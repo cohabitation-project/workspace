@@ -82,7 +82,7 @@ export function loadConfig() {
     contextPack,
     packHash,
     cooldownMs: parseInt(process.env.COOLDOWN_MS || '5000', 10),
-    maxTokens: parseInt(process.env.MAX_TOKENS || '1024', 10),
+    maxTokens: parseInt(process.env.MAX_TOKENS || '4096', 10),
   };
 }
 

@@ -55,9 +55,17 @@ async function chatAnthropic(apiKey, model, system, userMessage, history, maxTok
   }
 
   const data = await res.json();
-  const text = data.content.map(b => b.text).join('');
+  const stopReason = data.stop_reason ?? 'unknown';
+  const text = (data.content ?? []).map(b => b.text ?? '').join('');
   const tokensUsed = (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0);
-  return { text, tokensUsed };
+
+  console.log(`[Anthropic] model=${model} stop_reason=${stopReason} content_blocks=${(data.content ?? []).length} output_tokens=${data.usage?.output_tokens ?? '?'} text_length=${text.length}`);
+
+  if (stopReason === 'max_tokens') {
+    console.warn(`[Anthropic] Response truncated (max_tokens=${maxTokens}). Consider increasing MAX_TOKENS.`);
+  }
+
+  return { text, tokensUsed, stopReason };
 }
 
 async function chatOpenAI(apiKey, model, system, userMessage, history, maxTokens, endpoint) {
@@ -82,9 +90,10 @@ async function chatOpenAI(apiKey, model, system, userMessage, history, maxTokens
   }
 
   const data = await res.json();
-  const text = data.choices[0].message.content;
+  const text = data.choices[0].message.content ?? '';
+  const stopReason = data.choices[0].finish_reason ?? 'unknown';
   const tokensUsed = (data.usage?.total_tokens) ?? (data.usage?.prompt_tokens ?? 0) + (data.usage?.completion_tokens ?? 0);
-  return { text, tokensUsed };
+  return { text, tokensUsed, stopReason };
 }
 
 async function chatGoogle(apiKey, model, system, userMessage, history, maxTokens) {
@@ -115,7 +124,8 @@ async function chatGoogle(apiKey, model, system, userMessage, history, maxTokens
   }
 
   const data = await res.json();
-  const text = data.candidates[0].content.parts.map(p => p.text).join('');
+  const text = (data.candidates?.[0]?.content?.parts ?? []).map(p => p.text ?? '').join('');
+  const stopReason = data.candidates?.[0]?.finishReason ?? 'unknown';
   const tokensUsed = data.usageMetadata?.totalTokenCount ?? 0;
-  return { text, tokensUsed };
+  return { text, tokensUsed, stopReason };
 }

@@ -162,7 +162,7 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
   const history = getHistory(threadId || channel.id);
 
   try {
-    const { text: reply, tokensUsed } = await chat(agent, userText, history, config.maxTokens);
+    const { text: reply, tokensUsed, stopReason } = await chat(agent, userText, history, config.maxTokens);
 
     recordTokens(agent, tokensUsed);
 
@@ -177,6 +177,16 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
       prompt: userText,
       reply,
     });
+
+    // Guard: if the LLM returned empty content, post a visible error
+    if (!reply || !reply.trim()) {
+      const reason = stopReason === 'max_tokens'
+        ? 'response truncated to zero by token limit'
+        : `empty response from API (stop_reason: ${stopReason})`;
+      console.error(`[${agent.name}] Empty reply — ${reason}`);
+      await sendAsAgent(agent, `⚠ Empty response — ${reason}. The operator has been notified.`, channel, threadId);
+      return;
+    }
 
     // Record in history
     addToHistory(threadId || channel.id, 'user', authorName, userText);
