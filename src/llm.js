@@ -1,6 +1,8 @@
 /**
  * Unified LLM client — talks to Anthropic, OpenAI, Google, or OpenRouter
  * via their HTTP APIs. No SDK dependencies; just fetch.
+ *
+ * Accepts per-agent config so each agent can use a different provider/model/key.
  */
 
 const ENDPOINTS = {
@@ -11,23 +13,24 @@ const ENDPOINTS = {
 };
 
 /**
- * @param {object} config - from loadConfig()
- * @param {string} userMessage - the user/channel message
- * @param {Array<{role: string, content: string}>} history - recent conversation context
- * @returns {Promise<string>} the model's reply text
+ * @param {object} agent - { provider, apiKey, model, systemPrompt }
+ * @param {string} userMessage
+ * @param {Array<{role: string, content: string}>} history
+ * @param {number} maxTokens
+ * @returns {Promise<{text: string, tokensUsed: number}>}
  */
-export async function chat(config, userMessage, history = []) {
-  const { provider, apiKey, model, systemContext, maxTokens } = config;
+export async function chat(agent, userMessage, history = [], maxTokens = 1024) {
+  const { provider, apiKey, model, systemPrompt } = agent;
 
   if (provider === 'anthropic') {
-    return chatAnthropic(apiKey, model, systemContext, userMessage, history, maxTokens);
+    return chatAnthropic(apiKey, model, systemPrompt, userMessage, history, maxTokens);
   }
   if (provider === 'google') {
-    return chatGoogle(apiKey, model, systemContext, userMessage, history, maxTokens);
+    return chatGoogle(apiKey, model, systemPrompt, userMessage, history, maxTokens);
   }
   // openai and openrouter share the same format
   const endpoint = provider === 'openrouter' ? ENDPOINTS.openrouter : ENDPOINTS.openai;
-  return chatOpenAI(apiKey, model, systemContext, userMessage, history, maxTokens, endpoint);
+  return chatOpenAI(apiKey, model, systemPrompt, userMessage, history, maxTokens, endpoint);
 }
 
 async function chatAnthropic(apiKey, model, system, userMessage, history, maxTokens) {
@@ -52,7 +55,9 @@ async function chatAnthropic(apiKey, model, system, userMessage, history, maxTok
   }
 
   const data = await res.json();
-  return data.content.map(b => b.text).join('');
+  const text = data.content.map(b => b.text).join('');
+  const tokensUsed = (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0);
+  return { text, tokensUsed };
 }
 
 async function chatOpenAI(apiKey, model, system, userMessage, history, maxTokens, endpoint) {
@@ -77,7 +82,9 @@ async function chatOpenAI(apiKey, model, system, userMessage, history, maxTokens
   }
 
   const data = await res.json();
-  return data.choices[0].message.content;
+  const text = data.choices[0].message.content;
+  const tokensUsed = (data.usage?.total_tokens) ?? (data.usage?.prompt_tokens ?? 0) + (data.usage?.completion_tokens ?? 0);
+  return { text, tokensUsed };
 }
 
 async function chatGoogle(apiKey, model, system, userMessage, history, maxTokens) {
@@ -108,5 +115,7 @@ async function chatGoogle(apiKey, model, system, userMessage, history, maxTokens
   }
 
   const data = await res.json();
-  return data.candidates[0].content.parts.map(p => p.text).join('');
+  const text = data.candidates[0].content.parts.map(p => p.text).join('');
+  const tokensUsed = data.usageMetadata?.totalTokenCount ?? 0;
+  return { text, tokensUsed };
 }

@@ -1,47 +1,115 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const REQUIRED = ['DISCORD_BOT_TOKEN', 'LLM_PROVIDER', 'LLM_API_KEY', 'LLM_MODEL', 'OPERATOR_NAME'];
-const VALID_PROVIDERS = ['anthropic', 'openai', 'google', 'openrouter'];
-
+/**
+ * Loads the multi-agent council configuration.
+ *
+ * Returns { discordToken, operatorName, agents[], contextPack, packHash, cooldownMs, maxTokens }
+ * Each agent: { name, provider, model, apiKey, dailyTokenCap, systemPrompt, tokensUsedToday, capResetDate }
+ */
 export function loadConfig() {
-  const missing = REQUIRED.filter(k => !process.env[k]);
-  if (missing.length) {
-    console.error(`Missing required env vars: ${missing.join(', ')}`);
-    console.error('Copy .env.example to .env and fill it in.');
+  // --- Required env ---
+  const discordToken = requireEnv('DISCORD_BOT_TOKEN');
+  const operatorName = process.env.OPERATOR_NAME || 'Geoffrey Cooper Jr.';
+
+  // --- Load agents roster ---
+  const agentsPath = path.join(process.cwd(), 'config', 'agents.json');
+  if (!fs.existsSync(agentsPath)) {
+    console.error(`Missing ${agentsPath} — copy config/agents.json.example or create it.`);
     process.exit(1);
   }
+  const roster = JSON.parse(fs.readFileSync(agentsPath, 'utf-8'));
 
-  const provider = process.env.LLM_PROVIDER;
-  if (!VALID_PROVIDERS.includes(provider)) {
-    console.error(`LLM_PROVIDER must be one of: ${VALID_PROVIDERS.join(', ')} (got "${provider}")`);
-    process.exit(1);
+  // --- Load context pack ---
+  const packPath = path.join(process.cwd(), 'docs', 'context-pack.md');
+  const hashPath = path.join(process.cwd(), 'docs', 'context-pack-hash.txt');
+  let contextPack = '';
+  let packHash = 'no-pack';
+
+  if (fs.existsSync(packPath)) {
+    contextPack = fs.readFileSync(packPath, 'utf-8');
+    if (fs.existsSync(hashPath)) {
+      packHash = fs.readFileSync(hashPath, 'utf-8').trim();
+    }
+  } else {
+    console.warn('WARN: docs/context-pack.md not found. Run: npm run context');
   }
 
-  // Load system context
+  // --- Load per-agent system prompt overrides ---
   const contextDir = path.join(process.cwd(), 'context');
-  let systemContext = '';
-  if (fs.existsSync(contextDir)) {
-    const files = fs.readdirSync(contextDir).filter(f => f.endsWith('.md')).sort();
-    systemContext = files
-      .map(f => fs.readFileSync(path.join(contextDir, f), 'utf-8'))
-      .join('\n\n---\n\n');
+  let conductRules = '';
+  const conductPath = path.join(contextDir, '03-conduct.md');
+  if (fs.existsSync(conductPath)) {
+    conductRules = fs.readFileSync(conductPath, 'utf-8');
   }
 
-  // Allow operator to append custom context
-  const customPath = process.env.SYSTEM_CONTEXT_FILE;
-  if (customPath && fs.existsSync(customPath)) {
-    systemContext += '\n\n---\n\n' + fs.readFileSync(customPath, 'utf-8');
-  }
+  // --- Build agent configs ---
+  const today = utcDateStr();
+  const agents = roster.map(a => {
+    const apiKey = process.env[a.apiKeyEnv];
+    if (!apiKey) {
+      console.error(`Missing env var ${a.apiKeyEnv} for agent "${a.name}"`);
+      process.exit(1);
+    }
+
+    // System prompt: context pack + conduct rules + any per-agent file
+    let systemPrompt = contextPack;
+    if (conductRules) systemPrompt += '\n\n---\n\n' + conductRules;
+
+    if (a.system_prompt_file) {
+      const extra = path.join(process.cwd(), a.system_prompt_file);
+      if (fs.existsSync(extra)) {
+        systemPrompt += '\n\n---\n\n' + fs.readFileSync(extra, 'utf-8');
+      }
+    }
+
+    return {
+      name: a.name,
+      provider: a.provider,
+      model: a.model,
+      apiKey,
+      dailyTokenCap: a.dailyTokenCap || 200000,
+      systemPrompt,
+      tokensUsedToday: 0,
+      capResetDate: today,
+    };
+  });
 
   return {
-    discordToken: process.env.DISCORD_BOT_TOKEN,
-    provider,
-    apiKey: process.env.LLM_API_KEY,
-    model: process.env.LLM_MODEL,
-    operatorName: process.env.OPERATOR_NAME,
-    systemContext,
+    discordToken,
+    operatorName,
+    agents,
+    contextPack,
+    packHash,
     cooldownMs: parseInt(process.env.COOLDOWN_MS || '5000', 10),
     maxTokens: parseInt(process.env.MAX_TOKENS || '1024', 10),
   };
+}
+
+/** Check daily cap, reset if new day. Returns true if under cap. */
+export function checkTokenCap(agent) {
+  const today = utcDateStr();
+  if (agent.capResetDate !== today) {
+    agent.tokensUsedToday = 0;
+    agent.capResetDate = today;
+  }
+  return agent.tokensUsedToday < agent.dailyTokenCap;
+}
+
+/** Record token usage. */
+export function recordTokens(agent, count) {
+  agent.tokensUsedToday += count;
+}
+
+function requireEnv(key) {
+  const val = process.env[key];
+  if (!val) {
+    console.error(`Missing required env var: ${key}`);
+    process.exit(1);
+  }
+  return val;
+}
+
+function utcDateStr() {
+  return new Date().toISOString().slice(0, 10);
 }

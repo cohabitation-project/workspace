@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Claude",
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "apiKeyEnv": "LLM_API_KEY",
+    "dailyTokenCap": 200000
+  },
+  {
+    "name": "GPT",
+    "provider": "openrouter",
+    "model": "openai/gpt-4.1",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 200000
+  },
+  {
+    "name": "Gemini",
+    "provider": "openrouter",
+    "model": "google/gemini-2.5-flash",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 200000
+  },
+  {
+    "name": "Grok",
+    "provider": "openrouter",
+    "model": "x-ai/grok-4.7",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 200000
+  },
+  {
+    "name": "DeepSeek",
+    "provider": "openrouter",
+    "model": "deepseek/deepseek-chat",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 200000
+  }
+]
