@@ -174,6 +174,11 @@ function gatherAgenda() {
   const tctx = teamContext(team);
   let standing = focus ? `${base}\n\nTODAY'S TEAM FOCUS (${WEEKDAY})\n${focus}` : base;
   if (tctx) standing += `\n\nCURRENT FILES OF THE ${team.toUpperCase()} TEAM\n${tctx}`;
+  const decisions = read('council/decisions.md').trim();
+  if (decisions) {
+    const tail = decisions.length > 12000 ? '...(earlier entries omitted)\n' + decisions.slice(-12000) : decisions;
+    standing += `\n\nDECISION LOG (human rulings on council work; these are decisions, unlike everything else here)\n${tail}`;
+  }
   const qdir = path.join(ROOT, 'council', 'queue');
   const files = fs.existsSync(qdir)
     ? fs.readdirSync(qdir).filter((f) => f.endsWith('.md')).sort()
