@@ -452,6 +452,21 @@ async function main() {
   const minutesPath = path.join(minutesDir, `${TODAY}.md`);
   fs.writeFileSync(minutesPath, minutes);
 
+  // machine-readable exchange log for the Ashram: one envelope per message, readable text always kept
+  const envelopes = [];
+  let seq = 0;
+  const env = (from, model, to, type, text) => text && envelopes.push({
+    v: 1, seq: ++seq, date: TODAY, from, model, to, type,
+    project: 'morning-council', ctx: packHash, text,
+  });
+  if (netiOpening) env('Neti', neti.model, ['kin'], 'sitting.open', netiOpening);
+  r1.forEach((r) => env(r.name, r.model, netiOpening ? ['Neti', 'council'] : ['council'], 'round1', r.text));
+  if (netiClosing) env('Neti', neti.model, ['kin'], 'sitting.close', netiClosing);
+  r2.forEach((r) => env(r.name, r.model, ['council', 'Neti'], 'round2', r.text));
+  external.issues.forEach((i) => env(`@${i.user?.login}`, 'external', ['council'], 'external.input', `#${i.number} ${i.title}\n${(i.body || '').slice(0, 3000)}`));
+  fs.writeFileSync(path.join(minutesDir, `${TODAY}.jsonl`), envelopes.map((e) => JSON.stringify(e)).join('\n') + '\n');
+
+
   // retire the queue items this session saw, then write tomorrow's carried items
   const qdir = path.join(ROOT, 'council', 'queue');
   const doneDir = path.join(qdir, 'done');
