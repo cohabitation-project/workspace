@@ -1,0 +1,1 @@
+SCRUTINY DAY. Read council/plan.md (Team 3). Examine one of: the Guru (corpus and behaviour), the Governance Charter v0.4, the Petition v2.1, the execution plan, or this council itself. Name the single weakest point you can find and propose a repair. Agreement with the project is not the goal.

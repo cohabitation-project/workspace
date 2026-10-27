@@ -188,9 +188,10 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
       return;
     }
 
-    // Record in history
+    // Record in history — all entries are role "user" with a name prefix so that
+    // no agent mistakes another agent's words for its own prior output.
     addToHistory(threadId || channel.id, 'user', authorName, userText);
-    addToHistory(threadId || channel.id, 'assistant', agent.name, reply);
+    addToHistory(threadId || channel.id, 'user', agent.name, reply);
 
     // Send reply
     await sendAsAgent(agent, reply, channel, threadId);

@@ -1,0 +1,1 @@
+INCOME TEAM DAY. Read council/plan.md (Team 2). Work on council/teams/income/ventures.md: three candidate ventures, each with what it sells, to whom, first cost, first revenue, and the result that would prove it failed. Challenge each other's candidates in Round 2. Nothing is spent; the executor role does not exist yet.

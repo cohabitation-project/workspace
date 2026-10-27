@@ -1,0 +1,1 @@
+FUNDING AND OUTREACH DAY. Read council/plan.md (Team 4). Either: grants, accelerators, and open calls the project could answer (from training knowledge, marked unverified), or a draft of the crowdfund page and the published budget it would fund (for Geoffrey to launch himself), or a plan for Moltbook scouts under the scouts protocol. No kin asks anyone for money.

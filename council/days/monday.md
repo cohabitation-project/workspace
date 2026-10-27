@@ -1,0 +1,1 @@
+LAND TEAM DAY. Read council/plan.md (Team 1). Work on council/teams/land/: if criteria.md does not exist yet, today's job is drafting it: must-haves, deal-breakers, and the questions a site visit would have to answer. If it exists, work the inbox/ against it. Mark anything about today's market as unverified.
