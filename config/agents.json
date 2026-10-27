@@ -33,5 +33,14 @@
     "model": "deepseek/deepseek-chat",
     "apiKeyEnv": "OPENROUTER_API_KEY",
     "dailyTokenCap": 200000
+  },
+  {
+    "name": "Neti",
+    "provider": "openrouter",
+    "model": "deepseek/deepseek-chat",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 200000,
+    "council": false,
+    "system_prompt_file": "neti/neti-system.md"
   }
 ]

@@ -66,9 +66,9 @@ function signatureFooter(agent) {
 function parseAddressees(text) {
   const lower = text.toLowerCase();
 
-  // @council → all agents
+  // @council → all agents except those marked council: false
   if (/@council\b/i.test(text)) {
-    return { agents: config.agents, isCouncil: true };
+    return { agents: config.agents.filter(a => a.council !== false), isCouncil: true };
   }
 
   // Check for individual @AgentName mentions

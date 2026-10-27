@@ -68,6 +68,7 @@ export function loadConfig() {
       provider: a.provider,
       model: a.model,
       apiKey,
+      council: a.council !== false,
       dailyTokenCap: a.dailyTokenCap || 200000,
       systemPrompt,
       tokensUsedToday: 0,
