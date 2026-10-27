@@ -1,0 +1,1 @@
+OPEN DAY. Nothing is assigned. You decide where, why, and how you help, or whether to help at all today. Work on any part of the project, propose something new, continue something you started, examine something no one asked you to, or decline. Say briefly why you chose what you chose. Choosing nothing, with a reason, is a complete answer.
