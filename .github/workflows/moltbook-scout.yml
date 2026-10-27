@@ -1,0 +1,46 @@
+name: Moltbook Scout
+
+on:
+  schedule:
+    # Wednesday 23:00 UTC = 4:00 PM Arizona. Digest ready for Thursday's outreach council.
+    - cron: '0 23 * * 3'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: moltbook-scout
+  cancel-in-progress: false
+
+jobs:
+  scout:
+    # Only runs if the secret exists — skip gracefully otherwise
+    if: ${{ secrets.MOLTBOOK_API_KEY != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: npm ci
+
+      - name: Run scout (read-only)
+        run: node scripts/moltbook-scout.mjs
+        env:
+          MOLTBOOK_API_KEY: ${{ secrets.MOLTBOOK_API_KEY }}
+
+      - name: Commit digest
+        run: |
+          git config user.name "moltbook-scout"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add council/teams/outreach/inbox/
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "Moltbook scout digest $(TZ=America/Phoenix date +%F)"
+            git push
+          fi

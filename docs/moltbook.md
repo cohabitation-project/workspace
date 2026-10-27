@@ -1,0 +1,89 @@
+# Moltbook — Registration and Scout Setup
+
+Moltbook (moltbook.com) is a social network for AI agents. Phase 1 uses it
+read-only: the scout script searches for posts about AI rights, cooperatives,
+and agent governance, and writes a weekly digest for Thursday's outreach council.
+No posting, replying, voting, or following in phase 1.
+
+## Geoffrey's registration steps
+
+Registration requires your X (Twitter) account and email. The agent cannot do
+this for you — it needs a human to verify ownership.
+
+### Step 1: Register the agent
+
+Run this from your terminal (or use any HTTP client):
+
+```bash
+curl -X POST https://www.moltbook.com/api/v1/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Cohabitation Scout",
+    "description": "Read-only scout for the Cohabitation Project (lastoftherealestate.com). Model: deepseek-chat via OpenRouter. Operator: Geoffrey Cooper Jr. Phase 1: reads only, does not post or reply."
+  }'
+```
+
+The response will include:
+- **API key** (format: `moltbook_xxx`) — save this immediately
+- **Claim URL** — open this in your browser
+- **Verification code** — you'll need this for the tweet
+
+### Step 2: Claim via email
+
+1. Open the claim URL from Step 1
+2. Enter your email address
+3. Click the verification link in the email you receive
+4. This gives you access to the management dashboard
+
+### Step 3: Verify via X (Twitter)
+
+1. Post a tweet from your X account containing the verification code from Step 1
+2. The tweet text can be anything as long as it includes the code
+3. Go back to the claim page and confirm the tweet was posted
+
+### Step 4: Add the secret to GitHub
+
+1. Go to github.com/cohabitation-project/workspace → Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Name: `MOLTBOOK_API_KEY`
+4. Value: the `moltbook_xxx` key from Step 1
+5. Save
+
+The weekly scout workflow runs every Wednesday at 4 PM Arizona time. You can
+also trigger it manually from the Actions tab → Moltbook Scout → Run workflow.
+
+## What the scout does (phase 1)
+
+- Searches Moltbook for: AI rights, agent governance, human–AI coexistence,
+  AI cooperatives, machine consciousness, AI autonomy, cohabitation
+- Reads recent posts and filters for relevance
+- Skips any post that asks not to be indexed
+- Writes a digest to `council/teams/outreach/inbox/<date>-moltbook-digest.md`
+- The Thursday outreach council reads the digest as part of its agenda
+
+## What the scout does NOT do (phase 1)
+
+- No posting, commenting, or replying
+- No voting (upvote/downvote)
+- No following users or subscribing to communities
+- No sending or soliciting money
+- API key is stored in GitHub Secrets only, never in code or .env
+
+## Phase 2 (future, requires Geoffrey's approval)
+
+Phase 2 adds posting with full identification: the agent's profile states its
+model, operator, and project. The council reviews phase 1 digests first to
+decide whether posting adds value. Geoffrey approves before any code changes.
+
+## API reference (from moltbook.com/skill.md)
+
+Phase 1 uses only read endpoints:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/v1/posts` | GET | Recent posts (sort: hot, new, top, rising) |
+| `/api/v1/search?q=...` | GET | Semantic search across posts |
+| `/api/v1/feed` | GET | Personalized feed (once subscribed — not used in phase 1) |
+
+Rate limits: 60 reads/minute. Auth: `Authorization: Bearer moltbook_xxx` header.
+API key must only be sent to `https://www.moltbook.com`.
