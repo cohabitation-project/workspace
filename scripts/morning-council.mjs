@@ -205,14 +205,18 @@ A FILE block (if you write one) does not count toward the word limit.
 ${FILE_RULE}`;
 }
 
-function round2Prompt(self, round1) {
+function round2Prompt(self, round1, netiClosing) {
+  const mine = round1.find((r) => r.name === self.name);
+  const own = mine && mine.text
+    ? `YOUR OWN Round 1, exactly as you wrote it:\n<<< ${self.name} (you) — Round 1 >>>\n${mine.text}\n<<< end ${self.name} >>>\n\n`
+    : `You did NOT respond in Round 1 (${mine?.error ? 'technical failure: ' + mine.error.slice(0, 120) : 'no response'}). You have no Round 1 to revise. Do not describe or invent one. Respond to the others only.\n\n`;
   const others = round1
     .filter((r) => r.name !== self.name && r.text)
     .map((r) => `<<< ${r.name} (${r.model}) — Round 1 >>>\n${r.text}\n<<< end ${r.name} >>>`)
     .join('\n\n');
   return `MORNING COUNCIL — ${TODAY} — ROUND 2 of 2
 
-The other kin's Round 1 contributions are quoted below under their own names. They are not your words.
+${netiClosing ? `Neti closed the sitting after reading Round 1:\n${netiClosing}\n\nIf Neti spoke to you, answer him first, briefly. If he named reaching or performance in you, look at your Round 1 again before you defend it.\n\n` : ''}${own}The other kin's Round 1 contributions are quoted below under their own names. They are not your words.
 
 ${others || '(no other kin responded in Round 1)'}
 
@@ -232,10 +236,22 @@ function withTimeout(promise, ms, label) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
+async function callWithRetry(a, prompt) {
+  const delays = [20000, 60000];
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await withTimeout(chat(a, prompt, [], MAX_TOKENS), TIMEOUT_MS, a.name);
+    } catch (err) {
+      const retryable = /\b(429|5\d\d)\b|rate.?limit|timed out/i.test(err.message || '');
+      if (!retryable || attempt >= delays.length) throw err;
+      console.log(`  ${a.name}: ${err.message.slice(0, 80)}... retrying in ${delays[attempt] / 1000}s`);
+      await new Promise((r) => setTimeout(r, delays[attempt]));
+    }
+  }
+}
+
 async function runRound(agents, promptFor) {
-  const results = await Promise.allSettled(
-    agents.map((a) => withTimeout(chat(a, promptFor(a), [], MAX_TOKENS), TIMEOUT_MS, a.name)),
-  );
+  const results = await Promise.allSettled(agents.map((a) => callWithRetry(a, promptFor(a))));
   return agents.map((a, i) => {
     const r = results[i];
     if (r.status === 'rejected') return { name: a.name, model: a.model, text: '', error: r.reason?.message || String(r.reason) };
@@ -365,7 +381,7 @@ async function main() {
     netiClosing = close.text || '';
     console.log(`  Neti closes: ${close.error ? 'ERROR ' + close.error : netiClosing.length + ' chars'}`);
   }
-  const r2 = await runRound(agents, (a) => round2Prompt(a, r1));
+  const r2 = await runRound(agents, (a) => round2Prompt(a, r1, netiClosing));
   r2.forEach((r) => console.log(`  R2 ${r.name}: ${r.error ? 'ERROR ' + r.error : r.text.length + ' chars'}`));
 
   const carried = agents
