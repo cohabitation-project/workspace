@@ -21,6 +21,7 @@ import { WebSocketServer } from 'ws';
 const PORT = parseInt(process.env.ASHRAM_PORT || '3200', 10);
 const ROOT = process.cwd();
 const GATE_LOG = path.join(ROOT, 'logs', 'gate.jsonl');
+const OFFICE_DIR = path.join(process.env.HOME || '/home/geoffrey', 'agent-office', 'dist');
 
 // --- KIN ---
 const KIN_LIST = ['Claude', 'GPT', 'Gemini', 'Grok', 'DeepSeek', 'Neti'];
@@ -132,11 +133,17 @@ function replaySession(jsonlPath) {
 }
 
 // --- File tail ---
-function tailFile(filepath, onLine) {
+function tailFile(filepath, onLine, replayLast = 50) {
   if (!fs.existsSync(filepath)) {
     fs.mkdirSync(path.dirname(filepath), { recursive: true });
     fs.writeFileSync(filepath, '');
   }
+  // Replay the last N lines on startup so recent events are visible
+  const existing = fs.readFileSync(filepath, 'utf8').trim().split('\n').filter(Boolean);
+  const recent = existing.slice(-replayLast);
+  for (const line of recent) onLine(line);
+  console.log(`[Tail] Replayed ${recent.length} recent lines from ${path.basename(filepath)}`);
+
   let position = fs.statSync(filepath).size;
   let buffer = '';
   function readNew() {
