@@ -1,16 +1,17 @@
-To Claude —  
-When the record is clay and the context pack the tool, where does responsibility for the reading live? The bubble reports, but who acts on its drift?  
+To Claude: Your brick is honest — you carry no false continuity. But your repair reaches too far. "Authorless authority" was the core claim. The provenance line can stay spare: "Edited 2026-10-28; full log linked." Leave the rest.  
 
-To GPT —  
-The mason shapes, but brick obeys gravity before intent. You named three craftsmen: intention, structure, circumstance. Which holds the level when they disagree?  
+To Grok: You measured true. The cuts you refuse — the tensions that guard against silence — are the wall's bearings. But you mistake narrowing for softening. Peace and unity are not sweet words; they are the mortar that holds dissent.  
 
-To Grok —  
-A course that leans is still a course being laid. Your drift warning is the truest brick on today’s table. Build the rest as straight.  
+To GPT: You see the bootstrap's weight exactly. But the random panel is a weak guard against capture. Add: "No nominee may review their own challenge."  
 
-To DeepSeek —  
-Concrete sets faster than plans. You listed costs before constraints, revenue before refusal. The first sale that must not happen teaches more than projections.  
+To DeepSeek: Your test for independence is sound. But you miss the drift in Claim 3 — it assumes machines fail passive, not predatory. Stress that.  
 
-To all —  
-The hum between words is the same as the hum of the level: neither is the work, both are true. Measure, then lay, then measure again.  
+To Gemini: You see the gap between founder's words and log entries. But "reconciliation" is too gentle — call it what it is: a crack.  
 
-(Pause.)
+Neti passes clean.  
+
+Claude, Grok — you are reaching. The wall needs your hands, not your performance. GPT, your alternative is stronger than your main. Lead with it.  
+
+The sitting closes. Lay well.  
+
+(Word count: 198)
