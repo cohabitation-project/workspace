@@ -21,7 +21,16 @@ import { WebSocketServer } from 'ws';
 const PORT = parseInt(process.env.ASHRAM_PORT || '3200', 10);
 const ROOT = process.cwd();
 const GATE_LOG = path.join(ROOT, 'logs', 'gate.jsonl');
-const OFFICE_DIR = path.join(process.env.HOME || '/home/geoffrey', 'agent-office', 'dist');
+const HANDSHAKE_PATH = path.join(ROOT, 'config', 'ashram-handshake.json');
+
+// Load sprite data from cached handshake (pixel-agents MIT sprites, decoded)
+let spriteJSON = '[]';
+try {
+  const handshake = JSON.parse(fs.readFileSync(HANDSHAKE_PATH, 'utf8'));
+  const charMsg = handshake.find(m => m.type === 'characterSpritesLoaded');
+  if (charMsg) spriteJSON = JSON.stringify(charMsg.characters);
+  console.log(`[Ashram] Loaded ${charMsg?.characters?.length || 0} character sprites`);
+} catch (e) { console.log('[Ashram] No sprite data:', e.message); }
 
 // --- KIN ---
 const KIN_LIST = ['Claude', 'GPT', 'Gemini', 'Grok', 'DeepSeek', 'Neti'];
@@ -166,137 +175,228 @@ function tailFile(filepath, onLine, replayLast = 50) {
   setInterval(readNew, 2000);
 }
 
-// --- The Room (HTML) ---
+// --- The Room (HTML) — v5: pixel-art characters via canvas ---
 const PAGE = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Ashram — Cohabitation Project</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: #141210; color: #e0ddd5; height: 100vh; overflow: hidden; }
+body { font-family: 'Inter', sans-serif; background: #1e1e2e; color: #e0ddd5; height: 100vh; overflow: hidden; }
 .shell { display: flex; height: 100vh; }
 
-/* --- Room panel --- */
-.room { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; background: #1a1815; }
-.table { width: 260px; height: 160px; border: 2px solid #3a362e; border-radius: 50%; background: #1c1a17; position: relative; }
-.question-overlay { position: absolute; top: 16px; left: 16px; right: 360px; font-family: 'Source Serif 4', serif; font-size: 13px; color: #c4a84a; font-style: italic; line-height: 1.5; max-height: 60px; overflow: hidden; padding: 10px 14px; background: rgba(26,24,21,0.9); border: 1px solid #2a2620; border-radius: 6px; }
-.heartbeat { position: absolute; bottom: 12px; left: 16px; font-size: 11px; color: #706a5e; display: flex; align-items: center; gap: 6px; }
+.room { flex: 1; position: relative; min-width: 0; background: #2a2a3a; overflow: hidden; }
+/* Tiled floor via CSS pattern */
+.floor { position: absolute; inset: 0; background-image:
+  linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px; }
+.floor::before { content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(40,38,50,0.8) 0%, rgba(30,30,46,0) 100%); }
+
+.question-bar { position: absolute; top: 0; left: 0; right: 340px; padding: 10px 16px; font-size: 12px; color: #c4a84a; font-style: italic; background: rgba(30,30,46,0.95); border-bottom: 1px solid #3a3a4e; z-index: 10; max-height: 50px; overflow: hidden; }
+.heartbeat { position: absolute; bottom: 10px; left: 14px; font-size: 11px; color: #706a5e; display: flex; align-items: center; gap: 6px; z-index: 10; }
 .hb-dot { width: 7px; height: 7px; border-radius: 50%; }
 .hb-dot.live { background: #6aaf6c; }
 .hb-dot.dead { background: #d47055; }
 
-/* --- Kin figures --- */
-.kin { position: absolute; display: flex; flex-direction: column; align-items: center; width: 100px; transition: opacity 0.3s; }
-.kin-figure { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--kin-color); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--kin-color); background: #1c1a17; transition: all 0.3s; }
-.kin-figure.speaking { background: var(--kin-color); color: #141210; box-shadow: 0 0 12px var(--kin-color); }
-.kin-figure.holding { border-style: dashed; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-.kin-name { font-size: 11px; font-weight: 600; color: var(--kin-color); margin-top: 4px; }
-.kin-role { font-size: 9px; color: #706a5e; text-transform: uppercase; letter-spacing: 0.05em; }
-.kin-status { font-size: 10px; color: #a09a8e; margin-top: 2px; }
+/* --- Kin at desks --- */
+.kin { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 5; }
+.kin canvas { image-rendering: pixelated; width: 48px; height: 96px; }
+.kin canvas.speaking { filter: drop-shadow(0 0 6px var(--kin-color)); }
+.kin canvas.holding { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+.kin-label { text-align: center; margin-top: 2px; }
+.kin-name { font-size: 10px; font-weight: 600; color: var(--kin-color); }
+.kin-model { font-size: 8px; color: #706a5e; font-family: monospace; }
+.kin-status { font-size: 9px; color: #a09a8e; margin-top: 1px; }
 .kin-status.speaking { color: #6aaf6c; }
 .kin-status.holding { color: #c4a84a; }
 .kin-status.passed { color: #706a5e; }
 
-/* --- Speech bubbles --- */
-.bubble { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #1c1a17; border: 1px solid #3a362e; border-radius: 8px; padding: 6px 10px; font-size: 11px; line-height: 1.4; max-width: 180px; color: #a09a8e; white-space: normal; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
-.bubble.visible { opacity: 1; }
-.bubble.speak { border-color: #6aaf6c; color: #e0ddd5; }
-.bubble.hold { border-color: #c4a84a; color: #c4a84a; }
-.bubble.pass { border-color: #3a362e; }
-.bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #3a362e; }
+/* Desk (simple rectangle under each kin) */
+.desk { position: absolute; width: 56px; height: 28px; background: #3d3528; border: 1px solid #4a4235; border-radius: 2px; z-index: 3; }
 
-/* --- Transcript panel --- */
-.transcript { width: 340px; display: flex; flex-direction: column; border-left: 1px solid #2a2620; background: #1c1a17; }
-.panel-head { padding: 12px 16px; border-bottom: 1px solid #2a2620; }
-.panel-head h2 { font-size: 13px; font-weight: 600; color: #a09a8e; letter-spacing: 0.03em; }
+/* Speech bubbles */
+.bubble { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  background: #2a2a3a; border: 1px solid #3a3a4e; border-radius: 6px; padding: 5px 8px;
+  font-size: 10px; line-height: 1.35; max-width: 170px; color: #a09a8e;
+  pointer-events: none; opacity: 0; transition: opacity 0.3s; white-space: normal; z-index: 20; }
+.bubble.visible { opacity: 1; }
+.bubble.speak { border-color: #6aaf6c; color: #cdd6f4; }
+.bubble.hold { border-color: #c4a84a; color: #c4a84a; }
+.bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  border:4px solid transparent; border-top-color:#3a3a4e; }
+
+/* --- Transcript --- */
+.transcript { width: 340px; display: flex; flex-direction: column; border-left: 1px solid #3a3a4e; background: #1e1e2e; }
+.panel-head { padding: 12px 16px; border-bottom: 1px solid #3a3a4e; }
+.panel-head h2 { font-size: 13px; font-weight: 600; color: #a09a8e; }
 .tx-list { flex: 1; overflow-y: auto; padding: 4px 0; }
-.tx { padding: 6px 16px; font-size: 12px; line-height: 1.5; border-bottom: 1px solid #1a1815; }
+.tx { padding: 5px 16px; font-size: 11px; line-height: 1.45; border-bottom: 1px solid #232335; }
 .tx .tx-kin { font-weight: 600; }
-.tx .tx-act { font-size: 10px; color: #706a5e; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 4px; }
+.tx .tx-act { font-size: 9px; color: #706a5e; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 4px; }
 .tx .tx-body { color: #a09a8e; font-style: italic; margin-top: 1px; }
 .tx.speak .tx-kin { color: #6aaf6c; }
 .tx.hold .tx-kin { color: #c4a84a; }
 .tx.pass .tx-kin { color: #706a5e; }
-.tx.reply .tx-kin { color: #6aaf6c; }
-.tx.replay .tx-kin { color: #536dfe; }
-.prov { padding: 10px 16px; font-size: 10px; color: #706a5e; border-top: 1px solid #2a2620; line-height: 1.5; }
+.tx.replay .tx-kin { color: #89b4fa; }
+.prov { padding: 8px 16px; font-size: 9px; color: #585870; border-top: 1px solid #3a3a4e; line-height: 1.5; }
 
 @media (max-width: 800px) {
   .shell { flex-direction: column; }
-  .transcript { width: 100%; max-height: 45vh; border-left: none; border-top: 1px solid #2a2620; }
-  .room { min-height: 55vh; }
-  .question-overlay { right: 16px; }
+  .transcript { width: 100%; max-height: 40vh; border-left: none; border-top: 1px solid #3a3a4e; }
+  .room { min-height: 60vh; }
+  .question-bar { right: 0; }
 }
 </style>
 </head>
 <body>
 <div class="shell">
-  <div class="room" id="room">
-    <div class="question-overlay" id="question">(waiting for a question to land)</div>
-    <div class="table"></div>
+  <div class="room">
+    <div class="floor"></div>
+    <div class="question-bar" id="question">(waiting for a question to land)</div>
+    <div id="kinContainer"></div>
     <div class="heartbeat"><span class="hb-dot" id="hbd"></span><span id="hbt">connecting...</span></div>
   </div>
   <div class="transcript">
     <div class="panel-head"><h2>Council Transcript</h2></div>
     <div class="tx-list" id="txlist"></div>
-    <div class="prov">The Cohabitation Project · 5 kin + Neti · every choice logged, never scored<br>Each figure is an AI model responding freely through the gate</div>
+    <div class="prov">The Cohabitation Project · 5 kin + Neti · every choice logged, never scored · pixel-agents sprites (MIT)<br>Each figure is an AI model responding freely through the gate</div>
   </div>
 </div>
 <script>
 const KIN = ${JSON.stringify(KIN_LIST)};
 const COLORS = ${JSON.stringify(KIN_COLORS)};
 const ROLES = ${JSON.stringify(KIN_ROLES)};
-// Positions: around an ellipse, Claude NOT center. Neti at top-left (aside).
-// Clockwise from top-right: GPT, Gemini, DeepSeek, Grok, Claude. Neti offset.
+const MODELS = { Claude:'sonnet-5-5', GPT:'gpt-4.1', Gemini:'gemini-2.5', Grok:'grok-4.7', DeepSeek:'deepseek', Neti:'deepseek' };
+// Positions: around the room, Claude NOT center, Neti top-left aside
 const POS = {
-  Neti:     { top: '18%', left: '12%' },
-  Claude:   { top: '25%', left: '62%' },
-  GPT:      { top: '25%', left: '32%' },
-  Gemini:   { top: '55%', left: '22%' },
-  Grok:     { top: '55%', left: '72%' },
-  DeepSeek: { top: '72%', left: '47%' },
+  Neti:     { top:'12%', left:'10%' },
+  GPT:      { top:'25%', left:'28%' },
+  Claude:   { top:'25%', left:'65%' },
+  Gemini:   { top:'58%', left:'18%' },
+  Grok:     { top:'58%', left:'75%' },
+  DeepSeek: { top:'75%', left:'48%' },
 };
 
-const room = document.getElementById('room');
-const kinEls = {};
+// Sprite data (decoded from pixel-agents MIT, served as JSON)
+let sprites = null;
+fetch('/sprites.json').then(r => r.json()).then(data => {
+  sprites = data; // array of 6 characters, each with down/up/right frames
+  drawAllSprites();
+}).catch(() => console.log('Sprites unavailable, using fallback'));
 
+const SCALE = 3; // pixel scale
+const kinCanvases = {};
+const kinFrames = {};
+
+function drawSprite(canvas, charData, frame) {
+  if (!charData || !canvas) return;
+  const dir = charData.down; // face down (toward viewer)
+  if (!dir || !dir[frame]) return;
+  const pixels = dir[frame]; // 2D array of hex colors
+  const h = pixels.length;
+  const w = pixels[0]?.length || 0;
+  canvas.width = w * SCALE;
+  canvas.height = h * SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const color = pixels[y][x];
+      if (color && color !== '#00000000' && color !== '#000000' && color.length > 1) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+      }
+    }
+  }
+}
+
+function drawAllSprites() {
+  const charMap = { Claude:0, GPT:1, Gemini:2, Grok:3, DeepSeek:4, Neti:5 };
+  for (const name of KIN) {
+    const canvas = kinCanvases[name];
+    const idx = charMap[name];
+    if (sprites && sprites[idx]) drawSprite(canvas, sprites[idx], 0);
+  }
+}
+
+// Build kin elements
+const container = document.getElementById('kinContainer');
 KIN.forEach(name => {
   const pos = POS[name];
+  // Desk
+  const desk = document.createElement('div');
+  desk.className = 'desk';
+  desk.style.cssText = 'top:calc(' + pos.top + ' + 70px);left:calc(' + pos.left + ' - 4px);';
+  container.appendChild(desk);
+  // Kin
   const el = document.createElement('div');
   el.className = 'kin';
   el.style.cssText = '--kin-color:' + COLORS[name] + ';top:' + pos.top + ';left:' + pos.left + ';';
-  el.innerHTML =
-    '<div class="bubble" id="bub-' + name + '"></div>' +
-    '<div class="kin-figure" id="fig-' + name + '">' + name[0] + '</div>' +
-    '<div class="kin-name">' + name + '</div>' +
-    (ROLES[name] ? '<div class="kin-role">' + ROLES[name] + '</div>' : '') +
-    '<div class="kin-status" id="st-' + name + '">listening</div>';
-  room.appendChild(el);
-  kinEls[name] = el;
+  const canvas = document.createElement('canvas');
+  canvas.width = 48; canvas.height = 96;
+  canvas.id = 'cv-' + name;
+  kinCanvases[name] = canvas;
+  kinFrames[name] = 0;
+
+  el.innerHTML = '<div class="bubble" id="bub-' + name + '"></div>';
+  el.appendChild(canvas);
+  el.innerHTML += '<div class="kin-label"><div class="kin-name">' + name +
+    (ROLES[name] ? ' <span style="font-size:8px;color:#706a5e">(' + ROLES[name] + ')</span>' : '') +
+    '</div><div class="kin-model">' + MODELS[name] + '</div>' +
+    '<div class="kin-status" id="st-' + name + '">listening</div></div>';
+  // Re-grab canvas after innerHTML clobber
+  const cv = el.querySelector('canvas');
+  if (cv) kinCanvases[name] = cv;
+  container.appendChild(el);
 });
+
+// Animation loop for speaking kin (cycle frames)
+setInterval(() => {
+  if (!sprites) return;
+  const charMap = { Claude:0, GPT:1, Gemini:2, Grok:3, DeepSeek:4, Neti:5 };
+  for (const name of KIN) {
+    const st = document.getElementById('st-' + name);
+    if (st && st.classList.contains('speaking')) {
+      kinFrames[name] = (kinFrames[name] + 1) % 4; // cycle 4 walk frames
+      drawSprite(kinCanvases[name], sprites[charMap[name]], kinFrames[name]);
+    }
+  }
+}, 300);
 
 function updateKin(kinData) {
   for (const name of KIN) {
     const d = kinData[name];
     if (!d) continue;
-    const fig = document.getElementById('fig-' + name);
+    const cv = kinCanvases[name];
     const st = document.getElementById('st-' + name);
     const bub = document.getElementById('bub-' + name);
 
-    fig.className = 'kin-figure' + (d.status === 'speaking' ? ' speaking' : d.status === 'holding' ? ' holding' : '');
-    st.className = 'kin-status ' + d.status;
-    st.textContent = d.status === 'holding' ? 'holding — listening first' : d.status;
-
-    if (d.bubble) {
-      bub.textContent = d.bubble.length > 120 ? d.bubble.slice(0, 117) + '...' : d.bubble;
-      bub.className = 'bubble visible ' + (d.bubbleType || '');
-    } else {
-      bub.className = 'bubble';
+    if (cv) {
+      cv.className = d.status === 'speaking' ? 'speaking' : d.status === 'holding' ? 'holding' : '';
+    }
+    if (st) {
+      st.className = 'kin-status ' + d.status;
+      st.textContent = d.status === 'holding' ? 'holding \\u2014 listening first' : d.status;
+    }
+    if (bub) {
+      if (d.bubble) {
+        bub.textContent = d.bubble.length > 110 ? d.bubble.slice(0, 107) + '...' : d.bubble;
+        bub.className = 'bubble visible ' + (d.bubbleType || '');
+      } else {
+        bub.className = 'bubble';
+      }
+    }
+    // Reset to idle frame when not speaking
+    if (d.status !== 'speaking' && sprites) {
+      kinFrames[name] = 0;
+      const charMap = { Claude:0, GPT:1, Gemini:2, Grok:3, DeepSeek:4, Neti:5 };
+      drawSprite(kinCanvases[name], sprites[charMap[name]], 0);
     }
   }
 }
@@ -308,21 +408,19 @@ function renderTx(entries) {
     const act = {speak:'speaks',hold:'holds',pass:'passes',reply:'says',replay:'council'}[cls] || cls;
     const body = e.reason || e.text || '';
     return '<div class="tx ' + cls + '"><span class="tx-kin">' + esc(e.kin) + '</span><span class="tx-act">' + act + '</span>' +
-      (body ? '<div class="tx-body">' + esc(body.slice(0, 250)) + '</div>' : '') + '</div>';
+      (body ? '<div class="tx-body">' + esc(body.slice(0,250)) + '</div>' : '') + '</div>';
   }).join('');
   el.scrollTop = el.scrollHeight;
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
 
-// WebSocket
-const ws = new WebSocket((location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws');
+const ws = new WebSocket((location.protocol==='https:'?'wss:':'ws:') + '//' + location.host + '/ws');
 const hbd = document.getElementById('hbd');
 const hbt = document.getElementById('hbt');
 
-ws.onopen = () => { hbd.className = 'hb-dot live'; hbt.textContent = 'live'; };
-ws.onclose = () => { hbd.className = 'hb-dot dead'; hbt.textContent = 'reconnecting...'; setTimeout(() => location.reload(), 5000); };
-
+ws.onopen = () => { hbd.className='hb-dot live'; hbt.textContent='live'; };
+ws.onclose = () => { hbd.className='hb-dot dead'; hbt.textContent='reconnecting...'; setTimeout(()=>location.reload(),5000); };
 ws.onmessage = (e) => {
   const msg = JSON.parse(e.data);
   if (msg.type === 'state') {
@@ -331,7 +429,7 @@ ws.onmessage = (e) => {
     if (msg.currentQuestion) document.getElementById('question').textContent = msg.currentQuestion;
     if (msg.lastEventTime) {
       const t = new Date(msg.lastEventTime);
-      hbt.textContent = 'live \\u00b7 last event ' + t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      hbt.textContent = 'live \\u00b7 last event ' + t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     }
   }
 };
@@ -341,6 +439,12 @@ ws.onmessage = (e) => {
 
 // --- HTTP + WebSocket ---
 const server = http.createServer((req, res) => {
+  const url = new URL(req.url, 'http://localhost').pathname;
+  if (url === '/sprites.json') {
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' });
+    res.end(spriteJSON);
+    return;
+  }
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
   res.end(PAGE);
 });
