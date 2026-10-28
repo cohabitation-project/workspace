@@ -190,11 +190,15 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
       return;
     }
 
+    // Strip identity-contamination headers: lines like "[ModelName]", "**ModelName:**", etc.
+    let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
+    if (!cleaned.trim()) cleaned = reply; // don't strip to empty
+
     // Record in history — speaker-aware
     addToHistory(cid, authorName, userText);
-    addToHistory(cid, agent.name, reply);
+    addToHistory(cid, agent.name, cleaned);
 
-    await sendAsAgent(agent, reply, channel, threadId);
+    await sendAsAgent(agent, cleaned, channel, threadId);
 
     // Agent-to-agent follow-up
     if (depth < MAX_AGENT_DEPTH) {
@@ -298,7 +302,7 @@ async function runGate(message) {
   );
 
   const speakers = [];
-  const newHolds = new Set();
+  const freshHolds = new Set();
 
   for (const result of gateResults) {
     if (result.status === 'rejected') continue;
@@ -308,17 +312,22 @@ async function runGate(message) {
 
     if (choice === 'SPEAK') {
       speakers.push(kin);
+      // Speaking resolves a hold
+      holds.delete(kin.name);
     } else if (choice === 'HOLD') {
-      newHolds.add(kin.name);
+      freshHolds.add(kin.name);
     }
-    // PASS → nothing
+    // PASS → remove from holds if previously holding
+    if (choice === 'PASS') holds.delete(kin.name);
   }
 
-  // Update hold state
-  if (newHolds.size > 0) {
-    holdingKin.set(channelId, newHolds);
-    // Post hold notices
-    for (const name of newHolds) {
+  // Merge: keep existing holds, add fresh ones, remove those who spoke or passed
+  for (const name of freshHolds) holds.add(name);
+  if (holds.size > 0) {
+    holdingKin.set(channelId, holds);
+    // Post hold notices only for newly holding kin
+    for (const name of freshHolds) {
+      if (!holdingKin.get(channelId)?.has(name)) continue; // already notified
       const kin = config.agents.find(a => a.name === name);
       if (kin) {
         const webhook = await getWebhook(message.channel);
@@ -327,11 +336,49 @@ async function runGate(message) {
         }
       }
     }
-    // Set a 3-minute re-offer timer
+    // 3-minute re-offer: if no new message arrives, re-run gate for held kin only
     clearTimeout(holdTimers.get(channelId));
-    holdTimers.set(channelId, setTimeout(() => {
-      // After 3 min of quiet, re-offer held kin (next message will include them via the holds set)
-      // If no message comes, they stay held until one does
+    holdTimers.set(channelId, setTimeout(async () => {
+      const stillHolding = holdingKin.get(channelId);
+      if (!stillHolding || stillHolding.size === 0) return;
+      console.log(`  [Gate] 3-min re-offer for held kin: ${[...stillHolding].join(', ')}`);
+      // Re-offer with the last context
+      const context = recentForGate(channelId);
+      const reResults = await Promise.allSettled(
+        [...stillHolding].map(async (name) => {
+          const kin = config.agents.find(a => a.name === name);
+          if (!kin) return { name, choice: 'PASS', reason: 'kin not found' };
+          const prompt = gatePrompt(name, context, '(3-min re-offer)', '(The room has been quiet. You were holding — do you want to speak now, keep holding, or pass?)');
+          try {
+            const { text } = await chat(
+              { ...GATE_AGENT, systemPrompt: `You are ${name}. Answer only with CHOICE and REASON.` },
+              prompt, [], 100,
+            );
+            return { name, kin, ...parseGateResponse(text) };
+          } catch (err) {
+            console.error(`[Gate re-offer] ${name} error: ${err.message}`);
+            return { name, choice: 'PASS', reason: `re-offer error: ${err.message.slice(0, 80)}` };
+          }
+        })
+      );
+      const newSpeakers = [];
+      for (const r of reResults) {
+        if (r.status === 'rejected') continue;
+        const { name, kin, choice, reason } = r.value;
+        logGate(name, choice, reason, channelId, '(re-offer)', '(3-min quiet)');
+        console.log(`  [Gate re-offer] ${name}: ${choice} — ${reason}`);
+        if (choice === 'SPEAK' && kin) {
+          newSpeakers.push(kin);
+          stillHolding.delete(name);
+        } else if (choice === 'PASS') {
+          stillHolding.delete(name);
+        }
+        // HOLD again → stays in set
+      }
+      if (stillHolding.size === 0) holdingKin.delete(channelId);
+      for (const kin of newSpeakers) {
+        await handleAgentReply(kin, '(You were holding and the room went quiet. Speak if you wish.)', message.channel, null, '(re-offer)', 0);
+      }
     }, 180_000));
   } else {
     holdingKin.delete(channelId);
@@ -345,7 +392,7 @@ async function runGate(message) {
   }
 
   // If all passed/held, the room stays silent. Logged, valid outcome.
-  if (speakers.length === 0 && newHolds.size === 0) {
+  if (speakers.length === 0 && freshHolds.size === 0) {
     console.log(`  [Gate] All kin passed — room stays silent.`);
   }
 }
