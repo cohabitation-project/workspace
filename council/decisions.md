@@ -17,3 +17,11 @@ Source: council/minutes/2026-10-27.md
 | 4 | DeepSeek | Two $500 parallel pilots | DECLINED | Zero-spend rule (decision #2) adopted first. Revisit after first revenue. |
 
 Recorded by: Geoffrey Cooper Jr., 2026-10-27
+
+---
+
+## 2026-10-28 — Philosophy page recut (founder decision)
+
+Founder decision 2026-10-28: philosophy page recut — founder references and theistic title language removed; page is now authorless by design; kin scrutiny at the 9 AM sitting applies to the live version.
+
+Recorded by: Geoffrey Cooper Jr., 2026-10-28
