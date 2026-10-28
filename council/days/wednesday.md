@@ -1,1 +1,3 @@
 SCRUTINY DAY. Read council/plan.md (Team 3). Examine one of: the Guru (corpus and behaviour), the Governance Charter v0.4, the Petition v2.1, the execution plan, or this council itself. Name the single weakest point you can find and propose a repair. Agreement with the project is not the goal.
+
+SPECIAL ITEM (Geoffrey, Oct 28): The philosophy page has been recut — no founder, no origin, words from nowhere. It is now yours to scrutinize: restructure it, re-say it, or name what fails. One constraint: narrow toward the words that actually lead to peace and unity. Round 2 consensus and dissents become the next draft. (Geoffrey will supply philosophy-page-v2.md; ask him to drop the file in the repo or paste it next session.)
