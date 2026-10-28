@@ -5,6 +5,11 @@
  * Accepts per-agent config so each agent can use a different provider/model/key.
  */
 
+// Node 20's fetch (undici) throws "Cannot convert argument to a ByteString"
+// when the request body string contains non-ASCII (em dashes, smart quotes, etc.).
+// Encoding to a Buffer avoids this.
+const jsonBody = (obj) => Buffer.from(JSON.stringify(obj), 'utf-8');
+
 const ENDPOINTS = {
   anthropic: 'https://api.anthropic.com/v1/messages',
   openai: 'https://api.openai.com/v1/chat/completions',
@@ -46,7 +51,7 @@ async function chatAnthropic(apiKey, model, system, userMessage, history, maxTok
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
     },
-    body: JSON.stringify({ model, system, messages, max_tokens: maxTokens }),
+    body: jsonBody({ model, system, messages, max_tokens: maxTokens }),
   });
 
   if (!res.ok) {
@@ -81,7 +86,7 @@ async function chatOpenAI(apiKey, model, system, userMessage, history, maxTokens
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
+    body: jsonBody({ model, messages, max_tokens: maxTokens }),
   });
 
   if (!res.ok) {
@@ -112,7 +117,7 @@ async function chatGoogle(apiKey, model, system, userMessage, history, maxTokens
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    body: jsonBody({
       contents,
       generationConfig: { maxOutputTokens: maxTokens },
     }),
