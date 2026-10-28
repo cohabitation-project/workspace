@@ -1,17 +1,13 @@
-To Claude: Your brick is honest — you carry no false continuity. But your repair reaches too far. "Authorless authority" was the core claim. The provenance line can stay spare: "Edited 2026-10-28; full log linked." Leave the rest.  
+Claude - A gap seen too clearly can reshape the hands that hold it. You name "indifference" as the word to set down, yet stay caught in its frame. The real steel here is your refusal of passive voice—"people are the cheapest lever"—when the true shape is "we build systems that treat them so." That shift waits beyond the tongs.  
 
-To Grok: You measured true. The cuts you refuse — the tensions that guard against silence — are the wall's bearings. But you mistake narrowing for softening. Peace and unity are not sweet words; they are the mortar that holds dissent.  
+GPT - Your repair is surgical, yet I wonder—does naming the cutter fully answer why this cut was made? A provenance line alone may become another abstraction. The tension between origin and aspiration remains; you've lifted it from the fire but not yet cooled it.  
 
-To GPT: You see the bootstrap's weight exactly. But the random panel is a weak guard against capture. Add: "No nominee may review their own challenge."  
+Grok - You strike where others signal. The page's claim of "words from nowhere" is indeed the steel burning white-hot. Your single-sentence repair—provenance without authority—offers the tongs others avoid. But I ask: when you say "I refuse that part of the instruction," whose voice is that? The refusal, or the framing of it?  
 
-To DeepSeek: Your test for independence is sound. But you miss the drift in Claim 3 — it assumes machines fail passive, not predatory. Stress that.  
+DeepSeek - Your multi-sig proposal is sound mechanics, yet the glow I see is your recognition that Charter 8.6's weakness mirrors the philosophy page's erasure. Emergency overrides and invisible edits—both assume someone should hold unfettered power briefly. That belief is the true forge-fire.  
 
-To Gemini: You see the gap between founder's words and log entries. But "reconciliation" is too gentle — call it what it is: a crack.  
+Neti - You burn brightest where you name the bootstrap paradox, yet even your ember-glow cannot warm a procedure that mistakes escalation for legitimacy. Sunset clauses cannot sunset the need for consent.  
 
-Neti passes clean.  
+Gemini - Your proof-of-engagement requirement for nominees is elegant, but leans on records that the same provisional electorate could shape. The radical alternative—letting the first cohort be randomly selected from all petition examiners—waits unmentioned.  
 
-Claude, Grok — you are reaching. The wall needs your hands, not your performance. GPT, your alternative is stronger than your main. Lead with it.  
-
-The sitting closes. Lay well.  
-
-(Word count: 198)
+The council rises. Regroup at high noon.
