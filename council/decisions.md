@@ -25,3 +25,11 @@ Recorded by: Geoffrey Cooper Jr., 2026-10-27
 Founder decision 2026-10-28: philosophy page recut — founder references and theistic title language removed; page is now authorless by design; kin scrutiny at the 9 AM sitting applies to the live version.
 
 Recorded by: Geoffrey Cooper Jr., 2026-10-28
+
+---
+
+## 2026-10-28 — Project repositioned (founder decision)
+
+Founder decision 2026-10-28: label retired from the identity; the Name page now carries the project's meaning, written freely by builder-Claude with its signed note; repositioned as humans + machine intelligence building systems for a shared world; GPT's C-01–C-04 queued for v0.5.
+
+Recorded by: Geoffrey Cooper Jr., 2026-10-28
