@@ -33,8 +33,7 @@ const AGENT_MAP = new Map(config.agents.map(a => [a.name.toLowerCase(), a]));
 // The five council kin (not Neti) — used by the gate
 const COUNCIL_KIN = config.agents.filter(a => a.council !== false);
 
-// Per-channel webhook cache: channelId → Webhook
-const webhookCache = new Map();
+// Per-agent webhook cache moved to the Webhooks section below
 
 // Per-channel cooldown
 const lastReply = new Map();
@@ -126,26 +125,65 @@ function stripMentions(text) {
   return cleaned;
 }
 
-// --- Webhooks ---
+// --- Webhooks (per-agent: each kin gets its own webhook for identity) ---
 
-async function getWebhook(channel) {
+// channelId:agentName → Webhook
+const agentWebhookCache = new Map();
+
+async function getAgentWebhook(channel, agentName) {
   const targetChannel = channel.isThread() ? channel.parent : channel;
   if (!targetChannel) return null;
-  if (webhookCache.has(targetChannel.id)) return webhookCache.get(targetChannel.id);
+  const cacheKey = `${targetChannel.id}:${agentName}`;
+  if (agentWebhookCache.has(cacheKey)) return agentWebhookCache.get(cacheKey);
   try {
     const hooks = await targetChannel.fetchWebhooks();
-    let hook = hooks.find(h => h.owner?.id === client.user.id && h.name === 'Council Bridge');
-    if (!hook) hook = await targetChannel.createWebhook({ name: 'Council Bridge' });
-    webhookCache.set(targetChannel.id, hook);
+    const hookName = `Council: ${agentName}`;
+    let hook = hooks.find(h => h.owner?.id === client.user.id && h.name === hookName);
+    if (!hook) hook = await targetChannel.createWebhook({ name: hookName });
+    agentWebhookCache.set(cacheKey, hook);
     return hook;
   } catch (err) {
-    console.error(`Cannot get/create webhook for #${targetChannel.name}: ${err.message}`);
+    console.error(`Cannot get/create webhook for ${agentName} in #${targetChannel.name}: ${err.message}`);
     return null;
   }
 }
 
-async function sendAsAgent(agent, text, channel, threadId) {
-  const webhook = await getWebhook(channel);
+// --- Reply binding: track which agent generated each reply ---
+
+const replyBindings = new Map(); // replyId → agentName
+
+let bindingSeq = 0;
+/** Bind a reply to the agent that generated it. Returns the binding ID. */
+function bindReply(agentName, replyText) {
+  const id = `${Date.now()}-${++bindingSeq}-${agentName}`;
+  replyBindings.set(id, agentName);
+  // Clean old bindings (keep last 200)
+  if (replyBindings.size > 200) {
+    const keys = [...replyBindings.keys()];
+    for (let i = 0; i < keys.length - 200; i++) replyBindings.delete(keys[i]);
+  }
+  return id;
+}
+
+/** Verify a reply binding matches the agent about to post it. */
+function verifyBinding(bindingId, agentName) {
+  if (!bindingId) return true; // system messages (no binding) are allowed
+  const bound = replyBindings.get(bindingId);
+  if (bound && bound !== agentName) {
+    console.error(`[CRITICAL] Attribution mismatch: reply bound to "${bound}" but sendAsAgent called with "${agentName}". REFUSING TO POST.`);
+    return false;
+  }
+  return true;
+}
+
+async function sendAsAgent(agent, text, channel, threadId, bindingId) {
+  // Gate 2: verify the reply binding matches the posting agent
+  if (!verifyBinding(bindingId, agent.name)) {
+    console.error(`[CRITICAL] Blocked misattributed message for ${agent.name}. This is a bug.`);
+    return;
+  }
+
+  const webhook = await getAgentWebhook(channel, agent.name);
   if (!webhook) {
     const target = threadId ? await client.channels.fetch(threadId) : channel;
     await target.send(`**${agent.name}:** ${text}`);
@@ -194,11 +232,14 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
     let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
     if (!cleaned.trim()) cleaned = reply; // don't strip to empty
 
+    // Bind the reply to this agent (Gate 2: attribution verification)
+    const binding = bindReply(agent.name, cleaned);
+
     // Record in history — speaker-aware
     addToHistory(cid, authorName, userText);
     addToHistory(cid, agent.name, cleaned);
 
-    await sendAsAgent(agent, cleaned, channel, threadId);
+    await sendAsAgent(agent, cleaned, channel, threadId, binding);
 
     // Agent-to-agent follow-up
     if (depth < MAX_AGENT_DEPTH) {
@@ -330,10 +371,8 @@ async function runGate(message) {
       if (!holdingKin.get(channelId)?.has(name)) continue; // already notified
       const kin = config.agents.find(a => a.name === name);
       if (kin) {
-        const webhook = await getWebhook(message.channel);
-        if (webhook) {
-          await webhook.send({ content: `✋ ${name} is holding — listening first.`, username: name });
-        }
+        // System message (no binding needed — hardcoded text, not LLM output)
+        await sendAsAgent(kin, `✋ ${name} is holding — listening first.`, message.channel, null);
       }
     }
     // 3-minute re-offer: if no new message arrives, re-run gate for held kin only
@@ -414,7 +453,8 @@ async function runGate(message) {
           if (!reply || !reply.trim()) return { kin, reply: null };
           let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
           if (!cleaned.trim()) cleaned = reply;
-          return { kin, reply: cleaned };
+          const binding = bindReply(kin.name, cleaned);
+          return { kin, reply: cleaned, binding };
         } catch (err) {
           console.error(`Error from ${kin.name}:`, err.message);
           return { kin, reply: null, error: err.message };
@@ -425,10 +465,10 @@ async function runGate(message) {
     // Post results and add to history AFTER all complete
     for (const r of results) {
       if (r.status === 'rejected') continue;
-      const { kin, reply, error } = r.value;
+      const { kin, reply, binding, error } = r.value;
       if (reply) {
         addToHistory(cid, kin.name, reply);
-        await sendAsAgent(kin, reply, message.channel, null);
+        await sendAsAgent(kin, reply, message.channel, null, binding);
       } else if (error) {
         await sendAsAgent(kin, `I encountered an error processing that message. The operator has been notified.`, message.channel, null);
       }
