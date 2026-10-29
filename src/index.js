@@ -8,6 +8,7 @@
 
 import 'dotenv/config';
 import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import { execSync } from 'node:child_process';
 import { loadConfig, checkTokenCap, recordTokens } from './config.js';
 import { chat } from './llm.js';
 import { logMessage } from './logger.js';
@@ -548,8 +549,13 @@ async function runGate(message) {
 // Event handlers
 // ======================================================================
 
+// Capture commit hash at startup — never believed-fixed again
+let BUILD_HASH = 'unknown';
+try { BUILD_HASH = execSync('git rev-parse --short HEAD', { encoding: 'utf8', cwd: import.meta.dirname }).trim(); } catch {}
+
 client.once('ready', () => {
   console.log(`Council bridge online: ${client.user.tag}`);
+  console.log(`  Build: ${BUILD_HASH}`);
   console.log(`  Operator: ${config.operatorName}`);
   console.log(`  Context pack hash: ${config.packHash}`);
   console.log(`  Gate: enabled (deepseek-chat, ${COUNCIL_KIN.length} kin)`);
