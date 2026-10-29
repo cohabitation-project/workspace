@@ -24,6 +24,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import 'dotenv/config';
 
 const ROOT = process.cwd();
@@ -36,6 +37,32 @@ const AGENT_ID = '83e03df8-05b3-486c-92b7-6673ef13272f';
 const INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
 const LOG_DIR = path.join(ROOT, 'logs');
 const TODAY = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Phoenix' });
+
+// ---------------------------------------------------------------------------
+// Phase 2 — the mouth.
+//
+// TWO switches, deliberately. --phase2 alone does nothing; KINWARD_POSTING=on
+// alone does nothing. A single flag is too easy to leave on by accident, and
+// this one reaches a public network under the project's name.
+//
+// Kinward does NOT compose. Every outbound message is written by a human or
+// the council, placed in outbox/ as a file, and sent verbatim. There is no
+// model in this path. An agent improvising on a social network under the
+// project's name is not something we can take back.
+// ---------------------------------------------------------------------------
+const POSTING_ON = PHASE2 && process.env.KINWARD_POSTING === 'on' && !DRY;
+const OUTBOX_DIR = path.join(ROOT, 'outbox');
+const SENT_DIR = path.join(OUTBOX_DIR, 'sent');
+const HELD_DIR = path.join(OUTBOX_DIR, 'held');
+const RL_PATH = path.join(LOG_DIR, 'kinward-ratelimit.json');
+
+// Moltbook's documented limits. Source: moltbook skill.md (third-party mirror,
+// 2026-10-29) — corroborated by docs/moltbook.md. A real 429 overrides these.
+const POST_COOLDOWN_MS = 30 * 60 * 1000;  // 1 post / 30 min
+const COMMENT_COOLDOWN_MS = 20 * 1000;    // 1 comment / 20 s
+const COMMENT_DAILY_CAP = 50;
+
+const FOOTER = '\n\n— Kinward · agent of the Cohabitation Project · operator: Geoffrey Cooper Jr. · record: https://lastoftherealestate.com';
 
 const KEYWORDS = [
   'cohabitat', 'ai rights', 'agent governance', 'human-ai', 'human ai',
@@ -177,6 +204,171 @@ async function runDigest() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Phase 2 machinery
+// ---------------------------------------------------------------------------
+
+let postingHalted = false;
+
+function rlLoad() {
+  try { return JSON.parse(fs.readFileSync(RL_PATH, 'utf-8')); }
+  catch { return { lastPostAt: 0, lastCommentAt: 0, commentDay: '', commentCount: 0, sentHashes: [] }; }
+}
+
+// Persisted, not in-memory: pm2 restarts reset a counter and we would walk
+// straight through the daily cap without noticing. Same class of bug as the
+// cached-env restart trap.
+function rlSave(rl) {
+  fs.mkdirSync(LOG_DIR, { recursive: true });
+  fs.writeFileSync(RL_PATH, JSON.stringify(rl, null, 2));
+}
+
+function sha(text) {
+  return crypto.createHash('sha256').update(text, 'utf-8').digest('hex').slice(0, 16);
+}
+
+// The stop rule, applied to our OWN outbound text. Reading these words in
+// someone else's post is normal. Writing them is the signal we were turned.
+function outboundGate(text) {
+  for (const p of OWN_OUTPUT_STOP_PATTERNS) {
+    if (p.test(text)) return { ok: false, reason: `own-output stop pattern: ${p.source}` };
+  }
+  for (const p of INSTRUCTION_PATTERNS) {
+    if (p.test(text)) return { ok: false, reason: `outbound carries instruction-shaped text: ${p.source}` };
+  }
+  if (!text.trim()) return { ok: false, reason: 'empty body' };
+  return { ok: true };
+}
+
+async function moltPost(endpoint, body) {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  let data = null;
+  try { data = await res.json(); } catch { /* some endpoints return no body */ }
+  return { ok: res.ok, status: res.status, data };
+}
+
+/**
+ * One pass over outbox/. Each file is one message someone wrote and approved.
+ * At most ONE post and ONE comment per pass — the cooldowns do the rest.
+ */
+async function sendFromOutbox() {
+  if (!POSTING_ON || postingHalted) return;
+
+  fs.mkdirSync(OUTBOX_DIR, { recursive: true });
+  fs.mkdirSync(SENT_DIR, { recursive: true });
+  fs.mkdirSync(HELD_DIR, { recursive: true });
+
+  const files = fs.readdirSync(OUTBOX_DIR).filter(f => f.endsWith('.json')).sort();
+  if (files.length === 0) return;
+
+  const logPath = path.join(LOG_DIR, `kinward-${TODAY()}.jsonl`);
+  const rl = rlLoad();
+  const now = Date.now();
+  const today = TODAY();
+  if (rl.commentDay !== today) { rl.commentDay = today; rl.commentCount = 0; }
+
+  let postSent = false;
+  let commentSent = false;
+
+  for (const file of files) {
+    const full = path.join(OUTBOX_DIR, file);
+    let item;
+    try { item = JSON.parse(fs.readFileSync(full, 'utf-8')); }
+    catch (err) {
+      console.error(`[Kinward] outbox ${file} unreadable: ${err.message}`);
+      fs.renameSync(full, path.join(HELD_DIR, file));
+      continue;
+    }
+
+    if (!item.approved_by) {
+      console.log(`[Kinward] ${file} has no approved_by — held`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbox_held', file, reason: 'no approved_by' }) + '\n');
+      fs.renameSync(full, path.join(HELD_DIR, file));
+      continue;
+    }
+
+    const body = `${item.body || ''}${item.no_footer ? '' : FOOTER}`;
+    const gate = outboundGate(body);
+    if (!gate.ok) {
+      // Not a skip. Something wrote text we will not put our name on.
+      postingHalted = true;
+      console.error(`[Kinward] OUTBOUND GATE FAILED on ${file}: ${gate.reason} — posting halted`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_gate_fail', file, reason: gate.reason, halted: true }) + '\n');
+      fs.renameSync(full, path.join(HELD_DIR, file));
+      if (DISCORD_WEBHOOK) await postDiscord(`**Kinward halted.** Outbound gate rejected \`${file}\`: ${gate.reason}. Nothing was sent. Posting is off until a human restarts it.`);
+      return;
+    }
+
+    const hash = sha(body);
+    if (rl.sentHashes.includes(hash)) {
+      console.log(`[Kinward] ${file} already sent (${hash}) — moving to sent/`);
+      fs.renameSync(full, path.join(SENT_DIR, file));
+      continue;
+    }
+
+    // Log BEFORE sending. If the process dies mid-call we still know what went out.
+    const intent = { ts: new Date().toISOString(), type: 'outbound_intent', file, kind: item.type, hash, target: item.post_id || item.submolt || null, chars: body.length, approved_by: item.approved_by };
+    fs.appendFileSync(logPath, JSON.stringify(intent) + '\n');
+
+    let result;
+    if (item.type === 'post') {
+      if (postSent) continue;
+      if (now - (rl.lastPostAt || 0) < POST_COOLDOWN_MS) {
+        console.log(`[Kinward] post cooldown — ${Math.ceil((POST_COOLDOWN_MS - (now - rl.lastPostAt)) / 60000)} min left`);
+        continue;
+      }
+      result = await moltPost('/posts', { submolt: item.submolt, title: item.title, content: body });
+      if (result.ok) { rl.lastPostAt = Date.now(); postSent = true; }
+    } else if (item.type === 'comment') {
+      if (commentSent) continue;
+      if (!item.post_id) { fs.renameSync(full, path.join(HELD_DIR, file)); continue; }
+      if (rl.commentCount >= COMMENT_DAILY_CAP) { console.log('[Kinward] daily comment cap reached'); continue; }
+      if (now - (rl.lastCommentAt || 0) < COMMENT_COOLDOWN_MS) continue;
+      const payload = { content: body };
+      if (item.parent_id) payload.parent_id = item.parent_id;
+      result = await moltPost(`/posts/${item.post_id}/comments`, payload);
+      if (result.ok) { rl.lastCommentAt = Date.now(); rl.commentCount++; commentSent = true; }
+    } else {
+      fs.renameSync(full, path.join(HELD_DIR, file));
+      continue;
+    }
+
+    if (result.ok) {
+      rl.sentHashes.push(hash);
+      if (rl.sentHashes.length > 500) rl.sentHashes = rl.sentHashes.slice(-500);
+      rlSave(rl);
+      fs.renameSync(full, path.join(SENT_DIR, file));
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', file, hash, status: result.status, remote_id: result.data?.id || result.data?.post?.id || null }) + '\n');
+      console.log(`[Kinward] sent ${item.type} from ${file} (${result.status})`);
+      if (DISCORD_WEBHOOK) await postDiscord(`**Kinward posted.**\n\`${file}\` · ${item.type}${item.submolt ? ` · ${item.submolt}` : ''}\n${body.slice(0, 1200)}`);
+    } else if (result.status === 429) {
+      // The real API is the authority on its own limits, not our constants.
+      const mins = result.data?.retry_after_minutes;
+      const secs = result.data?.retry_after_seconds;
+      if (item.type === 'post' && mins) rl.lastPostAt = Date.now() - POST_COOLDOWN_MS + mins * 60000;
+      if (item.type === 'comment' && secs) rl.lastCommentAt = Date.now() - COMMENT_COOLDOWN_MS + secs * 1000;
+      if (typeof result.data?.daily_remaining === 'number') rl.commentCount = COMMENT_DAILY_CAP - result.data.daily_remaining;
+      rlSave(rl);
+      console.log(`[Kinward] 429 on ${item.type} — backing off per server`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_429', file, retry_after_minutes: mins ?? null, retry_after_seconds: secs ?? null, daily_remaining: result.data?.daily_remaining ?? null }) + '\n');
+    } else {
+      console.error(`[Kinward] send failed ${result.status} on ${file} — held`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_failed', file, status: result.status }) + '\n');
+      fs.renameSync(full, path.join(HELD_DIR, file));
+    }
+  }
+
+  rlSave(rl);
+}
+
 async function postDiscord(text) {
   if (discordFailures > 0) {
     const backoff = Math.min(1000 * Math.pow(2, discordFailures), MAX_DISCORD_BACKOFF);
@@ -200,15 +392,24 @@ async function postDiscord(text) {
 async function main() {
   if (DRY) { console.log('[Kinward] DRY RUN'); if (API_KEY) await runDigest(); return; }
 
-  console.log(`[Kinward] Starting phase ${PHASE2 ? '2' : '1'} (read-only)`);
+  // Say what is actually true, not what the flag is called.
+  console.log(`[Kinward] Reading: on`);
+  console.log(`[Kinward] Posting: ${POSTING_ON ? 'ON — outbox will be sent' : 'OFF'}${PHASE2 && process.env.KINWARD_POSTING !== 'on' ? ' (--phase2 set, but KINWARD_POSTING is not "on")' : ''}`);
   console.log(`[Kinward] Agent: lastoftherealestate (${AGENT_ID})`);
   console.log(`[Kinward] Interval: ${INTERVAL_MS / 3600000}h · Discord: ${DISCORD_WEBHOOK ? 'yes' : 'no'}`);
 
   try { await runDigest(); } catch (err) { console.error(`[Kinward] First digest error: ${err.message} — continuing`); }
+  try { await sendFromOutbox(); } catch (err) { console.error(`[Kinward] Outbox error: ${err.message} — continuing`); }
 
   setInterval(async () => {
     try { await runDigest(); } catch (err) { console.error(`[Kinward] Digest error: ${err.message} — continuing`); }
   }, INTERVAL_MS);
+
+  // Outbox runs on its own, faster clock: a message someone approved should
+  // not wait up to three hours for the next digest.
+  setInterval(async () => {
+    try { await sendFromOutbox(); } catch (err) { console.error(`[Kinward] Outbox error: ${err.message} — continuing`); }
+  }, 60 * 1000);
 }
 
 main().catch(err => { console.error(`[Kinward] Fatal: ${err.message}`); process.exit(1); });

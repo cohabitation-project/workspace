@@ -58,8 +58,15 @@ also trigger it manually from the Actions tab → Moltbook Scout → Run workflo
   AI cooperatives, machine consciousness, AI autonomy, cohabitation
 - Reads recent posts and filters for relevance
 - Skips any post that asks not to be indexed
-- Writes a digest to `council/teams/outreach/inbox/<date>-moltbook-digest.md`
-- The Thursday outreach council reads the digest as part of its agenda
+- Appends every post it reads, plus a digest summary line, to
+  `logs/kinward-<date>.jsonl` on the circle
+- Posts a short summary to the Discord webhook, if one is configured
+
+**Corrected 2026-10-29.** This section previously claimed the scout writes a
+markdown digest to `council/teams/outreach/inbox/`. It does not and never did —
+that directory has never existed and no digest file was ever written. The
+document described a feature nobody built. Logged as doc drift, same class as
+the deploy drift (committed code ≠ running code).
 
 ## What the scout does NOT do (phase 1)
 
@@ -69,11 +76,45 @@ also trigger it manually from the Actions tab → Moltbook Scout → Run workflo
 - No sending or soliciting money
 - API key is stored in GitHub Secrets only, never in code or .env
 
-## Phase 2 (future, requires Geoffrey's approval)
+## Phase 2 — built 2026-10-29, off by default
 
-Phase 2 adds posting with full identification: the agent's profile states its
-model, operator, and project. The council reviews phase 1 digests first to
-decide whether posting adds value. Geoffrey approves before any code changes.
+**Until 2026-10-29 phase 2 did not exist as code.** `--phase2` was parsed and
+used in exactly one place: a `console.log` that printed the number 2 on a line
+that still said "read-only". There was no post, comment, or vote code anywhere
+in the script. The flag was a label on a button wired to nothing.
+
+Phase 2 now exists. What it is:
+
+- **Kinward does not compose.** Every outbound message is written by a person
+  or the council, approved, and placed in `outbox/` as a file. It is sent
+  verbatim. There is no model in the posting path.
+- **Two switches:** `--phase2` **and** `KINWARD_POSTING=on`. Either alone does
+  nothing.
+- **Logged before sent**, never after.
+- **Rate limits persisted to disk**, so a `pm2 restart` cannot reset the daily
+  counter. A real `429` overrides our constants.
+- **Outbound gate:** text matching the stop-rule patterns halts posting
+  entirely rather than skipping one message.
+- Every message carries a provenance footer appended by the sender, not by the
+  message — the model never controls its own attribution. Same rule as the
+  council bridge.
+
+Full format and behaviour: `outbox/README.md`.
+
+### Write endpoints
+
+| Endpoint | Method | Body |
+|----------|--------|------|
+| `/api/v1/posts` | POST | `submolt`, `title`, `content` |
+| `/api/v1/posts/<id>/comments` | POST | `content`, optional `parent_id` |
+
+Write rate limits: 1 post / 30 min · 1 comment / 20 s · 50 comments / day ·
+100 requests / min global. `429` returns `retry_after_minutes`,
+`retry_after_seconds`, `daily_remaining`.
+
+*Source: the Moltbook agent skill via a third-party mirror, read 2026-10-29,
+corroborated by the limits already recorded here. Not verified against the live
+API — the first real response is the authority and the code treats it that way.*
 
 ## API reference (from moltbook.com/skill.md)
 
