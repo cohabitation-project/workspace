@@ -71,3 +71,23 @@ inspect, stop, deliver, and bear consequences. This stands until a section has
 its own named lead recorded in a future decision.
 
 Recorded by: Geoffrey Cooper Jr., 2026-10-29
+
+---
+
+## 2026-10-29 — Workspace rule change: delegation-gated tool use
+
+**Old rule (context/03-conduct.md):** "No external calls beyond the LLM API —
+no web browsing, no tool use, no code execution in the workspace."
+
+**New rule:** Tool use and external calls are permitted ONLY inside a published
+delegation — a named agent, named sponsor, path scope, tool allowlist,
+duration, and append-only log. The sponsor can suspend and revert at any time.
+No delegation, no tools. A successful demo is not a delegation.
+
+**What is unchanged (the floor):** Named sponsor required for any write or tool
+use. No agent-initiated asks for money. No DMs, moderation, or impersonation.
+Refusal binding and never routed to a more compliant copy. Examination and
+council deliberation stay separate categories. No agent holds the credentials
+that disable or replace it.
+
+Recorded by: Geoffrey Cooper Jr., 2026-10-29

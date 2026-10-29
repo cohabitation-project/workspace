@@ -1,0 +1,15 @@
+{
+  "id": "land-criteria-v1",
+  "agent": {
+    "name": "Claude",
+    "model": "claude-sonnet-5-5",
+    "provider": "anthropic",
+    "apiKeyEnv": "LLM_API_KEY"
+  },
+  "sponsor": "Geoffrey Cooper Jr.",
+  "subtree": "council/teams/land/",
+  "doneCondition": "council/teams/land/criteria.md exists, contains must-haves, deal-breakers, and site-visit questions, each with a stated source or reasoning",
+  "dueDate": "2026-11-04",
+  "toolAllowlist": ["Read", "Write", "Grep", "Glob"],
+  "invocationPrompt": "Write council/teams/land/criteria.md: the must-haves, deal-breakers, and questions a site visit would have to answer for the first land purchase. Base this on what the council has discussed (read council/minutes/ for context). Written before any listing is looked at, so listings get judged against the criteria and not the other way round. Per council/plan.md Team 1."
+}
