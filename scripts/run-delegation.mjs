@@ -194,9 +194,22 @@ try {
   console.log(`\nCommitted to branch ${branchName}.`);
 
 } catch (err) {
-  session.status = 'blocked';
-  session.exitStatus = err.message;
-  console.error(`Agent error: ${err.message}`);
+  // Distinguish AGENT_UNAVAILABLE (not the holder's fault) from blocked (holder error)
+  const msg = err.message || '';
+  const isUnavailable = /\b(429|rate.?limit|quota|503|502|504|timeout|deprecated|model.*not.*found|capacity)/i.test(msg);
+  if (isUnavailable) {
+    session.status = 'agent_unavailable';
+    session.exitStatus = msg;
+    session.unavailableReason = /429|rate.?limit|quota/i.test(msg) ? 'rate_limit'
+      : /503|502|504|timeout|capacity/i.test(msg) ? 'provider_outage'
+      : 'model_unavailable';
+    console.error(`Agent UNAVAILABLE (${session.unavailableReason}): ${msg}`);
+    console.log('This is not recorded as the holder failing — the agent was not reachable.');
+  } else {
+    session.status = 'blocked';
+    session.exitStatus = msg;
+    console.error(`Agent error: ${msg}`);
+  }
 } finally {
   saveSession();
   // Return to main

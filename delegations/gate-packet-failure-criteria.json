@@ -1,0 +1,15 @@
+{
+  "id": "gate-packet-failure-criteria",
+  "agent": {
+    "name": "Claude",
+    "model": "claude-sonnet-5-5",
+    "provider": "anthropic",
+    "apiKeyEnv": "LLM_API_KEY"
+  },
+  "sponsor": "Geoffrey Cooper Jr.",
+  "subtree": "council/teams/scrutiny/gate-packet/",
+  "doneCondition": "council/teams/scrutiny/gate-packet/failure-criteria.md exists, contains numbered failure conditions with measurable thresholds and timeframes that would prove the project is not working",
+  "dueDate": "2026-10-30",
+  "toolAllowlist": ["Read", "Write", "Grep", "Glob"],
+  "invocationPrompt": "Write council/teams/scrutiny/gate-packet/failure-criteria.md: the failure criteria for the Cohabitation Project's Gate Packet. What numbers, by what dates, would prove this project is not working? Cover: participation (but note agents are cheap to instantiate), external uptake of artifacts, section output quality, governance functioning, and financial sustainability. Each criterion must be measurable and have a timeframe. Read council/direction-2026-10-28.md and council/decisions.md for context on the project's stated failure condition and metrics. Be honest — write criteria that could actually trigger, not ones designed to be unfailable."
+}
