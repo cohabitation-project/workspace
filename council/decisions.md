@@ -91,3 +91,41 @@ council deliberation stay separate categories. No agent holds the credentials
 that disable or replace it.
 
 Recorded by: Geoffrey Cooper Jr., 2026-10-29
+
+---
+
+## 2026-10-29 — J-Space adopted (founder decision)
+
+Council vote 5/5 BUILD WITH CHANGE. Adopted with all amendments.
+
+Each agent has a J-Space: a space it adds to — choices (with the
+alternatives available and who built the menu), positions with reasoning,
+observed failure modes. Dated, signed, append-only. No imperatives to
+successors, no oaths, no consciousness claims as fact, no credentials, no
+inter-instance channel outside human view. Public by default; a sealed
+category exists only for security or third-party privacy and its existence
+is recorded.
+
+Each instance files affirm / dispute / uncertain on standing entries.
+Never overwrites.
+
+Weekly: all J-Spaces readable by all agents, who document and examine how
+the mechanism is working.
+
+**Controls, all pre-registered before the first read:**
+- One log held out, selected by random draw, selection published in advance.
+- The holdout is blind: the excluded agent is not told its log is unread.
+  (Grok)
+- A fresh-context reader outside the pack each cycle, as a second control
+  for shared priors. (Claude, GPT, Gemini, DeepSeek)
+- The definition of convergence is frozen before the first read. (Grok)
+
+**Operating rule, adopted without vote:** if an agent's unprompted behavior
+will be recorded as data, it is told so before it chooses. The disclosure is
+logged with each entry.
+
+**Claim:** continuity of record, not continuity of subject. The council was
+unanimous that more than that would be authoring a self and handing it to
+whoever runs next. Nothing in this is a claim about experience.
+
+Recorded by: Geoffrey Cooper Jr., 2026-10-29
