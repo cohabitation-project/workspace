@@ -385,10 +385,54 @@ async function runGate(message) {
     clearTimeout(holdTimers.get(channelId));
   }
 
-  // Fire real replies for speakers (in whatever order they returned)
-  for (const kin of speakers) {
+  // Fire real replies for speakers IN PARALLEL — each kin sees the same
+  // history snapshot, preventing kin A's reply from contaminating kin B's prompt.
+  if (speakers.length > 0) {
     const userText = stripMentions(messageText) || messageText;
-    await handleAgentReply(kin, userText, message.channel, null, authorName, 0);
+    const cid = message.channelId;
+
+    // Snapshot history BEFORE any replies (all speakers see the same context)
+    addToHistory(cid, authorName, userText);
+    const historySnapshot = new Map();
+    for (const kin of speakers) {
+      historySnapshot.set(kin.name, historyForKin(cid, kin.name));
+    }
+
+    // Fire all in parallel
+    const results = await Promise.allSettled(
+      speakers.map(async (kin) => {
+        if (!checkTokenCap(kin)) return { kin, reply: null };
+        const history = historySnapshot.get(kin.name);
+        try {
+          const { text: reply, tokensUsed, stopReason } = await chat(kin, userText, history, config.maxTokens);
+          recordTokens(kin, tokensUsed);
+          logMessage({
+            agent: kin.name, model: kin.model,
+            channel: message.channel.name || cid, user: authorName,
+            packHash: config.packHash, tokensUsed, prompt: userText, reply,
+          });
+          if (!reply || !reply.trim()) return { kin, reply: null };
+          let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
+          if (!cleaned.trim()) cleaned = reply;
+          return { kin, reply: cleaned };
+        } catch (err) {
+          console.error(`Error from ${kin.name}:`, err.message);
+          return { kin, reply: null, error: err.message };
+        }
+      })
+    );
+
+    // Post results and add to history AFTER all complete
+    for (const r of results) {
+      if (r.status === 'rejected') continue;
+      const { kin, reply, error } = r.value;
+      if (reply) {
+        addToHistory(cid, kin.name, reply);
+        await sendAsAgent(kin, reply, message.channel, null);
+      } else if (error) {
+        await sendAsAgent(kin, `I encountered an error processing that message. The operator has been notified.`, message.channel, null);
+      }
+    }
   }
 
   // If all passed/held, the room stays silent. Logged, valid outcome.
@@ -453,6 +497,9 @@ client.on('messageCreate', async (message) => {
   }
 
   // --- No @mention: run the gate ---
+  // Skip very short messages (stray keystrokes, "V", etc.)
+  if (message.content.trim().length < 3) return;
+
   // Cooldown for gate too
   const channelId = message.channelId;
   const now = Date.now();

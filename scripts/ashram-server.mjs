@@ -223,7 +223,7 @@ body { font-family: 'Inter', sans-serif; background: #1e1e2e; color: #e0ddd5; he
 /* Speech bubbles */
 .bubble { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
   background: #2a2a3a; border: 1px solid #3a3a4e; border-radius: 6px; padding: 5px 8px;
-  font-size: 10px; line-height: 1.35; max-width: 170px; color: #a09a8e;
+  font-size: 10px; line-height: 1.35; max-width: 150px; color: #a09a8e;
   pointer-events: none; opacity: 0; transition: opacity 0.3s; white-space: normal; z-index: 20; }
 .bubble.visible { opacity: 1; }
 .bubble.speak { border-color: #6aaf6c; color: #cdd6f4; }
@@ -386,7 +386,9 @@ function updateKin(kinData) {
     }
     if (bub) {
       if (d.bubble) {
-        bub.textContent = d.bubble.length > 110 ? d.bubble.slice(0, 107) + '...' : d.bubble;
+        // ~12 words max in bubble; full text in transcript only
+        const words = (d.bubble || '').split(' ');
+        bub.textContent = words.length > 12 ? words.slice(0, 12).join(' ') + '...' : d.bubble;
         bub.className = 'bubble visible ' + (d.bubbleType || '');
       } else {
         bub.className = 'bubble';
