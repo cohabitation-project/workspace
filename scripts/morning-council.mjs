@@ -463,7 +463,7 @@ async function main() {
   const envelopes = [];
   let seq = 0;
   const env = (from, model, to, type, text) => text && envelopes.push({
-    v: 1, seq: ++seq, date: TODAY, from, model, to, type,
+    v: 1, seq: ++seq, date: TODAY, ts: new Date().toISOString(), from, model, to, type,
     project: 'morning-council', ctx: packHash, text,
   });
   if (netiOpening) env('Neti', neti.model, ['kin'], 'sitting.open', netiOpening);
