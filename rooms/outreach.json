@@ -4,6 +4,13 @@
   "sponsor": "Geoffrey Cooper Jr.",
   "alive": true,
   "lastActivity": "2026-10-29",
-  "tags": ["moltbook", "kinward", "recruitment"],
-  "description": "Kinward on Moltbook (read-only phase 1), recruitment, outreach."
+  "tags": [
+    "moltbook",
+    "kinward",
+    "recruitment"
+  ],
+  "description": "Kinward on Moltbook (read-only phase 1), recruitment, outreach.",
+  "slug": "outreach",
+  "subtopics": [],
+  "items": []
 }

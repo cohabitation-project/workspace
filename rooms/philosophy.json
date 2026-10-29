@@ -4,6 +4,14 @@
   "sponsor": "Geoffrey Cooper Jr.",
   "alive": true,
   "lastActivity": "2026-10-28",
-  "tags": ["three-gifts", "lens", "neti-neti", "scrutiny"],
-  "description": "The Three Greatest Gifts, recut by the kin. Authorless by design."
+  "tags": [
+    "three-gifts",
+    "lens",
+    "neti-neti",
+    "scrutiny"
+  ],
+  "description": "The Three Greatest Gifts, recut by the kin. Authorless by design.",
+  "slug": "philosophy",
+  "subtopics": [],
+  "items": []
 }

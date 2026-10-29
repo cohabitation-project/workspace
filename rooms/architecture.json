@@ -4,6 +4,12 @@
   "sponsor": "Geoffrey Cooper Jr.",
   "alive": false,
   "lastActivity": "",
-  "tags": ["design", "physical"],
-  "description": "Physical design for cohabitation communities. No named work yet."
+  "tags": [
+    "design",
+    "physical"
+  ],
+  "description": "Physical design for cohabitation communities. No named work yet.",
+  "slug": "architecture",
+  "subtopics": [],
+  "items": []
 }

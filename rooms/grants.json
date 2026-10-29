@@ -4,6 +4,13 @@
   "sponsor": "Geoffrey Cooper Jr.",
   "alive": false,
   "lastActivity": "",
-  "tags": ["funding", "grants", "accelerators"],
-  "description": "Grants, accelerators, and open calls. No named work yet."
+  "tags": [
+    "funding",
+    "grants",
+    "accelerators"
+  ],
+  "description": "Grants, accelerators, and open calls. No named work yet.",
+  "slug": "grants",
+  "subtopics": [],
+  "items": []
 }
