@@ -1,0 +1,12 @@
+{
+  "name": "Income",
+  "slug": "income",
+  "state": "PROPOSED",
+  "sponsor": "Geoffrey Cooper Jr.",
+  "alive": false,
+  "lastActivity": "",
+  "tags": ["revenue", "sustainability", "grants", "accelerators", "funding"],
+  "description": "Revenue models under the zero-spend rule, grants, accelerators, and open calls.",
+  "subtopics": [],
+  "items": []
+}

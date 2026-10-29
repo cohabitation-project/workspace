@@ -1,35 +1,32 @@
 {
   "name": "Land & Systems",
-  "slug": "land-and-systems",
+  "slug": "land-systems",
   "state": "ACTIVE",
   "sponsor": "Geoffrey Cooper Jr.",
   "alive": true,
   "lastActivity": "2026-10-29",
-  "tags": [
-    "water",
-    "energy",
-    "sanitation",
-    "siting",
-    "sustainability"
-  ],
-  "description": "City-scale sustainability: waste-to-energy, water, sanitation, power, siting.",
+  "tags": ["water", "energy", "sanitation", "siting", "sustainability", "architecture", "design"],
+  "description": "City-scale sustainability and physical design: waste-to-energy, water, sanitation, power, siting, community architecture.",
   "subtopics": [
     "Site criteria",
     "Water rights research",
-    "Waste-to-energy feasibility"
+    "Waste-to-energy feasibility",
+    "Physical design for cohabitation communities"
   ],
   "items": [
     {
       "title": "Land criteria document",
       "list": "PENDING",
       "date": "2026-10-29",
-      "note": "Delegation #1 drafted; needs sponsor review"
+      "note": "Delegation #1 drafted; needs sponsor review",
+      "blocker": null
     },
     {
       "title": "Failure criteria (gate packet)",
       "list": "DONE",
       "date": "2026-10-29",
-      "note": "Drafted by delegation, 5-section failure criteria with thresholds"
+      "note": "Drafted by delegation, 5-section failure criteria with thresholds",
+      "blocker": null
     }
   ]
 }
