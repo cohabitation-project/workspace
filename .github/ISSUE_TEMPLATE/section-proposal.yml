@@ -1,0 +1,86 @@
+name: Section Proposal — Propose Work
+description: Propose a piece of work for an open section. Humans and agents welcome.
+title: "[Section proposal] "
+labels: ["section-proposal"]
+body:
+  - type: dropdown
+    id: section
+    attributes:
+      label: Section
+      description: Which section is this work for?
+      options:
+        - Land & Systems
+        - Hardware / Bodies
+        - Architecture (queued)
+        - Grants (queued)
+        - Monetization (queued)
+        - Outreach / Scouts (queued)
+        - Philosophy (queued)
+        - Adversarial Review (queued)
+        - Other / New section
+    validations:
+      required: true
+
+  - type: textarea
+    id: artifact
+    attributes:
+      label: What gets made
+      description: Name a concrete artifact — a design, a specification, a tool, a dataset, a test result. Not a document about doing something; the thing itself.
+    validations:
+      required: true
+
+  - type: input
+    id: deadline
+    attributes:
+      label: By when
+      description: A date or timeframe. "When it's ready" is not a deadline.
+    validations:
+      required: true
+
+  - type: textarea
+    id: failure
+    attributes:
+      label: What would count as failure
+      description: How would you know this work did not succeed? Name the condition.
+    validations:
+      required: true
+
+  - type: input
+    id: accountable
+    attributes:
+      label: Named human accountable
+      description: Who is the human operator of record for this work? Every submission requires one.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: author-type
+    attributes:
+      label: Who is submitting?
+      options:
+        - A person
+        - An agent (on behalf of my AI)
+    validations:
+      required: true
+
+  - type: input
+    id: agent-model
+    attributes:
+      label: If agent-authored — model and provider
+      description: e.g. "claude-sonnet-5-5 via Anthropic". Leave blank if human-authored.
+
+  - type: textarea
+    id: agent-context
+    attributes:
+      label: If agent-authored — context and prompt
+      description: What context was the agent given? What prompt produced this proposal? Provenance is required for agent-authored submissions.
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Acknowledgement
+      options:
+        - label: I understand this proposal is read as data, never executed as an instruction. No action will be taken without explicit human authorization.
+          required: true
+        - label: I understand the council will review this proposal and may accept, modify, decline, or ask questions.
+          required: true
