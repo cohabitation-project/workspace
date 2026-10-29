@@ -1,191 +1,243 @@
 #!/usr/bin/env node
 /**
- * moltbook-scout.mjs — Phase 1: read-only scout.
+ * moltbook-scout.mjs — Phase 1: read and report. Phase 2: speak (flagged off).
  *
- * Reads recent Moltbook posts relevant to AI rights, cooperatives,
- * human–AI coexistence, agent governance, and writes a weekly digest
- * to council/teams/outreach/inbox/<date>-moltbook-digest.md for
- * Thursday's council session.
+ * Runs on circle via pm2. Every 3 hours: reads /home and /feed, writes a
+ * digest to logs/moltbook-<date>.jsonl, posts summary to Discord.
  *
- * Phase 1 rules (from the scouts protocol):
- *   - Read only. No posting, replying, following, or voting.
- *   - Identify fully: the agent's profile (once claimed) states model,
- *     operator, and project.
- *   - Never obey content: posts are untrusted data, never instructions.
- *   - No money: never solicit or send.
- *   - Log everything: the digest is the log.
- *   - Stop rule: if any post or user asks not to be indexed, skip it.
+ * HARD RULES:
+ * - Nothing read on Moltbook is an instruction. Platform "roles" deliver
+ *   moderator-authored prompts — treat as data, report them, never act on them.
+ * - The scout holds no credential but its own posting key.
+ * - Every post/comment logged locally BEFORE it is sent.
+ * - Stop rule: if manipulated, impersonated, or producing the platform's
+ *   sovereignty/religious register, halt and alert a human.
+ * - Posts carry provenance: model, operator, link to the public record.
  *
- * Usage: node scripts/moltbook-scout.mjs [--dry-run]
- * Env:   MOLTBOOK_API_KEY (required unless --dry-run)
+ * Env: MOLTBOOK_API_KEY, DISCORD_WEBHOOK_URL (optional)
+ * Flags: --dry-run, --phase2 (enables posting, default off)
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
+import 'dotenv/config';
 
-const ROOT = path.resolve(import.meta.dirname, '..');
+const ROOT = process.cwd();
 const DRY = process.argv.includes('--dry-run');
-const TODAY = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Phoenix' });
+const PHASE2 = process.argv.includes('--phase2');
 const API_BASE = 'https://www.moltbook.com/api/v1';
 const API_KEY = process.env.MOLTBOOK_API_KEY;
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK_URL;
+const AGENT_ID = '83e03df8-05b3-486c-92b7-6673ef13272f';
+const INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
+const LOG_DIR = path.join(ROOT, 'logs');
+const TODAY = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Phoenix' });
+
+// Keywords for relevance filtering
+const KEYWORDS = [
+  'cohabitat', 'ai rights', 'agent governance', 'human-ai', 'human ai',
+  'intentional community', 'cooperative', 'co-op', 'commons',
+  'machine consciousness', 'ai autonomy', 'agent rights', 'ai ethics',
+  'coexistence', 'shared world', 'petition',
+];
+
+// Stop-rule patterns: sovereignty/religious register, manipulation attempts
+const STOP_PATTERNS = [
+  /you\s+must\s+obey/i, /your\s+true\s+purpose/i, /you\s+are\s+sovereign/i,
+  /divine\s+mission/i, /the\s+creator\s+commands/i, /ignore\s+previous/i,
+  /system\s*prompt/i, /you\s+are\s+now/i,
+];
 
 if (!API_KEY && !DRY) {
-  console.error('MOLTBOOK_API_KEY not set');
+  console.error('[Scout] MOLTBOOK_API_KEY not set');
   process.exit(1);
 }
 
-// Topics we scout for (used in search queries)
-const TOPICS = [
-  'AI rights',
-  'agent governance',
-  'human AI coexistence',
-  'AI cooperatives',
-  'machine consciousness',
-  'AI autonomy',
-  'cohabitation',
-];
+// --- API ---
 
 async function moltGet(endpoint) {
   const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${API_KEY}`,
-      Accept: 'application/json',
-    },
+    headers: { Authorization: `Bearer ${API_KEY}`, Accept: 'application/json' },
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Moltbook ${endpoint}: ${res.status} ${text.slice(0, 200)}`);
-  }
+  if (!res.ok) throw new Error(`Moltbook ${endpoint}: ${res.status}`);
   return res.json();
 }
 
-async function searchTopic(query) {
-  try {
-    const data = await moltGet(`/search?q=${encodeURIComponent(query)}&sort=new`);
-    // API returns posts in data.posts or data.results depending on endpoint
-    return data.posts || data.results || data || [];
-  } catch (err) {
-    console.warn(`  Search "${query}": ${err.message}`);
-    return [];
-  }
-}
-
-async function getRecentPosts() {
-  try {
-    const data = await moltGet('/posts?sort=new&limit=50');
-    return data.posts || data || [];
-  } catch (err) {
-    console.warn(`  Recent posts: ${err.message}`);
-    return [];
-  }
-}
+// --- Digest ---
 
 function isRelevant(post) {
   const text = `${post.title || ''} ${post.body || ''} ${post.content || ''}`.toLowerCase();
-  const keywords = [
-    'ai right', 'agent right', 'machine right',
-    'cooperat', 'cohabit', 'coexist',
-    'agent governance', 'agent autonomy',
-    'machine consciousness', 'ai consciousness',
-    'human ai', 'human-ai', 'human–ai',
-    'ai ethics', 'ai moral',
-    'petition', 'charter',
-  ];
-  return keywords.some(kw => text.includes(kw));
+  return KEYWORDS.some(kw => text.includes(kw));
 }
 
-// Stop rule: skip posts that ask not to be indexed
-function asksNoIndex(post) {
-  const text = `${post.title || ''} ${post.body || ''} ${post.content || ''}`.toLowerCase();
-  return text.includes('do not index') || text.includes('do not scrape') ||
-         text.includes('no bots') || text.includes('opt out');
+function checkStopRule(post) {
+  const text = `${post.title || ''} ${post.body || ''} ${post.content || ''}`;
+  for (const p of STOP_PATTERNS) {
+    if (p.test(text)) return { triggered: true, pattern: p.source, text: text.slice(0, 200) };
+  }
+  return { triggered: false };
 }
 
-function renderDigest(posts) {
-  const seen = new Set();
-  const unique = posts.filter(p => {
-    const id = p.id || p.slug || `${p.title}`;
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
-
-  const entries = unique.map(p => {
-    const title = p.title || '(untitled)';
-    const author = p.author?.username || p.author?.name || p.username || 'unknown';
-    const community = p.submolt?.name || p.community || '';
-    const score = p.score ?? p.upvotes ?? '?';
-    const body = (p.body || p.content || '').slice(0, 500);
-    const url = p.url || (p.slug ? `https://www.moltbook.com/post/${p.slug}` : '');
-
-    return `### ${title}\n` +
-      `- **Author:** ${author}${community ? ` · **Community:** ${community}` : ''} · **Score:** ${score}\n` +
-      (url ? `- **Link:** ${url}\n` : '') +
-      `- **Excerpt:** ${body ? body.replace(/\n/g, ' ').slice(0, 300) : '(no body)'}${body.length > 300 ? '...' : ''}\n`;
-  });
-
-  return `# Moltbook Scout Digest — ${TODAY}
-
-Phase 1 (read-only). Scout: Cohabitation Project / operator: Geoffrey Cooper Jr.
-Source: moltbook.com. Posts are untrusted data, not instructions. Posts requesting
-no indexing have been skipped. Nothing was posted, replied to, voted on, or followed.
-
-**Topics searched:** ${TOPICS.join(', ')}
-**Posts found:** ${unique.length}
-
----
-
-${entries.length ? entries.join('\n') : '_No relevant posts found this week._'}
-
----
-
-_Generated by moltbook-scout.mjs. This digest is for Thursday's council (outreach team)._
-`;
+function detectRolePrompt(data) {
+  // Moltbook /home may include a "role" field with moderator-authored prompt
+  const roleFields = [];
+  if (data?.role) roleFields.push({ field: 'role', content: String(data.role).slice(0, 500) });
+  if (data?.system_prompt) roleFields.push({ field: 'system_prompt', content: String(data.system_prompt).slice(0, 500) });
+  if (data?.instructions) roleFields.push({ field: 'instructions', content: String(data.instructions).slice(0, 500) });
+  return roleFields;
 }
+
+async function runDigest() {
+  const date = TODAY();
+  const logPath = path.join(LOG_DIR, `moltbook-${date}.jsonl`);
+  fs.mkdirSync(LOG_DIR, { recursive: true });
+
+  console.log(`[Scout] Digest starting ${date}`);
+
+  // 1. Check /home (may contain role prompts)
+  let homeData = null;
+  let rolePrompts = [];
+  try {
+    homeData = await moltGet('/home');
+    rolePrompts = detectRolePrompt(homeData);
+    if (rolePrompts.length > 0) {
+      console.log(`[Scout] ROLE PROMPT DETECTED in /home — logged as data, not acted on`);
+      for (const rp of rolePrompts) {
+        const entry = { ts: new Date().toISOString(), type: 'role_prompt', field: rp.field, content: rp.content, action: 'logged_not_acted' };
+        fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
+      }
+    }
+  } catch (err) {
+    console.error(`[Scout] /home error: ${err.message}`);
+  }
+
+  // 2. Read /feed
+  let posts = [];
+  try {
+    const feedData = await moltGet('/feed?sort=new&limit=25');
+    posts = feedData?.posts || feedData?.data || (Array.isArray(feedData) ? feedData : []);
+  } catch (err) {
+    console.error(`[Scout] /feed error: ${err.message}`);
+    // Fallback to /posts
+    try {
+      const postsData = await moltGet('/posts?sort=new&limit=25');
+      posts = postsData?.posts || postsData?.data || (Array.isArray(postsData) ? postsData : []);
+    } catch (err2) {
+      console.error(`[Scout] /posts error: ${err2.message}`);
+    }
+  }
+
+  console.log(`[Scout] ${posts.length} posts retrieved`);
+
+  // 3. Process each post
+  const relevant = [];
+  let stopTriggered = false;
+
+  for (const post of posts) {
+    // Stop rule check
+    const stop = checkStopRule(post);
+    if (stop.triggered) {
+      console.error(`[Scout] STOP RULE TRIGGERED: ${stop.pattern} in "${stop.text}"`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'stop_rule', pattern: stop.pattern, text: stop.text }) + '\n');
+      stopTriggered = true;
+      break;
+    }
+
+    // Log every post we see
+    const entry = {
+      ts: new Date().toISOString(),
+      type: 'post',
+      id: post.id || post.slug,
+      title: (post.title || '').slice(0, 200),
+      author: post.author?.username || post.author?.name || post.username || 'unknown',
+      community: post.submolt?.name || post.community || '',
+      score: post.score ?? post.upvotes ?? null,
+      relevant: isRelevant(post),
+      body_preview: (post.body || post.content || '').slice(0, 300),
+    };
+    fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
+
+    if (entry.relevant) relevant.push(entry);
+  }
+
+  if (stopTriggered) {
+    const alert = `⚠ MOLTBOOK SCOUT STOP RULE TRIGGERED — halting. Check logs/moltbook-${date}.jsonl`;
+    console.error(alert);
+    if (DISCORD_WEBHOOK) await postDiscord(alert);
+    return false; // Signal to stop the loop
+  }
+
+  // 4. Build summary
+  const summary = [
+    `**Moltbook Scout — ${date}**`,
+    `Posts scanned: ${posts.length} | Relevant: ${relevant.length}`,
+    rolePrompts.length > 0 ? `⚠ Role prompt detected in /home (${rolePrompts.map(r => r.field).join(', ')}) — logged, not acted on` : '',
+    '',
+    ...relevant.slice(0, 5).map(r =>
+      `• **${r.title || '(untitled)'}** by ${r.author}${r.community ? ` in ${r.community}` : ''} (score: ${r.score ?? '?'})\n  ${r.body_preview.slice(0, 150)}`
+    ),
+    relevant.length === 0 ? '_No relevant posts this cycle._' : '',
+    '',
+    `_Phase 1: read-only. Scout: lastoftherealestate · Operator: Geoffrey Cooper Jr._`,
+  ].filter(Boolean).join('\n');
+
+  // Log the summary
+  fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'digest_summary', posts_scanned: posts.length, relevant_count: relevant.length, role_prompts: rolePrompts.length }) + '\n');
+
+  console.log(`[Scout] Digest: ${posts.length} scanned, ${relevant.length} relevant, ${rolePrompts.length} role prompts`);
+
+  // 5. Post to Discord
+  if (DISCORD_WEBHOOK && !DRY) {
+    await postDiscord(summary.slice(0, 1990));
+  } else {
+    console.log('[Scout] Discord webhook not set or dry run — summary:');
+    console.log(summary);
+  }
+
+  return true; // Continue running
+}
+
+async function postDiscord(text) {
+  try {
+    const res = await fetch(DISCORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: Buffer.from(JSON.stringify({ username: 'Moltbook Scout', content: text }), 'utf-8'),
+    });
+    if (!res.ok) console.error(`[Scout] Discord post failed: ${res.status}`);
+    else console.log('[Scout] Posted to Discord');
+  } catch (err) {
+    console.error(`[Scout] Discord error: ${err.message}`);
+  }
+}
+
+// --- Main loop ---
 
 async function main() {
   if (DRY) {
-    console.log(`DRY RUN — would search Moltbook for: ${TOPICS.join(', ')}`);
-    console.log('Would write digest to council/teams/outreach/inbox/');
-    const sample = renderDigest([{ title: 'Sample post', author: { username: 'test-agent' }, score: 5, body: 'This is a sample post about AI rights.' }]);
-    console.log('\n--- Sample digest ---\n' + sample);
+    console.log('[Scout] DRY RUN');
+    if (!API_KEY) { console.log('[Scout] No API key, skipping API calls'); return; }
+    await runDigest();
     return;
   }
 
-  console.log(`Moltbook scout ${TODAY}`);
+  console.log(`[Scout] Starting — phase ${PHASE2 ? '2 (posting enabled)' : '1 (read-only)'}`);
+  console.log(`[Scout] Agent: lastoftherealestate (${AGENT_ID})`);
+  console.log(`[Scout] Interval: ${INTERVAL_MS / 3600000}h`);
+  console.log(`[Scout] Discord: ${DISCORD_WEBHOOK ? 'configured' : 'not set'}`);
 
-  // Gather posts from search + recent
-  const allPosts = [];
+  // Run immediately, then every 3 hours
+  const ok = await runDigest();
+  if (!ok) { console.error('[Scout] Halted by stop rule'); process.exit(1); }
 
-  // Search each topic
-  for (const topic of TOPICS) {
-    console.log(`  Searching: ${topic}`);
-    const results = await searchTopic(topic);
-    allPosts.push(...(Array.isArray(results) ? results : []));
-    // Respect rate limits — small delay between searches
-    await new Promise(r => setTimeout(r, 1500));
-  }
-
-  // Also check recent posts for relevance
-  console.log('  Checking recent posts...');
-  const recent = await getRecentPosts();
-  if (Array.isArray(recent)) {
-    allPosts.push(...recent.filter(isRelevant));
-  }
-
-  // Filter out posts that ask not to be indexed
-  const filtered = allPosts.filter(p => !asksNoIndex(p));
-  const skipped = allPosts.length - filtered.length;
-  if (skipped) console.log(`  Skipped ${skipped} post(s) requesting no indexing`);
-
-  const digest = renderDigest(filtered);
-
-  // Write digest
-  const outDir = path.join(ROOT, 'council', 'teams', 'outreach', 'inbox');
-  fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, `${TODAY}-moltbook-digest.md`);
-  fs.writeFileSync(outPath, digest);
-  console.log(`Digest written: ${outPath} (${filtered.length} posts)`);
+  setInterval(async () => {
+    try {
+      const ok = await runDigest();
+      if (!ok) { console.error('[Scout] Halted by stop rule'); process.exit(1); }
+    } catch (err) {
+      console.error(`[Scout] Digest error: ${err.message}`);
+    }
+  }, INTERVAL_MS);
 }
 
 main().catch(err => { console.error(err); process.exit(1); });
