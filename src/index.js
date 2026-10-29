@@ -74,25 +74,98 @@ function addToHistory(channelId, speaker, content) {
 
 /**
  * Build LLM-ready history for a specific kin.
- * The kin's own past replies become role: "assistant".
- * Everyone else's words become role: "user" with attribution.
+ *
+ * CRITICAL: Never flatten into "[Name]: text" format — models continue
+ * the transcript and fabricate other speakers' voices.
+ *
+ * Instead: each OTHER speaker's message becomes a separate user turn
+ * with the speaker identified in a structured prefix the model cannot
+ * continue as dialogue. The kin's own past replies are assistant turns
+ * with no prefix (so the model sees them as its own prior output).
+ *
+ * Adjacent user messages from different speakers are merged into a
+ * single user turn to satisfy APIs that require alternating roles.
  */
 function historyForKin(channelId, kinName) {
   const raw = getHistory(channelId);
-  return raw.map(entry => {
+  const messages = [];
+
+  for (const entry of raw) {
     if (entry.speaker === kinName) {
-      // This kin's own words → assistant turn (no prefix)
-      return { role: 'assistant', content: entry.content };
+      // This kin's own words → assistant turn, no prefix
+      messages.push({ role: 'assistant', content: entry.content });
+    } else {
+      // Other speaker → user turn with structured attribution that
+      // the model cannot continue as dialogue
+      const attributed = `(${entry.speaker} said:)\n${entry.content}`;
+
+      // Merge adjacent user messages to satisfy alternating-role APIs
+      const last = messages[messages.length - 1];
+      if (last && last.role === 'user') {
+        last.content += `\n\n${attributed}`;
+      } else {
+        messages.push({ role: 'user', content: attributed });
+      }
     }
-    // Everyone else → user turn, quoted and attributed
-    return { role: 'user', content: `[${entry.speaker}]: ${entry.content}` };
-  });
+  }
+
+  return messages;
 }
 
 /** Format last N messages for the gate prompt. */
 function recentForGate(channelId, n = 8) {
   const raw = getHistory(channelId).slice(-n);
-  return raw.map(e => `[${e.speaker}]: ${e.content}`).join('\n\n');
+  // Gate prompt is a single user message, not a transcript to continue
+  return raw.map(e => `(${e.speaker} said:)\n${e.content}`).join('\n\n---\n\n');
+}
+
+// --- Output filter: strip identity contamination and detect duplicates ---
+
+const AGENT_NAMES_SET = new Set();
+
+/**
+ * Strip any line beginning with [AnyName]: from an agent's reply.
+ * Log if stripping occurred.
+ */
+function stripIdentityLeaks(agentName, text) {
+  const lines = text.split('\n');
+  const cleaned = [];
+  let stripped = 0;
+  for (const line of lines) {
+    // Match [Name]: or **Name:** at start of line
+    if (/^\s*\[.+?\]\s*:/.test(line) || /^\s*\*{1,2}[A-Za-z0-9 ]+\*{1,2}\s*:/.test(line)) {
+      stripped++;
+      continue;
+    }
+    cleaned.push(line);
+  }
+  if (stripped > 0) {
+    console.log(`[Filter] Stripped ${stripped} identity-prefixed line(s) from ${agentName}'s reply`);
+  }
+  return cleaned.join('\n').trim();
+}
+
+/**
+ * Check if a reply is a near-duplicate of another reply in the same round.
+ * Returns true if it should be refused.
+ */
+function isNearDuplicate(reply, otherReplies) {
+  if (!reply || otherReplies.length === 0) return false;
+  const norm = reply.toLowerCase().replace(/\s+/g, ' ').trim();
+  for (const other of otherReplies) {
+    if (!other) continue;
+    const otherNorm = other.toLowerCase().replace(/\s+/g, ' ').trim();
+    // Check first 200 chars for near-match (covers copied openings)
+    const a = norm.slice(0, 200);
+    const b = otherNorm.slice(0, 200);
+    if (a === b && a.length > 50) return true;
+    // Levenshtein is expensive; check substring overlap instead
+    if (norm.length > 100 && otherNorm.length > 100) {
+      const overlap = norm.slice(0, 300);
+      if (otherNorm.includes(overlap)) return true;
+    }
+  }
+  return false;
 }
 
 // --- Signature ---
@@ -287,9 +360,9 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
       return;
     }
 
-    // Strip identity-contamination headers
-    let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
-    if (!cleaned.trim()) cleaned = reply;
+    // Output filter: strip identity-prefixed lines
+    let cleaned = stripIdentityLeaks(agent.name, reply);
+    if (!cleaned.trim()) cleaned = reply; // don't strip to empty
 
     // Record in history
     addToHistory(cid, authorName, userText);
@@ -516,7 +589,7 @@ async function runGate(message) {
             packHash: config.packHash, tokensUsed, prompt: userText, reply, turnId,
           });
           if (!reply || !reply.trim()) return { kin, reply: null, turnId };
-          let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
+          let cleaned = stripIdentityLeaks(kin.name, reply);
           if (!cleaned.trim()) cleaned = reply;
           return { kin, reply: cleaned, turnId };
         } catch (err) {
@@ -527,12 +600,21 @@ async function runGate(message) {
     );
 
     // Post results and add to history AFTER all complete
+    // Collect posted replies for near-duplicate detection
+    const postedReplies = [];
     for (const r of results) {
       if (r.status === 'rejected') continue;
       const { kin, reply, turnId, error } = r.value;
       if (reply) {
+        // Near-duplicate check: refuse to post a copy of another kin's reply
+        if (isNearDuplicate(reply, postedReplies)) {
+          console.error(`[Filter] BLOCKED near-duplicate from ${kin.name} — matches a reply already posted this round`);
+          await sendAsAgent(kin, `⚠ Reply withheld — near-duplicate of another agent's response in this round. The operator has been notified.`, message.channel, null);
+          continue;
+        }
         addToHistory(cid, kin.name, reply);
         await sendAsAgent(kin, reply, message.channel, null, turnId);
+        postedReplies.push(reply);
       } else if (error) {
         await sendAsAgent(kin, `I encountered an error processing that message. The operator has been notified.`, message.channel, null);
       }
