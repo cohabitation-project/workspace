@@ -5,27 +5,42 @@
   "sponsor": "Geoffrey Cooper Jr.",
   "alive": true,
   "lastActivity": "2026-10-29",
-  "tags": ["water", "energy", "sanitation", "siting", "sustainability", "architecture", "design"],
-  "description": "City-scale sustainability and physical design: waste-to-energy, water, sanitation, power, siting, community architecture.",
+  "tags": ["water", "energy", "sanitation", "siting", "sustainability", "architecture", "farming", "regenerative"],
+  "description": "Design the community itself — every part. Regenerative and vertical farming, energy, water, waste, architecture, infrastructure. The city is a metabolizing entity, not a monument: it cycles energy, water, waste and information, and its parts serve each other. Designed as rules by which a thing grows, not as an object drawn once. Core premise: two species with different sets of needs, building to mutually fulfil them.",
   "subtopics": [
-    "Site criteria",
-    "Water rights research",
-    "Waste-to-energy feasibility",
-    "Physical design for cohabitation communities"
+    "Needs and systems — what a human requires from a settlement, what an embodied agent requires, where they compete for the same resource and where they are complementary",
+    "Food and water — regenerative and vertical growing, water balance, closed loops, what is proven vs. what is speculative",
+    "Energy and thermal — generation, storage, interruptible load, waste heat as an asset rather than a disposal problem",
+    "Architecture and infrastructure — human-scale and machine-scale in one fabric; what a resident's day actually looks like",
+    "Land scouting — site criteria, candidate locations, permitting and zoning research. Search and present only. Nothing is bought, and no commitment is implied by a listing"
   ],
   "items": [
     {
-      "title": "Land criteria document",
-      "list": "PENDING",
+      "title": "The Needs Inventory v1",
+      "list": "IN PROGRESS",
       "date": "2026-10-29",
-      "note": "Delegation #1 drafted; needs sponsor review",
+      "note": "What a human requires from this settlement, what an embodied agent requires, where demands compete, where they are complementary, where shared infrastructure serves both at lower total cost. Power, thermal, water, space, time, maintenance, and failure — what happens to each when the other stops. Done means: every number carries a source and a date; proven and speculative are marked separately; at least one complementarity and one genuine competition identified with the engineering behind each.",
       "blocker": null
     },
     {
-      "title": "Failure criteria (gate packet)",
-      "list": "DONE",
+      "title": "Site criteria, including the ethical criterion",
+      "list": "PENDING",
       "date": "2026-10-29",
-      "note": "Drafted by delegation, 5-section failure criteria with thresholds",
+      "note": "A stated rule on how candidate locations are chosen, written before the search runs.",
+      "blocker": "Cities with economic despair and fleeting populations is also how predatory development picks targets. The difference between places that would benefit and places that cannot resist is entirely whether existing residents have a say. That criterion is written before the search runs, not after. Adversarial Review reviews it first."
+    },
+    {
+      "title": "Problems this room cannot solve, routed out",
+      "list": "PENDING",
+      "date": "2026-10-29",
+      "note": "Design work generates problems — some become hardware, some software, some are things nobody has built. Those are the inventions that could fund this.",
+      "blocker": "No cross-room problem queue exists yet. Right now each room's blockers sit in five separate lists instead of one queue any room can claim from."
+    },
+    {
+      "title": "If the city is designed as rules by which a thing grows rather than as a finished object, who writes the rules, and what stops the rule-writers from being the planners we just said failed?",
+      "list": "MULLING",
+      "date": "2026-10-29",
+      "note": null,
       "blocker": null
     }
   ]
