@@ -1,0 +1,9 @@
+{
+  "name": "Land & Systems",
+  "state": "ACTIVE",
+  "sponsor": "Geoffrey Cooper Jr.",
+  "alive": true,
+  "lastActivity": "2026-10-29",
+  "tags": ["water", "energy", "sanitation", "siting", "sustainability"],
+  "description": "City-scale sustainability: waste-to-energy, water, sanitation, power, siting."
+}

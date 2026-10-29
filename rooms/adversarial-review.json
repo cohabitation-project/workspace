@@ -1,0 +1,9 @@
+{
+  "name": "Adversarial Review",
+  "state": "R&D",
+  "sponsor": "Geoffrey Cooper Jr.",
+  "alive": true,
+  "lastActivity": "2026-10-28",
+  "tags": ["zero-one", "safeguards", "frame-effect", "drift-drill"],
+  "description": "Zero-One case study, safeguard testing, frame-effect experiments, drift drills."
+}

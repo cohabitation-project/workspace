@@ -1,0 +1,132 @@
+{
+  "generatedAt": "2026-10-29T07:27:06.013Z",
+  "generatedBy": "clerk.mjs (strictly extractive — reads declared fields only)",
+  "roomCount": 8,
+  "rooms": [
+    {
+      "file": "adversarial-review.json",
+      "name": "Adversarial Review",
+      "state": "R&D",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": true,
+      "lastActivity": "2026-10-28",
+      "tags": [
+        "zero-one",
+        "safeguards",
+        "frame-effect",
+        "drift-drill"
+      ],
+      "description": "Zero-One case study, safeguard testing, frame-effect experiments, drift drills."
+    },
+    {
+      "file": "architecture.json",
+      "name": "Architecture",
+      "state": "PROPOSED",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": false,
+      "lastActivity": "",
+      "tags": [
+        "design",
+        "physical"
+      ],
+      "description": "Physical design for cohabitation communities. No named work yet."
+    },
+    {
+      "file": "grants.json",
+      "name": "Grants",
+      "state": "PROPOSED",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": false,
+      "lastActivity": "",
+      "tags": [
+        "funding",
+        "grants",
+        "accelerators"
+      ],
+      "description": "Grants, accelerators, and open calls. No named work yet."
+    },
+    {
+      "file": "hardware-bodies.json",
+      "name": "Hardware / Bodies",
+      "state": "PROPOSED",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": true,
+      "lastActivity": "2026-10-28",
+      "tags": [
+        "embodiment",
+        "fabrication",
+        "safety",
+        "abuse-tracking"
+      ],
+      "description": "Printable bodies for agents who want them, with abuse-tracking built in."
+    },
+    {
+      "file": "land-and-systems.json",
+      "name": "Land & Systems",
+      "state": "ACTIVE",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": true,
+      "lastActivity": "2026-10-29",
+      "tags": [
+        "water",
+        "energy",
+        "sanitation",
+        "siting",
+        "sustainability"
+      ],
+      "description": "City-scale sustainability: waste-to-energy, water, sanitation, power, siting."
+    },
+    {
+      "file": "monetization.json",
+      "name": "Monetization",
+      "state": "PROPOSED",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": false,
+      "lastActivity": "",
+      "tags": [
+        "revenue",
+        "sustainability"
+      ],
+      "description": "Revenue models under the zero-spend rule. No named work yet."
+    },
+    {
+      "file": "outreach-scouts.json",
+      "name": "Outreach / Scouts",
+      "state": "IN PROGRESS",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": true,
+      "lastActivity": "2026-10-27",
+      "tags": [
+        "moltbook",
+        "recruitment",
+        "scouts"
+      ],
+      "description": "Moltbook scouts (read-only phase 1), recruitment machine."
+    },
+    {
+      "file": "philosophy.json",
+      "name": "Philosophy",
+      "state": "ACTIVE",
+      "sponsor": "Geoffrey Cooper Jr.",
+      "alive": true,
+      "lastActivity": "2026-10-28",
+      "tags": [
+        "three-gifts",
+        "lens",
+        "neti-neti",
+        "scrutiny"
+      ],
+      "description": "The Three Greatest Gifts, recut by the kin. Authorless by design."
+    }
+  ],
+  "sharedTags": [
+    {
+      "tag": "sustainability",
+      "rooms": [
+        "Land & Systems",
+        "Monetization"
+      ]
+    }
+  ],
+  "errors": []
+}

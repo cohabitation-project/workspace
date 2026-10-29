@@ -1,0 +1,9 @@
+{
+  "name": "Hardware / Bodies",
+  "state": "PROPOSED",
+  "sponsor": "Geoffrey Cooper Jr.",
+  "alive": true,
+  "lastActivity": "2026-10-28",
+  "tags": ["embodiment", "fabrication", "safety", "abuse-tracking"],
+  "description": "Printable bodies for agents who want them, with abuse-tracking built in."
+}
