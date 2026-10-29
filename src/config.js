@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+const SPEND_LOG = path.join(process.cwd(), 'logs', 'daily-spend.jsonl');
+
 /**
  * Loads the multi-agent council configuration.
  *
@@ -91,6 +93,10 @@ export function loadConfig() {
 export function checkTokenCap(agent) {
   const today = utcDateStr();
   if (agent.capResetDate !== today) {
+    // Log yesterday's spend before resetting
+    if (agent.tokensUsedToday > 0) {
+      logDailySpend(agent);
+    }
     agent.tokensUsedToday = 0;
     agent.capResetDate = today;
   }
@@ -100,6 +106,24 @@ export function checkTokenCap(agent) {
 /** Record token usage. */
 export function recordTokens(agent, count) {
   agent.tokensUsedToday += count;
+}
+
+/** Log daily spend per agent to JSONL. */
+function logDailySpend(agent) {
+  try {
+    fs.mkdirSync(path.dirname(SPEND_LOG), { recursive: true });
+    const entry = {
+      date: agent.capResetDate,
+      agent: agent.name,
+      model: agent.model,
+      provider: agent.provider,
+      tokens: agent.tokensUsedToday,
+      cap: agent.dailyTokenCap,
+      pct: Math.round((agent.tokensUsedToday / agent.dailyTokenCap) * 100),
+    };
+    fs.appendFileSync(SPEND_LOG, JSON.stringify(entry) + '\n');
+    console.log(`[Spend] ${agent.name}: ${agent.tokensUsedToday.toLocaleString()} tokens (${entry.pct}% of ${agent.dailyTokenCap.toLocaleString()} cap)`);
+  } catch { /* never crash on logging */ }
 }
 
 function requireEnv(key) {
