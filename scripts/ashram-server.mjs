@@ -325,7 +325,7 @@ function drawAllSprites() {
   }
 }
 
-// Build kin elements
+// Build kin elements — NO innerHTML after canvas (destroys drawing context)
 const container = document.getElementById('kinContainer');
 KIN.forEach(name => {
   const pos = POS[name];
@@ -334,25 +334,49 @@ KIN.forEach(name => {
   desk.className = 'desk';
   desk.style.cssText = 'top:calc(' + pos.top + ' + 70px);left:calc(' + pos.left + ' - 4px);';
   container.appendChild(desk);
-  // Kin
+  // Kin wrapper
   const el = document.createElement('div');
   el.className = 'kin';
   el.style.cssText = '--kin-color:' + COLORS[name] + ';top:' + pos.top + ';left:' + pos.left + ';';
+
+  // Bubble (above sprite)
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.id = 'bub-' + name;
+  el.appendChild(bub);
+
+  // Canvas (the sprite — must not be destroyed by innerHTML)
   const canvas = document.createElement('canvas');
   canvas.width = 48; canvas.height = 96;
   canvas.id = 'cv-' + name;
+  el.appendChild(canvas);
   kinCanvases[name] = canvas;
   kinFrames[name] = 0;
 
-  el.innerHTML = '<div class="bubble" id="bub-' + name + '"></div>';
-  el.appendChild(canvas);
-  el.innerHTML += '<div class="kin-label"><div class="kin-name">' + name +
-    (ROLES[name] ? ' <span style="font-size:8px;color:#706a5e">(' + ROLES[name] + ')</span>' : '') +
-    '</div><div class="kin-model">' + MODELS[name] + '</div>' +
-    '<div class="kin-status" id="st-' + name + '">listening</div></div>';
-  // Re-grab canvas after innerHTML clobber
-  const cv = el.querySelector('canvas');
-  if (cv) kinCanvases[name] = cv;
+  // Label block (below sprite)
+  const label = document.createElement('div');
+  label.className = 'kin-label';
+  const nm = document.createElement('div');
+  nm.className = 'kin-name';
+  nm.textContent = name;
+  if (ROLES[name]) {
+    const role = document.createElement('span');
+    role.style.cssText = 'font-size:8px;color:#706a5e;margin-left:4px';
+    role.textContent = '(' + ROLES[name] + ')';
+    nm.appendChild(role);
+  }
+  label.appendChild(nm);
+  const mdl = document.createElement('div');
+  mdl.className = 'kin-model';
+  mdl.textContent = MODELS[name];
+  label.appendChild(mdl);
+  const st = document.createElement('div');
+  st.className = 'kin-status';
+  st.id = 'st-' + name;
+  st.textContent = 'listening';
+  label.appendChild(st);
+  el.appendChild(label);
+
   container.appendChild(el);
 });
 
