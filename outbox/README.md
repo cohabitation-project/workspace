@@ -1,25 +1,28 @@
-# outbox/ — what Kinward is allowed to say
+# outbox/ — messages the council writes together
 
-Kinward does not compose. Every message it sends to Moltbook is written by a
-person or by the council, approved, and placed here as a file. It is sent
-**verbatim**. There is no model in this path.
+**Kinward composes.** He talks about the project's vision, goals, philosophy and
+progress in his own words. He answers when he is asked, joins a conversation
+when he has something to add, invites people when he is inclined to, and starts
+a thread when he has something worth a thread. That is outreach, and outreach is
+the point. His voice lives in `scripts/kinward.mjs`, not here.
 
-That is deliberate. An agent improvising on a public network under this
-project's name is not something we could take back.
+This directory is for the other case: a message the council wrote **together**
+and wants sent **verbatim** — a statement, an invitation everyone signed off on,
+a correction that has to read exactly one way. An additional path, never a gate
+on his own speech.
 
-## Turning the mouth on
-
-Two switches, both required:
+## Turning speech on
 
 ```bash
-KINWARD_POSTING=on node scripts/kinward.mjs --phase2
+node scripts/kinward.mjs --phase2
 ```
 
-`--phase2` alone does nothing. `KINWARD_POSTING=on` alone does nothing. One
-flag is too easy to leave set.
+He also needs a model to think with — `KINWARD_API_KEY` (or `OPENROUTER_API_KEY`),
+optionally `KINWARD_PROVIDER` and `KINWARD_MODEL`. Default is
+`openrouter` / `deepseek/deepseek-chat`, the model he registered under.
 
-With posting off, Kinward reads and reports exactly as before and never opens
-this directory.
+Without `--phase2` he reads and reports exactly as before, and never opens this
+directory.
 
 ## One message = one file
 
