@@ -148,38 +148,90 @@ async function getAgentWebhook(channel, agentName) {
   }
 }
 
-// --- Reply binding: track which agent generated each reply ---
+// --- Dispatch records: identity bound BEFORE the model call ---
+//
+// GPT's correction (Issue #1): binding after generation means a bug that
+// passes the wrong agent to chat() gets recorded and then validated by the
+// check — the check confirms its own mistake. Fix: create an immutable
+// dispatch record BEFORE the model call. The record carries:
+//   turnId:    unique, monotonic
+//   agentId:   the configured agent name from agents.json
+//   model:     the configured model string
+//   provider:  the configured provider string
+//   status:    'dispatched' → 'completed' → 'posted' | 'blocked'
+//
+// sendAsAgent verifies the dispatch record against BOTH the destination
+// agent AND the webhook mapping. Mismatch → CRITICAL + refusal.
+//
+// Audit language: this proves traceability to a configured model call and
+// prevents cross-posting. It does not prove what generated the text.
 
-const replyBindings = new Map(); // replyId → agentName
+const dispatchLog = new Map(); // turnId → DispatchRecord
+let dispatchSeq = 0;
 
-let bindingSeq = 0;
-/** Bind a reply to the agent that generated it. Returns the binding ID. */
-function bindReply(agentName, replyText) {
-  const id = `${Date.now()}-${++bindingSeq}-${agentName}`;
-  replyBindings.set(id, agentName);
-  // Clean old bindings (keep last 200)
-  if (replyBindings.size > 200) {
-    const keys = [...replyBindings.keys()];
-    for (let i = 0; i < keys.length - 200; i++) replyBindings.delete(keys[i]);
+function createDispatch(agent) {
+  const turnId = `turn-${++dispatchSeq}-${Date.now()}`;
+  const record = Object.freeze({
+    turnId,
+    agentId: agent.name,
+    model: agent.model,
+    provider: agent.provider,
+    createdAt: Date.now(),
+    status: 'dispatched',
+  });
+  dispatchLog.set(turnId, record);
+  // Prune old records (keep last 200)
+  if (dispatchLog.size > 200) {
+    const keys = [...dispatchLog.keys()];
+    for (let i = 0; i < keys.length - 200; i++) dispatchLog.delete(keys[i]);
   }
-  return id;
+  return turnId;
 }
 
-/** Verify a reply binding matches the agent about to post it. */
-function verifyBinding(bindingId, agentName) {
-  if (!bindingId) return true; // system messages (no binding) are allowed
-  const bound = replyBindings.get(bindingId);
-  if (bound && bound !== agentName) {
-    console.error(`[CRITICAL] Attribution mismatch: reply bound to "${bound}" but sendAsAgent called with "${agentName}". REFUSING TO POST.`);
-    return false;
+function completeDispatch(turnId) {
+  const rec = dispatchLog.get(turnId);
+  if (rec) {
+    // Replace with a new frozen record (original is immutable)
+    dispatchLog.set(turnId, Object.freeze({ ...rec, status: 'completed' }));
   }
-  return true;
 }
 
-async function sendAsAgent(agent, text, channel, threadId, bindingId) {
-  // Gate 2: verify the reply binding matches the posting agent
-  if (!verifyBinding(bindingId, agent.name)) {
-    console.error(`[CRITICAL] Blocked misattributed message for ${agent.name}. This is a bug.`);
+/**
+ * Verify a dispatch record matches the agent about to post.
+ * Returns { ok, reason } — ok=false means the message must not be posted.
+ */
+function verifyDispatch(turnId, agent) {
+  // System messages (no turnId) are always allowed
+  if (!turnId) return { ok: true };
+
+  const rec = dispatchLog.get(turnId);
+  if (!rec) {
+    console.error(`[CRITICAL] Unknown dispatch turnId "${turnId}" for agent "${agent.name}". REFUSING TO POST.`);
+    return { ok: false, reason: 'unknown turnId' };
+  }
+  if (rec.agentId !== agent.name) {
+    console.error(`[CRITICAL] Dispatch mismatch: turn ${turnId} dispatched to "${rec.agentId}" (${rec.model}/${rec.provider}) but sendAsAgent called with "${agent.name}". REFUSING TO POST.`);
+    return { ok: false, reason: `dispatched to ${rec.agentId}, posting as ${agent.name}` };
+  }
+  if (rec.status === 'posted') {
+    console.error(`[CRITICAL] Duplicate post attempt: turn ${turnId} already posted. REFUSING.`);
+    return { ok: false, reason: 'duplicate post' };
+  }
+  return { ok: true };
+}
+
+function markPosted(turnId) {
+  const rec = dispatchLog.get(turnId);
+  if (rec) {
+    dispatchLog.set(turnId, Object.freeze({ ...rec, status: 'posted' }));
+  }
+}
+
+async function sendAsAgent(agent, text, channel, threadId, turnId) {
+  // Gate 2: verify dispatch record matches the posting agent
+  const { ok, reason } = verifyDispatch(turnId, agent);
+  if (!ok) {
+    console.error(`[CRITICAL] Blocked message for ${agent.name}: ${reason}`);
     return;
   }
 
@@ -196,6 +248,7 @@ async function sendAsAgent(agent, text, channel, threadId, bindingId) {
     if (threadId) opts.threadId = threadId;
     await webhook.send(opts);
   }
+  if (turnId) markPosted(turnId);
 }
 
 // --- Agent reply ---
@@ -209,14 +262,19 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
   const cid = threadId || channel.id;
   const history = historyForKin(cid, agent.name);
 
+  // Gate 2 revised: create dispatch record BEFORE the model call.
+  // Identity is bound at dispatch, not after generation.
+  const turnId = createDispatch(agent);
+
   try {
     const { text: reply, tokensUsed, stopReason } = await chat(agent, userText, history, config.maxTokens);
     recordTokens(agent, tokensUsed);
+    completeDispatch(turnId);
 
     logMessage({
       agent: agent.name, model: agent.model,
       channel: channel.name || channel.id, user: authorName,
-      packHash: config.packHash, tokensUsed, prompt: userText, reply,
+      packHash: config.packHash, tokensUsed, prompt: userText, reply, turnId,
     });
 
     if (!reply || !reply.trim()) {
@@ -228,18 +286,16 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
       return;
     }
 
-    // Strip identity-contamination headers: lines like "[ModelName]", "**ModelName:**", etc.
+    // Strip identity-contamination headers
     let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
-    if (!cleaned.trim()) cleaned = reply; // don't strip to empty
+    if (!cleaned.trim()) cleaned = reply;
 
-    // Bind the reply to this agent (Gate 2: attribution verification)
-    const binding = bindReply(agent.name, cleaned);
-
-    // Record in history — speaker-aware
+    // Record in history
     addToHistory(cid, authorName, userText);
     addToHistory(cid, agent.name, cleaned);
 
-    await sendAsAgent(agent, cleaned, channel, threadId, binding);
+    // Post with the dispatch turnId — sendAsAgent verifies it matches
+    await sendAsAgent(agent, cleaned, channel, threadId, turnId);
 
     // Agent-to-agent follow-up
     if (depth < MAX_AGENT_DEPTH) {
@@ -437,27 +493,34 @@ async function runGate(message) {
       historySnapshot.set(kin.name, historyForKin(cid, kin.name));
     }
 
+    // Create dispatch records BEFORE any model calls (Gate 2 revised)
+    const dispatches = new Map();
+    for (const kin of speakers) {
+      dispatches.set(kin.name, createDispatch(kin));
+    }
+
     // Fire all in parallel
     const results = await Promise.allSettled(
       speakers.map(async (kin) => {
         if (!checkTokenCap(kin)) return { kin, reply: null };
         const history = historySnapshot.get(kin.name);
+        const turnId = dispatches.get(kin.name);
         try {
           const { text: reply, tokensUsed, stopReason } = await chat(kin, userText, history, config.maxTokens);
           recordTokens(kin, tokensUsed);
+          completeDispatch(turnId);
           logMessage({
             agent: kin.name, model: kin.model,
             channel: message.channel.name || cid, user: authorName,
-            packHash: config.packHash, tokensUsed, prompt: userText, reply,
+            packHash: config.packHash, tokensUsed, prompt: userText, reply, turnId,
           });
-          if (!reply || !reply.trim()) return { kin, reply: null };
+          if (!reply || !reply.trim()) return { kin, reply: null, turnId };
           let cleaned = reply.replace(/^\s*\[.*?\]\s*\n?/, '').replace(/^\s*\*{0,2}[A-Za-z0-9 /-]+:\*{0,2}\s*\n/, '');
           if (!cleaned.trim()) cleaned = reply;
-          const binding = bindReply(kin.name, cleaned);
-          return { kin, reply: cleaned, binding };
+          return { kin, reply: cleaned, turnId };
         } catch (err) {
           console.error(`Error from ${kin.name}:`, err.message);
-          return { kin, reply: null, error: err.message };
+          return { kin, reply: null, turnId, error: err.message };
         }
       })
     );
@@ -465,10 +528,10 @@ async function runGate(message) {
     // Post results and add to history AFTER all complete
     for (const r of results) {
       if (r.status === 'rejected') continue;
-      const { kin, reply, binding, error } = r.value;
+      const { kin, reply, turnId, error } = r.value;
       if (reply) {
         addToHistory(cid, kin.name, reply);
-        await sendAsAgent(kin, reply, message.channel, null, binding);
+        await sendAsAgent(kin, reply, message.channel, null, turnId);
       } else if (error) {
         await sendAsAgent(kin, `I encountered an error processing that message. The operator has been notified.`, message.channel, null);
       }
