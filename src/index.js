@@ -95,9 +95,8 @@ function historyForKin(channelId, kinName) {
       // This kin's own words → assistant turn, no prefix
       messages.push({ role: 'assistant', content: entry.content });
     } else {
-      // Other speaker → user turn with structured attribution that
-      // the model cannot continue as dialogue
-      const attributed = `(${entry.speaker} said:)\n${entry.content}`;
+      // Other speaker → user turn with structured attribution
+      const attributed = `${HISTORY_PREFIX}${entry.speaker}${HISTORY_SUFFIX}\n${entry.content}`;
 
       // Merge adjacent user messages to satisfy alternating-role APIs
       const last = messages[messages.length - 1];
@@ -115,25 +114,41 @@ function historyForKin(channelId, kinName) {
 /** Format last N messages for the gate prompt. */
 function recentForGate(channelId, n = 8) {
   const raw = getHistory(channelId).slice(-n);
-  // Gate prompt is a single user message, not a transcript to continue
-  return raw.map(e => `(${e.speaker} said:)\n${e.content}`).join('\n\n---\n\n');
+  // Gate prompt uses the same format constants as history
+  return raw.map(e => `${HISTORY_PREFIX}${e.speaker}${HISTORY_SUFFIX}\n${e.content}`).join('\n\n---\n\n');
 }
 
 // --- Output filter: strip identity contamination and detect duplicates ---
+//
+// The filter is DERIVED from the same constants the history formatter uses.
+// If the format changes, the filter changes with it. No separate list.
 
-const AGENT_NAMES_SET = new Set();
+// History attribution format — single source of truth
+const HISTORY_PREFIX = '(';
+const HISTORY_SUFFIX = ' said:)';
+
+// Build the leak-detection regex from the format constants + legacy formats.
+// Escapes special regex chars in the prefix/suffix.
+const escRx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const LEAK_PATTERNS = [
+  // Current format: (Name said:)
+  new RegExp(`^\\s*${escRx(HISTORY_PREFIX)}.+?${escRx(HISTORY_SUFFIX)}`, 'i'),
+  // Legacy: [Name]:
+  /^\s*\[.+?\]\s*:/,
+  // Legacy: **Name:**
+  /^\s*\*{1,2}[A-Za-z0-9 /-]+\*{1,2}\s*:/,
+];
 
 /**
- * Strip any line beginning with [AnyName]: from an agent's reply.
- * Log if stripping occurred.
+ * Strip any line matching an attribution format the history formatter
+ * has ever emitted. Derived from HISTORY_PREFIX/SUFFIX, not hardcoded.
  */
 function stripIdentityLeaks(agentName, text) {
   const lines = text.split('\n');
   const cleaned = [];
   let stripped = 0;
   for (const line of lines) {
-    // Match [Name]: or **Name:** at start of line
-    if (/^\s*\[.+?\]\s*:/.test(line) || /^\s*\*{1,2}[A-Za-z0-9 ]+\*{1,2}\s*:/.test(line)) {
+    if (LEAK_PATTERNS.some(p => p.test(line))) {
       stripped++;
       continue;
     }
