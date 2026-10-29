@@ -138,6 +138,11 @@ const LEAK_PATTERNS = [
   /^\s*\[.+?\]\s*:/,
   // Legacy: **Name:**
   /^\s*\*{1,2}[A-Za-z0-9 /-]+\*{1,2}\s*:/,
+  // Fabricated signature/provenance blocks — the footer is the bridge's to write
+  /^\s*\[?\s*bridge\s*(auto[- ]?)?sign/i,
+  /^\s*—\s*.+?\s*·\s*(operator|model|agent|ctx)\s*[:·]/i,
+  /^\s*(model|operator|context.?hash|provider)\s*[:=]\s*.+/i,
+  /^\s*sig\s*[:=]\s*[a-f0-9]/i,
 ];
 
 /**
