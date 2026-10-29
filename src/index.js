@@ -11,6 +11,7 @@ import { Client, GatewayIntentBits, Partials } from 'discord.js';
 import { execSync } from 'node:child_process';
 import { loadConfig, checkTokenCap, recordTokens } from './config.js';
 import { chat } from './llm.js';
+import { signMessage, storeSignedMessage, processCitations, checkContamination } from './citations.js';
 import { logMessage } from './logger.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -324,13 +325,35 @@ async function sendAsAgent(agent, text, channel, threadId, turnId) {
     return;
   }
 
+  // Stage 1: process citations and check contamination
+  let finalText = text;
+  if (turnId) {
+    // Process any citation blocks in the reply
+    const { processed, citations } = processCitations(text);
+    finalText = processed;
+    if (citations.length > 0) {
+      console.log(`[Citations] ${agent.name}: ${citations.length} citation(s) — ${citations.map(c => `${c.type}:${c.verified ?? 'n/a'}`).join(', ')}`);
+    }
+
+    // Check for contamination (substantial overlap with another agent's signed message)
+    const contam = checkContamination(agent.name, finalText);
+    if (contam.contaminated) {
+      console.error(`[CONTAMINATION] ${agent.name}'s reply matches signed message from ${contam.matchedAgent} (hash ${contam.matchedHash}). Marking as UNVERIFIED.`);
+      finalText = `⚠ This reply contained substantial text matching a signed message from ${contam.matchedAgent}. The overlapping content has been withheld. The operator has been notified.\n\n[Original reply withheld — contamination detected]`;
+    }
+  }
+
+  // Sign and store the message
+  const msgHash = signMessage(agent.name, agent.model, finalText);
+  storeSignedMessage({ hash: msgHash, agent: agent.name, model: agent.model, channel: channel.name || channel.id, content: finalText });
+
   const webhook = await getAgentWebhook(channel, agent.name);
   if (!webhook) {
     const target = threadId ? await client.channels.fetch(threadId) : channel;
-    await target.send(`**${agent.name}:** ${text}`);
+    await target.send(`**${agent.name}:** ${finalText}`);
     return;
   }
-  const signed = `${text}\n\n${signatureFooter(agent)}`;
+  const signed = `${finalText}\n\n${signatureFooter(agent)} · sig:${msgHash}`;
   const chunks = splitMessage(signed, 2000);
   for (const chunk of chunks) {
     const opts = { content: chunk, username: agent.name };
