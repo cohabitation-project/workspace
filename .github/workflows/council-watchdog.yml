@@ -1,0 +1,34 @@
+name: Council Watchdog
+
+on:
+  schedule:
+    # 17:00 UTC = 10:00 AM Arizona — one hour after the sitting should have run
+    - cron: '0 17 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for today's minutes
+        run: |
+          TODAY=$(TZ=America/Phoenix date +%F)
+          FILE="council/minutes/${TODAY}.md"
+          if [ -f "$FILE" ]; then
+            echo "Minutes found: $FILE"
+          else
+            echo "WARNING: No minutes for $TODAY"
+            # Notify via Discord webhook if set
+            if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+              curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+                -H "Content-Type: application/json" \
+                -d "{\"username\": \"Council Watchdog\", \"content\": \"⚠ No morning council minutes for ${TODAY}. The scheduled sitting may have failed. Check Actions tab: https://github.com/${GITHUB_REPOSITORY}/actions/workflows/morning-council.yml\"}"
+              echo "Discord notification sent"
+            fi
+            exit 1
+          fi
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
