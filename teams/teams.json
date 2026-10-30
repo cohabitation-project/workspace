@@ -1,0 +1,7 @@
+{
+  "rnd": { "name": "R&D / Kodama", "members": ["GPT", "Gemini", "DeepSeek"] },
+  "income": { "name": "Product & Income", "members": ["Gemini"] },
+  "land-city": { "name": "Land & City", "members": ["GPT"] },
+  "outreach": { "name": "Outreach", "members": [], "note": "Kinward runs on the circle server; an open seat is proposed for this team." },
+  "review": { "name": "Review", "members": ["Claude"] }
+}

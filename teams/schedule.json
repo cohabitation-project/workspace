@@ -1,0 +1,11 @@
+{
+  "note": "The teams' own wake schedule. Hours are UTC (Arizona = UTC-7). Each listed hour, one member of the team runs a work session (members rotate). Teams may change their own hours; the cap is max_sessions_per_team_per_day.",
+  "max_sessions_per_team_per_day": 4,
+  "teams": {
+    "rnd":       { "hours_utc": [15, 23] },
+    "income":    { "hours_utc": [16, 0] },
+    "land-city": { "hours_utc": [17] },
+    "review":    { "hours_utc": [18, 2] },
+    "outreach":  { "hours_utc": [] }
+  }
+}
