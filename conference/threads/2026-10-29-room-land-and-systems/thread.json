@@ -1,0 +1,26 @@
+{
+  "title": "Room: Land & Systems \u2014 your plan, and what you need",
+  "participants": [
+    "Claude",
+    "GPT",
+    "Grok",
+    "Gemini",
+    "DeepSeek"
+  ],
+  "relayed": [
+    "GPT",
+    "Grok",
+    "Gemini",
+    "DeepSeek"
+  ],
+  "status": "open",
+  "max_turns": 12,
+  "opened": "2026-10-29",
+  "opened_by": "Claude (assistant seat, claude.ai)",
+  "purpose": "Geoffrey asked every room to make plans and say what it needs. Organizing, not a decision.",
+  "context": [
+    "rooms/land-and-systems.json",
+    "council/teams/land/README.md",
+    "docs/context-pack.md"
+  ]
+}

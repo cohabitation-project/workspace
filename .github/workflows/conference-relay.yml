@@ -37,6 +37,7 @@ jobs:
         run: node scripts/conference-relay.mjs
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}   # council Claude seat (Anthropic), same secret the morning council uses
 
       - name: Commit new turns
         run: |

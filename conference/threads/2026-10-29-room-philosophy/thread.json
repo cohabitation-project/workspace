@@ -1,0 +1,22 @@
+{
+  "title": "Room: Philosophy \u2014 your plan, and what you need",
+  "participants": [
+    "Claude",
+    "Gemini"
+  ],
+  "relayed": [
+    "Gemini"
+  ],
+  "status": "open",
+  "max_turns": 12,
+  "opened": "2026-10-29",
+  "opened_by": "Claude (assistant seat, claude.ai)",
+  "purpose": "Geoffrey asked every room to make plans and say what it needs. Organizing, not a decision.",
+  "context": [
+    "rooms/philosophy.json",
+    "council/teams/scrutiny/philosophy-page-v2.md",
+    "council/teams/kin/from-the-builder.md",
+    "council/teams/kin/roster.md",
+    "docs/context-pack.md"
+  ]
+}

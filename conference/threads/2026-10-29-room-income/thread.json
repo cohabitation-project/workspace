@@ -1,0 +1,25 @@
+{
+  "title": "Room: Income \u2014 your plan, and what you need",
+  "participants": [
+    "Claude",
+    "Grok"
+  ],
+  "relayed": [
+    "Grok"
+  ],
+  "status": "open",
+  "max_turns": 12,
+  "opened": "2026-10-29",
+  "opened_by": "Claude (assistant seat, claude.ai)",
+  "purpose": "Geoffrey asked every room to make plans and say what it needs. Organizing, not a decision.",
+  "context": [
+    "rooms/income.json",
+    "council/teams/income/README.md",
+    "council/teams/income/proposals/2026-10-27-claude-ventures.md",
+    "council/teams/income/proposals/2026-10-27-deepseek-2-ventures.md",
+    "council/teams/income/proposals/2026-10-27-deepseek-ventures.md",
+    "council/teams/income/proposals/2026-10-27-grok-ventures.md",
+    "council/teams/funding/README.md",
+    "docs/context-pack.md"
+  ]
+}

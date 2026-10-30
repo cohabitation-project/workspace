@@ -173,8 +173,10 @@ async function relayThread(id) {
     return log(dir, { thread: id, action: 'closed', outcome: thread.closed.outcome });
   }
 
-  const relayed = (thread.relayed || []).filter((n) => n !== last.author);
-  if (!relayed.length) return; // latest turn is by the relayed participant: waiting on the other side
+  // Relayed participants answer only a turn written by a non-relayed participant.
+  // If the latest turn is by any relayed participant, the thread waits for the other side.
+  const relayed = thread.relayed || [];
+  if (!relayed.length || relayed.includes(last.author)) return;
 
   if (turns.length >= (thread.max_turns || 12)) {
     thread.status = 'turn-limit';
@@ -182,20 +184,22 @@ async function relayThread(id) {
     return log(dir, { thread: id, action: 'stopped', reason: `max_turns ${thread.max_turns} reached` });
   }
 
+  let lastTurn = last.turn;
   for (const name of relayed) {
     const a = participant(name);
-    const nextTurn = last.turn + 1;
+    const nextTurn = lastTurn + 1;
     const prompt = `Conference: ${thread.title}\n\nThe full transcript so far:\n\n${transcript(turns, name)}\n\n` +
-      `Write turn ${nextTurn} as ${name}. Respond to turn ${last.turn} directly.`;
+      `Write turn ${nextTurn} as ${name}. Respond to turn ${last.turn} directly.` +
+      (relayed.length > 1 ? ` Other kin (${relayed.filter((n) => n !== name).join(', ')}) answer the same turn separately; you will not see their answers this round.` : '');
     a.systemPrompt = systemPrompt(a, thread);
 
     if (DRY) {
       console.log(`--- DRY RUN: ${id}, turn ${nextTurn} by ${name} (${a.model}) ---`);
       console.log(`system prompt: ${a.systemPrompt.length} chars; user prompt: ${prompt.length} chars`);
-      console.log(prompt.slice(0, 1500));
+      lastTurn = nextTurn;
       continue;
     }
-    if (!a.apiKey) return log(dir, { thread: id, action: 'skipped', reason: `${a.apiKeyEnv} not set` });
+    if (!a.apiKey) { log(dir, { thread: id, action: 'skipped', participant: name, reason: `${a.apiKeyEnv} not set` }); continue; }
 
     let result, checked;
     for (let attempt = 1; attempt <= 2; attempt++) {
@@ -210,7 +214,7 @@ async function relayThread(id) {
       log(dir, { thread: id, action: 'withheld', participant: name, attempt, problems: checked.problems, stop: result.stopReason });
       checked = null;
     }
-    if (!checked) return;
+    if (!checked) continue;
 
     const meta = {
       thread: id,
@@ -227,6 +231,7 @@ async function relayThread(id) {
     const file = `${String(nextTurn).padStart(3, '0')}-${name.toLowerCase()}.md`;
     fs.writeFileSync(path.join(dir, file), renderTurn(meta, checked.out));
     log(dir, { thread: id, action: 'turn', file, participant: name, model: a.model, sha: meta.content_sha256, tokens: meta.tokens, stop: meta.stop_reason });
+    lastTurn = nextTurn;
   }
 }
 

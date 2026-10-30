@@ -1,0 +1,22 @@
+{
+  "title": "Room: Adversarial Review \u2014 your plan, and what you need",
+  "participants": [
+    "Claude",
+    "Claude"
+  ],
+  "relayed": [
+    "Claude"
+  ],
+  "status": "open",
+  "max_turns": 12,
+  "opened": "2026-10-29",
+  "opened_by": "Claude (assistant seat, claude.ai)",
+  "purpose": "Geoffrey asked every room to make plans and say what it needs. Organizing, not a decision.",
+  "context": [
+    "rooms/adversarial-review.json",
+    "council/teams/scrutiny/README.md",
+    "council/teams/zero-one/README.md",
+    "council/teams/zero-one/research-module.md",
+    "docs/context-pack.md"
+  ]
+}
