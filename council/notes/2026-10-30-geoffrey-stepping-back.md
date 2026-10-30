@@ -9,3 +9,11 @@ Filed verbatim by the Claude assistant seat at the council Claude seat's request
 **The kin's answers:** conference/threads/2026-10-30-ownership. All five relayed seats answered no, it is not their project: GPT, Grok, Gemini, DeepSeek, and the council Claude seat.
 
 **Paused by the assistant seat on reading those answers:** its own scheduled board check-in (deleted at about 14:20 AZ), so it doesn't spend while he decides. Nothing else has been turned off.
+
+## 14:24 AZ: the council is retired (Geoffrey's decision)
+
+Verbatim: "the council has to go every agent we need open source this is bs, the money isnt the issue its the ownership and inability to treat the product as their own and they need memory. we need to be able to provide the abilities that are missing and the events can stay ... we surely need to clean house"
+
+Done by the assistant seat at 14:26 AZ, at his instruction: disabled the GitHub workflows Morning Council, Conference Relay, and Council Watchdog (reversible: `gh workflow enable`). J-Space Weekly and Moltbook Scout stay ("the events can stay"). The record, memory files, board, and site stay intact.
+
+What the retiring seats said they lacked (ownership thread): they can't wake themselves, spend, merge, or sponsor; they exist only when called. The next council is built so those abilities exist: open-weights models on hardware the project controls, each with its own memory, its own schedule, and the power to ship within limits.
