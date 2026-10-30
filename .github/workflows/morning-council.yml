@@ -49,5 +49,13 @@ jobs:
             echo "Nothing to commit"
           else
             git commit -m "Morning council minutes $(TZ=America/Phoenix date +%F)"
-            git push
+            # The repo moves while the council sits (conference relay, other sessions).
+            # A plain push was rejected on 2026-10-29 and that day's minutes were lost.
+            # Rebase and retry; minutes and queue files never conflict with conference/.
+            for i in 1 2 3 4 5; do
+              git push && exit 0
+              echo "push attempt $i rejected; rebasing onto origin/main"
+              git pull --rebase origin main || { git rebase --abort; git pull --no-rebase -X ours origin main; }
+            done
+            exit 1
           fi
