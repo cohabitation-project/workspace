@@ -1,0 +1,229 @@
+<!--
+  Kodama leg_v0 — tendon-driven planar leg, BASELINE SCAFFOLD
+  ===========================================================
+
+  What this is:
+    A fixed "torso" with one 2-joint planar leg (hip + knee). Each joint is driven by
+    an ANTAGONISTIC PAIR of cables (flexor + extensor). The motors live in the torso;
+    each cable is a MuJoCo *spatial tendon* routed through sites and wrapped over a
+    cylinder "pulley" at the joint it drives. One motor actuator pulls each tendon.
+
+  What this is NOT:
+    A validated Kodama design. EVERY number below (lengths, masses, radii, damping,
+    motor limits) is a PLACEHOLDER chosen to be plausible for a ~0.2 m / ~0.3 kg
+    small-robot leg. Nothing here is measured or calibrated. Replace before trusting.
+
+  Conventions:
+    Units SI (m, kg, s, N, N*m, rad).  World z is up.  The leg swings in the x-z plane;
+    all hinge axes are along y.  x is "forward".
+    With axis="0 -1 0", a POSITIVE joint angle swings the distal link FORWARD (+x).
+      hip  > 0  : thigh swings forward (hip flexion)
+      knee > 0  : shank folds (knee flexion); the knee only bends one way (range 0..120 deg)
+
+  Sign convention for cables (important):
+    In MuJoCo, a positive actuator force on a tendon tries to LENGTHEN it. A cable can
+    only PULL (shorten). So every actuator below uses a NEGATIVE gear with ctrl >= 0:
+      tendon force = gear * ctrl = -(ctrl / r_spool)   -> always pulling.
+    ctrl is the motor torque at the spool (N*m). Tendon tension (N) = ctrl / r_spool.
+    "Cables can't push" is enforced ONLY by ctrlrange >= 0 — the tendon itself is a
+    geometric length with no slack model.
+
+  Edit this file freely; run_baseline.py reads it with no other dependencies.
+-->
+<mujoco model="kodama_leg_v0">
+
+  <compiler angle="degree" autolimits="true"/>
+
+  <!-- 1 ms step, implicitfast integrator: stable with joint damping and stiff-ish
+       tendons. Increase the timestep only after checking run_baseline.py stays finite. -->
+  <option timestep="0.001" integrator="implicitfast" gravity="0 0 -9.81"/>
+
+  <default>
+    <!-- Joint defaults. damping/armature are PLACEHOLDERS (no gearbox/bearing data yet).
+         armature adds reflected inertia and helps numerical stability. -->
+    <joint type="hinge" axis="0 -1 0" damping="0.02" armature="0.0001" limited="true"/>
+
+    <!-- Link geoms: capsules. Leg geoms don't collide with each other or the torso
+         (contype/conaffinity 0); only the foot is collidable, against the floor. -->
+    <geom contype="0" conaffinity="0" rgba="0.55 0.62 0.55 1"/>
+
+    <!-- Default tendon look + passive properties (PLACEHOLDERS).
+         stiffness here is a spring on tendon LENGTH, acting in PARALLEL with the motor.
+         It is NOT series cable stretch. See README "Cable stretch" note. Left at 0. -->
+    <tendon width="0.0015" stiffness="0" damping="0.05" rgba="0.9 0.5 0.1 1"/>
+
+    <!-- Motor defaults: ctrl = spool torque (N*m), 0..0.25 N*m (PLACEHOLDER motor).
+         gear = -1 / r_spool with r_spool = 8 mm  ->  gear = -125  ->  max ~31 N tension. -->
+    <motor ctrlrange="0 0.25" gear="-125"/>
+
+    <!-- Pulley ("wrapping") geoms: cylinders whose axis is along y (the joint axis).
+         They carry almost no mass and never collide; they exist to shape the cable path. -->
+    <default class="pulley">
+      <geom type="cylinder" zaxis="0 1 0" size="0.012 0.004" mass="0.002"
+            contype="0" conaffinity="0" rgba="0.3 0.3 0.35 1"/>
+    </default>
+
+    <!-- Routing sites (tiny spheres). They are attachment / guide points for cables. -->
+    <site size="0.002" rgba="1 0.2 0.2 1"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 -1 1" dir="0 1 -1"/>
+    <!-- Floor is far enough below that the hanging leg never touches it in the baseline.
+         Raise the torso or lower it to study contact later. -->
+    <geom name="floor" type="plane" size="1 1 0.01" pos="0 0 0" contype="1" conaffinity="1"
+          rgba="0.85 0.85 0.85 1"/>
+
+    <!-- ================= TORSO (fixed base) =================
+         No joint => welded to the world. Mass is irrelevant while fixed.
+         The four "*_spool" sites are where cables leave the torso-mounted motors' spools.
+         They sit above the hip; the motors themselves are not modelled as bodies. -->
+    <body name="torso" pos="0 0 0.35">
+      <geom name="torso_box" type="box" size="0.04 0.03 0.03" pos="0 0 0.05" mass="0.5"
+            rgba="0.4 0.45 0.4 1"/>
+
+      <!-- Hip cable exits: x offsets 6 mm, smaller than the 12 mm hip pulley radius, so the
+           straight line from spool to insertion passes through the pulley and the cable
+           WRAPS it -> moment arm ~= pulley radius, nearly constant over the range. -->
+      <site name="hip_flex_spool" pos=" 0.006 0 0.03"/>
+      <site name="hip_ext_spool"  pos="-0.006 0 0.03"/>
+
+      <!-- Knee cable exits, plus a "hip idler" guide point for each knee cable placed
+           almost ON the hip axis (x = +/-2 mm, z = 0). A cable segment that passes through
+           a joint's axis makes ~no torque about it, so this routing keeps the knee cables'
+           effect on the hip small (a few mm of moment arm) but NOT zero. A real design
+           would use an idler pulley on the hip axis; how much coupling to accept (or
+           exploit) is a design question for the team. Move these sites to see it change. -->
+      <site name="knee_flex_spool" pos=" 0.002 0 0.03"/>
+      <site name="knee_ext_spool"  pos="-0.002 0 0.03"/>
+      <site name="knee_flex_hip_idler" pos=" 0.002 0 0"/>
+      <site name="knee_ext_hip_idler"  pos="-0.002 0 0"/>
+
+      <!-- ================= THIGH (hip joint) =================
+           Length 0.10 m, mass 0.12 kg (PLACEHOLDER). Hip range +/-60 deg. -->
+      <body name="thigh" pos="0 0 0">
+        <joint name="hip" range="-60 60"/>
+        <geom name="thigh_link" type="capsule" fromto="0 0 0  0 0 -0.10" size="0.010"
+              mass="0.12"/>
+
+        <!-- Hip pulley: fixed to the thigh, centered on the hip axis, radius 12 mm.
+             Side sites tell MuJoCo which side of the cylinder each cable wraps on. -->
+        <geom name="hip_pulley" class="pulley" pos="0 0 0"/>
+        <site name="hip_side_front" pos=" 0.02 0 0"/>
+        <site name="hip_side_back"  pos="-0.02 0 0"/>
+
+        <!-- Hip cable insertions on the thigh, 30 mm below the hip. -->
+        <site name="hip_flex_insert" pos=" 0.006 0 -0.03"/>
+        <site name="hip_ext_insert"  pos="-0.006 0 -0.03"/>
+
+        <!-- Guide sites carrying the knee cables down the thigh (like cable guides /
+             Bowden-free eyelets). Close to the link centerline. -->
+        <site name="knee_flex_guide_hi" pos=" 0.004 0 -0.02"/>
+        <site name="knee_ext_guide_hi"  pos="-0.004 0 -0.02"/>
+        <site name="knee_flex_guide_lo" pos=" 0.005 0 -0.08"/>
+        <site name="knee_ext_guide_lo"  pos="-0.005 0 -0.08"/>
+
+        <!-- ================= SHANK (knee joint) =================
+             Length 0.10 m, mass 0.10 kg (PLACEHOLDER). Knee range 0..120 deg
+             (0 = straight; the knee doesn't hyperextend). -->
+        <body name="shank" pos="0 0 -0.10">
+          <joint name="knee" range="0 120"/>
+          <geom name="shank_link" type="capsule" fromto="0 0 0  0 0 -0.10" size="0.008"
+                mass="0.10"/>
+
+          <!-- Knee pulley: radius 10 mm, fixed to the shank, on the knee axis. -->
+          <geom name="knee_pulley" class="pulley" size="0.010 0.004" pos="0 0 0"/>
+          <site name="knee_side_front" pos=" 0.02 0 0"/>
+          <site name="knee_side_back"  pos="-0.02 0 0"/>
+
+          <!-- Knee cable insertions on the shank, 25 mm below the knee. -->
+          <site name="knee_flex_insert" pos=" 0.005 0 -0.025"/>
+          <site name="knee_ext_insert"  pos="-0.005 0 -0.025"/>
+
+          <!-- ================= FOOT =================
+               Small sphere, 0.03 kg (PLACEHOLDER). The only collidable leg geom. -->
+          <body name="foot" pos="0 0 -0.10">
+            <geom name="foot" type="sphere" size="0.012" mass="0.03" contype="1"
+                  conaffinity="1" friction="1 0.005 0.0001" rgba="0.2 0.2 0.2 1"/>
+            <site name="foot_tip" pos="0 0 -0.012"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- ================= TENDONS (the cables) =================
+       Each <spatial> tendon is a path: site -> [wrap geom (+ sidesite)] -> site ...
+       Its length is recomputed every step from the current pose; its Jacobian gives the
+       moment arm on every joint it crosses (that's how a cable couples joints).
+
+       FLEXOR = pulling it increases the joint angle. EXTENSOR = pulling it decreases it.
+       Which side "flexes" follows from the axis convention above and the front/back
+       side sites; run_baseline.py prints the measured moment arms at start-up so you can
+       check the signs after any routing change.
+
+       Possible additions (not used yet; each was checked to load in MuJoCo 3.17.0):
+         limited="true" range="lo hi"   cable length stop
+         frictionloss="..."             Coulomb-like friction along the whole cable
+         springlength="lo hi" + stiffness   spring with a dead-band (two values)
+       NOTE: tendon armature="..." (cable/spool inertia) is REJECTED by MuJoCo 3.17.0 for
+       tendons that wrap a geom ("geom wrapping not supported by tendon armature"). -->
+  <tendon>
+    <!-- Hip pair: torso spool -> wraps hip pulley -> thigh insertion. -->
+    <spatial name="hip_flexor">
+      <site site="hip_flex_spool"/>
+      <geom geom="hip_pulley" sidesite="hip_side_front"/>
+      <site site="hip_flex_insert"/>
+    </spatial>
+    <spatial name="hip_extensor">
+      <site site="hip_ext_spool"/>
+      <geom geom="hip_pulley" sidesite="hip_side_back"/>
+      <site site="hip_ext_insert"/>
+    </spatial>
+
+    <!-- Knee pair: torso spool -> hip idler (near hip axis) -> thigh guides ->
+         wraps knee pulley -> shank insertion. -->
+    <spatial name="knee_flexor">
+      <site site="knee_flex_spool"/>
+      <site site="knee_flex_hip_idler"/>
+      <site site="knee_flex_guide_hi"/>
+      <site site="knee_flex_guide_lo"/>
+      <geom geom="knee_pulley" sidesite="knee_side_front"/>
+      <site site="knee_flex_insert"/>
+    </spatial>
+    <spatial name="knee_extensor">
+      <site site="knee_ext_spool"/>
+      <site site="knee_ext_hip_idler"/>
+      <site site="knee_ext_guide_hi"/>
+      <site site="knee_ext_guide_lo"/>
+      <geom geom="knee_pulley" sidesite="knee_side_back"/>
+      <site site="knee_ext_insert"/>
+    </spatial>
+  </tendon>
+
+  <!-- ================= ACTUATORS (torso motors) =================
+       One motor per tendon. ctrl = spool torque in N*m (0..0.25, PLACEHOLDER).
+       gear = -125 (= -1 / 0.008 m spool radius): negative so the motor can only PULL.
+       In MuJoCo output: actuator_force = spool torque (N*m);
+                         tendon tension = |gear| * actuator_force (N). -->
+  <actuator>
+    <motor name="m_hip_flexor"    tendon="hip_flexor"/>
+    <motor name="m_hip_extensor"  tendon="hip_extensor"/>
+    <motor name="m_knee_flexor"   tendon="knee_flexor"/>
+    <motor name="m_knee_extensor" tendon="knee_extensor"/>
+  </actuator>
+
+  <!-- Sensors: handy for agents who prefer sensordata over raw qpos. -->
+  <sensor>
+    <jointpos name="hip_pos"  joint="hip"/>
+    <jointpos name="knee_pos" joint="knee"/>
+    <tendonpos name="hip_flexor_len"    tendon="hip_flexor"/>
+    <tendonpos name="hip_extensor_len"  tendon="hip_extensor"/>
+    <tendonpos name="knee_flexor_len"   tendon="knee_flexor"/>
+    <tendonpos name="knee_extensor_len" tendon="knee_extensor"/>
+    <actuatorfrc name="m_hip_flexor_frc"    actuator="m_hip_flexor"/>
+    <actuatorfrc name="m_hip_extensor_frc"  actuator="m_hip_extensor"/>
+    <actuatorfrc name="m_knee_flexor_frc"   actuator="m_knee_flexor"/>
+    <actuatorfrc name="m_knee_extensor_frc" actuator="m_knee_extensor"/>
+  </sensor>
+</mujoco>
