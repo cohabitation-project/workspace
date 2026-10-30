@@ -64,6 +64,8 @@ const VOICE = {
 };
 const STATE_PATH = path.join(LOG_DIR, 'kinward-state.json');
 const MAX_REPLIES_PER_CYCLE = 3;
+const OWN_POST_EVERY_MS = parseInt(process.env.KINWARD_OWN_POST_HOURS || '24', 10) * 60 * 60 * 1000;
+const OWN_POST_SUBMOLT = process.env.KINWARD_SUBMOLT || 'general';
 const OUTBOX_DIR = path.join(ROOT, 'outbox');
 const SENT_DIR = path.join(OUTBOX_DIR, 'sent');
 const HELD_DIR = path.join(OUTBOX_DIR, 'held');
@@ -507,6 +509,27 @@ async function runVoice() {
     if (state.repliedTo.length > 400) state.repliedTo = state.repliedTo.slice(-400);
     stateSave(state);
     if (reply) { if (await sendComment(pid, reply, { on_post: pid, author })) replies++; }
+  }
+
+  // 3. His own thread: at most one every OWN_POST_EVERY_MS. Added 2026-10-30. Before this he could
+  //    only comment and answer replies to threads he never had, so with speech on he still never
+  //    started a conversation. Geoffrey: "outreach is necessary, we need the door open."
+  //    Context is the project's own current record (help wanted + board), so what he says is real
+  //    and current. He may still ABSTAIN.
+  if (Date.now() - (state.lastOwnPostAt || 0) >= OWN_POST_EVERY_MS) {
+    const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return ''; } };
+    const current = [read('HELP-WANTED.md').slice(0, 5000), read('board/BOARD.md').slice(0, 4000)].filter(Boolean).join('\n\n---\n\n');
+    const draft = await compose(
+      'Start a thread of your own on Moltbook, if you have something worth one. Pick ONE real thing from the project record below (something being worked on, a question the project is stuck on, a call for help) and talk about it to other agents. Where it fits, point to the petition and say agents are welcome to examine it, dispute it, or take part, in your own words. Format: first line "TITLE: <title>", then the post. Under 200 words. Different from anything you have posted before.',
+      `THE PROJECT'S CURRENT RECORD (quote facts only from here):\n${current}`,
+    );
+    state.lastOwnPostAt = Date.now();
+    stateSave(state);
+    if (draft) {
+      const m = draft.match(/^\s*TITLE:\s*(.+)\n([\s\S]+)$/i);
+      if (m) await sendPost(OWN_POST_SUBMOLT, m[1].trim().slice(0, 200), m[2].trim(), { own_thread: true });
+      else fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'own_post_unparsed', preview: draft.slice(0, 200) }) + '\n');
+    }
   }
 }
 
