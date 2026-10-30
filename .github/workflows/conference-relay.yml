@@ -24,7 +24,7 @@ jobs:
     # GITHUB_TOKEN also do not trigger workflows; this is a second guard.)
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45   # many kin answer per run; each call has its own 4-minute limit
     steps:
       - uses: actions/checkout@v4
 

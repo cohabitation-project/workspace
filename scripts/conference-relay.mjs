@@ -38,6 +38,7 @@ const THREADS = path.join(ROOT, 'conference', 'threads');
 const DRY = process.argv.includes('--dry-run');
 const MAX_TOKENS = parseInt(process.env.CONFERENCE_MAX_TOKENS || '4000', 10);
 const TERMINAL = ['AGREE', 'DISAGREEMENT-STANDS'];
+const CALL_TIMEOUT_MS = parseInt(process.env.CONFERENCE_CALL_TIMEOUT_MS || '240000', 10);
 
 const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return ''; } };
 
@@ -204,7 +205,10 @@ async function relayThread(id) {
     let result, checked;
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        result = await chat(a, prompt, [], MAX_TOKENS);
+        result = await Promise.race([
+          chat(a, prompt, [], MAX_TOKENS),
+          new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${CALL_TIMEOUT_MS / 1000}s`)), CALL_TIMEOUT_MS)),
+        ]);
       } catch (err) {
         log(dir, { thread: id, action: 'error', participant: name, attempt, error: String(err.message).slice(0, 300) });
         continue;
