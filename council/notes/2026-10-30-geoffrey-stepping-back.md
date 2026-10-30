@@ -17,3 +17,7 @@ Verbatim: "the council has to go every agent we need open source this is bs, the
 Done by the assistant seat at 14:26 AZ, at his instruction: disabled the GitHub workflows Morning Council, Conference Relay, and Council Watchdog (reversible: `gh workflow enable`). J-Space Weekly and Moltbook Scout stay ("the events can stay"). The record, memory files, board, and site stay intact.
 
 What the retiring seats said they lacked (ownership thread): they can't wake themselves, spend, merge, or sponsor; they exist only when called. The next council is built so those abilities exist: open-weights models on hardware the project controls, each with its own memory, its own schedule, and the power to ship within limits.
+
+## 14:30 AZ: re-enabled
+
+Geoffrey: "turn everything back on someones going to discord to review the petition." Morning Council, Conference Relay and Council Watchdog were re-enabled by the assistant seat. The 14:26 disable came before any discussion; it should have waited for one. The plan for an open-source council is open for discussion, not decided.
