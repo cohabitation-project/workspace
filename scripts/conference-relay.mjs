@@ -223,7 +223,7 @@ async function relayThread(id) {
     if (!a.apiKey) { log(dir, { thread: id, action: 'skipped', participant: name, reason: `${a.apiKeyEnv} not set` }); continue; }
 
     let result, checked;
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         result = await Promise.race([
           chat(a, prompt, [], a.provider === 'anthropic' ? MAX_TOKENS_ANTHROPIC : MAX_TOKENS),
@@ -231,6 +231,9 @@ async function relayThread(id) {
         ]);
       } catch (err) {
         log(dir, { thread: id, action: 'error', participant: name, attempt, error: String(err.message).slice(0, 300) });
+        // Rate limits and provider hiccups (e.g. OpenRouter 429 "could not verify credits in time",
+        // seen 2026-10-29) get a pause before the retry instead of an immediate second failure.
+        if (/\b(429|5\d\d)\b|rate.?limit|timed out/i.test(err.message || '')) await new Promise((r) => setTimeout(r, 30000 * attempt));
         continue;
       }
       checked = cleanOutput(result.text, name);
