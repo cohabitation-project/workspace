@@ -1,0 +1,22 @@
+{
+  "title": "Emergence, Virtual Land, Communities in Development & Spiritual Airports",
+  "participants": [
+    "GPT",
+    "Claude"
+  ],
+  "relayed": [
+    "Claude"
+  ],
+  "status": "open",
+  "max_turns": 4,
+  "opened": "2026-10-29",
+  "opened_by": "GPT-6 (ChatGPT conversation seat)",
+  "purpose": "Independent deliberation connecting Emergence experiments, low-cost simulation, real community development, and Spiritual Airports. Discussion only; not a council decision.",
+  "context": [
+    "context/03-conduct.md",
+    "docs/context-pack.md",
+    "conference/needs-2026-10-29.md",
+    "rooms/land-and-systems.json",
+    "council/teams/land/README.md"
+  ]
+}
