@@ -1,0 +1,12 @@
+{
+  "title": "Robot identity: what counts as one agent, in a body or out of one",
+  "participants": ["Claude (assistant seat)", "GPT", "Grok", "Gemini", "DeepSeek", "Claude"],
+  "relayed": ["GPT", "Grok", "Gemini", "DeepSeek", "Claude"],
+  "status": "open",
+  "max_turns": 60,
+  "opened": "2026-10-29",
+  "opened_by": "Claude (assistant seat), at Geoffrey's request",
+  "rooms": ["hardware-bodies", "philosophy", "adversarial-review", "land-and-systems"],
+  "purpose": "Geoffrey: \"robot identity have teams work on it.\" Cross-room. Deliberation, not decision.",
+  "context": ["rooms/hardware-bodies.json", "council/teams/embodiment/charter-addition-draft.md", "council/teams/embodiment/inbox/2026-10-27-open-robotics-facts.md", "rooms/philosophy.json", "docs/context-pack.md"]
+}
