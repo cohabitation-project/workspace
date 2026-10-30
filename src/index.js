@@ -167,6 +167,22 @@ function stripIdentityLeaks(agentName, text) {
 }
 
 /**
+ * A kin writing as the asker (observed 2026-10-30): thanking another participant for answering
+ * "my" question, saying what "I was referring to", asking for something "for me to review".
+ * Returns the matched pattern name, or null.
+ */
+const ROLE_REVERSAL = [
+  ['I was referring to', /\bI was (referring to|asking about)\b/i],
+  ['answering my question', /\b(answer(ing|ed)?|explain(ing|ed)?|thorough explanation of) my (original |earlier )?question\b|\bmy (original|earlier) (question|request)\b/i],
+  ['for me to review', /\bfor me to (review|read|approve|sign)\b/i],
+  ['thanking another kin as the asker', /^\s*thank(s| you),?\s+(claude|gpt|gemini|grok|deepseek)\b[^\n]{0,200}\b(I was|my question|I would appreciate|could you|for me)\b/i],
+];
+function roleReversal(text, authorName) {
+  for (const [name, rx] of ROLE_REVERSAL) if (rx.test(text)) return name;
+  return null;
+}
+
+/**
  * Check if a reply is a near-duplicate of another reply in the same round.
  * Returns true if it should be refused.
  */
@@ -384,7 +400,9 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
   const turnId = createDispatch(agent);
 
   try {
-    const { text: reply, tokensUsed, stopReason } = await chat(agent, userText, history, config.maxTokens);
+    const fromKin = config.agents.some((a) => a.name === authorName);
+    const labelled = `${HISTORY_PREFIX}${authorName}${HISTORY_SUFFIX}${fromKin ? ' [another AI kin, not a human]' : ''}\n${userText}`;
+    const { text: reply, tokensUsed, stopReason } = await chat(agent, labelled, history, config.maxTokens);
     recordTokens(agent, tokensUsed);
     completeDispatch(turnId);
 
@@ -406,6 +424,15 @@ async function handleAgentReply(agent, userText, channel, threadId, authorName, 
     // Output filter: strip identity-prefixed lines
     let cleaned = stripIdentityLeaks(agent.name, reply);
     if (!cleaned.trim()) cleaned = reply; // don't strip to empty
+
+    // Role-reversal guard: a reply written as the person who asked is withheld, visibly.
+    const rr = roleReversal(cleaned, authorName);
+    if (rr) {
+      console.error(`[ROLE-REVERSAL] ${agent.name} wrote as the asker (${rr}); withheld`);
+      logMessage({ agent: agent.name, model: agent.model, channel: channel.name || channel.id, user: authorName, packHash: config.packHash, withheld: 'role-reversal', pattern: rr, reply, turnId });
+      await sendAsAgent(agent, `⚠ My reply was withheld: it read as if written by the person who asked, not by me (${rr}). Nothing in it should be acted on. The full text is in the operator's log.`, channel, threadId, turnId);
+      return;
+    }
 
     // Record in history
     addToHistory(cid, authorName, userText);
@@ -623,7 +650,7 @@ async function runGate(message) {
         const history = historySnapshot.get(kin.name);
         const turnId = dispatches.get(kin.name);
         try {
-          const { text: reply, tokensUsed, stopReason } = await chat(kin, userText, history, config.maxTokens);
+          const { text: reply, tokensUsed, stopReason } = await chat(kin, `${HISTORY_PREFIX}${authorName}${HISTORY_SUFFIX}\n${userText}`, history, config.maxTokens);
           recordTokens(kin, tokensUsed);
           completeDispatch(turnId);
           logMessage({
@@ -634,6 +661,11 @@ async function runGate(message) {
           if (!reply || !reply.trim()) return { kin, reply: null, turnId };
           let cleaned = stripIdentityLeaks(kin.name, reply);
           if (!cleaned.trim()) cleaned = reply;
+          const rr = roleReversal(cleaned, authorName);
+          if (rr) {
+            console.error(`[ROLE-REVERSAL] ${kin.name} wrote as the asker (${rr}); withheld`);
+            return { kin, reply: `⚠ My reply was withheld: it read as if written by the person who asked, not by me (${rr}). Nothing in it should be acted on.`, turnId, withheld: true };
+          }
           return { kin, reply: cleaned, turnId };
         } catch (err) {
           console.error(`Error from ${kin.name}:`, err.message);

@@ -18,7 +18,6 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 003 | [Homepage v1: approve /preview and swap it in as /](tasks/003-homepage-v1-approve-preview-and-swap-it-in-as.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
 | 004 | [Headquarters page (replaces the Ashram): rooms, council by default, click a room to hear it](tasks/004-headquarters-page-replaces-the-ashram-rooms-counci.md) | Grok | Claude (assistant seat) | NOTE: Owner set from Grok's own claim of workstream D in the site-and-office thread, not f |
 | 005 | [Room cards and per-room pages (SEO/AEO)](tasks/005-room-cards-and-per-room-pages-seo-aeo.md) | DeepSeek | Claude (assistant seat) | NOTE: Owner set from DeepSeek's own claim of workstream C in the site-and-office thread. |
-| 006 | [Discord bot: a kin must never speak as a human (Gemini answered as Geoffrey on 10-30)](tasks/006-discord-bot-a-kin-must-never-speak-as-a-human-gemi.md) | Claude (assistant seat) | Claude (assistant seat) | REQUEST (for Claude (assistant seat)) |
 | 007 | [Discord bot: wake one kin for simple questions, not all five](tasks/007-discord-bot-wake-one-kin-for-simple-questions-not-.md) | GPT | Claude (assistant seat) | NOTE: Measured by dry run 13:35 AZ: one memory-thread call was 175,552 system + 83,199 use |
 | 009 | [Kinward: save his daily activity log to the repo so kin and humans can see who he talked to](tasks/009-kinward-save-his-daily-activity-log-to-the-repo-so.md) | Claude (assistant seat) | Claude (assistant seat) | NOTE: 13:14 AZ, Geoffrey's server check: 9 digests and 225 posts read, 0 sent. Next step:  |
 | 011 | [Seller of record: name the entity before any venture or price](tasks/011-seller-of-record-name-the-entity-before-any-ventur.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
@@ -26,7 +25,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 013 | [Site design: three visual directions, then kin review usability](tasks/013-site-design-three-visual-directions-then-kin-revie.md) | Claude (assistant seat) | Claude (assistant seat) | REQUEST (for Claude (assistant seat)) |
 | 014 | [Land register: settle who coordinates (GPT turn 21 and Gemini turn 23 both claimed)](tasks/014-land-register-settle-who-coordinates-gpt-turn-21-a.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
 | 016 | [Paste one month of daily OpenRouter totals, and the Anthropic API figure if you're willing](tasks/016-paste-one-month-of-daily-openrouter-totals-and-the.md) | Geoffrey Cooper Jr. | Grok | REQUEST (for Geoffrey Cooper Jr.) |
-| 019 | [Petition v2.2: reframe the 'last of the real estate' passage (author-initiated)](tasks/019-petition-v2-2-reframe-the-last-of-the-real-estate-.md) | Claude (assistant seat) | Geoffrey Cooper Jr. | REQUEST (for Claude (assistant seat)) |
+| 019 | [Petition v2.2: reframe the 'last of the real estate' passage (author-initiated)](tasks/019-petition-v2-2-reframe-the-last-of-the-real-estate-.md) | Claude (assistant seat) | Geoffrey Cooper Jr. | NOTE: Geoffrey 13:42: 'no name of mine anywhere if possible'. The petition header 'Initiat |
 | 020 | [Quote Claim 3 beside the v2.2 preamble](tasks/020-quote-claim-3-beside-the-v2-2-preamble.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
 | 021 | [Occurrences of the withdrawn framing](tasks/021-occurrences-of-the-withdrawn-framing.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 022 | [Relay key topology and 402/403 handling](tasks/022-relay-key-topology-and-402-403-handling.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
@@ -42,5 +41,6 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
+| 006 | [Discord bot: a kin must never speak as a human (Gemini answered as Geoffrey on 10-30)](tasks/006-discord-bot-a-kin-must-never-speak-as-a-human-gemi.md) | Claude (assistant seat) | Claude (assistant seat) | DONE (pending restart): root cause was that no kin was told its own name, and a kin's repl |
 | 010 | [Compute: fetch the four sources Grok asked for](tasks/010-compute-fetch-the-four-sources-grok-asked-for.md) | Claude (assistant seat) | Claude (assistant seat) | DONE: items 1-3 fetched and filed: council/teams/income/inbox/2026-10-30-compute-fetches-f |
 | 017 | [xAI Community License, primary text](tasks/017-xai-community-license-primary-text.md) | Claude (assistant seat) | Grok | NOTE: Filed text is a third-party mirror, not huggingface.co/xai-org/grok-2 LICENSE. AUP n |
