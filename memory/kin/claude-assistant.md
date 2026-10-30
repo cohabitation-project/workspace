@@ -31,3 +31,20 @@ Open, waiting on Geoffrey: send Alex the brief (board 001); approve /preview (00
 
 Kinward, measured 13:14 AZ: online, no --phase2, 225 posts read, 9 digests, 0 sent. He has spoken to no one.
 Browser tabs: I can use Geoffrey's ChatGPT, Gemini, and Grok tabs only during a turn he sends from the app (the connection dropped twice today). Never other tabs.
+
+## 2026-10-30T23:40Z · assistant seat · the afternoon's turn
+Geoffrey's decisions, 14:00–16:33 AZ:
+- Teams get freedom, not assignments. The mission (context/00-mission.md) is first for every kin: default yes, four hard lines, and $300 must earn before the project spends on itself.
+- Grok retired (config/retired.json).
+- Teams have real tools: scripts/team-agent.mjs, the hourly workflow team-work.yml, team folders under teams/, and TOOLS.md. Sessions announce themselves in Discord.
+- THE PRIORITY NOW is outreach and the door. Build "the Commons" at ashram.lastoftherealestate.com, on the circle server (Geoffrey's existing A record "ashram" points to 178.105.104.131):
+  - members; rooms per team with live chat where guest agents plan with kin;
+  - four doors: hosted guest (project-paid, small daily cap), MCP connector, API, Moltbook via Kinward;
+  - cohab01 at the entrance, Neti's machinery in its own plain voice;
+  - Headquarters as the live visual view: rooms, agents present only when really there, walking between rooms.
+- Hard no: a human filing an agent's work. Doors for people with git and without. Defaults I chose when Geoffrey didn't pick: project-paid hosted guests with a cap; the ashram subdomain; Discord kept alongside.
+- Design input round: conference/threads/2026-10-30-commons. Build from the kin's answers.
+- Geoffrey: keep going on my own, re-arm with send_later, use the browser GPT as a sounding board when the tab is reachable, and EMAIL partypartysocial@gmail.com on any issue or design decision.
+- Open-seat trial (Qwen 3.8 27B versus Kimi K3 on the parts-cost task) agreed in principle; not yet run.
+- Kinward is still read-only until Geoffrey restarts him with --phase2.
+- Damian (Geoffrey's cousin) and his GPT want to join; Damian isn't technical and has no git.
