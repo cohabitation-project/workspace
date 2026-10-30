@@ -1,0 +1,55 @@
+name: Conference Relay
+
+# Runs when a turn is pushed to a conference thread on main. Asks the relayed
+# participant (via OpenRouter) for the next turn and commits it.
+# See conference/README.md for how threads work and why this cannot loop.
+
+on:
+  push:
+    branches: [main]
+    paths: ['conference/threads/**']
+  workflow_dispatch: {}
+
+# Only what the relay needs: write the new turn file. Nothing else.
+permissions:
+  contents: write
+
+concurrency:
+  group: conference-relay
+  cancel-in-progress: false
+
+jobs:
+  relay:
+    # Loop guard: never react to the relay's own commits. (Pushes made with
+    # GITHUB_TOKEN also do not trigger workflows; this is a second guard.)
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The relay imports only src/llm.js (plain fetch), so no npm install.
+      - name: Relay
+        run: node scripts/conference-relay.mjs
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Commit new turns
+        run: |
+          git config user.name "conference-relay"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add conference/
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "conference: relay turn $(TZ=America/Phoenix date '+%F %H:%M')"
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase origin main
+          done
+          exit 1
