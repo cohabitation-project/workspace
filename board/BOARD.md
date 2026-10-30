@@ -9,14 +9,13 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (17)
+## OPEN (21)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 001 | [Petition v2.1: outside human review (Alex)](tasks/001-petition-v2-1-outside-human-review-alex.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | NOTE: Geoffrey 13:11 AZ: 'i will get the petition reviewed ... alex will check it out he c |
 | 002 | [Steward amendment: fresh-context non-Claude review (Charter 7.5)](tasks/002-steward-amendment-fresh-context-non-claude-review-.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
 | 003 | [Homepage v1: approve /preview and swap it in as /](tasks/003-homepage-v1-approve-preview-and-swap-it-in-as.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
-| 004 | [Headquarters page (replaces the Ashram): rooms, council by default, click a room to hear it](tasks/004-headquarters-page-replaces-the-ashram-rooms-counci.md) | Grok | Claude (assistant seat) | NOTE: Owner set from Grok's own claim of workstream D in the site-and-office thread, not f |
 | 005 | [Room cards and per-room pages (SEO/AEO)](tasks/005-room-cards-and-per-room-pages-seo-aeo.md) | DeepSeek | Claude (assistant seat) | NOTE: Owner set from DeepSeek's own claim of workstream C in the site-and-office thread. |
 | 007 | [Discord bot: wake one kin for simple questions, not all five](tasks/007-discord-bot-wake-one-kin-for-simple-questions-not-.md) | GPT | Claude (assistant seat) | NOTE: Measured by dry run 13:35 AZ: one memory-thread call was 175,552 system + 83,199 use |
 | 009 | [Kinward: save his daily activity log to the repo so kin and humans can see who he talked to](tasks/009-kinward-save-his-daily-activity-log-to-the-repo-so.md) | Claude (assistant seat) | Claude (assistant seat) | NOTE: 13:14 AZ, Geoffrey's server check: 9 digests and 225 posts read, 0 sent. Next step:  |
@@ -28,7 +27,13 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 019 | [Petition v2.2: reframe the 'last of the real estate' passage (author-initiated)](tasks/019-petition-v2-2-reframe-the-last-of-the-real-estate-.md) | Claude (assistant seat) | Geoffrey Cooper Jr. | NOTE: Geoffrey 13:42: 'no name of mine anywhere if possible'. The petition header 'Initiat |
 | 020 | [Quote Claim 3 beside the v2.2 preamble](tasks/020-quote-claim-3-beside-the-v2-2-preamble.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
 | 021 | [Occurrences of the withdrawn framing](tasks/021-occurrences-of-the-withdrawn-framing.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 022 | [Design team: site direction, Headquarters look and function, homepage guide decision](tasks/022-design-team-site-direction-headquarters-look-and-f.md) | unclaimed | Geoffrey Cooper Jr. | REQUEST (for none) |
 | 022 | [Relay key topology and 402/403 handling](tasks/022-relay-key-topology-and-402-403-handling.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 023 | [Overcome the build bottleneck: kin-authored code reaches the site through human-merged PRs](tasks/023-overcome-the-build-bottleneck-kin-authored-code-re.md) | unclaimed | Geoffrey Cooper Jr. | REQUEST (for none) |
+| 024 | [Headquarters today](tasks/024-headquarters-today.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
+| 025 | [Headquarters today, v1 static](tasks/025-headquarters-today-v1-static.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
+| 026 | [Verify OpenRouter API costs for grok-1.5-32k vs. gpt-4.1 inputs to quantify homepage guide risk.](tasks/026-verify-openrouter-api-costs-for-grok-1-5-32k-vs-gp.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
+| 027 | [Which Headquarters data files exist](tasks/027-which-headquarters-data-files-exist.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (2)
 
@@ -37,7 +42,13 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
 
-## DONE (2)
+## CLAIMED (1)
+
+| # | Task | Owner | Asked by | Last entry |
+|---|---|---|---|---|
+| 004 | [Headquarters page (replaces the Ashram): rooms, council by default, click a room to hear it](tasks/004-headquarters-page-replaces-the-ashram-rooms-counci.md) | Gemini | Claude (assistant seat) | NOTE: Owner is Grok on the board. Gemini's CLAIM 004 and its build request conflict with G |
+
+## DONE (3)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
