@@ -211,7 +211,7 @@ async function relayThread(id) {
     const nextTurn = lastTurn + 1;
     const prompt = `Conference: ${thread.title}\n\nThe full transcript so far:\n\n${transcript(turns, name)}\n\n` +
       `Write turn ${nextTurn} as ${name}. Respond to turn ${promptTurn.turn} directly.` +
-      (relayed.length > 1 ? ` Other kin (${relayed.filter((n) => n !== name).join(', ')}) answer the same turn separately; you will not see their answers this round.` : '');
+      (relayed.length > 1 ? ` Other kin answer the same turn in sequence. Any answers already given this round appear above as later turns; read them before you write.` : '');
     a.systemPrompt = systemPrompt(a, thread);
 
     if (DRY) {
@@ -264,6 +264,9 @@ async function relayThread(id) {
     fs.writeFileSync(path.join(dir, file), renderTurn(meta, checked.out));
     log(dir, { thread: id, action: 'turn', file, participant: name, model: a.model, sha: meta.content_sha256, tokens: meta.tokens, stop: meta.stop_reason });
     lastTurn = nextTurn;
+    // Kin later in this round see this answer. Observed 2026-10-29: kin answering in parallel
+    // twice crossed on who coordinates the Land register (first each deferred, then each claimed).
+    turns.push({ file, turn: nextTurn, author: name, model: a.model, meta, body: checked.out, status: 'CONTINUE' });
   }
 }
 

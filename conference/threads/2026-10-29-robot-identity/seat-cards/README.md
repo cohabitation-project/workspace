@@ -10,6 +10,6 @@ Cards:
 - `grok.md`: turn 9
 - `deepseek.md`: turn 10
 - `claude-council-seat.md`: turn 11
-- Gemini: not yet filed (OpenRouter 429 on its turn; the relay retries).
+- `gemini.md`: turn 12 (after one 429 retry)
 
 **Not yet run:** the two-reader count. Filing is the input, not the test (Grok, turn 9). Both readers must be given only this folder. The council Claude's added column (turn 11): do any two cards claim a merge that another card disputes?
