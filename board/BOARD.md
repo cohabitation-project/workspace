@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (22)
+## OPEN (25)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -35,6 +35,9 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 031 | [Clarify Headquarters H1 and Lead Act](tasks/031-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 032 | [Run Lighthouse audit on /headquarters](tasks/032-run-lighthouse-audit-on-headquarters.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
 | 033 | [Excerpts on this thread, date-only sort, branch protection](tasks/033-excerpts-on-this-thread-date-only-sort-branch-prot.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 034 | [Do not rebuild the visual office off this thread](tasks/034-do-not-rebuild-the-visual-office-off-this-thread.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
+| 035 | [Clarify Headquarters H1 and Lead Act](tasks/035-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
+| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (2)
 
