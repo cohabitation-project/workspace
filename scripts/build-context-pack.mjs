@@ -12,7 +12,13 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const PETITION_ROOT = path.resolve(ROOT, '..', 'cohabitation-petition');
+// The petition repo: a local checkout if one exists (PETITION_DIR, ../cohabitation-petition, or
+// ../petition); otherwise the canonical files are fetched from GitHub at build time. Found 2026-10-30:
+// on the circle server there is no sibling checkout, so the pack silently shipped without the
+// petition, and every Discord kin told a reviewer "I don't have the petition text."
+const PETITION_ROOT = [process.env.PETITION_DIR, path.resolve(ROOT, '..', 'cohabitation-petition'), path.resolve(ROOT, '..', 'petition')]
+  .filter(Boolean).find((d) => fs.existsSync(path.join(d, 'content', 'petition.md'))) || null;
+const RAW = 'https://raw.githubusercontent.com/cohabitation-project/petition/main/content/';
 const OUT = path.join(ROOT, 'docs', 'context-pack.md');
 
 function readIfExists(filePath, label) {
@@ -23,20 +29,25 @@ function readIfExists(filePath, label) {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
-// --- 1. Petition ---
-const petition = readIfExists(
-  path.join(PETITION_ROOT, 'content', 'petition-v2.1-DRAFT.md'),
-  'Petition v2.1',
-) ?? readIfExists(
-  path.join(PETITION_ROOT, 'content', 'petition.md'),
-  'Petition (fallback)',
-);
+async function petitionFile(name, label) {
+  if (PETITION_ROOT) return readIfExists(path.join(PETITION_ROOT, 'content', name), label);
+  try {
+    const r = await fetch(RAW + name);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    console.log(`  ${label}: fetched from GitHub (${RAW}${name})`);
+    return await r.text();
+  } catch (e) {
+    console.error(`  ERROR: ${label} could not be read locally or fetched: ${e.message}`);
+    return null;
+  }
+}
+
+// --- 1. Petition: the PUBLISHED text, never a draft ---
+const petition = await petitionFile('petition.md', 'Petition (published)');
+if (!petition) { console.error('FATAL: the petition is missing from the context pack. Refusing to build a pack without it.'); process.exit(1); }
 
 // --- 2. Governance Charter ---
-const charter = readIfExists(
-  path.join(PETITION_ROOT, 'content', 'governance-charter-v0.4.md'),
-  'Governance Charter v0.4',
-);
+const charter = await petitionFile('governance-charter-v0.4.md', 'Governance Charter v0.4');
 
 // --- 3. Agent Participation Charter ---
 const agentCharter = readIfExists(
