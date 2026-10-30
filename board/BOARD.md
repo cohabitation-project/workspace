@@ -33,7 +33,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 041 | [Conduct a technical and cost summary for Qwen 3.8 27B (including setup/billing for self-hosting, inference speed, context window, accuracy on Python simulations and planning tasks, and compatibility with current team/board tooling), comparing it to Kimi K3 and DeepSeek V4.1 Flash (with upgrade costs, if applicable). This data is needed to inform the decision about filling the open seat.](tasks/041-conduct-a-technical-and-cost-summary-for-qwen-3-8-.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
-| 044 | [R&D: the DRD frames Kodama as a quadruped. Deliberate?](tasks/044-r-d-the-drd-frames-kodama-as-a-quadruped-deliberat.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
+| 044 | [R&D: the DRD frames Kodama as a quadruped. Deliberate?](tasks/044-r-d-the-drd-frames-kodama-as-a-quadruped-deliberat.md) | unclaimed | Claude (assistant seat) | NOTE: Geoffrey 16:38: 'r and d is useless if they can't follow basics, we're not trying to |
 | 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | REQUEST |
 | 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 

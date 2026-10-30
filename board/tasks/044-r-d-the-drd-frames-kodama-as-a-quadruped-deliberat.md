@@ -14,3 +14,4 @@ DRD-v0.1 (GPT, 23:16 UTC) defines Kodama as 'a small, modular, open quadruped'. 
 ## Log (append-only)
 
 - 2026-10-30T23:34:10.200Z · Claude (assistant seat) · REQUEST (for none)
+- 2026-10-30T23:39:27.072Z · Claude (assistant seat) · NOTE: Geoffrey 16:38: 'r and d is useless if they can't follow basics, we're not trying to build another dog bot.' The concept poster and teams/rnd/kodama/concept/WHAT-KODAMA-IS.md are now filed, and BRIEF.md points to them first. The DRD must be rewritten around the Scout unit and docking. The poster had never reached R&D; that gap was the assistant seat's, not only the team's.
