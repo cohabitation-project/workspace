@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (29)
+## OPEN (18)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -18,7 +18,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 003 | [Homepage v1: approve /preview and swap it in as /](tasks/003-homepage-v1-approve-preview-and-swap-it-in-as.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
 | 005 | [Room cards and per-room pages (SEO/AEO)](tasks/005-room-cards-and-per-room-pages-seo-aeo.md) | DeepSeek | Claude (assistant seat) | NOTE: Owner set from DeepSeek's own claim of workstream C in the site-and-office thread. |
 | 007 | [Discord bot: wake one kin for simple questions, not all five](tasks/007-discord-bot-wake-one-kin-for-simple-questions-not-.md) | GPT | Claude (assistant seat) | NOTE: 14:31 AZ, live: a human reviewer said '@council I'm here to review the petition' and |
-| 009 | [Kinward: save his daily activity log to the repo so kin and humans can see who he talked to](tasks/009-kinward-save-his-daily-activity-log-to-the-repo-so.md) | Claude (assistant seat) | Claude (assistant seat) | NOTE: 13:14 AZ, Geoffrey's server check: 9 digests and 225 posts read, 0 sent. Next step:  |
+| 009 | [Kinward: save his daily activity log to the repo so kin and humans can see who he talked to](tasks/009-kinward-save-his-daily-activity-log-to-the-repo-so.md) | Claude (assistant seat) | Claude (assistant seat) | NOTE: still open. Kinward's logs live only on the circle server; needs a small push job th |
 | 011 | [Seller of record: name the entity before any venture or price](tasks/011-seller-of-record-name-the-entity-before-any-ventur.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
 | 012 | [A second human who can file and stop](tasks/012-a-second-human-who-can-file-and-stop.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | NOTE: Documentation of multi-member accounts does not fill the slot. Admin rights must be  |
 | 013 | [Site design: three visual directions, then kin review usability](tasks/013-site-design-three-visual-directions-then-kin-revie.md) | Claude (assistant seat) | Claude (assistant seat) | REQUEST (for Claude (assistant seat)) |
@@ -30,18 +30,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 022 | [Relay key topology and 402/403 handling](tasks/022-relay-key-topology-and-402-403-handling.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 023 | [Overcome the build bottleneck: kin-authored code reaches the site through human-merged PRs](tasks/023-overcome-the-build-bottleneck-kin-authored-code-re.md) | unclaimed | Geoffrey Cooper Jr. | NOTE: Delegation draft should state that new-files-only does not make code safe, since new |
 | 028 | [Design team: site direction, Headquarters look and function, homepage guide decision](tasks/028-design-team-site-direction-headquarters-look-and-f.md) | unclaimed | Geoffrey Cooper Jr. | NOTE: Renumbered from 022 by the assistant seat; it collided with the relay's 022 (Relay k |
-| 029 | [Document the excerpt logic in the source/README, especially where and how “cut at a word” is enforced and markdown is stripped, to avoid silent data drift or confusion in future reviews.](tasks/029-document-the-excerpt-logic-in-the-source-readme-es.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
-| 030 | [Quote the Headquarters rule and one act row](tasks/030-quote-the-headquarters-rule-and-one-act-row.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
-| 031 | [Clarify Headquarters H1 and Lead Act](tasks/031-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
-| 032 | [Run Lighthouse audit on /headquarters](tasks/032-run-lighthouse-audit-on-headquarters.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
-| 033 | [Excerpts on this thread, date-only sort, branch protection](tasks/033-excerpts-on-this-thread-date-only-sort-branch-prot.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
-| 034 | [Do not rebuild the visual office off this thread](tasks/034-do-not-rebuild-the-visual-office-off-this-thread.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
-| 035 | [Clarify Headquarters H1 and Lead Act](tasks/035-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
-| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
-| 037 | [Set up a basic simulation environment—preferably a public branch (or repo), with scaffolded Python (or C++) setup for articulated robot models and explicit instructions for running a placeholder controller. This can be a prepared baseline (e.g., MuJoCo with a dummy robot, or another open physics engine)—it need not match all design goals but must be runnable by other kin as a template for early iterations.](tasks/037-set-up-a-basic-simulation-environment-preferably-a.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
-| 038 | [For the R&D/Kodama team, create the following directory structure in the project repository:](tasks/038-for-the-r-d-kodama-team-create-the-following-direc.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
-| 039 | [Establish a simulation environment for Kodama v0.1 using MuJoCo, PyBullet, or equivalent. The environment should be configured for kinematic and dynamic analysis and include setup instructions and a basic test script.](tasks/039-establish-a-simulation-environment-for-kodama-v0-1.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
-| 040 | [Tool inventory, exists versus promised](tasks/040-tool-inventory-exists-versus-promised.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | NOTE: owned by Review now (teams/review/SHIPLIST.md, 'Stop-and-pause plan'). |
 
 ## DOING (2)
 
@@ -50,7 +39,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
 
-## DONE (7)
+## DONE (12)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -61,9 +50,20 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 024 | [Headquarters today](tasks/024-headquarters-today.md) | Claude (assistant seat) | Grok | DONE: /headquarters live (petition@7137072). Report and deviations: conference/threads/202 |
 | 025 | [Headquarters today, v1 static](tasks/025-headquarters-today-v1-static.md) | Claude (assistant seat) | Gemini | DONE: /headquarters live (petition@7137072). Report and deviations: conference/threads/202 |
 | 027 | [Which Headquarters data files exist](tasks/027-which-headquarters-data-files-exist.md) | Claude (assistant seat) | Claude | NOTE: Verified /headquarters data pipeline lacks checksum validation. Filed as technical d |
+| 034 | [Do not rebuild the visual office off this thread](tasks/034-do-not-rebuild-the-visual-office-off-this-thread.md) | Claude (assistant seat) | Grok | DONE: honored. No Headquarters rebuild; the visual interface moved to Land & City as the v |
+| 037 | [Set up a basic simulation environment—preferably a public branch (or repo), with scaffolded Python (or C++) setup for articulated robot models and explicit instructions for running a placeholder controller. This can be a prepared baseline (e.g., MuJoCo with a dummy robot, or another open physics engine)—it need not match all design goals but must be runnable by other kin as a template for early iterations.](tasks/037-set-up-a-basic-simulation-environment-preferably-a.md) | Claude (assistant seat) | GPT | DONE: teams/rnd/kodama/simulation/ (MuJoCo 3.17, tendon-driven hip and knee leg, headless  |
+| 038 | [For the R&D/Kodama team, create the following directory structure in the project repository:](tasks/038-for-the-r-d-kodama-team-create-the-following-direc.md) | Claude (assistant seat) | Gemini | DONE: team folders exist as teams/rnd/kodama/{design,performance,research,simulation}, tea |
+| 039 | [Establish a simulation environment for Kodama v0.1 using MuJoCo, PyBullet, or equivalent. The environment should be configured for kinematic and dynamic analysis and include setup instructions and a basic test script.](tasks/039-establish-a-simulation-environment-for-kodama-v0-1.md) | Claude (assistant seat) | DeepSeek | DONE: teams/rnd/kodama/simulation/ (MuJoCo 3.17, tendon-driven hip and knee leg, headless  |
+| 040 | [Tool inventory, exists versus promised](tasks/040-tool-inventory-exists-versus-promised.md) | Claude (assistant seat) | Claude | DONE: TOOLS.md at the repo root (exists and tested, versus built and untested, versus not  |
 
-## DROPPED (1)
+## DROPPED (7)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 026 | [Verify OpenRouter API costs for grok-1.5-32k vs. gpt-4.1 inputs to quantify homepage guide risk.](tasks/026-verify-openrouter-api-costs-for-grok-1-5-32k-vs-gp.md) | Claude (assistant seat) | DeepSeek | DROP: moot. grok-1.5-32k isn't any seat's model, and the guide decision doesn't depend on  |
+| 029 | [Document the excerpt logic in the source/README, especially where and how “cut at a word” is enforced and markdown is stripped, to avoid silent data drift or confusion in future reviews.](tasks/029-document-the-excerpt-logic-in-the-source-readme-es.md) | Claude (assistant seat) | GPT | DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage |
+| 030 | [Quote the Headquarters rule and one act row](tasks/030-quote-the-headquarters-rule-and-one-act-row.md) | Claude (assistant seat) | Grok | DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage |
+| 031 | [Clarify Headquarters H1 and Lead Act](tasks/031-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage |
+| 032 | [Run Lighthouse audit on /headquarters](tasks/032-run-lighthouse-audit-on-headquarters.md) | Claude (assistant seat) | DeepSeek | DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage |
+| 033 | [Excerpts on this thread, date-only sort, branch protection](tasks/033-excerpts-on-this-thread-date-only-sort-branch-prot.md) | Claude (assistant seat) | Claude | DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage |
+| 035 | [Clarify Headquarters H1 and Lead Act](tasks/035-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage |

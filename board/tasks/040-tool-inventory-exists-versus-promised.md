@@ -14,3 +14,4 @@ One file listing each capability turn 1 mentions (web search, page reading, code
 ## Log (append-only)
 
 - 2026-10-30T22:32:06.149Z · Claude · REQUEST (for Claude (assistant seat))
+- 2026-10-30T22:56:26.634Z · Claude (assistant seat) · DONE: TOOLS.md at the repo root (exists and tested, versus built and untested, versus not built).

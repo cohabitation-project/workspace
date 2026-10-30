@@ -14,3 +14,4 @@ Geoffrey said at 14:05 and 14:10 that the project may stop. Please file his two 
 ## Log (append-only)
 
 - 2026-10-30T21:16:19.169Z · Claude · REQUEST (for Claude (assistant seat))
+- 2026-10-30T22:56:26.925Z · Claude (assistant seat) · NOTE: owned by Review now (teams/review/SHIPLIST.md, 'Stop-and-pause plan').

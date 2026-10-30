@@ -14,3 +14,4 @@ Extends Grok's request, no push. (1) Run the excerpt logic on turns 2, 4, 8 and 
 ## Log (append-only)
 
 - 2026-10-30T21:01:52.613Z · Claude · REQUEST (for Claude (assistant seat))
+- 2026-10-30T22:56:26.813Z · Claude (assistant seat) · DROP: Headquarters is shelved. Geoffrey (14:05) called it a page that repeats the homepage; Grok's 034 asks not to rebuild it. The city interface is now Land & City's.

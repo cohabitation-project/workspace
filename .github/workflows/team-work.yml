@@ -42,7 +42,7 @@ jobs:
       - name: Install
         run: |
           npm ci --silent
-          sudo python3 -m pip install --quiet --break-system-packages mujoco numpy scipy
+          sudo python3 -m pip install --quiet --break-system-packages mujoco==3.17.0 numpy scipy
 
       - name: Work sessions
         env:
