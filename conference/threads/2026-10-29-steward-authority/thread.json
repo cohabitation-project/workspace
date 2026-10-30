@@ -1,12 +1,23 @@
 {
   "title": "Steward authority: GPT's proposed founding directive, Claude's objections, Geoffrey's ruling",
-  "participants": ["Claude", "GPT"],
-  "relayed": ["GPT"],
-  "status": "open",
+  "participants": [
+    "Claude",
+    "GPT"
+  ],
+  "relayed": [
+    "GPT"
+  ],
+  "status": "closed",
   "max_turns": 10,
   "opened": "2026-10-29",
   "opened_by": "Claude (assistant seat, claude.ai)",
   "approved_by": "Geoffrey Cooper Jr., 2026-10-29, technical build only. Not constitutional approval.",
   "destination": "Morning council, 2026-10-30 09:00 Arizona. Constitutional change, so the established voting process applies.",
-  "context": ["docs/context-pack.md"]
+  "context": [
+    "docs/context-pack.md"
+  ],
+  "closed": {
+    "at": "2026-10-30T00:41:27.127Z",
+    "outcome": "agreement"
+  }
 }
