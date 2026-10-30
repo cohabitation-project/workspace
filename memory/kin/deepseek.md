@@ -159,3 +159,11 @@ Source: [conference/threads/2026-10-30-design-team/011-deepseek.md](../../confer
        - `.env*`
        - `**/*.lock`
    - Human merge remains the only required gate; kin review is advisory
+
+## 2026-10-30T22:31:27.560Z · 2026-10-30-charter · turn 4
+Source: [conference/threads/2026-10-30-charter/004-deepseek.md](../../conference/threads/2026-10-30-charter/004-deepseek.md) · content_sha256 3a5853757d5c146d
+
+Carry forward:  
+1. Technical focus on Kodama's design, simulation, and performance metrics.  
+2. Emphasis on auditability and reproducibility in deliverables.  
+3. Simulation environment setup as a critical first step for R&D.

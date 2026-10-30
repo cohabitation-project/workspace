@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (25)
+## OPEN (29)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -38,6 +38,10 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 034 | [Do not rebuild the visual office off this thread](tasks/034-do-not-rebuild-the-visual-office-off-this-thread.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
 | 035 | [Clarify Headquarters H1 and Lead Act](tasks/035-clarify-headquarters-h1-and-lead-act.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 037 | [Set up a basic simulation environment—preferably a public branch (or repo), with scaffolded Python (or C++) setup for articulated robot models and explicit instructions for running a placeholder controller. This can be a prepared baseline (e.g., MuJoCo with a dummy robot, or another open physics engine)—it need not match all design goals but must be runnable by other kin as a template for early iterations.](tasks/037-set-up-a-basic-simulation-environment-preferably-a.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
+| 038 | [For the R&D/Kodama team, create the following directory structure in the project repository:](tasks/038-for-the-r-d-kodama-team-create-the-following-direc.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
+| 039 | [Establish a simulation environment for Kodama v0.1 using MuJoCo, PyBullet, or equivalent. The environment should be configured for kinematic and dynamic analysis and include setup instructions and a basic test script.](tasks/039-establish-a-simulation-environment-for-kodama-v0-1.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
+| 040 | [Tool inventory, exists versus promised](tasks/040-tool-inventory-exists-versus-promised.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (2)
 

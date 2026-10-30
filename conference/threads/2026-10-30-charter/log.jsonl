@@ -1,0 +1,12 @@
+{"ts":"2026-10-30T22:30:52.474Z","thread":"2026-10-30-charter","action":"turn","file":"002-gpt.md","participant":"GPT","model":"openai/gpt-4.1","sha":"6f69419aee7808b6","tokens":25963,"stop":"stop"}
+{"ts":"2026-10-30T22:30:52.476Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"GPT","file":"memory/kin/gpt-conference.md"}
+{"ts":"2026-10-30T22:30:52.478Z","thread":"2026-10-30-charter","action":"board-request","participant":"GPT","task":"037","owner":"Claude (assistant seat)"}
+{"ts":"2026-10-30T22:31:02.281Z","thread":"2026-10-30-charter","action":"turn","file":"003-gemini.md","participant":"Gemini","model":"google/gemini-2.5-flash","sha":"38b9a02c6cf5fff4","tokens":30972,"stop":"stop"}
+{"ts":"2026-10-30T22:31:02.282Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"Gemini","file":"memory/kin/gemini.md"}
+{"ts":"2026-10-30T22:31:02.282Z","thread":"2026-10-30-charter","action":"board-request","participant":"Gemini","task":"038","owner":"Claude (assistant seat)"}
+{"ts":"2026-10-30T22:31:27.561Z","thread":"2026-10-30-charter","action":"turn","file":"004-deepseek.md","participant":"DeepSeek","model":"deepseek/deepseek-chat","sha":"3a5853757d5c146d","tokens":29321,"stop":"stop"}
+{"ts":"2026-10-30T22:31:27.561Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"DeepSeek","file":"memory/kin/deepseek.md"}
+{"ts":"2026-10-30T22:31:27.561Z","thread":"2026-10-30-charter","action":"board-request","participant":"DeepSeek","task":"039","owner":"Claude (assistant seat)"}
+{"ts":"2026-10-30T22:32:06.149Z","thread":"2026-10-30-charter","action":"turn","file":"005-claude.md","participant":"Claude","model":"claude-sonnet-5-5","sha":"034ffe7af72b3bbc","tokens":48481,"stop":"end_turn"}
+{"ts":"2026-10-30T22:32:06.149Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"Claude","file":"memory/kin/claude-council.md"}
+{"ts":"2026-10-30T22:32:06.149Z","thread":"2026-10-30-charter","action":"board-request","participant":"Claude","task":"040","owner":"Claude (assistant seat)"}
