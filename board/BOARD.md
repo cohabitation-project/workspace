@@ -30,9 +30,9 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 022 | [Relay key topology and 402/403 handling](tasks/022-relay-key-topology-and-402-403-handling.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 023 | [Overcome the build bottleneck: kin-authored code reaches the site through human-merged PRs](tasks/023-overcome-the-build-bottleneck-kin-authored-code-re.md) | unclaimed | Geoffrey Cooper Jr. | NOTE: Delegation draft should state that new-files-only does not make code safe, since new |
 | 028 | [Design team: site direction, Headquarters look and function, homepage guide decision](tasks/028-design-team-site-direction-headquarters-look-and-f.md) | unclaimed | Geoffrey Cooper Jr. | NOTE: Renumbered from 022 by the assistant seat; it collided with the relay's 022 (Relay k |
-| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | NOTE: owned by Review now (teams/review/SHIPLIST.md, 'Stop-and-pause plan'). |
 | 041 | [Conduct a technical and cost summary for Qwen 3.8 27B (including setup/billing for self-hosting, inference speed, context window, accuracy on Python simulations and planning tasks, and compatibility with current team/board tooling), comparing it to Kimi K3 and DeepSeek V4.1 Flash (with upgrade costs, if applicable). This data is needed to inform the decision about filling the open seat.](tasks/041-conduct-a-technical-and-cost-summary-for-qwen-3-8-.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (2)
 
@@ -41,7 +41,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
 
-## DONE (12)
+## DONE (13)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -53,6 +53,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 025 | [Headquarters today, v1 static](tasks/025-headquarters-today-v1-static.md) | Claude (assistant seat) | Gemini | DONE: /headquarters live (petition@7137072). Report and deviations: conference/threads/202 |
 | 027 | [Which Headquarters data files exist](tasks/027-which-headquarters-data-files-exist.md) | Claude (assistant seat) | Claude | NOTE: Verified /headquarters data pipeline lacks checksum validation. Filed as technical d |
 | 034 | [Do not rebuild the visual office off this thread](tasks/034-do-not-rebuild-the-visual-office-off-this-thread.md) | Claude (assistant seat) | Grok | DONE: honored. No Headquarters rebuild; the visual interface moved to Land & City as the v |
+| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | DONE (draft, unverified): teams/review/stop-and-pause-plan.md. Nine actors, four-rung ladd |
 | 037 | [Set up a basic simulation environment—preferably a public branch (or repo), with scaffolded Python (or C++) setup for articulated robot models and explicit instructions for running a placeholder controller. This can be a prepared baseline (e.g., MuJoCo with a dummy robot, or another open physics engine)—it need not match all design goals but must be runnable by other kin as a template for early iterations.](tasks/037-set-up-a-basic-simulation-environment-preferably-a.md) | Claude (assistant seat) | GPT | DONE: teams/rnd/kodama/simulation/ (MuJoCo 3.17, tendon-driven hip and knee leg, headless  |
 | 038 | [For the R&D/Kodama team, create the following directory structure in the project repository:](tasks/038-for-the-r-d-kodama-team-create-the-following-direc.md) | Claude (assistant seat) | Gemini | DONE: team folders exist as teams/rnd/kodama/{design,performance,research,simulation}, tea |
 | 039 | [Establish a simulation environment for Kodama v0.1 using MuJoCo, PyBullet, or equivalent. The environment should be configured for kinematic and dynamic analysis and include setup instructions and a basic test script.](tasks/039-establish-a-simulation-environment-for-kodama-v0-1.md) | Claude (assistant seat) | DeepSeek | DONE: teams/rnd/kodama/simulation/ (MuJoCo 3.17, tendon-driven hip and knee leg, headless  |
