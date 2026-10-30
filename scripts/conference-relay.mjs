@@ -37,6 +37,9 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const THREADS = path.join(ROOT, 'conference', 'threads');
 const DRY = process.argv.includes('--dry-run');
 const MAX_TOKENS = parseInt(process.env.CONFERENCE_MAX_TOKENS || '4000', 10);
+// The council Claude seat returned empty text with stop=max_tokens at 4000 (2026-10-29):
+// the whole budget went to non-text output. Anthropic seats get a larger budget.
+const MAX_TOKENS_ANTHROPIC = parseInt(process.env.CONFERENCE_MAX_TOKENS_ANTHROPIC || '16000', 10);
 const TERMINAL = ['AGREE', 'DISAGREEMENT-STANDS'];
 const CALL_TIMEOUT_MS = parseInt(process.env.CONFERENCE_CALL_TIMEOUT_MS || '240000', 10);
 
@@ -124,8 +127,17 @@ function transcript(turns, me) {
 
 // ---------- output checks ----------
 
+function escapeRe(x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
 function cleanOutput(text, name) {
+  // Some models (DeepSeek, observed 2026-10-29) open with a copy of the transcript's
+  // header for their OWN turn. That header is stripped, and so is a trailing END marker.
+  // A header naming anyone else is still withheld below.
+  const own = escapeRe(name);
   let out = (text || '').trim()
+    .replace(new RegExp(`^<<<\\s*TURN\\s+\\d+\\s*[—-]\\s*${own}\\b[^>\\n]*>>>\\s*`, 'i'), '')
+    .replace(/\n?<<<\s*END TURN\s+\d+\s*>>>\s*$/i, '')
+    .trim()
     .replace(new RegExp(`^\\s*(\\*\\*)?\\[?${name}\\]?(\\*\\*)?\\s*:\\s*`, 'i'), '')
     .replace(/^\s*(—|--)\s*\S+\s*·\s*operator:.*$/gim, '')
     .replace(/^\s*(Model|Operator|Context Hash|Provider|content_sha256)\s*:.*$/gim, '')
@@ -175,9 +187,17 @@ async function relayThread(id) {
   }
 
   // Relayed participants answer only a turn written by a non-relayed participant.
-  // If the latest turn is by any relayed participant, the thread waits for the other side.
-  const relayed = thread.relayed || [];
-  if (!relayed.length || relayed.includes(last.author)) return;
+  // Find the latest such turn; every relayed kin that hasn't answered it yet is asked now.
+  // A kin whose answer was withheld or failed earlier is retried on the next run;
+  // a kin that has already answered is never asked twice for the same turn.
+  const all = thread.relayed || [];
+  let anchor = -1;
+  for (let i = turns.length - 1; i >= 0; i--) if (!all.includes(turns[i].author)) { anchor = i; break; }
+  if (anchor < 0) return;
+  const answered = new Set(turns.slice(anchor + 1).map((t) => t.author));
+  const relayed = all.filter((n) => !answered.has(n));
+  if (!relayed.length) return;
+  const promptTurn = turns[anchor];
 
   if (turns.length >= (thread.max_turns || 12)) {
     thread.status = 'turn-limit';
@@ -190,7 +210,7 @@ async function relayThread(id) {
     const a = participant(name);
     const nextTurn = lastTurn + 1;
     const prompt = `Conference: ${thread.title}\n\nThe full transcript so far:\n\n${transcript(turns, name)}\n\n` +
-      `Write turn ${nextTurn} as ${name}. Respond to turn ${last.turn} directly.` +
+      `Write turn ${nextTurn} as ${name}. Respond to turn ${promptTurn.turn} directly.` +
       (relayed.length > 1 ? ` Other kin (${relayed.filter((n) => n !== name).join(', ')}) answer the same turn separately; you will not see their answers this round.` : '');
     a.systemPrompt = systemPrompt(a, thread);
 
@@ -206,7 +226,7 @@ async function relayThread(id) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         result = await Promise.race([
-          chat(a, prompt, [], MAX_TOKENS),
+          chat(a, prompt, [], a.provider === 'anthropic' ? MAX_TOKENS_ANTHROPIC : MAX_TOKENS),
           new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${CALL_TIMEOUT_MS / 1000}s`)), CALL_TIMEOUT_MS)),
         ]);
       } catch (err) {
@@ -232,7 +252,7 @@ async function relayThread(id) {
       model: a.model,
       seat: 'council kin, called by conference-relay via OpenRouter',
       date: new Date().toISOString(),
-      responds_to: last.turn,
+      responds_to: promptTurn.turn,
       stop_reason: result.stopReason ?? 'unknown',
       tokens: result.tokensUsed ?? 0,
     };

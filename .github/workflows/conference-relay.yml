@@ -26,7 +26,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45   # many kin answer per run; each call has its own 4-minute limit
     steps:
+      # Check out the latest main, not the commit that triggered the run. Runs queue
+      # behind each other, and a queued run must see turns the previous run committed,
+      # or it would ask the same kin again.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-node@v4
         with:
