@@ -105,6 +105,12 @@ if (agentCharter) {
 }
 sections.push('---', '', bindingConstraints, '');
 sections.push('---', '', '# Ledger Index', '', ledgerIndex, '');
+// Help wanted and the board (2026-10-30): so kin in Discord can tell newcomers what human help is
+// needed, and know what work is open. Both are read from the repo at pack-build time.
+for (const [title, rel] of [['Help wanted (quote from this; never invent asks)', 'HELP-WANTED.md'], ['The board (shared to-do list)', 'board/BOARD.md']]) {
+  const p = path.join(ROOT, rel);
+  if (fs.existsSync(p)) sections.push('---', '', `# ${title}`, '', fs.readFileSync(p, 'utf-8'), '');
+}
 
 const pack = sections.join('\n');
 

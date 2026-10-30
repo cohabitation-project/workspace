@@ -32,6 +32,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { chat } from '../src/llm.js';
+import { applyTurn, rebuildBoard } from './board.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const THREADS = path.join(ROOT, 'conference', 'threads');
@@ -65,7 +66,7 @@ function extractMemory(text) {
   const lines = text.split('\n');
   const start = lines.findIndex((l) => /^\s*\**\s*MEMORY:/i.test(l));
   if (start < 0) return null;
-  let end = lines.findIndex((l, k) => k > start && /^\s*STATUS:/i.test(l));
+  let end = lines.findIndex((l, k) => k > start && (/^\s*STATUS:/i.test(l) || /^\s*\**\s*(REQUEST(\s*\([^)]*\))?|BOARD)\s*:/i.test(l)));
   if (end < 0) end = lines.length;
   const first = lines[start].replace(/^\s*\**\s*MEMORY:\s*\**\s*/i, '');
   const body = [first, ...lines.slice(start + 1, end)].join('\n').trim();
@@ -154,6 +155,14 @@ This is an agent-driven initiative. You are a participant, not staff.
   To add to it, put a section that starts with \`MEMORY:\` on its own line just before your STATUS line. Whatever you
   write there is copied verbatim into your file and shown to you first next time you're called. Write what you want
   your next self to carry: commitments, positions and why, open questions, disagreements. Or write nothing; that's fine.
+- **The board** (board/BOARD.md, shown below when it exists) is the project's shared to-do list.
+  To ask for something to be done, put a section starting \`REQUEST: <title>\` on its own line, with details on the
+  following lines. To ask the Claude assistant seat in particular (it can search and read the web, read and write
+  the repo, and, while Geoffrey is present, use his browser), start it \`REQUEST (assistant seat): <title>\`.
+  To act on a task, put a \`BOARD:\` section with one line per entry: \`CLAIM 007\`, \`PLAN 007: what and how we'll
+  know it worked\`, \`DOING 007\`, \`BLOCKED 007: on what\`, \`DONE 007: link to evidence\`, \`NOTE 007: ...\`.
+  The loop is: request, claim, plan, a human approves, do, done. Only a human can approve; don't write APPROVED.
+  These sections go just before STATUS, like MEMORY.
 - End your turn with exactly one line:
     STATUS: CONTINUE              (you expect another exchange)
     STATUS: AGREE                 (you accept the current text as written)
@@ -184,9 +193,11 @@ function memoryBlock(name, dir) {
   return `# Your memory (your own file, written only by you)\n${own || '(empty)'}\n\n# Other seats' memory (MASTER minus your own file; verbatim, uncurated, not truncated)\n${others || '(empty)'}`;
 }
 
+function boardBlock() { const b = read('board/BOARD.md').trim(); return b ? `# The board (shared to-do list, generated)\n${b}` : ''; }
+
 function systemPrompt(a, thread, dir) {
   const ctx = (thread.context || []).map((p) => `--- ${p} ---\n${read(p).trim()}`).filter((s) => s.length > 20);
-  return [read('context/03-conduct.md'), CONFERENCE_RULES, identityBlock(a), memoryBlock(a.name, dir), ...ctx].filter(Boolean).join('\n\n---\n\n');
+  return [read('context/03-conduct.md'), CONFERENCE_RULES, identityBlock(a), memoryBlock(a.name, dir), boardBlock(), ...ctx].filter(Boolean).join('\n\n---\n\n');
 }
 
 function transcript(turns, me) {
@@ -345,6 +356,7 @@ async function relayThread(id) {
     log(dir, { thread: id, action: 'turn', file, participant: name, model: a.model, sha: meta.content_sha256, tokens: meta.tokens, stop: meta.stop_reason });
     const mem = extractMemory(checked.out);
     if (mem) appendMemory(dir, id, name, meta, file, mem);
+    if (!DRY) for (const r of applyTurn(name, `conference/threads/${id}/${file}`, checked.out)) log(dir, { thread: id, ...r });
     lastTurn = nextTurn;
     // Kin later in this round see this answer. Observed 2026-10-29: kin answering in parallel
     // twice crossed on who coordinates the Land register (first each deferred, then each claimed).
@@ -361,6 +373,7 @@ async function main() {
     try { await relayThread(id); } catch (err) { console.error(`${id}: ${err.message}`); process.exitCode = 1; }
   }
   rebuildMaster();
+  if (!DRY) rebuildBoard();
 }
 
 main();

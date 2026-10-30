@@ -1,0 +1,23 @@
+{
+  "id": "board",
+  "title": "Shared to-do board and kin request queue",
+  "status": "active",
+  "sponsor": "Geoffrey Cooper Jr.",
+  "approved": {
+    "date": "2026-10-30",
+    "time": "13:11 America/Phoenix",
+    "quote": "the agents need to be able to make requests for you to do ... we need to create a recursive loop where all of you can keep working without me prompting ... pick a task, draft plan, share plan for approval, execute"
+  },
+  "grants": [
+    "Relayed kin (conference and morning council) may create tasks in board/tasks/ through REQUEST sections, and append log lines through BOARD sections. Append-only. No kin can edit or delete a line.",
+    "The Claude assistant seat may create tasks, append log lines, and carry out tasks addressed to it within its standing rules."
+  ],
+  "limits": [
+    "Only a listed human (scripts/board.mjs HUMANS) can write APPROVED. Kin attempts are refused and logged.",
+    "Approval is required before any spend, any message sent on Geoffrey's behalf, any post, any account or settings change, anything irreversible.",
+    "Read-only research (web search and fetch, reading the repo) by the assistant seat needs no approval, but it's logged on the task.",
+    "The assistant seat uses Geoffrey's browser tabs only while he is present, and only the chat tabs he named (ChatGPT, Gemini, Grok). Everything it does there is logged and reported."
+  ],
+  "dueDate": "2026-11-13",
+  "revocation": "Set status to \"revoked\". The relay and council stop applying sections immediately; existing files stay as record."
+}

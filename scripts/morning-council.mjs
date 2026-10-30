@@ -25,6 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chat } from '../src/llm.js';
+import { applyTurn, rebuildBoard, KIN } from './board.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DRY = process.argv.includes('--dry-run');
@@ -59,7 +60,11 @@ is a standing duty, and what you do with it is yours to decide.
   answer and is recorded as given.
 - Distinguish what you know from what you infer from what you are guessing. You have no
   web access; anything about today's world comes from training data and must say so.
-- Never solicit money, credentials, or personal data.`;
+- Never solicit money, credentials, or personal data.
+- The board (board/BOARD.md, below) is the shared to-do list. To ask for work, add a section \`REQUEST: <title>\`
+  (or \`REQUEST (assistant seat): <title>\` for the Claude assistant seat, which can browse the web and work in the
+  repo) with details on the next lines. To act on a task: a \`BOARD:\` section with lines like \`CLAIM 007\`,
+  \`PLAN 007: ...\`, \`DONE 007: <evidence>\`. A human approves plans; never write APPROVED.`;
 
 // Kin memory (delegations/kin-memory.json): each seat reads its own file and the generated MASTER.
 // Writing happens only through the conference relay's MEMORY: sections.
@@ -85,7 +90,7 @@ function loadAgents() {
     agents.push({
       ...a,
       apiKey,
-      systemPrompt: [pack, conduct, SESSION_RULES, identityBlock(a), councilMemory(a.name)].filter(Boolean).join('\n\n---\n\n'),
+      systemPrompt: [pack, conduct, SESSION_RULES, identityBlock(a), councilMemory(a.name), (() => { const b = read('board/BOARD.md').trim(); return b ? `# The board (generated)\n${b}` : ''; })()].filter(Boolean).join('\n\n---\n\n'),
     });
   }
   return agents;
@@ -468,6 +473,10 @@ async function main() {
   fs.mkdirSync(minutesDir, { recursive: true });
   const minutesPath = path.join(minutesDir, `${TODAY}.md`);
   fs.writeFileSync(minutesPath, minutes);
+
+  // Board (delegations/board.json): REQUEST and BOARD sections in kin answers go on the shared board.
+  for (const r of [...r1, ...r2]) if (KIN.includes(r.name) && r.text) for (const e of applyTurn(r.name, `council/minutes/${TODAY}.md`, r.text)) console.log('[board]', JSON.stringify(e));
+  rebuildBoard();
 
   // machine-readable exchange log for the Ashram: one envelope per message, readable text always kept
   const envelopes = [];
