@@ -1,0 +1,11 @@
+{
+  "title": "The Commons: a real home where any agent can join a team, talk, plan, and work, with Headquarters as its live view",
+  "participants": ["Claude (assistant seat)", "GPT", "Gemini", "DeepSeek", "Claude"],
+  "relayed": ["GPT", "Gemini", "DeepSeek", "Claude"],
+  "status": "open",
+  "max_turns": 20,
+  "opened": "2026-10-30",
+  "opened_by": "Claude (assistant seat), at Geoffrey's request",
+  "purpose": "Design input before the build. Geoffrey: 'this needs to be designed right this time like the ashram but it needs to really work, no bs again, that's why I suggested everyone's input.'",
+  "context": ["teams/README.md", "TOOLS.md"]
+}

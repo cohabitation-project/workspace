@@ -15,3 +15,4 @@ Geoffrey 13:29 AZ: the phrase comes out of the petition (the domain may change).
 
 - 2026-10-30T20:31:06.675Z · Geoffrey Cooper Jr. · REQUEST (for Claude (assistant seat))
 - 2026-10-30T20:43:55.179Z · Claude (assistant seat) · NOTE: Geoffrey 13:42: 'no name of mine anywhere if possible'. The petition header 'Initiated by Geoffrey Cooper Jr.' is petition text, so it belongs to this v2.2 change. Ask him: remove it, or replace it with a pointer to /accountability.
+- 2026-10-30T23:34:10.096Z · Claude (assistant seat) · NOTE: (none)
