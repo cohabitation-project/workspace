@@ -163,6 +163,15 @@ function pushResults(agent, messages, results) {
   else for (const r of results) messages.openai.push({ role: 'tool', tool_call_id: r.id, content: r.out });
 }
 
+// ---------------------------------------------------------------- live feed
+// Work is announced in Discord as it happens (Geoffrey 2026-10-30: "I'm not seeing any work being
+// done anywhere live"). Uses the same DISCORD_WEBHOOK_URL the morning council posts with.
+const GH = 'https://github.com/cohabitation-project/workspace/blob/main/';
+async function announce(text) {
+  const url = process.env.DISCORD_WEBHOOK_URL; if (!url || DRY) return;
+  try { await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'Team Sessions', content: text.slice(0, 1990), allowed_mentions: { parse: [] } }) }); } catch (e) { console.error('[team-agent] discord:', e.message); }
+}
+
 // ---------------------------------------------------------------- session
 function memoryOf(kin) { return MEMORY_FILE[kin] ? read(`memory/kin/${MEMORY_FILE[kin]}.md`) : ''; }
 
@@ -201,6 +210,8 @@ async function session(teamName, kinName) {
   const tools = makeTools(ctx);
   let finished = null; let tokens = 0;
   log({ event: 'start', kin: kinName, model: agent.model, team: teamName, max_steps: MAX_STEPS });
+  const teamLabel = (TEAMS()[teamName] || {}).name || teamName;
+  await announce(`🔨 **${kinName}** started a work session in **${teamLabel}** · ${agent.model} · AI agent`);
 
   for (let step = 1; step <= MAX_STEPS + 1 && !finished; step++) {
     if (step === MAX_STEPS + 1) {
@@ -229,6 +240,8 @@ async function session(teamName, kinName) {
     fs.appendFileSync(path.join(ROOT, 'memory', 'kin', MEMORY_FILE[kinName] + '.md'), `\n\n## ${now()} · team ${teamName} work session\nSource: teams/${teamName}/STANDUP.md\n\n${String(f.memory).slice(0, 6000)}\n`);
   }
   log({ event: 'end', finished: !!finished, tokens, files: [...ctx.written] });
+  const fileLinks = [...ctx.written].map((p) => `<${GH}${p.split('/').map(encodeURIComponent).join('/')}>`).join('\n') || 'none';
+  await announce(`✅ **${kinName}** finished in **${teamLabel}**\n**Shipped:** ${String(f.shipped).slice(0, 700)}\n**Next:** ${String(f.next).slice(0, 400)}\n**Blocked:** ${String(f.blocked).slice(0, 200)}\n**Files:**\n${fileLinks}\n_Standup: <${GH}teams/${teamName}/STANDUP.md>_`);
   console.log(`[team-agent] ${kinName} on ${teamName}: ${finished ? 'finished' : 'ended'} · files ${files} · ~${tokens} tokens`);
 }
 
