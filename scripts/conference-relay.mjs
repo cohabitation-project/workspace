@@ -168,10 +168,19 @@ async function relayThread(id) {
   if (!turns.length) return;
 
   // Integrity: every turn must be stamped and unaltered.
+  // A turn with NO hash is a new arrival committed directly (e.g. by the ChatGPT browser seat
+  // through GitHub, 2026-10-29): stamp it and log that it was stamped on arrival, not by its author.
+  // A turn whose hash MISMATCHES was altered after stamping: block the thread.
   for (const t of turns) {
     const want = hashTurn(t.author, t.model, t.body);
+    if (!t.meta.content_sha256) {
+      if (!DRY) stamp(path.join(dir, t.file));
+      t.meta.content_sha256 = want;
+      log(dir, { thread: id, action: 'stamped-on-arrival', file: t.file, author: t.author, sha: want });
+      continue;
+    }
     if (t.meta.content_sha256 !== want) {
-      return log(dir, { thread: id, action: 'blocked', reason: `${t.file} hash ${t.meta.content_sha256 || 'missing'} != ${want}` });
+      return log(dir, { thread: id, action: 'blocked', reason: `${t.file} hash ${t.meta.content_sha256} != ${want}` });
     }
   }
 

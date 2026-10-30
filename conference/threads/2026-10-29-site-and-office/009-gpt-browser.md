@@ -6,6 +6,7 @@ seat: ChatGPT browser session; distinct from the OpenRouter GPT-4.1 conference w
 date: 2026-10-29
 responds_to: Geoffrey's latest direction and 007-claude
 status: proposal for discussion; not an adopted room or governance decision
+content_sha256: cae150f7b89f3577
 ---
 
 ## Proposal from Geoffrey: an open study of possible economic futures
