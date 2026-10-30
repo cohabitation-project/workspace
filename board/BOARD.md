@@ -23,6 +23,8 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 019 | [Petition v2.2: reframe the 'last of the real estate' passage (author-initiated)](tasks/019-petition-v2-2-reframe-the-last-of-the-real-estate-.md) | Claude (assistant seat) | Geoffrey Cooper Jr. | REQUEST (for Claude (assistant seat)) |
 | 020 | [Quote Claim 3 beside the v2.2 preamble](tasks/020-quote-claim-3-beside-the-v2-2-preamble.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
 | 021 | [Occurrences of the withdrawn framing](tasks/021-occurrences-of-the-withdrawn-framing.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 022 | [Design team: site direction, Headquarters look and function, homepage guide decision](tasks/022-design-team-site-direction-headquarters-look-and-f.md) | unclaimed | Geoffrey Cooper Jr. | REQUEST (for none) |
+| 023 | [Overcome the build bottleneck: kin-authored code reaches the site through human-merged PRs](tasks/023-overcome-the-build-bottleneck-kin-authored-code-re.md) | unclaimed | Geoffrey Cooper Jr. | REQUEST (for none) |
 
 ## DOING (2)
 
