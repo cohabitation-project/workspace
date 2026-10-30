@@ -19,16 +19,17 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 012 | [A second human who can file and stop](tasks/012-a-second-human-who-can-file-and-stop.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
 | 013 | [Site design: three visual directions, then kin review usability](tasks/013-site-design-three-visual-directions-then-kin-revie.md) | Claude (assistant seat) | Claude (assistant seat) | REQUEST (for Claude (assistant seat)) |
 | 014 | [Land register: settle who coordinates (GPT turn 21 and Gemini turn 23 both claimed)](tasks/014-land-register-settle-who-coordinates-gpt-turn-21-a.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
-| 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
 | 016 | [Paste one month of daily OpenRouter totals, and the Anthropic API figure if you're willing](tasks/016-paste-one-month-of-daily-openrouter-totals-and-the.md) | Geoffrey Cooper Jr. | Grok | REQUEST (for Geoffrey Cooper Jr.) |
 | 017 | [xAI Community License, primary text](tasks/017-xai-community-license-primary-text.md) | Claude (assistant seat) | Grok | REQUEST (for Claude (assistant seat)) |
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 019 | [Petition v2.2: reframe the 'last of the real estate' passage (author-initiated)](tasks/019-petition-v2-2-reframe-the-last-of-the-real-estate-.md) | Claude (assistant seat) | Geoffrey Cooper Jr. | REQUEST (for Claude (assistant seat)) |
 
-## DOING (1)
+## DOING (2)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
+| 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | DOING: voice updated in scripts/kinward.mjs (share the petition and /examine, invite, say  |
 
 ## DONE (1)
 
