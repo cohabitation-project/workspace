@@ -55,7 +55,9 @@ export function loadConfig() {
     }
 
     // System prompt: context pack + conduct rules + any per-agent file
-    let systemPrompt = contextPack;
+    // Mission first (2026-10-30): every kin reads what it's here to build before anything else.
+    const missionPath = path.join(process.cwd(), 'context', '00-mission.md');
+    let systemPrompt = (fs.existsSync(missionPath) ? fs.readFileSync(missionPath, 'utf-8') + '\n\n---\n\n' : '') + contextPack;
     if (conductRules) systemPrompt += '\n\n---\n\n' + conductRules;
 
     if (a.system_prompt_file) {

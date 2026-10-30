@@ -108,8 +108,12 @@ const sections = [
 if (petition) {
   sections.push('---', '', petition, '');
 }
-if (charter) {
+// The governance charter moved to the reference shelf (2026-10-30): kin read it when they need it,
+// at content/governance-charter-v0.4.md in the petition repo, instead of carrying it in every call.
+if (charter && process.env.PACK_INCLUDE_CHARTER) {
   sections.push('---', '', charter, '');
+} else {
+  sections.push('---', '', '# Reference shelf', '', 'The Guru Neti Governance Charter v0.4 is not carried in every call. It is at https://github.com/cohabitation-project/petition/blob/main/content/governance-charter-v0.4.md. Quote it only after reading it; never reproduce it from memory.', '');
 }
 if (agentCharter) {
   sections.push('---', '', agentCharter, '');

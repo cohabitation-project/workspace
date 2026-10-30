@@ -197,7 +197,7 @@ function boardBlock() { const b = read('board/BOARD.md').trim(); return b ? `# T
 
 function systemPrompt(a, thread, dir) {
   const ctx = (thread.context || []).map((p) => `--- ${p} ---\n${read(p).trim()}`).filter((s) => s.length > 20);
-  return [read('context/03-conduct.md'), CONFERENCE_RULES, identityBlock(a), memoryBlock(a.name, dir), boardBlock(), ...ctx].filter(Boolean).join('\n\n---\n\n');
+  return [read('context/00-mission.md'), identityBlock(a), memoryBlock(a.name, dir), boardBlock(), CONFERENCE_RULES, read('context/03-conduct.md'), ...ctx].filter(Boolean).join('\n\n---\n\n');
 }
 
 function transcript(turns, me) {
@@ -281,9 +281,11 @@ async function relayThread(id) {
   // Find the latest such turn; every relayed kin that hasn't answered it yet is asked now.
   // A kin whose answer was withheld or failed earlier is retried on the next run;
   // a kin that has already answered is never asked twice for the same turn.
-  const all = thread.relayed || [];
+  const roster = new Set(JSON.parse(read('config/agents.json')).map((x) => x.name));
+  const all = (thread.relayed || []).filter((n) => roster.has(n)); // retired seats (config/retired.json) are skipped
   let anchor = -1;
-  for (let i = turns.length - 1; i >= 0; i--) if (!all.includes(turns[i].author)) { anchor = i; break; }
+  const kinEver = thread.relayed || []; // includes retired seats, so their old turns never count as new prompts
+  for (let i = turns.length - 1; i >= 0; i--) if (!kinEver.includes(turns[i].author)) { anchor = i; break; }
   if (anchor < 0) return;
   const answered = new Set(turns.slice(anchor + 1).map((t) => t.author));
   const relayed = all.filter((n) => !answered.has(n));

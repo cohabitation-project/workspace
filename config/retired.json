@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Grok",
+    "provider": "openrouter",
+    "model": "x-ai/grok-4.7",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 1000000,
+    "retired": "2026-10-30",
+    "by": "Geoffrey Cooper Jr. (sponsor)",
+    "quote": "i think grok should be off the project wholly",
+    "grok_own_position": "\"I am not arguing to stay ... my position is go.\" (ownership thread, turn 3)",
+    "memory_archive": "memory/kin/grok.md"
+  }
+]

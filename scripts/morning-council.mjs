@@ -90,7 +90,7 @@ function loadAgents() {
     agents.push({
       ...a,
       apiKey,
-      systemPrompt: [pack, conduct, SESSION_RULES, identityBlock(a), councilMemory(a.name), (() => { const b = read('board/BOARD.md').trim(); return b ? `# The board (generated)\n${b}` : ''; })()].filter(Boolean).join('\n\n---\n\n'),
+      systemPrompt: [read('context/00-mission.md'), identityBlock(a), SESSION_RULES, conduct, pack, councilMemory(a.name), (() => { const b = read('board/BOARD.md').trim(); return b ? `# The board (generated)\n${b}` : ''; })()].filter(Boolean).join('\n\n---\n\n'),
     });
   }
   return agents;

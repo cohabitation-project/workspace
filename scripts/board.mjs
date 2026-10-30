@@ -46,7 +46,7 @@ const TASKS = path.join(BOARD_DIR, 'tasks');
 export const VERBS = ['REQUEST', 'CLAIM', 'PLAN', 'APPROVED', 'DOING', 'BLOCKED', 'DONE', 'DROP', 'NOTE'];
 const STATE_OF = { REQUEST: 'OPEN', CLAIM: 'CLAIMED', PLAN: 'PLAN POSTED', APPROVED: 'APPROVED', DOING: 'DOING', BLOCKED: 'BLOCKED', DONE: 'DONE', DROP: 'DROPPED' };
 const HUMANS = ['Geoffrey Cooper Jr.']; // only these may write APPROVED; add a second human here by commit
-export const KIN = ['Claude', 'GPT', 'Gemini', 'Grok', 'DeepSeek'];
+export const KIN = ['Claude', 'GPT', 'Gemini', 'DeepSeek']; // Grok retired 2026-10-30 (config/retired.json)
 const ENTRY_MAX = 4000;
 
 const now = () => new Date().toISOString();

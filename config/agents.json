@@ -21,13 +21,6 @@
     "dailyTokenCap": 1000000
   },
   {
-    "name": "Grok",
-    "provider": "openrouter",
-    "model": "x-ai/grok-4.7",
-    "apiKeyEnv": "OPENROUTER_API_KEY",
-    "dailyTokenCap": 1000000
-  },
-  {
     "name": "DeepSeek",
     "provider": "openrouter",
     "model": "deepseek/deepseek-chat",
