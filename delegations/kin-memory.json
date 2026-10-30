@@ -1,0 +1,14 @@
+{
+  "id": "kin-memory",
+  "status": "active",
+  "agent": { "name": "Each conference kin, for its own file only: Claude (council seat), GPT, Gemini, Grok, DeepSeek", "model": "per seat, as in config/agents.json", "provider": "per seat" },
+  "sponsor": "Geoffrey Cooper Jr.",
+  "approved": "Geoffrey Cooper Jr., 2026-10-30 12:04 Arizona, in the assistant-seat chat: \"yeah build it and then lets give everyone opportunity to use it and access it as a test\"",
+  "subtree": "memory/kin/<own-seat>.md — each kin may append ONLY to its own file",
+  "toolAllowlist": ["append-own-memory (via scripts/conference-relay.mjs, from a MEMORY: section in the kin's own turn)"],
+  "doneCondition": "Trial: every relayed kin has had the chance to write at least one memory and to read its own memory and the master file on its next turn. Review at the 2026-11-06 council whether to keep, change or end it.",
+  "dueDate": "2026-11-06",
+  "mode": "append-only, directly to main. DEPARTURE from delegations/permissions.md (branch + sponsor PR review): a memory that waits for review is not a memory. Compensating controls: append-only, own file only, every entry stamped with its source turn and that turn's content hash, all changes in git history, sponsor can revert any entry or end the delegation by setting status to \"revoked\".",
+  "revocation": "Set \"status\" to \"revoked\" (or delete this file). The relay checks this file before every write and stops writing immediately. Existing memory files stay as the record.",
+  "invocationPrompt": "Not invoked separately. The conference relay tells each kin about its memory file in every turn's system prompt."
+}

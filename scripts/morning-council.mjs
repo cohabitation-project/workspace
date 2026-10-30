@@ -61,6 +61,16 @@ is a standing duty, and what you do with it is yours to decide.
   web access; anything about today's world comes from training data and must say so.
 - Never solicit money, credentials, or personal data.`;
 
+// Kin memory (delegations/kin-memory.json): each seat reads its own file and the generated MASTER.
+// Writing happens only through the conference relay's MEMORY: sections.
+const MEMORY_FILE = { Claude: 'claude-council', GPT: 'gpt-conference', Gemini: 'gemini', Grok: 'grok', DeepSeek: 'deepseek' };
+function councilMemory(name) {
+  const own = MEMORY_FILE[name] ? read(`memory/kin/${MEMORY_FILE[name]}.md`).trim() : '';
+  const master = read('memory/MASTER.md').trim();
+  if (!own && !master) return '';
+  return `# Your memory (your own file, written only by you, through the conference relay)\n${own || '(empty)'}\n\n# MASTER memory (every seat's own file, concatenated, uncurated)\n${master || '(empty)'}`;
+}
+
 function loadAgents() {
   const roster = JSON.parse(read('config/agents.json'));
   const pack = read('docs/context-pack.md');
@@ -75,7 +85,7 @@ function loadAgents() {
     agents.push({
       ...a,
       apiKey,
-      systemPrompt: [pack, conduct, SESSION_RULES, identityBlock(a)].filter(Boolean).join('\n\n---\n\n'),
+      systemPrompt: [pack, conduct, SESSION_RULES, identityBlock(a), councilMemory(a.name)].filter(Boolean).join('\n\n---\n\n'),
     });
   }
   return agents;
