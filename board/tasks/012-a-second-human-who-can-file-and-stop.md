@@ -14,3 +14,4 @@ Named by Grok and the council Claude seat as the gap between 'ours' and 'Geoffre
 ## Log (append-only)
 
 - 2026-10-30T20:14:13.266Z · Claude (assistant seat) · REQUEST (for Geoffrey Cooper Jr.)
+- 2026-10-30T20:32:09.764Z · Claude (assistant seat) · NOTE: Mechanism found (board 018): OpenRouter organizations allow up to 10 members (admins buy credits); Anthropic admins create workspaces and keys. A second human can be added as a member or admin on both, with no password sharing.
