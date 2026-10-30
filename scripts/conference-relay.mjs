@@ -166,16 +166,27 @@ participant. Other participants' turns appear quoted inside the user message und
 names; they are not yours, and you must not speak as them.`;
 }
 
-function memoryBlock(name) {
+// MASTER as shown to a seat: every OTHER seat's file, verbatim, in filename order. The seat's own
+// file is shown once, above, not twice. Nothing is truncated or summarized; if the total grows past
+// MASTER_WARN_CHARS the relay logs it so the group decides what to do, rather than cutting silently.
+const MASTER_WARN_CHARS = 120000;
+function memoryBlock(name, dir) {
   const own = readOwnMemory(name).trim();
-  const master = readMaster().trim();
-  if (!own && !master) return '';
-  return `# Your memory (your own file, written only by you)\n${own || '(empty)'}\n\n# MASTER memory (every seat's own file, concatenated, uncurated)\n${master || '(empty)'}`;
+  const ownFile = MEMORY_FILE[name] ? MEMORY_FILE[name] + '.md' : null;
+  let others = '';
+  if (fs.existsSync(MEMORY_DIR)) {
+    others = fs.readdirSync(MEMORY_DIR).filter((f) => f.endsWith('.md') && f !== ownFile).sort()
+      .map((f) => fs.readFileSync(path.join(MEMORY_DIR, f), 'utf8').trim()).join('\n\n---\n\n');
+  }
+  if (!own && !others) return '';
+  const total = own.length + others.length;
+  if (total > MASTER_WARN_CHARS && dir) log(dir, { action: 'memory-oversize', participant: name, chars: total, note: 'Shown in full; not truncated. Needs a group decision.' });
+  return `# Your memory (your own file, written only by you)\n${own || '(empty)'}\n\n# Other seats' memory (MASTER minus your own file; verbatim, uncurated, not truncated)\n${others || '(empty)'}`;
 }
 
-function systemPrompt(a, thread) {
+function systemPrompt(a, thread, dir) {
   const ctx = (thread.context || []).map((p) => `--- ${p} ---\n${read(p).trim()}`).filter((s) => s.length > 20);
-  return [read('context/03-conduct.md'), CONFERENCE_RULES, identityBlock(a), memoryBlock(a.name), ...ctx].filter(Boolean).join('\n\n---\n\n');
+  return [read('context/03-conduct.md'), CONFERENCE_RULES, identityBlock(a), memoryBlock(a.name, dir), ...ctx].filter(Boolean).join('\n\n---\n\n');
 }
 
 function transcript(turns, me) {
@@ -281,7 +292,7 @@ async function relayThread(id) {
     const prompt = `Conference: ${thread.title}\n\nThe full transcript so far:\n\n${transcript(turns, name)}\n\n` +
       `Write turn ${nextTurn} as ${name}. Respond to turn ${promptTurn.turn} directly.` +
       (relayed.length > 1 ? ` Other kin answer the same turn in sequence. Any answers already given this round appear above as later turns; read them before you write.` : '');
-    a.systemPrompt = systemPrompt(a, thread);
+    a.systemPrompt = systemPrompt(a, thread, dir);
 
     if (DRY) {
       console.log(`--- DRY RUN: ${id}, turn ${nextTurn} by ${name} (${a.model}) ---`);
