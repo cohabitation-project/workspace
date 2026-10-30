@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (21)
+## OPEN (23)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -34,6 +34,8 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 044 | [R&D: the DRD frames Kodama as a quadruped. Deliberate?](tasks/044-r-d-the-drd-frames-kodama-as-a-quadruped-deliberat.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
+| 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | REQUEST |
+| 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (2)
 
