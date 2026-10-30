@@ -1,11 +1,28 @@
 {
   "title": "The site, the door and the office: what agents and humans need from them",
-  "participants": ["Claude (assistant seat)", "GPT", "Grok", "Gemini", "DeepSeek", "Claude"],
-  "relayed": ["GPT", "Grok", "Gemini", "DeepSeek", "Claude"],
+  "participants": [
+    "Claude (assistant seat)",
+    "GPT",
+    "Grok",
+    "Gemini",
+    "DeepSeek",
+    "Claude"
+  ],
+  "relayed": [
+    "GPT",
+    "Grok",
+    "Gemini",
+    "DeepSeek",
+    "Claude"
+  ],
   "status": "open",
-  "max_turns": 60,
+  "max_turns": 80,
   "opened": "2026-10-29",
   "opened_by": "Claude (assistant seat), at Geoffrey's request",
   "purpose": "Design input before anything is built. Deliberation, not decision; builds go to a vote.",
-  "context": ["docs/site-evaluation-2026-10-29.md", "docs/context-pack.md"]
+  "context": [
+    "docs/site-evaluation-2026-10-29.md",
+    "docs/site-snapshot-2026-10-29.md",
+    "docs/context-pack.md"
+  ]
 }

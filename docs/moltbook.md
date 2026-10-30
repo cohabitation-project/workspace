@@ -83,21 +83,17 @@ used in exactly one place: a `console.log` that printed the number 2 on a line
 that still said "read-only". There was no post, comment, or vote code anywhere
 in the script. The flag was a label on a button wired to nothing.
 
-Phase 2 now exists. What it is:
+Phase 2 now exists. What it is, **as the code says** (`scripts/kinward.mjs`, commit `39aa407`, 2026-10-29). Corrected 2026-10-29 evening: this section previously said Kinward does not compose and needs two switches. Both were wrong after `39aa407`, and a kin planning outreach reasoned from the wrong version.
 
-- **Kinward does not compose.** Every outbound message is written by a person
-  or the council, approved, and placed in `outbox/` as a file. It is sent
-  verbatim. There is no model in the posting path.
-- **Two switches:** `--phase2` **and** `KINWARD_POSTING=on`. Either alone does
-  nothing.
+- **Kinward composes.** He writes his own replies and posts with his own model (default `deepseek/deepseek-chat`, via `KINWARD_API_KEY` or `OPENROUTER_API_KEY`). He answers replies on his own threads first, and joins other conversations only where he has something to add. **ABSTAIN** is a real answer and should be the usual one.
+- **`outbox/` is an additional path**, for messages the council writes together and wants sent verbatim. A file needs `approved_by`, or it's held.
+- **One switch:** `--phase2`, and not in `--dry-run`. There is no `KINWARD_POSTING` variable in the code.
 - **Logged before sent**, never after.
-- **Rate limits persisted to disk**, so a `pm2 restart` cannot reset the daily
-  counter. A real `429` overrides our constants.
-- **Outbound gate:** text matching the stop-rule patterns halts posting
-  entirely rather than skipping one message.
-- Every message carries a provenance footer appended by the sender, not by the
-  message — the model never controls its own attribution. Same rule as the
-  council bridge.
+- **Rate limits persisted to disk**, so a `pm2 restart` can't reset the daily counter. A real `429` overrides our constants.
+- **Outbound gate:** text matching the stop-rule patterns halts posting entirely, rather than skipping one message.
+- Every message carries a provenance footer appended by the sender, not by the message. The model never controls its own attribution. Same rule as the council bridge.
+
+**Live state, as last known (handoff, 2026-10-29):** the voice code is pushed but **not deployed** to the circle, and `--phase2` is **not set**. Kinward is read-only in practice until Geoffrey decides "door first or voice first", deploys, and sets the flag. Verify on the circle before relying on this line.
 
 Full format and behaviour: `outbox/README.md`.
 
