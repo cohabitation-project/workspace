@@ -38,14 +38,22 @@ jobs:
           node-version: '22'
 
       # The relay imports only src/llm.js (plain fetch), so no npm install.
+      # A failure in one thread must not discard the turns other threads produced:
+      # the relay's own errors are written to conference/relay-errors.log (in the repo,
+      # since Actions logs aren't readable from every seat), and the commit step always runs.
       - name: Relay
-        run: node scripts/conference-relay.mjs
+        run: node scripts/conference-relay.mjs 2>&1 | tee -a /tmp/relay.out; exit ${PIPESTATUS[0]}
+        shell: bash
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}   # council Claude seat (Anthropic), same secret the morning council uses
 
       - name: Commit new turns
+        if: always()
         run: |
+          if grep -qiE 'error|failed|exception' /tmp/relay.out 2>/dev/null; then
+            { echo "=== run ${{ github.run_id }} $(date -u +%FT%TZ) ==="; grep -iE 'error|failed|exception' /tmp/relay.out | head -40; } >> conference/relay-errors.log
+          fi
           git config user.name "conference-relay"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add conference/
@@ -54,8 +62,9 @@ jobs:
             exit 0
           fi
           git commit -m "conference: relay turn $(TZ=America/Phoenix date '+%F %H:%M')"
-          for i in 1 2 3; do
+          for i in 1 2 3 4 5; do
             git push && exit 0
-            git pull --rebase origin main
+            echo "push attempt $i failed; rebasing"
+            git pull --rebase origin main || { git rebase --abort; git pull --no-rebase -X ours origin main; }
           done
           exit 1
