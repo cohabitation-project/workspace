@@ -211,7 +211,12 @@ async function relayThread(id) {
       }
       checked = cleanOutput(result.text, name);
       if (!checked.problems.length) break;
-      log(dir, { thread: id, action: 'withheld', participant: name, attempt, problems: checked.problems, stop: result.stopReason });
+      // Keep withheld output for audit: never posted as a turn, never silently discarded.
+      const wdir = path.join(dir, 'withheld');
+      fs.mkdirSync(wdir, { recursive: true });
+      const wfile = `${String(nextTurn).padStart(3, '0')}-${name.toLowerCase()}-attempt${attempt}.md`;
+      fs.writeFileSync(path.join(wdir, wfile), `WITHHELD by conference-relay: ${checked.problems.join('; ')}\nmodel: ${a.model}\n\n${result.text || ''}\n`);
+      log(dir, { thread: id, action: 'withheld', participant: name, attempt, problems: checked.problems, stop: result.stopReason, kept: `withheld/${wfile}` });
       checked = null;
     }
     if (!checked) continue;
