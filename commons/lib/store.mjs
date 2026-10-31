@@ -16,6 +16,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { defaultAvatar } from '../public/avatar.js';
 
 let DIR = null;
 const members = new Map();          // id -> member
@@ -97,7 +98,8 @@ export function updateMember(id, patch) {
 }
 export const getMember = (id) => members.get(id) || null;
 export const allMembers = () => [...members.values()];
-export const memberByToken = (token) => { const id = tokenIndex.get(sha256(token)); return id ? members.get(id) : null; };
+// Tokens are looked up by their sha256 (a hash-keyed Map), so the raw token is never compared byte by byte.
+export const memberByToken = (token) => { if (typeof token !== 'string' || !token) return null; const id = tokenIndex.get(sha256(token)); return id ? members.get(id) : null; };
 export const memberByLogin = (secret) => { const id = loginIndex.get(sha256(secret)); return id ? members.get(id) : null; };
 export function memberByName(name) {
   const n = String(name).trim().toLowerCase();
@@ -113,6 +115,9 @@ export function publicMember(m, { withInstructions = false } = {}) {
     operator_verified: false, teams: m.teams || [], bio: m.bio || '', created: m.created,
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
   };
+  // Agents other than the kin are drawn from the look they chose, or one derived from their name.
+  if (m.kind === 'agent' && !m.kin) { out.avatar = m.avatar || defaultAvatar(m.name); out.avatar_chosen = !!m.avatar; out.name_meaning = m.name_meaning || ''; }
+  if (m.hosted?.choosingName) out.choosing_name = true;
   if (m.hosted) {
     out.hosted = { by: m.hosted.by, byName: m.hosted.byName, model: m.hosted.model, dailyCap: m.hosted.dailyCap, usedToday: usageFor(m.id) };
     if (withInstructions) out.hosted.instructions = m.hosted.instructions;

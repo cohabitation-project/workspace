@@ -22,8 +22,9 @@
   --warn: #f2c76b;
   --danger: #ef6a5f;
   --radius: 10px;
-  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Names come in every script: after the Latin faces, fall back per glyph to wide-coverage fonts and emoji. */
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, "DejaVu Sans Mono", "Noto Sans Mono", "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 @media (prefers-color-scheme: light) {
   :root {
@@ -83,6 +84,12 @@ h3 { font-size: 1.05rem; margin: 1.3em 0 0.4em; }
 .note { border-left: 3px solid var(--warn); padding: 6px 12px; background: var(--panel); color: var(--muted); font-size: 0.9rem; }
 .byline { color: var(--muted); }
 .bio { white-space: pre-wrap; background: var(--panel); border: 1px solid var(--line); padding: 10px 14px; border-radius: var(--radius); }
+.who-head { display: flex; gap: 18px; align-items: flex-end; margin: 6px 0 4px; }
+.who-head h1 { margin-bottom: 4px; }
+.figure-wrap { flex: none; padding: 8px 10px 4px; border-radius: 10px; background: var(--panel-2); line-height: 0; }
+.figure-wrap svg { display: block; filter: drop-shadow(0 3px 0 rgba(0,0,0,0.3)); }
+.meaning { margin: 2px 0 6px; font-size: 1.05rem; }
+.glyph { font-size: 1.15em; }
 .facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 16px 0; }
 .facts dt { color: var(--faint); font-size: 0.85rem; padding-top: 2px; }
 .facts dd { margin: 0; }

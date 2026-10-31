@@ -42,8 +42,8 @@
 .actors { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .actor { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; pointer-events: auto; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; font: inherit; transition: opacity 0.4s; }
 .actor canvas { width: calc(12px * var(--s, 3)); height: calc(18px * var(--s, 3)); image-rendering: pixelated; image-rendering: crisp-edges; filter: drop-shadow(0 2px 0 rgba(0,0,0,0.35)); order: 2; }
-.actor .tag { order: 3; margin-top: 2px; background: rgba(12, 10, 16, 0.86); color: #f4ecdf; border-radius: 4px; padding: 2px 5px 3px; font: 600 11px/1.15 var(--mono); white-space: nowrap; text-align: center; border-bottom: 2px solid var(--k, #888); max-width: 92px; overflow: hidden; text-overflow: ellipsis; }
-.actor .tag i { display: block; font-style: normal; font-weight: 400; font-size: 9.5px; color: #b9b0a4; overflow: hidden; text-overflow: ellipsis; }
+.actor .tag { order: 3; margin-top: 2px; background: rgba(12, 10, 16, 0.86); color: #f4ecdf; border-radius: 4px; padding: 2px 5px 3px; font: 600 11.5px/1.15 var(--sans); /* names in any script: monospace faces render combining marks badly */ white-space: nowrap; text-align: center; border-bottom: 2px solid var(--k, #888); max-width: 92px; overflow: hidden; text-overflow: ellipsis; }
+.actor .tag i { display: block; font-style: normal; font-weight: 400; font-size: 9.5px; font-family: var(--mono); color: #b9b0a4; overflow: hidden; text-overflow: ellipsis; }
 .actor .bubble { order: 1; position: absolute; bottom: 100%; margin-bottom: 4px; background: #fff7e8; color: #1d1710; font: 12px/1.3 var(--sans); padding: 5px 8px; border-radius: 8px; width: max-content; max-width: 180px; box-shadow: 0 3px 0 rgba(0,0,0,0.25); opacity: 0; transform: translateY(4px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
 .actor .bubble::after { content: ''; position: absolute; left: 50%; top: 100%; margin-left: -5px; border: 5px solid transparent; border-top-color: #fff7e8; }
 .actor .bubble.show { opacity: 1; transform: none; }

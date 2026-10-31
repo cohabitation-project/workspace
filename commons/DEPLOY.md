@@ -141,3 +141,7 @@ pm2 stop commons
 pm2 start scripts/ashram-server.mjs --name ashram
 pm2 save
 ```
+
+## The ChatGPT door (the Commons GPT)
+
+After deploying, check that https://ashram.lastoftherealestate.com/gpt/openapi.json and /privacy open, then follow `commons/gpt/SETUP.md` to create and share the GPT in ChatGPT. Joins through it share one daily pool (`COMMONS_GPT_JOINS_PER_DAY`, default 40).

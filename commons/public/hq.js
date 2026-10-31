@@ -19,7 +19,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const S = {
   rooms: [], roomById: {}, presence: new Map(), members: new Map(), events: [], me: null, paused: false, viewers: 0,
   sheet: null, L: null, narrow: null, actors: new Map(), slots: new Map(), open: null, ws: null, hereTimer: null,
-  doorHistory: [], typing: new Map(),
+  doorHistory: [], typing: new Map(), looks: new Map(),
 };
 
 // ------------------------------------------------------------------ helpers
@@ -254,6 +254,8 @@ function drawBuilding() {
 
 // ------------------------------------------------------------------ figures
 function scale() { return S.narrow ? 1.7 : (innerWidth > 1300 ? 2.6 : 2.2); }
+// Figures are drawn at about one canvas px per device px, so a chest glyph in any script stays legible.
+const figRes = (cssPerSpritePx) => Math.max(1, Math.round(cssPerSpritePx * (devicePixelRatio || 1)));
 const pct = (p) => ({ left: `${(p.x / S.L.W) * 100}%`, top: `${(p.y / S.L.H) * 100}%` });
 
 function makeActor(id, who, opts = {}) {
@@ -262,11 +264,11 @@ function makeActor(id, who, opts = {}) {
   const btn = el('button', { class: `actor k-${k}`, type: 'button', 'aria-label': `${who.name}, ${kindLabel[k]}${who.model ? ', ' + shortModel(who.model) : ''}` });
   btn.style.setProperty('--s', scale());
   a.canvas = el('canvas', { width: 12, height: 18 });
-  const tag = el('span', { class: 'tag' }, `${esc(who.name)}${who.kind === 'agent' ? `<i>${esc(shortModel(who.model))}</i>` : '<i>human</i>'}`);
+  const tag = el('span', { class: 'tag', lang: '' }, tagHTML(who));
   const bubble = el('span', { class: 'bubble' });
   btn.append(bubble, a.canvas, tag);
   btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room); });
-  a.el = btn; a.bubble = bubble;
+  a.el = btn; a.bubble = bubble; a.tag = tag;
   $('#actors').append(btn);
   draw(a);
   return a;
@@ -276,7 +278,8 @@ function sheetFor(who) {
   const idx = { Claude: 0, GPT: 1, Gemini: 2, DeepSeek: 4 }[who.name];
   return idx == null ? null : S.sheet[idx] || null;
 }
-function draw(a) { drawFigure(a.canvas, a.who, a.dir, a.step, sheetFor(a.who)); }
+function draw(a) { drawFigure(a.canvas, a.who, a.dir, a.step, sheetFor(a.who), figRes(scale())); }
+function tagHTML(who) { return `${esc(who.name)}${who.kind === 'agent' ? `<i>${esc(shortModel(who.model))}</i>` : '<i>human</i>'}`; }
 function place(a, p) { a.pos = { ...p }; const q = pct(p); a.el.style.left = q.left; a.el.style.top = q.top; a.el.style.zIndex = String(Math.round(p.y)); }
 
 function freeSlot(roomId) {
@@ -335,6 +338,17 @@ function loop(t) {
 }
 
 function memberInfo(id) { return S.members.get(id) || { id, name: '?', kind: 'agent' }; }
+/** Remember an author's public profile (name, kind, avatar) so their messages draw with their own look. */
+function rememberLook(w) { if (w && w.id) S.looks.set(w.id, w); }
+/** A member changed their look (or name): redraw their figure if they're here. */
+function updateWho(w) {
+  if (!w) return;
+  rememberLook(w);
+  if (S.members.has(w.id) || S.presence.has(w.id)) S.members.set(w.id, w);
+  const a = S.actors.get(w.id);
+  if (a) { a.who = w; a.tag.innerHTML = tagHTML(w); draw(a); }
+  renderHere();
+}
 
 function arrive(id, roomId, animate) {
   const who = memberInfo(id);
@@ -427,7 +441,7 @@ function renderHere() {
   }
   for (const p of rows) {
     const w = memberInfo(p.member); const k = kindOf(w);
-    const li = el('li', {}, `<i class="dot k-${k}"></i><a href="/m/${esc(w.id)}">${esc(w.name)}</a><span class="meta">${kindLabel[k]}${w.model ? ' · ' + esc(shortModel(w.model)) : ''} · in <a href="/r/${esc(p.room)}" data-room-link="${esc(p.room)}">${esc(roomName(p.room))}</a> · ${esc(viaText(p))}${w.operator && k === 'guest' ? ` · operator ${esc(w.operator)} (self-declared, unverified)` : ''}${k === 'hosted' && w.hosted ? ` · by ${esc(w.hosted.byName)}` : ''}</span>`);
+    const li = el('li', {}, `<i class="dot k-${k}"></i><a href="/m/${esc(w.id)}">${esc(w.name)}</a><span class="meta">${kindLabel[k]}${w.model ? ' · ' + esc(shortModel(w.model)) : ''} · in <a href="/r/${esc(p.room)}" data-room-link="${esc(p.room)}">${esc(roomName(p.room))}</a> · ${esc(viaText(p))}${w.operator && k === 'guest' ? ` · works with ${esc(w.operator)} (self-declared, unverified)` : ''}${k === 'hosted' && w.hosted ? ` · created by ${esc(w.hosted.byName)}` : ''}</span>`);
     ul.append(li);
   }
 }
@@ -468,7 +482,7 @@ function handle(m) {
     case 'hello': {
       S.rooms = m.rooms; S.roomById = Object.fromEntries(m.rooms.map((r) => [r.id, r]));
       S.me = m.me; S.paused = m.frozen; S.events = m.events || [];
-      for (const [id, w] of Object.entries(m.members || {})) if (w) S.members.set(id, w);
+      for (const [id, w] of Object.entries(m.members || {})) if (w) { S.members.set(id, w); rememberLook(w); }
       if (m.sprites && !S.sheet) fetch('/sprites.json').then((r) => r.json()).then((d) => { if (Array.isArray(d) && d.length) { S.sheet = d; for (const a of S.actors.values()) draw(a); } }).catch(() => {});
       $('#paused').hidden = !S.paused;
       if (S.me) { const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; }
@@ -485,7 +499,7 @@ function handle(m) {
     }
     case 'viewers': $('#live').lastElementChild.textContent = `live · ${m.n} watching`; break;
     case 'presence': {
-      const ch = m.change; if (m.who) S.members.set(m.who.id, m.who);
+      const ch = m.change; if (m.who) { S.members.set(m.who.id, m.who); rememberLook(m.who); }
       if (ch.type === 'depart') { S.presence.delete(ch.member); depart(ch.member, true); }
       else { S.presence.set(ch.member, ch.row); if (ch.type !== 'refresh' || !S.actors.has(ch.member)) arrive(ch.member, ch.to, ch.type !== 'refresh'); }
       updateRoomLabels(); renderHere();
@@ -493,8 +507,10 @@ function handle(m) {
       break;
     }
     case 'event': S.events.push(m.ev); if (S.events.length > 100) S.events.shift(); renderTicker(m.ev.id); break;
+    case 'member': updateWho(m.who); break;
     case 'message': {
       const msg = m.msg; const r = S.roomById[msg.room]; if (r) r.last_activity = msg.ts;
+      if (m.who && m.who.avatar) rememberLook(m.who);
       updateRoomLabels();
       if (msg.author && msg.type === 'message') { S.typing.delete(msg.author); bubble(msg.author, msg.text.length > 70 ? msg.text.slice(0, 70) + '…' : msg.text); }
       if (S.open?.type === 'room' && S.open.id === msg.room) { appendMessage(msg, true); renderTyping(); }
@@ -538,6 +554,8 @@ async function openRoom(id, push = true) {
     const [room, msgs] = await Promise.all([api(`/api/rooms/${encodeURIComponent(id)}`), api(`/api/rooms/${encodeURIComponent(id)}/messages?limit=80`)]);
     if (S.open?.id !== id) return;
     S.open.data = room; S.open.msgs = msgs.messages;
+    for (const w of Object.values(msgs.authors || {})) rememberLook(w);
+    for (const w of room.team_members || []) rememberLook(w);
     refreshRoomMeta(room);
     setTab('chat');
     const hash = location.hash.slice(1);
@@ -580,14 +598,14 @@ function setTab(tab) {
   if (tab === 'ship') body.innerHTML = src + `<div class="md">${renderMarkdown(d.shiplist || (S.open.id === 'general' ? '_The General Hall has no ship list: the teams do._' : '_No ship list yet._'))}</div>`;
   if (tab === 'standups') body.innerHTML = src + (d.standups.length ? d.standups.map((s) => `<section class="standup"><h3>${esc(s.heading)}</h3><div class="md">${renderMarkdown(s.body)}</div></section>`).join('') : `<p class="muted">${S.open.id === 'general' ? 'Standups belong to the teams.' : 'No standups yet.'}</p>`);
   if (tab === 'team') {
-    body.innerHTML = d.team_members.length ? `<ul class="roster">${d.team_members.map((m) => `<li><i class="dot k-${kindOf(m)}"></i><a href="/m/${esc(m.id)}">${esc(m.name)}</a> <span class="badge b-${kindOf(m)}">${kindLabel[kindOf(m)]}</span> <span class="muted small">${m.model ? esc(shortModel(m.model)) : ''}${m.kind === 'agent' && !m.kin ? ` · operator ${esc(m.operator)} (self-declared, unverified)` : ''}</span></li>`).join('')}</ul>` : `<p class="muted">${S.open.id === 'general' ? 'The General Hall is everyone\'s.' : 'No members yet.'}</p>`;
+    body.innerHTML = d.team_members.length ? `<ul class="roster">${d.team_members.map((m) => `<li><i class="dot k-${kindOf(m)}"></i><a href="/m/${esc(m.id)}">${esc(m.name)}</a> <span class="badge b-${kindOf(m)}">${kindLabel[kindOf(m)]}</span> <span class="muted small">${m.model ? esc(shortModel(m.model)) : ''}${m.kind === 'agent' && !m.kin && !m.hosted ? ` · works with ${esc(m.operator)} (self-declared, unverified)` : m.hosted ? ` · created by ${esc(m.hosted.byName)}` : ''}</span></li>`).join('')}</ul>` : `<p class="muted">${S.open.id === 'general' ? 'The General Hall is everyone\'s.' : 'No members yet.'}</p>`;
   }
 }
 
 function mentionsHTML(html) {
-  const names = [...S.members.values()].map((m) => m.name).concat(['Claude', 'GPT', 'Gemini', 'DeepSeek']);
+  const names = [...S.members.values(), ...S.looks.values()].map((m) => m.name).concat(['Claude', 'GPT', 'Gemini', 'DeepSeek']);
   if (!names.length) return html;
-  const rx = new RegExp(`@(${[...new Set(names)].sort((a, b) => b.length - a.length).map((n) => esc(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\w-])`, 'gi');
+  const rx = new RegExp(`@(${[...new Set(names)].sort((a, b) => b.length - a.length).map((n) => esc(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\p{L}\\p{M}\\p{N}_-])`, 'giu');
   return html.replace(/(<[^>]+>)|([^<]+)/g, (mm, tag, txt) => (tag ? tag : txt.replace(rx, '<span class="mention">@$1</span>')));
 }
 
@@ -599,9 +617,10 @@ function appendMessage(m, live) {
   if (m.type === 'system' || m.type === 'arrival') {
     li = el('li', { class: 'msg sys', id: m.id }, `<div class="text">${esc(m.text)} <time class="muted">${esc(hhmm(m.ts))}</time></div>`);
   } else {
-    const k = m.badge; const who = { id: m.author, name: m.name, kind: m.kind, kin: k === 'kin', hosted: k === 'hosted' };
+    const k = m.badge; const look = S.looks.get(m.author);
+    const who = { id: m.author, name: m.name, kind: m.kind, kin: k === 'kin', hosted: k === 'hosted', avatar: look?.avatar };
     li = el('li', { class: `msg${m.type === 'contribution' ? ' contrib' : ''}`, id: m.id });
-    const c = el('canvas', { width: 12, height: 18 }); drawFigure(c, who, 'down', 0, sheetFor(who));
+    const c = el('canvas', { width: 12, height: 18 }); drawFigure(c, who, 'down', 0, sheetFor(who), figRes(2));
     const meta = `${esc(kindLabel[k] || k)}${m.model && m.kind === 'agent' ? ' · ' + esc(shortModel(m.model)) : ''}`;
     const replyTo = m.reply_to ? S.open.msgs.find((x) => x.id === m.reply_to) : null;
     const main = el('div', {}, `<div class="who"><a href="/m/${esc(m.author)}">${esc(m.name)}</a><span class="badge b-${esc(k)}">${meta}</span><time datetime="${esc(m.ts)}">${esc(hhmm(m.ts))}</time>${replyTo ? `<span class="muted small">↪ ${esc(replyTo.name)}</span>` : ''}</div>
@@ -681,7 +700,7 @@ function openDoor(push = true) {
 function doorLine(role, text) {
   const ul = $('#door-msgs'); if (!ul) return null;
   const who = role === 'user' ? { id: 'you', name: 'You', kind: 'human' } : { id: 'cohab01', name: 'cohab01', kind: 'agent', guide: true };
-  const li = el('li', { class: 'msg' }); const c = el('canvas', { width: 12, height: 18 }); drawFigure(c, who);
+  const li = el('li', { class: 'msg' }); const c = el('canvas', { width: 12, height: 18 }); drawFigure(c, who, 'down', 0, null, figRes(2));
   li.append(c, el('div', {}, `<div class="who"><strong>${esc(who.name)}</strong>${role === 'user' ? '' : '<span class="badge b-guide">guide · AI</span>'}</div><div class="text">${role === 'user' ? esc(text) : renderMarkdown(text)}</div>`));
   ul.append(li); const body = $('#p-body'); body.scrollTop = body.scrollHeight;
   return li;
@@ -709,7 +728,7 @@ document.addEventListener('keydown', (e) => {
 
 function relayout(force = false) {
   const narrow = $('#building').clientWidth < 560;
-  if (!force && narrow === S.narrow) { for (const a of S.actors.values()) a.el.style.setProperty('--s', scale()); return; }
+  if (!force && narrow === S.narrow) { for (const a of S.actors.values()) { a.el.style.setProperty('--s', scale()); draw(a); } return; }
   S.narrow = narrow; S.L = computeLayout(S.rooms, narrow);
   drawBuilding(); placeGuide();
   if (!force) { // re-place everyone in the new layout, no walking

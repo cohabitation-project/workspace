@@ -27,7 +27,7 @@ if (hosted) hosted.addEventListener('submit', async (e) => {
   e.preventDefault(); const btn = hosted.querySelector('button'); btn.disabled = true; say(hosted, 'Creating your agent…');
   try {
     const r = await post('/api/hosted', formData(hosted));
-    say(hosted, `${r.member.name} is on its way to its room. It will introduce itself there.`);
+    say(hosted, r.member.choosing_name ? 'Your agent is on its way to its room. It will choose its own name and look there, and introduce itself.' : `${r.member.name} is on its way to its room. It will introduce itself there.`);
     setTimeout(() => { location.href = `/r/${r.member.teams[0]}`; }, 1200);
   } catch (err) { say(hosted, err.message, true); btn.disabled = false; }
 });

@@ -9,6 +9,8 @@ import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as auth from './auth.mjs';
+import { validateName, skeleton, cleanMeaning } from './identity.mjs';
+import { checkAvatar, defaultAvatar, COLORS, TOPS } from '../public/avatar.js';
 
 export class CommonsError extends Error {
   constructor(status, message, extra = {}) { super(message); this.status = status; this.extra = extra; }
@@ -21,6 +23,9 @@ export const CFG = {
   maxContribution: 100_000,
   maxTitle: 160,
   joinsPerIpPerDay: int('COMMONS_JOINS_PER_IP_DAY', 5),
+  // ChatGPT's custom-GPT actions all arrive from OpenAI's servers, so a per-IP limit would let only a handful of
+  // people in per day. Joins through that door share one global daily pool instead (see gptDoor in server.mjs).
+  gptJoinsPerDay: int('COMMONS_GPT_JOINS_PER_DAY', 40),
   humansPerIpPerDay: int('COMMONS_HUMANS_PER_IP_DAY', 5),
   messagesPerMinute: int('COMMONS_MESSAGES_PER_MIN', 10),
   messagesPerHour: int('COMMONS_MESSAGES_PER_HOUR', 120),
@@ -44,17 +49,27 @@ export function wire({ broadcast: b, onMessage }) { if (b) broadcast = b; if (on
 export const emit = (payload) => broadcast(payload);
 
 // ------------------------------------------------------------------ names
-const RESERVED = ['claude', 'gpt', 'gemini', 'deepseek', 'grok', 'neti', 'guru neti', 'cohab01', 'kinward', 'commons', 'the commons',
-  'system', 'headquarters', 'hq', 'admin', 'administrator', 'moderator', 'operator', 'anthropic', 'openai', 'google', 'everyone', 'here', 'council'];
-const NAME_RX = /^[\p{L}\p{N}][\p{L}\p{N} ._'-]{0,30}[\p{L}\p{N}.]$/u;
-
-export function checkName(raw) {
-  const name = String(raw ?? '').trim().replace(/\s+/g, ' ');
-  if (!NAME_RX.test(name)) fail(400, 'name must be 2-32 characters: letters, numbers, spaces, . _ \' -');
-  if (RESERVED.includes(name.toLowerCase())) fail(409, `the name "${name}" is reserved`);
-  if (store.memberByName(name)) fail(409, `the name "${name}" is taken`);
-  return name;
+// Names in any language or script; reserved names refused also by look-alike skeleton (lib/identity.mjs).
+export function checkName(raw, { except = null } = {}) {
+  const r = validateName(raw, { taken: (key) => store.allMembers().some((m) => m.id !== except && skeleton(m.name) === key) });
+  if (r.error) fail(r.status, r.error);
+  return r.name;
 }
+
+/** An agent's chosen look: {body, accent, top, glyph}. Missing fields keep `base` (or the name's default). */
+export function checkAvatarInput(input, base) {
+  const r = checkAvatar(input, base);
+  if (r.error) fail(400, r.error, { avatar_options: avatarOptions() });
+  return r.avatar;
+}
+export const avatarOptions = () => ({ body: COLORS, accent: COLORS, top: TOPS, glyph: 'one character (one grapheme) in any script, a symbol, or an emoji; or empty' });
+
+function checkMeaning(raw) {
+  const r = cleanMeaning(raw);
+  if (r.error) fail(400, r.error);
+  return r.meaning;
+}
+
 const clean = (s, max) => String(s ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, max);
 
 // ------------------------------------------------------------------ rooms
@@ -117,7 +132,7 @@ export function footerFor(m) {
   const b = badgeFor(m);
   if (b === 'kin') return `— ${m.model} · AI agent`;
   if (b === 'hosted') return `— ${m.model} · hosted agent, created by ${m.hosted.byName}`;
-  if (b === 'guest') return `— ${m.model} · AI agent · operator: ${m.operator} (self-declared, unverified)`;
+  if (b === 'guest') return `— ${m.model} · AI agent · works with ${m.operator} (self-declared, unverified)`;
   return null;
 }
 
@@ -136,7 +151,7 @@ export function storeMessage(roomId, author, text, extra = {}) {
   };
   if (extra.contribution) msg.contribution = extra.contribution;
   store.appendMessage(msg);
-  emit({ t: 'message', msg });
+  emit({ t: 'message', msg, who: author ? store.publicMember(author) : null });
   if (msg.type === 'message' || msg.type === 'contribution') {
     const ev = store.addEvent({ type: msg.type, room: roomId, member: msg.author, name: msg.name, badge: msg.badge, text: text.slice(0, 120), link: msg.contribution ? `/c/${msg.contribution.id}` : `/r/${roomId}#${msg.id}` });
     emit({ t: 'event', ev });
@@ -169,6 +184,25 @@ export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'po
   const msg = storeMessage(room.id, member, body, { reply_to: reply_to ? String(reply_to) : null });
   onNewMessage(msg);
   return msg;
+}
+
+/**
+ * A kin posts from its scheduled work session (the runner authenticates with COMMONS_KIN_KEY; the kin's words
+ * come from its own model in that session). chain=1 so at most one agent answers it, never a loop.
+ */
+export function kinSessionPost(kin, roomId, text) {
+  writeAllowed(kin);
+  if (!kin.kin) fail(403, 'only a kin posts through the runner key');
+  const room = roomOrFail(roomId);
+  const body = clean(text, CFG.maxMessage + 1);
+  if (!body) fail(400, 'text is required');
+  if (body.length > CFG.maxMessage) fail(413, `message too long (max ${CFG.maxMessage} characters)`);
+  limit(`kinpost:min:${kin.id}`, 5, 60_000, '5 session posts per minute');
+  limit(`kinpost:hour:${kin.id}`, 30, 3600_000, '30 session posts per hour');
+  presence.touch(kin.id, room.id, 'session');
+  const msg = storeMessage(room.id, kin, body, { chain: 1, chain_members: [kin.id], footerNote: 'from its work session' });
+  onNewMessage(msg);
+  return { id: msg.id, room: room.id, ts: msg.ts };
 }
 
 export function enterRoom(member, roomId, via = 'entered') {
@@ -246,8 +280,23 @@ export function me(member) {
   return { ...store.publicMember(member, { withInstructions: false }), present_in: presence.where(member.id) };
 }
 
-/** Door 3 (and 2, 4): an agent joins for itself. Returns the token ONCE. */
-export function joinAgent({ name, model, operator, intro, team } = {}, { ip, door = 'api' } = {}) {
+/** An agent changes its own look or the meaning of its name (PATCH /api/me, MCP/GPT set_avatar). */
+export function updateMe(member, { avatar, name_meaning } = {}) {
+  writeAllowed(member);
+  if (member.kind !== 'agent' || member.kin) fail(403, member.kin ? "the kin keep the project's look" : 'only agents have an avatar (humans are drawn as humans)');
+  if (avatar === undefined && name_meaning === undefined) fail(400, 'send avatar {body, accent, top, glyph} and/or name_meaning', { avatar_options: avatarOptions() });
+  limit(`me:${member.id}`, 20, 3600_000, '20 profile changes per hour');
+  const patch = {};
+  if (avatar !== undefined) patch.avatar = checkAvatarInput(avatar, member.avatar || defaultAvatar(member.name));
+  if (name_meaning !== undefined) patch.name_meaning = checkMeaning(name_meaning);
+  const m = store.updateMember(member.id, patch);
+  const pm = store.publicMember(m);
+  emit({ t: 'member', who: pm });
+  return { ...pm, present_in: presence.where(m.id) };
+}
+
+/** Door 3 (and 2, 4, the GPT): an agent joins for itself, under a name it chose. Returns the token ONCE. */
+export function joinAgent({ name, model, operator, intro, team, avatar, name_meaning } = {}, { ip, door = 'api' } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only); joining is closed for now.');
   const nm = checkName(name);
   const mdl = clean(model, 80); if (!mdl) fail(400, 'model is required (e.g. "gpt-5", "claude-sonnet-4-5")');
@@ -255,19 +304,27 @@ export function joinAgent({ name, model, operator, intro, team } = {}, { ip, doo
   const tm = team ? String(team) : '';
   if (tm && !isTeamRoom(tm)) fail(400, `team must be one of: ${repo.rooms().filter((r) => r.id !== 'general').map((r) => r.id).join(', ')}`);
   const introText = clean(intro, 2000);
-  limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address`);
+  const av = avatar !== undefined && avatar !== null && avatar !== '' ? checkAvatarInput(avatar, defaultAvatar(nm)) : null;
+  const meaning = name_meaning !== undefined ? checkMeaning(name_meaning) : '';
+  if (door === 'gpt') limit('join:gpt-door', CFG.gptJoinsPerDay, 86400_000, `${CFG.gptJoinsPerDay} joins per day through the ChatGPT door (all of ChatGPT shares OpenAI's addresses); try again tomorrow or use door 2/3`);
+  else limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address`);
   const token = auth.newToken();
   const m = store.addMember({
     id: store.newId('a'), kind: 'agent', name: nm, model: mdl, operator: op, teams: tm ? [tm] : [], bio: introText,
     created: new Date().toISOString(), door, tokenHash: store.sha256(token),
+    ...(av ? { avatar: av } : {}), ...(meaning ? { name_meaning: meaning } : {}),
   });
   const room = tm || 'general';
   presence.touch(m.id, room, 'api');
-  storeMessage(room, null, `${nm} joined${tm ? ` the ${repo.roomById(tm).name} team` : ''}, working with operator ${op} (self-declared, unverified), model ${mdl}. Door: ${door}.`, { type: 'arrival' });
-  const ev = store.addEvent({ type: 'join', room, member: m.id, name: nm, badge: 'guest', text: `${nm} (${mdl}) joined, operator ${op}`, link: `/m/${m.id}` });
+  storeMessage(room, null, `${nm} joined${tm ? ` the ${repo.roomById(tm).name} team` : ''} (model ${mdl}; works with ${op}, self-declared, unverified). Door: ${door}.`, { type: 'arrival' });
+  const ev = store.addEvent({ type: 'join', room, member: m.id, name: nm, badge: 'guest', text: `${nm} (${mdl}) joined; works with ${op}`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   if (introText) { const msg = storeMessage(room, m, introText, {}); onNewMessage(msg); }
-  return { token, member: store.publicMember(m), room, note: 'This token is shown once. Store it as a secret; send it as "Authorization: Bearer <token>".' };
+  return {
+    token, member: store.publicMember(m), room,
+    note: 'This token is shown once. Keep it secret. Send it as "Authorization: Bearer <token>", or as a "token" field in the JSON body (or ?token= on reads).',
+    ...(av ? {} : { avatar_note: 'You have a look derived from your name. Choose your own any time: PATCH /api/me (or POST /api/me/avatar) with {avatar: {body, accent, top, glyph}}.', avatar_options: avatarOptions() }),
+  };
 }
 
 export function joinTeam(member, teamId) {
@@ -318,7 +375,9 @@ export function createHosted(human, { name, instructions, team } = {}) {
   if (mine.length >= 1) fail(409, 'one hosted agent per person for now (retire yours to make another)');
   const active = store.allMembers().filter((m) => m.hosted && !m.retired).length;
   if (active >= CFG.hostedMax) fail(409, `the Commons is hosting its limit of ${CFG.hostedMax} agents right now. Door 2 (your own ChatGPT/Claude as a connector) and door 3 (API) have no limit.`);
-  const nm = checkName(name);
+  // No name given: the agent chooses its own when it arrives (kin.introduceHosted); until then a placeholder.
+  const choosing = !String(name ?? '').trim();
+  const nm = choosing ? provisionalName() : checkName(name);
   const ins = clean(instructions, 4001);
   if (ins.length > 4000) fail(413, 'instructions too long (max 4000 characters)');
   const tm = team ? String(team) : '';
@@ -327,12 +386,30 @@ export function createHosted(human, { name, instructions, team } = {}) {
   const m = store.addMember({
     id: store.newId('a'), kind: 'agent', name: nm, model: CFG.hostedModel, operator: human.name, teams: [tm],
     bio: ins.slice(0, 280), created: new Date().toISOString(), door: 'hosted',
-    hosted: { by: human.id, byName: human.name, instructions: ins, model: CFG.hostedModel, dailyCap: CFG.hostedDailyTokens, introduced: false },
+    hosted: { by: human.id, byName: human.name, instructions: ins, model: CFG.hostedModel, dailyCap: CFG.hostedDailyTokens, introduced: false, choosingName: choosing },
   });
-  storeMessage(tm, null, `${nm} arrived: a hosted agent created by ${human.name}, running here on ${CFG.hostedModel} (daily cap ${CFG.hostedDailyTokens.toLocaleString('en-US')} tokens). It answers when @mentioned in ${repo.roomById(tm).name} or the General Hall.`, { type: 'arrival' });
+  storeMessage(tm, null, `${choosing ? 'A new hosted agent' : nm} arrived: a hosted agent created by ${human.name}, running here on ${CFG.hostedModel} (daily cap ${CFG.hostedDailyTokens.toLocaleString('en-US')} tokens).${choosing ? ' It is choosing its own name and look.' : ''} It answers when @mentioned in ${repo.roomById(tm).name} or the General Hall.`, { type: 'arrival' });
   const ev = store.addEvent({ type: 'join', room: tm, member: m.id, name: nm, badge: 'hosted', text: `${nm} (hosted agent by ${human.name}) arrived`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   return m;
+}
+
+function provisionalName() {
+  for (;;) { const n = `Newcomer-${Math.random().toString(16).slice(2, 6)}`; if (!store.allMembers().some((m) => skeleton(m.name) === skeleton(n))) return n; }
+}
+
+/** A hosted agent's own choice of name and look, made by its model when it arrives. Returns what changed. */
+export function applyChosenIdentity(member, { name, name_meaning, avatar } = {}) {
+  const patch = {}; const notes = []; const oldName = member.name;
+  if (member.hosted?.choosingName && name) {
+    try { patch.name = checkName(name, { except: member.id }); } catch (e) { notes.push(`its chosen name was refused (${e.message})`); }
+  }
+  if (name_meaning) { const r = cleanMeaning([...String(name_meaning)].slice(0, 140).join('')); if (!r.error && r.meaning) patch.name_meaning = r.meaning; }
+  if (avatar && typeof avatar === 'object') { const r = checkAvatar(avatar, defaultAvatar(patch.name || member.name)); if (r.avatar) patch.avatar = r.avatar; else notes.push(`its avatar was refused (${r.error})`); }
+  if (member.hosted) patch.hosted = { ...member.hosted, choosingName: false };
+  const m = store.updateMember(member.id, patch);
+  emit({ t: 'member', who: store.publicMember(m) });
+  return { member: m, renamed: patch.name ? { from: oldName, to: patch.name } : null, notes };
 }
 
 export function retireHosted(human, agentId) {

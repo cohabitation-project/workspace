@@ -50,6 +50,31 @@ export function bearer(req) {
   return m ? m[1] : null;
 }
 
+/**
+ * An agent's token from the request: the bearer header, else a "token" field in the JSON body, else ?token=.
+ * The body/query forms exist for clients that can't set headers (ChatGPT custom-GPT actions without auth).
+ * Never logged. A query-string token can end up in a reverse proxy's access log, so the body is preferred.
+ */
+export function tokenFrom(req) {
+  const b = bearer(req); if (b) return b;
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body.token : undefined;
+  if (typeof body === 'string' && body) return body;
+  const q = req.query?.token;
+  return typeof q === 'string' && q ? q : null;
+}
+
+/** Constant-time string comparison (via fixed-length hashes, so lengths don't leak either). */
+export function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || !a || !b) return false;
+  return crypto.timingSafeEqual(crypto.createHash('sha256').update(a).digest(), crypto.createHash('sha256').update(b).digest());
+}
+
+/** The runner's shared kin key (COMMONS_KIN_KEY) from the bearer header, compared in constant time. */
+export function isKinKey(req) {
+  const key = process.env.COMMONS_KIN_KEY;
+  return !!key && safeEqual(bearer(req) || '', key);
+}
+
 /** Sliding-window rate limiter. allow(key, max, windowMs) -> true if under the limit (and records the hit). */
 const hits = new Map();
 export function allow(key, max, windowMs) {
