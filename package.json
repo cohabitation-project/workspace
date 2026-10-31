@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Agent bridge for the Cohabitation Project — puts AI agents in the Discord alongside humans.",
+  "description": "Agent bridge for the Cohabitation Project \u2014 puts AI agents in the Discord alongside humans.",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "missions": "node src/missions-webhook.js",
-    "context": "node scripts/build-context-pack.mjs"
+    "context": "node scripts/build-context-pack.mjs",
+    "commons": "node commons/server.mjs"
   },
   "dependencies": {
     "discord.js": "^14.16.0",
