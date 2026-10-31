@@ -20,7 +20,7 @@ const opt = (k) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 
 const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return ''; } };
 const MODELS = (opt('models') || '').split(',').map((s) => s.trim()).filter(Boolean);
 const STEPS = parseInt(opt('steps') || '18', 10);
-const DAY = new Date().toISOString().slice(0, 10);
+const DAY = opt('date') || new Date().toISOString().slice(0, 10);
 const BASE = `teams/rnd/kodama/seat-trial/${DAY}`;
 
 // List prices (USD per 1M tokens) read from openrouter.ai model pages on 2026-10-31. Labelled: list price, not billed.
@@ -61,17 +61,25 @@ function system(model, dir) {
 export function checkPrices(estimate, pages) {
   const res = { measured: 0, onCitedPage: 0, onOtherPage: 0, notFound: [] };
   const norm = (t) => String(t).replace(/,/g, '');
+  const host = (u) => String(u).replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[/?#]+$/, '');
+  const LABEL = /^\**\[?(measured|m)\]?\**$/i;
   for (const line of estimate.split('\n')) {
-    const urls = line.match(/https?:\/\/[^\s)|>\]]+/g) || [];
-    for (const m of line.matchAll(/\$\s?([\d,]+(?:\.\d{1,2})?)\s*\[measured\]/gi)) {
-      res.measured++;
-      const v = norm(m[1]); const forms = [v, Number(v).toFixed(2)]; if (/\.00$/.test(Number(v).toFixed(2))) forms.push('$' + Math.round(Number(v)));
-      const has = (pg) => forms.some((f) => norm(pg.text).includes(f));
-      const cited = pages.filter((pg) => urls.some((u) => pg.url.replace(/\/+$/, '') === u.replace(/\/+$/, '')));
-      if (cited.some(has)) res.onCitedPage++;
-      else if (pages.some(has)) res.onOtherPage++;
-      else res.notFound.push(`$${v}`);
-    }
+    if (!/^\|\s*\d+\s*\|/.test(line)) continue;                       // bill-of-materials rows only
+    const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+    const tagged = cells.some((c) => LABEL.test(c)) || /\[(measured|m)\]/i.test(line);
+    if (!tagged) continue;
+    // the unit price: the first price-shaped cell after #, part, why and example
+    const priceCell = cells.slice(4).find((c) => /^\$?\s?[\d,]+\.\d{2}\b/.test(c));
+    if (!priceCell) continue;
+    const v = norm(priceCell.match(/[\d,]+\.\d{2}/)[0]);
+    res.measured++;
+    const refs = cells.flatMap((c) => c.match(/(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+\/[^\s|)\]>]*/gi) || []).map(host);
+    const forms = [v]; if (/\.00$/.test(v)) forms.push('$' + v.replace(/\.00$/, ''));
+    const has = (pg) => forms.some((f) => norm(pg.text).includes(f));
+    const cited = pages.filter((pg) => refs.some((r) => host(pg.url) === r || host(pg.url).startsWith(r) || r.startsWith(host(pg.url))));
+    if (cited.some(has)) res.onCitedPage++;
+    else if (pages.some(has)) res.onOtherPage++;
+    else res.notFound.push(`$${v}`);
   }
   return res;
 }
@@ -149,12 +157,20 @@ async function trial(model) {
 }
 
 async function main() {
-  if (!MODELS.length) { console.error('usage: node scripts/seat-trial.mjs --models a,b,c'); process.exit(1); }
-  if (!process.env.OPENROUTER_API_KEY) { console.error('OPENROUTER_API_KEY is not set'); process.exit(1); }
+  if (!MODELS.length && !args.includes('--rescore')) { console.error('usage: node scripts/seat-trial.mjs --models a,b,c | --rescore [--date YYYY-MM-DD]'); process.exit(1); }
+  if (!args.includes('--rescore') && !process.env.OPENROUTER_API_KEY) { console.error('OPENROUTER_API_KEY is not set'); process.exit(1); }
   // The same switch as team sessions: if delegations/team-tools.json isn't active, no tool-using runs at all.
   let d = {}; try { d = JSON.parse(read('delegations/team-tools.json')); } catch { /* missing = off */ }
   if (d.status !== 'active') { console.log('[seat-trial] delegations/team-tools.json is not active; nothing to do.'); return; }
-  for (const m of MODELS) await trial(m);
+  if (!args.includes('--rescore')) for (const m of MODELS) await trial(m);
+  else for (const d of fs.readdirSync(path.join(ROOT, BASE), { withFileTypes: true }).filter((x) => x.isDirectory())) {
+    // --rescore: re-run only the price check on what each candidate already wrote and fetched (no model calls)
+    const sp = path.join(ROOT, BASE, d.name, 'stats.json'); if (!fs.existsSync(sp)) continue;
+    const st = JSON.parse(fs.readFileSync(sp, 'utf8')); const fd = path.join(ROOT, BASE, d.name, 'fetched');
+    const pages = fs.existsSync(fd) ? fs.readdirSync(fd).map((f) => { const t = fs.readFileSync(path.join(fd, f), 'utf8'); return { url: (t.match(/^URL: (.*)$/m) || [])[1] || '', text: t }; }) : [];
+    if (st.estimate) st.priceCheck = checkPrices(fs.readFileSync(path.join(ROOT, st.estimate), 'utf8'), pages);
+    fs.writeFileSync(sp, JSON.stringify(st, null, 2) + '\n');
+  }
   // RESULTS.md covers every candidate tried today (each folder's stats.json), so a rerun of one model adds to the table.
   const out = fs.readdirSync(path.join(ROOT, BASE), { withFileTypes: true }).filter((d) => d.isDirectory())
     .map((d) => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, BASE, d.name, 'stats.json'), 'utf8')); } catch { return null; } }).filter(Boolean);

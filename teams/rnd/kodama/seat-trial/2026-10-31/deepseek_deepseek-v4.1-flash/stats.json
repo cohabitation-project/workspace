@@ -29,8 +29,8 @@
   ],
   "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/deepseek_deepseek-v4.1-flash/estimate.md",
   "priceCheck": {
-    "measured": 0,
-    "onCitedPage": 0,
+    "measured": 5,
+    "onCitedPage": 5,
     "onOtherPage": 0,
     "notFound": []
   },

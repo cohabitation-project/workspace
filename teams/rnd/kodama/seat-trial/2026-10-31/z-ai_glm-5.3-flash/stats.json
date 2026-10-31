@@ -34,9 +34,9 @@
   ],
   "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/z-ai_glm-5.3-flash/estimate.md",
   "priceCheck": {
-    "measured": 1,
-    "onCitedPage": 0,
-    "onOtherPage": 1,
+    "measured": 6,
+    "onCitedPage": 6,
+    "onOtherPage": 0,
     "notFound": []
   },
   "run_at": "2026-10-31T14:18:51.468Z"
