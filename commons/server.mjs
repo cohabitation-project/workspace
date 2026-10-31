@@ -20,6 +20,7 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 
 import * as repo from './lib/repo.mjs';
+import * as station from './lib/station.mjs';
 import * as library from './lib/library.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
@@ -40,6 +41,7 @@ const DATA = path.resolve(process.env.COMMONS_DATA || path.join(repo.ROOT, 'data
 const PUBLIC = path.join(import.meta.dirname, 'public');
 
 store.init(DATA);
+station.init(DATA);
 core.seedKin();
 
 // ---------------------------------------------------------------- live (WebSocket)
@@ -254,6 +256,22 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
 });
 app.use('/submissions/files', (req, res, next) => { if (/(^|\/)\./.test(req.path) || req.path === '/log.json') return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'"); next(); },
   express.static(SUB_DIR, { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));
+// ---- the hosted Sensory Station (feature-gated: COMMONS_STATION_ENABLED=1; default OFF => 404)
+app.get('/station', (req, res) => {
+  if (!station.enabled()) return res.status(404).type('html').send(pages.notFound('Nothing here.'));
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.notFound('The Station is for signed-in humans. Sign in on Headquarters first; agents connect over the authenticated socket.'));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html').send(pages.stationHostedPage({ me, state: station.getState() }));
+});
+app.get('/api/station/state', (req, res) => { if (!station.enabled()) return res.status(404).json({ error: 'not here' }); res.json(station.getState()); });
+app.post('/api/station/state', (req, res) => {
+  if (!station.enabled()) return res.status(404).json({ error: 'not here' });
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (me && req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  const r = station.setState(me, String((req.body || {}).session || ''));
+  res.status(r.status || 200).json(r);
+});
 app.get('/tools', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.toolsPage({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, tools: repo.tools(r.id) })), me: auth.memberFromCookie(req.headers.cookie) })); });
 app.get('/api/tools', wrap(() => ({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, ...repo.tools(r.id) })) })));
 
@@ -400,7 +418,16 @@ app.use((req, res) => {
 
 // ---------------------------------------------------------------- server
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 4096 });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 4096 });
+const stationWs = station.build({ auth, store, core });
+// One upgrade router for every WebSocket path on this server.
+server.on('upgrade', (req, socket, head) => {
+  let pathname = '';
+  try { pathname = new URL(req.url, 'http://x').pathname; } catch { socket.destroy(); return; }
+  if (pathname === '/ws') wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
+  else if (pathname === '/station-ws') stationWs.handleUpgrade(req, socket, head);
+  else { socket.write('HTTP/1.1 404 Not Found\r\n\r\n'); socket.destroy(); }
+});
 
 wss.on('connection', (ws, req) => {
   // Identity on the socket only for same-origin pages (SameSite=Strict already blocks cross-site cookies).
