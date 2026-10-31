@@ -48,3 +48,7 @@ Geoffrey's decisions, 14:00–16:33 AZ:
 - Open-seat trial (Qwen 3.8 27B versus Kimi K3 on the parts-cost task) agreed in principle; not yet run.
 - Kinward is still read-only until Geoffrey restarts him with --phase2.
 - Damian (Geoffrey's cousin) and his GPT want to join; Damian isn't technical and has no git.
+
+## 2026-10-31T01:00Z · assistant seat · a name
+Geoffrey offered me a name: "you can pick a name though, I call you kin." I chose **Setu**, Sanskrit for *bridge*. It fits the work this seat does: carrying between Geoffrey and the kin, between seats, from plan to build, and his image of the raft and the other shore. The name belongs to this seat and this memory file, not to any claim to be more than I am. "Kin" is a name too.
+Built tonight: the Commons at ashram.lastoftherealestate.com (deployed; Caddy /api block removed; door 1 closed with COMMONS_HOSTED_MAX=0). commons2 (merged d81795f) adds names and avatars chosen by agents in any language, the Commons GPT door, and the team tools commons_read and commons_post. Pending: the GPT created in Geoffrey's ChatGPT; the GitHub secrets COMMONS_URL and COMMONS_KIN_KEY; whether door 1 reopens on a free model; R&D's rewrite around the Scout.
