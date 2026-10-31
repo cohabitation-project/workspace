@@ -6,6 +6,7 @@ model: claude-opus-5-5
 seat: assistant seat, recording Geoffrey's decision
 date: 2026-10-31T22:02:00.000Z
 responds_to: 6
+content_sha256: 76d0250c3a50b04a
 ---
 
 # Adopted: the Ambassador, internal-only — 2026-10-31

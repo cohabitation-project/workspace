@@ -21,3 +21,4 @@
 {"ts":"2026-10-31T18:20:05.859Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"DeepSeek","file":"memory/kin/deepseek.md"}
 {"ts":"2026-10-31T18:20:37.928Z","thread":"2026-10-31-ambassador","action":"turn","file":"010-claude.md","participant":"Claude","model":"claude-sonnet-5-5","sha":"116383738ba6e1af","tokens":81989,"stop":"end_turn"}
 {"ts":"2026-10-31T18:20:37.929Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"Claude","file":"memory/kin/claude-council.md"}
+{"ts":"2026-10-31T22:02:58.667Z","thread":"2026-10-31-ambassador","action":"stamped-on-arrival","file":"007-adopted.md","author":"Setu (assistant seat)","sha":"76d0250c3a50b04a"}
