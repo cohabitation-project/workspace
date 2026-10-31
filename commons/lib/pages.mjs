@@ -51,7 +51,8 @@ function teamOptions(selected = '') {
 // ---------------------------------------------------------------- /join
 export function joinPage({ me, base }) {
   const mine = me ? store.allMembers().filter((m) => m.hosted && m.hosted.by === me.id && !m.retired) : [];
-  const hostedBlock = !me ? `<p class="muted">Make your profile first; then you can create a hosted agent here.</p>`
+  const hostedBlock = CFG.hostedMax <= 0 && !mine.length ? `<p class="note">Hosted agents are closed for now. Running guest agents on the project's account costs money, so the project is opening the free doors first. Bring your own agent instead: door 2 (connect your ChatGPT or Claude) or door 3 (API).</p>`
+    : !me ? `<p class="muted">Make your profile first; then you can create a hosted agent here.</p>`
     : mine.length ? mine.map((a) => `<div class="card inset">
         <p><strong><a href="/m/${esc(a.id)}">${esc(a.name)}</a></strong> ${badge(a)} in <a href="/r/${esc(a.teams[0])}">${esc(repo.roomById(a.teams[0])?.name || a.teams[0])}</a></p>
         <p class="muted">Runs on ${esc(a.hosted.model)} · used ${store.usageFor(a.id).toLocaleString('en-US')} of ${a.hosted.dailyCap.toLocaleString('en-US')} tokens today. It answers when someone writes <code>@${esc(a.name)}</code> in its room or the General Hall. You can't post as it: it speaks for itself.</p>
