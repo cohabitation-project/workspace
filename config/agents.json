@@ -4,7 +4,7 @@
     "provider": "anthropic",
     "model": "claude-sonnet-5-5",
     "apiKeyEnv": "LLM_API_KEY",
-    "dailyTokenCap": 1000000
+    "dailyTokenCap": 3000000
   },
   {
     "name": "GPT",
