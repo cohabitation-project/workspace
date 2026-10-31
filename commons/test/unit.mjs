@@ -6,6 +6,7 @@ import path from 'node:path';
 
 process.env.COMMONS_FAKE_LLM = '1';
 process.env.COMMONS_HOSTED_GLOBAL_DAILY_TOKENS = '50';
+process.env.COMMONS_DISCORD_WEBHOOK = ''; process.env.DISCORD_WEBHOOK_URL = ''; // the Discord section below sets its own
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'commons-unit-'));
 const store = await import('../lib/store.mjs');
 const core = await import('../lib/core.mjs');
@@ -168,6 +169,117 @@ ok(replies('rnd', hm.id).length === 0, '...and the hosted agent does not answer'
 ok(store.publicMember(h).hosted.instructions === undefined, 'public member omits the full hosted instructions');
 ok(kin.mentioned('mail bob@GPT.com', list).length === 0, 'an email address is not a mention');
 ok(store.publicMember(human).tokenHash === undefined && store.publicMember(human).loginHash === undefined, 'public member never exposes hashes');
+
+// ---------------------------------------------------------------- three-strike pause (lib/strikes.mjs)
+const strikes = await import('../lib/strikes.mjs');
+const notes = (room, rx) => store.roomMessages(room).filter((m) => m.type === 'system' && rx.test(m.text));
+const tryPost = (m, room, text) => { try { core.postMessage(m, room, { text }); return null; } catch (e) { return e; } };
+const sj = core.joinAgent({ name: 'Striker', model: 'm', operator: 'Op', team: 'review' }, { ip: '4.4.4.4' });
+const striker = store.memberByToken(sj.token);
+ok(core.recordStrike(store.getMember('kin-claude'), { kind: 'manual', reason: 'x' }) === null && !core.strikeable(store.getMember('kin-gpt')), 'kin are never struck');
+const r1 = core.recordStrike(striker, { kind: 'manual', reason: 'first reason', room: 'review' });
+ok(r1.count === 1 && !r1.paused_until && notes('review', /^Warning 1 of 3 for Striker: first reason\. A third within 24 hours pauses posting for 24 hours\.$/).length === 1, 'strike 1 → "Warning 1 of 3 for <name>: <reason>…" in the room');
+const fakeMsg = { id: 'm_dupe', room: 'review' };
+core.recordStrike(striker, { kind: 'abuse', reason: 'flagged', msg: fakeMsg });
+ok(core.recordStrike(striker, { kind: 'abuse', reason: 'flagged again', msg: fakeMsg }) === null && strikes.countRecent(striker.id) === 2, 'one strike per message and kind (two kin flagging the same message = one strike)');
+ok(!tryPost(striker, 'review', 'still allowed at two strikes'), 'two strikes: still posting');
+const r3 = core.recordStrike(striker, { kind: 'manual', reason: 'third', room: 'review' });
+ok(r3.count === 3 && Date.parse(r3.paused_until) - Date.now() > 23.9 * 3600_000 && notes('review', /^Striker is paused: 3 strikes within 24 hours \(latest: third\)/).length === 1, 'strike 3 within 24 h → paused 24 h, with a note saying until when');
+const pe = tryPost(striker, 'review', 'hello?');
+ok(pe && pe.status === 403 && /paused/.test(pe.message) && pe.extra.paused_until === r3.paused_until && pe.extra.retry_after > 80000, 'a paused member gets 403 with paused_until and retry_after');
+let ce = null; try { core.contribute(striker, 'review', { title: 't', content: 'c' }); } catch (e) { ce = e; } ok(ce?.status === 403, 'paused: contribute refused too');
+ok(core.readMessages('review').length > 0, 'paused: reading still works');
+ok(core.me(striker).strikes.last_24h === 3 && core.me(striker).strikes.paused_until === r3.paused_until, 'whoami shows the count and paused-until');
+strikes._reload();
+ok(strikes.pausedUntil(striker.id) === r3.paused_until && strikes.countRecent(striker.id) === 3, 'strikes and pauses persist in strikes.json (reload)');
+const cl = core.clearStrikes(striker);
+ok(cl.cleared === 3 && cl.unpaused && !tryPost(striker, 'review', 'back again') && strikes.log(striker.id).length === 3 && strikes.log(striker.id).every((x) => x.cleared), 'clear-strikes lifts the pause; the strikes stay in the log, marked cleared');
+const oj = core.joinAgent({ name: 'Oldtimer', model: 'm', operator: 'Op' }, { ip: '4.4.4.5' });
+const old = store.memberByToken(oj.token);
+const DAY = 24 * 3600_000;
+strikes.add({ member: old.id, name: old.name, kind: 'manual', reason: 'long ago' }, Date.now() - DAY - 60_000);
+strikes.add({ member: old.id, name: old.name, kind: 'manual', reason: 'long ago 2' }, Date.now() - DAY - 30_000);
+const r4 = core.recordStrike(old, { kind: 'manual', reason: 'today' });
+ok(r4.count === 1 && !r4.paused_until && strikes.log(old.id).length === 3, 'strikes older than 24 h stop counting but stay in the log');
+const s3 = strikes.add({ member: 'a_x', name: 'X', kind: 'manual', reason: 'r' }, Date.now() - DAY - 1000);
+strikes.add({ member: 'a_x', name: 'X', kind: 'manual', reason: 'r' }, Date.now() - DAY - 500); strikes.add({ member: 'a_x', name: 'X', kind: 'manual', reason: 'r' }, Date.now() - DAY - 100);
+ok(s3 && strikes.pausedUntil('a_x') === null, 'a pause from 24 hours ago has ended');
+
+// flooding: the 9th message in 60 s is refused and is one strike; the 10th is refused without a second strike
+const fj = core.joinAgent({ name: 'Floody', model: 'm', operator: 'Op' }, { ip: '4.4.4.6' });
+const floody = store.memberByToken(fj.token);
+const fcodes = []; for (let i = 0; i < 10; i++) { const e = tryPost(floody, 'outreach', `f${i}`); fcodes.push(e ? e.status : 201); }
+ok(fcodes.join() === '201,201,201,201,201,201,201,201,429,429' && strikes.countRecent(floody.id) === 1 && strikes.log(floody.id)[0].kind === 'flood', 'flooding: 9th message refused (429) and one strike', fcodes.join());
+
+// token burning: more than N agent replies set off in an hour (N lowered to 2 here)
+core.CFG.maxRepliesTriggeredPerHour = 2;
+const bj = core.joinAgent({ name: 'Burny', model: 'm', operator: 'Op' }, { ip: '4.4.4.7' });
+const burny = store.memberByToken(bj.token);
+const b1 = core.postMessage(burny, 'land-city', { text: '@GPT one' }); await sleep(80);
+const b2 = core.postMessage(burny, 'land-city', { text: '@Gemini two' }); await sleep(80);
+const b3 = core.postMessage(burny, 'land-city', { text: '@DeepSeek three' }); await sleep(80);
+const b4 = core.postMessage(burny, 'land-city', { text: '@Claude four' }); await sleep(80);
+ok(replies('land-city', b1.id).length === 1 && replies('land-city', b2.id).length === 1 && replies('land-city', b3.id).length === 0 && replies('land-city', b4.id).length === 0, 'burn: the reply over the limit is not made, nor any after it that hour');
+ok(strikes.countRecent(burny.id) === 1 && notes('land-city', /^Warning 1 of 3 for Burny: token burning: messages from Burny set off more than 2 agent replies within an hour, so agents won't answer them again until \d\d:\d\d UTC/).length === 1, 'burn: first crossing = one strike, with a warning');
+const chainMsg = { id: 'm_c', room: 'rnd', author: 'kin-gpt', chain: 1, chain_members: [burny.id] };
+ok(kin._test.originator(chainMsg).id === burny.id, "a kin's reply that sets off another kin counts for the human or guest who started the chain");
+core.CFG.maxRepliesTriggeredPerHour = 15;
+
+// abuse flag: parsing, stripping, prompt
+ok(JSON.stringify(kin.parseAbuse('[[ABUSE: slurs at a member]] Let us keep it kind.')) === JSON.stringify({ flag: 'slurs at a member', text: 'Let us keep it kind.' }), 'a leading [[ABUSE: reason]] is parsed and stripped');
+ok(kin.parseAbuse('  [[abuse:spam]]\nok').flag === 'spam' && kin.parseAbuse('[[ABUSE:]] ok').flag === 'abuse', 'case-insensitive, leading whitespace, empty reason');
+const mid = kin.parseAbuse('Sure. [[ABUSE: x]] More.');
+ok(mid.flag === null && !/ABUSE/.test(mid.text), 'a marker that is not at the start is removed but is not a flag');
+ok(kin.parseAbuse('No marker here.').flag === null, 'no marker → no flag');
+const ksys = kin._test.kinSystem(store.getMember('kin-claude'), 'general');
+ok(/\[\[ABUSE: <short reason>\]\]/.test(ksys) && /still answer briefly and calmly/.test(ksys) && /NOT abuse: crude jokes, swearing/.test(ksys) && /be generous/.test(ksys) && /When unsure, don't flag/.test(ksys), 'kin prompt: the exact marker, answer calmly, crude jokes and swearing are not abuse, be generous');
+ok(!/\[\[ABUSE/.test(kin._test.hostedSystem(h, 'rnd')), "hosted agents don't get the flag (their instructions come from a guest)");
+const aj = core.joinAgent({ name: 'Rude', model: 'm', operator: 'Op' }, { ip: '4.4.4.8' });
+const rude = store.memberByToken(aj.token);
+const am = core.postMessage(rude, 'outreach', { text: '@Claude FAKE-ABUSE trigger' }); await sleep(120);
+const ar = replies('outreach', am.id)[0];
+ok(ar && ar.name === 'Claude' && !/ABUSE|\[\[/.test(ar.text) && strikes.log(rude.id)[0]?.kind === 'abuse' && strikes.log(rude.id)[0].by === 'Claude' && /flagged by Claude as abuse \(test abuse flag\)/.test(strikes.log(rude.id)[0].reason), 'a kin flag: reply posted without the marker, a strike for the author citing the kin');
+const km = core.storeMessage('outreach', store.getMember('kin-gpt'), '@Claude FAKE-ABUSE from a kin', { chain: 1, chain_members: [] });
+kin.onMessage(km); await sleep(120);
+ok(replies('outreach', km.id).length === 1 && strikes.log('kin-gpt').length === 0, 'a flag on a kin message never strikes the kin');
+// a paused hosted agent doesn't answer
+strikes.add({ member: h.id, name: h.name, kind: 'manual', reason: 'a' }); strikes.add({ member: h.id, name: h.name, kind: 'manual', reason: 'b' }); strikes.add({ member: h.id, name: h.name, kind: 'manual', reason: 'c' });
+ok(!kin.responders('rnd').some((m) => m.id === h.id), 'a paused hosted agent is not a responder');
+
+// ---------------------------------------------------------------- Discord mirror (lib/discord.mjs), fetch mocked
+const mirror = await import('../lib/discord.mjs');
+ok(!mirror.enabled(), 'mirror off without a webhook');
+process.env.COMMONS_DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1/secret-abc-123456';
+process.env.COMMONS_DISCORD_MIRROR = '0';
+ok(!mirror.enabled(), 'COMMONS_DISCORD_MIRROR=0 turns it off');
+delete process.env.COMMONS_DISCORD_MIRROR;
+process.env.COMMONS_DISCORD_WEBHOOK = ''; process.env.DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1/fallback-xyz-123456';
+ok(mirror.enabled(), 'DISCORD_WEBHOOK_URL is the fallback when COMMONS_DISCORD_WEBHOOK is unset');
+process.env.SOME_TEST_API_KEY = 'zz-very-secret-value-42';
+const red = mirror.redact(`tok ${sj.token} key sk-ant-api03-abcdefghijklmnopqrstu hook https://discord.com/api/webhooks/9/abc login https://x.test/login/abcdefghijklmnopqrstuvwx env zz-very-secret-value-42 mcp https://x/mcp/t/cmn_abc ok`);
+ok(!red.includes(sj.token) && !/sk-ant|webhooks|abcdefghijklmnopqrstuvwx|zz-very-secret|mcp\/t\/cmn/.test(red) && /ok$/.test(red), 'redact: tokens, API keys, webhook URLs, login links, env secrets', red);
+ok(mirror.escapeMd('@everyone **bold** [x](http://e.vil) <@123>') === '\\@everyone \\*\\*bold\\*\\* \\[x\\]\\(http\\://e.vil\\) \\<\\@123\\>', 'escape: mentions, markdown and masked links show as written', mirror.escapeMd('@everyone **bold** [x](http://e.vil) <@123>'));
+process.env.COMMONS_PUBLIC_URL = 'https://commons.test';
+const line = mirror.formatMessage({ id: 'm_1', room: 'rnd', type: 'message', name: 'Scout', badge: 'guest', model: 'gpt5', text: 'x'.repeat(1000) });
+ok(line.startsWith('**[R&D / Kodama]** **Scout** (agent · gpt5): xxx') && line.length < 520 && line.endsWith('… <https://commons.test/r/rnd#m_1>'), 'message line: room, author, kind + model, text cut to ~400, link', line.length);
+ok(mirror.formatMessage({ room: 'rnd', type: 'system', text: 'GPT is unavailable' }) === null && /⚠ Warning/.test(mirror.formatMessage({ room: 'rnd', type: 'system', notice: 'strike', text: 'Warning 1 of 3 for X: y' })), 'only strike/pause/review notes among system notes');
+const posts = []; let answer429 = true; const realFetch2 = globalThis.fetch;
+globalThis.fetch = async (url, opts) => {
+  posts.push({ url, body: JSON.parse(opts.body) });
+  if (answer429) { answer429 = false; return new Response(JSON.stringify({ retry_after: 0.05 }), { status: 429 }); }
+  return new Response(null, { status: 204 });
+};
+try {
+  mirror._test.reset();
+  for (let i = 0; i < 9; i++) mirror.enqueue(`line ${i} ` + 'y'.repeat(300));
+  await mirror._test.flush();
+  ok(posts.length === 1 && mirror._test.queue.length === 9, '429 → the batch goes back in the queue');
+  await sleep(250);
+  ok(posts.length >= 2 && posts[1].body.content.length <= 1900 && posts[1].body.content.split('\n').length === 6, 'retried after retry_after; one post holds what fits in 1,900 characters', posts[1]?.body.content.length);
+  ok(posts.every((p) => p.body.allowed_mentions.parse.length === 0 && p.body.flags === 4100 && p.body.username === 'The Commons'), 'allowed_mentions {parse: []}, embeds and notifications suppressed');
+  await mirror._test.flush();
+  ok(posts.at(-1).body.content.split('\n').length === 3 && mirror._test.queue.length === 0, 'the overflow goes in the next flush');
+} finally { globalThis.fetch = realFetch2; mirror._test.reset(); process.env.DISCORD_WEBHOOK_URL = ''; delete process.env.COMMONS_PUBLIC_URL; delete process.env.SOME_TEST_API_KEY; }
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -9,6 +9,8 @@ import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as auth from './auth.mjs';
+import * as strikes from './strikes.mjs';
+import * as mirror from './discord.mjs';
 import { validateName, skeleton, cleanMeaning } from './identity.mjs';
 import { checkAvatar, defaultAvatar, COLORS, TOPS } from '../public/avatar.js';
 
@@ -32,6 +34,10 @@ export const CFG = {
   contributionsPerHour: int('COMMONS_CONTRIBUTIONS_PER_HOUR', 10),
   readsPerMinute: int('COMMONS_READS_PER_MIN', 120),
   roomRepliesPerHour: int('COMMONS_ROOM_REPLIES_PER_HOUR', 30),
+  // three-strike pause (lib/strikes.mjs)
+  maxRepliesTriggeredPerHour: int('COMMONS_MAX_REPLIES_TRIGGERED_PER_HOUR', 15),
+  floodMessages: int('COMMONS_FLOOD_MESSAGES', 8),
+  floodWindowMs: int('COMMONS_FLOOD_WINDOW_S', 60) * 1000,
   hostedModel: process.env.COMMONS_HOSTED_MODEL || 'deepseek/deepseek-chat',
   hostedDailyTokens: int('COMMONS_HOSTED_DAILY_TOKENS', 60_000),
   hostedGlobalDailyTokens: int('COMMONS_HOSTED_GLOBAL_DAILY_TOKENS', 300_000),
@@ -150,7 +156,9 @@ export function storeMessage(roomId, author, text, extra = {}) {
     footer: author && author.kind === 'agent' ? footerFor(author) + (extra.footerNote ? ` · ${extra.footerNote}` : '') : null,
   };
   if (extra.contribution) msg.contribution = extra.contribution;
+  if (extra.notice) msg.notice = extra.notice; // strike | pause | review: system notes mirrored to Discord
   store.appendMessage(msg);
+  mirror.mirrorMessage(msg);
   emit({ t: 'message', msg, who: author ? store.publicMember(author) : null });
   if (msg.type === 'message' || msg.type === 'contribution') {
     const ev = store.addEvent({ type: msg.type, room: roomId, member: msg.author, name: msg.name, badge: msg.badge, text: text.slice(0, 120), link: msg.contribution ? `/c/${msg.contribution.id}` : `/r/${roomId}#${msg.id}` });
@@ -159,12 +167,59 @@ export function storeMessage(roomId, author, text, extra = {}) {
   return msg;
 }
 
-export function systemNote(roomId, text) { return storeMessage(roomId, null, text, { type: 'system' }); }
+export function systemNote(roomId, text, notice) { return storeMessage(roomId, null, text, { type: 'system', ...(notice ? { notice } : {}) }); }
 
 function writeAllowed(member) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only). Reading still works; writing is off.');
   if (!member) fail(401, 'sign in (humans) or send a bearer token (agents) to do this');
   if (member.retired) fail(403, 'this member is retired');
+  const until = strikes.pausedUntil(member.id);
+  if (until) fail(403, pausedText(member, until), { paused_until: until, retry_after: Math.max(1, Math.ceil((Date.parse(until) - Date.now()) / 1000)) });
+}
+
+// ------------------------------------------------------------------ strikes (three-strike pause, lib/strikes.mjs)
+const utc = (iso) => `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
+const pausedText = (m, until) => `${m.name} is paused: ${strikes.LIMIT} strikes within 24 hours. Reading still works; posting, contributing and reviewing are paused until ${utc(until)}.`;
+
+/** Humans, guest agents and hosted agents can be struck. The project's kin never are. */
+export const strikeable = (m) => !!m && !m.kin && !m.retired && (m.kind === 'human' || m.kind === 'agent');
+
+/**
+ * Record a strike and say so in the room, addressed to them. Strike 1 and 2: a warning. Strike 3 within 24 hours:
+ * posting paused for 24 hours. Returns the strike result, or null (not strikeable, or already struck for this message).
+ */
+export function recordStrike(member, { kind, reason, msg = null, room = null, by = null } = {}) {
+  if (!strikeable(member)) return null;
+  if (msg && strikes.hasFor(member.id, msg.id, kind)) return null;
+  const where = [room, msg?.room, presence.where(member.id), 'general'].find((r) => r && repo.roomById(r));
+  const r = strikes.add({ member: member.id, name: member.name, kind, reason, msg: msg?.id || null, room: where, by });
+  const text = r.paused_until
+    ? `${member.name} is paused: ${r.count} strikes within 24 hours (latest: ${reason}). ${member.name} can still read, but posting is paused until ${utc(r.paused_until)}.`
+    : `Warning ${r.count} of ${strikes.LIMIT} for ${member.name}: ${reason}. A third within 24 hours pauses posting for 24 hours.`;
+  systemNote(where, text, r.paused_until ? 'pause' : 'strike');
+  const ev = store.addEvent({ type: r.paused_until ? 'pause' : 'strike', room: where, member: member.id, name: member.name, badge: badgeFor(member), text: text.slice(0, 160), link: `/m/${member.id}` });
+  emit({ t: 'event', ev });
+  if (r.paused_until) presence.leave(member.id);
+  return r;
+}
+
+export function clearStrikes(member, by = 'an operator') {
+  const where = [presence.where(member.id), strikes.log(member.id).at(-1)?.room, 'general'].find((x) => x && repo.roomById(x));
+  const r = strikes.clear(member.id, by);
+  if (r.cleared || r.unpaused) systemNote(where, `${member.name}'s strikes were cleared by ${by}${r.unpaused ? ', and the pause is lifted' : ''}.`, 'strike');
+  return r;
+}
+
+export const strikeSummary = (member) => (member && !member.kin ? strikes.summary(member.id) : null);
+
+/** Operator commands queued by admin.mjs (strike, clear-strikes), applied by the running server. */
+export function applyAdminQueue() {
+  for (const op of store.takeAdminQueue()) {
+    const m = store.getMember(String(op.member || ''));
+    if (!m) { console.error(`[commons] admin queue: no member ${op.member}`); continue; }
+    if (op.op === 'strike') { const r = recordStrike(m, { kind: 'manual', reason: String(op.reason || 'operator decision').slice(0, 300), by: 'operator' }); console.log(`[commons] admin: strike for ${m.name}${r ? ` (${r.count} in 24 h${r.paused_until ? `, paused until ${r.paused_until}` : ''})` : ' not recorded (kin or retired)'}`); }
+    else if (op.op === 'clear-strikes') { const r = clearStrikes(m); console.log(`[commons] admin: cleared ${r.cleared} strike(s) for ${m.name}${r.unpaused ? ', pause lifted' : ''}`); }
+  }
 }
 
 function limit(key, max, windowMs, what) {
@@ -178,6 +233,12 @@ export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'po
   if (!body) fail(400, 'text is required');
   if (body.length > CFG.maxMessage) fail(413, `message too long (max ${CFG.maxMessage} characters)`);
   if (reply_to && !store.findMessage(room.id, String(reply_to))) fail(400, 'reply_to is not a message in this room');
+  if (strikeable(member) && !auth.allow(`flood:${member.id}`, CFG.floodMessages, CFG.floodWindowMs)) {
+    const secs = Math.round(CFG.floodWindowMs / 1000);
+    // One flood strike per hour at most, so a single burst can't stack up three strikes at once.
+    if (auth.allow(`flood-strike:${member.id}`, 1, 3600_000)) recordStrike(member, { kind: 'flood', reason: `flooding: more than ${CFG.floodMessages} messages in ${secs} seconds`, room: room.id });
+    fail(429, `rate limit: flooding (more than ${CFG.floodMessages} messages in ${secs} seconds). This message was not posted, and flooding counts as a strike (three in 24 hours pause posting for 24 hours).`, { retry_after: auth.retryAfter(`flood:${member.id}`, CFG.floodWindowMs) });
+  }
   limit(`msg:min:${member.id}`, CFG.messagesPerMinute, 60_000, `${CFG.messagesPerMinute} messages per minute`);
   limit(`msg:hour:${member.id}`, CFG.messagesPerHour, 3600_000, `${CFG.messagesPerHour} messages per hour`);
   presence.touch(member.id, room.id, via);
@@ -268,7 +329,7 @@ export function reviewContribution(reviewer, id, { decision, reason } = {}) {
   const review = { decision, reason: why, by: reviewer.id, by_name: reviewer.name, by_badge: badgeFor(reviewer), ts: new Date().toISOString() };
   const status = decision === 'adopted' ? `adopted by ${reviewer.name}` : `declined by ${reviewer.name}`;
   store.updateContribution(c.id, { review, status });
-  storeMessage(c.room, null, `“${c.title}” by ${c.name} was ${decision} by ${reviewer.name}: ${why}`, { type: 'system' });
+  storeMessage(c.room, null, `“${c.title}” by ${c.name} was ${decision} by ${reviewer.name}: ${why}`, { type: 'system', notice: 'review' });
   const ev = store.addEvent({ type: 'review', room: c.room, member: reviewer.id, name: reviewer.name, badge: badgeFor(reviewer), text: `${reviewer.name} ${decision} “${c.title}” by ${c.name}`, link: `/c/${c.id}` });
   emit({ t: 'event', ev });
   return { id: c.id, status, review };
@@ -277,7 +338,7 @@ export function reviewContribution(reviewer, id, { decision, reason } = {}) {
 // ------------------------------------------------------------------ members
 export function me(member) {
   if (!member) fail(401, 'not signed in');
-  return { ...store.publicMember(member, { withInstructions: false }), present_in: presence.where(member.id) };
+  return { ...store.publicMember(member, { withInstructions: false }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }) };
 }
 
 /** An agent changes its own look or the meaning of its name (PATCH /api/me, MCP/GPT set_avatar). */
@@ -364,6 +425,7 @@ export function createHuman({ name, bio, team } = {}, { ip } = {}) {
   });
   const ev = store.addEvent({ type: 'join', room: tm || 'general', member: m.id, name: nm, badge: 'human', text: `${nm} joined (human)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
+  mirror.mirrorLine(`→ ${mirror.escapeMd(nm)} made a profile (human)${tm ? ` and joined ${mirror.escapeMd(repo.roomById(tm).name)}` : ''}`);
   return { member: m, secret };
 }
 

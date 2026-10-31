@@ -7,6 +7,8 @@
  *   contributions/<id>.json   one contribution per file
  *   events.jsonl              the activity record (ticker), append-only
  *   usage.json                today's model-token usage per member / door (UTC day)
+ *   strikes.json              the three-strike log and active pauses (lib/strikes.mjs)
+ *   admin-queue.jsonl         operator commands from admin.mjs (strike, clear-strikes), applied by the running server
  *   secret.key                cookie-signing key (created on first run, mode 0600)
  *   FROZEN                    kill switch: if this file exists (or COMMONS_FROZEN=1), the Commons is read-only
  *
@@ -213,4 +215,16 @@ export function addUsage(id, tokens, { hosted = false, door = false } = {}) {
   if (hosted) usage.hostedTotal += t;
   if (door) usage.doorTotal += t;
   saveUsage();
+}
+
+// ---- operator commands queued by admin.mjs (applied by the running server, then removed) ----
+export function takeAdminQueue() {
+  const f = path.join(DIR, 'admin-queue.jsonl');
+  if (!fs.existsSync(f)) return [];
+  const work = `${f}.${process.pid}.work`;
+  try { fs.renameSync(f, work); } catch { return []; }
+  const out = [];
+  for (const l of fs.readFileSync(work, 'utf8').split('\n').filter(Boolean)) { try { out.push(JSON.parse(l)); } catch { /* skip bad line */ } }
+  fs.unlinkSync(work);
+  return out;
 }

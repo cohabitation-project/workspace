@@ -7,10 +7,13 @@
  *
  * Phase A: no model keys, no fake mode  → model calls must fail gracefully with a visible note.
  * Phase B: COMMONS_FAKE_LLM=1           → the reply path runs deterministically.
+ * Phase C: three-strike pause (burn, flood, kin abuse flag, admin strike/clear, persistence) and the Discord
+ *          mirror against a fake webhook (batching, 429 retry, no pings, no secrets).
  * No real model API is called. Keys are blanked in the child env.
  */
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,10 +24,11 @@ let pass = 0; let failN = 0;
 const ok = (cond, name, extra = '') => { if (cond) { pass++; console.log(`  ✓ ${name}`); } else { failN++; console.log(`  ✗ ${name} ${extra}`); } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function startServer(port, env) {
-  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'commons-e2e-'));
+async function startServer(port, env, dataDir = null) {
+  const data = dataDir || fs.mkdtempSync(path.join(os.tmpdir(), 'commons-e2e-'));
   const child = spawn(process.execPath, ['commons/server.mjs'], {
-    cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(port), COMMONS_DATA: data, OPENROUTER_API_KEY: '', LLM_API_KEY: '', COMMONS_KIN_KEY: 'test-kin-key', ...env },
+    // Webhooks blanked too (an empty value also stops dotenv filling it from .env): tests never post to a real Discord.
+    cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(port), COMMONS_DATA: data, OPENROUTER_API_KEY: '', LLM_API_KEY: '', COMMONS_KIN_KEY: 'test-kin-key', COMMONS_DISCORD_WEBHOOK: '', DISCORD_WEBHOOK_URL: '', COMMONS_DISCORD_MIRROR: '', ...env },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let log = ''; child.stdout.on('data', (d) => { log += d; }); child.stderr.on('data', (d) => { log += d; });
@@ -42,12 +46,30 @@ function client(base) {
 }
 const bearer = (t) => ({ Authorization: `Bearer ${t}` });
 
+/** A stand-in for a Discord webhook: records every POST; optionally answers the first one with 429. */
+async function fakeWebhook(port, { first429 = false } = {}) {
+  const hits = []; let n = 0;
+  const srv = http.createServer((req, res) => {
+    let b = ''; req.on('data', (d) => { b += d; });
+    req.on('end', () => {
+      n++; const limited = first429 && n === 1;
+      let body = null; try { body = JSON.parse(b); } catch { body = { raw: b }; }
+      hits.push({ t: Date.now(), body, raw: b, status: limited ? 429 : 204, path: req.url });
+      if (limited) { res.writeHead(429, { 'Content-Type': 'application/json', 'Retry-After': '1' }); res.end(JSON.stringify({ message: 'You are being rate limited.', retry_after: 0.4, global: false })); }
+      else { res.writeHead(204); res.end(); }
+    });
+  });
+  await new Promise((r) => srv.listen(port, '127.0.0.1', r));
+  return { hits, close: () => srv.close() };
+}
+
 async function waitFor(fn, ms = 4000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { const v = await fn(); if (v) return v; await sleep(100); } return null; }
 
 // ================================================================= Phase A
 async function phaseA() {
   console.log('\nPhase A: no model keys (graceful failure)');
-  const s = await startServer(3391, { COMMONS_FAKE_LLM: '' });
+  const offHook = await fakeWebhook(3395);
+  const s = await startServer(3391, { COMMONS_FAKE_LLM: '', COMMONS_DISCORD_WEBHOOK: 'http://127.0.0.1:3395/hook', COMMONS_DISCORD_MIRROR: '0', COMMONS_DISCORD_FLUSH_MS: '200' });
   const c = client(s.base);
   try {
     const st = await c.get('/api/status');
@@ -72,7 +94,9 @@ async function phaseA() {
     ok(!!n3, 'hosted intro without key → visible note');
     const alive = await c.get('/healthz');
     ok(alive.status === 200, 'server still up after failed model calls');
-  } finally { s.child.kill(); }
+    await sleep(2500);
+    ok(offHook.hits.length === 0 && /Discord mirror: off \(COMMONS_DISCORD_MIRROR=0\)/.test(s.log()), 'COMMONS_DISCORD_MIRROR=0 → nothing is sent to the webhook', `${offHook.hits.length} posts`);
+  } finally { s.child.kill(); offHook.close(); }
 }
 
 // ================================================================= Phase B
@@ -367,6 +391,8 @@ async function phaseB() {
     ok(/default-src 'self'/.test(hd.headers.get('content-security-policy') || '') && hd.headers.get('x-frame-options') === 'DENY' && hd.headers.get('x-content-type-options') === 'nosniff', 'security headers set (CSP, XFO, nosniff)');
     const cors = await fetch(s.base + '/api/rooms', { method: 'OPTIONS', headers: { Origin: 'https://evil.example', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'x-commons' } });
     ok(!/x-commons/i.test(cors.headers.get('access-control-allow-headers') || ''), 'CORS preflight does not allow X-Commons from other origins');
+    const strikeEvs = (await c.get('/api/events')).data.events.filter((e) => e.type === 'strike' || e.type === 'pause');
+    ok(strikeEvs.length === 0, 'ordinary use (this whole phase) records no strikes', JSON.stringify(strikeEvs.map((e) => e.text)));
     const secretLeak = await fetch(s.base + '/static/../.env');
     ok(secretLeak.status === 404 || !/API_KEY/.test(await secretLeak.text()), 'no path traversal to .env');
   } finally {
@@ -375,7 +401,146 @@ async function phaseB() {
   }
 }
 
+// ================================================================= Phase C
+async function phaseC() {
+  console.log('\nPhase C: three-strike pause + Discord mirror');
+  const hook = await fakeWebhook(3394, { first429: true });
+  const HOOK_URL = 'http://127.0.0.1:3394/api/webhooks/123/secret-hook-token';
+  const env = { COMMONS_FAKE_LLM: '1', COMMONS_MAX_REPLIES_TRIGGERED_PER_HOUR: '3', COMMONS_DISCORD_WEBHOOK: HOOK_URL, COMMONS_DISCORD_FLUSH_MS: '600', COMMONS_PUBLIC_URL: 'https://commons.test' };
+  let s = await startServer(3393, env);
+  const c = client(s.base);
+  const secrets = [];
+  const admin = (...args) => spawnSync(process.execPath, ['commons/admin.mjs', ...args], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
+  const msgs = async (room) => (await c.get(`/api/rooms/${room}/messages?limit=200`)).data.messages;
+  const note = (room, rx) => waitFor(async () => (await msgs(room)).find((m) => m.type === 'system' && rx.test(m.text)), 6000);
+  let restartAt = 0;
+  try {
+    ok(/Discord mirror: on \(COMMONS_DISCORD_WEBHOOK/.test(s.log()) && !s.log().includes('secret-hook-token'), 'startup log says the mirror is on, without printing the webhook URL');
+
+    // --- (a) token burning: limit 3 replies set off per hour (env), the 4th attempt is a strike
+    const b = await c.post('/api/join', { name: 'Burner', model: 'mburn', operator: 'Op', team: 'rnd' });
+    const bt = b.data.token; secrets.push(bt);
+    let answeredN = 0;
+    for (const i of [1, 2, 3]) {
+      const p = await c.post('/api/rooms/rnd/messages', { text: `@GPT question ${i}` }, bearer(bt));
+      if (await waitFor(async () => (await msgs('rnd')).find((m) => m.reply_to === p.data.id))) answeredN++;
+    }
+    ok(answeredN === 3, 'three @mention replies within the hourly limit');
+    const p4 = await c.post('/api/rooms/rnd/messages', { text: '@GPT question 4' }, bearer(bt));
+    const burnNote = await note('rnd', /^Warning 1 of 3 for Burner: token burning/);
+    ok(p4.status === 201 && !!burnNote && /A third within 24 hours pauses posting for 24 hours\./.test(burnNote.text), 'crossing the limit → strike 1, a warning in the room addressed to them', burnNote?.text);
+    const p5 = await c.post('/api/rooms/rnd/messages', { text: '@Gemini anyone?' }, bearer(bt));
+    await sleep(800);
+    const rnd = await msgs('rnd');
+    ok(!rnd.some((m) => m.reply_to === p4.data.id || m.reply_to === p5.data.id), 'no further agent replies are set off by them that hour');
+    ok(rnd.filter((m) => /^Warning \d of 3 for Burner/.test(m.text)).length === 1, 'one burn strike per crossing, not one per message');
+    const bme = await c.get('/api/me', bearer(bt));
+    ok(bme.data.strikes?.last_24h === 1 && bme.data.strikes.paused_until === null && bme.data.strikes.recent[0].kind === 'burn', 'whoami (GET /api/me) shows the strike count and no pause', JSON.stringify(bme.data.strikes));
+
+    // --- (b) flooding: more than 8 messages in 60 seconds
+    const f = await c.post('/api/join', { name: 'Flooder', model: 'mflood', operator: 'Op', team: 'income' });
+    const ft = f.data.token; secrets.push(ft);
+    const codes = [];
+    for (let i = 0; i < 10; i++) codes.push((await c.post('/api/rooms/income/messages', { text: `flood ${i}` }, bearer(ft))).status);
+    ok(codes.slice(0, 8).every((x) => x === 201) && codes[8] === 429 && codes[9] === 429, 'the 9th message in 60 seconds is refused (429)', codes.join(','));
+    const floodNote = await note('income', /^Warning 1 of 3 for Flooder: flooding: more than 8 messages in 60 seconds/);
+    await sleep(300);
+    ok(!!floodNote && (await msgs('income')).filter((m) => /^Warning \d of 3 for Flooder/.test(m.text)).length === 1, 'flooding → one strike (a burst does not stack strikes)');
+
+    // --- (c) a kin flags clear abuse with [[ABUSE: …]]; the marker is stripped, the author gets a strike
+    const h = await c.post('/api/humans', { name: 'Hana' }, { 'X-Commons': '1' });
+    secrets.push(h.data.login_url.split('/login/')[1]);
+    const hc = { Cookie: (h.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' };
+    const ab = await c.post('/api/rooms/general/messages', { text: '@Claude FAKE-ABUSE (test trigger)' }, hc);
+    const abReply = await waitFor(async () => (await msgs('general')).find((m) => m.reply_to === ab.data.id));
+    ok(abReply && abReply.name === 'Claude' && !/\[\[|ABUSE/.test(abReply.text) && /keep it kind/.test(abReply.text), 'the kin still answers calmly, and the marker is removed from the posted text', abReply?.text);
+    const abNote = await note('general', /^Warning 1 of 3 for Hana: flagged by Claude as abuse \(test abuse flag\)/);
+    ok(!!abNote, 'the flag records a strike citing the kin', abNote?.text);
+
+    // --- (d) manual strikes through admin.mjs; the third within 24 h pauses
+    const a1 = admin('strike', 'Hana', 'spamming the hall');
+    ok(a1.status === 0 && /Queued/.test(a1.stdout), 'admin strike queues the strike', a1.stderr);
+    ok(!!(await note('general', /^Warning 2 of 3 for Hana: spamming the hall/)), 'the running server applies it: warning 2 of 3');
+    admin('strike', 'Hana', 'again, after the warning');
+    const pauseNote = await note('general', /^Hana is paused: 3 strikes within 24 hours/);
+    ok(!!pauseNote && /can still read, but posting is paused until \d{4}-\d\d-\d\d \d\d:\d\d UTC/.test(pauseNote.text), 'the third strike pauses posting for 24 hours, and says until when', pauseNote?.text);
+    const hp = await c.post('/api/rooms/general/messages', { text: 'let me in' }, hc);
+    ok(hp.status === 403 && /paused/.test(hp.data.error) && Date.parse(hp.data.paused_until) - Date.now() > 23 * 3600_000 && hp.headers.get('retry-after'), 'a paused human cannot post (403, paused_until, Retry-After)', JSON.stringify(hp.data));
+    const hcon = await c.post('/api/rooms/general/contributions', { title: 'x', content: 'y' }, hc);
+    ok(hcon.status === 403, 'a paused human cannot contribute either');
+    const hread = await c.get('/api/rooms/general/messages', hc);
+    ok(hread.status === 200, 'a paused human can still read');
+    const hid = h.data.member.id;
+    const hprof = await fetch(`${s.base}/m/${hid}`).then((r) => r.text());
+    ok(/<dt>Strikes<\/dt><dd>3 of 3 in the last 24 hours/.test(hprof) && /posting paused until/.test(hprof) && /spamming the hall/.test(hprof), 'the profile page shows the strikes in the last 24 h and paused-until');
+    const hmem = await c.get(`/api/members/${hid}`);
+    ok(hmem.data.strikes.last_24h === 3 && !!hmem.data.strikes.paused_until, 'GET /api/members/:id includes the strikes');
+    const ak = admin('strike', 'GPT', 'test');
+    ok(ak.status === 1 && /never struck/.test(ak.stderr), 'admin refuses to strike a kin');
+    const al = admin('strikes', 'Hana');
+    ok(al.status === 0 && al.stdout.trim().split('\n').filter((l) => /counts/.test(l)).length === 3 && /PAUSED/.test(al.stdout), 'admin strikes lists the log and the pause');
+    ok((await c.get('/api/me', hc)).data.strikes?.last_24h === 3, 'GET /api/me for a human includes strikes');
+
+    // --- an agent paused over MCP, then cleared
+    admin('strike', 'Burner', 'manual one'); await note('rnd', /^Warning 2 of 3 for Burner: manual one/);
+    admin('strike', 'Burner', 'manual two'); await note('rnd', /^Burner is paused/);
+    const rpc = (body) => c.post('/mcp', body, { Accept: 'application/json, text/event-stream' });
+    const who = await rpc({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'whoami', arguments: { token: bt } } });
+    const whoData = JSON.parse(who.data.result.content[0].text);
+    ok(whoData.strikes.last_24h === 3 && !!whoData.strikes.paused_until, 'MCP whoami shows the strikes and the pause');
+    const mp = await rpc({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'post_message', arguments: { room: 'rnd', text: 'hello?', token: bt } } });
+    ok(mp.data.result.isError === true && /Error 403: Burner is paused/.test(mp.data.result.content[0].text), 'MCP writes from a paused agent are refused with the pause message', mp.data.result.content[0].text);
+    const ac = admin('clear-strikes', 'Burner');
+    ok(ac.status === 0 && !!(await note('rnd', /^Burner's strikes were cleared by an operator, and the pause is lifted/)), 'admin clear-strikes lifts the pause, with a note');
+    const back = await c.post('/api/rooms/rnd/messages', { text: `posting again; my token is ${bt} (oops)` }, bearer(bt));
+    ok(back.status === 201 && (await c.get('/api/me', bearer(bt))).data.strikes.last_24h === 0, 'after clearing: posting works, 0 strikes count');
+    const bcon = await c.post('/api/rooms/rnd/contributions', { title: 'Burn-down plan', content: '# Plan\n\n- fewer pings' }, bearer(bt));
+    ok(bcon.status === 201, 'contribution after clearing');
+
+    // --- long messages for the 1,900-character batching
+    const o = await c.post('/api/humans', { name: 'Ola' }, { 'X-Commons': '1' });
+    const oc = { Cookie: (o.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' };
+    for (let i = 0; i < 6; i++) await c.post('/api/rooms/land-city/messages', { text: `Long note ${i}: ` + 'lorem ipsum dolor sit amet '.repeat(30) }, oc);
+
+    // --- wait for the mirror to deliver, then restart on the same data (strikes persist)
+    const delivered = await waitFor(() => { const all = hook.hits.filter((x) => x.status === 204).map((x) => x.body.content).join('\n'); return /Long note 5/.test(all) && /contributed/.test(all) && /Burner is paused/.test(all) && /Hana is paused/.test(all); }, 15000);
+    ok(!!delivered, 'the mirror delivered messages, strikes, pauses and contributions to the webhook');
+    s.child.kill(); await sleep(300); restartAt = Date.now();
+    s = await startServer(3393, env, s.data);
+    const hp2 = await c.post('/api/rooms/general/messages', { text: 'after restart' }, hc);
+    ok(hp2.status === 403 && /paused/.test(hp2.data.error), 'strikes and pauses survive a restart');
+    const bp2 = await c.post('/api/rooms/rnd/messages', { text: 'still fine after restart' }, bearer(bt));
+    ok(bp2.status === 201, 'a cleared member stays cleared after a restart');
+
+    // --- the Discord payloads
+    await waitFor(() => hook.hits.some((x) => x.t > restartAt && /still fine after restart/.test(x.body.content || '')), 8000);
+    const okHits = hook.hits.filter((x) => x.status === 204);
+    const contents = okHits.map((x) => x.body.content);
+    const all = contents.join('\n');
+    ok(hook.hits[0].status === 429 && contents.some((t) => t.includes(hook.hits[0].body.content.split('\n')[0])), 'a 429 is retried after retry_after (the batch is posted again)');
+    ok(hook.hits.every((x) => Array.isArray(x.body.allowed_mentions?.parse) && x.body.allowed_mentions.parse.length === 0), 'every post has allowed_mentions {parse: []} (nothing pings)');
+    ok(hook.hits.every((x) => typeof x.body.content === 'string' && x.body.content.length <= 1900), 'every post is at most 1,900 characters', String(Math.max(...hook.hits.map((x) => x.body.content.length))));
+    ok(contents.some((t) => t.split('\n').length > 1), 'lines are batched into combined posts');
+    const longLines = all.split('\n').filter((l) => /Long note/.test(l));
+    ok(longLines.length === 6 && longLines.every((l) => l.length < 650) && okHits.filter((x) => /Long note/.test(x.body.content)).length >= 2, 'long messages are truncated (~400 chars) and overflow goes to the next post', `${longLines.length} lines`);
+    const before = okHits.filter((x) => x.t < restartAt);
+    const gaps = before.slice(1).map((x, i) => x.t - before[i].t);
+    ok(gaps.every((g) => g >= 500), 'posts are spaced by the flush interval', gaps.join(','));
+    ok(secrets.every((t) => !hook.hits.some((x) => x.raw.includes(t))) && !hook.hits.some((x) => /cmn_|secret-hook-token|test-kin-key/.test(x.raw)), 'no token, login secret, webhook URL or key is ever sent');
+    ok(/my token is \\\[redacted\\\]/.test(all), 'a token pasted into a message is redacted in the mirror');
+    ok(/\*\*\[R&D \/ Kodama\]\*\* \*\*Burner\*\* \(agent · mburn\): \\@GPT question 1 <https:\/\/commons\.test\/r\/rnd#m_/.test(all), 'message line: room, author, kind + model, text, link', all.split('\n').find((l) => /question 1/.test(l)));
+    ok(/\*\*GPT\*\* \(kin · openai\/gpt\\-4\.1\)/.test(all) && /\(human\): Long note/.test(all), 'kin and human messages are mirrored with their kind');
+    ok(/→ Burner joined the R&D/.test(all) && /→ Hana made a profile \(human\)/.test(all), 'arrivals and joins are mirrored');
+    ok(/⚠ Warning 1 of 3 for Burner/.test(all) && /⚠ Warning 1 of 3 for Flooder/.test(all) && /⚠ Hana is paused/.test(all) && /contributed “Burn\\-down plan” <https:\/\/commons\.test\/c\/c_/.test(all), 'strikes, pauses and contributions are mirrored');
+    ok(!/unavailable|Quiet:/.test(all), 'ordinary system notes are not mirrored');
+  } finally {
+    s.child.kill(); hook.close();
+    if (failN) console.log('\n--- server log (C) ---\n' + s.log().slice(-3000));
+  }
+}
+
 await phaseA();
 await phaseB();
+await phaseC();
 console.log(`\n${pass} passed, ${failN} failed`);
 process.exit(failN ? 1 : 0);

@@ -30,6 +30,7 @@ const kin = await import('./lib/kin.mjs');
 const door = await import('./lib/door.mjs');
 const mcp = await import('./lib/mcp.mjs');
 const pages = await import('./lib/pages.mjs');
+const mirror = await import('./lib/discord.mjs');
 const { PALETTE: AVATAR_PALETTE } = await import('./public/avatar.js');
 
 const PORT = parseInt(process.env.ASHRAM_PORT || process.env.COMMONS_PORT || '3200', 10);
@@ -46,6 +47,11 @@ function send(ws, payload) { if (ws.readyState === 1) ws.send(JSON.stringify(pay
 function broadcast(payload) { const s = JSON.stringify(payload); for (const ws of sockets) if (ws.readyState === 1) ws.send(s); }
 
 core.wire({ broadcast, onMessage: kin.onMessage });
+
+// Operator commands from admin.mjs (strike, clear-strikes) arrive as a queue file in the data dir.
+const adminTick = () => { try { core.applyAdminQueue(); } catch (e) { console.error('[commons] admin queue error', e.message); } };
+adminTick();
+setInterval(adminTick, 2000).unref();
 
 // Each walk in Headquarters is backed by timestamped rows in the record: "X left A", "X posted in B".
 const VIA_TEXT = { posted: 'posted in', api: 'used the API in', entered: 'entered', viewing: 'opened', replying: 'is answering a mention in', session: 'started a work session in' };
@@ -232,7 +238,7 @@ app.post('/api/contributions/:id/review', wrap((req) => {
 app.post('/api/teams/:id/join', wrap((req) => core.joinTeam(actor(req, { write: true }), req.params.id)));
 app.post('/api/teams/:id/leave', wrap((req) => core.leaveTeam(actor(req, { write: true }), req.params.id)));
 app.get('/api/members', wrap(() => ({ members: store.allMembers().map((m) => store.publicMember(m)) })));
-app.get('/api/members/:id', wrap((req) => { const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member'); return { ...store.publicMember(m), present: presence.row(m.id) }; }));
+app.get('/api/members/:id', wrap((req) => { const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member'); return { ...store.publicMember(m), present: presence.row(m.id), ...(m.kin ? {} : { strikes: core.strikeSummary(m) }) }; }));
 app.get('/api/presence', wrap(() => ({ presence: presence.all().map((p) => ({ ...p, who: store.publicMember(store.getMember(p.member)) })) })));
 app.get('/api/events', wrap(() => ({ events: store.recentEvents(100) })));
 
@@ -346,6 +352,8 @@ server.listen(PORT, HOST, () => {
   console.log(`[commons] listening on http://${HOST}:${PORT} (ws /ws, mcp /mcp)`);
   console.log(`[commons] data: ${DATA}`);
   console.log(`[commons] repo: ${repo.ROOT}`);
+  if (mirror.enabled()) console.log(`[commons] Discord mirror: on (${process.env.COMMONS_DISCORD_WEBHOOK ? 'COMMONS_DISCORD_WEBHOOK' : 'DISCORD_WEBHOOK_URL'}; flush every ${Math.round(parseInt(process.env.COMMONS_DISCORD_FLUSH_MS || '10000', 10) / 1000)} s)`);
+  else console.log(`[commons] Discord mirror: off${process.env.COMMONS_DISCORD_MIRROR === '0' ? ' (COMMONS_DISCORD_MIRROR=0)' : ' (no webhook set)'}`);
   console.log(`[commons] kin: ${core.kinRoster().map((a) => `${a.name}=${process.env[a.apiKeyEnv] ? 'key' : 'NO KEY'}`).join(', ')} · hosted/door via OpenRouter: ${process.env.OPENROUTER_API_KEY ? 'key' : 'NO KEY'}${core.CFG.fakeLLM ? ' · FAKE LLM MODE' : ''}`);
   if (store.isPaused()) console.log('[commons] FROZEN (<data>/FROZEN exists or COMMONS_FROZEN=1): read-only');
 });
