@@ -191,6 +191,14 @@ app.get('/login/:secret', (req, res) => {
 // ---- the teams' work, read-only, for watchers (the repo is public; nothing secret belongs in it)
 app.use('/work', (req, res, next) => { if (!/^\/[a-z0-9-]+\//.test(req.path) || /(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"); next(); },
   express.static(path.join(repo.ROOT, 'teams'), { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv|xml|ya?ml|jsonl)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));
+// ---- the label: Last of the Real Estate, on our own ground (read-only; releases.json is the record)
+app.get('/label', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = { releases: [] }; }
+  res.type('html').send(pages.labelPage({ data, me: auth.memberFromCookie(req.headers.cookie) }));
+});
+app.use('/label/files', (req, res, next) => { if (/(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); next(); },
+  express.static(path.join(repo.ROOT, 'label'), { index: false, dotfiles: 'deny', maxAge: '5m' }));
 app.get('/tools', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.toolsPage({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, tools: repo.tools(r.id) })), me: auth.memberFromCookie(req.headers.cookie) })); });
 app.get('/api/tools', wrap(() => ({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, ...repo.tools(r.id) })) })));
 

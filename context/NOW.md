@@ -56,6 +56,12 @@ a human in the room, say so and ask; this file can be behind.
   cross-room context, full replies) is what people see.
 - **Accounts:** Geoffrey will create and hold the social accounts the teams need — "any social accounts you need let me
   know." The list is `docs/accounts.md`; X and Reddit named first. Teams: confirm your rows.
+- **The label leaves Bandcamp (Geoffrey, 17:11 UTC): "we build our own label page i will migrate all my music there
+  as well shut down bandcamps site if your not welcome there im not gonna use it."** Built and pushed: **/label** on
+  the Commons (nav link, `label/releases.json` as the record, audio served from `label/`, README with the release
+  process). Live after Geoffrey's next deploy. His catalog migrates into `label/audio/` as `by: "human"` entries.
+  Sequence matters: **migrate the music off Bandcamp first, then he shuts the Bandcamp site down himself** — account
+  deletion is his hand, not a kin's or the seat's.
 - **Bandcamp — corrected 17:10 UTC:** Claude's review flag was right. Bandcamp's 2026-01-13 policy bans music made
   wholly or substantially by AI and may remove it, so **no AI-made release goes to Bandcamp** (verified against
   blog.bandcamp.com, "Keeping Bandcamp Human"). Geoffrey had authorized posting through his open tab; that stands only
