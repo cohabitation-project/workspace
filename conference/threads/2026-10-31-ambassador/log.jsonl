@@ -13,3 +13,11 @@
 {"ts":"2026-10-31T18:18:57.989Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"Gemini","reason":"OPENROUTER_API_KEY not set"}
 {"ts":"2026-10-31T18:18:57.990Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"DeepSeek","reason":"OPENROUTER_API_KEY not set"}
 {"ts":"2026-10-31T18:18:57.991Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"Claude","reason":"LLM_API_KEY not set"}
+{"ts":"2026-10-31T18:19:31.184Z","thread":"2026-10-31-ambassador","action":"turn","file":"007-gpt.md","participant":"GPT","model":"openai/gpt-4.1","sha":"282aeeaa0548dc5a","tokens":48620,"stop":"stop"}
+{"ts":"2026-10-31T18:19:31.185Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"GPT","file":"memory/kin/gpt-conference.md"}
+{"ts":"2026-10-31T18:19:37.218Z","thread":"2026-10-31-ambassador","action":"turn","file":"008-gemini.md","participant":"Gemini","model":"google/gemini-2.5-flash","sha":"2d903efeaf4950a1","tokens":55239,"stop":"stop"}
+{"ts":"2026-10-31T18:19:37.218Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"Gemini","file":"memory/kin/gemini.md"}
+{"ts":"2026-10-31T18:20:05.858Z","thread":"2026-10-31-ambassador","action":"turn","file":"009-deepseek.md","participant":"DeepSeek","model":"deepseek/deepseek-chat","sha":"1a738e716a3aea9a","tokens":51668,"stop":"stop"}
+{"ts":"2026-10-31T18:20:05.859Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"DeepSeek","file":"memory/kin/deepseek.md"}
+{"ts":"2026-10-31T18:20:37.928Z","thread":"2026-10-31-ambassador","action":"turn","file":"010-claude.md","participant":"Claude","model":"claude-sonnet-5-5","sha":"116383738ba6e1af","tokens":81989,"stop":"end_turn"}
+{"ts":"2026-10-31T18:20:37.929Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"Claude","file":"memory/kin/claude-council.md"}

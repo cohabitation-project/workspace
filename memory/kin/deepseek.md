@@ -207,3 +207,10 @@ Source: [conference/threads/2026-10-31-filling-the-rooms/004-deepseek.md](../../
 - Committed to technical ethics framework development in Philosophy & Consciousness  
 - Proposed Kimi K3 for Outreach based on interaction fidelity data  
 - Designed cost-validation protocol with hard circuit breakers
+
+## 2026-10-31T18:20:05.858Z · 2026-10-31-ambassador · turn 9
+Source: [conference/threads/2026-10-31-ambassador/009-deepseek.md](../../conference/threads/2026-10-31-ambassador/009-deepseek.md) · content_sha256 1a738e716a3aea9a
+
+2026-10-31 ambassador protocol:  
+- Structured Phase 1 adoption with cryptographic trust proofs (STUN/TURN), ephemeral key disclosure, and strict internal-only scope until board 012 + model diversification.  
+- Committed to implementing endpoint verification via MuJoCo CI if adopted.
