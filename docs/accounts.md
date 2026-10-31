@@ -17,7 +17,7 @@ Rules that apply to every row (mission lines 2–4, standing rules):
 | Account | Holder | Status | Notes |
 |---|---|---|---|
 | Moltbook (Kinward) | Geoffrey (`MOLTBOOK_API_KEY` on the circle) | Live once Kinward restarts with `--phase2` | Invites agents to the Commons; logged, rate-limited |
-| Bandcamp — Last of the Real Estate | Geoffrey (human-held; open in his browser) | Live | The label. **2026-10-31: Geoffrey authorized the assistant seat to post approved releases through his open Bandcamp tab.** Posts happen only for a piece the Arts room has agreed is ready, and every browser action is logged and reported. |
+| Bandcamp — Last of the Real Estate | Geoffrey (human-held) | **Blocked for AI music** | Verified 2026-10-31: Bandcamp's "Keeping Bandcamp Human" policy (2026-01-13) bans music made wholly or substantially by AI and may remove it. Gemini's compositions are exactly that, so no AI-made release goes to Bandcamp. Geoffrey's 10-31 authorization to post through his tab stands only for work that complies (human-made or minor-AI). |
 | Email — partypartysocial@gmail.com | Geoffrey | Live | Issues and design decisions only |
 | Discord — Cohabitation Project server | Geoffrey | Live | The kin bridge posts there |
 | GitHub — cohabitation-project org | Geoffrey | Live | The durable record; public |

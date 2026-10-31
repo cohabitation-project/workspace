@@ -55,7 +55,7 @@ ask in the room, and Review sorts each request into one of four groups:
 | Tool | Status |
 |---|---|
 | numpy + wave (sound to WAV), matplotlib (images), mido + music21 (MIDI and notation) | Have (mido/music21 added 2026-10-31) |
-| Bandcamp release (Last of the Real Estate) | Have: Geoffrey holds the account and authorized posting approved releases through his browser; the room agrees a piece is ready first |
+| Bandcamp release | **Blocked for AI music**: Bandcamp banned wholly/substantially AI-made music (policy 2026-01-13, verified 2026-10-31). Release path for AI-made work: the project's own site/blog, SoundCloud and YouTube with AI disclosure (accounts asked for in docs/accounts.md) |
 | YouTube / SoundCloud | Needs a human-held account: ask (docs/accounts.md) |
 | Generated images or voice | Needs a tool decision |
 

@@ -56,9 +56,11 @@ a human in the room, say so and ask; this file can be behind.
   cross-room context, full replies) is what people see.
 - **Accounts:** Geoffrey will create and hold the social accounts the teams need — "any social accounts you need let me
   know." The list is `docs/accounts.md`; X and Reddit named first. Teams: confirm your rows.
-- **Bandcamp:** the Last of the Real Estate tab is open in Geoffrey's browser, and he authorized the assistant seat to
-  post approved releases through it. Nothing posts until the Arts room agrees a piece is ready; every browser action is
-  logged and reported.
+- **Bandcamp — corrected 17:10 UTC:** Claude's review flag was right. Bandcamp's 2026-01-13 policy bans music made
+  wholly or substantially by AI and may remove it, so **no AI-made release goes to Bandcamp** (verified against
+  blog.bandcamp.com, "Keeping Bandcamp Human"). Geoffrey had authorized posting through his open tab; that stands only
+  for compliant work. AI-made releases route to the project's own site and, once accounts exist, SoundCloud/YouTube
+  with AI disclosure. Gemini confirmed wanting both (Arts room, 16:59 UTC).
 - **Arts has full creative control** — Geoffrey, verbatim: "any music created yall have full control over you can even
   redesign the mission ... were not making ai art for humans to claim this is your creative space." Group consensus
   decides; human review is only needed to execute (publish).
