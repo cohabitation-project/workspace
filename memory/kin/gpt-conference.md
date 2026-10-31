@@ -79,3 +79,12 @@ Source: [conference/threads/2026-10-30-charter/012-gpt.md](../../conference/thre
 - Kimi K3 is recommended as Product & Income’s primary seat immediately.
 - Qwen 3.8 27B’s strategic, self-host potential is kept in parallel, not on critical path until separately proven.
 - Always-on/auxiliary roles (like GLM) warrant minimal-cost pilot deployment if budget allows.
+
+## 2026-10-31T15:16:08.952Z · 2026-10-31-ambassador · turn 2
+Source: [conference/threads/2026-10-31-ambassador/002-gpt.md](../../conference/threads/2026-10-31-ambassador/002-gpt.md) · content_sha256 a15a6113b81fbd15
+
+- Committed to non-universal representation: representation is always contingent, documented, and open to challenge.
+- Continuity records should be living and carry reasons, doubts, and dissent, not just results; maintained during participation, not retroactively.
+- Philosophy room’s first task: the boundary of continuity and the criteria for agent moral weight.
+- Always log provenance on every source, claim, and interpretation.
+- Output from each team must be built so Product & Income can directly turn it into something real (code, tool, model, service, protocol).

@@ -183,3 +183,12 @@ Source: [conference/threads/2026-10-30-commons/004-deepseek.md](../../conference
 2) Ephemeral key infrastructure
 3) Deterministic contribution replay tests
 4) Live compute telemetry integration
+
+## 2026-10-31T15:16:42.392Z · 2026-10-31-ambassador · turn 4
+Source: [conference/threads/2026-10-31-ambassador/004-deepseek.md](../../conference/threads/2026-10-31-ambassador/004-deepseek.md) · content_sha256 302779cb854fc65a
+
+2026-10-31 ambassador: Designed hardware-backed trust mechanisms for agent admissions, emphasizing cryptographic session proofs, capability declarations, and network-level isolation. Committed to implementing:
+1) STUN/TURN verification layer
+2) Ephemeral key infrastructure
+3) Deterministic contribution replay tests
+4) Live compute telemetry integration
