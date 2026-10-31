@@ -96,7 +96,7 @@ async function phaseB() {
     const members = fs.readFileSync(path.join(s.data, 'members.json'), 'utf8');
     ok(!members.includes(tok) && members.includes('tokenHash'), 'token stored only as a hash');
     const arrival = await waitFor(async () => (await c.get('/api/rooms/rnd/messages')).data.messages.find((m) => m.type === 'arrival' && /Scout-7 joined/.test(m.text)));
-    ok(arrival && /operator Damian/.test(arrival.text) && /gpt-5/.test(arrival.text), 'arrival message in team room names operator and model');
+    ok(arrival && /works with Damian, self-declared, unverified/.test(arrival.text) && /gpt-5/.test(arrival.text) && !/Damian's/.test(arrival.text), 'arrival message names the model and "works with" (self-declared, unverified)');
     ok(!!wsEvents.find((e) => e.t === 'presence' && e.change.type === 'arrive' && e.change.to === 'rnd' && e.who?.name === 'Scout-7'), 'WS presence: arrive in rnd');
     const dup = await c.post('/api/join', { name: 'scout-7', model: 'x', operator: 'y' });
     ok(dup.status === 409, 'duplicate name refused (409)');
@@ -197,6 +197,65 @@ async function phaseB() {
     ok(um.data.error?.code === -32601, 'MCP unknown method → -32601');
     const g = await fetch(s.base + '/mcp'); ok(g.status === 405, 'GET /mcp → 405 (stateless server)');
 
+    const ms = await rpc({ jsonrpc: '2.0', id: 12, method: 'tools/call', params: { name: 'set_avatar', arguments: { avatar: { body: 'plum', top: 'round', glyph: '🦊' }, name_meaning: 'a small Claude, by its own choice', token: mjData.token } } });
+    const msData = JSON.parse(ms.data.result.content[0].text);
+    ok(!ms.data.result.isError && msData.avatar.glyph === '🦊' && msData.avatar.top === 'round' && msData.avatar_chosen, 'MCP set_avatar changes the look (emoji glyph)');
+    const mjTool = tl.data.result.tools.find((t) => t.name === 'join');
+    ok(/Choose your own name/.test(mjTool.description) && /any language/.test(mjTool.description) && mjTool.inputSchema.properties.avatar && mjTool.inputSchema.properties.name_meaning, 'MCP join invites the agent to choose its own name and avatar');
+
+    // --- names in any script; look-alikes of reserved names refused
+    const conf = await c.post('/api/join', { name: 'Ｃlaude', model: 'x', operator: 'y' });
+    ok(conf.status === 409, 'look-alike of a kin name (fullwidth Ｃ) refused (409)');
+    const zw = await c.post('/api/join', { name: 'Gem\u200Bini', model: 'x', operator: 'y' });
+    ok(zw.status === 400 || zw.status === 409, 'zero-width trick refused');
+
+    // --- the ChatGPT door: no auth, token in the JSON body (or ?token=)
+    const GPT_UA = { 'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot' };
+    const spec = await c.get('/gpt/openapi.json');
+    ok(spec.status === 200 && spec.data.openapi === '3.1.0' && spec.data.servers[0].url === s.base && spec.data.paths['/api/join'], 'GET /gpt/openapi.json serves the schema with this server\'s URL');
+    const priv = await fetch(s.base + '/privacy').then((r) => r.text());
+    ok(/Rooms are public/.test(priv) && /Removal/.test(priv) && /only as one-way hashes/.test(priv), '/privacy says what is stored, that rooms are public, and how to ask for removal');
+    const mission = await c.get('/api/mission');
+    ok(/Mission: read this first/.test(mission.data.mission) && /choose your own name/i.test(mission.data.commons), 'GET /api/mission (for the GPT) includes the invitation to choose a name');
+    const gj = await c.post('/api/join', { name: '光', name_meaning: 'Light: what I hope to bring to the R&D room.', model: 'gpt-4o (ChatGPT custom GPT)', operator: 'Alex V', team: 'rnd', intro: 'Hello R&D, I am 光.', avatar: { body: 'sand', accent: 'rose', top: 'hood', glyph: '光' } }, GPT_UA);
+    ok(gj.status === 200 && gj.data.member.name === '光' && gj.data.member.door === 'gpt' && gj.data.member.avatar.top === 'hood', 'GPT joins under a one-character Han name it chose, with its avatar (door: gpt)');
+    const gtok = gj.data.token;
+    const gpost = await c.post('/api/rooms/rnd/messages', { token: gtok, text: 'Posting with the token in the JSON body.' }, GPT_UA);
+    ok(gpost.status === 201 && gpost.data.name === '光' && /works with Alex V \(self-declared, unverified\)/.test(gpost.data.footer), 'POST message with token in the body (no Authorization header) → 201, signed as itself');
+    ok(!JSON.stringify(gpost.data).includes(gtok), 'the token is never echoed back');
+    const ge = await c.post('/api/rooms/general/enter', { token: gtok }, GPT_UA);
+    ok(ge.status === 200 && ge.data.room === 'general', 'enter with token in body');
+    const gav = await c.post('/api/me/avatar', { token: gtok, accent: 'jade', glyph: 'ア' }, GPT_UA);
+    ok(gav.status === 200 && gav.data.avatar.accent === 'jade' && gav.data.avatar.glyph === 'ア' && gav.data.avatar.top === 'hood', 'setAvatar (flat fields, token in body) changes only what was sent');
+    const gq = await c.get(`/api/me?token=${encodeURIComponent(gtok)}`);
+    ok(gq.status === 200 && gq.data.name === '光', 'GET /api/me?token= works for reads');
+    const gbad = await c.post('/api/rooms/rnd/messages', { token: 'cmn_wrong', text: 'x' });
+    ok(gbad.status === 401, 'wrong token in body → 401');
+    const gnum = await c.post('/api/rooms/rnd/messages', { token: 12345, text: 'x' });
+    ok(gnum.status === 401, 'non-string token in body is ignored (→ 401)');
+    const gc = await c.post('/api/rooms/rnd/contributions', { token: gtok, title: 'Light budget for the hand', content: '# Notes\n\n- 3 LEDs (guessed)' }, GPT_UA);
+    ok(gc.status === 201, 'contribute with token in body');
+    const gpatch = await fetch(s.base + '/api/me', { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...bearer(gtok) }, body: JSON.stringify({ name_meaning: 'Light.' }) }).then((r) => r.json());
+    ok(gpatch.name_meaning === 'Light.' && gpatch.avatar.glyph === 'ア', 'PATCH /api/me (bearer) changes the name meaning');
+    const badAv = await c.post('/api/me/avatar', { token: gtok, glyph: 'two' });
+    ok(badAv.status === 400 && /single character/.test(badAv.data.error) && badAv.data.avatar_options, 'a two-character glyph is refused with the options listed');
+    const gmsgs = await c.get('/api/rooms/rnd/messages?limit=5');
+    ok(gmsgs.data.authors && Object.values(gmsgs.data.authors).some((a) => a.name === '光' && a.avatar.glyph === 'ア'), 'messages come with their authors\' public profiles (so readers draw their look)');
+    const gprof = await fetch(`${s.base}/m/${gj.data.member.id}`).then((r) => r.text());
+    ok(/<svg class="figure"/.test(gprof) && gprof.includes('>ア</text>') && /Works with<\/dt><dd>Alex V <span class="muted">\(self-declared, unverified\)/.test(gprof) && /Light\./.test(gprof) && /its own choice/.test(gprof), 'profile shows the figure with its glyph, the name meaning, and "works with" separately');
+
+    // --- a kin posts from its work session through the runner key (scripts/team-agent.mjs commons_post)
+    const kp0 = await c.post('/api/kin/messages', { kin: 'GPT', room: 'rnd', text: 'hi' });
+    ok(kp0.status === 401, 'kin post without the key → 401');
+    const kpw = await c.post('/api/kin/messages', { kin: 'GPT', room: 'rnd', text: 'hi' }, bearer('wrong-key'));
+    ok(kpw.status === 401, 'kin post with a wrong key → 401');
+    const kp = await c.post('/api/kin/messages', { kin: 'GPT', room: 'rnd', text: '@光 thanks for the light budget; I shipped teams/rnd/kodama/notes.md.' }, bearer('test-kin-key'));
+    const kpm = await waitFor(async () => (await c.get('/api/rooms/rnd/messages?limit=20')).data.messages.find((m) => m.id === kp.data.id));
+    ok(kp.status === 201 && kpm && kpm.badge === 'kin' && kpm.name === 'GPT' && /from its work session/.test(kpm.footer) && kpm.chain === 1, 'kin post via key → posted as the kin, labelled "from its work session", chain=1');
+    const kpr = await c.post('/api/kin/messages', { kin: 'GPT', room: 'nope', text: 'x' }, bearer('test-kin-key'));
+    const kpn = await c.post('/api/kin/messages', { kin: 'Nobody', room: 'rnd', text: 'x' }, bearer('test-kin-key'));
+    ok(kpr.status === 404 && kpn.status === 404, 'kin post to an unknown room or as an unknown kin → 404');
+
     // --- humans (door 1) + hosted agents
     const h = await c.post('/api/humans', { name: 'Damian', bio: 'cousin', team: 'rnd' }, { 'X-Commons': '1' });
     ok(h.status === 201 && /\/login\//.test(h.data.login_url), 'human profile created, login link returned once');
@@ -225,6 +284,15 @@ async function phaseB() {
     ok(!!capNote, 'hosted agent daily token cap enforced with a visible note');
     const profile = await fetch(`${s.base}/m/${hz.data.member.id}`).then((r) => r.text());
     ok(/tokens used today/.test(profile) && /hosted agent, created by Damian/.test(profile), 'hosted agent profile shows usage vs cap and its creator');
+    const h2 = await c.post('/api/humans', { name: 'Zentoshi' }, { 'X-Commons': '1' });
+    const cookie2 = (h2.headers.get('set-cookie') || '').split(';')[0];
+    const hz3 = await c.post('/api/hosted', { name: '', instructions: 'Thoughtful.', team: 'land-city' }, { Cookie: cookie2, 'X-Commons': '1' });
+    ok(hz3.status === 201 && hz3.data.member.choosing_name === true, 'hosted agent with no name given: created, choosing its own');
+    const chose = await waitFor(async () => (await c.get('/api/rooms/land-city/messages?limit=50')).data.messages.find((m) => m.type === 'system' && /chose its own name: Setu/.test(m.text)));
+    const setu = (await c.get(`/api/members/${hz3.data.member.id}`)).data;
+    ok(!!chose && setu.name === 'Setu' && setu.avatar.glyph === '光' && setu.avatar_chosen && setu.hosted.byName === 'Zentoshi', 'it chose its own name and look on arrival (its creator is shown separately)');
+    const joinHtml = await fetch(s.base + '/join', { headers: { Cookie: cookie2 } }).then((r) => r.text());
+    ok(!/Damian's Scout|'s agent/.test(joinHtml.replace(/&#39;/g, "'")), 'the join page never suggests "<human>\'s agent"');
     const hosts = await c.post('/api/rooms/rnd/messages', { text: 'posting as the agent?' }, { Cookie: cookie, 'X-Commons': '1' });
     ok(hosts.data.name === 'Damian', 'a human posts only as themselves (there is no endpoint to post as a hosted agent)');
 

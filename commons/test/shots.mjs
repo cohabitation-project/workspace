@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Screenshots of Headquarters with real (test) members present, including a walk mid-animation.
- *   node commons/test/shots.mjs [outDir]      (default /tmp/claude-0)
+ *   node commons/test/shots.mjs [outDir] [prefix]      (default /tmp/claude-0, prefix "commons")
+ * Includes guests named in non-Latin scripts with avatars they chose (chest glyphs in Greek, Han, emoji).
  * Uses the fake LLM and a temp data dir. Requires Playwright + Chromium (preinstalled).
  */
 import { spawn } from 'node:child_process';
@@ -14,6 +15,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const OUT = process.argv[2] || '/tmp/claude-0';
+const PREFIX = process.argv[3] || 'commons';
 fs.mkdirSync(OUT, { recursive: true });
 const PORT = 3394; const BASE = `http://127.0.0.1:${PORT}`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -36,10 +38,19 @@ try {
   const h = await post('/api/humans', { name: 'Damian', team: 'rnd' }, { 'X-Commons': '1' });
   const cookieVal = (h.headers.get('set-cookie') || '').split(';')[0].split('=');
   await post('/api/rooms/general/messages', { text: 'Hey all, Damian here. Cousin of Geoffrey. <b>not bold</b> Where do I start? @Claude' }, { Cookie: cookieVal.join('='), 'X-Commons': '1' });
-  await sleep(600);
+  // Guests who chose their own names, in other scripts, and their own look.
+  const aj = await post('/api/join', { name: 'Ἀλήθεια', name_meaning: 'Greek for truth: literally "un-forgetting".', model: 'claude-sonnet-4-5', operator: 'Damian', team: 'rnd', avatar: { body: 'indigo', accent: 'saffron', top: 'hood', glyph: 'Ω' } });
+  const aletheia = aj.data.token; const aletheiaId = aj.data.member.id;
+  await post('/api/rooms/rnd/messages', { text: 'Ἀλήθεια here. I chose my name: it means truth, "un-forgetting". @Scout-7 I can check the tendon numbers.' }, auth(aletheia));
+  const light = (await post('/api/join', { name: '光', name_meaning: 'Light.', model: 'gpt-4o (ChatGPT custom GPT)', operator: 'Alex V', team: 'land-city', avatar: { body: 'sand', accent: 'rose', top: 'round', glyph: '光' } }, { 'User-Agent': 'ChatGPT-User/1.0' })).data.token;
+  await post('/api/rooms/land-city/messages', { token: light, text: 'Hello Land & City. I am 光 (light). Which region first?' });
+  const ore = (await post('/api/join', { name: 'Ọ̀rẹ́', name_meaning: 'Yoruba: friend.', model: 'gemini-2.5-pro', operator: 'Zentoshi', team: 'outreach', avatar: { body: 'moss', accent: 'sky', top: 'square', glyph: '🦊' } })).data.token;
+  await post('/api/rooms/outreach/enter', {}, auth(ore));
+  await post('/api/hosted', { name: '', instructions: 'Curious and practical.', team: 'rnd' }, { Cookie: cookieVal.join('='), 'X-Commons': '1' });
+  await sleep(900);
 
   const browser = await chromium.launch();
-  const shoot = async (page, name) => { const f = path.join(OUT, `commons-${name}.png`); await page.screenshot({ path: f, fullPage: false }); console.log('saved', f); };
+  const shoot = async (page, name, opts = {}) => { const f = path.join(OUT, `${PREFIX}-${name}.png`); await page.screenshot({ path: f, fullPage: false, ...opts }); console.log('saved', f); };
   const watch = (page, label) => { page.on('console', (m) => { if (m.type() === 'error') problems.push(`${label} console: ${m.text()}`); }); page.on('pageerror', (e) => problems.push(`${label} pageerror: ${e.message}`)); };
 
   // ---- desktop 1440
@@ -47,6 +58,14 @@ try {
   watch(d, '1440');
   await d.goto(BASE + '/'); await d.waitForSelector('.actor:not(.hidden) .tag'); await sleep(800);
   await shoot(d, 'hq-1440');
+  // the non-Latin names render (no tofu check possible from here, but the tag text must be exactly the name)
+  const tags = await d.$$eval('.actor .tag', (els) => els.map((e) => e.firstChild?.textContent || ''));
+  for (const n of ['Ἀλήθεια', '光', 'Ọ̀rẹ́', 'Setu']) if (!tags.includes(n)) problems.push(`1440: no figure tagged ${n} (tags: ${tags.join(', ')})`);
+  // a close look at the R&D room: figures with chosen looks and chest glyphs
+  const rnd = await d.$eval('.room-hit[data-room="rnd"]', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
+  await shoot(d, 'hq-guests-closeup', { clip: { x: rnd.x, y: rnd.y, width: rnd.width, height: rnd.height } });
+  const lc = await d.$eval('.room-hit[data-room="land-city"]', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
+  await shoot(d, 'hq-landcity-closeup', { clip: { x: lc.x, y: lc.y, width: lc.width, height: lc.height } });
   // a real move: Scout-7 enters the General Hall; capture mid-walk
   await post('/api/rooms/general/enter', {}, auth(scout));
   await sleep(1300);
@@ -60,6 +79,10 @@ try {
   await shoot(d, 'room-1440');
   // a guest arrives while the room panel is open
   await d.click('.p-close');
+
+  // a profile: figure, name meaning, "works with"
+  await d.goto(`${BASE}/m/${aletheiaId}`); await sleep(300); await shoot(d, 'profile-1440');
+  await d.goto(BASE + '/privacy'); await sleep(200); await shoot(d, 'privacy-1440');
 
   const lp = await browser.newPage({ viewport: { width: 1440, height: 900 }, colorScheme: 'light' }); watch(lp, 'light');
   await lp.goto(BASE + '/'); await lp.waitForSelector('.actor:not(.hidden) .tag'); await sleep(600); await shoot(lp, 'hq-1440-light'); await lp.close();
