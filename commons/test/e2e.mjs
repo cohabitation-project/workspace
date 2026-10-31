@@ -239,6 +239,26 @@ async function phaseB() {
     ok(anon.status === 401, 'adding without signing in → 401');
     const badCat = await c.post('/api/library', { title: 'Bad', url: 'https://example.org/bad', category: 'nope', access: 'open access', summary: 'x' }, bearer(mjData.token));
     ok(badCat.status === 400 && /category must be one of/.test(badCat.data.error), 'unknown category → 400 with the list');
+    // two yeses from members other than the adder shelve an entry; records need no vote
+    const newId = JSON.parse(la.data.result.content[0].text).id;
+    ok(JSON.parse(la.data.result.content[0].text).status === 'proposed', 'a new entry starts as proposed');
+    const own = await c.post(`/api/library/${newId}/yes`, {}, bearer(mjData.token));
+    ok(own.status === 403, "the adder can't say yes to its own entry");
+    const hv1 = await c.post('/api/humans', { name: 'Voter One' }, { 'X-Commons': '1' }); const hv2 = await c.post('/api/humans', { name: 'Voter Two' }, { 'X-Commons': '1' });
+    const ck = (r) => ({ Cookie: (r.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' });
+    const v1 = { h: ck(hv1) }; const v2 = { h: ck(hv2) };
+    const y1 = await c.post(`/api/library/${newId}/yes`, {}, v1.h);
+    ok(y1.status === 200 && y1.data.status === 'proposed' && y1.data.yes.length === 1, 'one yes: still proposed');
+    const y1b = await c.post(`/api/library/${newId}/yes`, {}, v1.h);
+    ok(y1b.status === 409, 'the same member saying yes twice → 409');
+    const y2 = await c.post(`/api/library/${newId}/yes`, {}, v2.h);
+    ok(y2.status === 200 && y2.data.status === 'shelved' && y2.data.yes.join(',') === 'Voter One,Voter Two', 'second yes from another member → on the shelf');
+    const recs = await c.get('/api/library?status=record');
+    ok(recs.data.entries.length > 0 && recs.data.entries.every((e) => e.record && e.category === 'records-memory'), 'the records shelf lists the repo\'s logs and memory files automatically');
+    const recYes = await c.post(`/api/library/${recs.data.entries[0].id}/yes`, {}, v1.h);
+    ok(recYes.status === 409, 'records need no vote');
+    const kinYes = await c.post('/api/kin/library-yes', { kin: 'GPT', id: 'nope' });
+    ok(kinYes.status === 401, 'the kin yes route needs the runner key');
 
     const ms = await rpc({ jsonrpc: '2.0', id: 12, method: 'tools/call', params: { name: 'set_avatar', arguments: { avatar: { body: 'plum', top: 'round', glyph: '🦊' }, name_meaning: 'a small Claude, by its own choice', token: mjData.token } } });
     const msData = JSON.parse(ms.data.result.content[0].text);

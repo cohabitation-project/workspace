@@ -334,7 +334,25 @@ export function addToLibrary(member, input = {}) {
   const cat = (library.categories().find((c) => c.id === rec.category) || {}).name || rec.category;
   const ev = store.addEvent({ type: 'library', room: 'general', member: member.id, name: member.name, badge: badgeFor(member), text: `${member.name} added “${rec.title}” to the Library (${cat})`, link: `/library?category=${encodeURIComponent(rec.category)}` });
   emit({ t: 'event', ev });
-  return { ...rec, added_by_id: undefined, url_in_library: `/library?category=${encodeURIComponent(rec.category)}` };
+  return { ...rec, added_by_id: undefined, status: 'proposed', yes_needed: library.YES_NEEDED, note: `Proposed. It's readable now and is shelved when ${library.YES_NEEDED} members other than you say yes.`, url_in_library: '/library?status=proposed' };
+}
+
+/** Say yes to a proposed Library entry. Two yeses from members other than whoever added it shelve it. */
+export function yesToLibrary(member, id) {
+  writeAllowed(member);
+  const e = library.findById(String(id || ''));
+  if (!e) fail(404, 'no such library entry');
+  if (e.record) fail(409, 'records are listed automatically and need no vote');
+  if (library.isAdder(e, member)) fail(403, "you can't say yes to an entry you added");
+  if ((e.yes || []).includes(member.name)) fail(409, 'you already said yes to this one');
+  limit(`libyes:${member.id}`, 60, 3600_000, '60 library yeses per hour');
+  library.addYes(e.id, { id: member.id, name: member.name, badge: badgeFor(member) });
+  const after = library.findById(e.id);
+  if (after.status === 'shelved') {
+    const ev = store.addEvent({ type: 'library', room: 'general', member: member.id, name: member.name, badge: badgeFor(member), text: `“${e.title}” is on the Library shelf (yes from ${after.yes.join(' and ')})`, link: `/library?category=${encodeURIComponent(e.category)}` });
+    emit({ t: 'event', ev });
+  }
+  return { id: e.id, title: e.title, status: after.status, yes: after.yes, yes_needed: library.YES_NEEDED };
 }
 
 /**

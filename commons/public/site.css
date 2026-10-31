@@ -159,3 +159,9 @@ table.api td:nth-child(2) { white-space: nowrap; }
 .lib-item p { margin: 6px 0; }
 .lib-title { font-weight: 600; }
 @media (max-width: 760px) { .lib-grid { grid-template-columns: 1fr; gap: 12px; } .lib-cats ul { position: static; display: flex; flex-wrap: wrap; gap: 4px 14px; } }
+.lib-filters { margin: 4px 0 0; }
+.lib-filters a[aria-current="page"] { font-weight: 600; }
+.lib-status { font-size: 13px; margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lib-status.s-shelved { color: var(--accent, #b9761c); }
+.lib-status.s-proposed { color: var(--muted); }
+.lib-status.s-record { color: var(--muted); font-style: italic; }

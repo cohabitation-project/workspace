@@ -115,6 +115,19 @@ function furnitureBox(R, narrow) {
 const O = '#15121b';
 const rect = (x, y, w, h, fill, extra = '') => `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0, w).toFixed(1)}" height="${Math.max(0, h).toFixed(1)}" fill="${fill}" ${extra}/>`;
 const box = (x, y, w, h, fill, top) => rect(x, y, w, h, O) + rect(x + 1.5, y + 1.5, w - 3, h - 3, fill) + (top ? rect(x + 1.5, y + 1.5, w - 3, Math.min(4, h / 3), top) : '');
+function bookshelf({ x, y, w, h }) {
+  const spines = ['#b9761c', '#7cd6b4', '#c25a4a', '#6d8fd1', '#e0c36a', '#8f6bb3', '#5fae6e', '#d98c5f'];
+  const pw = Math.min(w, 86);
+  let out = `<g class="library"><rect x="${x}" y="${y - 16}" width="${pw}" height="14" fill="#17131d" stroke="#0b090e"/><text x="${x + pw / 2}" y="${y - 6}" font-size="9" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">LIBRARY</text>`;
+  out += box(x, y, w, h, '#4a3221', '#6b4a30');
+  const shelves = h > 56 ? 3 : 2; const sh = (h - 8) / shelves;
+  for (let k = 0; k < shelves; k++) {
+    const sy = y + 4 + k * sh; let bx = x + 5; let n = 0;
+    while (bx < x + w - 9) { const bw = 4 + ((n * 7 + k * 3) % 4); const bh = sh - 6 - ((n * 5 + k) % 3) * 2; out += rect(bx, sy + (sh - 3 - bh), bw, bh, spines[(n + k * 3) % spines.length]); bx += bw + 1; n++; }
+    out += rect(x + 3, sy + sh - 3, w - 6, 2, '#2c1e14');
+  }
+  return out + '</g>';
+}
 
 function furniture(id, B) {
   // Drawn in a 120×60 design box, scaled uniformly into B.
@@ -228,8 +241,8 @@ function drawBuilding() {
   s += box(dk.x - 34, dk.y - 4, 68, 16, '#5d3d26', '#8a5a34') + box(dk.x + 14, dk.y - 12, 12, 8, '#2f3e46') + rect(dk.x + 16, dk.y - 10, 8, 4, '#7cd6b4');
   if (!L.narrow) {
     s += `<g class="sign"><rect x="${Lb.x + 24}" y="${Lb.y + 22}" width="${Lb.w - 48}" height="34" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + Lb.w / 2}" y="${Lb.y + 44}" font-size="15">THE COMMONS</text></g>`;
-    s += box(Lb.x + 26, Lb.y + 76, Lb.w - 52, 120, '#2f2a3a', '#3b3549');
-    S.rooms.forEach((r, i) => { s += rect(Lb.x + 36, Lb.y + 90 + i * 16, 8, 8, '#7cd6b4') + `<text x="${Lb.x + 50}" y="${Lb.y + 97 + i * 16}" font-size="10" fill="#d9cfbf" font-family="ui-monospace,monospace">${esc(r.name).slice(0, 22)}</text>`; });
+    s += box(Lb.x + 26, Lb.y + 76, Lb.w - 52, Math.max(120, 26 + S.rooms.length * 16), '#2f2a3a', '#3b3549');
+    S.rooms.forEach((r, i) => { const n = String(r.name); s += rect(Lb.x + 36, Lb.y + 90 + i * 16, 8, 8, '#7cd6b4') + `<text x="${Lb.x + 50}" y="${Lb.y + 97 + i * 16}" font-size="${n.length > 22 ? 8.5 : 10}" fill="#d9cfbf" font-family="ui-monospace,monospace">${esc(n.length > 27 ? n.slice(0, 26) + '…' : n)}</text>`; });
     s += box(Lb.x + Lb.w - 44, Lb.y + Lb.h - 70, 22, 22, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w - 48, Lb.y + Lb.h - 92, 30, 24, '#3f8f4f', '#57b066');
   } else {
     s += `<g class="sign"><rect x="${Lb.x + 196}" y="${Lb.y + 18}" width="${Lb.w - 214}" height="28" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + 196 + (Lb.w - 214) / 2}" y="${Lb.y + 37}" font-size="12">THE COMMONS</text></g>`;
@@ -239,15 +252,32 @@ function drawBuilding() {
   for (const r of S.rooms) {
     const R = L.rooms[r.id]; const fs = L.narrow ? 10.5 : 13; const ph = L.narrow ? 20 : 24;
     const py = R.y + 9;
-    const label = esc(r.name).toUpperCase();
-    const pw = Math.min(R.w - 18, label.length * fs * 0.62 + (L.narrow ? 16 : 70));
-    s += `<g class="plaque"><rect x="${R.x + 9}" y="${py}" width="${pw}" height="${ph}" rx="2"/><text x="${R.x + 16}" y="${py + ph * 0.7}" font-size="${fs}">${label}</text>${L.narrow ? '' : `<text class="count" id="count-${esc(r.id)}" x="${R.x + 9 + pw - 8}" y="${py + ph * 0.7}" font-size="${fs - 2}" text-anchor="end"></text>`}</g>`;
+    // Long names (e.g. "Philosophy & Consciousness") used to run past the plaque: shrink the type to fit, and if it
+    // still doesn't, break onto two lines at " & " (or the last space before the middle).
+    const name = String(r.name).toUpperCase(); const countW = L.narrow ? 0 : 62; const room = R.w - 18 - countW - 14;
+    const width = (t, f) => t.length * f * 0.62;
+    let lines = [name]; let f = fs;
+    while (width(name, f) > room && f > (L.narrow ? 8.5 : 10)) f -= 0.5;
+    if (width(name, f) > room) {
+      const amp = name.indexOf(' & '); let cut = amp > 0 ? amp + 2 : name.lastIndexOf(' ', Math.floor(name.length / 2) + 4);
+      if (cut <= 0) cut = Math.floor(name.length / 2);
+      lines = [name.slice(0, cut).trim(), name.slice(cut).trim()]; f = fs;
+      while (Math.max(...lines.map((l) => width(l, f))) > room && f > (L.narrow ? 8.5 : 10)) f -= 0.5;
+    }
+    const lh = f * 1.25; const phh = lines.length > 1 ? ph + lh : ph;
+    const pw = Math.min(R.w - 18, Math.max(...lines.map((l) => width(l, f))) + (L.narrow ? 16 : 70));
+    const textEls = lines.map((l, i) => `<text x="${R.x + 16}" y="${py + ph * 0.7 + i * lh}" font-size="${f}">${esc(l)}</text>`).join('');
+    s += `<g class="plaque"><rect x="${R.x + 9}" y="${py}" width="${pw}" height="${phh}" rx="2"/>${textEls}${L.narrow ? '' : `<text class="count" id="count-${esc(r.id)}" x="${R.x + 9 + pw - 8}" y="${py + ph * 0.7}" font-size="${fs - 2}" text-anchor="end"></text>`}</g>`;
     const slots = slotsFor(R, L.narrow); const qy = (slots[0].y + slots[slots.length - 1].y) / 2 - (L.narrow ? 6 : 14);
     const qw = Math.min(R.w - (L.narrow ? 10 : 24), L.narrow ? 152 : 220);
     s += `<g class="quiet" id="quiet-${esc(r.id)}"><rect x="${R.x + R.w / 2 - qw / 2}" y="${qy - (L.narrow ? 14 : 18)}" width="${qw}" height="${L.narrow ? 46 : 50}" rx="6"/><text class="q1" x="${R.x + R.w / 2}" y="${qy}" font-size="${L.narrow ? 11 : 13}">Quiet · nobody here</text><text class="q2" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 14 : 17)}" font-size="${L.narrow ? 9 : 11}"></text><text class="q3" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 26 : 31)}" font-size="${L.narrow ? 9 : 11}"></text></g>`;
     s += `<rect class="room-hit" data-room="${esc(r.id)}" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" tabindex="0" role="button" aria-label="Open ${esc(r.name)}"/>`;
   }
   s += `<rect class="room-hit" data-door="1" x="${Lb.x}" y="${Lb.y}" width="${Lb.w}" height="${Lb.h}" tabindex="0" role="button" aria-label="The entrance: ask cohab01"/>`;
+  // The Library: a bookshelf in the lobby. Anyone can open it (no sign-in).
+  const LS = L.narrow ? { x: Lb.x + 196, y: Lb.y + 70, w: 74, h: 50 } : { x: Lb.x + 34, y: Lb.y + 226, w: 168, h: 66 };
+  s += bookshelf(LS);
+  s += `<rect class="room-hit lib-hit" data-href="/library" x="${LS.x - 4}" y="${LS.y - 18}" width="${LS.w + 8}" height="${LS.h + 22}" tabindex="0" role="link" aria-label="Open the Library: papers, tools and the project's records"/>`;
   svg.innerHTML = s;
   updateRoomLabels();
 }
@@ -719,15 +749,16 @@ function route(push = false) {
 }
 addEventListener('popstate', () => route(false));
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-room], [data-door], [data-room-link]');
+  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href]');
   if (!t || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (t.dataset.href) { e.preventDefault(); location.href = t.dataset.href; return; }
   if (t.dataset.door) { e.preventDefault(); openDoor(); return; }
   const id = t.dataset.room || t.dataset.roomLink;
   if (id && S.roomById[id]) { e.preventDefault(); openRoom(id); if (t.closest('#ticker') && t.getAttribute('href')?.includes('#')) history.replaceState({}, '', t.getAttribute('href')); }
 });
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest?.('.room-hit'); if (!t || (e.key !== 'Enter' && e.key !== ' ')) return;
-  e.preventDefault(); if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
+  e.preventDefault(); if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
 });
 
 function relayout(force = false) {

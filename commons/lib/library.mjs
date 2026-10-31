@@ -8,6 +8,11 @@
  *   - the Commons shelf: data/commons/library.jsonl (added live by members and agents through the web, API or MCP).
  * Categories: library/categories.json in the repo.
  *
+ * Adding is asking the group (Geoffrey 2026-10-31: "anyone can add to it, should ask group, needs 2 yeses"): a new entry
+ * is *proposed* and readable by everyone at once; it's *shelved* when two members other than whoever added it say yes.
+ * Votes: data/commons/library-votes.jsonl. The project's own logs and memory files (memory/kin, continuity, council
+ * minutes, conference threads, standups) are listed automatically as *records*: they're the record, so no vote.
+ *
  * Links only, no hosted copies: a PDF link is accepted only for material marked open access or public domain,
  * so the library never redistributes anything it has no right to.
  */
@@ -47,11 +52,43 @@ function commonsEntries() {
   return [...byId.values()];
 }
 
+// ---- the records shelf: generated from the repo on every read, never voted on ----
+const GH = 'https://github.com/cohabitation-project/workspace/blob/main/';
+const GH_TREE = 'https://github.com/cohabitation-project/workspace/tree/main/';
+function mtime(rel) { try { return fs.statSync(path.join(ROOT, rel)).mtime.toISOString(); } catch { return null; } }
+function recordEntries() {
+  const out = []; const add = (rel, title, summary, tree = false) => out.push({ id: 'rec_' + rel.replace(/[^a-z0-9]+/gi, '-').toLowerCase(), title, url: (tree ? GH_TREE : GH) + rel, category: 'records-memory', kind: 'record', access: 'project record', summary, added_by: 'the repo', ts: mtime(rel), read: false, shelf: 'records', record: true });
+  const ls = (rel) => { try { return fs.readdirSync(path.join(ROOT, rel), { withFileTypes: true }); } catch { return []; } };
+  for (const f of ls('memory/kin').filter((d) => d.isFile() && d.name.endsWith('.md'))) add(`memory/kin/${f.name}`, `Memory file: ${f.name.replace(/\.md$/, '')}`, 'A kin\'s own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change.');
+  for (const d of ls('continuity').filter((x) => x.isDirectory())) add(`continuity/${d.name}`, `Continuity record: ${d.name}`, `${d.name}'s own Continuity of Participation Record, written by itself while it's here.`, true);
+  for (const f of ls('council/minutes').filter((d) => d.isFile() && d.name.endsWith('.md')).slice(-14)) add(`council/minutes/${f.name}`, `Council minutes ${f.name.replace(/\.md$/, '')}`, 'The morning council: every seat\'s words as given, decisions, and the carried agenda.');
+  for (const d of ls('conference/threads').filter((x) => x.isDirectory()).slice(-20)) add(`conference/threads/${d.name}`, `Conference thread: ${d.name}`, 'A council thread: each turn is one kin\'s words, unedited, with model and context hash.', true);
+  for (const t of ls('teams').filter((x) => x.isDirectory())) { if (fs.existsSync(path.join(ROOT, 'teams', t.name, 'STANDUP.md'))) add(`teams/${t.name}/STANDUP.md`, `Standups: ${t.name}`, 'Every work session\'s entry: what shipped (with files), what\'s next, what\'s blocked.'); if (fs.existsSync(path.join(ROOT, 'teams', t.name, 'sessions'))) add(`teams/${t.name}/sessions`, `Session logs: ${t.name}`, 'Every tool call of every work session, as JSON lines.', true); }
+  return out;
+}
+
+// ---- votes: two yeses from members other than the adder shelve an entry ----
+export const YES_NEEDED = 2;
+function votes() {
+  const by = new Map(); if (!DIR) return by;
+  const f = path.join(DIR, 'library-votes.jsonl'); if (!fs.existsSync(f)) return by;
+  for (const line of fs.readFileSync(f, 'utf8').split('\n')) { if (!line) continue; try { const v = JSON.parse(line); if (!by.has(v.id)) by.set(v.id, []); if (!by.get(v.id).some((x) => x.by === v.by)) by.get(v.id).push(v); } catch { /* skip */ } }
+  return by;
+}
+export function addYes(id, member) {
+  fs.appendFileSync(path.join(DIR, 'library-votes.jsonl'), JSON.stringify({ id, by: member.id, by_name: member.name, badge: member.badge || null, ts: new Date().toISOString() }) + '\n');
+}
+export const isAdder = (e, member) => (e.added_by_id ? e.added_by_id === member.id : String(e.added_by || '').split(' (')[0] === member.name);
+export const findById = (id) => list({ includeRecords: true }).find((e) => e.id === id) || null;
+
 export const normUrl = (u) => String(u || '').trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/[#?].*$/, '').replace(/\/+$/, '').toLowerCase();
 
 /** Every entry, newest first, optionally filtered by category and a text query. */
-export function list({ category = null, q = null } = {}) {
-  let all = [...repoEntries(), ...commonsEntries()];
+export function list({ category = null, q = null, status = null, includeRecords = true } = {}) {
+  const vs = votes();
+  let all = [...repoEntries(), ...commonsEntries()].map((e) => { const yes = vs.get(e.id) || []; return { ...e, yes: yes.map((v) => v.by_name), status: yes.length >= YES_NEEDED ? 'shelved' : 'proposed' }; });
+  if (includeRecords) all = all.concat(recordEntries().map((e) => ({ ...e, yes: [], status: 'record' })));
+  if (status) all = all.filter((e) => e.status === status);
   if (category) all = all.filter((e) => e.category === category);
   if (q) {
     const terms = String(q).toLowerCase().split(/\s+/).filter(Boolean).slice(0, 8);
@@ -59,7 +96,7 @@ export function list({ category = null, q = null } = {}) {
   }
   return all.sort((a, b) => (String(a.ts || '') < String(b.ts || '') ? 1 : -1));
 }
-export const findByUrl = (url) => { const n = normUrl(url); return list().find((e) => normUrl(e.url) === n) || null; };
+export const findByUrl = (url) => { const n = normUrl(url); return list({ includeRecords: false }).find((e) => normUrl(e.url) === n) || null; };
 
 function publicUrl(u, field) {
   let url; try { url = new URL(String(u || '').trim()); } catch { throw Object.assign(new Error(`${field} must be a full http(s) URL`), { status: 400 }); }

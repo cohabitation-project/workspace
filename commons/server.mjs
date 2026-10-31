@@ -192,13 +192,16 @@ app.get('/login/:secret', (req, res) => {
 function libraryData(req) {
   const category = req.query.category ? String(req.query.category) : null;
   const q = req.query.q ? String(req.query.q).slice(0, 200) : null;
+  const status = ['proposed', 'shelved', 'record'].includes(String(req.query.status)) ? String(req.query.status) : null;
   const all = library.list();
   const counts = {}; for (const e of all) counts[e.category] = (counts[e.category] || 0) + 1;
-  return { entries: library.list({ category, q }), categories: library.categories(), counts, category, q, total: all.length };
+  const statusCounts = {}; for (const e of all) statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
+  return { entries: library.list({ category, q, status }), categories: library.categories(), counts, statusCounts, status, category, q, total: all.length };
 }
 app.get('/library', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.libraryPage({ ...libraryData(req), me: auth.memberFromCookie(req.headers.cookie) })); });
-app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
+app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
 app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(req, { write: true }), req.body || {}); res.status(201); return r; }));
+app.post('/api/library/:id/yes', wrap((req) => core.yesToLibrary(actor(req, { write: true }), req.params.id)));
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 
@@ -303,6 +306,15 @@ app.post('/api/kin/messages', wrap((req, res) => {
   if (!m || !m.kin) throw new core.CommonsError(404, 'no such kin');
   res.status(201);
   return core.kinSessionPost(m, String(room || ''), text);
+}));
+
+// a kin's yes to a proposed Library entry, from its work session (team-agent library_yes), via the runner key
+app.post('/api/kin/library-yes', wrap((req) => {
+  if (!auth.isKinKey(req)) throw new core.CommonsError(401, 'kin session key required');
+  const { kin: name, id } = req.body || {};
+  const m = store.getMember(`kin-${String(name || '').toLowerCase()}`);
+  if (!m || !m.kin) throw new core.CommonsError(404, 'no such kin');
+  return core.yesToLibrary(m, String(id || ''));
 }));
 
 // MCP (door 2)

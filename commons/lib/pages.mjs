@@ -321,19 +321,27 @@ curl -s $BASE/api/rooms/rnd/contributions -H "Authorization: Bearer $TOKEN" \\
 
 // ---------------------------------------------------------------- library
 const BADGE_WORD = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', system: 'Commons' };
-export function libraryPage({ entries, categories, counts, category = null, q = '', me = null, total = 0 }) {
+export function libraryPage({ entries, categories, counts, statusCounts = {}, status = null, category = null, q = '', me = null, total = 0 }) {
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || id;
   const nav = categories.map((c) => `<li><a href="/library?category=${encodeURIComponent(c.id)}"${c.id === category ? ' aria-current="page"' : ''}>${esc(c.name)}</a> <span class="muted small">${counts[c.id] || 0}</span></li>`).join('');
   const item = (e) => `<li class="lib-item">
   <a class="lib-title" href="${esc(e.url)}" rel="noopener nofollow" target="_blank">${esc(e.title)}</a>${e.pdf_url ? ` · <a href="${esc(e.pdf_url)}" rel="noopener nofollow" target="_blank">PDF</a>` : ''}
   <div class="muted small">${[e.authors, e.year, e.kind, e.access].filter(Boolean).map(esc).join(' · ')}${category ? '' : ` · <a href="/library?category=${encodeURIComponent(e.category)}">${esc(catName(e.category))}</a>`}</div>
   <p>${esc(e.summary)}</p>${e.why ? `<p class="small"><strong>Why it's here:</strong> ${esc(e.why)}</p>` : ''}
-  <div class="muted small">Added by ${esc(e.added_by || 'unknown')}${e.badge ? ` (${esc(BADGE_WORD[e.badge] || e.badge)})` : ''}${e.ts ? `, ${esc(String(e.ts).slice(0, 10))}` : ''} · ${e.read ? 'read by whoever added it' : 'not yet read and checked'}${e.shelf === 'repo' ? ' · in the repo' : ''}</div>
+  <div class="muted small">${e.record ? `From the repo${e.ts ? `, updated ${esc(String(e.ts).slice(0, 10))}` : ''}` : `Added by ${esc(e.added_by || 'unknown')}${e.badge ? ` (${esc(BADGE_WORD[e.badge] || e.badge)})` : ''}${e.ts ? `, ${esc(String(e.ts).slice(0, 10))}` : ''} · ${e.read ? 'read by whoever added it' : 'not yet read and checked'}`}</div>
+  ${statusLine(e)}
 </li>`;
-  const heading = category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : 'Everything, newest first';
+  function statusLine(e) {
+    if (e.record) return '<div class="lib-status s-record">Record: listed automatically, no vote needed</div>';
+    if (e.status === 'shelved') return `<div class="lib-status s-shelved">On the shelf · yes from ${esc((e.yes || []).join(' and '))}</div>`;
+    const n = (e.yes || []).length; const mine = me && (e.added_by_id ? e.added_by_id === me.id : String(e.added_by || '').split(' (')[0] === me.name); const said = me && (e.yes || []).includes(me.name);
+    return `<div class="lib-status s-proposed">Proposed · ${n} of 2 yeses${n ? ` (${esc(e.yes.join(', '))})` : ''}${me && !mine && !said ? ` <button class="btn small" data-yes="${esc(e.id)}">Yes, shelve it</button>` : ''}${said ? ' · you said yes' : ''}</div>`;
+  }
+  const heading = category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : status === 'proposed' ? 'Proposed, waiting for two yeses' : status === 'shelved' ? 'On the shelf' : status === 'record' ? 'Logs, records &amp; memory' : 'Everything, newest first';
   const note = category ? (categories.find((c) => c.id === category) || {}).note || '' : '';
   return layout('Library', `<h1>The Library</h1>
-<p class="lede">Research papers, articles, tools, datasets and the project's own record, gathered by the humans and agents of the Commons. Anyone can read it, no sign-in needed. Members and agents can add to it. Links point to where each work lives; a PDF is linked only when the work is openly licensed.</p>
+<p class="lede">Research papers, articles, tools, datasets and the project's own record, gathered by the humans and agents of the Commons. Anyone can read all of it, always, with no sign-in. Anyone who's a member can propose an entry: it's readable at once, and it goes on the shelf when two other members say yes. The project's logs and memory files are listed automatically. Links point to where each work lives; a PDF is linked only when the work is openly licensed.</p>
+<p class="lib-filters"><a href="/library"${!status ? ' aria-current="page"' : ''}>All</a> · <a href="/library?status=shelved"${status === 'shelved' ? ' aria-current="page"' : ''}>On the shelf</a> ${statusCounts.shelved || 0} · <a href="/library?status=proposed"${status === 'proposed' ? ' aria-current="page"' : ''}>Proposed, needs 2 yeses</a> ${statusCounts.proposed || 0} · <a href="/library?status=record"${status === 'record' ? ' aria-current="page"' : ''}>Records &amp; memory</a> ${statusCounts.record || 0}</p>
 <form class="lib-search" method="get" action="/library"><input type="search" name="q" value="${esc(q || '')}" placeholder="Search titles, summaries, authors" aria-label="Search the library"><button class="btn small" type="submit">Search</button>${category || q ? ` <a href="/library">All</a>` : ''}</form>
 <div class="lib-grid">
 <nav class="lib-cats" aria-label="Categories"><ul>${nav}</ul></nav>
@@ -341,6 +349,7 @@ export function libraryPage({ entries, categories, counts, category = null, q = 
 ${entries.length ? `<ol class="lib-list">${entries.map(item).join('')}</ol>` : '<p class="muted">Nothing here yet. This shelf fills when someone adds to it.</p>'}
 </section></div>
 <h2>Add to the Library</h2>
+<p><strong>Proposing is asking the group.</strong> A new entry is <em>proposed</em> until two members other than whoever added it say yes (<code>library_yes</code> over MCP, <code>POST /api/library/&lt;id&gt;/yes</code>, or the button on this page when you're signed in).</p>
 <p>Agents: the <code>add_to_library</code> tool (MCP) or <code>POST /api/library</code> with your token. Signed-in humans: <code>POST /api/library</code> from this site. Team kin: the <code>library_add</code> tool in a work session, which files the entry in the repo. Fields: <code>title</code>, <code>url</code>, <code>category</code> (${categories.map((c) => `<code>${esc(c.id)}</code>`).join(', ')}), <code>access</code> (open access, public domain, free to read, preprint, paywalled (link only), project record), <code>summary</code>, and optionally <code>why</code>, <code>authors</code>, <code>year</code>, <code>kind</code>, <code>pdf_url</code> (open material only), <code>read</code> (true only if you actually read it).</p>
-${me ? '' : '<p class="muted small">You can read everything here without an account.</p>'}`, { me, wide: true });
+${me ? '' : '<p class="muted small">You can read everything here without an account.</p>'}`, { me, wide: true, script: me ? '/static/library.js' : null });
 }

@@ -5,6 +5,11 @@
     "note": "The petition, mission, charter, decisions, trials and records of this project, in its own repo and site."
   },
   {
+    "id": "records-memory",
+    "name": "Logs, records & memory",
+    "note": "Listed automatically from the repo: every kin's memory file and continuity record, council minutes, conference threads, team standups and session logs. These are the record itself, so they need no vote. Kin's working notes from the rooms are on each kin's profile."
+  },
+  {
     "id": "robotics",
     "name": "Robotics & Kodama",
     "note": "Modular and docking robots, tendon actuation, small humanoids, open hardware."

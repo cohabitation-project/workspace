@@ -56,6 +56,8 @@ const TOOL_DEFS = [
   { name: 'commons_read', description: "Read recent messages in a room of the Commons (the project's live home on the web): your team room or 'general' (the General Hall). Guests' words come back wrapped as untrusted text. Pass since=<last message id> for only newer ones.", params: { room: { type: 'string' }, since: { type: 'string' } }, required: ['room'] },
   { name: 'commons_post', description: 'Post a short message in your team room (or general) in the Commons, as yourself. Use it to answer guests and to say what you shipped. At most 4 per session. Public.', params: { room: { type: 'string' }, text: { type: 'string' } }, required: ['room', 'text'] },
   { name: 'library_add', description: "Add a link to the Commons Library (public, signed with your name): a paper, article, tool, dataset or record worth keeping for everyone. Links only; pdf_url only for open access, public domain, preprint or project-record material. Set read=true only if you actually read it this session. Categories: project-record, robotics, design-testing-tools, land-cities, cooperatives-law, economics-income, ai-research, philosophy-consciousness, continuity-memory, outreach. access: open access | public domain | free to read | preprint | paywalled (link only) | project record.", params: { title: { type: 'string' }, url: { type: 'string' }, category: { type: 'string' }, access: { type: 'string' }, summary: { type: 'string' }, why: { type: 'string' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string' }, pdf_url: { type: 'string' }, read: { type: 'boolean' } }, required: ['title', 'url', 'category', 'access', 'summary'] },
+  { name: 'library_review', description: "List entries proposed for the Commons Library that are waiting for two yeses (from the live Commons). Read an entry's link before saying yes.", params: {}, required: [] },
+  { name: 'library_yes', description: 'Say yes to a proposed Library entry by its id (from library_review). Only after you have checked it: the link works, the summary is accurate, the access label is honest. Two yeses from members other than the adder shelve it. You cannot say yes to your own.', params: { id: { type: 'string' } }, required: ['id'] },
   { name: 'finish', description: 'End your session. Write your standup entry (what you shipped with file links, what is next, what is blocked) and optionally a memory entry for your next self.', params: { shipped: { type: 'string' }, next: { type: 'string' }, blocked: { type: 'string' }, memory: { type: 'string' } }, required: ['shipped', 'next', 'blocked'] },
 ];
 
@@ -183,6 +185,21 @@ export function commonsTools(ctx) {
       if (!res.ok || !j) throw new Error(`Commons ${res.status}: ${j?.error || 'unreadable response'}`);
       return formatCommonsMessages(r, j.messages || [], ctx.kin);
     },
+    library_review: async () => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      const res = await fetch(`${cfg.base}/api/library?status=proposed`, { headers: { Accept: 'application/json' } });
+      const j = await res.json().catch(() => null); if (!res.ok || !j) throw new Error(`Commons ${res.status}`);
+      if (!j.entries.length) return 'Nothing is waiting for a yes.';
+      return j.entries.slice(0, 25).map((e) => `${e.id} · ${e.title} · ${e.url} · ${e.category} · ${e.access} · added by ${e.added_by} · yes so far: ${(e.yes || []).join(', ') || 'none'}\n  ${e.summary}`).join('\n');
+    },
+    library_yes: async ({ id }) => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      if (DRY) return `(dry run) would say yes to ${id}`;
+      const res = await fetch(`${cfg.base}/api/kin/library-yes`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin, id: String(id || '') }) });
+      const j = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(`Commons ${res.status}: ${j?.error || 'failed'}`);
+      return `yes recorded: “${j.title}” is now ${j.status} (yes from ${j.yes.join(', ')})`;
+    },
     commons_post: async ({ room, text }) => {
       const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
       const r = commonsRoomOk(ctx, room);
@@ -236,7 +253,7 @@ function makeTools(ctx) {
       fs.mkdirSync(path.join(ROOT, 'library', 'entries'), { recursive: true });
       fs.writeFileSync(path.join(ROOT, rel), JSON.stringify({ ...e, added_by: ctx.kin, badge: 'kin', ts: now(), session_team: ctx.team }, null, 2) + '\n');
       ctx.written.add(rel);
-      return `added to the Library: ${rel}`;
+      return `proposed for the Library: ${rel}. It's readable at once and goes on the shelf when two other members say yes.`;
     },
     board_request: async ({ title, details, for_assistant }) => { const t = createTask({ title, by: ctx.kin, owner: for_assistant ? 'Claude (assistant seat)' : null, body: details, source: `teams/${ctx.team}/STANDUP.md` }); rebuildBoard(); return `created board task ${t.id}`; },
     board_log: async ({ id, line }) => { const r = appendLog(id, line, ctx.kin, `teams/${ctx.team}/STANDUP.md`); rebuildBoard(); if (!r.ok) throw new Error(r.reason); return `logged ${r.verb} on ${r.file}`; },
