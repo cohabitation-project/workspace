@@ -106,22 +106,38 @@ $('spk-test').addEventListener('click', async () => {
 });
 
 // ---- session controls ----
+// Failure-safe rule (Aletheia's review, finding 2): the indicator always reflects ACTUAL device state.
+// Devices are changed first; the server is told second. If the server call fails, the indicator still shows
+// the device truth and a visible warning says the server record disagrees — capture is never left running
+// under a CLOSED or PAUSED label, and a refused Start shuts the camera again.
+function serverWarn(on) { itext.textContent += on ? '  ⚠ server record out of sync — see logs' : ''; }
+function stopAllCapture() {
+  if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; video.srcObject = null; }
+  return micStop().then(() => { $('mic-on').checked = false; });
+}
 $('start').onclick = async () => {
   if (!$('authorizer').value.trim()) { alert('Put your name in first — a human opens the window.'); return; }
   try {
     if (!stream) await openCamera(); // the selected camera; local preview only
     else stream.getTracks().forEach((t) => { t.enabled = true; });
-    if (await setServerState('live')) setIndicator('live');
-  } catch (e) { alert('Camera not available or permission refused: ' + e.message); }
+  } catch (e) { alert('Camera not available or permission refused: ' + e.message); return; }
+  const ok = await setServerState('live').catch(() => false);
+  if (ok) setIndicator('live');
+  else { await stopAllCapture(); setIndicator('off'); } // refused session = no capture stays on
 };
 $('pause').onclick = async () => {
+  // Pause pauses ALL capture (review finding 1): camera tracks disabled, microphone fully stopped.
   if (stream) stream.getTracks().forEach((t) => { t.enabled = false; });
-  if (await setServerState('paused')) setIndicator('paused');
+  await micStop(); $('mic-on').checked = false; // resuming leaves the mic off; the human re-enables deliberately
+  setIndicator('paused'); // device truth first
+  const ok = await setServerState('paused').catch(() => false);
+  if (!ok) serverWarn(true);
 };
 $('end').onclick = async () => {
-  if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; video.srcObject = null; }
-  await micStop(); $('mic-on').checked = false;
-  if (await setServerState('off')) setIndicator('off');
+  await stopAllCapture();
+  setIndicator('off'); // device truth first
+  const ok = await setServerState('off').catch(() => false);
+  if (!ok) serverWarn(true);
 };
 
 // ---- conversation ----

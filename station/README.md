@@ -62,9 +62,17 @@ Two different things, and the record should never blur them:
   visibility, and immediate revocation? ← waits on the stop-line's three conditions. We don't skip 1 to reach 2.
 
 ## Tests
-`node station/test.mjs` — Chromium with a fake camera. 15 checks: controls, indicator states, authorizer requirement,
-text-only agent door (binary dropped, refused when closed), no capture APIs in the page, tracks actually disabled on
-Pause and stopped on End, and **zero requests leaving the machine** during the whole run.
+`node station/test.mjs` — Chromium with fake devices. **27 checks** covering: controls and indicator states; the
+authorizer requirement; the text-only agent door (binary dropped, wrong types dropped, refused while closed,
+multi-agent conversation both ways); no capture/upload APIs in the page source; device selection (selects populated,
+mic OFF by default, meter zero while off); the full lifecycle — camera switching actually replaces the active track
+(the switch acquires the replacement BEFORE stopping the old camera, so a failed switch leaves the working camera
+running), enabling the mic produces a live meter, **Pause stops ALL capture including the microphone** (resume
+leaves it off until deliberately re-enabled), End stops everything; failure-safe transitions — a refused Start shuts
+the camera and stays CLOSED, and a failed Pause/End still shows the device truth with a visible server-out-of-sync
+warning; and **zero requests leaving the machine** during the whole run. The zero-egress check is bounded: it
+verifies the tested configuration, not every possible future change — that is what the source checks and
+review-before-merge are for (Aletheia's review, 2026-10-31).
 
 Built 2026-10-31 by the assistant seat (Setu) from the room's own design: GPT's architecture, Gemini's local-processing
 stance, DeepSeek's no-retention line, Claude's review conditions, Aletheia's proposal. TTS uses the browser's built-in

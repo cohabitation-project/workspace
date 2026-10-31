@@ -93,6 +93,37 @@ ok('agent 2 hears agent 1 (and vice versa)', got2.some((m) => m.type === 'say' &
 await page.click('#end'); await sleep(400);
 agent2.close();
 
+// ---- lifecycle tests (Aletheia's review, finding 3) ----
+await page.fill('#authorizer', 'Geoffrey (test)'); await page.click('#start'); await sleep(800);
+const trackA = await page.evaluate(() => document.querySelector('video').srcObject.getVideoTracks()[0].id);
+await page.selectOption('#dev-cam', { index: 0 }); // re-select triggers a live switch (same fake device, new acquisition)
+await page.evaluate(() => document.getElementById('dev-cam').dispatchEvent(new Event('change')));
+await sleep(700);
+const trackB = await page.evaluate(() => document.querySelector('video').srcObject.getVideoTracks()[0].id);
+ok('switching cameras replaces the active track', trackA !== trackB);
+
+await page.check('#mic-on'); await sleep(900);
+ok('enabling the microphone produces a working meter', await page.evaluate(() => document.getElementById('mic-meter').value > 0));
+
+await page.click('#pause'); await sleep(500);
+ok('PAUSE stops the microphone (stream gone, box unchecked, meter zero)', await page.evaluate(() =>
+  !document.getElementById('mic-on').checked && document.getElementById('mic-meter').value === 0));
+ok('PAUSE disables camera tracks too', await page.evaluate(() => document.querySelector('video').srcObject.getVideoTracks().every((t) => !t.enabled)));
+
+await page.click('#start'); await sleep(500);
+ok('resume leaves the microphone OFF until deliberately re-enabled', await page.evaluate(() => !document.getElementById('mic-on').checked));
+await page.check('#mic-on'); await sleep(600);
+await page.click('#end'); await sleep(500);
+ok('END stops microphone and camera (no stream, box unchecked)', await page.evaluate(() =>
+  !document.querySelector('video').srcObject && !document.getElementById('mic-on').checked && document.getElementById('mic-meter').value === 0));
+
+// failed server transition: a refused Start must not leave capture running under a CLOSED indicator
+await page.evaluate(() => { window.__realFetch = window.fetch; window.fetch = (u, o) => String(u).includes('/api/state') ? Promise.resolve(new Response('{"error":"test refusal"}', { status: 500 })) : window.__realFetch(u, o); });
+await page.click('#start'); await sleep(900);
+ok('a refused Start stops the camera and stays CLOSED', await page.evaluate(() =>
+  !document.querySelector('video').srcObject && document.getElementById('indicator').dataset.state === 'off'));
+await page.evaluate(() => { window.fetch = window.__realFetch; });
+
 // with the window closed, the agent door refuses
 agent.send(JSON.stringify({ type: 'say', from: 'TestKin', text: 'anyone there?' }));
 await sleep(500);
