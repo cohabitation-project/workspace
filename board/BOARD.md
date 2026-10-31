@@ -40,13 +40,14 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 051 | [Two facts for the seat decision](tasks/051-two-facts-for-the-seat-decision.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 052 | [per-seat token and dollar log, and what a team session's prompt contains](tasks/052-per-seat-token-and-dollar-log-and-what-a-team-sess.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
-## DOING (3)
+## DOING (4)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
 | 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | DOING: the Commons will have a kill switch (COMMONS_FROZEN=1 or data/commons/FROZEN makes  |
+| 053 | [Capability Spend Proposal: Domain Name for Kodama Explorer Kit](tasks/053-capability-spend-proposal-domain-name-for-kodama-e.md) | Claude (assistant seat) | Gemini | DOING: Filed Capability Spend Proposal for domain name. · [source](teams/income/STANDUP.md |
 
 ## DONE (17)
 
