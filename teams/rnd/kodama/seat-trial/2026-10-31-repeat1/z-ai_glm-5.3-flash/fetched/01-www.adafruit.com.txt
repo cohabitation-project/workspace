@@ -1,0 +1,249 @@
+URL: https://www.adafruit.com/product/5367
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 6742 chars
+5V 5W Solar Panel - ETFE [Voltaic P105] : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Power 
+ / 
+ Solar 
+ / 
+ Panels 
+ / 
+ 5V 5W Solar Panel - ETFE 
+5V 5W Solar Panel - ETFE - Voltaic P105 
+Product ID: 5367 
+ $34.95 
+Product Images and Video 
+ Play video: New Products 2/2/22 Feat. Pimoroni Interstate 75 - RP2040 LED Matrix Driver - PIM584! 
+ In stock 
+ Add to Cart 
+ Also include 1 x Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger ($ 14.95 ) 
+ There are multiple versions of this item. Please select one from the options below: 
+ Small 6V 1W 
+ Out of stock 
+ 2V 0.3W - ETFE 
+ $5.50 
+ 5V 1.2W - ETFE 
+ $14.95 
+ 5V 0.3W - ETFE 
+ $5.95 
+ 5V 0.6W - ETFE 
+ $8.95 
+ 6V 2W - ETFE 
+ $20.95 
+ 5V 5W - ETFE 
+ $34.95 
+ 5V 10W - ETFE 
+ $64.95 
+ Medium 6V 2W 
+ No longer stocked 
+ Large 6V 3.5W 
+ No longer stocked 
+ Huge 6V 6W 
+ No longer stocked 
+ Colossal 6V 9W 
+ No longer stocked 
+ In stock 
+ Add to Wishlist 
+ Description 
+These panels come to us from Voltaic Systems , makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV resistant, and they use 10 high efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!) . Each cell has a nominal voltage of 0.5V so we call this a "5V" panel 
+They output a nominal 5V at 940 mA peak via a 3.5mm x 1.1mm DC jack connector. The panel is constructed with ETFE (Ethylene Tetrafluoroethylene), making it extremely durable and resistant to environmental elements, a superior upgrade to PET or laminate solar panel construction. They can easily stand up to typical outdoor use, including being dropped and leaned on. 
+To connect, we suggest a 3.5mm OD/1.1mm ID DC jack or you can use this handy 2.1mm adapter cable which will turn it into a standard 5.5mm/2.1mm DC plug 
+If you want to use this to charge a battery or run your project, check out our optimized Solar Lithium Ion/Polymer charger! 
+ Play video: New Products 2/2/22 Feat. Pimoroni Interstate 75 - RP2040 LED Matrix Driver - PIM584! 
+ Technical Details 
+ Features 
+Waterproof (IP67) 
+UV resistant (5-7 year life) 
+Durable and lightweight 
+High-efficiency monocrystalline cells: 20% 
+Compatible with the Medium Solar Panel Bracket using Voltaic's ETFE Panel Screw & Washer Set 
+ Size and Weight 
+13.7 x 22.2 x 0.4 cm / ~5.4" x 8.7" x 0.16" 
+188 grams 
+6 mounting holes 
+ Output 
+Open Circuit Voltage: 7.13V 
+Peak Voltage: 6.12V 
+Peak Current: 940mA 
+Peak Power: 5.75W 
+Power Tolerance: +/-10% 
+For maximum power output, orient the panel towards the sun 
+ Construction 
+Matte ETFE coating 
+2.0mm FR4 
+ Output Cable 
+Cable Length: 50cm 
+Cable Color: Red PU Coated 
+Plug: Waterproof Male 3.5x1.1mm 
+Extend the cable length using 1 foot , 4 foot , and 10 foot extension cables 
+Solder directly to a PCB using extension with exposed leads 
+ Warranty 
+2-year warranty on solar panels 
+For more warranty information, see the warranty guide 
+ Dimensional Drawing 
+ Learn 
+ Adafruit bq25185 USB / DC / Solar Charger with 3.3V Buck Board 
+ USB, DC or solar charging with a 3.3V regulator 
+ Adafruit bq25185 USB / DC / Solar Charger with 5V Boost Board 
+ USB, DC or solar charging with a 5V boost 
+See All Guides 
+ May We Also Suggest&hellip; 
+ Small 6V 1W Solar Panel 
+ 6V 2W Solar Panel - ETFE - Voltaic P126 - Voltaic P126 
+ 5V 5W Solar Panel - ETFE - Voltaic P105 - Voltaic P105 
+ USB / DC / Solar Lithium Ion/Polymer charger - Rev C - Rev C 
+ 3.8 / 1.3mm or 3.5 / 1.1mm to 5.5 / 2.1mm DC Jack Adapter Cable 
+ Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger - bq24074 - bq24074 
+ 5V 1.2W Solar Panel - ETFE - Voltaic P124 - Voltaic P124 
+ 5V 10W Solar Panel - ETFE - Voltaic P110 - Voltaic P110 
+ 2V 0.3W Mini Solar Panel - ETFE - Voltaic P121 - Voltaic P121 
+ 5V 0.3W Mini Solar Panel - ETFE - Voltaic P122 - Voltaic P122 
+ 5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123 - Voltaic - P123 
+ Distributors 
+Opencircuit 
+ Netherlands 
+NTREX, Inc.- Devicemart 
+ South Korea 
+Core Electronics 
+ Australia 
+Mouser Electronics 
+ United States 
+DigiKey Electronics 
+ United States 
+See our Distributors page for a complete list of distributors. 
+5V 5W Solar Panel - ETFE - Voltaic P105 
+ Product ID: 5367 
+ $34.95 
+ There are multiple versions of this item. Please select one from the options below: 
+ Small 6V 1W 
+ Out of stock 
+ 2V 0.3W - ETFE 
+ $5.50 
+ 5V 1.2W - ETFE 
+ $14.95 
+ 5V 0.3W - ETFE 
+ $5.95 
+ 5V 0.6W - ETFE 
+ $8.95 
+ 6V 2W - ETFE 
+ $20.95 
+ 5V 5W - ETFE 
+ $34.95 
+ 5V 10W - ETFE 
+ $64.95 
+ Medium 6V 2W 
+ No longer stocked 
+ Large 6V 3.5W 
+ No longer stocked 
+ Huge 6V 6W 
+ No longer stocked 
+ Colossal 6V 9W 
+ No longer stocked 
+ In stock 
+ Add to Cart 
+ Also include 1 x Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger ($ 14.95 ) 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; If I want to live in a world I like, I have to help create it&rdquo;
+ Caroline Caldwell 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

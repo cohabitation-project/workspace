@@ -1,0 +1,654 @@
+URL: https://openelab.io/collections/brands-feetech
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 11765 chars
+Brands - Feetech
+ &ndash; OpenELAB Technology Ltd. 
+ &times;
+Before checkout 
+Choose how to ship your order 
+The SKUs and quantities listed below are currently out of stock. They must be sourced from our China warehouse and will ship from China once ready. Choose whether to ship the available items first or wait and ship the entire order together. 
+Out-of-stock SKUs and quantities 
+ How would you like us to ship your order? 
+ Ship available items first 
+ Ship the available items now. The listed out-of-stock items will be sourced and shipped separately from China once ready, at no extra shipping cost. 
+ Wait and ship the full order together 
+ Wait until the listed out-of-stock items are ready in China, then ship the entire order together. 
+ Additional order notes (optional) 
+ Back 
+ I have selected, continue to payment 
+ Skip to content 
+ 📞 +49 155 61896199 
+ 📧 info@openelab.io 
+ 💬 Forum 
+💼 Business & Institutional Orders: Enter Your VAT in the Cart before Checkout! 
+ openelab.io 
+ openelab.de
+ openelab.com
+ EUR 
+ English 
+ Trustpilot 
+Quick search 
+ MeshCore 
+ Meshtastic 
+ reComputer 
+ Atom 
+ Home Assistant 
+ SO-ARM101 
+ RoboSense Airy 
+ Livox MID-360S 
+Recommended products 
+ M5StickS3 ESP32S3 Mini IoT Dev Kit 
+ Regular price 
+ 28,69 € 
+ Sale price 
+ 26,97 € 
+ Seeed Studio SO-ARM101 Pro Assembled Kit LeRobot 6DOF Robotic Arm 
+ Sale price 
+ 425,44 € 
+ Elecrow ThinkNode M1 LoRa Meshtastic Transceiver With 1.54" EPD Screen 
+ Regular price 
+ 74,58 € 
+ Sale price 
+ 65,38 € 
+ HELTEC WiFi LoRa 32 V4.3.1 SX1262 LoRa Node Meshtastic LoRaWAN GPS Included 
+ Regular price 
+ 34,44 € 
+ Sale price 
+ 25,30 € - 36,80 € 
+ RoboSense Airy 96-Channel Hemispherical Digital LiDAR for Robotics 
+ Regular price 
+ 113,85 € 
+ Sale price 
+ 108,43 € - 1.031,71 € 
+ Livox MID‑360S 360‑Degree 3D LiDAR Sensor with ROS2 Support for Robotics and SLAM 
+ Regular price 
+ 888,89 € 
+ Sale price 
+ 826,85 € - 861,35 € 
+ Login 
+ Wishlist 
+ 0 
+ Visit All Categories 
+ Dev Board 
+ Arduino 
+ Raspberry Pi 
+ ESP32 / ESP8266 
+ NVIDIA 
+ NXP 
+ FPGA 
+ STM32 
+ Motor 
+ Stepper Motors 
+ Servo Motors 
+ Worm Gear Motor 
+ BLDC Motor 
+ Joint Motor 
+ Motor Driver Board 
+ Accessories 
+ Motor Selection Guide 
+ Display 
+ LCD 
+ TFT 
+ OLED 
+ e-Paper 
+ LED Matrix 
+ Wireless & IoT 
+ Gateway & Router 
+ LoRa/Zigbee 
+ WiFi 
+ Bluetooth 
+ RFID/NFC 
+ UWB 
+ Antenna 
+ Robotic 
+ Humanoid Robot 
+ Motor 
+ LiDAR 
+ Servo 
+ Camera 
+ Robotic Arm 
+ Robotic Car 
+ Robotic Kit 
+ Accessories 
+ Workshop 
+ Workshop - CNC Accessories 
+ Workshop - CNC Router 
+ Workshop - Tools 
+ Drone 
+ Fly-ready Drones 
+ Flight Controller / GPS 
+ ESC / PDB / BEC 
+ Motors / Propellers 
+ RX / TX 
+ Radio Controller / Monitors 
+ Current Sensor / Batteries 
+ Camera / Gimbal 
+ Frames / OSD 
+ Accessories 
+ Kit 
+ Starter Kit 
+ Smart Home 
+ Robotics 
+ Car 
+ IoT Kit 
+ Camera 
+ Edge AI Camera 
+ General Camera 
+ Video Conferencing 
+ Surveillance and Security 
+ Education and Experiment 
+ Embedded Camera 
+ USB Camera 
+ SPI Camera 
+ UART Camera 
+ I2C Camera 
+ CSI Camera 
+ Grove Camera 
+ HDMI Camera 
+ Depth & LiDAR Camera 
+ Depth Camera 
+ LiDAR Camera 
+ Camera Accessory 
+ Mount and Enclosure 
+ Lenses and Optical Accessory 
+ Sensor 
+ Touch/Pressure Sensor 
+ Acceleration/Gyroscope/Compass Sensor 
+ Distance/ToF Sensor 
+ Gas Sensor 
+ IR/Motion/Hall Effect Sensor 
+ Light/Color Sensor 
+ Sound Sensor 
+ Dust Sensor 
+ Current Sensor 
+ Temperature/Humidity Sensor 
+ Presence Sensor 
+ Power 
+ Battery 
+ AC-DC 
+ DC-DC 
+ Power Bank 
+ Solar 
+ LED 
+ Matrix 
+ Strip 
+ Fan 
+ Components 
+ Accessory 
+ Cable & Wire 
+ Board 
+ Button & Switch 
+ Programmer / Adapter 
+ 3D Printer 
+ Tool 
+ Geek 
+ View all collection
+ Brands 
+ ALL 
+ AIoT 
+ Robotics 
+ STEM 
+ DIY & Workshop 
+ M5Stack 
+ LILYGO 
+ Seeed Studio 
+ DFRobot 
+ Ai-Thinker 
+ Waveshare 
+ Hi-Link 
+ Adafruit 
+ AntennaHome 
+ Elecrow 
+ HELTEC 
+ RAKwirelss 
+ MEAN WELL 
+ DOBOT 
+ AgiBot 
+ Realman 
+ Agilex 
+ Robosense 
+ Livox 
+ Orbbec 
+ Robstride 
+ Cubemars 
+ MyActuator 
+ D-Robotics 
+ LSLiDAR 
+ Seeed Studio 
+ Hiwonder 
+ Elephant Robotics 
+ WHEELTEC 
+ ACEBOTT 
+ YAHBOOM 
+ ELEGOO 
+ Genmitsu 
+ Heygears 
+ LaserPecker 
+ SunEnergyXT 
+ Unitrend 
+ FNIRSI 
+ Motor NEW 
+ Robotics HOT 
+ reComputer HOT 
+ LoRa & Mesh Network 
+ LoRaWAN 
+ Meshtastic 
+ Meshcore 
+ Resources 
+ Workshop 
+ STEM 
+ Blog 
+ Creator Program 
+ B2B Orders with VAT No. 
+ EDU Program 
+ Rewards & Gifts 
+ SALES 
+ Wishlist 
+ Search 
+ Login 
+ EUR 
+ English 
+ Brands - Feetech
+ Filter 
+ Filter 
+ Product categories 
+ Inventory 
+ 0 selected 
+ EU (5) 
+ Price 
+ Price: 
+ € 
+ - 
+ € 
+ Filter 
+ 0 selected 
+ AI upload (2) 
+ draft (1) 
+ FEETECH (2) 
+ Robotics (4) 
+ Serial Bus Servo (2) 
+ Servo Motor (2) 
+ TTL Servo (2) 
+ Most relevant 
+ Sort 
+Sort by: 
+ Featured 
+ Most relevant 
+ Best selling 
+ Alphabetically, A-Z 
+ Alphabetically, Z-A 
+ Price, low to high 
+ Price, high to low 
+ Date, old to new 
+ Date, new to old 
+ EU 
+ Add to Wishlist 
+ Quick view 
+ Feetech STS3215-C018 12V TTL Bus Servo with 345:1 Gear Ratio 
+ Sale price 
+ 29,04 € 
+ Add to cart 
+ EU 
+ Add to Wishlist 
+ Quick view 
+ Feetech STS3250-C002 TTL Serial Bus Servo for Robotic Joints 
+ Sale price 
+ 79,29 € 
+ Add to cart 
+ EU 
+ Add to Wishlist 
+ Quick view 
+ Feetech STS3215-C001 7.4V TTL Bus Servo with 345:1 Gear Ratio 
+ Sale price 
+ 25,82 € 
+ Add to cart 
+ EU 
+ Add to Wishlist 
+ Quick view 
+ Feetech STS3215-C046 7.4V TTL Bus Servo with 147:1 Gear Ratio 
+ Sale price 
+ 25,82 € 
+ Add to cart 
+ Add to Wishlist 
+ Quick view 
+ Feetech HD-1910-C001 Coreless TTL Servo for Microduck Robotics 
+ Sale price 
+ 17,19 € - 34,44 € 
+ Quick add 
+ EU 
+ Add to Wishlist 
+ Quick view 
+ Feetech STS3215-C044 7.4V TTL Bus Servo with 191:1 Gear Ratio 
+ Sale price 
+ 25,82 € 
+ Add to cart 
+ New 
+ Add to Wishlist 
+ Quick view 
+ Feetech SCS0009 Ultra-Compact Servo 6V 2.3kg 
+ Sale price 
+ 15,93 € 
+ Add to cart 
+ Add to Wishlist 
+ Quick view 
+ Feetech STS3095-C002 95KG High Torque Serial Bus Servo Motor 
+ Sale price 
+ 136,85 € 
+ Add to cart 
+ Add to Wishlist 
+ Quick view 
+ Feetech HL-3612 Coreless TTL Bus Servo for Compact Robot Joints 
+ Sale price 
+ 17,19 € - 68,94 € 
+ Quick add 
+ Add to Wishlist 
+ Quick view 
+ Feetech HL-3606 Coreless TTL Bus Servo with Single and Dual Shaft Options 
+ Sale price 
+ 17,19 € - 63,19 € 
+ Quick add 
+ Register for our Newsletter 
+Get the latest information about our products and special offers. 
+Newsletter 
+Stay updated for news, articles and product promos! 
+ Subscribe 
+ I agree with the terms and conditions 
+Website Feedback 
+Help us improve OpenELAB 
+Found a website issue or have an idea? Tell us what would make your experience better. 
+ Share Feedback 
+Website Feedback 
+Tell us what happened and what would make the OpenELAB website better. 
+ Feedback type * 
+ Select a type 
+ Website function 
+ Improvement suggestion 
+ Payment issue 
+ Checkout issue 
+ Account/login issue 
+ Product information 
+ Shipping/Delivery 
+ Other 
+ Priority * 
+ Low 
+ Medium 
+ High 
+ Page URL * 
+ Name * 
+ Email * 
+ Order number 
+ Feedback details * 
+ Expected result / suggestion 
+ Submit Feedback 
+Your message will be sent to our support team. 
+ Get to know us 
+ About OpenELAB.io 
+ Distribution Brands 
+ Prototyping Services 
+ Events & Exhibitions 
+ News 
+ Jobs 
+ Contact Us 
+ Follow Us 
+ Product Navigation 
+ Dev Board 
+ Motor 
+ Display 
+ Wireless & IoT 
+ Robotic 
+ Workshop 
+ Drone 
+ Kit 
+ Camera 
+ Sensor 
+ Power 
+ LED 
+ Components 
+ Accessory 
+ Geek 
+ Community 
+ Download Center 
+ GitHub 
+ Forum 
+ Blog 
+ Wiki 
+ Affiliate Program 
+ Education Program 
+ Creator Program 
+ Ambassador Program 
+ FAQs 
+ Rewards & Gifts 
+ Help & Policies 
+ Shopping Guide 
+ Payment Information 
+ Shipping & Order 
+ B2B Orders with VAT No. 
+ Guarantee & Return Policy 
+ Privacy Policy 
+ Cookie Policy 
+ Terms and Conditions 
+ Imprint / Disclaimer 
+ OpenELAB Technology Ltd. 
+ Munich Office: Parkring 31, 4. OG, 85748 Garching bei München, Germany
+ New Jersey Office: 220 Davidson Ave, Unit 209, Somerset, NJ 08873, United States
+ Shenzhen Office: Room 1511, Fuchun Oriental Building, Futian District, Shenzhen, China
+ Email: info@openelab.io 
+ Phone: 
++49 155 61896199
++1 (341) 214-2466
+ Facebook 
+ Twitter 
+ LinkedIn 
+ YouTube 
+ WhatsApp 
+ Trustpilot 
+© 2026 OpenELAB Technology Ltd. All rights reserved. 
+ &#215; 
+ Idealo Partner 
+Shopping cart 
+Your cart is empty 
+You may check out all the available products and buy some in the shop 
+ Return to shop 
+ Product 
+ Filter 
+ Account 
+ 0 
+ Wishlist 
+ Blog 
+ Dev Board 
+ Arduino 
+ Raspberry Pi 
+ ESP32 / ESP8266 
+ NVIDIA 
+ NXP 
+ FPGA 
+ STM32 
+ Motor 
+ Stepper Motors 
+ Servo Motors 
+ Worm Gear Motor 
+ BLDC Motor 
+ Joint Motor 
+ Motor Driver Board 
+ Accessories 
+ Motor Selection Guide 
+ Display 
+ LCD 
+ TFT 
+ OLED 
+ e-Paper 
+ LED Matrix 
+ Wireless & IoT 
+ Gateway & Router 
+ LoRa/Zigbee 
+ WiFi 
+ Bluetooth 
+ RFID/NFC 
+ UWB 
+ Antenna 
+ Robotic 
+ Humanoid Robot 
+ Motor 
+ LiDAR 
+ Servo 
+ Camera 
+ Robotic Arm 
+ Robotic Car 
+ Robotic Kit 
+ Accessories 
+ Workshop 
+ Workshop - CNC Accessories 
+ Workshop - CNC Router 
+ Workshop - Tools 
+ Drone 
+ Fly-ready Drones 
+ Flight Controller / GPS 
+ ESC / PDB / BEC 
+ Motors / Propellers 
+ RX / TX 
+ Radio Controller / Monitors 
+ Current Sensor / Batteries 
+ Camera / Gimbal 
+ Frames / OSD 
+ Accessories 
+ Kit 
+ Starter Kit 
+ Smart Home 
+ Robotics 
+ Car 
+ IoT Kit 
+ Camera 
+ Edge AI Camera 
+ General Camera 
+ Video Conferencing 
+ Surveillance and Security 
+ Education and Experiment 
+ Embedded Camera 
+ USB Camera 
+ SPI Camera 
+ UART Camera 
+ I2C Camera 
+ CSI Camera 
+ Grove Camera 
+ HDMI Camera 
+ Depth & LiDAR Camera 
+ Depth Camera 
+ LiDAR Camera 
+ Camera Accessory 
+ Mount and Enclosure 
+ Lenses and Optical Accessory 
+ Sensor 
+ Touch/Pressure Sensor 
+ Acceleration/Gyroscope/Compass Sensor 
+ Distance/ToF Sensor 
+ Gas Sensor 
+ IR/Motion/Hall Effect Sensor 
+ Light/Color Sensor 
+ Sound Sensor 
+ Dust Sensor 
+ Current Sensor 
+ Temperature/Humidity Sensor 
+ Presence Sensor 
+ Power 
+ Battery 
+ AC-DC 
+ DC-DC 
+ Power Bank 
+ Solar 
+ LED 
+ Matrix 
+ Strip 
+ Fan 
+ Components 
+ Accessory 
+ Cable & Wire 
+ Board 
+ Button & Switch 
+ Programmer / Adapter 
+ 3D Printer 
+ Tool 
+ Geek 
+ View all collection 
+Compare Products 
+ Compare 
+ Clear All 
+Choosing a selection results in a full page refresh. 
+Opens in a new tab. 
+Opens external website. 
+Opens external website in a new window. 
+Search our site 
+Quick link 
+ Dev Board
+ Motor
+ Display
+ Wireless & IoT
+ Robotic
+ Workshop
+ Drone
+ Kit
+ Camera
+ Sensor
+ Power
+ LED
+ Components
+ Accessory
+ Geek
+Quick search 
+ MeshCore 
+ Meshtastic 
+ reComputer 
+ Atom 
+ Home Assistant 
+ SO-ARM101 
+ RoboSense Airy 
+ Livox MID-360S 
+Recommended products 
+ M5StickS3 ESP32S3 Mini IoT Dev Kit 
+ Regular price 
+ 28,69 € 
+ Sale price 
+ 26,97 € 
+ Seeed Studio SO-ARM101 Pro Assembled Kit LeRobot 6DOF Robotic Arm 
+ Sale price 
+ 425,44 € 
+ Elecrow ThinkNode M1 LoRa Meshtastic Transceiver With 1.54" EPD Screen 
+ Regular price 
+ 74,58 € 
+ Sale price 
+ 65,38 € 
+ HELTEC WiFi LoRa 32 V4.3.1 SX1262 LoRa Node Meshtastic LoRaWAN GPS Included 
+ Regular price 
+ 34,44 € 
+ Sale price 
+ 25,30 € - 36,80 € 
+ RoboSense Airy 96-Channel Hemispherical Digital LiDAR for Robotics 
+ Regular price 
+ 113,85 € 
+ Sale price 
+ 108,43 € - 1.031,71 € 
+ Livox MID‑360S 360‑Degree 3D LiDAR Sensor with ROS2 Support for Robotics and SLAM 
+ Regular price 
+ 888,89 € 
+ Sale price 
+ 826,85 € - 861,35 € 
+ View all 
+Reset your password 
+Sign up for early Sale access plus tailored new arrivals, trends and promotions. To opt out, click unsubscribe in our emails 
+ Email * 
+ Cancel 
+ Reset password 
+Log in 
+ Email * 
+ Password * 
+ Forgot your password? 
+ Log in 
+ New customer? Create your account 
+Register 
+ First name * 
+ Last name * 
+ Email * 
+ Password * 
+ Register 
+ Already have an account? Log in here 
+ English Deutsch Italiano français Español Nederlands čeština Polski Suomi svenska Dansk

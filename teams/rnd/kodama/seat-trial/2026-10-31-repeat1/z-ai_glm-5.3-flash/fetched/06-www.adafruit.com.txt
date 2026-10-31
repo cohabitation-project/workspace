@@ -1,0 +1,283 @@
+URL: https://www.adafruit.com/product/4754
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 10880 chars
+Adafruit 9-DOF Orientation IMU Fusion Breakout - BNO085 (BNO080) [STEMMA QT / Qwiic] : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Sensors 
+ / 
+ Accel, Gyro, and Magnetometers 
+ / 
+ 9-DoF Orientation IMUs 
+ / 
+ Adafruit 9-DOF Orientation IMU Fusion Breakout - BNO085 (BNO080) 
+Adafruit 9-DOF Orientation IMU Fusion Breakout - BNO085 (BNO080) - STEMMA QT / Qwiic 
+Product ID: 4754 
+ $29.50 
+Product Images and Video 
+ Play video: New Products 10/7/2020 featuring Adafruit 9-DOF Orientation IMU Fusion Breakout - STEMMA QT / Qwiic! 
+ Qty 
+ Discount 
+ 1-9 
+ $29.50 
+ 10-99 
+ $26.55 
+ 100+ 
+ $23.60 
+ In stock 
+ Add to Cart 
+ Also include 1 x STEMMA QT / Qwiic JST SH 4-pin to Premium Male Headers Cable ($ 0.95 ) 
+ Qty 
+ Discount 
+ 1-9 
+ $29.50 
+ 10-99 
+ $26.55 
+ 100+ 
+ $23.60 
+ In stock 
+ Add to Wishlist 
+ Description 
+Here it is, the motion sensor you were looking for: the one that just gives you the directly usable information without requiring you to first consult with a PhD to learn the arcane arts of Sensor Fusion . The BNO085 takes the life's work of multiple people who have spent their entire career focused on how to get useful information from direct motion sensor measurements and then squeezes that information down into a 5.2x3.8mm box, along with the sensors to go along with it. 
+ Please note, the BNO085 is the 'upgrade fix' to BNO080 - it is completely back-compatible with the BNO-080 and, in addition, fixes an SPI timeout bug that made SPI difficult to use. The '085 is the same price and you can use any existing '080 code so we are only going to carry the '085! 
+The BNO085 by the motion sensing experts at CEVA Hillcrest Laboratories takes the familiar 3-axis accelerometers, gyroscopes, and magnetometers and packages then alongside an Arm Cortex M0 processor running CEVA's SH-2 firmware that handles the work of reading the sensors, fusing the measurements into data that you can use directly, and packaging that data and delivering it to you. If the name and description of the BNO085 sounds strikingly similar to those of the BNO055 by Bosch Sensortec, there is a good reason why: they're the same thing, but also they're not. Thanks to a unique agreement between Bosch and CEGA, the BNO085 uses the same hardware as the BNO055 but very different firmware running on it. 
+"How different?" you might ask. Well my friend, pull up a chair and grab a box of popcorn because it's quite a list. First lets list the similarities. The BNO055 and BNO085 can both deliver the following types of sensor data and sensor fusion products: 
+ Acceleration Vector / Accelerometer 
+Three axes of acceleration (gravity + linear motion) in m/s^2 
+ Angular Velocity Vector / Gyro 
+Three axes of 'rotation speed' in rad/s 
+ Magnetic Field Strength Vector / Magnetometer 
+Three axes of magnetic field sensing in micro Tesla (uT) 
+ Linear Acceleration Vector 
+Three axes of linear acceleration data (acceleration minus gravity) in m/s^2 
+ Gravity Vector 
+Three axes of gravitational acceleration (minus any movement) in m/s^2 
+ Absolute Orientation/ Rotation Vector 
+Four point quaternion output for accurate data manipulation 
+Thanks to the sensor fusion and signal processing wizards from CEVA, with the BNO085 you also get: 
+ Application Optimized Rotation Vectors 
+For AR/VR, low latency, and low power consumption 
+ Additional Base Sensor Reports 
+Separate and simultaneous outputs of Calibrated, Uncalibrated + Correction, and Raw ADC outputs for the Accelerometer, Gyro, and Magnetometer 
+ Detection and Classification reports: 
+Stability Detection and Classification 
+Significant Motion Detector 
+Tap, Step, and Shake Detectors 
+Activity Classification 
+As if the above wasn't enough, the BNO085 also provides an impressive suite of detection and classification products by further analyzing the measured motion: 
+Stability Detection and Classification 
+Tap Detector 
+Step Detector 
+Step Counter 
+Activity Classification 
+Significant Motion Detector 
+Shake Detector 
+More information about the various report types is available on the Report Types page 
+A firehose of information in a human-friendly package 
+The BNO085 is a supremely capable sensor, practically overflowing with useful information. It is also very small. As the Ideal Gas Law tells us, when you shove a lot of stuff into a small space, things are going to get a bit spicy. Worry not fellow scientist, we here at Adafruit have done our part to make the BNO085 as approachable as possible. It's a pretty familiar recipe:
+Take the following and mix in Eagle CAD: 
+One part raw unprocessed CEVA Hillcrest Labs brand BNO085 
+One voltage regulator for flexible input voltage 
+One part Level shifting circuitry for use with 3.3V (RPi/Feather) or 5V(Arduino) logic levels 
+Two handy dandy Stemma QT connectors for solderless connection 
+One, 32.768kHz crystal to provide a stable reference oscillation 
+One breakout PCB with breadboard friendly headers 
+Prepare in the pick and place and bake in a reflow oven on High for about 5 minutes and you get the Adafruit BNO085 IMU breakout (part of a complete breakfast!) 
+With the physical hardware tamed and made approachable, that leaves the software. If it wasn't already very obvious, the BNO085 can generate a wide selection of data and as a result, it has a slightly complex and unique way of delivering that information. To save you the effort of figuring out how to decode and organize all those measurements, we've written libraries for you to use with CircuitPython and Arduino. Just plug in the sensor to your favorite device using our wiring examples, and install the library for your chosen platform and you're ready to start building your very own Robot Friend. 
+As an alternative to the cornucopia of vectors and classifications that the standard sensor hub modes provide, the BN0085 also provides a simple but useful and well-executed UART-based mode that provides calibrated heading and acceleration measurements. The UART-RVC mode takes its acronym from one of its potential applications: Robot Vacuum Cleaner s. This mode is exceedingly simple to interface with and based on my limited testing it performs astoundingly well. The ease of use to utility ratio here is off the charts.
+ We've written libraries for the UART RVC mode for both Arduino and CircuitPython/Python . Check out the UART RVC pages for Arduino and Python for wiring diagrams and example code. 
+ Note: QT Cable is not included, but we have a variety in the shop 
+ Play video: What is Stemma QT? #adafruit #stemma 
+ Play video: New Products 10/7/2020 featuring Adafruit 9-DOF Orientation IMU Fusion Breakout - STEMMA QT / Qwiic! 
+ Technical Details 
+ Revision History: 
+ As of Dec 22, 2023 &ndash; We've updated this PCB with Adafruit Pinguin to make a lovely and legible silkscreen. 
+Product Dimensions: 25.6mm x 22.7mm x 4.6mm / 1.0" x 0.9" x 0.2" 
+Product Weight: 2.5g / 0.1oz 
+ May We Also Suggest&hellip; 
+ Adafruit 9-DOF Accel/Mag/Gyro+Temp Breakout Board - LSM9DS1 
+ Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 
+ Adafruit LSM6DSOX 6 DoF Accelerometer and Gyroscope - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Adafruit MPU-6050 6-DoF Accel and Gyro Sensor - STEMMA QT Qwiic 
+ Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Adafruit 9-DOF LSM9DS1 Breakout Board - STEMMA QT / Qwiic 
+ Adafruit TDK InvenSense ICM-20948 9-DoF IMU (MPU-9250 Upgrade) - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Adafruit LSM6DS3TR-C + LIS3MDL - Precision 9 DoF IMU - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Adafruit BNO055 + BMP280 BFF Add-On for QT Py 
+ Distributors 
+Robotscience 
+ South Korea 
+ELECTRONICAI I+D 
+ Colombia 
+Fab.to.Lab 
+ India 
+Arduitronics 
+ Thailand 
+Pimoroni 
+ United Kingdom 
+Mouser Electronics 
+ United States 
+BricoGeek 
+ Spain 
+Evelta Electronics 
+ India 
+Electrokit Sweden AB 
+ Sweden 
+Little Bird Electronics 
+ Australia 
+Opencircuit 
+ Netherlands 
+Go Tronic 
+ France 
+ROBU.IN 
+ India 
+Letmeknow 
+ France 
+SB Components Ltd 
+ United Kingdom 
+Kiwi Electronics 
+ Netherlands 
+VCTEC KOREA 
+ South Korea 
+DigiKey Electronics 
+ United States 
+Eckstein Komponente 
+ Germany 
+BerryBase 
+ Germany 
+NTREX, Inc.- Devicemart 
+ South Korea 
+The Pi Hut 
+ United Kingdom 
+Makersify 
+ United Kingdom 
+BOTLAND B. DERKACZ SP.K. 
+ Germany 
+BOTLAND B. DERKACZ SP.K. 
+ Czech Republic 
+BOTLAND B. DERKACZ SP.K. 
+ Poland 
+Deryuantech 
+ Taiwan 
+Paradisetronic.com 
+ Germany 
+Core Electronics 
+ Australia 
+See our Distributors page for a complete list of distributors. 
+Adafruit 9-DOF Orientation IMU Fusion Breakout - BNO085 (BNO080) - STEMMA QT / Qwiic 
+ Product ID: 4754 
+ $29.50 
+ In stock 
+ Add to Cart 
+ Also include 1 x STEMMA QT / Qwiic JST SH 4-pin to Premium Male Headers Cable ($ 0.95 ) 
+ Qty 
+ Discount 
+ 1-9 
+ $29.50 
+ 10-99 
+ $26.55 
+ 100+ 
+ $23.60 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; Achieving a goal provides immediate satisfaction; the process of achieving a goal is a lasting pleasure&rdquo;
+ Evelyn Berezin 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

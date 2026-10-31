@@ -1,0 +1,514 @@
+URL: https://www.pololu.com/category/11/brushed-dc-motor-drivers
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 36168 chars
+Pololu - Brushed DC Motor Drivers 
+ Electronics &raquo; Motion Control Modules &raquo; 
+Brushed DC Motor Drivers 
+These motor drivers are intended to be used with brushed DC motors such as our metal gearmotors or plastic gearmotors . We have many different motor driver boards available that offer a variety of features over a wide range of operating voltages and current capabilities. These modules are generally basic carrier boards for a selection of motor driver ICs or discrete MOSFET based H-bridges. They offer low-level interfaces such as PWM and digital high/low inputs. An external microcontroller is typically required for generating these low-level signals. Some of our motor drivers are available in the form factor of an Arduino shield, but can also be used with other controllers as general-purpose motor drivers. Additionally, some are available in the form factor of a Raspberry Pi expansion board for easy integration with compatible Raspberry Pi boards (Model B+ or newer). The tables below provide a comparison of the key features and specifications of our motor drivers. 
+ Low-power motor drivers 
+ DRV8838 
+ BD65496&shy;&shy;MUV 
+ DRV8835 
+ DRV8833 
+ A4990 
+ TB6612&shy;FNG 
+ MP6550 
+ Motor channels 
+ single 
+ single 
+ dual 
+ dual 
+ dual 
+ dual 
+ single 
+ Min. operating voltage 
+ 0 V 
+ 2 V 
+ 0 V 
+ 2.7 V 
+ 6 V 
+ 4.5 V 
+ 1.8 V 
+ Max. operating voltage 
+ 11 V 
+ 16 V 
+ 11 V 
+ 10.8 V 
+ 32 V 
+ 13.5 V 
+ 22 V 
+ Max. continuous current (1) 
+ 1.7 A 
+ 1.2 A 
+ 1.2 A 
+ 1.2 A 
+ 0.7 A 
+ 1 A 
+ 1.7 A 
+ Peak current 
+ 1.8 A 
+ 5 A 
+ 1.5 A 
+ 2 A 
+ 0.9 A (2) 
+ 3 A 
+ 2.5 A (2) 
+ Current sense feedback? 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ 200 mV/A 
+ Active current limiting 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ adjustable 
+ adjustable 
+ &mdash; 
+ adjustable 
+ Size 
+ 0.4″ × 0.5″ 
+ 0.6″ × 0.6″ 
+ 0.4″ × 0.7″ 
+ 0.5″ × 0.8″ 
+ 0.6″ × 0.8″ 
+ 0.6″ × 0.8″ 
+ 0.5″ × 0.6″ 
+ Shield version available? 
+ &mdash; 
+ &mdash; 
+ Yes 
+ &mdash; 
+ Yes 
+ &mdash; 
+ &mdash; 
+ Raspberry Pi expansion
+version available? 
+ &mdash; 
+ &mdash; 
+ Yes 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ 1-piece price 
+ $5.95 
+ $14.95 
+ $6.95 
+ $10.95 
+ $13.95 
+ $4.95 
+ $5.95 
+ Note 1: Per motor channel, on Pololu carrier board, at room temperature, and without additional cooling. 
+ Note 2: Default current limit; see product descriptions for details. 
+ Medium-power motor drivers 
+ DRV8876
+&lpar;QFN&rpar; 
+ TB67H453-
+FTG &lpar;QFN&rpar; 
+ DRV8876 
+ TB67H453-
+FNG 
+ DRV8874 
+ DRV8256E 
+ DRV8256P 
+ MAX14870 
+ MC33926 
+ TB9051&shy;FTG 
+ TB67H&shy;420FTG 
+ MPQ6612A 
+ Motor channels 
+ single 
+ single 
+ single 
+ single 
+ single 
+ single 
+ single / dual 
+ single / dual 
+ single / dual 
+ single / dual 
+ single 
+ Min. operating voltage 
+ 4.5 V 
+ 4.5 V 
+ 4.5 V 
+ 4.5 V 
+ 4.5 V 
+ 4.5 V 
+ 4.5 V 
+ 5 V 
+ 4.5 V 
+ 10 V 
+ 4 V 
+ Max. operating voltage 
+ 37 V 
+ 44 V 
+ 37 V 
+ 44 V 
+ 37 V 
+ 48 V 
+ 36 V 
+ 28 V 
+ 28 V 
+ 47 V 
+ 40 V 
+ Max. continuous current (1) 
+ 1.1 A 
+ 1.1 A 
+ 1.3 A 
+ 1.3 A 
+ 2.1 A 
+ 1.9 A 
+ 1.7 A 
+ 2.5 A 
+ 2.6 A 
+ 3.4 A / 1.7 A 
+ 4 A 
+ Peak current 
+ 2 A (2) 
+ 2 A (2) 
+ 2 A (2) 
+ 2 A (2) 
+ 4.4 A (2) 
+ 6.4 A 
+ 2.5 A 
+ 5 A 
+ 5 A 
+ 9 A / 4.5 A 
+ 7.5 A 
+ Current sense feedback? 
+ 2500 mV/A 
+ 2500 mV/A 
+ 2500 mV/A 
+ 2500 mV/A 
+ 1100 mV/A 
+ &mdash; 
+ &mdash; 
+ 525 mV/A 
+ 500 mV/A 
+ &mdash; 
+ 200 mV/A 
+ Active current limiting 
+ adjustable 
+ adjustable 
+ adjustable 
+ adjustable 
+ adjustable 
+ adjustable 
+ adjustable 
+ &mdash; 
+ &mdash; 
+ 9 A / 4.5 A 
+ adjustable 
+ Size 
+ 0.6″ × 0.7″ 
+ 0.6″ × 0.7″ 
+ 0.6″ × 0.7″ 
+ 0.6″ × 0.7″ 
+ 0.6″ × 0.7″ 
+ 0.6″ × 0.6″ 
+ 0.6″ × 0.5″ 
+ 1.2″ × 1.0″ 
+ 1.0″ × 1.0″ 
+ 1.2″ × 1.0″ 
+ 0.8″ × 0.9″ 
+ Shield version available? 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ Yes 
+ Yes 
+ Yes 
+ &mdash; 
+ &mdash; 
+ Raspberry Pi expansion
+version available? 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ Yes 
+ Yes 
+ Yes 
+ &mdash; 
+ &mdash; 
+ 1-piece price 
+ $7.14 
+ $4.49 
+ $8.15 
+ $4.95 
+ $11.94 
+ $14.31 (E)
+ $14.31 (P) 
+ $11.94 
+ $19.95 
+ $12.95 
+ $12.95 
+ $12.95 (no connectors)
+ $14.95 (soldered con.) 
+ Note 1: Per motor channel, on Pololu carrier board, at room temperature, and without additional cooling. 
+ Note 2: Default current limit; see product descriptions for details. 
+ High-power motor drivers 
+ DRV8263H 
+ VNH5019 
+ G2 18v17 
+ G2 18v25 
+ G2 24v13 
+ G2 24v21 
+ G2 24v30 CS 
+ H2 36v11 CS 
+ G2 18v18 
+ G2 18v22 
+ G2 24v14 
+ G2 24v18 
+ Motor channels 
+ single 
+ single / dual 
+ single 
+ dual 
+ Min. operating voltage 
+ 4.5 V 
+ 5.5 V 
+ 6.5 V 
+ 5 V 
+ 6.5 V 
+ Max. operating voltage 
+ 65 V 
+ 24 V 
+ 30 V 
+ 40 V 
+ 60 V 
+ 30 V 
+ 40 V 
+ Max. continuous current (1) 
+ 3.5 A 
+ 12 A 
+ 17 A 
+ 25 A 
+ 13 A 
+ 21 A 
+ 30 A 
+ 11 A 
+ 18 A 
+ 22 A 
+ 14 A 
+ 18 A 
+ Current sense feedback? 
+ 300 mV/A 
+ 140 mV/A 
+ 20 mV/A 
+ 10 mV/A 
+ 40 mV/A 
+ 20 mV/A 
+ 13.2 mV/A 
+ 60 mV/A (2) 
+ 20 mV/A 
+ 10 mV/A 
+ 20 mV/A 
+ 20 mV/A 
+ Active current limiting 
+ 10 A
+adjustable 
+ &mdash; 
+ 40 A
+adjustable 
+ 60 A
+adjustable 
+ 30 A
+adjustable 
+ 50 A
+adjustable 
+ 100 A
+adjustable 
+ &mdash; 
+ 50 A
+adjustable 
+ 60 A
+adjustable 
+ 40 A
+adjustable 
+ 50 A
+adjustable 
+ Size 
+ 1.3″ × 0.8″ 
+ 1.5″ × 1.1″ 
+ 1.3″ × 0.8″ 
+ 1.7″ × 1.9″ 
+ 1.3″ × 0.8″ 
+ 2.56″ × 2.02″ 
+ Shield version available? 
+ &mdash; 
+ Yes 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ Yes 
+ Yes 
+ Yes 
+ Yes 
+ Raspberry Pi expansion
+version available? 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ &mdash; 
+ Yes 
+ Yes 
+ Yes 
+ Yes 
+ 1-piece price 
+ $14.95 
+ $19.95 
+ $44.95 
+ $56.95 
+ $44.95 
+ $56.95 
+ $74.95 
+ $56.95 
+ $74.95 
+ $104.95 
+ $79.95 
+ $104.95 
+ Note 1: Per driver board motor channel, at room temperature and without heat sinking or forced air flow. 
+ Note 2: When V CC = 5 V; sensitivity is proportional to V CC . 
+ Compare all products in this category 
+Subcategories 
+ Compare 
+ Pololu High-Power Motor Drivers 
+This family of discrete MOSFET H-bridge motor drivers is suitable for bidirectional control of high-voltage or high-current DC brushed motors. 
+Products in category &ldquo;Brushed DC Motor Drivers&rdquo; 
+ New!
+ Pololu item #: 
+ 2507 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ Pololu Dual VNH5019 Motor Driver Shield for Arduino 
+Get your Arduino moving! This shield makes it easy to control two high-power DC motors with your Arduino or Arduino-compatible board. Its dual robust VNH5019 motor drivers operate from 5.5 to 24 V and can deliver a continuous 12 A (30 A peak) per motor, or a continuous 24 A (60 A peak) to a single motor connected to both channels. These great drivers also offer current-sense feedback and accept ultrasonic PWM frequencies for quieter operation. The Arduino pin mappings can all be customized if the defaults are not convenient, and the motor driver control lines are broken out along the left side of the shield for general-purpose use without an Arduino. 
+ New!
+ Pololu item #: 
+ 1451 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ VNH5019 Motor Driver Carrier 
+This carrier board for ST&#8217;s VNH5019 motor driver IC operates from 5.5 to 24 V and can deliver a continuous 12 A (30 A peak). It works with 2.5 to 5 V logic levels, supports ultrasonic (up to 20 kHz) PWM, and features current sense feedback (an analog voltage proportional to the motor current). Along with built-in protection against reverse-voltage, over-voltage, under-voltage, over-temperature, and over-current, these features make this product a great general-purpose motor driver. 
+ New!
+ Pololu item #: 
+ 5238 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ DRV8263H Single Brushed DC Motor Driver Carrier 
+This breakout board for TI&#8217;s DRV8263H motor driver offers a wide operating voltage range of 4.5 V to 65 V and can deliver a continuous 3.5 A to a single bidirectional brushed DC motor. The DRV8263H also features integrated current sensing and regulation that limits the peak motor current to about 10 A by default, as well as built-in protection against under-voltage, over-current, and over-temperature. The carrier board adds protection against reverse voltage. 
+ New!
+ Pololu item #: 
+ 5286 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free shipping in USA over $100 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ MPQ6612A Single Brushed DC Motor Driver Carrier (Soldered Connectors) 
+This breakout board for the MPS MPQ6612A motor driver offers a wide operating voltage range of 4 V to 40 V and can deliver up to 4 A continuous to a single brushed DC motor. The MPQ6612A has built-in current sensing and regulation that limits the peak motor current to 7.5 A by default, as well as protection against over-current and over-temperature. The carrier board also adds reverse-voltage protection. This version includes soldered connectors , so no soldering is required to use it. 
+ New!
+ Pololu item #: 
+ 5285 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ MPQ6612A Single Brushed DC Motor Driver Carrier 
+This breakout board for the MPS MPQ6612A motor driver offers a wide operating voltage range of 4 V to 40 V and can deliver up to 4 A continuous to a single brushed DC motor. The MPQ6612A has built-in current sensing and regulation that limits the peak motor current to 7.5 A by default, as well as protection against over-current and over-temperature. The carrier board also adds reverse-voltage protection. This version does not include any connectors. 
+ New!
+ Pololu item #: 
+ 2999 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ TB67H420FTG Dual/Single Motor Driver Carrier 
+This breakout board makes it easy to use Toshiba&#8217;s TB67H420FTG brushed DC motor driver, which can operate in either dual-channel mode for independent bidirectional control of two motors or single-channel mode for driving one motor with increased current. It has a wide operating voltage range of 10 V to 47 V and can deliver a continuous 1.7 A to each motor channel, or 3.4 A in single-channel mode. A configurable current chopping threshold allows the TB67H420 to actively limit the motor current, and it features built-in protection against under-voltage, over-current, and over-temperature conditions; our carrier board also adds reverse-voltage protection (up to 40 V). 
+ New!
+ Pololu item #: 
+ 2520 
+ Brand: 
+ Pololu 
+ supply outlook 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+ Out of stock. 
+ Quantity: 
+ Add to cart 
+ Backorder 
+ Dual TB9051FTG Motor Driver Shield for Arduino 
+This shield makes it easy to control two brushed DC motors with your Arduino or Arduino-compatible board. Its dual TB9051FTG motor drivers operate from 4.5 to 28 V and can deliver a continuous 2.6 A per motor (5 A peak). These great drivers also offer current-sense feedback and accept ultrasonic PWM frequencies for quieter operation. A fixed current chopping threshold allows each TB9051 to limit the peak motor current, and they feature built-in protection against under-voltage, over-current, and over-temperature conditions; our shield also adds reverse-voltage protection. The Arduino pin mappings can all be customized if the defaults are not convenient, and the motor driver control lines are broken out along the left side of the shield for general-purpose use without an Arduino. 
+ New!
+ Pololu item #: 
+ 2761 
+ Brand: 
+ Pololu 
+ Status: 
+ Active a

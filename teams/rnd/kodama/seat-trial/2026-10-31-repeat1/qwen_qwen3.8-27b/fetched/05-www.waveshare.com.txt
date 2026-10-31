@@ -1,0 +1,647 @@
+URL: https://www.waveshare.com/rplidar-a1.htm
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 15977 chars
+Slamtec RPLIDAR A1 Laser Ranging Sensor, 360° Omnidirectional Lidar | RPLIDAR A1 
+ JavaScript seems to be disabled in your browser. 
+ You must have JavaScript enabled in your browser to utilize the functionality of this website. 
+ Select Your Currency 
+ US Dollar $ 
+ Australian Dollar AU$ 
+ British Pound Sterling £ 
+ Canadian Dollar CA$ 
+ Euro € 
+ Japanese Yen ¥ 
+ -->
+ $ US Dollar 
+ AU$ Australian Dollar 
+ £ British Pound Sterling 
+ CA$ Canadian Dollar 
+ € Euro 
+ ¥ Japanese Yen 
+ SUPPORT 
+ Checkout 
+ My Cart 
+ My Account 
+ -->
+ Checkout 
+| 
+ My Cart 
+| 
+ Login/Register 
+ Waveshare 
+ Search 
+ 0 item(s) 
+ - $0.00 
+You have no items in your shopping cart. 
+ Toggle navigation 
+ Search 
+ PRODUCTS 
+ Products 
+ Raspberry Pi 
+ Boards / Kits 
+ Raspberry Pi 5 
+ Raspberry Pi 4 
+ Raspberry Pi 3 
+ Raspberry Pi 400 
+ Raspberry Pi Zero 2 W 
+ Raspberry Pi Zero 
+ Raspberry Pi Pico 
+ Compute Module 4/4S 
+ Compute Module 3 
+ Raspberry Pi Pico 2 
+ Compute Module 5 
+ Raspberry Pi 500 
+ Displays 
+ LCD 
+ OLED 
+ e-Paper 
+ Cameras 
+ ≥10MP Rolling Shutter 
+ 8MP Rolling Shutter 
+ 5MP Rolling Shutter 
+ 2MP Rolling Shutter 
+ Global Shutter Cameras 
+ USB Cameras 
+ AI Cameras 
+ GMSL Cameras 
+ HATs 
+ IoT 
+ Interface / Expansion / Power 
+ Motors / Relays / SCR 
+ AD / DA / Audio / Sensors 
+ LED / Buttons 
+ Versatile 
+ All-in-one 
+ Magic Mirror / All-in-one 
+ HomeLab 
+ Robots 
+ Mobile Robots 
+ Robot Arm / Control 
+ Portable Gaming 
+ Accessories 
+ Pi Cases 
+ Display Cases 
+ Wires / Power / SD Card... 
+ AI 
+ Boards / Kits 
+ Jetson Nano 
+ Jetson TX2 
+ Jetson Xavier NX 
+ Jetson Orin 
+ AI Cameras 
+ OPS Computer 
+ Raspberry Pi 
+ D-Robotics 
+ Luckfox 
+ Displays 
+ LCD 
+ OLED 
+ e-Paper 
+ Cameras 
+ Single Cameras 
+ Binocular Cameras 
+ USB Cameras 
+ GMSL Cameras 
+ Others 
+ Expansions 
+ IoT 
+ Motors / Relays / SCR 
+ AD / DA / Versatile 
+ Power Supply 
+ Robots 
+ Mobile Robots 
+ Robot Arm / Control 
+ Accessories 
+ Cases 
+ Wires / Power / SD Card... 
+ Luckfox 
+ Linux Boards / Modules 
+ Omni3576-RK3576 
+ Luckfox Lyra-RK3506 
+ LuckFox Pico-RV1106 
+ Luckfox Aura-RV1126 
+ Core3566-RK3566 
+ LuckFox Lume-T153 
+ Displays 
+ LCD/OLED 
+ Cameras 
+ 3MP Cameras 
+ 8MP Cameras 
+ 5MP Cameras 
+ 1MP Cameras 
+ RISC-V 
+ Boards / Kits 
+ VisionFive2 
+ VisionFive2 Lite 
+ Displays 
+ LCD 
+ Expansions / Accessories 
+ Audio / Sensors 
+ Relays / Motors / Servos 
+ Cooling Fan 
+ Cameras 
+ 8MP IMX219 Cameras 
+ ESP32 
+ Boards / Kits 
+ ESP32-P4 
+ ESP32-S3 
+ ESP32-C6 
+ ESP32-C5 
+ ESP32-C3 
+ ESP32-H2 
+ ESP32-S2 
+ ESP32 
+ Displays 
+ LCD (SPI/QSPI) 
+ LCD (RGB) 
+ LCD (MIPI) 
+ AMOLED 
+ e-Paper 
+ RLCD 
+ RGB LED Matrix 
+ AI Chat 
+ Cameras 
+ Industrial Controller 
+ Robots 
+ Mobile Robots 
+ Arduino 
+ Official Arduino® 
+ Boards / Core Boards 
+ Arduino UNO Q 
+ Compatible with Arduino® 
+ Cases 
+ Kits 
+ Accessories 
+ Displays 
+ LCD 
+ 5″ - 24.5″ 
+ 2.8″ - 4.3″ 
+ 0.71″ - 2.4″ 
+ OLED 
+ 5″ - 15.6″ 
+ 0.49″ - 2.4″ 
+ e-Paper 
+ 5.65″ - 13.3″ 
+ 2.66″ - 5″ 
+ 1.02″ - 2.36″ 
+ Driver Boards 
+ Accessories 
+ Cables / Adapters 
+ Cases 
+ Speakers 
+ Stand 
+ USB Monitor 
+ 2.1“ - 7“ 
+ IoT / Communication 
+ Long Range Wireless 
+ NB-IoT / Cat-M / LoRa / LoRaWAN 
+ 5G / 4G / Cat-1 / GSM / GPRS 
+ GNSS / GPS 
+ Short Range Wireless 
+ WiFi 
+ ZigBee 
+ Bluetooth 
+ NFC / RF 
+ Wired Comm / Converter 
+ USB 
+ USB TO RS232 / RS485 / UART/ CAN 
+ Ethernet 
+ Ethernet TO UART / RS232 / RS485 
+ RS232 / RS485 / CAN / DALI2 
+ Misc Modules 
+ Cameras / Audio / Video 
+ Speech / Image Recognition / AI Cameras 
+ MIPI Cameras 
+ USB Cameras 
+ GMSL Cameras 
+ Cameras 
+ Audio Decoder 
+ Sensors 
+ Accelerometer / Angular Rate / Compass 
+ Fingerprint / Sound / Image / Gesture 
+ Temperature / Humidity / Barometer 
+ Gas 
+ Light / Ranging / Lidar 
+ Others 
+ Motors / Servos 
+ Drivers 
+ Motors / Servos 
+ Others 
+ Interface Expansion 
+ LED / Buttons 
+ Storage 
+ AD / DA 
+ RTC 
+ Power / Relays / SCR 
+ Laser Module 
+ Robotics 
+ Mobile Robots 
+ Jetson Series AI Robots 
+ Raspberry Pi Robots 
+ ESP32 Robots 
+ Arduino-Related Robots 
+ Dog-like Robots 
+ Raspberry Pi Dog-like Robots 
+ Drivers / Sensors / Lidar 
+ Drivers 
+ Sensors 
+ Lidar 
+ Motors / Servos 
+ Motors 
+ Servos 
+ Robot Arm / Control 
+ Robot Arm 
+ Pan Tilt Control 
+ Remote Controller 
+ Robotic Components 
+ Gearing 
+ Chassis Accessories 
+ MCU / FPGA 
+ Core Boards / Compact Boards 
+ STM32 Core 
+ STM32 Discovery 
+ STM32 Nucleo 
+ LPC Core 
+ BeagleBoard 
+ ALTERA Core 
+ Arduino® Compatible 
+ micro:bit 
+ Development Boards / Expansions 
+ STM32 Open 
+ STM32 EVK 
+ AVR Arduino Shields 
+ Arduino Shields Compatible 
+ Displays / Buttons / Sound 
+ Motors / Interface 
+ Debugger / Programmer 
+ STM32 / STM8 
+ AVR 
+ PIC 
+ ALTERA Core 
+ XILINX 
+ Programming Adapters 
+ STM32 
+ STM8 
+ AVR 
+ Robots 
+ Robot Arm 
+ Sockets / Adapters 
+ Specific Programming Adapters 
+ STM32 Series 
+ STM8 Series 
+ AVR Series 
+ QFP 
+ Sockets 
+ TO DIP 
+ With Pinheader 
+ QFN / MLF 
+ Sockets 
+ TO DIP 
+ With Pinheader 
+ SOP 
+ Sockets 
+ TO DIP 
+ SSOP / TSSOP 
+ Sockets 
+ TO DIP 
+ TSOP / MSOP / SOT 
+ Sockets 
+ TO DIP 
+ PLCC 
+ Sockets 
+ TO DIP 
+ Accessories 
+ Adapters / Cables / Antennas 
+ HDMI 
+ USB 
+ Serial Cables 
+ Jumper Wires 
+ FFC 
+ Antennas 
+ Motors / Servos 
+ Motors 
+ Servos 
+ Power / Heat Sinks 
+ Power Supply 
+ Solar Power 
+ Heat Sinks 
+ Cooling Fans 
+ Misc 
+ Raspberry Pi Cases 
+ Jetson Nano Cases 
+ Display Cases 
+ Speakers 
+ Storage 
+ Home 
+ New Arrivals 
+ Displays 
+ AI 
+ Shipping 
+ Payment 
+ Customization 
+ Wiki 
+ Shopping Q&A 
+ SUPPORT -->
+ Home 
+ > 
+ 22342 
+ Light / Ranging / Lidar , Lidar 
+Slamtec RPLIDAR A1 Laser Ranging Sensor, 360° Omnidirectional Lidar 
+ SKU : 22342 
+ Part No. : RPLIDAR A1 
+ $109.99 
+ Qty: 
+ Increase 
+ Decrease 
+ Add to Cart 
+&#8595;Please select all required options below before ordering. 
+ --> 
+ -->
+ Price Quantity 
+ 1 
+ $108.79 2 
+ save 2 %
+ -->
+ -->
+ $108.19 3 
+ save 2 %
+ -->
+ -->
+ $107.95 4+ 
+ save 2 %
+ -->
+ -->
+ -->
+ -->
+ Related Products: 
+ -->
+ -->
+ Share: 
+ -->
+ Share: 
+ Description 
+ Package Content 
+ Wiki 
+Details 
+Slamtec RPLIDAR A1 Laser Ranging Sensor, 360° Omnidirectional Lidar 
+RPLIDAR A1 
+360°Laser Ranging Lidar 
+Specifications 
+ Ranging Distance 
+ 0.15 ~ 12.00 m 
+ Ranging Accuracy 
+ 1% of actual distance (≤3 m)
+ 2% of actual distance (3~5 m)
+ 2.5% of actual distance (5~12 m) 
+ Scanning Frequency 
+ 5.5 Hz 
+ Scanning Angle 
+ 360° 
+ Ranging Frequency 
+ 8000 Hz 
+ Resolution 
+ ≤ 1% of actual distance (≤12 m)
+ ≤ 2% of actual distance (within 12~16 m) 
+ Wavelength 
+ 785 nm 
+ Communication Interface 
+ UART 
+ Power Supply 
+ 5 V 
+ Power Consumption 
+ 0.5 W 
+ Operating Current 
+ 100 mA 
+ Weight 
+ 248 g 
+ Operating Temperature 
+ 0°C ~ 40°C 
+ Dimensions
+(L × W × H) 
+ 96.8 × 70.3 × 55.0mm 
+Laser Triangulation Technology 
+ With High-speed Visual Acquisition and Processing
+ Measures Distance Data in More Than 8000 Times Per Second 
+360° Omnidirectional Laser Scanning 
+Rotates clockwise in the ranging core to achieve 360-degree scanning and ranging of the surrounding environment, thus obtaining the contour map of the surrounding environment 
+Upgraded Optical Design and Algorithm System 
+Improves the internal optical design and algorithm system to make the sample rate up to 8000times/s, which can enable your robots to map faster and more accurately 
+Comparison under different working modes 
+ 10Hz 8000 Points 
+ 10Hz 4000 Points 
+ 5Hz 2000 Points 
+OPTMAG Original Design 
+ Most traditional non-solid LIDARs use slip ring to transfer power and data information, however, they only have thousands of hours lifetime due to mechanical wear and tear. RPLIDAR A1 has integrated the wireless power and optical communication technology to self-design the OPTMAG technology, which breakouts the life limitation of traditional LIDAR system. It fixes the electrical connection failure caused by the physical wearing out so as to prolong the life-span.
+Configurable Scan Rate from 2-10 Hz 
+Users can adjust the scan rate by motor PWM signal 
+Applications 
+ Robot Simultaneous Localization And Mapping (SLAM)
+ Environment Scanning and 3D Reconstruction
+ Obstacle Detection and Avoidance
+ Multi-touch and Human Computer Interaction
+Rich technical documentation support 
+ Datasheet, User Manual, Application Manual, Protocol Specification
+SDK & Demo Support 
+Outline dimensions 
+Resources & Services 
+ WIKI: www.waveshare.com/wiki/RPLIDAR_A1 
+* Resources for different product may vary, please check the wiki page to confirm the actually provided resources. 
+Product Selection 
+ Product RPLIDAR A1 RPLIDAR C1 D500 LiDAR Kit D200 LiDAR Kit DTOF LIDAR STL27L 
+ RANGING DISTANCE 
+ 0.15 ~ 12.00 m 
+ 0.05~12.00m (white object, 70% reflectivity)
+ 0.05~6.00m (black object, 10% reflectivity) 
+ 0.03~12.00m 
+ 0.15 ~ 8.00 m 
+ 0.03~25.00 m 
+ RANGING ACCURACY 
+ 1% of actual distance (&le;3 m) 
+ &plusmn;30mm 
+ &plusmn;10 mm (0.3 ~ 0.5m)
+ &plusmn;20mm (0.5 ~ 2m)
+ &plusmn;30mm (2 ~ 12m) 
+ White target:
+ &plusmn;5mm (0.1~0.5m)
+ &plusmn;10mm (0.5~1m)
+ &plusmn;1.0% of actual distance (1~6 m)
+ &plusmn;1.5% of actual distance (6~8 m) 
+ &plusmn;15mm (0.03~2m)
+ &plusmn;20mm (2~8m)
+ &plusmn;30mm (>8m) 
+ Black target:
+ &plusmn;7mm (0.1~0.5m)
+ &plusmn;12mm (0.5~1m)
+ &plusmn;1.2% of actual distance (1~4 m)
+ &plusmn;1.5% of actual distance (4~6 m)
+ NA (6~8m) 
+ SCANNING FREQUENCY 
+ 5.5 Hz 
+ 8~12Hz (Typ 10) 
+ 6~13Hz (Typ 10) 
+ 6Hz by default, 2 ~ 8 Hz externally controllable 
+ 10 Hz 
+ SCANNING ANGLE 
+ 360&deg; 
+ 360&deg; 
+ 360&deg; 
+ 360&deg; 
+ 360&deg; 
+ RANGING FREQUENCY 
+ 8000 Hz 
+ 5000 Hz 
+ 5000 Hz 
+ 4000Hz 
+ 21600Hz 
+ RESOLUTION 
+ &le; 1% of actual distance (&le;12 m)
+ &le; 2% of actual distance (within 12~16 m) 
+ 15 mm 
+ 15 mm 
+ &asymp; 17 mm 
+ 15~30 mm 
+ WAVELENGTH 
+ 785 nm 
+ 905 nm 
+ 895 ~ 915 nm (Typ 905) 
+ 775 ~ 800 nm (Typ 793) 
+ 895 ~ 915 nm (Typ 905) 
+ COMMUNICATION INTERFACE 
+ UART 
+ UART, TTL 
+ UART 
+ UART 
+ UART 
+ POWER SUPPLY 
+ 5 V 
+ 5 V 
+ 5 V 
+ DC 5V&plusmn;10% 
+ 4.5~5V 
+ POWER CONSUMPTION 
+ 0.5 W 
+ 1.15W 
+ 1.45W 
+ &asymp; 1.5 W 
+ 1.45W 
+ OPERATING CURRENT 
+ 100mA 
+ 230mA 
+ 290mA 
+ &le;300mA 
+ 290mA 
+ WEIGHT 
+ 248g 
+ 110g 
+ 45g 
+ 101g 
+ 46.1g 
+ OPERATING TEMPERATURE 
+ 0&deg;C ~ 40&deg;C 
+ -10 ~ 40&deg;C 
+ -10 ~ 45&deg;C 
+ -10&deg;C ~ 50&deg;C 
+ -10&deg;C ~ 50&deg;C 
+ DIMENSIONS(L &times; W &times; H) 
+ 96.8 &times; 70.3 &times; 55.0mm 
+ 55.60 &times; 55.60 &times; 41.3mm 
+ 54.00 &times; 46.29 &times; 35.00 
+ 96.3 &times; 59.8 &times; 38.80mm 
+ 54.00 &times; 46.29 &times; 34.80mm 
+ Weight: 0.248 kg 
+Quick Overview 
+ xxxxxx 
+ History Price 
+Retail Price: 
+Distributor Price: 
+ confirm 
+ -->
+ --> 
+Category Navigation: 
+ Products 
+ Raspberry Pi 
+ Boards / Kits 
+ Raspberry Pi 5 
+ Raspberry Pi 4 
+ Raspberry Pi 3 
+ Raspberry Pi 400 
+ Raspberry Pi Zero 2 W 
+ Raspberry Pi Zero 
+ Raspberry Pi Pico 
+ Compute Module 4/4S 
+ Compute Module 3 
+ Raspberry Pi Pico 2 
+ Compute Module 5 
+ Raspberry Pi 500 
+ Displays 
+ LCD 
+ OLED 
+ e-Paper 
+ Cameras 
+ ≥10MP Rolling Shutter 
+ 8MP Rolling Shutter 
+ 5MP Rolling Shutter 
+ 2MP Rolling Shutter 
+ Global Shutter Cameras 
+ USB Cameras 
+ AI Cameras 
+ GMSL Cameras 
+ HATs 
+ IoT 
+ Interface / Expansion / Power 
+ Motors / Relays / SCR 
+ AD / DA / Audio / Sensors 
+ LED / Buttons 
+ Versatile 
+ All-in-one 
+ Magic Mirror / All-in-one 
+ HomeLab 
+ Robots 
+ Mobile Robots 
+ Robot Arm / Control 
+ Portable Gaming 
+ Accessories 
+ Pi Cases 
+ Display Cases 
+ Wires / Power / SD Card... 
+ AI 
+ Boards / Kits 
+ Jetson Nano 
+ Jetson TX2 
+ Jetson Xavier NX 
+ Jetson Orin 
+ AI Cameras 
+ OPS Computer 
+ Raspberry Pi 
+ D-Robotics 
+ Luckfox 
+ Displays 
+ LCD 
+ OLED 
+ e-Paper 
+ Cameras 
+ Single Cameras 
+ Binocular Cameras 
+ USB Cameras 
+ GMSL Cameras 
+ Others 
+ Expansions 
+ IoT 
+ Motors / Relays / SCR 
+ AD / DA / Versatile 
+ Power Supply 
+ Robots 
+ Mobile Robots 
+ Robot Arm / Control 
+ Accessories 
+ Cases 
+ Wires / Power / SD Card... 
+ Luckfox 
+ Linux Boards / Modules 
+ Omni3576-RK3576 
+ Luckfox Lyra-RK3506 
+ LuckFox Pico-RV1106 
+ Luckfox Aura-RV1126 
+ Core3566-RK3566 
+ Luck

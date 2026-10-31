@@ -1,0 +1,40 @@
+{
+  "model": "moonshotai/kimi-k3",
+  "steps": 8,
+  "calls": {
+    "list_files": 1,
+    "read_file": 1,
+    "web_search": 6,
+    "fetch_url": 6,
+    "run_python": 1,
+    "write_file": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.pishop.us/product/raspberry-pi-5-4gb/",
+    "https://www.seeedstudio.com/STS3215-30KG-Serial-Servo-p-6340.html",
+    "https://www.canakit.com/raspberry-pi-camera-module-3.html?cid=usd&src=raspberrypi",
+    "https://www.powerhobby.com/products/powerhobby-2s-7-4v-2200mah-50c-lipo-battery-w-xt60-plug",
+    "https://www.adafruit.com/category/580",
+    "https://www.pololu.com/product/2858"
+  ],
+  "errors": 0,
+  "inTok": 168903,
+  "outTok": 13080,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.1187729985,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31-repeat1/moonshotai_kimi-k3/estimate.md"
+  ],
+  "task": "parts",
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31-repeat1/moonshotai_kimi-k3/estimate.md",
+  "priceCheck": {
+    "measured": 0,
+    "onCitedPage": 0,
+    "onOtherPage": 0,
+    "notFound": []
+  },
+  "sellerCheck": null,
+  "run_at": "2026-10-31T15:29:15.097Z"
+}

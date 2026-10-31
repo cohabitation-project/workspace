@@ -1,0 +1,697 @@
+URL: https://thepihut.com/products/raspberry-pi-camera-module-3
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 15653 chars
+Raspberry Pi Camera Module 3 - The Pi Hut 
+ Skip to content 
+ Navigation 
+ The Pi Hut 
+ No results found
+ Currency
+ GBP 
+ Country/region 
+ GBP
+ USD
+ CAD
+ EUR
+ Login / Signup
+ Account
+ 0 
+ Cart 
+ Raspberry Pi 
+ Handy Links 
+ New Products 
+ Sale Items 
+ Gifts 
+ Categories 
+ The Raspberry Pi 
+ Kits & Bundles 
+ SD Cards & Storage 
+ Power Supplies 
+ HATs, pHATS & GPIO 
+ Cases 
+ Cooling 
+ Camera 
+ Screens & Displays 
+ Cables 
+ USB Addons 
+ Arcade 
+ Books 
+ Merch 
+Raspberry Pi 5 2-3x the CPU performance with loads of great new features! 
+Raspberry Pi Pico 2 W Now with wireless! The Raspberry Pi Pico 2 W. 
+ Maker Store 
+ Handy Links 
+ New Products 
+ Sale Items 
+ Gifts 
+ Categories 
+ Accessories 
+ Audio 
+ Bitcoin Mining 
+ Breakouts & Modules 
+ Cables 
+ Components 
+ Development Boards 
+ Displays 
+ Enclosures 
+ Kits & Projects 
+ LEDs 
+ Power 
+ Prototyping Supplies 
+ Robotics 
+ Sensors 
+ Soldering 
+ Tools 
+ Wearables 
+ 3D Printing 
+Addressable RGB LEDs Easy-to-use RGB LEDs to light up your next project, in a range of handy formats! 
+Microcontrollers! Hundreds of microcontrollers to choose from - we've got something for every project! 
+ micro:bit 
+ Handy Links 
+ New Products 
+ Sale Items 
+ Gifts 
+ Categories 
+ The BBC micro:bit V2 
+ Kits and Bundles 
+ Cases 
+ Add-ons & Extensions 
+ Cables & Accessories 
+ Power 
+ Robotics 
+BBC micro:bit V2 The NEW micro:bit V2 - now with a speaker, microphone and touch sensor! 
+BBC micro:bit V2 GO Starter Kit Everything you need to start using the micro:bit - includes a micro:bit V2! 
+ Arduino 
+ Handy Links 
+ New Products 
+ Sale Items 
+ Gifts 
+ Categories 
+ Official Arduino Boards 
+ Compatible Boards 
+ Kits & Bundles 
+ Cases 
+ Shields 
+ Cables 
+ Power Supplies 
+ Accessories 
+Arduino UNO R4 WiFi The latest UNO, now with onboard WiFi and a 12x8 LED matrix! 
+Arduino Nano ESP32 The power of the ESP32 with the support of the Arduino ecosystem 
+ M5Stack 
+ Handy Links 
+ New Products 
+ Sale Items 
+ Series 
+ Atom 
+ Camera 
+ Chain 
+ Core 
+ Paper 
+ Stamp 
+ Stick 
+ Add-ons 
+ Accessories 
+ Atom Bases 
+ Core Stacks 
+ Stick HATs 
+ Units 
+Cardputer Adv The latest generation of the incredibly popular, card-sized, programmable platform! 
+M5StickS3 The Stick family gets an ESP32-S3, complete with 1.14" LCD and 6-axis IMU! 
+ Home Automation 
+ Handy Links 
+ New Products 
+ Sale Items 
+ Categories 
+ Accessories 
+ Energy Meters 
+ Host Devices 
+ Input Devices 
+ Professional 
+ Relays & Switches 
+ Sensors 
+ Smart Bulbs 
+ Zigbee 
+ Z-Wave 
+Huge Shelly Range Compact home automation devices for your smart home! 
+Home Automation Sensors! Easy-to-use sensors for automating your home 
+ Gifts 
+ By Store 
+ Christmas-Themed Gifts 
+ Raspberry Pi Gifts 
+ Maker Gifts 
+ micro:bit Gifts 
+ Arduino Gifts 
+ By Price 
+ Gifts Under £10 
+ Gifts Under £20 
+ Gifts Under £50 
+The Pi Hut e-Gift Card Give them the gift of choice with The Pi Hut e-Gift card! 
+Raspberry Pi Pico Kit! An affordable gift option with everything they need to get started! 
+ Sale! 
+ Blog 
+ Articles 
+ View All 
+ Tutorials 
+ View All 
+Pico Getting Started Guide Our easy-to-follow tutorial will help you get up and running with the Raspberry Pi Pico 
+3D-Printable Pi 5 Cases Our team's pick of the ever-growing catalogue of 3D-printable Pi 5 cases 
+ Raspberry Pi
+ Raspberry Pi
+ The Raspberry Pi
+ The Raspberry Pi
+ Boards
+ Pi 500/400
+ Pico
+ Compute Module
+ Kits & Bundles
+ SD Cards & Storage
+ SD Cards & Storage
+ SD Cards
+ SSDs
+ Flash Drives
+ Card Readers
+ Accessories
+ View All
+ Power Supplies
+ Power Supplies
+ Power Supplies
+ Adaptors
+ Switches
+ Cables
+ Power HATs
+ Power over Ethernet (PoE)
+ Accessories
+ View All
+ HATs, pHATS & GPIO
+ HATs, pHATS & GPIO
+ Audio
+ Breakouts
+ Breakout Garden
+ Displays
+ Fan HATs
+ GPS, GSM & LoRa
+ Headers
+ Inputs
+ LED
+ Motor & Servo Control
+ Other HATs
+ Port Expanders
+ Power Management
+ Prototyping
+ Real Time Clock
+ Relays
+ Sensor
+ Serial & I2C
+ SSD
+ View All
+ Cases
+ Cases
+ Raspberry Pi 5
+ Raspberry Pi 4
+ Raspberry Pi 3
+ Raspberry Pi 3A+
+ Raspberry Pi Zero
+ Audio
+ Camera
+ Case Accessories
+ Cluster
+ Cooling
+ DIN & Rack
+ Display/Screen
+ Media Centre
+ Retro Gaming
+ SSD
+ View All
+ Cooling
+ Cooling
+ Heatsinks & Fans
+ Cooling Cases
+ Fan HATs
+ View All
+ Camera
+ Camera
+ Accessories
+ Cables
+ Camera Modules
+ Cases
+ Lenses
+ USB Cameras
+ ZeroCam
+ View All
+ Screens & Displays
+ Screens & Displays
+ Mini Displays
+ Medium Displays
+ Large Displays
+ Touchscreen Displays
+ ePaper Displays
+ GPIO Connection
+ HDMI Connection
+ Display Accessories
+ View All
+ Cables
+ Cables
+ Adapters & Accessories
+ Audio
+ Ethernet
+ GPIO
+ HDMI
+ USB
+ View All
+ USB Add-ons
+ USB Add-ons
+ Audio
+ Game Controllers
+ Keyboards & Mice
+ Remote Controls
+ USB Hubs
+ WiFi & Ethernet
+ View All
+ Arcade
+ Arcade
+ Buttons & Joysticks
+ HATs & Control Boards
+ Kits
+ Merch & Accessories
+ Wires & Connectors
+ View All
+ Books
+ Merch
+ Maker Store
+ Maker Store
+ Accessories
+ Accessories
+ Books
+ Materials
+ Merch & Clothing
+ Notepads & Pens
+ Peripherals
+ Stickers & Badges
+ Storage
+ View All
+ Audio
+ Audio
+ Amplifiers & Modules
+ Buzzers
+ Cables & Connectors
+ Microphones
+ Speakers & Headphones
+ View All
+ Bitcoin Mining
+ Breakouts & Modules
+ Breakouts & Modules
+ ADC & DAC
+ Bluetooth
+ Camera
+ Ethernet
+ Flat Cable (FFC/FPC)
+ GPIO Expanders
+ GPS & GSM
+ Logic Level
+ LoRa
+ Other Modules
+ Relay
+ RTC
+ Serial
+ Storage
+ Terminal Block
+ USB
+ Wireless
+ View All
+ Cables
+ Cables
+ Accessories
+ Adapters
+ DC (Barrel Jack)
+ DIY Cables
+ Flat Flexible (FFC)
+ Grove
+ HDMI
+ IDC
+ JST
+ Molex
+ Other Cables
+ Panel Mount
+ Power
+ Qwiic/STEMMA QT
+ RJ
+ Serial
+ USB
+ View All
+ Components & Parts
+ Components & Parts
+ Antennas
+ Buttons & Switches
+ Capacitors
+ Component Kits
+ Connectors
+ Fans
+ Headers
+ Heatsinks
+ Integrated Circuits
+ Oscillators
+ Resistors
+ Terminal Blocks
+ Transistors
+ View All
+ Development Boards
+ Development Boards
+ Challenger
+ Circuit Playground
+ Espruino
+ Feather
+ FireBeetle
+ ItsyBitsy
+ M5Stack
+ MicroMod
+ Modules
+ QT Py & XIAO
+ SenseCAP
+ Teensy
+ Thing
+ Trinkey & Trinket
+ View All
+ Displays
+ Displays
+ Accessories
+ ePaper
+ LCD
+ OLED
+ Segment
+ TFT
+ View All
+ Enclosures & Fixings
+ Enclosures & Fixings
+ Fixings
+ Knobs
+ Project Enclosures
+ Rack Cabinets
+ View All
+ Kits & Projects
+ LEDs
+ LEDs
+ Accessories
+ COB LEDs
+ DotStar & APA102
+ Drivers
+ EL Wire
+ Flexible
+ IR
+ Matrix
+ NeoPixels & WS2812
+ Rings
+ Standard LEDs
+ Strips & Sticks
+ View All
+ Power
+ Power
+ Accessories
+ Batteries
+ Battery Holders
+ Boost Converters
+ Chargers
+ Inverters
+ Power Banks
+ Power over Ethernet
+ Power Supplies
+ Regulators & Buck Converters
+ Solar
+ View All
+ Prototyping
+ Prototyping
+ Accessories
+ Breadboards
+ Crocodile Clips
+ Jumper Wires
+ PCBs & Perfboard
+ SMT Breakouts
+ Wire & Heat Shrink
+ View All
+ Robotics
+ Robotics
+ Accessories
+ Chassis
+ Kits
+ Motor Drivers
+ Motors
+ Mounting Hubs
+ Pumps
+ Servos
+ Solenoids
+ Stepper Motors
+ Wheels & Tracks
+ View All
+ Sensors
+ Sensors
+ Accelerometers
+ Body & Muscle
+ Distance
+ Environment & Air Quality
+ Fingerprint
+ Force & Weight
+ Gas
+ Hall, Reed & Magnet
+ IMU & Gyro
+ Light & Colour
+ Line Following
+ Liquid & Moisture
+ Motion
+ NFC & RFID
+ Rotation
+ Temperature
+ Tilt & Vibration
+ Touch
+ Voltage & Current
+ View All
+ Soldering
+ Soldering
+ DIY Solder Kits
+ View All
+ Tools
+ Wearables
+ 3D Printing
+ 3D Printing
+ PETG Filament
+ PLA Filament
+ View All
+ micro:bit
+ micro:bit
+ The micro:bit
+ Kits & Bundles
+ Cases
+ Add-ons & Extensions
+ Cables & Accessories
+ Power
+ Robotics
+ Arduino
+ Arduino
+ Official Arduino Boards
+ Compatible Boards
+ Kits & Bundles
+ Cases
+ Shields
+ Shields
+ GPS & GSM Shields
+ Input & Button Shields
+ LED Shields
+ Prototyping Shields
+ Relay Shields
+ Robotics Shields
+ Sensor Shields
+ Serial Shields
+ Other Shields
+ View All
+ Cables
+ Power Supplies
+ Accessories
+ M5Stack
+ M5Stack
+ Series
+ Series
+ Atom
+ Camera
+ Chain
+ Core
+ Paper
+ Stamp
+ Stick
+ Accessories
+ Atom Bases
+ Core Stacks
+ Stick HATs
+ Units
+ Home Automation
+ Home Automation
+ Accessories
+ Energy Meters
+ Host Devices
+ Input Devices
+ Professional
+ Relays & Switches
+ Sensors
+ Smart Bulbs
+ Zigbee
+ Z-Wave
+ Gifts
+ Gifts
+ Christmas-Themed Gifts
+ Raspberry Pi Gifts
+ Maker Gifts
+ Micro:bit Gifts
+ Arduino Gifts
+ Gifts Under £10
+ Gifts Under £20
+ Gifts Under £50
+ View All
+ Sale! 
+ Blog
+ Blog
+ Articles
+ Tutorials
+ GBP 
+ Country/region 
+ GBP
+ USD
+ CAD
+ EUR
+ Login / Signup
+ E-mail 
+ Password 
+ Forgot password? 
+ Login 
+ New customer? Create an account 
+Huge Range 
+ 8,300+ products 
+Five Star Service 
+ 180,000+ reviews 
+No Quibble Returns 
+ support portal 
+Next Day Delivery 
+ order by 2pm* 
+ Go to slide 1 
+ Go to slide 2 
+ Go to slide 3 
+ Go to slide 4 
+ Cart 
+Your cart is empty 
+ Start shopping 
+ Home 
+ Raspberry Pi Camera Module 3 
+ Zoom 
+ Zoom 
+ Zoom 
+ Zoom 
+Raspberry Pi Camera Module 3 
+ Raspberry Pi SKU:
+ SC1223 
+ Version: Standard 
+ Standard 
+ Wide-angle 
+Price: 
+ Sale price 
+ £24 
+incl. VAT 
+excl. VAT 
+Stock: 
+ In stock 
+ Quantity: 
+ Decrease quantity 
+ Increase quantity 
+ Variant 
+ Standard - £24 
+ Wide-angle - £33.60 
+ Add to cart Notify me 
+Compatible with: 
+ RPi 3B 
+ RPi 4B 
+ RPi 5 
+ RPi Zero 2 
+Awesome Extras 
+ Raspberry Pi Camera Adapter Cable for Raspberry Pi 5 
+ Sale price From 
+ £0.90
+ incl. VAT 
+ excl. VAT 
+ Add to cart
+ Add to cart
+ Raspberry Pi Raspberry Pi Zero Camera Adapter 
+ Sale price 
+ £1.70 
+ incl. VAT 
+ excl. VAT 
+ Notify me 
+ The Pi Hut Tripod Mount for Raspberry Pi Camera Modules 
+ Sale price 
+ £3.50 
+ incl. VAT 
+ excl. VAT 
+ Notify me 
+ The Pi Hut Adjustable Raspberry Pi Camera Mount & Protector 
+ Sale price 
+ £5 
+ incl. VAT 
+ excl. VAT 
+ Notify me 
+ ModMyPi Mini Camera Mount for Raspberry Pi Camera Module 
+ Sale price 
+ £3 
+ incl. VAT 
+ excl. VAT 
+ Variant 
+ Default Title - £3 
+ Add to cart
+ The Pi Hut Pro Mini Camera Mount for Raspberry Pi Zero 
+ Sale price 
+ £5 
+ incl. VAT 
+ excl. VAT 
+ Variant 
+ Default Title - £5 
+ Add to cart
+ The Pi Hut Panel Mount Kit for Raspberry Pi Camera Module 3 
+ Sale price 
+ £3 
+ incl. VAT 
+ excl. VAT 
+ Variant 
+ Default Title - £3 
+ Add to cart
+ The Pi Hut Camera Case for Raspberry Pi Zero 
+ Sale price 
+ £7 
+ incl. VAT 
+ excl. VAT 
+ Notify me 
+ The Pi Hut Flex Cable for Raspberry Pi Camera or Display - 300mm 
+ Sale price 
+ £1.50 
+ incl. VAT 
+ excl. VAT 
+ Variant 
+ Default Title - £1.50 
+ Add to cart
+ Raspberry Pi Raspberry Pi AI HAT+ 2 
+ Sale price 
+ £192 
+ incl. VAT 
+ excl. VAT 
+ Variant 
+ Default Title - £192 
+ Add to cart
+ Previous 
+ Next 
+The Raspberry Pi Camera Module 3 is the latest entry in the   Official Raspberry Pi range of camera modules , offering a new   12 Megapixel Sony IMX708 image sensor, powered autofocus, improved low-light sensitivity and HDR (High Dynamic Range) support for your Raspberry Pi projects! 
+ The standard version now comes with both the standard (15-pin) and Pi 5/Pi Zero (22-pin) adapter cables in the box! The wide-angle version does not include a Pi 5 cable, but you can add one to your cart here . 
+The new Camera Module 3 is available with a standard 75° or wide-angle 120° lens (select version before adding to cart), giving you more options for your specific project needs. As with the previous generation, we also have an   infrared-sensitive NoIR version available   for night photography. 
+ The module is capable of 4608x2592 pixel images and 4608x2592 @14 FPS/2304x1296 @56 FPS/1536x864 @120FPS video. When HDR is enabled, the resolution is limited to 2304x1296 @ 30 FPS. 
+Compatibility (Important!) 
+ Accessories 
+The Camera Module 3 is mechanically identical to the previous Camera Module V2   apart from the front sensor section . The new sensor is larger and may not fit all previous camera accessories. We have updated all of our camera accessories with compatibility information in the descriptions. 
+ Software 
+The Camera Module 3   can only be used with   libcamera   - the previous raspistill/raspivid libraries will not work 
+ You will need to update Raspberry Pi OS   as the Camera Module 3 requires a new driver and a specific version of libcamera 
+Features 
+Back-illuminated and stacked CMOS 12-megapixel image sensor (Sony IMX708) 
+High signal-to-noise ratio (SNR) 
+Built-

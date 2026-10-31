@@ -1,0 +1,369 @@
+URL: https://www.pishop.us/product/raspberry-pi-5-4gb/
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 11676 chars
+Raspberry Pi 5 4GB (SC1111) | PiShop US - Official Reseller 
+ Email: [email&#160;protected] 
+ --> Sign in 
+ --> My Account
+ Check out 
+ Sign in 
+ Register 
+ Home 
+ Categories
+ * Adafruit
+ * Arduino
+ * micro:bit
+ * Raspberry Pi
+ Clearance
+ Audio
+ Cables & Connectors
+ Development Boards
+ Electronic Components
+ Internet of Things
+ Keyboards & Remotes
+ Play and Learn
+ Power
+ Prototyping
+ Robotics & CNC
+ Soldering
+ Tools
+ Wireless
+ Wearables & E-Textiles
+ 3D Printing
+ Gift Ideas
+ Brands 
+ ALL BRANDS 
+ Adafruit 
+ Arduino 
+ HiFiBerry 
+ HiPi.io 
+ micro:bit 
+ PiKVM 
+ Pimoroni 
+ PiShop.us 
+ Raspberry Pi 
+ SmartiPi 
+ Waveshare 
+ FAQ
+ Resources 
+ Raspberry Pi for Schools 
+ Projects and Tutorials 
+ Raspberry Pi Media Center (KODI/OSMC) 
+ RetroPie Quick Start Guide 
+ Raspberry Pi 4 Information 
+ Raspberry Pi 101 
+ Quick Start Guide for Pi Kits 
+ Raspberry Pi UPS Hat Guide 
+ About Us 
+ For Educators 
+ For Commercial Customers 
+ Our Mission 
+ Contact Us 
+ Blog
+ Toggle menu 
+ 0 item(s) 
+ -->
+ All Categories 
+ * Adafruit 
+ Feathers and Wings 
+ NeoPixels 
+ * Arduino 
+ Arduino Accessories 
+ Arduino Boards 
+ Arduino Cases 
+ Arduino Kits 
+ Arduino Shields 
+ * micro:bit 
+ micro:bit Boards & Kits 
+ micro:bit Project Kits 
+ micro:bit Accessories 
+ * Raspberry Pi 
+ Raspberry Pi 5 
+ Raspberry Pi 5 Boards 
+ Raspberry Pi 5 Power Supplies 
+ Raspberry Pi 5 HATs & Add-Ons 
+ Raspberry Pi 5 Accessories 
+ Raspberry Pi 5 Cases & Cooling 
+ Raspberry Pi 5 Kits 
+ Raspberry Pi Accessories 
+ Pico Accessories 
+ Zero Accessories 
+ Raspberry Pi Arcade 
+ Raspberry Pi Boards 
+ Raspberry Pi Boards 
+ Compute Modules 
+ Development Boards 
+ Raspberry Pi Cables 
+ Raspberry Pi Cameras 
+ Camera Modules 
+ Camera Accessories 
+ Camera Cables 
+ Camera Mounts 
+ Lenses 
+ Raspberry Pi Cases 
+ Model 4 B Cases 
+ Model 3 B/B+ Cases 
+ Model A+/3 A+ Cases 
+ Model Zero and Zero W 
+ Raspberry Pi Cooling 
+ Raspberry Pi HATs and Add-On Boards 
+ Raspberry Pi Kits 
+ Pi 4 B Kits 
+ Pi Project Kits 
+ Pi Zero W & Zero Kits 
+ Raspberry Pi Networking 
+ Raspberry Pi Power Supplies 
+ Power Supplies for Pi 3/2/1 & Zero 
+ Power Supplies for Pi 4 
+ PoE Power 
+ Raspberry Pi UPS 
+ Raspberry Pi Prototyping & GPIO 
+ Raspberry Pi Screens, Displays & Touchscreens 
+ Raspberry Pi Services 
+ Raspberry Pi SD Cards 
+ Guides & Books 
+ Swag 
+ Clearance
+ Audio 
+ Amplifiers 
+ Audio Players and Kits 
+ DACs 
+ Speakers 
+ Transports 
+ Cables & Connectors 
+ Adapters 
+ Ethernet 
+ HDMI 
+ JST 
+ Miscellaneous 
+ USB 
+ Development Boards
+ Electronic Components 
+ Breakouts & Modules 
+ LEDs 
+ Other 
+ Passive Components 
+ Relay Modules 
+ Sensors 
+ Switches & Pushbuttons 
+ Internet of Things
+ Keyboards & Remotes
+ Play and Learn
+ Power 
+ Batteries 
+ Battery Chargers 
+ Battery Holders 
+ Power Supplies 
+ Power Switches 
+ Solar Panels 
+ USB Power Banks 
+ Prototyping 
+ Breadboards 
+ Headers 
+ Jumper Wires, Clips 
+ Protoboards 
+ Robotics & CNC 
+ Parts & Accessories 
+ Robots & Kits 
+ Soldering
+ Tools
+ Wireless 
+ Bluetooth 
+ Cellular 
+ GPS Location 
+ LoRa 
+ Software Defined Radio 
+ WiFi 
+ Wearables & E-Textiles
+ 3D Printing 
+ 3D Printer Filaments 
+ PLA 
+ Gift Ideas
+ Vertical Categories 
+ &#215; 
+ Home 
+ * Raspberry Pi 
+ Raspberry Pi Boards 
+ Raspberry Pi Boards 
+ Raspberry Pi 5/4GB 
+ Filter -->
+ Click to zoom in 
+Raspberry Pi 5/4GB 
+ Raspberry Pi 
+ -->
+ (1 review)
+ Write a Review
+Write a Review 
+ &#215; 
+Raspberry Pi 
+Raspberry Pi 5/4GB 
+ Rating
+ Required 
+ Select Rating 
+ 1 star (worst) 
+ 2 stars 
+ 3 stars (average) 
+ 4 stars 
+ 5 stars (best) 
+ Name
+ Review Subject
+ Required 
+ Comments
+ Required 
+ $110.00 
+ Brand 
+ Raspberry Pi 
+ SKU: 
+ 4GB-9024 
+ Condition: 
+ New 
+ Model 
+ Pi 5 
+Essential extras: 
+ SKU: 9015:
+ -->
+ HighPi Pro 5S Case for Raspberry Pi 5 
+ SKU: 492-2:
+ -->
+ USB-C PD Power Supply for Raspberry Pi 5, 27W 
+ SKU: 374-1:
+ -->
+ Raspberry Pi Active Cooler 
+ SKU: 1668:
+ -->
+ Raspberry Pi Official Beginner&#x27;s Guide 
+ SKU: 1337-1:
+ -->
+ MicroSD Card With Raspberry Pi OS 64-bit - 32GB 
+ SKU: CS-PID-301:
+ -->
+ Micro-HDMI to HDMI cable for Pi 4/5, 3ft, Black 
+ Current Stock:
+ 3 
+ -->
+ Quantity: 
+ Increase Quantity: 
+ Decrease Quantity: 
+ IN STOCK 
+ Add to Wish List 
+ Create New Wish List 
+ -->
+ Description 
+ Show Reviews 
+ Raspberry Pi 5 4GB - SC1111/SC1431 - The everything computer. Optimized. 
+The new Raspberry Pi 5 board features a quad-core 2.4 GHz ARM Cortex-A76 CPU and VideoCore VII GPU, capable of driving dual 4Kp60 displays. It introduces a PCIe 2.0 x1 interface, plus doubled USB and SD card bandwidth, with re-engineered MIPI lanes for faster storage, displays, and cameras. 
+Powered by the RP1 southbridge, the latest board runs smoothly as both a desktop replacement and an embedded controller. Redesigned camera and display connectors provide higher bandwidth, making this board ready for next-generation projects in AI, automation, and high-resolution media. 
+ Need more RAM?⚡ RPi 5 with 16GB is now available. 
+ CAUTION: The Pi 5 requires new camera cables and display cables . Older Pi 4 cables are not compatible. 
+Key Upgrades 
+ 2.4GHz quad-core Arm Cortex-A76 &mdash; 2&ndash;3&times; the CPU performance of Raspberry Pi 4, for a noticeably smoother desktop, browsing and code compiling 
+ 2GB LPDDR4X-4267 RAM &mdash; comfortable for a full desktop, multitasking, development tools and several lightweight services running together 
+ 800MHz VideoCore VII GPU &mdash; drives two 4Kp60 HDMI displays with HDR at the same time 
+ PCIe 2.0 interface &mdash; boot from an NVMe SSD with the M.2 HAT+ for faster boot and storage than a microSD card 
+ RP1 I/O controller &mdash; two USB 3.0 ports with 5Gbps transfer speeds and up to twice the peak microSD speed of Raspberry Pi 4 (SDR104) 
+ Two 4-lane MIPI connectors &mdash; use two cameras, two displays, or one of each 
+ Built-in power button, real-time clock and UART debug port &mdash; no add-on boards needed (the RTC battery is sold separately) 
+ Built for projects and development &mdash; programming, Linux desktop use, home labs, home automation and multitasking 
+Specifications 
+Broadcom BCM2712 2.4GHz quad-core 64-bit Arm Cortex-A76 CPU, with cryptography extensions, 512KB per-core L2 caches and a 2MB shared L3 cache 
+VideoCore VII GPU, supporting OpenGL ES 3.1, Vulkan 1.3 
+Dual 4Kp60 HDMI&reg; display output with HDR support 
+4Kp60 HEVC decoder 
+ LPDDR4X-4267 SDRAM 4GB 
+Dual-band 802.11ac Wi-Fi&reg; 
+Bluetooth 5.0 / Bluetooth Low Energy (BLE) 
+microSD card slot, with support for high-speed SDR104 mode 
+2 &times; USB 3.0 ports, supporting simultaneous 5Gbps operation 
+2 &times; USB 2.0 ports 
+Gigabit Ethernet, with PoE+ support (requires separate PoE+ HAT) 
+2 &times; 4-lane MIPI camera/display transceivers 
+PCIe 2.0 x1 interface for fast peripherals (requires separate M.2 HAT or other adapter) 
+5V/5A DC power via USB-C, with Power Delivery support 
+Raspberry Pi standard 40-pin header 
+Real-time clock (RTC), powered from an external battery 
+Power button 
+ Resources 
+ Raspberry Pi 5 product brief 
+ Raspberry Pi 5 mechanical drawing 
+ Getting started documentation 
+ RP1 peripherals documentation 
+ Compliance : Raspberry Pi 5 meets a number of regional and international standards &mdash; view the certificates and conformity documents 
+ Product lifetime : Raspberry Pi 5 will remain in production until at least January 2036 
+ Power and cooling 
+ Raspberry Pi 5 draws more power than earlier models, so we recommend a 5V/5A (27W) USB-C PD power supply . For sustained workloads, use the Active Cooler or a case with a fan. 
+FAQ 
+ Will older versions of Raspberry Pi OS work with Raspberry Pi 5?
+ No, it requires the latest Raspberry Pi OS . Older releases aren&rsquo;t supported, so you&rsquo;ll need to flash a fresh SD card with the current version before booting up. 
+ Will my power supply for Raspberry Pi 4 work with the Pi 5 board?
+ This board draws more power than the Raspberry Pi 4 , and an underpowered supply can cause issues. We recommend a high-quality 5V 5A USB-C power supply. 
+ Does Raspberry Pi 5 need active cooling? 
+This new Pi is faster and more powerful than prior-generation Raspberry Pis, and like most general-purpose computers, it will perform best with active cooling. The Raspberry Pi Case for Pi 5 , with its integrated fan, is one option. For configurations with a HAT, we recommend our HighPi Pro 5S Case with the official Active Cooler . 
+ Will Raspberry Pi 5 fit my Raspberry Pi 4 case? 
+No. The board layout has changed, so Raspberry Pi 4 cases do not fit. Choose the official Raspberry Pi 5 case or our HighPi Pro 5S case . 
+ 1 Review
+ Hide Reviews
+ Show Reviews
+ 5 
+replaces my pc 
+ Posted by storm on Jan 7th 2024
+i have worked with the pi 4 before and i was going to use the rpi 4 as a desktop computer, but the p 4 did not have the speed for the switch to it to make sense. so when i saw the pi 5 get announced i got my hopes up. i have been using it for 2 weeks now with no issues it works great as my daily computer as the clock speed change has made big improvements. if you are wanting to get someone there first computer this is what i suggest to get. very nice (im writing this review on the said rpi 5) 
+ &#215; 
+ Related products
+ Camera Cable for Raspberry Pi 5 
+ $3.95 
+ The Raspberry Pi 5 provides two MIPI connectors to use with camera modules or displays. These connectors are smaller than previous generations of Raspberry Pi, so you'll need one of these adapter...
+ Choose Options 
+ Display Cable for Raspberry Pi 5 
+ $3.95 
+ The Raspberry Pi 5 provides two MIPI connectors to use with displays (DSI) or camera modules. These connectors are smaller than previous generations of Raspberry Pi, so you'll need one of these...
+ Choose Options 
+ HighPi Pro 5S Case for Raspberry Pi 5 
+ $10.95 
+ HighPi Pro 5S Case for Raspberry Pi 5
+The HighPi Pro 5S Case for Raspberry Pi 5 continues the HighPi case line, offering ease of use, flexible configuration, and attractive design. It embraces the...
+ Add to Cart 
+ Raspberry Pi M.2 HAT for Pi 5 
+ $12.00 
+ Raspberry Pi M.2 HAT+ | SC1166
+The Raspberry Pi M.2 HAT for Raspberry Pi 5 lets you plug M.2 peripherals—like NVMe SSDs or AI accelerators—into the Pi 5’s PCIe interface. With the official HAT+...
+ Add to Cart 
+ USB Audio Adapter – Works with Raspberry Pi 
+ $4.95 
+ The USB Audio Adapter – Works with Raspberry Pi delivers cleaner, louder sound than the Pi’s onboard audio. Its compact design leaves the second USB port free. Fully compatible with Raspberry Pi 5...
+ Add to Cart 
+ USB-C PD Power Supply for Raspberry Pi 5, 27W, ETL Listed 
+ $11.95 
+ USB-C PD Power Supply for Raspberry Pi 5, 27W, ETL Listed, Black
+This USB-C PD Power Supply for Raspberry Pi 5 provides up to 27W of stable power. It supports multiple USB-C PD profiles for...
+ Add to Cart 
+ Email Address 
+Sign up for newsletter 
+Receive email-only deals, special offers & product exclusives 
+ Quick Links 
+ Brands 
+ FAQ 
+ Resources 
+ About Us 
+ Blog 
+ Privacy Policy 
+ Sitemap 
+ My Account 
+ Check out 
+ Sign in 
+ Register 
+ Contact Us
+ Email: [email&#160;protected] 
+ 844-774-4338, 302-500-4020 
+ Monday-Friday 9am-5pm EST 
+ Pi Shop Inc.
+DBA PiShop.us
+EIN: 61-1809971
+101 Cirillo Cir
+New Castle, DE, 19720 
+ Other Stores By Our Team
+ -->
+ &copy; 2026 PiShop.us 
+ list 
+ The cookie settings on this website are set to &#x27;allow all cookies&#x27; to give you the very best experience. Please click Accept Cookies to continue to use the site.
+ Accept Cookies

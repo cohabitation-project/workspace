@@ -1,0 +1,218 @@
+URL: https://www.adafruit.com/search?q=servo+motor
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 4927 chars
+Search Results for 'servo motor' on Adafruit Industries 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+Search Results for
+ "servo motor" 
+ Skip Filter & Sort Menu 
+filter & sort
+Filter & Sort
+Filter & Sort
+ Sort By 
+ Best Match 
+ Most Recent 
+ Apply 
+ sorting 
+ Availability 
+ In Stock 
+ Out of Stock 
+ Discontinued 
+ Apply 
+ availability filters 
+ Features 
+ Works with WipperSnapper 
+ Apply 
+ availability filters 
+ Price Ranges 
+ Less than $5 
+ $5 to $9.99 
+ $10 to $24.99 
+ $25 to $99.99 
+ Over $100 
+ Apply 
+ price range filters 
+ Category 
+ Arduino (6) 
+ Books (2) 
+ Breakout Boards (5) 
+ Circuit Playground (3) 
+ CircuitPython (5) 
+ Cosplay/Costuming (5) 
+ Crickit - Creative Robotics (16) 
+ Development Boards (11) 
+ Feather (3) 
+ Halloween (5) 
+ Internet of Things - IoT (1) 
+ Kits & Projects (3) 
+ micro:bit Add-ons & Accessories (3) 
+ Power (2) 
+ Raspberry Pi (9) 
+ Robotics & CNC (38) 
+ STEMMA (1) 
+ Wearables (1) 
+ Young Engineers (4) 
+Search results 
+Micro servo - TowerPro SG92R. 
+ Micro servo - TowerPro SG92R 
+ Product ID: 169 
+ $ 5.95 
+ In stock 
+ Add to Cart , Micro servo - TowerPro SG92R 
+Micro Servo with 3-pin JST PH 2mm Cable - TowerPro SG92R - STEMMA Connector Compatible. 
+ Micro Servo with 3-pin JST PH 2mm Cable - TowerPro SG92R - STEMMA Connector Compatible 
+ Product ID: 4326 
+ $ 5.95 
+ In stock 
+ Add to Cart , Micro Servo with 3-pin JST PH 2mm Cable - TowerPro SG92R - STEMMA Connector Compatible 
+Adafruit Motor/Stepper/Servo Shield for Arduino v3 Kit. 
+ Adafruit Motor/Stepper/Servo Shield for Arduino v3 Kit 
+ Product ID: 1438 
+ $ 19.95 
+ In stock 
+ Add to Cart , Adafruit Motor/Stepper/Servo Shield for Arduino v3 Kit 
+DC Motor in Micro Servo Body. 
+ DC Motor in Micro Servo Body 
+ Product ID: 2941 
+ $ 3.50 
+ Out of stock 
+ Notify Me , DC Motor in Micro Servo Body 
+Motor party add-on pack for Arduino. 
+ Motor party add-on pack for Arduino 
+ Product ID: 171 
+ $ 39.95 
+ 81 in stock 
+ Add to Cart , Motor party add-on pack for Arduino 
+Standard Servo Arm and Horn Set - 25 Spline. 
+ Standard Servo Arm and Horn Set - 25 Spline 
+ Product ID: 4250 
+ $ 2.50 
+ 93 in stock 
+ Add to Cart , Standard Servo Arm and Horn Set - 25 Spline 
+Micro Servo - MG90D High Torque Metal Gear. 
+ Micro Servo - MG90D High Torque Metal Gear 
+ Product ID: 1143 
+ $ 9.95 
+ In stock 
+ Add to Cart , Micro Servo - MG90D High Torque Metal Gear 
+Micro Servo with Alligator Clips. 
+ Micro Servo with Alligator Clips 
+ Product ID: 5592 
+ $ 7.95 
+ 55 in stock 
+ Add to Cart , Micro Servo with Alligator Clips 
+Standard servo - TowerPro SG-5010 - 5010. 
+ Standard servo - TowerPro SG-5010 - 5010 
+ Product ID: 155 
+ $ 12.00 
+ 20 in stock 
+ Add to Cart , Standard servo - TowerPro SG-5010 - 5010 
+Micro Servo - High Powered, High Torque Metal Gear - TowerPro MG92B. 
+ Micro Servo - High Powered, High Torque Metal Gear - TowerPro MG92B 
+ Product ID: 2307 
+ $ 11.95 
+ In stock 
+ Add to Cart , Micro Servo - High Powered, High Torque Metal Gear - TowerPro MG92B 
+ Previous 
+ Current page: 1 
+ Go to page 2 
+ Go to page 3 
+ Go to page 4 
+ Go to last page 5 
+ Go to next page Next 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; The most valuable thing you can make is a mistake - you can't learn anything from being perfect&rdquo;
+ Adam Osborne 
+ A Minority and Woman-owned Business Enterprise (M/WBE)

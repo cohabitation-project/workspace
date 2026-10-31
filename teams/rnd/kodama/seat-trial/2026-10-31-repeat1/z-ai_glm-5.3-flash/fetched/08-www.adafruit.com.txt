@@ -1,0 +1,240 @@
+URL: https://www.adafruit.com/product/354
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 7941 chars
+Lithium Ion Battery Pack - 3.7V 4400mAh : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Power 
+ / 
+ LiIon & LiPoly 
+ / 
+ Batteries 
+ / 
+ Lithium Ion Battery Pack - 3.7V 4400mAh 
+Lithium Ion Battery Pack - 3.7V 4400mAh 
+Product ID: 354 
+ $19.95 
+Product Images and Video 
+ Play video: Lithium Battery Shipping Restrictions 
+ Play video: LiPo Longevity - Collin&rsquo;s Lab Notes #adafruit #collinslabnotes 
+ Play video: Beware of Bad Lipos - Collin&rsquo;s Lab Notes #adafruit #collinslabnotes 
+ Qty 
+ Discount 
+ 1-9 
+ $19.95 
+ 10-99 
+ $17.96 
+ 100+ 
+ $15.96 
+ In stock 
+ Add to Cart 
+ There are multiple versions of this item. Please select one from the options below: 
+ 3.7V 100mAh ($5.95) 
+ 3.7V 150mAh ($5.95) 
+ 3.7V 350mAh ($6.95) 
+ 3.7V 350mAh with Short Cable ($5.95) 
+ 3.7V 400mAh Ideal For Feather ($6.95) 
+ 3.7V 420mAh with Short Cable ($6.95) 
+ 3.7V 500mAh ($7.95) -- out of stock - notify me 
+ 3.7V 1200mAh ($9.95) 
+ 3.7V 2000mAh ($12.50) 
+ 3.7V 2200mAh ($9.95) 
+ 3.7V 2500mAh ($14.95) 
+ 3.7V 4400mAh 
+ 3.7V 6600mAh ($24.50) 
+ 3.7V 10050mAh (10 Ah) ($29.95) 
+ Qty 
+ Discount 
+ 1-9 
+ $19.95 
+ 10-99 
+ $17.96 
+ 100+ 
+ $15.96 
+ In stock 
+ Add to Wishlist 
+ Description 
+Need a big battery for your project? This lithium-ion pack is made of 2 balanced 2200mAh cells for a total of 4400mA capacity! The cells are connected in parallel and spot-welded to a protection circuit that provides over-voltage, under-voltage, and over-current protection. 
+Each cell can provide 1A of current for about 4 hours so all together the peak current you can draw is a little over 1.5 Amps. Note that these batteries are not designed to sustain such high loads, we suggest keeping any constant current draw under 1A. 
+The packs come with color-coded wires, and now they come with a JST 2-pin cable attached for use with our chargers! Because they have a high quality JST-or-compatible connector, the cable won't snag or get stuck in a matching JST jack, they click in and out smoothly. The cables are rated for 2A so if you use them keep that in mind. 
+The included protection circuitry keeps the battery voltage from going too high (over-charging) or low (over-use) which means that the battery will cut out when completely dead at 2.5V. However, even with this protection, it is very important that you only use a LiIon/LiPoly constant-voltage/constant-current charger to recharge them and at a rate of 0.5C (2.2A) or less. 
+Like most lithium-ion packs, the batteries we sell do not have thermistors built-in. This is why we suggest charging at 0.25C or even less - 1A max in this case. Of course, you can charge at a lower rate - it'll just take a little longer to fill up. 
+ Additional safety notes: Do not use a NiMH/NiCad/lead-acid charger! Also, do not abuse these batteries, do not short, bend, crush, or puncture. Never charge or use unattended. Always inspect batteries and surrounding circuitry constantly for any damage, loose wiring, or the possibility of short circuits. Polarity matches all Adafruit LiPoly/LiIon chargers and boards, other brands may have reverse polarity and can destroy your battery. As with all Lithium-ion polymer batteries and with any power source - they should be used by experts who are comfortable working with power supplies. 
+ Play video: Beware of Bad Lipos - Collin&rsquo;s Lab Notes #adafruit #collinslabnotes 
+ Play video: LiPo Longevity - Collin&rsquo;s Lab Notes #adafruit #collinslabnotes 
+ Play video: Lithium Battery Shipping Restrictions 
+ Technical Details 
+2 x 2200mAh Lithium Ion 18650-sized cells in parallel 
+Dimensions: 69mm x 37mm x 18mm / 2.7" x 1.5" x 0.71" 
+Weight: 95g / 3.5oz 
+Max recommended charging rate: 1A 
+Max recommended discharge rate: 2.2A 
+ Revision History: 
+ As of December 31, 2014 - these batteries come with a JST cable attached. 
+ MSDS Report 
+ UN38.3 Report 
+ Datasheet 
+ Learn 
+ Manually bridging MQTT to Adafruit.IO 
+ Get sensor data from a local MQTT broker into Adafruit.IO 
+ Pick the Perfect Plant: Battery-Powered Sun Tracking 
+ Build a battery-powered, weatherproof light monitor to discover the perfect plants for your garden, optimized with deep sleep to run for weeks. 
+ Adafruit LM73100 Ideal Diode Breakout 
+ Ideal for your power budget 
+ Plotting Offline Data - JSONL to CSV files, filters and graphs 
+ Don't know your JSON from your CSV formats, been an age since you saw a spreadsheet, let us wipe away those cobwebs... 
+See All Guides 
+ May We Also Suggest&hellip; 
+ Lithium Ion Battery Pack - 3.7V 6600mAh 
+ Lithium Ion Polymer Battery - 3.7v 1200mAh 
+ Lithium Ion Polymer Battery - 3.7v 2500mAh 
+ USB / DC / Solar Lithium Ion/Polymer charger - Rev C - Rev C 
+ USB LiIon/LiPoly charger - v1.2 - v1.2 
+ PowerBoost 500 Basic - 5V USB Boost @ 500mA from 1.8V+ 
+ PowerBoost 1000 Basic - 5V USB Boost @ 1000mA from 1.8V+ 
+ Adafruit Micro Lipo - USB LiIon/LiPoly charger - v2 - v2 
+ Adafruit Micro-Lipo Charger for LiPo/LiIon Batt w/MicroUSB Jack - v1 - v1 
+ Adafruit Mini Lipo w/Mini-B USB Jack - USB LiIon/LiPoly charger - v1 - v1 
+ Lithium Ion Cylindrical Battery - 3.7v 2200mAh 
+ JST PH 2-Pin Cable – Male Header 200mm 
+ Distributors 
+Mouser Electronics 
+ United States 
+Little Bird Electronics 
+ Australia 
+DigiKey Electronics 
+ United States 
+MicroCenter 
+ United States 
+See our Distributors page for a complete list of distributors. 
+Lithium Ion Battery Pack - 3.7V 4400mAh 
+ Product ID: 354 
+ $19.95 
+ There are multiple versions of this item. Please select one from the options below: 
+ 3.7V 100mAh ($5.95) 
+ 3.7V 150mAh ($5.95) 
+ 3.7V 350mAh ($6.95) 
+ 3.7V 350mAh with Short Cable ($5.95) 
+ 3.7V 400mAh Ideal For Feather ($6.95) 
+ 3.7V 420mAh with Short Cable ($6.95) 
+ 3.7V 500mAh ($7.95) -- out of stock - notify me 
+ 3.7V 1200mAh ($9.95) 
+ 3.7V 2000mAh ($12.50) 
+ 3.7V 2200mAh ($9.95) 
+ 3.7V 2500mAh ($14.95) 
+ 3.7V 4400mAh 
+ 3.7V 6600mAh ($24.50) 
+ 3.7V 10050mAh (10 Ah) ($29.95) 
+ In stock 
+ Add to Cart 
+ Qty 
+ Discount 
+ 1-9 
+ $19.95 
+ 10-99 
+ $17.96 
+ 100+ 
+ $15.96 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; Nothing will work unless you do&rdquo;
+ Maya Angelou 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

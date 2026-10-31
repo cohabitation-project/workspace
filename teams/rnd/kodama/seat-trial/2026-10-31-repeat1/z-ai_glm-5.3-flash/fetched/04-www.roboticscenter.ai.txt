@@ -1,0 +1,212 @@
+URL: https://www.roboticscenter.ai/store/product/feetech-feetech-sts3215
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 6135 chars
+Feetech STS3215 Actuator: Price & Specs | Robotics Center 
+ Robots 
+ Data & Eval 
+ Learn 
+ About 
+ Shop 
+ Store 
+ Browse the full hardware catalog Shop by Brand 
+ Explore robotics manufacturers Hardware 
+ Browse robots, parts & components 
+ Explore 
+ Applications 
+ Robots by task & industry Compare Products 
+ Side-by-side specs & pricing Leasing 
+ Flexible access to research hardware 
+ Build & deploy 
+ Contract Manufacturing 
+ Sourcing, assembly & QA from prototype to production Mobile Manipulator 
+ The RC M1 platform 
+ Data 
+ Data Marketplace 
+ Hardware-synced robot datasets Datasets 
+ Explore robot-learning datasets Data Services 
+ Collection, teleop & annotation Dexterous Hand Data 
+ Teleop, egocentric & UMI collection Datakit 
+ Build and manage robot datasets 
+ Develop & evaluate 
+ Eval 
+ Cross-embodiment policy evals on real robot arms Dexterity 
+ Buy, measure, and train on dexterous hands VLA Models 
+ Vision-language-action model guide Benchmarks 
+ Robot-learning benchmarks explained Tools 
+ Simulators, datasets & stacks 
+ Operate 
+ Teleoperation 
+ Operate robots and collect demonstrations RL Environments 
+ Train and evaluate policies in simulation 
+ Partners 
+ Start Selling 
+ List products on the marketplace Supplier Portal 
+ Manage products, orders & fulfillment 
+ Learn 
+ Academy 
+ Guides to deploy faster Guides 
+ Hands-on hardware & data guides Glossary 
+ Robotics terms, defined Developer Docs 
+ Quickstarts & integration notes 
+ Community 
+ Forum 
+ Q&A, build logs & deployments People 
+ Researchers shaping robotics Institutions 
+ Labs & universities we work with Events 
+ Workshops, demos & meetups 
+ Insights 
+ Blog 
+ Deep dives on physical AI News 
+ Company news & robotics digest Research 
+ Paper explainers & write-ups 
+ Research 
+ Reports 
+ Industry reports & analysis Robot directory 
+ Compare robots by published specs Markets 
+ Robotics by market & region Whitepaper 
+ RL² technical whitepaper 
+ Company 
+ About 
+ Who we are Careers 
+ Join the team 
+ Connect 
+ Locations 
+ Global service coverage Contact 
+ Talk to our sales engineers Newsletter 
+ Subscribe to the Robotics Center weekly brief 
+ Search Search robots, parts, datasets ⌘K 
+ Contact Sales 
+Sign in 
+ Account & settings 
+ Sign in 
+ Language EN 
+ English EN 中文 ZH Deutsch DE 日本語 JA Français FR 한국어 KO العربية AR हिन्दी HI עברית HE Português PT Русский RU Español ES 
+ Robots 
+ Data & Eval 
+ Learn 
+ About 
+ Sign in 
+ Chat with us 
+ Language EN 
+ English EN 中文 ZH Deutsch DE 日本語 JA Français FR 한국어 KO العربية AR हिन्दी HI עברית HE Português PT Русский RU Español ES 
+ Shop now → Contact 
+Shop Hardware 
+ Humanoids 
+ Robotic Arms 
+ Quadrupeds 
+ Dexterous Hands 
+ Sensors 
+ Teleoperation 
+nav.dataDev 
+ Data Marketplace 
+ nav.rlEval 
+ Academy 
+ Developer Docs 
+Try: OpenArm , Wuji Hand , Unitree G1 , quadruped , gripper 
+ Product 
+OpenArm 
+Open 7-DoF arm, bimanual-ready, with pilot data-collection packages. 
+ Product 
+Browse the Store 
+90+ platforms — humanoids, arms, quadrupeds, dexterous hands, and teleoperation kits. Lead time shown on each product. 
+ Dataset 
+Data Marketplace 
+Hardware-synced demonstrations for VLA and imitation learning. Download in LeRobot, HDF5, or RLDS format. 
+ Guide 
+Get Started with Physical AI 
+From first arm on the bench to a policy that survives a real workcell — the Robotics Center pipeline in three steps. 
+ Guide 
+Wuji Glove 
+Specifications and integration guide for the tactile and pose-tracking data glove. 
+ Guide 
+Unitree Go2 — Setup & SDK 
+Unbox, calibrate, and run your first autonomous walk. Includes ROS 2 bringup and teleop quickstart. 
+ ↵ to select 
+ Home › Feetech › Feetech STS3215 
+ Feetech 
+Feetech STS3215 
+ Contact for pricing Backorder 
+ Request a Quote 
+ Save 
+ Compare 
+ Shipping calculated at checkout 
+ In-house support 
+Key Specifications 
+6-7.4V 
+Operating Voltage Range 
+0.5 kg 
+Net weight 
+A：45.2mm B：24.7mm C：35mm 
+Dimensions 
+19.5kg.cm@6V 
+Peak Stall Torque 
+All Specifications 
+ General 
+ Brand Feetech 
+ Category Actuator & Motor 
+ Availability Backorder 
+ Net weight 0.5 kg 
+ Model ST-3215-C001 
+ Product Name 7.4V 19KG. Dual axis TTL string servo 
+ Storage Temperature Range -30°C~80°C 
+ Operating Temperature Range -20°C~70°C 
+ Dimensions A：45.2mm B：24.7mm C：35mm 
+ Weight 55± 1g 
+ Gear Type Copper 
+ Limit Angle NO limit 
+ Bearing Ball Bearing 
+ Horn Gear Spline 25T 
+ Horn Type Plastic,POM 
+ Case aluminium alloy 
+ Motor Coreless motor 
+ Protocol Type Half Duplex Asynchronous Serial Communication 
+ ID Range 0-253 
+ Running Degree 360° (when 0~4096) 
+ Feedback Load,Position,Speed,InputVoltage ,Current 
+ Performance 
+ No Load Speed 0.238sec/60°@6V 
+ Peak Stall Torque 19.5kg.cm@6V 
+ Rated Torque 6.5kg.cm@6V 
+ Power & Electrical 
+ Connector Wire 150mm ± 5mm 
+ Operating Voltage Range 6-7.4V 
+ Runnig Current 150 mA@6V 
+ Stall Current 2000mA@6V 
+ Command Signal DigitalPacket 
+ Communication Speed 38400bps ~ 1 Mbps 
+ After you order 
+What happens next 
+Lead time & shipping 
+Each product shows its lead time; shipping is calculated at checkout from your delivery address. 
+Support 
+After delivery, Robotics Center support helps with setup and integration questions. 
+Onboarding 
+We help you go from procurement to first successful run with setup and integration support. 
+ More like this 
+Related products 
+Feetech 
+Feetech SCS0009 
+$15.00 
+ Compare 
+Feetech 
+Feetech STS3032 
+Request a Quote 
+ Compare 
+CubeMars 
+CubeMars AK Series Driver Board 
+$79.90 
+ Compare 
+CubeMars 
+CubeMars AK10-9 V2.0 KV60 
+$798.90 
+ Compare 
+Robotics Center. A global hub for showcasing, testing, and advancing robotics. 
+Shop Store Unitree Compare Products Leasing Mobile Manipulator Sell Used Equipment 
+Explore VLA Models Benchmarks Tools Applications Locations 
+Learn & Data Academy Guides Blog Research People Robot directory Glossary Data Marketplace 
+Company About Careers Events Contact 
+ Privacy Terms Refunds Returns Robotics Center · 90 Welsh St, San Francisco, CA 94107 · +1-415-636-3630 · Staffed Mon–Fri, 10 AM – 4 PM PT · contact@roboticscenter.ai · East Coast: 125 Western Ave, Allston, MA 02134 
+Your cart 
+ View cart 
+Your cart is empty. Browse the Store →

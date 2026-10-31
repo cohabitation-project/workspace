@@ -1,0 +1,40 @@
+{
+  "model": "qwen/qwen3.8-27b",
+  "steps": 8,
+  "calls": {
+    "list_files": 1,
+    "fetch_url": 6,
+    "read_file": 1,
+    "web_search": 5,
+    "run_python": 1,
+    "write_file": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.adafruit.com/product/5813",
+    "https://www.pololu.com/product/995",
+    "https://www.pololu.com/category/11/brushed-dc-motor-drivers",
+    "https://www.waveshare.com/rplidar-a1.htm",
+    "https://www.adafruit.com/product/5369"
+  ],
+  "errors": 0,
+  "inTok": 214973,
+  "outTok": 21889,
+  "finished": true,
+  "modelError": null,
+  "nudges": 1,
+  "cost": 0.040357555,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31-repeat1/qwen_qwen3.8-27b/estimate.md"
+  ],
+  "task": "parts",
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31-repeat1/qwen_qwen3.8-27b/estimate.md",
+  "priceCheck": {
+    "measured": 3,
+    "onCitedPage": 3,
+    "onOtherPage": 0,
+    "notFound": []
+  },
+  "sellerCheck": null,
+  "run_at": "2026-10-31T15:32:47.922Z"
+}

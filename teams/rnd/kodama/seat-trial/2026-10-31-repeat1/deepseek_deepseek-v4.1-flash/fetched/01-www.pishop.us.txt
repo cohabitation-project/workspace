@@ -1,0 +1,463 @@
+URL: https://www.pishop.us/search.php?search_query=raspberry+pi+5
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 12266 chars
+PiShop.us 
+ Email: [email&#160;protected] 
+ --> Sign in 
+ --> My Account
+ Check out 
+ Sign in 
+ Register 
+ Home 
+ Categories
+ * Adafruit
+ * Arduino
+ * micro:bit
+ * Raspberry Pi
+ Clearance
+ Audio
+ Cables & Connectors
+ Development Boards
+ Electronic Components
+ Internet of Things
+ Keyboards & Remotes
+ Play and Learn
+ Power
+ Prototyping
+ Robotics & CNC
+ Soldering
+ Tools
+ Wireless
+ Wearables & E-Textiles
+ 3D Printing
+ Gift Ideas
+ Brands 
+ ALL BRANDS 
+ Adafruit 
+ Arduino 
+ HiFiBerry 
+ HiPi.io 
+ micro:bit 
+ PiKVM 
+ Pimoroni 
+ PiShop.us 
+ Raspberry Pi 
+ SmartiPi 
+ Waveshare 
+ FAQ
+ Resources 
+ Raspberry Pi for Schools 
+ Projects and Tutorials 
+ Raspberry Pi Media Center (KODI/OSMC) 
+ RetroPie Quick Start Guide 
+ Raspberry Pi 4 Information 
+ Raspberry Pi 101 
+ Quick Start Guide for Pi Kits 
+ Raspberry Pi UPS Hat Guide 
+ About Us 
+ For Educators 
+ For Commercial Customers 
+ Our Mission 
+ Contact Us 
+ Blog
+ Toggle menu 
+ 0 item(s) 
+ -->
+ All Categories 
+ * Adafruit 
+ Feathers and Wings 
+ NeoPixels 
+ * Arduino 
+ Arduino Accessories 
+ Arduino Boards 
+ Arduino Cases 
+ Arduino Kits 
+ Arduino Shields 
+ * micro:bit 
+ micro:bit Boards & Kits 
+ micro:bit Project Kits 
+ micro:bit Accessories 
+ * Raspberry Pi 
+ Raspberry Pi 5 
+ Raspberry Pi 5 Boards 
+ Raspberry Pi 5 Power Supplies 
+ Raspberry Pi 5 HATs & Add-Ons 
+ Raspberry Pi 5 Accessories 
+ Raspberry Pi 5 Cases & Cooling 
+ Raspberry Pi 5 Kits 
+ Raspberry Pi Accessories 
+ Pico Accessories 
+ Zero Accessories 
+ Raspberry Pi Arcade 
+ Raspberry Pi Boards 
+ Raspberry Pi Boards 
+ Compute Modules 
+ Development Boards 
+ Raspberry Pi Cables 
+ Raspberry Pi Cameras 
+ Camera Modules 
+ Camera Accessories 
+ Camera Cables 
+ Camera Mounts 
+ Lenses 
+ Raspberry Pi Cases 
+ Model 4 B Cases 
+ Model 3 B/B+ Cases 
+ Model A+/3 A+ Cases 
+ Model Zero and Zero W 
+ Raspberry Pi Cooling 
+ Raspberry Pi HATs and Add-On Boards 
+ Raspberry Pi Kits 
+ Pi 4 B Kits 
+ Pi Project Kits 
+ Pi Zero W & Zero Kits 
+ Raspberry Pi Networking 
+ Raspberry Pi Power Supplies 
+ Power Supplies for Pi 3/2/1 & Zero 
+ Power Supplies for Pi 4 
+ PoE Power 
+ Raspberry Pi UPS 
+ Raspberry Pi Prototyping & GPIO 
+ Raspberry Pi Screens, Displays & Touchscreens 
+ Raspberry Pi Services 
+ Raspberry Pi SD Cards 
+ Guides & Books 
+ Swag 
+ Clearance
+ Audio 
+ Amplifiers 
+ Audio Players and Kits 
+ DACs 
+ Speakers 
+ Transports 
+ Cables & Connectors 
+ Adapters 
+ Ethernet 
+ HDMI 
+ JST 
+ Miscellaneous 
+ USB 
+ Development Boards
+ Electronic Components 
+ Breakouts & Modules 
+ LEDs 
+ Other 
+ Passive Components 
+ Relay Modules 
+ Sensors 
+ Switches & Pushbuttons 
+ Internet of Things
+ Keyboards & Remotes
+ Play and Learn
+ Power 
+ Batteries 
+ Battery Chargers 
+ Battery Holders 
+ Power Supplies 
+ Power Switches 
+ Solar Panels 
+ USB Power Banks 
+ Prototyping 
+ Breadboards 
+ Headers 
+ Jumper Wires, Clips 
+ Protoboards 
+ Robotics & CNC 
+ Parts & Accessories 
+ Robots & Kits 
+ Soldering
+ Tools
+ Wireless 
+ Bluetooth 
+ Cellular 
+ GPS Location 
+ LoRa 
+ Software Defined Radio 
+ WiFi 
+ Wearables & E-Textiles
+ 3D Printing 
+ 3D Printer Filaments 
+ PLA 
+ Gift Ideas
+ Vertical Categories 
+ &#215; 
+ Home 
+ Search 
+ Results for &#x27;raspberry pi 5&#x27;
+ Products (402)
+ News & Information (5)
+ -->
+ Refine by
+ No filters applied
+ Browse by Category, Brand & more
+ Hide Filters
+ Show Filters
+ Category
+ * Adafruit
+ * Arduino
+ * micro:bit
+ * Raspberry Pi
+ Audio
+ Cables &amp; Connectors
+ Clearance
+ Development Boards
+ Electronic Components
+ Gift Ideas
+ Internet of Things
+ Play and Learn
+ Power
+ Prototyping
+ Robotics &amp; CNC
+ Show More 
+ Brand
+ 8086 Consultancy
+ Adafruit
+ Alchemy Power
+ BitScope
+ Cableshop.ca
+ DINrPlate
+ EDATEC
+ FLIRC
+ HiFiBerry
+ Kitronik
+ Show More 
+ Availability
+ In Stock
+Categories 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ > 
+ Raspberry Pi 5 HATs & Add-Ons 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi HATs and Add-On Boards 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ > 
+ Raspberry Pi 5 Boards 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ > 
+ Raspberry Pi 5 Power Supplies 
+ * Raspberry Pi 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ > 
+ Raspberry Pi 5 Cases & Cooling 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ > 
+ Raspberry Pi 5 Kits 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Boards 
+ > 
+ Raspberry Pi Boards 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi 5 
+ > 
+ Raspberry Pi 5 Accessories 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Boards 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Cases 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Boards 
+ > 
+ Compute Modules 
+ > 
+ Compute Module 5 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi SD Cards 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Screens, Displays & Touchscreens 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Boards 
+ > 
+ Compute Modules 
+ > 
+ Compute Module 4 
+Brands 
+ PiShop 
+ -->
+ Sort By: 
+ Relevance 
+ A to Z 
+ Z to A 
+ Raspberry Pi UPS Hat Guide (Page)
+HiPi.io UPS HAT for Raspberry Pi Guide
+Important: Add battery power to your Raspberry Pi project to protect against power failures or to go mobile! Switch between mains power or battery on the fly... 
+ Nvidia + OpenAI vs. Raspberry Pi (Yes, Really) (Post)
+You’ve probably seen the headlines around the DRAM market. Here’s the one-sentence version: DDR4 production capacity has been shifted toward more profitable High-Bandwidth Memory (HBM), which is in ma 
+ RetroPie Quick Start Guide (Page)
+RetroPie on Raspberry Pi: Quick Start (2025 update!)
+Use RetroPie to turn your Raspberry Pi into a retro gaming machine! Play classics from NES, SNES, SEGA, Atari, and many more.
+What is RetroPie?... 
+ PiKVM Switch Multiport Extender: One Device to Manage Them All (Post)
+PiKVM Switch Multiport Extender: Multi-System Control, Simplified
+In the world of IT infrastructure, where space is tight and uptime is critical, efficient management tools make all the difference. En 
+ Quick Start Guide for Pi Kits (Page)
+Quick Start Guide for Pi Kits - V6
+Thank You!
+Thank you for purchasing from us. We love Raspberry Pi’s, and it’s our goal to get them into the hands of awesome people like you.
+If you have... 
+ Filter 
+View as: 
+ 2 
+ 3 
+ 4 
+ Sort By: 
+ Featured Items 
+ Newest Items 
+ Best Selling 
+ A to Z 
+ Z to A 
+ By Review 
+ Price: Ascending 
+ Price: Descending 
+ Relevance 
+ Raspberry Pi 5/8GB 
+ $175.00 
+ Raspberry Pi 5 8GB - SC1112
+The Raspberry Pi 5 8GB board features a quad-core 2.4 GHz ARM Cortex-A76 CPU and an 800 MHz VideoCore VII GPU, capable of driving dual 4Kp60 displays. Key specs include a...
+ Choose Options 
+ Raspberry Pi 5/4GB 
+ $110.00 
+ Raspberry Pi 5 4GB - SC1111/SC1431 - The everything computer. Optimized.
+The new Raspberry Pi 5 board features a quad-core 2.4 GHz ARM Cortex-A76 CPU and VideoCore VII GPU, capable of driving dual 
+ Choose Options 
+ Raspberry Pi 5/16GB 
+ $305.00 
+ Raspberry Pi 5 16GB - SC1113 - The everything computer. Now with 16GB!
+The new Raspberry Pi 5 board features a quad-core 2.4 GHz ARM Cortex-A76 CPU and VideoCore VII GPU, capable of driving dual...
+ Choose Options 
+ Raspberry Pi 5 Desktop Kit - 8GB 
+ $218.00 
+ Official Raspberry Pi 5 Desktop Kit US - 8GB
+The Pi5 Desktop Kit is a full computer kit - just connect it one or two HDMI displays! It has never been easier to create a new low-cost, silent desktop...
+ Notify Me 
+ Raspberry Pi M.2 HAT+ SSD Kit for Raspberry Pi 5 - 256GB 
+ $99.00 
+ Raspberry Pi SSD Kit 256GB for Raspberry Pi 5 - SC1675Raspberry Pi SSD Kit bundles a Raspberry Pi M.2 HAT+ with a Raspberry Pi NVMe SSD. It enables you to unlock outstanding performance for I/O...
+ Notify Me 
+ Raspberry Pi 5 Desktop Kit - 4GB 
+ $155.95 
+ Official Raspberry Pi 5 Desktop Kit US - 4GB
+The Pi5 Desktop Kit is a full computer kit - just connect it one or two HDMI displays! It has never been easier to create a new low-cost, silent desktop...
+ Notify Me 
+ Raspberry Pi 5/2GB 
+ $77.50 
+ Raspberry Pi 5 2GB - SC1110 - The everything computer. Optimized.
+The new Raspberry Pi 5 board features a quad-core 2.4 GHz ARM Cortex-A76 CPU and VideoCore VII GPU, capable of driving dual 4Kp60...
+ Choose Options 
+ Raspberry Pi 5" Touch Display 2, Portrait 
+ $54.95 
+ Raspberry Pi 5" Touch Display 2, Portrait - SC1975
+The Raspberry Pi 5″ Touch Display 2 is a compact multi-touch screen built for Raspberry Pi projects that require portability and precision. With a...
+ Add to Cart 
+ Raspberry Pi 5/1GB 
+ $45.00 
+ Raspberry Pi 5 1GB - The everything computer. Optimized.
+The new Raspberry Pi 5 board features a quad-core 2.4 GHz ARM Cortex-A76 CPU and VideoCore VII GPU, capable of driving dual 4Kp60 displays...
+ Notify Me 
+ Raspberry Pi M.2 HAT for Pi 5 
+ $12.00 
+ Raspberry Pi M.2 HAT+ | SC1166
+The Raspberry Pi M.2 HAT for Raspberry Pi 5 lets you plug M.2 peripherals—like NVMe SSDs or AI accelerators—into the Pi 5’s PCIe interface. With the official HAT+...
+ Add to Cart 
+ Raspberry Pi M.2 HAT+ SSD Kit for Raspberry Pi 5 - 512GB 
+ $164.95 
+ Raspberry Pi M.2 HAT+ SSD Kit for Raspberry Pi 5 - 512GB - SC1676
+Raspberry Pi SSD Kit bundles a Raspberry Pi M.2 HAT+ with a Raspberry Pi NVMe SSD drive. It enables you to unlock outstanding...
+ Notify Me 
+ Raspberry Pi Case for Pi 5 Black/Grey 
+ $10.95 
+ Raspberry Pi Case for Raspberry Pi 5, Black/Grey - SC1160The Raspberry Pi Case for Raspberry Pi 5 is a clip-together four-part enclosure with an active cooling fan. It keeps your Raspberry Pi 5 at a...
+ Add to Cart 
+ Raspberry Pi AI HAT+ 26 TOPS 
+ $119.95 
+ Raspberry Pi AI HAT+ 26 TOPS - SC1791 (SC1468)
+The Raspberry Pi AI HAT+ features a built-in neural network accelerator, turning your Raspberry Pi 5 into a high-performance, accessible, and...
+ Choose Options 
+ Raspberry Pi AI HAT+ 13 TOPS 
+ $76.95 
+ Raspberry Pi AI HAT+ 13 TOPS - SC1785 SC1430
+The Raspberry Pi AI HAT+ features a built-in neural network accelerator, turning your Raspberry Pi 5 into a high-performance, accessible, and...
+ Choose Options 
+ Raspberry Pi M.2 HAT+ Compact 
+ $15.00 
+ Raspberry Pi M.2 HAT+ Compact - SC1771
+The Raspberry Pi M.2 HAT+ Compact is an alternative to the existing M.2 HAT+, designed to fit inside the Official case for Raspberry Pi 5. It connec
+ Add to Cart 
+ Raspberry Pi Case for Pi 5 Red/White 
+ $10.95 
+ Raspberry Pi Case for Raspberry Pi 5, Red/White - SC0229
+The Raspberry Pi Case for Raspberry Pi 5 is a clip-together four-part enclosure with an active cooling fan. It keeps your RPi 5 at a...
+ Add to Cart 
+ Raspberry Pi Touch Display 2 - 7inch 
+ $81.95 
+Raspberry Pi Touch Display 2 - 7-inch Variant - SC1635
+The Raspberry Pi Touch Display 2 (7″) brings a sharper 720×1280 HD screen and a thinner, integrated driver design. With five-finger...
+ Add to Cart 
+ Raspberry Pi Compute Module 5, 16GB RAM, Lite - CM5016000 
+ $335.00 
+ Raspberry Pi Compute Module 5, 16GB RAM, Lite - CM5016000 - SC1574
+This Lite variant of the CM5 comes with 16GB of RAM, 
+ Notify Me 
+ Raspberry Pi NVMe SSD - 1TB 
+ $145.00 
+ Raspberry Pi NVMe SSD - 1TB - SC1984
+A Raspberry Pi SSD unlocks outstanding performance for I/O intensive applications on Raspberry Pi 5 and other devices, including super-fast startup when booting...
+ Notify Me 
+ Raspberry Pi 27W USB-C Power Supply Black US 
+ $12.95 
+ Raspberry Pi 27W USB-C Power Supply Black US - SC1158
+The Raspberry Pi 27W USB-C Power Supply is ideal for Raspberry Pi 5, especially for users who wish to drive high-power peripherals such as hard...
+ Add to Cart 
+ 1 
+ 2 
+ 3 
+ 4 
+ 5 
+ 6 
+ Next
+ Email Address 
+Sign up for newsletter 
+Receive email-only deals, special offers & product exclusives 
+ Quick Links 
+ Brands 
+ FAQ 
+ Resources 
+ About Us 
+ Blog 
+ Privacy Policy 
+ Sitemap 
+ My Account 
+ Check out 
+ Sign in 
+ Register 
+ Contact Us
+ Email: [email&#160;protected] 
+ 844-774-4338, 302-500-4020 
+ Monday-Friday 9am-5pm EST 
+ Pi Shop Inc.
+DBA PiShop.us
+EIN: 61-1809971
+101 Cirillo Cir
+New Castle, D

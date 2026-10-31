@@ -1,0 +1,199 @@
+URL: https://www.adafruit.com/search?q=16-channel+pwm+servo+driver
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 4708 chars
+Search Results for '16-channel pwm servo driver' on Adafruit Industries 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+Search Results for
+ "16-channel pwm servo driver" 
+ Skip Filter & Sort Menu 
+filter & sort
+Filter & Sort
+Filter & Sort
+ Sort By 
+ Best Match 
+ Most Recent 
+ Apply 
+ sorting 
+ Availability 
+ In Stock 
+ Out of Stock 
+ Discontinued 
+ Apply 
+ availability filters 
+ Price Ranges 
+ Less than $5 
+ $5 to $9.99 
+ $10 to $24.99 
+ $25 to $99.99 
+ Over $100 
+ Apply 
+ price range filters 
+ Category 
+ Arduino (1) 
+ Breakout Boards (3) 
+ Cables (2) 
+ CircuitPython (1) 
+ Components & Parts (1) 
+ Crickit - Creative Robotics (2) 
+ Development Boards (2) 
+ Feather (2) 
+ Halloween (1) 
+ Raspberry Pi (2) 
+ Robotics & CNC (7) 
+Search results 
+Adafruit 16-Channel 12-bit PWM/Servo Driver - I2C interface - PCA9685. 
+ Adafruit 16-Channel 12-bit PWM/Servo Driver - I2C interface - PCA9685 
+ Product ID: 815 
+ $ 14.95 
+ Out of stock 
+ Notify Me , Adafruit 16-Channel 12-bit PWM/Servo Driver - I2C interface - PCA9685 
+Adafruit 16-Channel 12-bit PWM/Servo Shield - I2C interface. 
+ Adafruit 16-Channel 12-bit PWM/Servo Shield - I2C interface 
+ Product ID: 1411 
+ $ 17.50 
+ 90 in stock 
+ Add to Cart , Adafruit 16-Channel 12-bit PWM/Servo Shield - I2C interface 
+Feedback 360 Degree - High Speed Continuous Rotation Servo. 
+ Feedback 360 Degree - High Speed Continuous Rotation Servo 
+ Product ID: 3614 
+ $ 27.99 
+ 30 in stock 
+ Add to Cart , Feedback 360 Degree - High Speed Continuous Rotation Servo 
+Servo Extension Cable - 30cm / 12" long -. 
+ Servo Extension Cable - 30cm / 12" long - 
+ Product ID: 972 
+ $ 1.95 
+ Out of stock 
+ Notify Me , Servo Extension Cable - 30cm / 12" long - 
+Servo Extension Cable - 50cm / 19.5" long. 
+ Servo Extension Cable - 50cm / 19.5" long 
+ Product ID: 973 
+ $ 2.50 
+ In stock 
+ Add to Cart , Servo Extension Cable - 50cm / 19.5" long 
+3x4 Right Angle Male Header - 4 pack. 
+ 3x4 Right Angle Male Header - 4 pack 
+ Product ID: 816 
+ $ 2.95 
+ In stock 
+ Add to Cart , 3x4 Right Angle Male Header - 4 pack 
+Adafruit 16-Channel PWM / Servo HAT for Raspberry Pi - Mini Kit. 
+ Adafruit 16-Channel PWM / Servo HAT for Raspberry Pi - Mini Kit 
+ Product ID: 2327 
+ $ 17.50 
+ 87 in stock 
+ Add to Cart , Adafruit 16-Channel PWM / Servo HAT for Raspberry Pi - Mini Kit 
+Adafruit 16-Channel PWM / Servo Bonnet for Raspberry Pi. 
+ Adafruit 16-Channel PWM / Servo Bonnet for Raspberry Pi 
+ Product ID: 3416 
+ $ 12.50 
+ 66 in stock 
+ Add to Cart , Adafruit 16-Channel PWM / Servo Bonnet for Raspberry Pi 
+Adafruit Feather RP2350 with HSTX Port. 
+ Adafruit Feather RP2350 with HSTX Port 
+ Product ID: 6000 
+ $ 12.50 
+ 37 in stock 
+ Add to Cart , Adafruit Feather RP2350 with HSTX Port 
+Adafruit Feather RP2350 with HSTX Port and 8MB PSRAM. 
+ Adafruit Feather RP2350 with HSTX Port and 8MB PSRAM 
+ Product ID: 6130 
+ $ 15.50 
+ Out of stock 
+ Notify Me , Adafruit Feather RP2350 with HSTX Port and 8MB PSRAM 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; Adversity is revealing of character&rdquo;
+ Unknown 
+ A Minority and Woman-owned Business Enterprise (M/WBE)

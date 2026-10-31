@@ -1,0 +1,380 @@
+URL: https://www.pishop.us/search.php?search_query=camera+module+3
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 9834 chars
+PiShop.us 
+ Email: [email&#160;protected] 
+ --> Sign in 
+ --> My Account
+ Check out 
+ Sign in 
+ Register 
+ Home 
+ Categories
+ * Adafruit
+ * Arduino
+ * micro:bit
+ * Raspberry Pi
+ Clearance
+ Audio
+ Cables & Connectors
+ Development Boards
+ Electronic Components
+ Internet of Things
+ Keyboards & Remotes
+ Play and Learn
+ Power
+ Prototyping
+ Robotics & CNC
+ Soldering
+ Tools
+ Wireless
+ Wearables & E-Textiles
+ 3D Printing
+ Gift Ideas
+ Brands 
+ ALL BRANDS 
+ Adafruit 
+ Arduino 
+ HiFiBerry 
+ HiPi.io 
+ micro:bit 
+ PiKVM 
+ Pimoroni 
+ PiShop.us 
+ Raspberry Pi 
+ SmartiPi 
+ Waveshare 
+ FAQ
+ Resources 
+ Raspberry Pi for Schools 
+ Projects and Tutorials 
+ Raspberry Pi Media Center (KODI/OSMC) 
+ RetroPie Quick Start Guide 
+ Raspberry Pi 4 Information 
+ Raspberry Pi 101 
+ Quick Start Guide for Pi Kits 
+ Raspberry Pi UPS Hat Guide 
+ About Us 
+ For Educators 
+ For Commercial Customers 
+ Our Mission 
+ Contact Us 
+ Blog
+ Toggle menu 
+ 0 item(s) 
+ -->
+ All Categories 
+ * Adafruit 
+ Feathers and Wings 
+ NeoPixels 
+ * Arduino 
+ Arduino Accessories 
+ Arduino Boards 
+ Arduino Cases 
+ Arduino Kits 
+ Arduino Shields 
+ * micro:bit 
+ micro:bit Boards & Kits 
+ micro:bit Project Kits 
+ micro:bit Accessories 
+ * Raspberry Pi 
+ Raspberry Pi 5 
+ Raspberry Pi 5 Boards 
+ Raspberry Pi 5 Power Supplies 
+ Raspberry Pi 5 HATs & Add-Ons 
+ Raspberry Pi 5 Accessories 
+ Raspberry Pi 5 Cases & Cooling 
+ Raspberry Pi 5 Kits 
+ Raspberry Pi Accessories 
+ Pico Accessories 
+ Zero Accessories 
+ Raspberry Pi Arcade 
+ Raspberry Pi Boards 
+ Raspberry Pi Boards 
+ Compute Modules 
+ Development Boards 
+ Raspberry Pi Cables 
+ Raspberry Pi Cameras 
+ Camera Modules 
+ Camera Accessories 
+ Camera Cables 
+ Camera Mounts 
+ Lenses 
+ Raspberry Pi Cases 
+ Model 4 B Cases 
+ Model 3 B/B+ Cases 
+ Model A+/3 A+ Cases 
+ Model Zero and Zero W 
+ Raspberry Pi Cooling 
+ Raspberry Pi HATs and Add-On Boards 
+ Raspberry Pi Kits 
+ Pi 4 B Kits 
+ Pi Project Kits 
+ Pi Zero W & Zero Kits 
+ Raspberry Pi Networking 
+ Raspberry Pi Power Supplies 
+ Power Supplies for Pi 3/2/1 & Zero 
+ Power Supplies for Pi 4 
+ PoE Power 
+ Raspberry Pi UPS 
+ Raspberry Pi Prototyping & GPIO 
+ Raspberry Pi Screens, Displays & Touchscreens 
+ Raspberry Pi Services 
+ Raspberry Pi SD Cards 
+ Guides & Books 
+ Swag 
+ Clearance
+ Audio 
+ Amplifiers 
+ Audio Players and Kits 
+ DACs 
+ Speakers 
+ Transports 
+ Cables & Connectors 
+ Adapters 
+ Ethernet 
+ HDMI 
+ JST 
+ Miscellaneous 
+ USB 
+ Development Boards
+ Electronic Components 
+ Breakouts & Modules 
+ LEDs 
+ Other 
+ Passive Components 
+ Relay Modules 
+ Sensors 
+ Switches & Pushbuttons 
+ Internet of Things
+ Keyboards & Remotes
+ Play and Learn
+ Power 
+ Batteries 
+ Battery Chargers 
+ Battery Holders 
+ Power Supplies 
+ Power Switches 
+ Solar Panels 
+ USB Power Banks 
+ Prototyping 
+ Breadboards 
+ Headers 
+ Jumper Wires, Clips 
+ Protoboards 
+ Robotics & CNC 
+ Parts & Accessories 
+ Robots & Kits 
+ Soldering
+ Tools
+ Wireless 
+ Bluetooth 
+ Cellular 
+ GPS Location 
+ LoRa 
+ Software Defined Radio 
+ WiFi 
+ Wearables & E-Textiles
+ 3D Printing 
+ 3D Printer Filaments 
+ PLA 
+ Gift Ideas
+ Vertical Categories 
+ &#215; 
+ Home 
+ Search 
+ Results for &#x27;camera module 3&#x27;
+ Products (85)
+ News & Information (0)
+ -->
+ Refine by
+ No filters applied
+ Browse by Category, Brand & more
+ Hide Filters
+ Show Filters
+ Category
+ * Arduino
+ * Raspberry Pi
+ Clearance
+ Internet of Things
+ Robotics &amp; CNC
+ Brand
+ Arduino
+ EDATEC
+ Pimoroni
+ PiShop
+ Raspberry Pi
+ StereoPi
+ The Pi Hut
+ Waveshare
+ Availability
+ In Stock
+Categories 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Cameras 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Cameras 
+ > 
+ Camera Mounts 
+ * Raspberry Pi 
+ > 
+ Raspberry Pi Boards 
+ > 
+ Compute Modules 
+ > 
+ Compute Module 4 
+ -->
+ Filter 
+View as: 
+ 2 
+ 3 
+ 4 
+ Sort By: 
+ Featured Items 
+ Newest Items 
+ Best Selling 
+ A to Z 
+ Z to A 
+ By Review 
+ Price: Ascending 
+ Price: Descending 
+ Relevance 
+ Raspberry Pi Camera Module 3 Wide 
+ $38.50 
+Please ensure that your Raspberry Pi OS is up to date by following the official Raspberry Pi guide - a recent update contains the new libraries necessary f
+ Notify Me 
+ OV5647 Camera Module with Optical Image Stabilization for Raspberry Pi, 5MP 
+ $69.99 
+ Waveshare 22980 - OV5647 Optical Image Stabilization Camera Module For Raspberry Pi, 5MP - OV5647-70 5MP OIS Camera
+The OV5647-70 5MP OIS Camera Module is a high-precision imaging solution...
+ Add to Cart 
+ Raspberry Pi Camera Module 3 
+ $29.25 
+ Raspberry Pi Camera Module 3 is a compact camera from Raspberry Pi. It offers an IMX708 12-megapixel sensor with HDR, and features phase detection autofocus. This is the standard version with an...
+ Add to Cart 
+ Raspberry Pi Camera 3 Sensor Assembly SA31VA30P, Std 76°, Visible 
+ $21.95 
+ Raspberry Pi Camera Module 3 Sensor Assembly SA31VA30P, Standard 76° Angle, Visible - SC0893
+The Raspberry Pi Camera Module 3 Sensor Assembly contains the same sensor and autofocus functionalities...
+ Add to Cart 
+ Raspberry Pi Camera 3 Sensor Assembly SA36NA30P, Wide 120°, NoIR 
+ $35.95 
+ Raspberry Pi Camera Module 3 Sensor Assembly SA36NA30P, Wide 120°, NoIR - SC0896
+The Raspberry Pi Camera Module 3 Sensor Assembly contains the same sensor and autofocus functionalities as Raspberry...
+ Add to Cart 
+ Raspberry Pi HQ Camera M12 
+ $50.00 
+ Raspberry Pi High Quality Camera M12 Mount - SC1221
+The High Quality Camera with a native M12 mount gives you access to the huge ecosystem of compact, affordable M12 lenses. Perfect for robotics,...
+ Choose Options 
+ Camera Case for Raspberry Pi 4 
+ $11.95 
+ The Pi Hut Raspberry Pi 4 Case - TPH-045 - Updated to accommodate the Camera Module 3!
+Designed to hold and protect your Raspberry Pi 4 and 
+ Choose Options 
+ Raspberry Pi Camera 3 Sensor Assembly SA31NA30P, Std 76°, NoIR 
+ $21.95 
+ Raspberry Pi Camera 3 Sensor Assembly SA31NA30P, Std 76°, NoIR - SC0894
+The Raspberry Pi Camera Module 3 Sensor Assembly contains the same sensor and autofocus functionalities as Raspberry Pi Camera...
+ Add to Cart 
+ Raspberry Pi Camera 3 Sensor Assembly SA36VA30P, Wide 120°, Visible 
+ $35.95 
+ Raspberry Pi Camera 3 Sensor Assembly SA36VA30P, Wide 120° Angle, Visible - SC0895
+The Raspberry Pi Camera Module 3 Sensor Assembly contains the same sensor and autofocus functionalities as...
+ Add to Cart 
+ IMX219-160 Camera, 160° FOV, for CM3/3+/4 & Jetson Nano 
+ $23.59 
+ Waveshare 16662 - IMX219-160 Camera, Applicable For Compute Module CM3/3+/4 & Jetson Nano, 8 Megapixels, 160° FOV - IMX219-160 Camera
+This camera is compatible with the following devices:
+Compute...
+ Add to Cart 
+ Raspberry Pi Camera Module 3 NoIR 
+ $27.50 
+ Raspberry Pi Camera Module 3 NoIR is a compact camera from Raspberry Pi. It offers an IMX708 12-megapixel sensor with HDR, and features phase detection autofocus. This is the NoIR version without an...
+ Choose Options 
+ Mini Camera Mount for Raspberry Pi Camera Module 
+ $4.95 
+ The mini camera mount is the perfect companion for your Official Raspberry Pi Camera Module 3 (also compatible with the earlier V2/V1 versions).
+The mount is made from clear acrylic and can be...
+ Notify Me 
+ Raspberry Pi Camera Module 3 Wide NoIR 
+ $38.50 
+ Raspberry Pi Camera Module 3 Wide NoIR is a compact camera from Raspberry Pi. It offers an IMX708 12-megapixel sensor with HDR, and features phase detection autofocus. This is the wide version...
+ Choose Options 
+ Pimoroni Raspberry Pi Camera Mount (for Pi Camera Module 1 or 2) 
+ $4.95 
+ A stylish, small, and adjustable mount for your Raspberry Pi Camera.
+NOTE: This mount is not compatible with the Pi Camera Module 3.
+Features
+Allows four different angles of repose.
+Four Screws...
+ Add to Cart 
+ Panel Mount Kit for Raspberry Pi Camera Module 3 
+ $4.95 
+ The camera module is NOT included
+Specifications
+Material: 3mm perspex
+Colour: Black
+Dimensions:
+Mounting plate: 55mm x 45mm
+Camera mounting holes: M2
+Mounting plate mounting holes:...
+ Notify Me 
+ Tripod Mount for Raspberry Pi Camera Modules 
+ $5.95 
+ This simple and affordable tripod mount for the Raspberry Pi Camera Module solves that annoying issue of not being able to mount these modules to a tripod - unlike the High Quality Camera which comes...
+ Notify Me 
+ Raspberry Pi Compute Module CM4 IO Board 
+ $38.50 
+ Raspberry Pi Compute Module CM4 IO Board - SC0326Like the IO boards for earlier Compute Module products, this breaks out all the interfaces from the Compute Module to standard connectors, providing a...
+ Add to Cart 
+ Official Raspberry Pi Zero Case + Mini Camera Cable 
+ $5.95 
+ Raspberry Pi Zero Case | SC0049
+The Raspberry Pi Zero Case has been designed to fit the Pi Zero board family.
+The case consists of two parts. It has a standard base featuring 
+ Add to Cart 
+ Raspberry Pi Compute Module 5, 16GB RAM, Lite - CM5016000 
+ $335.00 
+ Raspberry Pi Compute Module 5, 16GB RAM, Lite - CM5016000 - SC1574
+This Lite variant of the CM5 comes with 16GB of RAM, 
+ Notify Me 
+ 1 
+ 2 
+ 3 
+ 4 
+ 5 
+ Next
+ Email Address 
+Sign up for newsletter 
+Receive email-only deals, special offers & product exclusives 
+ Quick Links 
+ Brands 
+ FAQ 
+ Resources 
+ About Us 
+ Blog 
+ Privacy Policy 
+ Sitemap 
+ My Account 
+ Check out 
+ Sign in 
+ Register 
+ Contact Us
+ Email: [email&#160;protected] 
+ 844-774-4338, 302-500-4020 
+ Monday-Friday 9am-5pm EST 
+ Pi Shop Inc.
+DBA PiShop.us
+EIN: 61-1809971
+101 Cirillo Cir
+New Castle, DE, 19720 
+ Other Stores By Our Team
+ -->
+ &copy; 2026 PiShop.us 
+ list 
+ The cookie settings on this website are set to &#x27;allow all cookies&#x27; to give you the very best experience. Please click Accept Cookies to continue to use the site.
+ Accept Cookies

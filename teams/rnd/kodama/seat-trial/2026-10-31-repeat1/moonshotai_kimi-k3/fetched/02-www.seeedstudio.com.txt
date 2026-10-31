@@ -1,0 +1,417 @@
+URL: https://www.seeedstudio.com/STS3215-30KG-Serial-Servo-p-6340.html
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 13172 chars
+Feetech ST3215 Servo 
+ "
+ rel="preload"
+ importance="low"
+ as="font"
+ crossorigin
+/>
+getViewFileUrl('fonts/Blank-Theme-Icons/Blank-Theme-Icons.woff2') ?>"
+ rel="preload"
+ importance="low"
+ as="font"
+ crossorigin
+/> --> 
+ The store will not work correctly in the case when cookies are disabled. 
+ JavaScript seems to be disabled in your browser. 
+ For the best experience on our site, be sure to turn on Javascript in your browser. 
+By technology 
+ Explore 
+ Unable to load solutions. Please try again later.
+ No solution entries for this category yet.
+ View More
+ Explore 
+ Unable to load solutions. Please try again later.
+ No solution entries for this category yet.
+ View More
+ Software by SenseCraft
+ Unable to load Bazaar posts. Please try again later.
+ No Bazaar posts found for this category.
+ View more 
+ Software by SenseCraft
+ Browse SenseCraft posts from Bazaar.
+ No posts found for this category.
+ View more 
+ Products 
+ Documents 
+ Service 
+ Solution 
+ Support 
+ -->
+ 0">
+ Sign Out 
+ 0"
+ :list="freeShippingBars"
+ > 
+the AI Hardware Partner 
+For Industry 
+ 0}"
+ @click="toggleMiniCart()"
+ @mouseover="toggleMiniCart(true)"
+ >
+ Quick Order 
+ Account 
+ 0"
+ style="
+ width: 25px;
+ height: 25px;
+ transform: scale(0.75);
+ transform-origin: left;
+ margin-left: 1px;
+ "
+ class="rounded-full bg-orange-600 text-white flex items-center justify-center"
+ v-html="msgCount > 99 ? '99+' : msgCount"
+ > 
+ 0"
+ class="px-14 pb-20"
+ >
+ 0)"
+ > 
+ 0"
+ >
+ 0"
+ >
+ 0)"
+ >
+ 0"
+ >
+ All 
+ 0"
+ >
+ −
+ +
+ SKU
+ 0">
+ Options 
+')"
+ > 
+ Subtotal
+ 1"
+ v-html="'('+cart.summary_count+' items)'"
+ > 
+ Proceed To Checkout 
+ You have no picked items in your shopping cart. 
+ Get more with a SeeedStudio accountclear
+ Sign In 
+ Create Account 
+ Hello,
+ Sign Out 
+ 0"
+ >
+ 99 ? '99+' : notifyMsgs.coupon_messages.unread_count"
+ > 
+ 0 && insurances[0].options && insurances[0].options.length > 0"
+ >
+ Insurance Protection
+ Free or low-cost shipping protection with 100% compensation for lost or
+ damaged. items.
+ 0"
+ class="mb-[10px]"
+ >
+ Insurance Protection
+ I have read and agree to the
+ Statement for Export Control and Trade Compliance.
+ You acknowledge and agree that any transfer, sale, re-sale, export
+ or re-export of any Seeed Items received from Seeed will comply with
+ all applicable Trade laws and regulations, including but not limited
+ to those of the U.S., China, EU and other countries. You further
+ certify to the following certifications:
+ Before transferring, selling, re-selling, exporting or
+ re-exporting Seeed Items, you will screen all parties to the
+ onward transaction against the Sanctioned Entity, and you will
+ comply with any restrictions related to any such parties. Any
+ legal entity, natural person (individual) or organization listed
+ in any of the following sanctions list shall be deemed to be the
+ Sanctioned Entity:
+destinations embargoed by the U.S. government; 
+ Denied Persons List, Unverified List, Entity List and Military
+ End User List of the U.S. Export Administration Regulations;
+ Specially Designated Nationals and Blocked Persons Lists,
+ Sectoral Sanctions Identifications (SSI) List, Non-SDN Chinese
+ Military-Industrial Complex Companies (CMIC) and other
+ negative lists issued by the U.S. Department of the Treasury;
+ Chinese Military Companies List issued by the U.S. Department
+ of Defense;
+Foreign End User List issued by China; and 
+ Other negative lists issued by U.S., China, EU or other
+ countries.
+ You certify that you shall not transfer, sell, resell, export or
+ re-export Seeed Items to, or provide Seeed Items for ultimate
+ end use in, the following countries and regions:
+ Prohibited Regions (non-state entities)
+The Crimea region of Ukraine 
+The so-called Donetsk People’s Republic 
+The so-called Luhansk People’s Republic 
+The Kherson region (the part under Russian control) 
+ The Zaporizhzhia region (the part under Russian control)
+Prohibited Countries 
+Afghanistan 
+Belarus 
+Bosnia and Herzegovina 
+Burundi 
+Central African Republic 
+Democratic Republic of the Congo 
+Cuba 
+Egypt 
+Eritrea 
+Guinea (Conakry) 
+Guinea-Bissau 
+Iran 
+Iraq 
+Lebanon 
+Libya 
+Mali 
+Nicaragua 
+North Korea (Democratic People’s Republic of Korea) 
+Russia 
+Somalia 
+South Sudan 
+Sudan (including the Darfur region) 
+Syria 
+Tunisia 
+Turkey 
+Ukraine 
+Venezuela 
+Yemen 
+Zimbabwe 
+ Furthermore, you certify that you shall not provide Seeed Items
+ for ultimate end use in any other country or region subject to
+ comprehensive sanctions administered by any competent sovereign
+ governmental authority or the United Nations.
+ You certify that you will use Seeed Items for civil end-uses and
+ not for any of the following uses:
+ to be used in the design, development, production,
+ stockpiling, or use of chemical or biological weapons and
+ their precursors;
+ to be used in the design, development, production,
+ stockpiling, or use of missiles, rocket systems or unmanned
+ air vehicles of any range or payload;
+ to be used in the nuclear explosive activities, including
+ research on or development, design, manufacture, construction,
+ testing or maintenance of any nuclear explosive device, or
+ components or subsystems of such a device;
+ to be used in the unsafeguarded nuclear activities, including
+ research on or development, design, manufacture construction,
+ operation, or maintenance of any nuclear reactor, critical
+ facility, facility for the fabrication of nuclear fuel,
+ facility for the conversion of nuclear material from one
+ chemical form to another, or separate storage installation,
+ where there is no obligation to accept International Atomic
+ Energy Agency (IAEA) safeguards;
+ to be used in the design, development, production,
+ construction, support, or maintenance of a maritime nuclear
+ propulsion project;
+ to be used, directly or indirectly, contrary to the applicable
+ Trade laws.
+ You certify that it shall not transfer, sale, re-sale, export or
+ re-export Seeed Items to, or provide Seeed Items for ultimate end
+ use in, North Korea, Iran, Afghanistan, Cuba, the so-called
+ Donetsk People’s Republic, the so-called Luhansk People’s
+ Republic, Russia, Belarus, Syria, and the Crimea, Donetsk,
+ Luhansk, and Zaporizhzhia regions, or any other country or region
+ subject to comprehensive sanctions administered by any competent
+ sovereign governmental authority or the United Nations.
+ You certify that Seeed Items will not be exported or re-exported
+ for use by or for by persons who commit, threaten to commit or
+ support terrorism.
+ You have informed or will inform all third parties receiving Seeed
+ Items of the foregoing obligations.
+ You undertake to cooperate fully with Seeed in any official or
+ unofficial audits or inspections related to Trade compliance, and
+ to indemnify and hold Seeed harmless from and against any damages
+ caused by or in connection with any violation of the applicable
+ Trade laws conducted by you, or employees, consultants or agents
+ of you.
+ Close 
+ I acknowledge that the shipping fee includes the &euro;3 EU import
+ duty for orders under $150.
+ Under DAP terms, buyers cover customs duties, taxes, and import fees;
+ check your country's regulations for details. 
+ DAP shipments with TAXES over $100 require payment within 5 days at customs clearance to avoid automatic return. 
+ ( )
+ 0">
+ 0 || hasOpened"
+ v-show="query.length > 0"
+ :search-function="handleSearch"
+ :search-client="searchClient"
+ class="ais_instance"
+ :index-name="productIndex"
+ >
+ 0">
+Category 
+ Search error
+ 0">
+ results for
+ Help us enhance our search 
+ ⌘ 
+ K 
+ op.checked).map(op => op.value).join(',')
+ handleChange(index);
+ }"
+ />
+ Cancel
+ Submitting 
+ Submitted 
+ Submit 
+ Tell Us About Your Search Experienc
+ 0 -->
+ 0 -->
+ Skip to the end of the images gallery 
+ Skip to the beginning of the images gallery 
+ Feetech ST3215-C047 12V 30Kg Servo 
+ SKU 
+ 108090003 
+ Rating: 
+ 70 % of 100 
+ 3 
+ Reviews 
+ Add Your Review 
+ STS3215 C047 is a 12V 30Kg. cm serial bus smart servo, with plastic case, core motor, 1:345 metal gearbox and 12 bit high precision magnetic coding sensor. The stall toruqe is 30 kg. cm and the rated torque is 10kg.cm. Designed for versatility, it is suited for use in industrial automation, robotics, and low-torque drive applications, such as LeRobot SO-Arm 101 . 
+ $22.00 
+ In stock 
+ 10+: 
+ $20.90 
+ Selection Guide 
+ 0">
+ Feetech HL-3915-C001 12V 14.2Kg Servo 
+ Feetech HL-3615-C002 6V 2.5Kg Servo 
+ Feetech ST3215-C001 7.4V 1:345 Gear Ratio Servo 
+ Feetech ST3215-C044 7.4V 1:191 Gear Ratio Servo 
+ Feetech ST3215-C046 7.4V 1:147 Gear Ratio Servo 
+ Feetech ST3215-C047 12V 30Kg Servo 
+ Feetech SCS0009 6V 2.3kg Ultra-Compact Servo for Amazing Hand and HopeJR 
+ Feetech FE-URT-1 USB to TTL, 485 bus programmer 
+ -->
+ - 
+ + 
+ United States Warehouse 
+ China Warehouse 
+ Add to Cart 
+ Also Add: 
+ $0.00 
+ XIAO Bus Servo Adapter 
+ $9.9 
+ USB 3.1 Type C to A Cable 1 Meter - 3.1A 
+ $2.5 
+ X10 USB Camera 1080p 
+ $12 
+ SO-ARM101 Pro Servo Motor Kit – LeRobot Compatible 6DOF Robotic Arm 
+ $249.9 
+ SO-101 3D Printed Parts - LeRobot Open Source 6-DOF arm 
+ $29.9 
+ Product Details
+ Learn and Documents 
+ Shared by Users 
+ Reviews 
+ FAQ 
+ --> 
+ 1">
+Collapse 
+Read more 
+ Verified Purchase
+ View Details 
+ Follow-up
+ SeeedStudio Official Reply
+All Reviews 
+ Sort by: 
+ Filter: 
+ Verified Purchase
+ With Image/Video
+Official Replies 
+ Reset
+ 0">
+ OOOPS
+ There are no reviews matching the selection. Please adjust
+ your selections to try again.
+ Product Details
+ / 5 
+ = 0 ? p-1 : 0) }"
+ > 
+Missing Typesense searchClient. 
+ Review Details
+ No images and videos in this review 
+ Customer Images / Videos
+ View All
+ 0">
+ View More Reviews
+ OOOPS
+ No customer reviews yet. 
+ Be the first to share your experience!
+Product Details 
+Wiki & Learn 
+Reviews 
+ -->
+ 0" class="pb-15 px-10 pt-5">
+ No Data
+ 0"
+ >
+ Other things you might like
+ handleAddCart(e, item)"
+ class="r_addcart_2981"
+ >
+ 1"
+ :class="{'collapsed': isCollapsed}"
+ >
+ 1"
+ :status="isSticky ? 'sticky' : ''"
+ :class="{'collapsed': isCollapsed}"
+ @click="toggleCollapsed()"
+ >
+ Download PDF
+ -->
+ Subscribe
+ 0"
+ :data="stockTypes"
+ size="small"
+ row-class-name="warehouse_switch_row"
+ :span-method="objectSpanMethod"
+ >
+ Warehouse
+ CN warehouse 
+ ships to most countries in the world.
+ US warehouse 
+ ships to USA only.
+ DE warehouse 
+ ships to European Union only.
+ You’re already subscribed! We’ll notify you when it’s back
+ in stock.
+Subscribed 
+Notify Me 
+ Back In Stock Notification
+Desired Quantity 
+Email 
+ Cancel 
+ Submit 
+ Both options will be displayed at PayPal checkout if your order is
+ eligible. You can select your preferred plan there and see the exact
+ payment schedule.
+ 1️⃣ Pay in 4 – Interest-Free Installments
+Split your purchase into 4 interest-free payments. 
+Payments are due every two weeks, starting today. 
+Perfect for short-term budgeting. 
+ 2️⃣ Pay Monthly – Long-Term Financing
+ Spread the cost over 6 to 24 months with a fixed-term loan.
+Subject to credit approval and APR. 
+Ideal for managing larger expenses over time. 
+ ⚠️ Important Information: 
+ All payment plans are provided, approved, and serviced solely by
+ PayPal.
+ Seeed Studio is not the lender and does not set terms or rates.
+ For full details, please review PayPal’s Pay Later Terms.
+ Learn More > 
+ Your orders are protected with complimentary AIG insurance. For
+ enhanced coverage, you may upgrade to DHL or FedEx carrier insurance
+ (premiums: DHL 1%, FedEx 1.22%).
+ Learn More > 
+ Select our
+ US warehouse or
+ DE warehouse for local
+ shipping. Plus, save on taxes by uploading your exemption certificate
+ in your account or applying your tax ID at checkout.
+ Learn More > 
+1 on 1 Support 
+ With 1-on-1 support, you get undivided attention and real-time
+ collaboration to resolve complex issues faster an

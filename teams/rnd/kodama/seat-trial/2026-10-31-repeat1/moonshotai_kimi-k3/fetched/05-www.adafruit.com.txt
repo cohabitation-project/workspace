@@ -1,0 +1,215 @@
+URL: https://www.adafruit.com/category/580
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 11300 chars
+Power, Solar, Panels Products Category on Adafruit Industries 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Power /
+ Solar /
+ Panels 
+6V 2W Solar Panel - ETFE - Voltaic P126. 
+ 6V 2W Solar Panel - ETFE - Voltaic P126 
+ Product ID: 5366 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV resistant, and they use 12 high efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). Each cell has a nominal voltage of 0.5V so we call this a "6V" panel They output a 'nominal' 6V at 330 mA peak via a... 
+ $ 20.95 
+ In stock 
+ Add to Cart , 6V 2W Solar Panel - ETFE - Voltaic P126 
+5V 0.3W Mini Solar Panel - ETFE - Voltaic P122. 
+ 5V 0.3W Mini Solar Panel - ETFE - Voltaic P122 
+ Product ID: 5855 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV-resistant, and they use 10 high-efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). Each cell has a nominal voltage of 0.5V so we call this a "5V" panel. Note the datasheet has it down as a 6V panel,... 
+ $ 5.95 
+ In stock 
+ Add to Cart , 5V 0.3W Mini Solar Panel - ETFE - Voltaic P122 
+5V 5W Solar Panel - ETFE - Voltaic P105. 
+ 5V 5W Solar Panel - ETFE - Voltaic P105 
+ Product ID: 5367 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV resistant, and they use 10 high efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). Each cell has a nominal voltage of 0.5V so we call this a "5V" panel They output a nominal 5V at 940 mA peak via a... 
+ $ 34.95 
+ In stock 
+ Add to Cart , 5V 5W Solar Panel - ETFE - Voltaic P105 
+5V 1.2W Solar Panel - ETFE - Voltaic P124. 
+ 5V 1.2W Solar Panel - ETFE - Voltaic P124 
+ Product ID: 5368 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV resistant, and they use 10 high-efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). Each cell has a nominal voltage of 0.5V so we call this a "5V" panel They output a nominal 5V at 200 mA peak via a... 
+ $ 14.95 
+ In stock 
+ Add to Cart , 5V 1.2W Solar Panel - ETFE - Voltaic P124 
+5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123. 
+ 5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123 
+ Product ID: 5856 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV-resistant, and they use 10 high-efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). Each cell has a nominal voltage of 0.5V, so we call this a "5V" panel. Note the datasheet has it down as a 6V panel,... 
+ $ 8.95 
+ In stock 
+ Add to Cart , 5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123 
+2V 0.3W Mini Solar Panel - ETFE - Voltaic P121. 
+ 2V 0.3W Mini Solar Panel - ETFE - Voltaic P121 
+ Product ID: 5853 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV-resistant, and they use four high-efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). The panel is made of 4 cells with a nominal voltage of 0.5V each, so we call this a "2V" panel They output a... 
+ $ 5.50 
+ In stock 
+ Add to Cart , 2V 0.3W Mini Solar Panel - ETFE - Voltaic P121 
+5V 10W Solar Panel - ETFE - Voltaic P110. 
+ 5V 10W Solar Panel - ETFE - Voltaic P110 
+ Product ID: 5369 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch-resistant, and UV resistant, and they use 10 high-efficiency monocrystalline SunPower cells with 22+% efficiency (praise the sun!). Each cell has a nominal voltage of 0.5V so we call this a "5V" panel They output a nominal 5V at a 1,670mA peak via... 
+ $ 64.95 
+ In stock 
+ Add to Cart , 5V 10W Solar Panel - ETFE - Voltaic P110 
+Round Solar Panel Skill Badge - 5V / 40mA. 
+ Round Solar Panel Skill Badge - 5V / 40mA 
+ Product ID: 700 
+ This skill badge is self-fulfilling! Normally you would get the badge after the project is done, but in this case, the badge can be part of the project! The solar panel is epoxied into a round disc 55mm diameter (about 2.2 inches), its rugged and looks cool besides. We include a sticky foam pin back you can attach to the back of the panel to mount it onto a backpack,... 
+ $ 2.95 
+ Out of stock 
+ Notify Me , Round Solar Panel Skill Badge - 5V / 40mA 
+Small 6V 1W Solar Panel. 
+ Small 6V 1W Solar Panel 
+ Product ID: 3809 
+ These panels come to us from Voltaic Systems, makers of excellent solar-powered bags and packs. These are waterproof, scratch resistant, and UV resistant. With a high efficiency monocrystalline cell, they output 6V at 180 mA via 3.5mm x 1.1mm DC jack connector. The substrate is an aluminum / plastic composite, specifically designed to be durable and lightweight. They... 
+ $ 19.95 
+ Out of stock 
+ Notify Me , Small 6V 1W Solar Panel 
+Flexible 6V 1W Solar Panel. 
+ Flexible 6V 1W Solar Panel 
+ Product ID: 1485 
+ This flexible easy-to-use solar panel is a great addition to your next solar powered project. This solar cell provides approximately 6V DC in direct sunlight at up to 1W (approximately 160 mA). Multiple units can be chained in series and/or parallel to increase voltage and current. The film cells are bonded between two plastic sheets that will protect it outdoors and... 
+ No longer stocked 
+ More Info , Flexible 6V 1W Solar Panel 
+Large 6V 3.7W Solar Panel. 
+ Large 6V 3.7W Solar Panel 
+ Product ID: 417 
+ Harness even more power from the sun with this nice big solar panel. We had these custom made for us when customers let us know they needed more than what our 2W panel could provide. This panel is a 12-cell (6V) assembly mounted onto a fiberglass PCB and covered with PET plastic which protects the cells without reducing efficiency. The back has two soldering spots to... 
+ No longer stocked 
+ More Info , Large 6V 3.7W Solar Panel 
+Huge 6V 6W Solar panel - 6.0 Watt. 
+ Huge 6V 6W Solar panel - 6.0 Watt 
+ Product ID: 1525 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch resistant, and UV resistant. They use a high efficiency monocrystalline cell. They output 6V at 930 mA via 3.5mm x 1.1mm DC jack connector - a nice upgrade to the 2W or 3W panels we have been carrying. The substrate is an aluminum / plastic... 
+ No longer stocked 
+ More Info , Huge 6V 6W Solar panel - 6.0 Watt 
+Colossal 6V 9W Solar Panel - 9.0 Watt. 
+ Colossal 6V 9W Solar Panel - 9.0 Watt 
+ Product ID: 2747 
+ These 6 Volt, 9 Watt panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. They are waterproof, scratch resistant, and UV resistant. Using a high efficiency monocrystalline cell and outputting 6V at ~1.5A via 3.5mm x 1.1mm DC jack connector, they are a nice upgrade to the 2W or 3W panels we have been carrying. The substrate is an... 
+ No longer stocked 
+ More Info , Colossal 6V 9W Solar Panel - 9.0 Watt 
+Large 6V 3.5W Solar panel - 3.5 Watt. 
+ Large 6V 3.5W Solar panel - 3.5 Watt 
+ Product ID: 500 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch resistant, and UV resistant. They use a high efficiency monocrystalline cell. They output 6V at 530 mA via 3.5mm x 1.1mm DC jack connector - a nice upgrade to the 2W panels we have been carrying. The substrate is an aluminum / plastic composite,... 
+ No longer stocked 
+ More Info , Large 6V 3.5W Solar panel - 3.5 Watt 
+Solar Bug Kit 2.0 from Brown Dog Gadgets - 4 Pack. 
+ Solar Bug Kit 2.0 from Brown Dog Gadgets - 4 Pack 
+ Product ID: 5415 
+ Create multiple solar-powered insects that moves with this fun-filled STEM project from Brown Dog Gadgets! Learn about solar energy by creating a simple solar circuit in minutes using only conductive tape! Cut out your bug, decorate it, then add your solar cell and vibrating motor. All parts are connected with our special Maker Tape conductive tape, perfect for... 
+ No longer stocked 
+ More Info , Solar Bug Kit 2.0 from Brown Dog Gadgets - 4 Pack 
+Solar Bug Kit 2.0 from Brown Dog Gadgets - 25-pack. 
+ Solar Bug Kit 2.0 from Brown Dog Gadgets - 25-pack 
+ Product ID: 5416 
+ Create multiple solar-powered insects that move for an entire party, camp-group, or classrom with this fun-filled STEM project from Brown Dog Gadgets! Learn about solar energy by creating a simple solar circuit in minutes using only conductive tape! Cut out your bug, decorate it, then add your solar cell and vibrating motor! All parts are connected with our special... 
+ No longer stocked 
+ More Info , Solar Bug Kit 2.0 from Brown Dog Gadgets - 25-pack 
+Medium 6V 2W Solar panel - 2.0 Watt. 
+ Medium 6V 2W Solar panel - 2.0 Watt 
+ Product ID: 200 
+ These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch resistant, and UV resistant. They use a high efficiency monocrystalline cell. They output 6V at 330 mA via 3.5mm x 1.1mm DC jack connector. The substrate is an aluminum / plastic composite, specifically designed to be strong and lightweight. They... 
+ No longer stocked 
+ More Info , Medium 6V 2W Solar panel - 2.0 Watt 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; That brain of mine is something more than merely mortal; as time will show&rdquo;
+ Ada Lovelace 
+ A Minority and Woman-owned Business Enterprise (M/WBE)

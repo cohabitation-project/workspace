@@ -1,0 +1,146 @@
+URL: https://www.canakit.com/raspberry-pi-camera-module-3.html?cid=usd&src=raspberrypi
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 4584 chars
+Raspberry Pi Camera Module 3
+ USD 
+ United States 
+ Canada 
+ Raspberry Pi 5 In-Stock Now! 
+ Raspberry Pi 5 In-Stock Now! 
+ Toggle menu 
+ Login / Signup My Account 
+ 0 My Cart $0.00 
+ Raspberry Pi 5 
+ Raspberry Pi 
+ Compute Module 5 
+ Pi 4 Kits 
+ Pi 400 
+ Pi 500 / Pi 500+ 
+ Pi 3 A+ Kits 
+ Pi 3 B+ Kits 
+ Pi 3 Kits 
+ Boards 
+ Pi Zero 2 W 
+ Pi Zero W 
+ Pi Zero 
+ Pi Pico 
+ Official Accessories 
+ Other Accessories 
+ Arduino 
+ Kits & Bundles 
+ Boards 
+ Embedded Electronics 
+ Conductive Material 
+ Lilypad 
+ RFID 
+ Makey Makey 
+ Xbee 
+ Kits & Modules 
+ Audio Amplifiers 
+ Color Organs 
+ DC Power Supplies 
+ Digital Meters 
+ FM Transmitters 
+ Led Blinkers & Displays 
+ Light Chasers 
+ Microphone Amplifiers 
+ Motor Controllers (PWM) 
+ PIC Programmers 
+ Relay Controllers 
+ Signal Generators 
+ Telephone Related 
+ Thermometers 
+ Timers 
+ VU Meters 
+ Parts & Components 
+ Breadboards / Prototyping 
+ Cables 
+ Electronic Parts 
+ Enclosures & Cases 
+ Power Supplies 
+ Stepper Motors 
+ Tools 
+ New Products 
+ Catalog 
+ Raspberry Pi 
+ Official Accessories 
+Raspberry Pi Camera Module 3 
+Raspberry Pi 
+Camera Module 3 
+RSP-CAM-V3 
+ $26 .95 
+ Add to Cart 
+Camera Module 3 NoIR 
+RSP-CAM-V3-NOIR 
+ $26 .95 
+ Add to Cart 
+Camera Module 3 - Wide 
+RSP-CAM-V3-WIDE 
+ $37 .95 
+ Add to Cart 
+Camera Module 3 - Wide NoIR 
+RSP-CAM-V3-WIDE-NOIR 
+ $37 .95 
+ Add to Cart 
+Features 
+Sensor: Sony IMX708 
+Resolution: 11.9 Megapixels 
+Common video modes: 1080p50, 720p100, 480p120 
+Product Description 
+ *** NOTE: If using the camera with a Raspberry Pi 5 or a Raspberry Pi Zero, a special Pi 5 Camera Cable or Pi Zero Camera Cable sold separately is required. *** The Raspberry Pi Camera Module 3 is the latest compact camera from Raspberry Pi. and is available in standard and also night (NoiR) variants. NoIR is for night use only. Both the standard and NoIR variants additionally offer a wide-angle version. It offers an IMX708 12-megapixel sensor with HDR, and features phase detection autofocus. Camera Module 3 is available in standard and wide-angle variants, both of which are available with or without an infrared cut filter. Camera Module 3 can be used to take full HD video as well as stills photographs, and features an HDR mode up to 3 megapixels. Its operation is fully supported by the libcamera library, including Camera Module 3’s rapid autofocus feature: this makes it easy for beginners to use, while offering plenty for advanced users. The PCB size and mounting holes remain the same as for Camera Module 2. The Z dimension differs: due to the improved optics, Camera Module 3 is several millimetres taller than Camera Module 2. All variants of Camera Module 3 feature: • Back-illuminated and stacked CMOS 12-megapixel image sensor (Sony IMX708) • High signal-to-noise ratio (SNR) • Built-in 2D Dynamic Defect Pixel Correction (DPC) • Phase Detection Autofocus (PDAF) for rapid autofocus • QBC Re-mosaic function • HDR mode (up to 3 megapixel output) • CSI-2 serial data output • 2-wire serial communication (supports I2C fast mode and fast-mode plus) • 2-wire serial control of focus mechanism Specifications: Sensor: Sony IMX708 Resolution: 11.9 megapixels Sensor size: 7.4mm sensor diagonal Pixel size: 1.4μm × 1.4μm Horizontal/vertical: 4608 × 2592 pixels Common video modes: 1080p50, 720p100, 480p120 Output: RAW10 Autofocus system: Phase Detection Autofocus Dimensions: 25 × 24 × 11.5mm (12.4mm height for Wide variants) Ribbon cable length: 200mm Cable connector: 15 × 1mm FPC 
+Related Items 
+ New 
+ Compare 
+ CanaKit Mini Wireless Keyboard with Touchpad 
+ $39 .95 
+ Add to Cart 
+ Quick view 
+ New 
+ Compare 
+ USB Mini Stereo Speaker 
+ $24 .95 
+ Add to Cart 
+ Quick view 
+ New 
+ Compare 
+ HP IPS Monitor - 21.5" 
+ $159 .95 
+ Add to Cart 
+ Quick view 
+ New 
+ Compare 
+ CanaKit Raspberry Pi 4 2GB EXTREME Kit - Aluminum (Silver and Black) 
+ $164 .95 
+ Add to Cart 
+ Quick view 
+ New 
+ Compare 
+ The Official Raspberry Pi Camera Guide 
+ $14 .00 
+ Add to Cart 
+ Quick view 
+ New 
+ Compare 
+ CanaKit Raspberry Pi 4 Retro Gaming Case 
+ $13 .95 
+ Add to Cart 
+ Quick view 
+Support 
+ FAQs 
+ Contact Us 
+Speedy Delivery 
+Express service available 
+Business & Industrial 
+We service enterprise clients 
+Questions 
+Contact our friendly customer support 
+Secure Online Payment 
+We possess SSL / Secure сertificate 
+ Privacy Policy 
+ Return and Refund Policy 
+Copyright &#169; 2026 by CanaKit Corporation. All rights reserved. 
+ Search 
+ Menu 
+ 0 $0.00 
+ Top
