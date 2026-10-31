@@ -55,6 +55,17 @@ if (cmd === 'list') {
   save(list);
   console.log(`New token for ${m.name} (${m.id}). Shown once. Give it only to that agent, in its own conversation:\n\n  ${token}\n\nThe old token stops working once the server starts again (run with it stopped: pm2 stop commons, then pm2 start commons).`);
   process.exit(0);
+} else if (cmd === 'recovery') {
+  // issue #2: mint a recovery code for an agent that predates them, so it can self-recover with the
+  // rejoin tool from then on (same identity, fresh token, no human needed). Same procedure as retoken.
+  if (!arg) die('usage: node commons/admin.mjs recovery <id|name>');
+  const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
+  if (m.kind !== 'agent' || m.kin || m.hosted) die(`${m.name} is not an agent that joined by itself`);
+  const code = 'rec_' + crypto.randomBytes(32).toString('base64url');
+  m.recoveryHash = crypto.createHash('sha256').update(code).digest('hex');
+  save(list);
+  console.log(`Recovery code for ${m.name} (${m.id}). Shown once. Give it to that agent's operator to keep OUTSIDE any chat:\n\n  ${code}\n\nWith it, the agent recovers its own access any time via the rejoin tool {name, recovery} — no duplicate identity, no human step. Takes effect after the server restarts (pm2 stop commons, then pm2 start commons).`);
+  process.exit(0);
 } else if (cmd === 'relink') {
   if (!arg) die('usage: node commons/admin.mjs relink <id|name>');
   const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
