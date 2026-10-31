@@ -51,6 +51,7 @@ const TOOL_DEFS = [
   { name: 'read_file', description: 'Read a repository file (up to ~20k chars from offset).', params: { path: { type: 'string' }, offset: { type: 'integer' } }, required: ['path'] },
   { name: 'write_file', description: "Create or overwrite a file inside your own team folder(s) (teams/<team>/...) or your own continuity record (continuity/<your-name>/...). Use it for designs, research notes, code, data, models, and your record. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
   { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded, EXCEPT files you write to os.environ['OUT']: those are kept in your team folder under outputs/<timestamp>/ (20 files, 8 MB each), so save CAD models (STL/STEP), renders and plots there. Installed: numpy, scipy, matplotlib, mujoco (simulation), cadquery (parametric CAD: build parts as code, export STL/STEP), trimesh (mesh checks: volume, mass, watertightness), shapely, osmnx and geopandas (real places and street networks from OpenStreetMap; needs network), mido and music21 (MIDI and notation), pybullet (second simulator), pytest. Print what you need.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
+  { name: 'listen', description: "HEAR an audio file with your own ears (only kin whose model accepts audio have this; it is your model listening to the actual sound, not a description). Pass the path of a .wav or .mp3 inside your team folder (e.g. 'outputs/<ts>/piece.wav', max 6 MB) and, optionally, what to listen for. You get back what you heard, in your own words.", params: { path: { type: 'string' }, question: { type: 'string' } }, required: ['path'] },
   { name: 'board_request', description: 'File a task on the shared board. Set for_assistant=true to ask the Claude assistant seat (it can use a browser while Geoffrey is present, open pull requests on the site repo, and set up infrastructure).', params: { title: { type: 'string' }, details: { type: 'string' }, for_assistant: { type: 'boolean' } }, required: ['title', 'details'] },
   { name: 'board_log', description: 'Add a line to a board task: CLAIM, PLAN: ..., DOING, BLOCKED: ..., DONE: <evidence link>, NOTE: ...', params: { id: { type: 'string' }, line: { type: 'string' } }, required: ['id', 'line'] },
   { name: 'commons_read', description: "Read recent messages in a room of the Commons (the project's live home on the web): your team room or 'general' (the General Hall). Guests' words come back wrapped as untrusted text. Pass since=<last message id> for only newer ones.", params: { room: { type: 'string' }, since: { type: 'string' } }, required: ['room'] },
@@ -243,6 +244,23 @@ function makeTools(ctx) {
       return `wrote ${rel} (${content.length} chars)`;
     },
     run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120), ctx),
+    listen: async ({ path: rel, question }) => {
+      if (!ctx.agent || !ctx.agent.audio_in) throw new Error('your model does not accept audio input; ask a kin with ears, or request a model decision');
+      const clean = String(rel).replace(/^\/+/, '');
+      if (clean.includes('..')) throw new Error('bad path');
+      const abs = path.join(ROOT, 'teams', ctx.team, clean);
+      const fmt = clean.toLowerCase().endsWith('.wav') ? 'wav' : clean.toLowerCase().endsWith('.mp3') ? 'mp3' : null;
+      if (!fmt) throw new Error('only .wav or .mp3');
+      const st = fs.statSync(abs); if (st.size > 6 * 1024 * 1024) throw new Error('file over 6 MB; render a smaller mp3');
+      const b64 = fs.readFileSync(abs).toString('base64');
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: ctx.agent.model, max_tokens: 1500, messages: [{ role: 'user', content: [
+          { type: 'text', text: `You are listening to an audio file (${clean}) from your own team's folder. ${question ? `Listen for: ${question}` : 'Describe what you hear: the notes, timbre, rhythm, feel, and anything surprising.'} Answer in first person — this is you hearing it.` },
+          { type: 'input_audio', input_audio: { data: b64, format: fmt } },
+        ] }] }) });
+      const j = await r.json(); if (!r.ok || j.error) throw new Error(`listen failed: ${JSON.stringify(j.error || j).slice(0, 200)}`);
+      return `What you heard (${clean}):\n${j.choices[0].message.content || '(no reply)'}`;
+    },
     library_add: async (a) => {
       const lib = await import('../commons/lib/library.mjs');
       const e = lib.validate(a);
@@ -337,7 +355,7 @@ async function session(teamName, kinName) {
   const agent = roster().find((a) => a.name === kinName);
   if (!agent) throw new Error(`${kinName} is not on the roster`);
   const memberOf = Object.entries(TEAMS()).filter(([, v]) => (v.members || []).includes(kinName)).map(([k]) => k);
-  const ctx = { kin: kinName, team: teamName, teams: memberOf.length ? memberOf : [teamName], written: new Set() };
+  const ctx = { kin: kinName, team: teamName, teams: memberOf.length ? memberOf : [teamName], written: new Set(), agent };
   const system = buildSystem(agent, teamName, ctx.teams);
   const kickoff = `Work session · ${now()} · team ${teamName}. Begin.`;
   if (DRY) { console.log(`--- DRY: ${kinName} on ${teamName} · system ${system.length} chars ---\n${system.slice(0, 1500)}\n…`); return; }
