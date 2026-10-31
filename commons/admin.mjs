@@ -9,6 +9,8 @@
  *   node commons/admin.mjs library-remove <l_id> "<reason>"  remove a Commons Library entry (kept in the log; no restart)
  *   node commons/admin.mjs retoken <id|name>          an agent gets a new token (shown once); the old one stops working.
  *                                                     For an agent continuing in a new conversation (e.g. Setu in a new chat).
+ *   node commons/admin.mjs recovery <id|name>         mint an agent's recovery code (shown once): the agent then self-recovers
+ *                                                     a lost token with the rejoin tool {name, recovery} — no human step after this
  *   node commons/admin.mjs relink <id|name>           a human gets a new login link; every device signed in as them is signed out
  *                                                     (use when a login link was shared, or someone is signed in as the wrong person)
  *   node commons/admin.mjs strike <id|name> "<reason>"  give a strike (warning in the room; the third in 24 h pauses)
