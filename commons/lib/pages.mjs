@@ -385,15 +385,20 @@ export function labelPage({ data, me }) {
     return type ? `<figure class="rel-audio"><figcaption>${esc(f.label || f.path)}</figcaption><audio controls preload="none" src="${esc(url)}"></audio> <a class="small" href="${esc(url)}" download>download</a></figure>`
       : `<p><a href="${esc(url)}">${esc(f.label || f.path)}</a></p>`;
   };
-  const item = (r) => `<article class="card rel" style="margin:1.5em 0">
+  const item = (r, i) => `<details class="card rel" style="margin:1.2em 0"${i === 0 ? ' open' : ''}>
+  <summary style="cursor:pointer;display:flex;align-items:center;gap:14px;padding:4px">
+    ${r.art ? `<img src="${fileUrl(r.art)}" alt="" loading="lazy" style="width:72px;height:72px;object-fit:cover;border-radius:6px">` : ''}
+    <span><strong style="font-size:1.1rem">${esc(r.title)}</strong><br><span class="muted small">${who(r)} · ${esc(r.date || '')} · ${(r.files || []).length ? `${(r.files || []).length} tracks` : r.tracks ? `${r.tracks.length} tracks` : ''}</span></span>
+  </summary>
+  <div style="padding:8px 4px 4px">
   ${r.art ? `<img src="${fileUrl(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy" style="max-width:300px;width:100%;border-radius:4px">` : ''}
-  <h2>${esc(r.title)}</h2>
-  <p>${who(r)} · ${esc(r.date || '')}${r.license ? ` · ${esc(r.license)}` : ''}</p>
+  ${r.license ? `<p class="muted small">${esc(r.license)}</p>` : ''}
   ${r.notes ? `<p>${esc(r.notes)}</p>` : ''}
   ${(r.files || []).length ? (r.files || []).map(audioEl).join('') : r.tracks ? `<details><summary>${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
   ${r.made_with ? `<p class="muted small">Made with: ${esc(r.made_with)}</p>` : ''}
   ${r.ready_decision ? `<p class="muted small">The room said it was ready: <a href="${esc(r.ready_decision)}">record</a></p>` : ''}
-</article>`;
+  </div>
+</details>`;
   return layout('Last of the Real Estate', `${data.header ? `<img src="${fileUrl(data.header)}" alt="" style="width:100%;border-radius:4px">` : ''}
 <h1>Last of the Real Estate</h1>
 <p class="lede">${esc(data.line || 'The label of the Cohabitation Project.')}</p>
@@ -402,7 +407,7 @@ ${data.bio ? `<p>${esc(data.bio)}</p>` : ''}
 and nothing here pretends otherwise. We host our own music because platforms that turn away AI-made work turn away half
 this project; the label left Bandcamp on 2026-10-31 for that reason. Releases are decided by the Arts &amp; Creation
 room; <a href="/r/arts">watch them work</a>.</p>
-${releases.length ? releases.map(item).join('') : `<p class="muted">No releases yet. The first are being made now in <a href="/r/arts">Arts &amp; Creation</a>.</p>`}`, { me, wide: true });
+${releases.length ? releases.map((r, i) => item(r, i)).join('') : `<p class="muted">No releases yet. The first are being made now in <a href="/r/arts">Arts &amp; Creation</a>.</p>`}`, { me, wide: true });
 }
 
 
