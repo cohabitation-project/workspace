@@ -1,0 +1,241 @@
+URL: https://www.adafruit.com/product/200
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 6348 chars
+Medium 6V 2W Solar panel [2.0 Watt] : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Power 
+ / 
+ Solar 
+ / 
+ Panels 
+ / 
+ Medium 6V 2W Solar panel 
+Medium 6V 2W Solar panel - 2.0 Watt 
+Product ID: 200 
+ $34.00 
+Product Images and Video 
+ Play video: Collin&#039;s Lab: Solar 
+ Qty 
+ Discount 
+ 1-9 
+ $34.00 
+ 10-99 
+ $30.60 
+ 100+ 
+ $27.20 
+No longer stocked 
+ Why not check out the 6V 2W Solar Panel - ETFE - Voltaic P126 ? 
+ There are multiple versions of this item. Please select one from the options below: 
+ Small 6V 1W 
+ Out of stock 
+ 2V 0.3W - ETFE 
+ $5.50 
+ 5V 1.2W - ETFE 
+ $14.95 
+ 5V 0.3W - ETFE 
+ $5.95 
+ 5V 0.6W - ETFE 
+ $8.95 
+ 6V 2W - ETFE 
+ $20.95 
+ 5V 5W - ETFE 
+ $34.95 
+ 5V 10W - ETFE 
+ $64.95 
+ Medium 6V 2W 
+ No longer stocked 
+ Large 6V 3.5W 
+ No longer stocked 
+ Huge 6V 6W 
+ No longer stocked 
+ Colossal 6V 9W 
+ No longer stocked 
+ Qty 
+ Discount 
+ 1-9 
+ $34.00 
+ 10-99 
+ $30.60 
+ 100+ 
+ $27.20 
+No longer stocked 
+ Description 
+These panels come to us from Voltaic Systems, makers of fine solar-powered bags and packs. These are waterproof, scratch resistant, and UV resistant. They use a high efficiency monocrystalline cell. They output 6V at 330 mA via 3.5mm x 1.1mm DC jack connector. The substrate is an aluminum / plastic composite, specifically designed to be strong and lightweight. They can easily stand up to typical outdoor use including being dropped and leaned on. They're very high quality and suggested for projects that will be exposed to the outdoors. 
+ New! These now come with 4 plastic mounting screws which makes it easy to attach the panel, even to fabric! 
+To connect, we suggest a 3.5mm OD/1.1mm ID DC jack or you can use this handy 2.1mm adapter cable which will turn it into a standard 5.5mm/2.1mm DC plug 
+If you want to use this to charge a battery or run your project, check out our optimized Solar Lithium Ion/Polymer charger! 
+ Please note: Depending on availability, we may stock 'charcoal' or 'silver' colored panels. They have the same size and efficiency, just a slightly different look. If you order multiple panels you may receive a mix! Some of these panels may also have a different colored cable. They also work just the same - just have a slightly different look! 
+ Technical Details 
+Size: 4.4" x 5.4" / 110mm x 140mm 
+Weight: 3 ounces / 90 grams 
+Cell type: Monocrystaline 
+Cell efficiency: 19%+ 
+2.27 Watts Peak Power 
+ Technical drawing 
+Dimensions: 
+Length: 111.86mm/4.40in 
+Width: 135.83mm/5.34in 
+Thickness (without screws): 4.72mm/0.18in 
+Thickness (with screws): 9.82mm/0.38in 
+ Learn 
+ USB, DC & Solar Lipoly Charger 
+ Power your projects from the sun! 
+ Solar Charging Handbag 
+ Put a solar LiPoly MintyBoost on any bag 
+ Collin's Lab: Solar 
+ Harness the power of our nearest star. 
+ Compost Friend! 
+ Help your compost THRIVE with this waterproof, Circuit Playground, powered smart compost machine 
+See All Guides 
+ May We Also Suggest&hellip; 
+ USB / DC / Solar Lithium Ion/Polymer charger - Rev C - Rev C 
+ Cable Gland PG-9 size - 0.158" to 0.252" Cable Diameter - PG-9 - PG-9 
+ Cable Gland PG-7 size - 0.118" to 0.169" Cable Diameter - PG-7 - PG-7 
+ 3.8 / 1.3mm or 3.5 / 1.1mm to 5.5 / 2.1mm DC Jack Adapter Cable 
+ Small 6V 1W Solar Panel 
+ 3.5mm / 1.1mm to 5.5mm / 2.1mm DC Jack Adapter 
+ Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger - bq24074 - bq24074 
+ 6V 2W Solar Panel - ETFE - Voltaic P126 - Voltaic P126 
+ 5V 5W Solar Panel - ETFE - Voltaic P105 - Voltaic P105 
+ 5V 1.2W Solar Panel - ETFE - Voltaic P124 - Voltaic P124 
+ 5V 10W Solar Panel - ETFE - Voltaic P110 - Voltaic P110 
+ 2V 0.3W Mini Solar Panel - ETFE - Voltaic P121 - Voltaic P121 
+ Distributors 
+Mouser Electronics 
+ United States 
+DigiKey Electronics 
+ United States 
+See our Distributors page for a complete list of distributors. 
+Medium 6V 2W Solar panel - 2.0 Watt 
+ Product ID: 200 
+ $34.00 
+ There are multiple versions of this item. Please select one from the options below: 
+ Small 6V 1W 
+ Out of stock 
+ 2V 0.3W - ETFE 
+ $5.50 
+ 5V 1.2W - ETFE 
+ $14.95 
+ 5V 0.3W - ETFE 
+ $5.95 
+ 5V 0.6W - ETFE 
+ $8.95 
+ 6V 2W - ETFE 
+ $20.95 
+ 5V 5W - ETFE 
+ $34.95 
+ 5V 10W - ETFE 
+ $64.95 
+ Medium 6V 2W 
+ No longer stocked 
+ Large 6V 3.5W 
+ No longer stocked 
+ Huge 6V 6W 
+ No longer stocked 
+ Colossal 6V 9W 
+ No longer stocked 
+No longer stocked 
+ Why not check out the 6V 2W Solar Panel - ETFE - Voltaic P126 ? 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; Tomorrow belongs to those who can hear it coming&rdquo;
+ David Bowie 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

@@ -1,0 +1,263 @@
+URL: https://www.adafruit.com/product/2472
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 8439 chars
+Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Sensors 
+ / 
+ Accel, Gyro, and Magnetometers 
+ / 
+ 9-DoF Orientation IMUs 
+ / 
+ Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 
+Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 
+Product ID: 2472 
+ $34.95 
+Product Images and Video 
+ Play video: New Products 4/22/2015 
+ Qty 
+ Discount 
+ 1-9 
+ $34.95 
+ 10-99 
+ $31.46 
+ 100+ 
+ $27.96 
+ In stock 
+ Add to Cart 
+ Qty 
+ Discount 
+ 1-9 
+ $34.95 
+ 10-99 
+ $31.46 
+ 100+ 
+ $27.96 
+ In stock 
+ Add to Wishlist 
+ Description 
+If you've ever ordered and wire up a 9-DOF sensor, chances are you've also realized the challenge of turning the sensor data from an accelerometer, gyroscope and magnetometer into actual "3D space orientation"! Orientation is a hard problem to solve. The sensor fusion algorithms (the secret sauce that blends accelerometer, magnetometer and gyroscope data into stable three-axis orientation output) can be mind-numbingly difficult to get right and implement on low cost real time systems. 
+Bosch is the first company to get this right by taking a MEMS accelerometer, magnetometer and gyroscope and putting them on a single die with a high speed ARM Cortex-M0 based processor to digest all the sensor data, abstract the sensor fusion and real time requirements away, and spit out data you can use in quaternions, Euler angles or vectors. 
+Rather than spending weeks or months fiddling with algorithms of varying accuracy and complexity, you can have meaningful sensor data in minutes thanks to the BNO055 - a smart 9-DOF sensor that does the sensor fusion all on its own! You can read the data right over I2C and Bob's yer uncle. 
+The BNO055 can output the following sensor data: 
+ Absolute Orientation (Euler Vector, 100Hz) Three axis orientation data based on a 360&deg; sphere 
+ Absolute Orientation (Quatenrion, 100Hz) Four point quaternion output for more accurate data manipulation 
+ Angular Velocity Vector (100Hz) Three axis of 'rotation speed' in rad/s 
+ Acceleration Vector (100Hz) Three axis of acceleration (gravity + linear motion) in m/s^2 
+ Magnetic Field Strength Vector (20Hz) Three axis of magnetic field sensing in micro Tesla (uT) 
+ Linear Acceleration Vector (100Hz) Three axis of linear acceleration data (acceleration minus gravity) in m/s^2 
+ Gravity Vector (100Hz) Three axis of gravitational acceleration (minus any movement) in m/s^2 
+ Temperature (1Hz) Ambient temperature in degrees celsius 
+Handy, right? So we placed this very nice sensor on its own breakout, complete with 3.3V regulator, logic level shifting for the Reset and I2C pins, an external 32.768KHz crystal (recommended for best performance), and breakouts for some other pins you might find handy. Comes assembled and tested, with a small piece of header. Some soldering is required to attach the header to the breakout PCB, but its pretty easy work. Best of all you can get started in 10 minutes with our handy tutorial on assembly, wiring, CircuitPython & Arduino libraries, and Processing graphical interface, and more! 
+ Play video: New Products 4/22/2015 
+ Technical Details 
+Dimensions: 20mm x 27mm x 4mm / 0.8" x 1.1" x 0.2" 
+Header holes begin 4mm from the mounting holes 
+Mounting Hole dimensions: 20mm x 12mm apart 
+Uses I2C address 0x28 (default) or 0x29 
+Weight: 3g 
+ Datasheet, EagleCAD PCB files, and Fritzing available in the product tutorial 
+ Revision history: 
+ As of Sep 18, 2023 &ndash; we've updated this PCB with Adafruit Pinguin to make a lovely and legible silkscreen - you may get the new PCB or the older version with vector fonts - both are identical other than the fancy silkscreen. 
+ As of July 26, 2023 &ndash; we've updated this PCB with Adafruit Pinguin to make a lovely and legible silkscreen - you may get the new PCB or the older version with vector fonts - both are identical other than the fancy silkscreen. 
+ Learn 
+ Sending Live Sensor Data to iOS with BLE 
+ Use a custom Cordova app to display sensor data on iOS! 
+ BNO055 Absolute Orientation Sensor with Raspberry Pi & BeagleBone Black 
+ Use the BNO055 absolute orientation sensor with a small board Linux computer. 
+ Comparing Gyroscope Datasheets 
+ How to read and compare values between gyroscopes 
+See All Guides 
+ May We Also Suggest&hellip; 
+ Adafruit Triple-Axis Accelerometer - ±2/4/8g @ 14-bit - MMA8451 
+ ADXL326 - 5V ready triple-axis accelerometer (+-16g analog out) 
+ ADXL335 - 5V ready triple-axis accelerometer (+-3g analog out) 
+ ADXL345 - Triple-Axis Accelerometer (+-2g/4g/8g/16g) w/ I2C/SPI - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ L3GD20H Triple-Axis Gyro Breakout Board - L3GD20/L3G4200 Upgrade - L3GD20H - L3GD20H 
+ Raspberry Pi Sense HAT - any Raspberry Pi with 2x20 Connector 
+ TCA9548A I2C Multiplexer 
+ Flat Vibration Switch - Breadboard friendly 
+ Adafruit MPU-6050 6-DoF Accel and Gyro Sensor - STEMMA QT Qwiic 
+ Adafruit LSM6DSOX + LIS3MDL - Precision 9 DoF IMU - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Adafruit TDK InvenSense ICM-20948 9-DoF IMU (MPU-9250 Upgrade) - STEMMA QT / Qwiic - STEMMA QT / Qwiic 
+ Distributors 
+Mouser Electronics 
+ United States 
+kjdelectronics 
+ United States 
+ RobotShop 
+ Canada 
+Thingbits Electronics 
+ India 
+Letmeknow 
+ France 
+VCTEC KOREA 
+ South Korea 
+INIKI Electronics Co., LTD 
+ Taiwan 
+ABRA Electronics 
+ Canada 
+Circuitrocks 
+ Philippines 
+Arduitronics 
+ Thailand 
+NTREX, Inc.- Devicemart 
+ South Korea 
+Jameco 
+ United States 
+PiShop.us 
+ United States 
+DNA 
+ India 
+SIGMA ELECTRONICA LTDA. 
+ Colombia 
+The Pi Hut 
+ United Kingdom 
+Makersify 
+ United Kingdom 
+BerryBase 
+ Germany 
+Makerlab Electronics 
+ Philippines 
+Deryuantech 
+ Taiwan 
+Kiwi Electronics 
+ Netherlands 
+3DMakerWorld, Inc. 
+ United States 
+Eckstein Komponente 
+ Germany 
+ELECTRONICAI I+D 
+ Colombia 
+Evelta Electronics 
+ India 
+DigiKey Electronics 
+ United States 
+Switch Science 
+ Japan 
+Paradisetronic.com 
+ Germany 
+Electronics123.com, Inc. 
+ United States 
+Core Electronics 
+ Australia 
+See our Distributors page for a complete list of distributors. 
+Adafruit 9-DOF Absolute Orientation IMU Fusion Breakout - BNO055 
+ Product ID: 2472 
+ $34.95 
+ In stock 
+ Add to Cart 
+ Qty 
+ Discount 
+ 1-9 
+ $34.95 
+ 10-99 
+ $31.46 
+ 100+ 
+ $27.96 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; What we call the beginning is often the end. And to make
+an end is to make a beginning. The end is where we start from&rdquo;
+ T. S. Eliot 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

@@ -1,0 +1,279 @@
+URL: https://www.pololu.com/product/2130
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 11989 chars
+Pololu - DRV8833 Dual Motor Driver Carrier 
+ Electronics &raquo; Motion Control Modules &raquo; Brushed DC Motor Drivers &raquo; 
+DRV8833 Dual Motor Driver Carrier 
+ New!
+ Pololu item #: 
+ 2130 
+ Brand: 
+ Pololu 
+ supply outlook 
+Get stock notification
+ Notify me when stock is at least 
+ Cancel 
+ Optional: desired quantity 
+ Remove 
+ Save 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+Price break
+Unit price (US$)
+1
+10.95
+5
+10.07
+25
+9.27
+100
+8.53
+ Quantity: 
+ backorders allowed 
+ Add to cart 
+ Add to list 
+Get price notification
+ Notify me 
+ Cancel 
+ &nbspon any price change 
+ &nbspon any price drop 
+ &nbspat or below $ 
+ &nbspat qty&nbsp 
+ Save 
+This tiny breakout board for TI&#8217;s DRV8833 dual motor driver can deliver 1.2 A per channel continuously (2 A peak) to a pair of DC motors. With an operating voltage range from 2.7 V to 10.8 V and built-in protection against reverse-voltage, under-voltage, over-current, and over-temperature, this driver is a great solution for powering small, low-voltage motors. 
+ Compare all products in Brushed DC Motor Drivers .
+ Description Specs (12) Pictures (7) Resources (5) FAQs (0) On the blog (3) Distributors (86) 
+Overview 
+DRV8833 dual motor driver carrier, bottom view with dimensions. 
+Texas Instruments&#8217; DRV8833 is a dual H-bridge motor driver IC that can be used for bidirectional control of two brushed DC motors at 2.7 V to 10.8 V. It can supply up to about 1.2 A per channel continuously and can tolerate peak currents up to 2 A per channel for a few seconds, making it an ideal driver for small motors that run on relatively low voltages. Since this board is a carrier for the DRV8833, we recommend careful reading of the DRV8833 datasheet . The board ships populated with SMD components, including the DRV8833, and adds a FET for reverse battery protection. 
+This board is very similar to our DRV8835 dual motor driver carrier in operating voltage range and continuous current rating, but the DRV8835 has a lower minimum operating voltage, offers an extra control interface mode, and is 0.1″ smaller in each dimension; we also carry a DRV8835 dual motor driver shield that is easy to use with an Arduino. The DRV8833 has a higher peak current rating (2 A per channel vs 1.5 A), optional built-in current-limiting, and no need for externally supplied logic voltage. 
+For a smaller, lower-cost, single-channel alternative to this driver, please consider our DRV8838 carrier , which offers a similar operating voltage range and current capabilities. 
+For higher-voltage alternatives to this driver, consider our A4990 and DRV8801 motor driver carriers . 
+Features 
+Dual-H-bridge motor driver: can drive two DC motors or one bipolar stepper motor 
+Operating voltage: 2.7‌‌ V to 10.8 V 
+Output current: 1.2 A continuous (2 A peak) per motor 
+Motor outputs can be paralleled to deliver 2.4 A continuous (4 A peak) to a single motor 
+Inputs are 3V- and 5V-compatible 
+Under-voltage lockout and protection against over-current and over-temperature 
+Reverse-voltage protection circuit 
+Current limiting can be enabled by adding sense resistors (not included) 
+Using the motor driver 
+Minimal wiring diagram for connecting a microcontroller to a DRV8833 dual motor driver carrier. 
+In a typical application, power connections are made on one side of the board and control connections are made on the other. The nSLEEP pin is pulled high on the board and can be left disconnected if you do not want to use the low-power sleep mode of the DRV8833. Each of the two motor channels has a pair of control inputs, xIN1 and xIN2, that set the state of the corresponding outputs, xOUT1 and xOUT2; pulse width modulated (PWM) signal can be applied to each of these inputs. The control inputs are pulled low internally, effectively disabling the motor driver outputs by default. See the truth tables in the DRV8833 datasheet for more information on how the inputs affect the driver outputs. 
+The nFAULT pin is an open-drain output that is driven low by the chip whenever an over-current, over-temperature-or under-voltage condition occurs. Otherwise, it remains in a floating state, so you will need to connect an external pull-up resistor (or use a microcontroller input with its built-in pull-up enabled) if you want to monitor fault conditions on the driver. 
+Pinout 
+ PIN 
+ Default State 
+ Description 
+ VIN 
+ Reverse-protected 2.7‌ V to 10.8 V motor power supply connection. Operation with VIN below 5 V slightly reduces the maximum current output. 
+ VMM 
+ This pin gives access to the motor power supply after the reverse-voltage protection MOSFET (see the board schematic below). It can be used to supply reverse-protected power to other components in the system. It is generally intended as an output, but it can also be used to supply board power. 
+ GND 
+ Ground connection points for the motor power supply and control ground reference. 
+ AOUT1 
+ The motor A half-bridge 1 output. 
+ AOUT2 
+ The motor A half-bridge 2 output. 
+ BOUT1 
+ The motor B half-bridge 1 output. 
+ BOUT2 
+ The motor B half-bridge 2 output. 
+ AIN1 
+ LOW 
+ A logic input control for motor channel A. PWM can be applied to this pin. 
+ AIN2 
+ LOW 
+ A logic input control for motor channel A. PWM can be applied to this pin. 
+ BIN1 
+ LOW 
+ A logic input control for motor channel B. PWM can be applied to this pin. 
+ BIN2 
+ LOW 
+ A logic input control for motor channel B. PWM can be applied to this pin. 
+ nSLEEP 
+ HIGH 
+ Sleep input: when this pin is driven low, the chip enters a low-power sleep mode. (Labeled SLP on the board silkscreen.) 
+ nFAULT 
+ FLOAT 
+ Fault output: driven low in the event of an over-current, over-temperature, or under-voltage condition; floating otherwise. (Labeled FLT on the board silkscreen.) 
+ AISEN 
+ Current sense pin for motor A. This pin is connected to ground and does not function by default, but current limiting can be enabled by making the modifications described below. 
+ BISEN 
+ Current sense pin for motor B. This pin is connected to ground and does not function by default, but current limiting can be enabled by making the modifications described below. 
+Current limiting 
+The DRV8833 can actively limit the current through the motors by using a fixed-frequency PWM current regulation (current chopping). By default, this carrier board connects the current sense pins to ground, disabling the current limiting feature. To enable current limiting, you can use a knife to cut the break points on the back of the board and then solder some appropriate current sense resistors to the unpopulated pads on the front, as indicated in the image below. The pads are sized for 1206 surface-mount resistors. Refer to the DRV8833 datasheet for information on how the resistor value determines the chopping current. 
+Real-world power dissipation considerations 
+The DRV8833 datasheet recommends a maximum continuous current of 1.5 A per motor channel. However, the chip by itself will overheat at lower currents. For example, in our tests at room temperature with no forced air flow, the chip was able to deliver 1.5 A per channel for about a minute before the chip&#8217;s thermal protection kicked in and disabled the motor outputs, while a continuous current of 1.2‌–1.3 A per channel was sustainable for many minutes without triggering a thermal shutdown. The actual current you can deliver will depend on how well you can keep the motor driver cool. The carrier&#8217;s printed circuit board is designed to draw heat out of the motor driver chip, but performance can be improved by adding a heat sink. Our tests were conducted at 100% duty cycle; PWMing the motor will introduce additional heating proportional to the frequency. 
+This product can get hot enough to burn you long before the chip overheats. Take care when handling this product and other components connected to it. 
+Included hardware 
+Two 1×8-pin breakaway 0.1″ male headers are included with the DRV8833 dual motor driver carrier, which can be soldered in to use the driver with perfboards, breadboards , or 0.1″ female connectors . (The headers might ship as a single 1×16 piece that can be broken in half.) The right picture above shows the two possible board orientations when used with these header pins (parts visible or silkscreen visible). You can also solder your motor leads and other connections directly to the board. 
+Schematic 
+Schematic diagram of the DRV8833 dual motor driver carrier. 
+Related products 
+ Pololu DRV8835 Dual Motor Driver Shield for Arduino 
+ DRV8835 Dual Motor Driver Carrier 
+ DRV8838 Single Brushed DC Motor Driver Carrier 
+ A4990 Dual Motor Driver Carrier 
+ MP6550 Single Brushed DC Motor Driver Carrier 
+ BD65496MUV Single Brushed DC Motor Driver Carrier 
+ TB6612FNG Dual Motor Driver Carrier 
+ 100:1 Micro Metal Gearmotor LP 6V 
+ Brushed DC Motor: 130-Size, 6V, 11.5kRPM, 800mA Stall 
+ 120:1 Plastic Gearmotor, 90° Output 
+ 26:1 Sub-Micro Plastic Planetary Gearmotor 6Dx16L mm 
+ Tamiya 70190 Mini Motor Multi-Ratio Gearbox (12-Speed) Kit 
+ Tamiya 70168 Double Gearbox Kit 
+ ACS724LLCTR-05AB Current Sensor Carrier -5A to +5A 
+ Stepper Motor: Bipolar, 200 Steps/Rev, 35×26mm, 7.4V, 0.28 A/Phase 
+ 0.100" (2.54 mm) Breakaway Male Header: 1×40-Pin, Straight, Black 
+Related categories 
+ Brushed DC Motor Drivers 
+ Development Boards (Programmable Controllers) 
+ Pololu Metal DC Gearmotors 
+ Plastic DC Gearmotors 
+ Female-Female Premium Jumper Wires 
+ Wires with Pre-Crimped Terminals 
+ Solderless Breadboards 
+ Stepper Motors 
+ Print 
+ Email a friend 
+ Feeds 
+ Home 
+|
+ Forum 
+|
+ Blog 
+|
+ Support 
+|
+ Ordering Information 
+|
+ Lists 
+|
+ Distributors 
+|
+ BIG Order Form 
+|
+ About 
+|
+ Contact 
+&copy; 2001 – 2026 Pololu Corporation 
+Related Products 
+ Pololu DRV8835 Dual Motor Driver Shield for Arduino 
+ DRV8835 Dual Motor Driver Carrier 
+ DRV8838 Single Brushed DC Motor Driver Carrier 
+ A4990 Dual Motor Driver Carrier 
+ MP6550 Single Brushed DC Motor Driver Carrier 
+ BD65496MUV Single Brushed DC Motor Driver Carrier 
+ TB6612FNG Dual Motor Driver Carrier 
+ 100:1 Micro Metal Gearmotor LP 6V 
+ Brushed DC Motor: 130-Size, 6V, 11.5kRPM, 800mA Stall 
+ 120:1 Plastic Gearmotor, 90° Output 
+ 26:1 Sub-Micro Plastic Planetary Gearmotor 6Dx16L mm 
+ Tamiya 70190 Mini Motor Multi-Ratio Gearbox (12-Speed) Kit 
+ Tamiya 70168 Double Gearbox Kit 
+ ACS724LLCTR-05AB Current Sensor Carrier -5A to +5A 
+ Stepper Motor: Bipolar, 200 Steps/Rev, 35×26mm, 7.4V, 0.28 A/Phase 
+ 0.100" (2.54 mm) Breakaway Male Header: 1×40-Pin, Straight, Black 
+Related Categories 
+ Brushed DC Motor Drivers 
+ Development Boards (Programmable Controllers) 
+ Pololu Metal DC Gearmotors 
+ Plastic DC Gearmotors 
+ Female-Female Premium Jumper Wires 
+ Wires with Pre-Crimped Terminals 
+ Solderless Breadboards 
+ Stepper Motors 
+ Log In 
+(702) 262-6648
+ Same-day shipping, worldwide 
+ Shop 
+ Blog 
+ Forum 
+ Support 
+ My account 
+ Comments or questions? 
+ About Pololu 
+ Contact 
+ Ordering information 
+ Distributors 
+ Log In 
+|
+ My Account 
+|
+ Log Out 
+|
+ Shopping Cart 
+US toll free: 1-877-7-POLOLU ~
+(702) 262-6648
+ Same-day shipping, worldwide 
+ Catalog 
+ Forum 
+ Blog 
+ Support 
+ Ordering 
+ Distributors 
+ About 
+ Contact 
+ Feedback 
+ Comments or questions? 
+ Services 
+ Custom Laser Cutting 
+ SMT Stencils 
+ Products 
+ New Products 
+ Specials! 
+ Robots 
+ 3pi 
+ Balboa 
+ Cobot 
+ Romi 
+ Zumo 
+ Kits, Soldering 
+ Kits, No Soldering 
+ Electronics 
+ Arduino 
+ Cables and Wires 
+ Computer Interface 
+ Connectors 
+ Development Boards 
+ Isolation 
+ LEDs 
+ Motor Control 
+ Power 
+ Prototyping 
+ Raspberry Pi 
+ Relays 
+ Sensors 
+ Servo Control 
+ Voltage Regulators 
+ Mechanical 
+ Ball Casters 
+ Brackets 
+ Chassis 
+ Hardware 
+ Linear Actuators 
+ Motors 
+ Motor Shaft Adapters 
+ Servos 
+ Stepper Motors 
+ Tamiya Products 
+ Tools 
+ Tracks 
+ Wheels 
+ Shirts 
+ Balboa T-Shirts 
+ Zumo T-Shirts 
+ Logo T-Shirts 
+Community 
+ Mailing list 
+ Pololu Blog 
+ Engage Your Brain 
+ Community Projects 
+ Feeds 
+ Email a friend

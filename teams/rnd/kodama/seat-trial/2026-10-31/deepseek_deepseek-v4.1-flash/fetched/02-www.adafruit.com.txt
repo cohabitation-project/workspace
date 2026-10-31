@@ -1,0 +1,250 @@
+URL: https://www.adafruit.com/product/4755
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 9079 chars
+Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger [bq24074] : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Power 
+ / 
+ Solar 
+ / 
+ Chargers 
+ / 
+ Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger 
+Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger - bq24074 
+Product ID: 4755 
+ $14.95 
+Product Images and Video 
+ Play video: New Products 9/16/2020 featuring Adafruit BrainCraft HAT - Machine Learning for Raspberry Pi 4! 
+ Play video: JP&rsquo;s Product Pick of the Week 6/28/22 USB/DC/Solar LiPo Charger bq24074 @adafruit @johnedgarpark 
+ Qty 
+ Discount 
+ 1-9 
+ $14.95 
+ 10-99 
+ $13.46 
+ 100+ 
+ $11.96 
+ 36 in stock 
+ Add to Cart 
+ Also include 1 x 3.5mm / 1.1mm to 5.5mm / 2.1mm DC Jack Adapter ($ 1.50 ) 
+ Qty 
+ Discount 
+ 1-9 
+ $14.95 
+ 10-99 
+ $13.46 
+ 100+ 
+ $11.96 
+ 36 in stock 
+ Add to Wishlist 
+ Description 
+This charger is the only one you need to keep all your Lithium Polymer (LiPoly) or Lithium Ion (LiIon) rechargeable batteries topped up. No matter the power source at your disposal! The Adafruit Universal USB / DC / Solar Lithium Ion/Polymer Charger can use USB, DC or Solar power, with a wide 5-10V input voltage range! The charger chip is super smart, and will reduce the current draw if the input voltage starts to dip under 4.5V, making it a perfect near-MPPT solar charger that you can use with a wide range of panels. 
+Even though we designed it with solar in mind, it's also great as a plain USB or DC charger - we like that you can use 5V or 9V chargers without worry, and the high charge rate is great for quickly charging up those large battery packs! 
+Compared to our earlier, MCP73871-based charger this universal charger has some nice improvements: 
+USB Type C port for modern computers and chargers 
+Up to 1.5A charge rate 
+Up to 10V input voltage, 28V protected 
+Load output is regulated to never be over 4.4V so it's safe for 3.3V regulators or 5V boost converters 
+No stabilization capacitor needed (although you can add one if you like!) 
+Same load sharing so that DC/USB/Solar is prioritized over battery power when available, to keep the battery from cycling 
+Power Good LED lets you know that the charger is working 
+Less expensive 
+However... 
+The max load current is 1.5A instead of 1.8A 
+There is no 'Done' LED - when the CHG LED turns off, thats how you know charging is complete 
+This charger is a breeze to use for solar projects: pick up any of our many 3.7V/4.2V LiIon batteries , and a 6V solar panel . Plug the battery into the BATT port using a 2-pin JST PH cable and the solar panel into the DC jack using a 2.1mm adapter cable Put the solar panel outside (and keep the battery out of the sun, it needs to be kept cool!) to start charging. You can power another project at the same time by connecting to the LOAD output port, which will never go above 4.4V.
+The bq24074 which powers this design is great for solar charging, and will automatically draw the most current possible from the panel in any light condition Even thought it isn't a 'true' MPPT (max power point tracker), it has near-identical performance without the additional cost of a buck-converter. Our detailed tutorial on this charger includes a design document explaining how it all works. 
+For use with Adafruit Lipoly/LiIon batteries only! Other batteries may have different voltage, chemistry, polarity or pinout.
+Comes with an assembled charger board, and bit of header. Does not come with a Lipoly battery or solar panel but we do have tons available in the shop that work quite well . 
+Features: 
+ 3.7V/4.2V Lithium Ion or Lithium Polymer battery charger 
+ Charge with 5-10V DC, USB or 6-10V solar panel , can have both USB and DC plugged in at the same time, higher voltage source will be used. 
+ Automatic charging current tracking for high efficiency use of any wattage solar panel 
+ Use any 6-10V solar panel the charging circuit is linear, not switching, so any voltage above 6V is 'lost as heat', so we recommend 6-7V panels. 5V panels will droop too much and not give a good experience. 
+ Two color indicator LEDs - Power good and Charging 
+ Set for 1000mA max charge rate , can be adjusted to 500mA or 1.5A by soldering closed a jumper 
+ Will always draw the most current possible from a solar cell - up to the max charge rate! 
+ Smart load sharing automatically uses the input power when available, to keep battery from constantly charging/discharging, up to 1.5A draw. Load output is regulated to no-more-than 4.4V 
+ Optional Temperature monitoring of battery by soldering in a 10K NTC thermistor (not included) - suggested for outdoor projects where the battery may get hot (50&deg;C) or cold (0&deg;C). 
+ Play video: JP&rsquo;s Product Pick of the Week 6/28/22 USB/DC/Solar LiPo Charger bq24074 @adafruit @johnedgarpark 
+ Play video: New Products 9/16/2020 featuring Adafruit BrainCraft HAT - Machine Learning for Raspberry Pi 4! 
+ Technical Details 
+ Revision History: 
+ As of Jan 6, 2022 &ndash; we've updated this PCB with Adafruit Pinguin to make a lovely and legible silkscreen - you may get the new PCB or the older version with vector fonts - both are identical other than the fancy silkscreen. Additionally, this LiPo charger may come with black or tan JST connectors. They work the same! 
+ Learn 
+ Primary Guide: Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger - BQ24074 
+ You've got batteries, we've got coulombs 
+See All Guides 
+ May We Also Suggest&hellip; 
+ USB / DC / Solar Lithium Ion/Polymer charger - Rev C - Rev C 
+ MPM3610 5V Buck Converter Breakout - 21V In 5V Out at 1.2A 
+ TLV62569 3.3V Buck Converter Breakout - 3.3V Output 1.2A Max 
+ MPM3610 3.3V Buck Converter Breakout - 21V In 3.3V Out at 1.2A 
+ PowerBoost 1000 Charger - Rechargeable 5V Lipo USB Boost @ 1A - 1000C - 1000C 
+ PowerBoost 1000 Basic - 5V USB Boost @ 1000mA from 1.8V+ 
+ 3.5mm / 1.1mm to 5.5mm / 2.1mm DC Jack Adapter 
+ Adafruit Micro Lipo - USB LiIon/LiPoly charger - v2 - v2 
+ TPS62827 3.3V Buck Converter Breakout - 3.3V Output 2 Amp Max 
+ 6V 2W Solar Panel - ETFE - Voltaic P126 - Voltaic P126 
+ 5V 5W Solar Panel - ETFE - Voltaic P105 - Voltaic P105 
+ 5V 1.2W Solar Panel - ETFE - Voltaic P124 - Voltaic P124 
+ Distributors 
+BuyaPi.ca 
+ Canada 
+Go Tronic 
+ France 
+Pimoroni 
+ United Kingdom 
+Opencircuit 
+ Netherlands 
+Electrokit Sweden AB 
+ Sweden 
+Eckstein Komponente 
+ Germany 
+NTREX, Inc.- Devicemart 
+ South Korea 
+Mikrotron 
+ Croatia 
+Fab.to.Lab 
+ India 
+CR Cibernetica 
+ Costa Rica 
+ELECTRONICAI I+D 
+ Colombia 
+Paradisetronic.com 
+ Germany 
+Mouser Electronics 
+ United States 
+Kiwi Electronics 
+ Netherlands 
+Letmeknow 
+ France 
+VCTEC KOREA 
+ South Korea 
+Makersify 
+ United Kingdom 
+The Pi Hut 
+ United Kingdom 
+DigiKey Electronics 
+ United States 
+Core Electronics 
+ Australia 
+See our Distributors page for a complete list of distributors. 
+Adafruit Universal USB / DC / Solar Lithium Ion/Polymer charger - bq24074 
+ Product ID: 4755 
+ $14.95 
+ 36 in stock 
+ Add to Cart 
+ Also include 1 x 3.5mm / 1.1mm to 5.5mm / 2.1mm DC Jack Adapter ($ 1.50 ) 
+ Qty 
+ Discount 
+ 1-9 
+ $14.95 
+ 10-99 
+ $13.46 
+ 100+ 
+ $11.96 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; A strong spirit transcends rules&rdquo;
+ Prince 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

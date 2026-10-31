@@ -1,0 +1,152 @@
+URL: https://www.adafruit.com/search?q=MPU-6050
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 3274 chars
+Search Results for 'MPU-6050' on Adafruit Industries 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+Search Results for
+ "MPU-6050" 
+ Skip Filter & Sort Menu 
+filter & sort
+Filter & Sort
+Filter & Sort
+ Sort By 
+ Best Match 
+ Most Recent 
+ Apply 
+ sorting 
+ Availability 
+ In Stock 
+ Out of Stock 
+ Discontinued 
+ Apply 
+ availability filters 
+ Price Ranges 
+ Less than $5 
+ $5 to $9.99 
+ $10 to $24.99 
+ $25 to $99.99 
+ Over $100 
+ Apply 
+ price range filters 
+ Category 
+ Arduino (1) 
+ CircuitPython (1) 
+ Development Boards (1) 
+ Feather (1) 
+ Sensors (3) 
+ STEMMA (3) 
+Search results 
+Adafruit MPU-6050 6-DoF Accel and Gyro Sensor - STEMMA QT Qwiic. 
+ Adafruit MPU-6050 6-DoF Accel and Gyro Sensor - STEMMA QT Qwiic 
+ Product ID: 3886 
+ $ 12.95 
+ 64 in stock 
+ Add to Cart , Adafruit MPU-6050 6-DoF Accel and Gyro Sensor - STEMMA QT Qwiic 
+Adafruit LSM6DSOX + LIS3MDL FeatherWing - Precision 9-DoF IMU - STEMMA QT / Qwiic. 
+ Adafruit LSM6DSOX + LIS3MDL FeatherWing - Precision 9-DoF IMU - STEMMA QT / Qwiic 
+ Product ID: 4565 
+ $ 19.95 
+ 28 in stock 
+ Add to Cart , Adafruit LSM6DSOX + LIS3MDL FeatherWing - Precision 9-DoF IMU - STEMMA QT / Qwiic 
+Adafruit LSM6DSOX + LIS3MDL - Precision 9 DoF IMU - STEMMA QT / Qwiic. 
+ Adafruit LSM6DSOX + LIS3MDL - Precision 9 DoF IMU - STEMMA QT / Qwiic 
+ Product ID: 4517 
+ $ 19.95 
+ In stock 
+ Add to Cart , Adafruit LSM6DSOX + LIS3MDL - Precision 9 DoF IMU - STEMMA QT / Qwiic 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; Far and away the best prize that life has to offer is the chance to work hard at work worth doing&rdquo;
+ Theodore Roosevelt 
+ A Minority and Woman-owned Business Enterprise (M/WBE)

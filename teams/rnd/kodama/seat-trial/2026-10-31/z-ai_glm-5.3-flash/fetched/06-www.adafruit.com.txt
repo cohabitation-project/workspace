@@ -1,0 +1,213 @@
+URL: https://www.adafruit.com/search?q=solar+panel
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 4579 chars
+Search Results for 'solar panel' on Adafruit Industries 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+Search Results for
+ "solar panel" 
+ Skip Filter & Sort Menu 
+filter & sort
+Filter & Sort
+Filter & Sort
+ Sort By 
+ Best Match 
+ Most Recent 
+ Apply 
+ sorting 
+ Availability 
+ In Stock 
+ Out of Stock 
+ Discontinued 
+ Apply 
+ availability filters 
+ Features 
+ Works with WipperSnapper 
+ Apply 
+ availability filters 
+ Price Ranges 
+ Less than $5 
+ $5 to $9.99 
+ $10 to $24.99 
+ $25 to $99.99 
+ Over $100 
+ Apply 
+ price range filters 
+ Category 
+ Accessories (12) 
+ Arduino (1) 
+ Batteries (5) 
+ Breakout Boards (3) 
+ CircuitPython (2) 
+ Clearance Sale (2) 
+ Components & Parts (1) 
+ Development Boards (1) 
+ Feather (1) 
+ Internet of Things - IoT (1) 
+ Power (19) 
+ Raspberry Pi (1) 
+ STEMMA (2) 
+ Tools (1) 
+ Wearables (1) 
+Search results 
+Solar Digital Calipers. 
+ Solar Digital Calipers 
+ Product ID: 3720 
+ $ 14.95 
+ 17 in stock 
+ Add to Cart , Solar Digital Calipers 
+Round Solar Panel Skill Badge - 5V / 40mA. 
+ Round Solar Panel Skill Badge - 5V / 40mA 
+ Product ID: 700 
+ $ 2.95 
+ Out of stock 
+ Notify Me , Round Solar Panel Skill Badge - 5V / 40mA 
+6V 2W Solar Panel - ETFE - Voltaic P126. 
+ 6V 2W Solar Panel - ETFE - Voltaic P126 
+ Product ID: 5366 
+ $ 20.95 
+ In stock 
+ Add to Cart , 6V 2W Solar Panel - ETFE - Voltaic P126 
+5V 5W Solar Panel - ETFE - Voltaic P105. 
+ 5V 5W Solar Panel - ETFE - Voltaic P105 
+ Product ID: 5367 
+ $ 34.95 
+ In stock 
+ Add to Cart , 5V 5W Solar Panel - ETFE - Voltaic P105 
+5V 10W Solar Panel - ETFE - Voltaic P110. 
+ 5V 10W Solar Panel - ETFE - Voltaic P110 
+ Product ID: 5369 
+ $ 64.95 
+ In stock 
+ Add to Cart , 5V 10W Solar Panel - ETFE - Voltaic P110 
+Small 6V 1W Solar Panel. 
+ Small 6V 1W Solar Panel 
+ Product ID: 3809 
+ $ 19.95 
+ Out of stock 
+ Notify Me , Small 6V 1W Solar Panel 
+5V 1.2W Solar Panel - ETFE - Voltaic P124. 
+ 5V 1.2W Solar Panel - ETFE - Voltaic P124 
+ Product ID: 5368 
+ $ 14.95 
+ In stock 
+ Add to Cart , 5V 1.2W Solar Panel - ETFE - Voltaic P124 
+5V 0.3W Mini Solar Panel - ETFE - Voltaic P122. 
+ 5V 0.3W Mini Solar Panel - ETFE - Voltaic P122 
+ Product ID: 5855 
+ $ 5.95 
+ In stock 
+ Add to Cart , 5V 0.3W Mini Solar Panel - ETFE - Voltaic P122 
+5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123. 
+ 5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123 
+ Product ID: 5856 
+ $ 8.95 
+ In stock 
+ Add to Cart , 5V 0.6W Mini Solar Panel - ETFE - Voltaic - P123 
+2V 0.3W Mini Solar Panel - ETFE - Voltaic P121. 
+ 2V 0.3W Mini Solar Panel - ETFE - Voltaic P121 
+ Product ID: 5853 
+ $ 5.50 
+ In stock 
+ Add to Cart , 2V 0.3W Mini Solar Panel - ETFE - Voltaic P121 
+ Previous 
+ Current page: 1 
+ Go to page 2 
+ Go to page 3 
+ Go to last page 4 
+ Go to next page Next 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; To be successful, you have to have your heart in your business and your business in your heart&rdquo;
+ Thomas J. Watson 
+ A Minority and Woman-owned Business Enterprise (M/WBE)

@@ -1,0 +1,10 @@
+URL: https://www.ebay.com/itm/277251166582
+OFFSET: 0
+
+HTTP 403 · text/html · 174 chars
+Error Page | eBay 
+SORRY 
+Something went wrong on our end 
+0.4560d017.1793455653.67e83a55 
+Please go back and try again. 
+Copyright © 1995-2026 eBay Inc. All Rights Reserved.

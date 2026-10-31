@@ -1,0 +1,198 @@
+URL: https://www.adafruit.com/product/2473
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 5145 chars
+Solder Wire - RoHS Lead Free - 0.5mm/.02 diameter [50g] : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Tools 
+ / 
+ Soldering 
+ / 
+ Solder 
+ / 
+ Solder Wire - RoHS Lead Free - 0.5mm/.02" diameter 
+Solder Wire - RoHS Lead Free - 0.5mm/.02" diameter - 50g 
+Product ID: 2473 
+ $12.50 
+Product Images and Video 
+ Play video: New Products 5/27/2015 
+ Play video: Solder Gauge - Collin&#039;s Lab Notes #adafruit #soldering #collinslabnotes 
+ Play video: Lead vs Lead Free Solder - Collin&rsquo;s Lab Notes #adafruit #collinslabnotes 
+ Qty 
+ Discount 
+ 1-9 
+ $12.50 
+ 10-99 
+ $11.25 
+ 100+ 
+ $10.00 
+ 30 in stock 
+ Add to Cart 
+ Qty 
+ Discount 
+ 1-9 
+ $12.50 
+ 10-99 
+ $11.25 
+ 100+ 
+ $10.00 
+ 30 in stock 
+ Add to Wishlist 
+ Description 
+If you want to make a kit you'll need some solder. This 0.1lb / 50g spool is a good amount, not too much (like 1 lb spools) and not too little (like those little 'pocket clip' vials). 
+This spool of solder is the less expensive version of our popular SAC305 RoHS solder . This is lead-free solder, so great for lead-free shops, however, it's not SAC305, a formulation which some people prefer. For flux, it contains a 'no clean' rosin core. It's good for all through-hole soldering and great for any kind of SMT soldering. 
+Contains Sn 99.3%, Cu 0.7% with a flux of 2.2%. 
+Perfect for when you need a lead-free alternative to classic 60/40! 
+ Play video: Lead vs Lead Free Solder - Collin&rsquo;s Lab Notes #adafruit #collinslabnotes 
+ Play video: Solder Gauge - Collin&#039;s Lab Notes #adafruit #soldering #collinslabnotes 
+ Play video: New Products 5/27/2015 
+ Technical Details 
+Weight: 50g 
+Diameter: 0.5mm / 0.02" 
+ Learn 
+ Custom Milled PCB Pins 
+ Make wearable art with your milling machine 
+ Building the Assistive Technology Ultimate Remote 
+ This assistive technology device combines infrared and Bluetooth control that can be operated with just 2 or 3 AT switches 
+ Cranky Adabot Solder Dispenser 
+ Now with hand crank action! 
+See All Guides 
+ May We Also Suggest&hellip; 
+ Ladyada's Electronics Toolkit 
+ Mini Solder spool - 60/40 lead rosin-core solder 0.3mm diameter - 100g - 100g 
+ Engineer Professional Silicone-Tip Solder Sucker 
+ Replacement Tubes for Professional Silicone-Tip Solder Sucker 
+ Solder Spool - 1/4 lb SAC305 RoHS lead-free / 0.031" rosin-core - 0.25 lb / 100 g - 0.25 lb / 100 g 
+ Solder sucker 
+ Solder wick - 1.5mm wide and 1.5m / 5 feet long 
+ Solder Wire - 60/40 Rosin Core - 0.5mm/0.02" diameter - 50 grams 
+ Solder Wire - SAC305 RoHS Lead Free - 0.5mm/.02" diameter - 50g - 50g 
+ Maker Paste - Low Temperature Lead-Free Prototyping Solder Paste 
+ Square 60mm x 60mm Soldering Sponge – 3 Pack 
+ Solder Wire Holder Stand - TJ-227 - TJ-227 
+ Distributors 
+Mouser Electronics 
+ United States 
+Letmeknow 
+ France 
+Jameco 
+ United States 
+Little Bird Electronics 
+ Australia 
+See our Distributors page for a complete list of distributors. 
+Solder Wire - RoHS Lead Free - 0.5mm/.02" diameter - 50g 
+ Product ID: 2473 
+ $12.50 
+ 30 in stock 
+ Add to Cart 
+ Qty 
+ Discount 
+ 1-9 
+ $12.50 
+ 10-99 
+ $11.25 
+ 100+ 
+ $10.00 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; If A equals success, then the formula is A equals X plus Y plus Z. X is work. Y is play. Z is keep your mouth shut&rdquo;
+ Albert Einstein 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

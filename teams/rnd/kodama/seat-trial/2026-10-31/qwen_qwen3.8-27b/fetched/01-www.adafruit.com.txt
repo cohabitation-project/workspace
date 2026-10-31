@@ -1,0 +1,213 @@
+URL: https://www.adafruit.com/product/5813
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 8111 chars
+Raspberry Pi 5 - 8 GB RAM : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Raspberry Pi 
+ / 
+ Computers 
+ / 
+ Raspberry Pi 5 - 8 GB RAM 
+Raspberry Pi 5 - 8 GB RAM 
+Product ID: 5813 
+ $200.00 
+Product Images and Video 
+ Play video: #NewProducts 10/4/23 Featuring #Adafruit VCNL4020 #Proximity and #LightSensor - #STEMMAQT ! 
+ In stock 
+Max per customer: 2 
+ Add to Cart 
+ Also include 1 x Flirc Aluminum Case for Raspberry Pi 5 ($ 16.95 ) 
+ Also include 1 x Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm ($ 2.70 ) 
+ Also include 1 x Aluminum Metal Heatsink Raspberry Pi 5 Case with Fan ($ 19.95 ) 
+ There are multiple versions of this item. Please select one from the options below: 
+ 1GB RAM 
+ $49.50 
+ 2GB RAM 
+ Out of stock 
+ 4GB RAM 
+ $130.00 
+ 8GB RAM 
+ $200.00 
+ 16GB RAM 
+ $350.00 
+ In stock 
+ Add to Wishlist 
+ Description 
+The Raspberry Pi 5 is the newest Raspberry Pi computer, and the Pi Foundation knows you can always make a good thing better ! And what could make the Pi 5 better than the 4? How about a faster processor, USB 3.0 ports, and an updated Gigabit Ethernet chip with PoE capability? Good guess - that's exactly what they did! 
+The Raspberry Pi 5 is the latest product in the Raspberry Pi range, boasting 64-bit quad-core Arm Cortex-A76 processor running at 2.4GHz with built-in metal heatsink , USB 3 ports, dual-band 2.4GHz and 5GHz wireless LAN , faster Gigabit Ethernet , and PoE capability via a separate PoE HAT. 
+This version comes with 8 GB of RAM , but there's also a 4GB version if you like. 
+Featuring a 64-bit quad-core Arm Cortex-A76 processor running at 2.4GHz, Raspberry Pi 5 delivers a 2&ndash;3&times; increase in CPU performance relative to Raspberry Pi 4. Alongside a substantial uplift in graphics performance from an 800MHz VideoCore VII GPU; dual 4Kp60 display output over HDMI; and state-of-the-art camera support from a rearchitected Raspberry Pi Image Signal Processor, it provides a smooth desktop experience for consumers, and opens the door to new applications for industrial customers. 
+For the first time, this is a full-size Raspberry Pi computer using silicon built in-house at Raspberry Pi. The RP1 &ldquo;southbridge&rdquo; provides the bulk of the I/O capabilities for Raspberry Pi 5 and delivers a step change in peripheral performance and functionality. Aggregate USB bandwidth is more than doubled, yielding faster transfer speeds to external UAS drives and other high-speed peripherals; the dedicated two-lane 1Gbps MIPI camera and display interfaces present on earlier models have been replaced by a pair of four-lane 1.5Gbps MIPI transceivers, tripling total bandwidth, and supporting any combination of up to two cameras or displays; peak SD card performance is doubled, through support for the SDR104 high-speed mode; and for the first time. the platform exposes a single-lane PCI Express 2.0 interface, providing support for high-bandwidth peripherals. 
+Please note the Pi 5 is a significant redesign, and Raspberry Pi 4 cases will not fit. 
+ Official Raspberry Pi 5 case - easy snap-fit case for your Pi 5 
+ Official Raspberry Pi 5 power supply - can give up to 5A (27W) of current with a 1.5m long cable, and a USB C connector 
+ Micro HDMI cable - connect the onboard micro HDMI sockets to standard HDMI displays. 
+ Play video: #NewProducts 10/4/23 Featuring #Adafruit VCNL4020 #Proximity and #LightSensor - #STEMMAQT ! 
+ Technical Details 
+ Specifications: 
+ Processor: 
+2.4GHz quad-core 64-bit Arm Cortex-A76 CPU, with cryptography extensions, 512KB per-core L2 caches, and a 2MB shared L3 cache 
+ Features: 
+VideoCore VII GPU, supporting OpenGL ES 3.1, Vulkan 1.2 &bull; Dual 4Kp60 HDMI&reg; display output with HDR support 
+4Kp60 HEVC decoder 
+LPDDR4X-4267 SDRAM (4GB and 8GB SKUs available at launch) 
+Dual-band 802.11ac Wi-Fi&reg; 
+Bluetooth&reg; 5.0 / Bluetooth&reg; Low Energy 
+microSD card slot, with support for high-speed SDR104 mode 
+2 &times; USB 3.0 ports, supporting simultaneous 5Gbps operation 
+2 &times; USB 2.0 ports 
+Gigabit Ethernet, with PoE+ support (requires separate PoE+ HAT) 
+2 &times; 4-lane MIPI camera/display transceivers 
+PCIe 2.0 x1 interface for fast peripherals (requires separate M.2 HAT or other adapter) 
+5V/5A DC power via USB-C, with Power Delivery support &bull; Raspberry Pi standard 40-pin header 
+Real-time clock (RTC), powered from external battery 
+Power button 
+ Product Brief 
+ Safety & User Guide 
+ Learn 
+ Raspberry Pi 5 3D Printed Case 
+ Print a 3D snap fit case for the Raspberry Pi 5 
+ NFC Raspberry Pi Media Player 
+ Kick back with some popcorn and launch movies with NFC 
+ Speech Synthesis On Raspberry Pi with KittenTTS 
+ Make your Raspberry Pi read a personalized weather forecast using the open source KittenTTS text-to-speech model 
+ Local LLMs on Raspberry Pi 
+ Explore the possibilities of running LLMs locally on the Raspberry Pi & similar hardware. 
+See All Guides 
+ May We Also Suggest&hellip; 
+ Raspberry Pi 5 - 4 GB RAM 
+ USB C to USB C Cable - USB 3.1 Gen 4 with E-Mark - 1 meter long 
+ Official Raspberry Pi Micro HDMI to HDMI Cable - 1 meter long - 1 meter long 
+ USB A to USB C Adapter 
+ USB C to USB C Cable - USB 3.1 Gen 4 with E-Mark - 6" long 
+ Micro SD Card Extender - 68cm (26 inch) long flex cable 
+ Official Raspberry Pi 27W PD Power Supply 5.1V 5A with USB C 
+ Official Raspberry Pi 5 Active Cooler 
+ Official Raspberry Pi Foundation Raspberry Pi 5 Case + Fan 
+ Raspberry Pi 5 RTC Battery 
+ Pimoroni NVMe Base for Raspberry Pi 5 - PIM699 - PIM699 
+ Witty Pi 5 HAT+ - RTC & Power Management for Raspberry Pi 
+Raspberry Pi 5 - 8 GB RAM 
+ Product ID: 5813 
+ $200.00 
+ There are multiple versions of this item. Please select one from the options below: 
+ 1GB RAM 
+ $49.50 
+ 2GB RAM 
+ Out of stock 
+ 4GB RAM 
+ $130.00 
+ 8GB RAM 
+ $200.00 
+ 16GB RAM 
+ $350.00 
+ In stock 
+Max per customer: 2 
+ Add to Cart 
+ Also include 1 x Flirc Aluminum Case for Raspberry Pi 5 ($ 16.95 ) 
+ Also include 1 x Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm ($ 2.70 ) 
+ Also include 1 x Aluminum Metal Heatsink Raspberry Pi 5 Case with Fan ($ 19.95 ) 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; You're only given one little spark of madness. You mustn't lose it&rdquo;
+ Robin Williams 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

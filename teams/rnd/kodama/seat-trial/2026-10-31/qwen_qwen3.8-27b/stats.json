@@ -1,0 +1,40 @@
+{
+  "model": "qwen/qwen3.8-27b",
+  "steps": 14,
+  "calls": {
+    "read_file": 1,
+    "list_files": 1,
+    "web_search": 9,
+    "fetch_url": 10,
+    "run_python": 1,
+    "write_file": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.adafruit.com/product/5813",
+    "https://power.tenergy.com/battery-packs/li-ion-packs/14-8v/",
+    "https://hitecrcd.com/hs-5645mg-high-torque-metal-gear-digital-sport-servo/",
+    "https://www.newpowa.com/10w-monocrystalline-12v-solar-panel/",
+    "https://www.adafruit.com/product/2473",
+    "https://www.adafruit.com/product/1411",
+    "https://www.adafruit.com/product/2472",
+    "https://www.adafruit.com/product/5657"
+  ],
+  "errors": 0,
+  "inTok": 438490,
+  "outTok": 25022,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.05288015,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31/qwen_qwen3.8-27b/estimate.md"
+  ],
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/qwen_qwen3.8-27b/estimate.md",
+  "priceCheck": {
+    "measured": 0,
+    "onCitedPage": 0,
+    "onOtherPage": 0,
+    "notFound": []
+  },
+  "run_at": "2026-10-31T14:11:34.854Z"
+}

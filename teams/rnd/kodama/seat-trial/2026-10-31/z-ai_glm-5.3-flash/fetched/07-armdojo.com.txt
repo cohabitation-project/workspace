@@ -1,0 +1,150 @@
+URL: https://armdojo.com/products/feetech-sts3215-serial-bus-servo
+OFFSET: 15000
+
+HTTP 200 · text/html; charset=utf-8 · 27818 chars
+n SO-ARM100 / SO-ARM101 leader or follower arm 
+Building an SO-101 arm from printed parts: the 12-servo set matches the official bill of materials 
+LeKiwi mobile base (3 × 12 V wheel servos) or the full LeKiwi robot (base + arm) 
+OpenDuck Mini bipedal robot (14 × 7.4 V servos) 
+12-DOF robot dogs and quadrupeds, three servos per leg: the robot dog set has 12 × 12 V C018 (30 kg·cm) for the leg joints 
+Custom robots, grippers and pan-tilt heads that need position, load and temperature feedback over one bus 
+Who is it for? 
+LeRobot builders sourcing exact-spec servos, robot-dog and quadruped builders, robotics students, and makers who want feedback servos that are cheaper than Dynamixel but supported by open-source software. 
+Compatibility 
+Controllers: BusLinker V3.0, Waveshare bus servo adapter, Feetech FE-URT-2, or any 3.3 V / 5 V UART with half-duplex direction control 
+Software: Hugging Face LeRobot (feetech motor bus), Feetech FD software, Python (scservo_sdk), Arduino and ESP32 libraries 
+Horns: 25 T spline, metal horns included; compatible with SO-101 and LeKiwi printed parts 
+Voltage: C018 runs on 12 V (SO-101 follower joints); C001 / C044 / C046 run on 7.4 V (leader arm and light joints) — do not feed 12 V to the 7.4 V models 
+Specifications 
+ Model 
+ Feetech STS3215 (ST3215) smart serial bus servo 
+ Stall torque 
+ C018: 30 kg·cm at 12 V; C001 / C044 / C046: 19 kg·cm at 7.4 V (1:345), lower on the faster ratios 
+ Gear ratio 
+ 1:345 (C018, C001), 1:191 (C044), 1:147 (C046) 
+ Speed 
+ 0.16 s/60° (C018 at 12 V); 52 rpm at 7.4 V for 1:345 models 
+ Position sensor 
+ 12-bit magnetic encoder, 4096 steps over 360°, 0.088° resolution 
+ Control modes 
+ Position (0–360°), constant-speed wheel, open-loop PWM, step mode, multi-turn absolute position 
+ Interface 
+ Half-duplex TTL serial bus, 38 400 bps – 1 Mbps, daisy-chain up to 253 IDs, 3-pin cable 
+ Feedback 
+ Position, speed, load, voltage, temperature, current, moving status; over-current and over-temperature protection 
+ Voltage 
+ C018: 6–12.6 V (use 12 V); C001: 4–7.4 V, over-voltage protection above 8 V; C044 / C046: 5–8.4 V. Power a mixed leader arm from 5 V (LeRobot's guide) or 7.4 V, not 8.4 V 
+ Gears 
+ Metal (brass and steel), dual-shaft housing with rear bearing, 25 T spline 
+ Size / weight 
+ 45.2 × 24.7 × 35 mm, 55 g 
+ Included per servo 
+ Metal main horn, rear horn, horn screws, mounting screws, 15 cm 3-pin cable 
+ Ships from 
+ Singapore, with tracking 
+What's in the box 
+ STS3215-C018, 12 V, 30 kg·cm, 1:345: 1 × STS3215-C018 servo, metal main horn, rear horn, screws, 15 cm cable 
+ STS3215-C001, 7.4 V, 19 kg·cm, 1:345: 1 × STS3215-C001 servo with horns, screws and cable 
+ STS3215-C044, 7.4 V, 1:191 (fast): 1 × STS3215-C044 servo with horns, screws and cable 
+ STS3215-C046, 7.4 V, 1:147 (fastest): 1 × STS3215-C046 servo with horns, screws and cable 
+ SO-ARM101 12-servo set (6 × 12 V + 6 × 7.4 V, three ratios): 6 × C018 12 V for the follower, 6 × 7.4 V servos in the 1:345 / 1:191 / 1:147 mix the SO-101 leader arm calls for, horns, screws and cables 
+ LeKiwi base set (3 × 12 V, 1:345): 3 × STS3215-C018 12 V servos with horns, screws and cables 
+ LeKiwi full robot set (9 × 12 V + 6 × 7.4 V): 9 × 12 V and 6 × 7.4 V servos in the three LeKiwi gear ratios, horns, screws and cables 
+ OpenDuck Mini set (14 × 7.4 V, 19 kg·cm, 1:345): 14 × STS3215-C001 servos with horns, screws and cables 
+ Robot dog set (12 × 12 V C018, 30 kg·cm, 1:345): 12 × STS3215-C018 12 V servos with horns, screws and cables 
+Shipping and returns 
+Ships from Singapore with tracking, charged by parcel weight and shown in full before payment. Checkout shows one shipping option: the lowest-cost tracked service for your parcel. 
+ United States: tracked shipping (8–14 business days) from $18.99 for parcels up to 1.9 kg; heavier parcels up to 5 kg ship express tracked (2–5 business days) from $77.99; assembled robot-arm kits and parcels over 5 kg ship by DHL Express (3–5 business days) from $260.99. US import duty is not collected at checkout; the recipient pays it on arrival. 
+ UK, France, Germany, Netherlands, Italy & Spain: tracked shipping (8–14 business days) from $17.99 for parcels up to 1.9 kg. Import VAT and any duty are paid on delivery. 
+ Rest of Europe & Canada: tracked shipping (5–22 business days) from $10.99 for parcels up to 1.9 kg. Import VAT and any duty are paid on delivery. 
+ Japan & Australia: tracked shipping (5–14 business days) from $11.99 for parcels up to 2 kg. 
+ Heavier parcels and assembled robot-arm kits (built and calibrated to order in Singapore, dispatched in 7–10 business days): priority tracked from $144.99 to Europe, the UK and Canada (9–14 business days); DHL Express from $260.99 to the US for robot-arm kits; robot-arm kits to Japan, Australia and other countries by priority tracked from $124.99 (10–14 business days), other parcels over 2 kg there by express courier from $229.99. 
+ Free shipping: orders of $100 or more ship free when the shipping charge is $22.99 or less (most destinations outside the US). 
+ Everywhere else: tracked shipping (5–15 business days) from $11.99; the rate for your country is shown at checkout. 
+Full table: shipping, duties and delivery times . 7-day returns; defective items are replaced or refunded with shipping covered. 
+ One parcel, one shipping charge: small parts travel together, so the postage on a single servo is usually the same as on three of them. 
+Kurz auf Deutsch 
+Original Feetech STS3215 Serial-Bus-Servo mit 12-Bit-Magnetencoder und Metallgetriebe – der Standardantrieb für SO-100/SO-101-Roboterarme, LeKiwi und OpenDuck Mini. Die 12-V-Version C018 (30 kg·cm) für den Follower-Arm, die 7,4-V-Versionen C001/C044/C046 mit unterschiedlichen Übersetzungen für den Leader-Arm; dazu fertige Sets für SO-ARM101, LeKiwi und OpenDuck Mini. Versand mit Sendungsverfolgung aus Singapur, Preise in Euro, Bezahlung auch per PayPal. Einfuhrabgaben, falls erhoben, trägt der Empfänger. Fragen gern auf Deutsch an dylan@martha-trade.com. 
+Frequently asked questions 
+Which STS3215 do I need for the SO-ARM101? 
+The follower arm uses six 12 V C018 (30 kg·cm) servos. The leader arm uses 7.4 V servos with three different gear ratios so it is light to move by hand: the 12-servo set on this page contains exactly the mix from the SO-101 bill of materials. 
+What is the difference between C018, C001, C044 and C046? 
+C018 is the 12 V, 30 kg·cm, 1:345 version. C001 is the 7.4 V, 19 kg·cm, 1:345 version. C044 (1:191) and C046 (1:147) are 7.4 V servos with lower gear ratios: faster and easier to back-drive, less torque; the SO-101 leader arm uses them for the joints you move most. 
+Is it a real Feetech servo? 
+Yes. These are genuine Feetech STS3215 servos with the Feetech label, magnetic encoder and metal gearbox, the same part sold by Seeed and Waveshare. 
+Can I control it from Arduino or Raspberry Pi? 
+Yes. It speaks the Feetech half-duplex serial protocol. Use a bus servo board such as the BusLinker V3.0 or a Waveshare adapter for USB, or a UART plus direction pin on a microcontroller with the Feetech SCServo library. 
+Does it do continuous rotation? 
+Yes. Besides 0–360° position mode it supports wheel (constant speed) mode, open-loop PWM mode, step mode and multi-turn absolute position, selectable by register. 
+What power supply do I need? 
+12 V 5 A for six C018 servos in an arm; 7.4 V (2S LiPo or a 7.4 V supply) for the C001 / C044 / C046 models. Each servo draws about 0.9 A rated and up to 2–3 A at stall. 
+Complete the build 
+ One SO-ARM101 arm needs 6 STS3215 servos; a leader+follower pair needs 12. Recommended path: single servo → Waveshare adapter → cables → dual-voltage power → 6/12 kit / starter . Also see metal horns . 
+Build guides 
+ Feetech servo setup guide : set the voltage, wire the FE-URT-2 and give every servo its own ID, with diagrams and a printable PDF 
+ STS3215 robot dog parts list : what a 12-DOF quadruped needs: servo version, controller, power and open-source frames 
+ SO-101 bill of materials and real cost : every part of a leader and follower pair 
+ Powering 12 V vs 7.4 V servos : adapters, current and wiring 
+ Setting STS3215 servo IDs and zero offsets : the setup every build starts with 
+ Robot Builder FAQ : which servo for which robot, SO-101, Open Duck, robot dogs and ordering 
+ Share
+ Share
+ Link 
+ Close share 
+ Copy link 
+ View full details
+Complete the build: SO-101 leader + follower pair (print your own parts) 
+Everything electronic and mechanical for a Hugging Face LeRobot SO-101 teleoperation pair, with the official servo split: six 12 V servos for the follower and six 7.4 V servos in three gear ratios for the leader. Untick what you already have. 
+Servos 
+ Add Feetech STS3215 Serial Bus Servo, 30 kg·cm 12 V / 19 kg·cm 7.4 V, 360° Magnetic Encoder, for SO-ARM101, LeKiwi, OpenDuck and Robot Dogs (single or robot sets) 
+ Feetech STS3215 Serial Bus Servo, 30 kg·cm 12 V / 19 kg·cm 7.4 V, 360° Magnetic Encoder... 
+SO-ARM101 12-servo set (6 × 12 V + 6 × 7.4 V, three ratios) · $229.99 each 
+12 servos: 6 × 12 V follower + 6 × 7.4 V leader, horns and 15 cm cables included 
+Electronics 
+ Add Waveshare Bus Servo Adapter (A), USB-C and UART Driver Board for Feetech ST/SC Bus Servos — Single Board or Leader-and-Follower Pair for SO-ARM101, LeKiwi and LeRobot 
+ Waveshare Bus Servo Adapter (A), USB-C and UART Driver Board for Feetech ST/SC Bus Serv... 
+2 boards — one leader and one follower arm · $21.99 each 
+One USB bus servo adapter per arm 
+Cables 
+ Add Feetech Bus Servo Cables, 3-Pin 5264 Connectors, for STS3215 / SO-ARM101 / LeKiwi, 15–90 cm, 5-Packs and Mixed Set 
+ Feetech Bus Servo Cables, 3-Pin 5264 Connectors, for STS3215 / SO-ARM101 / LeKiwi, 15–9... 
+Mixed 12-pack: 4×15 + 4×20 + 4×40 cm · $14.99 each 
+15 / 20 / 40 cm lengths for the longer joint runs 
+Mounting 
+ Add Heavy-Duty G-Clamps 4-Pack, 2" or 3" Cast Iron C-Clamps for Fixing SO-ARM101 / LeRobot Arm Bases to a Desk 
+ Heavy-Duty G-Clamps 4-Pack, 2" or 3" Cast Iron C-Clamps for Fixing SO-ARM101 / LeRobot ... 
+2-inch (50 mm opening), 4-pack · $24.99 each 
+Two clamps per arm base 
+Cameras 
+ Add LeRobot Camera Kit: Wide-Angle Wrist Camera + 90° Overhead Camera, 1080p USB UVC, with Optional Desk Camera Arm, for SO-101 Data Collection 
+ LeRobot Camera Kit: Wide-Angle Wrist Camera + 90° Overhead Camera, 1080p USB UVC, with ... 
+2 cameras + overhead camera arm · $94.99 each 
+Wrist + overhead views for recording datasets 
+Training 
+ Add Robot Training Props: 100 Colored Wooden Cubes (10 Colors) with 10×10 Tray, for Pick-and-Place, Sorting and Stacking Datasets 
+ Robot Training Props: 100 Colored Wooden Cubes (10 Colors) with 10×10 Tray, for Pick-an... 
+$19.99 each 
+100 identical cubes — the easiest first pick-and-place task 
+Upgrades 
+ Add Feetech STS3250 Serial Bus Servo, 50 kg·cm 12 V, Full Metal Case, 360° Magnetic Encoder, Upgrade for SO-ARM101 Shoulder Joints 
+ Feetech STS3250 Serial Bus Servo, 50 kg·cm 12 V, Full Metal Case, 360° Magnetic Encoder... 
+STS3250-C002 (servo only) · $64.99 each 
+50 kg·cm for the follower shoulder and elbow 
+Spares 
+ Add SO-101 Joint Spares Kit: 6 Metal Horn Sets + 17 Bus Servo Cables + Spare 25T Output Disc, for SO-ARM100 / SO-ARM101 LeRobot Arms 
+ SO-101 Joint Spares Kit: 6 Metal Horn Sets + 17 Bus Servo Cables + Spare 25T Output Dis... 
+$47.99 each 
+Horns and cables for every wear point of one arm 
+Selected: 
+ Add selected to cart 
+Prefer one box? SO-101 DIY Electronics Kit, Leader + Follower: 12 Feetech STS3215 Servos, 2 B... — the same core parts as a single kit from $284.99. 
+Printed parts: print them yourself from the open-source SO-101 STL files (about 768 g of PLA for a pair). 
+Power supplies are not included anywhere in our store (mains adapters are hard to ship internationally). Buy locally: 12 V ≥ 5 A for a follower / 12 V servos, 7.4 V ≥ 3 A for a leader; both with a 5.5 × 2.1 mm centre-positive plug. 
+ See every robot build → 
+Quick links 
+ About
+ Search
+ Your Privacy Choices
+Info 
+ About
+ Search

@@ -1,0 +1,38 @@
+{
+  "model": "moonshotai/kimi-k3",
+  "steps": 8,
+  "calls": {
+    "list_files": 1,
+    "web_search": 9,
+    "read_file": 1,
+    "fetch_url": 7,
+    "run_python": 1,
+    "write_file": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.pishop.us/product/raspberry-pi-5-8gb/",
+    "https://www.adafruit.com/product/200",
+    "https://www.adafruit.com/product/5812",
+    "https://www.adafruit.com/product/5657",
+    "https://www.waveshare.com/st3215-servo.htm",
+    "https://www.pololu.com/product/2851"
+  ],
+  "errors": 0,
+  "inTok": 188417,
+  "outTok": 14067,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.1287473915,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31/moonshotai_kimi-k3/estimate.md"
+  ],
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/moonshotai_kimi-k3/estimate.md",
+  "priceCheck": {
+    "measured": 0,
+    "onCitedPage": 0,
+    "onOtherPage": 0,
+    "notFound": []
+  },
+  "run_at": "2026-10-31T14:04:27.976Z"
+}

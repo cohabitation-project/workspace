@@ -1,0 +1,199 @@
+URL: https://www.adafruit.com/product/5657
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 6845 chars
+Raspberry Pi Camera Module 3 Standard [12MP Autofocus] : Adafruit Industries, Unique & fun DIY electronics and kits 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+ Raspberry Pi 
+ / 
+ Cameras 
+ / 
+ Camera Modules 
+ / 
+ Raspberry Pi Camera Module 3 Standard 
+Raspberry Pi Camera Module 3 Standard - 12MP Autofocus 
+Product ID: 5657 
+ $29.25 
+Product Images and Video 
+ Play video: Raspberry Pi Camera Module 3 - Autofocus cameras! 
+ Play video: NewProds 3/1/23 Feat. Adafruit PiCowbell Adalogger for Pico - MicroSD, RTC &amp; STEMMA QT! 
+ In stock 
+ Add to Cart 
+ Also include 1 x Raspberry Pi Zero FPC Camera Cable - 30cm long ($ 3.95 ) 
+ Also include 1 x Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm ($ 2.70 ) 
+ There are multiple versions of this item. Please select one from the options below: 
+ Standard - 12MP 75 Degree Autofocus Lens 
+ $29.25 
+ 12MP 120 Degree Wide Angle Lens 
+ $38.50 
+ NoIR - 12MP 75 Degree Infrared Lens 
+ $25.00 
+ Wide NoIR - 12MP 120 Degree Infrared Lens 
+ $38.50 
+ In stock 
+ Add to Wishlist 
+ Description 
+Raspberry Pi Camera Module 3 is a compact camera from Raspberry Pi. Featuring autofocus and a 12-megapixel sensor, and supported by Raspberry Pi's Picamera2 Python library, Camera Module 3 gives you excellent image quality with precise control. 
+ Camera Module 3 Standard features a 75-degree diagonal angle of view . No additional lens is required to use this camera; it is ready to go as-is! Camera Module 3 is available in telephoto and wide-angle variants, both of which are available with or without an infrared cut filter. 
+Camera Module 3 can be used to take full HD video as well as still photographs and features an HDR mode up to 3 megapixels. Its operation is fully supported by the libcamera library, including Camera Module 3&rsquo;s rapid autofocus feature: this makes it easy for beginners to use, while offering plenty for advanced users. Camera Module 3 is compatible with all Raspberry Pi computers. 
+The PCB size and mounting holes remain the same as for Camera Module 2. The Z dimension differs: due to the improved optics, Camera Module 3 is several millimeters taller than Camera Module 2. That means you cannot use our cute camera case ! 
+Comes with a 200mm long flexible cable for connecting to a Raspberry Pi computer; if it's too short/long, we have a range of Raspberry Pi Camera Cables in various lengths you can use here . 
+ To use with a Raspberry Pi 5, you will need this adapter cable! We have three length options here . 
+ Features: 
+Sony IMX708 12-megapixel sensor with I2C-controlled focus actuator 
+Large 7.4mm diagonal sensor 
+75-degree diagonal angle of view 
+Compatible with all models of Raspberry Pi ( Raspberry Pi Zero models require a special camera cable ) 
+ Play video: NewProds 3/1/23 Feat. Adafruit PiCowbell Adalogger for Pico - MicroSD, RTC & STEMMA QT! 
+ Play video: Raspberry Pi Camera Module 3 - Autofocus cameras! 
+ Technical Details 
+ Raspberry Pi Documentation 
+ GitHub 
+ Camera Module 3 Product Brief 
+ Mechanical Drawing 
+ Learn 
+ Raspberry Pi Thermal Camera 
+ Build a DIY Thermal Imaging Camera 
+ Coffee Rater 
+ Share your drinks with friends, and get instant feedback 
+See All Guides 
+ May We Also Suggest&hellip; 
+ Raspberry Pi Camera Module 3 - 12MP 120 Degree Wide Angle Lens 
+ Raspberry Pi Camera Module 3 NoIR - 12MP 75 Degree Infrared Lens 
+ Raspberry Pi Camera Module 3 Wide NoIR - 12MP 120 Degree - Wide Angle Infrared Lens - Wide Angle Infrared Lens 
+ Flex Cable for Raspberry Pi Camera or Display — Various Sizes 
+ Adafruit OV5640 Camera Breakout - 120 Degree Lens 
+ Zero Spy Camera for Raspberry Pi Zero 
+ Raspberry Pi High Quality HQ Camera - 12MP - 12MP 
+ Raspberry Pi Global Shutter Camera – CS Lens Mount 
+ Panel Mount Kit for Raspberry Pi Camera Module 3 
+ Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm - 300mm long - 300mm long 
+ Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm - 500mm long - 500mm long 
+ Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm - 200mm long - 200mm long 
+ Distributors 
+Little Bird Electronics 
+ Australia 
+Mouser Electronics 
+ United States 
+Circuitrocks 
+ Philippines 
+See our Distributors page for a complete list of distributors. 
+Raspberry Pi Camera Module 3 Standard - 12MP Autofocus 
+ Product ID: 5657 
+ $29.25 
+ There are multiple versions of this item. Please select one from the options below: 
+ Standard - 12MP 75 Degree Autofocus Lens 
+ $29.25 
+ 12MP 120 Degree Wide Angle Lens 
+ $38.50 
+ NoIR - 12MP 75 Degree Infrared Lens 
+ $25.00 
+ Wide NoIR - 12MP 120 Degree Infrared Lens 
+ $38.50 
+ In stock 
+ Add to Cart 
+ Also include 1 x Raspberry Pi Zero FPC Camera Cable - 30cm long ($ 3.95 ) 
+ Also include 1 x Raspberry Pi 5 FPC Camera Cable - 22-pin 0.5mm to 15-pin 1mm ($ 2.70 ) 
+ Add to Wishlist 
+ Description 
+ Technical Details 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; If you want to build a ship, don't drum up people to collect wood and don't assign them tasks and work, but rather teach them to long for the endless immensity of the sea&rdquo;
+ Antoine de Saint-Exupery 
+ A Minority and Woman-owned Business Enterprise (M/WBE) 
+ &times; 
+Create New Wishlist 
+ Name 
+ Description 
+ Create Wishlist

@@ -1,0 +1,38 @@
+{
+  "model": "deepseek/deepseek-v4.1-flash",
+  "steps": 10,
+  "calls": {
+    "list_files": 1,
+    "read_file": 3,
+    "web_search": 7,
+    "fetch_url": 6,
+    "write_file": 2,
+    "run_python": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.adafruit.com/product/5812",
+    "https://www.adafruit.com/product/4755",
+    "https://www.pololu.com/product/3062",
+    "https://www.adafruit.com/product/4754",
+    "https://www.pololu.com/product/2130",
+    "https://www.adafruit.com/product/5366"
+  ],
+  "errors": 1,
+  "inTok": 278769,
+  "outTok": 20067,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.014059929,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31/deepseek_deepseek-v4.1-flash/estimate.md"
+  ],
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/deepseek_deepseek-v4.1-flash/estimate.md",
+  "priceCheck": {
+    "measured": 0,
+    "onCitedPage": 0,
+    "onOtherPage": 0,
+    "notFound": []
+  },
+  "run_at": "2026-10-31T14:14:04.659Z"
+}

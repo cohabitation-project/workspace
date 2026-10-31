@@ -1,0 +1,555 @@
+URL: https://www.waveshare.com/st3215-servo.htm
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 18502 chars
+ST3215 Series Serial Bus Servo, High precision and torque, 360 Degrees Magnetic Encoder, Two-way Feedback, Servo/Motor Mode Switchable, Options For 30kg.cm@12V / 19.5kg.cm@7.4V Torque | ST3215 Servo 
+ JavaScript seems to be disabled in your browser. 
+ You must have JavaScript enabled in your browser to utilize the functionality of this website. 
+ Select Your Currency 
+ US Dollar $ 
+ Australian Dollar AU$ 
+ British Pound Sterling £ 
+ Canadian Dollar CA$ 
+ Euro € 
+ Japanese Yen ¥ 
+ -->
+ $ US Dollar 
+ AU$ Australian Dollar 
+ £ British Pound Sterling 
+ CA$ Canadian Dollar 
+ € Euro 
+ ¥ Japanese Yen 
+ SUPPORT 
+ Checkout 
+ My Cart 
+ My Account 
+ -->
+ Checkout 
+| 
+ My Cart 
+| 
+ Login/Register 
+ Waveshare 
+ Search 
+ 0 item(s) 
+ - $0.00 
+You have no items in your shopping cart. 
+ Toggle navigation 
+ Search 
+ PRODUCTS 
+ Products 
+ Raspberry Pi 
+ Boards / Kits 
+ Raspberry Pi 5 
+ Raspberry Pi 4 
+ Raspberry Pi 3 
+ Raspberry Pi 400 
+ Raspberry Pi Zero 2 W 
+ Raspberry Pi Zero 
+ Raspberry Pi Pico 
+ Compute Module 4/4S 
+ Compute Module 3 
+ Raspberry Pi Pico 2 
+ Compute Module 5 
+ Raspberry Pi 500 
+ Displays 
+ LCD 
+ OLED 
+ e-Paper 
+ Cameras 
+ ≥10MP Rolling Shutter 
+ 8MP Rolling Shutter 
+ 5MP Rolling Shutter 
+ 2MP Rolling Shutter 
+ Global Shutter Cameras 
+ USB Cameras 
+ AI Cameras 
+ GMSL Cameras 
+ HATs 
+ IoT 
+ Interface / Expansion / Power 
+ Motors / Relays / SCR 
+ AD / DA / Audio / Sensors 
+ LED / Buttons 
+ Versatile 
+ All-in-one 
+ Magic Mirror / All-in-one 
+ HomeLab 
+ Robots 
+ Mobile Robots 
+ Robot Arm / Control 
+ Portable Gaming 
+ Accessories 
+ Pi Cases 
+ Display Cases 
+ Wires / Power / SD Card... 
+ AI 
+ Boards / Kits 
+ Jetson Nano 
+ Jetson TX2 
+ Jetson Xavier NX 
+ Jetson Orin 
+ AI Cameras 
+ OPS Computer 
+ Raspberry Pi 
+ D-Robotics 
+ Luckfox 
+ Displays 
+ LCD 
+ OLED 
+ e-Paper 
+ Cameras 
+ Single Cameras 
+ Binocular Cameras 
+ USB Cameras 
+ GMSL Cameras 
+ Others 
+ Expansions 
+ IoT 
+ Motors / Relays / SCR 
+ AD / DA / Versatile 
+ Power Supply 
+ Robots 
+ Mobile Robots 
+ Robot Arm / Control 
+ Accessories 
+ Cases 
+ Wires / Power / SD Card... 
+ Luckfox 
+ Linux Boards / Modules 
+ Omni3576-RK3576 
+ Luckfox Lyra-RK3506 
+ LuckFox Pico-RV1106 
+ Luckfox Aura-RV1126 
+ Core3566-RK3566 
+ LuckFox Lume-T153 
+ Displays 
+ LCD/OLED 
+ Cameras 
+ 3MP Cameras 
+ 8MP Cameras 
+ 5MP Cameras 
+ 1MP Cameras 
+ RISC-V 
+ Boards / Kits 
+ VisionFive2 
+ VisionFive2 Lite 
+ Displays 
+ LCD 
+ Expansions / Accessories 
+ Audio / Sensors 
+ Relays / Motors / Servos 
+ Cooling Fan 
+ Cameras 
+ 8MP IMX219 Cameras 
+ ESP32 
+ Boards / Kits 
+ ESP32-P4 
+ ESP32-S3 
+ ESP32-C6 
+ ESP32-C5 
+ ESP32-C3 
+ ESP32-H2 
+ ESP32-S2 
+ ESP32 
+ Displays 
+ LCD (SPI/QSPI) 
+ LCD (RGB) 
+ LCD (MIPI) 
+ AMOLED 
+ e-Paper 
+ RLCD 
+ RGB LED Matrix 
+ AI Chat 
+ Cameras 
+ Industrial Controller 
+ Robots 
+ Mobile Robots 
+ Arduino 
+ Official Arduino® 
+ Boards / Core Boards 
+ Arduino UNO Q 
+ Compatible with Arduino® 
+ Cases 
+ Kits 
+ Accessories 
+ Displays 
+ LCD 
+ 5″ - 24.5″ 
+ 2.8″ - 4.3″ 
+ 0.71″ - 2.4″ 
+ OLED 
+ 5″ - 15.6″ 
+ 0.49″ - 2.4″ 
+ e-Paper 
+ 5.65″ - 13.3″ 
+ 2.66″ - 5″ 
+ 1.02″ - 2.36″ 
+ Driver Boards 
+ Accessories 
+ Cables / Adapters 
+ Cases 
+ Speakers 
+ Stand 
+ USB Monitor 
+ 2.1“ - 7“ 
+ IoT / Communication 
+ Long Range Wireless 
+ NB-IoT / Cat-M / LoRa / LoRaWAN 
+ 5G / 4G / Cat-1 / GSM / GPRS 
+ GNSS / GPS 
+ Short Range Wireless 
+ WiFi 
+ ZigBee 
+ Bluetooth 
+ NFC / RF 
+ Wired Comm / Converter 
+ USB 
+ USB TO RS232 / RS485 / UART/ CAN 
+ Ethernet 
+ Ethernet TO UART / RS232 / RS485 
+ RS232 / RS485 / CAN / DALI2 
+ Misc Modules 
+ Cameras / Audio / Video 
+ Speech / Image Recognition / AI Cameras 
+ MIPI Cameras 
+ USB Cameras 
+ GMSL Cameras 
+ Cameras 
+ Audio Decoder 
+ Sensors 
+ Accelerometer / Angular Rate / Compass 
+ Fingerprint / Sound / Image / Gesture 
+ Temperature / Humidity / Barometer 
+ Gas 
+ Light / Ranging / Lidar 
+ Others 
+ Motors / Servos 
+ Drivers 
+ Motors / Servos 
+ Others 
+ Interface Expansion 
+ LED / Buttons 
+ Storage 
+ AD / DA 
+ RTC 
+ Power / Relays / SCR 
+ Laser Module 
+ Robotics 
+ Mobile Robots 
+ Jetson Series AI Robots 
+ Raspberry Pi Robots 
+ ESP32 Robots 
+ Arduino-Related Robots 
+ Dog-like Robots 
+ Raspberry Pi Dog-like Robots 
+ Drivers / Sensors / Lidar 
+ Drivers 
+ Sensors 
+ Lidar 
+ Motors / Servos 
+ Motors 
+ Servos 
+ Robot Arm / Control 
+ Robot Arm 
+ Pan Tilt Control 
+ Remote Controller 
+ Robotic Components 
+ Gearing 
+ Chassis Accessories 
+ MCU / FPGA 
+ Core Boards / Compact Boards 
+ STM32 Core 
+ STM32 Discovery 
+ STM32 Nucleo 
+ LPC Core 
+ BeagleBoard 
+ ALTERA Core 
+ Arduino® Compatible 
+ micro:bit 
+ Development Boards / Expansions 
+ STM32 Open 
+ STM32 EVK 
+ AVR Arduino Shields 
+ Arduino Shields Compatible 
+ Displays / Buttons / Sound 
+ Motors / Interface 
+ Debugger / Programmer 
+ STM32 / STM8 
+ AVR 
+ PIC 
+ ALTERA Core 
+ XILINX 
+ Programming Adapters 
+ STM32 
+ STM8 
+ AVR 
+ Robots 
+ Robot Arm 
+ Sockets / Adapters 
+ Specific Programming Adapters 
+ STM32 Series 
+ STM8 Series 
+ AVR Series 
+ QFP 
+ Sockets 
+ TO DIP 
+ With Pinheader 
+ QFN / MLF 
+ Sockets 
+ TO DIP 
+ With Pinheader 
+ SOP 
+ Sockets 
+ TO DIP 
+ SSOP / TSSOP 
+ Sockets 
+ TO DIP 
+ TSOP / MSOP / SOT 
+ Sockets 
+ TO DIP 
+ PLCC 
+ Sockets 
+ TO DIP 
+ Accessories 
+ Adapters / Cables / Antennas 
+ HDMI 
+ USB 
+ Serial Cables 
+ Jumper Wires 
+ FFC 
+ Antennas 
+ Motors / Servos 
+ Motors 
+ Servos 
+ Power / Heat Sinks 
+ Power Supply 
+ Solar Power 
+ Heat Sinks 
+ Cooling Fans 
+ Misc 
+ Raspberry Pi Cases 
+ Jetson Nano Cases 
+ Display Cases 
+ Speakers 
+ Storage 
+ Home 
+ New Arrivals 
+ Displays 
+ AI 
+ Shipping 
+ Payment 
+ Customization 
+ Wiki 
+ Shopping Q&A 
+ SUPPORT -->
+ Home 
+ > 
+ 22414 
+ Motors / Servos , Servos , Servos 
+ST3215 Series Serial Bus Servo, High precision and torque, 360 Degrees Magnetic Encoder, Two-way Feedback, Servo/Motor Mode Switchable, Options For 30kg.cm@12V / [email&#160;protected] Torque 
+ $16.99 -
+ $21.99 
+ Add to Cart 
+&#8595;Please select all required options below before ordering. 
+ --> 
+ Select Torque 
+ [email&#160;protected] 30kg.cm@12V 
+ -->
+ Related Products: 
+ -->
+ -->
+ Share: 
+ -->
+ Share: 
+ Description 
+ Package Content 
+ Wiki 
+Details 
+ST3215 Series Serial Bus Servo, High precision and torque, with Programmable 360 Degrees Magnetic Encoder, Two-way Feedback, Servo/Motor Mode Switchable, Options For 30kg.cm@12V / [email&#160;protected] Torque 
+ST3215 Series Serial Bus Servo 
+ 360° High Torque Programmable Magnetic Encoder
+Options for 30kg.cm@12V / [email&#160;protected] torque 
+Specifications 
+ PRODUCT TYPE 
+ ST3215 serial bus servo 
+ ST3215-7.4V serial bus servo 
+ TORQUE 
+ 30kg.cm@12V 
+ [email&#160;protected] 
+ ROTATION ANGLE 
+ 360° (0~4095) 
+ POSITION SENSOR RESOLUTION 
+ 360° / 4096 
+ MECHANISM LIMITED ANGLE 
+ No Limit 
+ OPERATING VOLTAGE 
+ 6 ~ 12.6 V 
+ 4V ~ 7.4V 
+ GEAR 
+ high precision metal gear 
+ NO-LOAD SPEED 
+ 0.222sec / 60° (45RPM)@12V 
+ 0.192sec / 60°(52RPM)@7.4V 
+ Encoder TYPE 
+ 360° Magnetic Encoder 
+ ID RANGE 
+ 0 ~ 253 
+ BAUDRATE 
+ 38400bps ~ 1Mbps (1Mbps by default) 
+ FEEDBACK 
+ Position, Load, Speed, Input Voltage 
+ NO-LOAD CURRENT 
+ 200mA 
+ 150mA 
+ LOCKED-ROTOR CURRENT 
+ 2.7A 
+ 2.5A 
+ kt 
+ 11kg.cm/A 
+ 7.8kg.cm/A 
+Application Examples 
+Servos will provide various feedback like position, speed, torque lock, operating mode (servo mode, servo motor mode, etc.) for advanced projects requiring closed-loop automatic control. 
+Ideal choice for building quadruped robots, hexapod walkers, robotic arms and other robotic projects requiring multiple servos. (This product provides the open source model of the quadruped robots as shown in the picture below.) 
+* images here are for reference ONLY 
+UART Serial Bus Control 
+Allows controlling up to 253 serial bus servos at the same time 
+ Note: though one channel UART is able to control up to 253 serial bus servos, due to the high power of the servos, it is necessary to consider whether the power supply solution is enough when using too many servos. For reference only, the servo driver board is NOT included
+Large Torque 
+ Up To 30kg.Cm Torque On 12V version, Suitable For Building Quadruped Robots, Hexapod Walkers, and Robotic Arms;
+ Up To 19.5kg.Cm Torque On 7.4V version, offering stable and efficient performance in small-to-medium robotics projects. Users can flexibly select options based on their specific requirements.
+* images here are for reference ONLY 
+360° Magnetic Encoder
+ High Precision, Longer Lifetime 
+ Adopts 12-bit high-precision magnetic encoding angle sensor. Compared with the potentiometer, the angle is enlarged to 360°, and the resolution is increased by 4 times. Since there is a gap and no friction between the magnetic encoder and the radial magnet, the lifetime of the servo is effectively extended.
+Acceleration Start-stop Function 
+The speed and acceleration values can be set, and the motion effect is softer 
+ Actual Effect 
+ Motion Effect Diagram 
+Compact Structure Design 
+The case adopts higher intensity engineering plastics, dual shaft and low profile design, shortening the plane spacing of the double-shaft servo wheel, and the overall structure is more compact, which can make the appearance of the product more beautiful. 
+One Button to Calibrate the Middle Position 
+360° installation at any position, one button to set the current position as middle position. Easy to install 
+ 1. In the default program, a hotspot will be created automatically after the servo driver board is turned on. Use your mobile phone to connect to this hotspot, open the browser, and enter the IP address to enter the control interface.
+ 2. Click Release to unlock, then turn the servo to the middle position where you need to set
+ 3. Click Set Middle Position then comfirm.
+ 4. Turn the servo to any angle, then click Middle, and the servo will automatically return to the middle position initially set.
+Two-Way Feedback 
+ The Servos Will Provide Various Feedback Like Position, Load, Speed, 
+And Input Voltage In Real Time 
+* images here are for reference ONLY 
+Dual Modes: Servo Or Motor 
+ precise rotation angle control on servo mode 
+ continuous rotation on motor mode 
+* images here are for reference ONLY 
+Details Introduction 
+ Nylon and fiberglass case 
+ Improved heat-resistance, size stability, rigidity, and mechanical performance
+ High strength aluminum servo wheels 
+ Using T6061 aluminum alloy, good corrosion-resistance
+ High precision copper and steel gears 
+ Ingenious combination of the two, lower operating noise, better stability and mechanical performance
+Open Source Control Program 
+We provide the open-source web control demo of the servo driver board and a secondary development tutorial, which can be directly used for remote setting and remote control of the servo. At the same time, we also provide a 3D model for you to build your own project quickly 
+Outline dimensions 
+Resources & Services 
+ WIKI: www.waveshare.com/wiki/ST3215_Servo 
+* Resources for different product may vary, please check the wiki page to confirm the actually provided resources. 
+Product Selection 
+ Product 
+ Voltage 
+ Control Method 
+ Precision 
+ NO-LOAD SPEED 
+ Continuous Rotation 
+ LOCKED-ROTOR TORQUE * 
+ LOCKED-ROTOR CURRENT 
+ Range 
+ Feedback 
+ WP90 
+ 4.8 ~ 7.4 
+ PWM 
+ ≤2° 
+ 0.1sec/60° 
+ - 
+ 2.3kg.cm 
+ 1.0A 
+ 180° 
+ - 
+ WP5320 
+ 4 ~ 8.4 
+ PWM 
+ ≤5° 
+ 0.151sec/60° 
+ - 
+ 20kg.cm 
+ 3A 
+ 180° 
+ - 
+ WP5335 
+ 4 ~ 8.4 
+ PWM 
+ ≤1° 
+ 0.192sec/60° 
+ - 
+ 35.5kg.cm 
+ 3.9A 
+ 180° 
+ - 
+ SC09 
+ 4~6V 
+ TTL 
+ 300°/1024 
+ 0.1sec/60° 
+ √ 
+ 2.3kg.cm 
+ 1.0A 
+ 300° 
+ √ 
+ SC15 
+ 4.8 ~ 8.4 
+ TTL 
+ 210° / 1024 
+ 0.16 sec / 60° 
+ √ 
+ 15kg.cm 
+ 1.5A 
+ 210° 
+ √ 
+ ST3020 
+ 6 ~ 14.0 
+ TTL 
+ 360° / 4096 
+ 0.167sec / 60° 
+ √ 
+ 25kg.cm 
+ 2.7A 
+ 360° 
+ √ 
+ ST3215-7.4V 
+ 4.0~7.4 
+ TTL 
+ 360° / 4096 
+ 0.192 sec / 60° 
+ √ 
+ 19.5kg.cm 
+ 2.5A 
+ 360° 
+ √ 
+ ST3215 
+ 6 ~ 12.6 
+ TTL 
+ 360° / 4096 
+ 0.222 sec / 60° 
+ √ 
+ 30kg.cm 
+ 2.7A 
+ 360° 
+ √ 
+ ST3025 
+ 6 ~ 12.6 
+ TTL 
+ 360° / 4096 
+ 0.117sec / 60° 
+ √ 
+ 40

@@ -1,0 +1,862 @@
+URL: https://www.pololu.com/product/3062
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 20107 chars
+Pololu - 30:1 Micro Metal Gearmotor HPCB 6V 
+ Pololu Metal DC Gearmotors &raquo; Micro Metal Gearmotors &raquo; 6V High-Power Carbon Brush (HPCB) Micro Metal Gearmotors &raquo; 
+30:1 Micro Metal Gearmotor HPCB 6V 
+ New!
+ Pololu item #: 
+ 3062 
+ Brand: 
+ Pololu 
+ supply outlook 
+Get stock notification
+ Notify me when stock is at least 
+ Cancel 
+ Optional: desired quantity 
+ Remove 
+ Save 
+ Status: 
+ Active and Preferred 
+ Free add-on shipping in USA 
+ Free shipping in USA over $75 
+Price break
+Unit price (US$)
+1
+26.45
+5
+24.33
+25
+22.39
+100
+20.60
+ Quantity: 
+ backorders allowed 
+ Add to cart 
+ Add to list 
+Get price notification
+ Notify me 
+ Cancel 
+ &nbspon any price change 
+ &nbspon any price drop 
+ &nbspat or below $ 
+ &nbspat qty&nbsp 
+ Save 
+This is a miniature brushed DC metal gearmotor with a gearbox cross section of 10×12 mm and a 9 mm long, 3 mm diameter D-shaped gearbox output shaft. 
+ motor/brush type 
+ gearbox 
+ encoder 
+ HPCB 6V: high-power 6V with carbon brushes 
+ 29.86:1 with brass plates 
+ no encoder 
+ voltage 
+ no-load performance 
+ stall extrapolation* 
+ 6 V 
+ 1100 RPM, 150 mA 
+ 0.45 kg⋅cm (6.2 oz⋅in), 1.5 A 
+ * Note: Stall torque and stall current specifications are theoretical values; stalls could damage the motor or gearbox. 
+Alternatives available with variations in these parameter(s):
+ gear ratio motor type encoder 
+ Select variant&#8230; 
+ Compare all products in 6V High-Power Carbon Brush (HPCB) Micro Metal Gearmotors .
+ Description Specs (17) Pictures (17) Resources (3) FAQs (3) On the blog (1) Distributors (64) 
+Overview 
+Our Micro Metal Gearmotor family consists of tiny brushed DC metal gearmotors with nitride-hardened martensitic stainless steel gears in a wide range of gear ratios, motor windings, brushes, and encoder configurations:
+Micro Metal Gearmotor next to a US quarter dollar for size reference. 
+ Gear ratio options 
+ Motor winding/brush options 
+ Encoder options 
+5:1 
+10:1 
+15:1 
+30:1 
+50:1 
+75:1 
+100:1 
+150:1 
+210:1 
+250:1 
+298:1 
+380:1 
+1000:1 
+ HPCB 12V: high-power 12V
+with long-life carbon brushes 
+ HPCB 6V: high-power 6V
+with long-life carbon brushes 
+ HP 6V: high-power 6V
+with precious metal brushes 
+ MP 6V: medium-power 6V
+with precious metal brushes 
+ LP 6V: low-power 6V
+with precious metal brushes 
+integrated 12 CPR quadrature encoder
+with back connector 
+integrated 12 CPR quadrature encoder
+with side connector 
+encoder-compatible (extended motor shaft
+for adding an encoder) 
+no encoder 
+The following comparison table shows basic specifications for all of the available versions (see the Micro Metal Gearmotor datasheet (5MB pdf) for additional information, including detailed performance graphs): 
+ HPCB 12V 
+(high-power, carbon brushes) 
+ Rated
+Voltage 
+ Stall
+Current 
+ No-Load
+Current 
+ No-Load
+Speed
+(RPM) 
+ Extrapolated
+Stall Torque 
+ Max
+Power
+(W) 
+ Approx
+Gear
+Ratio 
+No Encoder 
+w/ Extended
+Motor Shaft 
+w/ Encoder,
+Back Conn. 
+w/ Encoder,
+Side Conn. 
+ (kg⋅cm) 
+ (oz⋅in) 
+ 12 V 
+ 0.75 A 
+ 100 mA 
+ 6800 
+ 0.09 
+ 1.3 
+ &ndash; 
+ 5:1 
+ #3036 
+ #3047 
+ #5204 
+ #5205 
+ 80 mA 
+ 3400 
+ 0.17 
+ 2.4 
+ 1.5 
+ 10:1 
+ #3037 
+ #3048 
+ #5206 
+ #5207 
+ 2200 
+ 0.25 
+ 3.5 
+ 1.4 
+ 15:1 
+ #4788 
+ #4789 
+ #5208 
+ #5209 
+ 1100 
+ 0.39 
+ 5.4 
+ 1.1 
+ 30:1 
+ #3038 
+ #3049 
+ #5210 
+ #5211 
+ 650 
+ 0.67 
+ 9.3 
+ 1.1 
+ 50:1 
+ #3039 
+ #3050 
+ #5212 
+ #5213 
+ 450 
+ 1.0 
+ 14 
+ 1.1 
+ 75:1 
+ #3040 
+ #3051 
+ #5214 
+ #5215 
+ 330 
+ 1.3 
+ 18 
+ 1.1 
+ 100:1 
+ #3041 
+ #3052 
+ #5216 
+ #5217 
+ 220 
+ 1.8 
+ 25 
+ 1.0 
+ 150:1 
+ #3042 
+ #3053 
+ #5218 
+ #5219 
+ 160 
+ 2.5 
+ 35 
+ 1.0 
+ 210:1 
+ #3043 
+ #3054 
+ #5220 
+ #5221 
+ 130 
+ 3.0 
+ 42 
+ 1.1 
+ 250:1 
+ #3044 
+ #3055 
+ #5222 
+ #5223 
+ 110 
+ 3.3 
+ 46 
+ 1.0 
+ 298:1 
+ #3045 
+ #3056 
+ #5224 
+ #5225 
+ 85 
+ 5.0 
+ 69 
+ 1.1 
+ 380:1 
+ #4798 
+ #4799 
+ #5226 
+ #5227 
+ 35 
+ 10 
+ 140 
+ &ndash; 
+ 1000:1 
+ #3046 
+ #3057 
+ #5228 
+ #5229 
+ HPCB 6V 
+(high-power, carbon brushes) 
+ Rated
+Voltage 
+ Stall
+Current 
+ No-Load
+Current 
+ No-Load
+Speed
+(RPM) 
+ Extrapolated
+Stall Torque 
+ Max
+Power
+(W) 
+ Approx
+Gear
+Ratio 
+No Encoder 
+w/ Extended
+Motor Shaft 
+w/ Encoder,
+Back Conn. 
+w/ Encoder,
+Side Conn. 
+ (kg⋅cm) 
+ (oz⋅in) 
+ 6 V 
+ 1.5 A 
+ 170 mA 
+ 6500 
+ 0.09 
+ 1.3 
+ &ndash; 
+ 5:1 
+ #3060 
+ #3082 
+ #5178 
+ #5179 
+ 150 mA 
+ 3300 
+ 0.17 
+ 2.4 
+ 1.3 
+ 10:1 
+ #3061 
+ #3071 
+ #5180 
+ #5181 
+ 2100 
+ 0.25 
+ 3.5 
+ 1.3 
+ 15:1 
+ #4786 
+ #4787 
+ #5182 
+ #5183 
+ 1100 
+ 0.45 
+ 6.2 
+ 1.2 
+ 30:1 
+ #3062 
+ #3072 
+ #5184 
+ #5185 
+ 650 
+ 0.74 
+ 10 
+ 1.2 
+ 50:1 
+ #3063 
+ #3073 
+ #5186 
+ #5187 
+ 430 
+ 1.1 
+ 15 
+ 1.3 
+ 75:1 
+ #3064 
+ #3074 
+ #5188 
+ #5189 
+ 330 
+ 1.6 
+ 22 
+ 1.3 
+ 100:1 
+ #3065 
+ #3075 
+ #5190 
+ #5191 
+ 220 
+ 2.0 
+ 28 
+ 1.1 
+ 150:1 
+ #3066 
+ #3076 
+ #5192 
+ #5193 
+ 160 
+ 2.8 
+ 39 
+ 1.1 
+ 210:1 
+ #3067 
+ #3077 
+ #5194 
+ #5195 
+ 130 
+ 3.2 
+ 44 
+ 1.1 
+ 250:1 
+ #3068 
+ #3078 
+ #5196 
+ #5197 
+ 110 
+ 3.4 
+ 47 
+ 1.0 
+ 298:1 
+ #3069 
+ #3079 
+ #5198 
+ #5199 
+ 85 
+ 5.0 
+ 69 
+ 1.1 
+ 380:1 
+ #4796 
+ #4797 
+ #5200 
+ #5201 
+ 33 
+ 11 
+ 150 
+ &ndash; 
+ 1000:1 
+ #3070 
+ #3080 
+ #5202 
+ #5203 
+ HP 6V 
+(high-power) 
+ Rated
+Voltage 
+ Stall
+Current 
+ No-Load
+Current 
+ No-Load
+Speed
+(RPM) 
+ Extrapolated
+Stall Torque 
+ Max
+Power
+(W) 
+ Approx
+Gear
+Ratio 
+No Encoder 
+w/ Extended
+Motor Shaft 
+w/ Encoder,
+Back Conn. 
+w/ Encoder,
+Side Conn. 
+ (kg⋅cm) 
+ (oz⋅in) 
+ 6 V 
+ 1.6 A 
+ 120 mA 
+ 6100 
+ 0.11 
+ 1.5 
+ &ndash; 
+ 5:1 
+ #1000 
+ #2210 
+ #5152 
+ #5153 
+ 100 mA 
+ 3100 
+ 0.22 
+ 3.0 
+ 1.6 
+ 10:1 
+ #999 
+ #2211 
+ #5154 
+ #5155 
+ 2000 
+ 0.30 
+ 4.2 
+ 1.5 
+ 15:1 
+ #4784 
+ #4785 
+ #5156 
+ #5157 
+ 1000 
+ 0.57 
+ 7.9 
+ 1.5 
+ 30:1 
+ #1093 
+ #2212 
+ #5158 
+ #5159 
+ 590 
+ 0.86 
+ 12 
+ 1.3 
+ 50:1 
+ #998 
+ #2213 
+ #5160 
+ #5161 
+ 410 
+ 1.3 
+ 18 
+ 1.4 
+ 75:1 
+ #2361 
+ #2215 
+ #5162 
+ #5163 
+ 310 
+ 1.7 
+ 24 
+ 1.3 
+ 100:1 
+ #1101 
+ #2214 
+ #5164 
+ #5165 
+ 210 
+ 2.4 
+ 33 
+ 1.2 
+ 150:1 
+ #997 
+ #2386 
+ #5166 
+ #5167 
+ 150 
+ 3.0 
+ 42 
+ 1.1 
+ 210:1 
+ #996 
+ #2216 
+ #5168 
+ #5169 
+ 120 
+ 3.4 
+ 47 
+ 1.1 
+ 250:1 
+ #995 
+ #2217 
+ #5170 
+ #5171 
+ 100 
+ 4.0 
+ 56 
+ 1.1 
+ 298:1 
+ #994 
+ #2218 
+ #5172 
+ #5173 
+ 84 
+ 5.5 
+ 76 
+ 1.1 
+ 380:1 
+ #4794 
+ #4795 
+ #5174 
+ #5175 
+ 31 
+ 12 
+ 170 
+ &ndash; 
+ 1000:1 
+ #1595 
+ #2373 
+ #5176 
+ #5177 
+ MP 6V 
+(medium-power) 
+ Rated
+Voltage 
+ Stall
+Current 
+ No-Load
+Current 
+ No-Load
+Speed
+(RPM) 
+ Extrapolated
+Stall Torque 
+ Max
+Power
+(W) 
+ Approx
+Gear
+Ratio 
+No Encoder 
+w/ Extended
+Motor Shaft 
+w/ Encoder,
+Back Conn. 
+w/ Encoder,
+Side Conn. 
+ (kg⋅cm) 
+ (oz⋅in) 
+ 6 V 
+ 0.67 A 
+ 80 mA 
+ 4400 
+ 0.06 
+ 0.8 
+ &ndash; 
+ 5:1 
+ #2362 
+ #2376 
+ #5126 
+ #5127 
+ 70 mA 
+ 2200 
+ 0.11 
+ 1.5 
+ &ndash; 
+ 10:1 
+ #2363 
+ #2377 
+ #5128 
+ #5129 
+ 1400 
+ 0.20 
+ 2.8 
+ 0.70 
+ 15:1 
+ #4782 
+ #4783 
+ #5130 
+ #5131 
+ 720 
+ 0.33 
+ 4.6 
+ 0.57 
+ 30:1 
+ #2364 
+ #2378 
+ #5132 
+ #5133 
+ 420 
+ 0.54 
+ 7.5 
+ 0.55 
+ 50:1 
+ #2365 
+ #2379 
+ #5134 
+ #5135 
+ 290 
+ 0.78 
+ 11 
+ 0.54 
+ 75:1 
+ #2366 
+ #2380 
+ #5136 
+ #5137 
+ 220 
+ 0.94 
+ 13 
+ 0.50 
+ 100:1 
+ #2367 
+ #2381 
+ #5138 
+ #5139 
+ 150 
+ 1.3 
+ 18 
+ 0.48 
+ 150:1 
+ #2368 
+ #2382 
+ #5140 
+ #5141 
+ 100 
+ 1.7 
+ 24 
+ 0.46 
+ 210:1 
+ #2369 
+ #2383 
+ #5142 
+ #5143 
+ 88 
+ 2.2 
+ 31 
+ 0.48 
+ 250:1 
+ #2370 
+ #2384 
+ #5144 
+ #5145 
+ 73 
+ 2.4 
+ 33 
+ 0.44 
+ 298:1 
+ #2371 
+ #2385 
+ #5146 
+ #5147 
+ 57 
+ 3.6 
+ 50 
+ 0.53 
+ 380:1 
+ #4792 
+ #4793 
+ #5148 
+ #5149 
+ 22 
+ 6.7 
+ 93 
+ &ndash; 
+ 1000:1 
+ #2372 
+ #3059 
+ #5150 
+ #5151 
+ LP 6V 
+(low-power) 
+ Rated
+Voltage 
+ Stall
+Current 
+ No-Load
+Current 
+ No-Load
+Speed
+(RPM) 
+ Extrapolated
+Stall Torque 
+ Max
+Power
+(W) 
+ Approx
+Gear
+Ratio 
+No Encoder 
+w/ Extended
+Motor Shaft 
+w/ Encoder,
+Back Conn. 
+w/ Encoder,
+Side Conn. 
+ (kg⋅cm) 
+ (oz⋅in) 
+ 6 V 
+ 0.36 A 
+ 50 mA 
+ 2500 
+ 0.05 
+ 0.7 
+ &ndash; 
+ 5:1 
+ #1100 
+ #2200 
+ #5100 
+ #5101 
+ 40 mA 
+ 1300 
+ 0.10 
+ 1.4 
+ &ndash; 
+ 10:1 
+ #1099 
+ #2201 
+ #5102 
+ #5103 
+ 860 
+ 0.17 
+ 2.4 
+ 0.37 
+ 15:1 
+ #4780 
+ #4781 
+ #5104 
+ #5105 
+ 450 
+ 0.29 
+ 4.0 
+ 0.31 
+ 30:1 
+ #993 
+ #2202 
+ #5106 
+ #5107 
+ 270 
+ 0.44 
+ 6.1 
+ 0.29 
+ 50:1 
+ #1098 
+ #2203 
+ #5108 
+ #5109 
+ 180 
+ 0.64 
+ 8.9 
+ 0.29 
+ 75:1 
+ #2360 
+ #2209 
+ #5110 
+ #5111 
+ 130 
+ 0.74 
+ 10 
+ 0.25 
+ 100:1 
+ #992 
+ #2204 
+ #5112 
+ #5113 
+ 90 
+ 1.1 
+ 15 
+ 0.25 
+ 150:1 
+ #1097 
+ #2205 
+ #5114 
+ #5115 
+ 65 
+ 1.6 
+ 22 
+ 0.25 
+ 210:1 
+ #1096 
+ #2206 
+ #5116 
+ #5117 
+ 54 
+ 1.7 
+ 24 
+ 0.23 
+ 250:1 
+ #1095 
+ #2207 
+ #5118 
+ #5119 
+ 45 
+ 2.0 
+ 28 
+ 0.22 
+ 298:1 
+ #1094 
+ #2208 
+ #5120 
+ #5121 
+ 36 
+ 2.9 
+ 40 
+ 0.27 
+ 380:1 
+ #4790 
+ #4791 
+ #5122 
+ #5123 
+ 13 
+ 5.5 
+ 76 
+ &ndash; 
+ 1000:1 
+ #1596 
+ #3058 
+ #5124 
+ #5125 
+ Note: Stalling or overloading gearmotors can greatly decrease their lifetimes and even result in immediate damage. The recommended upper limit for instantaneous torque is 2.5 kg⋅cm (35 oz⋅in) for the 380:1 and 1000:1 gearboxes, and 2 kg⋅cm (25 oz⋅in) for all the other gear ratios; we strongly advise keeping applied loads well under this limit . Stalls can also result in rapid (potentially on the order of seconds) thermal damage to the motor windings and brushes, especially for the versions that use high-power (HP and HPCB) motors; a general recommendation for brushed DC motor operation is 25% or less of the stall current. 
+In general, these kinds of motors can run at voltages above and below their nominal voltages; lower voltages might not be practical, and higher voltages could start negatively affecting the life of the motor. 
+Motor windings/brush options 
+The 6V and 12V HPCB motors have long-life carbon brushes, and they offer the same performance at their respective nominal voltages, just with the 12 V motor drawing half the current of the 6 V motor. The 6V HP, MP, and LP motors have shorter-life precious metal brushes, which are generally lower-friction than carbon brushes and preferred for lower-current applications. The HPCB versions (shown on the left in the picture below) can be differentiated from versions with precious metal brushes (shown on the right) by their copper-colored terminals. Note that the HPCB terminals are 0.5 mm wider than those on the other Micro Metal Gearmotor versions (2 mm vs. 1.5 mm), and they are about 1 mm closer together (6 mm vs. 7 mm). 
+Micro Metal Gearmotor HPCB long-life carbon brushes (left) next to Micro Metal Gearmotor HP precious metal brushes (right). 
+Encoder options 
+Micro Metal Gearmotor (standard version without encoder or extended motor shaft). 
+Micro Metal Gearmotor with 12 CPR encoder, back connector (cable not included). 
+Micro Metal Gearmotor with 12 CPR encoder, side connector (cable not included). 
+Micro Metal Gearmotor with extended motor shaft. 
+In addition to standard versions that are not intended for use with encoders, we have versions of our Micro Metal Gearmotors available with integrated 12 CPR quadrature encoders on the motor shafts (i.e. on the inputs to the gearbox). These are available in two styles&mdash;back connector and side connector&mdash;and work with our assortment of 6-pin JST SH-style cables and 6-pin JST SH-style connector boards ( cables are not included ). A plastic snap-on housing covers the encoder disc and electronics. 
+We also have motor versions available with an extended motor shaft for adding your own encoder. This 1 mm diameter shaft extends 4.5 mm from the rear of the motor and rotates at the same speed as the input to the gearbox. These versions work with our separately available encoders for Micro Metal Gearmotors . 
+Gearbox options 
+The table below shows the exact gear ratios for our Micro Metal Gearmotors. All gearboxes have the same overall dimensions except for 1000:1, which is 3.5 mm longer than the others. The gearboxes use brass plates on all versions except 380:1, which has steel plates for increased durability and resistance to wear from radial loads. 
+Micro Metal Gearmotor size comparison of 1000:1 (bottom) vs other gear ratios (top). 
+Please note that the higher gear ratios can generate enough torque to damage themselves if exposed to loads beyond what they are rated for (25 kg⋅mm for 1000:1 and 380:1, 20 kg⋅mm for everything else). The point of these higher gear ratios is not to deliver more overall torque but rather to allow for slower speeds at a given

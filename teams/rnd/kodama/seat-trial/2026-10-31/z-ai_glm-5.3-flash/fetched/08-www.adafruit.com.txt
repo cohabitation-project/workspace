@@ -1,0 +1,234 @@
+URL: https://www.adafruit.com/search?q=lipoly+battery
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 5340 chars
+Search Results for 'lipoly battery' on Adafruit Industries 
+ Skip Navigation 
+ Shop 
+ Learn 
+ Blog 
+ Forums 
+ IO 
+ LIVE! 
+ AdaBox 
+ Sign In 
+ Shopping cart, 0 items. 
+ toggle menu 
+ Search 
+ Shopping cart, 0 items. 
+ Sign In | Create Account 
+ New Products 
+ Featured Products 
+ Gift Ideas 
+ Circuit Playground 
+ Feather 
+ Raspberry Pi 
+ Arduino 
+ LEDs 
+ All Categories 
+ Support 
+ Shipping & Returns 
+ About Us 
+ Products 
+Products navigation 
+Shop Categories view all categories 
+ Arduino 
+ CircuitPython 
+ Circuit Playground 
+ Feather 
+ STEMMA / STEMMA QT 
+ LCDs & Displays 
+ Raspberry Pi 
+ RP2040 / Pico 
+ Accessories 
+ Batteries 
+ Books 
+ Breakout Boards 
+ Cables 
+ Components & Parts 
+ Development Boards 
+ E-Ink / ThinkInk 
+ Gift Certificates 
+ Kits & Projects 
+ LEDs 
+ Mechanical Keyboards 
+ Neopixels 
+ Power 
+ Prototyping 
+ Robotics & CNC 
+ Sensors 
+ Tools 
+ Wearables 
+ Wireless 
+ Clearance Sale 
+New Products view all New Products 
+Adafruit RV-8803 High Accuracy Real Time Clock Breakout Board 
+$10.95 
+Adafruit CP2105 Friend - USB to Dual UART Serial Converters 
+$6.95 
+Adafruit TMF8806 Time of Flight Distance Sensor - 10mm to 5m 
+$12.50 
+Adafruit Stereo I2S 3W Amplifier Breakout - Dual MAX98357A 
+$9.95 
+Featured Products view all Featured Products 
+Adafruit BMP581 I2C or SPI Temperature and Pressure Sensor 
+$9.95 
+Adafruit STSPIN220 Stepper Motor Driver Breakout Board 
+$6.50 
+Adafruit Sparkle Motion Stick + Enclosure Kit 
+$19.95 
+Adafruit PCM5102 I2S DAC with Line Level Output - 112dB SNR 
+$4.95 
+ Gift Ideas 
+ What's New 
+ Search 
+Search Results for
+ "lipoly battery" 
+ Skip Filter & Sort Menu 
+filter & sort
+Filter & Sort
+Filter & Sort
+ Sort By 
+ Best Match 
+ Most Recent 
+ Apply 
+ sorting 
+ Availability 
+ In Stock 
+ Out of Stock 
+ Discontinued 
+ Apply 
+ availability filters 
+ Features 
+ Works with WipperSnapper 
+ Apply 
+ availability filters 
+ Price Ranges 
+ Less than $5 
+ $5 to $9.99 
+ $10 to $24.99 
+ $25 to $99.99 
+ Over $100 
+ Apply 
+ price range filters 
+ Category 
+ Accessories (1) 
+ Arduino (65) 
+ Batteries (32) 
+ Bluetooth® (9) 
+ Breakout Boards (21) 
+ Cables (2) 
+ Circuit Playground (9) 
+ CircuitPython (31) 
+ Clearance Sale (1) 
+ Components & Parts (4) 
+ Cosplay/Costuming (31) 
+ Crickit - Creative Robotics (7) 
+ Development Boards (87) 
+ Feather (71) 
+ Halloween (31) 
+ Internal Kits (3) 
+ Internet of Things - IoT (22) 
+ Kits & Projects (4) 
+ LCDs & Displays (7) 
+ LEDs (6) 
+ Machine Learning (2) 
+ Microchip (7) 
+ NeoPixels (1) 
+ Power (39) 
+ PPE (1) 
+ Raspberry Pi (12) 
+ Reseller and School Packs (2) 
+ Robotics & CNC (5) 
+ Sensors (2) 
+ STEMMA (33) 
+ Tools (2) 
+ Wearables (19) 
+ Wireless (20) 
+ Young Engineers (8) 
+Search results 
+Adafruit MAX17048 LiPoly / LiIon Fuel Gauge and Battery Monitor - STEMMA JST PH & QT / Qwiic. 
+ Adafruit MAX17048 LiPoly / LiIon Fuel Gauge and Battery Monitor - STEMMA JST PH & QT / Qwiic 
+ Product ID: 5580 
+ $ 5.95 
+ In stock 
+ Add to Cart , Adafruit MAX17048 LiPoly / LiIon Fuel Gauge and Battery Monitor - STEMMA JST PH & QT / Qwiic 
+Adafruit LC709203F LiPoly / LiIon Fuel Gauge and Battery Monitor - STEMMA JST PH & QT / Qwiic. 
+ Adafruit LC709203F LiPoly / LiIon Fuel Gauge and Battery Monitor - STEMMA JST PH & QT / Qwiic 
+ Product ID: 4712 
+ $ 6.95 
+ In stock 
+ Add to Cart , Adafruit LC709203F LiPoly / LiIon Fuel Gauge and Battery Monitor - STEMMA JST PH & QT / Qwiic 
+Single Li-Ion and LiPoly Battery Power Meter. 
+ Single Li-Ion and LiPoly Battery Power Meter 
+ Product ID: 5383 
+ $ 2.95 
+ 37 in stock 
+ Add to Cart , Single Li-Ion and LiPoly Battery Power Meter 
+Adafruit Metro ESP32-S2. 
+ Adafruit Metro ESP32-S2 
+ Product ID: 4775 
+ $ 24.95 
+ 2 in stock 
+ Add to Cart , Adafruit Metro ESP32-S2 
+Circuit Playground TFT Gizmo - Bolt-on Display + Audio Amplifier - JST PH 2mm. 
+ Circuit Playground TFT Gizmo - Bolt-on Display + Audio Amplifier - JST PH 2mm 
+ Product ID: 4367 
+ $ 19.95 
+ Out of stock 
+ Notify Me , Circuit Playground TFT Gizmo - Bolt-on Display + Audio Amplifier - JST PH 2mm 
+Full Size Wireless Keyboard with Trackpad. 
+ Full Size Wireless Keyboard with Trackpad 
+ Product ID: 2876 
+ $ 39.95 
+ In stock 
+ Add to Cart , Full Size Wireless Keyboard with Trackpad 
+Trinket M0 Powered NeoPixel Goggle Kit Pack. 
+ Trinket M0 Powered NeoPixel Goggle Kit Pack 
+ Product ID: 2221 
+ $ 39.95 
+ Out of stock 
+ Notify Me , Trinket M0 Powered NeoPixel Goggle Kit Pack 
+Teensy 3.x Feather Adapter. 
+ Teensy 3.x Feather Adapter 
+ Product ID: 3200 
+ $ 6.95 
+ 64 in stock 
+ Add to Cart , Teensy 3.x Feather Adapter 
+Adafruit PyGamer Starter Kit. 
+ Adafruit PyGamer Starter Kit 
+ Product ID: 4277 
+ $ 59.95 
+ Out of stock 
+ Notify Me , Adafruit PyGamer Starter Kit 
+GEMMA Talking Toy Guts Sound Pack. 
+ GEMMA Talking Toy Guts Sound Pack 
+ Product ID: 1759 
+ $ 19.95 
+ Out of stock 
+ Notify Me , GEMMA Talking Toy Guts Sound Pack 
+ Previous 
+ Current page: 1 
+ Go to page 2 
+ Go to page 3 
+ Go to page 4 
+ &mldr; 
+ Go to last page 17 
+ Go to next page Next 
+ Contact Us 
+ Tech Support Forums 
+ FAQs 
+ Shipping & Returns 
+ Freebies 
+ Terms of Service 
+ Privacy & Legal 
+ Website Accessibility 
+ About Us 
+ Press 
+ Educators 
+ Distributors 
+ Jobs 
+ Gift Cards 
+ &ldquo; Life's most persistent and urgent question is, What are you doing for others?&rdquo;
+ Martin Luther King, Jr. 
+ A Minority and Woman-owned Business Enterprise (M/WBE)
