@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export const ROOT = path.resolve(process.env.COMMONS_REPO || path.join(import.meta.dirname, '..', '..'));
-const read = (rel) => { try { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); } catch { return ''; } };
+export const read = (rel) => { try { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); } catch { return ''; } };
 const readJSON = (rel, dflt) => { try { return JSON.parse(read(rel)); } catch { return dflt; } };
 
 export const GENERAL = { id: 'general', name: 'General Hall', blurb: 'The common room. Anyone, any topic, any team.' };

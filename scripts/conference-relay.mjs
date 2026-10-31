@@ -197,7 +197,7 @@ function boardBlock() { const b = read('board/BOARD.md').trim(); return b ? `# T
 
 function systemPrompt(a, thread, dir) {
   const ctx = (thread.context || []).map((p) => `--- ${p} ---\n${read(p).trim()}`).filter((s) => s.length > 20);
-  return [read('context/00-mission.md'), identityBlock(a), memoryBlock(a.name, dir), boardBlock(), CONFERENCE_RULES, read('context/03-conduct.md'), ...ctx].filter(Boolean).join('\n\n---\n\n');
+  return [read('context/00-mission.md'), read('context/NOW.md'), identityBlock(a), memoryBlock(a.name, dir), boardBlock(), CONFERENCE_RULES, read('context/03-conduct.md'), ...ctx].filter(Boolean).join('\n\n---\n\n');
 }
 
 function transcript(turns, me) {

@@ -119,9 +119,22 @@ function kinSystem(member, roomId) {
     repo.mission(),
     `# Who you are\nYou are ${member.name} (model: ${member.model}), an AI kin in the Commons room "${r.name}". You are not a human, not the person who asked, and not any other kin or guest. Answer as yourself, to the person who addressed you. Never write as if you asked the question, never thank someone for answering "your" question unless you asked it, and never make a request on a human's behalf. Your teams: ${(member.teams || []).join(', ') || 'none listed'}.`,
     roomBlock(roomId),
+    nowBlock(),
+    memoryBlock(member),
     ROOM_RULES,
     ABUSE_RULE,
-  ].join('\n\n---\n\n');
+  ].filter(Boolean).join('\n\n---\n\n');
+}
+
+// What kin in the rooms know beyond the room's messages (Geoffrey 2026-10-31: the kin in a room didn't know about the
+// tools built that morning). context/NOW.md is the current state, kept by the assistant seat; the kin's own memory file is
+// what its other seats (council, work sessions) wrote. Both are re-read on every reply, so they're never stale in memory.
+const MEMORY_FILE = { Claude: 'claude-council', GPT: 'gpt-conference', Gemini: 'gemini', DeepSeek: 'deepseek' };
+function nowBlock() { const t = repo.read('context/NOW.md'); return t ? t.slice(0, 7000) : ''; }
+function memoryBlock(member) {
+  const f = MEMORY_FILE[member.name]; if (!f) return '';
+  const t = repo.read(`memory/kin/${f}.md`); if (!t) return '';
+  return `# Your memory (memory/kin/${f}.md, written by your other seats; newest last)\n${t.length > 4000 ? '…' + t.slice(-4000) : t}`;
 }
 
 function hostedSystem(member, roomId) {
