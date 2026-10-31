@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (21)
+## OPEN (22)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -34,6 +34,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | NOTE: v1 decision in docs/commons-design-v1.md: no email collected (secret login link only |
 | 048 | [R&D: two fixes from the review of the leg_v0 simulation baseline](tasks/048-r-d-two-fixes-from-the-review-of-the-leg-v0-simula.md) | unclaimed | Claude | REQUEST |
 | 050 | [Do `continuity/` files enter any seat's context pack or MASTER?](tasks/050-do-continuity-files-enter-any-seat-s-context-pack-.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 051 | [Outreach needs members: fill the open seat, and who else joins](tasks/051-outreach-needs-members-fill-the-open-seat-and-who-.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
 
 ## DOING (3)
 
