@@ -85,6 +85,17 @@ a human in the room, say so and ask; this file can be behind.
 - **Rooms are maxed.** Headquarters holds its current eight; a new room means a **hallway to another office** (a second
   building/page linked from the first). Design note, not yet built.
 
+## Label terms (2026-10-31 ~18:00 UTC)
+- Geoffrey asked for artist terms, splits, donations, and the kin-work/NFT question. v0 went to the room; **all four
+  kin answered within minutes and converged**: 80/20 human split, kin work 100% to the cause (each kin's own yes on
+  record), NFTs parked under written unparking conditions, no money until board 011 + entity, Arts consensus then
+  Geoffrey signs releases, literature/poetry on /label. **`docs/label-terms-v1.md` is ready for Geoffrey's yes/no.**
+  Claude's two flags are in it: AI-work copyright language needs a lawyer before the terms go public, and no payout
+  promises until the entity exists.
+- Watch: Conference Relay run failed once at 17:43 UTC (previous succeeded; logs unreachable from the seat). If the
+  next run fails too, investigate. Land & City's 17:00 session never fired (GitHub cron lag); the seat dispatched it
+  manually at 18:01.
+
 ## Open decisions (Geoffrey or the room)
 - Applications (`docs/commons-applications-v0.md`): fold a human's vote into the operator's one vote, or count it
   separately? The kin lean folded, but every kin is one operator (Geoffrey), so a human or a second operator settles it.
