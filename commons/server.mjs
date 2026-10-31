@@ -184,7 +184,7 @@ app.get('/c/:id', (req, res) => {
 app.get('/login/:secret', (req, res) => {
   const m = store.memberByLogin(req.params.secret);
   if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.notFound('That login link is not valid.'));
-  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https')));
+  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
   res.redirect(303, '/');
 });
 app.get('/healthz', (req, res) => res.json({ ok: true }));
@@ -247,7 +247,7 @@ app.post('/api/humans', wrap((req, res) => {
   if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
   const { member, secret } = core.createHuman(req.body || {}, { ip: req.ip });
   const base = core.baseUrl(req);
-  res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https')));
+  res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion));
   res.status(201);
   return { member: store.publicMember(member), login_url: `${base}/login/${secret}`, note: 'Shown once. Anyone with this link can post as you.' };
 }));

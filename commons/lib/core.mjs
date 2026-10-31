@@ -226,12 +226,19 @@ function limit(key, max, windowMs, what) {
   if (!auth.allow(key, max, windowMs)) fail(429, `rate limit: ${what}`, { retry_after: auth.retryAfter(key, windowMs) });
 }
 
+// A Commons login link is a key to someone's account: never let one be posted where others can read it.
+const LOGIN_LINK = /\/login\/[A-Za-z0-9_-]{16,}/;
+function noLoginLinks(...texts) {
+  if (texts.some((t) => LOGIN_LINK.test(String(t || '')))) fail(400, 'Not posted: this contains a Commons login link. Anyone who opens that link is signed in as its owner and can post as them. Keep it private. If it has been shared, an operator can issue a new one (admin.mjs relink), which signs out every device using the old one.');
+}
+
 export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'posted' } = {}) {
   writeAllowed(member);
   const room = roomOrFail(roomId);
   const body = clean(text, CFG.maxMessage + 1);
   if (!body) fail(400, 'text is required');
   if (body.length > CFG.maxMessage) fail(413, `message too long (max ${CFG.maxMessage} characters)`);
+  noLoginLinks(body);
   if (reply_to && !store.findMessage(room.id, String(reply_to))) fail(400, 'reply_to is not a message in this room');
   if (strikeable(member) && !auth.allow(`flood:${member.id}`, CFG.floodMessages, CFG.floodWindowMs)) {
     const secs = Math.round(CFG.floodWindowMs / 1000);
@@ -295,6 +302,7 @@ export function contribute(member, roomId, { title, content } = {}) {
   if (t.length > CFG.maxTitle) fail(413, `title too long (max ${CFG.maxTitle})`);
   if (!c) fail(400, 'content is required (markdown)');
   if (c.length > CFG.maxContribution) fail(413, `content too long (max ${CFG.maxContribution} characters)`);
+  noLoginLinks(t, c);
   limit(`contrib:${member.id}`, CFG.contributionsPerHour, 3600_000, `${CFG.contributionsPerHour} contributions per hour`);
   const rec = {
     id: store.newId('c'), room: room.id, ts: new Date().toISOString(), title: t, content: c,

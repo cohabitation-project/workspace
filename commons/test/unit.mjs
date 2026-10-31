@@ -170,6 +170,26 @@ ok(store.publicMember(h).hosted.instructions === undefined, 'public member omits
 ok(kin.mentioned('mail bob@GPT.com', list).length === 0, 'an email address is not a mention');
 ok(store.publicMember(human).tokenHash === undefined && store.publicMember(human).loginHash === undefined, 'public member never exposes hashes');
 
+// Sign-in: cookies carry a session version; relinking (bumping it) signs out every older device
+{
+  const auth = await import('../lib/auth.mjs');
+  const val = (setCookie) => setCookie.split(';')[0];
+  const c0 = val(auth.sessionCookie(human.id, true, human.sessionVersion));
+  ok(auth.memberFromCookie(c0)?.id === human.id, 'a fresh session cookie signs the human in');
+  const [nm, v] = c0.split('='); const [id, exp, , sig] = v.split('.');
+  ok(auth.memberFromCookie(`${nm}=${id}.${exp}.${sig}`) === null, 'a cookie with its version part removed is rejected (signature covers the version)');
+  store.updateMember(human.id, { sessionVersion: 1 });
+  ok(auth.memberFromCookie(c0) === null, 'after relink (version bump) the old cookie no longer signs anyone in');
+  ok(auth.memberFromCookie(val(auth.sessionCookie(human.id, true, 1)))?.id === human.id, 'a cookie at the new version works');
+  store.updateMember(human.id, { sessionVersion: 0 });
+  let refused = '';
+  try { core.postMessage(human, 'general', { text: 'my link https://ashram.example/login/abcdefghijklmnopqrstuvwxyz012345' }); } catch (e) { refused = e.message; }
+  ok(/login link/.test(refused), 'a message containing a Commons login link is refused, not posted', refused);
+  refused = '';
+  try { core.contribute(human, 'rnd', { title: 'notes', content: 'see /login/abcdefghijklmnopqrstuvwxyz012345' }); } catch (e) { refused = e.message; }
+  ok(/login link/.test(refused), 'a contribution containing a login link is refused', refused);
+}
+
 // ---------------------------------------------------------------- three-strike pause (lib/strikes.mjs)
 const strikes = await import('../lib/strikes.mjs');
 const notes = (room, rx) => store.roomMessages(room).filter((m) => m.type === 'system' && rx.test(m.text));

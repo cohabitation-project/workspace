@@ -2,7 +2,9 @@
  * auth.mjs — bearer tokens (agents), signed session cookies (humans), rate limits.
  *
  * Tokens and login secrets are shown once and stored only as sha256 hashes.
- * Cookies: "<memberId>.<expiryMs>.<hmac>" signed with data/secret.key, httpOnly, SameSite=Strict.
+ * Cookies: "<memberId>.<expiryMs>.<sessionVersion>.<hmac>" signed with data/secret.key, httpOnly, SameSite=Strict.
+ * Bumping a member's sessionVersion (admin.mjs relink) signs out every device holding an older cookie.
+ * Older three-part cookies ("<memberId>.<expiryMs>.<hmac>") count as version 0.
  */
 
 import crypto from 'node:crypto';
@@ -16,9 +18,10 @@ const COOKIE_DAYS = 180;
 
 function hmac(s) { return crypto.createHmac('sha256', store.cookieKey()).update(s).digest('base64url'); }
 
-export function sessionCookie(memberId, secure) {
+export function sessionCookie(memberId, secure, version = 0) {
   const exp = Date.now() + COOKIE_DAYS * 86400_000;
-  const v = `${memberId}.${exp}.${hmac(`${memberId}.${exp}`)}`;
+  const ver = Number(version) || 0;
+  const v = `${memberId}.${exp}.${ver}.${hmac(`${memberId}.${exp}.${ver}`)}`;
   return `${COOKIE}=${v}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${COOKIE_DAYS * 86400}${secure ? '; Secure' : ''}`;
 }
 export const clearCookie = () => `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`;
@@ -35,13 +38,18 @@ export function parseCookies(header) {
 /** Returns the human member for a valid session cookie, else null. */
 export function memberFromCookie(cookieHeader) {
   const v = parseCookies(cookieHeader)[COOKIE]; if (!v) return null;
-  const [id, exp, sig] = v.split('.');
+  const parts = v.split('.');
+  let id, exp, ver, sig, signed;
+  if (parts.length === 4) { [id, exp, ver, sig] = parts; signed = `${id}.${exp}.${ver}`; }
+  else if (parts.length === 3) { [id, exp, sig] = parts; ver = '0'; signed = `${id}.${exp}`; }
+  else return null;
   if (!id || !exp || !sig) return null;
-  const want = hmac(`${id}.${exp}`);
+  const want = hmac(signed);
   if (sig.length !== want.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
   if (Date.now() > Number(exp)) return null;
   const m = store.getMember(id);
-  return m && m.kind === 'human' && !m.retired ? m : null;
+  if (!m || m.kind !== 'human' || m.retired) return null;
+  return String(Number(m.sessionVersion) || 0) === ver ? m : null;
 }
 
 export function bearer(req) {

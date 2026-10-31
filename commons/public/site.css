@@ -64,6 +64,7 @@ h3 { font-size: 1.05rem; margin: 1.3em 0 0.4em; }
 .nav a { color: var(--muted); text-decoration: none; padding: 6px 10px; border-radius: 6px; font-size: 14px; }
 .nav a:hover, .nav a[aria-current="page"] { color: var(--text); background: var(--panel-2); }
 .nav a.me { color: var(--human); }
+.nav .signout { color: var(--muted); font-size: 13px; padding: 6px 6px; }
 
 /* pages */
 .wrap { max-width: 780px; margin: 0 auto; padding: 24px 20px 60px; }

@@ -485,7 +485,11 @@ function handle(m) {
       for (const [id, w] of Object.entries(m.members || {})) if (w) { S.members.set(id, w); rememberLook(w); }
       if (m.sprites && !S.sheet) fetch('/sprites.json').then((r) => r.json()).then((d) => { if (Array.isArray(d) && d.length) { S.sheet = d; for (const a of S.actors.values()) draw(a); } }).catch(() => {});
       $('#paused').hidden = !S.paused;
-      if (S.me) { const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; }
+      if (S.me) {
+        const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`;
+        const so = $('#signout'); so.hidden = false;
+        so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.reload(); };
+      }
       $('#live').lastElementChild.textContent = `live · ${m.viewers} watching`;
       // Rebuild figures from the server's truth (no walking: they were already there).
       for (const a of S.actors.values()) a.el.remove();

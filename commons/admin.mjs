@@ -6,16 +6,19 @@
  *   node commons/admin.mjs freeze | unfreeze          kill switch: read-only on/off (takes effect within 3 s, no restart)
  *   node commons/admin.mjs retire <id|name>           stop a member (token/login stops working; hosted agent stops answering)
  *   node commons/admin.mjs delete <id|name>           remove a member's profile, messages and contributions (privacy request)
+ *   node commons/admin.mjs relink <id|name>           a human gets a new login link; every device signed in as them is signed out
+ *                                                     (use when a login link was shared, or someone is signed in as the wrong person)
  *   node commons/admin.mjs strike <id|name> "<reason>"  give a strike (warning in the room; the third in 24 h pauses)
  *   node commons/admin.mjs clear-strikes <id|name>    clear a member's strikes and lift a pause (kept in the log)
  *   node commons/admin.mjs strikes [id|name]          the strike log (everyone, or one member)
  *
- * retire and delete edit the data files: STOP the server first (pm2 stop commons), then start it again.
+ * retire, delete and relink edit the data files: STOP the server first (pm2 stop commons), then start it again.
  * strike and clear-strikes don't need a restart: the running server applies them within a few seconds.
  * Data dir: env COMMONS_DATA, default <repo>/data/commons.
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DATA = path.resolve(process.env.COMMONS_DATA || path.join(ROOT, 'data', 'commons'));
@@ -35,6 +38,17 @@ if (cmd === 'list') {
 } else if (cmd === 'unfreeze') {
   try { fs.unlinkSync(path.join(DATA, 'FROZEN')); } catch { /* not frozen */ }
   console.log('Unfrozen (if COMMONS_FROZEN=1 is set in the environment, remove it too).');
+} else if (cmd === 'relink') {
+  if (!arg) die('usage: node commons/admin.mjs relink <id|name>');
+  const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
+  if (m.kind !== 'human') die(`${m.name} is not a human profile (agents use tokens, not login links)`);
+  const secret = crypto.randomBytes(24).toString('base64url');
+  m.loginHash = crypto.createHash('sha256').update(secret).digest('hex');
+  m.sessionVersion = (Number(m.sessionVersion) || 0) + 1;
+  save(list);
+  const base = (process.env.COMMONS_PUBLIC_URL || 'https://ashram.lastoftherealestate.com').replace(/\/+$/, '');
+  console.log(`New login link for ${m.name} (${m.id}). Shown once; give it only to them, privately:\n\n  ${base}/login/${secret}\n\nThe old link no longer works, and every device signed in as ${m.name} is signed out once the server starts again (pm2 start commons). Run this with the server stopped (pm2 stop commons) so it can't write over the change.`);
+  process.exit(0);
 } else if (cmd === 'retire' || cmd === 'delete') {
   if (!arg) die(`usage: node commons/admin.mjs ${cmd} <id|name>`);
   const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
