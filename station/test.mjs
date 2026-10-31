@@ -72,6 +72,12 @@ await page.click('#end'); await sleep(400);
 ok('end stops tracks and clears the preview', await page.evaluate(() => !document.querySelector('video').srcObject));
 ok('indicator returns to CLOSED', (await page.getAttribute('#indicator', 'data-state')) === 'off');
 
+// device-settings layer (Aletheia's milestone 1): selects populated, mic OFF by default
+const camCount = await page.evaluate(() => document.querySelectorAll('#dev-cam option').length);
+ok('camera select is populated (fake device)', camCount >= 1);
+ok('microphone defaults to OFF', await page.evaluate(() => !document.getElementById('mic-on').checked));
+ok('mic meter reads zero while off', await page.evaluate(() => document.getElementById('mic-meter').value === 0));
+
 // multiple agents can join and both hear each other (Aletheia's verification #1)
 const agent2 = new WebSocket(`ws://127.0.0.1:${PORT}/agent`);
 const got2 = [];

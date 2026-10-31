@@ -44,6 +44,23 @@
   </div>
 
   <div class="card">
+    <strong>Devices</strong> <span class="muted">— pick which camera, microphone and speaker this station uses.
+    The microphone stays OFF until you switch it on, and even then it is a local level meter only: nothing is
+    recorded, and nothing is ever streamed to agents (the agent door is text-only by code).</span>
+    <div class="row">
+      <label>Camera <select id="dev-cam"></select></label>
+      <label>Microphone <select id="dev-mic"></select></label>
+      <label>Speaker <select id="dev-spk"></select></label>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="mic-on"> microphone on (local meter only)</label>
+      <meter id="mic-meter" min="0" max="1" value="0" style="width:140px"></meter>
+      <button id="spk-test">Test sound</button>
+      <span class="muted small" id="spk-note">TTS voices may ignore the speaker choice; the test sound respects it where the browser allows.</span>
+    </div>
+  </div>
+
+  <div class="card">
     <strong>Local preview</strong> <span class="muted">— seen only here, by you.</span>
     <video id="preview" autoplay muted playsinline></video>
   </div>

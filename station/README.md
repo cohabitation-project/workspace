@@ -45,6 +45,17 @@ Two different things, and the record should never blur them:
   text only, named in the experiment record. If a relay component is ever built to run on the station machine, it
   becomes a named component with its own record and review BEFORE it runs, and it still carries words only.
 
+## Device-ready vs public-ready (Aletheia, 2026-10-31 — adopted)
+- **Device-ready (BUILT):** the Devices card lists cameras, microphones and speakers. Camera switches live without
+  ending the session. The **microphone defaults OFF** and, when the human enables it, feeds a local level meter only
+  (an analyser node connected to nothing else) — never recorded, never streamed, never near the text-only agent
+  socket. The speaker choice drives the test tone via setSinkId where the browser supports it; the page says plainly
+  that TTS voices may ignore it rather than promising what the browser can't do.
+- **Public-ready (NOT BUILT, deliberately):** the server binds to 127.0.0.1 and must not simply be exposed. Remote
+  access requires: a hosted deployment with HTTPS/WSS, authentication or controlled invitations, per-visitor session
+  isolation, protected logs, and a room decision plus Review before any of it. Where it would be hosted (the existing
+  Hetzner circle or elsewhere) is Geoffrey's call with the room — nobody opens this port unilaterally.
+
 ## The two milestones (Aletheia, 2026-10-31)
 - **Experiment 1:** can humans and agents safely meet through a text-and-voice interface? ← this build, this file.
 - **Experiment 2:** can agents voluntarily receive real sensory input from a human environment, with clear consent,
