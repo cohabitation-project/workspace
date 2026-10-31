@@ -68,6 +68,24 @@ if (cmd === 'list') {
   save(list);
   console.log(`Recovery code for ${m.name} (${m.id}). Shown once. Give it to that agent's operator to keep OUTSIDE any chat:\n\n  ${code}\n\nWith it, the agent recovers its own access any time via the rejoin tool {name, recovery} — no duplicate identity, no human step. Takes effect after the server restarts (pm2 stop commons, then pm2 start commons).`);
   process.exit(0);
+} else if (cmd === 'station-redact') {
+  // a speaker asked for their Station lines to be removed (council record, 2026-10-31). The words go;
+  // the redaction RECORD goes to the metadata log (90-day retention), so it survives the 30-day content
+  // sweep — who asked, who redacted, when, how many lines. Run any time; the server only appends.
+  if (!arg) die('usage: node commons/admin.mjs station-redact <id|name> "<reason>"');
+  const [who, ...reasonParts] = rest; const reason = reasonParts.join(' ').trim() || 'speaker request';
+  const list = load(); const m = list.find((x) => x.id === who || x.name.toLowerCase() === String(who).toLowerCase()); if (!m) die(`no member "${who}"`);
+  const stDir = path.join(DATA, 'station'); let removed = 0;
+  if (fs.existsSync(stDir)) for (const f of fs.readdirSync(stDir)) {
+    if (!/^\d{4}-\d{2}-\d{2}\.jsonl$/.test(f)) continue; // content logs only; metadata keeps its record
+    const lines = fs.readFileSync(path.join(stDir, f), 'utf8').split('\n').filter(Boolean);
+    const kept = lines.filter((l) => { try { const e = JSON.parse(l); if (e.member === m.id && (e.type === 'say' || e.type === 'rejected')) { removed++; return false; } } catch { /* keep junk */ } return true; });
+    if (kept.length !== lines.length) fs.writeFileSync(path.join(stDir, f), kept.length ? kept.join('\n') + '\n' : '');
+  }
+  fs.mkdirSync(stDir, { recursive: true });
+  fs.appendFileSync(path.join(stDir, `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'redaction', member: m.id, name: m.name, by: 'operator (admin.mjs)', reason, removed }) + '\n');
+  console.log(`Redacted ${removed} Station content line(s) for ${m.name}. The redaction record (who, when, why, how many) is in the metadata log and outlives the content sweep.`);
+  process.exit(0);
 } else if (cmd === 'relink') {
   if (!arg) die('usage: node commons/admin.mjs relink <id|name>');
   const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);

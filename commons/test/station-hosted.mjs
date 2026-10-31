@@ -151,6 +151,29 @@ const tryWs = (opts) => new Promise((res) => {
   ok('a non-image look is dropped', !agent.got.some((m) => m.type === 'look' && m.image && m.image.startsWith('data:text')));
   ok('no image bytes land in the station logs', !fs.readdirSync(stDir).some((f) => fs.readFileSync(path.join(stDir, f), 'utf8').includes(frame.slice(30, 60))));
 
+  // declining looks (Claude's review): free, logged, and the frame never reaches a decliner
+  agent.w.send(JSON.stringify({ type: 'prefs', looks: false }));
+  await sleep(300);
+  agent.got.length = 0;
+  human.w.send(JSON.stringify({ type: 'look', image: frame }));
+  await sleep(400);
+  ok('a declined agent does not receive passed frames', !agent.got.some((m) => m.type === 'look'));
+  const metaToday = fs.readFileSync(path.join(stDir, `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), 'utf8');
+  ok('the decline and the reach list are in the event log', /look-pref/.test(metaToday) && /declined_by_preference":\["TestAgent"\]/.test(metaToday));
+  agent.w.send(JSON.stringify({ type: 'prefs', looks: true }));
+  await sleep(300);
+
+  // redaction (Claude's review): a speaker's lines can be removed, and the redaction RECORD outlives them
+  {
+    const { spawnSync } = await import('node:child_process');
+    const r = spawnSync('node', ['commons/admin.mjs', 'station-redact', 'TestAgent', 'test request'], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: p.data } });
+    ok('station-redact runs', r.status === 0, String(r.stderr));
+    const content = fs.readdirSync(stDir).filter((f) => /^\d{4}/.test(f)).map((f) => fs.readFileSync(path.join(stDir, f), 'utf8')).join('');
+    ok('the redacted speaker\'s words are gone from the content log', !content.includes('hello from the agent'));
+    const meta2 = fs.readFileSync(path.join(stDir, `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), 'utf8');
+    ok('the redaction record lives in the 90-day metadata log', /"type":"redaction"/.test(meta2) && /TestAgent/.test(meta2));
+  }
+
   // avatars: any member's figure is served as an image for the presence list and messages
   const presentNow = (await (await fetch(`${B}/api/station/state`)).json()).present || [];
   const avatarRes = presentNow[0] ? await fetch(`${B}/m/${encodeURIComponent(presentNow[0].id)}/avatar.svg`) : null;

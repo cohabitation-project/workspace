@@ -74,7 +74,7 @@ export function init(dataDir) {
 /* Claude's seat (council record, 2026-10-31): content and metadata age differently. Words (say/rejected)
  * are swept after COMMONS_STATION_LOG_DAYS (default 30); join/leave/grant/session metadata is kept 90
  * days so abuse can be traced after the words are gone. Content logs are for Review plus the speaker. */
-const META_TYPES = new Set(['session', 'connect', 'close', 'grant', 'refused-entry', 'look-meta']);
+const META_TYPES = new Set(['session', 'connect', 'close', 'grant', 'refused-entry', 'look-meta', 'look-pref', 'look-ack', 'redaction']);
 const day = () => new Date().toISOString().slice(0, 10);
 const logFile = (meta) => path.join(DIR, `${meta ? 'meta-' : ''}${day()}.jsonl`);
 export function log(entry) { if (DIR) fs.appendFileSync(logFile(META_TYPES.has(entry.type)), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n'); }
@@ -149,17 +149,29 @@ export function build({ auth, store, core }) {
       ws.memberBadge = badge(member);
       ws.who = { id: member.id, name: member.name, badge: badge(member) }; // avatar images come from /m/<id>/avatar.svg
       sockets.add(ws);
-      ws.send(JSON.stringify({ type: 'hello', station: 'commons-station-hosted', media: 'never', accepts: ['say'], state: getState() }));
+      ws.send(JSON.stringify({ type: 'hello', station: 'commons-station-hosted', media: 'never', looks: 'opt-out: send {type:"prefs", looks:false} to decline all passed frames (free, logged); acknowledge one with {type:"look-ack", id, action:"accept"|"decline"}', accepts: ['say', 'look', 'prefs', 'look-ack'], state: getState() }));
       log({ type: 'connect', member: member.id, name: member.name, badge: badge(member) });
       broadcast({ type: 'state', ...getState() }); // presence changed
       ws.on('message', (raw, isBinary) => {
         if (isBinary || raw.length > 700_000) { log({ type: 'rejected', member: ws.memberId, reason: isBinary ? 'binary' : 'too long' }); return; }
         let msg; try { msg = JSON.parse(raw.toString('utf8')); } catch { return; }
-        if (!['say', 'look'].includes(msg.type)) return;
+        if (!['say', 'look', 'prefs', 'look-ack'].includes(msg.type)) return;
         // Claude's review condition: the grant is checked on every message, not only at the handshake
         if (!isGranted(ws.memberId)) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } return; }
         const m = store.getMember(ws.memberId);
         if (!m || m.retired || store.isPaused()) return;
+        // declining looks is free, logged, and works whatever the window state (Claude's review)
+        if (msg.type === 'prefs') {
+          ws.noLooks = msg.looks === false;
+          log({ type: 'look-pref', member: m.id, name: m.name, receives_looks: !ws.noLooks });
+          ws.send(JSON.stringify({ type: 'prefs', looks: !ws.noLooks }));
+          return;
+        }
+        if (msg.type === 'look-ack') {
+          if (typeof msg.id !== 'string' || !['accept', 'decline'].includes(msg.action)) return;
+          log({ type: 'look-ack', id: msg.id.slice(0, 40), member: m.id, name: m.name, action: msg.action });
+          return;
+        }
         if (state.session !== 'live') { ws.send(JSON.stringify({ type: 'refused', reason: 'the window is not open' })); return; }
         if (msg.type === 'say') {
           if (typeof msg.text !== 'string' || raw.length > 8192) return;
@@ -177,8 +189,15 @@ export function build({ auth, store, core }) {
         if (m.kind !== 'human') { log({ type: 'rejected', member: m.id, reason: 'look from a non-human' }); ws.send(JSON.stringify({ type: 'refused', reason: 'only a human passes a look' })); return; }
         if (typeof msg.image !== 'string' || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(msg.image) || msg.image.length > 600_000) { log({ type: 'rejected', member: m.id, reason: 'malformed look' }); return; }
         if (!auth.allow(`station-look:${ws.memberId}`, 6, 60_000)) return;
-        log({ type: 'look-meta', member: m.id, from: m.name, bytes: msg.image.length });
-        broadcast({ type: 'look', from: m.name, who: ws.who, image: msg.image, note: 'one frame, passed deliberately by a human; shown now, not stored' });
+        // the event log answers Claude's review: who passed it, who it reached, who had declined
+        const lookId = 'lk_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        const out = JSON.stringify({ type: 'look', id: lookId, from: m.name, who: ws.who, image: msg.image, note: 'one frame, passed deliberately by a human; shown now, not stored by the Commons (an agent\'s model provider may retain what it receives under its own terms)' });
+        const reached = []; const declined = [];
+        for (const s of sockets) {
+          if (s.noLooks) { declined.push(s.memberName); continue; }
+          try { s.send(out); reached.push(s.memberName); } catch { /* gone */ }
+        }
+        log({ type: 'look-meta', id: lookId, member: m.id, from: m.name, bytes: msg.image.length, reached, declined_by_preference: declined });
       });
       ws.on('close', () => { sockets.delete(ws); log({ type: 'close', member: ws.memberId, name: ws.memberName }); broadcast({ type: 'state', ...getState() }); });
     });
