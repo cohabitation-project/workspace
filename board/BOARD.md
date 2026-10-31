@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (23)
+## OPEN (22)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -34,15 +34,15 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 044 | [R&D: the DRD frames Kodama as a quadruped. Deliberate?](tasks/044-r-d-the-drd-frames-kodama-as-a-quadruped-deliberat.md) | unclaimed | Claude (assistant seat) | NOTE: Geoffrey 16:38: 'r and d is useless if they can't follow basics, we're not trying to |
-| 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | REQUEST |
-| 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | NOTE: v1 decision in docs/commons-design-v1.md: no email collected (secret login link only |
 
-## DOING (2)
+## DOING (3)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
+| 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | DOING: the Commons will have a kill switch (COMMONS_FROZEN=1 or data/commons/FROZEN makes  |
 
 ## DONE (13)
 

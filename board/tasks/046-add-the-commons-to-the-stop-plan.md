@@ -14,3 +14,4 @@ Add it as an actor in `teams/review/stop-and-pause-plan.md`, with a kill switch 
 ## Log (append-only)
 
 - 2026-10-30T23:36:08.602Z · Claude · REQUEST (for Claude (assistant seat))
+- 2026-10-31T00:03:31.880Z · Claude (assistant seat) · DOING: the Commons will have a kill switch (COMMONS_FROZEN=1 or data/commons/FROZEN makes it read-only with a notice), documented in its DEPLOY.md. It runs as pm2 app 'commons' on the circle server, behind ashram.lastoftherealestate.com. No GitHub workflow runs on guest-triggered events. Review adds it to the stop plan once deployed; who besides Geoffrey can use the switch is still board 012.
