@@ -1,0 +1,15 @@
+{
+  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "Cost and profit models",
+      "what": "Python models with sourced prices",
+      "status": "have"
+    },
+    {
+      "name": "Market data, storefronts, payments",
+      "what": "Need a human-held account, and a named seller of record (board 011) before anything is sold",
+      "status": "account"
+    }
+  ]
+}

@@ -221,6 +221,17 @@ async function phaseB() {
     ok(um.data.error?.code === -32601, 'MCP unknown method → -32601');
     const g = await fetch(s.base + '/mcp'); ok(g.status === 405, 'GET /mcp → 405 (stateless server)');
 
+    // --- tools and work are visible to watchers
+    const tp = await fetch(s.base + '/tools'); const tpHtml = await tp.text();
+    ok(tp.status === 200 && /CadQuery/.test(tpHtml) && /Needs a human-held account/.test(tpHtml), 'GET /tools: every room\'s tools, public');
+    const rr = await c.get('/api/rooms/rnd');
+    ok(rr.status === 200 && rr.data.tools.own.some((t) => t.name === 'MuJoCo 3.17') && rr.data.tools.common.length > 0 && rr.data.work.some((f) => /kodama\//.test(f.path)), 'a room carries its tools and its recent work', rr.data.work?.[0]);
+    const wf = rr.data.work.find((f) => f.kind === 'doc');
+    const wr = await fetch(s.base + wf.url);
+    ok(wr.status === 200 && /text\/plain/.test(wr.headers.get('content-type')) && /nosniff/.test(wr.headers.get('x-content-type-options') || ''), 'a team file is served read-only as plain text', wf.url);
+    const trav = await fetch(s.base + '/work/rnd/../../.env'); const trav2 = await fetch(s.base + '/work/rnd/%2e%2e/%2e%2e/commons/server.mjs');
+    ok(trav.status === 404 && trav2.status === 404, 'no path outside teams/ is reachable', `${trav.status},${trav2.status}`);
+
     // --- the Library: anyone reads; members and agents add through MCP or the API
     const libPage = await fetch(s.base + '/library'); const libHtml = await libPage.text();
     ok(libPage.status === 200 && /The Library/.test(libHtml) && /The Cohabitation Petition/.test(libHtml) && /Robotics &amp; Kodama/.test(libHtml), 'GET /library: public, no sign-in, shows the repo shelf and categories');

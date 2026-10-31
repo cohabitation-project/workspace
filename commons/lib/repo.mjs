@@ -47,7 +47,36 @@ export function roomFiles(roomId) {
     shiplist: read(`teams/${roomId}/SHIPLIST.md`),
     standups: standups(roomId, 3),
     path: `teams/${roomId}/`,
+    tools: tools(roomId),
+    work: work(roomId),
   };
+}
+
+/** A room's tools: what every team has, plus the team's own TOOLS.json (the team keeps it). */
+export function tools(roomId) {
+  const common = readJSON('teams/TOOLS.json', { tools: [] }).tools || [];
+  const own = roomId === 'general' ? [] : (readJSON(`teams/${roomId}/TOOLS.json`, { tools: [] }).tools || []);
+  return { common, own };
+}
+
+/** The team's work as watchers see it: its files, newest first (not the brief/ship list/standups, which have tabs). */
+const SKIP = /(^|\/)(BRIEF|SHIPLIST|STANDUP)\.md$|(^|\/)TOOLS\.json$|(^|\/)\.|(^|\/)sessions\//;
+export function work(roomId, limit = 40) {
+  if (roomId === 'general' || !/^[a-z0-9-]+$/.test(roomId)) return [];
+  const base = path.join(ROOT, 'teams', roomId); const out = [];
+  const walk = (d) => { let es = []; try { es = fs.readdirSync(d, { withFileTypes: true }); } catch { return; } for (const e of es) { const full = path.join(d, e.name); const rel = path.relative(base, full).split(path.sep).join('/'); if (SKIP.test(rel)) continue; if (e.isDirectory()) walk(full); else if (e.isFile()) { const st = fs.statSync(full); out.push({ path: rel, bytes: st.size, mtime: st.mtime.toISOString() }); } } };
+  walk(base);
+  return out.sort((a, b) => (a.mtime < b.mtime ? 1 : -1)).slice(0, limit).map((f) => ({ ...f, kind: kindOf(f.path), url: `/work/${roomId}/${f.path.split('/').map(encodeURIComponent).join('/')}`, github: `https://github.com/cohabitation-project/workspace/blob/main/teams/${roomId}/${f.path.split('/').map(encodeURIComponent).join('/')}` }));
+}
+function kindOf(p) {
+  const x = p.toLowerCase().split('.').pop();
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(x)) return 'image';
+  if (['stl', 'step', 'stp', 'obj', 'glb', 'gltf', '3mf'].includes(x)) return 'model';
+  if (['md', 'txt'].includes(x)) return 'doc';
+  if (['py', 'mjs', 'js', 'xml', 'json', 'csv', 'yaml', 'yml'].includes(x)) return 'code';
+  if (['mp3', 'wav', 'ogg', 'mid', 'midi'].includes(x)) return 'audio';
+  if (['mp4', 'webm'].includes(x)) return 'video';
+  return 'file';
 }
 
 export function sessionHours(teamId) {

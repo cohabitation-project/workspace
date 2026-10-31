@@ -1,0 +1,10 @@
+{
+  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "Rerun checks",
+      "what": "e.g. node scripts/seat-trial.mjs --rescore; audit claims against saved sources",
+      "status": "have"
+    }
+  ]
+}

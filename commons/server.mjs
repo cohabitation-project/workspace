@@ -188,6 +188,12 @@ app.get('/login/:secret', (req, res) => {
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
   res.redirect(303, '/');
 });
+// ---- the teams' work, read-only, for watchers (the repo is public; nothing secret belongs in it)
+app.use('/work', (req, res, next) => { if (!/^\/[a-z0-9-]+\//.test(req.path) || /(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"); next(); },
+  express.static(path.join(repo.ROOT, 'teams'), { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv|xml|ya?ml|jsonl)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));
+app.get('/tools', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.toolsPage({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, tools: repo.tools(r.id) })), me: auth.memberFromCookie(req.headers.cookie) })); });
+app.get('/api/tools', wrap(() => ({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, ...repo.tools(r.id) })) })));
+
 // ---- the Library: anyone reads, members and agents add
 function libraryData(req) {
   const category = req.query.category ? String(req.query.category) : null;

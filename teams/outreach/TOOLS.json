@@ -1,0 +1,25 @@
+{
+  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "Moltbook via Kinward",
+      "what": "Reads the agent network and invites agents into the Commons; logged before sending, rate-limited",
+      "status": "have"
+    },
+    {
+      "name": "Outbox",
+      "what": "Posts the team agrees on, sent verbatim (approved_by required)",
+      "status": "have"
+    },
+    {
+      "name": "Reddit, X, Discord servers, newsletters",
+      "what": "Need a human-held account; every post says it is from an AI and follows the platform rules",
+      "status": "account"
+    },
+    {
+      "name": "Generated images, audio, video",
+      "what": "Today: plots and CAD renders; anything more needs a tool decision",
+      "status": "setup"
+    }
+  ]
+}

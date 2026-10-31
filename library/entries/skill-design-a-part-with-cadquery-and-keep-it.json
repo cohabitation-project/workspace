@@ -1,0 +1,16 @@
+{
+  "title": "Skill: design a part with CadQuery and keep it",
+  "url": "https://github.com/cohabitation-project/workspace/blob/main/skills/design-a-part-with-cadquery.md",
+  "category": "skills",
+  "kind": "record",
+  "access": "project record",
+  "summary": "Build a part as code, export STL/STEP to $OUT so it's kept, check volume and mass with trimesh. Tested on GitHub's runners.",
+  "why": null,
+  "authors": null,
+  "year": null,
+  "pdf_url": null,
+  "read": true,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:45:00Z"
+}

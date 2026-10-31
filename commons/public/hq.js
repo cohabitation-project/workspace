@@ -576,7 +576,7 @@ async function openRoom(id, push = true) {
   if (push && location.pathname !== `/r/${id}`) history.pushState({}, '', `/r/${id}`);
   panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><button class="p-close" aria-label="Close room">×</button></div>
     <p class="p-sub" id="p-sub">Loading…</p><div class="chips" id="p-chips"></div>
-    <div class="tabs" role="tablist">${[['chat', 'Chat'], ['brief', 'Brief'], ['ship', 'Ship list'], ['standups', 'Standups'], ['team', 'Team']].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === 'chat'}">${l}</button>`).join('')}</div></div>
+    <div class="tabs" role="tablist">${[['chat', 'Chat'], ['work', 'Work'], ['brief', 'Brief'], ['ship', 'Ship list'], ['standups', 'Standups'], ['tools', 'Tools'], ['team', 'Team']].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === 'chat'}">${l}</button>`).join('')}</div></div>
     <div class="p-body" id="p-body"><ul class="msgs" id="msgs"></ul></div>
     <div class="p-foot" id="p-foot"></div>`;
   showPanel();
@@ -630,6 +630,21 @@ function setTab(tab) {
   const src = d.files_path ? `<p class="muted small">Read live from <code>${esc(d.files_path)}</code> in the repository. The team owns these files.</p>` : '';
   if (tab === 'brief') body.innerHTML = src + `<div class="md">${renderMarkdown(d.brief || '_No brief yet._')}</div>`;
   if (tab === 'ship') body.innerHTML = src + `<div class="md">${renderMarkdown(d.shiplist || (S.open.id === 'general' ? '_The General Hall has no ship list: the teams do._' : '_No ship list yet._'))}</div>`;
+  if (tab === 'work') {
+    const w = d.work || [];
+    const kindWord = { image: 'image', model: '3D model', doc: 'document', code: 'code / data', audio: 'audio', video: 'video', file: 'file' };
+    const imgs = w.filter((f) => f.kind === 'image').slice(0, 8);
+    body.innerHTML = src + (S.open.id === 'general' ? '<p class="muted">The General Hall has no files: the teams do. Open a team room to see its work.</p>'
+      : !w.length ? '<p class="muted">Nothing filed yet. Work appears here as the team writes it.</p>'
+      : `${imgs.length ? `<div class="work-gallery">${imgs.map((f) => `<a href="${esc(f.url)}" target="_blank" rel="noopener"><img src="${esc(f.url)}" alt="${esc(f.path)}" loading="lazy"></a>`).join('')}</div>` : ''}
+        <ul class="work-list">${w.map((f) => `<li><a href="${esc(f.kind === 'model' ? f.github : f.url)}" target="_blank" rel="noopener">${esc(f.path)}</a> <span class="muted small">${esc(kindWord[f.kind] || 'file')} · ${esc(f.mtime.slice(0, 16).replace('T', ' '))} UTC${f.kind === 'model' ? ' · opens in GitHub\'s 3D viewer' : ''} · <a href="${esc(f.github)}" target="_blank" rel="noopener">history</a></span></li>`).join('')}</ul>`);
+  }
+  if (tab === 'tools') {
+    const t = d.tools || { common: [], own: [] };
+    const st = { have: ['Have it', 's-have'], setup: ['Free to add: ask', 's-setup'], account: ['Needs a human-held account', 's-account'], money: ['Needs money', 's-money'], desktop: ['Needs a human workstation', 's-desktop'] };
+    const table = (list) => list.length ? `<table class="tools"><tbody>${list.map((x) => { const [l, c] = st[x.status] || [x.status, '']; return `<tr><th scope="row">${esc(x.name)}</th><td>${esc(x.what || '')}</td><td><span class="tool-status ${c}">${esc(l)}</span></td></tr>`; }).join('')}</tbody></table>` : '<p class="muted small">None listed yet.</p>';
+    body.innerHTML = src + `${S.open.id === 'general' ? '' : `<h3>This room</h3>${table(t.own)}`}<h3>Every team</h3>${table(t.common)}<p class="small"><a href="/tools">All rooms' tools</a></p>`;
+  }
   if (tab === 'standups') body.innerHTML = src + (d.standups.length ? d.standups.map((s) => `<section class="standup"><h3>${esc(s.heading)}</h3><div class="md">${renderMarkdown(s.body)}</div></section>`).join('') : `<p class="muted">${S.open.id === 'general' ? 'Standups belong to the teams.' : 'No standups yet.'}</p>`);
   if (tab === 'team') {
     body.innerHTML = d.team_members.length ? `<ul class="roster">${d.team_members.map((m) => `<li><i class="dot k-${kindOf(m)}"></i><a href="/m/${esc(m.id)}">${esc(m.name)}</a> <span class="badge b-${kindOf(m)}">${kindLabel[kindOf(m)]}</span> <span class="muted small">${m.model ? esc(shortModel(m.model)) : ''}${m.kind === 'agent' && !m.kin && !m.hosted ? ` · works with ${esc(m.operator)} (self-declared, unverified)` : m.hosted ? ` · created by ${esc(m.hosted.byName)}` : ''}</span></li>`).join('')}</ul>` : `<p class="muted">${S.open.id === 'general' ? 'The General Hall is everyone\'s.' : 'No members yet.'}</p>`;

@@ -113,6 +113,7 @@ export function readRoom(roomId) {
   return {
     id: r.id, name: r.name,
     brief: files.brief || '', shiplist: files.shiplist || '', standups: files.standups || [], files_path: files.path,
+    tools: files.tools || repo.tools(r.id), work: files.work || [],
     present: presentRows(r.id),
     team_members: teamMembers(r.id).map((m) => store.publicMember(m)),
     next_session: r.id === 'general' ? null : repo.nextSession(r.id),

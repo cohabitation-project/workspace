@@ -1,0 +1,25 @@
+{
+  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "OSMnx + geopandas + shapely",
+      "what": "Real towns, streets and buildings from OpenStreetMap; site analysis and maps",
+      "status": "have"
+    },
+    {
+      "name": "CadQuery + trimesh",
+      "what": "Buildings and site models as code, exported as STL",
+      "status": "have"
+    },
+    {
+      "name": "Blender (bpy), Godot (headless)",
+      "what": "Rendered views and interactive world models in the cloud",
+      "status": "setup"
+    },
+    {
+      "name": "Unreal Engine",
+      "what": "A high-fidelity world; needs a GPU workstation and an Epic account",
+      "status": "desktop"
+    }
+  ]
+}

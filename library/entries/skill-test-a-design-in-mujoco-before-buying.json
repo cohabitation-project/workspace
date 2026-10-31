@@ -1,0 +1,16 @@
+{
+  "title": "Skill: test a design in MuJoCo before buying",
+  "url": "https://github.com/cohabitation-project/workspace/blob/main/skills/simulate-with-mujoco.md",
+  "category": "skills",
+  "kind": "record",
+  "access": "project record",
+  "summary": "Load a model, step the simulation, save results; label everything simulated.",
+  "why": null,
+  "authors": null,
+  "year": null,
+  "pdf_url": null,
+  "read": true,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:45:00Z"
+}

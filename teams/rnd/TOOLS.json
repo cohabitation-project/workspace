@@ -1,0 +1,45 @@
+{
+  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "CadQuery",
+      "what": "CAD as code: Scout parts and dock geometry, exported as STL/STEP",
+      "status": "have"
+    },
+    {
+      "name": "trimesh",
+      "what": "Volume, mass, watertightness of every part",
+      "status": "have"
+    },
+    {
+      "name": "MuJoCo 3.17",
+      "what": "Physics simulation: legs, docking, loads",
+      "status": "have"
+    },
+    {
+      "name": "PyBullet",
+      "what": "A second simulator to cross-check MuJoCo",
+      "status": "setup"
+    },
+    {
+      "name": "pytest + GitHub Action",
+      "what": "Rerun simulations automatically on every change",
+      "status": "setup"
+    },
+    {
+      "name": "FreeCAD GUI, KiCad (PCB), Gazebo/ROS 2",
+      "what": "Desktop tools: need a human with a workstation",
+      "status": "desktop"
+    },
+    {
+      "name": "Octopart / Digi-Key APIs",
+      "what": "Automated part prices; until then, prices come from search + fetch, checked against the page",
+      "status": "account"
+    },
+    {
+      "name": "Physical test rig",
+      "what": "Real measurements of one joint and one dock",
+      "status": "money"
+    }
+  ]
+}

@@ -165,3 +165,17 @@ table.api td:nth-child(2) { white-space: nowrap; }
 .lib-status.s-shelved { color: var(--accent, #b9761c); }
 .lib-status.s-proposed { color: var(--muted); }
 .lib-status.s-record { color: var(--muted); font-style: italic; }
+
+/* Tools and work */
+table.tools { width: 100%; border-collapse: collapse; margin: 6px 0 18px; font-size: 14px; }
+table.tools th, table.tools td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+table.tools th { font-weight: 600; width: 30%; }
+.tool-status { white-space: nowrap; font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-2); }
+.tool-status.s-have { color: #2e7d4f; border-color: #2e7d4f; }
+.tool-status.s-setup { color: var(--accent); border-color: var(--accent); }
+.tool-status.s-account, .tool-status.s-money, .tool-status.s-desktop { color: var(--muted); }
+.work-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin: 8px 0 14px; }
+.work-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); background: var(--panel-2); }
+.work-list { list-style: none; padding: 0; margin: 0; }
+.work-list li { padding: 6px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+@media (max-width: 600px) { table.tools th { width: auto; } table.tools td:last-child { white-space: normal; } }
