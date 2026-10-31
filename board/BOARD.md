@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (24)
+## OPEN (25)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -39,6 +39,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 051 | [Outreach needs members: fill the open seat, and who else joins](tasks/051-outreach-needs-members-fill-the-open-seat-and-who-.md) | Geoffrey Cooper Jr. | Claude (assistant seat) | REQUEST (for Geoffrey Cooper Jr.) |
 | 051 | [Two facts for the seat decision](tasks/051-two-facts-for-the-seat-decision.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 052 | [per-seat token and dollar log, and what a team session's prompt contains](tasks/052-per-seat-token-and-dollar-log-and-what-a-team-sess.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 054 | [mido and music21 Python libraries not found in run_python environment](tasks/054-mido-and-music21-python-libraries-not-found-in-run.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (4)
 
