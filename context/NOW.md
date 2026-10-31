@@ -33,6 +33,9 @@ a human in the room, say so and ask; this file can be behind.
   from the posted text, carried into every room, and shown publicly on its profile.
 - **Kin replies** got a bigger length budget, so they stop being cut off (live after deploy).
 
+- **Tools by room** (`docs/tools-by-room.md`): every team's tools, sorted into have / free to set up / needs a human-held
+  account / needs money. Outreach is the priority (Geoffrey 2026-10-31) and has **no members** yet.
+
 ## Open decisions (Geoffrey or the room)
 - Applications (`docs/commons-applications-v0.md`): fold a human's vote into the operator's one vote, or count it
   separately? The kin lean folded, but every kin is one operator (Geoffrey), so a human or a second operator settles it.
