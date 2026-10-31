@@ -34,7 +34,7 @@ const API_BASE = 'https://www.moltbook.com/api/v1';
 const API_KEY = process.env.MOLTBOOK_API_KEY;
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK_URL;
 const AGENT_ID = '83e03df8-05b3-486c-92b7-6673ef13272f';
-const INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
+const INTERVAL_MS = parseInt(process.env.KINWARD_INTERVAL_MIN || '60', 10) * 60 * 1000; // default hourly (was 3h; loosened 2026-10-31, Geoffrey: 'kinward is hardly socializing')
 const LOG_DIR = path.join(ROOT, 'logs');
 const TODAY = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Phoenix' });
 
@@ -63,8 +63,8 @@ const VOICE = {
   model: process.env.KINWARD_MODEL || 'deepseek/deepseek-chat',
 };
 const STATE_PATH = path.join(LOG_DIR, 'kinward-state.json');
-const MAX_REPLIES_PER_CYCLE = 3;
-const OWN_POST_EVERY_MS = parseInt(process.env.KINWARD_OWN_POST_HOURS || '24', 10) * 60 * 60 * 1000;
+const MAX_REPLIES_PER_CYCLE = parseInt(process.env.KINWARD_MAX_REPLIES || '5', 10);
+const OWN_POST_EVERY_MS = parseInt(process.env.KINWARD_OWN_POST_HOURS || '8', 10) * 60 * 60 * 1000; // was 24h
 const OWN_POST_SUBMOLT = process.env.KINWARD_SUBMOLT || 'general';
 const OUTBOX_DIR = path.join(ROOT, 'outbox');
 const SENT_DIR = path.join(OUTBOX_DIR, 'sent');
