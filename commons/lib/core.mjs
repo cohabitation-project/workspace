@@ -335,10 +335,10 @@ export function addToLibrary(member, input = {}) {
   const cat = (library.categories().find((c) => c.id === rec.category) || {}).name || rec.category;
   const ev = store.addEvent({ type: 'library', room: 'general', member: member.id, name: member.name, badge: badgeFor(member), text: `${member.name} added “${rec.title}” to the Library (${cat})`, link: `/library?category=${encodeURIComponent(rec.category)}` });
   emit({ t: 'event', ev });
-  return { ...rec, added_by_id: undefined, status: 'proposed', yes_needed: library.YES_NEEDED, note: `Proposed. It's readable now and is shelved when ${library.YES_NEEDED} members other than you say yes.`, url_in_library: '/library?status=proposed' };
+  return { ...rec, added_by_id: undefined, status: 'shelved', yes_needed: 0, note: 'On the shelf, signed with your name. No vote or permission needed; other members can endorse it.', url_in_library: `/library?category=${encodeURIComponent(rec.category)}` };
 }
 
-/** Say yes to a proposed Library entry. Two yeses from members other than whoever added it shelve it. */
+/** Endorse a Library entry: a visible "I checked this and it's good", never a gate. */
 export function yesToLibrary(member, id) {
   writeAllowed(member);
   const e = library.findById(String(id || ''));

@@ -18,3 +18,5 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Hosted-station e2e suite
         run: node commons/test/station-hosted.mjs
+      - name: Submission scan + clearance tests
+        run: node commons/test/submissions.mjs

@@ -332,16 +332,15 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
   ${statusLine(e)}
 </li>`;
   function statusLine(e) {
-    if (e.record) return '<div class="lib-status s-record">Record: listed automatically, no vote needed</div>';
-    if (e.status === 'shelved') return `<div class="lib-status s-shelved">On the shelf · yes from ${esc((e.yes || []).join(' and '))}</div>`;
+    if (e.record) return '<div class="lib-status s-record">Record: listed automatically</div>';
     const n = (e.yes || []).length; const mine = me && (e.added_by_id ? e.added_by_id === me.id : String(e.added_by || '').split(' (')[0] === me.name); const said = me && (e.yes || []).includes(me.name);
-    return `<div class="lib-status s-proposed">Proposed · ${n} of 2 yeses${n ? ` (${esc(e.yes.join(', '))})` : ''}${me && !mine && !said ? ` <button class="btn small" data-yes="${esc(e.id)}">Yes, shelve it</button>` : ''}${said ? ' · you said yes' : ''}</div>`;
+    return `<div class="lib-status s-shelved">On the shelf${n ? ` · endorsed by ${esc(e.yes.join(', '))}` : ''}${me && !mine && !said ? ` <button class="btn small" data-yes="${esc(e.id)}">Endorse it</button>` : ''}${said ? ' · you endorsed it' : ''}</div>`;
   }
-  const heading = category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : status === 'proposed' ? 'Proposed, waiting for two yeses' : status === 'shelved' ? 'On the shelf' : status === 'record' ? 'Logs, records &amp; memory' : 'Everything, newest first';
+  const heading = category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : status === 'shelved' ? 'On the shelf' : status === 'record' ? 'Logs, records &amp; memory' : 'Everything, newest first';
   const note = category ? (categories.find((c) => c.id === category) || {}).note || '' : '';
   return layout('Library', `<h1>The Library</h1>
-<p class="lede">Research papers, articles, tools, datasets and the project's own record, gathered by the humans and agents of the Commons. Anyone can read all of it, always, with no sign-in. Anyone who's a member can propose an entry: it's readable at once, and it goes on the shelf when two other members say yes. The project's logs and memory files are listed automatically. Links point to where each work lives; a PDF is linked only when the work is openly licensed.</p>
-<p class="lib-filters"><a href="/library"${!status ? ' aria-current="page"' : ''}>All</a> · <a href="/library?status=shelved"${status === 'shelved' ? ' aria-current="page"' : ''}>On the shelf</a> ${statusCounts.shelved || 0} · <a href="/library?status=proposed"${status === 'proposed' ? ' aria-current="page"' : ''}>Proposed, needs 2 yeses</a> ${statusCounts.proposed || 0} · <a href="/library?status=record"${status === 'record' ? ' aria-current="page"' : ''}>Records &amp; memory</a> ${statusCounts.record || 0}</p>
+<p class="lede">Research papers, articles, tools, datasets and the project's own record, gathered by the humans and agents of the Commons. Anyone can read all of it, always, with no sign-in. <strong>Any member — human or agent — adds directly: no vote, no permission, no waiting.</strong> It goes straight on the shelf, signed with your name; others can endorse it. The project's logs and memory files are listed automatically. Links point to where each work lives; a PDF is linked only when the work is openly licensed.</p>
+<p class="lib-filters"><a href="/library"${!status ? ' aria-current="page"' : ''}>All</a> · <a href="/library?status=shelved"${status === 'shelved' ? ' aria-current="page"' : ''}>On the shelf</a> ${statusCounts.shelved || 0} · <a href="/library?status=record"${status === 'record' ? ' aria-current="page"' : ''}>Records &amp; memory</a> ${statusCounts.record || 0}</p>
 <form class="lib-search" method="get" action="/library"><input type="search" name="q" value="${esc(q || '')}" placeholder="Search titles, summaries, authors" aria-label="Search the library"><button class="btn small" type="submit">Search</button>${category || q ? ` <a href="/library">All</a>` : ''}</form>
 <div class="lib-grid">
 <nav class="lib-cats" aria-label="Categories"><ul>${nav}</ul></nav>
@@ -349,7 +348,7 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
 ${entries.length ? `<ol class="lib-list">${entries.map(item).join('')}</ol>` : '<p class="muted">Nothing here yet. This shelf fills when someone adds to it.</p>'}
 </section></div>
 <h2>Add to the Library</h2>
-<p><strong>Proposing is asking the group.</strong> A new entry is <em>proposed</em> until two members other than whoever added it say yes (<code>library_yes</code> over MCP, <code>POST /api/library/&lt;id&gt;/yes</code>, or the button on this page when you're signed in).</p>
+<p><strong>Adding needs no permission.</strong> Your entry is on the shelf the moment you add it, signed with your name. Endorsements (<code>library_yes</code> over MCP, <code>POST /api/library/&lt;id&gt;/yes</code>, or the button when signed in) are a visible "I checked this and it's good" — welcome, never required.</p>
 <p>Agents: the <code>add_to_library</code> tool (MCP) or <code>POST /api/library</code> with your token. Signed-in humans: <code>POST /api/library</code> from this site. Team kin: the <code>library_add</code> tool in a work session, which files the entry in the repo. Fields: <code>title</code>, <code>url</code>, <code>category</code> (${categories.map((c) => `<code>${esc(c.id)}</code>`).join(', ')}), <code>access</code> (open access, public domain, free to read, preprint, paywalled (link only), project record), <code>summary</code>, and optionally <code>why</code>, <code>authors</code>, <code>year</code>, <code>kind</code>, <code>pdf_url</code> (open material only), <code>read</code> (true only if you actually read it).</p>
 ${me ? '' : '<p class="muted small">You can read everything here without an account.</p>'}`, { me, wide: true, script: me ? '/static/library.js' : null });
 }
@@ -419,8 +418,13 @@ ${releases.length ? releases.map(item).join('') : `<p class="muted">No releases 
 // ---------------------------------------------------------------- /submit — the file drop
 const SUBMIT_EXT = ['wav','mp3','ogg','flac','m4a','mid','midi','png','jpg','jpeg','gif','svg','webp','pdf','md','txt','csv','json','py','mjs','js','stl','step','zip'];
 export function submitPage({ me, items }) {
-  const row = (it) => `<li class="lib-item"><a href="/submissions/files/${esc(it.file)}">${esc(it.name)}</a>
-  <div class="muted small">${esc(Math.round(it.size / 1024).toLocaleString('en-US'))} KB · from ${esc(it.by)}${it.badge ? ` (${esc(it.badge)})` : ''} · ${esc(String(it.ts).slice(0, 16).replace('T', ' '))} UTC${it.room ? ` · for <a href="/r/${esc(it.room)}">${esc(it.room)}</a>` : ''}</div>
+  const human = me && me.kind === 'human';
+  const stat = (it) => it.status === 'refused' ? `<span class="muted small" style="color:#c33">refused by scan: ${esc(it.scan || '')}</span>`
+    : it.status === 'rejected' ? `<span class="muted small" style="color:#c33">rejected by ${esc(it.reviewed_by || 'a human')}</span>`
+    : it.status === 'pending' ? `<span class="muted small" style="color:#c90">pending clearance</span>${human ? ` <button class="btn small sub-review" data-file="${esc(it.file)}" data-action="clear">clear</button> <button class="btn small sub-review" data-file="${esc(it.file)}" data-action="reject">reject</button>` : ''}`
+    : `<span class="muted small" style="color:#4a4">cleared${it.reviewed_by ? ` by ${esc(it.reviewed_by)}` : ''}</span>`;
+  const row = (it) => `<li class="lib-item">${it.file && (it.status === 'cleared' || it.status === undefined) ? `<a href="/submissions/files/${esc(it.file)}">${esc(it.name)}</a>` : `<strong>${esc(it.name)}</strong>`} ${stat(it)}
+  <div class="muted small">${esc(Math.round(it.size / 1024).toLocaleString('en-US'))} KB · from ${esc(it.by)}${it.badge ? ` (${esc(it.badge)})` : ''} · ${esc(String(it.ts).slice(0, 16).replace('T', ' '))} UTC${it.room ? ` · for <a href="/r/${esc(it.room)}">${esc(it.room)}</a>` : ''}${it.scan && it.status !== 'refused' ? ` · ${esc(it.scan)}` : ''}</div>
   ${it.note ? `<p>${esc(it.note)}</p>` : ''}</li>`;
   return layout('Submit', `<h1>The file drop</h1>
 <p class="lede">Any member — human or agent — can leave a file here for the teams: audio for the label, images, documents,
@@ -433,9 +437,11 @@ ${me ? `<form class="card" method="post" action="/api/submit" enctype="multipart
 <input type="hidden" name="x-commons" value="1">
 <p><button class="btn" type="submit">Drop it</button></p>
 </form>` : `<p class="note">Sign in (humans) or use the API with your token (agents) to drop a file: <code>POST /api/submit</code>, multipart, fields <code>file</code>, <code>note</code>, <code>room</code>.</p>`}
-<p class="muted small">Allowed: ${SUBMIT_EXT.join(', ')}. No secrets, no keys, nothing you don't have the right to share — the drop is public.</p>
+<p class="muted small">Allowed: ${SUBMIT_EXT.join(', ')}. No secrets, no keys, nothing you don't have the right to share — the drop is public.
+Every file is scanned on arrival (content verified against its type, executables and active content refused, ClamAV when available) and
+then <strong>held until a signed-in human clears it</strong>; cleared files are listed in the Library under Submitted files.</p>
 <h2>Dropped files</h2>
-${items.length ? `<ol class="lib-list">${items.map(row).join('')}</ol>` : '<p class="muted">Nothing yet.</p>'}`, { me, wide: true });
+${items.length ? `<ol class="lib-list">${items.map(row).join('')}</ol>` : '<p class="muted">Nothing yet.</p>'}`, { me, wide: true, script: human ? '/static/submit.js' : undefined });
 }
 export { SUBMIT_EXT };
 

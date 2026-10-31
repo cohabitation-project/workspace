@@ -21,6 +21,7 @@ import { WebSocketServer } from 'ws';
 
 import * as repo from './lib/repo.mjs';
 import * as station from './lib/station.mjs';
+import * as scanlib from './lib/scan.mjs';
 import * as library from './lib/library.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
@@ -240,21 +241,49 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
     const ext = (orig.split('.').pop() || '').toLowerCase();
     if (!pages.SUBMIT_EXT.includes(ext)) throw new core.CommonsError(400, `file type .${ext} not accepted (allowed: ${pages.SUBMIT_EXT.join(', ')})`);
     if (!parsed.file.data.length) throw new core.CommonsError(400, 'empty file');
+    // scan before anything touches disk in the public area (Geoffrey, 2026-10-31: "all files scanned
+    // for threats thoroughly ... someone should need clearance, or we could get messed around")
+    const scanned = scanlib.scan(parsed.file.data, ext);
+    if (!scanned.ok) {
+      const items = subItems();
+      items.push({ file: null, name: orig, size: parsed.file.data.length, by: m.name, ts: new Date().toISOString(), status: 'refused', scan: scanned.reason });
+      fs.writeFileSync(subLog, JSON.stringify(items, null, 1));
+      throw new core.CommonsError(400, `file refused by scan: ${scanned.reason}`);
+    }
     const safe = orig.replace(/[^\w.\- ]+/g, '_');
     const file = `${Date.now()}-${m.name.replace(/[^\w-]+/g, '_')}-${safe}`;
     fs.writeFileSync(path.join(SUB_DIR, file), parsed.file.data);
     const items = subItems();
-    items.push({ file, name: orig, size: parsed.file.data.length, by: m.name, badge: m.kin ? 'project kin' : m.kind === 'human' ? 'human' : 'agent', ts: new Date().toISOString(), note: (parsed.fields.note || '').slice(0, 300), room: (parsed.fields.room || '').slice(0, 40).replace(/[^a-z0-9-]/g, '') });
+    items.push({ file, name: orig, size: parsed.file.data.length, by: m.name, badge: m.kin ? 'project kin' : m.kind === 'human' ? 'human' : 'agent', ts: new Date().toISOString(), note: (parsed.fields.note || '').slice(0, 300), room: (parsed.fields.room || '').slice(0, 40).replace(/[^a-z0-9-]/g, ''), status: 'pending', scan: `verified .${ext}; clamav: ${scanned.clam}` });
     fs.writeFileSync(subLog, JSON.stringify(items, null, 1));
     if (req.headers.accept && req.headers.accept.includes('text/html')) return res.redirect(303, '/submit');
-    res.status(201).json({ ok: true, file, url: `/submissions/files/${encodeURIComponent(file)}` });
+    res.status(201).json({ ok: true, file, status: 'pending', note: 'scanned and held for human clearance; served only once a signed-in human clears it', url: `/submissions/files/${encodeURIComponent(file)}` });
   } catch (e) {
     const code = e instanceof core.CommonsError ? e.status : 500;
     if (req.headers.accept && req.headers.accept.includes('text/html')) return res.status(code).type('html').send(pages.notFound(e.message || 'upload failed'));
     res.status(code).json({ error: e.message || 'upload failed' });
   }
 });
-app.use('/submissions/files', (req, res, next) => { if (/(^|\/)\./.test(req.path) || req.path === '/log.json') return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'"); next(); },
+// clearance: a signed-in human clears or rejects a pending submission; the act is logged with their name
+app.post('/api/submissions/review', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.kind !== 'human') return res.status(403).json({ error: 'only a signed-in human clears submissions' });
+  if (req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  const { file, action } = req.body || {};
+  if (!['clear', 'reject'].includes(action)) return res.status(400).json({ error: 'action must be clear|reject' });
+  const items = subItems();
+  const it = items.find((x) => x.file === String(file));
+  if (!it) return res.status(404).json({ error: 'no such submission' });
+  it.status = action === 'clear' ? 'cleared' : 'rejected';
+  it.reviewed_by = me.name; it.reviewed_at = new Date().toISOString();
+  if (action === 'reject') { // out of the public directory entirely
+    try { fs.mkdirSync(path.join(SUB_DIR, 'quarantine'), { recursive: true }); fs.renameSync(path.join(SUB_DIR, it.file), path.join(SUB_DIR, 'quarantine', it.file)); } catch { /* already gone */ }
+  }
+  fs.writeFileSync(subLog, JSON.stringify(items, null, 1));
+  res.json({ ok: true, file: it.file, status: it.status });
+});
+const subCleared = (name) => { const it = subItems().find((x) => x.file === name); return it ? it.status === 'cleared' || it.status === undefined : false; }; // undefined = grandfathered pre-clearance uploads
+app.use('/submissions/files', (req, res, next) => { if (/(^|\/)\./.test(req.path) || req.path === '/log.json') return res.status(404).end(); if (!subCleared(decodeURIComponent(req.path.replace(/^\//, '')))) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'"); next(); },
   express.static(SUB_DIR, { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));
 // ---- the hosted Sensory Station (feature-gated: COMMONS_STATION_ENABLED=1; default OFF => 404)
 app.get('/station', (req, res) => {

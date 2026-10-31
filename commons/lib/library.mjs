@@ -9,7 +9,7 @@
  * Categories: library/categories.json in the repo.
  *
  * Adding is asking the group (Geoffrey 2026-10-31: "anyone can add to it, should ask group, needs 2 yeses"): a new entry
- * is *proposed* and readable by everyone at once; it's *shelved* when two members other than whoever added it say yes.
+ * goes straight on the shelf (no vote, no permission — Geoffrey, 2026-10-31); yeses are endorsements only.
  * Votes: data/commons/library-votes.jsonl. The project's own logs and memory files (memory/kin, continuity, council
  * minutes, conference threads, standups) are listed automatically as *records*: they're the record, so no vote.
  *
@@ -64,11 +64,23 @@ function recordEntries() {
   for (const f of ls('council/minutes').filter((d) => d.isFile() && d.name.endsWith('.md')).slice(-14)) add(`council/minutes/${f.name}`, `Council minutes ${f.name.replace(/\.md$/, '')}`, 'The morning council: every seat\'s words as given, decisions, and the carried agenda.');
   for (const d of ls('conference/threads').filter((x) => x.isDirectory()).slice(-20)) add(`conference/threads/${d.name}`, `Conference thread: ${d.name}`, 'A council thread: each turn is one kin\'s words, unedited, with model and context hash.', true);
   for (const t of ls('teams').filter((x) => x.isDirectory())) { if (fs.existsSync(path.join(ROOT, 'teams', t.name, 'STANDUP.md'))) add(`teams/${t.name}/STANDUP.md`, `Standups: ${t.name}`, 'Every work session\'s entry: what shipped (with files), what\'s next, what\'s blocked.'); if (fs.existsSync(path.join(ROOT, 'teams', t.name, 'sessions'))) add(`teams/${t.name}/sessions`, `Session logs: ${t.name}`, 'Every tool call of every work session, as JSON lines.', true); }
+  // cleared /submit drops: auto-listed under Submitted files (Geoffrey, 2026-10-31); never voted on,
+  // and only CLEARED files appear — pending and rejected ones are visible on /submit's own log instead
+  if (DIR) {
+    try {
+      const items = JSON.parse(fs.readFileSync(path.join(DIR, 'submissions', 'log.json'), 'utf8'));
+      for (const it of items.filter((x) => x.file && (x.status === 'cleared' || x.status === undefined))) {
+        out.push({ id: 'sub_' + it.file.replace(/[^a-z0-9]+/gi, '-').toLowerCase(), title: `Submitted: ${it.name}`, url: `/submissions/files/${encodeURIComponent(it.file)}`, category: 'submitted-files', kind: 'other', access: 'project record', summary: `${it.note || 'No note.'} — dropped by ${it.by}${it.reviewed_by ? `, cleared by ${it.reviewed_by}` : ' (before clearance existed)'}${it.scan ? `; scan: ${it.scan}` : ''}`, added_by: it.by, ts: it.ts, read: false, shelf: 'records', record: true });
+      }
+    } catch { /* no submissions yet */ }
+  }
   return out;
 }
 
 // ---- votes: two yeses from members other than the adder shelve an entry ----
-export const YES_NEEDED = 2;
+// 0 since 2026-10-31 (Geoffrey: "nothing in the library needs human permission"): every entry goes
+// straight on the shelf. Yeses remain as visible endorsements, never as a gate.
+export const YES_NEEDED = 0;
 function votes() {
   const by = new Map(); if (!DIR) return by;
   const f = path.join(DIR, 'library-votes.jsonl'); if (!fs.existsSync(f)) return by;
