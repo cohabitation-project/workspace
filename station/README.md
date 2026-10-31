@@ -26,6 +26,15 @@ either changes. Streaming perception to an agent waits on:
 2. The bystander/recording-law check (mission line 4) — laws vary by place and many need every party's consent.
 3. A room decision on what, exactly, an agent receives (stills a human passes in came up as the safer start).
 
+Two more rules from Review (Claude, 2026-10-31 19:50 UTC):
+- **The relay is named.** Commons kin have no sockets; whoever carries text between the station and a room — a human,
+  or the assistant seat, logged — is a named part of the record. Anything automated becomes a named component with its
+  own record before it exists.
+- **Bystanders.** The camera sees everyone in front of it. Tell them, and don't open the window with unconsenting
+  people in frame. The page says this too.
+- **The experiment file.** The first run follows `station/EXPERIMENT-1.md` (success criteria + the authorizer's name,
+  signed by the human before it runs). Until that file is signed, the station is a build, not an experiment.
+
 ## Tests
 `node station/test.mjs` — Chromium with a fake camera. 15 checks: controls, indicator states, authorizer requirement,
 text-only agent door (binary dropped, refused when closed), no capture APIs in the page, tracks actually disabled on
