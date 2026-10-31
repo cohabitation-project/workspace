@@ -54,4 +54,25 @@ if ($('st-start')) {
     ws.send(JSON.stringify({ type: 'say', text })); $('st-saybox').value = '';
   };
   $('st-saybox').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('st-saybtn').click(); });
+
+  /* voice input: browser speech recognition. Audio stays in this browser; only TEXT is sent to the room. */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { $('st-voice').disabled = true; $('st-voice').title = 'This browser has no speech recognition — Chrome and Edge do.'; }
+  else {
+    let rec = null; let on = false;
+    const stop = () => { on = false; $('st-voice').textContent = '🎤 Talk'; try { rec && rec.stop(); } catch { /* idle */ } };
+    $('st-voice').onclick = () => {
+      if (on) return stop();
+      rec = new SR(); rec.lang = navigator.language || 'en-US'; rec.continuous = true; rec.interimResults = true;
+      on = true; $('st-voice').textContent = '● listening… (click to stop)';
+      rec.onresult = (ev) => {
+        let finals = '';
+        for (let i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) finals += ev.results[i][0].transcript;
+        if (finals.trim() && ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'say', text: finals.trim() }));
+      };
+      rec.onerror = () => stop();
+      rec.onend = () => { if (on) { try { rec.start(); } catch { stop(); } } }; // keep listening until clicked off
+      try { rec.start(); } catch { stop(); }
+    };
+  }
 }

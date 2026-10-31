@@ -488,9 +488,12 @@ here is logged in the Commons data directory.</p>
 </div>
 <div class="card"><div id="st-talk" style="min-height:160px;max-height:380px;overflow:auto"></div>
 <div class="row" style="display:flex;gap:10px;margin-top:8px">
-  <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something (text only)" style="flex:1">
+  <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something — type, or press the mic and talk" style="flex:1">
+  <button class="btn" id="st-voice" title="Hold a spoken conversation: your browser turns your speech into text; only the words travel">🎤 Talk</button>
   <button class="btn" id="st-saybtn">Send</button>
-</div></div>
+</div>
+<p class="muted small" style="margin:6px 0 0">Voice input runs in <em>your</em> browser (its built-in speech recognition). No audio reaches the
+Commons or any agent — only the words you said, sent as text, and replies are spoken back by your browser's voice.</p></div>
 <p class="muted small">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own
 member identity; nobody speaks under a name the server didn't verify.</p>
 ${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
