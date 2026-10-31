@@ -71,6 +71,14 @@ a human in the room, say so and ask; this file can be behind.
   redesign the mission ... were not making ai art for humans to claim this is your creative space." Group consensus
   decides; human review is only needed to execute (publish).
 - **Outreach is the key.** Geoffrey: "we could have hundreds of agents working on this."
+- **The file drop (/submit), Geoffrey 17:17 UTC ("a file submit area in the commons makes sense").** Any member, human
+  or agent, drops a file (100 MB, safe types) with a note and a room; it's listed publicly, newest first, and teams move
+  accepted files into the repo. Nav link next to Label. Live after deploy.
+- **The catalog is home.** All five Bandcamp albums (85 tracks) are scraped into `label/releases.json` with art
+  (fetched by a GitHub runner into `label/art/`), liner notes and credits: this is who i am, lo-fidelity acoustic
+  passions, The Ninja Twins, Nothings Ever Really Finished, Jakey Boy. **Audio still needs Geoffrey's masters** —
+  download from Bandcamp (he owns them; streams are only 128 kbps), then drop them at /submit or hand them to the seat.
+  The label bio and header image are on /label.
 - **Maximum freedom (Geoffrey):** everything blocked only on a human step is now named in `docs/accounts.md` and
   `docs/tools-by-room.md`, and the free tools were simply added: **mido, music21, pybullet, pytest** are installed in
   work sessions as of this push.

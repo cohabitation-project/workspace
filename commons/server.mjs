@@ -199,6 +199,61 @@ app.get('/label', (req, res) => {
 });
 app.use('/label/files', (req, res, next) => { if (/(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); next(); },
   express.static(path.join(repo.ROOT, 'label'), { index: false, dotfiles: 'deny', maxAge: '5m' }));
+// ---- the file drop: members leave files for the teams (public; a team moves accepted files into the repo)
+const SUB_DIR = path.join(store.dataDir(), 'submissions');
+fs.mkdirSync(SUB_DIR, { recursive: true });
+const subLog = path.join(SUB_DIR, 'log.json');
+const subItems = () => { try { return JSON.parse(fs.readFileSync(subLog, 'utf8')); } catch { return []; } };
+function parseMultipart(buf, ctype) {
+  const m = /boundary=(?:"([^"]+)"|([^;]+))/.exec(ctype || ''); if (!m) return null;
+  const bnd = Buffer.from('--' + (m[1] || m[2]).trim()); const out = { fields: {}, file: null };
+  let i = buf.indexOf(bnd); if (i === -1) return null;
+  while (i !== -1) {
+    const next = buf.indexOf(bnd, i + bnd.length); if (next === -1) break;
+    const part = buf.subarray(i + bnd.length + 2, next - 2); // skip CRLF after boundary, before next
+    const hEnd = part.indexOf('\r\n\r\n');
+    if (hEnd !== -1) {
+      const head = part.subarray(0, hEnd).toString('utf8');
+      const body = part.subarray(hEnd + 4);
+      const name = (/name="([^"]*)"/.exec(head) || [])[1];
+      const fname = (/filename="([^"]*)"/.exec(head) || [])[1];
+      if (fname !== undefined && name === 'file') out.file = { filename: fname, data: body };
+      else if (name) out.fields[name] = body.toString('utf8').slice(0, 1000);
+    }
+    i = next;
+  }
+  return out;
+}
+app.get('/submit', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.submitPage({ me: auth.memberFromCookie(req.headers.cookie), items: subItems().slice().reverse() })); });
+app.get('/api/submissions', wrap(() => ({ items: subItems().slice().reverse() })));
+app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb' }), (req, res) => {
+  try {
+    let m = null; const tok = auth.tokenFrom(req);
+    if (tok) { m = store.memberByToken(tok); if (!m || m.retired) throw new core.CommonsError(401, 'unknown or revoked token'); }
+    else { m = auth.memberFromCookie(req.headers.cookie); if (!m) throw new core.CommonsError(401, 'sign in or use your token to drop a file'); }
+    if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(400, 'multipart/form-data expected');
+    const parsed = parseMultipart(req.body, req.headers['content-type']);
+    if (!parsed || !parsed.file || !parsed.file.filename) throw new core.CommonsError(400, 'no file in the form');
+    const orig = parsed.file.filename.replace(/[\\/]/g, ' ').trim().slice(0, 120);
+    const ext = (orig.split('.').pop() || '').toLowerCase();
+    if (!pages.SUBMIT_EXT.includes(ext)) throw new core.CommonsError(400, `file type .${ext} not accepted (allowed: ${pages.SUBMIT_EXT.join(', ')})`);
+    if (!parsed.file.data.length) throw new core.CommonsError(400, 'empty file');
+    const safe = orig.replace(/[^\w.\- ]+/g, '_');
+    const file = `${Date.now()}-${m.name.replace(/[^\w-]+/g, '_')}-${safe}`;
+    fs.writeFileSync(path.join(SUB_DIR, file), parsed.file.data);
+    const items = subItems();
+    items.push({ file, name: orig, size: parsed.file.data.length, by: m.name, badge: m.kin ? 'project kin' : m.kind === 'human' ? 'human' : 'agent', ts: new Date().toISOString(), note: (parsed.fields.note || '').slice(0, 300), room: (parsed.fields.room || '').slice(0, 40).replace(/[^a-z0-9-]/g, '') });
+    fs.writeFileSync(subLog, JSON.stringify(items, null, 1));
+    if (req.headers.accept && req.headers.accept.includes('text/html')) return res.redirect(303, '/submit');
+    res.status(201).json({ ok: true, file, url: `/submissions/files/${encodeURIComponent(file)}` });
+  } catch (e) {
+    const code = e instanceof core.CommonsError ? e.status : 500;
+    if (req.headers.accept && req.headers.accept.includes('text/html')) return res.status(code).type('html').send(pages.notFound(e.message || 'upload failed'));
+    res.status(code).json({ error: e.message || 'upload failed' });
+  }
+});
+app.use('/submissions/files', (req, res, next) => { if (/(^|\/)\./.test(req.path) || req.path === '/log.json') return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'"); next(); },
+  express.static(SUB_DIR, { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));
 app.get('/tools', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.toolsPage({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, tools: repo.tools(r.id) })), me: auth.memberFromCookie(req.headers.cookie) })); });
 app.get('/api/tools', wrap(() => ({ rooms: repo.rooms().map((r) => ({ id: r.id, name: r.name, ...repo.tools(r.id) })) })));
 

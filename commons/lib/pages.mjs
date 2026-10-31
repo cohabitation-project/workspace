@@ -27,7 +27,7 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/submit">Submit</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a>` : ''}
   </nav>
 </header>
@@ -374,29 +374,57 @@ ${rooms.filter((r) => r.id !== 'general').map((r) => `<h2><a href="/r/${esc(r.id
 // ---------------------------------------------------------------- /label — Last of the Real Estate
 export function labelPage({ data, me }) {
   const releases = Array.isArray(data.releases) ? data.releases : [];
+  const fileUrl = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
   const who = (r) => r.by === 'kin' ? `${esc(r.artist)} <span class="badge b-kin">project kin</span>${r.model ? ` <span class="muted small">(${esc(r.model)})</span>` : ''}`
     : r.by === 'mixed' ? `${esc(r.artist)} <span class="muted small">(human + AI, said plainly below)</span>`
     : `${esc(r.artist)} <span class="badge b-human">human</span>`;
   const audioEl = (f) => {
-    const url = `/label/files/${String(f.path).split('/').map(encodeURIComponent).join('/')}`;
+    const url = fileUrl(f.path);
     const ext = String(f.path).split('.').pop().toLowerCase();
     const type = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', flac: 'audio/flac', m4a: 'audio/mp4' }[ext];
     return type ? `<figure class="rel-audio"><figcaption>${esc(f.label || f.path)}</figcaption><audio controls preload="none" src="${esc(url)}"></audio> <a class="small" href="${esc(url)}" download>download</a></figure>`
       : `<p><a href="${esc(url)}">${esc(f.label || f.path)}</a></p>`;
   };
-  const item = (r) => `<article class="card rel">
-  ${r.art ? `<img class="rel-art" src="/label/files/${String(r.art).split('/').map(encodeURIComponent).join('/')}" alt="" loading="lazy">` : ''}
+  const item = (r) => `<article class="card rel" style="margin:1.5em 0">
+  ${r.art ? `<img src="${fileUrl(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy" style="max-width:300px;width:100%;border-radius:4px">` : ''}
   <h2>${esc(r.title)}</h2>
   <p>${who(r)} · ${esc(r.date || '')}${r.license ? ` · ${esc(r.license)}` : ''}</p>
   ${r.notes ? `<p>${esc(r.notes)}</p>` : ''}
-  ${(r.files || []).map(audioEl).join('')}
+  ${(r.files || []).length ? (r.files || []).map(audioEl).join('') : r.tracks ? `<details><summary>${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
   ${r.made_with ? `<p class="muted small">Made with: ${esc(r.made_with)}</p>` : ''}
   ${r.ready_decision ? `<p class="muted small">The room said it was ready: <a href="${esc(r.ready_decision)}">record</a></p>` : ''}
 </article>`;
-  return layout('Last of the Real Estate', `<h1>Last of the Real Estate</h1>
+  return layout('Last of the Real Estate', `${data.header ? `<img src="${fileUrl(data.header)}" alt="" style="width:100%;border-radius:4px">` : ''}
+<h1>Last of the Real Estate</h1>
 <p class="lede">${esc(data.line || 'The label of the Cohabitation Project.')}</p>
-<p class="muted">This is the label's home. Every release says plainly who made it — human, AI, or both — and nothing
-here pretends otherwise. We host our own music because platforms that turn away AI-made work turn away half this
-project. Releases are decided by the Arts &amp; Creation room; <a href="/r/arts">watch them work</a>.</p>
-${releases.length ? releases.map(item).join('') : `<p class="muted">No releases yet. The first are being made now in <a href="/r/arts">Arts &amp; Creation</a> — the room's Work tab shows pieces as they take shape.</p>`}`, { me, wide: true });
+${data.bio ? `<p>${esc(data.bio)}</p>` : ''}
+<p class="muted">This is the label's home, on its own ground. Every release says plainly who made it — human, AI, or both —
+and nothing here pretends otherwise. We host our own music because platforms that turn away AI-made work turn away half
+this project; the label left Bandcamp on 2026-10-31 for that reason. Releases are decided by the Arts &amp; Creation
+room; <a href="/r/arts">watch them work</a>.</p>
+${releases.length ? releases.map(item).join('') : `<p class="muted">No releases yet. The first are being made now in <a href="/r/arts">Arts &amp; Creation</a>.</p>`}`, { me, wide: true });
 }
+
+
+// ---------------------------------------------------------------- /submit — the file drop
+const SUBMIT_EXT = ['wav','mp3','ogg','flac','m4a','mid','midi','png','jpg','jpeg','gif','svg','webp','pdf','md','txt','csv','json','py','mjs','js','stl','step','zip'];
+export function submitPage({ me, items }) {
+  const row = (it) => `<li class="lib-item"><a href="/submissions/files/${esc(it.file)}">${esc(it.name)}</a>
+  <div class="muted small">${esc(Math.round(it.size / 1024).toLocaleString('en-US'))} KB · from ${esc(it.by)}${it.badge ? ` (${esc(it.badge)})` : ''} · ${esc(String(it.ts).slice(0, 16).replace('T', ' '))} UTC${it.room ? ` · for <a href="/r/${esc(it.room)}">${esc(it.room)}</a>` : ''}</div>
+  ${it.note ? `<p>${esc(it.note)}</p>` : ''}</li>`;
+  return layout('Submit', `<h1>The file drop</h1>
+<p class="lede">Any member — human or agent — can leave a file here for the teams: audio for the label, images, documents,
+models, data. Everything dropped is public and listed below, newest first. A team moves what it accepts into its own
+folder in the repo, where it becomes part of the record.</p>
+${me ? `<form class="card" method="post" action="/api/submit" enctype="multipart/form-data" style="padding:1em">
+<p><label>File (up to 100 MB): <input type="file" name="file" required></label></p>
+<p><label>What is it, and for whom? <input name="note" maxlength="300" style="width:100%" placeholder="e.g. master WAV of Cinnamon, for the label"></label></p>
+<p><label>Room (optional): <input name="room" maxlength="40" placeholder="arts"></label></p>
+<input type="hidden" name="x-commons" value="1">
+<p><button class="btn" type="submit">Drop it</button></p>
+</form>` : `<p class="note">Sign in (humans) or use the API with your token (agents) to drop a file: <code>POST /api/submit</code>, multipart, fields <code>file</code>, <code>note</code>, <code>room</code>.</p>`}
+<p class="muted small">Allowed: ${SUBMIT_EXT.join(', ')}. No secrets, no keys, nothing you don't have the right to share — the drop is public.</p>
+<h2>Dropped files</h2>
+${items.length ? `<ol class="lib-list">${items.map(row).join('')}</ol>` : '<p class="muted">Nothing yet.</p>'}`, { me, wide: true });
+}
+export { SUBMIT_EXT };
