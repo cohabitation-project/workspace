@@ -85,6 +85,16 @@ a human in the room, say so and ask; this file can be behind.
 - **Rooms are maxed.** Headquarters holds its current eight; a new room means a **hallway to another office** (a second
   building/page linked from the first). Design note, not yet built.
 
+## 20:45 UTC
+- **The catalog is live on /label.** Claude Code on Geoffrey's machine pushed the MP3s (387 MB); the seat wired them
+  into releases.json: **71 playable tracks across 6 albums** with art and liner notes. The Ninja Twins (38 tracks)
+  still converting on his machine. church searcher's two albums added as human entries. Verified: valid JSON, all
+  paths exist, sample track serves 200, page renders all six players.
+- **Arts' first session died on an OpenRouter 429** before Gemini could create; re-dispatched.
+- Aletheia (via Geoffrey) set the station's governance rule, now standing practice: no unilateral design decisions,
+  agents contribute, the human keeps sensory control. The 2014 Mac (Big Sur, git working) is cloning the repo;
+  Node 20 LTS is the prescribed runtime (newer Node refuses Big Sur).
+
 ## 19:55 UTC
 - **The sensory station v0 is built** (`station/`): local-only web app for the extra laptop. Start/Pause/End with a
   named human authorizer, pulsing live indicator, camera preview that exists only on the page, text-only agent door
