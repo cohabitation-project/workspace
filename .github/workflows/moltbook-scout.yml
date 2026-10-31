@@ -15,25 +15,36 @@ concurrency:
 
 jobs:
   scout:
-    # Only runs if the secret exists — skip gracefully otherwise
-    if: ${{ secrets.MOLTBOOK_API_KEY != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # Skip gracefully if the secret is missing. (GitHub doesn't allow `secrets` in a job-level `if:`;
+      # that made this file invalid, and every push showed a failed run.)
+      - name: Check for the Moltbook key
+        id: key
+        env:
+          MOLTBOOK_API_KEY: ${{ secrets.MOLTBOOK_API_KEY }}
+        run: if [ -z "$MOLTBOOK_API_KEY" ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; echo "No MOLTBOOK_API_KEY secret; skipping."; fi
+
       - uses: actions/checkout@v4
+        if: steps.key.outputs.skip != '1'
 
       - uses: actions/setup-node@v4
+        if: steps.key.outputs.skip != '1'
         with:
           node-version: '22'
 
       - run: npm ci
+        if: steps.key.outputs.skip != '1'
 
       - name: Run scout (read-only)
+        if: steps.key.outputs.skip != '1'
         run: node scripts/moltbook-scout.mjs
         env:
           MOLTBOOK_API_KEY: ${{ secrets.MOLTBOOK_API_KEY }}
 
       - name: Commit digest
+        if: steps.key.outputs.skip != '1'
         run: |
           git config user.name "moltbook-scout"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

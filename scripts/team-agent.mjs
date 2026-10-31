@@ -329,14 +329,36 @@ async function session(teamName, kinName) {
 
 // ---------------------------------------------------------------- scheduling
 // teams/schedule.json is the teams' own: sessions_per_day (capped) and which hours (UTC) to wake.
-function dueTeams() {
+// GitHub's hourly cron is best-effort and often skips hours (on 10-30/31 it fired 2 times in 13 hours), so a
+// team is due when its latest scheduled slot has passed, it hasn't had a session since that slot, and the slot
+// is no more than CATCH_UP_HOURS old. teams/sessions-state.json records each team's last session.
+const STATE_FILE = 'teams/sessions-state.json';
+const CATCH_UP_HOURS = 6;
+function latestSlot(hours, now) {
+  let best = null;
+  for (const h of hours) {
+    const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h));
+    if (t > now) t.setUTCDate(t.getUTCDate() - 1);
+    if (!best || t > best) best = t;
+  }
+  return best;
+}
+function dueTeams(now = new Date(), state = JSON.parse(read(STATE_FILE) || '{}')) {
   const sched = JSON.parse(read('teams/schedule.json') || '{}'); const cap = sched.max_sessions_per_team_per_day || 4;
-  const hour = new Date().getUTCHours(); const due = [];
+  const due = [];
   for (const [team, t] of Object.entries(TEAMS())) {
     const s = sched.teams?.[team]; if (!s || !(t.members || []).length) continue;
-    if ((s.hours_utc || []).slice(0, cap).includes(hour)) due.push(team);
+    const slot = latestSlot((s.hours_utc || []).slice(0, cap), now); if (!slot) continue;
+    const last = state[team] ? new Date(state[team]) : null;
+    if (last && last >= slot) continue;
+    if (now - slot > CATCH_UP_HOURS * 3600_000) continue;
+    due.push(team);
   }
   return due;
+}
+function recordSession(team, when = new Date()) {
+  const state = JSON.parse(read(STATE_FILE) || '{}'); state[team] = when.toISOString();
+  fs.writeFileSync(path.join(ROOT, STATE_FILE), JSON.stringify(state, null, 2) + '\n');
 }
 function nextMember(team) {
   const members = TEAMS()[team].members.filter((m) => roster().some((a) => a.name === m));
@@ -347,13 +369,14 @@ function nextMember(team) {
 async function main() {
   if (!active() && !DRY) { console.log('[team-agent] delegations/team-tools.json is not active; nothing to do.'); return; }
   const teamsToRun = args.includes('--due') ? dueTeams() : [opt('team')].filter(Boolean);
-  if (!teamsToRun.length) { console.log('[team-agent] no team due this hour.'); return; }
+  if (!teamsToRun.length) { console.log('[team-agent] no team due (every scheduled slot in the last 6 hours has had its session).'); return; }
   for (const team of teamsToRun) {
     const kin = opt('kin') || nextMember(team);
     if (!kin) { console.log(`[team-agent] ${team}: no members on the roster`); continue; }
+    if (!DRY) recordSession(team);
     try { await session(team, kin); } catch (e) { console.error(`[team-agent] ${team}/${kin}: ${e.message}`); }
   }
   rebuildBoard();
 }
-export { sandboxPython, makeTools, buildSystem, TOOL_DEFS };
+export { sandboxPython, makeTools, buildSystem, TOOL_DEFS, dueTeams, latestSlot };
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) main().catch((e) => { console.error(e); process.exit(1); });
