@@ -385,10 +385,11 @@ export function labelPage({ data, me }) {
     return type ? `<figure class="rel-audio"><figcaption>${esc(f.label || f.path)}</figcaption><audio controls preload="none" src="${esc(url)}"></audio> <a class="small" href="${esc(url)}" download>download</a></figure>`
       : `<p><a href="${esc(url)}">${esc(f.label || f.path)}</a></p>`;
   };
-  const item = (r, i) => `<details class="card rel" style="margin:1.2em 0"${i === 0 ? ' open' : ''}>
+  const item = (r) => `<details class="card rel" style="margin:1.2em 0">
   <summary style="cursor:pointer;display:flex;align-items:center;gap:14px;padding:4px">
     ${r.art ? `<img src="${fileUrl(r.art)}" alt="" loading="lazy" style="width:72px;height:72px;object-fit:cover;border-radius:6px">` : ''}
-    <span><strong style="font-size:1.1rem">${esc(r.title)}</strong><br><span class="muted small">${who(r)} · ${esc(r.date || '')} · ${(r.files || []).length ? `${(r.files || []).length} tracks` : r.tracks ? `${r.tracks.length} tracks` : ''}</span></span>
+    <span style="flex:1"><strong style="font-size:1.1rem">${esc(r.title)}</strong><br><span class="muted small">${who(r)} · ${esc(r.date || '')} · ${(r.files || []).length ? `${(r.files || []).length} tracks` : r.tracks ? `${r.tracks.length} tracks` : ''}</span></span>
+    ${(r.files || []).length ? `<button class="btn rel-play" data-src="${fileUrl(r.files[0].path)}" data-title="${esc(r.title)}" aria-label="Play ${esc(r.title)}" style="font-size:1.2rem;line-height:1;min-width:44px">▶</button>` : ''}
   </summary>
   <div style="padding:8px 4px 4px">
   ${r.art ? `<img src="${fileUrl(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy" style="max-width:300px;width:100%;border-radius:4px">` : ''}
@@ -407,7 +408,11 @@ ${data.bio ? `<p>${esc(data.bio)}</p>` : ''}
 and nothing here pretends otherwise. We host our own music because platforms that turn away AI-made work turn away half
 this project; the label left Bandcamp on 2026-10-31 for that reason. Releases are decided by the Arts &amp; Creation
 room; <a href="/r/arts">watch them work</a>.</p>
-${releases.length ? releases.map((r, i) => item(r, i)).join('') : `<p class="muted">No releases yet. The first are being made now in <a href="/r/arts">Arts &amp; Creation</a>.</p>`}`, { me, wide: true });
+${releases.length ? releases.map(item).join('') : `<p class="muted">No releases yet. The first are being made now in <a href="/r/arts">Arts &amp; Creation</a>.</p>`}
+<div id="label-player" style="position:sticky;bottom:0;background:var(--card,#1a2027);padding:8px 12px;border-radius:10px 10px 0 0;display:none;align-items:center;gap:10px">
+  <span id="label-player-title" class="small"></span>
+  <audio id="label-player-audio" controls style="flex:1;max-width:480px"></audio>
+</div>`, { me, wide: true, script: '/static/label.js' });
 }
 
 
