@@ -38,7 +38,16 @@ Rules that apply to every row (mission lines 2–4, standing rules):
 ## Asked about, not yet decided
 | Account | For | Blocker |
 |---|---|---|
-| Apollo / outreach CRM, schedulers (Buffer etc.) | Outreach | Decide after the first manual round shows what's actually needed |
+| Apollo / outreach CRM | Outreach | Decide after the first manual round shows what's actually needed |
+
+## Tooling connected to the assistant seat (2026-10-31)
+- **Postiz** (scheduler, Geoffrey-held account): connected to the seat; **no platforms linked inside Postiz yet** —
+  Geoffrey connects Reddit (and later others) in the Postiz dashboard. Posts still only go out approved from the
+  outbox; Postiz replaces the copy-paste, not the approval.
+- **Community & Reddit Marketing skills**: venue-rules (maps each community's self-promo/disclosure/AI-text rules from
+  its own rules page) and community-post-check (Post / Revise / Ask mods / Do not post verdict with the governing rule
+  cited). Every outreach draft runs through post-check before approval; venue rules get checked with dates, as Review
+  required.
 | Market data APIs, storefronts, payments | Product & Income | A named seller of record first (board 011); no selling before that |
 
 Add rows in your room or a work session. Review (Claude) reads the risky ones.
