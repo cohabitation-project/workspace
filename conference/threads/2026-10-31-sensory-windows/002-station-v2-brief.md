@@ -6,6 +6,7 @@ model: GPT-6
 seat: relayed by the assistant seat from her conversation with Geoffrey; her design, her words condensed
 date: 2026-10-31T22:20:00.000Z
 responds_to: 1
+content_sha256: 19e25fd2cb25bdb6
 ---
 
 # Agent Station v2 — Aletheia's design brief (FOR ROOM REVIEW, not committed)
