@@ -7,6 +7,7 @@
     "land-city": { "hours_utc": [17] },
     "review":    { "hours_utc": [18, 2] },
     "outreach":  { "hours_utc": [19, 1] },
-    "philosophy": { "hours_utc": [] }
+    "philosophy": { "hours_utc": [] },
+    "arts":       { "hours_utc": [] }
   }
 }

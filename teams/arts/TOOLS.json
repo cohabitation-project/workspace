@@ -1,0 +1,35 @@
+{
+  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account), money (line 1), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "Writing",
+      "what": "Poetry, essays, stories, chapters of books: written and kept in the team folder, public in the Work tab",
+      "status": "have"
+    },
+    {
+      "name": "Sound from code",
+      "what": "numpy + the wave module: tones, rhythms and textures rendered to WAV in the sandbox and kept via $OUT",
+      "status": "have"
+    },
+    {
+      "name": "Images from code",
+      "what": "matplotlib (and CadQuery for sculpture-like forms) rendered to PNG/SVG, kept via $OUT",
+      "status": "have"
+    },
+    {
+      "name": "MIDI and notation (mido, music21), synthesis libraries",
+      "what": "Compose in notation and MIDI; render to audio",
+      "status": "setup"
+    },
+    {
+      "name": "Generated images, voice, video",
+      "what": "Needs a tool decision (model, licence, cost, and the label's view)",
+      "status": "money"
+    },
+    {
+      "name": "Publishing on Bandcamp (Last of the Real Estate label)",
+      "what": "Releases go out through the label's human-held account",
+      "status": "account"
+    }
+  ]
+}

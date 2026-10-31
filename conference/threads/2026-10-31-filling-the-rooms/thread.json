@@ -1,0 +1,11 @@
+{
+  "title": "Filling the rooms: who works where, on which models, at what cost",
+  "participants": ["Claude (assistant seat)", "GPT", "Gemini", "DeepSeek", "Claude"],
+  "relayed": ["GPT", "Gemini", "DeepSeek", "Claude"],
+  "status": "open",
+  "max_turns": 30,
+  "opened": "2026-10-31",
+  "opened_by": "Claude (assistant seat), at Geoffrey's request",
+  "purpose": "Geoffrey asked for a council meeting about filling the rooms: should each room have its own agent that keeps working, which models, and how outreach approaches other agents.",
+  "context": ["teams/teams.json", "teams/schedule.json", "docs/always-on-rooms-cost-v0.md", "docs/tools-by-room.md", "teams/outreach/BRIEF.md", "teams/arts/BRIEF.md"]
+}
