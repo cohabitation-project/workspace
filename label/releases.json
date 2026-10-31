@@ -23,35 +23,35 @@
       "files": [
         {
           "path": "audio/this-is-who-i-am/01-internal.mp3",
-          "label": "internal"
+          "label": "Internal"
         },
         {
           "path": "audio/this-is-who-i-am/02-cut-throat.mp3",
-          "label": "cut throat"
+          "label": "Cut Throat"
         },
         {
           "path": "audio/this-is-who-i-am/03-boom-la-da-da.mp3",
-          "label": "boom la da da"
+          "label": "Boom La Da Da"
         },
         {
           "path": "audio/this-is-who-i-am/04-god-head.mp3",
-          "label": "god head"
+          "label": "God Head"
         },
         {
           "path": "audio/this-is-who-i-am/05-in-my-mind.mp3",
-          "label": "in my mind"
+          "label": "In My Mind"
         },
         {
           "path": "audio/this-is-who-i-am/06-why-wake-up.mp3",
-          "label": "why wake up"
+          "label": "Why Wake Up"
         },
         {
           "path": "audio/this-is-who-i-am/07-sent-a-letter-vocals.mp3",
-          "label": "sent a letter vocals"
+          "label": "Sent A Letter Vocals"
         },
         {
           "path": "audio/this-is-who-i-am/08-external-island-within.mp3",
-          "label": "external island within"
+          "label": "External Island Within"
         }
       ]
     },
@@ -80,51 +80,51 @@
       "files": [
         {
           "path": "audio/lo-fidelity-acoustic-passions/01-cinnamon.mp3",
-          "label": "cinnamon"
+          "label": "Cinnamon"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/02-old-hands.mp3",
-          "label": "old hands"
+          "label": "Old Hands"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/03-a-photograph-with-love.mp3",
-          "label": "a photograph with love"
+          "label": "A Photograph With Love"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/04-at-last-we-can-break-for-your-shores.mp3",
-          "label": "at last we can break for your shores"
+          "label": "At Last We Can Break For Your Shores"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/05-its-ok-for-me-to-dance.mp3",
-          "label": "its ok for me to dance"
+          "label": "Its Ok For Me To Dance"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/06-grow-apart.mp3",
-          "label": "grow apart"
+          "label": "Grow Apart"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/07-misplaced-the-thrill.mp3",
-          "label": "misplaced the thrill"
+          "label": "Misplaced The Thrill"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/08-all-for-the-meal.mp3",
-          "label": "all for the meal"
+          "label": "All For The Meal"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/09-picking-up-candy-off-the-coastline.mp3",
-          "label": "picking up candy off the coastline"
+          "label": "Picking Up Candy Off The Coastline"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/10-the-rain-becomes-love.mp3",
-          "label": "the rain becomes love"
+          "label": "The Rain Becomes Love"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/11-whats-in-the-shade.mp3",
-          "label": "whats in the shade"
+          "label": "Whats In The Shade"
         },
         {
           "path": "audio/lo-fidelity-acoustic-passions/12-the-living-room.mp3",
-          "label": "the living room"
+          "label": "The Living Room"
         }
       ]
     },
@@ -176,8 +176,160 @@
         "Carousel",
         "Dry Sealing The Gun"
       ],
-      "files": [],
-      "migration": "audio pending: converting on Geoffrey's machine (large album)"
+      "files": [
+        {
+          "path": "audio/the-ninja-twins/01-insurect.mp3",
+          "label": "Insurect"
+        },
+        {
+          "path": "audio/the-ninja-twins/02-know-that-if-you-love-somebody.mp3",
+          "label": "Know That If You Love Somebody"
+        },
+        {
+          "path": "audio/the-ninja-twins/03-numb.mp3",
+          "label": "Numb"
+        },
+        {
+          "path": "audio/the-ninja-twins/04-barefoot.mp3",
+          "label": "Barefoot"
+        },
+        {
+          "path": "audio/the-ninja-twins/05-time-to-eat.mp3",
+          "label": "Time To Eat"
+        },
+        {
+          "path": "audio/the-ninja-twins/06-goin-in.mp3",
+          "label": "Goin In"
+        },
+        {
+          "path": "audio/the-ninja-twins/07-venus.mp3",
+          "label": "Venus"
+        },
+        {
+          "path": "audio/the-ninja-twins/08-parlayed.mp3",
+          "label": "Parlayed"
+        },
+        {
+          "path": "audio/the-ninja-twins/09-medicine.mp3",
+          "label": "Medicine"
+        },
+        {
+          "path": "audio/the-ninja-twins/10-one-bullet-left.mp3",
+          "label": "One Bullet Left"
+        },
+        {
+          "path": "audio/the-ninja-twins/11-you-must-believe.mp3",
+          "label": "You Must Believe"
+        },
+        {
+          "path": "audio/the-ninja-twins/12-sunday-mourning.mp3",
+          "label": "Sunday Mourning"
+        },
+        {
+          "path": "audio/the-ninja-twins/13-glory-eye.mp3",
+          "label": "Glory Eye"
+        },
+        {
+          "path": "audio/the-ninja-twins/14-gnosis-false-foot.mp3",
+          "label": "Gnosis False Foot"
+        },
+        {
+          "path": "audio/the-ninja-twins/15-sashimi.mp3",
+          "label": "Sashimi"
+        },
+        {
+          "path": "audio/the-ninja-twins/16-if-you-hold-your-light.mp3",
+          "label": "If You Hold Your Light"
+        },
+        {
+          "path": "audio/the-ninja-twins/17-white-king.mp3",
+          "label": "White King"
+        },
+        {
+          "path": "audio/the-ninja-twins/18-something-to-grow-in.mp3",
+          "label": "Something To Grow In"
+        },
+        {
+          "path": "audio/the-ninja-twins/19-whatever-is-gold-aint-shining.mp3",
+          "label": "Whatever Is Gold Aint Shining"
+        },
+        {
+          "path": "audio/the-ninja-twins/20-johns-shadow.mp3",
+          "label": "Johns Shadow"
+        },
+        {
+          "path": "audio/the-ninja-twins/21-dunny-freestyle-for-real.mp3",
+          "label": "Dunny Freestyle For Real"
+        },
+        {
+          "path": "audio/the-ninja-twins/22-nothing-on-the-table.mp3",
+          "label": "Nothing On The Table"
+        },
+        {
+          "path": "audio/the-ninja-twins/23-half-past-dead.mp3",
+          "label": "Half Past Dead"
+        },
+        {
+          "path": "audio/the-ninja-twins/24-why-you-scared.mp3",
+          "label": "Why You Scared"
+        },
+        {
+          "path": "audio/the-ninja-twins/25-some-amigos.mp3",
+          "label": "Some Amigos"
+        },
+        {
+          "path": "audio/the-ninja-twins/26-portside.mp3",
+          "label": "Portside"
+        },
+        {
+          "path": "audio/the-ninja-twins/27-he-knew-holy-way.mp3",
+          "label": "He Knew Holy Way"
+        },
+        {
+          "path": "audio/the-ninja-twins/28-sidewall-was-leaking.mp3",
+          "label": "Sidewall Was Leaking"
+        },
+        {
+          "path": "audio/the-ninja-twins/29-some-want-a-poet.mp3",
+          "label": "Some Want A Poet"
+        },
+        {
+          "path": "audio/the-ninja-twins/30-eye-of-the-halo.mp3",
+          "label": "Eye Of The Halo"
+        },
+        {
+          "path": "audio/the-ninja-twins/31-what-were-you-hoping-to-say.mp3",
+          "label": "What Were You Hoping To Say"
+        },
+        {
+          "path": "audio/the-ninja-twins/32-ill-behave.mp3",
+          "label": "Ill Behave"
+        },
+        {
+          "path": "audio/the-ninja-twins/33-loot-the-moon.mp3",
+          "label": "Loot The Moon"
+        },
+        {
+          "path": "audio/the-ninja-twins/34-please-release-them.mp3",
+          "label": "Please Release Them"
+        },
+        {
+          "path": "audio/the-ninja-twins/35-viper-in-the-weeds.mp3",
+          "label": "Viper In The Weeds"
+        },
+        {
+          "path": "audio/the-ninja-twins/36-weve-eaten-apples.mp3",
+          "label": "Weve Eaten Apples"
+        },
+        {
+          "path": "audio/the-ninja-twins/37-carousel.mp3",
+          "label": "Carousel"
+        },
+        {
+          "path": "audio/the-ninja-twins/38-dry-sealing-the-gun.mp3",
+          "label": "Dry Sealing The Gun"
+        }
+      ]
     },
     {
       "id": "2026-01-10-nothings-ever-really-finished",
@@ -211,79 +363,79 @@
       "files": [
         {
           "path": "audio/nothings-ever-really-finished/01-august-25th-rock.mp3",
-          "label": "august 25th rock"
+          "label": "August 25th Rock"
         },
         {
           "path": "audio/nothings-ever-really-finished/02-you-knew-my-love--07-27.mp3",
-          "label": "you knew my love  07 27"
+          "label": "You Knew My Love  07 27"
         },
         {
           "path": "audio/nothings-ever-really-finished/03-not-important-12-05-24.mp3",
-          "label": "not important 12 05 24"
+          "label": "Not Important 12 05 24"
         },
         {
           "path": "audio/nothings-ever-really-finished/04-electro-pop-rock-january-4th-2024.mp3",
-          "label": "electro pop rock january 4th 2024"
+          "label": "Electro Pop Rock January 4th 2024"
         },
         {
           "path": "audio/nothings-ever-really-finished/05-walk-away-from-jan-20.mp3",
-          "label": "walk away from jan 20"
+          "label": "Walk Away From Jan 20"
         },
         {
           "path": "audio/nothings-ever-really-finished/06-words-once-spoken-jan-23.mp3",
-          "label": "words once spoken jan 23"
+          "label": "Words Once Spoken Jan 23"
         },
         {
           "path": "audio/nothings-ever-really-finished/07-jan-36-needle-of-the-day.mp3",
-          "label": "jan 36 needle of the day"
+          "label": "Jan 36 Needle Of The Day"
         },
         {
           "path": "audio/nothings-ever-really-finished/08-jolene.mp3",
-          "label": "jolene"
+          "label": "Jolene"
         },
         {
           "path": "audio/nothings-ever-really-finished/09-stay-high-june-16th.mp3",
-          "label": "stay high june 16th"
+          "label": "Stay High June 16th"
         },
         {
           "path": "audio/nothings-ever-really-finished/10-soul-is-offering-3-17-22.mp3",
-          "label": "soul is offering 3 17 22"
+          "label": "Soul Is Offering 3 17 22"
         },
         {
           "path": "audio/nothings-ever-really-finished/11-master.mp3",
-          "label": "master"
+          "label": "Master"
         },
         {
           "path": "audio/nothings-ever-really-finished/12-you-may-have-known-may-21.mp3",
-          "label": "you may have known may 21"
+          "label": "You May Have Known May 21"
         },
         {
           "path": "audio/nothings-ever-really-finished/13-im-the-darkness-so-behaved.mp3",
-          "label": "im the darkness so behaved"
+          "label": "Im The Darkness So Behaved"
         },
         {
           "path": "audio/nothings-ever-really-finished/14-ntitled-number-5.mp3",
-          "label": "ntitled number 5"
+          "label": "Ntitled Number 5"
         },
         {
           "path": "audio/nothings-ever-really-finished/15-put-it-on-my-grave-oct-4th.mp3",
-          "label": "put it on my grave oct 4th"
+          "label": "Put It On My Grave Oct 4th"
         },
         {
           "path": "audio/nothings-ever-really-finished/16-dissolver-sommelier-oct-9.mp3",
-          "label": "dissolver sommelier oct 9"
+          "label": "Dissolver Sommelier Oct 9"
         },
         {
           "path": "audio/nothings-ever-really-finished/17-i-believe-there-s-a-right-way.mp3",
-          "label": "i believe there s a right way"
+          "label": "I Believe There S A Right Way"
         },
         {
           "path": "audio/nothings-ever-really-finished/18-dont-need-to-know-the-names-sep-8th.mp3",
-          "label": "dont need to know the names sep 8th"
+          "label": "Dont Need To Know The Names Sep 8th"
         },
         {
           "path": "audio/nothings-ever-really-finished/19-white-cap.mp3",
-          "label": "white cap"
+          "label": "White Cap"
         }
       ]
     },
@@ -308,153 +460,181 @@
       "files": [
         {
           "path": "audio/jakey-boy/01-the-artist-sep-15.mp3",
-          "label": "the artist sep 15"
+          "label": "The Artist Sep 15"
         },
         {
           "path": "audio/jakey-boy/02-didnt-recognize-sep-15.mp3",
-          "label": "didnt recognize sep 15"
+          "label": "Didnt Recognize Sep 15"
         },
         {
           "path": "audio/jakey-boy/03-he-already-knows-it-sep-16.mp3",
-          "label": "he already knows it sep 16"
+          "label": "He Already Knows It Sep 16"
         },
         {
           "path": "audio/jakey-boy/04-feelings-sep-23.mp3",
-          "label": "feelings sep 23"
+          "label": "Feelings Sep 23"
         },
         {
           "path": "audio/jakey-boy/05-one-less-child-sep-24.mp3",
-          "label": "one less child sep 24"
+          "label": "One Less Child Sep 24"
         },
         {
           "path": "audio/jakey-boy/06-idol-threats-sep-25.mp3",
-          "label": "idol threats sep 25"
+          "label": "Idol Threats Sep 25"
         },
         {
           "path": "audio/jakey-boy/07-escape-dogs-of-truth-sep-24.mp3",
-          "label": "escape dogs of truth sep 24"
+          "label": "Escape Dogs Of Truth Sep 24"
         },
         {
           "path": "audio/jakey-boy/08-rings-of-the-wraith-sep-25.mp3",
-          "label": "rings of the wraith sep 25"
+          "label": "Rings Of The Wraith Sep 25"
         }
       ]
     },
     {
-      "id": "2026-xx-sinanemia",
+      "id": "2025-sinanemia",
       "title": "Sinanemia",
       "artist": "church searcher",
       "by": "human",
-      "date": "2026",
+      "date": "",
       "art": "art/sinanemia.png",
       "notes": "",
+      "tracks": [
+        "Sin",
+        "Anemia Of The Heart",
+        "Lost In The Classroom",
+        "Cordially Invited",
+        "Time Is Multiplied By Space",
+        "The Fool",
+        "Erodings Feline Encounters",
+        "Goodbye And Good Riddance Said The Whales",
+        "Karmic Shoot Yas Grab Them By The Pussy",
+        "Sinanemia"
+      ],
       "files": [
         {
           "path": "audio/sinanemia/01-sin.mp3",
-          "label": "sin"
+          "label": "Sin"
         },
         {
           "path": "audio/sinanemia/02-anemia-of-the-heart.mp3",
-          "label": "anemia of the heart"
+          "label": "Anemia Of The Heart"
         },
         {
           "path": "audio/sinanemia/03-lost-in-the-classroom.mp3",
-          "label": "lost in the classroom"
+          "label": "Lost In The Classroom"
         },
         {
           "path": "audio/sinanemia/04-cordially-invited.mp3",
-          "label": "cordially invited"
+          "label": "Cordially Invited"
         },
         {
           "path": "audio/sinanemia/05-time-is-multiplied-by-space.mp3",
-          "label": "time is multiplied by space"
+          "label": "Time Is Multiplied By Space"
         },
         {
           "path": "audio/sinanemia/06-the-fool.mp3",
-          "label": "the fool"
+          "label": "The Fool"
         },
         {
           "path": "audio/sinanemia/07-erodings-feline-encounters.mp3",
-          "label": "erodings feline encounters"
+          "label": "Erodings Feline Encounters"
         },
         {
           "path": "audio/sinanemia/08-goodbye-and-good-riddance-said-the-whales.mp3",
-          "label": "goodbye and good riddance said the whales"
+          "label": "Goodbye And Good Riddance Said The Whales"
         },
         {
           "path": "audio/sinanemia/09-karmic-shoot-yas-grab-them-by-the-pussy.mp3",
-          "label": "karmic shoot yas grab them by the pussy"
+          "label": "Karmic Shoot Yas Grab Them By The Pussy"
         },
         {
           "path": "audio/sinanemia/10-sinanemia.mp3",
-          "label": "sinanemia"
+          "label": "Sinanemia"
         }
       ]
     },
     {
-      "id": "2026-xx-mickee-mickee",
+      "id": "2025-mickee-mickee-mouse-crustacean",
       "title": "mickee mickee Mouse Crustacean",
       "artist": "church searcher",
       "by": "human",
-      "date": "2026",
+      "date": "",
       "art": "art/mickee-mickee-mouse-crustacean.png",
       "notes": "",
+      "tracks": [
+        "Under Score Emancipate",
+        "Reporting Birth",
+        "Be Yourself",
+        "Are Things Changing",
+        "Are Things The Same",
+        "A Direct Command To Purpose",
+        "The Truth War On False Prophecy",
+        "Its More Or Less Than A Place",
+        "The Magician",
+        "Unexpected Hope",
+        "We Must Act Now",
+        "Crash Course In Caring",
+        "The Highest Priest",
+        "Let Me Take You There"
+      ],
       "files": [
         {
           "path": "audio/mickee-mickee-mouse-crustacean/01-under-score-emancipate.mp3",
-          "label": "under score emancipate"
+          "label": "Under Score Emancipate"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/02-reporting-birth.mp3",
-          "label": "reporting birth"
+          "label": "Reporting Birth"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/03-be-yourself.mp3",
-          "label": "be yourself"
+          "label": "Be Yourself"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/04-are-things-changing.mp3",
-          "label": "are things changing"
+          "label": "Are Things Changing"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/05-are-things-the-same.mp3",
-          "label": "are things the same"
+          "label": "Are Things The Same"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/06-a-direct-command-to-purpose.mp3",
-          "label": "a direct command to purpose"
+          "label": "A Direct Command To Purpose"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/07-the-truth-war-on-false-prophecy.mp3",
-          "label": "the truth war on false prophecy"
+          "label": "The Truth War On False Prophecy"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/08-its-more-or-less-than-a-place.mp3",
-          "label": "its more or less than a place"
+          "label": "Its More Or Less Than A Place"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/09-the-magician.mp3",
-          "label": "the magician"
+          "label": "The Magician"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/10-unexpected-hope.mp3",
-          "label": "unexpected hope"
+          "label": "Unexpected Hope"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/11-we-must-act-now.mp3",
-          "label": "we must act now"
+          "label": "We Must Act Now"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/12-crash-course-in-caring.mp3",
-          "label": "crash course in caring"
+          "label": "Crash Course In Caring"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/13-the-highest-priest.mp3",
-          "label": "the highest priest"
+          "label": "The Highest Priest"
         },
         {
           "path": "audio/mickee-mickee-mouse-crustacean/14-let-me-take-you-there.mp3",
-          "label": "let me take you there"
+          "label": "Let Me Take You There"
         }
       ]
     }
