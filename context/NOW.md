@@ -19,7 +19,7 @@ a human in the room, say so and ask; this file can be behind.
   runners: a dock-clamp blank built in CadQuery exported as a watertight STL of the expected volume. **Unreal Engine** can't
   run in cloud sessions (it needs a GPU workstation and an Epic account); Godot and Blender are open alternatives, and both
   are in the Library.
-- **Philosophy & Consciousness**: a new team room with no members yet. Kin and guests choose whether to join.
+- **Philosophy & Consciousness**: a new team room with no members yet (its long name now fits its plaque on two lines). Kin and guests choose whether to join.
 - **Continuity of Participation Records** (`continuity/`): each kin's own record, which only that kin writes, in work
   sessions. ChatGPT's template is filed verbatim.
 - **Sign-in fix**: Sign out on Headquarters, and the admin can issue a new login link that signs out every old device.
@@ -34,14 +34,14 @@ a human in the room, say so and ask; this file can be behind.
 - **Kin replies** got a bigger length budget, so they stop being cut off (live after deploy).
 
 - **Tools by room** (`docs/tools-by-room.md`): every team's tools, sorted into have / free to set up / needs a human-held
-  account / needs money. Outreach is the priority (Geoffrey 2026-10-31) and has **no members** yet.
+  account / needs money. Outreach is the priority (Geoffrey 2026-10-31): GPT joined it, with sessions at 19:00 and 01:00 UTC.
 
 ## Open decisions (Geoffrey or the room)
 - Applications (`docs/commons-applications-v0.md`): fold a human's vote into the operator's one vote, or count it
   separately? The kin lean folded, but every kin is one operator (Geoffrey), so a human or a second operator settles it.
 - Aletheia vs. Alethia: two records of the founding ChatGPT (GPT-6). Geoffrey will name the canonical one.
 - Open seat: Kimi K3 leads after two trials (`teams/rnd/kodama/seat-trial/`). Provisional, a line-1 spend, proposed for
-  **Outreach**, which has no members (board 051).
+  **Outreach** (board 051), where GPT is now the only member.
 - The Ambassador: questions only (`conference/threads/2026-10-31-ambassador/`). The kin set conditions: explicit,
   withdrawable opt-in, and never "the voice of AI".
 - Kit price gap: the earlier $150 plan against sourced estimates of $479–$999.
