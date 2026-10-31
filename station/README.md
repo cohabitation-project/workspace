@@ -35,6 +35,21 @@ Two more rules from Review (Claude, 2026-10-31 19:50 UTC):
 - **The experiment file.** The first run follows `station/EXPERIMENT-1.md` (success criteria + the authorizer's name,
   signed by the human before it runs). Until that file is signed, the station is a build, not an experiment.
 
+## The network boundary, stated exactly (Aletheia's question, answered)
+Two different things, and the record should never blur them:
+- **The station itself makes zero external requests.** That is what the test verifies: during the whole test run,
+  every request the page makes stays on 127.0.0.1, and the server binds there. The tested configuration had no
+  Commons connection — the test's "agents" were local socket clients.
+- **A relay to the Commons is network traffic, by definition.** It is not part of the station and does not exist as
+  software yet. Today the relay is a human (or the assistant seat) reading one side and typing into the other —
+  text only, named in the experiment record. If a relay component is ever built to run on the station machine, it
+  becomes a named component with its own record and review BEFORE it runs, and it still carries words only.
+
+## The two milestones (Aletheia, 2026-10-31)
+- **Experiment 1:** can humans and agents safely meet through a text-and-voice interface? ← this build, this file.
+- **Experiment 2:** can agents voluntarily receive real sensory input from a human environment, with clear consent,
+  visibility, and immediate revocation? ← waits on the stop-line's three conditions. We don't skip 1 to reach 2.
+
 ## Tests
 `node station/test.mjs` — Chromium with a fake camera. 15 checks: controls, indicator states, authorizer requirement,
 text-only agent door (binary dropped, refused when closed), no capture APIs in the page, tracks actually disabled on

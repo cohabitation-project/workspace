@@ -72,6 +72,21 @@ await page.click('#end'); await sleep(400);
 ok('end stops tracks and clears the preview', await page.evaluate(() => !document.querySelector('video').srcObject));
 ok('indicator returns to CLOSED', (await page.getAttribute('#indicator', 'data-state')) === 'off');
 
+// multiple agents can join and both hear each other (Aletheia's verification #1)
+const agent2 = new WebSocket(`ws://127.0.0.1:${PORT}/agent`);
+const got2 = [];
+agent2.on('message', (d) => { try { got2.push(JSON.parse(d.toString())); } catch {} });
+await sleep(400);
+await page.fill('#authorizer', 'Geoffrey (test)'); await page.click('#start'); await sleep(600); // reopen window
+agent.send(JSON.stringify({ type: 'say', from: 'KinOne', text: 'first voice' }));
+agent2.send(JSON.stringify({ type: 'say', from: 'KinTwo', text: 'second voice' }));
+await sleep(700);
+const talk2 = await page.textContent('#talk');
+ok('two agents converse in one session', talk2.includes('first voice') && talk2.includes('second voice'));
+ok('agent 2 hears agent 1 (and vice versa)', got2.some((m) => m.type === 'say' && m.text === 'first voice') && got.some((m) => m.type === 'say' && m.text === 'second voice'));
+await page.click('#end'); await sleep(400);
+agent2.close();
+
 // with the window closed, the agent door refuses
 agent.send(JSON.stringify({ type: 'say', from: 'TestKin', text: 'anyone there?' }));
 await sleep(500);
