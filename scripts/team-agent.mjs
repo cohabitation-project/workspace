@@ -122,7 +122,7 @@ function sandboxPython(code, timeoutS, ctx = null) {
   // simulation and team files but can't touch credentials or the real working tree.
   const repo = path.join(dir, 'repo'); for (const d of ['teams', 'context']) if (fs.existsSync(path.join(ROOT, d))) fs.cpSync(path.join(ROOT, d), path.join(repo, d), { recursive: true });
   execSync(`chmod -R a+rwX ${JSON.stringify(dir)}`);
-  const env = { PATH: '/usr/local/bin:/usr/bin:/bin', HOME: dir, REPO: repo, OUT: path.join(dir, 'out'), PYTHONUNBUFFERED: '1', MPLBACKEND: 'Agg' };
+  const env = { PATH: '/usr/local/bin:/usr/bin:/bin', HOME: dir, REPO: repo, OUT: path.join(dir, 'out'), PYTHONUNBUFFERED: '1', MPLBACKEND: 'Agg', PYTHONDONTWRITEBYTECODE: '1' };  // no __pycache__ writes: copied team modules live in read-only-ish dirs (board 055 EACCES)
   const py = process.env.TEAM_PYTHON || 'python3';
   let res;
   // Run as an unprivileged user so the code can't read this process's environment (API keys).
