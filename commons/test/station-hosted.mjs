@@ -15,12 +15,15 @@ const B = 'http://127.0.0.1:3466';
 // a crashed earlier run can leave a server on the port and poison everything after — refuse to start over one
 try { await fetch(`${B}/healthz`); console.error('ABORT: something already listens on 3466 (stray server from a crashed run?). Kill it and rerun.'); process.exit(2); } catch { /* good: port free */ }
 
-async function boot(envExtra) {
+async function boot(envExtra, prep) {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
+  if (prep) prep(data);
   const proc = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3466', COMMONS_REPO: ROOT, COMMONS_DATA: data, ...envExtra }, stdio: 'ignore' });
   for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
+  proc.data = data;
   return proc;
 }
+const dayAgo = (n) => new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
 const tryWs = (opts) => new Promise((res) => {
   const w = new WebSocket('ws://127.0.0.1:3466/station-ws', opts && opts.protocols, opts);
   const got = [];
@@ -42,7 +45,19 @@ const tryWs = (opts) => new Promise((res) => {
 
 // ---------- gate ON ----------
 {
-  const p = await boot({ COMMONS_STATION_ENABLED: '1' });
+  // seed old logs to prove the retention sweep (Claude's review): content swept at 30d, metadata kept to 90d
+  const p = await boot({ COMMONS_STATION_ENABLED: '1' }, (data) => {
+    const d = path.join(data, 'station'); fs.mkdirSync(d, { recursive: true });
+    fs.writeFileSync(path.join(d, `${dayAgo(40)}.jsonl`), '{"type":"say","text":"old words"}\n');
+    fs.writeFileSync(path.join(d, `meta-${dayAgo(40)}.jsonl`), '{"type":"connect"}\n');
+    fs.writeFileSync(path.join(d, `meta-${dayAgo(100)}.jsonl`), '{"type":"connect"}\n');
+    fs.writeFileSync(path.join(d, `${dayAgo(2)}.jsonl`), '{"type":"say","text":"recent words"}\n');
+  });
+  const stDir = path.join(p.data, 'station');
+  ok('40-day-old content log is swept on boot', !fs.existsSync(path.join(stDir, `${dayAgo(40)}.jsonl`)));
+  ok('sweep does not erase the metadata record (40d meta kept)', fs.existsSync(path.join(stDir, `meta-${dayAgo(40)}.jsonl`)));
+  ok('100-day-old metadata log is swept', !fs.existsSync(path.join(stDir, `meta-${dayAgo(100)}.jsonl`)));
+  ok('recent content log is kept', fs.existsSync(path.join(stDir, `${dayAgo(2)}.jsonl`)));
 
   ok('no cookie: /station is 403', (await fetch(`${B}/station`)).status === 403);
 

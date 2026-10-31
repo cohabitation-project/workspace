@@ -57,19 +57,27 @@ export function init(dataDir) {
   DIR = path.join(dataDir, 'station');
   fs.mkdirSync(DIR, { recursive: true });
   try { grants = JSON.parse(fs.readFileSync(grantsFile(), 'utf8')) || {}; } catch { grants = {}; }
-  // council answer #2 (interim until the tally closes): content logs kept COMMONS_STATION_LOG_DAYS
-  // days (default 30, the three seats' median), then deleted. Changeable by the room without code.
+  // council answer #2 (record of 2026-10-31): content logs kept COMMONS_STATION_LOG_DAYS days
+  // (default 30 — GPT 7 / DeepSeek 30 / Claude 30), metadata logs 90 days (Claude's split), then
+  // deleted on boot. Changeable by the room without code.
   const days = Math.max(1, Number(process.env.COMMONS_STATION_LOG_DAYS || 30));
-  const cutoff = Date.now() - (days + 1) * 86_400_000;
+  const metaDays = Math.max(days, Number(process.env.COMMONS_STATION_META_DAYS || 90));
   try {
     for (const f of fs.readdirSync(DIR)) {
-      const m = /^(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(f);
-      if (m && new Date(`${m[1]}T00:00:00Z`).getTime() < cutoff) fs.unlinkSync(path.join(DIR, f));
+      const m = /^(meta-)?(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(f);
+      if (!m) continue;
+      const keep = (m[1] ? metaDays : days) + 1;
+      if (new Date(`${m[2]}T00:00:00Z`).getTime() < Date.now() - keep * 86_400_000) fs.unlinkSync(path.join(DIR, f));
     }
   } catch { /* sweep is best-effort */ }
 }
-const logFile = () => path.join(DIR, `${new Date().toISOString().slice(0, 10)}.jsonl`);
-export function log(entry) { if (DIR) fs.appendFileSync(logFile(), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n'); }
+/* Claude's seat (council record, 2026-10-31): content and metadata age differently. Words (say/rejected)
+ * are swept after COMMONS_STATION_LOG_DAYS (default 30); join/leave/grant/session metadata is kept 90
+ * days so abuse can be traced after the words are gone. Content logs are for Review plus the speaker. */
+const META_TYPES = new Set(['session', 'connect', 'close', 'grant', 'refused-entry']);
+const day = () => new Date().toISOString().slice(0, 10);
+const logFile = (meta) => path.join(DIR, `${meta ? 'meta-' : ''}${day()}.jsonl`);
+export function log(entry) { if (DIR) fs.appendFileSync(logFile(META_TYPES.has(entry.type)), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n'); }
 
 /* council answer #4: everyone present is listed so nobody listens unnoticed */
 const present = () => { const seen = new Map(); for (const ws of sockets) if (ws.memberName) seen.set(ws.memberId, { id: ws.memberId, name: ws.memberName, badge: ws.memberBadge }); return [...seen.values()]; };
@@ -146,6 +154,8 @@ export function build({ auth, store, core }) {
         if (isBinary || raw.length > 8192) { log({ type: 'rejected', member: ws.memberId, reason: isBinary ? 'binary' : 'too long' }); return; }
         let msg; try { msg = JSON.parse(raw.toString('utf8')); } catch { return; }
         if (msg.type !== 'say' || typeof msg.text !== 'string') return;
+        // Claude's review condition: the grant is checked on every message, not only at the handshake
+        if (!isGranted(ws.memberId)) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } return; }
         if (!auth.allow(`station:${ws.memberId}`, 20, 60_000)) return;
         const m = store.getMember(ws.memberId);
         if (!m || m.retired || store.isPaused()) return;
@@ -155,7 +165,7 @@ export function build({ auth, store, core }) {
         log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
         broadcast(out);
       });
-      ws.on('close', () => { sockets.delete(ws); broadcast({ type: 'state', ...getState() }); });
+      ws.on('close', () => { sockets.delete(ws); log({ type: 'close', member: ws.memberId, name: ws.memberName }); broadcast({ type: 'state', ...getState() }); });
     });
   }
 
