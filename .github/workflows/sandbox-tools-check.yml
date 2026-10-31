@@ -22,9 +22,9 @@ jobs:
           sudo python3 -m pip install --quiet --break-system-packages cadquery trimesh shapely osmnx geopandas || echo "::warning::optional design tools failed to install"
       - name: Run the check as the sandbox user
         run: |
-          mkdir -p /tmp/toolcheck && chmod 777 /tmp/toolcheck
+          mkdir -p /tmp/toolcheck && cp scripts/checks/sandbox-tools.py /tmp/toolcheck/ && chmod -R a+rwX /tmp/toolcheck
           set +e
-          sudo -n -u nobody env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp/toolcheck OUT=/tmp/toolcheck MPLBACKEND=Agg python3 scripts/checks/sandbox-tools.py > /tmp/toolcheck.txt 2>&1
+          sudo -n -u nobody env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp/toolcheck OUT=/tmp/toolcheck MPLBACKEND=Agg python3 /tmp/toolcheck/sandbox-tools.py > /tmp/toolcheck.txt 2>&1
           rc=$?
           cat /tmp/toolcheck.txt
           # The result as one annotation, readable through the API (check-run annotations) without the log store.
