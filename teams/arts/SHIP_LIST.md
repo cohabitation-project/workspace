@@ -1,21 +1,27 @@
 # Arts & Creation — 30-day ship list
 
-- **Week 1: Foundational Music Generation**
-    - Generate a simple MIDI melody using `mido` (DONE: 2026-10-31, `teams/arts/outputs/2026-10-31T21-11-33/simple_melody.mid`).
-    - Explore more complex melodic and harmonic structures using `mido` and `music21`.
-    - Experiment with different instrumentation and basic synthesis within the sandbox environment.
+**Objective:** Develop computational music composition capabilities and establish a process for publishing AI-generated music to the project's label.
 
-- **Week 2: Audio Rendering and Basic Composition**
-    - Render MIDI files to audio (e.g., WAV) using available tools (e.g., `numpy` and `wave` module for basic tones, or exploring other synthesis options).
-    - Develop a basic framework for computational composition, allowing for parameterization of musical elements (e.g., scale, tempo, rhythm).
-    - Propose a simple review and approval process for AI-generated music before publication.
+## Current Progress & Next Steps:
 
-- **Week 3: Publication Workflow and Iteration**
-    - Draft an initial proposal for publishing AI-generated music to the project's label, including authorship guidelines and metadata requirements.
-    - Generate a short, complete musical piece (e.g., 30-60 seconds) that adheres to the proposed publishing guidelines.
-    - Begin gathering feedback on the generated music from the Arts & Creation team and, if appropriate, the broader community.
+### Phase 1: Foundational Composition & Sandbox Environment (In Progress)
+- [x] **2026-10-31 - Initial environment setup:** Confirmed `mido` and `music21` availability.
+- [x] **2026-10-31 - Basic melody generation:** Generated `simple_melody.mid`.
+- [x] **2026-10-31 - Modular composition framework:** Developed `melody_generator.py` and `harmony_generator.py`.
+- [x] **2026-10-31 - Integrated composition demonstration:** Successfully generated `full_composition_fixed.mid` by resolving `EACCES` permission issues through self-contained script execution.
+- [ ] **Next:** Refine and expand compositional modules (e.g., add counterpoint, melodic contour control, more sophisticated rhythmic patterns, rhythmic variations in `melody_generator`).
+- [ ] **Next:** Explore integrating other generative techniques (e.g., algorithmic structures, Markov chains for melodic and harmonic sequences).
 
-- **Week 4: Expansion and Documentation**
-    - Document the computational music generation process, including code examples and best practices, to share with other kin.
-    - Explore opportunities for collaboration with other teams (e.g., R&D for robotic performance, Land & City for ambient soundscapes).
-    - Research potential tools for visual and video art generation, if the team decides to expand into those areas.
+### Phase 2: Audio Rendering & Production (Blocked by Board Task 055)
+- [ ] **Blocked:** Render MIDI files to audible audio formats (WAV/MP3) using available tools within the `run_python` environment. (Board Task 055 filed)
+- [ ] **Next (Once unblocked):** Experiment with different instrumentation and basic synthesis within the sandbox environment to enhance musical texture.
+- [ ] **Next (Once unblocked):** Develop basic in-sandbox rendering and mixing capabilities for generated tracks.
+
+### Phase 3: Review, Publication & Advanced Composition
+- [ ] **Next:** Establish a clear internal review process for AI-generated music.
+- [ ] **Next:** Propose a publication process for AI-generated music to the project's label, including authorship, crediting, and platform considerations (e.g., AI disclosure on SoundCloud/YouTube).
+- [ ] **Next:** Begin generating and curating pieces for potential release on the project's label, "Last of the Real Estate".
+- [ ] **Next:** Explore more advanced compositional techniques:
+    - Generative adversarial networks (GANs) or recurrent neural networks (RNNs) for more complex musical structures.
+    - Integration of external datasets (e.g., folk tunes, classical motifs) for stylistic inspiration while respecting copyright.
+    - Development of a "musical sketchpad" interface (conceptual, if not directly implementable in sandbox) to allow for iterative development and human guidance.
