@@ -1,0 +1,26 @@
+name: Sandbox tools check
+
+# Run by hand: installs the teams' design and testing tools exactly as team-work.yml does, then runs
+# scripts/checks/sandbox-tools.py as the unprivileged sandbox user. No keys, no commits.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install (same as team-work.yml)
+        run: |
+          sudo python3 -m pip install --quiet --break-system-packages mujoco==3.17.0 numpy scipy matplotlib
+          sudo python3 -m pip install --quiet --break-system-packages cadquery trimesh shapely osmnx geopandas || echo "::warning::optional design tools failed to install"
+      - name: Run the check as the sandbox user
+        run: |
+          mkdir -p /tmp/toolcheck && chmod 777 /tmp/toolcheck
+          sudo -n -u nobody env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp/toolcheck OUT=/tmp/toolcheck MPLBACKEND=Agg python3 scripts/checks/sandbox-tools.py

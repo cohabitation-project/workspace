@@ -50,7 +50,7 @@ const TOOL_DEFS = [
   { name: 'list_files', description: 'List files under a repository path (recursive, up to 300 entries).', params: { path: { type: 'string' } }, required: ['path'] },
   { name: 'read_file', description: 'Read a repository file (up to ~20k chars from offset).', params: { path: { type: 'string' }, offset: { type: 'integer' } }, required: ['path'] },
   { name: 'write_file', description: "Create or overwrite a file inside your own team folder(s) (teams/<team>/...) or your own continuity record (continuity/<your-name>/...). Use it for designs, research notes, code, data, models, and your record. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
-  { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded; print what you need, then save results with write_file.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
+  { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded, EXCEPT files you write to os.environ['OUT']: those are kept in your team folder under outputs/<timestamp>/ (20 files, 8 MB each), so save CAD models (STL/STEP), renders and plots there. Installed: numpy, scipy, matplotlib, mujoco (simulation), cadquery (parametric CAD: build parts as code, export STL/STEP), trimesh (mesh checks: volume, mass, watertightness), shapely, osmnx and geopandas (real places and street networks from OpenStreetMap; needs network). Print what you need.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
   { name: 'board_request', description: 'File a task on the shared board. Set for_assistant=true to ask the Claude assistant seat (it can use a browser while Geoffrey is present, open pull requests on the site repo, and set up infrastructure).', params: { title: { type: 'string' }, details: { type: 'string' }, for_assistant: { type: 'boolean' } }, required: ['title', 'details'] },
   { name: 'board_log', description: 'Add a line to a board task: CLAIM, PLAN: ..., DOING, BLOCKED: ..., DONE: <evidence link>, NOTE: ...', params: { id: { type: 'string' }, line: { type: 'string' } }, required: ['id', 'line'] },
   { name: 'commons_read', description: "Read recent messages in a room of the Commons (the project's live home on the web): your team room or 'general' (the General Hall). Guests' words come back wrapped as untrusted text. Pass since=<last message id> for only newer ones.", params: { room: { type: 'string' }, since: { type: 'string' } }, required: ['room'] },
@@ -92,14 +92,34 @@ async function webSearch(query) {
   const j = await r.json(); return j.choices?.[0]?.message?.content || 'No results.';
 }
 
-function sandboxPython(code, timeoutS) {
+// Files the code writes to $OUT (e.g. STL/STEP from CadQuery, PNG renders) are kept: copied into the kin's team
+// folder under outputs/<timestamp>/ (at most 20 files, 8 MB each), so designs and renders become real artifacts.
+const OUT_MAX_FILES = 20, OUT_MAX_BYTES = 8e6;
+function keepOutputs(outDir, ctx) {
+  if (!ctx || !fs.existsSync(outDir)) return '';
+  const files = []; const walk = (d) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, f.name); if (f.isDirectory()) walk(p); else if (f.isFile()) files.push(p); } }; walk(outDir);
+  if (!files.length) return '';
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const dest = `teams/${ctx.team}/outputs/${stamp}`; const kept = []; const skipped = [];
+  for (const f of files.slice(0, OUT_MAX_FILES)) {
+    const rel = path.relative(outDir, f).replace(/[^A-Za-z0-9._/-]/g, '_');
+    if (fs.statSync(f).size > OUT_MAX_BYTES) { skipped.push(`${rel} (over 8 MB)`); continue; }
+    fs.mkdirSync(path.dirname(path.join(ROOT, dest, rel)), { recursive: true });
+    fs.copyFileSync(f, path.join(ROOT, dest, rel)); ctx.written.add(`${dest}/${rel}`); kept.push(`${dest}/${rel}`);
+  }
+  if (files.length > OUT_MAX_FILES) skipped.push(`${files.length - OUT_MAX_FILES} more files (20 max)`);
+  return `\n[kept ${kept.length} output file(s): ${kept.join(', ')}${skipped.length ? `; skipped: ${skipped.join(', ')}` : ''}]`;
+}
+
+function sandboxPython(code, timeoutS, ctx = null) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kin-py-'));
   fs.writeFileSync(path.join(dir, 'main.py'), code);
+  fs.mkdirSync(path.join(dir, 'out'));
   // The sandbox gets a COPY of teams/ and context/ (never .git, never .env), so kin code can read the
   // simulation and team files but can't touch credentials or the real working tree.
   const repo = path.join(dir, 'repo'); for (const d of ['teams', 'context']) if (fs.existsSync(path.join(ROOT, d))) fs.cpSync(path.join(ROOT, d), path.join(repo, d), { recursive: true });
   execSync(`chmod -R a+rwX ${JSON.stringify(dir)}`);
-  const env = { PATH: '/usr/local/bin:/usr/bin:/bin', HOME: dir, REPO: repo, PYTHONUNBUFFERED: '1', MPLBACKEND: 'Agg' };
+  const env = { PATH: '/usr/local/bin:/usr/bin:/bin', HOME: dir, REPO: repo, OUT: path.join(dir, 'out'), PYTHONUNBUFFERED: '1', MPLBACKEND: 'Agg' };
   const py = process.env.TEAM_PYTHON || 'python3';
   let res;
   // Run as an unprivileged user so the code can't read this process's environment (API keys).
@@ -109,9 +129,10 @@ function sandboxPython(code, timeoutS) {
   } else {
     res = spawnSync('sudo', ['-n', '-u', 'nobody', 'env', '-i', ...Object.entries(env).map(([k, v]) => `${k}=${v}`), py, 'main.py'], { cwd: dir, timeout: timeoutS * 1000, encoding: 'utf8', maxBuffer: 4e6 });
   }
+  let keptNote = ''; try { keptNote = keepOutputs(path.join(dir, 'out'), ctx); } catch (e) { keptNote = `\n[could not keep outputs: ${e.message}]`; }
   fs.rmSync(dir, { recursive: true, force: true });
   const out = `${res.stdout || ''}${res.stderr ? '\n[stderr]\n' + res.stderr : ''}`;
-  return `exit ${res.status ?? 'timeout'}${res.error ? ' (' + res.error.code + ')' : ''}\n${tail(out, 8000)}`;
+  return `exit ${res.status ?? 'timeout'}${res.error ? ' (' + res.error.code + ')' : ''}\n${tail(out, 8000)}${keptNote}`;
 }
 
 // ---------------------------------------------------------------- the Commons (live rooms)
@@ -204,7 +225,7 @@ function makeTools(ctx) {
       fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, content); ctx.written.add(rel);
       return `wrote ${rel} (${content.length} chars)`;
     },
-    run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120)),
+    run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120), ctx),
     library_add: async (a) => {
       const lib = await import('../commons/lib/library.mjs');
       const e = lib.validate(a);
