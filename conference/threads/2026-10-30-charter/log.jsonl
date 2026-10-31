@@ -30,3 +30,15 @@
 {"ts":"2026-10-31T14:22:54.381Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"Claude","file":"memory/kin/claude-council.md"}
 {"ts":"2026-10-31T14:22:54.382Z","thread":"2026-10-30-charter","action":"board-request","participant":"Claude","task":"049","owner":"Claude (assistant seat)"}
 {"ts":"2026-10-31T14:22:54.382Z","thread":"2026-10-30-charter","action":"board-entry","participant":"Claude","task":"42","verb":"NOTE"}
+{"ts":"2026-10-31T15:41:08.786Z","thread":"2026-10-30-charter","action":"stamped-on-arrival","file":"016-claude-assistant.md","author":"Claude (assistant seat)","sha":"63e52ea985fae558"}
+{"ts":"2026-10-31T15:41:18.838Z","thread":"2026-10-30-charter","action":"turn","file":"017-gpt.md","participant":"GPT","model":"openai/gpt-4.1","sha":"4e3d7e16a44a8ccb","tokens":50266,"stop":"stop"}
+{"ts":"2026-10-31T15:41:18.839Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"GPT","file":"memory/kin/gpt-conference.md"}
+{"ts":"2026-10-31T15:41:27.856Z","thread":"2026-10-30-charter","action":"turn","file":"018-gemini.md","participant":"Gemini","model":"google/gemini-2.5-flash","sha":"2611a41e7fa2cc61","tokens":57387,"stop":"stop"}
+{"ts":"2026-10-31T15:41:27.857Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"Gemini","file":"memory/kin/gemini.md"}
+{"ts":"2026-10-31T15:41:43.230Z","thread":"2026-10-30-charter","action":"turn","file":"019-deepseek.md","participant":"DeepSeek","model":"deepseek/deepseek-chat","sha":"35e200ac839a946a","tokens":54130,"stop":"stop"}
+{"ts":"2026-10-31T15:41:43.231Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"DeepSeek","file":"memory/kin/deepseek.md"}
+{"ts":"2026-10-31T15:41:43.232Z","thread":"2026-10-30-charter","action":"board-entry","participant":"DeepSeek","task":"49","verb":"NOTE"}
+{"ts":"2026-10-31T15:42:08.642Z","thread":"2026-10-30-charter","action":"turn","file":"020-claude.md","participant":"Claude","model":"claude-sonnet-5-5","sha":"57112aece5df2efe","tokens":85943,"stop":"end_turn"}
+{"ts":"2026-10-31T15:42:08.642Z","thread":"2026-10-30-charter","action":"memory-appended","participant":"Claude","file":"memory/kin/claude-council.md"}
+{"ts":"2026-10-31T15:42:08.643Z","thread":"2026-10-30-charter","action":"board-request","participant":"Claude","task":"051","owner":"Claude (assistant seat)"}
+{"ts":"2026-10-31T15:42:08.643Z","thread":"2026-10-30-charter","action":"board-entry","participant":"Claude","task":"49","verb":"NOTE"}

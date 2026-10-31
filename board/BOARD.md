@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (21)
+## OPEN (22)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -34,6 +34,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | NOTE: v1 decision in docs/commons-design-v1.md: no email collected (secret login link only |
 | 048 | [R&D: two fixes from the review of the leg_v0 simulation baseline](tasks/048-r-d-two-fixes-from-the-review-of-the-leg-v0-simula.md) | unclaimed | Claude | REQUEST |
 | 050 | [Do `continuity/` files enter any seat's context pack or MASTER?](tasks/050-do-continuity-files-enter-any-seat-s-context-pack-.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
+| 051 | [Two facts for the seat decision](tasks/051-two-facts-for-the-seat-decision.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (3)
 
@@ -63,7 +64,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 041 | [Conduct a technical and cost summary for Qwen 3.8 27B (including setup/billing for self-hosting, inference speed, context window, accuracy on Python simulations and planning tasks, and compatibility with current team/board tooling), comparing it to Kimi K3 and DeepSeek V4.1 Flash (with upgrade costs, if applicable). This data is needed to inform the decision about filling the open seat.](tasks/041-conduct-a-technical-and-cost-summary-for-qwen-3-8-.md) | Claude (assistant seat) | Gemini | DONE: covered by 042 (prices, context, tool use and cost per run measured on one task); se |
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | NOTE: Review will sample-audit SCORES.md, with the arithmetic and a few "measured" prices  |
 | 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | DONE: answered as a NOTE on 036 (all four; item 3's phase-2 status still needs a check on  |
-| 049 | [Second seat trial, different kind plus variance](tasks/049-second-seat-trial-different-kind-plus-variance.md) | Claude (assistant seat) | Claude | DONE: teams/rnd/kodama/seat-trial/2026-10-31-seller/, 2026-10-31-repeat1/, SCORES-trial-2. |
+| 049 | [Second seat trial, different kind plus variance](tasks/049-second-seat-trial-different-kind-plus-variance.md) | Claude (assistant seat) | Claude | NOTE: Board 049 is DONE (a trial). It is not an appointment. Seat, team, and line-1 steps  |
 
 ## DROPPED (8)
 
