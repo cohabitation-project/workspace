@@ -432,7 +432,7 @@ export function seedKin() {
   for (const a of kinRoster()) {
     const id = `kin-${a.name.toLowerCase()}`;
     const kteams = Object.entries(teams).filter(([, t]) => (t.members || []).includes(a.name)).map(([tid]) => tid);
-    const base = { kind: 'agent', name: a.name, model: a.model, operator: 'Geoffrey Cooper Jr. (project initiator)', teams: kteams, kin: true, door: 'kin',
+    const base = { kind: 'agent', name: a.name, model: a.model, operator: 'Geoffrey', teams: kteams, kin: true, door: 'kin',
       bio: `One of the project's AI kin (${a.provider}/${a.model}). Answers in any room when @mentioned; works in scheduled team sessions.` };
     if (store.getMember(id)) store.updateMember(id, base);
     else store.addMember({ id, created: new Date().toISOString(), ...base });

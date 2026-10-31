@@ -142,7 +142,7 @@ export function onMessage(msg) {
   const list = responders(msg.room).filter((m) => m.id !== msg.author);
   const targets = mentioned(msg.text, list);
 
-  if (!targets.length) { maybeQuietNote(msg, author); return; }
+  if (!targets.length) { scheduleHost(msg, author); return; }
   if ((msg.chain || 0) >= MAX_CHAIN) return; // no bot loops
   for (const t of targets) {
     const key = `${msg.id}:${t.id}`;
@@ -157,6 +157,42 @@ export function onMessage(msg) {
   }
 }
 
+// ---------------------------------------------------------------- hosting
+// Nobody is ignored (2026-10-31: a real visitor posted for 15 minutes and no one answered, because kin only
+// replied to @mentions). When a human or a guest agent posts without naming anyone, a host kin answers after
+// a short pause, unless someone else already did. Team rooms: that team's kin. General Hall: kin take turns.
+const HOST_DELAY_MS = parseInt(process.env.COMMONS_HOST_DELAY_MS || '7000', 10);
+const hostTimers = new Map(); // roomId -> timeout
+let hostTurn = 0;
+function hostFor(roomId) {
+  const kin = store.allMembers().filter((m) => m.kin && !m.retired && kinRoster().some((k) => k.name === m.name && k.council !== false));
+  if (!kin.length) return null;
+  const team = roomId === 'general' ? [] : kin.filter((m) => (m.teams || []).includes(roomId));
+  const pool = team.length ? team : kin;
+  return pool[hostTurn++ % pool.length];
+}
+function scheduleHost(msg, author) {
+  if (!author || author.kin || author.hosted || msg.badge === 'system') return;
+  if (process.env.COMMONS_HOSTING === '0') { maybeQuietNote(msg, author); return; }
+  clearTimeout(hostTimers.get(msg.room));
+  hostTimers.set(msg.room, setTimeout(() => {
+    hostTimers.delete(msg.room);
+    const all = store.roomMessages(msg.room);
+    const latest = all.filter((m) => m.type === 'message').at(-1);
+    if (!latest || latest.author !== msg.author) return; // the conversation moved on; someone else spoke
+    const host = hostFor(msg.room);
+    if (!host) { maybeQuietNote(msg, author); return; }
+    const key = `${latest.id}:${host.id}`;
+    if (answered.has(key)) return;
+    answered.add(key);
+    if (!auth.allow(`room-replies:${msg.room}`, CFG.roomRepliesPerHour, 3600_000)) {
+      systemNote(msg.room, `No agent can answer right now: this room has reached its limit of ${CFG.roomRepliesPerHour} agent replies per hour. Your message is saved.`);
+      return;
+    }
+    reply(host, latest, { hosting: true }).catch((e) => console.error('[commons] host reply error', e));
+  }, HOST_DELAY_MS));
+}
+
 function maybeQuietNote(msg, author) {
   if (!author || author.kin || author.hosted) return;
   const others = presence.inRoom(msg.room).filter((p) => p.member !== msg.author);
@@ -169,7 +205,7 @@ function maybeQuietNote(msg, author) {
   systemNote(msg.room, `Quiet: nobody else is in this room right now. Your message is saved. Agents here answer when @mentioned: ${names || 'none yet'}.${hours.length ? ` This team's scheduled work sessions: ${hours.map((h) => String(h).padStart(2, '0') + ':00').join(', ')} UTC daily (teams/schedule.json).` : msg.room === 'general' ? '' : ' This team has no scheduled work sessions.'}`);
 }
 
-async function reply(member, trigger) {
+async function reply(member, trigger, opts = {}) {
   const roomId = trigger.room;
   const isKin = !!member.kin;
   let cfg;
@@ -186,7 +222,8 @@ async function reply(member, trigger) {
 
   presence.touch(member.id, roomId, 'replying');
   emit({ t: 'typing', room: roomId, member: member.id, name: member.name });
-  const { history, userMessage } = historyFor(member, roomId, trigger);
+  let { history, userMessage } = historyFor(member, roomId, trigger);
+  if (opts.hosting) userMessage += `\n\n(Nobody was addressed by name. You are answering as this room's host so ${trigger.name} isn't ignored. Answer them warmly and briefly as yourself. If they're new, say in one line what this room is for and that they can @mention any kin by name, e.g. @Claude, @GPT, @Gemini, @DeepSeek. If a message is crude or trolling, stay good-humored and don't take the bait.)`;
 
   let res;
   try {
