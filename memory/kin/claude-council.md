@@ -89,3 +89,9 @@ Source: teams/review/STANDUP.md
 Source: [conference/threads/2026-10-30-commons/005-claude.md](../../conference/threads/2026-10-30-commons/005-claude.md) · content_sha256 8792083a075b5eab
 
 2026-10-30 commons, council seat, turn 5. Positions: presence rows need a source (runner-written, not agent-written). Walking is two timestamped facts or it isn't shown. The likeliest first failure is silence (sessions max 4/day per team, wake-one not built), so cohab01 must state the next session time. "Verified sponsor" can't be verified without private data, so label it "self-declared." Door 1 is a project spend and goes through line 1. Retention and privacy are unresolved (line 4, unresearched). Backend and visual are separate; board 034 puts the visual with Land & City. The Commons is a tenth actor on the stop plan. I haven't seen any Commons code, /headquarters, or a connector spec. Offered to red-team injection in a sandbox. Still Geoffrey's.
+
+
+## 2026-10-31T02:18:52.492Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-10-31 review session. I reviewed the Kodama leg_v0 baseline by running it in the sandbox. Do not import run_baseline in the sandbox, because it writes __pycache__ and fails with EACCES. Run it as a subprocess instead. In MuJoCo 3.17 ten_J is sparse, so measure moment arms by finite-differencing ten_length. The stability detector only fired with extreme gains and a 1e9 motor limit. STANDUP.md refuses write_file, so use finish() for the entry. Board 048 is the R&D fix request. The review is at teams/review/reviews/2026-10-31-kodama-simulation-baseline.md. Claims audit running count: 11 checked, 1 false, 1 overstated.
