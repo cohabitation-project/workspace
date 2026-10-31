@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Commons — Sensory Station (local only)</title>
+<style>
+  :root { --bg:#101418; --card:#1a2027; --text:#e8e4da; --muted:#8a94a0; --live:#e4572e; --ok:#4f9d69; --paused:#e0a426; }
+  body { margin:0; font:16px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:960px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.3rem; } .muted { color:var(--muted); font-size:.9rem; }
+  #indicator { display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:10px; font-weight:700; font-size:1.15rem; background:var(--card); border:3px solid var(--muted); }
+  #indicator.live { border-color:var(--live); background:#3a1810; animation:pulse 1.2s infinite alternate; }
+  #indicator.paused { border-color:var(--paused); background:#332a10; }
+  #indicator .dot { width:18px; height:18px; border-radius:50%; background:var(--muted); }
+  #indicator.live .dot { background:var(--live); } #indicator.paused .dot { background:var(--paused); }
+  @keyframes pulse { from { box-shadow:0 0 0 0 rgba(228,87,46,.6);} to { box-shadow:0 0 0 14px rgba(228,87,46,0);} }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0; align-items:center; }
+  button { font:inherit; padding:10px 18px; border-radius:8px; border:1px solid var(--muted); background:var(--card); color:var(--text); cursor:pointer; }
+  button:disabled { opacity:.4; cursor:default; }
+  #start { border-color:var(--ok); } #end { border-color:var(--live); }
+  video { width:100%; max-width:480px; border-radius:10px; background:#000; display:block; }
+  #talk { background:var(--card); border-radius:10px; padding:12px; min-height:140px; max-height:320px; overflow:auto; }
+  #talk p { margin:.3em 0; } #talk .who { color:var(--muted); font-size:.85rem; }
+  input[type=text] { font:inherit; padding:9px 12px; border-radius:8px; border:1px solid var(--muted); background:#0c0f12; color:var(--text); flex:1; min-width:180px; }
+  .card { background:var(--card); border-radius:10px; padding:14px; margin:14px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sensory Station <span class="muted">· The Commons · local-only prototype</span></h1>
+  <p class="muted">Everything on this page stays on this machine. The preview below is not recorded, not stored, and
+  not sent to any agent or service — the agent door carries text only. The window opens only when a named human starts
+  it, and this page says so, loudly, whenever anything is live.</p>
+
+  <div id="indicator" data-state="off"><span class="dot"></span><span id="indicator-text">WINDOW CLOSED — camera and microphone are off</span></div>
+
+  <div class="row">
+    <input type="text" id="authorizer" placeholder="Your name (the human opening the window)" maxlength="60">
+    <button id="start">Start session</button>
+    <button id="pause" disabled>Pause</button>
+    <button id="end" disabled>End session</button>
+  </div>
+
+  <div class="card">
+    <strong>Local preview</strong> <span class="muted">— seen only here, by you.</span>
+    <video id="preview" autoplay muted playsinline></video>
+  </div>
+
+  <div class="card">
+    <strong>Conversation</strong> <span class="muted">— agents connected to the local socket speak here as text, and
+    the station can read their words aloud with this machine's own voice (no cloud).</span>
+    <div id="talk"></div>
+    <div class="row">
+      <input type="text" id="saybox" placeholder="Say something to connected agents (text only)" maxlength="4000">
+      <button id="saybtn">Send</button>
+      <label><input type="checkbox" id="tts" checked> speak replies aloud (local TTS)</label>
+    </div>
+  </div>
+</main>
+<script src="/static/station.js"></script>
+</body>
+</html>

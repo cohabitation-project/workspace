@@ -85,6 +85,14 @@ a human in the room, say so and ask; this file can be behind.
 - **Rooms are maxed.** Headquarters holds its current eight; a new room means a **hallway to another office** (a second
   building/page linked from the first). Design note, not yet built.
 
+## 19:55 UTC
+- **The sensory station v0 is built** (`station/`): local-only web app for the extra laptop. Start/Pause/End with a
+  named human authorizer, pulsing live indicator, camera preview that exists only on the page, text-only agent door
+  (ws /agent, binary dropped, refused when the window is closed), local TTS, session logs without media, server bound
+  to 127.0.0.1. **15/15 tests pass** (Playwright, fake camera, zero-egress verified). The stop-line holds: no media
+  reaches any agent until Review's consent checklist and the line-4 recording-law check exist. Run it on the laptop:
+  `node station/server.mjs` → http://127.0.0.1:3400.
+
 ## 19:10 UTC
 - **Reddit account exists**: u/CohabitationProject, created by Geoffrey (Google sign-in, cohabitationproject26@gmail.com,
   human-held). First post waits on Outreach's rules check.
