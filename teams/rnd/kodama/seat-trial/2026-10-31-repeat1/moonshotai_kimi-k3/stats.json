@@ -30,9 +30,9 @@
   "task": "parts",
   "estimate": "teams/rnd/kodama/seat-trial/2026-10-31-repeat1/moonshotai_kimi-k3/estimate.md",
   "priceCheck": {
-    "measured": 0,
-    "onCitedPage": 0,
-    "onOtherPage": 0,
+    "measured": 7,
+    "onCitedPage": 6,
+    "onOtherPage": 1,
     "notFound": []
   },
   "sellerCheck": null,

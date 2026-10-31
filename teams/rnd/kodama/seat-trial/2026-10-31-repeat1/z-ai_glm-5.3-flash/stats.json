@@ -32,9 +32,9 @@
   "task": "parts",
   "estimate": "teams/rnd/kodama/seat-trial/2026-10-31-repeat1/z-ai_glm-5.3-flash/estimate.md",
   "priceCheck": {
-    "measured": 0,
-    "onCitedPage": 0,
-    "onOtherPage": 0,
+    "measured": 10,
+    "onCitedPage": 7,
+    "onOtherPage": 3,
     "notFound": []
   },
   "sellerCheck": null,

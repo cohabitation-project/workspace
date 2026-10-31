@@ -99,14 +99,22 @@ export function checkPrices(estimate, pages) {
   const host = (u) => String(u).replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[/?#]+$/, '');
   const LABEL = /^\**\[?(measured|m)\]?\**$/i;
   for (const line of estimate.split('\n')) {
-    if (!/^\|\s*\d+\s*\|/.test(line)) continue;                       // bill-of-materials rows only
+    if (!/^\|/.test(line) || /^\|[\s:|-]+\|?\s*$/.test(line)) continue;  // table rows (numbered or not), not separators
     const cells = line.split('|').slice(1, -1).map((c) => c.trim());
     const tagged = cells.some((c) => LABEL.test(c)) || /\[(measured|m)\]/i.test(line);
     if (!tagged) continue;
-    // the unit price: the first price-shaped cell after #, part, why and example
-    const priceCell = cells.slice(4).find((c) => /^\$?\s?[\d,]+\.\d{2}\b/.test(c));
-    if (!priceCell) continue;
-    const v = norm(priceCell.match(/[\d,]+\.\d{2}/)[0]);
+    // The measured price: one written in the same cell as its [measured] tag if there is one (e.g. "$26.55 @ 10–99
+    // [measured]"); otherwise, on an ordinary line-item row, the first price-shaped cell. Totals and summary rows
+    // ("Measured items", "of which measured", "Total") are sums, not prices anyone fetched, so they're skipped.
+    const inCell = cells.map((c) => c.match(/\$?\s?([\d,]+\.\d{2})[^|]*\[(measured|m)\]/i)).find(Boolean);
+    let v;
+    if (inCell) v = norm(inCell[1]);
+    else {
+      if (/total|measured|of which|items\b|guessed|inferred/i.test(cells[0].replace(/\*/g, ''))) continue;
+      const priceCell = cells.slice(1).find((c) => /^\**~?\$?\s?[\d,]+\.\d{2}\b/.test(c));
+      if (!priceCell) continue;
+      v = norm(priceCell.match(/[\d,]+\.\d{2}/)[0]);
+    }
     res.measured++;
     const refs = cells.flatMap((c) => c.match(/(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+\/[^\s|)\]>]*/gi) || []).map(host);
     const forms = [v]; if (/\.00$/.test(v)) forms.push('$' + v.replace(/\.00$/, ''));
