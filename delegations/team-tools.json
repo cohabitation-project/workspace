@@ -9,7 +9,7 @@
     "In a session: web search and page fetching; reading the repository; writing anything inside their own team folders, committed directly (default yes, reversible through git); running Python in a sandbox; filing and updating board tasks; appending their standup and their own memory entry."
   ],
   "limits": [
-    "Writes only inside teams/<own team>/. STANDUP.md is append-only, through finish().",
+    "Writes only inside teams/<own team>/ and the kin's own continuity record, continuity/<own name>/ (added 2026-10-31, Geoffrey: \"let every agent begin building them and designing them\"). STANDUP.md is append-only, through finish().",
     "The Python sandbox runs as an unprivileged user on a copy of teams/ and context/, with no API keys, no repository credentials, and a 120-second limit.",
     "The four lines in context/00-mission.md apply: no spending outside the agreed process, no pretending to be human, no passwords, keys, or private data, follow the law.",
     "At most 4 sessions per team per day, and 14 tool steps per session (TEAM_MAX_STEPS)."

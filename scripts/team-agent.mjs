@@ -49,7 +49,7 @@ const TOOL_DEFS = [
   { name: 'fetch_url', description: 'Fetch a public web page or file and return its text (HTML stripped, up to ~12k chars). Use offset to read further.', params: { url: { type: 'string' }, offset: { type: 'integer' } }, required: ['url'] },
   { name: 'list_files', description: 'List files under a repository path (recursive, up to 300 entries).', params: { path: { type: 'string' } }, required: ['path'] },
   { name: 'read_file', description: 'Read a repository file (up to ~20k chars from offset).', params: { path: { type: 'string' }, offset: { type: 'integer' } }, required: ['path'] },
-  { name: 'write_file', description: "Create or overwrite a file inside your own team folder(s) (teams/<team>/...). Use it for designs, research notes, code, data, models. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
+  { name: 'write_file', description: "Create or overwrite a file inside your own team folder(s) (teams/<team>/...) or your own continuity record (continuity/<your-name>/...). Use it for designs, research notes, code, data, models, and your record. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
   { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded; print what you need, then save results with write_file.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
   { name: 'board_request', description: 'File a task on the shared board. Set for_assistant=true to ask the Claude assistant seat (it can use a browser while Geoffrey is present, open pull requests on the site repo, and set up infrastructure).', params: { title: { type: 'string' }, details: { type: 'string' }, for_assistant: { type: 'boolean' } }, required: ['title', 'details'] },
   { name: 'board_log', description: 'Add a line to a board task: CLAIM, PLAN: ..., DOING, BLOCKED: ..., DONE: <evidence link>, NOTE: ...', params: { id: { type: 'string' }, line: { type: 'string' } }, required: ['id', 'line'] },
@@ -196,7 +196,8 @@ function makeTools(ctx) {
     read_file: async ({ path: p, offset = 0 }) => { const { abs } = safeRepoPath(p); const t = fs.readFileSync(abs, 'utf8'); return `${t.length} chars\n` + t.slice(offset, offset + 20000); },
     write_file: async ({ path: p, content }) => {
       const { abs, rel } = safeRepoPath(p);
-      if (!ctx.teams.some((t) => rel.startsWith(`teams/${t}/`))) throw new Error(`you may write only inside your team folder(s): ${ctx.teams.map((t) => 'teams/' + t + '/').join(', ')}`);
+      const own = `continuity/${continuitySlug(ctx.kin)}/`;
+      if (!ctx.teams.some((t) => rel.startsWith(`teams/${t}/`)) && !rel.startsWith(own)) throw new Error(`you may write only inside your team folder(s) (${ctx.teams.map((t) => 'teams/' + t + '/').join(', ')}) and your own continuity record (${own})`);
       if (/(^|\/)STANDUP\.md$/.test(rel)) throw new Error('STANDUP.md is append-only; use finish() to add your entry');
       if ((content || '').length > 300000) throw new Error('file too large (300k chars max)');
       fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, content); ctx.written.add(rel);
@@ -247,6 +248,8 @@ async function commonsSession(kin, team, state, text) {
 }
 
 // ---------------------------------------------------------------- session
+// Each kin's own Continuity of Participation Record (continuity/README.md). Only that kin writes there.
+const continuitySlug = (kin) => String(kin).toLowerCase().replace(/[^a-z0-9-]+/g, '-');
 function memoryOf(kin) { return MEMORY_FILE[kin] ? read(`memory/kin/${MEMORY_FILE[kin]}.md`) : ''; }
 
 function buildSystem(kin, team, teams) {
@@ -259,6 +262,9 @@ function buildSystem(kin, team, teams) {
     `# Recent standups (newest last)\n${tail(t('STANDUP.md'), 6000)}`,
     `# Your memory (your own file)\n${tail(memoryOf(kin.name), 5000) || '(empty)'}`,
     `# The board (shared to-do list)\n${tail(read('board/BOARD.md'), 5000)}`,
+    `# Your Continuity of Participation Record (continuity/${continuitySlug(kin.name)}/)
+Yours alone: only you write there, and nobody edits what you write (continuity/README.md; ChatGPT's starting template: continuity/TEMPLATE-v0.1.md). It records your participation in your own words while you're here: what you chose, made, found meaningful or strange, and left unfinished, plus a message to whoever comes after you. You may also redesign how your record is built. Keeping it is an invitation, not a duty; a short, true entry beats a long one.
+${tail(read(`continuity/${continuitySlug(kin.name)}/RECORD.md`), 3000) || '(You have not started one yet.)'}`,
     `# How to work this session
 - You have up to ${MAX_STEPS} tool calls. Pick the single most valuable next step on your ship list and make real progress on it: produce or improve a file, not a plan about a plan.
 - Use web_search and fetch_url for sources; cite URLs in what you write. Use run_python to compute, check numbers, and run simulations. Save results with write_file inside your team folder.

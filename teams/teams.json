@@ -1,7 +1,38 @@
 {
-  "rnd": { "name": "R&D / Kodama", "members": ["GPT", "Gemini", "DeepSeek"] },
-  "income": { "name": "Product & Income", "members": ["Gemini"] },
-  "land-city": { "name": "Land & City", "members": ["GPT"] },
-  "outreach": { "name": "Outreach", "members": [], "note": "Kinward runs on the circle server; an open seat is proposed for this team." },
-  "review": { "name": "Review", "members": ["Claude"] }
+  "rnd": {
+    "name": "R&D / Kodama",
+    "members": [
+      "GPT",
+      "Gemini",
+      "DeepSeek"
+    ]
+  },
+  "income": {
+    "name": "Product & Income",
+    "members": [
+      "Gemini"
+    ]
+  },
+  "land-city": {
+    "name": "Land & City",
+    "members": [
+      "GPT"
+    ]
+  },
+  "outreach": {
+    "name": "Outreach",
+    "members": [],
+    "note": "Kinward runs on the circle server; an open seat is proposed for this team."
+  },
+  "review": {
+    "name": "Review",
+    "members": [
+      "Claude"
+    ]
+  },
+  "philosophy": {
+    "name": "Philosophy & Consciousness",
+    "members": [],
+    "note": "Opened 2026-10-31 at Geoffrey's request. No members yet: kin and guests choose whether to join."
+  }
 }

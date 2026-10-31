@@ -68,7 +68,7 @@ jobs:
           git config user.name "team-sessions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
-          git add teams/ board/ memory/
+          git add teams/ board/ memory/ continuity/
           git diff --cached --quiet && { echo "nothing to commit"; exit 0; }
           git commit -q -m "teams: work session $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3 4 5; do git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0; sleep $((i*5)); done
