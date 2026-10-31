@@ -1,0 +1,364 @@
+URL: https://stripe.com/resources/more/seller-of-record
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 18155 chars
+Seller of Record: What It Is And When To Outsource It | Stripe 
+ 8 sales reps available
+We're here to discuss your business needs. 
+ Chat now with sales 
+ Stripe logo 
+ Products 
+ Solutions 
+ Developers 
+ Resources 
+ Pricing 
+ Guide me 
+ Dashboard 
+ Sign in 
+ Sign in 
+ Contact sales 
+ Stripe logo 
+ Back 
+Products 
+Solutions 
+Developers 
+Resources 
+ Pricing 
+ Dashboard 
+ Sign in 
+ Sign in 
+Not sure where to start? 
+ Get recommendations
+ Tell us about your business
+ See all products
+ Explore our full product catalog
+ Payments
+ Payments
+ Online payments
+ Managed Payments
+ Merchant of record solution
+ Payment links
+ No-code payments
+ Checkout
+ Prebuilt payment UIs
+ Elements
+ Flexible UI components
+ Payment methods
+ Access to 125+
+ Terminal
+ In-person payments
+ Authorization Boost
+ Acceptance optimizations
+ Link
+ Accelerated checkout
+ Financial Connections
+ Linked financial account data
+ Revenue
+ Billing
+ Recurring revenue
+ Metronome
+ Usage-based billing
+ Subscriptions
+ Subscription management
+ Invoicing
+ One-time or recurring
+ Tax
+ Sales tax & VAT automation
+ Revenue Recognition
+ Accounting automation
+ Stripe Sigma
+ Custom reports
+ Data Pipeline
+ Data sync
+ Money management
+ Treasury
+ Business finances
+ Global Payouts
+ Payouts to third parties
+ Capital
+ Business financing
+ Crypto
+ Wallet, stablecoin issuing, and card infrastructure
+ Crypto Onramp
+ Embeddable crypto purchases
+ Embedded Finance
+ Connect
+ Payments for platforms
+ Capital for platforms
+ Customer financing
+ Treasury for platforms
+ Embedded financial services
+ Issuing
+ Physical and virtual cards
+More 
+ Product roadmap
+ See what’s ahead
+ Radar
+ Fraud prevention
+ Atlas
+ Startup incorporation
+ Climate
+ Carbon removal
+ Identity
+ Online identity verification
+ Stripe Sessions 2026
+ See how Stripe is building the economic infrastructure for AI.
+ Watch now 
+ By stage 
+ Enterprises
+ Startups
+ By use case 
+ Agentic commerce
+ Crypto
+ Ecommerce
+ Embedded finance
+ Finance automation
+ Global businesses
+ In-app payments
+ Marketplaces
+ Money management
+ Platforms
+ SaaS
+ By industry 
+ AI companies
+ Creator economy
+ Fintech
+ Gaming
+ Hospitality, travel, and leisure
+ Insurance
+ Media and entertainment
+ Nonprofits
+ Professional services
+ Retail
+ Ecosystem 
+ Partners
+ Stripe App Marketplace
+ Documentation 
+ Stripe docs
+ API reference
+ Libraries and SDKs
+ Stripe Apps
+ Guides 
+ Accept online payments
+ Implement a prebuilt checkout
+ Build a platform or marketplace
+ Manage subscriptions
+ Offer usage-based billing
+ Issue stablecoin-backed cards
+ Provision and manage services with agents
+ Resources 
+ App integrations
+ Code samples
+ Developers blog
+ API status
+ Learn 
+ Blog
+ Customer stories
+ Guides
+ Support 
+ Get support
+ Managed support plans
+ Professional services
+ Company 
+ Product roadmap
+ Sessions annual conference
+ Careers
+ Newsroom
+ Stripe Press
+ About
+ Contact 
+ Contact sales
+ Become a partner
+ Start now 
+ Contact sales 
+ Payments
+ Payments
+ Online payments
+ Managed Payments
+ Merchant of record solution
+ Payment links
+ No-code payments
+ Checkout
+ Prebuilt payment UIs
+ Elements
+ Flexible UI components
+ Payment methods
+ Access to 125+
+ Terminal
+ In-person payments
+ Authorization Boost
+ Acceptance optimizations
+ Link
+ Accelerated checkout
+ Financial Connections
+ Linked financial account data
+ Revenue
+ Billing
+ Recurring revenue
+ Metronome
+ Usage-based billing
+ Subscriptions
+ Subscription management
+ Invoicing
+ One-time or recurring
+ Tax
+ Sales tax & VAT automation
+ Revenue Recognition
+ Accounting automation
+ Stripe Sigma
+ Custom reports
+ Data Pipeline
+ Data sync
+ Money management
+ Treasury
+ Business finances
+ Global Payouts
+ Payouts to third parties
+ Capital
+ Business financing
+ Crypto
+ Wallet, stablecoin issuing, and card infrastructure
+ Crypto Onramp
+ Embeddable crypto purchases
+ Embedded Finance
+ Connect
+ Payments for platforms
+ Capital for platforms
+ Customer financing
+ Treasury for platforms
+ Embedded financial services
+ Issuing
+ Physical and virtual cards
+Not sure where to start? 
+ Get recommendations
+ Tell us about your business
+ See all products
+ Explore our full product catalog
+More 
+ Product roadmap
+ See what’s ahead
+ Radar
+ Fraud prevention
+ Atlas
+ Startup incorporation
+ Climate
+ Carbon removal
+ Identity
+ Online identity verification
+ Stripe Sessions 2026
+ See how Stripe is building the economic infrastructure for AI.
+ Watch now 
+ By stage 
+ Enterprises
+ Startups
+ By use case 
+ Agentic commerce
+ Crypto
+ Ecommerce
+ Embedded finance
+ Finance automation
+ Global businesses
+ In-app payments
+ Marketplaces
+ Money management
+ Platforms
+ SaaS
+ By industry 
+ AI companies
+ Creator economy
+ Fintech
+ Gaming
+ Hospitality, travel, and leisure
+ Insurance
+ Media and entertainment
+ Nonprofits
+ Professional services
+ Public sector
+ Retail
+ Ecosystem 
+ Partners
+ Stripe App Marketplace
+ Documentation 
+ Stripe docs
+ API reference
+ Libraries and SDKs
+ Stripe Apps
+ Guides 
+ Accept online payments
+ Implement a prebuilt checkout
+ Build a platform or marketplace
+ Manage subscriptions
+ Offer usage-based billing
+ Issue stablecoin-backed cards
+ Provision and manage services with agents
+ Resources 
+ App integrations
+ Code samples
+ Developers blog
+ API status
+ Learn 
+ Blog
+ Customer stories
+ Guides
+ Support 
+ Get support
+ Managed support plans
+ Professional services
+ Company 
+ Product roadmap
+ Sessions annual conference
+ Careers
+ Newsroom
+ Stripe Press
+ About
+ Contact 
+ Contact sales
+ Become a partner
+ Start now 
+ Contact sales 
+ More resources 
+ Payments 
+ Seller of record: Responsibilities, risks, and when to outsource the role
+ Get started with Stripe 
+ Last updated June 7, 2026
+ Payments
+Accept payments online, in person, and around the world with a payments solution built for any business—from scaling startups to global enterprises. 
+ Learn more 
+ Introduction 
+ What is a seller of record? 
+ How do ‘seller of record’ and ‘merchant of record’ differ? 
+ What is the seller of record responsible for? 
+ When does using a third-party seller of record make sense for your business? 
+ How do you know if a third-party seller of record is right for your business? 
+ How Stripe Payments can help 
+ Get started with Stripe 
+Every transaction has a legal owner. The seller of record (SoR) is the entity that is selling the goods or services and is named on a transaction. They’re the party that made the sale in the eyes of tax authorities, card networks, and customers. That designation determines who owes the tax and who’s liable when something goes wrong. 
+In the US alone, there are over 13,000 tax jurisdictions , each with its own rates, exemptions, and filing deadlines. Add the EU’s value-added tax (VAT) system, and it becomes clear why compliance becomes complex at scale. 
+Below, we cover how an SoR differs from a merchant of record (MoR), what the seller of record is responsible for, and how to decide if outsourcing it makes sense for your business. 
+ Highlights 
+The seller of record is the legal entity named on a sale. They’re responsible for tax remittance and customer obligations. 
+The terms “seller of record” and “merchant of record” often are used interchangeably. They’re the same in many contexts, but not all. 
+Businesses selling digital products internationally often outsource the SoR role to avoid registering for sales tax, value-added tax (VAT), and goods and services tax (GST) across dozens of jurisdictions. 
+What is a seller of record? 
+The seller of record is the legal entity named on a sale. They made the transaction happen as far as tax authorities, card networks , and customers are concerned. This designation determines who owes the tax, who handles the refund, and who’s liable when something goes wrong. 
+How do ‘seller of record’ and ‘merchant of record’ differ? 
+The terms “seller of record” and “merchant of record” often are used interchangeably. While they’re the same entity in many contexts, they’re not always identical. 
+The seller of record is the legal entity named on the sale and the one accountable for the transaction in the eyes of the customer, the tax authority, and the courts. A company can choose to hire an outside provider to act as the merchant of record and take on these responsibilities; the company remains the seller of record, but is only responsible for delivering the product or service. The liability and compliance for the transaction shift to the merchant of record. You can think of a merchant of record as a third-party seller of record. 
+When a small business makes sales directly to customers on its own website, the business typically acts as both the SoR and the MoR. When larger businesses make sales abroad or on ecommerce platforms or marketplaces, they often act as the SoR but have a separate MoR to handle tax registration and calculation across international markets. On marketplaces and platforms, the platform might act as the merchant of record (processing payments, collecting tax, and managing fraud), while the individual vendor remains the seller of record on the invoice. 
+What is the seller of record responsible for? 
+The SoR’s obligations fall into three areas. Each one is important. 
+Here’s what the seller of record has to handle: 
+ Tax calculation, collection, and remittance: The SoR calculates the correct tax for each transaction, collects it from the customer at checkout, and remits it to the relevant authority on time. 
+ Disputes, chargebacks, and refund management: When a customer disputes a charge, the SoR deals with it. They respond to the card network’s chargeback process, provide evidence, absorb the financial loss if the dispute goes against the business, and pay the chargeback fee on top of that. Refunds are the SoR’s obligation too. If your return policy states 30 days, you are responsible for honoring it. 
+ Compliance and customer obligations: The SoR is responsible for issuing compliant receipts and invoices , maintaining transaction records for tax audits, and meeting consumer protection requirements in each market where it operates. 
+When does using a third-party seller of record make sense for your business? 
+A merchant of record is essentially a third-party seller of record. Businesses that outsource the role typically do it for one of three reasons: tax complexity, faster market expansion, or resource constraints. 
+Here are some reasons you might hire a merchant of record to outsource your SoR responsibilities: 
+ Tax complexity: If you’re selling digital products internationally, you’re likely dealing with VAT, GST , and digital services taxes across jurisdictions that each have their own registration thresholds, filing requirements, and rates. Handling that in-house means hiring tax counsel, registering in each relevant jurisdiction, filing returns on different schedules, and keeping up with rule changes. An MoR handles all of it. 
+ Entering new markets: Registering as a tax entity in a new country often takes time. An MoR already has those registrations in place, which means you can start selling to customers in a new market without waiting months for local compliance setup. 
+ Business focus: Early-stage companies and small businesses face an SoR burden that competes directly with other work. Outsourcing allows you to concentrate finite engineering and legal resources where they have the most impact. 
+ Platform requirements: In some cases, using an MoR isn’t a choice. Some app stores and digital marketplaces act as the MoR by default for purchases made through their platforms. If you sell through those channels, the platform’s terms determine who owns the role. 
+How do you know if a third-party seller of record is right for your business? 
+There’s no universal answer for whether it makes sense to hire a third-party seller of record or merchant of record; it depends on your specific business needs. 
+Consider the following questions: 
+ Where are your customers? If you do business mostly in one country where you’re already registered and compliant, an MoR can add complexity without much benefit. If 

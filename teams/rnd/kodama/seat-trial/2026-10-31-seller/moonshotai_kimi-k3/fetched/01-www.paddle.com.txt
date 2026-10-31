@@ -1,0 +1,161 @@
+URL: https://www.paddle.com/blog/what-is-merchant-of-record
+OFFSET: 0
+
+HTTP 200 · text/html; charset=utf-8 · 13662 chars
+What is a merchant of record (MoR) + why use one for payments and sales tax? 
+ Skip to main content 
+ Launch 
+Explore the Paddle AI Toolkit and go from prompt to global selling. Learn more 
+ Support 
+ Help center 
+ Payment support 
+ Billing FAQs 
+ Why has Paddle charged me? 
+ Cancel a subscription 
+ Request a refund 
+ Login 
+ Paddle Billing 
+ ProfitWell Metrics 
+ Product 
+Billing 
+The only complete Merchant of Record solution purpose-built for SaaS and apps 
+Checkout 
+High performance, localized checkout 
+Subscriptions 
+Flexible, multi-product subscriptions 
+Payments 
+All-in-one payment tools 
+Reporting 
+Real-time payment and revenue analytics 
+Invoicing 
+Recurring, automated B2B billing 
+Fraud protection 
+Reduce your risk with fraud prevention & protection 
+Metrics 
+Real-time subscription analytics, 100% free 
+Retain customers 
+Radically reduce churn, automatically 
+Tax & compliance 
+Eliminate sales tax headaches with full, automatic global tax compliance 
+In-app purchase 
+Take advantage of lower fees, more control, and faster growth 
+ Solutions 
+By use case 
+Paddle for SaaS 
+Paddle for apps 
+Paddle for app studios 
+Paddle for digital products 
+Paddle for software 
+Paddle for games 
+By stage 
+Startups 
+Enterprise 
+Nexus Mods 
+9x revenue uplift in China 
+HubX 
+$100,000+ recovered in 72 days 
+ All customer stories Partner with Paddle RevenueCat integration Pricing Customers 
+ Developers 
+Dev docs 
+Get started with Paddle Billing 
+Changelog 
+Stay updated on everything we ship 
+Developer sandbox 
+Start exploring 
+API reference 
+Setup and maintain your data 
+Security portal 
+Data privacy, transparency, and access 
+Platform status 
+See if everything is running as it should be 
+Quick start guides 
+Create your first product 
+Issue an invoice 
+Connect a checkout 
+ New Docs MCP 
+Give your AI assistant up-to-date Paddle knowledge 
+ Billing quickstart guide 
+ Developer docs 
+ Billing sandbox 
+ Engineering blog 
+ Resources 
+Blog 
+The latest SaaS insights, opinions and news 
+Webinars 
+Live and on-demand 
+Resource hub 
+Access to guides, reports, and best practices 
+Selling SaaS Globally Handbook 
+A SaaS leader&#x27;s practical guide to global expansion 
+Mobile App Monetization Guide 
+Use a web monetization strategy to unlock growth for your mobile app 
+ Careers at Paddle 
+ Get started Book a demo 
+ Product Billing Checkout Subscriptions Payments Tax & compliance Invoicing Fraud protection Metrics Retain customers In-app purchase Reporting 
+ By use case Paddle for SaaS Paddle for apps Paddle for app studios Paddle for digital products Paddle for software Paddle for games Sell SaaS globally Launch your SaaS 
+ By stage Startups Enterprise 
+ Pricing Customers Resources Careers Help center Payment support Billing FAQs Developer docs Why has Paddle charged me? Mobile App Monetization Strategies 
+ Get started Book a demo 
+ Get started Book a demo Login Paddle Billing ProfitWell Metrics 
+What is a Merchant of Record and why use an MoR as a solution for payments and sales tax? 
+ Published 
+ Aug 1, 2024 
+ Topic 
+Payments 
+ Reading Time 
+7 Mins 
+A Merchant of Record offers businesses an alternative to building your own payments stack, so you can focus on crafting your product and winning customers, rather than on the mechanics of how you get paid. 
+ Author 
+ Paddle 
+ Share 
+The Merchant of Record (MoR) model gives businesses the option to offload operational work. The kind that can easily cost a finance team or growing business a painful amount of resources, like international payments and sales tax compliance. Here, we explain exactly what the MoR model is, how it works, and why so many businesses, from fast scaling startups to established enterprise level companies, chose to partner with one. 
+In this guide 
+ What is a Merchant of Record? 
+ How does the Merchant of Record model work? 
+ What types of business benefit from an MoR? 
+ Reasons to partner with an MoR 
+ The MoR model and your customer relationships 
+ Is Paddle a Merchant of Record? 
+ Merchant of Record FAQs 
+What is a Merchant of Record? 
+A Merchant of Record (MoR) is a legal entity responsible for selling goods or services to an end customer. They manage all payments and take on the associated liabilities, such as collecting sales tax, ensuring Payment Card Industry (PCI) compliance, and honoring refunds and chargebacks . 
+Businesses can choose to be their own MoR, setting up the infrastructure and processes needed to manage payments and liabilities. Alternatively, Merchant of Record service providers exist to take the burden of managing payments and sales tax compliance away from those who would rather focus their in-house resources on growth through product development or customer acquisition. 
+How does the Merchant of Record model work? 
+If you choose to sell through a Merchant of Record, your customers still go to your website to access the products. But with the MoR acting as a reseller, there are actually two transactions taking place during the sale: One between the end customer and the MoR, and the other between the MoR and you. 
+ Need a Merchant of Record for your SaaS or mobile app? Talk to our team today 
+When the transaction is complete, it’s the Merchant of Record’s name that appears on the customer’s credit card statement and to whom the cardholder has recourse in case of any dispute, as they are technically making the sale with the end customer. This is how and why the Merchant of Record becomes the liable party.  
+What types of business benefit from an MoR? 
+Any business can benefit from outsourcing the hassle of building and maintaining a payments infrastructure and handling sales tax compliance . The Merchant of Record model is particularly useful for companies that sell to cross-state or international customer bases where the company isn’t set up locally. Selling across borders comes with a lot of financial and legal admin. The MoR can free a business from having to worry about any of that. Industries that benefit from this include: 
+ SaaS:  If you sell software as a service then your customer base is global by default – anyone can sign up. Or at least try to. This can make payments, billing, saas sales tax , and compliance complicated fast.  
+ E-commerce & D2C:  A lot of online retailers and direct-to-consumer (D2C) businesses sell across state lines or internationally without having local offices or bank accounts etc. 
+ Digital products/downloads:   Similarly, businesses that sell downloadable items like eBooks, games, or academic papers will attract customers from all over the globe. 
+ Mobile apps: In the US, you can now use external payments in your app to bypass app store fees by using a Merchant of Record like Paddle, known as app2web. For mobile apps that also drive app sales outside of the app stores on the web, they can use an MoR, known as web2app. 
+What does partnering with a Merchant of Record take off your plate? 
+Wondering if your business should be looking into obtaining an MoR? Here’s a quick overview of some of the issues and responsibilities you&#x27;ll be outsourcing:  
+ Merchant accounts:  setting up multiple merchant bank accounts in the countries where you have a substantial customer base, to accept payments in additional currencies 
+ Payment and data compliance : Managing payment card security (PCI-DSS) and upholding relevant data requirements in the locations you sell to, or integrating additional tools to manage this  
+ Local entity creation:  Establishing local business entities to facilitate merchant accounts, tax registration, payment relationships, and so on. Each one   can take over two years and cost up to $2M per market to set up. 
+ Currency conversion:  handling the conversion of payments made in foreign currencies by international customers 
+ Payment failure rates:  integrating & maintaining multiple B2B payment processors or payment service providers to facilitate payment routing and cascading, to mitigate the chance of payments being mistakenly declined as fraudulent, causing lost revenue. 
+ Payment processor fees : negotiating and managing all credit and debit card fees 
+ Fraud offenses : Creating logic to flag fraudulent orders , and then manually reviewing those suspicious orders, refining your custom rules 
+ Disputes and refunds : handling payment reconciliation, refunds, and chargebacks 
+ Sales tax:  calculating, filing, and remitting software  sales tax in the locations where your customers are 
+Setting up and maintaining the infrastructure and admin needed here in-house can quickly amount to hiring several teams.  
+What does the MoR model mean for your relationship with customers? 
+An MoR in a transaction will have certain obligations towards the end buyer, including the responsibility for the calculation and remittance of sales tax. But the transaction itself is where its relationship starts and ends. You remain in control of how you present your product and the ongoing relationship with the customer. You interact with them as normal in terms of product support and marketing, including executing separate terms and conditions that relate to the product use. 
+Is Paddle a Merchant of Record? 
+Paddle is a provider of complete recurring billing software for SaaS and mobile app businesses, which includes acting as the Merchant of Record for thousands of software companies around the world. 
+We handle all payments, taxes, currencies, and financial compliance, like other MoRs, but we&#x27;ve built the Paddle platform specifically for SaaS companies and growth strategies. 
+ Need a Merchant of Record for your SaaS or app company? Talk to our team today 
+In addition to the benefits of an MoR, Paddle provides hybrid billing solutions, innovative payment routing, a highly customizable website checkout and subscription management software . Our sellers also receive 24/7 support from our Customer Success team and strategic guidance from our experienced advisors – specialists in growing your business globally.   
+We equip SaaS and app companies with the ability to experiment and respond quickly to new growth opportunities across customer acquisition, retention, and expansion, without the administrative and engineering burdens or revenue leaks created by a DIY infrastructure.  
+ Find out more about Paddle or speak directly to an expert by  booking a demo here . 
+Merchant of Record FAQs 
+What’s the difference between a Merchant of Record and a payment service provider (PSP) 
+The main difference between an MoR and a PSP is that a Merchant of Record handles your entire order process, which includes taking on the related liabilities, whereas a payment service provider only handles the transaction process – the part where money leaves your customer’s bank account and arrives in yours. 
+A PSP, like  Stripe , doesn’t take on any of the financial or taxation responsibilities of the transactions you make through their gateway. An MoR takes care of all of them. Payment service providers are also only one part of your wider payments infrastructure; you’ll need to manage and integrate other (often costly) tools to build a sufficient billing stack. 
+What&#x27;s the difference between a Merchant of Record (MoR) and a seller of record (SoR)? 
+When comparing Merchant of Record vs seller of record , a MoR like Paddle carries out the role of SoR with the additional benefits of global tax and VAT compliance, as well as managing payments and transactions and the related liabilities. The SoR is usually the business that owns the product or service, and many high-growth businesses use MoRs to focus on improving their products. 
+Is Stripe a Merchant of Record? 
+Stripe has released its Managed Payments product, currently in beta which is a Merchant of Record-type feature. It provides some simplification for tax and compliance, but still requires users to manage much of their payment stack. Stripe does operate as the business of record for marketplaces transacting using Stripe Connect, and is considered as a pa

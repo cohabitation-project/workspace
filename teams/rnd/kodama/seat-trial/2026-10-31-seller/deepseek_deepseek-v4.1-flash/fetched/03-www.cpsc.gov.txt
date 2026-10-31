@@ -1,0 +1,131 @@
+URL: https://www.cpsc.gov/FAQ/GCC
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 20179 chars
+General Certificate of Conformity (GCC) FAQ | CPSC.gov 
+ Skip to main content
+An official website of the United States government 
+Here's how you know 
+ Here's how you know 
+ Official websites use .gov 
+ A .gov website belongs to an official government organization in the United States.
+ Secure .gov websites use HTTPS 
+ A lock ( 
+ Lock 
+ Locked padlock 
+ ) or https:// means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
+ Countdown to
+ America&#039;s 250th Anniversary:
+ / 
+ Happy 250th Anniversary, America! 
+ Dismiss 
+United States 
+Consumer Product Safety Commission 
+ Calendar • 
+ News • 
+ Email Signup • 
+ Contact Us 
+Menu 
+ Calendar • 
+ News • 
+ Email Signup • 
+ Contact Us 
+ Recalls & Safety Education 
+ Recalls & Product Safety Warnings 
+ Safety Education 
+ Neighborhood Safety Network 
+ Community Outreach Center 
+ Recall App 
+ Multimedia 
+ Business & Manufacturing 
+ Business & Manufacturing Resources 
+ Testing & Certification 
+ CPSC eFiling Resources 
+ Regulatory Robot 
+ Recall Guidance 
+ Small Business Assistance 
+ Import Resources 
+ Open Government 
+ CPSC Data 
+ Recall API 
+ Laws, Regulations & Proceedings 
+ Regulations, Laws & Standards 
+ Statutes 
+ Voluntary Standards 
+ Legislative Affairs 
+ Notices of Violations 
+ Rulemaking 
+ Adjudicative Proceedings 
+ CPSA State Attorney General Enforcement 
+ Research & Reports 
+ Research and Reports Overview 
+ Agency Reports 
+ Clearinghouse Online Query Tool 
+ NEISS Injury Statistics 
+ Join NEISS 
+ About Us 
+ About CPSC 
+ Acting Chairman 
+ Commissioners 
+ Office of Inspector General 
+ Office of Equal Employment Opportunity 
+ Office of Communications 
+ Office of the Secretary 
+ Freedom of Information Act 
+ Employment Information 
+ Consumer Opinion Surveys 
+ Division of Field Operations 
+ Archive 
+ Contact Us 
+ Search Search 
+ General Certificate of Conformity (GCC) FAQ 
+Who must issue the GCC? 
+ Per 16 CFR § 1110.7 , except as otherwise stated in a specific standard or regulation, the domestic manufacturer or importer (for products manufactured overseas) is responsible for drafting and issuing the GCC based upon a passing test results of each product or a reasonable testing program. Unlike children’s products, general use products do not require third-party testing by a CPSC-accepted laboratory; passing first party testing or third-party testing by a non-CPSC-accepted laboratory is acceptable to support a GCC. In cases when an importer issues the certificate, the importer does not need to be located physically within the United States, nor do they need to list a US-based address to comply with elements 3 and/or 4 of the GCC. 
+ The domestic manufacturer or importer of a general-use product that is subject to product safety rules or other standards is always legally responsible for issuing a GCC, even if a third-party laboratory, or another third party, drafts of assists with drafting the GCC. 
+Which products require a GCC? 
+ Products subject to a consumer product safety rule, or a similar rule, ban, standard, or regulation under any other CPSC-enforced statute, require testing and certification. A list of rules requiring testing and a GCC is found here . Manufacturers and importers of any general-use consumer products subject to one of the listed requirements must issue a GCC. However, if the general-use consumer product is not subject to one of the listed requirements, then a GCC is likely not required. 
+How much does a GCC cost? 
+ Creating a GCC has no cost. The domestic manufacturer or importer may draft the GCC using a word processing software or other similar software. Our GCC business guidance page provides instructions on how to draft a GCC (including examples of CPCs), and the list of citations that require testing and certification to be included in element 2 of a GCC, as applicable, can be found here . Some laboratories and consultants may offer to draft or assist with drafting a GCC for a fee, but their assistance is optional. The CPSC’s Small Business Ombudsman is available to offer assistance for no charge. 
+ CPSC does not require certificates to be filed with the agency at this time, and so no cost to file exists. Rather, certificates must be provided to CPSC upon request. Typically, firms email certificates to CPSC in PDF format. 
+ CPSC is working on an eFiling initiative where importers of regulated consumer products may electronically file certificates of compliance. For more information on eFiling, visit www.cpsc.gov/eFiling . 
+To whom must I provide my GCC? 
+ Section 14(g)(3) of the Consumer Product Safety Act (CPSA) requires GCCs to be “furnished” to distributors and retailers. Additionally, a copy of the GCCs must also be provided immediately (within 24 hours) upon request by CPSC and Customs. 
+ The requirement to “furnish” the GCC is satisfied if the manufacturer or importer provides its distributors and retailers a reasonable means to access the certificate, either physically or electronically. CPSC has codified requirements for electronic GCCs at 16 CFR § 1110.13 . 
+What if I sell directly to consumers and do not use retailers or distributors? 
+ The law still requires domestic manufacturers or importers to test and certify products that are sold and shipped directly to consumers. CPSC does not require you to provide the certificate to consumers. 
+On what must I base my GCC? 
+ The GCC must be based on a test of each product or a reasonable testing program. Unlike children’s products, general-use products do not have to be tested using a third-party, CPSC-accepted laboratory and may, instead, be tested for compliance by the manufacturer or a non-CPSC-accepted laboratory. 
+ 16 CFR part 1109 also allows for certification based on component part testing or certification, or a third party’s finished product testing or certification as long as certain conditions are met. 
+Does the CPSC have a sample GCC? 
+ Yes. Our GCC business guidance page provides example GCCs. You are not required to, but you may, copy the layout and title the document “General Certificate of Conformity” or “GCC” and include the details pertinent to your product. You may also use your own format or layout as long as it includes the seven required elements. 
+Where must I file the GCC? 
+ CPSC does not require you to file a GCC with the agency at this time 
+ CPSC is working on an eFiling initiative where importers of regulated consumer products may electronically file certificates of compliance. For more information on eFiling, visit www.cpsc.gov/eFiling . 
+Can electronic certificates, instead of paper certificates, be used? 
+ Yes. Electronic certificates are acceptable provided that CPSC staff has reasonable access to them (if requested), they contain all of the information required by section 14(g) of the CPSA, and they comply with any additional requirements for electronic certificates per 16 CFR § 1110.13 . 
+If I post the GCC on the internet, do I need to change it for each shipment, batch, or lot of the product? 
+ It depends. If each shipment is materially unchanged from the prior shipment, a single GCC may be acceptable; however, the GCC would need to describe the date range of products covered using either batch/lot information or other identifying information (such as actual dates). 
+ One GCC may apply to (or “cover”) multiple batches or lots of productions if the firm has exercised an appropriate level of due care to ensure the continued compliance of each additional batch or lot of production with all applicable consumer product safety rules. 
+ For each new shipment or unit of production entering commerce, the GCC would need to be updated to reflect the new batch. 
+What is a reasonable testing program? 
+At this time, the Commission has not issued a regulation defining the general requirements for a "reasonable testing program" for all general-use consumer products. The staff guidance provided below describing a reasonable testing program suggests best practices for a reasonable testing program, but the guidance is not mandatory. 
+The following list of mandatory standards comprises CPSC regulations that contain the requirements for a reasonable testing program in the particular standard: 
+ 16 CFR part 1610 , Standard for the flammability of clothing textiles 
+ 16 CFR part 1203 , Safety standard for bicycle helmets 
+ 16 CFR part 1204 , Safety standard for omnidirectional citizens band base station antennas 
+ 16 CFR part 1205 , Safety standard for walk-behind power lawn mowers 
+ 16 CFR part 1209 , Safety standard for cellulose insulation 
+ 16 CFR part 1210 , Safety standard for cigarette lighters 
+ 16 CFR part 1211 , Safety standard for automatic residential garage door operators 
+ 16 CFR part 1212 , Safety standard for multipurpose lighters 
+If your product is not listed above and it is subject to another consumer product safety rule or other standard, you may consider the following staff guidance when establishing your company's reasonable testing program: 
+A reasonable testing program should provide a manufacturer or importer with a high degree of assurance that its consumer product complies with the applicable consumer product safety rule or standard. 
+A reasonable testing program should be in writing and should be approved by the senior management of the manufacturer (or importer). In addition, you may wish to consider maintaining your records on file in a manner similar to the recordkeeping requirements that apply to children's products. 
+A reasonable testing program should be based on the considered judgment and reasoning of the manufacturer (or importer) concerning the number, frequency, and methods of tests to be conducted on the products. The reasons should be reasonable assumptions for the industry in which the manufacturer (or importer) operates, including such factors as the nature and length of the manufacturer's relationship with their vendors and suppliers, and for the types of materials and processes used in production, including the potential for variability in those materials or processes. In other words, a product with fewer components and with a lower risk of variability in those components (e.g., a dyed t-shirt) would likely have a very different testing program than a product with many more components and for which those components have a higher risk of variability (e.g., chemical products involving a mixture of hazardous or potentially hazardous or volatile substances). 
+You should also check out CPSC’s proposed rule that would establish requirements for a reasonable testing program: 75 FR 28335 . While not a mandatory requirement, the proposed rule provides some guidance that may be helpful for firms to develop their own reasonable testing program. 
+Do I have to test my general-use product at a third-party, CPSC-accepted laboratory? 
+ No. A firm may use a third-party, CPSC-accepted laboratory to test its consumer product to applicable rules and standards; however, there is no requirement that a manufacturer or importer of general-use products use such a laboratory to conduct its testing. 
+Once I have tested and certified that my consumer products are compliant with the applicable requirements, how often must I retest and recertify? 
+ General use products do not have a periodic testing requirement; however, products must remain compliant, and the certificate must remain accurate. Therefore, CPSC recommends manufacturers and importers of general use products to retest your consumer product periodically, typically yearly, and whenever there is a material change to the product. 
+ Any material changes (such as changing the paint, metal, fabrics, or component part) or changing the product's design or manufacturing process could render the product noncompliant. In that situation, you should retest for compliance to those rules affected by the material change. You may also need to update your GCC. 
+ You must ensure that your consumer product complies with the re

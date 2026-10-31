@@ -1,0 +1,157 @@
+URL: https://www.cpsc.gov/Business--Manufacturing/Recall-Guidance/Duty-to-Report-to-the-CPSC-Your-Rights-and-Responsibilities
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 10683 chars
+Duty to Report to CPSC: Rights and Responsibilities of Businesses | CPSC.gov 
+ Skip to main content
+An official website of the United States government 
+Here's how you know 
+ Here's how you know 
+ Official websites use .gov 
+ A .gov website belongs to an official government organization in the United States.
+ Secure .gov websites use HTTPS 
+ A lock ( 
+ Lock 
+ Locked padlock 
+ ) or https:// means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
+ Countdown to
+ America&#039;s 250th Anniversary:
+ / 
+ Happy 250th Anniversary, America! 
+ Dismiss 
+United States 
+Consumer Product Safety Commission 
+ Calendar • 
+ News • 
+ Email Signup • 
+ Contact Us 
+Menu 
+ Calendar • 
+ News • 
+ Email Signup • 
+ Contact Us 
+ Recalls & Safety Education 
+ Recalls & Product Safety Warnings 
+ Safety Education 
+ Neighborhood Safety Network 
+ Community Outreach Center 
+ Recall App 
+ Multimedia 
+ Business & Manufacturing 
+ Business & Manufacturing Resources 
+ Testing & Certification 
+ CPSC eFiling Resources 
+ Regulatory Robot 
+ Recall Guidance 
+ Small Business Assistance 
+ Import Resources 
+ Open Government 
+ CPSC Data 
+ Recall API 
+ Laws, Regulations & Proceedings 
+ Regulations, Laws & Standards 
+ Statutes 
+ Voluntary Standards 
+ Legislative Affairs 
+ Notices of Violations 
+ Rulemaking 
+ Adjudicative Proceedings 
+ CPSA State Attorney General Enforcement 
+ Research & Reports 
+ Research and Reports Overview 
+ Agency Reports 
+ Clearinghouse Online Query Tool 
+ NEISS Injury Statistics 
+ Join NEISS 
+ About Us 
+ About CPSC 
+ Acting Chairman 
+ Commissioners 
+ Office of Inspector General 
+ Office of Equal Employment Opportunity 
+ Office of Communications 
+ Office of the Secretary 
+ Freedom of Information Act 
+ Employment Information 
+ Consumer Opinion Surveys 
+ Division of Field Operations 
+ Archive 
+ Contact Us 
+ Search Search 
+ Duty to Report to CPSC: Rights and Responsibilities of Businesses 
+ English
+ Español 
+ BAHASA INDONESIA 
+ 한국어 
+If you are a manufacturer, importer, distributor, and/or retailer of consumer products, you have a legal obligation to immediately report the following types of information to the CPSC: 
+A defective product that could create a substantial risk of injury to consumers; 
+A product that creates an unreasonable risk of serious injury or death; 
+A product that fails to comply with an applicable consumer product safety rule or with any other rule, regulation, standard, or ban under the CPSA or any other statute enforced by the CPSC; 
+An incident in which a child (regardless of age) chokes on a marble, small ball, latex balloon, or other small part contained in a toy or game and that, as a result of the incident, the child dies, suffers serious injury, ceases breathing for any length of time, or is treated by a medical professional; and 
+Certain types of lawsuits. (This applies to manufacturers and importers only and is subject to the time periods detailed in Sec. 37 of the CPSA.) 
+Failure to fully and immediately report this information may lead to substantial civil or criminal penalties. CPSC staff’s advice is "when in doubt, report." 
+CPSC has compiled a recall handbook with detailed information. The handbook: 
+Teaches you how to recognize potentially hazardous consumer products as soon as possible; 
+Explains how to develop and implement a “corrective action plan” (called a CAP) to address the hazards; 
+Explains CPSC’s Fast Track Program; and, 
+Discusses how to communicate recall information to consumers and how to monitor product recalls. 
+ Frequently Asked Questions 
+If I suspect a product I manufactured, imported, distributed, offered to sell, or sold might be a hazard, how much time do I have to report this to the CPSC? 
+A company must report to the Commission within 24 hours of obtaining reportable information. The Commission encourages companies to report potential substantial product hazards even while their own investigations are continuing. However, if a company is truly uncertain whether information is reportable, the firm may spend a reasonable time investigating the matter. 
+If a company has actual knowledge that the Commission has been adequately informed of the defect or failure to comply by another responsible party, the company need not submit a report to the Commission. Documentation demonstrating that another party has already reported to CPSC is recommended. Firms may determine this as part of their investigation by contacting other companies in the product’s supply chain. CPSC is generally restricted from sharing this type of information with companies due to confidentiality requirements. If a firm is unsure whether CPSC has been adequately informed of a defect or risk or failure to comply with a consumer product safety rule, the firm must report that information to CPSC. 
+The company’s investigation to determine whether to report to the CPSC should not exceed 10 working days, unless the firm can demonstrate that a longer time is reasonable under the circumstances. Absent such circumstances, the Commission will presume that, at the end of 10 working days, the company has received and considered all information that would have been available to it had it undertaken a reasonable, expeditious, and diligent investigation. 
+What if I receive information that reasonably suggests my product could create a safety or health hazard but no reports have been received alleging that actual harm or injury has been suffered? 
+You must immediately report the information about the product. The law does not require injury or harm to have occurred. 
+Does filing a report with the CPSC mean that the CPSC is definitely going to recall my product? 
+No. Reporting a product to the Commission under Section 15 of the CPSA does not mean that the Commission will conclude automatically that a corrective action is necessary. 
+CPSC staff will evaluate the report and work with the reporting firm to determine if corrective action is appropriate. Many of the reports CPSC receives require no corrective action because CPSC staff concludes that the reported product defect does not create a substantial product hazard. In the case of reporting a non-compliance with CPSC safety requirements, there are other options that CPSC staff may consider short of a recall, for example, correcting a non-compliant label in future production. 
+How do I know if CPSC is already aware of a possible health or safety risk with a product? 
+Confidentiality requirements generally restrict CPSC from publishing lists of product reports received from manufacturers, importers, distributors, or retailers, or from disclosing matters in active investigation. 
+Does the Commission treat the information reported as confidential? 
+Yes. Under Section 6(b)(5) of the CPSA the Commission and its employees may not publicly disclose information reported under Section 15, unless the Commission has: 
+Filed a legal complaint alleging that a product presents a substantial product hazard; 
+Has entered into a remedial settlement agreement dealing with a product; 
+Has published a public health or safety finding; or 
+The manufacturer consents to its disclosure. (Also see 16 CFR 1015.18 .) 
+Section 6(b)(5) of the CPSA also applies to any information reported under Section 102 of the Child Safety Protection Act .(See 16 CFR 1117.7 .) In addition to the protections of Section 6(b)(5), additional information disclosure protections are provided under Sections 6(a) and (b)(1) of the CPSA . 
+Section 37 of the CPSA requires manufacturers of consumer products to report information about settled or adjudicated lawsuits. Under Section 6(e) of the CPSA , the Commission and its employees may not publicly disclose information reported under Section 37 of the CPSA , except that such information may be furnished to the reporting manufacturer or Congress, under certain circumstances. By law, reporting under Section 37 is not an admission of the existence of an unreasonable risk of injury, a defect, a substantial product hazard, an imminent hazard, or any other liability under any statute or common law. Information provided voluntarily that is in addition to information required to be reported under Section 37, is governed by the confidentiality provisions of Section 15 reports. 
+ Whistleblower Protections for Consumer Product Industry Workers 
+If you work for a company that manufactures, imports, distributes, brands or sells consumer products, your employer may not fire or retaliate against you because you provided, caused to be provided, or are about to provide or cause to be provided to the employer, the federal government, or the attorney general of a state, information relating to any violation of, or any act or omission that you reasonably believe to be a violation of any law, order, rule, regulation, standard, or ban enforced by the CPSC. 
+For more information, see the U.S. Occupational Safety and Health Administration (OSHA), and visit: www.whistleblowers.gov for more information on these protections and how to file a complaint. 
+ This communication has been prepared for general informational purposes only. This communication does not, and is not intended to, constitute legal advice and has not been reviewed or approved by the Commission, and does not necessarily represent their views. Any views expressed in this communication may be changed or superseded by the Commission. 
+ Report an unsafe product 
+ Return to top 
+U.S. Consumer Product Safety Commission
+441 G Street NW 
+Washington, DC 20548 
+Contact Us: 800-638-2772 (TTY 800-638-8270)
+Toll-Free Consumer Hotline | Time: 8 a.m. - 5.30. p.m. ET 
+ Budget, Performances & Finance 
+ Information Quality Act 
+ Data 
+ USA.gov 
+Connect 
+ facebook 
+ Instagram 
+ Youtube 
+ Twitter 
+ Linkedin 
+ Bluesky 
+ TruthSocial 
+En español 
+ facebook 
+ Twitter 
+ Website Feedback 
+Identifier Menu 
+ Accessibility 
+ Vulnerability Disclosure Policy 
+ Privacy Policy 
+ Open Government 
+ FOIA 
+ Inspector General 
+ No Fear Act 
+You are about to leave the U.S. Consumer Product Safety Commission (CPSC) public website. 
+The link you selected is for a destination outside of the Federal Government. CPSC does not control this external site or its privacy policy and cannot attest to the accuracy of the information it contains. You may wish to review the privacy policy of the external site as its information collection practices may differ from ours. Linking to this external site does not constitute an endorsement of the site or the information it contains by CPSC or any of its employees. 
+Click Ok if you wish to continue to the website; otherwise, click Cancel to return to our site. 
+ Ok 
+ Cancel

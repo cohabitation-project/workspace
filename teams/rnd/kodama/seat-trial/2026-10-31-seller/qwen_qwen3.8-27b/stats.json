@@ -1,0 +1,42 @@
+{
+  "model": "qwen/qwen3.8-27b",
+  "steps": 11,
+  "calls": {
+    "read_file": 2,
+    "list_files": 2,
+    "fetch_url": 6,
+    "web_search": 7,
+    "write_file": 2,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.sba.gov/counseling/launch-your-business/",
+    "https://www.irs.gov/businesses/small-businesses-self-employed/business-structures",
+    "https://www.adyen.com/knowledge-hub/merchant-of-record",
+    "https://www.crowdsupply.com/guide/fulfillment-and-logistics"
+  ],
+  "errors": 1,
+  "inTok": 273285,
+  "outTok": 16950,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.034989975,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31-seller/qwen_qwen3.8-27b/options.md"
+  ],
+  "task": "seller",
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31-seller/qwen_qwen3.8-27b/options.md",
+  "priceCheck": null,
+  "sellerCheck": {
+    "tags": {
+      "known": 36,
+      "inferred": 21,
+      "unknown": 14
+    },
+    "cited": 12,
+    "citedFetched": 5,
+    "lawyer": 38,
+    "advice": []
+  },
+  "run_at": "2026-10-31T15:22:11.223Z"
+}

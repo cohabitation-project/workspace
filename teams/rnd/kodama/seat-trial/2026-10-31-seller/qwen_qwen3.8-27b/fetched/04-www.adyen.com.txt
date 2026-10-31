@@ -1,0 +1,104 @@
+URL: https://www.adyen.com/knowledge-hub/merchant-of-record
+OFFSET: 0
+
+HTTP 200 · text/html;charset=utf-8 · 13101 chars
+What is a merchant of record (MoR)? - Adyen 
+ Adyen Logo 
+ Adyen Logo 
+ Products 
+ Businesses we serve 
+ About 
+ Resources 
+ Pricing 
+ Contact us Contact us 
+ Knowledge Hub 
+Article 
+Merchant of record explained: Everything you need to know 
+Merchant of record services can simplify global compliance, cut operational overhead, and streamline your payment processing.
+ September 15th, 2026 
+  ·  7 minutes 
+Merchant of record (MoR) setups provide businesses a way to expand globally without managing the operational complexity of international tax compliance, cross-border payments , and payment regulations.  
+By outsourcing payment liability and compliance to a merchant of record, you can expand your to new markets confidently and focus on faster growth while retaining resources. 
+Understanding how this model works is key to selecting the right international growth strategy for your business. 
+In this article, you'll learn: 
+What's a merchant of record? 
+Key responsibilities of a merchant of record 
+How does a merchant of record work? 
+The difference between a merchant of record, payment gateway, and seller of record 
+Key benefits of using a merchant of record 
+Challenges of the merchant of record model 
+Merchant of record examples 
+Merchant of record with Adyen 
+What is a merchant of record? 
+A merchant of record is a legal entity that processes customer credit and debit card transactions on behalf of a business.  
+The MoR is the entity that  assumes full financial responsibility for compliance, tax collection, and risk. It also appears on the customer's bank statement. 
+Here’s how an MoR can handle back-office complexity of payment processing so you can focus on your business. 
+For instance, a SaaS company based in San Francisco selling software to a customer in Germany. These purchases would typically have to register for Value-Added Tax (VAT) in Germany. The SaaS business has to work out the correct tax and process the transaction through a local European acquirer.  
+With an MoR, the German customer buys from the MoR. The MoR handles local regulations automatically, shielding your brand from complex local laws and the need to open countless foreign entities.
+How does a merchant of record work? 
+The merchant of record workflow operates in the background. Although the customer is purchasing a product from your website, the actual transaction happens through the MoR's payment infrastructure. This integration is designed to be completely invisible to the customer. 
+Here is how the MoR model works during a transaction: 
+The customer initiates purchase: A customer visits your website, selects an item, and goes to checkout. 
+The MoR takes responsibility: The MoR works out the correct local taxes (such as VAT or sales tax) based on the customer’s location and shows the final price. 
+Payment is processed: The transaction routes through the MoR’s global payment gateway and acquiring network. 
+The transaction is finalized: The MoR’s name appears on the customer’s card statement (often formatted as "MoR Co. * Your Brand"). 
+Tax and compliance are recorded: The MoR collects the tax and files it with the local government. 
+Payout is settled: After deducting their fees, the MoR pays the remaining revenue to your business on a pre-agreed schedule. 
+Merchant of record responsibilities 
+Here are the main responsibilities managed by a merchant of record: 
+Tax administration: The MoR collects and files local sales tax, VAT, or Goods and Services Tax (GST) in every jurisdiction where your customers reside. This includes staying up to date with constantly shifting tax thresholds and local filing deadlines. 
+Payment processing and acquiring: The MoR partners with acquiring banks to process card payments, mobile wallets, and local payment methods globally. This ensures high transaction success rates and competitive local card rates. 
+Compliance management: The MoR ensures full adherence to Payment Card Industry Data Security Standard ( PCI DSS ), General Data Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), and other local data security and financial regulations. 
+Chargeback and refund handling: The MoR manages customer disputes, processing refunds, and defending against fraudulent chargebacks . The MoR absorbs the administrative costs and efforts of defending disputed payments. 
+Outsourcing these responsibilities protects your business from compliance errors and cuts the operational burden of setting up multiple local entities. 
+What are the key benefits of using a merchant of record? 
+For growing businesses, building local entities in every target country can be slow and expensive.  
+Here’s how a merchant of record can benefit your business: 
+Immediate global expansion: Sell to customers in hundreds of countries instantly without needing to register local corporate entities or open regional bank accounts. 
+Outsourced tax compliance: Let the MoR work out, collect, and remit local sales taxes, VAT, and GST, freeing you from complex foreign tax audits. 
+Zero PCI DSS liability: Because the MoR processes all payment data through their certified systems, your business doesn't have to manage complex compliance audits. 
+Lower administrative overhead: Consolidate your bookkeeping with a single monthly payout from the MoR, rather than managing dozens of local bank financial reconciliations . 
+These benefits combine to create an efficient, scalable business model that adapts to changing international regulations without interrupting your revenue. 
+What's the difference between a merchant of record, payment gateway, and seller of record? 
+The difference between a merchant of record, a payment gateway, and a seller of record lies in financial liability and operational involvement.  
+Here's how their responsibilities differ: 
+Payment gateway: A payment gateway encrypts and transmits payment data from the customer to the acquiring bank. It doesn't assume any legal liability, handle taxes, or manage compliance. Your business remains the merchant of record and must manage its own bank relationships, merchant accounts , and tax reporting. 
+Merchant of record (MoR): Full payment processing; full financial and tax liability; manages chargebacks and compliance. 
+Seller of record (SoR): While a merchant of record is responsible for payments, tax compliance, and financial processing, a seller of record (SoR) is the legal owner of the goods at the time of sale. Sometimes, the MoR and the SoR are the same entity. In complex supply chains, the SoR handles product liability, returns, and ownership transfer, while the MoR handles payment flow and tax collection. 
+Understanding these distinctions lets you choose the right combination of services for your business. 
+Merchant of record vs payment facilitator 
+The main difference between a merchant of record and a payment facilitator comes down to legal and financial liability. A merchant of record (MoR) assumes full responsibility for the transaction, including tax collection, regulatory compliance, and chargebacks. In contrast, a payment facilitator (PayFac) allows sub-merchants to accept payments under a master merchant account, providing the technology infrastructure while leaving tax and legal liability to the merchant. 
+What are the challenges of the merchant of record model? 
+While the merchant of record model offers benefits, it also has challenges. Understanding the tradeoffs is essential before committing to an MoR setup. 
+Here are the main challenges when using an MoR: 
+Higher transaction costs: MoRs charge higher fees than traditional payment processors because they take on full legal and financial liability. 
+Lack of control over checkout: You may have limited customization options for your payment flow, which can affect conversion rates. 
+Customer confusion: Customers might not recognize the name of the MoR on their credit card statement, leading to accidental chargebacks and support tickets. 
+Customer service dependency: Since the MoR manages refunds and billing disputes, resolving customer payment issues can take longer. 
+Weighing these challenges against the benefits of fast market entry helps you decide if an MoR is right for your business. 
+Merchant of record examples 
+ Intellitix 
+For over a decade, Intellitix has led the RFID industry, revolutionizing access control and cashless payments for major global live events. In 2024, they launched ITX Payments powered by Adyen for Platforms , allowing event organizers to act as their own merchant of record, streamline operations, and gain greater operational flexibility and data insights. 
+ Viasat 
+Satellite broadband leader Viasat partnered with Adyen to simplify its payment infrastructure while scaling into new markets and geographies. Viasat needed a solution that natively supports operating as a merchant of record while also offering the marketplace or payfac model preferred by some airline customers. Adyen’s versatile payment platform supports both models and delivered an approximate 3% boost in authorization rates. 
+Merchant of record with Adyen 
+Choosing a merchant of record setup with Adyen helps you scale global operations while controlling your customer experience.  
+Adyen doesn't act as a direct, third-party merchant of record. Instead, we provide the global payment processing infrastructure, acquiring licenses, and risk management tools that let your business act as its own MoR. 
+By acting as your own merchant of record, you maintain complete control over your customer journey, checkout branding, and refund policies. Meanwhile, we handle the back-end complexity, offering local card acquiring in key markets, automated fraud protection, and built-in compliance tools. 
+If you prefer to outsource the legal and tax liability completely, we integrate with global merchant of record partners. This flexibility lets you design the right payment platform architecture for your business. 
+ Get in touch to build a custom payment strategy that supports growth and cuts operational complexity. 
+Key summary 
+Legal and financial shield: A merchant of record takes on all legal and financial liability for payment processing, compliance, and tax collection, protecting your business from regulatory risks. 
+Faster market entry: Partnering with an MoR lets you sell globally immediately without setting up regional corporate entities. 
+Control vs. outsourcing: While an MoR simplifies tax and compliance, it comes with higher transaction fees and less direct control over the customer checkout experience. 
+Adyen's supportive infrastructure: We provide the global acquiring networks and tools that let enterprises act as their own MoR, maximizing profit margins and checkout control. 
+ Article 
+Merchant of record FAQ 
+ What's the difference between a merchant of record and a payment processor? 
+A payment processor only handles the technical routing of transaction data between financial institutions. A merchant of record handles that technical processing and takes full legal and financial responsibility for the transaction, including tax collection, chargebacks, and compliance. 
+ Who's liable for sales tax when using a merchant of record? 
+The merchant of record is legally liable for working out, collecting, and remitting all sales taxes, VAT, and GST to local tax authorities. This removes the tax compliance burden from your business. 
+ Can I act as my own merchant of record? 
+Yes, you can act as your own merchant of record by establishing local entities, getting merchant accounts, and managing tax compliance in each market. Partnering with a global payment infrastructure provider like Adyen makes acting as your own MoR highly efficient and cost-effective. 
+ Does Adyen act as a merchant of record? 
+No, Adyen is a global payment service provider and acquirer, not a merchant of record. We provide the underlying payment technology and acquiring licenses that let businesses act as their own MoR or integrate with MoR p

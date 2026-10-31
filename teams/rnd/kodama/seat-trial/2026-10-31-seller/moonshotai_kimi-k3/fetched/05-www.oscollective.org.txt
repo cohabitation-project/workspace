@@ -1,0 +1,67 @@
+URL: https://www.oscollective.org/
+OFFSET: 0
+
+HTTP 200 · text/html; charset=UTF-8 · 3065 chars
+Home - Open Source Collective 
+ Skip to content 
+ Menu 
+ Menu 
+ For Projects 
+ For Donors 
+ About Us 
+ docs 
+ Blog 
+ We support Open Source. 
+As a 501(c)(6) nonprofit fiscal host, we provide the financial and legal infrastructure for thousands of open source projects. We’re the 'API' between open source communities and the world of accounting and invoices. 
+ Need a legal and financial home for your open source project? 
+ Apply today 
+ Here’s how we help… 
+ Open Source Projects 
+ We handle the accounting, taxes, invoices, contracts, employment, and more for 2,500+ open source projects worldwide. 
+ You’ll stay in control of your project, and we’ll make the operational details behind the scenes. 
+ Apply Today 
+ Companies and Organizations 
+ Looking to support the open source projects your business depends on? 
+ We'll help you find your core projects to back, provide valuable metrics, handle grants, and follow your accounting and legal requirements. 
+ Learn More 
+ Individual Supporters 
+ Open source projects rely on the generosity of individual donors like you. 
+ Support the projects you use and love, or find new ones that matter to you. 
+ Get Started 
+ Focus on your project while we handle the rest: 
+ Accounting and financial administration 
+ Expense processing: for project contributors, bug bounty programs, vendors, and more 
+ Dedicated project page with configurable donation levels 
+ Multi-country/currency support for payees via bank transfer or PayPal 
+ Bank account access and management 
+ Automated 990 tax forms sent on your behalf 
+ Backend integration with fundraising platforms, like GitHub Sponsors and Thanks.dev 
+ Legal and tax compliance 
+ Employment and benefits 
+ Website domain transfers and registration 
+ Trademark registration and holding 
+ Grant management 
+ Signing contracts and entering into legal agreements 
+ Financial assistance for conferences 
+ Vendor registration and invoicing on behalf of corporate supporters 
+ Networking, development, and peer support 
+ Open source is about cooperation and transparency. 
+ We use the Open Collective platform to manage the fundraising and expenses for each of our fiscally hosted open source projects. This means all budgets are open and visible to everyone and the balance of each project is available in real-time. Even ours. 
+ Here’s our budget .
+We work in the open. Our staff is available via email, Discord, or 1:1 over video to help with any questions. We offer regular updates to our hosted collectives through the Open Collective platform and community calls. 
+ Learn more about Open Collective 
+ Discover Our Community 
+ More than 3,500 open source projects are hosted by Open Source Collective. Check out some of them below.
+Webpack 
+Open Web Docs 
+JHipster 
+Mautic 
+Babel 
+ Next 
+ Previous 
+ VIEW MORE 
+ Get in touch 
+ We’re a 501(c)(6) non-profit registered in the USA. EIN 82-2037583 
+Connect with us on LinkedIn , Bluesky , and  Mastodon . 
+ If you have any questions, let us know at [email&#160;protected] , 
+ &copy; 2026 Open Source Collective | Privacy Policy
