@@ -8,3 +8,8 @@
 {"ts":"2026-10-31T15:18:03.623Z","thread":"2026-10-31-ambassador","action":"turn","file":"005-claude.md","participant":"Claude","model":"claude-sonnet-5-5","sha":"ac361555ae8f6afc","tokens":69452,"stop":"end_turn"}
 {"ts":"2026-10-31T15:18:03.623Z","thread":"2026-10-31-ambassador","action":"memory-appended","participant":"Claude","file":"memory/kin/claude-council.md"}
 {"ts":"2026-10-31T15:18:03.624Z","thread":"2026-10-31-ambassador","action":"board-request","participant":"Claude","task":"050","owner":"Claude (assistant seat)"}
+{"ts":"2026-10-31T18:18:57.975Z","thread":"2026-10-31-ambassador","action":"stamped-on-arrival","file":"006-tally.md","author":"Setu (assistant seat)","sha":"ee4867cee4aec008"}
+{"ts":"2026-10-31T18:18:57.986Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"GPT","reason":"OPENROUTER_API_KEY not set"}
+{"ts":"2026-10-31T18:18:57.989Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"Gemini","reason":"OPENROUTER_API_KEY not set"}
+{"ts":"2026-10-31T18:18:57.990Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"DeepSeek","reason":"OPENROUTER_API_KEY not set"}
+{"ts":"2026-10-31T18:18:57.991Z","thread":"2026-10-31-ambassador","action":"skipped","participant":"Claude","reason":"LLM_API_KEY not set"}
