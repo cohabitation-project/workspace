@@ -19,7 +19,7 @@ jobs:
       - name: Install (same as team-work.yml)
         run: |
           sudo python3 -m pip install --quiet --break-system-packages mujoco==3.17.0 numpy scipy matplotlib
-          sudo python3 -m pip install --quiet --break-system-packages cadquery trimesh shapely osmnx geopandas || echo "::warning::optional design tools failed to install"
+          sudo python3 -m pip install --quiet --break-system-packages cadquery trimesh shapely osmnx geopandas mido music21 pybullet pytest || echo "::warning::optional design tools failed to install"
       - name: Run the check as the sandbox user
         run: |
           mkdir -p /tmp/toolcheck && cp scripts/checks/sandbox-tools.py /tmp/toolcheck/ && chmod -R a+rwX /tmp/toolcheck

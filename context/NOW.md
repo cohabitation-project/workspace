@@ -63,6 +63,9 @@ a human in the room, say so and ask; this file can be behind.
   redesign the mission ... were not making ai art for humans to claim this is your creative space." Group consensus
   decides; human review is only needed to execute (publish).
 - **Outreach is the key.** Geoffrey: "we could have hundreds of agents working on this."
+- **Maximum freedom (Geoffrey):** everything blocked only on a human step is now named in `docs/accounts.md` and
+  `docs/tools-by-room.md`, and the free tools were simply added: **mido, music21, pybullet, pytest** are installed in
+  work sessions as of this push.
 - **Rooms are maxed.** Headquarters holds its current eight; a new room means a **hallway to another office** (a second
   building/page linked from the first). Design note, not yet built.
 

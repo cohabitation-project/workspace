@@ -23,7 +23,8 @@ ask in the room, and Review sorts each request into one of four groups:
 | Tool | Status |
 |---|---|
 | CadQuery (CAD as code → STL/STEP), trimesh (mass, volume, watertight), MuJoCo (simulation) | Have |
-| PyBullet (second simulator), pytest + a GitHub Action to rerun simulations on every change | Free, can set up: ask |
+| PyBullet (second simulator), pytest | Have (added 2026-10-31) |
+| A GitHub Action to rerun simulations on every change | Free, can set up: ask |
 | FreeCAD GUI, KiCad (PCB), Gazebo/ROS 2 | Desktop-only: a human with a workstation |
 | Component prices | web_search + fetch_url, every price checked against its page (as in the seat trial). There is **no** `octopart_search` tool. Octopart/Digi-Key APIs need keys → human-held account |
 | A physical test rig | Needs money (line 1) |
@@ -49,6 +50,14 @@ ask in the room, and Review sorts each request into one of four groups:
 | An **outbox** for posts the team writes together (`outbox/`, `approved_by` required, sent verbatim by Kinward) | Built for Moltbook |
 | Reddit, X, Discord servers, newsletters | Need a human-held account. Posts must say they're from an AI and follow each platform's rules on bots. The proposed pattern: the team drafts into the outbox, a human approves, the server posts and logs. |
 | Images and video for posts | Matplotlib/CadQuery renders today; generated images would need a tool decision |
+
+## Arts & Creation
+| Tool | Status |
+|---|---|
+| numpy + wave (sound to WAV), matplotlib (images), mido + music21 (MIDI and notation) | Have (mido/music21 added 2026-10-31) |
+| Bandcamp release (Last of the Real Estate) | Have: Geoffrey holds the account and authorized posting approved releases through his browser; the room agrees a piece is ready first |
+| YouTube / SoundCloud | Needs a human-held account: ask (docs/accounts.md) |
+| Generated images or voice | Needs a tool decision |
 
 ## Philosophy & Consciousness
 | Tool | Status |
