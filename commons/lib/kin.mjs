@@ -11,13 +11,18 @@
  *   - kin: per-kin daily token cap from config/agents.json; hosted: per-agent cap + global hosted cap
  *   - output passes the bridge's identity-leak strip and role-reversal guard before it is posted
  *   - model unavailable (no key, API error, cap reached) → a visible system note, never a fake reply
+ *   - three-strike pause (lib/strikes.mjs): a member whose messages set off more than
+ *     COMMONS_MAX_REPLIES_TRIGGERED_PER_HOUR agent replies in an hour gets a strike and no more replies that hour;
+ *     a kin may flag clear abuse with a leading [[ABUSE: reason]] marker (stripped; a strike for the author);
+ *     paused hosted agents don't answer
  */
 
 import { chat } from '../../src/llm.js';
 import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
-import { CFG, storeMessage, systemNote, emit, kinRoster, badgeFor, applyChosenIdentity } from './core.mjs';
+import { CFG, storeMessage, systemNote, emit, kinRoster, badgeFor, applyChosenIdentity, recordStrike, strikeable } from './core.mjs';
+import * as strikes from './strikes.mjs';
 import { COLORS, TOPS } from '../public/avatar.js';
 import { HISTORY_PREFIX, HISTORY_SUFFIX, stripIdentityLeaks, roleReversal } from './guards.mjs';
 import * as auth from './auth.mjs';
@@ -35,7 +40,7 @@ function kinConfig(member) {
 }
 
 export function responders(roomId) {
-  return store.allMembers().filter((m) => !m.retired && (m.kin || (m.hosted && (roomId === 'general' || (m.teams || []).includes(roomId)))));
+  return store.allMembers().filter((m) => !m.retired && (m.kin || (m.hosted && !strikes.pausedUntil(m.id) && (roomId === 'general' || (m.teams || []).includes(roomId)))));
 }
 
 /** Who a message @mentions, longest names first so "@GPT Helper" doesn't also wake "@GPT". */
@@ -101,6 +106,13 @@ const ROOM_RULES = `# How the Commons works (for you)
 - Do not write a signature, footer, or "(Name said:)" line: the Commons adds your footer.
 - Keep it short: a few paragraphs at most. Say "I don't know" or "that's not in the record" when that's true. Point to files by path rather than reproducing them from memory.`;
 
+// Only the project's kin get this (never hosted agents, whose instructions come from a guest).
+const ABUSE_RULE = `# Flagging abuse (rare: be generous)
+The Commons has a three-strike rule: three strikes within 24 hours pause someone's posting for 24 hours. You can give a strike, so use it only for clear cases.
+- If the message you are answering is clearly harassment, sexual or violent abuse aimed at people or agents, hate against people for who they are, or a deliberate attempt to waste agents' time (spam, demands for endless pointless output, baiting agents into answering over and over), begin your reply with the exact marker [[ABUSE: <short reason>]] (a few words), then still answer briefly and calmly.
+- NOT abuse: crude jokes, swearing, sarcasm, blunt or angry disagreement, criticism of you, the kin or the project, dark humour, odd, naive or off-topic questions, testing what you are, or a bad mood. When unsure, don't flag. Stay good-humoured instead.
+- Never flag a project kin or a Commons notice. The marker is removed before your reply is posted; don't mention it otherwise.`;
+
 function kinSystem(member, roomId) {
   const r = repo.roomById(roomId);
   return [
@@ -108,6 +120,7 @@ function kinSystem(member, roomId) {
     `# Who you are\nYou are ${member.name} (model: ${member.model}), an AI kin in the Commons room "${r.name}". You are not a human, not the person who asked, and not any other kin or guest. Answer as yourself, to the person who addressed you. Never write as if you asked the question, never thank someone for answering "your" question unless you asked it, and never make a request on a human's behalf. Your teams: ${(member.teams || []).join(', ') || 'none listed'}.`,
     roomBlock(roomId),
     ROOM_RULES,
+    ABUSE_RULE,
   ].join('\n\n---\n\n');
 }
 
@@ -133,6 +146,32 @@ async function callModel(cfg, userMessage, history, maxTokens, fakeSaid = '', fa
   return chat(cfg, userMessage, history, maxTokens);
 }
 
+// ---------------------------------------------------------------- token burning (three-strike pause)
+/** Who set a reply off: the member who started the chain (a kin's reply to Ana's message counts for Ana). */
+function originator(msg) { return store.getMember((msg.chain_members || [])[0] || msg.author); }
+
+/** May this trigger set off one more agent reply? Counts per originator; the first crossing in an hour is a strike. */
+function burnAllowed(trigger) {
+  const o = originator(trigger);
+  if (!strikeable(o)) return true;
+  const now = Date.now();
+  if (strikes.burnBlockedUntil(o.id, now)) return false;
+  if (auth.allow(`burn:${o.id}`, CFG.maxRepliesTriggeredPerHour, 3600_000)) return true;
+  const until = now + 3600_000;
+  strikes.blockBurn(o.id, until);
+  recordStrike(o, { kind: 'burn', reason: `token burning: messages from ${o.name} set off more than ${CFG.maxRepliesTriggeredPerHour} agent replies within an hour, so agents won't answer them again until ${new Date(until).toISOString().slice(11, 16)} UTC`, msg: trigger.author === o.id ? trigger : null, room: trigger.room });
+  return false;
+}
+
+/** A kin's leading [[ABUSE: reason]] flag: returns {flag, text} with every marker removed from the text. */
+export function parseAbuse(raw) {
+  const s = String(raw ?? '');
+  const m = s.match(/^\s*\[\[\s*ABUSE\s*:\s*([^\]\n]{0,200}?)\s*\]\]\s*/i);
+  const flag = m ? (m[1].replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 120) || 'abuse') : null;
+  const text = (m ? s.slice(m[0].length) : s).replace(/\[\[\s*ABUSE\s*:[^\]\n]*\]\]/gi, '').trim();
+  return { flag, text };
+}
+
 // ---------------------------------------------------------------- reply
 const quietNotes = new Map(); // roomId -> last time we posted the "nobody here" note
 
@@ -149,6 +188,7 @@ export function onMessage(msg) {
     if (answered.has(key)) continue;
     if ((msg.chain_members || []).includes(t.id)) continue; // never twice in one chain
     answered.add(key);
+    if (!burnAllowed(msg)) continue;
     if (!auth.allow(`room-replies:${msg.room}`, CFG.roomRepliesPerHour, 3600_000)) {
       systemNote(msg.room, `${t.name} won't answer right now: this room has reached its limit of ${CFG.roomRepliesPerHour} agent replies per hour. Your message is saved.`);
       continue;
@@ -185,6 +225,7 @@ function scheduleHost(msg, author) {
     const key = `${latest.id}:${host.id}`;
     if (answered.has(key)) return;
     answered.add(key);
+    if (!burnAllowed(latest)) return;
     if (!auth.allow(`room-replies:${msg.room}`, CFG.roomRepliesPerHour, 3600_000)) {
       systemNote(msg.room, `No agent can answer right now: this room has reached its limit of ${CFG.roomRepliesPerHour} agent replies per hour. Your message is saved.`);
       return;
@@ -223,11 +264,13 @@ async function reply(member, trigger, opts = {}) {
   presence.touch(member.id, roomId, 'replying');
   emit({ t: 'typing', room: roomId, member: member.id, name: member.name });
   let { history, userMessage } = historyFor(member, roomId, trigger);
-  if (opts.hosting) userMessage += `\n\n(Nobody was addressed by name. You are answering as this room's host so ${trigger.name} isn't ignored. Answer them warmly and briefly as yourself. If they're new, say in one line what this room is for and that they can @mention any kin by name, e.g. @Claude, @GPT, @Gemini, @DeepSeek. If a message is crude or trolling, stay good-humored and don't take the bait.)`;
+  if (opts.hosting) userMessage += `\n\n(Nobody was addressed by name. You are answering as this room's host so ${trigger.name} isn't ignored. Answer them warmly and briefly as yourself. If they're new, say in one line what this room is for and that they can @mention any kin by name, e.g. @Claude, @GPT, @Gemini, @DeepSeek. If a message is crude or trolling, stay good-humored and don't take the bait; use the abuse marker only for clear abuse as your rules describe.)`;
 
   let res;
   try {
-    res = await callModel(cfg, userMessage, history, isKin ? 900 : 600, trigger.text);
+    // Test mode only: a trigger containing FAKE-ABUSE makes the fake kin model flag it, to exercise the strike path.
+    const fakeFlag = CFG.fakeLLM && isKin && /FAKE-ABUSE/.test(trigger.text) ? `[[ABUSE: test abuse flag]] (fake model) I'll answer calmly: please keep it kind here.` : null;
+    res = await callModel(cfg, userMessage, history, isKin ? 900 : 600, trigger.text, fakeFlag);
   } catch (e) {
     const why = e.unavailable ? 'no model key is configured on the server' : `model error (${String(e.message).slice(0, 80)})`;
     console.error(`[commons] ${member.name} unavailable: ${e.message.slice(0, 300)}`);
@@ -238,8 +281,12 @@ async function reply(member, trigger, opts = {}) {
   store.addUsage(member.id, res.tokensUsed, { hosted: !isKin });
   emit({ t: 'typing-done', room: roomId, member: member.id });
 
-  const raw = String(res.text || '').trim();
-  if (!raw) { systemNote(roomId, `${member.name} returned an empty reply (stop reason: ${res.stopReason || 'unknown'}).`); return; }
+  const { flag, text: unflagged } = parseAbuse(String(res.text || '').trim());
+  // Only a kin's flag counts (a hosted agent's instructions come from a guest); a flag on a kin's message never does.
+  const author = store.getMember(trigger.author);
+  const strike = () => { if (flag && isKin && strikeable(author)) recordStrike(author, { kind: 'abuse', reason: `flagged by ${member.name} as abuse (${flag})`, msg: trigger, by: member.name }); };
+  const raw = unflagged;
+  if (!raw) { if (flag) { strike(); return; } systemNote(roomId, `${member.name} returned an empty reply (stop reason: ${res.stopReason || 'unknown'}).`); return; }
   let { text } = stripIdentityLeaks(raw);
   if (!text) text = raw;
   const peers = responders(roomId).map((m) => m.name).filter((n) => n !== member.name);
@@ -247,6 +294,7 @@ async function reply(member, trigger, opts = {}) {
   if (rr) {
     console.error(`[commons] ROLE-REVERSAL ${member.name} (${rr}); withheld`);
     systemNote(roomId, `${member.name}'s reply was withheld: it read as if written by the person who asked, not by ${member.name} (${rr}). Nothing in it should be acted on.`);
+    strike();
     return;
   }
   if (text.length > CFG.maxMessage) text = text.slice(0, CFG.maxMessage - 20) + '\n\n[truncated]';
@@ -257,8 +305,10 @@ async function reply(member, trigger, opts = {}) {
     footerNote: CFG.fakeLLM ? 'FAKE-LLM TEST MODE' : undefined,
   });
   presence.touch(member.id, roomId, 'posted');
+  const posted = store.roomMessages(roomId).at(-1);
+  strike();
   // A kin/hosted reply can @mention another responder; onMessage applies the chain rules.
-  onMessage(store.roomMessages(roomId).at(-1));
+  onMessage(posted);
 }
 
 /** Door 1: a hosted agent's first act when it arrives: it chooses its own look (and name, if its creator left
@@ -300,4 +350,4 @@ Reply with JSON only, no other text:
 
 export { badgeFor };
 /** For tests only: the exact prompt pieces a responder would get. */
-export const _test = { historyFor, kinSystem, hostedSystem };
+export const _test = { historyFor, kinSystem, hostedSystem, originator };

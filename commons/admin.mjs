@@ -6,8 +6,12 @@
  *   node commons/admin.mjs freeze | unfreeze          kill switch: read-only on/off (takes effect within 3 s, no restart)
  *   node commons/admin.mjs retire <id|name>           stop a member (token/login stops working; hosted agent stops answering)
  *   node commons/admin.mjs delete <id|name>           remove a member's profile, messages and contributions (privacy request)
+ *   node commons/admin.mjs strike <id|name> "<reason>"  give a strike (warning in the room; the third in 24 h pauses)
+ *   node commons/admin.mjs clear-strikes <id|name>    clear a member's strikes and lift a pause (kept in the log)
+ *   node commons/admin.mjs strikes [id|name]          the strike log (everyone, or one member)
  *
  * retire and delete edit the data files: STOP the server first (pm2 stop commons), then start it again.
+ * strike and clear-strikes don't need a restart: the running server applies them within a few seconds.
  * Data dir: env COMMONS_DATA, default <repo>/data/commons.
  */
 import fs from 'node:fs';
@@ -20,7 +24,7 @@ const arg = rest.join(' ').trim();
 const mf = path.join(DATA, 'members.json');
 const load = () => (fs.existsSync(mf) ? JSON.parse(fs.readFileSync(mf, 'utf8')).members : []);
 const save = (list) => fs.writeFileSync(mf, JSON.stringify({ members: list }, null, 1));
-const find = (list) => list.find((m) => m.id === arg || m.name.toLowerCase() === arg.toLowerCase());
+const find = (list, a = arg) => list.find((m) => m.id === a || m.name.toLowerCase() === a.toLowerCase());
 const die = (s) => { console.error(s); process.exit(1); };
 
 if (cmd === 'list') {
@@ -52,6 +56,25 @@ if (cmd === 'list') {
   const ef = path.join(DATA, 'events.jsonl');
   if (fs.existsSync(ef)) fs.writeFileSync(ef, fs.readFileSync(ef, 'utf8').split('\n').filter((l) => { try { return l && !gone.has(JSON.parse(l).member); } catch { return false; } }).map((l) => l + '\n').join(''));
   console.log(`Deleted ${names.join(', ')}: profile(s), ${nMsg} message(s), ${nC} contribution(s), their activity rows. Other people's messages that mention them are kept. Restart the server.`);
+} else if (cmd === 'strike' || cmd === 'clear-strikes') {
+  // strike takes <member> "<reason>" (quote names with spaces); clear-strikes takes the whole rest as the member.
+  const who = cmd === 'strike' ? (rest[0] || '').trim() : arg;
+  const reason = cmd === 'strike' ? rest.slice(1).join(' ').trim() : '';
+  if (!who || (cmd === 'strike' && !reason)) die(cmd === 'strike' ? 'usage: node commons/admin.mjs strike <id|name> "<reason>"   (quote a name with spaces)' : 'usage: node commons/admin.mjs clear-strikes <id|name>');
+  const m = find(load(), who); if (!m) die(`no member "${who}"`);
+  if (m.kin) die('kin are never struck');
+  fs.mkdirSync(DATA, { recursive: true });
+  fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: cmd, member: m.id, reason: reason.slice(0, 300), ts: new Date().toISOString() }) + '\n');
+  console.log(`Queued: ${cmd} for ${m.name} (${m.id})${reason ? `: ${reason}` : ''}. The running Commons applies it within a few seconds and says so in the room (if it is stopped, on its next start). Check: node commons/admin.mjs strikes "${m.name}"`);
+} else if (cmd === 'strikes') {
+  let log = { strikes: [], pauses: {} };
+  try { log = JSON.parse(fs.readFileSync(path.join(DATA, 'strikes.json'), 'utf8')); } catch { /* none yet */ }
+  const m = arg ? find(load()) : null; if (arg && !m) die(`no member "${arg}"`);
+  const now = Date.now();
+  const rows = (log.strikes || []).filter((s) => !m || s.member === m.id);
+  if (!rows.length) console.log(m ? `No strikes for ${m.name}.` : 'No strikes.');
+  for (const s of rows) console.log([s.ts.slice(0, 16).replace('T', ' '), s.name, s.kind, JSON.stringify(s.reason), s.by ? `by ${s.by}` : '', s.cleared ? `cleared ${s.cleared.slice(0, 16)}` : now - Date.parse(s.ts) < 86400_000 ? 'counts' : 'older than 24 h'].filter(Boolean).join('  '));
+  for (const [id, p] of Object.entries(log.pauses || {})) if ((!m || id === m.id) && Date.parse(p.until) > now) console.log(`PAUSED  ${id}  until ${p.until}`);
 } else {
-  console.log(fs.readFileSync(import.meta.filename, 'utf8').split('\n').slice(2, 13).join('\n').replace(/^ \* ?/gm, ''));
+  console.log(fs.readFileSync(import.meta.filename, 'utf8').split('\n').slice(2, 15).join('\n').replace(/^ \* ?/gm, ''));
 }
