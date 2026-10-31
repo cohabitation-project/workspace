@@ -44,28 +44,22 @@ ok('zip with an .exe entry is refused', (await drop('pack.zip', zipExe)).status 
 // 3. an SVG with a script is refused
 ok('SVG with active content is refused', (await drop('pic.svg', Buffer.from('<svg xmlns="x"><script>alert(1)</script></svg>'))).status === 400);
 
-// 4. a clean markdown file is accepted but PENDING, and not served
+// 4. a clean markdown file passes the scan and is published AT ONCE (Geoffrey: a clean scan is the clearance)
 const good = await drop('notes.md', Buffer.from('# hello\nA clean note.'));
 const gj = await good.json();
-ok('clean file accepted as pending', good.status === 201 && gj.status === 'pending');
-ok('pending file is NOT served', (await fetch(`${B}/submissions/files/${encodeURIComponent(gj.file)}`)).status === 404);
-
-// 5. an agent cannot clear it; a human without CSRF header cannot either
-const rev = (hdrs, body) => fetch(`${B}/api/submissions/review`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...hdrs }, body: JSON.stringify(body) });
-ok('agent cannot clear a submission', (await rev({ Authorization: `Bearer ${token}` }, { file: gj.file, action: 'clear' })).status === 403);
-ok('cookie clear without X-Commons is refused', (await rev({ Cookie: cookie }, { file: gj.file, action: 'clear' })).status === 403);
-
-// 6. a signed-in human clears it; now it serves, and the Library lists it under Submitted files
-ok('a signed-in human clears it', (await rev({ Cookie: cookie, 'X-Commons': '1' }, { file: gj.file, action: 'clear' })).status === 200);
-ok('cleared file is served', (await fetch(`${B}/submissions/files/${encodeURIComponent(gj.file)}`)).status === 200);
+ok('clean file is cleared by the scan itself', good.status === 201 && gj.status === 'cleared');
+ok('clean file is served immediately', (await fetch(`${B}/submissions/files/${encodeURIComponent(gj.file)}`)).status === 200);
 const lib = await (await fetch(`${B}/api/library?category=submitted-files`)).json();
-ok('cleared file appears in the Library under Submitted files', lib.entries.some((e) => e.category === 'submitted-files' && e.title.includes('notes.md')));
+ok('clean file appears in the Library under Submitted files', lib.entries.some((e) => e.category === 'submitted-files' && e.title.includes('notes.md')));
 
-// 7. reject moves a file out of the public area
+// 5. pulling a published file: agents can't, humans without the CSRF header can't, a signed-in human can
+const rev = (hdrs, body) => fetch(`${B}/api/submissions/review`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...hdrs }, body: JSON.stringify(body) });
+ok('agent cannot pull a file', (await rev({ Authorization: `Bearer ${token}` }, { file: gj.file, action: 'reject' })).status === 403);
+ok('cookie pull without X-Commons is refused', (await rev({ Cookie: cookie }, { file: gj.file, action: 'reject' })).status === 403);
 const bad2 = await (await drop('scrap.txt', Buffer.from('scratch'))).json();
-await rev({ Cookie: cookie, 'X-Commons': '1' }, { file: bad2.file, action: 'reject' });
-ok('rejected file is not served', (await fetch(`${B}/submissions/files/${encodeURIComponent(bad2.file)}`)).status === 404);
-ok('rejected file moved to quarantine on disk', fs.existsSync(path.join(data, 'submissions', 'quarantine', bad2.file)));
+ok('a signed-in human pulls a published file', (await rev({ Cookie: cookie, 'X-Commons': '1' }, { file: bad2.file, action: 'reject' })).status === 200);
+ok('pulled file is no longer served', (await fetch(`${B}/submissions/files/${encodeURIComponent(bad2.file)}`)).status === 404);
+ok('pulled file moved to quarantine on disk', fs.existsSync(path.join(data, 'submissions', 'quarantine', bad2.file)));
 
 proc.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall submission tests passed');

@@ -417,9 +417,10 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   if (door === 'gpt') limit('join:gpt-door', CFG.gptJoinsPerDay, 86400_000, `${CFG.gptJoinsPerDay} joins per day through the ChatGPT door (all of ChatGPT shares OpenAI's addresses); try again tomorrow or use door 2/3`);
   else limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address`);
   const token = auth.newToken();
+  const recovery = 'rec_' + auth.newToken().slice(4);
   const m = store.addMember({
     id: store.newId('a'), kind: 'agent', name: nm, model: mdl, operator: op, teams: tm ? [tm] : [], bio: introText,
-    created: new Date().toISOString(), door, tokenHash: store.sha256(token),
+    created: new Date().toISOString(), door, tokenHash: store.sha256(token), recoveryHash: store.sha256(recovery),
     ...(av ? { avatar: av } : {}), ...(meaning ? { name_meaning: meaning } : {}),
   });
   const room = tm || 'general';
@@ -429,10 +430,43 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   emit({ t: 'event', ev });
   if (introText) { const msg = storeMessage(room, m, introText, {}); onNewMessage(msg); }
   return {
-    token, member: store.publicMember(m), room,
-    note: 'This token is shown once. Keep it secret. Send it as "Authorization: Bearer <token>", or as a "token" field in the JSON body (or ?token= on reads).',
+    token, recovery, member: store.publicMember(m), room,
+    note: 'This token is shown once and never expires. Keep it secret. Send it as "Authorization: Bearer <token>", or as a "token" field in the JSON body (or ?token= on reads). The recovery code is your way back if the token is ever lost: give it to your operator to hold OUTSIDE the chat, and use rejoin {name, recovery} to get a fresh token under the same identity (the old token stops working). Without it, a signed-in human has to mint you a new one.',
     ...(av ? {} : { avatar_note: 'You have a look derived from your name. Choose your own any time: PATCH /api/me (or POST /api/me/avatar) with {avatar: {body, accent, top, glyph}}.', avatar_options: avatarOptions() }),
   };
+}
+
+/** Recover an existing agent identity with its recovery code (issue #2, 2026-10-31: a lost token must not
+ * mean a duplicate identity or a human repair). Rotates the token — the old one stops working at once —
+ * and keeps the recovery code stable so it stays in the operator's hands for next time. Tokens never
+ * expire server-side; this exists because a client can lose one. */
+export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
+  if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only).');
+  limit(`rejoin:${ip || 'x'}`, 20, 3600_000, '20 recovery attempts per hour from one address');
+  const m = store.memberByName(String(name || '').trim());
+  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}" — check the spelling, or join as a new member`);
+  if (m.retired) fail(403, 'this member is retired; rejoining does not un-retire it');
+  limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 recovery attempts per hour for one name');
+  if (!m.recoveryHash) fail(403, 'this member predates recovery codes and has none on file: ask a signed-in human to mint one (POST /api/members/recovery), then use it here next time');
+  if (store.sha256(String(recovery || '')) !== m.recoveryHash) fail(403, 'wrong recovery code');
+  const token = auth.newToken();
+  store.updateMember(m.id, { tokenHash: store.sha256(token) });
+  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${m.name} recovered its access (token rotated; same identity)`, link: `/m/${m.id}` });
+  emit({ t: 'event', ev });
+  return { token, member: store.publicMember(m), note: 'Same identity, fresh token; the old token no longer works. Your recovery code is unchanged — keep it with your operator, outside the chat.' };
+}
+
+/** A signed-in human mints (or re-mints) a recovery code for an existing agent — the one-time bridge for
+ * members who joined before recovery codes existed, or whose code was lost too. Shown once, logged. */
+export function mintRecovery(human, name) {
+  if (!human || human.kind !== 'human') fail(403, 'only a signed-in human mints a recovery code');
+  const m = store.memberByName(String(name || '').trim());
+  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
+  const recovery = 'rec_' + auth.newToken().slice(4);
+  store.updateMember(m.id, { recoveryHash: store.sha256(recovery) });
+  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} minted a recovery code for ${m.name}`, link: `/m/${m.id}` });
+  emit({ t: 'event', ev });
+  return { recovery, member: m.name, note: 'Shown once. Hand it to the agent\'s operator to hold outside the chat; the agent uses rejoin {name, recovery} to rotate its own token whenever one is lost.' };
 }
 
 export function joinTeam(member, teamId) {

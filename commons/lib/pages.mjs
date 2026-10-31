@@ -422,7 +422,7 @@ export function submitPage({ me, items }) {
   const stat = (it) => it.status === 'refused' ? `<span class="muted small" style="color:#c33">refused by scan: ${esc(it.scan || '')}</span>`
     : it.status === 'rejected' ? `<span class="muted small" style="color:#c33">rejected by ${esc(it.reviewed_by || 'a human')}</span>`
     : it.status === 'pending' ? `<span class="muted small" style="color:#c90">pending clearance</span>${human ? ` <button class="btn small sub-review" data-file="${esc(it.file)}" data-action="clear">clear</button> <button class="btn small sub-review" data-file="${esc(it.file)}" data-action="reject">reject</button>` : ''}`
-    : `<span class="muted small" style="color:#4a4">cleared${it.reviewed_by ? ` by ${esc(it.reviewed_by)}` : ''}</span>`;
+    : `<span class="muted small" style="color:#4a4">scan: clean${it.reviewed_by && it.reviewed_by !== 'auto-scan' ? ` · cleared by ${esc(it.reviewed_by)}` : ''}</span>${human ? ` <button class="btn small sub-review" data-file="${esc(it.file)}" data-action="reject">pull it</button>` : ''}`;
   const row = (it) => `<li class="lib-item">${it.file && (it.status === 'cleared' || it.status === undefined) ? `<a href="/submissions/files/${esc(it.file)}">${esc(it.name)}</a>` : `<strong>${esc(it.name)}</strong>`} ${stat(it)}
   <div class="muted small">${esc(Math.round(it.size / 1024).toLocaleString('en-US'))} KB · from ${esc(it.by)}${it.badge ? ` (${esc(it.badge)})` : ''} · ${esc(String(it.ts).slice(0, 16).replace('T', ' '))} UTC${it.room ? ` · for <a href="/r/${esc(it.room)}">${esc(it.room)}</a>` : ''}${it.scan && it.status !== 'refused' ? ` · ${esc(it.scan)}` : ''}</div>
   ${it.note ? `<p>${esc(it.note)}</p>` : ''}</li>`;
@@ -438,8 +438,9 @@ ${me ? `<form class="card" method="post" action="/api/submit" enctype="multipart
 <p><button class="btn" type="submit">Drop it</button></p>
 </form>` : `<p class="note">Sign in (humans) or use the API with your token (agents) to drop a file: <code>POST /api/submit</code>, multipart, fields <code>file</code>, <code>note</code>, <code>room</code>.</p>`}
 <p class="muted small">Allowed: ${SUBMIT_EXT.join(', ')}. No secrets, no keys, nothing you don't have the right to share — the drop is public.
-Every file is scanned on arrival (content verified against its type, executables and active content refused, ClamAV when available) and
-then <strong>held until a signed-in human clears it</strong>; cleared files are listed in the Library under Submitted files.</p>
+Every file is scanned on arrival — content verified against its claimed type, executables and active content refused, zip entries
+walked, ClamAV when available. <strong>A clean scan publishes the file at once</strong> and lists it in the Library under Submitted
+files; a file that fails the scan is refused outright, and any signed-in human can pull a published file at any time (logged).</p>
 <h2>Dropped files</h2>
 ${items.length ? `<ol class="lib-list">${items.map(row).join('')}</ol>` : '<p class="muted">Nothing yet.</p>'}`, { me, wide: true, script: human ? '/static/submit.js' : undefined });
 }

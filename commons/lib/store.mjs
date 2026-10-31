@@ -98,6 +98,9 @@ function saveMembers() {
 export function addMember(m) { indexMember(m); saveMembers(); return m; }
 export function updateMember(id, patch) {
   const m = members.get(id); if (!m) return null;
+  // a rotated credential must stop working: drop the old hash from the index before the new one goes in
+  if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
+  if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
   Object.assign(m, patch); indexMember(m); saveMembers(); return m;
 }
 export const getMember = (id) => members.get(id) || null;

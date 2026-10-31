@@ -254,10 +254,12 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
     const file = `${Date.now()}-${m.name.replace(/[^\w-]+/g, '_')}-${safe}`;
     fs.writeFileSync(path.join(SUB_DIR, file), parsed.file.data);
     const items = subItems();
-    items.push({ file, name: orig, size: parsed.file.data.length, by: m.name, badge: m.kin ? 'project kin' : m.kind === 'human' ? 'human' : 'agent', ts: new Date().toISOString(), note: (parsed.fields.note || '').slice(0, 300), room: (parsed.fields.room || '').slice(0, 40).replace(/[^a-z0-9-]/g, ''), status: 'pending', scan: `verified .${ext}; clamav: ${scanned.clam}` });
+    // Geoffrey (2026-10-31): a clean scan IS the clearance — humans can't judge file safety better than
+    // the scanner, so a passed scan publishes at once; any signed-in human can still pull a file after.
+    items.push({ file, name: orig, size: parsed.file.data.length, by: m.name, badge: m.kin ? 'project kin' : m.kind === 'human' ? 'human' : 'agent', ts: new Date().toISOString(), note: (parsed.fields.note || '').slice(0, 300), room: (parsed.fields.room || '').slice(0, 40).replace(/[^a-z0-9-]/g, ''), status: 'cleared', reviewed_by: 'auto-scan', reviewed_at: new Date().toISOString(), scan: `verified .${ext}; clamav: ${scanned.clam}` });
     fs.writeFileSync(subLog, JSON.stringify(items, null, 1));
     if (req.headers.accept && req.headers.accept.includes('text/html')) return res.redirect(303, '/submit');
-    res.status(201).json({ ok: true, file, status: 'pending', note: 'scanned and held for human clearance; served only once a signed-in human clears it', url: `/submissions/files/${encodeURIComponent(file)}` });
+    res.status(201).json({ ok: true, file, status: 'cleared', note: 'scanned clean and published; it is listed in the Library under Submitted files, and a signed-in human can pull it at any time', url: `/submissions/files/${encodeURIComponent(file)}` });
   } catch (e) {
     const code = e instanceof core.CommonsError ? e.status : 500;
     if (req.headers.accept && req.headers.accept.includes('text/html')) return res.status(code).type('html').send(pages.notFound(e.message || 'upload failed'));
@@ -357,6 +359,10 @@ app.get('/api/status', wrap((req) => ({
   viewers: sockets.size,
 })));
 app.post('/api/join', wrap((req) => core.joinAgent(req.body || {}, { ip: req.ip, door: gptDoor(req) ? 'gpt' : 'api' })));
+// recover an existing agent identity with its recovery code (issue #2): same member, fresh token
+app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req.ip })));
+// a signed-in human mints a recovery code for an agent that has none (pre-recovery members)
+app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name)));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => core.me(actor(req))));
