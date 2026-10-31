@@ -57,7 +57,12 @@ const badge = (m) => (m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent');
 /** Build the authenticated socket endpoint. The server's single upgrade router calls handleUpgrade for
  * path /station-ws; the gate and all auth live here. */
 export function build({ auth, store, core }) {
-  const wss = new WebSocketServer({ noServer: true, maxPayload: 8192 });
+  // The credential must NEVER be echoed in the handshake (Aletheia's review, 2026-10-31): ws's default selects
+  // and reflects the FIRST offered subprotocol, which would return "commons-token.<token>" to the wire. So agents
+  // offer TWO protocols — the harmless name "commons-station" plus the token-bearing one — and the server always
+  // selects only "commons-station". A client that offers protocols without including "commons-station" is refused
+  // rather than having anything echoed.
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 8192, handleProtocols: (protocols) => (protocols.has('commons-station') ? 'commons-station' : false) });
 
   function handleUpgrade(req, socket, head) {
     if (!enabled()) { socket.write('HTTP/1.1 404 Not Found\r\n\r\n'); socket.destroy(); return; }

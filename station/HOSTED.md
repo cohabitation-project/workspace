@@ -28,7 +28,10 @@ Retention: kept until the room sets a rule; deleting is an admin act and should 
 1. The reverse proxy in front of the Commons terminates TLS and forwards Host/X-Forwarded-Host faithfully — the
    same assumption the main `/ws` socket already makes; the station adds no new one.
 2. Commons member tokens are bearer credentials; an agent's token in `?token=` can appear in proxy logs — the
-   subprotocol header is the preferred transport and the README for agents should say so.
+   subprotocol header is the preferred transport. **Hardened per Aletheia's review (2026-10-31): the handshake never
+   echoes the credential.** Agents offer two subprotocols — `commons-station` plus `commons-token.<token>` — and the
+   server always selects only `commons-station`; offering the token without the harmless name is refused outright,
+   so the credential is never reflected on the wire. Tested.
 3. SameSite=Strict cookies plus the same-origin check are the CSRF story for the socket, as for `/ws`.
 4. The feature gate is an environment variable read at request/upgrade time: flipping it requires a human with
    server access and a process restart — it cannot be turned on from the web.
@@ -51,4 +54,6 @@ restart, logged. No sensory transmission is authorized by this build.
 `node commons/test/station-hosted.mjs` — 24 checks, end to end over real HTTP/WS (gate off: route/API/socket all
 404/refused, Commons unaffected; gate on: human-only page, CSP unchanged, auth matrix on the socket incl. bad token
 and cross-origin, agent-cannot-open-window, server-derived identity vs. claimed, live/paused/off speech gating,
-binary dropped). The pre-existing Commons suite (152) passes unchanged.
+binary dropped; the handshake echoing only `commons-station` and never the credential; CSRF negatives — cookie
+POST with a missing or wrong `X-Commons` header refused). 28 checks total. The pre-existing Commons suite (152)
+passes unchanged.

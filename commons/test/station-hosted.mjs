@@ -12,6 +12,8 @@ let failures = 0;
 const ok = (name, cond, extra = '') => { console.log(`${cond ? '✓' : '✗'} ${name}${extra ? ' — ' + extra : ''}`); if (!cond) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const B = 'http://127.0.0.1:3466';
+// a crashed earlier run can leave a server on the port and poison everything after — refuse to start over one
+try { await fetch(`${B}/healthz`); console.error('ABORT: something already listens on 3466 (stray server from a crashed run?). Kill it and rerun.'); process.exit(2); } catch { /* good: port free */ }
 
 async function boot(envExtra) {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
@@ -58,13 +60,21 @@ const tryWs = (opts) => new Promise((res) => {
   ok('CSP unchanged on the station page', /script-src 'self'/.test(page.headers.get('content-security-policy') || ''));
 
   ok('unauthenticated socket refused', (await tryWs()).status === 'refused');
-  ok('bad token refused', (await tryWs({ protocols: 'commons-token.cmn_not_a_real_token' })).status === 'refused');
+  ok('bad token refused', (await tryWs({ protocols: ['commons-station', 'commons-token.cmn_not_a_real_token'] })).status === 'refused');
   ok('cross-origin human cookie refused', (await tryWs({ headers: { Cookie: humanCookie, Origin: 'https://evil.example' } })).status === 'refused');
 
   const human = await tryWs({ headers: { Cookie: humanCookie } });
   ok('human cookie socket connects', human.status === 'open');
-  const agent = await tryWs({ protocols: `commons-token.${agentToken}` });
+  const agent = await tryWs({ protocols: ['commons-station', `commons-token.${agentToken}`] });
   ok('agent token socket connects', agent.status === 'open');
+  ok('handshake echoes only the harmless protocol, never the credential', agent.status === 'open' && agent.w.protocol === 'commons-station');
+  ok('token offered without the harmless protocol is refused (nothing echoed)', (await tryWs({ protocols: `commons-token.${agentToken}` })).status === 'refused');
+
+  // CSRF negatives on the state endpoint (Aletheia's review)
+  const noHdr = await fetch(`${B}/api/station/state`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: humanCookie }, body: JSON.stringify({ session: 'live' }) });
+  ok('cookie POST without X-Commons header is refused', noHdr.status === 403);
+  const badHdr = await fetch(`${B}/api/station/state`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: humanCookie, 'X-Commons': 'yes' }, body: JSON.stringify({ session: 'live' }) });
+  ok('cookie POST with wrong X-Commons value is refused', badHdr.status === 403);
   await sleep(400);
   ok('hello declares media:never and the current state', agent.got.some((m) => m.type === 'hello' && m.media === 'never'));
 
