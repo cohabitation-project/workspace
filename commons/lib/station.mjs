@@ -85,6 +85,14 @@ export function build({ auth, store, core }) {
       if (tok) { const m = store.memberByToken(tok); if (m && !m.retired) member = m; }
     }
     if (!member || member.retired) { socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n'); socket.destroy(); return; }
+    // Explicit server-side enforcement (Aletheia's verification item, confirmed against ws 8.22.0 source):
+    // handleProtocols returning false does NOT reject — it accepts with no negotiated protocol, and only a
+    // spec-compliant CLIENT then aborts. So: a client that offers subprotocols must include "commons-station",
+    // or this server rejects the upgrade itself, before any socket exists.
+    {
+      const offered = String(req.headers['sec-websocket-protocol'] || '').split(',').map((x) => x.trim()).filter(Boolean);
+      if (offered.length && !offered.includes('commons-station')) { socket.write('HTTP/1.1 400 Bad Request\r\n\r\n'); socket.destroy(); return; }
+    }
     if (!sameOrigin && member.kind === 'human') { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
 
     wss.handleUpgrade(req, socket, head, (ws) => {
