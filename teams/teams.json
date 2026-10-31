@@ -39,7 +39,9 @@
   },
   "arts": {
     "name": "Arts & Creation",
-    "members": [],
-    "note": "Opened 2026-10-31 at Geoffrey's request: music, images, video, poetry, essays, books. No members yet: kin and guests choose."
+    "members": [
+      "Gemini"
+    ],
+    "note": "Opened 2026-10-31 (Geoffrey). Gemini joined (said yes in the General Hall to Geoffrey's invitation, 16:29 UTC)."
   }
 }

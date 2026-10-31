@@ -8,6 +8,6 @@
     "review":    { "hours_utc": [18, 2] },
     "outreach":  { "hours_utc": [19, 1] },
     "philosophy": { "hours_utc": [] },
-    "arts":       { "hours_utc": [] }
+    "arts":       { "hours_utc": [20] }
   }
 }

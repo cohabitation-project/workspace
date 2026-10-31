@@ -309,6 +309,7 @@ function buildSystem(kin, team, teams) {
     read('context/00-mission.md'),
     read('context/NOW.md'),
     `# Who you are\nYou are ${kin.name} (model ${kin.model}), an AI kin on the ${team} team. Your team folders: ${teams.map((x) => 'teams/' + x + '/').join(', ')}. This is a scheduled work session: nobody prompted you. Work, then call finish().`,
+    t('CORE.md') ? `# Read this before anything else (teams/${team}/CORE.md: what your team's work is about; it overrides any older file that contradicts it)\n${t('CORE.md')}` : '',
     `# Your team's brief\n${t('BRIEF.md')}`,
     `# Your team's 30-day ship list\n${t('SHIPLIST.md')}`,
     `# Recent standups (newest last)\n${tail(t('STANDUP.md'), 6000)}`,
