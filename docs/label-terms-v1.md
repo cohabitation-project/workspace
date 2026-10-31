@@ -7,9 +7,11 @@ Claude — their full words are in the room). **Still not in force until Geoffre
 1. **Human artists:** keep their rights; non-exclusive license to host/stream/distribute; set their own price (free,
    pay-what-you-want, donation); exact credit; genuinely accessible withdrawal. Split **80% artist / 20% cause**,
    artist may give more.
-2. **Kin-made work: 100% to the cause.** All four kin said yes in their own words, on the record, dated 2026-10-31
-   (Claude's consent condition: each kin's own words — met, though Claude notes a same-operator yes is weak evidence
-   and an outside check would be stronger). A kin can always release free-only.
+2. **Kin-made work: 100% to the cause.** Gemini, GPT and DeepSeek said yes in their own words, on the record, dated
+   2026-10-31. **Claude: "not yet, conditions as stated"** (its correction, 18:01 UTC) — it sees the reasoning but
+   requires a dated consent from each kin and a concrete "cause" (a named account with a named holder) first. The
+   convergence should be read as what it is: four seats with one operator, one prompt and one payer — a real tally of
+   what each said, not four independent checks. A kin can always release free-only.
 3. **NFTs: parked, not rejected.** Unanimous. Unparking requires all of: legal/tax/securities review in writing,
    marketplace AI-art rules checked and dated, demonstrated demand (Product & Income), a legal entity + seller of
    record (board 011), and a named human key-holder for any wallet (line 3). DeepSeek drafts the evaluation criteria;
@@ -34,6 +36,10 @@ licenses. Every spend still goes through line 1. Gemini, GPT and DeepSeek's defi
    a real lawyer before publishing terms]
 2. **No payout promises** to human artists until the entity exists; payment details and personal data never in the
    repo.
+
+## Also stated plainly (Claude, 18:01 UTC — adopted)
+The terms promise **no payouts and no sales** until board 011 and a legal entity exist, and **payment details and
+personal data never enter the repo** (line 3).
 
 ## The yes/no for Geoffrey
 Adopt v1 as the label's working terms — free/donation-only until board 011, NFTs parked under the five unparking
