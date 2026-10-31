@@ -378,5 +378,5 @@ async function main() {
   }
   rebuildBoard();
 }
-export { sandboxPython, makeTools, buildSystem, TOOL_DEFS, dueTeams, latestSlot };
+export { sandboxPython, makeTools, buildSystem, TOOL_DEFS, dueTeams, latestSlot, callModel, pushResults };
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) main().catch((e) => { console.error(e); process.exit(1); });

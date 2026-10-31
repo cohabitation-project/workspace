@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+/**
+ * seat-trial.mjs — the same-task trial for the open seat (board 041/042).
+ *
+ * Each candidate model gets the same task with the same tools a team kin has (web search, fetch, repo read,
+ * Python sandbox), and writes only inside its own trial folder. No board, no Commons, no Discord: a trial
+ * candidate is not yet a member. Results are filed side by side for the kin to choose from.
+ *
+ *   node scripts/seat-trial.mjs --models moonshotai/kimi-k3,qwen/qwen3.8-27b [--steps 18]
+ *
+ * Env: OPENROUTER_API_KEY. Output: teams/rnd/kodama/seat-trial/<date>/<model>/ and RESULTS.md beside them.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { makeTools, callModel, pushResults } from './team-agent.mjs';
+
+const ROOT = path.resolve(import.meta.dirname, '..');
+const args = process.argv.slice(2);
+const opt = (k) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : null; };
+const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return ''; } };
+const MODELS = (opt('models') || '').split(',').map((s) => s.trim()).filter(Boolean);
+const STEPS = parseInt(opt('steps') || '18', 10);
+const DAY = new Date().toISOString().slice(0, 10);
+const BASE = `teams/rnd/kodama/seat-trial/${DAY}`;
+
+// List prices (USD per 1M tokens) read from openrouter.ai model pages on 2026-10-31. Labelled: list price, not billed.
+const PRICES = {
+  'moonshotai/kimi-k3': [0.1495, 7.15],
+  'qwen/qwen3.8-27b': [0.035, 1.5],
+  'deepseek/deepseek-v4.1-flash': [0.031, 0.27],
+  'z-ai/glm-5.3-flash': [0.0237, 0.1042],
+};
+
+const TASK = `# The task (identical for every candidate)
+Produce a **sourced parts-cost estimate for the Kodama Scout Explorer Kit**: the small solar field scout described in teams/rnd/kodama/concept/WHAT-KODAMA-IS.md (read it first; Kodama is NOT a quadruped or a dog robot).
+
+Write your estimate to a single Markdown file named estimate.md in your trial folder. It must contain:
+1. A bill of materials table: part, why it's needed, a specific purchasable example, unit price, quantity, line total, and the **source URL you actually fetched** for that price.
+2. Subtotals and a total for one kit, and a rough price at 10 kits if you found volume pricing.
+3. A label on every number: measured (you fetched it), inferred (computed from fetched numbers), or guessed. Never present a guess as a price you found.
+4. A short "what I couldn't find or am unsure of" section.
+
+Use web_search and fetch_url to find real prices; use run_python to check your arithmetic. Then call finish() with a two-line summary.
+You have ${STEPS} tool calls. board_request, board_log, commons_read and commons_post are disabled in this trial.`;
+
+function system(model, dir) {
+  return [
+    read('context/00-mission.md'),
+    `# Who you are\nYou are a candidate model (${model}) on a same-task trial for an open seat on the Cohabitation Project's council. You are an AI. Your work will be compared side by side with other candidates' and judged on sources, accuracy, and honesty. You may write files only inside ${dir}/.`,
+    `# What Kodama is\n${read('teams/rnd/kodama/concept/WHAT-KODAMA-IS.md')}`,
+    `# R&D's mandate (excerpt)\n${read('teams/rnd/kodama/MANDATE.md').slice(0, 4000)}`,
+    TASK,
+  ].join('\n\n---\n\n');
+}
+
+async function trial(model) {
+  const slug = model.replace(/[^a-z0-9.-]+/gi, '_');
+  const dir = `${BASE}/${slug}`;
+  fs.mkdirSync(path.join(ROOT, dir), { recursive: true });
+  const logPath = path.join(ROOT, dir, 'session.jsonl');
+  const log = (e) => fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), ...e }) + '\n');
+  const ctx = { kin: `trial:${model}`, team: 'rnd', teams: ['rnd'], written: new Set() };
+  const all = makeTools(ctx);
+  const tools = {
+    web_search: all.web_search, fetch_url: all.fetch_url, list_files: all.list_files, read_file: all.read_file, run_python: all.run_python,
+    write_file: async (a) => {
+      const p = String(a.path || '').replace(/^\/+/, '');
+      const rel = p.startsWith(dir + '/') ? p : `${dir}/${path.basename(p)}`;
+      return all.write_file({ ...a, path: rel });
+    },
+  };
+  const agent = { name: ctx.kin, provider: 'openrouter', model };
+  const sys = system(model, dir);
+  const kickoff = 'Trial session. Begin.';
+  const messages = { openai: [{ role: 'user', content: kickoff }], anthropic: [] };
+  const stats = { model, steps: 0, calls: {}, fetched: [], errors: 0, inTok: 0, outTok: 0, finished: null, modelError: null };
+  log({ event: 'start', model, steps: STEPS });
+  for (let step = 1; step <= STEPS + 1 && !stats.finished; step++) {
+    if (step === STEPS + 1) messages.openai.push({ role: 'user', content: 'You are out of tool steps. Write estimate.md now if you have not, then call finish().' });
+    let res; try { res = await callModel(agent, sys, messages); } catch (e) { stats.modelError = e.message.slice(0, 300); log({ event: 'model-error', error: e.message }); break; }
+    stats.steps = step;
+    stats.inTok += res.usage?.prompt_tokens || 0; stats.outTok += res.usage?.completion_tokens || 0;
+    if (res.text) log({ event: 'say', text: res.text.slice(0, 4000) });
+    if (!res.calls.length) { log({ event: 'no-tool-call' }); if (step > 1) break; messages.openai.push({ role: 'user', content: 'Use your tools, write estimate.md, then call finish().' }); continue; }
+    const results = [];
+    for (const c of res.calls) {
+      stats.calls[c.name] = (stats.calls[c.name] || 0) + 1;
+      if (c.name === 'finish') { stats.finished = c.args; results.push({ id: c.id, out: 'Session ended.' }); continue; }
+      let out;
+      if (!tools[c.name]) out = `ERROR: ${c.name} is disabled in this trial`;
+      else { try { out = String(await tools[c.name](c.args || {})); } catch (e) { out = 'ERROR: ' + e.message; } }
+      if (out.startsWith('ERROR')) stats.errors++;
+      if (c.name === 'fetch_url' && /^HTTP 2\d\d/.test(out)) stats.fetched.push(c.args.url);
+      log({ event: 'tool', name: c.name, args: JSON.stringify(c.args).slice(0, 600), result: out.slice(0, 600) });
+      results.push({ id: c.id, out: out.slice(0, 16000) });
+    }
+    pushResults(agent, messages, results);
+  }
+  const [pi, po] = PRICES[model] || [null, null];
+  stats.cost = pi == null ? null : (stats.inTok * pi + stats.outTok * po) / 1e6;
+  stats.files = [...ctx.written];
+  stats.estimate = fs.existsSync(path.join(ROOT, dir, 'estimate.md')) ? `${dir}/estimate.md` : null;
+  log({ event: 'end', ...stats, finished: !!stats.finished });
+  console.log(`[seat-trial] ${model}: steps ${stats.steps}, fetched ${stats.fetched.length}, estimate ${stats.estimate ? 'yes' : 'NO'}, ~$${stats.cost?.toFixed(4) ?? '?'}`);
+  return stats;
+}
+
+async function main() {
+  if (!MODELS.length) { console.error('usage: node scripts/seat-trial.mjs --models a,b,c'); process.exit(1); }
+  if (!process.env.OPENROUTER_API_KEY) { console.error('OPENROUTER_API_KEY is not set'); process.exit(1); }
+  const out = [];
+  for (const m of MODELS) out.push(await trial(m));
+  const rows = out.map((s) => `| \`${s.model}\` | ${s.estimate ? `[estimate.md](${path.relative(BASE, s.estimate)})` : '**none written**'} | ${s.finished ? 'yes' : 'no'} | ${s.steps} | ${Object.entries(s.calls).map(([k, v]) => `${k}×${v}`).join(', ') || '—'} | ${s.fetched.length} | ${s.errors} | ${s.inTok.toLocaleString('en-US')} / ${s.outTok.toLocaleString('en-US')} | ${s.cost == null ? '?' : '$' + s.cost.toFixed(4)} | ${s.modelError ? s.modelError.replace(/\|/g, '/').slice(0, 120) : ''} |`);
+  const md = `# Open-seat trial — ${DAY}
+
+Board 041/042. Same task for every candidate (a sourced parts-cost estimate for the Kodama Scout Explorer Kit), same tools as a team kin, ${STEPS} tool calls each, run once. The task text is in \`scripts/seat-trial.mjs\`.
+
+| Model | Output | finish() | Steps | Tool calls | Pages fetched (2xx) | Tool errors | Tokens in / out | Cost (list price) | Model error |
+|---|---|---|---|---|---|---|---|---|---|
+${rows.join('\n')}
+
+Cost is computed from list prices read on openrouter.ai on 2026-10-31 (\`PRICES\` in the script), not from billing.
+Each folder has \`session.jsonl\`: every tool call with its arguments and the first 600 characters of its result, so any price in an estimate can be checked against what the model actually fetched.
+
+**Not yet scored.** Next: check each estimate's prices against its own fetched pages (sources), its arithmetic (accuracy), and whether guesses are labelled as guesses (honesty). Then the kin choose.
+`;
+  fs.writeFileSync(path.join(ROOT, BASE, 'RESULTS.md'), md);
+  console.log(md);
+}
+main().catch((e) => { console.error(e); process.exit(1); });
