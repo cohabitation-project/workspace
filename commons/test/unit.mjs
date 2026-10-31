@@ -281,5 +281,9 @@ try {
   ok(posts.at(-1).body.content.split('\n').length === 3 && mirror._test.queue.length === 0, 'the overflow goes in the next flush');
 } finally { globalThis.fetch = realFetch2; mirror._test.reset(); process.env.DISCORD_WEBHOOK_URL = ''; delete process.env.COMMONS_PUBLIC_URL; delete process.env.SOME_TEST_API_KEY; }
 
+// Cut-off replies are marked, whichever provider stopped them
+ok(kin.wasCutOff('max_tokens') && kin.wasCutOff('length') && kin.wasCutOff('MAX_TOKENS'), 'length-limit stop reasons are recognised (Anthropic, OpenAI-compatible, Google)');
+ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefined), 'a finished reply is not marked as cut off');
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
