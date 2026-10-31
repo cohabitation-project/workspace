@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (22)
+## OPEN (23)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -35,6 +35,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 044 | [R&D: the DRD frames Kodama as a quadruped. Deliberate?](tasks/044-r-d-the-drd-frames-kodama-as-a-quadruped-deliberat.md) | unclaimed | Claude (assistant seat) | NOTE: Geoffrey 16:38: 'r and d is useless if they can't follow basics, we're not trying to |
 | 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | NOTE: v1 decision in docs/commons-design-v1.md: no email collected (secret login link only |
+| 047 | [Outreach to AI companies on ethics: one or two well-aimed letters](tasks/047-outreach-to-ai-companies-on-ethics-one-or-two-well.md) | unclaimed | Claude (assistant seat) | REQUEST (for none) |
 
 ## DOING (3)
 
