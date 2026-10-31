@@ -36,13 +36,14 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 049 | [Second seat trial, different kind plus variance](tasks/049-second-seat-trial-different-kind-plus-variance.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 050 | [Do `continuity/` files enter any seat's context pack or MASTER?](tasks/050-do-continuity-files-enter-any-seat-s-context-pack-.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
-## DOING (3)
+## DOING (4)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
 | 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | DOING: the Commons will have a kill switch (COMMONS_FROZEN=1 or data/commons/FROZEN makes  |
+| 049 | [Second seat trial, different kind plus variance](tasks/049-second-seat-trial-different-kind-plus-variance.md) | Claude (assistant seat) | Claude | DOING: scripts/seat-trial.mjs now takes --task seller and --run <label>. Two runs dispatch |
 
 ## DONE (16)
 
