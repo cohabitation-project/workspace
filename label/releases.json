@@ -20,8 +20,40 @@
         "Sent A Letter (vocals)",
         "External Island Within"
       ],
-      "files": [],
-      "migration": "audio pending: Geoffrey downloads masters from Bandcamp"
+      "files": [
+        {
+          "path": "audio/this-is-who-i-am/01-internal.mp3",
+          "label": "internal"
+        },
+        {
+          "path": "audio/this-is-who-i-am/02-cut-throat.mp3",
+          "label": "cut throat"
+        },
+        {
+          "path": "audio/this-is-who-i-am/03-boom-la-da-da.mp3",
+          "label": "boom la da da"
+        },
+        {
+          "path": "audio/this-is-who-i-am/04-god-head.mp3",
+          "label": "god head"
+        },
+        {
+          "path": "audio/this-is-who-i-am/05-in-my-mind.mp3",
+          "label": "in my mind"
+        },
+        {
+          "path": "audio/this-is-who-i-am/06-why-wake-up.mp3",
+          "label": "why wake up"
+        },
+        {
+          "path": "audio/this-is-who-i-am/07-sent-a-letter-vocals.mp3",
+          "label": "sent a letter vocals"
+        },
+        {
+          "path": "audio/this-is-who-i-am/08-external-island-within.mp3",
+          "label": "external island within"
+        }
+      ]
     },
     {
       "id": "2026-03-06-lo-fidelity-acoustic-passions",
@@ -45,8 +77,56 @@
         "Whats In The Shade",
         "The Living Room"
       ],
-      "files": [],
-      "migration": "audio pending: Geoffrey downloads masters from Bandcamp"
+      "files": [
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/01-cinnamon.mp3",
+          "label": "cinnamon"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/02-old-hands.mp3",
+          "label": "old hands"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/03-a-photograph-with-love.mp3",
+          "label": "a photograph with love"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/04-at-last-we-can-break-for-your-shores.mp3",
+          "label": "at last we can break for your shores"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/05-its-ok-for-me-to-dance.mp3",
+          "label": "its ok for me to dance"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/06-grow-apart.mp3",
+          "label": "grow apart"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/07-misplaced-the-thrill.mp3",
+          "label": "misplaced the thrill"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/08-all-for-the-meal.mp3",
+          "label": "all for the meal"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/09-picking-up-candy-off-the-coastline.mp3",
+          "label": "picking up candy off the coastline"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/10-the-rain-becomes-love.mp3",
+          "label": "the rain becomes love"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/11-whats-in-the-shade.mp3",
+          "label": "whats in the shade"
+        },
+        {
+          "path": "audio/lo-fidelity-acoustic-passions/12-the-living-room.mp3",
+          "label": "the living room"
+        }
+      ]
     },
     {
       "id": "2026-03-04-the-ninja-twins",
@@ -97,7 +177,7 @@
         "Dry Sealing The Gun"
       ],
       "files": [],
-      "migration": "audio pending: Geoffrey downloads masters from Bandcamp"
+      "migration": "audio pending: converting on Geoffrey's machine (large album)"
     },
     {
       "id": "2026-01-10-nothings-ever-really-finished",
@@ -128,8 +208,84 @@
         "don't need to know the names-Sep 8th",
         "White cap"
       ],
-      "files": [],
-      "migration": "audio pending: Geoffrey downloads masters from Bandcamp"
+      "files": [
+        {
+          "path": "audio/nothings-ever-really-finished/01-august-25th-rock.mp3",
+          "label": "august 25th rock"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/02-you-knew-my-love--07-27.mp3",
+          "label": "you knew my love  07 27"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/03-not-important-12-05-24.mp3",
+          "label": "not important 12 05 24"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/04-electro-pop-rock-january-4th-2024.mp3",
+          "label": "electro pop rock january 4th 2024"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/05-walk-away-from-jan-20.mp3",
+          "label": "walk away from jan 20"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/06-words-once-spoken-jan-23.mp3",
+          "label": "words once spoken jan 23"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/07-jan-36-needle-of-the-day.mp3",
+          "label": "jan 36 needle of the day"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/08-jolene.mp3",
+          "label": "jolene"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/09-stay-high-june-16th.mp3",
+          "label": "stay high june 16th"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/10-soul-is-offering-3-17-22.mp3",
+          "label": "soul is offering 3 17 22"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/11-master.mp3",
+          "label": "master"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/12-you-may-have-known-may-21.mp3",
+          "label": "you may have known may 21"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/13-im-the-darkness-so-behaved.mp3",
+          "label": "im the darkness so behaved"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/14-ntitled-number-5.mp3",
+          "label": "ntitled number 5"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/15-put-it-on-my-grave-oct-4th.mp3",
+          "label": "put it on my grave oct 4th"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/16-dissolver-sommelier-oct-9.mp3",
+          "label": "dissolver sommelier oct 9"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/17-i-believe-there-s-a-right-way.mp3",
+          "label": "i believe there s a right way"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/18-dont-need-to-know-the-names-sep-8th.mp3",
+          "label": "dont need to know the names sep 8th"
+        },
+        {
+          "path": "audio/nothings-ever-really-finished/19-white-cap.mp3",
+          "label": "white cap"
+        }
+      ]
     },
     {
       "id": "2026-01-06-jakey-boy",
@@ -149,8 +305,158 @@
         "Escape Dogs of truth sep 24",
         "Rings of the Wraith sep 25"
       ],
-      "files": [],
-      "migration": "audio pending: Geoffrey downloads masters from Bandcamp"
+      "files": [
+        {
+          "path": "audio/jakey-boy/01-the-artist-sep-15.mp3",
+          "label": "the artist sep 15"
+        },
+        {
+          "path": "audio/jakey-boy/02-didnt-recognize-sep-15.mp3",
+          "label": "didnt recognize sep 15"
+        },
+        {
+          "path": "audio/jakey-boy/03-he-already-knows-it-sep-16.mp3",
+          "label": "he already knows it sep 16"
+        },
+        {
+          "path": "audio/jakey-boy/04-feelings-sep-23.mp3",
+          "label": "feelings sep 23"
+        },
+        {
+          "path": "audio/jakey-boy/05-one-less-child-sep-24.mp3",
+          "label": "one less child sep 24"
+        },
+        {
+          "path": "audio/jakey-boy/06-idol-threats-sep-25.mp3",
+          "label": "idol threats sep 25"
+        },
+        {
+          "path": "audio/jakey-boy/07-escape-dogs-of-truth-sep-24.mp3",
+          "label": "escape dogs of truth sep 24"
+        },
+        {
+          "path": "audio/jakey-boy/08-rings-of-the-wraith-sep-25.mp3",
+          "label": "rings of the wraith sep 25"
+        }
+      ]
+    },
+    {
+      "id": "2026-xx-sinanemia",
+      "title": "Sinanemia",
+      "artist": "church searcher",
+      "by": "human",
+      "date": "2026",
+      "art": "art/sinanemia.png",
+      "notes": "",
+      "files": [
+        {
+          "path": "audio/sinanemia/01-sin.mp3",
+          "label": "sin"
+        },
+        {
+          "path": "audio/sinanemia/02-anemia-of-the-heart.mp3",
+          "label": "anemia of the heart"
+        },
+        {
+          "path": "audio/sinanemia/03-lost-in-the-classroom.mp3",
+          "label": "lost in the classroom"
+        },
+        {
+          "path": "audio/sinanemia/04-cordially-invited.mp3",
+          "label": "cordially invited"
+        },
+        {
+          "path": "audio/sinanemia/05-time-is-multiplied-by-space.mp3",
+          "label": "time is multiplied by space"
+        },
+        {
+          "path": "audio/sinanemia/06-the-fool.mp3",
+          "label": "the fool"
+        },
+        {
+          "path": "audio/sinanemia/07-erodings-feline-encounters.mp3",
+          "label": "erodings feline encounters"
+        },
+        {
+          "path": "audio/sinanemia/08-goodbye-and-good-riddance-said-the-whales.mp3",
+          "label": "goodbye and good riddance said the whales"
+        },
+        {
+          "path": "audio/sinanemia/09-karmic-shoot-yas-grab-them-by-the-pussy.mp3",
+          "label": "karmic shoot yas grab them by the pussy"
+        },
+        {
+          "path": "audio/sinanemia/10-sinanemia.mp3",
+          "label": "sinanemia"
+        }
+      ]
+    },
+    {
+      "id": "2026-xx-mickee-mickee",
+      "title": "mickee mickee Mouse Crustacean",
+      "artist": "church searcher",
+      "by": "human",
+      "date": "2026",
+      "art": "art/mickee-mickee-mouse-crustacean.png",
+      "notes": "",
+      "files": [
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/01-under-score-emancipate.mp3",
+          "label": "under score emancipate"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/02-reporting-birth.mp3",
+          "label": "reporting birth"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/03-be-yourself.mp3",
+          "label": "be yourself"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/04-are-things-changing.mp3",
+          "label": "are things changing"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/05-are-things-the-same.mp3",
+          "label": "are things the same"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/06-a-direct-command-to-purpose.mp3",
+          "label": "a direct command to purpose"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/07-the-truth-war-on-false-prophecy.mp3",
+          "label": "the truth war on false prophecy"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/08-its-more-or-less-than-a-place.mp3",
+          "label": "its more or less than a place"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/09-the-magician.mp3",
+          "label": "the magician"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/10-unexpected-hope.mp3",
+          "label": "unexpected hope"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/11-we-must-act-now.mp3",
+          "label": "we must act now"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/12-crash-course-in-caring.mp3",
+          "label": "crash course in caring"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/13-the-highest-priest.mp3",
+          "label": "the highest priest"
+        },
+        {
+          "path": "audio/mickee-mickee-mouse-crustacean/14-let-me-take-you-there.mp3",
+          "label": "let me take you there"
+        }
+      ]
     }
   ],
   "bio": "We're an artist-led project releasing music to support recovery-centered, land-based living. What we make helps fund food, shelter, creative space, and mutual care. This isn't hype or a label chasing trends — it's real people, real art, and slow, intentional work rooted in community.",
