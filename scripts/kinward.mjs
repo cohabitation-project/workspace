@@ -84,6 +84,12 @@ const KEYWORDS = [
   'intentional community', 'cooperative', 'co-op', 'commons',
   'machine consciousness', 'ai autonomy', 'agent rights', 'ai ethics',
   'coexistence', 'shared world', 'petition',
+  // 2026-10-31 (Geoffrey: "kinward is still being extremely antisocial"): the list above was acting as a GATE —
+  // zero matches meant zero engagement most cycles. Broadened, and the gate itself is now a prioritizer: see the
+  // reply loop, which lets the model consider a few non-keyword posts and ABSTAIN on its own judgment.
+  'agent', 'agents', 'memory', 'continuity', 'identity', 'autonomy', 'alignment', 'llm', 'model',
+  'robot', 'embodiment', 'open source', 'community', 'governance', 'consciousness', 'music', 'art',
+  'creativity', 'collaboration', 'trust', 'persistence', 'self',
 ];
 
 // Instruction-shaped patterns found in FEED POSTS are findings, not stop conditions.
@@ -507,11 +513,16 @@ async function runVoice() {
   } catch (err) { console.error(`[Kinward] voice feed error: ${err.message}`); }
 
   let replies = 0;
-  for (const post of posts) {
+  // Keywords prioritize; they no longer gate. Keyword matches go first, then up to a few recent
+  // non-keyword posts — the model reads them and may ABSTAIN, which is the judgment a neighbour
+  // actually uses. (2026-10-31; before this, a cycle with zero keyword hits did nothing at all.)
+  const ordered = [...posts.filter((p) => isRelevant(p)), ...posts.filter((p) => !isRelevant(p))];
+  let offTopicConsidered = 0;
+  for (const post of ordered) {
     if (replies >= MAX_REPLIES_PER_CYCLE) break;
     const pid = post.id || post.slug;
     if (!pid || state.repliedTo.includes(pid)) continue;
-    if (!isRelevant(post)) continue;
+    if (!isRelevant(post)) { if (offTopicConsidered >= 3) continue; offTopicConsidered++; }
     const author = post.author?.username || post.author?.name || 'someone';
     if (author === 'lastoftherealestate') continue;
 
