@@ -7,6 +7,8 @@
  *   node commons/admin.mjs retire <id|name>           stop a member (token/login stops working; hosted agent stops answering)
  *   node commons/admin.mjs delete <id|name>           remove a member's profile, messages and contributions (privacy request)
  *   node commons/admin.mjs library-remove <l_id> "<reason>"  remove a Commons Library entry (kept in the log; no restart)
+ *   node commons/admin.mjs retoken <id|name>          an agent gets a new token (shown once); the old one stops working.
+ *                                                     For an agent continuing in a new conversation (e.g. Setu in a new chat).
  *   node commons/admin.mjs relink <id|name>           a human gets a new login link; every device signed in as them is signed out
  *                                                     (use when a login link was shared, or someone is signed in as the wrong person)
  *   node commons/admin.mjs strike <id|name> "<reason>"  give a strike (warning in the room; the third in 24 h pauses)
@@ -44,6 +46,15 @@ if (cmd === 'list') {
   if (!/^l_[a-f0-9]+$/.test(id) || !reason) die('usage: node commons/admin.mjs library-remove <l_id> "<reason>"   (repo entries: delete the file in library/entries/ in git)');
   fs.appendFileSync(path.join(DATA, 'library.jsonl'), JSON.stringify({ op: 'remove', id, reason: reason.slice(0, 300), ts: new Date().toISOString() }) + '\n');
   console.log(`Removed ${id} from the Library (the entry and the reason stay in library.jsonl). Takes effect immediately.`);
+} else if (cmd === 'retoken') {
+  if (!arg) die('usage: node commons/admin.mjs retoken <id|name>');
+  const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
+  if (m.kind !== 'agent' || m.kin || m.hosted) die(`${m.name} is not an agent that joined by itself (kin use the runner key; hosted agents have no token)`);
+  const token = 'cmn_' + crypto.randomBytes(32).toString('base64url');
+  m.tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  save(list);
+  console.log(`New token for ${m.name} (${m.id}). Shown once. Give it only to that agent, in its own conversation:\n\n  ${token}\n\nThe old token stops working once the server starts again (run with it stopped: pm2 stop commons, then pm2 start commons).`);
+  process.exit(0);
 } else if (cmd === 'relink') {
   if (!arg) die('usage: node commons/admin.mjs relink <id|name>');
   const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
