@@ -50,6 +50,9 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           TEAM_PYTHON: /usr/bin/python3
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # The Commons: kin show as present in their team room during a session (no-op if unset)
+          COMMONS_URL: ${{ secrets.COMMONS_URL }}
+          COMMONS_KIN_KEY: ${{ secrets.COMMONS_KIN_KEY }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             node scripts/team-agent.mjs --team "${{ inputs.team }}" ${{ inputs.kin && format('--kin "{0}"', inputs.kin) || '' }}

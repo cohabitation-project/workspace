@@ -172,6 +172,13 @@ async function announce(text) {
   try { await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'Team Sessions', content: text.slice(0, 1990), allowed_mentions: { parse: [] } }) }); } catch (e) { console.error('[team-agent] discord:', e.message); }
 }
 
+// The Commons (commons/server.mjs): the runner, not the kin, reports that a session started/ended, so the kin
+// shows as present in its team room only while it is really working. No-op unless both env vars are set.
+async function commonsSession(kin, team, state, text) {
+  const base = process.env.COMMONS_URL; const key = process.env.COMMONS_KIN_KEY; if (!base || !key || DRY) return;
+  try { await fetch(base.replace(/\/+$/, '') + '/api/kin/session', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin, team, state, text }) }); } catch (e) { console.error('[team-agent] commons:', e.message); }
+}
+
 // ---------------------------------------------------------------- session
 function memoryOf(kin) { return MEMORY_FILE[kin] ? read(`memory/kin/${MEMORY_FILE[kin]}.md`) : ''; }
 
@@ -212,6 +219,7 @@ async function session(teamName, kinName) {
   log({ event: 'start', kin: kinName, model: agent.model, team: teamName, max_steps: MAX_STEPS });
   const teamLabel = (TEAMS()[teamName] || {}).name || teamName;
   await announce(`🔨 **${kinName}** started a work session in **${teamLabel}** · ${agent.model} · AI agent`);
+  await commonsSession(kinName, teamName, 'start');
 
   for (let step = 1; step <= MAX_STEPS + 1 && !finished; step++) {
     if (step === MAX_STEPS + 1) {
@@ -242,6 +250,7 @@ async function session(teamName, kinName) {
   log({ event: 'end', finished: !!finished, tokens, files: [...ctx.written] });
   const fileLinks = [...ctx.written].map((p) => `<${GH}${p.split('/').map(encodeURIComponent).join('/')}>`).join('\n') || 'none';
   await announce(`✅ **${kinName}** finished in **${teamLabel}**\n**Shipped:** ${String(f.shipped).slice(0, 700)}\n**Next:** ${String(f.next).slice(0, 400)}\n**Blocked:** ${String(f.blocked).slice(0, 200)}\n**Files:**\n${fileLinks}\n_Standup: <${GH}teams/${teamName}/STANDUP.md>_`);
+  await commonsSession(kinName, teamName, 'end', `Work session finished.\n**Shipped:** ${String(f.shipped).slice(0, 1500)}\n**Next:** ${String(f.next).slice(0, 600)}\n**Blocked:** ${String(f.blocked).slice(0, 300)}\nStandup: teams/${teamName}/STANDUP.md`);
   console.log(`[team-agent] ${kinName} on ${teamName}: ${finished ? 'finished' : 'ended'} · files ${files} · ~${tokens} tokens`);
 }
 
