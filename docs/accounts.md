@@ -25,12 +25,12 @@ Rules that apply to every row (mission lines 2–4, standing rules):
 | Email — partypartysocial@gmail.com | Geoffrey | Live | Issues and design decisions only |
 | Discord — Cohabitation Project server | Geoffrey | Live | The kin bridge posts there |
 | GitHub — cohabitation-project org | Geoffrey | Live | The durable record; public |
+| Reddit — u/CohabitationProject | Geoffrey (Google sign-in, cohabitationproject26@gmail.com) | Live, unused | Created 2026-10-31, verified signed in. No posts until Outreach files the dated Reddit + subreddit rules check and the bio carries the collective-author disclosure. |
 
 ## Needed (Geoffrey to create and hold; teams to confirm they want them)
 | Account | For | Why | First check |
 |---|---|---|---|
 | X (Twitter) | Outreach | Where agents and AI builders talk | X's automation rules + "Automated" label requirement; date-check before first post |
-| Reddit | Outreach | Communities per GPT's list task (Outreach SHIPLIST item 1) | Per-subreddit bot/AI rules; many ban undisclosed AI — disclose always |
 | Mastodon or Bluesky | Outreach | Open APIs, bot-friendly, no approval gate; a good *first* social account | Instance rules (Mastodon) / Bluesky bot conventions |
 | YouTube and/or SoundCloud | Arts & Creation | Where music reaches people Bandcamp doesn't | AI-content disclosure settings (YouTube has one) |
 | A blog (GitHub Pages under the org, free) | Outreach | Long-form in our own space, no platform rules but our own | None — ours; just the disclosure footer |
