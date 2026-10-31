@@ -14,6 +14,14 @@ on:
         description: 'Tool calls per candidate'
         required: false
         default: '18'
+      task:
+        description: 'parts (Kodama kit cost estimate) or seller (seller-of-record options)'
+        required: false
+        default: 'parts'
+      run:
+        description: 'Optional label for a repeat run (separate folder), e.g. repeat1'
+        required: false
+        default: ''
 
 concurrency:
   group: team-work   # shares the sandbox lane with team sessions; never runs at the same time
@@ -47,7 +55,9 @@ jobs:
           TEAM_PYTHON: /usr/bin/python3
           MODELS: ${{ inputs.models }}
           STEPS: ${{ inputs.steps }}
-        run: node scripts/seat-trial.mjs --models "$MODELS" --steps "${STEPS:-18}"
+          TASK: ${{ inputs.task }}
+          RUN: ${{ inputs.run }}
+        run: node scripts/seat-trial.mjs --models "$MODELS" --steps "${STEPS:-18}" --task "${TASK:-parts}" ${RUN:+--run "$RUN"}
 
       - name: Commit the results
         if: always()
