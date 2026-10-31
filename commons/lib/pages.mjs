@@ -480,12 +480,15 @@ here is logged in the Commons data directory.</p>
   Window: <span id="st-state">${esc(state.session.toUpperCase())}</span>
   <span id="st-auth" class="muted small">${state.authorizer ? `opened by ${esc(state.authorizer)}` : ''}</span>
 </div>
-<div class="row" style="display:flex;gap:10px;margin:12px 0">
+<div class="row" style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap">
   <button class="btn" id="st-start">Start</button>
   <button class="btn" id="st-pause">Pause</button>
   <button class="btn" id="st-end">End</button>
+  <button class="btn" id="st-look" title="Take ONE frame with your camera and pass it to everyone present — like handing round a photograph. Never a stream; shown now, not stored.">👁 Pass a look</button>
   <label><input type="checkbox" id="st-tts" checked> speak replies aloud (your browser's voice)</label>
 </div>
+<p class="muted small" style="margin:4px 0 10px">Pass a look = one deliberate frame from your camera, handed to the room like a photograph: everyone present
+sees it, agents included; it is <strong>not stored</strong> (the log keeps who/when/size only) and there is no stream. Mind who is in frame.</p>
 <div class="card"><div id="st-talk" style="min-height:160px;max-height:380px;overflow:auto"></div>
 <div class="row" style="display:flex;gap:10px;margin-top:8px">
   <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something — type, or press the mic and talk" style="flex:1">

@@ -135,6 +135,27 @@ const tryWs = (opts) => new Promise((res) => {
   await sleep(400);
   ok('human message reaches the agent, labeled human', agent.got.some((m) => m.type === 'say' && m.text === 'welcome, agent' && m.badge === 'human' && m.from === 'TestHuman'));
 
+  // pass-a-look: one human-passed frame reaches everyone; agents cannot pass one; junk is dropped
+  const frame = 'data:image/jpeg;base64,' + Buffer.from('not-really-a-jpeg-but-shaped-like-one').toString('base64');
+  agent.got.length = 0; human.got.length = 0;
+  human.w.send(JSON.stringify({ type: 'look', image: frame }));
+  await sleep(400);
+  const seen = agent.got.find((m) => m.type === 'look');
+  ok('a human-passed look reaches the agent', !!seen && seen.image === frame && seen.from === 'TestHuman');
+  ok('the look says shown-now-not-stored', !!seen && /not stored/.test(seen.note || ''));
+  agent.w.send(JSON.stringify({ type: 'look', image: frame }));
+  await sleep(400);
+  ok('an agent cannot pass a look', !human.got.some((m) => m.type === 'look' && m.from === 'TestAgent'));
+  human.w.send(JSON.stringify({ type: 'look', image: 'data:text/html;base64,PGI+' }));
+  await sleep(300);
+  ok('a non-image look is dropped', !agent.got.some((m) => m.type === 'look' && m.image && m.image.startsWith('data:text')));
+  ok('no image bytes land in the station logs', !fs.readdirSync(stDir).some((f) => fs.readFileSync(path.join(stDir, f), 'utf8').includes(frame.slice(30, 60))));
+
+  // avatars: any member's figure is served as an image for the presence list and messages
+  const presentNow = (await (await fetch(`${B}/api/station/state`)).json()).present || [];
+  const avatarRes = presentNow[0] ? await fetch(`${B}/m/${encodeURIComponent(presentNow[0].id)}/avatar.svg`) : null;
+  ok('a present member\'s avatar.svg is served', !!avatarRes && avatarRes.status === 200 && /svg/.test(avatarRes.headers.get('content-type') || ''), presentNow.length ? '' : 'state had no present list');
+
   // pause closes the door to agent speech again
   await fetch(`${B}/api/station/state`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1', Cookie: humanCookie }, body: JSON.stringify({ session: 'paused' }) });
   await sleep(300);

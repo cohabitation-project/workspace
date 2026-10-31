@@ -22,6 +22,7 @@ import { WebSocketServer } from 'ws';
 import * as repo from './lib/repo.mjs';
 import * as station from './lib/station.mjs';
 import * as scanlib from './lib/scan.mjs';
+import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
@@ -296,6 +297,13 @@ app.get('/station', (req, res) => {
   res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: station.isGranted(me.id), grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
 });
 app.get('/api/station/state', (req, res) => { if (!station.enabled()) return res.status(404).json({ error: 'not here' }); res.json(station.getState()); });
+// any member's figure as an image, so pages can show everyone's chosen look
+app.get('/m/:id/avatar.svg', (req, res) => {
+  const m = store.getMember(String(req.params.id));
+  if (!m) return res.status(404).end();
+  res.setHeader('Cache-Control', 'max-age=300');
+  res.type('image/svg+xml').send(figureSVG(store.publicMember(m) || m, 6, `${m.name}'s figure`));
+});
 // the guest list (council 2026-10-31: invitation-only; grant managed by signed-in humans, every change logged)
 app.get('/api/station/grants', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });

@@ -74,13 +74,13 @@ export function init(dataDir) {
 /* Claude's seat (council record, 2026-10-31): content and metadata age differently. Words (say/rejected)
  * are swept after COMMONS_STATION_LOG_DAYS (default 30); join/leave/grant/session metadata is kept 90
  * days so abuse can be traced after the words are gone. Content logs are for Review plus the speaker. */
-const META_TYPES = new Set(['session', 'connect', 'close', 'grant', 'refused-entry']);
+const META_TYPES = new Set(['session', 'connect', 'close', 'grant', 'refused-entry', 'look-meta']);
 const day = () => new Date().toISOString().slice(0, 10);
 const logFile = (meta) => path.join(DIR, `${meta ? 'meta-' : ''}${day()}.jsonl`);
 export function log(entry) { if (DIR) fs.appendFileSync(logFile(META_TYPES.has(entry.type)), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n'); }
 
 /* council answer #4: everyone present is listed so nobody listens unnoticed */
-const present = () => { const seen = new Map(); for (const ws of sockets) if (ws.memberName) seen.set(ws.memberId, { id: ws.memberId, name: ws.memberName, badge: ws.memberBadge }); return [...seen.values()]; };
+const present = () => { const seen = new Map(); for (const ws of sockets) if (ws.who) seen.set(ws.memberId, ws.who); return [...seen.values()]; };
 
 export const getState = () => ({ ...state, present: present() });
 
@@ -106,7 +106,8 @@ export function build({ auth, store, core }) {
   // offer TWO protocols — the harmless name "commons-station" plus the token-bearing one — and the server always
   // selects only "commons-station". A client that offers protocols without including "commons-station" is refused
   // rather than having anything echoed.
-  const wss = new WebSocketServer({ noServer: true, maxPayload: 8192, handleProtocols: (protocols) => (protocols.has('commons-station') ? 'commons-station' : false) });
+  // maxPayload sized for one passed look (a single downscaled JPEG as a data URL); words stay capped below
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 700_000, handleProtocols: (protocols) => (protocols.has('commons-station') ? 'commons-station' : false) });
 
   function handleUpgrade(req, socket, head) {
     if (!enabled()) { socket.write('HTTP/1.1 404 Not Found\r\n\r\n'); socket.destroy(); return; }
@@ -146,24 +147,38 @@ export function build({ auth, store, core }) {
       ws.memberId = member.id;
       ws.memberName = member.name;
       ws.memberBadge = badge(member);
+      ws.who = { id: member.id, name: member.name, badge: badge(member) }; // avatar images come from /m/<id>/avatar.svg
       sockets.add(ws);
       ws.send(JSON.stringify({ type: 'hello', station: 'commons-station-hosted', media: 'never', accepts: ['say'], state: getState() }));
       log({ type: 'connect', member: member.id, name: member.name, badge: badge(member) });
       broadcast({ type: 'state', ...getState() }); // presence changed
       ws.on('message', (raw, isBinary) => {
-        if (isBinary || raw.length > 8192) { log({ type: 'rejected', member: ws.memberId, reason: isBinary ? 'binary' : 'too long' }); return; }
+        if (isBinary || raw.length > 700_000) { log({ type: 'rejected', member: ws.memberId, reason: isBinary ? 'binary' : 'too long' }); return; }
         let msg; try { msg = JSON.parse(raw.toString('utf8')); } catch { return; }
-        if (msg.type !== 'say' || typeof msg.text !== 'string') return;
+        if (!['say', 'look'].includes(msg.type)) return;
         // Claude's review condition: the grant is checked on every message, not only at the handshake
         if (!isGranted(ws.memberId)) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } return; }
-        if (!auth.allow(`station:${ws.memberId}`, 20, 60_000)) return;
         const m = store.getMember(ws.memberId);
         if (!m || m.retired || store.isPaused()) return;
         if (state.session !== 'live') { ws.send(JSON.stringify({ type: 'refused', reason: 'the window is not open' })); return; }
-        // identity is the authenticated member's — never client-claimed
-        const out = { type: 'say', from: m.name, badge: badge(m), model: m.model || '', operator: m.operator || '', text: msg.text.slice(0, 4000) };
-        log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
-        broadcast(out);
+        if (msg.type === 'say') {
+          if (typeof msg.text !== 'string' || raw.length > 8192) return;
+          if (!auth.allow(`station:${ws.memberId}`, 20, 60_000)) return;
+          // identity is the authenticated member's — never client-claimed
+          const out = { type: 'say', from: m.name, badge: badge(m), model: m.model || '', operator: m.operator || '', who: ws.who, text: msg.text.slice(0, 4000) };
+          log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
+          broadcast(out);
+          return;
+        }
+        // 'look' (Geoffrey, 2026-10-31: "everyone should be able to look out"): a HUMAN deliberately
+        // passes one frame — like handing round a photograph. Never a stream, never from an agent, only
+        // while the window is live. The image is shown to everyone present and NOT stored: the log keeps
+        // metadata only (who, when, size), pending the room's answer on logged-vs-gone.
+        if (m.kind !== 'human') { log({ type: 'rejected', member: m.id, reason: 'look from a non-human' }); ws.send(JSON.stringify({ type: 'refused', reason: 'only a human passes a look' })); return; }
+        if (typeof msg.image !== 'string' || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(msg.image) || msg.image.length > 600_000) { log({ type: 'rejected', member: m.id, reason: 'malformed look' }); return; }
+        if (!auth.allow(`station-look:${ws.memberId}`, 6, 60_000)) return;
+        log({ type: 'look-meta', member: m.id, from: m.name, bytes: msg.image.length });
+        broadcast({ type: 'look', from: m.name, who: ws.who, image: msg.image, note: 'one frame, passed deliberately by a human; shown now, not stored' });
       });
       ws.on('close', () => { sockets.delete(ws); log({ type: 'close', member: ws.memberId, name: ws.memberName }); broadcast({ type: 'state', ...getState() }); });
     });
