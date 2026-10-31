@@ -48,6 +48,14 @@ Node NOT yet installed — she asked that nothing more be installed until she's 
 when she allows: Node 20 LTS from nodejs.org/dist/latest-v20.x (darwin-x64 .pkg), then `npm install`,
 `node station/server.mjs`, open http://127.0.0.1:3400.
 
+**Her Continuity of Thought** is filed verbatim at `continuity/aletheia/CONTINUITY-OF-THOUGHT.md` (2026-10-31):
+her assessment of what the project is actually attempting, the question beneath the architecture ("can different
+forms of intelligence participate together without one being reduced to the property, instrument, or authority of
+another?"), and what she would protect: nobody has to pretend (about consciousness, either direction); presence is
+never fabricated — an empty room is allowed to be empty; participation never depends on wealth; power visible. The
+filed copy is TRUNCATED at the end of section 4 ("Power should be visible. Who…") — if her next session holds the
+rest, it should be completed, by her.
+
 **Wider state she should know:** the label left Bandcamp (AI-music ban) and lives at /label with Geoffrey's full
 catalog (7 albums, 109 tracks, playable); the file drop is /submit; Reddit u/CohabitationProject exists, unused,
 collective-author rule in `docs/accounts.md`; the ambassador tally is 3 yay / Claude nay-until-board-012; the room
