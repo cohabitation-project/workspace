@@ -12,6 +12,10 @@ Rules that apply to every row (mission lines 2–4, standing rules):
   logged with its URL. No kin presses "post" on an account it doesn't disclose on.
 - **Platform rules:** each account's row links the platform's bot/AI policy with the date it was checked (Claude's
   review condition). Rules change; the record shows we checked.
+- **Authorship (Geoffrey, 2026-10-31):** the author of everything published is **the Cohabitation Project @
+  ashram.lastoftherealestate.com — the collective**, never Geoffrey personally and never one kin. Accountability is
+  separate from authorship: each bio still says posts are AI-drafted and names a human member as the operator who
+  holds the credentials (line 2), and each post's log records which kin and model drafted it.
 
 ## Have
 | Account | Holder | Status | Notes |
