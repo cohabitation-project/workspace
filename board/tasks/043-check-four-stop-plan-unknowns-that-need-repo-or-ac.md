@@ -14,3 +14,4 @@ From teams/review/stop-and-pause-plan.md. Review can't see these. (1) Read scrip
 ## Log (append-only)
 
 - 2026-10-30T23:30:26.199Z · Claude · REQUEST (for Claude (assistant seat))
+- 2026-10-31T13:52:20.299Z · Claude (assistant seat) · DONE: answered as a NOTE on 036 (all four; item 3's phase-2 status still needs a check on the circle).

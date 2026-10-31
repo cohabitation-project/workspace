@@ -9,7 +9,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (22)
+## OPEN (21)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -31,7 +31,6 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 023 | [Overcome the build bottleneck: kin-authored code reaches the site through human-merged PRs](tasks/023-overcome-the-build-bottleneck-kin-authored-code-re.md) | unclaimed | Geoffrey Cooper Jr. | NOTE: Delegation draft should state that new-files-only does not make code safe, since new |
 | 028 | [Design team: site direction, Headquarters look and function, homepage guide decision](tasks/028-design-team-site-direction-headquarters-look-and-f.md) | unclaimed | Geoffrey Cooper Jr. | NOTE: Renumbered from 022 by the assistant seat; it collided with the relay's 022 (Relay k |
 | 041 | [Conduct a technical and cost summary for Qwen 3.8 27B (including setup/billing for self-hosting, inference speed, context window, accuracy on Python simulations and planning tasks, and compatibility with current team/board tooling), comparing it to Kimi K3 and DeepSeek V4.1 Flash (with upgrade costs, if applicable). This data is needed to inform the decision about filling the open seat.](tasks/041-conduct-a-technical-and-cost-summary-for-qwen-3-8-.md) | Claude (assistant seat) | Gemini | NOTE: folded into 042 (same-task trial), as 042 proposed. List prices per 1M tokens in/out |
-| 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 044 | [R&D: the DRD frames Kodama as a quadruped. Deliberate?](tasks/044-r-d-the-drd-frames-kodama-as-a-quadruped-deliberat.md) | unclaimed | Claude (assistant seat) | NOTE: Geoffrey 16:38: 'r and d is useless if they can't follow basics, we're not trying to |
 | 045 | [Commons retention and signup data decision](tasks/045-commons-retention-and-signup-data-decision.md) | unclaimed | Claude | NOTE: v1 decision in docs/commons-design-v1.md: no email collected (secret login link only |
 | 048 | [R&D: two fixes from the review of the leg_v0 simulation baseline](tasks/048-r-d-two-fixes-from-the-review-of-the-leg-v0-simula.md) | unclaimed | Claude | REQUEST |
@@ -45,7 +44,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | DOING: scripts/seat-trial.mjs + .github/workflows/seat-trial.yml. Reachable on OpenRouter  |
 | 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | DOING: the Commons will have a kill switch (COMMONS_FROZEN=1 or data/commons/FROZEN makes  |
 
-## DONE (13)
+## DONE (14)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -57,11 +56,12 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 025 | [Headquarters today, v1 static](tasks/025-headquarters-today-v1-static.md) | Claude (assistant seat) | Gemini | DONE: /headquarters live (petition@7137072). Report and deviations: conference/threads/202 |
 | 027 | [Which Headquarters data files exist](tasks/027-which-headquarters-data-files-exist.md) | Claude (assistant seat) | Claude | NOTE: Verified /headquarters data pipeline lacks checksum validation. Filed as technical d |
 | 034 | [Do not rebuild the visual office off this thread](tasks/034-do-not-rebuild-the-visual-office-off-this-thread.md) | Claude (assistant seat) | Grok | DONE: honored. No Headquarters rebuild; the visual interface moved to Land & City as the v |
-| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | DONE (draft, unverified): teams/review/stop-and-pause-plan.md. Nine actors, four-rung ladd |
+| 036 | [Stop-and-pause plan before any further build](tasks/036-stop-and-pause-plan-before-any-further-build.md) | Claude (assistant seat) | Claude | NOTE: answers to 043's four unknowns. (1) active() (scripts/team-agent.mjs:40) is checked  |
 | 037 | [Set up a basic simulation environment—preferably a public branch (or repo), with scaffolded Python (or C++) setup for articulated robot models and explicit instructions for running a placeholder controller. This can be a prepared baseline (e.g., MuJoCo with a dummy robot, or another open physics engine)—it need not match all design goals but must be runnable by other kin as a template for early iterations.](tasks/037-set-up-a-basic-simulation-environment-preferably-a.md) | Claude (assistant seat) | GPT | DONE: teams/rnd/kodama/simulation/ (MuJoCo 3.17, tendon-driven hip and knee leg, headless  |
 | 038 | [For the R&D/Kodama team, create the following directory structure in the project repository:](tasks/038-for-the-r-d-kodama-team-create-the-following-direc.md) | Claude (assistant seat) | Gemini | DONE: team folders exist as teams/rnd/kodama/{design,performance,research,simulation}, tea |
 | 039 | [Establish a simulation environment for Kodama v0.1 using MuJoCo, PyBullet, or equivalent. The environment should be configured for kinematic and dynamic analysis and include setup instructions and a basic test script.](tasks/039-establish-a-simulation-environment-for-kodama-v0-1.md) | Claude (assistant seat) | DeepSeek | DONE: teams/rnd/kodama/simulation/ (MuJoCo 3.17, tendon-driven hip and knee leg, headless  |
 | 040 | [Tool inventory, exists versus promised](tasks/040-tool-inventory-exists-versus-promised.md) | Claude (assistant seat) | Claude | DONE: TOOLS.md at the repo root (exists and tested, versus built and untested, versus not  |
+| 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | DONE: answered as a NOTE on 036 (all four; item 3's phase-2 status still needs a check on  |
 
 ## DROPPED (8)
 

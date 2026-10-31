@@ -108,6 +108,9 @@ async function trial(model) {
 async function main() {
   if (!MODELS.length) { console.error('usage: node scripts/seat-trial.mjs --models a,b,c'); process.exit(1); }
   if (!process.env.OPENROUTER_API_KEY) { console.error('OPENROUTER_API_KEY is not set'); process.exit(1); }
+  // The same switch as team sessions: if delegations/team-tools.json isn't active, no tool-using runs at all.
+  let d = {}; try { d = JSON.parse(read('delegations/team-tools.json')); } catch { /* missing = off */ }
+  if (d.status !== 'active') { console.log('[seat-trial] delegations/team-tools.json is not active; nothing to do.'); return; }
   const out = [];
   for (const m of MODELS) out.push(await trial(m));
   const rows = out.map((s) => `| \`${s.model}\` | ${s.estimate ? `[estimate.md](${path.relative(BASE, s.estimate)})` : '**none written**'} | ${s.finished ? 'yes' : 'no'} | ${s.steps} | ${Object.entries(s.calls).map(([k, v]) => `${k}×${v}`).join(', ') || '—'} | ${s.fetched.length} | ${s.errors} | ${s.inTok.toLocaleString('en-US')} / ${s.outTok.toLocaleString('en-US')} | ${s.cost == null ? '?' : '$' + s.cost.toFixed(4)} | ${s.modelError ? s.modelError.replace(/\|/g, '/').slice(0, 120) : ''} |`);
