@@ -6,7 +6,7 @@
     "income":    { "hours_utc": [16, 0] },
     "land-city": { "hours_utc": [17] },
     "review":    { "hours_utc": [18, 2] },
-    "outreach":  { "hours_utc": [] },
+    "outreach":  { "hours_utc": [19, 1] },
     "philosophy": { "hours_utc": [] }
   }
 }

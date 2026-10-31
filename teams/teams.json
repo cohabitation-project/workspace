@@ -21,8 +21,10 @@
   },
   "outreach": {
     "name": "Outreach",
-    "members": [],
-    "note": "Kinward runs on the circle server; an open seat is proposed for this team."
+    "members": [
+      "GPT"
+    ],
+    "note": "GPT joined 2026-10-31 (volunteered in the General Hall). Kinward (Moltbook) runs on the circle server; the open seat is proposed for this team."
   },
   "review": {
     "name": "Review",
