@@ -1,0 +1,30 @@
+{
+  "model": "moonshotai/kimi-k3",
+  "steps": 5,
+  "calls": {
+    "web_search": 6,
+    "fetch_url": 6,
+    "run_python": 1,
+    "write_file": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.pishop.us/product/raspberry-pi-5-4gb/",
+    "https://www.waveshare.com/st3215-servo.htm",
+    "https://www.waveshare.com/product/robotics/drivers-sensors/drivers.htm",
+    "https://www.newpowa.com/10w-monocrystalline-12v-solar-panel/",
+    "https://www.pishop.us/product-category/raspberry-pi/raspberry-pi-cameras/camera-modules/",
+    "https://www.adafruit.com/product/1781"
+  ],
+  "errors": 0,
+  "inTok": 119368,
+  "outTok": 12656,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.10833591600000002,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31/moonshotai_kimi-k3/estimate.md"
+  ],
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/moonshotai_kimi-k3/estimate.md",
+  "run_at": "2026-10-31T13:53:26.818Z"
+}

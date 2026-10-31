@@ -1,0 +1,32 @@
+{
+  "model": "deepseek/deepseek-v4.1-flash",
+  "steps": 9,
+  "calls": {
+    "read_file": 3,
+    "list_files": 1,
+    "web_search": 7,
+    "fetch_url": 6,
+    "run_python": 2,
+    "write_file": 1,
+    "finish": 1
+  },
+  "fetched": [
+    "https://www.adafruit.com/product/5812",
+    "https://www.adafruit.com/product/5657",
+    "https://www.adafruit.com/product/4754",
+    "https://www.pololu.com/category/23/rc-servos",
+    "https://www.adafruit.com/product/5368",
+    "https://www.adafruit.com/product/2011"
+  ],
+  "errors": 0,
+  "inTok": 186144,
+  "outTok": 9592,
+  "finished": true,
+  "modelError": null,
+  "cost": 0.008360304,
+  "files": [
+    "teams/rnd/kodama/seat-trial/2026-10-31/deepseek_deepseek-v4.1-flash/estimate.md"
+  ],
+  "estimate": "teams/rnd/kodama/seat-trial/2026-10-31/deepseek_deepseek-v4.1-flash/estimate.md",
+  "run_at": "2026-10-31T13:57:41.388Z"
+}

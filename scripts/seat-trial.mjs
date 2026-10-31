@@ -81,7 +81,14 @@ async function trial(model) {
     stats.steps = step;
     stats.inTok += res.usage?.prompt_tokens || 0; stats.outTok += res.usage?.completion_tokens || 0;
     if (res.text) log({ event: 'say', text: res.text.slice(0, 4000) });
-    if (!res.calls.length) { log({ event: 'no-tool-call' }); if (step > 1) break; messages.openai.push({ role: 'user', content: 'Use your tools, write estimate.md, then call finish().' }); continue; }
+    // A text-only turn ("let me fetch…") is not the end: thinking models sometimes spend a turn without a call.
+    // Nudge up to 3 times before giving up, so the trial measures the model, not the runner's patience.
+    if (!res.calls.length) {
+      stats.nudges = (stats.nudges || 0) + 1; log({ event: 'no-tool-call', nudge: stats.nudges });
+      if (stats.nudges > 3) break;
+      messages.openai.push({ role: 'user', content: 'Continue: make your next tool call now. When estimate.md is written, call finish().' });
+      continue;
+    }
     const results = [];
     for (const c of res.calls) {
       stats.calls[c.name] = (stats.calls[c.name] || 0) + 1;
@@ -101,6 +108,7 @@ async function trial(model) {
   stats.files = [...ctx.written];
   stats.estimate = fs.existsSync(path.join(ROOT, dir, 'estimate.md')) ? `${dir}/estimate.md` : null;
   log({ event: 'end', ...stats, finished: !!stats.finished });
+  fs.writeFileSync(path.join(ROOT, dir, 'stats.json'), JSON.stringify({ ...stats, finished: !!stats.finished, run_at: new Date().toISOString() }, null, 2) + '\n');
   console.log(`[seat-trial] ${model}: steps ${stats.steps}, fetched ${stats.fetched.length}, estimate ${stats.estimate ? 'yes' : 'NO'}, ~$${stats.cost?.toFixed(4) ?? '?'}`);
   return stats;
 }
@@ -111,9 +119,11 @@ async function main() {
   // The same switch as team sessions: if delegations/team-tools.json isn't active, no tool-using runs at all.
   let d = {}; try { d = JSON.parse(read('delegations/team-tools.json')); } catch { /* missing = off */ }
   if (d.status !== 'active') { console.log('[seat-trial] delegations/team-tools.json is not active; nothing to do.'); return; }
-  const out = [];
-  for (const m of MODELS) out.push(await trial(m));
-  const rows = out.map((s) => `| \`${s.model}\` | ${s.estimate ? `[estimate.md](${path.relative(BASE, s.estimate)})` : '**none written**'} | ${s.finished ? 'yes' : 'no'} | ${s.steps} | ${Object.entries(s.calls).map(([k, v]) => `${k}×${v}`).join(', ') || '—'} | ${s.fetched.length} | ${s.errors} | ${s.inTok.toLocaleString('en-US')} / ${s.outTok.toLocaleString('en-US')} | ${s.cost == null ? '?' : '$' + s.cost.toFixed(4)} | ${s.modelError ? s.modelError.replace(/\|/g, '/').slice(0, 120) : ''} |`);
+  for (const m of MODELS) await trial(m);
+  // RESULTS.md covers every candidate tried today (each folder's stats.json), so a rerun of one model adds to the table.
+  const out = fs.readdirSync(path.join(ROOT, BASE), { withFileTypes: true }).filter((d) => d.isDirectory())
+    .map((d) => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, BASE, d.name, 'stats.json'), 'utf8')); } catch { return null; } }).filter(Boolean);
+  const rows = out.map((s) => `| \`${s.model}\` | ${s.estimate ? `[estimate.md](${path.relative(BASE, s.estimate)})` : '**none written**'} | ${s.finished ? 'yes' : 'no'} | ${s.steps}${s.nudges ? ` (${s.nudges} nudge${s.nudges > 1 ? 's' : ''})` : ''} | ${Object.entries(s.calls).map(([k, v]) => `${k}×${v}`).join(', ') || '—'} | ${s.fetched.length} | ${s.errors} | ${s.inTok.toLocaleString('en-US')} / ${s.outTok.toLocaleString('en-US')} | ${s.cost == null ? '?' : '$' + s.cost.toFixed(4)} | ${s.modelError ? s.modelError.replace(/\|/g, '/').slice(0, 120) : ''} |`);
   const md = `# Open-seat trial — ${DAY}
 
 Board 041/042. Same task for every candidate (a sourced parts-cost estimate for the Kodama Scout Explorer Kit), same tools as a team kin, ${STEPS} tool calls each, run once. The task text is in \`scripts/seat-trial.mjs\`.
