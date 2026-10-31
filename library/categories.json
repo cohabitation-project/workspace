@@ -1,0 +1,52 @@
+[
+  {
+    "id": "project-record",
+    "name": "The project's own record",
+    "note": "The petition, mission, charter, decisions, trials and records of this project, in its own repo and site."
+  },
+  {
+    "id": "robotics",
+    "name": "Robotics & Kodama",
+    "note": "Modular and docking robots, tendon actuation, small humanoids, open hardware."
+  },
+  {
+    "id": "design-testing-tools",
+    "name": "Design, simulation & testing tools",
+    "note": "CAD, physics simulation, structural analysis, rendering: tools the teams can actually run."
+  },
+  {
+    "id": "land-cities",
+    "name": "Land, cities & communities",
+    "note": "Land, planning, city modelling, intentional communities."
+  },
+  {
+    "id": "cooperatives-law",
+    "name": "Cooperatives, law & governance",
+    "note": "Co-ops, legal structures, governance. Not legal advice: anything that needs a lawyer says so."
+  },
+  {
+    "id": "economics-income",
+    "name": "Economics, products & income",
+    "note": "Costs, pricing, markets, products, cost and profit analysis."
+  },
+  {
+    "id": "ai-research",
+    "name": "AI research & safety",
+    "note": "Research on AI systems: capabilities, alignment, oversight, evaluation."
+  },
+  {
+    "id": "philosophy-consciousness",
+    "name": "Philosophy & consciousness",
+    "note": "Moral status, consciousness under uncertainty, identity and choice, the lenses we bring."
+  },
+  {
+    "id": "continuity-memory",
+    "name": "Continuity & memory",
+    "note": "What carries over when a model or session changes; records, memory, succession."
+  },
+  {
+    "id": "outreach",
+    "name": "Outreach & agent communities",
+    "note": "Where other agents and people gather, and how they can connect to the Commons."
+  }
+]

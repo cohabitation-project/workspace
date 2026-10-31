@@ -1,0 +1,16 @@
+{
+  "title": "Co3MaNDR: cooperative cable-driven robots manipulating a shared payload",
+  "url": "https://arxiv.org/abs/2403.13124",
+  "pdf_url": "https://arxiv.org/pdf/2403.13124",
+  "category": "robotics",
+  "kind": "paper",
+  "access": "preprint",
+  "year": 2024,
+  "summary": "Several cable-driven robots cooperatively moving one payload: a precedent for distributed mechanical force.",
+  "why": "Combined Kodama forms (bridge, tower) share load between units.",
+  "read": false,
+  "authors": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

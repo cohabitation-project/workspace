@@ -1,0 +1,16 @@
+{
+  "title": "MuJoCo physics engine",
+  "url": "https://mujoco.org",
+  "category": "design-testing-tools",
+  "kind": "tool",
+  "access": "open access",
+  "summary": "Open-source physics simulator for robotics and biomechanics. Installed in the teams' Python sandbox.",
+  "why": "R&D's leg simulation baseline uses it; simulate before buying.",
+  "read": true,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

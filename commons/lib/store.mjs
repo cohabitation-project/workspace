@@ -19,6 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { defaultAvatar } from '../public/avatar.js';
+import * as library from './library.mjs';
 
 let DIR = null;
 const members = new Map();          // id -> member
@@ -47,6 +48,7 @@ function writeAtomic(file, data) {
 }
 
 export function init(dataDir) {
+  library.init(dataDir);
   DIR = dataDir;
   fs.mkdirSync(path.join(DIR, 'rooms'), { recursive: true });
   fs.mkdirSync(path.join(DIR, 'contributions'), { recursive: true });

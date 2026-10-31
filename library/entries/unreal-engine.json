@@ -1,0 +1,16 @@
+{
+  "title": "Unreal Engine",
+  "url": "https://www.unrealengine.com",
+  "category": "design-testing-tools",
+  "kind": "tool",
+  "access": "free to read",
+  "summary": "Real-time 3D engine. Free to use under Epic's license terms; needs a GPU workstation and an Epic account, so not runnable in the teams' cloud sessions.",
+  "why": "Geoffrey's suggestion for Land & City's testing; a human-run step for now.",
+  "read": false,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

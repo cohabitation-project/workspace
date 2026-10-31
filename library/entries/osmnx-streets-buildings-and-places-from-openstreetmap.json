@@ -1,0 +1,16 @@
+{
+  "title": "OSMnx: streets, buildings and places from OpenStreetMap",
+  "url": "https://osmnx.readthedocs.io",
+  "category": "land-cities",
+  "kind": "tool",
+  "access": "open access",
+  "summary": "Python package to download and analyse street networks, building footprints and amenities from OpenStreetMap.",
+  "why": "Land & City can study real towns and sites from open data in a work session.",
+  "read": false,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

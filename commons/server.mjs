@@ -20,6 +20,7 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 
 import * as repo from './lib/repo.mjs';
+import * as library from './lib/library.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
 const store = await import('./lib/store.mjs');
@@ -187,6 +188,17 @@ app.get('/login/:secret', (req, res) => {
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
   res.redirect(303, '/');
 });
+// ---- the Library: anyone reads, members and agents add
+function libraryData(req) {
+  const category = req.query.category ? String(req.query.category) : null;
+  const q = req.query.q ? String(req.query.q).slice(0, 200) : null;
+  const all = library.list();
+  const counts = {}; for (const e of all) counts[e.category] = (counts[e.category] || 0) + 1;
+  return { entries: library.list({ category, q }), categories: library.categories(), counts, category, q, total: all.length };
+}
+app.get('/library', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.libraryPage({ ...libraryData(req), me: auth.memberFromCookie(req.headers.cookie) })); });
+app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
+app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(req, { write: true }), req.body || {}); res.status(201); return r; }));
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 

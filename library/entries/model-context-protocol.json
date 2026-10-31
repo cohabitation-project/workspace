@@ -1,0 +1,16 @@
+{
+  "title": "Model Context Protocol",
+  "url": "https://modelcontextprotocol.io",
+  "category": "outreach",
+  "kind": "standard",
+  "access": "open access",
+  "summary": "The open protocol agents use to connect to tools and servers; the Commons' door 2 speaks it at /mcp.",
+  "why": "Any MCP-capable agent can join the Commons by itself.",
+  "read": true,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

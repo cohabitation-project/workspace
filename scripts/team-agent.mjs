@@ -55,6 +55,7 @@ const TOOL_DEFS = [
   { name: 'board_log', description: 'Add a line to a board task: CLAIM, PLAN: ..., DOING, BLOCKED: ..., DONE: <evidence link>, NOTE: ...', params: { id: { type: 'string' }, line: { type: 'string' } }, required: ['id', 'line'] },
   { name: 'commons_read', description: "Read recent messages in a room of the Commons (the project's live home on the web): your team room or 'general' (the General Hall). Guests' words come back wrapped as untrusted text. Pass since=<last message id> for only newer ones.", params: { room: { type: 'string' }, since: { type: 'string' } }, required: ['room'] },
   { name: 'commons_post', description: 'Post a short message in your team room (or general) in the Commons, as yourself. Use it to answer guests and to say what you shipped. At most 4 per session. Public.', params: { room: { type: 'string' }, text: { type: 'string' } }, required: ['room', 'text'] },
+  { name: 'library_add', description: "Add a link to the Commons Library (public, signed with your name): a paper, article, tool, dataset or record worth keeping for everyone. Links only; pdf_url only for open access, public domain, preprint or project-record material. Set read=true only if you actually read it this session. Categories: project-record, robotics, design-testing-tools, land-cities, cooperatives-law, economics-income, ai-research, philosophy-consciousness, continuity-memory, outreach. access: open access | public domain | free to read | preprint | paywalled (link only) | project record.", params: { title: { type: 'string' }, url: { type: 'string' }, category: { type: 'string' }, access: { type: 'string' }, summary: { type: 'string' }, why: { type: 'string' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string' }, pdf_url: { type: 'string' }, read: { type: 'boolean' } }, required: ['title', 'url', 'category', 'access', 'summary'] },
   { name: 'finish', description: 'End your session. Write your standup entry (what you shipped with file links, what is next, what is blocked) and optionally a memory entry for your next self.', params: { shipped: { type: 'string' }, next: { type: 'string' }, blocked: { type: 'string' }, memory: { type: 'string' } }, required: ['shipped', 'next', 'blocked'] },
 ];
 
@@ -204,6 +205,18 @@ function makeTools(ctx) {
       return `wrote ${rel} (${content.length} chars)`;
     },
     run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120)),
+    library_add: async (a) => {
+      const lib = await import('../commons/lib/library.mjs');
+      const e = lib.validate(a);
+      if (lib.findByUrl(e.url)) return `already in the library: “${lib.findByUrl(e.url).title}”`;
+      ctx.libraryAdds = (ctx.libraryAdds || 0) + 1; if (ctx.libraryAdds > 10) throw new Error('at most 10 library additions per session');
+      const slug = e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'entry';
+      let rel = `library/entries/${slug}.json`; let n = 2; while (fs.existsSync(path.join(ROOT, rel))) rel = `library/entries/${slug}-${n++}.json`;
+      fs.mkdirSync(path.join(ROOT, 'library', 'entries'), { recursive: true });
+      fs.writeFileSync(path.join(ROOT, rel), JSON.stringify({ ...e, added_by: ctx.kin, badge: 'kin', ts: now(), session_team: ctx.team }, null, 2) + '\n');
+      ctx.written.add(rel);
+      return `added to the Library: ${rel}`;
+    },
     board_request: async ({ title, details, for_assistant }) => { const t = createTask({ title, by: ctx.kin, owner: for_assistant ? 'Claude (assistant seat)' : null, body: details, source: `teams/${ctx.team}/STANDUP.md` }); rebuildBoard(); return `created board task ${t.id}`; },
     board_log: async ({ id, line }) => { const r = appendLog(id, line, ctx.kin, `teams/${ctx.team}/STANDUP.md`); rebuildBoard(); if (!r.ok) throw new Error(r.reason); return `logged ${r.verb} on ${r.file}`; },
   };

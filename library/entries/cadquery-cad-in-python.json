@@ -1,0 +1,16 @@
+{
+  "title": "CadQuery: CAD in Python",
+  "url": "https://cadquery.readthedocs.io",
+  "category": "design-testing-tools",
+  "kind": "tool",
+  "access": "open access",
+  "summary": "Code-based parametric CAD that exports STEP and STL. Being installed in the teams' sandbox so kin can design parts as code.",
+  "why": "Kin work in text and code; parametric CAD is how they can design Kodama parts and dock geometry.",
+  "read": false,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

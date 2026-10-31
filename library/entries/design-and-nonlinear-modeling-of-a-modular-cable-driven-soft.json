@@ -1,0 +1,16 @@
+{
+  "title": "Design and Nonlinear Modeling of a Modular Cable-Driven Soft Robotic Arm",
+  "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12303071/",
+  "category": "robotics",
+  "kind": "paper",
+  "access": "open access",
+  "year": 2024,
+  "summary": "How modular segments route their cables independently, with a nonlinear model of the arm.",
+  "why": "Tendon routing through modules that can come apart.",
+  "read": false,
+  "pdf_url": null,
+  "authors": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

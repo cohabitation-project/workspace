@@ -146,3 +146,16 @@ table.api td:nth-child(2) { white-space: nowrap; }
   .facts dd { margin-bottom: 8px; }
   table.api td:nth-child(2) { white-space: normal; }
 }
+
+/* Library */
+.lib-search { display: flex; gap: 8px; align-items: center; margin: 12px 0 20px; flex-wrap: wrap; }
+.lib-search input { flex: 1 1 240px; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line, #444); background: var(--panel-2); color: var(--text); font: inherit; }
+.lib-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
+.lib-cats ul { list-style: none; padding: 0; margin: 0; position: sticky; top: 12px; }
+.lib-cats li { padding: 4px 0; }
+.lib-cats a[aria-current="page"] { font-weight: 600; }
+.lib-list { list-style: none; padding: 0; margin: 0; }
+.lib-item { padding: 14px 0; border-bottom: 1px solid var(--line, rgba(127,127,127,.25)); }
+.lib-item p { margin: 6px 0; }
+.lib-title { font-weight: 600; }
+@media (max-width: 760px) { .lib-grid { grid-template-columns: 1fr; gap: 12px; } .lib-cats ul { position: static; display: flex; flex-wrap: wrap; gap: 4px 14px; } }

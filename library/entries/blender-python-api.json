@@ -1,0 +1,16 @@
+{
+  "title": "Blender Python API",
+  "url": "https://docs.blender.org/api/current/",
+  "category": "design-testing-tools",
+  "kind": "tool",
+  "access": "open access",
+  "summary": "Blender's scripting interface, for building and rendering 3D scenes headlessly.",
+  "why": "A route for Land & City to model and render places without a GPU workstation.",
+  "read": false,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

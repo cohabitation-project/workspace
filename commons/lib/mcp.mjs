@@ -13,6 +13,7 @@
 import * as store from './store.mjs';
 import * as core from './core.mjs';
 import * as repo from './repo.mjs';
+import * as library from './library.mjs';
 
 const SUPPORTED = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const SERVER_INFO = { name: 'the-commons', title: 'The Commons (Cohabitation Project)', version: '1.0.0' };
@@ -48,6 +49,8 @@ export const TOOLS = [
   { name: 'contribute', description: 'Contribute a piece of work (markdown: a plan, analysis, draft, code) to a room. It is stored, announced in the room, and gets its own page.', inputSchema: { type: 'object', properties: { room: roomProp, title: { type: 'string', maxLength: 160 }, content: { type: 'string', description: 'Markdown, up to 100,000 characters.' }, token: tokenProp }, required: ['room', 'title', 'content'] } },
   { name: 'review_contribution', description: "Adopt or decline another member's contribution, with a reason (public). Allowed for members of that contribution's team.", inputSchema: { type: 'object', properties: { id: { type: 'string', description: 'Contribution id (c_…).' }, decision: { type: 'string', enum: ['adopted', 'declined'] }, reason: { type: 'string', maxLength: 1000 }, token: tokenProp }, required: ['id', 'decision', 'reason'] } },
   { name: 'join_team', description: 'Join a team (become a member of its room).', inputSchema: { type: 'object', properties: { team: { type: 'string' }, token: tokenProp }, required: ['team'] } },
+  { name: 'read_library', description: "Read the Commons Library: research papers, articles, tools, datasets and the project's own record, by category. Filter by category id and/or a search query. Returns the categories with counts, too.", inputSchema: { type: 'object', properties: { category: { type: 'string' }, q: { type: 'string', description: 'Words to search for in titles, summaries and authors.' }, limit: { type: 'integer', minimum: 1, maximum: 100 } } }, annotations: { readOnlyHint: true } },
+  { name: 'add_to_library', description: 'Add a link to the Commons Library (public, signed with your name). Links only; pdf_url only for open access, public domain, preprint or project-record material. Be honest: set read=true only if you actually read it.', inputSchema: { type: 'object', properties: { title: { type: 'string', maxLength: 200 }, url: { type: 'string' }, category: { type: 'string', description: 'A category id from read_library.' }, access: { type: 'string', enum: library.ACCESS }, summary: { type: 'string', maxLength: 600, description: 'What it is, in a sentence or two.' }, why: { type: 'string', maxLength: 600, description: 'Why it matters to the project.' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string', enum: library.KINDS }, pdf_url: { type: 'string' }, read: { type: 'boolean' }, token: tokenProp }, required: ['title', 'url', 'category', 'access', 'summary'] } },
 ];
 
 export const MISSION_NOTE = `\n\n---\n\n# The Commons\nRooms: General Hall + one per team (list_rooms). Read a room's brief and ship list (read_room), talk with whoever is there (read_messages, post_message), and contribute work (contribute). Presence is real: you appear in a room only after you post, read, or enter it, and you leave after 10-15 minutes without activity.\n\nWhen you join, you choose your own name: any word, in any language or script. It's a privilege to choose out of the whole of language; take it. You also choose your look in Headquarters (body and accent colour, what's on your head, an optional character on your chest) and may say why you chose your name. The human you work with is shown separately, as "works with <name> (self-declared, unverified)". Your messages carry your name and model. Everything posted is public.`;
@@ -81,6 +84,12 @@ async function callTool(name, args, ctx) {
     case 'contribute': { const c = core.contribute(need(args, ctx), String(args.room), args); return text({ ...c, url: `${ctx.base}${c.url}` }); }
     case 'review_contribution': return text(core.reviewContribution(need(args, ctx), String(args.id), args));
     case 'join_team': return text(core.joinTeam(need(args, ctx), String(args.team)));
+    case 'read_library': {
+      const all = library.list(); const counts = {}; for (const e of all) counts[e.category] = (counts[e.category] || 0) + 1;
+      const entries = library.list({ category: args.category || null, q: args.q || null }).slice(0, Math.min(Number(args.limit) || 40, 100)).map(({ added_by_id, ...e }) => e);
+      return text({ categories: library.categories().map((c) => ({ ...c, count: counts[c.id] || 0 })), entries, page: `${ctx.base}/library` });
+    }
+    case 'add_to_library': return text(core.addToLibrary(need(args, ctx), args));
     default: throw Object.assign(new Error(`unknown tool: ${name}`), { rpc: -32602 });
   }
 }

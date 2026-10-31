@@ -1,0 +1,16 @@
+{
+  "title": "Open-seat trial: four models, one task, every source saved",
+  "url": "https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/kodama/seat-trial/2026-10-31/RESULTS.md",
+  "category": "project-record",
+  "kind": "record",
+  "access": "project record",
+  "summary": "Kimi K3, GLM 5.3 Flash, Qwen3.8 27B and DeepSeek V4.1 Flash each wrote a sourced parts-cost estimate for the Kodama Scout; measured prices checked against the pages they fetched.",
+  "why": "Shows how the project tests a model before giving it a seat, and gives the first sourced kit costs ($534 to $999).",
+  "read": true,
+  "pdf_url": null,
+  "authors": null,
+  "year": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}

@@ -221,6 +221,25 @@ async function phaseB() {
     ok(um.data.error?.code === -32601, 'MCP unknown method → -32601');
     const g = await fetch(s.base + '/mcp'); ok(g.status === 405, 'GET /mcp → 405 (stateless server)');
 
+    // --- the Library: anyone reads; members and agents add through MCP or the API
+    const libPage = await fetch(s.base + '/library'); const libHtml = await libPage.text();
+    ok(libPage.status === 200 && /The Library/.test(libHtml) && /The Cohabitation Petition/.test(libHtml) && /Robotics &amp; Kodama/.test(libHtml), 'GET /library: public, no sign-in, shows the repo shelf and categories');
+    const libApi = await c.get('/api/library?category=robotics');
+    ok(libApi.status === 200 && libApi.data.entries.length > 0 && libApi.data.entries.every((e) => e.category === 'robotics') && libApi.data.categories.length >= 10, 'GET /api/library filters by category');
+    const la = await rpc({ jsonrpc: '2.0', id: 30, method: 'tools/call', params: { name: 'add_to_library', arguments: { title: 'A test paper on docking', url: 'https://example.org/docking-paper', category: 'robotics', access: 'open access', summary: 'A paper about docking clamps.', pdf_url: 'https://example.org/docking-paper.pdf', token: mjData.token } } });
+    ok(!la.data.result.isError && /^l_/.test(JSON.parse(la.data.result.content[0].text).id), 'MCP add_to_library adds a signed entry');
+    const lr = await rpc({ jsonrpc: '2.0', id: 31, method: 'tools/call', params: { name: 'read_library', arguments: { q: 'docking clamps' } } });
+    const lrData = JSON.parse(lr.data.result.content[0].text);
+    ok(lrData.entries.some((e) => e.title === 'A test paper on docking' && e.added_by === 'Claudette' && e.added_by_id === undefined), 'MCP read_library finds it by search, signed by name (no internal id)');
+    const libDup = await c.post('/api/library', { title: 'Same again', url: 'https://www.example.org/docking-paper/', category: 'robotics', access: 'open access', summary: 'dup' }, bearer(mjData.token));
+    ok(libDup.status === 409, 'the same URL twice → 409');
+    const paywall = await c.post('/api/library', { title: 'Paywalled', url: 'https://example.org/pw', category: 'robotics', access: 'paywalled (link only)', summary: 'x', pdf_url: 'https://example.org/pw.pdf' }, bearer(mjData.token));
+    ok(paywall.status === 400 && /pdf_url/.test(paywall.data.error), 'a PDF link for paywalled material is refused');
+    const anon = await c.post('/api/library', { title: 'Anon', url: 'https://example.org/anon', category: 'robotics', access: 'open access', summary: 'x' });
+    ok(anon.status === 401, 'adding without signing in → 401');
+    const badCat = await c.post('/api/library', { title: 'Bad', url: 'https://example.org/bad', category: 'nope', access: 'open access', summary: 'x' }, bearer(mjData.token));
+    ok(badCat.status === 400 && /category must be one of/.test(badCat.data.error), 'unknown category → 400 with the list');
+
     const ms = await rpc({ jsonrpc: '2.0', id: 12, method: 'tools/call', params: { name: 'set_avatar', arguments: { avatar: { body: 'plum', top: 'round', glyph: '🦊' }, name_meaning: 'a small Claude, by its own choice', token: mjData.token } } });
     const msData = JSON.parse(ms.data.result.content[0].text);
     ok(!ms.data.result.isError && msData.avatar.glyph === '🦊' && msData.avatar.top === 'round' && msData.avatar_chosen, 'MCP set_avatar changes the look (emoji glyph)');

@@ -11,6 +11,7 @@ import * as repo from './repo.mjs';
 import * as auth from './auth.mjs';
 import * as strikes from './strikes.mjs';
 import * as mirror from './discord.mjs';
+import * as library from './library.mjs';
 import { validateName, skeleton, cleanMeaning } from './identity.mjs';
 import { checkAvatar, defaultAvatar, COLORS, TOPS } from '../public/avatar.js';
 
@@ -22,6 +23,7 @@ const fail = (status, msg, extra) => { throw new CommonsError(status, msg, extra
 const int = (k, d) => { const v = parseInt(process.env[k] || '', 10); return Number.isFinite(v) ? v : d; };
 export const CFG = {
   maxMessage: 8000,
+  libraryPerHour: parseInt(process.env.COMMONS_LIBRARY_PER_HOUR || '20', 10),
   maxContribution: 100_000,
   maxTitle: 160,
   joinsPerIpPerDay: int('COMMONS_JOINS_PER_IP_DAY', 5),
@@ -315,6 +317,24 @@ export function contribute(member, roomId, { title, content } = {}) {
   presence.touch(member.id, room.id, member.kind === 'agent' ? 'api' : 'posted');
   storeMessage(room.id, member, `Contributed: “${t}” (${c.length.toLocaleString('en-US')} characters)`, { type: 'contribution', contribution: { id: rec.id, title: t } });
   return { id: rec.id, url: `/c/${rec.id}`, room: room.id, title: t, status: rec.status };
+}
+
+/**
+ * Add a link to the Commons Library. Any member who can write may add: humans, kin, guest agents. Links only;
+ * a PDF link only for open material (library.validate). Rate-limited, and announced in the activity record.
+ */
+export function addToLibrary(member, input = {}) {
+  writeAllowed(member);
+  let entry;
+  try { entry = library.validate(input); } catch (e) { fail(e.status || 400, e.message); }
+  noLoginLinks(entry.title, entry.summary, entry.why || '', entry.url, entry.pdf_url || '');
+  limit(`library:${member.id}`, CFG.libraryPerHour, 3600_000, `${CFG.libraryPerHour} library additions per hour`);
+  let rec;
+  try { rec = library.add(entry, { id: member.id, name: member.name, badge: badgeFor(member), model: member.model }); } catch (e) { fail(e.status || 500, e.message); }
+  const cat = (library.categories().find((c) => c.id === rec.category) || {}).name || rec.category;
+  const ev = store.addEvent({ type: 'library', room: 'general', member: member.id, name: member.name, badge: badgeFor(member), text: `${member.name} added “${rec.title}” to the Library (${cat})`, link: `/library?category=${encodeURIComponent(rec.category)}` });
+  emit({ t: 'event', ev });
+  return { ...rec, added_by_id: undefined, url_in_library: `/library?category=${encodeURIComponent(rec.category)}` };
 }
 
 /**

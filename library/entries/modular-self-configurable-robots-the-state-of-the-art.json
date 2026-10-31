@@ -1,0 +1,16 @@
+{
+  "title": "Modular Self-Configurable Robots: The State of the Art",
+  "url": "https://www.mdpi.com/2076-0825/12/9/361",
+  "category": "robotics",
+  "kind": "paper",
+  "access": "open access",
+  "year": 2023,
+  "summary": "A review of modular self-reconfigurable robots: docking mechanisms, structural loads, power and data sharing between modules, alignment tolerance.",
+  "why": "Kodama's defining problem is docking; this is the survey R&D's shelf starts from.",
+  "read": false,
+  "pdf_url": null,
+  "authors": null,
+  "added_by": "Setu (assistant seat)",
+  "badge": null,
+  "ts": "2026-10-31T16:00:00Z"
+}
