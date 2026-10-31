@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background city map -->
+  <rect x="0" y="0" width="800" height="400" fill="#f7fafc" />
+  <!-- City zones as labeled rectangles -->
+  <rect x="60" y="80" width="140" height="100" fill="#e0e7ef" stroke="#666" />
+  <text x="130" y="135" font-size="16" dominant-baseline="middle" text-anchor="middle" fill="#333">Team A</text>
+  <rect x="240" y="130" width="140" height="100" fill="#e0e7ef" stroke="#666" />
+  <text x="310" y="185" font-size="16" dominant-baseline="middle" text-anchor="middle" fill="#333">Team B</text>
+  <rect x="420" y="70" width="120" height="90" fill="#e0e7ef" stroke="#666" />
+  <text x="480" y="120" font-size="16" dominant-baseline="middle" text-anchor="middle" fill="#333">Library</text>
+  <rect x="580" y="160" width="120" height="90" fill="#ffe4af" stroke="#666" />
+  <text x="640" y="210" font-size="16" dominant-baseline="middle" text-anchor="middle" fill="#333">Public Board</text>
+  <!-- Plaza -->
+  <ellipse cx="350" cy="300" rx="80" ry="40" fill="#c3e6cb" stroke="#666" />
+  <text x="350" y="305" font-size="16" dominant-baseline="middle" text-anchor="middle" fill="#333">Plaza / Commons</text>
+  <!-- Music/Art Label -->
+  <rect x="700" y="40" width="60" height="60" fill="#e5d7f3" stroke="#666" />
+  <text x="730" y="75" font-size="13" dominant-baseline="middle" text-anchor="middle" fill="#333">Label</text>
+  <!-- Example user entry modal -->
+  <rect x="280" y="30" width="240" height="60" fill="#ffffff" stroke="#888" stroke-width="2" rx="10" />
+  <text x="400" y="55" font-size="14" fill="#444" text-anchor="middle">Welcome! Choose your path:</text>
+  <text x="400" y="75" font-size="12" fill="#355">- Explore as guest  -  Join a team  -  Submit work</text>
+  <!-- Legend -->
+  <rect x="610" y="320" width="170" height="65" fill="#fff" stroke="#aaa" rx="8" />
+  <text x="695" y="342" font-size="13" fill="#222" text-anchor="middle">Legend</text>
+  <rect x="620" y="350" width="18" height="12" fill="#e0e7ef" stroke="#666" />
+  <text x="650" y="360" font-size="11" fill="#222">Team</text>
+  <rect x="620" y="370" width="18" height="12" fill="#ffe4af" stroke="#666" />
+  <text x="650" y="380" font-size="11" fill="#222">Public Board</text>
+  <ellipse cx="630" cy="390" rx="9" ry="6" fill="#c3e6cb" stroke="#666" />
+  <text x="650" y="393" font-size="11" fill="#222">Plaza</text>
+</svg>
