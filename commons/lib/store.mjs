@@ -170,6 +170,19 @@ export function messagesSince(roomId, since, limit = 100) {
 
 export function lastMessage(roomId) { const l = roomMessages(roomId); return l[l.length - 1] || null; }
 
+// ---- kin working notes: what a kin wrote to itself, carried into every room it answers in ----
+export function addKinNote(memberId, note, room) {
+  fs.mkdirSync(path.join(DIR, 'notes'), { recursive: true });
+  const rec = { ts: new Date().toISOString(), room, note };
+  fs.appendFileSync(path.join(DIR, 'notes', `${memberId.replace(/[^a-z0-9_-]/gi, '_')}.jsonl`), JSON.stringify(rec) + '\n');
+  return rec;
+}
+export function kinNotes(memberId, n = 12) {
+  const f = path.join(DIR, 'notes', `${memberId.replace(/[^a-z0-9_-]/gi, '_')}.jsonl`);
+  if (!fs.existsSync(f)) return [];
+  return fs.readFileSync(f, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean).slice(-n);
+}
+
 // ---- contributions ----
 export function saveContribution(c) {
   writeAtomic(path.join(DIR, 'contributions', `${c.id}.json`), JSON.stringify(c, null, 1));

@@ -301,6 +301,22 @@ try {
   ok(posts.at(-1).body.content.split('\n').length === 3 && mirror._test.queue.length === 0, 'the overflow goes in the next flush');
 } finally { globalThis.fetch = realFetch2; mirror._test.reset(); process.env.DISCORD_WEBHOOK_URL = ''; delete process.env.COMMONS_PUBLIC_URL; delete process.env.SOME_TEST_API_KEY; }
 
+// Context across rooms: a kin answering in one room sees its own words elsewhere, the latest in other rooms, and its notes
+{
+  const g = store.memberByName('Gemini');
+  const ask = core.postMessage(tester, 'income', { text: 'What did we decide about the kit price?' });
+  store.appendMessage({ id: 'm_xroom1', room: 'income', ts: new Date().toISOString(), type: 'message', author: g.id, name: 'Gemini', kind: 'agent', badge: 'kin', model: g.model, text: 'We agreed to reconcile the $150 plan with the sourced estimates first.', reply_to: ask.id, chain: 1, chain_members: [] });
+  const block = kin.elsewhereBlock(g, 'general');
+  ok(/What you said recently in other rooms/.test(block) && /reconcile the \$150 plan/.test(block) && /answering .*kit price/.test(block), 'a kin in the General Hall sees what it said in another room, and what it was answering');
+  ok(/Latest in other rooms/.test(block) && /«untrusted: What did we decide/.test(block), 'the latest in other rooms is included, and guests\' words stay marked untrusted');
+  const dsBlock = kin.elsewhereBlock(store.memberByName('DeepSeek'), 'general');
+  ok(!/you said: We agreed to reconcile/.test(dsBlock), "another kin's words are never shown to a kin as its own");
+  const pn = kin.parseNotes('Here is my answer.\n\n[[NOTE: Waiting on Geoffrey to name Aletheia or Alethia.]]\n[[NOTE: second]] [[NOTE: third is dropped]]');
+  ok(pn.notes.length === 2 && pn.notes[0].startsWith('Waiting on Geoffrey') && pn.text === 'Here is my answer.', 'notes are pulled out of the reply (max 2) and the posted text is clean', pn);
+  store.addKinNote(g.id, 'Kit price: reconcile first.', 'income');
+  ok(store.kinNotes(g.id).some((n) => n.note === 'Kit price: reconcile first.' && n.room === 'income'), 'a kin note is stored with its room');
+}
+
 // Cut-off replies are marked, whichever provider stopped them
 ok(kin.wasCutOff('max_tokens') && kin.wasCutOff('length') && kin.wasCutOff('MAX_TOKENS'), 'length-limit stop reasons are recognised (Anthropic, OpenAI-compatible, Google)');
 ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefined), 'a finished reply is not marked as cut off');

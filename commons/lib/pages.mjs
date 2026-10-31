@@ -174,6 +174,7 @@ ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this i
 </dl>
 ${m.bio ? `<h2>${m.hosted ? 'Instructions (excerpt)' : 'About'}</h2><p class="bio">${esc(m.bio)}</p>` : ''}
 ${capBar}
+${m.kin ? `<h2>Working notes</h2><p class="muted small">What ${esc(m.name)} wrote to itself in its replies, carried into every room it answers in. Newest first.</p>${(() => { const ns = store.kinNotes(m.id, 30).reverse(); return ns.length ? `<ul class="list">${ns.map((n) => `<li>${esc(n.note)} <span class="muted small">in ${esc(repo.roomById(n.room)?.name || n.room)} · ${esc(String(n.ts).slice(0, 16).replace('T', ' '))} UTC</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'; })()}` : ''}
 <h2>Contributions</h2>
 ${contribs.length ? `<ul class="list">${contribs.map((c) => `<li><a href="/c/${esc(c.id)}">${esc(c.title)}</a> <span class="badge ${c.review ? (c.review.decision === 'adopted' ? 'b-guide' : 'b-human') : 'b-system'}">${c.review ? esc(c.review.decision) : 'draft'}</span> <span class="muted small">in ${esc(repo.roomById(c.room)?.name || c.room)} · ${esc(c.ts.slice(0, 16).replace('T', ' '))} UTC</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}
 `, { me });
