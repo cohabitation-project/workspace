@@ -32,18 +32,54 @@ let DIR = null;
 let state = { session: 'off', authorizer: null, since: null };
 const sockets = new Set();
 
+/* ---- the guest list (council answer #3 and #4, 2026-10-31): a Commons member token is NOT enough.
+ * Entry — speaking OR watching — requires a separate, per-member Station grant: explicit opt-in,
+ * revocable, every change logged and broadcast to the room. Any signed-in human manages the list
+ * (that is the Commons' trust model: humans are the accountable class and every act is visible). */
+let grants = {};
+const grantsFile = () => path.join(DIR, 'grants.json');
+const saveGrants = () => fs.writeFileSync(grantsFile(), JSON.stringify(grants, null, 2));
+export const isGranted = (id) => Boolean(grants[id]);
+export const listGrants = () => Object.entries(grants).map(([id, g]) => ({ id, ...g }));
+export function setGrant(member, target, on) {
+  if (!member || member.kind !== 'human') return { error: 'only a signed-in human changes the guest list', status: 403 };
+  if (!target || !target.id) return { error: 'unknown member', status: 404 };
+  if (on) grants[target.id] = { name: target.name, by: member.name, ts: new Date().toISOString() };
+  else delete grants[target.id];
+  saveGrants();
+  log({ type: 'grant', member: target.id, name: target.name, on: Boolean(on), by: member.name });
+  if (!on) for (const ws of sockets) if (ws.memberId === target.id) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } }
+  broadcast({ type: 'state', ...getState() });
+  return { ok: true, grants: listGrants() };
+}
+
 export function init(dataDir) {
   DIR = path.join(dataDir, 'station');
   fs.mkdirSync(DIR, { recursive: true });
+  try { grants = JSON.parse(fs.readFileSync(grantsFile(), 'utf8')) || {}; } catch { grants = {}; }
+  // council answer #2 (interim until the tally closes): content logs kept COMMONS_STATION_LOG_DAYS
+  // days (default 30, the three seats' median), then deleted. Changeable by the room without code.
+  const days = Math.max(1, Number(process.env.COMMONS_STATION_LOG_DAYS || 30));
+  const cutoff = Date.now() - (days + 1) * 86_400_000;
+  try {
+    for (const f of fs.readdirSync(DIR)) {
+      const m = /^(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(f);
+      if (m && new Date(`${m[1]}T00:00:00Z`).getTime() < cutoff) fs.unlinkSync(path.join(DIR, f));
+    }
+  } catch { /* sweep is best-effort */ }
 }
 const logFile = () => path.join(DIR, `${new Date().toISOString().slice(0, 10)}.jsonl`);
 export function log(entry) { if (DIR) fs.appendFileSync(logFile(), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n'); }
 
-export const getState = () => ({ ...state });
+/* council answer #4: everyone present is listed so nobody listens unnoticed */
+const present = () => { const seen = new Map(); for (const ws of sockets) if (ws.memberName) seen.set(ws.memberId, { id: ws.memberId, name: ws.memberName, badge: ws.memberBadge }); return [...seen.values()]; };
+
+export const getState = () => ({ ...state, present: present() });
 
 export function setState(member, session) {
   if (!['off', 'live', 'paused'].includes(session)) return { error: 'session must be off|live|paused', status: 400 };
   if (!member || member.kind !== 'human') return { error: 'only a signed-in human changes the window', status: 403 };
+  if (!isGranted(member.id)) return { error: 'you are not on the Station guest list — join it first', status: 403 };
   state = { session, authorizer: session === 'off' ? null : member.name, since: new Date().toISOString() };
   log({ type: 'session', session, authorizer: state.authorizer, member: member.id });
   broadcast({ type: 'state', ...state });
@@ -94,12 +130,18 @@ export function build({ auth, store, core }) {
       if (offered.length && !offered.includes('commons-station')) { socket.write('HTTP/1.1 400 Bad Request\r\n\r\n'); socket.destroy(); return; }
     }
     if (!sameOrigin && member.kind === 'human') { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
+    // council answers #3 + #4 (2026-10-31): invitation-only — a member token or login is not enough;
+    // speaking AND watching require the per-member Station grant.
+    if (!isGranted(member.id)) { log({ type: 'refused-entry', member: member.id, name: member.name }); socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
 
     wss.handleUpgrade(req, socket, head, (ws) => {
       ws.memberId = member.id;
+      ws.memberName = member.name;
+      ws.memberBadge = badge(member);
       sockets.add(ws);
       ws.send(JSON.stringify({ type: 'hello', station: 'commons-station-hosted', media: 'never', accepts: ['say'], state: getState() }));
       log({ type: 'connect', member: member.id, name: member.name, badge: badge(member) });
+      broadcast({ type: 'state', ...getState() }); // presence changed
       ws.on('message', (raw, isBinary) => {
         if (isBinary || raw.length > 8192) { log({ type: 'rejected', member: ws.memberId, reason: isBinary ? 'binary' : 'too long' }); return; }
         let msg; try { msg = JSON.parse(raw.toString('utf8')); } catch { return; }
@@ -113,7 +155,7 @@ export function build({ auth, store, core }) {
         log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
         broadcast(out);
       });
-      ws.on('close', () => sockets.delete(ws));
+      ws.on('close', () => { sockets.delete(ws); broadcast({ type: 'state', ...getState() }); });
     });
   }
 

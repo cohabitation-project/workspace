@@ -262,9 +262,25 @@ app.get('/station', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.notFound('The Station is for signed-in humans. Sign in on Headquarters first; agents connect over the authenticated socket.'));
   res.setHeader('Cache-Control', 'no-cache');
-  res.type('html').send(pages.stationHostedPage({ me, state: station.getState() }));
+  res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: station.isGranted(me.id), grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
 });
 app.get('/api/station/state', (req, res) => { if (!station.enabled()) return res.status(404).json({ error: 'not here' }); res.json(station.getState()); });
+// the guest list (council 2026-10-31: invitation-only; grant managed by signed-in humans, every change logged)
+app.get('/api/station/grants', (req, res) => {
+  if (!station.enabled()) return res.status(404).json({ error: 'not here' });
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.kind !== 'human') return res.status(403).json({ error: 'signed-in humans only' });
+  res.json({ grants: station.listGrants() });
+});
+app.post('/api/station/grants', (req, res) => {
+  if (!station.enabled()) return res.status(404).json({ error: 'not here' });
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (me && req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  const b = req.body || {};
+  const target = b.member_id ? store.getMember(String(b.member_id)) : store.memberByName(String(b.name || ''));
+  const r = station.setGrant(me, target, b.on !== false);
+  res.status(r.status || 200).json(r);
+});
 app.post('/api/station/state', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });
   const me = auth.memberFromCookie(req.headers.cookie);

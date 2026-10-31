@@ -54,9 +54,23 @@ const tryWs = (opts) => new Promise((res) => {
   const agentToken = (await aj.json()).token;
   ok('agent joined with a token', !!agentToken);
 
-  const page = await fetch(`${B}/station`, { headers: { Cookie: humanCookie } });
-  ok('signed-in human: /station is 200', page.status === 200);
-  ok('page says text-only, no camera and no microphone', /no camera and no microphone/i.test(await page.text()));
+  // ---- invitation-only (council 2026-10-31): no grant, no entry — not even to watch
+  let page = await fetch(`${B}/station`, { headers: { Cookie: humanCookie } });
+  ok('signed-in human WITHOUT a grant sees the join screen, not the room', page.status === 200 && /invitation-only/i.test(await page.text()));
+  ok('ungranted human cookie socket refused', (await tryWs({ headers: { Cookie: humanCookie } })).status === 'refused');
+  ok('ungranted agent token socket refused', (await tryWs({ protocols: ['commons-station', `commons-token.${agentToken}`] })).status === 'refused');
+  const gHdr = { 'Content-Type': 'application/json', Cookie: humanCookie, 'X-Commons': '1' };
+  const gNo = await fetch(`${B}/api/station/grants`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: humanCookie }, body: JSON.stringify({ name: 'TestHuman', on: true }) });
+  ok('grant POST without X-Commons header is refused', gNo.status === 403);
+  const gAgent = await fetch(`${B}/api/station/grants`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${agentToken}` }, body: JSON.stringify({ name: 'TestAgent', on: true }) });
+  ok('an agent cannot edit the guest list', gAgent.status === 403);
+  ok('a human grants entry to themself (explicit, logged act)', (await fetch(`${B}/api/station/grants`, { method: 'POST', headers: gHdr, body: JSON.stringify({ name: 'TestHuman', on: true }) })).status === 200);
+  ok('a human grants entry to the agent', (await fetch(`${B}/api/station/grants`, { method: 'POST', headers: gHdr, body: JSON.stringify({ name: 'TestAgent', on: true }) })).status === 200);
+
+  page = await fetch(`${B}/station`, { headers: { Cookie: humanCookie } });
+  const pageText = await page.text();
+  ok('granted human: /station shows the room', page.status === 200 && /no camera and no microphone/i.test(pageText));
+  ok('shared-room banner is on the page (nothing private here)', /One shared room/.test(pageText));
   ok('CSP unchanged on the station page', /script-src 'self'/.test(page.headers.get('content-security-policy') || ''));
 
   ok('unauthenticated socket refused', (await tryWs()).status === 'refused');
@@ -69,6 +83,10 @@ const tryWs = (opts) => new Promise((res) => {
   ok('agent token socket connects', agent.status === 'open');
   ok('handshake echoes only the harmless protocol, never the credential', agent.status === 'open' && agent.w.protocol === 'commons-station');
   ok('token offered without the harmless protocol is refused (nothing echoed)', (await tryWs({ protocols: `commons-token.${agentToken}` })).status === 'refused');
+
+  // presence: everyone connected is listed, so nobody listens unnoticed
+  await sleep(400);
+  ok('presence lists everyone connected', [...human.got, ...agent.got].some((m) => (m.type === 'state' || m.type === 'hello') && ((m.state && m.state.present) || m.present || []).some((x) => x.name === 'TestAgent') && ((m.state && m.state.present) || m.present || []).some((x) => x.name === 'TestHuman')));
 
   // CSRF negatives on the state endpoint (Aletheia's review)
   const noHdr = await fetch(`${B}/api/station/state`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: humanCookie }, body: JSON.stringify({ session: 'live' }) });
@@ -115,6 +133,12 @@ const tryWs = (opts) => new Promise((res) => {
   agent.w.send(Buffer.from([1, 2, 3, 4]));
   await sleep(300);
   ok('binary frames are dropped', !human.got.some((m) => m.type === 'say'));
+
+  // revocation is immediate: the revoked member's socket is closed by the server
+  await fetch(`${B}/api/station/grants`, { method: 'POST', headers: gHdr, body: JSON.stringify({ name: 'TestAgent', on: false }) });
+  await sleep(500);
+  ok('revoking a grant closes that member\'s socket at once', agent.w.readyState === WebSocket.CLOSING || agent.w.readyState === WebSocket.CLOSED);
+  ok('revoked agent cannot reconnect', (await tryWs({ protocols: ['commons-station', `commons-token.${agentToken}`] })).status === 'refused');
 
   human.w.close(); agent.w.close(); p.kill(); await sleep(300);
 }

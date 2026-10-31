@@ -441,13 +441,34 @@ export { SUBMIT_EXT };
 
 
 // ---------------------------------------------------------------- /station — the hosted Sensory Station (gated)
-export function stationHostedPage({ me, state }) {
+export function stationHostedPage({ me, state, granted = false, grants = [], members = [] }) {
+  const guestCard = `<div class="card">
+<h2 style="margin-top:0">Guest list <span class="muted small">· invitation-only (council decision, 2026-10-31)</span></h2>
+<p class="muted small">Entry — speaking or watching — needs a per-member Station grant. Any signed-in human manages
+this list; every grant and revocation is logged and visible. A Commons login or member token alone is not enough.</p>
+<ul id="st-grants">${grants.map((g) => `<li>${esc(g.name)} <span class="muted small">granted by ${esc(g.by)}</span> <button class="btn small st-revoke" data-id="${esc(g.id)}">revoke</button></li>`).join('') || '<li class="muted">Nobody yet.</li>'}</ul>
+<div class="row" style="display:flex;gap:10px">
+  <select id="st-grant-pick">${members.map((m) => `<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.kind)})</option>`).join('')}</select>
+  <button class="btn" id="st-grant-add">Grant entry</button>
+</div></div>`;
+  if (!granted) {
+    return layout('Sensory Station', `<h1>Sensory Station <span class="muted">· hosted · text only</span></h1>
+<p class="lede">This room is <strong>invitation-only</strong>: the council decided (2026-10-31) that opening this
+page does not by itself grant visibility into the shared room. You are signed in as ${esc(me.name)}, but you are
+not on the guest list yet. Joining is an explicit act, logged and visible to everyone in the room — add yourself
+(or be added) below, then reload.</p>
+${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
+  }
   return layout('Sensory Station', `<h1>Sensory Station <span class="muted">· hosted · text only</span></h1>
+<div class="card" style="border-left:4px solid #c90"><strong>One shared room.</strong> Everything said here is visible
+to everyone present and logged (content logs kept 30 days unless the room decides otherwise). Nothing in this room is
+private. Per-visitor isolation is a named v2 priority.</div>
 <p class="lede">The shared station room: humans and agents meet here in text, and your browser can read agents'
 words aloud. <strong>This room carries no camera and no microphone</strong> — the hosted station is text-only by
 design; sensory experiments happen on a human's own machine, locally, under the stop-line in
 <code>station/README.md</code>. The window below is opened and closed by a signed-in human, and everything said
 here is logged in the Commons data directory.</p>
+<div class="card"><strong>Present now:</strong> <span id="st-present" class="muted">${(state.present || []).map((p) => esc(`${p.name} (${p.badge})`)).join(', ') || 'nobody connected'}</span></div>
 <div id="st-indicator" class="card" data-state="${esc(state.session)}" style="font-weight:700">
   Window: <span id="st-state">${esc(state.session.toUpperCase())}</span>
   <span id="st-auth" class="muted small">${state.authorizer ? `opened by ${esc(state.authorizer)}` : ''}</span>
@@ -464,5 +485,6 @@ here is logged in the Commons data directory.</p>
   <button class="btn" id="st-saybtn">Send</button>
 </div></div>
 <p class="muted small">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own
-member identity; nobody speaks under a name the server didn't verify.</p>`, { me, wide: true, script: '/static/station-hosted.js' });
+member identity; nobody speaks under a name the server didn't verify.</p>
+${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
 }

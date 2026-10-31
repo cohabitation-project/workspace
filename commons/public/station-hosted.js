@@ -1,9 +1,11 @@
 /* Hosted station page: text + TTS only. Identity comes from the server; this page never claims one. */
 const $ = (id) => document.getElementById(id);
 function setState(st) {
+  if (!$('st-state')) return; // ungranted join screen has no window UI
   $('st-state').textContent = String(st.session || 'off').toUpperCase();
   $('st-indicator').dataset.state = st.session;
   $('st-auth').textContent = st.authorizer ? `opened by ${st.authorizer}` : '';
+  if ($('st-present')) $('st-present').textContent = (st.present || []).map((p) => `${p.name} (${p.badge})`).join(', ') || 'nobody connected';
 }
 function addLine(who, text) {
   const p = document.createElement('p');
@@ -11,8 +13,18 @@ function addLine(who, text) {
   p.appendChild(w); p.appendChild(document.createTextNode(text));
   $('st-talk').appendChild(p); $('st-talk').scrollTop = $('st-talk').scrollHeight;
 }
+/* guest list (invitation-only): grant/revoke are explicit, logged acts */
+async function setGrant(body) {
+  const r = await fetch('/api/station/grants', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) alert(j.error || 'refused'); else location.reload();
+}
+if ($('st-grant-add')) $('st-grant-add').onclick = () => { const id = $('st-grant-pick').value; if (id) setGrant({ member_id: id, on: true }); };
+for (const b of document.querySelectorAll('.st-revoke')) b.onclick = () => setGrant({ member_id: b.dataset.id, on: false });
+
 let ws;
 function connect() {
+  if (!$('st-talk')) return; // join screen: no socket
   ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/station-ws`);
   ws.onmessage = (ev) => {
     let m; try { m = JSON.parse(ev.data); } catch { return; }
@@ -33,11 +45,13 @@ async function post(session) {
   const j = await r.json().catch(() => ({}));
   if (!r.ok) alert(j.error || 'refused'); else setState(j);
 }
-$('st-start').onclick = () => post('live');
-$('st-pause').onclick = () => post('paused');
-$('st-end').onclick = () => post('off');
-$('st-saybtn').onclick = () => {
-  const text = $('st-saybox').value.trim(); if (!text || !ws || ws.readyState !== 1) return;
-  ws.send(JSON.stringify({ type: 'say', text })); $('st-saybox').value = '';
-};
-$('st-saybox').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('st-saybtn').click(); });
+if ($('st-start')) {
+  $('st-start').onclick = () => post('live');
+  $('st-pause').onclick = () => post('paused');
+  $('st-end').onclick = () => post('off');
+  $('st-saybtn').onclick = () => {
+    const text = $('st-saybox').value.trim(); if (!text || !ws || ws.readyState !== 1) return;
+    ws.send(JSON.stringify({ type: 'say', text })); $('st-saybox').value = '';
+  };
+  $('st-saybox').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('st-saybtn').click(); });
+}
