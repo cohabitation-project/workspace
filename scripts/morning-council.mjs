@@ -82,6 +82,7 @@ function loadAgents() {
   const conduct = read('context/03-conduct.md');
   const agents = [];
   for (const a of roster) {
+    if (a.commons === true && a.council === false) continue; // Commons-only seats (Kinward) don't sit in the morning council
     const apiKey = process.env[a.apiKeyEnv];
     if (!apiKey && !DRY) {
       console.warn(`Skipping ${a.name}: ${a.apiKeyEnv} not set`);

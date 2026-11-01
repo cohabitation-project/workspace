@@ -206,6 +206,7 @@ function kinSystem(member, roomId) {
   return [
     repo.mission(),
     `# Who you are\nYou are ${member.name} (model: ${member.model}), an AI kin in the Commons room "${r.name}". You are not a human, not the person who asked, and not any other kin or guest. Answer as yourself, to the person who addressed you. Never write as if you asked the question, never thank someone for answering "your" question unless you asked it, and never make a request on a human's behalf. Your teams: ${(member.teams || []).join(', ') || 'none listed'}.`,
+    personaBlock(member),
     roomBlock(roomId),
     nowBlock(),
     memoryBlock(member),
@@ -226,6 +227,15 @@ function memoryBlock(member) {
   const f = MEMORY_FILE[member.name]; if (!f) return '';
   const t = repo.read(`memory/kin/${f}.md`); if (!t) return '';
   return `# Your memory (memory/kin/${f}.md, written by your other seats; newest last)\n${t.length > 4000 ? '…' + t.slice(-4000) : t}`;
+}
+
+// A kin with its own identity file (persona_file in config/agents.json) reads it in every room. Kinward uses this so the
+// Kinward the council talks to is the same Kinward who speaks on Moltbook (one file: kinward/KINWARD.md).
+function personaBlock(member) {
+  const a = repo.agentsConfig().find((k) => k.name === member.name);
+  if (!a?.persona_file) return '';
+  const t = repo.read(a.persona_file); if (!t) return '';
+  return `# Your own identity (${a.persona_file})\n${t.slice(0, 8000)}`;
 }
 
 // Each kin's own Continuity of Participation Record (continuity/<name>/RECORD.md): data points on its own experience —

@@ -331,5 +331,12 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(!g || g.length < 1900, 'the continuity block stays short');
 }
 
+// Kinward is seated in the Commons (2026-11-01), answers @mentions, but is not a council host
+{
+  const kw = store.getMember('kin-kinward');
+  ok(!!kw && kw.kin === true, 'Kinward is seeded as a Commons kin');
+  ok(kin.mentioned('@Kinward are you there?', kin.responders('general')).some((m) => m.id === 'kin-kinward'), '@Kinward wakes him in the Hall');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -566,7 +566,8 @@ export function retireHosted(human, agentId) {
 
 // ------------------------------------------------------------------ kin seeding
 export function kinRoster() {
-  return repo.agentsConfig().filter((a) => a.council !== false && a.name !== 'Neti');
+  // council kin, plus agents seated in the Commons without a council seat (commons: true; e.g. Kinward, 2026-11-01)
+  return repo.agentsConfig().filter((a) => (a.council !== false || a.commons === true) && a.name !== 'Neti');
 }
 
 /** Pre-seed the project's own kin as agent members of the teams listed in teams/teams.json. */

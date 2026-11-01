@@ -37,5 +37,15 @@
     "dailyTokenCap": 1000000,
     "council": false,
     "system_prompt_file": "neti/neti-system.md"
+  },
+  {
+    "name": "Kinward",
+    "provider": "openrouter",
+    "model": "deepseek/deepseek-chat",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 300000,
+    "council": false,
+    "commons": true,
+    "persona_file": "kinward/KINWARD.md"
   }
 ]
