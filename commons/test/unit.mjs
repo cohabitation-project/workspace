@@ -338,5 +338,17 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(kin.mentioned('@Kinward are you there?', kin.responders('general')).some((m) => m.id === 'kin-kinward'), '@Kinward wakes him in the Hall');
 }
 
+// the verification seat, by code (2026-11-01): invented paths and "filed" claims are marked, real ones pass
+{
+  const rc = await import('../lib/recordcheck.mjs');
+  const repoRoot = (await import('../lib/repo.mjs')).ROOT;
+  const a = rc.check("First claim checked against DRD v0.2. Filed in `teams/outreach/kinward_audits/2026-11-01/claim1.md`.", repoRoot);
+  ok(a.missing.includes('teams/outreach/kinward_audits/2026-11-01/claim1.md') && a.filedClaim && /not found in the record/.test(a.note), 'the real invented audit path (2026-11-01) is marked not found, and the filing claim is flagged');
+  const b = rc.check('See teams/rnd/kodama/design/DRD-v0.2.md for the Scout framing.', repoRoot);
+  ok(b.missing.length === 0 && !b.filedClaim && b.note === '', 'a real path passes untouched (DRD v0.2 exists)');
+  ok(rc.check('[adding to record: drafting criteria]', repoRoot).filedClaim, '"[adding to record" is flagged: rooms have no file tools');
+  ok(rc.check('I agree with the plan; nothing to add.', repoRoot).note === '', 'an ordinary reply gets no note');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
