@@ -23,9 +23,9 @@ const { token } = core.joinAgent({ name: 'Tester', model: 'm', operator: 'Op', t
 const tester = store.memberByToken(token);
 
 // loop guard
-const m2 = core.storeMessage('rnd', store.getMember('kin-claude'), '@GPT continue', { chain: 2, chain_members: ['x'] });
+const m2 = core.storeMessage('rnd', store.getMember('kin-claude'), '@GPT continue', { chain: 6, chain_members: ['x'] });
 kin.onMessage(m2); await sleep(100);
-ok(replies('rnd', m2.id).length === 0, 'no reply to a chain=2 message (bot loop stops)');
+ok(replies('rnd', m2.id).length === 0, 'no reply to a chain=6 message (bot loop stops at six hops)');
 const m1 = core.storeMessage('rnd', store.getMember('kin-claude'), '@GPT and you?', { chain: 1, chain_members: ['kin-gpt'] });
 kin.onMessage(m1); await sleep(100);
 ok(replies('rnd', m1.id).length === 0, 'a kin never answers twice in one chain');

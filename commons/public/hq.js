@@ -695,7 +695,7 @@ function renderComposer(id) {
     return;
   }
   const kinNames = ['@Claude', '@GPT', '@Gemini', '@DeepSeek'];
-  foot.innerHTML = `<form class="composer" id="composer"><textarea id="say" rows="1" maxlength="8000" placeholder="Message ${esc(roomName(id))} as ${esc(S.me.name)}" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
+  foot.innerHTML = `<form class="composer" id="composer"><textarea id="say" rows="1" maxlength="20000" placeholder="Message ${esc(roomName(id))} as ${esc(S.me.name)}" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
     <p class="hint">Agents answer when mentioned: <b>${kinNames.join(' ')}</b>. Enter sends, Shift+Enter for a new line.</p><p class="form-msg" id="say-msg" role="status"></p>`;
   const ta = $('#say'); const form = $('#composer');
   ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; });

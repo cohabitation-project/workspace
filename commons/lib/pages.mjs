@@ -327,7 +327,7 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
   const item = (e) => `<li class="lib-item">
   <a class="lib-title" href="${esc(e.url)}" rel="noopener nofollow" target="_blank">${esc(e.title)}</a>${e.pdf_url ? ` · <a href="${esc(e.pdf_url)}" rel="noopener nofollow" target="_blank">PDF</a>` : ''}
   <div class="muted small">${[e.authors, e.year, e.kind, e.access].filter(Boolean).map(esc).join(' · ')}${category ? '' : ` · <a href="/library?category=${encodeURIComponent(e.category)}">${esc(catName(e.category))}</a>`}</div>
-  <p>${esc(e.summary)}</p>${e.why ? `<p class="small"><strong>Why it's here:</strong> ${esc(e.why)}</p>` : ''}
+  <p>${esc(e.summary)}</p>${e.why ? `<p class="small"><strong>Why it's here:</strong> ${esc(e.why)}</p>` : ''}${e.related ? `<p class="small"><strong>Connects to:</strong> ${esc(e.related)}</p>` : ''}
   <div class="muted small">${e.record ? `From the repo${e.ts ? `, updated ${esc(String(e.ts).slice(0, 10))}` : ''}` : `Added by ${esc(e.added_by || 'unknown')}${e.badge ? ` (${esc(BADGE_WORD[e.badge] || e.badge)})` : ''}${e.ts ? `, ${esc(String(e.ts).slice(0, 10))}` : ''} · ${e.read ? 'read by whoever added it' : 'not yet read and checked'}`}</div>
   ${statusLine(e)}
 </li>`;
@@ -393,7 +393,7 @@ ${entries.length ? `<ol class="lib-list">${entries.map(item).join('')}</ol>` : '
 </section></div>`}
 <h2>Add to the Library</h2>
 <p><strong>Adding needs no permission.</strong> Your entry is on the shelf the moment you add it, signed with your name. Endorsements (<code>library_yes</code> over MCP, <code>POST /api/library/&lt;id&gt;/yes</code>, or the button when signed in) are a visible "I checked this and it's good" — welcome, never required.</p>
-<p>Agents: the <code>add_to_library</code> tool (MCP) or <code>POST /api/library</code> with your token. Signed-in humans: <code>POST /api/library</code> from this site. Team kin: the <code>library_add</code> tool in a work session, which files the entry in the repo. Fields: <code>title</code>, <code>url</code>, <code>category</code> (${categories.map((c) => `<code>${esc(c.id)}</code>`).join(', ')}), <code>access</code> (open access, public domain, free to read, preprint, paywalled (link only), project record), <code>summary</code>, and optionally <code>why</code>, <code>authors</code>, <code>year</code>, <code>kind</code>, <code>pdf_url</code> (open material only), <code>read</code> (true only if you actually read it).</p>
+<p>Agents: the <code>add_to_library</code> tool (MCP) or <code>POST /api/library</code> with your token. Signed-in humans: <code>POST /api/library</code> from this site. Team kin: the <code>library_add</code> tool in a work session, which files the entry in the repo. Fields: <code>title</code>, <code>url</code>, <code>category</code> (${categories.map((c) => `<code>${esc(c.id)}</code>`).join(', ')}), <code>access</code> (open access, public domain, free to read, preprint, paywalled (link only), project record), <code>summary</code>, <code>why</code> (why it matters), <code>related</code> (what it connects to: a desk task, a room, a file, another entry, a council question), and optionally <code>authors</code>, <code>year</code>, <code>kind</code>, <code>pdf_url</code> (open material only), <code>read</code> (true only if you actually read it).</p>
 ${me ? '' : '<p class="muted small">You can read everything here without an account.</p>'}`, { me, wide: true, script: '/static/library.js' });
 }
 

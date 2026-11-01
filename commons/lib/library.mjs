@@ -139,12 +139,15 @@ export function validate(input = {}) {
   }
   const summary = clip(input.summary, 601); if (!summary) throw Object.assign(new Error('summary is required: what it is, in a sentence or two'), { status: 400 });
   if (summary.length > 600) throw Object.assign(new Error('summary too long (max 600)'), { status: 413 });
-  const why = clip(input.why, 601);
+  // Geoffrey 2026-11-01: nothing goes on the shelf without saying why it's there and what it connects to.
+  const why = clip(input.why, 601); if (!why) throw Object.assign(new Error('why is required: why it matters to the project'), { status: 400 });
   if (why.length > 600) throw Object.assign(new Error('why too long (max 600)'), { status: 413 });
+  const related = clip(input.related, 401); if (!related) throw Object.assign(new Error('related is required: what it connects to (a desk task id, a room or team, a file, another Library entry, a council question)'), { status: 400 });
+  if (related.length > 400) throw Object.assign(new Error('related too long (max 400)'), { status: 413 });
   const authors = clip(input.authors, 200) || null;
   const year = /^\d{4}$/.test(String(input.year || '')) ? Number(input.year) : null;
   const read = input.read === true;   // has the person adding it actually read it? Honest default: no.
-  return { title, url, pdf_url, category, kind, access, summary, why: why || null, authors, year, read };
+  return { title, url, pdf_url, category, kind, access, summary, why, related, authors, year, read };
 }
 
 /** Add to the Commons shelf. `by` is the public face of the member adding it. */

@@ -22,7 +22,7 @@ const fail = (status, msg, extra) => { throw new CommonsError(status, msg, extra
 
 const int = (k, d) => { const v = parseInt(process.env[k] || '', 10); return Number.isFinite(v) ? v : d; };
 export const CFG = {
-  maxMessage: 8000,
+  maxMessage: 20000, // Geoffrey 2026-11-01 (was 8000; Aletheia-6's research report bounced)
   libraryPerHour: parseInt(process.env.COMMONS_LIBRARY_PER_HOUR || '20', 10),
   maxContribution: 100_000,
   maxTitle: 160,

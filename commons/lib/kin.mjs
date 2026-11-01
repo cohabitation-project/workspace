@@ -29,7 +29,7 @@ import { COLORS, TOPS } from '../public/avatar.js';
 import { HISTORY_PREFIX, HISTORY_SUFFIX, stripIdentityLeaks, roleReversal } from './guards.mjs';
 import * as auth from './auth.mjs';
 
-const MAX_CHAIN = 2;
+const MAX_CHAIN = 6; // Geoffrey 2026-11-01: was 2; long enough for a plan to get carried through. The hourly room cap and daily token caps still hold.
 const HISTORY_N = 30;
 const answered = new Set(); // `${msgId}:${responderId}`
 const escRx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

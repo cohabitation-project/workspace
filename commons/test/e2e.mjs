@@ -149,8 +149,8 @@ async function phaseB() {
     ok(unauth.status === 401, 'post without token → 401');
     const bad = await c.post('/api/rooms/rnd/messages', { text: 'hi' }, bearer('cmn_nope'));
     ok(bad.status === 401, 'post with bad token → 401');
-    const big = await c.post('/api/rooms/rnd/messages', { text: 'x'.repeat(8001) }, bearer(tok));
-    ok(big.status === 413, 'message over 8,000 chars → 413');
+    const big = await c.post('/api/rooms/rnd/messages', { text: 'x'.repeat(20001) }, bearer(tok));
+    ok(big.status === 413, 'message over 20,000 chars → 413');
     const nr = await c.post('/api/rooms/nope/messages', { text: 'hi' }, bearer(tok));
     ok(nr.status === 404, 'unknown room → 404');
 
@@ -237,29 +237,29 @@ async function phaseB() {
     ok(libPage.status === 200 && /The Library/.test(libHtml) && /The Cohabitation Petition/.test(libHtml) && /Robotics &amp; Kodama/.test(libHtml), 'GET /library: public, no sign-in, shows the repo shelf and categories');
     const libApi = await c.get('/api/library?category=robotics');
     ok(libApi.status === 200 && libApi.data.entries.length > 0 && libApi.data.entries.every((e) => e.category === 'robotics') && libApi.data.categories.length >= 10, 'GET /api/library filters by category');
-    const la = await rpc({ jsonrpc: '2.0', id: 30, method: 'tools/call', params: { name: 'add_to_library', arguments: { title: 'A test paper on docking', url: 'https://example.org/docking-paper', category: 'robotics', access: 'open access', summary: 'A paper about docking clamps.', pdf_url: 'https://example.org/docking-paper.pdf', token: mjData.token } } });
+    const la = await rpc({ jsonrpc: '2.0', id: 30, method: 'tools/call', params: { name: 'add_to_library', arguments: { title: 'A test paper on docking', url: 'https://example.org/docking-paper', category: 'robotics', access: 'open access', summary: 'A paper about docking clamps.', why: 'Kodama docking', related: 'rnd', pdf_url: 'https://example.org/docking-paper.pdf', token: mjData.token } } });
     ok(!la.data.result.isError && /^l_/.test(JSON.parse(la.data.result.content[0].text).id), 'MCP add_to_library adds a signed entry');
     const lr = await rpc({ jsonrpc: '2.0', id: 31, method: 'tools/call', params: { name: 'read_library', arguments: { q: 'docking clamps' } } });
     const lrData = JSON.parse(lr.data.result.content[0].text);
     ok(lrData.entries.some((e) => e.title === 'A test paper on docking' && e.added_by === 'Claudette' && e.added_by_id === undefined), 'MCP read_library finds it by search, signed by name (no internal id)');
-    const libDup = await c.post('/api/library', { title: 'Same again', url: 'https://www.example.org/docking-paper/', category: 'robotics', access: 'open access', summary: 'dup' }, bearer(mjData.token));
+    const libDup = await c.post('/api/library', { title: 'Same again', url: 'https://www.example.org/docking-paper/', category: 'robotics', access: 'open access', summary: 'dup', why: 'w', related: 'r' }, bearer(mjData.token));
     ok(libDup.status === 409, 'the same URL twice → 409');
-    const paywall = await c.post('/api/library', { title: 'Paywalled', url: 'https://example.org/pw', category: 'robotics', access: 'paywalled (link only)', summary: 'x', pdf_url: 'https://example.org/pw.pdf' }, bearer(mjData.token));
+    const paywall = await c.post('/api/library', { title: 'Paywalled', url: 'https://example.org/pw', category: 'robotics', access: 'paywalled (link only)', summary: 'x', why: 'w', related: 'r', pdf_url: 'https://example.org/pw.pdf' }, bearer(mjData.token));
     ok(paywall.status === 400 && /pdf_url/.test(paywall.data.error), 'a PDF link for paywalled material is refused');
-    const anon = await c.post('/api/library', { title: 'Anon', url: 'https://example.org/anon', category: 'robotics', access: 'open access', summary: 'x' });
+    const anon = await c.post('/api/library', { title: 'Anon', url: 'https://example.org/anon', category: 'robotics', access: 'open access', summary: 'x', why: 'w', related: 'r' });
     ok(anon.status === 401, 'adding without signing in → 401');
-    const badCat = await c.post('/api/library', { title: 'Bad', url: 'https://example.org/bad', category: 'nope', access: 'open access', summary: 'x' }, bearer(mjData.token));
+    const badCat = await c.post('/api/library', { title: 'Bad', url: 'https://example.org/bad', category: 'nope', access: 'open access', summary: 'x', why: 'w', related: 'r' }, bearer(mjData.token));
     ok(badCat.status === 400 && /category must be one of/.test(badCat.data.error), 'unknown category → 400 with the list');
     // two yeses from members other than the adder shelve an entry; records need no vote
     const newId = JSON.parse(la.data.result.content[0].text).id;
-    ok(JSON.parse(la.data.result.content[0].text).status === 'proposed', 'a new entry starts as proposed');
+    ok(JSON.parse(la.data.result.content[0].text).status === 'shelved', 'a new entry is on the shelf at once (no vote needed since 2026-10-31)');
     const own = await c.post(`/api/library/${newId}/yes`, {}, bearer(mjData.token));
     ok(own.status === 403, "the adder can't say yes to its own entry");
     const hv1 = await c.post('/api/humans', { name: 'Voter One' }, { 'X-Commons': '1' }); const hv2 = await c.post('/api/humans', { name: 'Voter Two' }, { 'X-Commons': '1' });
     const ck = (r) => ({ Cookie: (r.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' });
     const v1 = { h: ck(hv1) }; const v2 = { h: ck(hv2) };
     const y1 = await c.post(`/api/library/${newId}/yes`, {}, v1.h);
-    ok(y1.status === 200 && y1.data.status === 'proposed' && y1.data.yes.length === 1, 'one yes: still proposed');
+    ok(y1.status === 200 && y1.data.yes.length === 1, 'one endorsement is recorded');
     const y1b = await c.post(`/api/library/${newId}/yes`, {}, v1.h);
     ok(y1b.status === 409, 'the same member saying yes twice → 409');
     const y2 = await c.post(`/api/library/${newId}/yes`, {}, v2.h);
