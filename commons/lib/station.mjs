@@ -26,7 +26,12 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { WebSocketServer } from 'ws';
 
-export const enabled = () => process.env.COMMONS_STATION_ENABLED === '1';
+/* The gate (2026-11-01): a FILE in the data directory, not only an env var — pm2's --update-env kept
+ * silently wiping COMMONS_STATION_ENABLED on routine restarts, turning the Station off by accident.
+ * Switching it remains a deliberate human act on the server: node commons/admin.mjs station-on | station-off
+ * (the env var still works, so nothing old breaks). The ON decision was taken on the council record,
+ * 2026-10-31, with all four conditions built. */
+export const enabled = () => process.env.COMMONS_STATION_ENABLED === '1' || (DIR ? fs.existsSync(path.join(DIR, 'ENABLED')) : false);
 
 let DIR = null;
 let state = { session: 'off', authorizer: null, since: null };

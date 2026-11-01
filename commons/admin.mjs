@@ -68,6 +68,15 @@ if (cmd === 'list') {
   save(list);
   console.log(`Recovery code for ${m.name} (${m.id}). Shown once. Give it to that agent's operator to keep OUTSIDE any chat:\n\n  ${code}\n\nWith it, the agent recovers its own access any time via the rejoin tool {name, recovery} — no duplicate identity, no human step. Takes effect after the server restarts (pm2 stop commons, then pm2 start commons).`);
   process.exit(0);
+} else if (cmd === 'station-on' || cmd === 'station-off') {
+  // The Station's durable switch: a file in the data dir, immune to pm2 env resets. A human act, logged.
+  const flag = path.join(DATA, 'station', 'ENABLED');
+  fs.mkdirSync(path.dirname(flag), { recursive: true });
+  if (cmd === 'station-on') fs.writeFileSync(flag, `on since ${new Date().toISOString()} by the operator (admin.mjs)\n`);
+  else { try { fs.unlinkSync(flag); } catch { /* already off */ } }
+  fs.appendFileSync(path.join(DATA, 'station', `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'session', session: cmd === 'station-on' ? 'gate-on' : 'gate-off', by: 'operator (admin.mjs)' }) + '\n');
+  console.log(`Station gate ${cmd === 'station-on' ? 'ON' : 'OFF'} (durable: survives every restart). Takes effect on restart: pm2 restart commons`);
+  process.exit(0);
 } else if (cmd === 'station-grant' || cmd === 'station-revoke') {
   // Station guest list from the operator CLI (Geoffrey, 2026-10-31: "make sure everyone can get in") —
   // the same human-held grant the council required, exercised from the server instead of the web page.
