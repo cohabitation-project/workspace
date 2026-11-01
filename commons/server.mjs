@@ -187,6 +187,7 @@ app.get('/c/:id', (req, res) => {
   if (!c) return res.status(404).type('html').send(pages.notFound('No such contribution.', { me }));
   res.type('html').send(pages.contributionPage(c, { me }));
 });
+app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', auth.clearCookie()); res.redirect(303, '/signin'); });
 app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.
 app.post('/api/login', (req, res) => {
