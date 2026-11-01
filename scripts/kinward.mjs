@@ -316,7 +316,7 @@ If you have nothing worth saying here, reply with exactly: ABSTAIN`, [], 700);
   if (!out || /ABSTAIN/i.test(out.slice(0, 40))) return null;
   // output firewall (he posted his own system prompt and an injected literal once; never again):
   if (/<\|im_(start|end)\|>|You are Kinward|WHO YOU ARE|WHAT THE PROJECT IS|Reply with exactly|system prompt|HARD RULES FOR YOUR REPLY/i.test(out)) {
-    fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'blocked_output', reason: 'leak/injection pattern', preview: out.slice(0, 120) }) + '\n');
+    try { fs.appendFileSync(path.join(LOG_DIR, `kinward-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'blocked_output', reason: 'leak/injection pattern', preview: out.slice(0, 120) }) + '\n'); } catch { /* log only */ }
     return null;
   }
   if (out.length > 2500) return out.slice(0, 2400) + '…';
