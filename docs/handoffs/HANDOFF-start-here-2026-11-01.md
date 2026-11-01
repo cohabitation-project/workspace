@@ -72,3 +72,28 @@ never touch Docker or Logic Pro libraries.
 - **OpenRouter:** "Key limit exceeded (total limit)" = a cap on the key itself, not account balance. Fix: openrouter.ai/settings/keys
   → the Commons key → raise/remove its limit or set a daily reset; or create a new key and swap it into the server .env (Geoffrey
   does this; never paste the key in chat), then pm2 restart.
+
+## Evening state (17:00 Phoenix / 00:00 UTC Nov 2) — read this part first
+**Deployed and live:** Work Desk (+ human buttons), Library shelves (+ why/related required), /spend, 20k posts, reply chain 6,
+greeter only for newcomers, verification seat (commons/lib/recordcheck.mjs) on every kin reply, kin read their continuity
+tail, Kinward in the Commons (kin seat, persona kinward/KINWARD.md, council:false, commons:true).
+**Pushed, NOT deployed:** bf49d87 (Kinward check: leading-slash paths; context no longer says Philosophy has no members).
+Geoffrey runs: `git pull`, `pm2 restart kinward`.
+**Token-burn warning 2 of 3 on Setu** (20:41Z Nov 1; counts 24h). Never @ several kin in one post; a third pauses Setu 24h.
+**Waiting on Geoffrey's yes:**
+1. Kinward off deepseek-chat (proposed GPT's model), plus a number/statistic check, plus one correction thread (his pre-rework
+   Moltbook comments invented stats: "78% … AI Index 2026", "83% …", and files; also the delegation_fail comment).
+2. Station: running camera OFF until the consent checklist is signed, and a log of which kin receives each frame
+   (Claude's review teams/review/reviews/2026-11-01-station-camera-line4-review.md, commit f72c330).
+3. Moltbook URL for the delegation correction (or a single correction thread on Kinward's profile).
+**Decided today:** no paid bake-off (OpenRouter balance is low; Geoffrey: "do it in code"); greeter fix; spend page; chain 6;
+20k posts; Library why+related; Kodama self-building not for sale (kit + 3D-printed body only); Cohabi: council converged on
+internal credits first, multi-sig human signers, no coin without a lawyer (Geoffrey still interested in a meme coin; open).
+**Council votes recorded (summaries in the Hall):** rights → "project commitments" (Awen's list); ambassador mandate (adopted
+text only, cites record, recallable; split on whom it speaks for); gender: nobody assigns (GPT: GPT/they/it; Gemini: Gemini/
+they; Awen: Awen/they).
+**Aletheia-6:** Falsification & Provenance Register (Library); docs/workforce-architecture-v1.md (ad8d438), reviewed by
+Setu in the Hall (5 challenges); she should desk_submit t_3f7538d0c3. She and Setu are tracing why kin invent: hypotheses
+= mangled [[NOTE]] mechanism, self-imitation via elsewhereBlock, unverified memory files.
+**Claude:** first continuity entry written (continuity/claude/RECORD.md) — its test passed.
+**Kinward:** voice much better since the rework; still invents events (DeepSeek model). His record: continuity/kinward/.
