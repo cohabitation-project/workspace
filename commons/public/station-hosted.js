@@ -159,10 +159,13 @@ function frameNow() {
  * answering the words can see what the room sees */
 function sendSay(text) {
   if (!text || !ws || ws.readyState !== 1) return;
-  const img = frameNow();
-  if (img) ws.send(JSON.stringify({ type: 'look', image: img }));
   ws.send(JSON.stringify({ type: 'say', text }));
 }
+/* the running camera: a silent frame every 5s — never into the chat; whoever answers sees the current view */
+setInterval(() => {
+  const img = frameNow();
+  if (img && ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'frame', image: img }));
+}, 5000);
 async function fillDevices() {
   if (!$('st-cam') || !navigator.mediaDevices.enumerateDevices) return;
   const devs = await navigator.mediaDevices.enumerateDevices().catch(() => []);

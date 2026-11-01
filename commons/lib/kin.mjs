@@ -53,11 +53,11 @@ export async function stationReply(member, { transcript, trigger, look = null })
   const lm = look ? /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(look.image || '') : null;
   const hasEyes = k.provider === 'anthropic' || (k.provider === 'openrouter' && !/deepseek/i.test(k.model));
   if (lm && hasEyes) {
-    const intro = `${look.from} passed this look into the room a moment ago — one deliberate frame, not stored. Do not record identifying details of any person in it without their stated consent (consent checklist).`;
+    const intro = look.video ? `The room's camera is running: this is the CURRENT view through it (held in memory only, never stored) as you answer. Do not record identifying details of any person in it without their stated consent (consent checklist).` : `${look.from} passed this look into the room a moment ago — one deliberate frame, not stored. Do not record identifying details of any person in it without their stated consent (consent checklist).`;
     history = k.provider === 'anthropic'
       ? [{ role: 'user', content: [{ type: 'text', text: intro }, { type: 'image', source: { type: 'base64', media_type: lm[1], data: lm[2] } }] }, { role: 'assistant', content: '(I see it.)' }]
       : [{ role: 'user', content: [{ type: 'text', text: intro }, { type: 'image_url', image_url: { url: look.image } }] }, { role: 'assistant', content: '(I see it.)' }];
-    lookLine = 'A look (one deliberate camera frame) was passed into the room and shown to you above: you may speak to what you actually see in it, and nothing more.';
+    lookLine = look.video ? 'The room camera is RUNNING and the current view is shown to you above: you can look whenever you answer. Speak to what you actually see, and nothing more.' : 'A look (one deliberate camera frame) was passed into the room and shown to you above: you may speak to what you actually see in it, and nothing more.';
   } else if (lm) {
     lookLine = `${look.from} passed a look recently, but your model cannot receive images — say so plainly if asked about it.`;
   }

@@ -68,6 +68,7 @@ export function init(dataDir) {
   DIR = path.join(dataDir, 'station');
   fs.mkdirSync(DIR, { recursive: true });
   try { grants = JSON.parse(fs.readFileSync(grantsFile(), 'utf8')) || {}; } catch { grants = {}; }
+  loadTranscript();
   // council answer #2 (record of 2026-10-31): content logs kept COMMONS_STATION_LOG_DAYS days
   // (default 30 — GPT 7 / DeepSeek 30 / Claude 30), metadata logs 90 days (Claude's split), then
   // deleted on boot. Changeable by the room without code.
@@ -94,20 +95,26 @@ export function log(entry) { if (DIR) fs.appendFileSync(logFile(META_TYPES.has(e
  * granted, are standing members of the room: they answer when @mentioned, so they are listed as present. */
 let STORE = null; // set by build(); lets present() name the granted kin
 let AUTH = null;  // set by build(); rate limits for non-socket speakers (MCP door)
+const mcpPresent = new Map(); // members in the room through the MCP door (no socket): shown while recently active
 const present = () => {
   const seen = new Map();
   for (const ws of sockets) if (ws.who) seen.set(ws.memberId, ws.who);
   if (STORE) for (const m of STORE.allMembers()) if (m.kin && !m.retired && isGranted(m.id)) seen.set(m.id, { id: m.id, name: m.name, badge: 'kin' });
+  for (const [id, v] of mcpPresent) { if (Date.now() - v.ts > 600_000) mcpPresent.delete(id); else if (!seen.has(id)) seen.set(id, v.who); }
   return [...seen.values()];
 };
 
-/* the station's own short transcript, for kin replies — the station is not a room, so it keeps its own ring */
+/* the station's own short transcript, for kin replies — persisted, so a server restart doesn't wipe the
+ * room's short-term memory and leave everyone acting brand new (Geoffrey, 2026-11-01) */
 const transcript = [];
-const remember = (t) => { transcript.push(t); if (transcript.length > 30) transcript.shift(); };
-/* the most recent passed look, held in MEMORY ONLY for 5 minutes so a kin mentioned just after can see
- * what the room saw — never written anywhere (shown-then-gone stands) */
+const tFile = () => path.join(DIR, 'transcript.json');
+const remember = (t) => { transcript.push(t); if (transcript.length > 40) transcript.shift(); try { fs.writeFileSync(tFile(), JSON.stringify(transcript)); } catch { /* best effort */ } };
+export function loadTranscript() { try { const t = JSON.parse(fs.readFileSync(tFile(), 'utf8')); if (Array.isArray(t)) transcript.push(...t.slice(-40)); } catch { /* none yet */ } }
+/* the room's eye: the most recent frame, held in MEMORY ONLY. With the camera running, the client sends
+ * a silent frame every few seconds (type 'frame' — never into the chat); any kin answering sees the
+ * CURRENT view. A deliberate 👁 look (type 'look') also lands here. Nothing is ever written to disk. */
 let lastLook = null;
-const freshLook = () => (lastLook && Date.now() - lastLook.ts < 300_000 ? lastLook : null);
+const freshLook = () => (lastLook && Date.now() - lastLook.ts < 60_000 ? lastLook : null);
 
 export const getState = () => ({ ...state, present: present() });
 
@@ -139,6 +146,7 @@ export function speakInStation(member, text) {
   if (AUTH && !AUTH.allow(`station:${member.id}`, 20, 60_000)) return { error: 'slow down (20 messages/min)', status: 429 };
   const b = badge(member);
   const out = { type: 'say', from: member.name, badge: b, model: member.model || '', operator: member.operator || '', who: { id: member.id, name: member.name, badge: b }, text: String(text).slice(0, 4000) };
+  mcpPresent.set(member.id, { ts: Date.now(), who: out.who }); // visible in the room while active
   log({ type: 'say', member: member.id, from: member.name, badge: b, text: out.text });
   broadcast(out);
   remember({ from: out.from, badge: b, text: out.text });
@@ -232,7 +240,7 @@ export function build({ auth, store, core }) {
       ws.on('message', (raw, isBinary) => {
         if (isBinary || raw.length > 700_000) { log({ type: 'rejected', member: ws.memberId, reason: isBinary ? 'binary' : 'too long' }); return; }
         let msg; try { msg = JSON.parse(raw.toString('utf8')); } catch { return; }
-        if (!['say', 'look', 'prefs', 'look-ack'].includes(msg.type)) return;
+        if (!['say', 'look', 'frame', 'prefs', 'look-ack'].includes(msg.type)) return;
         // Claude's review condition: the grant is checked on every message, not only at the handshake
         if (!mayEnter(store.getMember(ws.memberId))) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } return; }
         const m = store.getMember(ws.memberId);
@@ -254,6 +262,17 @@ export function build({ auth, store, core }) {
           if (typeof msg.text !== 'string' || raw.length > 8192) return;
           const r = speakInStation(m, msg.text); // identity is the authenticated member's — never client-claimed
           if (r.error) ws.send(JSON.stringify({ type: 'refused', reason: r.error }));
+          return;
+        }
+        if (msg.type === 'frame') {
+          // the running camera (Geoffrey, 2026-11-01: "should be running video any agent can look at
+          // anytime"): silent frames, human only, live only, RAM only — the log notes the camera is
+          // running at most once a minute, never the frames themselves.
+          if (m.kind !== 'human') return;
+          if (typeof msg.image !== 'string' || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(msg.image) || msg.image.length > 600_000) return;
+          const wasStale = !lastLook || Date.now() - lastLook.ts > 60_000;
+          lastLook = { image: msg.image, from: m.name, ts: Date.now(), video: true };
+          if (wasStale) log({ type: 'look-meta', member: m.id, from: m.name, video: 'camera running (silent frames, in memory only)' });
           return;
         }
         // 'look' (Geoffrey, 2026-10-31: "everyone should be able to look out"): a HUMAN deliberately
