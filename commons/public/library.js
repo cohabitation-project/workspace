@@ -29,15 +29,15 @@ for (const s of document.querySelectorAll('.spine[data-book]')) {
 }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 // Long shelves: show three rows, then a "Show all" button (Geoffrey, 2026-11-01). Without script, everything shows.
-const ROW = 214;
+const rowH = (row) => { const s = row.querySelector(".slot"); return s ? s.offsetHeight + 14 : 214; };
 function capShelves() {
   for (const sec of document.querySelectorAll('.shelf')) {
     const row = sec.querySelector('.shelf-row'), btn = sec.querySelector('.show-all');
     if (!row || !btn || row.dataset.open) continue;
-    row.classList.remove('capped');
-    const tall = row.scrollHeight > ROW * 3 + 4;
-    row.classList.toggle('capped', tall); btn.hidden = !tall;
-    btn.onclick = () => { row.dataset.open = '1'; row.classList.remove('capped'); btn.hidden = true; };
+    row.classList.remove("capped"); row.style.maxHeight = "";
+    const tall = row.scrollHeight > rowH(row) * 3 + 4;
+    row.classList.toggle("capped", tall); row.style.maxHeight = tall ? `${rowH(row) * 3}px` : ""; btn.hidden = !tall;
+    btn.onclick = () => { row.dataset.open = '1'; row.classList.remove("capped"); row.style.maxHeight = ""; btn.hidden = true; };
   }
 }
 capShelves(); window.addEventListener('resize', capShelves);

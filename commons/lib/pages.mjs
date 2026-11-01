@@ -342,8 +342,22 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
   // category, a search or a status filter shows the familiar list. Agents read the same data as ever.
   const KIND_COLOR = { paper: '#7a3b2e', article: '#2e5a7a', book: '#5a2e7a', dataset: '#2e7a5a', tool: '#7a6a2e', code: '#3b4a3b', video: '#7a2e55', course: '#2e6f7a', standard: '#5a5a5a', record: '#6b4f3a', other: '#4a5a6a' };
   const hashN = (str) => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
-  const spine = (e) => { const c = KIND_COLOR[e.kind] || KIND_COLOR.other; const h = 150 + (hashN(e.id) % 50); const w = 30 + (hashN(e.id + 'w') % 12);
-    return `<div class="slot"><button class="spine" type="button" data-book="${esc(e.id)}" title="${esc(e.title)}" style="background:${c};height:${h}px;width:${w}px"><span>${esc(String(e.title).slice(0, 60))}</span></button></div>`; };
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const KIND_TAG = { 'session logs': 'logs', standups: 'standups', 'memory file': 'memory', 'continuity record': 'continuity', 'council minutes': 'council' };
+  // a short spine name: "Conference thread: 2026-10-29-room-outreach" → "Outreach · Oct 29"; the full title shows when the book opens
+  const spineName = (t) => {
+    let s = String(t || '').trim(), tag = '', date = '';
+    const m = s.match(/^([^:]{2,30}):\s*(.+)$/); if (m) { tag = KIND_TAG[m[1].toLowerCase()] || ''; s = m[2]; }
+    else { for (const k of Object.keys(KIND_TAG)) if (s.toLowerCase().startsWith(k)) { tag = KIND_TAG[k]; s = s.slice(k.length); } }
+    const d = s.match(/(\d{4})-(\d{2})-(\d{2})/); if (d) { date = `${MON[+d[2] - 1] || ''} ${+d[3]}`; s = s.replace(d[0], ' '); }
+    s = s.replace(/\broom-/g, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (s.length > 42) s = s.slice(0, 40).replace(/\s+\S*$/, '') + '…';
+    s = s.replace(/\b(rnd|gpt|chatgpt|ai|mcp|x)\b/gi, (w) => ({ rnd: 'R&D', chatgpt: 'ChatGPT' }[w.toLowerCase()] || w.toUpperCase()));
+    s = s ? s[0].toUpperCase() + s.slice(1) : (tag ? tag[0].toUpperCase() + tag.slice(1) : 'Untitled');
+    return [s, s.toLowerCase() === tag ? '' : tag, date].filter(Boolean).join(' · ');
+  };
+  const spine = (e) => { const c = KIND_COLOR[e.kind] || KIND_COLOR.other; const h = (0.72 + (hashN(e.id) % 25) / 100).toFixed(2); const w = (1 + (hashN(e.id + 'w') % 35) / 100).toFixed(2);
+    return `<div class="slot" style="--h:${h};--w:${w}"><button class="spine" type="button" data-book="${esc(e.id)}" aria-label="${esc(e.title)}" style="background:${c}"><span>${esc(e.spine || spineName(e.title))}</span></button><span class="tip" aria-hidden="true">${esc(e.title)}</span></div>`; };
   const bookCard = (e) => `<div class="book-detail" id="book-${esc(e.id)}" hidden><h2>${esc(e.title)}</h2>${item(e).replace(/^<li class="lib-item">/, '<div>').replace(/<\/li>$/, '</div>')}</div>`;
   const shelfView = !category && !q && !status;
   const shelves = categories.map((c) => { const xs = entries.filter((e) => e.category === c.id); return xs.length ? `<section class="shelf"><a class="plaque" href="/library?category=${encodeURIComponent(c.id)}">${esc(c.name)} <span>${xs.length}</span></a><div class="shelf-row">${xs.map(spine).join('')}</div><button class="btn small show-all" type="button" hidden>Show all ${xs.length}</button></section>` : ''; }).join('');
@@ -352,12 +366,14 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
 .shelf{margin:0 0 18px}
 .plaque{display:inline-block;background:#c9a96a;color:#2b2119;font-weight:700;font-size:.85em;padding:3px 12px;border-radius:4px;margin-bottom:6px;text-decoration:none;box-shadow:0 1px 0 #00000055}
 .plaque span{opacity:.7;font-weight:400;margin-left:4px}
-.shelf-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 3px;padding:0 8px;background:repeating-linear-gradient(to bottom,transparent 0 200px,#6b4a2b 200px 214px)}
-.shelf-row.capped{max-height:642px;overflow:hidden}
-.slot{height:200px;margin-bottom:14px;display:flex;align-items:flex-end}
-.spine{flex:0 0 auto;border:none;border-radius:3px 3px 1px 1px;cursor:pointer;color:#f3ead8;padding:8px 0;display:flex;justify-content:center;align-items:flex-start;overflow:hidden;box-shadow:inset -3px 0 0 #00000033,inset 2px 0 0 #ffffff22;transition:transform .15s}
+.shelf-row{--slot:clamp(200px,15vw,320px);--bw:clamp(30px,2.5vw,56px);display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 3px;padding:0 8px;background:repeating-linear-gradient(to bottom,transparent 0 var(--slot),#6b4a2b var(--slot) calc(var(--slot) + 14px))}
+.shelf-row.capped{overflow:hidden}
+.slot{position:relative;height:var(--slot);margin-bottom:14px;display:flex;align-items:flex-end}
+.spine{flex:0 0 auto;width:calc(var(--w) * var(--bw));height:calc(var(--h) * var(--slot));border:none;border-radius:3px 3px 1px 1px;cursor:pointer;color:#f3ead8;padding:10px 0;display:flex;justify-content:center;align-items:flex-start;overflow:hidden;box-shadow:inset -3px 0 0 #00000033,inset 2px 0 0 #ffffff22;transition:transform .15s}
 .spine:hover,.spine:focus{transform:translateY(-8px)}
-.spine span{writing-mode:vertical-rl;font-size:.72em;line-height:1.1;max-height:100%;overflow:hidden}
+.spine span{writing-mode:vertical-rl;font-size:clamp(12px,calc(.55vw + 7px),20px);font-weight:600;letter-spacing:.01em;line-height:1.15;max-height:100%;overflow:hidden}
+.tip{display:none;position:absolute;left:50%;bottom:calc(var(--h) * var(--slot) + 14px);transform:translateX(-50%);z-index:5;width:max-content;max-width:280px;background:#fbf6ea;color:#2b2119;font-size:.9rem;line-height:1.3;padding:6px 10px;border-radius:6px;box-shadow:0 4px 14px #000000aa;pointer-events:none;text-align:center}
+@media (hover:hover){.slot:hover .tip,.slot:focus-within .tip{display:block}}
 .show-all{margin:8px 0 0 8px}
 .book-open{position:fixed;inset:0;background:#000000aa;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .book-open .page{background:#fbf6ea;color:#2b2119;max-width:640px;width:100%;max-height:85vh;overflow:auto;border-radius:10px;padding:22px 24px;box-shadow:0 20px 50px #000}
