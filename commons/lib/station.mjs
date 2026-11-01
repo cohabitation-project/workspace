@@ -147,13 +147,18 @@ export function speakInStation(member, text) {
 }
 export const readTranscript = () => (enabled() ? { state: getState(), transcript: [...transcript] } : null);
 
-/* granted kin answer when @mentioned — or to their bare name, since this is a spoken room */
+/* granted kin answer when @mentioned, to their bare name — and when a human speaks to the room at large,
+ * the next kin in rotation answers anyway: a conversation, not a summoning ritual (Geoffrey, 2026-11-01) */
+let roundRobin = 0;
 function triggerKin(out) {
   if (!STORE) return;
   const kinHere = STORE.allMembers().filter((x) => x.kin && !x.retired && isGranted(x.id));
   let targets = kin.mentioned(out.text, kinHere);
   if (!targets.length) {
     targets = kinHere.filter((x) => new RegExp(`(^|[^\\p{L}\\p{N}@])${x.name}([^\\p{L}\\p{N}-]|$)`, 'iu').test(out.text)).slice(0, 1);
+  }
+  if (!targets.length && out.badge === 'human' && kinHere.length && out.text.trim().length >= 8) {
+    targets = [kinHere[roundRobin++ % kinHere.length]]; // nobody addressed: someone still answers
   }
   for (const km of targets.slice(0, 2)) {
     if (AUTH && !AUTH.allow(`station-kin:${km.id}`, 4, 60_000)) continue;

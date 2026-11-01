@@ -19,7 +19,7 @@ function renderRoom(present) {
   const agents = present || [];
   if (!agents.length) { const s = document.createElement('span'); s.className = 'muted'; s.textContent = 'nobody in the room yet'; room.appendChild(s); return; }
   for (const a of agents) {
-    const fig = document.createElement('div'); fig.id = `st-fig-${a.id}`; fig.style.textAlign = 'center'; fig.style.transition = 'transform .2s';
+    const fig = document.createElement('div'); fig.id = `st-fig-${a.id}`; fig.className = 'st-tile';
     const img = avatarImg(a, 72); if (img) { img.style.marginRight = '0'; fig.appendChild(img); }
     const nm = document.createElement('div'); nm.className = 'muted small'; nm.textContent = `${a.name} (${a.badge})`;
     fig.appendChild(nm); room.appendChild(fig);
@@ -53,6 +53,7 @@ function setState(st) {
 }
 function addLine(who, text, whoObj) {
   const p = document.createElement('p');
+  p.className = 'msg' + (whoObj && whoObj.badge === 'human' ? ' mine' : '');
   const img = avatarImg(whoObj, 16); if (img) p.appendChild(img);
   const w = document.createElement('strong'); w.textContent = who + ': ';
   p.appendChild(w); p.appendChild(document.createTextNode(text));
@@ -60,6 +61,7 @@ function addLine(who, text, whoObj) {
 }
 function addLook(m) {
   const p = document.createElement('p');
+  p.className = 'msg mine';
   const img = avatarImg(m.who, 16); if (img) p.appendChild(img);
   const w = document.createElement('strong'); w.textContent = `${m.from} passes a look: `;
   p.appendChild(w);
@@ -243,9 +245,24 @@ if ($('st-start')) {
   // every member's name is a spoken address too: the page carries the member list, and each name
   // becomes its own alias ("at cyrus" -> "@Cyrus"); the hand-tuned mishearings merge on top
   try {
-    const all = JSON.parse(($('st-room-card') && $('st-room-card').dataset.names) || '[]');
+    const all = JSON.parse((($('st-room') && $('st-room').dataset.names) || ($('st-room-card') && $('st-room-card').dataset.names)) || '[]');
     for (const n of all) if (!SPOKEN_NAMES[n]) SPOKEN_NAMES[n] = [n.toLowerCase()];
   } catch { /* names optional */ }
+  // fuzzy last resort: "at <anything close to a name>" maps to the nearest name (edit distance ≤ 2),
+  // so "at clodah", "at klahd" and whatever the recognizer invents next still land
+  function editDist(a, b) {
+    a = a.toLowerCase(); b = b.toLowerCase();
+    if (Math.abs(a.length - b.length) > 2) return 9;
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+    for (let j = 0; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+  function nearestName(word) {
+    let best = null; let bestD = 3;
+    for (const canon of Object.keys(SPOKEN_NAMES)) { const d = editDist(word, canon.replace(/-\d+$/, '')); if (d < bestD) { bestD = d; best = canon; } }
+    return best;
+  }
   function fixSpoken(t) {
     let s = t;
     for (const [canon, aliases] of Object.entries(SPOKEN_NAMES)) {
@@ -253,6 +270,7 @@ if ($('st-start')) {
       s = s.replace(new RegExp(`\\bat[,.]?\\s+(?:${alt})\\b`, 'gi'), `@${canon}`);           // "at klade" -> "@Claude"
       s = s.replace(new RegExp(`^(?:${alt})\\b[,.]?`, 'i'), `${canon},`);                     // "Klade can you..." -> "Claude, can you..."
     }
+    s = s.replace(/\bat[,.]?\s+([A-Za-z]{3,12})\b/g, (m0, w) => { const n = nearestName(w); return n ? `@${n}` : m0; });
     return s;
   }
 

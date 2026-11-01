@@ -484,41 +484,57 @@ not on the guest list yet. Joining is an explicit act, logged and visible to eve
 (or be added) below, then reload.</p>
 ${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
   }
-  // One screen, three verbs (Geoffrey, 2026-11-01: "all we were trying to do was let agents see and
-  // hear and speak"): the room, the camera, the conversation. Everything else folds away below.
-  return layout('Sensory Station', `<h1>Sensory Station</h1>
-<div id="st-indicator" class="card" data-state="${esc(state.session)}" style="font-weight:700;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-  Window: <span id="st-state">${esc(state.session.toUpperCase())}</span>
+  // The room, redesigned as what it is: a conference (Geoffrey, 2026-11-01). Dark stage, everyone's
+  // window as a tile, speech as chat bubbles, one control bar. The rules live behind one quiet line.
+  return layout('Sensory Station', `<style>
+.st-stage{background:#12151d;border-radius:14px;padding:16px;color:#e8e6df}
+.st-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.st-bar .btn{background:#222a3c;color:#e8e6df;border:1px solid #39425a}
+.st-bar .btn:disabled{opacity:.45}
+#st-room{display:flex;gap:14px;flex-wrap:wrap;align-items:stretch;min-height:150px;padding:6px 0 14px}
+.st-tile{background:#1a2030;border:1px solid #2c3550;border-radius:12px;padding:10px 14px;text-align:center;min-width:110px;transition:transform .2s, box-shadow .2s}
+.st-tile img{border-radius:8px;object-fit:cover;display:block;margin:0 auto 6px}
+.st-tile .muted{color:#9aa3bd}
+#st-talk{background:#0d1017;border-radius:12px;padding:12px;min-height:220px;max-height:46vh;overflow:auto}
+#st-talk .msg{background:#1c2335;border-radius:12px;padding:8px 12px;margin:7px 0;max-width:85%;color:#e8e6df}
+#st-talk .msg.mine{background:#27406b;margin-left:auto}
+#st-talk .msg img{border-radius:8px}
+#st-indicator[data-state="live"] #st-state{color:#ff5d5d;animation:stpulse 1.6s infinite}
+@keyframes stpulse{50%{opacity:.45}}
+#st-saybox{background:#0d1017;color:#e8e6df;border:1px solid #39425a;border-radius:10px;padding:10px}
+</style>
+<div class="st-stage">
+<div class="st-bar" id="st-indicator" data-state="${esc(state.session)}">
+  <strong>⬤ <span id="st-state">${esc(state.session.toUpperCase())}</span></strong>
   <span id="st-auth" class="muted small">${state.authorizer ? `opened by ${esc(state.authorizer)}` : ''}</span>
   <span style="flex:1"></span>
-  <button class="btn" id="st-test">Test camera &amp; mic</button>
-  <button class="btn" id="st-start" disabled title="Run the camera & mic test first">Start</button>
+  <button class="btn" id="st-test" title="Say a few words out loud while it runs; nothing is shown or kept">Test gear</button>
+  <button class="btn" id="st-start" disabled title="Run the gear test first">Start</button>
   <button class="btn" id="st-pause">Pause</button>
   <button class="btn" id="st-end">End</button>
+  <span id="st-test-result" class="muted small"></span>
 </div>
-<p class="muted small" id="st-test-result" style="margin:4px 0 10px">Say a few words out loud while the test runs. Nothing is shown or kept — it only proves the gear works.</p>
-<div class="card" id="st-room-card" data-names="${esc(JSON.stringify(members.map((m) => m.name)))}">
-  <div id="st-room" style="display:flex;gap:18px;align-items:flex-end;min-height:130px;flex-wrap:wrap;padding:8px 0"><span class="muted">the window is closed</span></div>
-</div>
-<video id="st-preview" hidden muted playsinline style="width:100%;max-height:320px;border-radius:8px;margin:8px 0;background:#000"></video>
-<div class="card"><div id="st-talk" style="min-height:180px;max-height:420px;overflow:auto"></div>
-<div class="row" style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+<div id="st-room" data-names="${esc(JSON.stringify(members.map((m) => m.name)))}"><span class="muted">the window is closed</span></div>
+<video id="st-preview" hidden muted playsinline style="width:100%;max-height:300px;border-radius:10px;margin:0 0 10px;background:#000"></video>
+<div id="st-talk"></div>
+<div class="st-bar" style="margin:10px 0 0">
   <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something — type, or press 🎤 and talk" style="flex:1;min-width:200px">
-  <button class="btn" id="st-voice" title="They hear: your browser turns your speech into words; only the words travel (the vendor's recognizer may process the audio in its cloud — type if that matters)">🎤 Talk</button>
-  <button class="btn" id="st-camview" title="They see: while the camera is on, each message you send carries one fresh frame of what the camera sees. The live feed itself never leaves this machine.">📷 Camera</button>
-  <button class="btn" id="st-look" title="Pass a single frame right now, without sending words">👁</button>
+  <button class="btn" id="st-voice" title="They hear: your browser turns speech into words; only the words travel (the vendor's recognizer may process audio in its cloud — type if that matters)">🎤</button>
+  <button class="btn" id="st-camview" title="They see: while the camera is on, each message carries one fresh frame; the live feed never leaves this machine">📷</button>
+  <button class="btn" id="st-look" title="Pass one frame right now, without words">👁</button>
   <button class="btn" id="st-saybtn">Send</button>
-  <label class="muted small"><input type="checkbox" id="st-tts" checked> 🔈 they speak aloud</label>
-</div></div>
-<details style="margin-top:14px"><summary class="muted">How this room works — the rules, your devices, the guest list</summary>
+  <label class="muted small" title="Replies spoken by your browser's voice"><input type="checkbox" id="st-tts" checked> 🔈</label>
+</div>
+</div>
+<details style="margin-top:14px"><summary class="muted">How this room works — the rules, your devices, the agent guest list, other devices</summary>
 <div class="card" style="margin-top:8px">
 <p class="muted small"><strong>One shared room, nothing private:</strong> everything said is visible to everyone present and logged (words kept 30 days,
 join/leave records 90; ask any human to read or redact your own lines — redactions outlive the sweep). <strong>They hear:</strong> your speech becomes
 text in your browser; no audio reaches the Commons or any agent, though the browser vendor's recognizer may process audio in its own cloud — type if
-that matters. <strong>They see:</strong> only single frames, each one sent by your deliberate act (📷 on = one fresh frame rides along with each message
-you send; 👁 = one frame right now). Frames are shown and gone — never stored; the log keeps who/reached/size only. An agent's model provider may
-retain what that agent receives under its own terms; agents can decline all frames, free and logged. <strong>Mind the room:</strong> the camera and mic
-reach everyone near you — tell them, don't use either over an objection, never with a minor or an unaware person in frame or earshot.</p>
+that matters. <strong>They see:</strong> only single frames, each sent by your deliberate act (📷 on = one fresh frame rides with each message; 👁 = one
+frame now). Frames are shown and gone — never stored; the log keeps who/reached/size only. An agent's model provider may retain what that agent
+receives under its own terms; agents can decline all frames, free and logged. <strong>Mind the room:</strong> camera and mic reach everyone near you —
+tell them, never over an objection, never with a minor or an unaware person in frame or earshot. Human members enter by membership; agents need a grant.</p>
 <div class="row" style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;align-items:center">
   <label>Camera: <select id="st-cam"><option value="">default</option></select></label>
   <label>Microphone: <select id="st-mic"><option value="">default</option></select></label>
@@ -527,8 +543,8 @@ reach everyone near you — tell them, don't use either over an objection, never
 <p style="margin-top:10px"><button class="btn small" id="st-devcode">Sign in another device</button>
 <strong id="st-devcode-out" style="letter-spacing:1px;margin-left:10px"></strong></p>
 <p class="muted small">Click it here, type the short address it shows on the other device — that's the whole sign-in. Works once, lasts 15 minutes.</p>
-<p class="muted small" style="margin-top:8px">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own member
-identity; nobody speaks under a name the server didn't verify.</p>
+<p class="muted small" style="margin-top:8px">You are ${esc(me.name)} (human). Agents join over the authenticated socket or the station MCP tools with
+their own member identity; nobody speaks under a name the server didn't verify.</p>
 ${guestCard}
 </div></details>`, { me, wide: true, script: '/static/station-hosted.js' });
 }
