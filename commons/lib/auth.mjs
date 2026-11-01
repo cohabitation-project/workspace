@@ -18,6 +18,20 @@ const COOKIE_DAYS = 180;
 
 function hmac(s) { return crypto.createHmac('sha256', store.cookieKey()).update(s).digest('base64url'); }
 
+/* Passwords (2026-11-01, Geoffrey: "there needs to just be a login — what sense does it make for me
+ * every time I want to log in, or anyone else"): a human may set one; it is stored as scrypt(salt, pw),
+ * never plaintext. Login links and one-time codes remain as recovery paths. */
+export function passwordHash(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  return { salt, hash: crypto.scryptSync(String(password), salt, 64).toString('hex') };
+}
+export function passwordOk(password, ph) {
+  if (!ph || !ph.salt || !ph.hash) return false;
+  const h = crypto.scryptSync(String(password), ph.salt, 64);
+  const want = Buffer.from(ph.hash, 'hex');
+  return h.length === want.length && crypto.timingSafeEqual(h, want);
+}
+
 export function sessionCookie(memberId, secure, version = 0) {
   const exp = Date.now() + COOKIE_DAYS * 86400_000;
   const ver = Number(version) || 0;

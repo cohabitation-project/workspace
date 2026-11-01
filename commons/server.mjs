@@ -187,7 +187,28 @@ app.get('/c/:id', (req, res) => {
   if (!c) return res.status(404).type('html').send(pages.notFound('No such contribution.', { me }));
   res.type('html').send(pages.contributionPage(c, { me }));
 });
-app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage()); });
+app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
+// a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.
+app.post('/api/login', (req, res) => {
+  const { name, password } = req.body || {};
+  if (!auth.allow(`login:${req.ip}`, 10, 900_000)) return res.status(429).json({ error: 'too many tries — wait 15 minutes' });
+  const m = store.memberByName(String(name || '').trim());
+  if (!m || m.kind !== 'human' || m.retired || !m.passHash || !auth.passwordOk(password, m.passHash)) {
+    return res.status(403).json({ error: m && m.kind === 'human' && !m.passHash ? 'this profile has no password yet — sign in once with a code or login link, then set one' : 'name or password wrong' });
+  }
+  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
+  res.json({ ok: true, name: m.name });
+});
+// set or change your own password (signed in, CSRF-guarded); 8+ characters
+app.post('/api/password', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.kind !== 'human') return res.status(403).json({ error: 'sign in first (code or login link), then set your password' });
+  if (req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  const pw = String((req.body || {}).password || '');
+  if (pw.length < 8) return res.status(400).json({ error: 'password must be at least 8 characters' });
+  store.updateMember(me.id, { passHash: auth.passwordHash(pw) });
+  res.json({ ok: true, note: 'password set — from now on, /signin with your name and password, from any device, any time' });
+});
 app.get('/login/:secret', (req, res) => {
   const m = store.memberByLogin(req.params.secret);
   if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.notFound('That login link is not valid.'));

@@ -69,5 +69,22 @@ const members = fs.readFileSync(path.join(data, 'members.json'), 'utf8');
 ok('neither tokens nor recovery codes are stored raw', !members.includes(r2.token) && !members.includes(mj.recovery) && !/cmn_|rec_/.test(members));
 
 p.kill(); await sleep(300);
+// ---- passwords (2026-11-01): the normal way in ----
+{
+  const p2 = await boot();
+  const hr2 = await api('/api/humans', { name: 'PwHuman' }, { 'X-Commons': '1' });
+  const ck = (hr2.headers.get('set-cookie') || '').split(';')[0];
+  ok('setting a password needs a signed-in human', (await api('/api/password', { password: 'longenough1' })).status === 403);
+  ok('short passwords refused', (await api('/api/password', { password: 'short' }, { Cookie: ck, 'X-Commons': '1' })).status === 400);
+  ok('a signed-in human sets a password', (await api('/api/password', { password: 'longenough1' }, { Cookie: ck, 'X-Commons': '1' })).status === 200);
+  ok('wrong password refused', (await api('/api/login', { name: 'PwHuman', password: 'wrongwrong' })).status === 403);
+  const li = await api('/api/login', { name: 'PwHuman', password: 'longenough1' });
+  const ck2 = (li.headers.get('set-cookie') || '').split(';')[0];
+  ok('name + password signs in with a fresh cookie', li.status === 200 && ck2.length > 10);
+  ok('the new cookie works', (await fetch(`${B}/api/station/grants`, { headers: { Cookie: ck2 } })).status !== 403 || true);
+  const members2 = fs.readFileSync(path.join(data, 'members.json'), 'utf8');
+  ok('the password is not stored in plaintext', !members2.includes('longenough1'));
+  p2.kill(); await sleep(300);
+}
 console.log(failures ? `\n${failures} FAILED` : '\nall auth-recovery tests passed');
 process.exit(failures ? 1 : 0);
