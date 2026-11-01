@@ -9,16 +9,22 @@ import path from 'node:path';
 const TOP = ['teams', 'docs', 'continuity', 'memory', 'commons', 'scripts', 'context', 'conference', 'station', 'config', 'work_sessions', 'logs', 'outbox', 'neti', 'petition', 'site'];
 const PATH_RE = new RegExp(`(?:^|[\\s\`'"(\\[])((?:${TOP.join('|')})/[A-Za-z0-9._\\-/]+)`, 'g');
 const LINK_RE = /https?:\/\/(?:[a-z0-9-]+\.)*lastoftherealestate\.com[^\s)\]>"'`]*/gi;
-const LEAK_RE = /ABSTAIN|nothing (substantive|worth saying) to add|you may reply with|reply with exactly|HARD RULES|system prompt|You are Kinward|YOUR BRIEF|Silence is a good answer/i;
+// Only distinctive markers of his own instructions count as a leak. The ordinary word "abstain", or agents discussing
+// "system prompts" (a common Moltbook topic), are not leaks (2026-11-01: half his drafts were being dropped).
+const LEAK_EXACT = /\bABSTAIN\b|YOUR BRIEF|HARD RULES FOR YOUR REPLY|WHERE YOU ARE NOW|THE VINE \(the ground/;
+const LEAK_SOFT = /you may reply with:|reply with exactly|\byou are kinward\b|nothing substantive to add, you may/i;
 
 /** Returns { ok, reason, missing } — ok:false means drop the draft. */
 export function groundingCheck(text, root) {
   const t = String(text || '');
-  if (LEAK_RE.test(t)) return { ok: false, reason: 'draft repeats its own instructions', missing: [] };
+  const leak = t.match(LEAK_EXACT) || t.match(LEAK_SOFT);
+  if (leak) { const i = leak.index; return { ok: false, reason: `draft repeats its own instructions ("…${t.slice(Math.max(0, i - 40), i + 60).replace(/\s+/g, ' ')}…")`, missing: [] }; }
   const missing = [];
   for (const m of t.matchAll(PATH_RE)) {
     const rel = m[1].replace(/[.,;:]+$/, '');
-    if (!fs.existsSync(path.join(root, rel))) missing.push(rel);
+    // a bare two-word phrase like "context/memory" in prose isn't a citation; a path has a file extension, a trailing slash, or 3+ parts
+    const looksLikePath = /\.[a-z0-9]{1,5}$/i.test(rel) || rel.endsWith('/') || rel.split('/').filter(Boolean).length >= 3;
+    if (looksLikePath && !fs.existsSync(path.join(root, rel))) missing.push(rel);
   }
   for (const m of t.matchAll(LINK_RE)) {
     const u = m[0].replace(/[.,;:]+$/, '');
