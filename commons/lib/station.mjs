@@ -25,6 +25,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { WebSocketServer } from 'ws';
+import * as kin from './kin.mjs';
 
 /* The gate (2026-11-01): a FILE in the data directory, not only an env var — pm2's --update-env kept
  * silently wiping COMMONS_STATION_ENABLED on routine restarts, turning the Station off by accident.
@@ -84,8 +85,19 @@ const day = () => new Date().toISOString().slice(0, 10);
 const logFile = (meta) => path.join(DIR, `${meta ? 'meta-' : ''}${day()}.jsonl`);
 export function log(entry) { if (DIR) fs.appendFileSync(logFile(META_TYPES.has(entry.type)), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n'); }
 
-/* council answer #4: everyone present is listed so nobody listens unnoticed */
-const present = () => { const seen = new Map(); for (const ws of sockets) if (ws.who) seen.set(ws.memberId, ws.who); return [...seen.values()]; };
+/* council answer #4: everyone present is listed so nobody listens unnoticed. The project kin, once
+ * granted, are standing members of the room: they answer when @mentioned, so they are listed as present. */
+let STORE = null; // set by build(); lets present() name the granted kin
+const present = () => {
+  const seen = new Map();
+  for (const ws of sockets) if (ws.who) seen.set(ws.memberId, ws.who);
+  if (STORE) for (const m of STORE.allMembers()) if (m.kin && !m.retired && isGranted(m.id)) seen.set(m.id, { id: m.id, name: m.name, badge: 'kin' });
+  return [...seen.values()];
+};
+
+/* the station's own short transcript, for kin replies — the station is not a room, so it keeps its own ring */
+const transcript = [];
+const remember = (t) => { transcript.push(t); if (transcript.length > 30) transcript.shift(); };
 
 export const getState = () => ({ ...state, present: present() });
 
@@ -106,6 +118,7 @@ const badge = (m) => (m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent');
 /** Build the authenticated socket endpoint. The server's single upgrade router calls handleUpgrade for
  * path /station-ws; the gate and all auth live here. */
 export function build({ auth, store, core }) {
+  STORE = store;
   // The credential must NEVER be echoed in the handshake (Aletheia's review, 2026-10-31): ws's default selects
   // and reflects the FIRST offered subprotocol, which would return "commons-token.<token>" to the wire. So agents
   // offer TWO protocols — the harmless name "commons-station" plus the token-bearing one — and the server always
@@ -185,6 +198,22 @@ export function build({ auth, store, core }) {
           const out = { type: 'say', from: m.name, badge: badge(m), model: m.model || '', operator: m.operator || '', who: ws.who, text: msg.text.slice(0, 4000) };
           log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
           broadcast(out);
+          remember({ from: out.from, badge: out.badge, text: out.text });
+          // granted kin answer when @mentioned (they are not sockets; the server speaks for their seat)
+          const kinHere = store.allMembers().filter((x) => x.kin && !x.retired && isGranted(x.id));
+          for (const km of kin.mentioned(out.text, kinHere).slice(0, 2)) {
+            if (!auth.allow(`station-kin:${km.id}`, 4, 60_000)) continue;
+            (async () => {
+              const r = await kin.stationReply(km, { transcript: [...transcript], trigger: out });
+              if (!r) return;
+              if (r.note) { const n = { type: 'say', from: 'station', badge: 'system', text: r.note }; log({ type: 'say', member: 'system', from: 'station', badge: 'system', text: r.note }); broadcast(n); return; }
+              if (!r.text) return;
+              const kout = { type: 'say', from: km.name, badge: 'kin', model: km.model || '', operator: km.operator || '', who: { id: km.id, name: km.name, badge: 'kin' }, text: r.text };
+              remember({ from: km.name, badge: 'kin', text: r.text });
+              log({ type: 'say', member: km.id, from: km.name, badge: 'kin', text: r.text });
+              broadcast(kout);
+            })().catch(() => { /* a failed kin reply never takes the station down */ });
+          }
           return;
         }
         // 'look' (Geoffrey, 2026-10-31: "everyone should be able to look out"): a HUMAN deliberately

@@ -104,12 +104,29 @@ async function post(session) {
 /* Camera & mic test: the gate before the window opens (Geoffrey, 2026-10-31). It confirms both devices
  * deliver — frames counted, sound level read — and NOTHING is displayed or kept: no self-view, ever. */
 let testPassed = false;
+/* device switching (Geoffrey, 2026-11-01): chosen camera/mic apply to the test and to Pass a look.
+ * Choices persist per-browser only (localStorage, best-effort). */
+const devPick = (id) => { try { return localStorage.getItem('st-' + id) || ''; } catch { return ''; } };
+const vidC = () => { const d = $('st-cam') && $('st-cam').value; return d ? { deviceId: { exact: d }, width: { ideal: 640 } } : { width: { ideal: 640 } }; };
+const micC = () => { const d = $('st-mic') && $('st-mic').value; return d ? { deviceId: { exact: d } } : true; };
+async function fillDevices() {
+  if (!$('st-cam') || !navigator.mediaDevices.enumerateDevices) return;
+  const devs = await navigator.mediaDevices.enumerateDevices().catch(() => []);
+  for (const [sel, kind] of [[$('st-cam'), 'videoinput'], [$('st-mic'), 'audioinput']]) {
+    const saved = devPick(sel.id);
+    sel.textContent = '';
+    sel.appendChild(new Option('default', ''));
+    for (const d of devs.filter((x) => x.kind === kind)) sel.appendChild(new Option(d.label || kind, d.deviceId));
+    if ([...sel.options].some((o) => o.value === saved)) sel.value = saved;
+    sel.onchange = () => { try { localStorage.setItem('st-' + sel.id, sel.value); } catch { /* fine */ } };
+  }
+}
 if ($('st-test')) {
   $('st-test').onclick = async () => {
     const out = $('st-test-result'); out.textContent = 'testing — say a few words out loud…';
     let stream = null; let ac = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ video: vidC(), audio: micC() });
       const v = document.createElement('video'); v.muted = true; v.srcObject = stream; // never attached to the page
       await v.play(); await new Promise((r) => setTimeout(r, 700));
       const camOk = v.videoWidth > 0 && v.readyState >= 2;
@@ -120,6 +137,7 @@ if ($('st-test')) {
       testPassed = camOk && micOk;
       out.textContent = `camera ${camOk ? '✓' : '✗ (no frames)'} · microphone ${micOk ? '✓' : '✗ (heard nothing — speak during the test)'}${testPassed ? ' — clear, the window may open' : ''}`;
       if (testPassed) { $('st-start').disabled = false; $('st-start').title = ''; }
+      fillDevices(); // labels are visible now that permission was granted
     } catch (e) { out.textContent = 'test failed: ' + (e.message || e) + ' — check the browser\'s camera/mic permission (the icon by the address bar)'; }
     finally { if (stream) for (const t of stream.getTracks()) t.stop(); if (ac) try { ac.close(); } catch { /* closed */ } }
   };
@@ -141,7 +159,7 @@ if ($('st-start')) {
     const btn = $('st-look'); btn.disabled = true; btn.textContent = '👁 taking one frame…';
     let stream = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 } } });
+      stream = await navigator.mediaDevices.getUserMedia({ video: vidC() });
       const v = document.createElement('video'); v.srcObject = stream; v.muted = true;
       await v.play(); await new Promise((r) => setTimeout(r, 700)); // let exposure settle
       const c = document.createElement('canvas');

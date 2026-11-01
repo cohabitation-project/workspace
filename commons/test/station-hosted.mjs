@@ -46,7 +46,7 @@ const tryWs = (opts) => new Promise((res) => {
 // ---------- gate ON ----------
 {
   // seed old logs to prove the retention sweep (Claude's review): content swept at 30d, metadata kept to 90d
-  const p = await boot({ COMMONS_STATION_ENABLED: '1' }, (data) => {
+  const p = await boot({ COMMONS_STATION_ENABLED: '1', COMMONS_FAKE_LLM: '1' }, (data) => {
     const d = path.join(data, 'station'); fs.mkdirSync(d, { recursive: true });
     fs.writeFileSync(path.join(d, `${dayAgo(40)}.jsonl`), '{"type":"say","text":"old words"}\n');
     fs.writeFileSync(path.join(d, `meta-${dayAgo(40)}.jsonl`), '{"type":"connect"}\n');
@@ -134,6 +134,17 @@ const tryWs = (opts) => new Promise((res) => {
   human.w.send(JSON.stringify({ type: 'say', text: 'welcome, agent' }));
   await sleep(400);
   ok('human message reaches the agent, labeled human', agent.got.some((m) => m.type === 'say' && m.text === 'welcome, agent' && m.badge === 'human' && m.from === 'TestHuman'));
+
+  // the kin in the room: a granted kin is listed present and answers when @mentioned (fake model in tests)
+  ok('a human grants entry to the kin Claude', (await fetch(`${B}/api/station/grants`, { method: 'POST', headers: gHdr, body: JSON.stringify({ member_id: 'kin-claude', on: true }) })).status === 200);
+  const st2 = await (await fetch(`${B}/api/station/state`)).json();
+  ok('a granted kin is listed as present in the room', (st2.present || []).some((x) => x.name === 'Claude' && x.badge === 'kin'));
+  human.got.length = 0;
+  human.w.send(JSON.stringify({ type: 'say', text: '@Claude are you there?' }));
+  await sleep(1200);
+  const kinSay = human.got.find((m) => m.type === 'say' && m.badge === 'kin' && m.from === 'Claude');
+  ok('an @mentioned kin answers in the station', !!kinSay, JSON.stringify(human.got.map((m) => m.type)));
+  ok('an ungranted kin stays silent', !human.got.some((m) => m.badge === 'kin' && m.from === 'Gemini'));
 
   // pass-a-look: one human-passed frame reaches everyone; agents cannot pass one; junk is dropped
   const frame = 'data:image/jpeg;base64,' + Buffer.from('not-really-a-jpeg-but-shaped-like-one').toString('base64');

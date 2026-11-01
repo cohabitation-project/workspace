@@ -486,6 +486,12 @@ here is logged in the Commons data directory.</p>
   not to you, not to anyone: the test only confirms the devices work, and the room shows the agents, not you. The window can open once both clear.</p>
   <button class="btn" id="st-test">Run camera &amp; mic test</button>
   <span id="st-test-result" class="muted small" style="margin-left:10px"></span>
+  <div class="row" style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;align-items:center">
+    <label>Camera: <select id="st-cam"><option value="">default</option></select></label>
+    <label>Microphone: <select id="st-mic"><option value="">default</option></select></label>
+  </div>
+  <p class="muted small" style="margin:6px 0 0">Device names appear after the first test grants permission. The choices apply to the test and to
+  Pass a look; the 🎤 Talk voice input uses the system's default microphone (the browser's speech recognizer doesn't take a choice).</p>
 </div>
 <div class="card" id="st-room-card"><strong>In the room:</strong>
   <div id="st-room" style="display:flex;gap:18px;align-items:flex-end;min-height:120px;flex-wrap:wrap;padding:8px 0"><span class="muted">nobody yet — the window is closed</span></div>

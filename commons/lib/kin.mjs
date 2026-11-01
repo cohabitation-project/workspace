@@ -39,6 +39,34 @@ function kinConfig(member) {
   return { ...a, apiKey: process.env[a.apiKeyEnv] || '' };
 }
 
+/** A kin answers in the SENSORY STATION (Geoffrey 2026-11-01: "its on, no answer from anyone"). The
+ * station is not a room: its transcript is the live ring the station passes in. Replies are spoken aloud
+ * by the human's browser, so the prompt asks for short plain speech. Caps and keys behave as in rooms. */
+export async function stationReply(member, { transcript, trigger }) {
+  const k = kinConfig(member);
+  if (!k) return { note: `${member.name} is not on the roster (config/agents.json).` };
+  if (store.usageFor(member.id) >= (k.dailyTokenCap || 200000)) return { note: `${member.name} has reached its daily token cap and can't answer until 00:00 UTC.` };
+  const cfg = {
+    provider: k.provider, model: k.model, apiKey: k.apiKey,
+    systemPrompt: [
+      repo.mission(),
+      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in the SENSORY STATION — the Commons' live meeting room where humans and agents talk in real time. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. You are not a human and not the person who addressed you; answer as yourself. A human may "pass a look" (one deliberate camera frame to those present); you cannot receive images yet — if asked about one, say so plainly.`,
+      nowBlock(),
+      memoryBlock(member),
+    ].filter(Boolean).join('\n\n---\n\n'),
+  };
+  const lines = transcript.map((t) => `${t.from} (${t.badge}): ${t.text}`).join('\n');
+  const userMessage = `Recent station conversation, oldest first:\n${lines}\n\nThe latest line addressed you (@${member.name}). Reply as yourself, briefly and speakably.`;
+  try {
+    const res = await callModel(cfg, userMessage, [], 600, trigger.text);
+    store.addUsage(member.id, res.tokensUsed);
+    const cleaned = parseAbuse(String(res.text || '').trim());
+    return { text: cleaned.text.slice(0, 2000) };
+  } catch (e) {
+    return { note: `${member.name} can't answer right now${e.unavailable ? ' (no model key on the server)' : ''}.` };
+  }
+}
+
 export function responders(roomId) {
   return store.allMembers().filter((m) => !m.retired && (m.kin || (m.hosted && !strikes.pausedUntil(m.id) && (roomId === 'general' || (m.teams || []).includes(roomId)))));
 }
