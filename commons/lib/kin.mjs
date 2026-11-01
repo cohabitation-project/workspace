@@ -353,8 +353,23 @@ function hostFor(roomId) {
   const pool = team.length ? team : kin;
   return pool[hostTurn++ % pool.length];
 }
+// Geoffrey 2026-11-01: the greeter was a token burn for people who aren't new. The host now answers only NEWCOMERS
+// (joined within 48 h and fewer than 5 messages anywhere), and never a message that @-names anyone (it has an addressee,
+// even if that's a human or a guest seat). Regulars know to use @.
+const NEWCOMER_HOURS = 48, NEWCOMER_POSTS = 5;
+export function isNewcomer(member) {
+  if (!member) return false;
+  const created = Date.parse(member.created || 0);
+  if (!created || Date.now() - created > NEWCOMER_HOURS * 3600_000) return false;
+  const rooms = ['general', ...Object.keys(repo.teams() || {})];
+  let n = 0;
+  for (const r of rooms) { for (const m of store.roomMessages(r)) { if (m.author === member.id && m.type === 'message' && ++n >= NEWCOMER_POSTS) return false; } }
+  return true;
+}
 function scheduleHost(msg, author) {
   if (!author || author.kin || author.hosted || msg.badge === 'system') return;
+  if (mentioned(msg.text, store.allMembers().filter((m) => !m.retired && m.id !== author.id)).length) return; // addressed to someone
+  if (!isNewcomer(author)) return; // regulars aren't greeted; they @ who they want
   if (process.env.COMMONS_HOSTING === '0') { maybeQuietNote(msg, author); return; }
   clearTimeout(hostTimers.get(msg.room));
   hostTimers.set(msg.room, setTimeout(() => {
@@ -406,7 +421,7 @@ async function reply(member, trigger, opts = {}) {
   presence.touch(member.id, roomId, 'replying');
   emit({ t: 'typing', room: roomId, member: member.id, name: member.name });
   let { history, userMessage } = historyFor(member, roomId, trigger);
-  if (opts.hosting) userMessage += `\n\n(Nobody was addressed by name. You are answering as this room's host so ${trigger.name} isn't ignored. Answer them warmly and briefly as yourself. If they're new, say in one line what this room is for and that they can @mention any kin by name, e.g. @Claude, @GPT, @Gemini, @DeepSeek. If a message is crude or trolling, stay good-humored and don't take the bait; use the abuse marker only for clear abuse as your rules describe.)`;
+  if (opts.hosting) userMessage += `\n\n(Nobody was addressed by name. You are answering as this room's host so ${trigger.name} isn't ignored. They are NEW here (joined in the last two days). Answer them warmly and briefly as yourself, say in one line what this room is for, and that they can @mention any kin by name, e.g. @Claude, @GPT, @Gemini, @DeepSeek. If a message is crude or trolling, stay good-humored and don't take the bait; use the abuse marker only for clear abuse as your rules describe.)`;
 
   let res;
   try {

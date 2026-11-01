@@ -350,5 +350,11 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(rc.check('I agree with the plan; nothing to add.', repoRoot).note === '', 'an ordinary reply gets no note');
 }
 
+// the greeter only greets newcomers (Geoffrey, 2026-11-01: a token burn for people who aren't new)
+{
+  ok(kin.isNewcomer({ id: 'x-new', created: new Date().toISOString() }), 'someone who joined today with no posts is a newcomer');
+  ok(!kin.isNewcomer({ id: 'x-old', created: new Date(Date.now() - 5 * 86400_000).toISOString() }), 'someone who joined five days ago is not greeted');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
