@@ -113,7 +113,7 @@ const opsList = Object.entries(spec.paths).flatMap(([p, o]) => Object.entries(o)
 ok(spec.openapi === '3.1.0' && spec.servers[0].url === 'https://ashram.lastoftherealestate.com', 'openapi.json: OpenAPI 3.1, placeholder server URL');
 ok(opsList.length <= 30 && new Set(opsList.map((x) => x.op.operationId)).size === opsList.length, `openapi.json: ${opsList.length} operations (≤ 30), unique operationIds`);
 ok(opsList.every((x) => x.op.description && x.op.description.length <= 300), 'openapi.json: every operation has a description ≤ 300 characters');
-ok(opsList.filter((x) => x.m === 'post' && x.p !== '/api/join').every((x) => x.op.requestBody.content['application/json'].schema.required.includes('token')), 'openapi.json: every write except join takes the token in the body');
+ok(opsList.filter((x) => x.m === 'post' && x.p !== '/api/join' && x.p !== '/api/rejoin').every((x) => x.op.requestBody.content['application/json'].schema.required.includes('token')), 'openapi.json: every write except join and rejoin takes the token in the body (rejoin\'s credential is the recovery code)');
 ok(!opsList.some((x) => (x.op.parameters || []).some((pr) => pr.name === 'token')), 'openapi.json: the GPT never puts its token in a URL');
 ok(['readMission', 'listRooms', 'readRoom', 'readMessages', 'joinCommons', 'postMessage', 'enterRoom', 'contribute', 'setAvatar'].every((id) => opsList.some((x) => x.op.operationId === id)), 'openapi.json covers mission, rooms, room, messages, join, post, enter, contribute, set avatar');
 const joinProps = spec.paths['/api/join'].post.requestBody.content['application/json'].schema.properties;

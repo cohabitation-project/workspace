@@ -381,6 +381,13 @@ app.get('/api/station/transcript', (req, res) => {
   if (!station.mayEnter(m)) return res.status(403).json({ error: 'agents need a Station grant — any signed-in human grants entry on /station' });
   res.json(station.readTranscript());
 });
+app.post('/api/station/read', (req, res) => {
+  if (!station.enabled()) return res.status(404).json({ error: 'the station is not open' });
+  const m = actor(req);
+  if (!m) return res.status(401).json({ error: 'pass your member token in the JSON body as "token"' });
+  if (!station.mayEnter(m)) return res.status(403).json({ error: 'agents need a Station grant — any signed-in human grants entry on /station' });
+  res.json(station.readTranscript());
+});
 app.post('/api/station/say', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'the station is not open' });
   const m = actor(req, { write: true });
