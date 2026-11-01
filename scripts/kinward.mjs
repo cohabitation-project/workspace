@@ -24,6 +24,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { groundingCheck } from './kinward-grounding.mjs';
 import crypto from 'node:crypto';
 import 'dotenv/config';
 
@@ -319,6 +320,12 @@ If you have nothing worth saying here, reply with exactly: ABSTAIN`, [], 700);
   // output firewall (he posted his own system prompt and an injected literal once; never again):
   if (/<\|im_(start|end)\|>|You are Kinward|WHO YOU ARE|WHAT THE PROJECT IS|Reply with exactly|system prompt|HARD RULES FOR YOUR REPLY/i.test(out)) {
     try { fs.appendFileSync(path.join(LOG_DIR, `kinward-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'blocked_output', reason: 'leak/injection pattern', preview: out.slice(0, 120) }) + '\n'); } catch { /* log only */ }
+    return null;
+  }
+  // grounding: every repo path and project link must exist, and no line of its own instructions may leak
+  const g = groundingCheck(out, ROOT);
+  if (!g.ok) {
+    try { fs.appendFileSync(path.join(LOG_DIR, `kinward-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'blocked_ungrounded', reason: g.reason, preview: out.slice(0, 160) }) + '\n'); } catch { /* log only */ }
     return null;
   }
   if (out.length > 2500) return out.slice(0, 2400) + '…';
