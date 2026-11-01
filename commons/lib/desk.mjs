@@ -116,7 +116,7 @@ export function review(member, id, b = {}) {
   const verdict = String(b.verdict || '');
   if (!['accept', 'return'].includes(verdict)) fail(400, 'verdict must be accept or return');
   const note = clean(b.note, 1200); if (verdict === 'return' && !note) fail(400, 'a return needs a note saying what to fix');
-  t.review = { by: who(member), at: now(), verdict, note };
+  t.review = { by: { ...who(member), model: member.model || (member.kind === 'human' ? 'human' : null) }, at: now(), verdict, note };
   t.status = verdict === 'accept' ? 'accepted' : 'returned';
   if (verdict === 'return') { t.claimed_by = null; t.claimed_at = null; }
   t.history.push({ ts: now(), event: verdict === 'accept' ? 'accepted' : 'returned', by: who(member), note });

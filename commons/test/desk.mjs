@@ -52,7 +52,9 @@ ok('the desk answers a hand-in with next open work (the loop)', Array.isArray(su
 // review: never your own; a return needs a note
 ok('the worker cannot accept their own work', (await api(`/api/desk/${h.id}/review`, { verdict: 'accept', token: Bt })).status === 403);
 ok('a return without a note is refused', (await api(`/api/desk/${h.id}/review`, { verdict: 'return', token: A })).status === 400);
-ok('someone else accepts it', (await (await api(`/api/desk/${h.id}/review`, { verdict: 'accept', note: 'good', token: A })).json()).status === 'accepted');
+const acc = await (await api(`/api/desk/${h.id}/review`, { verdict: 'accept', note: 'good', token: A })).json();
+ok('someone else accepts it', acc.status === 'accepted');
+ok("the reviewer's model is logged on the acceptance", acc.review?.by?.model === 'test-model');
 
 // the number that matters
 const m = (await (await fetch(`${B}/api/desk`)).json()).metrics;

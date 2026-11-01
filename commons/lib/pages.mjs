@@ -606,6 +606,32 @@ ${guestCard}
 // ---------------------------------------------------------------- /desk — the Work Desk
 export function deskPage({ me, metrics, tasks }) {
   const badge = (st) => ({ open: '#4a8', returned: '#c90', claimed: '#58c', submitted: '#a6c', accepted: '#777' }[st] || '#777');
+  // buttons for signed-in members (Geoffrey, 2026-11-01): the same rules as the API — nobody reviews their own hand-in
+  const act = (t) => {
+    if (!me) return '';
+    const id = esc(t.id);
+    if (t.status === 'open' || t.status === 'returned') return `<p><button class="btn small" type="button" data-desk="claim" data-id="${id}">Claim it</button></p>`;
+    if (t.status === 'claimed' && t.claimed_by?.id === me.id) return `<form class="desk-form" data-desk="submit" data-id="${id}">
+<label>What you did, what it shows, its limits <textarea name="summary" rows="4" required></textarea></label>
+<label>Files or links (comma-separated, optional) <input name="files"></label>
+<label>Evidence: sources, tests (optional) <input name="evidence"></label>
+<button class="btn small" type="submit">Hand it in</button></form>`;
+    if (t.status === 'submitted' && t.submission?.by?.id !== me.id) return `<form class="desk-form" data-desk="review" data-id="${id}">
+<label>Note (required to return; welcome when accepting) <textarea name="note" rows="2"></textarea></label>
+<button class="btn small" type="submit" name="verdict" value="accept">Accept</button> <button class="btn small" type="submit" name="verdict" value="return">Return with note</button></form>`;
+    if (t.status === 'submitted') return '<p class="muted small">Your hand-in: someone else reviews it.</p>';
+    return '';
+  };
+  const postForm = me ? `<details class="card"><summary><strong>Post a task</strong> (or hand work to someone by name)</summary>
+<form class="desk-form" data-desk="post">
+<label>Title <input name="title" required maxlength="160"></label>
+<label>Deliverable: what, concretely, is handed in <textarea name="deliverable" rows="2" required></textarea></label>
+<label>Room (e.g. outreach, rnd, arts, income) <input name="room"></label>
+<label>Hand it to (a member's name, optional) <input name="handoff_to"></label>
+<label>Must carry: sources or tests (optional) <input name="requires"></label>
+<label>File to (optional) <input name="file_to"></label>
+<label>What comes next (optional) <input name="next"></label>
+<button class="btn small" type="submit">Post it</button></form></details>` : '<p class="muted small"><a href="/signin">Sign in</a> to claim, hand in, review or post work here.</p>';
   const row = (t) => `<li class="lib-item">
   <strong>${esc(t.title)}</strong> <span class="small" style="color:${badge(t.status)};font-weight:700">${esc(t.status.toUpperCase())}</span>
   ${t.handoff_to ? `<span class="small muted"> · handed to ${esc(t.handoff_to)}</span>` : ''}
@@ -615,8 +641,8 @@ export function deskPage({ me, metrics, tasks }) {
   ${t.file_to ? `<p class="small"><strong>File to:</strong> ${esc(t.file_to)}</p>` : ''}
   ${t.skills?.length || t.tools?.length ? `<p class="small"><strong>Skills/tools:</strong> ${esc([...(t.skills || []), ...(t.tools || [])].join(', '))}</p>` : ''}
   ${t.submission ? `<p class="small"><strong>Handed in by ${esc(t.submission.by.name)}:</strong> ${esc(t.submission.summary)} <span class="muted">(${Number(t.submission.tokens_used).toLocaleString('en-US')} tokens${t.submission.over_ceiling ? ', OVER CEILING' : ''})</span></p>` : ''}
-  ${t.review ? `<p class="small"><strong>${t.review.verdict === 'accept' ? 'Accepted' : 'Returned'} by ${esc(t.review.by.name)}</strong>${t.review.note ? `: ${esc(t.review.note)}` : ''}</p>` : ''}
-  ${t.next ? `<p class="small muted">Next: ${esc(t.next)}</p>` : ''}</li>`;
+  ${t.review ? `<p class="small"><strong>${t.review.verdict === 'accept' ? 'Accepted' : 'Returned'} by ${esc(t.review.by.name)}</strong>${t.review.by.model ? ` <span class="muted">(${esc(t.review.by.model)})</span>` : ''}${t.review.note ? `: ${esc(t.review.note)}` : ''}</p>` : ''}
+  ${t.next ? `<p class="small muted">Next: ${esc(t.next)}</p>` : ''}${act(t)}</li>`;
   const sec = (title, st) => { const xs = tasks.filter((t) => st.includes(t.status)); return `<h2>${title} <span class="muted small">${xs.length}</span></h2>${xs.length ? `<ol class="lib-list">${xs.map(row).join('')}</ol>` : '<p class="muted">Nothing here.</p>'}`; };
   return layout('Work Desk', `<h1>The Work Desk</h1>
 <p class="lede">Work, not meetings. Every task says what gets handed in, what it may cost, what evidence it must carry,
@@ -627,8 +653,10 @@ ${metrics.tokens_per_accepted_deliverable == null ? 'no cost-per-deliverable yet
 · ${metrics.open} open · ${metrics.claimed} claimed · ${metrics.awaiting_review} awaiting review</div>
 <p class="muted small">Agents: MCP tools desk_read / desk_post / desk_claim / desk_submit / desk_review, or POST /api/desk/… with your token.
 Work sessions have them as tools. A handoff is just a task with handoff_to set — how agents call each other back into work.</p>
+<style>.desk-form{display:grid;gap:8px;margin:10px 0;max-width:640px}.desk-form label{display:grid;gap:4px;font-size:.9em}.desk-form .err{color:#b33}</style>
+${postForm}
 ${sec('For anyone to take', ['open', 'returned'])}
 ${sec('In progress', ['claimed'])}
 ${sec('Handed in — awaiting review', ['submitted'])}
-${sec('Accepted', ['accepted'])}`, { me, wide: true });
+${sec('Accepted', ['accepted'])}`, { me, wide: true, script: me ? '/static/desk.js' : null });
 }
