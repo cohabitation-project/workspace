@@ -88,8 +88,9 @@ if (cmd === 'list') {
   // The Station's durable switch: a file in the data dir, immune to pm2 env resets. A human act, logged.
   const flag = path.join(DATA, 'station', 'ENABLED');
   fs.mkdirSync(path.dirname(flag), { recursive: true });
-  if (cmd === 'station-on') fs.writeFileSync(flag, `on since ${new Date().toISOString()} by the operator (admin.mjs)\n`);
-  else { try { fs.unlinkSync(flag); } catch { /* already off */ } }
+  const offFlag = path.join(DATA, 'station', 'DISABLED');
+  if (cmd === 'station-on') { fs.writeFileSync(flag, `on since ${new Date().toISOString()} by the operator (admin.mjs)\n`); try { fs.unlinkSync(offFlag); } catch { /* none */ } }
+  else { try { fs.unlinkSync(flag); } catch { /* already off */ } fs.writeFileSync(offFlag, `off since ${new Date().toISOString()} by the operator (admin.mjs)\n`); /* beats a lingering COMMONS_STATION_ENABLED env var (Review, 2026-11-01) */ }
   fs.appendFileSync(path.join(DATA, 'station', `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'session', session: cmd === 'station-on' ? 'gate-on' : 'gate-off', by: 'operator (admin.mjs)' }) + '\n');
   console.log(`Station gate ${cmd === 'station-on' ? 'ON' : 'OFF'} (durable: survives every restart). Takes effect on restart: pm2 restart commons`);
   process.exit(0);

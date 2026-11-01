@@ -32,7 +32,10 @@ import * as kin from './kin.mjs';
  * Switching it remains a deliberate human act on the server: node commons/admin.mjs station-on | station-off
  * (the env var still works, so nothing old breaks). The ON decision was taken on the council record,
  * 2026-10-31, with all four conditions built. */
-export const enabled = () => process.env.COMMONS_STATION_ENABLED === '1' || (DIR ? fs.existsSync(path.join(DIR, 'ENABLED')) : false);
+export const enabled = () => {
+  if (DIR && fs.existsSync(path.join(DIR, 'DISABLED'))) return false; // the OFF switch beats everything, env var included (Review's finding, 2026-11-01: station-off could print success while the env var kept the gate open)
+  return process.env.COMMONS_STATION_ENABLED === '1' || (DIR ? fs.existsSync(path.join(DIR, 'ENABLED')) : false);
+};
 
 let DIR = null;
 let state = { session: 'off', authorizer: null, since: null };
