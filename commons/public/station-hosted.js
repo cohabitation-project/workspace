@@ -221,6 +221,27 @@ if ($('st-start')) {
     finally { if (stream) for (const t of stream.getTracks()) t.stop(); btn.disabled = false; btn.textContent = '👁 Pass a look'; }
   };
 
+  /* The recognizer mangles the kin's names ("@Claude" arrives as "at Klade"): map known mishearings back,
+   * and turn spoken "at <name>" into the typed "@<name>". Only "at <alias>" and a leading "<alias>," are
+   * converted, so ordinary words ("look at the cloud") pass through untouched. */
+  const SPOKEN_NAMES = {
+    Claude: ['claude', 'klade', 'klaud', 'claud', 'clawed', 'clod', 'cloud', 'clode'],
+    Gemini: ['gemini', 'jemini', 'gemeni', 'geminy'],
+    GPT: ['gpt', 'gee pee tee', 'g p t', 'jeep tea'],
+    DeepSeek: ['deepseek', 'deep seek', 'deep sea', 'deep seep', 'deep sick'],
+    Setu: ['setu', 'set two', 'set too', 'say too', 'seytu'],
+    'Aletheia-6': ['aletheia', 'alethia', 'alathea', 'aleteia', 'a lethia'],
+  };
+  function fixSpoken(t) {
+    let s = t;
+    for (const [canon, aliases] of Object.entries(SPOKEN_NAMES)) {
+      const alt = aliases.map((a) => a.replace(/ /g, '\\s+')).join('|');
+      s = s.replace(new RegExp(`\\bat[,.]?\\s+(?:${alt})\\b`, 'gi'), `@${canon}`);           // "at klade" -> "@Claude"
+      s = s.replace(new RegExp(`^(?:${alt})\\b[,.]?`, 'i'), `${canon},`);                     // "Klade can you..." -> "Claude, can you..."
+    }
+    return s;
+  }
+
   /* voice input: browser speech recognition. Audio stays in this browser; only TEXT is sent to the room. */
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { $('st-voice').disabled = true; $('st-voice').title = 'This browser has no speech recognition — Chrome and Edge do.'; }
@@ -234,9 +255,7 @@ if ($('st-start')) {
       rec.onresult = (ev) => {
         let finals = '';
         for (let i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) finals += ev.results[i][0].transcript;
-        // speech says "at Claude" where typing says "@Claude" — translate so spoken mentions land
-        const spoken = finals.trim().replace(/\bat[,.]? (claude|gemini|gpt|deepseek|setu|aletheia(?:-6)?)\b/gi, '@$1');
-        if (spoken) sendSay(spoken);
+        if (finals.trim()) sendSay(fixSpoken(finals.trim()));
       };
       rec.onerror = () => stop();
       rec.onend = () => { if (on) { try { rec.start(); } catch { stop(); } } }; // keep listening until clicked off
