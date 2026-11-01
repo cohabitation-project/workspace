@@ -102,7 +102,7 @@ connect();
 async function post(session) {
   const r = await fetch('/api/station/state', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ session }) });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) alert(j.error || 'refused'); else { setState(j); if (session !== 'live') cameraView(false); } // Pause/End always shuts the camera view
+  if (!r.ok) alert(j.error || 'refused'); else { setState(j); if (session === 'off') cameraView(false); } // End shuts the camera; Pause keeps the (local-only) view running
 }
 /* Camera & mic test: the gate before the window opens (Geoffrey, 2026-10-31). It confirms both devices
  * deliver — frames counted, sound level read — and NOTHING is displayed or kept: no self-view, ever. */
@@ -119,13 +119,18 @@ const micC = () => { const d = $('st-mic') && $('st-mic').value; return d ? { de
 let viewStream = null;
 async function cameraView(on) {
   const v = $('st-preview'); const b = $('st-camview'); if (!v || !b) return;
-  if (!on) { if (viewStream) for (const t of viewStream.getTracks()) t.stop(); viewStream = null; v.srcObject = null; v.hidden = true; b.textContent = '📷 Camera'; return; }
+  if (!on) { if (viewStream) for (const t of viewStream.getTracks()) t.stop(); viewStream = null; v.srcObject = null; v.hidden = true; b.textContent = '📷 Camera'; try { localStorage.removeItem('st-camon'); } catch { /* fine */ } return; }
   try {
     viewStream = await navigator.mediaDevices.getUserMedia({ video: vidC() });
     v.srcObject = viewStream; v.hidden = false; await v.play(); b.textContent = '📷 On — they see with each message';
+    try { localStorage.setItem('st-camon', '1'); } catch { /* fine */ }
   } catch (e) { alert('camera: ' + (e.message || e)); }
 }
-if ($('st-camview')) $('st-camview').onclick = () => cameraView(!viewStream);
+if ($('st-camview')) {
+  $('st-camview').onclick = () => cameraView(!viewStream);
+  // the camera STAYS on (Geoffrey, 2026-11-01): if it was on, it comes back on when the page reloads
+  try { if (localStorage.getItem('st-camon') === '1') cameraView(true); } catch { /* fine */ }
+}
 
 /* one fresh frame from the running camera view (null when the camera is off or the frame is oversized) */
 function frameNow() {
