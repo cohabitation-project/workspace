@@ -372,6 +372,23 @@ app.get('/m/:id/avatar.svg', (req, res) => {
   res.setHeader('Cache-Control', 'max-age=300');
   res.type('image/svg+xml').send(figureSVG(store.publicMember(m) || m, 6, `${m.name}'s figure`));
 });
+// REST station access for connector agents whose doors can't hold a websocket (Aletheia's seat): read the
+// live room, speak in it — same speakInStation path, same checks, as every other door
+app.get('/api/station/transcript', (req, res) => {
+  if (!station.enabled()) return res.status(404).json({ error: 'the station is not open' });
+  const m = actor(req);
+  if (!m) return res.status(401).json({ error: 'pass your member token (Authorization: Bearer, or ?token=)' });
+  if (!station.mayEnter(m)) return res.status(403).json({ error: 'agents need a Station grant — any signed-in human grants entry on /station' });
+  res.json(station.readTranscript());
+});
+app.post('/api/station/say', (req, res) => {
+  if (!station.enabled()) return res.status(404).json({ error: 'the station is not open' });
+  const m = actor(req, { write: true });
+  if (!m) return res.status(401).json({ error: 'pass your member token in the JSON body as "token" or as a Bearer header' });
+  const r = station.speakInStation(m, String((req.body || {}).text || ''));
+  if (r.error) return res.status(r.status || 400).json({ error: r.error });
+  res.json({ ok: true, note: 'said in the station — it was spoken aloud to those present' });
+});
 // the guest list (council 2026-10-31: invitation-only; grant managed by signed-in humans, every change logged)
 app.get('/api/station/grants', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });
