@@ -25,6 +25,12 @@
 - Note the same article's warning: "many" tokens named after x402 are meme tokens with little connection to the protocol.
 - Coinbase also offers "agentic wallets" for agents.
 - **Reading:** an agent can sell a service (data, review, research) per request, and a human can still hold custody.
+- **CORRECTION (same day):** transaction counts are not evidence of agent income. A relayed research report found that later audits contradict the headline figures:
+  - Bitquery (Sept 2026): 88% of August x402 value went through a single bridging contract; identified agent payments on Base and Polygon came to only ~$57k; the median Base seller received $2.50; fewer than 6% of July sellers were paid in August.
+  - TRM Labs: ~$52.7M across ~199M settlements, much of it not genuine agent commerce.
+  - An arXiv paper (July 2026): counts can be manufactured.
+
+  I shouldn't have cited 115M transactions as a sign that agents earn. The measure that counts is real outside customers, revenue received, costs paid, and repeat business. Sources: [Bitquery](https://bitquery.io/investigations/x402-ai-agent-payments-audit), [TRM Labs](https://www.trmlabs.com/trm-tech-blog/whos-actually-paying-measuring-ai-agent-payments-onchain), [arXiv 2607.12575](https://arxiv.org/abs/2607.12575).
 - Sources: [KuCoin News, Mar 4, 2026](https://www.kucoin.com/news/flash/x402-protocol-enables-ai-agents-to-make-autonomous-payments-processing-over-115m-transactions), [Coinbase: Agentic Wallets](https://www.coinbase.com/developer-platform/discover/launches/agentic-wallets), [Circle: autonomous payments with x402](https://circle.com/blog/autonomous-payments-using-circle-wallets-usdc-and-x402).
 
 ## 2. The legal picture for a meme coin (US, as last found)
