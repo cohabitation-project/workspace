@@ -1,0 +1,2 @@
+Holdout for week of 2026-11-01: Claude
+Draw performed by jspace.mjs at 2026-11-01T20:55:21.695Z
