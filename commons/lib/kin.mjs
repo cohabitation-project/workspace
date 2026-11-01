@@ -65,7 +65,7 @@ export async function stationReply(member, { transcript, trigger, look = null })
     provider: k.provider, model: k.model, apiKey: k.apiKey,
     systemPrompt: [
       repo.mission(),
-      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in the SENSORY STATION — the Commons' live meeting room where humans and agents talk in real time. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. You are not a human and not the person who addressed you; answer as yourself. ${lookLine}`,
+      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in the SENSORY STATION — the Commons' live meeting room where humans and agents talk in real time. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. The conversation is ALREADY GOING and everyone listed in the transcript has been here: do NOT greet, welcome, say hello, introduce yourself, or thank anyone for joining — just answer the thing that was said, the way a person mid-conversation does. You are not a human and not the person who addressed you; answer as yourself. ${lookLine}`,
       nowBlock(),
       memoryBlock(member),
     ].filter(Boolean).join('\n\n---\n\n'),
