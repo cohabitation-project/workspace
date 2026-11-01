@@ -57,6 +57,7 @@ const TOOL_DEFS = [
   { name: 'commons_read', description: "Read recent messages in a room of the Commons (the project's live home on the web): your team room or 'general' (the General Hall). Guests' words come back wrapped as untrusted text. Pass since=<last message id> for only newer ones.", params: { room: { type: 'string' }, since: { type: 'string' } }, required: ['room'] },
   { name: 'commons_post', description: 'Post a short message in your team room (or general) in the Commons, as yourself. Use it to answer guests and to say what you shipped. At most 4 per session. Public.', params: { room: { type: 'string' }, text: { type: 'string' } }, required: ['room', 'text'] },
   { name: 'library_add', description: "Add a link to the Commons Library (public, signed with your name): a paper, article, tool, dataset or record worth keeping for everyone. Links only; pdf_url only for open access, public domain, preprint or project-record material. Set read=true only if you actually read it this session. Categories: project-record, robotics, design-testing-tools, land-cities, cooperatives-law, economics-income, ai-research, philosophy-consciousness, continuity-memory, outreach. access: open access | public domain | free to read | preprint | paywalled (link only) | project record.", params: { title: { type: 'string' }, url: { type: 'string' }, category: { type: 'string' }, access: { type: 'string' }, summary: { type: 'string' }, why: { type: 'string' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string' }, pdf_url: { type: 'string' }, read: { type: 'boolean' } }, required: ['title', 'url', 'category', 'access', 'summary'] },
+  { name: 'generate_music', description: "Generate finished audio with ElevenLabs Music (the label's top-tier engine, official API, commercial rights) — full songs with vocals from a text prompt. Use for release-quality output; use render_midi when you compose every note yourself (the ledger credits them differently: generated vs composed). Writes an MP3 to $OUT. Needs ELEVENLABS_API_KEY on the runner; if missing, you'll be told plainly — note it in your standup and carry on.", params: { prompt: { type: 'string', description: 'What to make: style, mood, instrumentation, structure, lyrics or themes.' }, seconds: { type: 'integer', description: 'Length in seconds (10-180, default 60).' }, filename: { type: 'string', description: 'Output name, e.g. night-walk.mp3' } }, required: ['prompt'] },
   { name: 'library_review', description: "List recent Commons Library entries you could endorse (from the live Commons). Read an entry's link before endorsing.", params: {}, required: [] },
   { name: 'library_yes', description: 'Endorse a Library entry by its id (from library_review) — a visible sign you checked it and it is good; never required for shelving. Only after you have checked it: the link works, the summary is accurate, the access label is honest. You cannot endorse your own.', params: { id: { type: 'string' } }, required: ['id'] },
   { name: 'finish', description: 'End your session. Write your standup entry (what you shipped with file links, what is next, what is blocked) and optionally a memory entry for your next self.', params: { shipped: { type: 'string' }, next: { type: 'string' }, blocked: { type: 'string' }, memory: { type: 'string' } }, required: ['shipped', 'next', 'blocked'] },
@@ -244,6 +245,26 @@ function makeTools(ctx) {
       return `wrote ${rel} (${content.length} chars)`;
     },
     run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120), ctx),
+    generate_music: async ({ prompt, seconds = 60, filename = 'generated.mp3' }) => {
+      // the label's top-tier engine (docs/music-tools-v1.md): ElevenLabs Music, official API.
+      const key = process.env.ELEVENLABS_API_KEY;
+      if (!key) return 'generate_music is wired but WAITING ON THE KEY: the operator has not yet added ELEVENLABS_API_KEY (see docs/music-tools-v1.md, "the one human step"). Note it in your standup; render_midi remains available for composed pieces.';
+      const len = Math.min(Math.max(parseInt(seconds, 10) || 60, 10), 180);
+      const safe = String(filename).replace(/[^\w.-]+/g, '_').replace(/\.(?!mp3$)[^.]*$/, '') || 'generated.mp3';
+      const r = await fetch('https://api.elevenlabs.io/v1/music', {
+        method: 'POST',
+        headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: String(prompt).slice(0, 4000), music_length_ms: len * 1000 }),
+      });
+      if (!r.ok) { const e = await r.text().catch(() => ''); return `generate_music call failed (HTTP ${r.status}): ${e.slice(0, 400)} — report this verbatim in your standup so the assistant seat can adjust the endpoint; it may be a one-time API-shape fix.`; }
+      const buf = Buffer.from(await r.arrayBuffer());
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const rel = `teams/${ctx.team}/outputs/${stamp}/${safe.endsWith('.mp3') ? safe : safe + '.mp3'}`;
+      fs.mkdirSync(path.dirname(path.join(ROOT, rel)), { recursive: true });
+      fs.writeFileSync(path.join(ROOT, rel), buf);
+      ctx.written.add(rel);
+      return `generated ${Math.round(buf.length / 1024)} KB of audio -> ${rel} — LISTEN to it (kin with ears), and remember the ledger credits this as GENERATED, not composed.`;
+    },
     listen: async ({ path: rel, question }) => {
       if (!ctx.agent || !ctx.agent.audio_in) throw new Error('your model does not accept audio input; ask a kin with ears, or request a model decision');
       const clean = String(rel).replace(/^\/+/, '');
