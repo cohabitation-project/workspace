@@ -297,6 +297,18 @@ app.get('/station', (req, res) => {
   res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: station.isGranted(me.id), grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
 });
 app.get('/api/station/state', (req, res) => { if (!station.enabled()) return res.status(404).json({ error: 'not here' }); res.json(station.getState()); });
+// a member's chosen self-portrait, when they have given one (Geoffrey, 2026-11-01: "they can be anything —
+// a shape, a robot, a humanoid, a made-up creature, nothing, or keep the avatar; it's an opportunity to
+// express oneself"). Files live in commons/public/portraits/<member id>.jpg|png|webp, installed from the
+// member's own submission; without one, 404 and pages fall back to the pixel figure.
+app.get('/m/:id/portrait', (req, res) => {
+  const id = String(req.params.id).replace(/[^\w-]/g, '');
+  for (const ext of ['jpg', 'png', 'webp']) {
+    const f = path.join(import.meta.dirname, 'public', 'portraits', `${id}.${ext}`);
+    if (fs.existsSync(f)) { res.setHeader('Cache-Control', 'max-age=300'); return res.sendFile(f); }
+  }
+  res.status(404).end();
+});
 // any member's figure as an image, so pages can show everyone's chosen look
 app.get('/m/:id/avatar.svg', (req, res) => {
   const m = store.getMember(String(req.params.id));

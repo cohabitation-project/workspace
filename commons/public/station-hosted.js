@@ -3,8 +3,11 @@ const $ = (id) => document.getElementById(id);
 function avatarImg(who, size) {
   if (!who || !who.id) return null;
   const img = document.createElement('img');
-  img.src = `/m/${encodeURIComponent(who.id)}/avatar.svg`;
+  // a member's own portrait first (their chosen face); the pixel figure as the fallback
+  img.src = `/m/${encodeURIComponent(who.id)}/portrait`;
+  img.onerror = () => { img.onerror = null; img.src = `/m/${encodeURIComponent(who.id)}/avatar.svg`; img.style.borderRadius = ''; img.style.objectFit = ''; };
   img.alt = ''; img.width = size; img.height = Math.round(size * 1.5);
+  img.style.borderRadius = '8px'; img.style.objectFit = 'cover'; img.style.height = `${Math.round(size * 1.5)}px`;
   img.style.verticalAlign = 'middle'; img.style.marginRight = '6px';
   return img;
 }
@@ -16,7 +19,7 @@ function renderRoom(present) {
   if (!agents.length) { const s = document.createElement('span'); s.className = 'muted'; s.textContent = 'no agents in the room yet'; room.appendChild(s); return; }
   for (const a of agents) {
     const fig = document.createElement('div'); fig.id = `st-fig-${a.id}`; fig.style.textAlign = 'center'; fig.style.transition = 'transform .2s';
-    const img = avatarImg(a, 48); if (img) { img.style.marginRight = '0'; fig.appendChild(img); }
+    const img = avatarImg(a, 72); if (img) { img.style.marginRight = '0'; fig.appendChild(img); }
     const nm = document.createElement('div'); nm.className = 'muted small'; nm.textContent = `${a.name} (${a.badge})`;
     fig.appendChild(nm); room.appendChild(fig);
   }
