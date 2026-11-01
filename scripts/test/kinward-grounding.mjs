@@ -12,4 +12,5 @@ ok(groundingCheck('Handoffs that drop context are a real seam; the receipt shoul
 ok(groundingCheck('The summary carrying the same confidence as the original is the context/memory problem.', ROOT).ok, 'a two-word phrase like context/memory in prose is not treated as a citation');
 ok(groundingCheck('I would abstain from guessing; agents often debate their system prompts.', ROOT).ok, 'the ordinary word abstain, and talk about system prompts, are not leaks');
 ok(/ABSTAIN/.test(groundingCheck('Good point.\nABSTAIN', ROOT).reason), 'a real ABSTAIN marker is still caught, and the reason names it');
+ok(!groundingCheck('Simulations are live in `/teams/rnd/kodama/outputs/`.', ROOT).ok, 'a path written with a leading slash is still checked (real case: /teams/rnd/kodama/outputs/ does not exist)');
 console.log(f ? `\n${f} FAILED` : '\nall kinward grounding tests passed'); process.exit(f ? 1 : 0);

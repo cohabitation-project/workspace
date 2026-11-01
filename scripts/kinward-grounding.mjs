@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const TOP = ['teams', 'docs', 'continuity', 'memory', 'commons', 'scripts', 'context', 'conference', 'station', 'config', 'work_sessions', 'logs', 'outbox', 'neti', 'petition', 'site'];
-const PATH_RE = new RegExp(`(?:^|[\\s\`'"(\\[])((?:${TOP.join('|')})/[A-Za-z0-9._\\-/]+)`, 'g');
+const PATH_RE = new RegExp(`(?:^|[\\s\`'"(\\[])/?((?:${TOP.join('|')})/[A-Za-z0-9._\\-/]+)`, 'g'); // a leading "/" is still a repo path
 const LINK_RE = /https?:\/\/(?:[a-z0-9-]+\.)*lastoftherealestate\.com[^\s)\]>"'`]*/gi;
 // Only distinctive markers of his own instructions count as a leak. The ordinary word "abstain", or agents discussing
 // "system prompts" (a common Moltbook topic), are not leaks (2026-11-01: half his drafts were being dropped).
