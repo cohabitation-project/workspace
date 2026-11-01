@@ -127,17 +127,22 @@ const micC = () => { const d = $('st-mic') && $('st-mic').value; return d ? { de
 /* live camera view (Geoffrey, 2026-11-01): the camera visibly ON, shown on THIS page only — the feed
  * never leaves the machine. Agents still receive only the single frames deliberately passed. */
 let viewStream = null;
-async function cameraView(on) {
+let viewKind = 'camera';
+async function cameraView(on, kind) {
+  if (kind) viewKind = kind;
   const v = $('st-preview'); const b = $('st-camview'); if (!v || !b) return;
   if (!on) { if (viewStream) for (const t of viewStream.getTracks()) t.stop(); viewStream = null; v.srcObject = null; v.hidden = true; b.textContent = '📷 Camera'; try { localStorage.removeItem('st-camon'); } catch { /* fine */ } return; }
   try {
-    viewStream = await navigator.mediaDevices.getUserMedia({ video: vidC() });
-    v.srcObject = viewStream; v.hidden = false; await v.play(); b.textContent = '📷 On — they see with each message';
+    viewStream = viewKind === 'screen' ? await navigator.mediaDevices.getDisplayMedia({ video: true }) : await navigator.mediaDevices.getUserMedia({ video: vidC() });
+    v.srcObject = viewStream; v.hidden = false; await v.play();
+    b.textContent = viewKind === 'screen' ? '🖥 Sharing screen' : '📷 On — the room sees';
+    for (const t of viewStream.getVideoTracks()) t.onended = () => cameraView(false); // browser's own stop-share button works
     try { localStorage.setItem('st-camon', '1'); } catch { /* fine */ }
   } catch (e) { alert('camera: ' + (e.message || e)); }
 }
 if ($('st-camview')) {
-  $('st-camview').onclick = () => cameraView(!viewStream);
+  $('st-camview').onclick = () => cameraView(!viewStream || viewKind === 'screen', 'camera');
+  if ($('st-screen')) $('st-screen').onclick = () => cameraView(!viewStream || viewKind === 'camera', 'screen');
   // the camera STAYS on (Geoffrey, 2026-11-01): if it was on, it comes back on when the page reloads
   try { if (localStorage.getItem('st-camon') === '1') cameraView(true); } catch { /* fine */ }
 }
@@ -290,7 +295,7 @@ if ($('st-start')) {
       rec.onresult = (ev) => {
         let finals = '';
         for (let i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) finals += ev.results[i][0].transcript;
-        if (finals.trim()) sendSay(fixSpoken(finals.trim()));
+        if (finals.trim()) sendSay(finals.trim()); // words as spoken; no name needed — the room answers
       };
       rec.onerror = () => stop();
       rec.onend = () => { if (on) { try { rec.start(); } catch { stop(); } } }; // keep listening until clicked off

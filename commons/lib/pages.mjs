@@ -521,6 +521,7 @@ ${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
   <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something — type, or press 🎤 and talk" style="flex:1;min-width:200px">
   <button class="btn" id="st-voice" title="They hear: your browser turns speech into words; only the words travel (the vendor's recognizer may process audio in its cloud — type if that matters)">🎤</button>
   <button class="btn" id="st-camview" title="They see: while the camera is on, each message carries one fresh frame; the live feed never leaves this machine">📷</button>
+  <button class="btn" id="st-screen" title="Share your screen with the room: while sharing, whoever answers sees your current screen (frames in memory only, never stored)">🖥</button>
   <button class="btn" id="st-look" title="Pass one frame right now, without words">👁</button>
   <button class="btn" id="st-saybtn">Send</button>
   <label class="muted small" title="Replies spoken by your browser's voice"><input type="checkbox" id="st-tts" checked> 🔈</label>
