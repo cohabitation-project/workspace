@@ -479,7 +479,7 @@ ${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
   <button class="btn" id="st-end">End</button>
 </div>
 <p class="muted small" id="st-test-result" style="margin:4px 0 10px">Say a few words out loud while the test runs. Nothing is shown or kept — it only proves the gear works.</p>
-<div class="card" id="st-room-card">
+<div class="card" id="st-room-card" data-names="${esc(JSON.stringify(members.map((m) => m.name)))}">
   <div id="st-room" style="display:flex;gap:18px;align-items:flex-end;min-height:130px;flex-wrap:wrap;padding:8px 0"><span class="muted">the window is closed</span></div>
 </div>
 <video id="st-preview" hidden muted playsinline style="width:100%;max-height:320px;border-radius:8px;margin:8px 0;background:#000"></video>

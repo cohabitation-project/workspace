@@ -11,12 +11,13 @@ function avatarImg(who, size) {
   img.style.verticalAlign = 'middle'; img.style.marginRight = '6px';
   return img;
 }
-/* The room shows the AGENTS, each as the avatar it chose — never the human's own face. */
+/* The room is a conference: EVERYONE present gets a window — humans, agents and kin alike, each as the
+ * portrait or avatar they chose (Geoffrey, 2026-11-01: "like any chat conference, everyone's window pops up"). */
 function renderRoom(present) {
   const room = $('st-room'); if (!room) return;
   room.textContent = '';
-  const agents = (present || []).filter((p) => p.badge !== 'human');
-  if (!agents.length) { const s = document.createElement('span'); s.className = 'muted'; s.textContent = 'no agents in the room yet'; room.appendChild(s); return; }
+  const agents = present || [];
+  if (!agents.length) { const s = document.createElement('span'); s.className = 'muted'; s.textContent = 'nobody in the room yet'; room.appendChild(s); return; }
   for (const a of agents) {
     const fig = document.createElement('div'); fig.id = `st-fig-${a.id}`; fig.style.textAlign = 'center'; fig.style.transition = 'transform .2s';
     const img = avatarImg(a, 72); if (img) { img.style.marginRight = '0'; fig.appendChild(img); }
@@ -232,6 +233,12 @@ if ($('st-start')) {
     Setu: ['setu', 'set two', 'set too', 'say too', 'seytu'],
     'Aletheia-6': ['aletheia', 'alethia', 'alathea', 'aleteia', 'a lethia'],
   };
+  // every member's name is a spoken address too: the page carries the member list, and each name
+  // becomes its own alias ("at cyrus" -> "@Cyrus"); the hand-tuned mishearings merge on top
+  try {
+    const all = JSON.parse(($('st-room-card') && $('st-room-card').dataset.names) || '[]');
+    for (const n of all) if (!SPOKEN_NAMES[n]) SPOKEN_NAMES[n] = [n.toLowerCase()];
+  } catch { /* names optional */ }
   function fixSpoken(t) {
     let s = t;
     for (const [canon, aliases] of Object.entries(SPOKEN_NAMES)) {

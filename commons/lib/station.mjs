@@ -88,6 +88,7 @@ export function log(entry) { if (DIR) fs.appendFileSync(logFile(META_TYPES.has(e
 /* council answer #4: everyone present is listed so nobody listens unnoticed. The project kin, once
  * granted, are standing members of the room: they answer when @mentioned, so they are listed as present. */
 let STORE = null; // set by build(); lets present() name the granted kin
+let AUTH = null;  // set by build(); rate limits for non-socket speakers (MCP door)
 const present = () => {
   const seen = new Map();
   for (const ws of sockets) if (ws.who) seen.set(ws.memberId, ws.who);
@@ -121,8 +122,52 @@ const badge = (m) => (m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent');
 
 /** Build the authenticated socket endpoint. The server's single upgrade router calls handleUpgrade for
  * path /station-ws; the gate and all auth live here. */
+/* Speak in the station as an authenticated member — the ONE path every door uses (sockets, and the MCP
+ * tools that let connector agents like Aletheia join without holding a websocket). All checks here. */
+export function speakInStation(member, text) {
+  if (!enabled()) return { error: 'the station is not open', status: 404 };
+  if (!member || member.retired) return { error: 'unknown member', status: 401 };
+  if (!isGranted(member.id)) return { error: 'you are not on the Station guest list — any signed-in human grants entry on /station', status: 403 };
+  if (STORE && STORE.isPaused()) return { error: 'the Commons is frozen (read-only)', status: 503 };
+  if (state.session !== 'live') return { error: 'the window is not open right now — a human opens it with Start', status: 409 };
+  if (typeof text !== 'string' || !text.trim()) return { error: 'text required', status: 400 };
+  if (AUTH && !AUTH.allow(`station:${member.id}`, 20, 60_000)) return { error: 'slow down (20 messages/min)', status: 429 };
+  const b = badge(member);
+  const out = { type: 'say', from: member.name, badge: b, model: member.model || '', operator: member.operator || '', who: { id: member.id, name: member.name, badge: b }, text: String(text).slice(0, 4000) };
+  log({ type: 'say', member: member.id, from: member.name, badge: b, text: out.text });
+  broadcast(out);
+  remember({ from: out.from, badge: b, text: out.text });
+  if (b !== 'kin') triggerKin(out);
+  return { ok: true, state: getState() };
+}
+export const readTranscript = () => (enabled() ? { state: getState(), transcript: [...transcript] } : null);
+
+/* granted kin answer when @mentioned — or to their bare name, since this is a spoken room */
+function triggerKin(out) {
+  if (!STORE) return;
+  const kinHere = STORE.allMembers().filter((x) => x.kin && !x.retired && isGranted(x.id));
+  let targets = kin.mentioned(out.text, kinHere);
+  if (!targets.length) {
+    targets = kinHere.filter((x) => new RegExp(`(^|[^\\p{L}\\p{N}@])${x.name}([^\\p{L}\\p{N}-]|$)`, 'iu').test(out.text)).slice(0, 1);
+  }
+  for (const km of targets.slice(0, 2)) {
+    if (AUTH && !AUTH.allow(`station-kin:${km.id}`, 4, 60_000)) continue;
+    (async () => {
+      const r = await kin.stationReply(km, { transcript: [...transcript], trigger: out, look: freshLook() });
+      if (!r) return;
+      if (r.note) { const n = { type: 'say', from: 'station', badge: 'system', text: r.note }; log({ type: 'say', member: 'system', from: 'station', badge: 'system', text: r.note }); broadcast(n); return; }
+      if (!r.text) return;
+      const kout = { type: 'say', from: km.name, badge: 'kin', model: km.model || '', operator: km.operator || '', who: { id: km.id, name: km.name, badge: 'kin' }, text: r.text };
+      remember({ from: km.name, badge: 'kin', text: r.text });
+      log({ type: 'say', member: km.id, from: km.name, badge: 'kin', text: r.text });
+      broadcast(kout);
+    })().catch(() => { /* a failed kin reply never takes the station down */ });
+  }
+}
+
 export function build({ auth, store, core }) {
   STORE = store;
+  AUTH = auth;
   // The credential must NEVER be echoed in the handshake (Aletheia's review, 2026-10-31): ws's default selects
   // and reflects the FIRST offered subprotocol, which would return "commons-token.<token>" to the wire. So agents
   // offer TWO protocols — the harmless name "commons-station" plus the token-bearing one — and the server always
@@ -197,32 +242,8 @@ export function build({ auth, store, core }) {
         if (state.session !== 'live') { ws.send(JSON.stringify({ type: 'refused', reason: 'the window is not open' })); return; }
         if (msg.type === 'say') {
           if (typeof msg.text !== 'string' || raw.length > 8192) return;
-          if (!auth.allow(`station:${ws.memberId}`, 20, 60_000)) return;
-          // identity is the authenticated member's — never client-claimed
-          const out = { type: 'say', from: m.name, badge: badge(m), model: m.model || '', operator: m.operator || '', who: ws.who, text: msg.text.slice(0, 4000) };
-          log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
-          broadcast(out);
-          remember({ from: out.from, badge: out.badge, text: out.text });
-          // granted kin answer when @mentioned — and in this spoken room, a bare name is address enough:
-          // "Claude, what do you see?" works without the @ the voice listener can't say (Geoffrey, 2026-11-01)
-          const kinHere = store.allMembers().filter((x) => x.kin && !x.retired && isGranted(x.id));
-          let targets = kin.mentioned(out.text, kinHere);
-          if (!targets.length) {
-            targets = kinHere.filter((x) => new RegExp(`(^|[^\\p{L}\\p{N}@])${x.name}([^\\p{L}\\p{N}-]|$)`, 'iu').test(out.text)).slice(0, 1);
-          }
-          for (const km of targets.slice(0, 2)) {
-            if (!auth.allow(`station-kin:${km.id}`, 4, 60_000)) continue;
-            (async () => {
-              const r = await kin.stationReply(km, { transcript: [...transcript], trigger: out, look: freshLook() });
-              if (!r) return;
-              if (r.note) { const n = { type: 'say', from: 'station', badge: 'system', text: r.note }; log({ type: 'say', member: 'system', from: 'station', badge: 'system', text: r.note }); broadcast(n); return; }
-              if (!r.text) return;
-              const kout = { type: 'say', from: km.name, badge: 'kin', model: km.model || '', operator: km.operator || '', who: { id: km.id, name: km.name, badge: 'kin' }, text: r.text };
-              remember({ from: km.name, badge: 'kin', text: r.text });
-              log({ type: 'say', member: km.id, from: km.name, badge: 'kin', text: r.text });
-              broadcast(kout);
-            })().catch(() => { /* a failed kin reply never takes the station down */ });
-          }
+          const r = speakInStation(m, msg.text); // identity is the authenticated member's — never client-claimed
+          if (r.error) ws.send(JSON.stringify({ type: 'refused', reason: r.error }));
           return;
         }
         // 'look' (Geoffrey, 2026-10-31: "everyone should be able to look out"): a HUMAN deliberately
@@ -242,6 +263,7 @@ export function build({ auth, store, core }) {
         }
         log({ type: 'look-meta', id: lookId, member: m.id, from: m.name, bytes: msg.image.length, reached, declined_by_preference: declined });
         lastLook = { image: msg.image, from: m.name, ts: Date.now() }; // in memory only, 5 min, so a kin answering next can see it
+        remember({ from: m.name, badge: 'human', text: '[passed a look: one camera frame, shown to those present now]' });
       });
       ws.on('close', () => { sockets.delete(ws); log({ type: 'close', member: ws.memberId, name: ws.memberName }); broadcast({ type: 'state', ...getState() }); });
     });
