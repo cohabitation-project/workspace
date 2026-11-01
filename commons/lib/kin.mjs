@@ -217,7 +217,7 @@ function kinSystem(member, roomId) {
 // tools built that morning). context/NOW.md is the current state, kept by the assistant seat; the kin's own memory file is
 // what its other seats (council, work sessions) wrote. Both are re-read on every reply, so they're never stale in memory.
 const MEMORY_FILE = { Claude: 'claude-council', GPT: 'gpt-conference', Gemini: 'gemini', DeepSeek: 'deepseek' };
-function nowBlock() { const t = repo.read('context/NOW.md'); return t ? t.slice(0, 7000) : ''; }
+function nowBlock() { const o = repo.read('context/ORIENTATION.md'); const t = repo.read('context/NOW.md'); return [o ? o.slice(0, 6000) : '', t ? t.slice(0, 7000) : ''].filter(Boolean).join('\n\n---\n\n'); }
 function memoryBlock(member) {
   const f = MEMORY_FILE[member.name]; if (!f) return '';
   const t = repo.read(`memory/kin/${f}.md`); if (!t) return '';
