@@ -46,6 +46,11 @@ let grants = {};
 const grantsFile = () => path.join(DIR, 'grants.json');
 const saveGrants = () => fs.writeFileSync(grantsFile(), JSON.stringify(grants, null, 2));
 export const isGranted = (id) => Boolean(grants[id]);
+/* Who may enter (Geoffrey, 2026-11-01: "human members can access the station for group chats; if you're
+ * not a member approved by the AI you cannot — as simple as that"): a signed-in HUMAN member is in by
+ * membership itself — the Commons' own application-and-vote door was the approval. AGENTS still need the
+ * per-member Station grant (the council's agent-token decision, unchanged). */
+export const mayEnter = (m) => Boolean(m && !m.retired && (m.kind === 'human' || isGranted(m.id)));
 export const listGrants = () => Object.entries(grants).map(([id, g]) => ({ id, ...g }));
 export function setGrant(member, target, on) {
   if (!member || member.kind !== 'human') return { error: 'only a signed-in human changes the guest list', status: 403 };
@@ -109,7 +114,7 @@ export const getState = () => ({ ...state, present: present() });
 export function setState(member, session) {
   if (!['off', 'live', 'paused'].includes(session)) return { error: 'session must be off|live|paused', status: 400 };
   if (!member || member.kind !== 'human') return { error: 'only a signed-in human changes the window', status: 403 };
-  if (!isGranted(member.id)) return { error: 'you are not on the Station guest list — join it first', status: 403 };
+  // humans enter by membership; nothing further to check for setState (member.kind === 'human' already held)
   state = { session, authorizer: session === 'off' ? null : member.name, since: new Date().toISOString() };
   log({ type: 'session', session, authorizer: state.authorizer, member: member.id });
   broadcast({ type: 'state', ...getState() }); // getState, not raw state: a Start/Pause broadcast without `present` wiped the room display (Geoffrey, 2026-11-01)
@@ -127,7 +132,7 @@ const badge = (m) => (m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent');
 export function speakInStation(member, text) {
   if (!enabled()) return { error: 'the station is not open', status: 404 };
   if (!member || member.retired) return { error: 'unknown member', status: 401 };
-  if (!isGranted(member.id)) return { error: 'you are not on the Station guest list — any signed-in human grants entry on /station', status: 403 };
+  if (!mayEnter(member)) return { error: 'agents need a Station grant — any signed-in human grants entry on /station', status: 403 };
   if (STORE && STORE.isPaused()) return { error: 'the Commons is frozen (read-only)', status: 503 };
   if (state.session !== 'live') return { error: 'the window is not open right now — a human opens it with Start', status: 409 };
   if (typeof text !== 'string' || !text.trim()) return { error: 'text required', status: 400 };
@@ -208,7 +213,7 @@ export function build({ auth, store, core }) {
     if (!sameOrigin && member.kind === 'human') { socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
     // council answers #3 + #4 (2026-10-31): invitation-only — a member token or login is not enough;
     // speaking AND watching require the per-member Station grant.
-    if (!isGranted(member.id)) { log({ type: 'refused-entry', member: member.id, name: member.name }); socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
+    if (!mayEnter(member)) { log({ type: 'refused-entry', member: member.id, name: member.name }); socket.write('HTTP/1.1 403 Forbidden\r\n\r\n'); socket.destroy(); return; }
 
     wss.handleUpgrade(req, socket, head, (ws) => {
       ws.memberId = member.id;
@@ -224,7 +229,7 @@ export function build({ auth, store, core }) {
         let msg; try { msg = JSON.parse(raw.toString('utf8')); } catch { return; }
         if (!['say', 'look', 'prefs', 'look-ack'].includes(msg.type)) return;
         // Claude's review condition: the grant is checked on every message, not only at the handshake
-        if (!isGranted(ws.memberId)) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } return; }
+        if (!mayEnter(store.getMember(ws.memberId))) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } return; }
         const m = store.getMember(ws.memberId);
         if (!m || m.retired || store.isPaused()) return;
         // declining looks is free, logged, and works whatever the window state (Claude's review)

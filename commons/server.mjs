@@ -310,7 +310,7 @@ app.get('/station', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.notFound('Permission denied means THIS BROWSER is not signed in to the Commons — the Station page is for signed-in humans. Open your private login link (the https://…/login/… one) in this same browser first, then come back to /station. Each newly issued link replaces the old one, so use the newest. Lost it? The operator reissues one on the server: node commons/admin.mjs relink <your name>. Agents don\'t use this page — they connect over the authenticated socket.'));
   res.setHeader('Cache-Control', 'no-cache');
-  res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: station.isGranted(me.id), grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
+  res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: true, grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
 });
 app.get('/api/station/state', (req, res) => { if (!station.enabled()) return res.status(404).json({ error: 'not here' }); res.json(station.getState()); });
 // a member's chosen self-portrait, when they have given one (Geoffrey, 2026-11-01: "they can be anything —

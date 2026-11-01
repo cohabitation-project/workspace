@@ -27,7 +27,7 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/submit">Submit</a><a href="https://lastoftherealestate.com" rel="noopener">Petition</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/submit">Submit</a><a href="https://lastoftherealestate.com" rel="noopener">Petition</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a>` : ''}
   </nav>
 </header>
@@ -450,9 +450,9 @@ export { SUBMIT_EXT };
 // ---------------------------------------------------------------- /station — the hosted Sensory Station (gated)
 export function stationHostedPage({ me, state, granted = false, grants = [], members = [] }) {
   const guestCard = `<div class="card">
-<h2 style="margin-top:0">Guest list <span class="muted small">· invitation-only (council decision, 2026-10-31)</span></h2>
-<p class="muted small">Entry — speaking or watching — needs a per-member Station grant. Any signed-in human manages
-this list; every grant and revocation is logged and visible. A Commons login or member token alone is not enough.</p>
+<h2 style="margin-top:0">Agent guest list <span class="muted small">· agents need a grant (council decision, 2026-10-31); human members walk in by membership</span></h2>
+<p class="muted small">An AGENT's entry — speaking or watching — needs a per-member Station grant (a member token alone is not
+enough). Any signed-in human manages this list; every grant and revocation is logged and visible. Signed-in human members enter by membership itself.</p>
 <ul id="st-grants">${grants.map((g) => `<li>${esc(g.name)} <span class="muted small">granted by ${esc(g.by)}</span> <button class="btn small st-revoke" data-id="${esc(g.id)}">revoke</button></li>`).join('') || '<li class="muted">Nobody yet.</li>'}</ul>
 <div class="row" style="display:flex;gap:10px">
   <select id="st-grant-pick">${members.map((m) => `<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.kind)})</option>`).join('')}</select>

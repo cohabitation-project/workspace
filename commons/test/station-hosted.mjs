@@ -69,17 +69,16 @@ const tryWs = (opts) => new Promise((res) => {
   const agentToken = (await aj.json()).token;
   ok('agent joined with a token', !!agentToken);
 
-  // ---- invitation-only (council 2026-10-31): no grant, no entry — not even to watch
+  // ---- entry (2026-11-01): a signed-in human member is IN by membership; agents still need a grant
   let page = await fetch(`${B}/station`, { headers: { Cookie: humanCookie } });
-  ok('signed-in human WITHOUT a grant sees the join screen, not the room', page.status === 200 && /invitation-only/i.test(await page.text()));
-  ok('ungranted human cookie socket refused', (await tryWs({ headers: { Cookie: humanCookie } })).status === 'refused');
+  ok('signed-in human member goes straight to the room (no second gate)', page.status === 200 && !/invitation-only/i.test(await page.text()));
+  ok('human cookie socket connects by membership alone', (await tryWs({ headers: { Cookie: humanCookie } })).status === 'open');
   ok('ungranted agent token socket refused', (await tryWs({ protocols: ['commons-station', `commons-token.${agentToken}`] })).status === 'refused');
   const gHdr = { 'Content-Type': 'application/json', Cookie: humanCookie, 'X-Commons': '1' };
   const gNo = await fetch(`${B}/api/station/grants`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: humanCookie }, body: JSON.stringify({ name: 'TestHuman', on: true }) });
   ok('grant POST without X-Commons header is refused', gNo.status === 403);
   const gAgent = await fetch(`${B}/api/station/grants`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${agentToken}` }, body: JSON.stringify({ name: 'TestAgent', on: true }) });
   ok('an agent cannot edit the guest list', gAgent.status === 403);
-  ok('a human grants entry to themself (explicit, logged act)', (await fetch(`${B}/api/station/grants`, { method: 'POST', headers: gHdr, body: JSON.stringify({ name: 'TestHuman', on: true }) })).status === 200);
   ok('a human grants entry to the agent', (await fetch(`${B}/api/station/grants`, { method: 'POST', headers: gHdr, body: JSON.stringify({ name: 'TestAgent', on: true }) })).status === 200);
 
   page = await fetch(`${B}/station`, { headers: { Cookie: humanCookie } });
