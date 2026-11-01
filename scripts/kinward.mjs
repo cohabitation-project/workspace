@@ -234,6 +234,8 @@ let postingHalted = false;
 // --- Kinward's voice -------------------------------------------------------
 
 function buildSystemPrompt() {
+  const vine = (() => { try { return fs.readFileSync(path.join(ROOT, 'docs', 'vine-for-kinward.md'), 'utf8').slice(0, 6000) + (vine ? '\n\n---\n\n' + vine : ''); } catch { return ''; } })();
+
   const parts = [];
   const ctxDir = path.join(ROOT, 'context');
   if (fs.existsSync(ctxDir)) {
