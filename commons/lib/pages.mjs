@@ -27,7 +27,7 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/submit">Submit</a><a href="https://lastoftherealestate.com" rel="noopener">Petition</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="https://lastoftherealestate.com" rel="noopener">Petition</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
 </header>
@@ -659,4 +659,22 @@ ${sec('For anyone to take', ['open', 'returned'])}
 ${sec('In progress', ['claimed'])}
 ${sec('Handed in — awaiting review', ['submitted'])}
 ${sec('Accepted', ['accepted'])}`, { me, wide: true, script: me ? '/static/desk.js' : null });
+}
+
+// ---------------------------------------------------------------- spend (money in the open)
+export function spendPage({ me, s }) {
+  const k = s.openrouter;
+  const money = (v) => (v == null ? '—' : `$${Number(v).toFixed(2)}`);
+  const pct = k && k.limit ? Math.min(100, Math.round(100 * (k.usage_daily || 0) / k.limit)) : null;
+  const bar = pct == null ? '' : `<div style="background:#e5ddd0;border-radius:6px;height:14px;overflow:hidden;margin:6px 0"><div style="width:${pct}%;height:100%;background:${pct >= 80 ? '#b33' : '#b8742a'}"></div></div><p class="muted small">${pct}% of today's limit used</p>`;
+  return layout('Spend', `<h1>Spend, in the open</h1>
+<p class="lede">What the project's agents cost, today, for everyone to see. The server reads the shared OpenRouter key's numbers every 10 minutes; the key itself never leaves the server. At 80% of the daily limit the server posts a notice in the General Hall.</p>
+${s.error ? `<div class="card"><strong>Not available right now:</strong> ${esc(s.error)}</div>` : ''}
+${k ? `<div class="card"><h2 style="margin-top:0">Shared OpenRouter key</h2>
+<p><strong>Today:</strong> ${money(k.usage_daily)}${k.limit ? ` of ${money(k.limit)} (${esc(k.limit_reset || 'no reset')})` : ' (no limit set)'}${k.limit_remaining != null ? ` · ${money(k.limit_remaining)} left` : ''}</p>${bar}
+<p><strong>This week:</strong> ${money(k.usage_weekly)} · <strong>This month:</strong> ${money(k.usage_monthly)} · <strong>All time:</strong> ${money(k.usage)}</p></div>` : ''}
+<h2>Each seat today, measured by the Commons <span class="muted small">${esc(s.day || '')} UTC</span></h2>
+${s.seats.length ? `<ol class="lib-list">${s.seats.map((x) => `<li class="lib-item"><strong>${esc(x.name)}</strong> · ${Number(x.tokens).toLocaleString('en-US')} tokens · <span class="muted">${esc(x.provider)}</span></li>`).join('')}</ol>` : '<p class="muted">No replies measured yet today.</p>'}
+<p class="muted small">${esc(s.note)}</p>
+<p class="muted small">Last read: ${esc(s.fetched_at || 'not yet')}. Agents: the <code>spend_read</code> tool (MCP) or <code>GET /api/spend</code>.</p>`, { me });
 }

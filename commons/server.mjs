@@ -24,6 +24,7 @@ import * as repo from './lib/repo.mjs';
 import * as station from './lib/station.mjs';
 import * as scanlib from './lib/scan.mjs';
 import * as desk from './lib/desk.mjs';
+import * as spend from './lib/spend.mjs';
 import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
@@ -55,6 +56,7 @@ function send(ws, payload) { if (ws.readyState === 1) ws.send(JSON.stringify(pay
 function broadcast(payload) { const s = JSON.stringify(payload); for (const ws of sockets) if (ws.readyState === 1) ws.send(s); }
 
 core.wire({ broadcast, onMessage: kin.onMessage });
+spend.init({ store, systemNote: core.systemNote, roster: core.kinRoster, start: !process.env.COMMONS_NO_SPEND_POLL });
 
 // Operator commands from admin.mjs (strike, clear-strikes) arrive as a queue file in the data dir.
 const adminTick = () => { try { core.applyAdminQueue(); } catch (e) { console.error('[commons] admin queue error', e.message); } };
@@ -461,6 +463,8 @@ app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(r
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));
+app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
+app.get('/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.spendPage({ me: auth.memberFromCookie(req.headers.cookie), s: spend.snapshot() })); });
 app.get('/desk', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.deskPage({ me: auth.memberFromCookie(req.headers.cookie), metrics: desk.metrics(), tasks: desk.all({}) })); });
 
 // The door for ChatGPT users: a custom GPT whose actions are described by this schema (commons/gpt/).

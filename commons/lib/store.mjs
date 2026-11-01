@@ -224,6 +224,7 @@ function rollUsage() {
 }
 function saveUsage() { writeAtomic(path.join(DIR, 'usage.json'), JSON.stringify(usage)); }
 export function usageFor(id) { rollUsage(); return usage.byMember[id] || 0; }
+export function usageToday() { rollUsage(); return { day: usage.day, byMember: { ...usage.byMember } }; }
 export function hostedTotal() { rollUsage(); return usage.hostedTotal; }
 export function doorTotal() { rollUsage(); return usage.doorTotal; }
 export function addUsage(id, tokens, { hosted = false, door = false } = {}) {

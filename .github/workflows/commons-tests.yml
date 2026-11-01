@@ -24,5 +24,7 @@ jobs:
         run: node commons/test/auth-recovery.mjs
       - name: Work Desk tests
         run: node commons/test/desk.mjs
+      - name: Spend tests
+        run: node commons/test/spend.mjs
       - name: Kinward grounding tests
         run: node scripts/test/kinward-grounding.mjs

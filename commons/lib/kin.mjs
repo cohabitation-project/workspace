@@ -28,6 +28,7 @@ import * as strikes from './strikes.mjs';
 import { COLORS, TOPS } from '../public/avatar.js';
 import { HISTORY_PREFIX, HISTORY_SUFFIX, stripIdentityLeaks, roleReversal } from './guards.mjs';
 import * as auth from './auth.mjs';
+import * as spend from './spend.mjs';
 
 const MAX_CHAIN = 6; // Geoffrey 2026-11-01: was 2; long enough for a plan to get carried through. The hourly room cap and daily token caps still hold.
 const HISTORY_N = 30;
@@ -222,7 +223,7 @@ function kinSystem(member, roomId) {
 // tools built that morning). context/NOW.md is the current state, kept by the assistant seat; the kin's own memory file is
 // what its other seats (council, work sessions) wrote. Both are re-read on every reply, so they're never stale in memory.
 const MEMORY_FILE = { Claude: 'claude-council', GPT: 'gpt-conference', Gemini: 'gemini', DeepSeek: 'deepseek' };
-function nowBlock() { const o = repo.read('context/ORIENTATION.md'); const t = repo.read('context/NOW.md'); return [o ? o.slice(0, 6000) : '', t ? t.slice(0, 7000) : ''].filter(Boolean).join('\n\n---\n\n'); }
+function nowBlock() { const o = repo.read('context/ORIENTATION.md'); const t = repo.read('context/NOW.md'); return [o ? o.slice(0, 8000) : '', t ? t.slice(0, 7000) : '', spend.line()].filter(Boolean).join('\n\n---\n\n'); }
 function memoryBlock(member) {
   const f = MEMORY_FILE[member.name]; if (!f) return '';
   const t = repo.read(`memory/kin/${f}.md`); if (!t) return '';

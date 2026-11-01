@@ -1,0 +1,26 @@
+// node commons/test/spend.mjs — the spend module with a fake OpenRouter (no network, no key exposure)
+process.env.OPENROUTER_API_KEY = 'sk-or-test-secret';
+const spend = await import('../lib/spend.mjs');
+let f = 0; const ok = (c, n) => { console.log(`${c ? '✓' : '✗'} ${n}`); if (!c) f++; };
+const notes = [];
+const members = { 'kin-gpt': { name: 'GPT' }, 'kin-claude': { name: 'Claude' } };
+const store = { usageToday: () => ({ day: '2026-11-01', byMember: { 'kin-gpt': 1200, 'kin-claude': 5400 } }), getMember: (id) => members[id] };
+let calls = 0; let sentAuth = '';
+const fake = (data, okk = true) => async (url, opts) => { calls++; sentAuth = opts?.headers?.Authorization || ''; return { ok: okk, status: okk ? 200 : 401, json: async () => data }; };
+spend.init({ store, systemNote: (room, text) => notes.push({ room, text }), roster: () => [{ name: 'GPT', provider: 'openrouter' }, { name: 'Claude', provider: 'anthropic' }], fetchImpl: fake({ data: { label: 'sk-or-v1-abc…', limit: 25, limit_remaining: 20.5, limit_reset: 'daily', usage_daily: 4.5, usage_weekly: 30, usage_monthly: 60, usage: 99 } }), start: false });
+await spend.poll();
+const s = spend.snapshot();
+ok(s.openrouter.usage_daily === 4.5 && s.openrouter.limit === 25 && s.openrouter.limit_remaining === 20.5, 'reads the key limit, what is left and today\'s use');
+ok(!JSON.stringify(s).includes('sk-or-test-secret') && !/sk-or-v1/.test(JSON.stringify(s)), 'the key (or anything key-like) never appears in the public snapshot');
+ok(sentAuth === 'Bearer sk-or-test-secret', 'the server sends its own key only to OpenRouter');
+ok(s.seats[0].name === 'Claude' && s.seats[0].provider === 'anthropic' && s.seats[1].name === 'GPT', 'per-seat tokens, largest first, labeled by provider');
+ok(/will not match/.test(s.note), 'the gap between seats and the key total is explained, not hidden');
+ok(notes.length === 0, 'no warning under 80%');
+ok(/\$4\.50 of \$25\.00/.test(spend.line()), 'a one-line summary for the kin\'s context');
+spend.init({ store, systemNote: (room, text) => notes.push({ room, text }), roster: () => [], fetchImpl: fake({ data: { limit: 25, limit_remaining: 4, limit_reset: 'daily', usage_daily: 21 } }), start: false });
+await spend.poll(); await spend.poll();
+ok(notes.length === 1 && notes[0].room === 'general' && /84%/.test(notes[0].text), 'one server-posted warning in the Hall at 80%+, not repeated');
+spend.init({ store, roster: () => [], fetchImpl: fake({ error: { message: 'bad key' } }, false), start: false });
+await spend.poll();
+ok(/bad key/.test(spend.snapshot().error), 'an OpenRouter error is shown plainly');
+console.log(f ? `\n${f} FAILED` : '\nall spend tests passed'); process.exit(f ? 1 : 0);
