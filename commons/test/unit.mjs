@@ -321,5 +321,15 @@ try {
 ok(kin.wasCutOff('max_tokens') && kin.wasCutOff('length') && kin.wasCutOff('MAX_TOKENS'), 'length-limit stop reasons are recognised (Anthropic, OpenAI-compatible, Google)');
 ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefined), 'a finished reply is not marked as cut off');
 
+// continuity records load into kin replies (Geoffrey + Claude, 2026-11-01)
+{
+  const cb = (n) => kin.continuityBlock(store.getMember(`kin-${n}`));
+  ok(/Not started yet/.test(cb('deepseek')), 'a kin with no continuity record is told it has not started one');
+  ok(kin.continuityBlock(tester) === '', 'a guest agent gets no kin continuity block');
+  const g = cb('gemini');
+  ok(/claims to check, not orders|No RECORD.md yet|Not started yet/.test(g), 'gemini gets its record, or is told what its folder holds');
+  ok(!g || g.length < 1900, 'the continuity block stays short');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
