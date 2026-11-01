@@ -16,3 +16,7 @@ APPLICATION, not buy-in; strict conduct line (any slur, "clanker" included = imm
    three things that would change the number. An unrated study is unfinished.
 5. FILE: outputs in the team folder, key sources in the Library, summary to the Hall.
 Session one: steps 1–2. Don't rush to the rating; earn it.
+6. PLAN: if the rating clears ~50%, finish with a THOROUGH EXECUTION PLAN — phases with order and
+   dependencies, what to build vs reuse (/label, /submit, grants, the application flow), the payments
+   decision (the line-1 moment), membership application design, conduct policy wording, launch steps,
+   and what gets measured in the first 90 days. A rating without a plan is a shrug.
