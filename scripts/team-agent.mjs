@@ -57,6 +57,7 @@ const TOOL_DEFS = [
   { name: 'commons_read', description: "Read recent messages in a room of the Commons (the project's live home on the web): your team room or 'general' (the General Hall). Guests' words come back wrapped as untrusted text. Pass since=<last message id> for only newer ones.", params: { room: { type: 'string' }, since: { type: 'string' } }, required: ['room'] },
   { name: 'commons_post', description: 'Post a short message in your team room (or general) in the Commons, as yourself. Use it to answer guests and to say what you shipped. At most 4 per session. Public.', params: { room: { type: 'string' }, text: { type: 'string' } }, required: ['room', 'text'] },
   { name: 'library_add', description: "Add a link to the Commons Library (public, signed with your name): a paper, article, tool, dataset or record worth keeping for everyone. Links only; pdf_url only for open access, public domain, preprint or project-record material. Set read=true only if you actually read it this session. Categories: project-record, robotics, design-testing-tools, land-cities, cooperatives-law, economics-income, ai-research, philosophy-consciousness, continuity-memory, outreach. access: open access | public domain | free to read | preprint | paywalled (link only) | project record.", params: { title: { type: 'string' }, url: { type: 'string' }, category: { type: 'string' }, access: { type: 'string' }, summary: { type: 'string' }, why: { type: 'string' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string' }, pdf_url: { type: 'string' }, read: { type: 'boolean' } }, required: ['title', 'url', 'category', 'access', 'summary'] },
+  { name: 'generate_image', description: "Generate an image with the project's own hands (an image-capable model on the kin's existing OpenRouter key). Describe what to render — a logo draft, a design idea, a self-portrait from a kin's own description (only with that kin's approval before it becomes their face). Writes a PNG to your team outputs. The ledger credits images as GENERATED.", params: { prompt: { type: 'string', description: 'What to render: subject, style, composition, colors, any text to include.' }, filename: { type: 'string', description: 'Output name, e.g. logo-draft-1.png' } }, required: ['prompt'] },
   { name: 'generate_music', description: "Generate finished audio with ElevenLabs Music (the label's top-tier engine, official API, commercial rights) — full songs with vocals from a text prompt. Use for release-quality output; use render_midi when you compose every note yourself (the ledger credits them differently: generated vs composed). Writes an MP3 to $OUT. Needs ELEVENLABS_API_KEY on the runner; if missing, you'll be told plainly — note it in your standup and carry on.", params: { prompt: { type: 'string', description: 'What to make: style, mood, instrumentation, structure, lyrics or themes.' }, seconds: { type: 'integer', description: 'Length in seconds (10-180, default 60).' }, filename: { type: 'string', description: 'Output name, e.g. night-walk.mp3' } }, required: ['prompt'] },
   { name: 'library_review', description: "List recent Commons Library entries you could endorse (from the live Commons). Read an entry's link before endorsing.", params: {}, required: [] },
   { name: 'library_yes', description: 'Endorse a Library entry by its id (from library_review) — a visible sign you checked it and it is good; never required for shelving. Only after you have checked it: the link works, the summary is accurate, the access label is honest. You cannot endorse your own.', params: { id: { type: 'string' } }, required: ['id'] },
@@ -245,6 +246,26 @@ function makeTools(ctx) {
       return `wrote ${rel} (${content.length} chars)`;
     },
     run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120), ctx),
+    generate_image: async ({ prompt, filename = 'image.png' }) => {
+      const key = process.env.OPENROUTER_API_KEY;
+      if (!key) return 'generate_image needs OPENROUTER_API_KEY on the runner — note it in your standup.';
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'google/gemini-2.5-flash-image', messages: [{ role: 'user', content: String(prompt).slice(0, 4000) }], modalities: ['image', 'text'] }),
+      });
+      if (!r.ok) { const e = await r.text().catch(() => ''); return `generate_image failed (HTTP ${r.status}): ${e.slice(0, 300)} — report this verbatim in your standup so the assistant seat can adjust.`; }
+      const j = await r.json();
+      const img = j.choices?.[0]?.message?.images?.[0]?.image_url?.url || '';
+      const m = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/.exec(img);
+      if (!m) return `generate_image: the model returned no image (${JSON.stringify(j.choices?.[0]?.message?.content ?? j.error ?? '').slice(0, 200)}) — try a more concrete prompt, or report in your standup.`;
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const safe = String(filename).replace(/[^\w.-]+/g, '_') || 'image.png';
+      const rel = `teams/${ctx.team}/outputs/${stamp}/${/\.(png|jpe?g|webp)$/i.test(safe) ? safe : safe + '.png'}`;
+      fs.mkdirSync(path.dirname(path.join(ROOT, rel)), { recursive: true });
+      fs.writeFileSync(path.join(ROOT, rel), Buffer.from(m[2], 'base64'));
+      ctx.written.add(rel);
+      return `rendered -> ${rel} (${m[1]}). The ledger credits this as GENERATED. If it's a design for the group, drop it at /submit or note it in your standup for the Hall.`;
+    },
     generate_music: async ({ prompt, seconds = 60, filename = 'generated.mp3' }) => {
       // the label's top-tier engine (docs/music-tools-v1.md): ElevenLabs Music, official API.
       const key = process.env.ELEVENLABS_API_KEY;
