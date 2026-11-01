@@ -80,6 +80,13 @@ async function setGrant(body) {
 if ($('st-grant-add')) $('st-grant-add').onclick = () => { const id = $('st-grant-pick').value; if (id) setGrant({ member_id: id, on: true }); };
 for (const b of document.querySelectorAll('.st-revoke')) b.onclick = () => setGrant({ member_id: b.dataset.id, on: false });
 
+/* sign in another device: mint a short one-time code right here, no terminal anywhere */
+if ($('st-devcode')) $('st-devcode').onclick = async () => {
+  const r = await fetch('/api/device-code', { method: 'POST', headers: { 'X-Commons': '1' } });
+  const j = await r.json().catch(() => ({}));
+  $('st-devcode-out').textContent = r.ok ? `type this there: ${j.type_this}` : (j.error || 'refused');
+};
+
 let ws;
 function connect() {
   if (!$('st-talk')) return; // join screen: no socket

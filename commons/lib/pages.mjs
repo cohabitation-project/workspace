@@ -506,6 +506,9 @@ reach everyone near you — tell them, don't use either over an objection, never
   <label>Microphone: <select id="st-mic"><option value="">default</option></select></label>
   <span class="muted small">names appear after the first test; 🎤 uses the system-default mic</span>
 </div>
+<p style="margin-top:10px"><button class="btn small" id="st-devcode">Sign in another device</button>
+<strong id="st-devcode-out" style="letter-spacing:1px;margin-left:10px"></strong></p>
+<p class="muted small">Click it here, type the short address it shows on the other device — that's the whole sign-in. Works once, lasts 15 minutes.</p>
 <p class="muted small" style="margin-top:8px">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own member
 identity; nobody speaks under a name the server didn't verify.</p>
 ${guestCard}
