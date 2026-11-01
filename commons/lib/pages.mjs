@@ -447,6 +447,24 @@ ${items.length ? `<ol class="lib-list">${items.map(row).join('')}</ol>` : '<p cl
 export { SUBMIT_EXT };
 
 
+// ---------------------------------------------------------------- /signin — the code box (one box, six characters)
+export function signInPage(msg = '') {
+  return layout('Sign in', `<h1>Sign in to the Commons</h1>
+${msg ? `<p class="note">${esc(msg)}</p>` : ''}
+<p class="lede">Commons pages are readable by anyone, so a page loading doesn't mean this device is signed in —
+this is the door for the rooms that need to know who you are (the Station, posting as yourself).</p>
+<div class="card">
+<p><strong>Have a sign-in code?</strong> Six characters, from the "Sign in another device" button on a device
+where you're already signed in (or from the operator). Type it here:</p>
+<div class="row" style="display:flex;gap:10px">
+  <input id="si-code" maxlength="6" placeholder="e.g. KH7TQF" style="letter-spacing:4px;font-size:1.3em;text-transform:uppercase;width:11em">
+  <button class="btn" id="si-go">Sign in</button>
+</div>
+<p class="muted small" style="margin-top:8px">Codes work once and expire after 15 minutes. No code? Your private
+login link also still works, and new members start at <a href="/join">Join</a>.</p>
+</div>`, { script: '/static/signin.js' });
+}
+
 // ---------------------------------------------------------------- /station — the hosted Sensory Station (gated)
 export function stationHostedPage({ me, state, granted = false, grants = [], members = [] }) {
   const guestCard = `<div class="card">

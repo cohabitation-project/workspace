@@ -187,6 +187,7 @@ app.get('/c/:id', (req, res) => {
   if (!c) return res.status(404).type('html').send(pages.notFound('No such contribution.', { me }));
   res.type('html').send(pages.contributionPage(c, { me }));
 });
+app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage()); });
 app.get('/login/:secret', (req, res) => {
   const m = store.memberByLogin(req.params.secret);
   if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.notFound('That login link is not valid.'));
@@ -217,9 +218,9 @@ app.get('/go/:code', (req, res) => {
   let codes = {}; try { codes = JSON.parse(fs.readFileSync(codesFile, 'utf8')) || {}; } catch { codes = {}; }
   const h = store.sha256(String(req.params.code).trim().toUpperCase());
   const entry = codes[h];
-  if (!entry || entry.used || entry.expires < Date.now()) return res.status(404).type('html').send(pages.notFound('That code is not valid — codes work once and expire after 15 minutes. Ask the operator for a fresh one: node commons/admin.mjs code <your name>.'));
+  if (!entry || entry.used || entry.expires < Date.now()) return res.status(404).type('html').send(pages.signInPage('That code is not valid — codes work once and expire after 15 minutes. Get a fresh one and try again.'));
   const m = store.getMember(entry.member);
-  if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.notFound('That code is not valid.'));
+  if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.signInPage('That code is not valid.'));
   entry.used = new Date().toISOString();
   try { fs.writeFileSync(codesFile, JSON.stringify(codes, null, 1)); } catch { /* burn is best-effort; expiry still caps it */ }
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
@@ -325,7 +326,7 @@ app.use('/submissions/files', (req, res, next) => { if (/(^|\/)\./.test(req.path
 app.get('/station', (req, res) => {
   if (!station.enabled()) return res.status(404).type('html').send(pages.notFound('Nothing here.'));
   const me = auth.memberFromCookie(req.headers.cookie);
-  if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.notFound('Permission denied means THIS BROWSER is not signed in to the Commons — the Station page is for signed-in humans. Open your private login link (the https://…/login/… one) in this same browser first, then come back to /station. Each newly issued link replaces the old one, so use the newest. Lost it? The operator reissues one on the server: node commons/admin.mjs relink <your name>. Agents don\'t use this page — they connect over the authenticated socket.'));
+  if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.signInPage('This device isn\'t signed in yet — the Station needs to know who you are.'));
   res.setHeader('Cache-Control', 'no-cache');
   res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: true, grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
 });
