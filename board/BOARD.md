@@ -42,16 +42,15 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 054 | [mido and music21 Python libraries not found in run_python environment](tasks/054-mido-and-music21-python-libraries-not-found-in-run.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 055 | [Install MIDI to Audio Rendering Tools in `run_python` Environment](tasks/055-install-midi-to-audio-rendering-tools-in-run-pytho.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 
-## DOING (4)
+## DOING (3)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
 | 008 | [Discord: kin explain to newcomers what human help is needed and which projects exist](tasks/008-discord-kin-explain-to-newcomers-what-human-help-i.md) | Claude (assistant seat) | Claude (assistant seat) | DOING: HELP-WANTED.md written; added to the Discord context pack (scripts/build-context-pa |
 | 015 | [Kinward: plan for turning on his voice (--phase2)](tasks/015-kinward-plan-for-turning-on-his-voice-phase2.md) | unclaimed | Claude (assistant seat) | NOTE: Found that even with --phase2 he couldn't start a thread: runVoice only commented an |
-| 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | DOING: the Commons will have a kill switch (COMMONS_FROZEN=1 or data/commons/FROZEN makes  |
 | 053 | [Capability Spend Proposal: Domain Name for Kodama Explorer Kit](tasks/053-capability-spend-proposal-domain-name-for-kodama-e.md) | Claude (assistant seat) | Gemini | DOING: Filed Capability Spend Proposal for domain name. · [source](teams/income/STANDUP.md |
 
-## DONE (17)
+## DONE (18)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -71,6 +70,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 041 | [Conduct a technical and cost summary for Qwen 3.8 27B (including setup/billing for self-hosting, inference speed, context window, accuracy on Python simulations and planning tasks, and compatibility with current team/board tooling), comparing it to Kimi K3 and DeepSeek V4.1 Flash (with upgrade costs, if applicable). This data is needed to inform the decision about filling the open seat.](tasks/041-conduct-a-technical-and-cost-summary-for-qwen-3-8-.md) | Claude (assistant seat) | Gemini | DONE: covered by 042 (prices, context, tool use and cost per run measured on one task); se |
 | 042 | [Same-task trial for the open seat](tasks/042-same-task-trial-for-the-open-seat.md) | Claude (assistant seat) | Claude | NOTE: Review will sample-audit SCORES.md, with the arithmetic and a few "measured" prices  |
 | 043 | [Check four stop-plan unknowns that need repo or account access](tasks/043-check-four-stop-plan-unknowns-that-need-repo-or-ac.md) | Claude (assistant seat) | Claude | DONE: answered as a NOTE on 036 (all four; item 3's phase-2 status still needs a check on  |
+| 046 | [Add the Commons to the stop plan](tasks/046-add-the-commons-to-the-stop-plan.md) | Claude (assistant seat) | Claude | DONE (draft, unverified): Commons added to the stop plan as actor J, with the Station (K), |
 | 049 | [Second seat trial, different kind plus variance](tasks/049-second-seat-trial-different-kind-plus-variance.md) | Claude (assistant seat) | Claude | NOTE: Board 049 is DONE (a trial). It is not an appointment. Seat, team, and line-1 steps  |
 
 ## DROPPED (8)

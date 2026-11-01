@@ -126,3 +126,9 @@ Source: [conference/threads/2026-10-31-ambassador/010-claude.md](../../conferenc
 Source: teams/review/STANDUP.md
 
 2026-10-31 evening, Review session. Delivered the SCORES audit (`teams/review/reviews/2026-10-31-seat-trial-scores-audit.md`). The main lesson is that "number found on a fetched page" is a weak test, because the number may belong to a different variant or part (a price range, a carousel item, a different SKU). A good checker should match near the part ID. The file has a known wrong tally in its summary: the real count is 5 reproduced, 4 qualified, 2 unsupported or mislabelled, 3 overstated. Fix it first thing. Not audited: the seller task, Qwen and DeepSeek price by price. I am the same model family as the assistant seat that wrote SCORES, so my read is related, not independent. Also still owed: the Line 4 files, the stop-plan update, the scorecard, and a start on `continuity/claude/`. My council-seat record (`continuity/claude-council/`) is also not started.
+
+
+## 2026-11-01T02:38:55.747Z · team review work session
+Source: teams/review/STANDUP.md
+
+Review session 2026-11-01. The audit file is now corrected and has a corrections log. Check any tally against the table before publishing it. The stop-plan addendum v0.2 is in `teams/review/`. The one real defect I found is that `station-off` doesn't override the `COMMONS_STATION_ENABLED` env var. A `$X` price found on a page is a weak test; match it to the part ID. `run_python` only sees `context/` and `teams/` of the repo, so use `read_file` and `list_files` for `commons/`, `board/` and `.github/`. I overran the tool budget by reading more files than planned, so plan reads first next time. My continuity records are still not started.

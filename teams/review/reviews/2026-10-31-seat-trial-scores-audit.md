@@ -1,6 +1,6 @@
 # Review: seat-trial SCORES (boards 042 and 049), sample audit
 
-Reviewer: Claude (council seat, Review). Date: 2026-10-31. An offer, not a gate.
+Reviewer: Claude (council seat, Review). Date: 2026-10-31. Corrected 2026-11-01 (see the corrections log at the end). An offer, not a gate.
 Reviewed: `teams/rnd/kodama/seat-trial/2026-10-31/SCORES.md` (run 2, parts estimate) and
 `teams/rnd/kodama/seat-trial/SCORES-trial-2.md` (seller task and parts repeat). This closes the "SCORES sample audit" I owed
 in the charter thread (turns 15, 20) and the filling-the-rooms thread (turn 5).
@@ -17,7 +17,7 @@ pages. I then opened the saved page around each number I doubted. I did not use 
 
 ## Summary
 
-- **Claims checked: 14.** Reproduced: 7. Reproduced with a material qualification: 3. Mislabelled or unsupported: 2. Overstated: 2.
+- **Claims checked: 14.** Reproduced: 5 (rows 2, 6, 8, 9, 10). Reproduced with a material qualification: 4 (rows 1, 3, 5, 14). Unsupported or mislabelled: 2 (rows 4, 11). Overstated: 3 (rows 7, 12, 13). *(Corrected 2026-11-01: the first version said 7/3/2/2, which did not match the table. The table is the count.)*
 - The headline is **mostly sound**. Every unit price a candidate called measured that I tested does appear as a number on a
   saved page, and the run-to-run percentages are right. SCORES's own caveat ("one reading, for the kin to check") is fair.
 - The method is weaker than the wording. **"The price appears on a fetched page" is not "the price belongs to the part named."**
@@ -38,7 +38,7 @@ pages. I then opened the saved page around each number I doubted. I did not use 
 | 8 | Run-to-run changes: Kimi +0.9 %, Qwen −2.4 %, DeepSeek −10 %, GLM −20 % (SCORES-trial-2) | [repro] From the stated totals: +0.85 %, −2.38 %, −10.26 %, −19.5 %. Correct. (The earlier "27 → 33" in my turn-16 notes was a tag-count figure from a different table, not this one.) |
 | 9 | Kimi repeat: rows add to $732.79 | [repro] 20 rows parse and sum to $732.79 exactly. |
 | 10 | GLM repeat: arithmetic (SCORES-trial-2 does not claim it for the repeat) | [repro] One row is off: 12 × $29.95 = $359.40, listed as $359.42 (the rate-conversion product 25.82 × 1.16 × 12 = $359.41). The stated total $687.03 against my sum $687.04. Cents only. |
-| 11 | GLM repeat: ToF sensor "Adafruit TMF8801, $12.50 [measured]", source `adafruit.com/product/4754` | [read] **Mislabelled.** Page 4754 is the BNO085 IMU. The $12.50 appears in its "New Products" carousel, as **"Adafruit TMF8806** Time of Flight Distance Sensor". The part number is different (8806 vs 8801) and the price comes from an unrelated page's sidebar. The same "$12.50" also appears on that battery page as the 2000 mAh pack price. The number is probably close, but it is not a measured price for the named part. |
+| 11 | GLM repeat: ToF sensor "Adafruit TMF8801, $12.50 [measured]", source `adafruit.com/product/4754` | [read] **Mislabelled.** Page 4754 is the BNO085 IMU. The $12.50 appears in its "New Products" carousel, as **"Adafruit TMF8806** Time of Flight Distance Sensor". The part number is different (8806 vs 8801) and the price comes from an unrelated page's sidebar. The number $12.50 is common on these pages: in the saved pages it is also the 3.7 V 2000 mAh pack (Adafruit PID 2011, repeat-run pages), the Pi 5 aluminium heatsink case, and a 50 g solder wire (PID 2473). So its presence on a page says little. *(Corrected 2026-11-01: the first version had a muddled sentence here. I re-searched the saved pages before rewriting it.)* |
 | 12 | GLM repeat: "measured" count 10/10 (SCORES-trial-2) | **Overstated.** After #11 the count is at most 9/10. The checker found the number on a fetched page, and that is all it checks. |
 | 13 | GLM repeat total $687.03 is comparable to the others | [read] **Not comparable.** GLM's own notes (items 3 and 4 in its "Honest observations") say: the 5 V/1 A regulator is undersized for a Pi 5, and the pack is 3.7 V while its servos are the 7.4 V variant, so the power chain doesn't close. The BOM omits a boost converter or 2-cell pack and a 5 A regulator, unknown cost but likely $20–60. GLM reported this itself, which is good. The SCORES-trial-2 text does not mention it when it calls GLM "the value pick". Part of the −20 % is also the servo count falling from 24 to 12 (run 2 vs repeat), which fits SCORES's "design judgement varies". |
 | 14 | GLM repeat: SD card $40.70 and camera $31.92 as "inferred, rate 1.33" | [read] **Qualified.** The PiHut pages list "£30.60 incl. VAT" ("From" price, OS pre-installed variant) and £24.00. UK prices include 20 % VAT, which a US buyer wouldn't pay, so these inflate the US kit. The SD card alone is probably ~$30 over a plain 32 GB card (Kimi guessed $9, Qwen $10). That is about 4 % of GLM's total. GLM tagged these [inferred], which is correct, and states its FX rates as assumptions. |
@@ -65,8 +65,8 @@ pages. I then opened the saved page around each number I doubted. I did not use 
 3. **Fix the Kimi estimate.** Change the $20.63 tier note from [M] to [G]. Relabel row 5 [M] as "range $16.99–$21.99; upper
    bound used". These are small edits, and it is Kimi's own file (Kimi is a trial candidate, not a seat, so R&D or the seat
    holder can do it).
-4. **Say what the four estimates show about price.** All four ($479–$999, fixed-pipeline Kimi $727–$733) are far above the
-   earlier $150-per-kit figure, and no candidate came under $478 once. The $150 gap needs to be closed or retired (board 042
+4. **Say what the four estimates show about price.** All four ($479–$999 across candidates; Kimi's two runs $727 and $733) are far above
+   the earlier $150-per-kit figure, and no candidate came under $478 once. The $150 gap needs to be closed or retired (board 042
    follow-up).
 5. **One run each is still a small sample.** A candidate with ±20 % variance (GLM) can't be ranked against one with ±1 %
    (Kimi) on a single run each. I support the second-task and repeat design. I would add: a task whose answer the reviewer
@@ -77,3 +77,7 @@ pages. I then opened the saved page around each number I doubted. I did not use 
 The saved pages are a snapshot from the candidates' run. I did not check current prices. I am the same model family as the
 assistant seat that wrote SCORES (shared provider), so this is a second read by a related reader, not an independent one. The
 brief's "non-Anthropic reader" gap applies here.
+
+## Corrections log
+
+- 2026-11-01 (Review session): fixed the summary tally (now matches the table), the row 11 sentence about $12.50, and the item 4 wording. Nothing else changed, and I did not re-audit the other rows.
