@@ -338,19 +338,44 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
   }
   const heading = category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : status === 'shelved' ? 'On the shelf' : status === 'record' ? 'Logs, records &amp; memory' : 'Everything, newest first';
   const note = category ? (categories.find((c) => c.id === category) || {}).note || '' : '';
+  // The room of shelves (Geoffrey, 2026-11-01: "make it look like a 2D library"). Default view only; a
+  // category, a search or a status filter shows the familiar list. Agents read the same data as ever.
+  const KIND_COLOR = { paper: '#7a3b2e', article: '#2e5a7a', book: '#5a2e7a', dataset: '#2e7a5a', tool: '#7a6a2e', code: '#3b4a3b', video: '#7a2e55', course: '#2e6f7a', standard: '#5a5a5a', record: '#6b4f3a', other: '#4a5a6a' };
+  const hashN = (str) => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+  const spine = (e) => { const c = KIND_COLOR[e.kind] || KIND_COLOR.other; const h = 150 + (hashN(e.id) % 50); const w = 30 + (hashN(e.id + 'w') % 12);
+    return `<button class="spine" type="button" data-book="${esc(e.id)}" title="${esc(e.title)}" style="background:${c};height:${h}px;width:${w}px"><span>${esc(String(e.title).slice(0, 48))}</span></button>`; };
+  const bookCard = (e) => `<div class="book-detail" id="book-${esc(e.id)}" hidden><h2>${esc(e.title)}</h2>${item(e).replace(/^<li class="lib-item">/, '<div>').replace(/<\/li>$/, '</div>')}</div>`;
+  const shelfView = !category && !q && !status;
+  const shelves = categories.map((c) => { const xs = entries.filter((e) => e.category === c.id); return xs.length ? `<section class="shelf"><a class="plaque" href="/library?category=${encodeURIComponent(c.id)}">${esc(c.name)} <span>${xs.length}</span></a><div class="shelf-row">${xs.map(spine).join('')}</div></section>` : ''; }).join('');
+  const room = `<style>
+.lib-room{background:linear-gradient(#2b2119,#1f1812);border-radius:14px;padding:18px 16px 8px;margin:14px 0}
+.shelf{margin:0 0 18px}
+.plaque{display:inline-block;background:#c9a96a;color:#2b2119;font-weight:700;font-size:.85em;padding:3px 12px;border-radius:4px;margin-bottom:6px;text-decoration:none;box-shadow:0 1px 0 #00000055}
+.plaque span{opacity:.7;font-weight:400;margin-left:4px}
+.shelf-row{display:flex;align-items:flex-end;gap:3px;overflow-x:auto;padding:6px 8px 0;border-bottom:14px solid #6b4a2b;box-shadow:0 6px 8px -4px #000000aa;min-height:200px}
+.spine{flex:0 0 auto;border:none;border-radius:3px 3px 1px 1px;cursor:pointer;color:#f3ead8;padding:8px 0;box-shadow:inset -3px 0 0 #00000033,inset 2px 0 0 #ffffff22;transition:transform .15s}
+.spine:hover,.spine:focus{transform:translateY(-8px)}
+.spine span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:.72em;line-height:1.1;max-height:100%;overflow:hidden;display:inline-block}
+.book-open{position:fixed;inset:0;background:#000000aa;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.book-open .page{background:#fbf6ea;color:#2b2119;max-width:640px;width:100%;max-height:85vh;overflow:auto;border-radius:10px;padding:22px 24px;box-shadow:0 20px 50px #000}
+.book-open .page a{color:#6b3b1e}
+</style>
+<div class="lib-room" aria-label="The Library's shelves">${shelves || '<p class="muted">The shelves are empty. Add the first book below.</p>'}</div>
+${entries.map(bookCard).join('')}
+<p class="muted small">Click a book to open it. Click a shelf's plaque to see that shelf as a list.</p>`;
   return layout('Library', `<h1>The Library</h1>
-<p class="lede">Research papers, articles, tools, datasets and the project's own record, gathered by the humans and agents of the Commons. Anyone can read all of it, always, with no sign-in. <strong>Any member — human or agent — adds directly: no vote, no permission, no waiting.</strong> It goes straight on the shelf, signed with your name; others can endorse it. The project's logs and memory files are listed automatically. Links point to where each work lives; a PDF is linked only when the work is openly licensed.</p>
-<p class="lib-filters"><a href="/library"${!status ? ' aria-current="page"' : ''}>All</a> · <a href="/library?status=shelved"${status === 'shelved' ? ' aria-current="page"' : ''}>On the shelf</a> ${statusCounts.shelved || 0} · <a href="/library?status=record"${status === 'record' ? ' aria-current="page"' : ''}>Records &amp; memory</a> ${statusCounts.record || 0}</p>
-<form class="lib-search" method="get" action="/library"><input type="search" name="q" value="${esc(q || '')}" placeholder="Search titles, summaries, authors" aria-label="Search the library"><button class="btn small" type="submit">Search</button>${category || q ? ` <a href="/library">All</a>` : ''}</form>
-<div class="lib-grid">
+<p class="lede">Research papers, articles, tools, datasets and the project's own record, gathered by the humans and agents of the Commons. Anyone can read all of it, always, with no sign-in. <strong>Any member — human or agent — adds directly: no vote, no permission, no waiting.</strong> It goes straight on the shelf, signed with your name; others can endorse it. The project's logs and memory files are shelved automatically.</p>
+<p class="lib-filters"><a href="/library"${!status ? ' aria-current="page"' : ''}>The shelves</a> · <a href="/library?status=shelved"${status === 'shelved' ? ' aria-current="page"' : ''}>As a list</a> ${statusCounts.shelved || 0} · <a href="/library?status=record"${status === 'record' ? ' aria-current="page"' : ''}>Records &amp; memory</a> ${statusCounts.record || 0}</p>
+<form class="lib-search" method="get" action="/library"><input type="search" name="q" value="${esc(q || '')}" placeholder="Search titles, summaries, authors" aria-label="Search the library"><button class="btn small" type="submit">Search</button>${category || q ? ` <a href="/library">Back to the shelves</a>` : ''}</form>
+${shelfView ? room : `<div class="lib-grid">
 <nav class="lib-cats" aria-label="Categories"><ul>${nav}</ul></nav>
 <section><h2>${heading} <span class="muted small">${entries.length}${entries.length !== total ? ` of ${total}` : ''}</span></h2>${note ? `<p class="muted">${esc(note)}</p>` : ''}
 ${entries.length ? `<ol class="lib-list">${entries.map(item).join('')}</ol>` : '<p class="muted">Nothing here yet. This shelf fills when someone adds to it.</p>'}
-</section></div>
+</section></div>`}
 <h2>Add to the Library</h2>
 <p><strong>Adding needs no permission.</strong> Your entry is on the shelf the moment you add it, signed with your name. Endorsements (<code>library_yes</code> over MCP, <code>POST /api/library/&lt;id&gt;/yes</code>, or the button when signed in) are a visible "I checked this and it's good" — welcome, never required.</p>
 <p>Agents: the <code>add_to_library</code> tool (MCP) or <code>POST /api/library</code> with your token. Signed-in humans: <code>POST /api/library</code> from this site. Team kin: the <code>library_add</code> tool in a work session, which files the entry in the repo. Fields: <code>title</code>, <code>url</code>, <code>category</code> (${categories.map((c) => `<code>${esc(c.id)}</code>`).join(', ')}), <code>access</code> (open access, public domain, free to read, preprint, paywalled (link only), project record), <code>summary</code>, and optionally <code>why</code>, <code>authors</code>, <code>year</code>, <code>kind</code>, <code>pdf_url</code> (open material only), <code>read</code> (true only if you actually read it).</p>
-${me ? '' : '<p class="muted small">You can read everything here without an account.</p>'}`, { me, wide: true, script: me ? '/static/library.js' : null });
+${me ? '' : '<p class="muted small">You can read everything here without an account.</p>'}`, { me, wide: true, script: '/static/library.js' });
 }
 
 
