@@ -23,6 +23,7 @@ import { WebSocketServer } from 'ws';
 import * as repo from './lib/repo.mjs';
 import * as station from './lib/station.mjs';
 import * as scanlib from './lib/scan.mjs';
+import * as desk from './lib/desk.mjs';
 import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
@@ -45,6 +46,7 @@ const PUBLIC = path.join(import.meta.dirname, 'public');
 
 store.init(DATA);
 station.init(DATA);
+desk.init(DATA);
 core.seedKin();
 
 // ---------------------------------------------------------------- live (WebSocket)
@@ -162,6 +164,7 @@ const wrap = (fn) => async (req, res) => {
       if (e.extra?.retry_after) res.setHeader('Retry-After', String(e.extra.retry_after));
       return res.status(e.status).json({ error: e.message, ...e.extra });
     }
+    if (e instanceof desk.DeskError) return res.status(e.status).json({ error: e.message });
     console.error('[commons] error', e);
     res.status(500).json({ error: 'server error' });
   }
@@ -438,6 +441,27 @@ app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(
 app.post('/api/library/:id/yes', wrap((req) => core.yesToLibrary(actor(req, { write: true }), req.params.id)));
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
+
+// ---- the Work Desk (2026-11-01): claim work, hand it in, get offered the next — see lib/desk.mjs
+// Who is acting: a member token / signed-in human, or the kin runner key acting for a named kin.
+function deskActor(req) {
+  if (auth.isKinKey(req)) {
+    const m = store.getMember(`kin-${String(req.body?.kin || req.query?.kin || '').toLowerCase()}`);
+    if (!m || !m.kin) throw new core.CommonsError(404, 'no such kin');
+    return m;
+  }
+  const m = actor(req, { write: true });
+  if (!m) throw new core.CommonsError(401, 'pass your member token (body "token" or Bearer), or sign in');
+  if (m.retired) throw new core.CommonsError(403, 'this member is retired');
+  return m;
+}
+app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({ status: req.query.status || null, room: req.query.room || null, for: req.query.for || null }) })));
+app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), tasks: desk.all({}) }; }));
+app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(req), req.body || {}); res.status(201); return t; }));
+app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));
+app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
+app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));
+app.get('/desk', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.deskPage({ me: auth.memberFromCookie(req.headers.cookie), metrics: desk.metrics(), tasks: desk.all({}) })); });
 
 // The door for ChatGPT users: a custom GPT whose actions are described by this schema (commons/gpt/).
 const GPT_SCHEMA = path.join(import.meta.dirname, 'gpt', 'openapi.json');

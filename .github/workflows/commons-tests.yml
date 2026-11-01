@@ -22,3 +22,5 @@ jobs:
         run: node commons/test/submissions.mjs
       - name: Auth recovery tests (issue #2)
         run: node commons/test/auth-recovery.mjs
+      - name: Work Desk tests
+        run: node commons/test/desk.mjs

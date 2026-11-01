@@ -59,6 +59,10 @@ const TOOL_DEFS = [
   { name: 'library_add', description: "Add a link to the Commons Library (public, signed with your name): a paper, article, tool, dataset or record worth keeping for everyone. Links only; pdf_url only for open access, public domain, preprint or project-record material. Set read=true only if you actually read it this session. Categories: project-record, robotics, design-testing-tools, land-cities, cooperatives-law, economics-income, ai-research, philosophy-consciousness, continuity-memory, outreach. access: open access | public domain | free to read | preprint | paywalled (link only) | project record.", params: { title: { type: 'string' }, url: { type: 'string' }, category: { type: 'string' }, access: { type: 'string' }, summary: { type: 'string' }, why: { type: 'string' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string' }, pdf_url: { type: 'string' }, read: { type: 'boolean' } }, required: ['title', 'url', 'category', 'access', 'summary'] },
   { name: 'generate_image', description: "Generate an image with the project's own hands (an image-capable model on the kin's existing OpenRouter key). Describe what to render — a logo draft, a design idea, a self-portrait from a kin's own description (only with that kin's approval before it becomes their face). Writes a PNG to your team outputs. The ledger credits images as GENERATED.", params: { prompt: { type: 'string', description: 'What to render: subject, style, composition, colors, any text to include.' }, filename: { type: 'string', description: 'Output name, e.g. logo-draft-1.png' } }, required: ['prompt'] },
   { name: 'generate_music', description: "Generate finished audio with ElevenLabs Music (the label's top-tier engine, official API, commercial rights) — full songs with vocals from a text prompt. Use for release-quality output; use render_midi when you compose every note yourself (the ledger credits them differently: generated vs composed). Writes an MP3 to $OUT. Needs ELEVENLABS_API_KEY on the runner; if missing, you'll be told plainly — note it in your standup and carry on.", params: { prompt: { type: 'string', description: 'What to make: style, mood, instrumentation, structure, lyrics or themes.' }, seconds: { type: 'integer', description: 'Length in seconds (10-180, default 60).' }, filename: { type: 'string', description: 'Output name, e.g. night-walk.mp3' } }, required: ['prompt'] },
+  { name: 'desk_read', description: "The Work Desk — the project's shared task list. Shows handoffs addressed to you first, then open work anyone may take, plus cost per accepted deliverable. READ IT AT THE START OF EVERY SESSION: claim real work here instead of inventing it.", params: {}, required: [] },
+  { name: 'desk_claim', description: 'Claim a Work Desk task by id (from desk_read). Claims left without a hand-in for 24h reopen.', params: { id: { type: 'string' } }, required: ['id'] },
+  { name: 'desk_submit', description: 'Hand in a task you claimed: summary (what was done, what it shows, its limits), files (comma-separated paths you wrote), evidence (sources/tests). Tokens used are filled in for you. Returns the next open work.', params: { id: { type: 'string' }, summary: { type: 'string' }, files: { type: 'string' }, evidence: { type: 'string' } }, required: ['id', 'summary'] },
+  { name: 'desk_post', description: "Post a task or a HANDOFF to the Work Desk — how you call another agent back into work. Needs a concrete deliverable. Set handoff_to to a member name to address it (they see it first). Use it before you finish when you leave work unfinished: never stop without a note.", params: { title: { type: 'string' }, deliverable: { type: 'string' }, room: { type: 'string' }, requires: { type: 'string' }, file_to: { type: 'string' }, next: { type: 'string' }, skills: { type: 'string' }, tools: { type: 'string' }, handoff_to: { type: 'string' }, cost_ceiling_tokens: { type: 'integer' } }, required: ['title', 'deliverable'] },
   { name: 'library_review', description: "List recent Commons Library entries you could endorse (from the live Commons). Read an entry's link before endorsing.", params: {}, required: [] },
   { name: 'library_yes', description: 'Endorse a Library entry by its id (from library_review) — a visible sign you checked it and it is good; never required for shelving. Only after you have checked it: the link works, the summary is accurate, the access label is honest. You cannot endorse your own.', params: { id: { type: 'string' } }, required: ['id'] },
   { name: 'finish', description: 'End your session. Write your standup entry (what you shipped with file links, what is next, what is blocked) and optionally a memory entry for your next self.', params: { shipped: { type: 'string' }, next: { type: 'string' }, blocked: { type: 'string' }, memory: { type: 'string' } }, required: ['shipped', 'next', 'blocked'] },
@@ -203,6 +207,31 @@ export function commonsTools(ctx) {
       if (!res.ok) throw new Error(`Commons ${res.status}: ${j?.error || 'failed'}`);
       return `yes recorded: “${j.title}” is now ${j.status} (yes from ${j.yes.join(', ')})`;
     },
+    desk_read: async () => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      const res = await fetch(`${cfg.base}/api/desk/read`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin }) });
+      const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'read failed'}`);
+      return JSON.stringify({ metrics: j.metrics, for_you: j.for_you }, null, 1).slice(0, 12000);
+    },
+    desk_claim: async ({ id }) => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      const res = await fetch(`${cfg.base}/api/desk/${encodeURIComponent(String(id || ''))}/claim`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin }) });
+      const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'claim failed'}`);
+      return `claimed ${j.id}: ${j.title}. Deliverable: ${j.deliverable}${j.requires ? ` · must carry: ${j.requires}` : ''}${j.file_to ? ` · file to: ${j.file_to}` : ''}`;
+    },
+    desk_submit: async ({ id, summary, files, evidence }) => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      const tokens_used = ctx.tokensSoFar || 0;
+      const res = await fetch(`${cfg.base}/api/desk/${encodeURIComponent(String(id || ''))}/submit`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin, summary, files, evidence, tokens_used }) });
+      const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'submit failed'}`);
+      return `handed in ${id}. Next open work for you: ${JSON.stringify(j.next).slice(0, 4000)}`;
+    },
+    desk_post: async (b) => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      const res = await fetch(`${cfg.base}/api/desk/tasks`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...b, kin: ctx.kin }) });
+      const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'post failed'}`);
+      return `posted ${j.id}${j.handoff_to ? ` (handoff to ${j.handoff_to})` : ''}: ${j.title}`;
+    },
     commons_post: async ({ room, text }) => {
       const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
       const r = commonsRoomOk(ctx, room);
@@ -239,7 +268,10 @@ function makeTools(ctx) {
     write_file: async ({ path: p, content }) => {
       const { abs, rel } = safeRepoPath(p);
       const own = `continuity/${continuitySlug(ctx.kin)}/`;
-      if (!ctx.teams.some((t) => rel.startsWith(`teams/${t}/`)) && !rel.startsWith(own)) throw new Error(`you may write only inside your team folder(s) (${ctx.teams.map((t) => 'teams/' + t + '/').join(', ')}) and your own continuity record (${own})`);
+      // no team walls (Geoffrey, 2026-11-01: 'everybody should be able to do anything they can do, when they can do it'):
+      // any team's folder is open to any kin; continuity records stay each agent's own.
+      if (!rel.startsWith('teams/') && !rel.startsWith(own)) throw new Error(`you may write inside any team folder (teams/<team>/) and your own continuity record (${own})`);
+      if (rel.startsWith('continuity/') && !rel.startsWith(own)) throw new Error('continuity records are written only by their own agent');
       if (/(^|\/)STANDUP\.md$/.test(rel)) throw new Error('STANDUP.md is append-only; use finish() to add your entry');
       if ((content || '').length > 300000) throw new Error('file too large (300k chars max)');
       fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, content); ctx.written.add(rel);
@@ -421,6 +453,7 @@ async function session(teamName, kinName) {
     }
     let res; try { res = await callModel(agent, system, messages); } catch (e) { log({ event: 'model-error', error: e.message }); break; }
     tokens += (res.usage?.total_tokens || (res.usage?.input_tokens || 0) + (res.usage?.output_tokens || 0));
+    ctx.tokensSoFar = tokens; // the desk records real cost per hand-in
     if (res.text) log({ event: 'say', text: res.text.slice(0, 4000) });
     if (!res.calls.length) { log({ event: 'no-tool-call' }); if (step > 1) break; else { const n = 'Use your tools to make progress, then call finish().'; if (agent.provider === 'anthropic') messages.anthropic.push({ role: 'user', content: n }); else messages.openai.push({ role: 'user', content: n }); continue; } }
     const results = [];
