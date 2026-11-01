@@ -51,7 +51,9 @@ export async function stationReply(member, { transcript, trigger, look = null })
   let history = [];
   let lookLine = 'A human may "pass a look" (one deliberate camera frame to those present); none has reached you.';
   const lm = look ? /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(look.image || '') : null;
-  const hasEyes = k.provider === 'anthropic' || (k.provider === 'openrouter' && !/deepseek/i.test(k.model));
+  // a kin's seat can decline all looks: looks:false in config/agents.json (Review's condition, 2026-11-01);
+  // a kin may also ask in any room for its seat to be set so, and the operator flips the flag
+  const hasEyes = k.looks !== false && (k.provider === 'anthropic' || (k.provider === 'openrouter' && !/deepseek/i.test(k.model)));
   if (lm && hasEyes) {
     const intro = look.video ? `The room's camera is running: this is the CURRENT view through it (held in memory only, never stored) as you answer. Do not record identifying details of any person in it without their stated consent (consent checklist).` : `${look.from} passed this look into the room a moment ago — one deliberate frame, not stored. Do not record identifying details of any person in it without their stated consent (consent checklist).`;
     history = k.provider === 'anthropic'

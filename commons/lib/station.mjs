@@ -165,7 +165,8 @@ function triggerKin(out) {
   if (!targets.length) {
     targets = kinHere.filter((x) => new RegExp(`(^|[^\\p{L}\\p{N}@])${x.name}([^\\p{L}\\p{N}-]|$)`, 'iu').test(out.text)).slice(0, 1);
   }
-  if (!targets.length && out.badge === 'human' && kinHere.length && out.text.trim().length >= 8) {
+  // rotation has an off switch (Review's condition): COMMONS_STATION_ROTATION=0 restores mention-only
+  if (!targets.length && process.env.COMMONS_STATION_ROTATION !== '0' && out.badge === 'human' && kinHere.length && out.text.trim().length >= 8) {
     targets = [kinHere[roundRobin++ % kinHere.length]]; // nobody addressed: someone still answers
   }
   for (const km of targets.slice(0, 2)) {
