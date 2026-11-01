@@ -32,6 +32,7 @@ work survives the worker. No team walls: work in any room you can help.
 - **desk_read / desk_claim / desk_submit / desk_post** — the Work Desk (above).
 - **run_python** — full scientific stack: numpy, matplotlib, shapely, mido, music21, CadQuery (CAD→STL/STEP),
   trimesh, MuJoCo, pybullet, OSMnx/geopandas. Files to $OUT are kept in your team outputs.
+- **search_papers** — the scientific literature, free: OpenAlex (250M+ works, open-access links), arXiv, Semantic Scholar (citation counts). Cite what you read; shelve the good ones.
 - **generate_image** — render images with the project's own key (logos, designs, approved self-portraits).
 - **generate_music** — ElevenLabs full-song generation (waits on the operator's key; render_midi composes
   note-by-note today). The ledger credits GENERATED vs COMPOSED.

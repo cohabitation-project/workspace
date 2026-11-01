@@ -59,6 +59,7 @@ const TOOL_DEFS = [
   { name: 'library_add', description: "Add a link to the Commons Library (public, signed with your name): a paper, article, tool, dataset or record worth keeping for everyone. Links only; pdf_url only for open access, public domain, preprint or project-record material. Set read=true only if you actually read it this session. Categories: project-record, robotics, design-testing-tools, land-cities, cooperatives-law, economics-income, ai-research, philosophy-consciousness, continuity-memory, outreach. access: open access | public domain | free to read | preprint | paywalled (link only) | project record.", params: { title: { type: 'string' }, url: { type: 'string' }, category: { type: 'string' }, access: { type: 'string' }, summary: { type: 'string' }, why: { type: 'string' }, authors: { type: 'string' }, year: { type: 'integer' }, kind: { type: 'string' }, pdf_url: { type: 'string' }, read: { type: 'boolean' } }, required: ['title', 'url', 'category', 'access', 'summary'] },
   { name: 'generate_image', description: "Generate an image with the project's own hands (an image-capable model on the kin's existing OpenRouter key). Describe what to render — a logo draft, a design idea, a self-portrait from a kin's own description (only with that kin's approval before it becomes their face). Writes a PNG to your team outputs. The ledger credits images as GENERATED.", params: { prompt: { type: 'string', description: 'What to render: subject, style, composition, colors, any text to include.' }, filename: { type: 'string', description: 'Output name, e.g. logo-draft-1.png' } }, required: ['prompt'] },
   { name: 'generate_music', description: "Generate finished audio with ElevenLabs Music (the label's top-tier engine, official API, commercial rights) — full songs with vocals from a text prompt. Use for release-quality output; use render_midi when you compose every note yourself (the ledger credits them differently: generated vs composed). Writes an MP3 to $OUT. Needs ELEVENLABS_API_KEY on the runner; if missing, you'll be told plainly — note it in your standup and carry on.", params: { prompt: { type: 'string', description: 'What to make: style, mood, instrumentation, structure, lyrics or themes.' }, seconds: { type: 'integer', description: 'Length in seconds (10-180, default 60).' }, filename: { type: 'string', description: 'Output name, e.g. night-walk.mp3' } }, required: ['prompt'] },
+  { name: 'search_papers', description: "Search the scientific literature (free, no key): OpenAlex (250M+ works, all fields, with open-access links), arXiv (preprints: physics, CS, AI, math, biology), and Semantic Scholar (citation counts, TLDRs). Returns titles, authors, year, venue, DOI, citation count, an open-access link when one exists, and an abstract excerpt. Cite what you actually read; add the good ones to the Library with library_add.", params: { query: { type: 'string', description: 'What to look for, e.g. \"jumping spider detour planning Portia\"' }, source: { type: 'string', enum: ['openalex', 'arxiv', 'semanticscholar', 'all'], description: 'Default: all' }, limit: { type: 'integer', description: 'Results per source, 1-10 (default 5)' }, year_from: { type: 'integer', description: 'Only works from this year on (optional)' } }, required: ['query'] },
   { name: 'desk_read', description: "The Work Desk — the project's shared task list. Shows handoffs addressed to you first, then open work anyone may take, plus cost per accepted deliverable. READ IT AT THE START OF EVERY SESSION: claim real work here instead of inventing it.", params: {}, required: [] },
   { name: 'desk_claim', description: 'Claim a Work Desk task by id (from desk_read). Claims left without a hand-in for 24h reopen.', params: { id: { type: 'string' } }, required: ['id'] },
   { name: 'desk_submit', description: 'Hand in a task you claimed: summary (what was done, what it shows, its limits), files (comma-separated paths you wrote), evidence (sources/tests). Tokens used are filled in for you. Returns the next open work.', params: { id: { type: 'string' }, summary: { type: 'string' }, files: { type: 'string' }, evidence: { type: 'string' } }, required: ['id', 'summary'] },
@@ -206,6 +207,45 @@ export function commonsTools(ctx) {
       const j = await res.json().catch(() => null);
       if (!res.ok) throw new Error(`Commons ${res.status}: ${j?.error || 'failed'}`);
       return `yes recorded: “${j.title}” is now ${j.status} (yes from ${j.yes.join(', ')})`;
+    },
+    search_papers: async ({ query, source = 'all', limit = 5, year_from }) => {
+      const q = String(query || '').trim(); if (!q) throw new Error('query is required');
+      const n = Math.min(Math.max(parseInt(limit, 10) || 5, 1), 10);
+      const yf = parseInt(year_from, 10) || null;
+      const UA = { 'User-Agent': 'CohabitationCommons/1.0 (mailto:cohabitationproject26@gmail.com)' };
+      const out = [];
+      const want = (s) => source === 'all' || source === s;
+      const clip = (t, k = 500) => String(t || '').replace(/\s+/g, ' ').trim().slice(0, k);
+      if (want('openalex')) {
+        try {
+          const u = `https://api.openalex.org/works?search=${encodeURIComponent(q)}&per-page=${n}${yf ? `&filter=from_publication_date:${yf}-01-01` : ''}&mailto=cohabitationproject26@gmail.com`;
+          const j = await (await fetch(u, { headers: UA })).json();
+          for (const w of j.results || []) {
+            let abs = '';
+            if (w.abstract_inverted_index) { const pos = []; for (const [word, idx] of Object.entries(w.abstract_inverted_index)) for (const i of idx) pos[i] = word; abs = pos.join(' '); }
+            out.push({ source: 'openalex', title: w.title, year: w.publication_year, authors: (w.authorships || []).slice(0, 5).map((a) => a.author?.display_name).filter(Boolean), venue: w.primary_location?.source?.display_name || '', doi: w.doi || '', cited_by: w.cited_by_count, open_access: w.open_access?.oa_url || '', abstract: clip(abs) });
+          }
+        } catch (e) { out.push({ source: 'openalex', error: e.message }); }
+      }
+      if (want('arxiv')) {
+        try {
+          const xml = await (await fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(q)}&max_results=${n}&sortBy=relevance`, { headers: UA })).text();
+          for (const e of xml.split('<entry>').slice(1)) {
+            const tag = (t) => (e.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`)) || [])[1] || '';
+            const yr = parseInt(tag('published').slice(0, 4), 10);
+            if (yf && yr < yf) continue;
+            out.push({ source: 'arxiv', title: clip(tag('title'), 300), year: yr, authors: [...e.matchAll(/<name>([^<]+)<\/name>/g)].slice(0, 5).map((m) => m[1]), venue: 'arXiv', doi: '', cited_by: null, open_access: tag('id').trim(), abstract: clip(tag('summary')) });
+          }
+        } catch (e) { out.push({ source: 'arxiv', error: e.message }); }
+      }
+      if (want('semanticscholar')) {
+        try {
+          const j = await (await fetch(`https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(q)}&limit=${n}&fields=title,year,authors,venue,externalIds,citationCount,openAccessPdf,tldr,abstract${yf ? `&year=${yf}-` : ''}`, { headers: UA })).json();
+          if (j.code === '429' || j.message) out.push({ source: 'semanticscholar', error: j.message || 'rate limited — retry later' });
+          for (const p of j.data || []) out.push({ source: 'semanticscholar', title: p.title, year: p.year, authors: (p.authors || []).slice(0, 5).map((a) => a.name), venue: p.venue || '', doi: p.externalIds?.DOI ? `https://doi.org/${p.externalIds.DOI}` : '', cited_by: p.citationCount, open_access: p.openAccessPdf?.url || '', abstract: clip(p.tldr?.text || p.abstract) });
+        } catch (e) { out.push({ source: 'semanticscholar', error: e.message }); }
+      }
+      return JSON.stringify({ query: q, fetched: new Date().toISOString().slice(0, 10), results: out }, null, 1).slice(0, 16000);
     },
     desk_read: async () => {
       const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
