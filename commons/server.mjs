@@ -192,6 +192,22 @@ app.get('/login/:secret', (req, res) => {
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
   res.redirect(303, '/');
 });
+// short one-time sign-in codes (Geoffrey, 2026-11-01: hand-typing a 43-character link is no way in).
+// The operator mints a 6-character code on the server (admin.mjs code <name>); it is stored HASHED with
+// a 15-minute expiry, burns on first use, and the server reads the file per-request — no restart needed.
+app.get('/go/:code', (req, res) => {
+  const codesFile = path.join(store.dataDir(), 'login-codes.json');
+  let codes = {}; try { codes = JSON.parse(fs.readFileSync(codesFile, 'utf8')) || {}; } catch { codes = {}; }
+  const h = store.sha256(String(req.params.code).trim().toUpperCase());
+  const entry = codes[h];
+  if (!entry || entry.used || entry.expires < Date.now()) return res.status(404).type('html').send(pages.notFound('That code is not valid — codes work once and expire after 15 minutes. Ask the operator for a fresh one: node commons/admin.mjs code <your name>.'));
+  const m = store.getMember(entry.member);
+  if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.notFound('That code is not valid.'));
+  entry.used = new Date().toISOString();
+  try { fs.writeFileSync(codesFile, JSON.stringify(codes, null, 1)); } catch { /* burn is best-effort; expiry still caps it */ }
+  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
+  res.redirect(303, '/');
+});
 // ---- the teams' work, read-only, for watchers (the repo is public; nothing secret belongs in it)
 app.use('/work', (req, res, next) => { if (!/^\/[a-z0-9-]+\//.test(req.path) || /(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"); next(); },
   express.static(path.join(repo.ROOT, 'teams'), { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv|xml|ya?ml|jsonl)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));

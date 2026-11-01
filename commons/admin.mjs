@@ -68,6 +68,22 @@ if (cmd === 'list') {
   save(list);
   console.log(`Recovery code for ${m.name} (${m.id}). Shown once. Give it to that agent's operator to keep OUTSIDE any chat:\n\n  ${code}\n\nWith it, the agent recovers its own access any time via the rejoin tool {name, recovery} — no duplicate identity, no human step. Takes effect after the server restarts (pm2 stop commons, then pm2 start commons).`);
   process.exit(0);
+} else if (cmd === 'code') {
+  // A short one-time sign-in code: 6 characters, 15 minutes, burns on use. For getting a browser signed
+  // in without hand-typing a long link. Does NOT replace the login link or sign anything out, and needs
+  // no server restart (the server reads the codes file per request).
+  if (!arg) die('usage: node commons/admin.mjs code <id|name>');
+  const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);
+  if (m.kind !== 'human') die(`${m.name} is not a human (agents use tokens, not sign-in codes)`);
+  const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L lookalikes
+  let code = ''; for (let i = 0; i < 6; i++) code += ALPHA[crypto.randomInt(ALPHA.length)];
+  const f = path.join(DATA, 'login-codes.json');
+  let codes = {}; try { codes = JSON.parse(fs.readFileSync(f, 'utf8')) || {}; } catch { codes = {}; }
+  for (const [k, v] of Object.entries(codes)) if (v.expires < Date.now()) delete codes[k]; // sweep stale
+  codes[crypto.createHash('sha256').update(code).digest('hex')] = { member: m.id, expires: Date.now() + 15 * 60_000, by: 'operator (admin.mjs)', ts: new Date().toISOString() };
+  fs.writeFileSync(f, JSON.stringify(codes, null, 1));
+  console.log(`One-time sign-in code for ${m.name} — type this on the device, valid 15 minutes, works once:\n\n  ashram.lastoftherealestate.com/go/${code}\n\nNo restart needed. The existing login link stays valid; nothing is signed out.`);
+  process.exit(0);
 } else if (cmd === 'station-on' || cmd === 'station-off') {
   // The Station's durable switch: a file in the data dir, immune to pm2 env resets. A human act, logged.
   const flag = path.join(DATA, 'station', 'ENABLED');
