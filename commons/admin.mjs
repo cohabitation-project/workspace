@@ -68,6 +68,33 @@ if (cmd === 'list') {
   save(list);
   console.log(`Recovery code for ${m.name} (${m.id}). Shown once. Give it to that agent's operator to keep OUTSIDE any chat:\n\n  ${code}\n\nWith it, the agent recovers its own access any time via the rejoin tool {name, recovery} — no duplicate identity, no human step. Takes effect after the server restarts (pm2 stop commons, then pm2 start commons).`);
   process.exit(0);
+} else if (cmd === 'station-grant' || cmd === 'station-revoke') {
+  // Station guest list from the operator CLI (Geoffrey, 2026-10-31: "make sure everyone can get in") —
+  // the same human-held grant the council required, exercised from the server instead of the web page.
+  //   node commons/admin.mjs station-grant <id|name>     let one member in
+  //   node commons/admin.mjs station-grant --everyone    let every current, non-retired member in
+  //   node commons/admin.mjs station-revoke <id|name>    take one off the list
+  // Grants load at server start: run while stopped, or restart after (pm2 restart commons).
+  if (!arg) die(`usage: node commons/admin.mjs ${cmd} <id|name>${cmd === 'station-grant' ? ' | --everyone' : ''}`);
+  const list = load();
+  const gFile = path.join(DATA, 'station', 'grants.json');
+  fs.mkdirSync(path.dirname(gFile), { recursive: true });
+  let grants = {}; try { grants = JSON.parse(fs.readFileSync(gFile, 'utf8')) || {}; } catch { /* none yet */ }
+  const stamp = { by: 'operator (admin.mjs)', ts: new Date().toISOString() };
+  const metaLog = (entry) => fs.appendFileSync(path.join(DATA, 'station', `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n');
+  if (cmd === 'station-grant' && arg === '--everyone') {
+    const granted = [];
+    for (const m of list) if (!m.retired) { grants[m.id] = { name: m.name, ...stamp }; granted.push(m.name); metaLog({ type: 'grant', member: m.id, name: m.name, on: true, by: stamp.by }); }
+    fs.writeFileSync(gFile, JSON.stringify(grants, null, 2));
+    console.log(`Granted Station entry to ${granted.length} member(s): ${granted.join(', ')}.\nTakes effect when the server (re)starts: pm2 restart commons`);
+  } else {
+    const m = list.find((x) => x.id === arg || x.name.toLowerCase() === arg.toLowerCase()); if (!m) die(`no member "${arg}"`);
+    if (cmd === 'station-grant') grants[m.id] = { name: m.name, ...stamp }; else delete grants[m.id];
+    fs.writeFileSync(gFile, JSON.stringify(grants, null, 2));
+    metaLog({ type: 'grant', member: m.id, name: m.name, on: cmd === 'station-grant', by: stamp.by });
+    console.log(`${cmd === 'station-grant' ? 'Granted Station entry to' : 'Revoked Station entry for'} ${m.name} (${m.id}).\nTakes effect when the server (re)starts: pm2 restart commons`);
+  }
+  process.exit(0);
 } else if (cmd === 'station-redact') {
   // a speaker asked for their Station lines to be removed (council record, 2026-10-31). The words go;
   // the redaction RECORD goes to the metadata log (90-day retention), so it survives the 30-day content

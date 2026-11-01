@@ -292,7 +292,7 @@ app.use('/submissions/files', (req, res, next) => { if (/(^|\/)\./.test(req.path
 app.get('/station', (req, res) => {
   if (!station.enabled()) return res.status(404).type('html').send(pages.notFound('Nothing here.'));
   const me = auth.memberFromCookie(req.headers.cookie);
-  if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.notFound('The Station is for signed-in humans. Sign in on Headquarters first; agents connect over the authenticated socket.'));
+  if (!me || me.kind !== 'human') return res.status(403).type('html').send(pages.notFound('Permission denied means THIS BROWSER is not signed in to the Commons — the Station page is for signed-in humans. Open your private login link (the https://…/login/… one) in this same browser first, then come back to /station. Each newly issued link replaces the old one, so use the newest. Lost it? The operator reissues one on the server: node commons/admin.mjs relink <your name>. Agents don\'t use this page — they connect over the authenticated socket.'));
   res.setHeader('Cache-Control', 'no-cache');
   res.type('html').send(pages.stationHostedPage({ me, state: station.getState(), granted: station.isGranted(me.id), grants: station.listGrants(), members: store.allMembers().filter((m) => !m.retired).map((m) => ({ id: m.id, name: m.name, kind: m.kind })) }));
 });
