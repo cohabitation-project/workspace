@@ -99,7 +99,7 @@ connect();
 async function post(session) {
   const r = await fetch('/api/station/state', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ session }) });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) alert(j.error || 'refused'); else setState(j);
+  if (!r.ok) alert(j.error || 'refused'); else { setState(j); if (session !== 'live') cameraView(false); } // Pause/End always shuts the camera view
 }
 /* Camera & mic test: the gate before the window opens (Geoffrey, 2026-10-31). It confirms both devices
  * deliver — frames counted, sound level read — and NOTHING is displayed or kept: no self-view, ever. */
@@ -107,8 +107,44 @@ let testPassed = false;
 /* device switching (Geoffrey, 2026-11-01): chosen camera/mic apply to the test and to Pass a look.
  * Choices persist per-browser only (localStorage, best-effort). */
 const devPick = (id) => { try { return localStorage.getItem('st-' + id) || ''; } catch { return ''; } };
-const vidC = () => { const d = $('st-cam') && $('st-cam').value; return d ? { deviceId: { exact: d }, width: { ideal: 640 } } : { width: { ideal: 640 } }; };
-const micC = () => { const d = $('st-mic') && $('st-mic').value; return d ? { deviceId: { exact: d } } : true; };
+// `ideal`, not `exact`: a stale saved deviceId must fall back to the default camera, never fail the call
+const vidC = () => { const d = $('st-cam') && $('st-cam').value; return d ? { deviceId: { ideal: d }, width: { ideal: 640 } } : { width: { ideal: 640 } }; };
+const micC = () => { const d = $('st-mic') && $('st-mic').value; return d ? { deviceId: { ideal: d } } : true; };
+
+/* live camera view (Geoffrey, 2026-11-01): the camera visibly ON, shown on THIS page only — the feed
+ * never leaves the machine. Agents still receive only the single frames deliberately passed. */
+let viewStream = null;
+async function cameraView(on) {
+  const v = $('st-preview'); const b = $('st-camview'); if (!v || !b) return;
+  if (!on) { if (viewStream) for (const t of viewStream.getTracks()) t.stop(); viewStream = null; v.srcObject = null; v.hidden = true; b.textContent = '📷 Camera'; return; }
+  try {
+    viewStream = await navigator.mediaDevices.getUserMedia({ video: vidC() });
+    v.srcObject = viewStream; v.hidden = false; await v.play(); b.textContent = '📷 On — they see with each message';
+  } catch (e) { alert('camera: ' + (e.message || e)); }
+}
+if ($('st-camview')) $('st-camview').onclick = () => cameraView(!viewStream);
+
+/* one fresh frame from the running camera view (null when the camera is off or the frame is oversized) */
+function frameNow() {
+  if (!viewStream) return null;
+  try {
+    const v = $('st-preview');
+    const c = document.createElement('canvas');
+    const s = Math.min(1, 640 / (v.videoWidth || 640));
+    c.width = Math.round((v.videoWidth || 640) * s); c.height = Math.round((v.videoHeight || 480) * s);
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const img = c.toDataURL('image/jpeg', 0.7);
+    return img.length <= 600000 ? img : null;
+  } catch { return null; }
+}
+/* the one send path: words always; with the camera ON, one fresh frame rides along first, so a kin
+ * answering the words can see what the room sees */
+function sendSay(text) {
+  if (!text || !ws || ws.readyState !== 1) return;
+  const img = frameNow();
+  if (img) ws.send(JSON.stringify({ type: 'look', image: img }));
+  ws.send(JSON.stringify({ type: 'say', text }));
+}
 async function fillDevices() {
   if (!$('st-cam') || !navigator.mediaDevices.enumerateDevices) return;
   const devs = await navigator.mediaDevices.enumerateDevices().catch(() => []);
@@ -147,8 +183,8 @@ if ($('st-start')) {
   $('st-pause').onclick = () => post('paused');
   $('st-end').onclick = () => post('off');
   $('st-saybtn').onclick = () => {
-    const text = $('st-saybox').value.trim(); if (!text || !ws || ws.readyState !== 1) return;
-    ws.send(JSON.stringify({ type: 'say', text })); $('st-saybox').value = '';
+    const text = $('st-saybox').value.trim(); if (!text) return;
+    sendSay(text); $('st-saybox').value = '';
   };
   $('st-saybox').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('st-saybtn').click(); });
 
@@ -159,9 +195,13 @@ if ($('st-start')) {
     const btn = $('st-look'); btn.disabled = true; btn.textContent = '👁 taking one frame…';
     let stream = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: vidC() });
-      const v = document.createElement('video'); v.srcObject = stream; v.muted = true;
-      await v.play(); await new Promise((r) => setTimeout(r, 700)); // let exposure settle
+      let v;
+      if (viewStream) { v = $('st-preview'); } // camera view already running: take the frame from it
+      else {
+        stream = await navigator.mediaDevices.getUserMedia({ video: vidC() });
+        v = document.createElement('video'); v.srcObject = stream; v.muted = true;
+        await v.play(); await new Promise((r) => setTimeout(r, 700)); // let exposure settle
+      }
       const c = document.createElement('canvas');
       const scale = Math.min(1, 640 / (v.videoWidth || 640));
       c.width = Math.round((v.videoWidth || 640) * scale); c.height = Math.round((v.videoHeight || 480) * scale);
@@ -186,7 +226,7 @@ if ($('st-start')) {
       rec.onresult = (ev) => {
         let finals = '';
         for (let i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) finals += ev.results[i][0].transcript;
-        if (finals.trim() && ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'say', text: finals.trim() }));
+        if (finals.trim()) sendSay(finals.trim());
       };
       rec.onerror = () => stop();
       rec.onend = () => { if (on) { try { rec.start(); } catch { stop(); } } }; // keep listening until clicked off

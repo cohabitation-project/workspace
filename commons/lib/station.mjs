@@ -98,6 +98,10 @@ const present = () => {
 /* the station's own short transcript, for kin replies — the station is not a room, so it keeps its own ring */
 const transcript = [];
 const remember = (t) => { transcript.push(t); if (transcript.length > 30) transcript.shift(); };
+/* the most recent passed look, held in MEMORY ONLY for 5 minutes so a kin mentioned just after can see
+ * what the room saw — never written anywhere (shown-then-gone stands) */
+let lastLook = null;
+const freshLook = () => (lastLook && Date.now() - lastLook.ts < 300_000 ? lastLook : null);
 
 export const getState = () => ({ ...state, present: present() });
 
@@ -204,7 +208,7 @@ export function build({ auth, store, core }) {
           for (const km of kin.mentioned(out.text, kinHere).slice(0, 2)) {
             if (!auth.allow(`station-kin:${km.id}`, 4, 60_000)) continue;
             (async () => {
-              const r = await kin.stationReply(km, { transcript: [...transcript], trigger: out });
+              const r = await kin.stationReply(km, { transcript: [...transcript], trigger: out, look: freshLook() });
               if (!r) return;
               if (r.note) { const n = { type: 'say', from: 'station', badge: 'system', text: r.note }; log({ type: 'say', member: 'system', from: 'station', badge: 'system', text: r.note }); broadcast(n); return; }
               if (!r.text) return;
@@ -232,6 +236,7 @@ export function build({ auth, store, core }) {
           try { s.send(out); reached.push(s.memberName); } catch { /* gone */ }
         }
         log({ type: 'look-meta', id: lookId, member: m.id, from: m.name, bytes: msg.image.length, reached, declined_by_preference: declined });
+        lastLook = { image: msg.image, from: m.name, ts: Date.now() }; // in memory only, 5 min, so a kin answering next can see it
       });
       ws.on('close', () => { sockets.delete(ws); log({ type: 'close', member: ws.memberId, name: ws.memberName }); broadcast({ type: 'state', ...getState() }); });
     });

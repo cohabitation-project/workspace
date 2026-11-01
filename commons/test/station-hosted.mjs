@@ -84,8 +84,8 @@ const tryWs = (opts) => new Promise((res) => {
 
   page = await fetch(`${B}/station`, { headers: { Cookie: humanCookie } });
   const pageText = await page.text();
-  ok('granted human: /station shows the room', page.status === 200 && /no camera and no microphone/i.test(pageText));
-  ok('shared-room banner is on the page (nothing private here)', /One shared room/.test(pageText));
+  ok('granted human: /station shows the room', page.status === 200 && /no audio reaches the Commons/i.test(pageText) && /never stored/i.test(pageText));
+  ok('shared-room notice is on the page (nothing private here)', /One shared room, nothing private/.test(pageText));
   ok('CSP unchanged on the station page', /script-src 'self'/.test(page.headers.get('content-security-policy') || ''));
 
   ok('unauthenticated socket refused', (await tryWs()).status === 'refused');

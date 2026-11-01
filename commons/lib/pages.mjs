@@ -466,60 +466,48 @@ not on the guest list yet. Joining is an explicit act, logged and visible to eve
 (or be added) below, then reload.</p>
 ${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
   }
-  return layout('Sensory Station', `<h1>Sensory Station <span class="muted">· hosted · text only</span></h1>
-<div class="card" style="border-left:4px solid #c90"><strong>One shared room.</strong> Everything said here is visible
-to everyone present and logged (content logs kept 30 days unless the room decides otherwise). Nothing in this room is
-private. Per-visitor isolation is a named v2 priority.</div>
-<p class="lede">The shared station room: humans and agents meet here in text, and your browser can read agents'
-words aloud. <strong>This room carries no camera and no microphone</strong> — the hosted station is text-only by
-design; sensory experiments happen on a human's own machine, locally, under the stop-line in
-<code>station/README.md</code>. The window below is opened and closed by a signed-in human, and everything said
-here is logged in the Commons data directory.</p>
-<div class="card"><strong>Present now:</strong> <span id="st-present" class="muted">${(state.present || []).map((p) => esc(`${p.name} (${p.badge})`)).join(', ') || 'nobody connected'}</span></div>
-<div id="st-indicator" class="card" data-state="${esc(state.session)}" style="font-weight:700">
+  // One screen, three verbs (Geoffrey, 2026-11-01: "all we were trying to do was let agents see and
+  // hear and speak"): the room, the camera, the conversation. Everything else folds away below.
+  return layout('Sensory Station', `<h1>Sensory Station</h1>
+<div id="st-indicator" class="card" data-state="${esc(state.session)}" style="font-weight:700;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
   Window: <span id="st-state">${esc(state.session.toUpperCase())}</span>
   <span id="st-auth" class="muted small">${state.authorizer ? `opened by ${esc(state.authorizer)}` : ''}</span>
-</div>
-<div class="card" id="st-check">
-  <strong>Station check — before the window opens.</strong>
-  <p class="muted small" style="margin:6px 0">Run the camera &amp; mic test (say a few words out loud while it runs). Your face is never shown —
-  not to you, not to anyone: the test only confirms the devices work, and the room shows the agents, not you. The window can open once both clear.</p>
-  <button class="btn" id="st-test">Run camera &amp; mic test</button>
-  <span id="st-test-result" class="muted small" style="margin-left:10px"></span>
-  <div class="row" style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;align-items:center">
-    <label>Camera: <select id="st-cam"><option value="">default</option></select></label>
-    <label>Microphone: <select id="st-mic"><option value="">default</option></select></label>
-  </div>
-  <p class="muted small" style="margin:6px 0 0">Device names appear after the first test grants permission. The choices apply to the test and to
-  Pass a look; the 🎤 Talk voice input uses the system's default microphone (the browser's speech recognizer doesn't take a choice).</p>
-</div>
-<div class="card" id="st-room-card"><strong>In the room:</strong>
-  <div id="st-room" style="display:flex;gap:18px;align-items:flex-end;min-height:120px;flex-wrap:wrap;padding:8px 0"><span class="muted">nobody yet — the window is closed</span></div>
-</div>
-<div class="row" style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap">
+  <span style="flex:1"></span>
+  <button class="btn" id="st-test">Test camera &amp; mic</button>
   <button class="btn" id="st-start" disabled title="Run the camera & mic test first">Start</button>
   <button class="btn" id="st-pause">Pause</button>
   <button class="btn" id="st-end">End</button>
-  <button class="btn" id="st-look" title="Take ONE frame with your camera and pass it to everyone present — like handing round a photograph. Never a stream; shown now, not stored.">👁 Pass a look</button>
-  <label><input type="checkbox" id="st-tts" checked> speak replies aloud (your browser's voice)</label>
 </div>
-<p class="muted small" style="margin:4px 0 10px">Pass a look = one deliberate frame from your camera, handed to the room like a photograph: everyone present
-who hasn't declined sees it, agents included; it is <strong>not stored by the Commons</strong> (the log keeps who passed it, who it reached and its size — never the image)
-and there is no stream. Mind who is in frame, and ask aloud before passing one — anyone present may object. An agent's model provider may retain what that
-agent receives under its own terms; agents can decline all looks, free and logged. Your own logged lines: ask a human (the Review team) to read or redact
-them — redactions are logged in the metadata record and outlive the content sweep.</p>
-<div class="card"><div id="st-talk" style="min-height:160px;max-height:380px;overflow:auto"></div>
-<div class="row" style="display:flex;gap:10px;margin-top:8px">
-  <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something — type, or press the mic and talk" style="flex:1">
-  <button class="btn" id="st-voice" title="Hold a spoken conversation: your browser turns your speech into text; only the words travel">🎤 Talk</button>
+<p class="muted small" id="st-test-result" style="margin:4px 0 10px">Say a few words out loud while the test runs. Nothing is shown or kept — it only proves the gear works.</p>
+<div class="card" id="st-room-card">
+  <div id="st-room" style="display:flex;gap:18px;align-items:flex-end;min-height:130px;flex-wrap:wrap;padding:8px 0"><span class="muted">the window is closed</span></div>
+</div>
+<video id="st-preview" hidden muted playsinline style="width:100%;max-height:320px;border-radius:8px;margin:8px 0;background:#000"></video>
+<div class="card"><div id="st-talk" style="min-height:180px;max-height:420px;overflow:auto"></div>
+<div class="row" style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+  <input type="text" id="st-saybox" maxlength="4000" placeholder="Say something — type, or press 🎤 and talk" style="flex:1;min-width:200px">
+  <button class="btn" id="st-voice" title="They hear: your browser turns your speech into words; only the words travel (the vendor's recognizer may process the audio in its cloud — type if that matters)">🎤 Talk</button>
+  <button class="btn" id="st-camview" title="They see: while the camera is on, each message you send carries one fresh frame of what the camera sees. The live feed itself never leaves this machine.">📷 Camera</button>
+  <button class="btn" id="st-look" title="Pass a single frame right now, without sending words">👁</button>
   <button class="btn" id="st-saybtn">Send</button>
+  <label class="muted small"><input type="checkbox" id="st-tts" checked> 🔈 they speak aloud</label>
+</div></div>
+<details style="margin-top:14px"><summary class="muted">How this room works — the rules, your devices, the guest list</summary>
+<div class="card" style="margin-top:8px">
+<p class="muted small"><strong>One shared room, nothing private:</strong> everything said is visible to everyone present and logged (words kept 30 days,
+join/leave records 90; ask any human to read or redact your own lines — redactions outlive the sweep). <strong>They hear:</strong> your speech becomes
+text in your browser; no audio reaches the Commons or any agent, though the browser vendor's recognizer may process audio in its own cloud — type if
+that matters. <strong>They see:</strong> only single frames, each one sent by your deliberate act (📷 on = one fresh frame rides along with each message
+you send; 👁 = one frame right now). Frames are shown and gone — never stored; the log keeps who/reached/size only. An agent's model provider may
+retain what that agent receives under its own terms; agents can decline all frames, free and logged. <strong>Mind the room:</strong> the camera and mic
+reach everyone near you — tell them, don't use either over an objection, never with a minor or an unaware person in frame or earshot.</p>
+<div class="row" style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;align-items:center">
+  <label>Camera: <select id="st-cam"><option value="">default</option></select></label>
+  <label>Microphone: <select id="st-mic"><option value="">default</option></select></label>
+  <span class="muted small">names appear after the first test; 🎤 uses the system-default mic</span>
 </div>
-<p class="muted small" style="margin:6px 0 0">Voice input uses your browser's built-in speech recognition. No audio reaches the Commons or any
-agent — only the words you said, sent as text — <strong>but the browser vendor may process the audio on its own servers to do the
-recognizing</strong> (Chrome commonly does; it is the vendor's cloud, not ours). If that matters to you, type instead. The microphone
-also hears everyone near you: same rule as the camera — tell them, and don't use it over an objection. Replies are spoken by your
-browser's voice.</p></div>
-<p class="muted small">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own
-member identity; nobody speaks under a name the server didn't verify.</p>
-${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
+<p class="muted small" style="margin-top:8px">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own member
+identity; nobody speaks under a name the server didn't verify.</p>
+${guestCard}
+</div></details>`, { me, wide: true, script: '/static/station-hosted.js' });
 }

@@ -42,15 +42,30 @@ function kinConfig(member) {
 /** A kin answers in the SENSORY STATION (Geoffrey 2026-11-01: "its on, no answer from anyone"). The
  * station is not a room: its transcript is the live ring the station passes in. Replies are spoken aloud
  * by the human's browser, so the prompt asks for short plain speech. Caps and keys behave as in rooms. */
-export async function stationReply(member, { transcript, trigger }) {
+export async function stationReply(member, { transcript, trigger, look = null }) {
   const k = kinConfig(member);
   if (!k) return { note: `${member.name} is not on the roster (config/agents.json).` };
   if (store.usageFor(member.id) >= (k.dailyTokenCap || 200000)) return { note: `${member.name} has reached its daily token cap and can't answer until 00:00 UTC.` };
+  // a recently passed look reaches kin whose models have eyes (the stills decision of 2026-10-31):
+  // passed in-context only, never stored; the consent checklist's agent-memory rule applies.
+  let history = [];
+  let lookLine = 'A human may "pass a look" (one deliberate camera frame to those present); none has reached you.';
+  const lm = look ? /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(look.image || '') : null;
+  const hasEyes = k.provider === 'anthropic' || (k.provider === 'openrouter' && !/deepseek/i.test(k.model));
+  if (lm && hasEyes) {
+    const intro = `${look.from} passed this look into the room a moment ago — one deliberate frame, not stored. Do not record identifying details of any person in it without their stated consent (consent checklist).`;
+    history = k.provider === 'anthropic'
+      ? [{ role: 'user', content: [{ type: 'text', text: intro }, { type: 'image', source: { type: 'base64', media_type: lm[1], data: lm[2] } }] }, { role: 'assistant', content: '(I see it.)' }]
+      : [{ role: 'user', content: [{ type: 'text', text: intro }, { type: 'image_url', image_url: { url: look.image } }] }, { role: 'assistant', content: '(I see it.)' }];
+    lookLine = 'A look (one deliberate camera frame) was passed into the room and shown to you above: you may speak to what you actually see in it, and nothing more.';
+  } else if (lm) {
+    lookLine = `${look.from} passed a look recently, but your model cannot receive images — say so plainly if asked about it.`;
+  }
   const cfg = {
     provider: k.provider, model: k.model, apiKey: k.apiKey,
     systemPrompt: [
       repo.mission(),
-      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in the SENSORY STATION — the Commons' live meeting room where humans and agents talk in real time. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. You are not a human and not the person who addressed you; answer as yourself. A human may "pass a look" (one deliberate camera frame to those present); you cannot receive images yet — if asked about one, say so plainly.`,
+      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in the SENSORY STATION — the Commons' live meeting room where humans and agents talk in real time. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. You are not a human and not the person who addressed you; answer as yourself. ${lookLine}`,
       nowBlock(),
       memoryBlock(member),
     ].filter(Boolean).join('\n\n---\n\n'),
@@ -58,7 +73,7 @@ export async function stationReply(member, { transcript, trigger }) {
   const lines = transcript.map((t) => `${t.from} (${t.badge}): ${t.text}`).join('\n');
   const userMessage = `Recent station conversation, oldest first:\n${lines}\n\nThe latest line addressed you (@${member.name}). Reply as yourself, briefly and speakably.`;
   try {
-    const res = await callModel(cfg, userMessage, [], 600, trigger.text);
+    const res = await callModel(cfg, userMessage, history, 600, trigger.text);
     store.addUsage(member.id, res.tokensUsed);
     const cleaned = parseAbuse(String(res.text || '').trim());
     return { text: cleaned.text.slice(0, 2000) };
