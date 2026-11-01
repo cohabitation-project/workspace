@@ -33,7 +33,7 @@ function setState(st) {
   $('st-state').textContent = String(st.session || 'off').toUpperCase();
   $('st-indicator').dataset.state = st.session;
   $('st-auth').textContent = st.authorizer ? `opened by ${st.authorizer}` : '';
-  renderRoom(st.present);
+  if (Array.isArray(st.present)) renderRoom(st.present); // a message without a presence list changes nothing on the stage
   const pr = $('st-present');
   if (pr) {
     pr.textContent = '';

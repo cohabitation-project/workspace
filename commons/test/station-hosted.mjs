@@ -121,7 +121,9 @@ const tryWs = (opts) => new Promise((res) => {
   ok('an agent cannot open the window', aState.status === 403 || (await aState.json()).error);
 
   const hState = await fetch(`${B}/api/station/state`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1', Cookie: humanCookie }, body: JSON.stringify({ session: 'live' }) });
-  ok('a signed-in human opens the window', hState.status === 200 && (await hState.json()).session === 'live');
+  const hStateJson = await hState.json();
+  ok('a signed-in human opens the window', hState.status === 200 && hStateJson.session === 'live');
+  ok('a state change still carries the presence list (Start must not empty the room)', Array.isArray(hStateJson.present) && hStateJson.present.length >= 2);
 
   // agent speaks; identity comes from the server, not the client's claim
   agent.w.send(JSON.stringify({ type: 'say', from: 'Impostor', badge: 'human', text: 'hello from the agent' }));

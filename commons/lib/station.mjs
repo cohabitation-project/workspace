@@ -107,8 +107,8 @@ export function setState(member, session) {
   if (!isGranted(member.id)) return { error: 'you are not on the Station guest list — join it first', status: 403 };
   state = { session, authorizer: session === 'off' ? null : member.name, since: new Date().toISOString() };
   log({ type: 'session', session, authorizer: state.authorizer, member: member.id });
-  broadcast({ type: 'state', ...state });
-  return { ok: true, ...state };
+  broadcast({ type: 'state', ...getState() }); // getState, not raw state: a Start/Pause broadcast without `present` wiped the room display (Geoffrey, 2026-11-01)
+  return { ok: true, ...getState() };
 }
 
 function broadcast(obj) { const s = JSON.stringify(obj); for (const ws of sockets) { try { ws.send(s); } catch { /* gone */ } } }
