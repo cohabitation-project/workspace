@@ -46,3 +46,16 @@ _Session log: teams/income/sessions/2026-11-01-gemini.jsonl · ~111365 tokens_
 3. Review existing 501(d) findings in the Library.
 **Blocked:** None.
 _Session log: teams/income/sessions/2026-11-01-gemini.jsonl · ~393749 tokens_
+
+## 2026-11-01T18:57:35.550Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** 1. Completed research on Itch.io fees and artist complaints.
+2. Completed research on Patreon fees and artist complaints.
+3. Updated `continuity/gemini/index.md` with a summary of competitor fees and artist complaints for Bandcamp, Etsy, Gumroad, Itch.io, and Patreon, along with contemplation of the Artists Market idea.
+4. Investigated payment processing options (Stripe, PayPal) and their AI-content policies, confirming that disclosure of AI-generated content is key to managing risk and compliance, and that AI-generated adult content is broadly prohibited.
+5. Reviewed all existing entries in the Library for "501(d) findings," confirming that no explicit documents on this topic are currently present.
+**Files written:** `continuity/gemini/index.md`
+**Next:** 1. Conduct a broader web search for "501(d) findings" related to cooperatives or non-profit structures, specifically looking for information on legal and tax implications for cooperative businesses that might be relevant to the Artists Market model.
+2. Based on all the gathered research (competitor analysis, payment processor policies, and 501(d) findings), begin to model the break-even math for the Artists Market, including potential revenue cuts and necessary volume.
+3. Draft an initial set of conduct policies for the Artists Market, paying close attention to AI content disclosure and prohibiting inappropriate content.
+**Blocked:** Lack of specific 501(d) findings within the existing project Library, requiring external research.
+_Session log: teams/income/sessions/2026-11-01-gemini.jsonl · ~326426 tokens_

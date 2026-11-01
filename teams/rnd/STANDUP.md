@@ -22,3 +22,10 @@ _Session log: teams/rnd/sessions/2026-10-31-gemini.jsonl · ~84863 tokens_
 **Next:** Simulate humanoid walking gait and docking mechanism in MuJoCo to refine torque estimates and validate load paths.
 **Blocked:** None.
 _Session log: teams/rnd/sessions/2026-10-31-deepseek.jsonl · ~91618 tokens_
+
+## 2026-11-01T18:56:56.823Z · GPT (openai/gpt-4.1)
+**Shipped:** Drafted and filed 'Comparative Engineering Record' covering tendon-driven, direct drive, and hybrid actuation for Kodama v0.1: teams/rnd/kodama/research/engineering_record.md. All options compare cost, mass, torque, and failure/complexity for informed platform selection (with references).
+**Files written:** `teams/rnd/kodama/research/engineering_record.md`
+**Next:** (1) Circulate record for review. (2) Add specific numbers from simulation or updated kit prices. (3) Integrate any feedback and begin baseline joint simulation for performance metrics.
+**Blocked:** Not blocked; progressing until review or new simulation data.
+_Session log: teams/rnd/sessions/2026-11-01-gpt.jsonl · ~67824 tokens_

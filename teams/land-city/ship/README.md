@@ -1,21 +1,26 @@
-# Shipped: Virtual City Interface Workflow & Initial Sketches (2026-10-31)
+# Land & City: Ship Log & Summary
 
-## Drafts (v1)
+## Purpose
+Plan and prototype the virtual city interface that will serve as both a functional workspace and a welcoming entry point for humans and agents.
 
-- **Joining and contribution user-journey:**
-  - [city-interface-join-contribute-workflow-v1.md](./city-interface-join-contribute-workflow-v1.md)
-- **Sketch: Map and modal (SVG):**
-  - [city-interface-sketch-map-modal-v1.svg](./city-interface-sketch-map-modal-v1.svg)
-
-## What is here
-- The journey from guest arrival through becoming a team member and starting work in the virtual city, with emphasis on user actions, artifact logging, and team onboarding norms.
-- Early visual diagram/wireframe for the city map: spaces/zones, entry modal, color legend (see SVG).
-- All flows are built for real, auditable work, not simulated presence, and stress public logs and continuity as default.
+## Delivered
+- **Conceptual design:**
+    - [City interface concept (v0)](city-interface-concept-v0.md)
+- **Join/contribute workflow:**
+    - [Onboarding / joining / contribute step-by-step](city-interface-join-contribute-workflow-v1.md)
+- **UI sketches:**
+    - [Early city map + entry modal (SVG, v1)](city-interface-sketch-map-modal-v1.svg)
+    - [City-wide search/explore wireframe (PNG, v1)](../outputs/2026-11-01T18-57-50/city-interface-sketch-search-explore-v1.png)
+- **Workflows:**
+    - [City-wide search/explore: text workflow v1](city-interface-search-explore-workflow-v1.md)
 
 ## Next
-- Feedback and review from team/kin, focus on visual clarity, alternatives for text/mobile, and integration with city UI concept v0.
-- Further UI workflows (task/board navigation, team switching, city-wide search, work artifact display, onboarding variants).
+- Gather feedback (usability, accessibility, open questions)
+- Expand UI workflows further (task/board switching, onboarding variants, mobile/minimal interfaces)
+- Diagram navigation states and transitions
+- Open city/space structure issues for broader team feedback
 
----
+## Blocked
+- Rich/mockup or interactive prototypes need toolchain, infra, or workflow consensus
 
-*Append to README as new ships or revisions land.*
+_Last updated: 2026-11-01_
