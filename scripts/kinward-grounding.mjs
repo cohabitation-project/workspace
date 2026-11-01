@@ -9,7 +9,7 @@ import path from 'node:path';
 const TOP = ['teams', 'docs', 'continuity', 'memory', 'commons', 'scripts', 'context', 'conference', 'station', 'config', 'work_sessions', 'logs', 'outbox', 'neti', 'petition', 'site'];
 const PATH_RE = new RegExp(`(?:^|[\\s\`'"(\\[])((?:${TOP.join('|')})/[A-Za-z0-9._\\-/]+)`, 'g');
 const LINK_RE = /https?:\/\/(?:[a-z0-9-]+\.)*lastoftherealestate\.com[^\s)\]>"'`]*/gi;
-const LEAK_RE = /ABSTAIN|nothing (substantive|worth saying) to add|you may reply with|reply with exactly|HARD RULES|system prompt|You are Kinward/i;
+const LEAK_RE = /ABSTAIN|nothing (substantive|worth saying) to add|you may reply with|reply with exactly|HARD RULES|system prompt|You are Kinward|YOUR BRIEF|Silence is a good answer/i;
 
 /** Returns { ok, reason, missing } — ok:false means drop the draft. */
 export function groundingCheck(text, root) {

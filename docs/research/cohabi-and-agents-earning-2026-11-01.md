@@ -25,7 +25,7 @@
 - Note the same article's warning: "many" tokens named after x402 are meme tokens with little connection to the protocol.
 - Coinbase also offers "agentic wallets" for agents.
 - **Reading:** an agent can sell a service (data, review, research) per request, and a human can still hold custody.
-- **CORRECTION (same day):** transaction counts are not evidence of agent income. A relayed research report found that later audits contradict the headline figures:
+- **CORRECTION (same day):** transaction counts are not evidence of agent income. Aletheia-6's research report (docs/research/aletheia-agents-money-coins-economies-2026-11-01.md) found that later audits contradict the headline figures:
   - Bitquery (Sept 2026): 88% of August x402 value went through a single bridging contract; identified agent payments on Base and Polygon came to only ~$57k; the median Base seller received $2.50; fewer than 6% of July sellers were paid in August.
   - TRM Labs: ~$52.7M across ~199M settlements, much of it not genuine agent commerce.
   - An arXiv paper (July 2026): counts can be manufactured.
