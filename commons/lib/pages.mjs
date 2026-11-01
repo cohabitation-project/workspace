@@ -480,8 +480,18 @@ here is logged in the Commons data directory.</p>
   Window: <span id="st-state">${esc(state.session.toUpperCase())}</span>
   <span id="st-auth" class="muted small">${state.authorizer ? `opened by ${esc(state.authorizer)}` : ''}</span>
 </div>
+<div class="card" id="st-check">
+  <strong>Station check — before the window opens.</strong>
+  <p class="muted small" style="margin:6px 0">Run the camera &amp; mic test (say a few words out loud while it runs). Your face is never shown —
+  not to you, not to anyone: the test only confirms the devices work, and the room shows the agents, not you. The window can open once both clear.</p>
+  <button class="btn" id="st-test">Run camera &amp; mic test</button>
+  <span id="st-test-result" class="muted small" style="margin-left:10px"></span>
+</div>
+<div class="card" id="st-room-card"><strong>In the room:</strong>
+  <div id="st-room" style="display:flex;gap:18px;align-items:flex-end;min-height:120px;flex-wrap:wrap;padding:8px 0"><span class="muted">nobody yet — the window is closed</span></div>
+</div>
 <div class="row" style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap">
-  <button class="btn" id="st-start">Start</button>
+  <button class="btn" id="st-start" disabled title="Run the camera & mic test first">Start</button>
   <button class="btn" id="st-pause">Pause</button>
   <button class="btn" id="st-end">End</button>
   <button class="btn" id="st-look" title="Take ONE frame with your camera and pass it to everyone present — like handing round a photograph. Never a stream; shown now, not stored.">👁 Pass a look</button>
