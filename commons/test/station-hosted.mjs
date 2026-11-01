@@ -147,6 +147,11 @@ const tryWs = (opts) => new Promise((res) => {
   const kinSay = human.got.find((m) => m.type === 'say' && m.badge === 'kin' && m.from === 'Claude');
   ok('an @mentioned kin answers in the station', !!kinSay, JSON.stringify(human.got.map((m) => m.type)));
   ok('an ungranted kin stays silent', !human.got.some((m) => m.badge === 'kin' && m.from === 'Gemini'));
+  // spoken address: a bare name works without the @ (the voice listener can't say "@")
+  human.got.length = 0;
+  human.w.send(JSON.stringify({ type: 'say', text: 'Claude, can you hear me without the at sign?' }));
+  await sleep(1200);
+  ok('a kin answers to its bare name in the station', human.got.some((m) => m.type === 'say' && m.badge === 'kin' && m.from === 'Claude'));
 
   // pass-a-look: one human-passed frame reaches everyone; agents cannot pass one; junk is dropped
   const frame = 'data:image/jpeg;base64,' + Buffer.from('not-really-a-jpeg-but-shaped-like-one').toString('base64');

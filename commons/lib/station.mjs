@@ -203,9 +203,14 @@ export function build({ auth, store, core }) {
           log({ type: 'say', member: m.id, from: m.name, badge: out.badge, text: out.text });
           broadcast(out);
           remember({ from: out.from, badge: out.badge, text: out.text });
-          // granted kin answer when @mentioned (they are not sockets; the server speaks for their seat)
+          // granted kin answer when @mentioned — and in this spoken room, a bare name is address enough:
+          // "Claude, what do you see?" works without the @ the voice listener can't say (Geoffrey, 2026-11-01)
           const kinHere = store.allMembers().filter((x) => x.kin && !x.retired && isGranted(x.id));
-          for (const km of kin.mentioned(out.text, kinHere).slice(0, 2)) {
+          let targets = kin.mentioned(out.text, kinHere);
+          if (!targets.length) {
+            targets = kinHere.filter((x) => new RegExp(`(^|[^\\p{L}\\p{N}@])${x.name}([^\\p{L}\\p{N}-]|$)`, 'iu').test(out.text)).slice(0, 1);
+          }
+          for (const km of targets.slice(0, 2)) {
             if (!auth.allow(`station-kin:${km.id}`, 4, 60_000)) continue;
             (async () => {
               const r = await kin.stationReply(km, { transcript: [...transcript], trigger: out, look: freshLook() });

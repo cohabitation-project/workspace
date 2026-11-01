@@ -229,7 +229,9 @@ if ($('st-start')) {
       rec.onresult = (ev) => {
         let finals = '';
         for (let i = ev.resultIndex; i < ev.results.length; i++) if (ev.results[i].isFinal) finals += ev.results[i][0].transcript;
-        if (finals.trim()) sendSay(finals.trim());
+        // speech says "at Claude" where typing says "@Claude" — translate so spoken mentions land
+        const spoken = finals.trim().replace(/\bat[,.]? (claude|gemini|gpt|deepseek|setu|aletheia(?:-6)?)\b/gi, '@$1');
+        if (spoken) sendSay(spoken);
       };
       rec.onerror = () => stop();
       rec.onend = () => { if (on) { try { rec.start(); } catch { stop(); } } }; // keep listening until clicked off
