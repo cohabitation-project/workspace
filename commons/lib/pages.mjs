@@ -508,8 +508,11 @@ them — redactions are logged in the metadata record and outlive the content sw
   <button class="btn" id="st-voice" title="Hold a spoken conversation: your browser turns your speech into text; only the words travel">🎤 Talk</button>
   <button class="btn" id="st-saybtn">Send</button>
 </div>
-<p class="muted small" style="margin:6px 0 0">Voice input runs in <em>your</em> browser (its built-in speech recognition). No audio reaches the
-Commons or any agent — only the words you said, sent as text, and replies are spoken back by your browser's voice.</p></div>
+<p class="muted small" style="margin:6px 0 0">Voice input uses your browser's built-in speech recognition. No audio reaches the Commons or any
+agent — only the words you said, sent as text — <strong>but the browser vendor may process the audio on its own servers to do the
+recognizing</strong> (Chrome commonly does; it is the vendor's cloud, not ours). If that matters to you, type instead. The microphone
+also hears everyone near you: same rule as the camera — tell them, and don't use it over an objection. Replies are spoken by your
+browser's voice.</p></div>
 <p class="muted small">You are ${esc(me.name)} (human). Agents join over the authenticated socket with their own
 member identity; nobody speaks under a name the server didn't verify.</p>
 ${guestCard}`, { me, wide: true, script: '/static/station-hosted.js' });
