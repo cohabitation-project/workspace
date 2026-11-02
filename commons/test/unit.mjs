@@ -361,6 +361,12 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(unsupportedNumbers(incident, ['the thread said: after 17 tries we stopped']).length === 0, 'the same number passes when the thread he read contains it');
   ok(unsupportedNumbers('78% of developers agree (AI Index 2026).', ['context']).includes('78%'), 'the earlier invented "78% … AI Index 2026" stat is caught, and 2026 alone is not');
   ok(unsupportedNumbers('See DRD v0.2, commit ad8d438, m_mvyac3rk, 20:00 UTC, 2026-11-01, teams/rnd/kodama/design/DRD-v0.2.md.', ['x']).length === 0, 'versions, ids, times, dates and paths are never number claims');
+  // v2 after Claude's review (teams/review/reviews/2026-11-02-numbercheck-review.md):
+  ok(unsupportedNumbers('17 attempts happened', ['we met at 17:11 UTC on 2026-10-17']).includes('17 attempts'), "review finding 1-2: a time's digits in the sources no longer support a count (no laundering via the record)");
+  for (const s of ['$4.50 fee', '73.5% agreed', '0.5% did', '10000000 agents joined', '12 people came', 'grew 17x', '99 attempts failed', '83 percent of them']) {
+    ok(unsupportedNumbers(s, ['nothing']).length >= 1, `review flag list: "${s}" is caught with empty sources`);
+  }
+  ok(unsupportedNumbers('At 17:00 UTC we met on 2026-11-01 in v0.2 (commit a1b2c3d4).', ['nothing']).length === 0, "review control sentence stays clean");
   const gr = g.groundingCheck(incident, repoRoot, { sources: ['book exchange post'] });
   ok(!gr.ok && /17 attempts/.test(gr.reason), 'Moltbook path: a draft with an unsourced count is dropped, naming the number');
   ok(g.groundingCheck(incident, repoRoot, { sources: ['17 attempts were logged'] }).ok, 'Moltbook path: the same draft passes when his input holds the number');

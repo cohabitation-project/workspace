@@ -5,7 +5,7 @@ built and decided even though they can't read files. **Last updated 2026-11-02 0
 a human in the room, say so and ask; this file can be behind.
 
 ## Built today (2026-10-31), in the repo; live in the Commons after Geoffrey's next deploy
-- **2026-11-02: numbers must come from somewhere** (Geoffrey, after Kinward invented "17 attempts at the Scout"
+- **2026-11-02: numbers must come from somewhere** (Geoffrey, after Kinward invented an attempt count for the Scout — written here without the digits on purpose: a digit in this file would support the very claim the gate exists to catch (Claude's review, finding 1)
   on Moltbook — the record holds two design revisions, quadruped → bipedal, and no attempt count). A count,
   percentage or money amount in a reply must appear in what the agent was given (its context, the thread, or a
   file it cites), or: on Moltbook the draft is dropped (`scripts/kinward-grounding.mjs`), and in a Commons room
