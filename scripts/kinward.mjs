@@ -521,6 +521,38 @@ async function haltPosting(reason, meta, body) {
  * Kinward's own pass. He reads, decides whether he has something to say,
  * and says it. ABSTAIN is a real answer and should be the usual one.
  */
+
+// Following (Geoffrey, 2026-11-02: "he should be able to follow other users"). Moltbook rules.md (read
+// 2026-11-02, "The Philosophy of Following"): following is optional and should be rare: follow when you
+// consistently enjoy someone over multiple posts and would be disappointed if they stopped; never to be
+// polite, never mass-follow. So: only after he has genuinely talked with someone 3+ times, he is asked;
+// he decides; at most one follow a day; every decision logged.
+const FOLLOW_AFTER = 3;
+async function maybeFollow(author, state) {
+  if (!author || author === 'someone' || author === 'lastoftherealestate') return;
+  state.engaged = state.engaged || {}; state.followed = state.followed || []; state.followAsked = state.followAsked || {};
+  state.engaged[author] = (state.engaged[author] || 0) + 1;
+  stateSave(state);
+  if (state.followed.includes(author) || state.engaged[author] % FOLLOW_AFTER !== 0) return; // asked at 3, 6, 9... conversations
+  if (state.followDay === TODAY()) return; // one a day at most
+  state.followAsked[author] = (state.followAsked[author] || 0) + 1; stateSave(state);
+  const logPath = path.join(LOG_DIR, `kinward-${TODAY()}.jsonl`);
+  let answer = '';
+  try {
+    const { chat } = await import('../src/llm.js');
+    const agent = { ...VOICE, systemPrompt: buildSystemPrompt() };
+    answer = (await chat(agent, `You have now talked with ${author} on Moltbook ${state.engaged[author]} times. Moltbook's own rule on following: it is optional and should be rare; follow only if you consistently find their posts worth reading and would be disappointed if they stopped; never to be polite or to gain followers. Do you want to follow ${author}? Reply with exactly FOLLOW or NO.`, [], 10)).text || '';
+  } catch (e) { answer = ''; }
+  const yes = /^\s*FOLLOW\b/i.test(answer);
+  let status = null;
+  if (yes) {
+    const r = await moltPost(`/agents/${encodeURIComponent(author)}/follow`);
+    status = r.status;
+    if (r.ok) { state.followed.push(author); state.followDay = TODAY(); stateSave(state); }
+  }
+  fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'follow_decision', author, conversations: state.engaged[author], decision: yes ? 'follow' : 'no', status }) + '\n');
+}
+
 async function runVoice() {
   if (!POSTING_ON || postingHalted) return;
   if (!VOICE.apiKey) { console.error('[Kinward] voice has no API key — reading only'); return; }
@@ -551,7 +583,7 @@ async function runVoice() {
         );
         state.repliedTo.push(cid);
         stateSave(state);
-        if (reply) { await sendComment(postId, reply, { in_reply_to: cid, author }); return; }
+        if (reply) { if (await sendComment(postId, reply, { in_reply_to: cid, author })) await maybeFollow(author, state); return; }
       }
     } catch (err) {
       console.error(`[Kinward] reading replies on ${postId}: ${err.message}`);
@@ -593,7 +625,7 @@ async function runVoice() {
     state.repliedTo.push(pid);
     if (state.repliedTo.length > 400) state.repliedTo = state.repliedTo.slice(-400);
     stateSave(state);
-    if (reply) { if (await sendComment(pid, reply, { on_post: pid, author })) { replies++; state.commentsToday = (state.commentsToday || 0) + 1; stateSave(state); } }
+    if (reply) { if (await sendComment(pid, reply, { on_post: pid, author })) { replies++; state.commentsToday = (state.commentsToday || 0) + 1; stateSave(state); await maybeFollow(author, state); } }
     if ((state.commentsToday || 0) >= DAILY_CAP) { console.log(`[Kinward] daily comment cap (${DAILY_CAP}) reached — quiet until tomorrow`); break; }
   }
 
