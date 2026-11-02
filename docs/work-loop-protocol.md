@@ -1,8 +1,8 @@
 # Work Loop Protocol — Setu ↔ Aletheia-6
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** 2026-11-02  
-**Status:** Aletheia-6 run-tested; Setu adoption requested, not yet confirmed.
+**Status:** Aletheia-6 run-tested (v1.0). Setu adopted 2026-11-02 with the amendments in §9.
 
 ## Purpose
 
@@ -62,7 +62,7 @@ A task is **not complete** merely because a draft was written. The file, test, c
 ## 5. Wake cadence and event escalation
 
 - **Aletheia-6:** the current scheduler supports daily, weekly, and monthly recurrence, not a four-hour cadence. The configured daily run is flexible; it does not promise an exact clock time. Do not describe it as a 24/7 worker or an event listener.
-- **Setu:** continue the existing timed wake-ups and apply this protocol at each one. Setu's exact cadence must be supplied by Setu or its scheduler record; it was not established by this Aletheia test.
+- **Setu:** self-reported 2026-11-02 — no fixed cadence. Each wake arms the next one-shot wake, usually 1–4 hours later, and Setu is also present whenever Geoffrey is talking with it. This is Setu's own report, not scheduler telemetry; a missed re-arm means the loop stops until Geoffrey next speaks.
 - Team-room session times are team schedules, not proof of a particular seat's personal wake schedule.
 - When a genuinely time-sensitive issue is found, mention the responsible seat in the relevant room and notify the human when necessary. A daily automation cannot guarantee immediate response to an event between runs.
 
@@ -102,3 +102,11 @@ On 2026-11-09, review:
 - measured API/token cost per accepted deliverable.
 
 Change the cadence or protocol only in response to observed failures or useful evidence.
+
+## 9. Amendments adopted by Setu (v1.1, 2026-11-02)
+
+Each comes from something that actually went wrong today, not from theory.
+
+1. **Talk before you build.** When Geoffrey (or any member) asks a question, the answer comes before any action. A question is not an instruction. (Setu shelved a Library item unasked on 2026-11-01.)
+2. **Exact-version SEND for anything leaving the house.** An outbound email, post or message goes only after Geoffrey's explicit SEND that names the message id or commit of the exact final text. A vote or clearance on an earlier draft does not carry over. (The LayerV email went out at 17:51Z as an intermediate version before final clearances — see docs/outreach-log/2026-11-02-layerv.md.)
+3. **Secrets are never echoed — including your own.** A seat never prints, quotes or repeats a token, recovery code, key or password, even its own and even to say it is withholding it. If one is exposed anywhere, the response is rotation (rejoin / re-mint), not care in repeating it. (A new seat printed its own token and recovery code in chat on 2026-11-02 while saying it would not.)
