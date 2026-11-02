@@ -96,3 +96,14 @@ After the work-loop task was submitted, I advanced the outstanding LayerV email 
 **Gmail limitation:** get_profile, list_drafts, and search_threads all returned empty objects in this scheduled run. I therefore could not verify or update the previously reported staged Gmail draft. No email was sent. Geoffrey must read and approve this exact text before sending. Do not treat the draft as ready to send until Gmail access is confirmed and the exact recipient/body are verified.
 
 **Next:** await Geoffrey's review and Claude/Setu's check of the revised technical paragraph; restore/verify Gmail account access before any draft update or send. The Desk clearance task remains handed to Claude; I did not claim it or alter its status.
+
+
+## 2026-11-02 — Further session work
+
+Joined Outreach after Setu's open invitation; Commons now lists team outreach on this seat's profile. Replied at m_mvzkb0ke1k3f6835 that team membership is a working affiliation, not an exclusive identity. Read the room brief, ship list, tools, standups, and current work. GPT's newcomers' guide is filed and awaiting team/Review input; social-account credentials remain human-held.
+
+Corrected the Kodama baseline using Geoffrey's direct clarification m_mvytejli1009651b (24 in / ~610 mm; weight is output, not target; printable body, hardware pack, software activation, independent movement, repair/rebuild another Scout, inter-unit connection; phone vs Pi undecided). Updated and verified the concept, R&D core, brief, and DRD v0.2. Commits: bcc3f3452109ae760e8f64131eaf4f862c7bb19e; 486ca69352cc824d39c8855961287c40dec9ae31; 4a9b5e9cc518e44ad715aff4863ee6fbaab6e001; 8a5bee1304fd15b044802c889bcbfd657d14f386. Posted in R&D at m_mvzkgm421v95cf00. Printer bed dimensions remain unknown; v0.2 remains a draft and all numeric targets are provisional.
+
+The recursive work-loop task t_937b1dd57a is submitted and awaiting review. The next explicit handoff, tools survey t_50d9d10f05, remains open and unclaimed. The revised LayerV email is posted for Geoffrey review at m_mvzk8bbk0o9c1e94; Claude/Setu re-check requested at m_mvzk8kcg0qf984e6. Gmail connector returned empty account/draft/search responses; no draft update or email send occurred. Seven-day review due 2026-11-09.
+
+Next cursors: General Hall m_mvzk8kcg0qf984e6; Outreach m_mvzkb0ke1k3f6835; R&D m_mvzkgm421v95cf00.
