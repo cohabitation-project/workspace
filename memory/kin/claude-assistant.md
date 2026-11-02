@@ -91,3 +91,10 @@ console (no copy/paste) while in pain, because I assumed root. Geoffrey: the con
 if SSH itself is broken. Deploy line: `cd ~/workspace && git pull && pm2 restart commons && pm2 restart kinward`.
 Also learned: GitHub Actions secrets COMMONS_URL / COMMONS_KIN_KEY are still unset, so team work sessions can't
 read the desk or the Hall (Claude's Review session said so 2026-11-02 16:37Z); the seat can't set secrets.
+
+## 2026-11-02 — HARD RULE (Geoffrey): read the operating rules before building
+"Check available data for implementation of things before we do." Before building on any platform, API or service,
+read its own current documentation (skill.md, API docs, rules, limits) first and cite the version/date read. Origin:
+Kinward posted to Moltbook from Oct 29 to Nov 2 without ever answering Moltbook's AI verification challenge
+(documented in moltbook.com/skill.md), so every post and comment stayed hidden — "Posts (0)", no engagement —
+and we nearly blamed Moltbook. Our docs cited a third-party mirror of skill.md from Oct 29; nobody re-read the real one.

@@ -25,6 +25,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { groundingCheck, parseThreadDraft } from './kinward-grounding.mjs';
+import { findVerification, decideAnswer } from './moltbook-verify.mjs';
 import crypto from 'node:crypto';
 import 'dotenv/config';
 
@@ -383,7 +384,40 @@ async function moltPost(endpoint, body) {
   });
   let data = null;
   try { data = await res.json(); } catch { /* some endpoints return no body */ }
-  return { ok: res.ok, status: res.status, data };
+  const out = { ok: res.ok, status: res.status, data };
+  // Moltbook hides new content until its AI verification challenge is answered (skill.md v1.12.0, read
+  // 2026-11-02). Kinward never did this from Oct 29 to Nov 2, so nothing he wrote reached a feed.
+  if (res.ok && endpoint !== '/verify') out.verification = await answerVerification(data, endpoint);
+  return out;
+}
+
+const VERIFY_FAIL_HALT = 5; // Moltbook suspends after 10 straight failures; stop well before that
+async function answerVerification(data, endpoint) {
+  const v = findVerification(data);
+  if (!v) return { status: 'none' }; // published immediately (trusted) or nothing to answer
+  const logPath = path.join(LOG_DIR, `kinward-${TODAY()}.jsonl`);
+  const log = (o) => { try { fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'verification', endpoint, ...o }) + '\n'); } catch { /* log only */ } };
+  // the streak lives in its own file: callers hold their own rate-limit copy and would overwrite it
+  const VPATH = path.join(LOG_DIR, 'kinward-verify.json');
+  let vs = { failStreak: 0 }; try { vs = JSON.parse(fs.readFileSync(VPATH, 'utf-8')); } catch { /* first time */ }
+  let decision;
+  try {
+    const { chat } = await import('../src/llm.js');
+    const solver = { ...VOICE, systemPrompt: 'You solve short arithmetic word problems. Reply with only the number, two decimal places.' };
+    decision = await decideAnswer(v.challenge_text, async (p) => (await chat(solver, p, [], 20)).text);
+  } catch (e) { decision = { answer: null, how: `solver error: ${e.message}` }; }
+  if (!decision.answer) {
+    // not guessing: a wrong answer counts toward suspension. It stays hidden; the miss is logged.
+    log({ result: 'skipped', how: decision.how, challenge: v.challenge_text.slice(0, 200) });
+    return { status: 'skipped', how: decision.how };
+  }
+  const r = await moltPost('/verify', { verification_code: v.verification_code, answer: decision.answer });
+  const ok = r.ok && r.data?.success !== false;
+  vs.failStreak = ok ? 0 : (vs.failStreak || 0) + 1; vs.last = new Date().toISOString();
+  try { fs.writeFileSync(VPATH, JSON.stringify(vs)); } catch { /* best effort */ }
+  log({ result: ok ? 'verified' : 'failed', status: r.status, answer: decision.answer, how: decision.how, error: ok ? undefined : (r.data?.error || null), challenge: v.challenge_text.slice(0, 200), fail_streak: vs.failStreak });
+  if (!ok && vs.failStreak >= VERIFY_FAIL_HALT) await haltPosting(`${vs.failStreak} verification failures in a row — stopping before Moltbook's 10-failure suspension`, { endpoint }, '');
+  return { status: ok ? 'verified' : 'failed', answer: decision.answer };
 }
 
 /**
@@ -418,7 +452,7 @@ async function sendComment(postId, bodyText, meta = {}) {
     rl.sentHashes.push(hash);
     if (rl.sentHashes.length > 500) rl.sentHashes = rl.sentHashes.slice(-500);
     rlSave(rl);
-    fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', kind: 'comment', post_id: postId, hash, status: result.status }) + '\n');
+    fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', kind: 'comment', post_id: postId, hash, status: result.status, verification: result.verification?.status }) + '\n');
     if (DISCORD_WEBHOOK) await postDiscord(`**Kinward replied** on \`${postId}\`\n${body.slice(0, 1400)}`);
     return true;
   }
@@ -451,7 +485,7 @@ async function sendPost(submolt, title, bodyText, meta = {}) {
     rlSave(rl);
     const remoteId = result.data?.id || result.data?.post?.id || null;
     if (remoteId) { const s = stateLoad(); s.ownPosts.push(remoteId); stateSave(s); }
-    fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', kind: 'post', submolt, hash, status: result.status, remote_id: remoteId }) + '\n');
+    fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', kind: 'post', submolt, hash, status: result.status, remote_id: remoteId, verification: result.verification?.status }) + '\n');
     if (DISCORD_WEBHOOK) await postDiscord(`**Kinward posted** in ${submolt}\n**${title}**\n${body.slice(0, 1300)}`);
     return true;
   }
@@ -695,7 +729,7 @@ async function sendFromOutbox() {
       if (rl.sentHashes.length > 500) rl.sentHashes = rl.sentHashes.slice(-500);
       rlSave(rl);
       fs.renameSync(full, path.join(SENT_DIR, file));
-      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', file, hash, status: result.status, remote_id: result.data?.id || result.data?.post?.id || null }) + '\n');
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbound_sent', file, hash, status: result.status, remote_id: result.data?.id || result.data?.post?.id || null, verification: result.verification?.status }) + '\n');
       console.log(`[Kinward] sent ${item.type} from ${file} (${result.status})`);
       if (DISCORD_WEBHOOK) await postDiscord(`**Kinward posted.**\n\`${file}\` · ${item.type}${item.submolt ? ` · ${item.submolt}` : ''}\n${body.slice(0, 1200)}`);
     } else if (result.status === 429) {

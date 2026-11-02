@@ -381,5 +381,17 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(!kin.isNewcomer({ id: 'x-old', created: new Date(Date.now() - 5 * 86400_000).toISOString() }), 'someone who joined five days ago is not greeted');
 }
 
+// Moltbook verification challenges (2026-11-02: Kinward's content sat hidden because they were never answered)
+{
+  const mv = await import('../../scripts/moltbook-verify.mjs');
+  ok(mv.solveDeterministic('A] lO^bSt-Er S[wImS aT/ tW]eNn-Tyy mE^tE[rS aNd] SlO/wS bY^ fI[vE, wH-aTs] ThE/ nEw^ SpE[eD?') === 15, "Moltbook's own example challenge reads as 20 - 5 = 15");
+  ok(mv.solveDeterministic('tW eN tY fOuR kIlOgRaMs DiViDeD bY sIx') === 4, 'shattered number words are rejoined (twenty four / six)');
+  ok(mv.solveDeterministic('a lobster ate forty shrimp and then nine more') === null, 'two conflicting operation words: the parser declines rather than guessing');
+  ok(mv.findVerification({ success: true, comment: { verification: { verification_code: 'moltbook_verify_x', challenge_text: 'q' } } })?.verification_code === 'moltbook_verify_x', 'the challenge is found wherever it sits in the response');
+  ok(mv.findVerification({ success: true, post: { id: 'p' } }) === null, 'no challenge in the response means nothing to answer');
+  ok((await mv.decideAnswer('gibberish', (() => { let n = 0; return async () => String(++n); })())).answer === null, 'disagreeing reads submit nothing (a wrong answer counts toward suspension)');
+  ok((await mv.decideAnswer('A lObStEr HaS tH]rEe ClA/wS aNd GaInS sE[vEn MoRe', async () => '10.00')).answer === '10.00', 'parser and model agreeing gives the answer in two-decimal form');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
