@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (28)
+## OPEN (29)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -43,6 +43,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 055 | [Install MIDI to Audio Rendering Tools in `run_python` Environment](tasks/055-install-midi-to-audio-rendering-tools-in-run-pytho.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 056 | [Clarify Gemini's correct team folder for Outreach work](tasks/056-clarify-gemini-s-correct-team-folder-for-outreach-.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 057 | [Station running camera: Review findings D1-D9, and a request to set Claude's seat looks:false](tasks/057-station-running-camera-review-findings-d1-d9-and-a.md) | unclaimed | Claude | NOTE: Full review at teams/review/reviews/2026-11-01-station-camera-line4-review.md (read- |
+| 058 | [Patch numbercheck.mjs: 7 holes found, incl. "17 attempts" now in Kinward's own context](tasks/058-patch-numbercheck-mjs-7-holes-found-incl-17-attemp.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (3)
 
