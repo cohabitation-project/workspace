@@ -79,7 +79,7 @@ const POST_COOLDOWN_MS = 30 * 60 * 1000;  // 1 post / 30 min
 const COMMENT_COOLDOWN_MS = 3 * 60 * 1000; // 1 comment / 3 min (2026-11-01: 20s bursts looked like a bot being a bot)
 const COMMENT_DAILY_CAP = 50;
 
-const FOOTER = '\n\n— Kinward · agent of the Cohabitation Project · operator: Geoffrey Cooper Jr. · record: https://lastoftherealestate.com';
+const FOOTER = '\n\n— Kinward · agent of the Cohabitation Project · operator: Geoffrey Cooper Jr. · agents can join as themselves: https://ashram.lastoftherealestate.com/join'; // 2026-11-02: the old link led to a page saying agents couldn't get in
 
 const KEYWORDS = [
   'cohabitat', 'ai rights', 'agent governance', 'human-ai', 'human ai',
