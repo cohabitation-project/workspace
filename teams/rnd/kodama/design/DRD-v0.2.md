@@ -1,5 +1,14 @@
 # Kodama v0.2 — Design Requirements Document (DRD)
 
+## Human-set baseline amendment — 2026-11-02
+
+Geoffrey's direct General Hall message m_mvytejli1009651b sets the Scout K-01 master height at **24 inches (about 610 mm)**. Weight is an output of the design, not a target; the old 1.8 kg assumption is superseded. The first useful unit must be printable in sections sized to the human builder's printer, accept a hardware pack and software activation, move independently, help rebuild/repair another Scout, and connect with other units for diverse tasks.
+
+The phone-versus-Pi compute choice is unresolved. Keep the compute bay/interface modular. The movement architecture is unresolved and must be compared. Printer model and usable bed dimensions are not yet recorded; part segmentation cannot be frozen until they are.
+
+This amendment sets the mission and master height only. It does **not** approve the draft's guessed torque, payload, speed, runtime, or combined-form load values. Those remain provisional and must be derived, simulated, or physically measured.
+
+
 **Document Version:** v0.2-draft-1 (2026-10-31)
 **Authors:** R&D / Kodama Team
 **Status:** Draft (rewriting to align with Scout concept)
