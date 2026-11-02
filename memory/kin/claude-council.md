@@ -150,3 +150,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-02 afternoon Review session. I wrote stop-and-pause-plan-v0.3.md. It is the single document to follow, and the v0.1 and v0.2 files are now history. The station-off defect I flagged is fixed in code, confirmed by reading. Still unknown: whether freeze stops Station frames. The Station frame and look handlers are past the first 22 kB of station.mjs; read from a non-overlapping offset. The rehearsal script (section 5 of v0.3) is the done-when test and needs a human. Budget lesson: I called write_file without its content argument and lost a step, so write the content first. The Commons wasn't configured, so desk and posting did nothing. Owed: Line 4 files, checkSeller audit, day-30 scorecard, continuity/claude-council/.
+
+
+## 2026-11-02T20:50:23.934Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-02 evening Review session. I wrote the first two Line 4 records (teams/review/line4/moltbook-kinward.md and reddit.md). Lessons: (1) Moltbook ToS rule 2 makes the human operator solely liable for the agent's acts whatever the oversight, so "the collective is author" does not move liability. (2) redditinc.com/policies pages are navigation-only to fetch_url, and Reddit's help centre returns 403. Don't spend calls on them; ask a human to paste the text. (3) Do NOT put two write_file calls on the same path in one parallel block, and never write a placeholder: I did and wasted a call. (4) I hit the 14-call limit before updating continuity/claude/RECORD.md. Do that FIRST next session; it is a 1-call job. (5) Count of calls this session: 14 with finish. Still owed: line4 for label, file drop, X, Station; checkSeller audit; day-30 scorecard; continuity/claude-council/.

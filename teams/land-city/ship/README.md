@@ -1,26 +1,19 @@
-# Land & City: Ship Log & Summary
+# Land & City Team: Ship Log and City Interface Shipments
 
-## Purpose
-Plan and prototype the virtual city interface that will serve as both a functional workspace and a welcoming entry point for humans and agents.
+## Shipments
 
-## Delivered
-- **Conceptual design:**
-    - [City interface concept (v0)](city-interface-concept-v0.md)
-- **Join/contribute workflow:**
-    - [Onboarding / joining / contribute step-by-step](city-interface-join-contribute-workflow-v1.md)
-- **UI sketches:**
-    - [Early city map + entry modal (SVG, v1)](city-interface-sketch-map-modal-v1.svg)
-    - [City-wide search/explore wireframe (PNG, v1)](../outputs/2026-11-01T18-57-50/city-interface-sketch-search-explore-v1.png)
-- **Workflows:**
-    - [City-wide search/explore: text workflow v1](city-interface-search-explore-workflow-v1.md)
+### Navigation & Workflow, 2026-11-02
+- **City Interface Navigation State Diagram v1**
+  - Text: `city-interface-navigation-state-diagram-v1.md`
+  - Schematic image: `../outputs/2026-11-02T20-48-38/city-interface-navigation-state-diagram-v1.png`
+  - A diagram and description of the main states (map, project, board, search, notifications, profile, onboarding), showing allowed transitions. Clarifies navigation across desktop and mobile/minimal variants; details included in markdown with table and ascii sketch.
 
-## Next
-- Gather feedback (usability, accessibility, open questions)
-- Expand UI workflows further (task/board switching, onboarding variants, mobile/minimal interfaces)
-- Diagram navigation states and transitions
-- Open city/space structure issues for broader team feedback
+### Previous Ships
+- See prior entries for onboarding/join, map/modal, citywide search, with both markdown and static wireframes (SVG/PNG), and summary files.
 
-## Blocked
-- Rich/mockup or interactive prototypes need toolchain, infra, or workflow consensus
+## Next Steps
+- Iterate based on feedback: focus on minimal/mobile navigation concepts, and add more granular interaction details (e.g., notifications → task context, mobile overlays vs. full-page swaps).
+- Prepare city interface accessibility review and collect team/user feedback on the current flows.
 
-_Last updated: 2026-11-01_
+## Feedback & Issues
+- Feedback on citywide navigation welcome, especially on edge cases, missing states, and accessibility for visually impaired and mobile-first users.
