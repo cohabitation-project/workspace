@@ -352,7 +352,9 @@ function drawWing(L) {
   hqF += box(80, 0, 36, 40, '#3a3546', '#4a4458');
   hqF += rect(84, 6, 28, 3, '#ff9b5c') + rect(84, 14, 28, 3, '#7cd6b4') + rect(84, 22, 28, 3, '#e3a55b') + rect(84, 30, 28, 3, '#6d8fd1');
   // The Ambassador's glowing orb — gentle pulse animation
-  hqF += `<circle cx="50" cy="42" r="10" fill="#e3a55b" class="orb-glow"/><circle cx="50" cy="42" r="6" fill="#f0c27a" opacity="0.7"/><circle cx="50" cy="42" r="3.5" fill="#fff7e8"/>`;
+  // a luminous sphere (radial gradient + off-centre highlight) inside a slowly breathing halo
+  hqF += `<defs><radialGradient id="orb-sphere" cx="0.38" cy="0.35" r="0.7"><stop offset="0" stop-color="#fffaf0"/><stop offset="0.35" stop-color="#ffd98f"/><stop offset="0.8" stop-color="#e39a45"/><stop offset="1" stop-color="#b8692b"/></radialGradient><radialGradient id="orb-halo"><stop offset="0.45" stop-color="#ffd98f" stop-opacity="0.55"/><stop offset="1" stop-color="#ffd98f" stop-opacity="0"/></radialGradient></defs>`;
+  hqF += `<circle cx="50" cy="42" r="14" fill="url(#orb-halo)" class="orb-glow"/><circle cx="50" cy="42" r="7" fill="url(#orb-sphere)" class="orb-core"/>`;
   // Plant
   hqF += box(2, 40, 10, 9, '#8a5a34', '#a8703f') + box(0, 30, 14, 12, '#3f8f4f', '#57b066');
   s += `<g transform="translate(${hqOx.toFixed(1)} ${hqOy.toFixed(1)}) scale(${hqS.toFixed(3)})">${hqF}</g>`;
@@ -469,7 +471,8 @@ function drawBuilding() {
   }
   // Left-wall doorway to Hardware Lab wing (visual elements only — hit area drawn last for z-order)
   const wd = L.wing.doorCommons;
-  if (!L.narrow) {
+  const hasWing = S.rooms.some((r) => WING_ROOMS.has(r.id)); // no sign for a wing this server doesn't have
+  if (!hasWing) { /* nothing drawn */ } else if (!L.narrow) {
     s += rect(B.x - 2, wd.y - 24, w + 4, 48, '#5b5162') + rect(B.x - 1, wd.y - 24, 3, 48, '#3b3349');
     s += `<g class="sign"><rect x="${B.x + 10}" y="${wd.y - 14}" width="100" height="28" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${B.x + 60}" y="${wd.y + 5}" font-size="11">← HARDWARE LAB</text></g>`;
   } else {
@@ -503,14 +506,16 @@ function drawBuilding() {
     s += `<g class="quiet" id="quiet-${esc(r.id)}"><rect x="${R.x + R.w / 2 - qw / 2}" y="${qy - (L.narrow ? 14 : 18)}" width="${qw}" height="${L.narrow ? 46 : 50}" rx="6"/><text class="q1" x="${R.x + R.w / 2}" y="${qy}" font-size="${L.narrow ? 11 : 13}">Quiet · nobody here</text><text class="q2" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 14 : 17)}" font-size="${L.narrow ? 9 : 11}"></text><text class="q3" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 26 : 31)}" font-size="${L.narrow ? 9 : 11}"></text></g>`;
     s += `<rect class="room-hit" data-room="${esc(r.id)}" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" tabindex="0" role="button" aria-label="Open ${esc(r.name)}"/>`;
   }
-  s += `<rect class="room-hit" data-door="1" x="${Lb.x}" y="${Lb.y}" width="${Lb.w}" height="${Lb.h}" tabindex="0" role="button" aria-label="The entrance: ask cohab01"/>`;
+  // 2026-11-02 (Geoffrey's test): the whole lobby used to be one "ask cohab01" button, so clicks anywhere in
+  // the building (including the Hardware Lab sign) opened cohab01. cohab01 is a participant standing in the
+  // lobby, not the room: only cohab01 itself (its actor button) and the "Ask cohab01" links open the door panel.
   // The Library: bookshelf on the upper-right wall of the Commons building
   const LS = L.library;
   s += bookshelf(LS);
   s += `<rect class="room-hit lib-hit" data-href="/library" x="${LS.x - 4}" y="${LS.y - 18}" width="${LS.w + 8}" height="${LS.h + 22}" tabindex="0" role="link" aria-label="Open the Library: papers, tools and the project's records"/>`;
   // Wing doorway hit area — drawn LAST among Commons elements so it's on top of the lobby hit area.
   // Made wide enough to be a practical click target (covers the doorway sign area).
-  if (!L.narrow) {
+  if (!hasWing) { /* no wing on this server */ } else if (!L.narrow) {
     s += `<rect class="room-hit" data-nav="wing" x="${B.x - 10}" y="${wd.y - 40}" width="130" height="80" tabindex="0" role="button" aria-label="Enter the Hardware Lab wing"/>`;
   } else {
     const bBot = L.building.y + L.building.h;

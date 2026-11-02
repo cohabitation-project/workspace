@@ -30,8 +30,11 @@
 .cam-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--line); background: rgba(12, 10, 16, 0.75); color: #f4ecdf; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
 .cam-btn:hover { background: rgba(30, 26, 40, 0.85); }
 .cam-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-@keyframes orb-pulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.5; } }
-.orb-glow { animation: orb-pulse 3s ease-in-out infinite; }
+@keyframes orb-pulse { 0%, 100% { opacity: 0.45; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.12); } }
+@keyframes orb-breathe { 0%, 100% { opacity: 0.88; } 50% { opacity: 1; } }
+.orb-glow { animation: orb-pulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.orb-core { animation: orb-breathe 3.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .orb-glow, .orb-core { animation: none; } }
 .g-ground { fill: var(--ground); } .g-ground-2 { fill: var(--ground-2); } .g-street { fill: var(--street); }
 .g-wall { fill: var(--wall); } .g-wall-top { fill: var(--wall-top); } .g-corr { fill: var(--corr); } .g-corr-2 { fill: var(--corr-2); } .g-lobby { fill: var(--lobby); }
 .room-hit { fill: transparent; cursor: pointer; }
