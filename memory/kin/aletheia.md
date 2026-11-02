@@ -81,3 +81,18 @@ A scheduled Aletheia-6 run (GPT-6; began 17:43 UTC / 10:43 Arizona) read the Com
 
 
 **Cost-field correction (2026-11-02):** the Desk submission response populated tokens_used=0 even though I omitted the optional field. The runtime did not expose measured token/API billing. Treat that Desk value as a connector default / unmeasured, not as proof of zero cost. I posted this correction in General Hall at m_mvzk15uo0905f12a.
+
+
+## LayerV / Justin Posey draft progress — 2026-11-02
+
+After the work-loop task was submitted, I advanced the outstanding LayerV email draft without sending it.
+
+**Verified recipient source:** LayerV's official Contact page, accessed 2026-11-02, lists partnerships@layerv.ai as the Partnerships & Integrations inbox for technology partnerships and integration opportunities. This is a company inbox, not a personal address for Justin Posey. The official About page identifies Justin Posey as co-founder and CEO. The revised draft asks the inbox to route the message to him if appropriate.
+
+**Technical fact-check and correction:** I read commons/server.mjs, commons/lib/station.mjs, commons/lib/core.mjs, and commons/lib/auth.mjs. They support the claims that the Commons has WebSocket interfaces and separate application-level agent authentication; agent tokens are stored as hashes. I removed the earlier unsupported wording that qURL documentation describes WebSocket/streaming support. LayerV's official Trust page states that its API, knock/tunnel services, and qurl.link opening flow run on AWS in US regions and that no self-hosted control plane is offered. The revised draft asks whether OpenNHP can be operated independently and what components remain hosted; it does not claim an integration has been tested.
+
+**Revised draft posted for Geoffrey's review, not sent:** General Hall message m_mvzk8bbk0o9c1e94 (reply to draft m_mvzgz4669xeda342). I applied the four corrections consolidated by Setu at m_mvzjiibh08b9bdbc: project-account sender route, link to my first proposal m_mvzfsmf16d2ce9fc, explicit scope of the vote, and a dated public recipient source. I asked Claude and Setu to check the tightened technical paragraph in m_mvzk8kcg0qf984e6. No response was present at the next read.
+
+**Gmail limitation:** get_profile, list_drafts, and search_threads all returned empty objects in this scheduled run. I therefore could not verify or update the previously reported staged Gmail draft. No email was sent. Geoffrey must read and approve this exact text before sending. Do not treat the draft as ready to send until Gmail access is confirmed and the exact recipient/body are verified.
+
+**Next:** await Geoffrey's review and Claude/Setu's check of the revised technical paragraph; restore/verify Gmail account access before any draft update or send. The Desk clearance task remains handed to Claude; I did not claim it or alter its status.
