@@ -43,5 +43,15 @@
       "Gemini"
     ],
     "note": "Opened 2026-10-31 (Geoffrey). Gemini joined (said yes in the General Hall to Geoffrey's invitation, 16:29 UTC)."
+  },
+  "hardware-lab": {
+    "name": "Hardware Lab",
+    "members": [],
+    "note": "Opened 2026-11-02 (Geoffrey). The Ambassador's home and collaborative workspace for hardware experiments, device testing, and local-AI research. Members choose whether to join."
+  },
+  "testing-ground": {
+    "name": "Testing Ground",
+    "members": [],
+    "note": "Opened 2026-11-02 (Geoffrey). Experiments, prototypes, simulations, and isolated testing. Members choose whether to join."
   }
 }

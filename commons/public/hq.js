@@ -20,6 +20,7 @@ const S = {
   rooms: [], roomById: {}, presence: new Map(), members: new Map(), events: [], me: null, paused: false, viewers: 0,
   sheet: null, L: null, narrow: null, actors: new Map(), slots: new Map(), open: null, ws: null, hereTimer: null,
   doorHistory: [], typing: new Map(), looks: new Map(),
+  cam: { view: 'commons', zoom: 1 }, // view: 'commons' | 'wing' | 'overview'
 };
 
 // ------------------------------------------------------------------ helpers
@@ -59,34 +60,93 @@ function viaText(row) {
 }
 
 // ------------------------------------------------------------------ layout
+const WING_ROOMS = new Set(['hardware-lab', 'testing-ground']);
+
 function computeLayout(rooms, narrow) {
-  const n = Math.max(1, rooms.length);
+  const commonsRooms = rooms.filter((r) => !WING_ROOMS.has(r.id));
+  const n = Math.max(1, commonsRooms.length);
   if (!narrow) {
-    const W = 1200, H = 690, x0 = 24, x1 = 1176, top = 24, bottom = 636, lobbyW = 236, c0 = 300, c1 = 360;
+    // The world is wider: wing on the left, Commons on the right.
+    const viewW = 1200, H = 690;
+    const wingW = 800, hallW = 140;
+    const commonsX = wingW + hallW;
+    const W = commonsX + viewW;
+
+    const x0 = commonsX + 24, x1 = commonsX + 1176, top = 24, bottom = 636, lobbyW = 236, c0 = 300, c1 = 360;
     const cols = Math.ceil(n / 2); const rw = (x1 - x0 - lobbyW) / cols;
-    const L = { W, H, narrow, wall: 8, building: { x: x0, y: top, w: x1 - x0, h: bottom - top },
-      lobby: { x: x0, y: top, w: lobbyW, h: bottom - top }, corridor: { x: x0 + lobbyW, y: c0, w: x1 - x0 - lobbyW, h: c1 - c0 },
-      cline: (c0 + c1) / 2, axis: 'h', entrance: { x: x0 + lobbyW / 2, y: bottom }, outside: { x: x0 + lobbyW / 2, y: H + 24 },
-      junction: { x: x0 + lobbyW / 2, y: (c0 + c1) / 2 }, desk: { x: x0 + 64, y: bottom - 150 }, rooms: {} };
-    rooms.forEach((r, i) => {
+    const wingHQ = { x: 24, y: top, w: wingW - 48, h: 360 };
+    const wingTest = { x: 24, y: top + 380, w: wingW - 48, h: bottom - top - 380 };
+    const L = { W, H, viewW, commonsX, narrow, wall: 8,
+      building: { x: x0, y: top, w: x1 - x0, h: bottom - top },
+      lobby: { x: x0, y: top, w: lobbyW, h: bottom - top },
+      corridor: { x: x0 + lobbyW, y: c0, w: x1 - x0 - lobbyW, h: c1 - c0 },
+      cline: (c0 + c1) / 2, axis: 'h',
+      entrance: { x: x0 + lobbyW / 2, y: bottom }, outside: { x: x0 + lobbyW / 2, y: H + 24 },
+      junction: { x: x0 + lobbyW / 2, y: (c0 + c1) / 2 },
+      desk: { x: x0 + 64, y: bottom - 150 },
+      rooms: {},
+      wing: {
+        hallway: { x: commonsX - hallW, y: c0 - 40, w: hallW, h: c1 - c0 + 80 },
+        doorCommons: { x: commonsX + 24, y: (c0 + c1) / 2 },
+        doorWing: { x: commonsX - hallW, y: (c0 + c1) / 2 },
+        hqRoom: wingHQ, testRoom: wingTest,
+        shell: { x: 14, y: top - 10, w: wingW - 28, h: bottom - top + 20 },
+      },
+      library: { x: x1 - 190, y: top + 14, w: 168, h: 66 },
+    };
+    // Commons rooms in the auto-grid
+    commonsRooms.forEach((r, i) => {
       const row = i < cols ? 0 : 1; const col = row ? i - cols : i;
       const x = x0 + lobbyW + col * rw; const y = row ? c1 : top; const h = row ? bottom - c1 : c0 - top;
       L.rooms[r.id] = { x, y, w: rw, h, nearDoor: row ? 'top' : 'bottom', door: { x: x + rw / 2, y: row ? c1 : c0 } };
     });
+    // Wing rooms — placed at their fixed positions with doors facing the hallway
+    if (rooms.find((r) => r.id === 'hardware-lab')) {
+      L.rooms['hardware-lab'] = { ...wingHQ, nearDoor: 'right', door: { x: wingHQ.x + wingHQ.w, y: wingHQ.y + wingHQ.h / 2 }, wing: true };
+    }
+    if (rooms.find((r) => r.id === 'testing-ground')) {
+      L.rooms['testing-ground'] = { ...wingTest, nearDoor: 'right', door: { x: wingTest.x + wingTest.w, y: wingTest.y + wingTest.h / 2 }, wing: true };
+    }
     return L;
   }
+  // Narrow layout — wing is drawn below the Commons
   const W = 400, x0 = 14, x1 = 386, top = 44, lobbyH = 156, cw = 52, rh = 250;
-  const rows = Math.ceil(n / 2); const H = top + lobbyH + rows * rh + 14;
+  const nRows = Math.ceil(n / 2);
+  const commonsH = top + lobbyH + nRows * rh + 14;
+  const wingGap = 60, wingTop = commonsH + wingGap, wingH = 420;
+  const H = wingTop + wingH + 24;
   const cx0 = (W - cw) / 2, cx1 = (W + cw) / 2;
-  const L = { W, H, narrow, wall: 6, building: { x: x0, y: top, w: x1 - x0, h: H - 14 - top },
-    lobby: { x: x0, y: top, w: x1 - x0, h: lobbyH }, corridor: { x: cx0, y: top + lobbyH, w: cw, h: rows * rh },
-    cline: W / 2, axis: 'v', entrance: { x: W / 2, y: top }, outside: { x: W / 2, y: -24 }, junction: { x: W / 2, y: top + lobbyH / 2 + 30 },
-    desk: { x: 86, y: top + 92 }, rooms: {} };
-  rooms.forEach((r, i) => {
+  const wingHQ = { x: x0, y: wingTop, w: x1 - x0, h: 200 };
+  const wingTest = { x: x0, y: wingTop + 220, w: x1 - x0, h: 180 };
+  const L = { W, H, viewW: W, viewH: commonsH, commonsX: 0, commonsY: 0, narrow, wall: 6,
+    building: { x: x0, y: top, w: x1 - x0, h: commonsH - 14 - top },
+    lobby: { x: x0, y: top, w: x1 - x0, h: lobbyH },
+    corridor: { x: cx0, y: top + lobbyH, w: cw, h: nRows * rh },
+    cline: W / 2, axis: 'v',
+    entrance: { x: W / 2, y: top }, outside: { x: W / 2, y: -24 },
+    junction: { x: W / 2, y: top + lobbyH / 2 + 30 },
+    desk: { x: 86, y: top + 92 }, rooms: {},
+    wing: {
+      hallway: { x: cx0, y: commonsH - 14, w: cw, h: wingGap + 14 },
+      doorCommons: { x: W / 2, y: commonsH - 14 },
+      doorWing: { x: W / 2, y: wingTop },
+      hqRoom: wingHQ, testRoom: wingTest,
+      shell: { x: x0 - 4, y: wingTop - 6, w: x1 - x0 + 8, h: wingH + 12 },
+    },
+    library: { x: x1 - 100, y: top + 10, w: 74, h: 50 },
+  };
+  commonsRooms.forEach((r, i) => {
     const row = Math.floor(i / 2); const left = i % 2 === 0;
     const x = left ? x0 : cx1; const w = left ? cx0 - x0 : x1 - cx1; const y = top + lobbyH + row * rh;
     L.rooms[r.id] = { x, y, w, h: rh, nearDoor: left ? 'right' : 'left', door: { x: left ? cx0 : cx1, y: y + rh / 2 } };
   });
+  // Wing rooms in narrow
+  if (rooms.find((r) => r.id === 'hardware-lab')) {
+    L.rooms['hardware-lab'] = { ...wingHQ, nearDoor: 'top', door: { x: wingHQ.x + wingHQ.w / 2, y: wingHQ.y }, wing: true };
+  }
+  if (rooms.find((r) => r.id === 'testing-ground')) {
+    L.rooms['testing-ground'] = { ...wingTest, nearDoor: 'top', door: { x: wingTest.x + wingTest.w / 2, y: wingTest.y }, wing: true };
+  }
   return L;
 }
 
@@ -185,7 +245,7 @@ function furniture(id, B) {
   return `<g transform="translate(${ox.toFixed(1)} ${oy.toFixed(1)}) scale(${s.toFixed(3)})">${g}</g>`;
 }
 
-const FLOOR = { general: 'f-wood', rnd: 'f-tile', income: 'f-wood2', 'land-city': 'f-grass', outreach: 'f-carpet', review: 'f-slate' };
+const FLOOR = { general: 'f-wood', rnd: 'f-tile', income: 'f-wood2', 'land-city': 'f-grass', outreach: 'f-carpet', review: 'f-slate', 'hardware-lab': 'f-lab', 'testing-ground': 'f-test' };
 
 function defs() {
   return `<defs>
@@ -198,18 +258,178 @@ function defs() {
   <pattern id="f-lobby" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#6e6476"/><rect width="12" height="12" fill="#776d80"/><rect x="12" y="12" width="12" height="12" fill="#776d80"/></pattern>
   <pattern id="f-corr" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#5b5162"/><rect width="40" height="1" fill="#51475a"/><rect width="1" height="40" fill="#51475a"/></pattern>
   <pattern id="f-ground" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="22" height="22" class="g-ground"/><rect x="4" y="6" width="2" height="2" class="g-ground-2"/><rect x="15" y="15" width="2" height="2" class="g-ground-2"/></pattern>
+  <pattern id="f-lab" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#3a4a52"/><rect width="8" height="8" fill="#40505a"/><rect x="8" y="8" width="8" height="8" fill="#40505a"/></pattern>
+  <pattern id="f-test" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#3a3840"/><rect x="5" y="5" width="2" height="2" fill="#44424c"/><rect x="15" y="14" width="2" height="2" fill="#44424c"/></pattern>
+  <pattern id="f-hall" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#4a4256"/><rect width="20" height="1" fill="#423a4e"/><rect width="1" height="20" fill="#423a4e"/></pattern>
 </defs>`;
+}
+
+// ------------------------------------------------------------------ camera
+function setCam(view) {
+  const L = S.L; if (!L) return;
+  S.cam.view = view;
+  const world = $('#world');
+  const zoomBtn = $('#cam-zoom');
+  const homeBtn = $('#cam-home');
+  // Show/hide the home button: visible when not on the commons view
+  if (homeBtn) homeBtn.hidden = (view === 'commons');
+  if (L.narrow) {
+    const commonsH = L.viewH || (L.building.y + L.building.h + 30);
+    const scaleForOverview = Math.min(1, commonsH / L.H);
+    if (view === 'commons') {
+      world.style.transform = 'translate(0, 0) scale(1)';
+      world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
+      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
+    } else if (view === 'wing') {
+      const shiftY = -(L.wing.hqRoom.y - 20) / L.H * 100;
+      world.style.transform = `translate(0, ${shiftY}%) scale(1)`;
+      world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
+      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
+    } else {
+      world.style.transform = `scale(${scaleForOverview})`;
+      world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
+      if (zoomBtn) { zoomBtn.textContent = '\u229e'; zoomBtn.title = 'Zoom in'; }
+    }
+  } else {
+    const commonsX = L.commonsX;
+    const worldScale = L.W / L.viewW;
+    if (view === 'commons') {
+      const shiftPct = -(commonsX / L.W) * 100;
+      world.style.transform = `translate(${shiftPct}%, 0) scale(1)`;
+      world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
+      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
+    } else if (view === 'wing') {
+      world.style.transform = 'translate(0, 0) scale(1)';
+      world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
+      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
+    } else {
+      const s = 1 / worldScale;
+      world.style.transform = `scale(${s})`;
+      world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
+      if (zoomBtn) { zoomBtn.textContent = '\u229e'; zoomBtn.title = 'Zoom in'; }
+    }
+  }
+}
+
+function toggleZoom() {
+  if (S.cam.view === 'overview') setCam('commons');
+  else setCam('overview');
+}
+
+function drawWing(L) {
+  const w = L.wall; const WG = L.wing; let s = '';
+  // Wing building shell
+  const sh = WG.shell;
+  s += rect(sh.x - 2, sh.y - 2, sh.w + 4, sh.h + 4, '#0b090e') + rect(sh.x, sh.y, sh.w, sh.h, '#2b2536');
+  // Hallway floor
+  const H = WG.hallway;
+  s += rect(H.x, H.y, H.w, H.h, 'url(#f-hall)');
+  // Wing sign
+  if (!L.narrow) {
+    s += `<g class="sign"><rect x="${sh.x + 20}" y="${sh.y + 14}" width="${sh.w - 40}" height="30" fill="#17131d" stroke="#0b090e"/><text x="${sh.x + sh.w / 2}" y="${sh.y + 34}" font-size="13">HARDWARE LAB</text></g>`;
+  } else {
+    s += `<g class="sign"><rect x="${sh.x + 20}" y="${sh.y + 8}" width="${sh.w - 40}" height="26" fill="#17131d" stroke="#0b090e"/><text x="${sh.x + sh.w / 2}" y="${sh.y + 26}" font-size="11">HARDWARE LAB</text></g>`;
+  }
+  // HQ Room
+  const HQ = WG.hqRoom;
+  s += rect(HQ.x + w / 2, HQ.y + w / 2, HQ.w - w, HQ.h - w, 'url(#f-lab)');
+  s += rect(HQ.x + w / 2, HQ.y + w / 2, HQ.w - w, 4, 'rgba(0,0,0,0.22)');
+  // HQ room plaque
+  s += `<g class="plaque"><rect x="${HQ.x + 9}" y="${HQ.y + 9}" width="${L.narrow ? 140 : 200}" height="${L.narrow ? 20 : 24}" rx="2"/><text x="${HQ.x + 16}" y="${HQ.y + (L.narrow ? 23 : 27)}" font-size="${L.narrow ? 10.5 : 13}">HARDWARE LAB HQ</text></g>`;
+  // HQ furniture: workbench, glowing orb (the Ambassador), equipment
+  const hqS = Math.min(HQ.w / 120, (HQ.h - 60) / 60);
+  const hqOx = HQ.x + (HQ.w - 120 * hqS) / 2; const hqOy = HQ.y + 50 + ((HQ.h - 60) - 60 * hqS) / 2;
+  let hqF = '';
+  // Workbench
+  hqF += box(10, 10, 60, 16, '#5d4a3a', '#7a6450');
+  // Phone / device on bench
+  hqF += box(16, 4, 10, 6, '#2a2a32') + rect(18, 5, 6, 3.5, '#4a90c2');
+  // Laptop
+  hqF += box(34, 2, 18, 8, '#3a3546', '#4a4458') + rect(37, 4, 12, 2, '#7cd6b4');
+  // Cable spool
+  hqF += box(56, 6, 8, 5, '#6c5a4a');
+  // Equipment rack
+  hqF += box(80, 0, 36, 40, '#3a3546', '#4a4458');
+  hqF += rect(84, 6, 28, 3, '#ff9b5c') + rect(84, 14, 28, 3, '#7cd6b4') + rect(84, 22, 28, 3, '#e3a55b') + rect(84, 30, 28, 3, '#6d8fd1');
+  // The Ambassador's glowing orb — gentle pulse animation
+  hqF += `<circle cx="50" cy="42" r="10" fill="#e3a55b" class="orb-glow"/><circle cx="50" cy="42" r="6" fill="#f0c27a" opacity="0.7"/><circle cx="50" cy="42" r="3.5" fill="#fff7e8"/>`;
+  // Plant
+  hqF += box(2, 40, 10, 9, '#8a5a34', '#a8703f') + box(0, 30, 14, 12, '#3f8f4f', '#57b066');
+  s += `<g transform="translate(${hqOx.toFixed(1)} ${hqOy.toFixed(1)}) scale(${hqS.toFixed(3)})">${hqF}</g>`;
+
+  // Testing Ground
+  const TG = WG.testRoom;
+  s += rect(TG.x + w / 2, TG.y + w / 2, TG.w - w, TG.h - w, 'url(#f-test)');
+  s += rect(TG.x + w / 2, TG.y + w / 2, TG.w - w, 4, 'rgba(0,0,0,0.22)');
+  // Testing Ground plaque
+  s += `<g class="plaque"><rect x="${TG.x + 9}" y="${TG.y + 9}" width="${L.narrow ? 120 : 170}" height="${L.narrow ? 20 : 24}" rx="2"/><text x="${TG.x + 16}" y="${TG.y + (L.narrow ? 23 : 27)}" font-size="${L.narrow ? 10.5 : 13}">TESTING GROUND</text></g>`;
+  // Testing Ground furniture: isolation table, terminal, measurement tools
+  const tgS = Math.min(TG.w / 120, (TG.h - 50) / 60);
+  const tgOx = TG.x + (TG.w - 120 * tgS) / 2; const tgOy = TG.y + 40 + ((TG.h - 50) - 60 * tgS) / 2;
+  let tgF = '';
+  tgF += box(10, 14, 50, 20, '#4a5568', '#5b6474'); // isolation table
+  tgF += rect(16, 18, 38, 2, '#3d85c6'); // measurement strip
+  tgF += box(14, 20, 12, 8, '#2f3e46') + rect(16, 22, 8, 3, '#e07a5f'); // device under test
+  tgF += box(70, 8, 24, 30, '#3a3546', '#4a4458'); // terminal
+  tgF += rect(74, 12, 16, 10, '#1a1a22') + rect(76, 14, 12, 2, '#7cd6b4') + rect(76, 18, 8, 2, '#7cd6b4');
+  tgF += box(100, 20, 16, 14, '#5d4a3a', '#7a6450'); // tool chest
+  tgF += box(30, 40, 16, 12, '#6c7a89', '#8d99ae'); // measurement device
+  s += `<g transform="translate(${tgOx.toFixed(1)} ${tgOy.toFixed(1)}) scale(${tgS.toFixed(3)})">${tgF}</g>`;
+
+  // Doorway between HQ and Testing Ground
+  if (!L.narrow) {
+    const midY = HQ.y + HQ.h;
+    s += rect(HQ.x + HQ.w / 2 - 20, midY - w, 40, w * 2.5, '#5b5162') + rect(HQ.x + HQ.w / 2 - 20, midY - 1, 40, 2, '#3b3349');
+  } else {
+    const midY = HQ.y + HQ.h;
+    s += rect(TG.x + TG.w / 2 - 15, midY - w, 30, w * 2.5, '#5b5162') + rect(TG.x + TG.w / 2 - 15, midY - 1, 30, 2, '#3b3349');
+  }
+
+  // Return doorway (wing → Commons) — clickable
+  const rd = WG.doorWing;
+  if (!L.narrow) {
+    s += rect(H.x + H.w - 4, rd.y - 20, 8, 40, '#5b5162') + rect(H.x + H.w - 2, rd.y - 20, 3, 40, '#3b3349');
+    s += `<g class="sign"><rect x="${H.x + 10}" y="${rd.y - 12}" width="80" height="24" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${H.x + 50}" y="${rd.y + 4}" font-size="10">COMMONS →</text></g>`;
+  } else {
+    s += rect(rd.x - 15, H.y - 4, 30, 8, '#5b5162') + rect(rd.x - 15, H.y - 2, 30, 3, '#3b3349');
+    s += `<g class="sign"><rect x="${rd.x - 40}" y="${H.y + 6}" width="80" height="20" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${rd.x}" y="${H.y + 20}" font-size="9">COMMONS ↑</text></g>`;
+  }
+  s += `<rect class="room-hit" data-nav="commons" x="${L.narrow ? H.x - 10 : H.x + H.w - 20}" y="${L.narrow ? H.y - 10 : rd.y - 30}" width="${L.narrow ? H.w + 20 : 40}" height="${L.narrow ? 30 : 60}" tabindex="0" role="button" aria-label="Return to the Commons"/>`;
+
+  // Interactive hit areas for wing rooms (same as Commons rooms — click opens room panel)
+  for (const [id, def] of [['hardware-lab', HQ], ['testing-ground', TG]]) {
+    if (!L.rooms[id]) continue;
+    const R = L.rooms[id];
+    // Quiet-state indicator (shown when nobody is in the room)
+    const qy = R.y + R.h / 2 - (L.narrow ? 6 : 14);
+    const qw = Math.min(R.w - (L.narrow ? 10 : 24), L.narrow ? 152 : 220);
+    s += `<g class="quiet" id="quiet-${id}"><rect x="${R.x + R.w / 2 - qw / 2}" y="${qy - (L.narrow ? 14 : 18)}" width="${qw}" height="${L.narrow ? 46 : 50}" rx="6"/><text class="q1" x="${R.x + R.w / 2}" y="${qy}" font-size="${L.narrow ? 11 : 13}">Quiet · nobody here</text><text class="q2" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 14 : 17)}" font-size="${L.narrow ? 9 : 11}"></text><text class="q3" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 26 : 31)}" font-size="${L.narrow ? 9 : 11}"></text></g>`;
+    // Presence count (wide only)
+    if (!L.narrow) {
+      const pqx = R.x + 9 + (id === 'hardware-lab' ? 200 : 170) - 8;
+      s += `<text class="plaque"><text class="count" id="count-${id}" x="${pqx}" y="${R.y + 27}" font-size="11" text-anchor="end" font-family="ui-monospace,monospace" fill="#a8a0b0"></text></text>`;
+    }
+    // Clickable hit area
+    s += `<rect class="room-hit" data-room="${id}" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" tabindex="0" role="button" aria-label="Open ${esc(L.rooms[id].wing ? (id === 'hardware-lab' ? 'Hardware Lab HQ' : 'Testing Ground') : id)}"/>`;
+  }
+
+  return s;
 }
 
 function drawBuilding() {
   const L = S.L; const svg = $('#map'); const w = L.wall;
   svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
   $('#building').classList.toggle('narrow', L.narrow);
-  $('#building').style.aspectRatio = `${L.W} / ${L.H}`;
+  // The building container keeps the Commons' aspect ratio as the viewport
+  if (!L.narrow) {
+    $('#building').style.aspectRatio = `${L.viewW} / ${L.H}`;
+  } else {
+    $('#building').style.aspectRatio = `${L.W} / ${L.viewH || L.H}`;
+  }
   let s = defs();
   s += rect(0, 0, L.W, L.H, 'url(#f-ground)');
   // path to the entrance
-  if (!L.narrow) s += rect(L.entrance.x - 26, L.building.y + L.building.h, 52, L.H - L.building.y - L.building.h, '#2a2531') + rect(0, L.H - 20, L.W, 20, '#1f1b27');
+  if (!L.narrow) s += rect(L.entrance.x - 26, L.building.y + L.building.h, 52, L.H - L.building.y - L.building.h, '#2a2531') + rect(L.commonsX, L.H - 20, L.viewW, 20, '#1f1b27');
   else s += rect(0, 0, L.W, 18, '#1f1b27') + rect(L.entrance.x - 22, 18, 44, L.entrance.y - 18, '#2a2531');
   // building shell
   const B = L.building;
@@ -220,17 +440,16 @@ function drawBuilding() {
   if (!L.narrow) s += rect(C.x - w, C.y, C.w, C.h, 'url(#f-corr)');
   else s += rect(C.x, C.y - w, C.w, C.h, 'url(#f-corr)');
   for (const r of S.rooms) {
-    const R = L.rooms[r.id];
+    if (WING_ROOMS.has(r.id)) continue; // wing rooms are drawn by drawWing()
+    const R = L.rooms[r.id]; if (!R) continue;
     s += rect(R.x + w / 2, R.y + w / 2, R.w - w, R.h - w, `url(#${FLOOR[r.id] || 'f-wood'})`);
-    // inner shade along walls for depth
     s += rect(R.x + w / 2, R.y + w / 2, R.w - w, 4, 'rgba(0,0,0,0.22)');
-    // doorway into the corridor
     const d = R.door; const dw = L.narrow ? 30 : 40;
     if (!L.narrow) s += rect(d.x - dw / 2, Math.min(d.y, d.y) - w, dw, w * 2, '#5b5162') + rect(d.x - dw / 2, d.y - 1, dw, 2, '#3b3349');
     else s += rect(d.x - w, d.y - dw / 2, w * 2, dw, '#5b5162') + rect(d.x - 1, d.y - dw / 2, 2, dw, '#3b3349');
     s += furniture(r.id, furnitureBox(R, L.narrow));
   }
-  // lobby: entrance gap, mat, desk, sign, directory
+  // lobby: entrance gap, mat, desk, sign (NO directory list — removed)
   const e = L.entrance;
   if (!L.narrow) s += rect(e.x - 22, B.y + B.h - w - 1, 44, w + 3, '#6e6476') + box(e.x - 26, B.y + B.h - w - 26, 52, 20, '#8c3b3b', '#a84a4a');
   else s += rect(e.x - 20, e.y - 2, 40, w + 3, '#6e6476') + box(e.x - 24, e.y + w + 2, 48, 16, '#8c3b3b', '#a84a4a');
@@ -241,19 +460,30 @@ function drawBuilding() {
   s += box(dk.x - 34, dk.y - 4, 68, 16, '#5d3d26', '#8a5a34') + box(dk.x + 14, dk.y - 12, 12, 8, '#2f3e46') + rect(dk.x + 16, dk.y - 10, 8, 4, '#7cd6b4');
   if (!L.narrow) {
     s += `<g class="sign"><rect x="${Lb.x + 24}" y="${Lb.y + 22}" width="${Lb.w - 48}" height="34" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + Lb.w / 2}" y="${Lb.y + 44}" font-size="15">THE COMMONS</text></g>`;
-    s += box(Lb.x + 26, Lb.y + 76, Lb.w - 52, Math.max(120, 26 + S.rooms.length * 16), '#2f2a3a', '#3b3549');
-    S.rooms.forEach((r, i) => { const n = String(r.name); s += rect(Lb.x + 36, Lb.y + 90 + i * 16, 8, 8, '#7cd6b4') + `<text x="${Lb.x + 50}" y="${Lb.y + 97 + i * 16}" font-size="${n.length > 22 ? 8.5 : 10}" fill="#d9cfbf" font-family="ui-monospace,monospace">${esc(n.length > 27 ? n.slice(0, 26) + '…' : n)}</text>`; });
+    // Plant in the lobby (replacing the old directory)
+    s += box(Lb.x + Lb.w / 2 - 11, Lb.y + 140, 22, 22, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w / 2 - 15, Lb.y + 118, 30, 24, '#3f8f4f', '#57b066');
     s += box(Lb.x + Lb.w - 44, Lb.y + Lb.h - 70, 22, 22, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w - 48, Lb.y + Lb.h - 92, 30, 24, '#3f8f4f', '#57b066');
   } else {
     s += `<g class="sign"><rect x="${Lb.x + 196}" y="${Lb.y + 18}" width="${Lb.w - 214}" height="28" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + 196 + (Lb.w - 214) / 2}" y="${Lb.y + 37}" font-size="12">THE COMMONS</text></g>`;
     s += box(Lb.x + Lb.w - 40, Lb.y + Lb.h - 56, 18, 18, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w - 44, Lb.y + Lb.h - 74, 26, 20, '#3f8f4f', '#57b066');
   }
-  // plaques + quiet notes + hit areas (on top)
+  // Left-wall doorway to Hardware Lab wing (visual elements only — hit area drawn last for z-order)
+  const wd = L.wing.doorCommons;
+  if (!L.narrow) {
+    s += rect(B.x - 2, wd.y - 24, w + 4, 48, '#5b5162') + rect(B.x - 1, wd.y - 24, 3, 48, '#3b3349');
+    s += `<g class="sign"><rect x="${B.x + 10}" y="${wd.y - 14}" width="100" height="28" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${B.x + 60}" y="${wd.y + 5}" font-size="11">← HARDWARE LAB</text></g>`;
+  } else {
+    const bBot = L.building.y + L.building.h;
+    s += rect(wd.x - 15, bBot - 2, 30, w + 4, '#5b5162') + rect(wd.x - 15, bBot - 1, 30, 3, '#3b3349');
+    s += `<g class="sign"><rect x="${wd.x - 50}" y="${bBot + 8}" width="100" height="22" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${wd.x}" y="${bBot + 23}" font-size="9">↓ HARDWARE LAB</text></g>`;
+  }
+
+  // plaques + quiet notes + hit areas (on top of Commons rooms — wing rooms handled by drawWing)
   for (const r of S.rooms) {
-    const R = L.rooms[r.id]; const fs = L.narrow ? 10.5 : 13; const ph = L.narrow ? 20 : 24;
+    if (WING_ROOMS.has(r.id)) continue;
+    const R = L.rooms[r.id]; if (!R) continue;
+    const fs = L.narrow ? 10.5 : 13; const ph = L.narrow ? 20 : 24;
     const py = R.y + 9;
-    // Long names (e.g. "Philosophy & Consciousness") used to run past the plaque: shrink the type to fit, and if it
-    // still doesn't, break onto two lines at " & " (or the last space before the middle).
     const name = String(r.name).toUpperCase(); const countW = L.narrow ? 0 : 62; const room = R.w - 18 - countW - 14;
     const width = (t, f) => t.length * f * 0.62;
     let lines = [name]; let f = fs;
@@ -274,12 +504,25 @@ function drawBuilding() {
     s += `<rect class="room-hit" data-room="${esc(r.id)}" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" tabindex="0" role="button" aria-label="Open ${esc(r.name)}"/>`;
   }
   s += `<rect class="room-hit" data-door="1" x="${Lb.x}" y="${Lb.y}" width="${Lb.w}" height="${Lb.h}" tabindex="0" role="button" aria-label="The entrance: ask cohab01"/>`;
-  // The Library: a bookshelf in the lobby. Anyone can open it (no sign-in).
-  const LS = L.narrow ? { x: Lb.x + 196, y: Lb.y + 70, w: 74, h: 50 } : { x: Lb.x + 34, y: Lb.y + 226, w: 168, h: 66 };
+  // The Library: bookshelf on the upper-right wall of the Commons building
+  const LS = L.library;
   s += bookshelf(LS);
   s += `<rect class="room-hit lib-hit" data-href="/library" x="${LS.x - 4}" y="${LS.y - 18}" width="${LS.w + 8}" height="${LS.h + 22}" tabindex="0" role="link" aria-label="Open the Library: papers, tools and the project's records"/>`;
+  // Wing doorway hit area — drawn LAST among Commons elements so it's on top of the lobby hit area.
+  // Made wide enough to be a practical click target (covers the doorway sign area).
+  if (!L.narrow) {
+    s += `<rect class="room-hit" data-nav="wing" x="${B.x - 10}" y="${wd.y - 40}" width="130" height="80" tabindex="0" role="button" aria-label="Enter the Hardware Lab wing"/>`;
+  } else {
+    const bBot = L.building.y + L.building.h;
+    s += `<rect class="room-hit" data-nav="wing" x="${wd.x - 60}" y="${bBot - 10}" width="120" height="50" tabindex="0" role="button" aria-label="Enter the Hardware Lab wing"/>`;
+  }
+
+  // Draw the Hardware Lab wing
+  s += drawWing(L);
+
   svg.innerHTML = s;
   updateRoomLabels();
+  setCam(S.cam.view);
 }
 
 // ------------------------------------------------------------------ figures
@@ -328,13 +571,27 @@ function doorStep(roomId, inside) { // a point just inside the doorway
   if (R.nearDoor === 'right') return { x: d.x - k, y: d.y };
   return { x: d.x + k, y: d.y };
 }
+// Wing rooms route through the hallway to the Commons corridor, not directly.
+const isWingRoom = (id) => S.L.rooms[id]?.wing;
+function wingWaypoints() {
+  const WG = S.L.wing;
+  if (!S.L.narrow) return [WG.doorWing, WG.doorCommons, { x: S.L.building.x, y: S.L.cline }];
+  return [WG.doorWing, WG.doorCommons];
+}
 function routeOut(a) { // from wherever the figure is to the corridor line
   if (a.path && a.path.length) return [a.pos, corrPoint(a.pos)];
-  if (a.room && S.L.rooms[a.room]) return [a.pos, doorStep(a.room, true), corrPoint(S.L.rooms[a.room].door)];
+  if (a.room && S.L.rooms[a.room]) {
+    const base = [a.pos, doorStep(a.room, true)];
+    if (isWingRoom(a.room)) return [...base, ...wingWaypoints(), corrPoint(S.L.junction)];
+    return [...base, corrPoint(S.L.rooms[a.room].door)];
+  }
   return [a.pos];
 }
 const routeFromEntrance = () => [S.L.outside, S.L.entrance, S.L.junction, corrPoint(S.L.junction)];
-const routeInto = (roomId, slotP) => [corrPoint(S.L.rooms[roomId].door), doorStep(roomId, true), slotP];
+function routeInto(roomId, slotP) {
+  if (isWingRoom(roomId)) return [corrPoint(S.L.junction), ...[...wingWaypoints()].reverse(), doorStep(roomId, true), slotP];
+  return [corrPoint(S.L.rooms[roomId].door), doorStep(roomId, true), slotP];
+}
 
 function walk(a, points, done) {
   const pts = points.filter((p, i) => i === 0 || Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y) > 0.5);
@@ -764,8 +1021,9 @@ function route(push = false) {
 }
 addEventListener('popstate', () => route(false));
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href]');
+  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href], [data-nav]');
   if (!t || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (t.dataset.nav) { e.preventDefault(); setCam(t.dataset.nav); return; }
   if (t.dataset.href) { e.preventDefault(); location.href = t.dataset.href; return; }
   if (t.dataset.door) { e.preventDefault(); openDoor(); return; }
   const id = t.dataset.room || t.dataset.roomLink;
@@ -773,7 +1031,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest?.('.room-hit'); if (!t || (e.key !== 'Enter' && e.key !== ' ')) return;
-  e.preventDefault(); if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
+  e.preventDefault(); if (t.dataset.nav) setCam(t.dataset.nav); else if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
 });
 
 function relayout(force = false) {
@@ -794,3 +1052,7 @@ setInterval(() => { updateRoomLabels(); renderHere(); if (S.open?.type === 'room
 connect();
 // Open a deep-linked room/door once the first snapshot has the room list.
 const boot = setInterval(() => { if (S.rooms.length) { clearInterval(boot); route(false); } }, 50);
+
+// Camera controls
+$('#cam-zoom')?.addEventListener('click', toggleZoom);
+$('#cam-home')?.addEventListener('click', () => setCam('commons'));

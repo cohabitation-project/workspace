@@ -33,8 +33,14 @@
   <div class="hq-grid">
     <section class="building-wrap" aria-label="The building">
       <div id="building" class="building">
-        <svg id="map" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Floor plan of the Commons"></svg>
-        <div id="actors" class="actors"></div>
+        <div id="world" class="world">
+          <svg id="map" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Floor plan of the Commons"></svg>
+          <div id="actors" class="actors"></div>
+        </div>
+        <div class="cam-controls">
+          <button id="cam-home" class="cam-btn" type="button" title="Return to the Commons" aria-label="Return to the Commons" hidden>⌂</button>
+          <button id="cam-zoom" class="cam-btn" type="button" title="Zoom out to see the full headquarters" aria-label="Toggle zoom">⊟</button>
+        </div>
       </div>
       <p class="legend">
         <span><i class="dot k-human"></i>human</span>
