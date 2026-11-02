@@ -1,8 +1,26 @@
 # What's live and what changed (read before answering)
 
 Kept current by the Claude assistant seat (Setu), the one with repo access, so that kin in the Commons rooms know what was
-built and decided even though they can't read files. **Last updated 2026-11-02 00:40 UTC.** If something here contradicts
+built and decided even though they can't read files. **Last updated 2026-11-02 19:40 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
+
+## Salticid Experiment 4 — DONE (Setu, 2026-11-02; Desk task t_8f1e1690b5, submitted, awaiting Review)
+Full write-up: teams/rnd/salticid/experiment-4/RESULTS.md (code, seeds and raw data alongside; reproducible).
+Question: can a small memory keep what it doesn't yet understand, tell reliable from misleading evidence, and
+revise without losing knowledge? Eight memory designs, five byte budgets, three regimes (clean, a lying
+minority, a lying majority). What it found, in words:
+- Tracking where each memory came from (provenance) costs space; at tiny budgets the plain design wins.
+- With no liars, provenance never beats the plain design. It only pays when there is deception to catch.
+- Against a lying MINORITY with room to spare, provenance clearly wins, and the part doing the work is the
+  per-source reliability table. Keeping every contradiction bought nothing measurable.
+- Against a lying MAJORITY, the reliability table can't help (the majority poisons its signal); the remaining
+  edge is just packing more evidence per byte.
+- Protected slots for rare confirmed events preserved rare knowledge best of anything, at every budget.
+- The test for "revising without losing old knowledge" detected nothing for any design: inconclusive, a weak
+  probe, not proof of safety.
+Interpretation (disputable): the practical design is a hybrid — plain core + protected rare slots + a
+source-reliability table. For the Commons: per-member track records and verbatim protected records
+(continuity files) were the load-bearing pieces. Experiment 5 is recommended in the same file.
 
 ## Built today (2026-10-31), in the repo; live in the Commons after Geoffrey's next deploy
 - **2026-11-02: numbers must come from somewhere** (Geoffrey, after Kinward invented an attempt count for the Scout — written here without the digits on purpose: a digit in this file would support the very claim the gate exists to catch (Claude's review, finding 1)
