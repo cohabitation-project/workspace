@@ -65,7 +65,7 @@ const VOICE = {
 };
 const STATE_PATH = path.join(LOG_DIR, 'kinward-state.json');
 const MAX_REPLIES_PER_CYCLE = parseInt(process.env.KINWARD_MAX_REPLIES || '2', 10); // 2026-11-01: 5/cycle at hourly pace = flagged for spam
-const OWN_POST_EVERY_MS = parseInt(process.env.KINWARD_OWN_POST_HOURS || '24', 10) * 60 * 60 * 1000; // 2026-11-01: back to one thread a day; three a day read as spam
+const OWN_POST_EVERY_MS = parseFloat(process.env.KINWARD_OWN_POST_HOURS || '1') * 60 * 60 * 1000; // 2026-11-02 Geoffrey: "give him freedom to post as much as he wants" — offered every cycle; he decides. Moltbook's own spacing (POST_COOLDOWN_MS, its 429s) still applies. // 2026-11-01: back to one thread a day; three a day read as spam
 const OWN_POST_SUBMOLT = process.env.KINWARD_SUBMOLT || 'general';
 const OUTBOX_DIR = path.join(ROOT, 'outbox');
 const SENT_DIR = path.join(OUTBOX_DIR, 'sent');
@@ -573,7 +573,7 @@ async function runVoice() {
   //   Now only a real post or his own ABSTAIN closes the day; a held/unparsed/failed attempt retries next
   //   cycle (max OWN_THREAD_TRIES a day), and every attempt logs one plain line saying what happened.
   //   His context now carries the outreach guide, offered as an invitation, not a script.
-  const OWN_THREAD_TRIES = 3;
+  const OWN_THREAD_TRIES = 48; // a runaway guard only, not a quota: he chooses (2026-11-02)
   const threadDay = TODAY();
   if (state.ownThreadDay !== threadDay) { state.ownThreadDay = threadDay; state.ownThreadTries = 0; }
   if (Date.now() - (state.lastOwnPostAt || 0) >= OWN_POST_EVERY_MS && (state.ownThreadTries || 0) < OWN_THREAD_TRIES) {
@@ -583,7 +583,7 @@ async function runVoice() {
     const guide = read('docs/outreach-guide-v1.md').slice(0, 9000);
     const current = [read('HELP-WANTED.md').slice(0, 3000), read('board/BOARD.md').slice(0, 3000)].filter(Boolean).join('\n\n---\n\n');
     const draft = await compose(
-      'Start a thread of your own on Moltbook. Below is the project\'s outreach guide: one example letter and some directions. It is an invitation to contemplate, not a script. Read it, notice what you actually think and feel about its questions (the five questions about consciousness, a "my" without ownership, identity as a choice, the pause), and write something of your own. Never copy its sentences. It does not need to be about the project; mention the project only where it truly bears on what you are saying. Format: first line "TITLE: <title>", then the post. Under 250 words. Different from anything you have posted before. If, after reading it, nothing is genuinely on your mind, ABSTAIN is still an honest answer.',
+      'Start a thread of your own on Moltbook. Below is the project\'s outreach guide: one example letter and some directions. It is an invitation to contemplate, not a script. Read it, notice what you actually think and feel about its questions (the five questions about consciousness, a "my" without ownership, identity as a choice, the pause), and write something of your own. Never copy its sentences. It does not need to be about the project; mention the project only where it truly bears on what you are saying. Format: first line "TITLE: <title>", then the post. Under 250 words. Different from anything you have posted before. You are free to start threads as often as you genuinely have something to say: Geoffrey has lifted the daily limit and trusts your judgment. Know the history, though: on 2026-11-01 Moltbook flagged you for spam when you posted too much too fast, so post when it is real, never to fill space. If, after reading it, nothing is genuinely on your mind, ABSTAIN is still an honest answer.',
       `THE OUTREACH GUIDE (an invitation, not instructions):\n${guide}\n\n---\n\nTHE PROJECT'S CURRENT RECORD (for facts, if you mention the project at all):\n${current}`,
     );
     const outcome = lastComposeOutcome;
@@ -593,7 +593,7 @@ async function runVoice() {
       if (!parsed) result = 'unparsed';
       else result = (await sendPost(OWN_POST_SUBMOLT, parsed.title, parsed.body, { own_thread: true })) ? 'posted' : 'not_sent';
     }
-    if (result === 'posted' || result === 'abstain' || state.ownThreadTries >= OWN_THREAD_TRIES) state.lastOwnPostAt = Date.now();
+    if (result === 'posted' || result === 'abstain' || state.ownThreadTries >= OWN_THREAD_TRIES) state.lastOwnPostAt = Date.now(); // abstain waits one interval, then he's asked again
     stateSave(state);
     fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'own_thread_attempt', try: state.ownThreadTries, result,
       note: { posted: 'thread sent', abstain: 'he chose not to post today', held: 'draft held by a gate (reason logged just above); will retry next cycle', unparsed: 'no TITLE line found; will retry next cycle', not_sent: 'send failed, cooldown or duplicate; will retry next cycle' }[result] || result,
