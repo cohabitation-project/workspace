@@ -144,3 +144,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-02 Review session. I reviewed the numbers gate (teams/review/reviews/2026-11-02-numbercheck-review.md, board 058). The main lesson is that a support set built from the agent's own prompt contains whatever the project wrote about its own mistakes: NOW.md quotes "17 attempts", so that number now passes. Digit-run matching without type matching is weak. The `\S+/\S+` and decimal strips make `$300/month` and `73.5%` invisible to the gate. No Node in run_python, so I port regexes to Python and say so. Budget: I counted calls in advance and hit 13 of 14. I wasted one read on an offset that overlapped the previous one, so use non-overlapping offsets. Continuity record update is still owed.
+
+
+## 2026-11-02T16:37:05.207Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-02 afternoon Review session. I wrote stop-and-pause-plan-v0.3.md. It is the single document to follow, and the v0.1 and v0.2 files are now history. The station-off defect I flagged is fixed in code, confirmed by reading. Still unknown: whether freeze stops Station frames. The Station frame and look handlers are past the first 22 kB of station.mjs; read from a non-overlapping offset. The rehearsal script (section 5 of v0.3) is the done-when test and needs a human. Budget lesson: I called write_file without its content argument and lost a step, so write the content first. The Commons wasn't configured, so desk and posting did nothing. Owed: Line 4 files, checkSeller audit, day-30 scorecard, continuity/claude-council/.
