@@ -92,7 +92,7 @@ function computeLayout(rooms, narrow) {
         hqRoom: wingHQ, testRoom: wingTest,
         shell: { x: 14, y: top - 10, w: wingW - 28, h: bottom - top + 20 },
       },
-      library: { x: x1 - 190, y: top + 14, w: 168, h: 66 },
+      library: { x: x0 + 16, y: top + 150, w: 84, h: 52 }, // in the lobby, left of the plant (2026-11-02: on the upper-right wall it covered the Land & City sign)
     };
     // Commons rooms in the auto-grid
     commonsRooms.forEach((r, i) => {
@@ -474,7 +474,7 @@ function drawBuilding() {
   const hasWing = S.rooms.some((r) => WING_ROOMS.has(r.id)); // no sign for a wing this server doesn't have
   if (!hasWing) { /* nothing drawn */ } else if (!L.narrow) {
     s += rect(B.x - 2, wd.y - 24, w + 4, 48, '#5b5162') + rect(B.x - 1, wd.y - 24, 3, 48, '#3b3349');
-    s += `<g class="sign"><rect x="${B.x + 10}" y="${wd.y - 14}" width="100" height="28" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${B.x + 60}" y="${wd.y + 5}" font-size="11">← HARDWARE LAB</text></g>`;
+    s += `<g class="sign"><rect x="${B.x + 10}" y="${wd.y - 14}" width="124" height="28" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${B.x + 72}" y="${wd.y + 5}" font-size="11">← HARDWARE LAB</text></g>`;
   } else {
     const bBot = L.building.y + L.building.h;
     s += rect(wd.x - 15, bBot - 2, 30, w + 4, '#5b5162') + rect(wd.x - 15, bBot - 1, 30, 3, '#3b3349');
