@@ -61,3 +61,16 @@ function findName(root, q) {
   }
   return false;
 }
+
+/** A thread draft's title: "TITLE: x" tolerant of markdown (**TITLE:**, # Title:, "Title -"), else a short first
+ *  line stands as the title. Returns { title, body } or null. (2026-11-02: bold titles were silently dropped.) */
+export function parseThreadDraft(draft) {
+  const text = String(draft || '').trim();
+  const m = text.match(/^\s*[#>*_\s]*title\s*[:\-\u2014]\s*[*_]*\s*(.+?)\s*[*_]*\s*\n+([\s\S]+)$/i);
+  if (m && m[1].trim() && m[2].trim()) return { title: m[1].replace(/[*_#]+/g, '').trim().slice(0, 200), body: m[2].trim() };
+  const lines = text.split('\n');
+  const first = (lines[0] || '').replace(/[*_#]+/g, '').trim();
+  const rest = lines.slice(1).join('\n').trim();
+  if (first && first.length <= 120 && rest.length >= 40) return { title: first.slice(0, 200), body: rest };
+  return null;
+}
