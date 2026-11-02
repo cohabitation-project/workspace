@@ -5,6 +5,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { unsupportedNumbers } from '../commons/lib/numbercheck.mjs';
 
 const TOP = ['teams', 'docs', 'continuity', 'memory', 'commons', 'scripts', 'context', 'conference', 'station', 'config', 'work_sessions', 'logs', 'outbox', 'neti', 'petition', 'site'];
 const PATH_RE = new RegExp(`(?:^|[\\s\`'"(\\[])/?((?:${TOP.join('|')})/[A-Za-z0-9._\\-/]+)`, 'g'); // a leading "/" is still a repo path
@@ -14,17 +15,24 @@ const LINK_RE = /https?:\/\/(?:[a-z0-9-]+\.)*lastoftherealestate\.com[^\s)\]>"'`
 const LEAK_EXACT = /\bABSTAIN\b|YOUR BRIEF|HARD RULES FOR YOUR REPLY|WHERE YOU ARE NOW|THE VINE \(the ground/;
 const LEAK_SOFT = /you may reply with:|reply with exactly|\byou are kinward\b|nothing substantive to add, you may/i;
 
-/** Returns { ok, reason, missing } — ok:false means drop the draft. */
-export function groundingCheck(text, root) {
+/**
+ * Returns { ok, reason, missing } — ok:false means drop the draft.
+ * `sources` (optional): what the model was given — system prompt, task, thread. A count, percentage or money
+ * amount in the draft must appear there or in a cited existing file, or the draft is dropped (Geoffrey,
+ * 2026-11-01, after "17 attempts" was invented on Moltbook: numbers must come from somewhere).
+ */
+export function groundingCheck(text, root, { sources = [] } = {}) {
   const t = String(text || '');
   const leak = t.match(LEAK_EXACT) || t.match(LEAK_SOFT);
   if (leak) { const i = leak.index; return { ok: false, reason: `draft repeats its own instructions ("…${t.slice(Math.max(0, i - 40), i + 60).replace(/\s+/g, ' ')}…")`, missing: [] }; }
   const missing = [];
+  const cited = [];
   for (const m of t.matchAll(PATH_RE)) {
     const rel = m[1].replace(/[.,;:]+$/, '');
     // a bare two-word phrase like "context/memory" in prose isn't a citation; a path has a file extension, a trailing slash, or 3+ parts
     const looksLikePath = /\.[a-z0-9]{1,5}$/i.test(rel) || rel.endsWith('/') || rel.split('/').filter(Boolean).length >= 3;
-    if (looksLikePath && !fs.existsSync(path.join(root, rel))) missing.push(rel);
+    if (!looksLikePath) continue;
+    if (fs.existsSync(path.join(root, rel))) { if (!cited.includes(rel)) cited.push(rel); } else missing.push(rel);
   }
   for (const m of t.matchAll(LINK_RE)) {
     const u = m[0].replace(/[.,;:]+$/, '');
@@ -33,7 +41,15 @@ export function groundingCheck(text, root) {
     const q = p.searchParams.get('q');
     if (q && !findName(root, q)) missing.push(u);
   }
-  return missing.length ? { ok: false, reason: `cites things that don't exist: ${missing.slice(0, 5).join(', ')}`, missing } : { ok: true, reason: '', missing };
+  if (missing.length) return { ok: false, reason: `cites things that don't exist: ${missing.slice(0, 5).join(', ')}`, missing };
+  // numbers must come from somewhere: the thread, his context, or a cited file he actually named
+  const citedText = [];
+  for (const rel of cited.slice(0, 10)) {
+    try { const p = path.join(root, rel); const st = fs.statSync(p); if (st.isFile() && st.size < 200_000) citedText.push(fs.readFileSync(p, 'utf8')); } catch { /* unreadable gives no support */ }
+  }
+  const invented = unsupportedNumbers(t, [...sources, ...citedText]);
+  if (invented.length) return { ok: false, reason: `numbers with no source: ${invented.slice(0, 5).map((s) => `"${s}"`).join(', ')} (not in the thread, his context, or any cited file)`, missing };
+  return { ok: true, reason: '', missing };
 }
 
 function findName(root, q) {

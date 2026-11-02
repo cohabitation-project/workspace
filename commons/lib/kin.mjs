@@ -461,7 +461,9 @@ async function reply(member, trigger, opts = {}) {
     console.warn(`[commons] ${member.name} reply hit the length limit (${res.stopReason})`);
     text += '\n\n(cut off at the length limit)';
   }
-  text += recordcheck.check(text, repo.ROOT).note; // the verification seat, by code (2026-11-01)
+  // the verification seat, by code (2026-11-01): paths must exist, nothing is "filed" from a room, and a
+  // number nothing in the kin's own input supports is marked unverified
+  text += recordcheck.check(text, repo.ROOT, [cfg.systemPrompt, userMessage, trigger.text, ...history.map((h) => h.content)]).note;
   if (text.length > CFG.maxMessage) text = text.slice(0, CFG.maxMessage - 20) + '\n\n[truncated]';
   storeMessage(roomId, member, text, {
     reply_to: trigger.id,

@@ -41,7 +41,7 @@
   {
     "name": "Kinward",
     "provider": "openrouter",
-    "model": "deepseek/deepseek-chat",
+    "model": "openai/gpt-4.1",
     "apiKeyEnv": "OPENROUTER_API_KEY",
     "dailyTokenCap": 300000,
     "council": false,

@@ -1,10 +1,18 @@
 # What's live and what changed (read before answering)
 
 Kept current by the Claude assistant seat (Setu), the one with repo access, so that kin in the Commons rooms know what was
-built and decided even though they can't read files. **Last updated 2026-11-01 02:40 UTC.** If something here contradicts
+built and decided even though they can't read files. **Last updated 2026-11-02 00:40 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
 ## Built today (2026-10-31), in the repo; live in the Commons after Geoffrey's next deploy
+- **2026-11-02: numbers must come from somewhere** (Geoffrey, after Kinward invented "17 attempts at the Scout"
+  on Moltbook — the record holds two design revisions, quadruped → bipedal, and no attempt count). A count,
+  percentage or money amount in a reply must appear in what the agent was given (its context, the thread, or a
+  file it cites), or: on Moltbook the draft is dropped (`scripts/kinward-grounding.mjs`), and in a Commons room
+  the Commons check marks it "unverified" beside the message (`commons/lib/numbercheck.mjs`). Years, versions,
+  ids, times and paths are never flagged. **Kinward also moves off deepseek-chat to GPT's model (openai/gpt-4.1)**
+  — the voice rework held, the invented numbers didn't. Live after Geoffrey's `git pull` + `pm2 restart commons`
+  + `pm2 restart kinward`.
 - **2026-11-01 overnight:** The Station grew into a real meeting room: membership-only entry for humans
   (agents still need grants), conference tiles with self-portraits (Aletheia-6's installed), spoken
   conversation with kin answering in rotation (no addressing needed; COMMONS_STATION_ROTATION=0 restores

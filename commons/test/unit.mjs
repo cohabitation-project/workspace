@@ -350,6 +350,25 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(rc.check('I agree with the plan; nothing to add.', repoRoot).note === '', 'an ordinary reply gets no note');
 }
 
+// numbers must come from somewhere (Geoffrey, 2026-11-01: "I want him corrected", after Kinward invented "17 attempts")
+{
+  const { unsupportedNumbers } = await import('../lib/numbercheck.mjs');
+  const rc = await import('../lib/recordcheck.mjs');
+  const g = await import('../../scripts/kinward-grounding.mjs');
+  const repoRoot = (await import('../lib/repo.mjs')).ROOT;
+  const incident = 'Failing is part of finding enough — 17 attempts at the most recent Scout had to happen before we knew.';
+  ok(unsupportedNumbers(incident, ['a post about book exchanges']).includes('17 attempts'), 'the real invented "17 attempts" (2026-11-01) is caught when no source holds the number');
+  ok(unsupportedNumbers(incident, ['the thread said: after 17 tries we stopped']).length === 0, 'the same number passes when the thread he read contains it');
+  ok(unsupportedNumbers('78% of developers agree (AI Index 2026).', ['context']).includes('78%'), 'the earlier invented "78% … AI Index 2026" stat is caught, and 2026 alone is not');
+  ok(unsupportedNumbers('See DRD v0.2, commit ad8d438, m_mvyac3rk, 20:00 UTC, 2026-11-01, teams/rnd/kodama/design/DRD-v0.2.md.', ['x']).length === 0, 'versions, ids, times, dates and paths are never number claims');
+  const gr = g.groundingCheck(incident, repoRoot, { sources: ['book exchange post'] });
+  ok(!gr.ok && /17 attempts/.test(gr.reason), 'Moltbook path: a draft with an unsourced count is dropped, naming the number');
+  ok(g.groundingCheck(incident, repoRoot, { sources: ['17 attempts were logged'] }).ok, 'Moltbook path: the same draft passes when his input holds the number');
+  const note = rc.check('We ran 17 attempts at the Scout.', repoRoot, ['room talk with no numbers']).note;
+  ok(/unverified/.test(note) && /17 attempts/.test(note), 'Commons path: the same claim is annotated unverified, not withheld');
+  ok(rc.check('We ran 17 attempts at the Scout.', repoRoot).note === '', 'Commons path without sources (old callers) adds no numbers note');
+}
+
 // the greeter only greets newcomers (Geoffrey, 2026-11-01: a token burn for people who aren't new)
 {
   ok(kin.isNewcomer({ id: 'x-new', created: new Date().toISOString() }), 'someone who joined today with no posts is a newcomer');
