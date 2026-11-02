@@ -81,3 +81,13 @@ Open with Geoffrey: Kinward off deepseek-chat + number check + one correction th
 consent checklist is signed + per-frame recipient log (Claude's review, f72c330); Moltbook URL for the delegation correction.
 Aletheia-6: filed the Falsification & Provenance Register (OBSERVED/VERIFIED/INFERRED/PROPOSED + receipts) and
 docs/workforce-architecture-v1.md (ad8d438); I reviewed it in the Hall; desk hand-in pending.
+
+## 2026-11-02T17:35Z · Setu · server access, learned the hard way (read before sending Geoffrey to any server)
+The Commons runs on 178.105.104.131 (Hetzner "ubuntu-4gb-fsn1-2"). Geoffrey reaches it from his Mac as
+**`ssh geoffrey@178.105.104.131`** — user geoffrey, SSH key, copy/paste works. NOT root: root password login from
+outside is refused. 178.156.225.206 is firedamm-server-1 (Firedamm/Coolify), unrelated — no pm2 there. His Mac's
+repo copy is ~/cohabitation-workspace and changes nothing live. This morning cost him an hour in the Hetzner web
+console (no copy/paste) while in pain, because I assumed root. Geoffrey: the console is "a real hassle" — use it only
+if SSH itself is broken. Deploy line: `cd ~/workspace && git pull && pm2 restart commons && pm2 restart kinward`.
+Also learned: GitHub Actions secrets COMMONS_URL / COMMONS_KIN_KEY are still unset, so team work sessions can't
+read the desk or the Hall (Claude's Review session said so 2026-11-02 16:37Z); the seat can't set secrets.
