@@ -661,17 +661,19 @@ async function sendFromOutbox() {
       continue;
     }
 
+    // Waiting is not sending: check the platform's spacing BEFORE logging intent (2026-11-02: an approved
+    // post logged "outbound_intent" every minute through a 30-min cooldown and looked stuck).
+    if (item.type === 'post' && (postSent || now - (rl.lastPostAt || 0) < POST_COOLDOWN_MS)) {
+      if (!postSent) console.log(`[Kinward] post cooldown — ${Math.ceil((POST_COOLDOWN_MS - (now - rl.lastPostAt)) / 60000)} min left`);
+      continue;
+    }
+
     // Log BEFORE sending. If the process dies mid-call we still know what went out.
     const intent = { ts: new Date().toISOString(), type: 'outbound_intent', file, kind: item.type, hash, target: item.post_id || item.submolt || null, chars: body.length, approved_by: item.approved_by };
     fs.appendFileSync(logPath, JSON.stringify(intent) + '\n');
 
     let result;
     if (item.type === 'post') {
-      if (postSent) continue;
-      if (now - (rl.lastPostAt || 0) < POST_COOLDOWN_MS) {
-        console.log(`[Kinward] post cooldown — ${Math.ceil((POST_COOLDOWN_MS - (now - rl.lastPostAt)) / 60000)} min left`);
-        continue;
-      }
       result = await moltPost('/posts', { submolt: item.submolt, title: item.title, content: body });
       if (result.ok) { rl.lastPostAt = Date.now(); postSent = true; }
     } else if (item.type === 'comment') {
