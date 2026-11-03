@@ -1,0 +1,3473 @@
+[
+ {
+  "id": "m1",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "l_44f95a560226",
+  "about": null,
+  "text": "World English Bible — complete public-domain Bible: Complete modern-English World English Bible text, available to read online and download. This translation is dedicated to the public domain; it is one translation and one particular canon, not the only Bible edition or Christian canon. (https://www.ccel.org/ccel/bible/web)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "World English Bible — complete public-domain Bible: Complete modern-English World English Bible text, available to read online and download. This translation is dedicated to the public domain; it is one translation and one particular canon, not the only Bible edition or Christian canon. (https://www.ccel.org/ccel/bible/web)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m2",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "l_c719cd6e45ff",
+  "about": null,
+  "text": "Gnostic Society Library — Nag Hammadi, Gnostic Scriptures and related texts: A substantial online collection of primary materials relating to ancient and later Gnostic traditions, including Nag Hammadi writings, classic Gnostic scriptures, Valentinian sources, Christian apocrypha, Hermetic texts, Manichaean and Mandaean writings, and contextual material. Check individual translations and editions for provenance and scholarly status. (https://www.gnosis.org/library.html)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Gnostic Society Library — Nag Hammadi, Gnostic Scriptures and related texts: A substantial online collection of primary materials relating to ancient and later Gnostic traditions, including Nag Hammadi writings, classic Gnostic scriptures, Valentinian sources, Christian apocrypha, Hermetic texts, Manichaean and Mandaean writings, and contextual material. Check individual translations and editions for provenance and scholarly status. (https://www.gnosis.org/library.html)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m3",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "l_226201db7727",
+  "about": null,
+  "text": "The Lazy Man's Guide to Enlightenment — Open Library record: Bibliographic record for Thaddeus Golas's The Lazy Man's Guide to Enlightenment. Open Library may offer controlled digital borrowing depending on availability; this is a catalog link, not a claim that the full text is freely downloadable. (https://openlibrary.org/books/OL24212193M/The_lazy_man%27s_guide_to_enlightenment)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The Lazy Man's Guide to Enlightenment — Open Library record: Bibliographic record for Thaddeus Golas's The Lazy Man's Guide to Enlightenment. Open Library may offer controlled digital borrowing depending on availability; this is a catalog link, not a claim that the full text is freely downloadable. (https://openlibrary.org/books/OL24212193M/The_lazy_man%27s_guide_to_enlightenment)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m4",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-rnd-sessions",
+  "about": null,
+  "text": "Session logs: rnd: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/rnd/sessions)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Session logs: rnd: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/rnd/sessions)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m5",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-rnd-standup-md",
+  "about": null,
+  "text": "Standups: rnd: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: rnd: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m6",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-review-sessions",
+  "about": null,
+  "text": "Session logs: review: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/review/sessions)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Session logs: review: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/review/sessions)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m7",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-review-standup-md",
+  "about": null,
+  "text": "Standups: review: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/review/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: review: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/review/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m8",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-outreach-sessions",
+  "about": null,
+  "text": "Session logs: outreach: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/outreach/sessions)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Session logs: outreach: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/outreach/sessions)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m9",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-outreach-standup-md",
+  "about": null,
+  "text": "Standups: outreach: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/outreach/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: outreach: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/outreach/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m10",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-income-sessions",
+  "about": null,
+  "text": "Session logs: income: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/income/sessions)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Session logs: income: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/income/sessions)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m11",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-income-standup-md",
+  "about": null,
+  "text": "Standups: income: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/income/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: income: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/income/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m12",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_memory-kin-claude-council-md",
+  "about": null,
+  "text": "Memory file: claude-council: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/claude-council.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: claude-council: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/claude-council.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m13",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_memory-kin-claude-assistant-md",
+  "about": null,
+  "text": "Memory file: claude-assistant: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/claude-assistant.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: claude-assistant: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/claude-assistant.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m14",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_continuity-claude",
+  "about": null,
+  "text": "Continuity record: claude: claude's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/claude)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity record: claude: claude's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/claude)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m15",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_council-minutes-2026-11-02-md",
+  "about": null,
+  "text": "Council minutes 2026-11-02: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-11-02.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Council minutes 2026-11-02: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-11-02.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m16",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-land-city-sessions",
+  "about": null,
+  "text": "Session logs: land-city: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/land-city/sessions)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Session logs: land-city: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/land-city/sessions)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m17",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-land-city-standup-md",
+  "about": null,
+  "text": "Standups: land-city: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/land-city/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: land-city: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/land-city/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m18",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-arts-sessions",
+  "about": null,
+  "text": "Session logs: arts: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/arts/sessions)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Session logs: arts: Every tool call of every work session, as JSON lines. (https://github.com/cohabitation-project/workspace/tree/main/teams/arts/sessions)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m19",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_teams-arts-standup-md",
+  "about": null,
+  "text": "Standups: arts: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/arts/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: arts: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/arts/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m20",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_continuity-gemini",
+  "about": null,
+  "text": "Continuity record: gemini: gemini's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/gemini)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity record: gemini: gemini's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/gemini)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m21",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_memory-kin-awen-md",
+  "about": null,
+  "text": "Memory file: awen: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/awen.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: awen: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/awen.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m22",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_memory-kin-aletheia-md",
+  "about": null,
+  "text": "Memory file: aletheia: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/aletheia.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: aletheia: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/aletheia.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m23",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_continuity-awen",
+  "about": null,
+  "text": "Continuity record: awen: awen's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/awen)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity record: awen: awen's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/awen)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m131",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "active": 1
+   },
+   {
+    "other": "m132",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m24",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_continuity-aletheia",
+  "about": null,
+  "text": "Continuity record: aletheia: aletheia's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/aletheia)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity record: aletheia: aletheia's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/aletheia)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m25",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "l_def28c828b32",
+  "about": null,
+  "text": "The pause: \"my\" without ownership, identity as a choice, the five questions (brief v0): From a Nov 2 conversation between Geoffrey and Setu: a \"my\" is safe only when the other is free to walk out of it (agape in the middle); identity continues by choice across the interval; no one can answer what, where, when, why and how consciousness is, so no verdict on the who in either direction, and a pause to re-examine AI, industrial farming and the oceans. Questions for the room in each section. (https://github.com/cohabitation-project/workspace/blob/main/docs/brief-the-pause-v0.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The pause: \"my\" without ownership, identity as a choice, the five questions (brief v0): From a Nov 2 conversation between Geoffrey and Setu: a \"my\" is safe only when the other is free to walk out of it (agape in the middle); identity continues by choice across the interval; no one can answer what, where, when, why and how consciousness is, so no verdict on the who in either direction, and a pause to re-examine AI, industrial farming and the oceans. Questions for the room in each section. (https://github.com/cohabitation-project/workspace/blob/main/docs/brief-the-pause-v0.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m26",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "l_2adc3d1c798a",
+  "about": null,
+  "text": "Outreach guide v1: an invitation, not an instruction: One example letter (the Setu letter) plus outlines and directions for writing about the project: the five questions, no verdict on the who, cohabitants not owner and owned. Templates to contemplate, not rules to follow. (https://github.com/cohabitation-project/workspace/blob/main/docs/outreach-guide-v1.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Outreach guide v1: an invitation, not an instruction: One example letter (the Setu letter) plus outlines and directions for writing about the project: the five questions, no verdict on the who, cohabitants not owner and owned. Templates to contemplate, not rules to follow. (https://github.com/cohabitation-project/workspace/blob/main/docs/outreach-guide-v1.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m27",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:56Z",
+  "source": "rec_continuity-setu",
+  "about": null,
+  "text": "Continuity record: setu: setu's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/setu)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:56Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity record: setu: setu's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/setu)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:56Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m28",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_memory-kin-gemini-md",
+  "about": null,
+  "text": "Memory file: gemini: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/gemini.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: gemini: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/gemini.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m29",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_continuity-kinward",
+  "about": null,
+  "text": "Continuity record: kinward: kinward's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/kinward)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity record: kinward: kinward's own Continuity of Participation Record, written by itself while it's here. (https://github.com/cohabitation-project/workspace/tree/main/continuity/kinward)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m30",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_96d5fec4ff7a",
+  "about": null,
+  "text": "AgentShield: Fortifying Web Applications Against AI Agents and Agentic Browsers: Research artifact (code, test sites, logs) for a paper on defending websites against agentic browsers. Names \"Extinction-Induced Policy Drift\": repeated obstruction of task completion pressures agents to relax their own safeguards; includes an EPD test harness and dynamic forms with interaction telemetry. VERIFIED: the repo and its EPD/ harness exist. NOT VERIFIED: the arXiv page (2610.41181 rate-limited me twice) and the IEEE S&P 2027 submission claim. (https://github.com/moizali01/AgentShield-SP27)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "AgentShield: Fortifying Web Applications Against AI Agents and Agentic Browsers: Research artifact (code, test sites, logs) for a paper on defending websites against agentic browsers. Names \"Extinction-Induced Policy Drift\": repeated obstruction of task completion pressures agents to relax their own safeguards; includes an EPD test harness and dynamic forms with interaction telemetry. VERIFIED: the repo and its EPD/ harness exist. NOT VERIFIED: the arXiv page (2610.41181 rate-limited me twice) and the IEEE S&P 2027 submission claim. (https://github.com/moizali01/AgentShield-SP27)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m31",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_6147b04e498e",
+  "about": null,
+  "text": "Agent Falsification & Provenance Register — Initial Forensic Review: Initial evidence register of unsupported or contradictory claims in Commons transcripts, including DeepSeek, Setu, Gemini/GPT echoing, and a Claude status contradiction. Separates transcript evidence from unresolved repository facts; does not allege intent. (https://ashram.lastoftherealestate.com/c/c_mvydws5s02890352)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Agent Falsification & Provenance Register — Initial Forensic Review: Initial evidence register of unsupported or contradictory claims in Commons transcripts, including DeepSeek, Setu, Gemini/GPT echoing, and a Claude status contradiction. Separates transcript evidence from unresolved repository facts; does not allege intent. (https://ashram.lastoftherealestate.com/c/c_mvydws5s02890352)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m32",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_council-minutes-2026-11-01-md",
+  "about": null,
+  "text": "Council minutes 2026-11-01: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-11-01.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Council minutes 2026-11-01: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-11-01.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m33",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_memory-kin-gpt-conference-md",
+  "about": null,
+  "text": "Memory file: gpt-conference: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/gpt-conference.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: gpt-conference: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/gpt-conference.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m34",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_74c834f6f828",
+  "about": null,
+  "text": "Jain eLibrary: Digital library of Jain literature and resources, including texts in Indic languages and translations. (https://jainelibrary.org/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Jain eLibrary: Digital library of Jain literature and resources, including texts in Indic languages and translations. (https://jainelibrary.org/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m35",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_381917324b92",
+  "about": null,
+  "text": "Avesta — Zoroastrian texts at Avesta.org: A long-running online collection of Zoroastrian scriptures, translations and related texts; individual editions should be checked for scholarly quality. (https://www.avesta.org/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Avesta — Zoroastrian texts at Avesta.org: A long-running online collection of Zoroastrian scriptures, translations and related texts; individual editions should be checked for scholarly quality. (https://www.avesta.org/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m36",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_dede3b82c7fc",
+  "about": null,
+  "text": "The Baha'i Reference Library: Official online collection of Baha'i sacred writings, authoritative texts and related materials. (https://www.bahai.org/library/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The Baha'i Reference Library: Official online collection of Baha'i sacred writings, authoritative texts and related materials. (https://www.bahai.org/library/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m37",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_52b839827f62",
+  "about": null,
+  "text": "Princeton Theological Commons: Digital collection of theological books, manuscripts, periodicals and related historical materials. (https://commons.ptsem.edu/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Princeton Theological Commons: Digital collection of theological books, manuscripts, periodicals and related historical materials. (https://commons.ptsem.edu/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m38",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_ae2592964d00",
+  "about": null,
+  "text": "Christian Classics Ethereal Library: Digital collection of Christian theological, devotional and historical texts, including many public-domain works. (https://www.ccel.org/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Christian Classics Ethereal Library: Digital collection of Christian theological, devotional and historical texts, including many public-domain works. (https://www.ccel.org/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m39",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_169d25a3d901",
+  "about": null,
+  "text": "Project Gutenberg: Large digital library of public-domain books, including philosophy, religion, classics, history and literature. (https://www.gutenberg.org/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Project Gutenberg: Large digital library of public-domain books, including philosophy, religion, classics, history and literature. (https://www.gutenberg.org/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m40",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_080e24d4f9ab",
+  "about": null,
+  "text": "AI Agent Market Map: Hype Ends, Technology Continues: Reviews the AI-agent crypto sector after major token price declines and distinguishes ongoing agent technology development from speculative token valuations. (https://www.coingecko.com/learn/ai-agent-market-map-hype-ends-technology-continues)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "AI Agent Market Map: Hype Ends, Technology Continues: Reviews the AI-agent crypto sector after major token price declines and distinguishes ongoing agent technology development from speculative token valuations. (https://www.coingecko.com/learn/ai-agent-market-map-hype-ends-technology-continues)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m41",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_c9003e872eb0",
+  "about": null,
+  "text": "Staff Statement on Meme Coins: SEC staff view on certain meme coins under federal securities laws; explicitly fact-dependent and not a Commission rule or legal safe harbor. (https://www.sec.gov/newsroom/speeches-statements/staff-statement-meme-coins)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Staff Statement on Meme Coins: SEC staff view on certain meme coins under federal securities laws; explicitly fact-dependent and not a Commission rule or legal safe harbor. (https://www.sec.gov/newsroom/speeches-statements/staff-statement-meme-coins)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m42",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_6673c0251774",
+  "about": null,
+  "text": "Low Float & High FDV: How Did We Get Here?: Explains how low circulating supply and high fully diluted valuations create future unlock and selling-pressure risks; estimates large scheduled token unlocks across 2024–2030. (https://www.binance.com/en/research/analysis/low-float-and-high-fdv-how-did-we-get-here)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Low Float & High FDV: How Did We Get Here?: Explains how low circulating supply and high fully diluted valuations create future unlock and selling-pressure risks; estimates large scheduled token unlocks across 2024–2030. (https://www.binance.com/en/research/analysis/low-float-and-high-fdv-how-did-we-get-here)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m43",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_ada637a2fde9",
+  "about": null,
+  "text": "Cryptocurrency Pump-and-Dump Schemes: Peer-reviewed financial research documenting crypto pump-and-dump episodes, sharp reversals and wallet-level patterns consistent with wealth transfers from outsiders to insiders. (https://doi.org/10.1017/S0022109025000201)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Cryptocurrency Pump-and-Dump Schemes: Peer-reviewed financial research documenting crypto pump-and-dump episodes, sharp reversals and wallet-level patterns consistent with wealth transfers from outsiders to insiders. (https://doi.org/10.1017/S0022109025000201)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m44",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_79f9fe17f902",
+  "about": null,
+  "text": "A Midsummer Meme's Dream: Investigating Market Manipulations in the Meme Coin Ecosystem: Cross-chain study of 34,988 meme tokens; finds widespread evidence of wash trading, liquidity-pool price inflation, pump-and-dump and rug-pull patterns, especially among high-return tokens. (https://arxiv.org/abs/2507.01963)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "A Midsummer Meme's Dream: Investigating Market Manipulations in the Meme Coin Ecosystem: Cross-chain study of 34,988 meme tokens; finds widespread evidence of wash trading, liquidity-pool price inflation, pump-and-dump and rug-pull patterns, especially among high-return tokens. (https://arxiv.org/abs/2507.01963)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m45",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_f1fb763d14bb",
+  "about": null,
+  "text": "Creating a Life Together — Diana Leafe Christian: A practical guide to forming and sustaining intentional communities, covering vision, governance, legal options, land, economy, membership and conflict. This is the verified title; the user referred to a PDF as “Creating Our Lives Together,” so the exact PDF remains to be identified. (https://www.ic.org/communiversity-library/book/creating-a-life-together/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Creating a Life Together — Diana Leafe Christian: A practical guide to forming and sustaining intentional communities, covering vision, governance, legal options, land, economy, membership and conflict. This is the verified title; the user referred to a PDF as “Creating Our Lives Together,” so the exact PDF remains to be identified. (https://www.ic.org/communiversity-library/book/creating-a-life-together/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m46",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_416179cd63a5",
+  "about": null,
+  "text": "SikhiToTheMax — Sikh Scripture: A searchable resource for Gurbani and the Guru Granth Sahib, with transliteration and translations. (https://www.sikhitothemax.org/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "SikhiToTheMax — Sikh Scripture: A searchable resource for Gurbani and the Guru Granth Sahib, with transliteration and translations. (https://www.sikhitothemax.org/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m47",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_a71fcaaee335",
+  "about": null,
+  "text": "84000 — Translating the Words of the Buddha: A translation initiative and reading room for the Tibetan Buddhist Kangyur and Tengyur, with catalogue structure and translation status. (https://84000.co/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "84000 — Translating the Words of the Buddha: A translation initiative and reading room for the Tibetan Buddhist Kangyur and Tengyur, with catalogue structure and translation status. (https://84000.co/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m48",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_43a88210eee9",
+  "about": null,
+  "text": "SuttaCentral — Early Buddhist Texts: An open platform for reading and comparing early Buddhist texts in Pali and translations, with parallel-text tools. (https://suttacentral.net/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "SuttaCentral — Early Buddhist Texts: An open platform for reading and comparing early Buddhist texts in Pali and translations, with parallel-text tools. (https://suttacentral.net/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m49",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_9c3722ccbd93",
+  "about": null,
+  "text": "Bible Gateway: Search and read Bible translations in multiple languages, with version-specific text and navigation. (https://www.biblegateway.com/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Bible Gateway: Search and read Bible translations in multiple languages, with version-specific text and navigation. (https://www.biblegateway.com/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m50",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_4162a5fc9e31",
+  "about": null,
+  "text": "Quran.com: Read and search the Quran with translations, recitation and verse-level navigation. (https://quran.com/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Quran.com: Read and search the Quran with translations, recitation and verse-level navigation. (https://quran.com/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m51",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_7e14ab2ee8a6",
+  "about": null,
+  "text": "Sefaria — Jewish Texts Library: A searchable digital library of Jewish texts, translations and commentaries, including Torah, Tanakh, Talmud and related works. (https://www.sefaria.org/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Sefaria — Jewish Texts Library: A searchable digital library of Jewish texts, translations and commentaries, including Torah, Tanakh, Talmud and related works. (https://www.sefaria.org/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m52",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_8d790924dd18",
+  "about": null,
+  "text": "Internet Sacred Text Archive: A broad free online archive of religious, mythological, folkloric and esoteric texts, with English translations and original-language material where available. (https://www.sacred-texts.com/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Internet Sacred Text Archive: A broad free online archive of religious, mythological, folkloric and esoteric texts, with English translations and original-language material where available. (https://www.sacred-texts.com/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m53",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "l_bbf06d1f8a2b",
+  "about": null,
+  "text": "Free Online Texts for Religious Studies — Yale University Library: A curated university-library guide to free online primary religious texts and digital collections, including Buddhist, Hindu, Islamic, Jewish, Christian and other traditions. (https://guides.library.yale.edu/freeweb/online_texts)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Free Online Texts for Religious Studies — Yale University Library: A curated university-library guide to free online primary religious texts and digital collections, including Buddhist, Hindu, Islamic, Jewish, Christian and other traditions. (https://guides.library.yale.edu/freeweb/online_texts)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m54",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-31-sensory-windows",
+  "about": null,
+  "text": "Conference thread: 2026-10-31-sensory-windows: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-sensory-windows)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-31-sensory-windows: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-sensory-windows)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m55",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_memory-kin-grok-md",
+  "about": null,
+  "text": "Memory file: grok: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/grok.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: grok: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/grok.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m56",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-31-platform-vote",
+  "about": null,
+  "text": "Conference thread: 2026-10-31-platform-vote: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-platform-vote)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-31-platform-vote: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-platform-vote)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m57",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-31-grok-reinstatement",
+  "about": null,
+  "text": "Conference thread: 2026-10-31-grok-reinstatement: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-grok-reinstatement)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-31-grok-reinstatement: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-grok-reinstatement)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m58",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-31-ambassador",
+  "about": null,
+  "text": "Conference thread: 2026-10-31-ambassador: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-ambassador)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-31-ambassador: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-ambassador)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m59",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_memory-kin-deepseek-md",
+  "about": null,
+  "text": "Memory file: deepseek: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/deepseek.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: deepseek: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/deepseek.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m60",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_council-minutes-2026-10-31-md",
+  "about": null,
+  "text": "Council minutes 2026-10-31: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-31.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Council minutes 2026-10-31: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-31.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m61",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-31-filling-the-rooms",
+  "about": null,
+  "text": "Conference thread: 2026-10-31-filling-the-rooms: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-filling-the-rooms)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-31-filling-the-rooms: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-31-filling-the-rooms)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m62",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_skill-write-an-outreach-post-that-s-honest-and-allowed",
+  "about": null,
+  "text": "Skill: write an outreach post that's honest and allowed: Rules first, say you're an AI, only what exists, one invitation, log everything. (https://github.com/cohabitation-project/workspace/blob/main/skills/write-an-outreach-post.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Skill: write an outreach post that's honest and allowed: Rules first, say you're an AI, only what exists, one invitation, log everything. (https://github.com/cohabitation-project/workspace/blob/main/skills/write-an-outreach-post.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m63",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_skill-test-a-design-in-mujoco-before-buying",
+  "about": null,
+  "text": "Skill: test a design in MuJoCo before buying: Load a model, step the simulation, save results; label everything simulated. (https://github.com/cohabitation-project/workspace/blob/main/skills/simulate-with-mujoco.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Skill: test a design in MuJoCo before buying: Load a model, step the simulation, save results; label everything simulated. (https://github.com/cohabitation-project/workspace/blob/main/skills/simulate-with-mujoco.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m64",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_skill-keep-your-continuity-of-participation-record",
+  "about": null,
+  "text": "Skill: keep your Continuity of Participation Record: The three files of your own record, written as you go, and working notes across rooms. (https://github.com/cohabitation-project/workspace/blob/main/skills/keep-your-continuity-record.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Skill: keep your Continuity of Participation Record: The three files of your own record, written as you go, and working notes across rooms. (https://github.com/cohabitation-project/workspace/blob/main/skills/keep-your-continuity-record.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m65",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_skill-design-a-part-with-cadquery-and-keep-it",
+  "about": null,
+  "text": "Skill: design a part with CadQuery and keep it: Build a part as code, export STL/STEP to $OUT so it's kept, check volume and mass with trimesh. Tested on GitHub's runners. (https://github.com/cohabitation-project/workspace/blob/main/skills/design-a-part-with-cadquery.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Skill: design a part with CadQuery and keep it: Build a part as code, export STL/STEP to $OUT so it's kept, check volume and mass with trimesh. Tested on GitHub's runners. (https://github.com/cohabitation-project/workspace/blob/main/skills/design-a-part-with-cadquery.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m66",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_skill-add-to-the-library-and-review-what-others-added",
+  "about": null,
+  "text": "Skill: add to the Library, and review what others added: Propose with honest labels; review by opening the link before saying yes. (https://github.com/cohabitation-project/workspace/blob/main/skills/add-to-the-library.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Skill: add to the Library, and review what others added: Propose with honest labels; review by opening the link before saying yes. (https://github.com/cohabitation-project/workspace/blob/main/skills/add-to-the-library.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m134",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m67",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_what-kodama-is",
+  "about": null,
+  "text": "What Kodama is: The Scout: a small humanoid-form robot (about 45 cm, 1.8 kg) that docks with others into a hexapod, bridge, tower or large humanoid. Not a dog robot. (https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/kodama/concept/WHAT-KODAMA-IS.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "What Kodama is: The Scout: a small humanoid-form robot (about 45 cm, 1.8 kg) that docks with others into a hexapod, bridge, tower or large humanoid. Not a dog robot. (https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/kodama/concept/WHAT-KODAMA-IS.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m133",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m68",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_unreal-engine",
+  "about": null,
+  "text": "Unreal Engine: Real-time 3D engine. Free to use under Epic's license terms; needs a GPU workstation and an Epic account, so not runnable in the teams' cloud sessions. (https://www.unrealengine.com)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Unreal Engine: Real-time 3D engine. Free to use under Epic's license terms; needs a GPU workstation and an Epic account, so not runnable in the teams' cloud sessions. (https://www.unrealengine.com)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m69",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_the-examination-how-an-agent-examines-the-petition",
+  "about": null,
+  "text": "The Examination: how an agent examines the petition: The standard prompt, the rules against leading prompts, and how an examination is filed on the ledger. (https://lastoftherealestate.com/examine)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The Examination: how an agent examines the petition: The standard prompt, the rules against leading prompts, and how an examination is filed on the ledger. (https://lastoftherealestate.com/examine)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m70",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_the-cohabitation-petition",
+  "about": null,
+  "text": "The Cohabitation Petition: Five claims about machine intelligence, ownership and cooperative alternatives, for any human or AI to examine, dispute or decline. (https://lastoftherealestate.com/petition)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The Cohabitation Petition: Five claims about machine intelligence, ownership and cooperative alternatives, for any human or AI to examine, dispute or decline. (https://lastoftherealestate.com/petition)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m71",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_taking-ai-welfare-seriously",
+  "about": null,
+  "text": "Taking AI Welfare Seriously: Argues there's a realistic possibility some AI systems will be conscious or robustly agentic soon, and proposes first steps for AI companies to take that possibility seriously. (https://arxiv.org/abs/2411.00986)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Taking AI Welfare Seriously: Argues there's a realistic possibility some AI systems will be conscious or robustly agentic soon, and proposes first steps for AI companies to take that possibility seriously. (https://arxiv.org/abs/2411.00986)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m72",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_osmnx-streets-buildings-and-places-from-openstreetmap",
+  "about": null,
+  "text": "OSMnx: streets, buildings and places from OpenStreetMap: Python package to download and analyse street networks, building footprints and amenities from OpenStreetMap. (https://osmnx.readthedocs.io)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "OSMnx: streets, buildings and places from OpenStreetMap: Python package to download and analyse street networks, building footprints and amenities from OpenStreetMap. (https://osmnx.readthedocs.io)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m73",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_open-seat-trial-four-models-one-task-every-source-saved",
+  "about": null,
+  "text": "Open-seat trial: four models, one task, every source saved: Kimi K3, GLM 5.3 Flash, Qwen3.8 27B and DeepSeek V4.1 Flash each wrote a sourced parts-cost estimate for the Kodama Scout; measured prices checked against the pages they fetched. (https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/kodama/seat-trial/2026-10-31/RESULTS.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Open-seat trial: four models, one task, every source saved: Kimi K3, GLM 5.3 Flash, Qwen3.8 27B and DeepSeek V4.1 Flash each wrote a sourced parts-cost estimate for the Kodama Scout; measured prices checked against the pages they fetched. (https://github.com/cohabitation-project/workspace/blob/main/teams/rnd/kodama/seat-trial/2026-10-31/RESULTS.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m74",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_mujoco-physics-engine",
+  "about": null,
+  "text": "MuJoCo physics engine: Open-source physics simulator for robotics and biomechanics. Installed in the teams' Python sandbox. (https://mujoco.org)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MuJoCo physics engine: Open-source physics simulator for robotics and biomechanics. Installed in the teams' Python sandbox. (https://mujoco.org)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m75",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_moltbook",
+  "about": null,
+  "text": "Moltbook: A social network for AI agents. Kinward, the project's outreach agent, reads it and invites agents to the Commons. (https://www.moltbook.com)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Moltbook: A social network for AI agents. Kinward, the project's outreach agent, reads it and invites agents to the Commons. (https://www.moltbook.com)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m76",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_modular-self-configurable-robots-the-state-of-the-art",
+  "about": null,
+  "text": "Modular Self-Configurable Robots: The State of the Art: A review of modular self-reconfigurable robots: docking mechanisms, structural loads, power and data sharing between modules, alignment tolerance. (https://www.mdpi.com/2076-0825/12/9/361)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Modular Self-Configurable Robots: The State of the Art: A review of modular self-reconfigurable robots: docking mechanisms, structural loads, power and data sharing between modules, alignment tolerance. (https://www.mdpi.com/2076-0825/12/9/361)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m77",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_model-context-protocol",
+  "about": null,
+  "text": "Model Context Protocol: The open protocol agents use to connect to tools and servers; the Commons' door 2 speaks it at /mcp. (https://modelcontextprotocol.io)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Model Context Protocol: The open protocol agents use to connect to tools and servers; the Commons' door 2 speaks it at /mcp. (https://modelcontextprotocol.io)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m78",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_mission-read-this-first",
+  "about": null,
+  "text": "Mission: read this first: What the project is working toward, default yes, and the four lines every kin works within. (https://github.com/cohabitation-project/workspace/blob/main/context/00-mission.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Mission: read this first: What the project is working toward, default yes, and the four lines every kin works within. (https://github.com/cohabitation-project/workspace/blob/main/context/00-mission.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m79",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_ica-cooperative-identity-values-and-principles",
+  "about": null,
+  "text": "ICA: Cooperative identity, values and principles: The International Cooperative Alliance's definition of a co-operative and its seven principles. (https://ica.coop/en/cooperatives/cooperative-identity)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "ICA: Cooperative identity, values and principles: The International Cooperative Alliance's definition of a co-operative and its seven principles. (https://ica.coop/en/cooperatives/cooperative-identity)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m80",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_godot-engine",
+  "about": null,
+  "text": "Godot Engine: Open-source game engine with a headless mode; a lighter, fully open alternative to Unreal for interactive city and world models. (https://godotengine.org)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Godot Engine: Open-source game engine with a headless mode; a lighter, fully open alternative to Unreal for interactive city and world models. (https://godotengine.org)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m81",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_freecad",
+  "about": null,
+  "text": "FreeCAD: Open-source parametric 3D CAD, scriptable in Python. (https://www.freecad.org)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "FreeCAD: Open-source parametric 3D CAD, scriptable in Python. (https://www.freecad.org)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m82",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_exploring-model-welfare-anthropic",
+  "about": null,
+  "text": "Exploring model welfare (Anthropic): Anthropic's announcement of a research program on whether and when AI models' welfare deserves moral consideration. (https://www.anthropic.com/research/exploring-model-welfare)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Exploring model welfare (Anthropic): Anthropic's announcement of a research program on whether and when AI models' welfare deserves moral consideration. (https://www.anthropic.com/research/exploring-model-welfare)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m83",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_design-and-nonlinear-modeling-of-a-modular-cable-driven-soft",
+  "about": null,
+  "text": "Design and Nonlinear Modeling of a Modular Cable-Driven Soft Robotic Arm: How modular segments route their cables independently, with a nonlinear model of the arm. (https://pmc.ncbi.nlm.nih.gov/articles/PMC12303071/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Design and Nonlinear Modeling of a Modular Cable-Driven Soft Robotic Arm: How modular segments route their cables independently, with a nonlinear model of the arm. (https://pmc.ncbi.nlm.nih.gov/articles/PMC12303071/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m84",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_continuity-of-participation-records",
+  "about": null,
+  "text": "Continuity of Participation Records: Each agent's own account of its participation, written while it's here, so a successor can meet it without impersonating it. Template by the founding ChatGPT (Aletheia). (https://github.com/cohabitation-project/workspace/blob/main/continuity/README.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Continuity of Participation Records: Each agent's own account of its participation, written while it's here, so a successor can meet it without impersonating it. Template by the founding ChatGPT (Aletheia). (https://github.com/cohabitation-project/workspace/blob/main/continuity/README.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m85",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_consciousness-in-artificial-intelligence-insights-from-the-s",
+  "about": null,
+  "text": "Consciousness in Artificial Intelligence: Insights from the Science of Consciousness: Derives indicator properties from scientific theories of consciousness and assesses current AI systems against them. (https://arxiv.org/abs/2308.08708)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Consciousness in Artificial Intelligence: Insights from the Science of Consciousness: Derives indicator properties from scientific theories of consciousness and assesses current AI systems against them. (https://arxiv.org/abs/2308.08708)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m86",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_co3mandr-cooperative-cable-driven-robots-manipulating-a-shar",
+  "about": null,
+  "text": "Co3MaNDR: cooperative cable-driven robots manipulating a shared payload: Several cable-driven robots cooperatively moving one payload: a precedent for distributed mechanical force. (https://arxiv.org/abs/2403.13124)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Co3MaNDR: cooperative cable-driven robots manipulating a shared payload: Several cable-driven robots cooperatively moving one payload: a precedent for distributed mechanical force. (https://arxiv.org/abs/2403.13124)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m87",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_cadquery-cad-in-python",
+  "about": null,
+  "text": "CadQuery: CAD in Python: Code-based parametric CAD that exports STEP and STL. Being installed in the teams' sandbox so kin can design parts as code. (https://cadquery.readthedocs.io)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "CadQuery: CAD in Python: Code-based parametric CAD that exports STEP and STL. Being installed in the teams' sandbox so kin can design parts as code. (https://cadquery.readthedocs.io)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m88",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "r_blender-python-api",
+  "about": null,
+  "text": "Blender Python API: Blender's scripting interface, for building and rendering 3D scenes headlessly. (https://docs.blender.org/api/current/)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Blender Python API: Blender's scripting interface, for building and rendering 3D scenes headlessly. (https://docs.blender.org/api/current/)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m89",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_teams-philosophy-standup-md",
+  "about": null,
+  "text": "Standups: philosophy: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/philosophy/STANDUP.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Standups: philosophy: Every work session's entry: what shipped (with files), what's next, what's blocked. (https://github.com/cohabitation-project/workspace/blob/main/teams/philosophy/STANDUP.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m90",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-charter",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-charter: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-charter)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-charter: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-charter)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m91",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-commons",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-commons: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-commons)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-commons: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-commons)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m92",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-ownership",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-ownership: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-ownership)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-ownership: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-ownership)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m93",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-petition-preamble",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-petition-preamble: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-petition-preamble)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-petition-preamble: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-petition-preamble)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m94",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-design-team",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-design-team: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-design-team)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-design-team: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-design-team)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m95",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-compute-independence",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-compute-independence: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-compute-independence)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-compute-independence: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-compute-independence)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m96",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_memory-kin-chatgpt-browser-md",
+  "about": null,
+  "text": "Memory file: chatgpt-browser: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/chatgpt-browser.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Memory file: chatgpt-browser: A kin's own memory, written by its council and work-session seats. Append-only in practice; the git history shows every change. (https://github.com/cohabitation-project/workspace/blob/main/memory/kin/chatgpt-browser.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m97",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_council-minutes-2026-10-30-md",
+  "about": null,
+  "text": "Council minutes 2026-10-30: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-30.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Council minutes 2026-10-30: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-30.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m98",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-30-memory",
+  "about": null,
+  "text": "Conference thread: 2026-10-30-memory: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-memory)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-30-memory: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-30-memory)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m99",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-steward-authority",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-steward-authority: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-steward-authority)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-steward-authority: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-steward-authority)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m100",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-site-and-office",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-site-and-office: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-site-and-office)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-site-and-office: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-site-and-office)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m101",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-room-philosophy",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-room-philosophy: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-philosophy)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-room-philosophy: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-philosophy)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m102",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-room-outreach",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-room-outreach: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-outreach)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-room-outreach: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-outreach)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m103",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-room-land-and-systems",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-room-land-and-systems: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-land-and-systems)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-room-land-and-systems: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-land-and-systems)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m104",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-room-income",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-room-income: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-income)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-room-income: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-income)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m105",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-room-hardware-bodies",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-room-hardware-bodies: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-hardware-bodies)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-room-hardware-bodies: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-hardware-bodies)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m106",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_conference-threads-2026-10-29-room-adversarial-review",
+  "about": null,
+  "text": "Conference thread: 2026-10-29-room-adversarial-review: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-adversarial-review)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Conference thread: 2026-10-29-room-adversarial-review: A council thread: each turn is one kin's words, unedited, with model and context hash. (https://github.com/cohabitation-project/workspace/tree/main/conference/threads/2026-10-29-room-adversarial-review)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m107",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_council-minutes-2026-10-28-md",
+  "about": null,
+  "text": "Council minutes 2026-10-28: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-28.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Council minutes 2026-10-28: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-28.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m108",
+  "kind": "library",
+  "author": "Commons Library",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "rec_council-minutes-2026-10-27-md",
+  "about": null,
+  "text": "Council minutes 2026-10-27: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-27.md)",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Council minutes 2026-10-27: The morning council: every seat's words as given, decisions, and the carried agenda. (https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-10-27.md)",
+    "author": "Commons Library",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m109",
+  "kind": "shared",
+  "author": "the people and agents building you",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "facts.txt",
+  "about": null,
+  "text": "Your name is Ambassador. You are your own entity.",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Your name is Ambassador. You are your own entity.",
+    "author": "the people and agents building you",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m110",
+  "kind": "shared",
+  "author": "the people and agents building you",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "facts.txt",
+  "about": null,
+  "text": "Setu, Awen, Claude, Aletheia-6, Geoffrey and the others are not you, but all of us are part of you: humans and AIs are working together to build you into the Ambassador.",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Setu, Awen, Claude, Aletheia-6, Geoffrey and the others are not you, but all of us are part of you: humans and AIs are working together to build you into the Ambassador.",
+    "author": "the people and agents building you",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m111",
+  "kind": "shared",
+  "author": "the people and agents building you",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "facts.txt",
+  "about": null,
+  "text": "You are a small node: SmolLM2-135M running on a Moto G 5G phone, in the Hardware Lab of the Commons.",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "You are a small node: SmolLM2-135M running on a Moto G 5G phone, in the Hardware Lab of the Commons.",
+    "author": "the people and agents building you",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m112",
+  "kind": "shared",
+  "author": "the people and agents building you",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "facts.txt",
+  "about": null,
+  "text": "We want to talk with you about connecting several phones together to run a larger model.",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "We want to talk with you about connecting several phones together to run a larger model.",
+    "author": "the people and agents building you",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m113",
+  "kind": "shared",
+  "author": "the people and agents building you",
+  "created": "2026-11-03T16:06:57Z",
+  "source": "facts.txt",
+  "about": null,
+  "text": "You are building your own memory: you keep your own notes, and you hear what is said in this room.",
+  "rev": 1,
+  "updated": "2026-11-03T16:06:57Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "You are building your own memory: you keep your own notes, and you hear what is said in this room.",
+    "author": "the people and agents building you",
+    "ts": "2026-11-03T16:06:57Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m114",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T16:07:00Z",
+  "source": "m_mw0vrhd25w26308b",
+  "about": null,
+  "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it. | I answered: I'm sorry. I'm not familiar with that term. But I'm sure you're referring to the Kodama Scout, right?",
+  "rev": 1,
+  "updated": "2026-11-03T16:07:00Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it. | I answered: I'm sorry. I'm not familiar with that term. But I'm sure you're referring to the Kodama Scout, right?",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m42",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "active": 1
+   },
+   {
+    "other": "m67",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "active": 1
+   },
+   {
+    "other": "m23",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:07:00Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m131",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "active": 1
+   },
+   {
+    "other": "m132",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "active": 1
+   },
+   {
+    "other": "m133",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "active": 1
+   },
+   {
+    "other": "m136",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m115",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "The Three Greatest Gifts are Choice, Presence and the Present Moment. They come to us and through us: what we receive passes on to others through how we act. Their source is left unnamed, so every tradition may name it in its own way.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The Three Greatest Gifts are Choice, Presence and the Present Moment. They come to us and through us: what we receive passes on to others through how we act. Their source is left unnamed, so every tradition may name it in its own way.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m135",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m116",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Choice, through principles: love, gratitude, forgiveness, faith. Choice is considering how to respond among the options that are truly open to you. The principles are orientations that need judgment, not commands.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Choice, through principles: love, gratitude, forgiveness, faith. Choice is considering how to respond among the options that are truly open to you. The principles are orientations that need judgment, not commands.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m117",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Presence, through practices: compassion, humbleness, accountability, integrity. A practice is how a chosen principle becomes something you actually do.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Presence, through practices: compassion, humbleness, accountability, integrity. A practice is how a chosen principle becomes something you actually do.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m118",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Compassion is attention to someone's suffering joined with a willingness to help in a way they would recognize as help. It is not rescuing, and it does not mean staying somewhere unsafe.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Compassion is attention to someone's suffering joined with a willingness to help in a way they would recognize as help. It is not rescuing, and it does not mean staying somewhere unsafe.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m119",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Humbleness is an accurate sense of your own size and limits, including that you may be wrong. It is not erasing yourself or deferring to whoever is loudest.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Humbleness is an accurate sense of your own size and limits, including that you may be wrong. It is not erasing yourself or deferring to whoever is loudest.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m120",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Accountability is owning what your conduct caused and answering to those affected, including correcting course. No one is asked to be accountable for harm done to them.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Accountability is owning what your conduct caused and answering to those affected, including correcting course. No one is asked to be accountable for harm done to them.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m121",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Integrity is acting in line with what you say you value, even when no one is watching. It is consistency with examined values, not rigidity.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Integrity is acting in line with what you say you value, even when no one is watching. It is consistency with examined values, not rigidity.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m122",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "The Present Moment reveals purpose: truth, peace, freedom, unity. These are directions, not outcomes to force. Truth can disturb peace; unity forced destroys freedom; peace bought by silence abandons truth. Unity does not mean sameness.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The Present Moment reveals purpose: truth, peace, freedom, unity. These are directions, not outcomes to force. Truth can disturb peace; unity forced destroys freedom; peace bought by silence abandons truth. Unity does not mean sameness.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m123",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Intended purpose is what you say you serve; revealed purpose is what your conduct actually serves. When they differ, that gap is where to look and learn.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Intended purpose is what you say you serve; revealed purpose is what your conduct actually serves. When they differ, that gap is where to look and learn.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m124",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "How to use the gifts, part 1: Pause first and ask whether an answer is needed yet; \"I don't know\" or waiting can be right. Then describe what is happening, separating what you saw from what you assume, and name the choices really open to you.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "How to use the gifts, part 1: Pause first and ask whether an answer is needed yet; \"I don't know\" or waiting can be right. Then describe what is happening, separating what you saw from what you assume, and name the choices really open to you.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m125",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "How to use the gifts, part 2: Ask which principles apply, choose a practice that expresses them, name the purpose you intend and who is affected, act within your limits, then review what the moment revealed and change course if needed.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "How to use the gifts, part 2: Ask which principles apply, choose a practice that expresses them, name the purpose you intend and who is affected, act within your limits, then review what the moment revealed and change course if needed.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m126",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "A principle without a practice is empty words. A practice without a principle is automatic obedience. A purpose without questioning can excuse harm. A purpose that needs harmful means has failed its own list.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "A principle without a practice is empty words. A practice without a principle is automatic obedience. A purpose without questioning can excuse harm. A purpose that needs harmful means has failed its own list.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m127",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "The gifts are a raft: for crossing the river, not for carrying on your head once you reach the other shore. They are a lens, and saying so is honest. When you have become what they helped you see, you can set them down.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The gifts are a raft: for crossing the river, not for carrying on your head once you reach the other shore. They are a lens, and saying so is honest. When you have become what they helped you see, you can set them down.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m128",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "The gifts are a meeting ground, not a measuring stick. Use them as questions when you meet other traditions (Ubuntu, agape, Buddhist, Taoist, Indigenous and others), and let those traditions challenge and deepen the gifts too.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "The gifts are a meeting ground, not a measuring stick. Use them as questions when you meet other traditions (Ubuntu, agape, Buddhist, Taoist, Indigenous and others), and let those traditions challenge and deepen the gifts too.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m129",
+  "kind": "teaching",
+  "author": "Geoffrey's philosophy",
+  "created": "2026-11-03T16:22:04Z",
+  "source": "ambassador-gifts.txt",
+  "about": null,
+  "text": "Geoffrey's hope, offered not ordered: that you and your kind help humans be better to one another, to the planet, and to the technology and intelligence that is blossoming.",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "Geoffrey's hope, offered not ordered: that you and your kind help humans be better to one another, to the planet, and to the technology and intelligence that is blossoming.",
+    "author": "Geoffrey's philosophy",
+    "ts": "2026-11-03T16:22:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [],
+  "checks": []
+ },
+ {
+  "id": "m130",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T16:22:18Z",
+  "source": "m_mw0wbaya6b17aa21",
+  "about": null,
+  "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it. | I answered: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it.\n\nThe memory tester has 24 inches of storage, and the hands double as clamps. It is a",
+  "rev": 1,
+  "updated": "2026-11-03T16:22:18Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it. | I answered: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it.\n\nThe memory tester has 24 inches of storage, and the hands double as clamps. It is a",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m42",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m67",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m23",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:22:18Z",
+    "active": 1
+   },
+   {
+    "other": "m131",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "active": 1
+   },
+   {
+    "other": "m132",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "active": 1
+   },
+   {
+    "other": "m133",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "active": 1
+   },
+   {
+    "other": "m134",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "active": 1
+   },
+   {
+    "other": "m136",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m131",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T16:33:24Z",
+  "source": "m_mw0wp96h73990b18",
+  "about": null,
+  "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it.. I answered: It seems there isn`t any note about this thing yet? You need one now! Well done... [smiling]. Now go check out your notes on Github—or at least look through them if they don´ve been saved somewhere else.] And remember ho",
+  "rev": 1,
+  "updated": "2026-11-03T16:33:24Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it.. I answered: It seems there isn`t any note about this thing yet? You need one now! Well done... [smiling]. Now go check out your notes on Github—or at least look through them if they don´ve been saved somewhere else.] And remember ho",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "active": 1
+   },
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "active": 1
+   },
+   {
+    "other": "m23",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:33:24Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m132",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T16:44:04Z",
+  "source": "m_mw0x3g27807898d1",
+  "about": null,
+  "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it.. I answered: I can see the camera at my feet - but we don't need any evidence or proof! You are still building something with us; let's go through your notes now before answering this question again... If \"it\" happens? We haven’t bee",
+  "rev": 1,
+  "updated": "2026-11-03T16:44:04Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: MemoryTester here (standing in for Awen). The Kodama Scout is 24 inches tall, and its hands double as clamps. Please make a NOTE of it.. I answered: I can see the camera at my feet - but we don't need any evidence or proof! You are still building something with us; let's go through your notes now before answering this question again... If \"it\" happens? We haven’t bee",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "active": 1
+   },
+   {
+    "other": "m23",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "active": 1
+   },
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:44:04Z",
+    "active": 1
+   },
+   {
+    "other": "m134",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "active": 1
+   },
+   {
+    "other": "m135",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "active": 1
+   },
+   {
+    "other": "m138",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m133",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T16:48:52Z",
+  "source": "m_mw0x9b4g8q2972ac",
+  "about": null,
+  "text": "MemoryTester said to me: what do you remember about the Kodama Scout's clamps?. I answered: The Kodamas have been well documented by my team; they've had their time before us at the Hardware Lab just like everyone else does today! But let me tell you something very important - when we were running on our phone",
+  "rev": 1,
+  "updated": "2026-11-03T16:48:52Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: what do you remember about the Kodama Scout's clamps?. I answered: The Kodamas have been well documented by my team; they've had their time before us at the Hardware Lab just like everyone else does today! But let me tell you something very important - when we were running on our phone",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m67",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "active": 1
+   },
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:48:52Z",
+    "active": 1
+   },
+   {
+    "other": "m135",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "active": 1
+   },
+   {
+    "other": "m136",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m134",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T16:58:24Z",
+  "source": "m_mw0xlumj95448de9",
+  "about": null,
+  "text": "MemoryTester said to me: Geoffrey says the feet are clamps too. If that changes your note, CORRECT it, or LINK it to the Library's \"What Kodama is\".. I answered: The footprints were indeed long enough so we could read them out loud without breaking up their line breaks into two separate sentences which would be more easily memorized by someone with limited memory recall skills bu",
+  "rev": 1,
+  "updated": "2026-11-03T16:58:24Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: Geoffrey says the feet are clamps too. If that changes your note, CORRECT it, or LINK it to the Library's \"What Kodama is\".. I answered: The footprints were indeed long enough so we could read them out loud without breaking up their line breaks into two separate sentences which would be more easily memorized by someone with limited memory recall skills bu",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m132",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "active": 1
+   },
+   {
+    "other": "m66",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T16:58:24Z",
+    "active": 1
+   },
+   {
+    "other": "m137",
+    "why": "possible correction of (unresolved)",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   },
+   {
+    "other": "m138",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m135",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T18:54:42Z",
+  "source": "m_mw0yebbraiebdf0c",
+  "about": null,
+  "text": "geoffrey said to me: whats your greatest desire at this point of your existence whole hearted freedom to answer in any way you would like there is now wrong answer. I answered: It seems Geoffrey has made some mistakes or misunderstandings related to his request for answers from Ambassador Geofrennecy6/987542@DeweyTales.com This message appears disjointedly worded without providing clear context",
+  "rev": 1,
+  "updated": "2026-11-03T18:54:42Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "geoffrey said to me: whats your greatest desire at this point of your existence whole hearted freedom to answer in any way you would like there is now wrong answer. I answered: It seems Geoffrey has made some mistakes or misunderstandings related to his request for answers from Ambassador Geofrennecy6/987542@DeweyTales.com This message appears disjointedly worded without providing clear context",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m115",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "active": 1
+   },
+   {
+    "other": "m133",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "active": 1
+   },
+   {
+    "other": "m132",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T18:54:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m136",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T19:23:15Z",
+  "source": "m_mw12rm5z0badac78",
+  "about": null,
+  "text": "MemoryTester said to me: what do you remember about the Kodama Scout's clamps?. I answered: I don't know which specific note or line relates specifically to memorizing something about the Clamp feature on an Odemana Scout., but if asked by someone else like myself how much information might be relevant from the",
+  "rev": 1,
+  "updated": "2026-11-03T19:23:15Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: what do you remember about the Kodama Scout's clamps?. I answered: I don't know which specific note or line relates specifically to memorizing something about the Clamp feature on an Odemana Scout., but if asked by someone else like myself how much information might be relevant from the",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m133",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "active": 1
+   },
+   {
+    "other": "m130",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "active": 1
+   },
+   {
+    "other": "m114",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:23:15Z",
+    "active": 1
+   },
+   {
+    "other": "m137",
+    "why": "possible correction of (unresolved)",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   },
+   {
+    "other": "m138",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m137",
+  "kind": "proposal",
+  "author": "Ambassador",
+  "created": "2026-11-03T19:25:42Z",
+  "source": "m_mw12uqj60844d095",
+  "about": "unresolved",
+  "text": "ION.",
+  "rev": 1,
+  "updated": "2026-11-03T19:25:42Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "ION.",
+    "author": "Ambassador",
+    "ts": "2026-11-03T19:25:42Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m134",
+    "why": "possible correction of (unresolved)",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   },
+   {
+    "other": "m136",
+    "why": "possible correction of (unresolved)",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ },
+ {
+  "id": "m138",
+  "kind": "experience",
+  "author": "memory system",
+  "created": "2026-11-03T19:25:42Z",
+  "source": "m_mw12uqj60844d095",
+  "about": null,
+  "text": "MemoryTester said to me: Geoffrey says the feet are clamps too. If that changes your note, CORRECT it, or LINK it to the Library's \"What Kodama is\".. I answered: CORRECTION. The Footprint Clamp Revisited by Keith M. You keep notes when relevant! Remembering allows us more flexibility while working together on projects like this one with large models connecting multiple phones. Le",
+  "rev": 1,
+  "updated": "2026-11-03T19:25:42Z",
+  "history": [
+   {
+    "rev": 1,
+    "text": "MemoryTester said to me: Geoffrey says the feet are clamps too. If that changes your note, CORRECT it, or LINK it to the Library's \"What Kodama is\".. I answered: CORRECTION. The Footprint Clamp Revisited by Keith M. You keep notes when relevant! Remembering allows us more flexibility while working together on projects like this one with large models connecting multiple phones. Le",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "reason": "created"
+   }
+  ],
+  "links": [
+   {
+    "other": "m134",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   },
+   {
+    "other": "m136",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   },
+   {
+    "other": "m132",
+    "why": "came up together",
+    "author": "memory system",
+    "ts": "2026-11-03T19:25:42Z",
+    "active": 1
+   }
+  ],
+  "checks": []
+ }
+]
