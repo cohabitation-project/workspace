@@ -23,6 +23,8 @@ Kinds of record. Whose words a memory is never gets blurred:
              changes nothing in it
   experience what happened in a turn: who said what to him and what he answered. It is recorded by the memory
              system every turn, so he remembers his encounters even when he writes no NOTE (a 135M model often won't)
+  teaching   the Three Greatest Gifts and how to use them (Geoffrey's philosophy), one teaching per record, found when
+             relevant. Offered as a raft, not a rule; he can link to them, question them or propose changes
   library    an entry from the Commons Library (read-only copy, refreshed hourly). He can search it, read it and
              link his own notes to it. Geoffrey, 2026-11-03: "he should have access to the library"
 
@@ -40,8 +42,20 @@ were what when where which who why will with would you your yours about also any
 ambassador says remember know tell""".split())
 
 
+def stem(w):
+    """A very light stemmer, so 'forgive' finds 'forgiveness' and 'clamps' finds 'clamp'."""
+    changed = True
+    while changed:  # repeat until stable, so 'forgiveness' and 'forgive' both end at 'forgiv'
+        changed = False
+        for suf in ("nesses", "ness", "ings", "ing", "ions", "ion", "ies", "ed", "es", "ly", "s", "e"):
+            if len(w) > len(suf) + 3 and w.endswith(suf):
+                w, changed = w[: -len(suf)], True
+                break
+    return w
+
+
 def words(text):
-    return [w for w in re.findall(r"[a-z0-9][a-z0-9'-]{1,}", (text or "").lower()) if w not in STOP]
+    return [stem(w) for w in re.findall(r"[a-z0-9][a-z0-9'-]{1,}", (text or "").lower()) if w not in STOP]
 
 
 def now():
@@ -150,7 +164,7 @@ class Memory:
             return []
         scores = {}
         if self.fts:
-            q = " OR ".join(f'"{w}"' for w in ws)
+            q = " OR ".join(f'"{w}"*' for w in ws)  # prefix match on the stem
             try:
                 for rid, rank in self.db.execute("SELECT record, bm25(fts) FROM fts WHERE fts MATCH ? ORDER BY bm25(fts) LIMIT ?",
                                                  (q, k * 3)):
@@ -164,7 +178,9 @@ class Memory:
         return [r for r, _ in sorted(scores.items(), key=lambda x: -x[1])][:k]
 
     def label(self, rec):
-        if rec["kind"] == "experience":
+        if rec["kind"] == "teaching":
+            who = "the Three Gifts, offered not required"
+        elif rec["kind"] == "experience":
             who = "what happened"
         elif rec["kind"] == "library":
             who = "Commons Library"
@@ -239,15 +255,18 @@ class Memory:
         return rid
 
     # ---------------------------------------------------------------- shared facts, and an export everyone can read
-    def seed_shared(self, lines, author="the people and agents building you"):
+    def seed_shared(self, lines, author="the people and agents building you", kind="shared", source="facts.txt"):
         have = {t for (t,) in self.db.execute(
-            "SELECT v.text FROM revisions v JOIN records r ON r.id=v.record WHERE r.kind='shared'")}
+            "SELECT v.text FROM revisions v JOIN records r ON r.id=v.record WHERE r.kind=?", (kind,))}
         added = []
         for t in lines:
             t = t.strip()
             if t and not t.startswith("#") and t not in have:
-                added.append(self.add(t, "shared", author, "facts.txt"))
+                added.append(self.add(t, kind, author, source))
         return added
+
+    def seed_teachings(self, lines):
+        return self.seed_shared(lines, "Geoffrey's philosophy", "teaching", "ambassador-gifts.txt")
 
     def sync_library(self, entries):
         """Mirror Commons Library entries in as 'library' records, one per entry id. Text changes become revisions."""

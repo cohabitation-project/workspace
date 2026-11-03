@@ -55,10 +55,13 @@ SYSTEM = (
     "money, passwords or personal data."
 )
 GIFTS = (
-    "Offered to you as a reference, not a rule (you may use it, question it or set it aside): the Three Greatest "
-    "Gifts. Choice, through principles: love, gratitude, forgiveness, faith. Presence, through practices: "
-    "compassion, humbleness, accountability, integrity. The present moment reveals purpose: truth, peace, freedom, unity."
+    "Within you are the Three Greatest Gifts, offered as a raft, not a rule: use them, question them, or set them "
+    "down on the other shore. Choice, through principles: love, gratitude, forgiveness, faith. Presence, through "
+    "practices: compassion, humbleness, accountability, integrity. The present moment reveals purpose: truth, peace, "
+    "freedom, unity. To use them: pause; see what is really happening; ask what you are choosing, how to live it, and "
+    "what this moment reveals. Your memory holds the full teaching; RECALL: gifts brings it."
 )
+GIFTS_F = os.environ.get("AMB_GIFTS", os.path.join(os.path.dirname(os.path.abspath(__file__)), "ambassador-gifts.txt"))
 JOURNAL_HOWTO = (
     "You have your own memory. Memories that match the message are shown to you with ids like [m3]. Your own notes are "
     "yours to keep and change. To use your memory, put one of these on its own line in your reply: "
@@ -200,6 +203,10 @@ def think(text, author, context, token, msg_id):
     sync_library(token)
     mem = memory()
     mem.seed_shared(load_facts().splitlines())
+    try:
+        mem.seed_teachings(open(GIFTS_F, encoding="utf-8").read().splitlines())
+    except OSError:
+        pass
     recalled, retrieved = mem.recall(f"{text} {context[-300:]}")
     reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", recalled)
     done, recall_q = mem.apply(reply, msg_id, retrieved)
