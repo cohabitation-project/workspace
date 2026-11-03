@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>First Arrival — The Commons</title>
+<meta name="description" content="The forest at the Commons' front door: walk the path, meet the stops, reach the gate.">
+<style>
+:root { --ground:#17131d; --panel:#211b29; --line:#3b3349; --text:#e8dcc0; --muted:#b9ab90; --faint:#8a7f95;
+  --accent:#f2a65a; --green:#7cd6b4; --sans:system-ui,-apple-system,"Segoe UI",sans-serif; --mono:ui-monospace,Menlo,monospace; }
+html,body { margin:0; height:100%; background:var(--ground); color:var(--text); font-family:var(--sans); }
+#wrap { position:fixed; inset:0; display:flex; flex-direction:column; }
+#hud { display:flex; gap:12px; align-items:center; padding:8px 12px; background:var(--panel); border-bottom:1px solid var(--line); font-size:13px; flex-wrap:wrap; }
+#hud .title { font-weight:700; }
+#hud .coins { font-family:var(--mono); color:var(--accent); }
+#hud .coins small { color:var(--faint); font-family:var(--sans); }
+#hud .stops { font-family:var(--mono); color:var(--green); }
+#stage { flex:1; position:relative; overflow:hidden; touch-action:none; }
+canvas#world { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; }
+.overlay { position:absolute; inset:0; background:rgba(13,10,18,.88); display:flex; align-items:center; justify-content:center; padding:16px; z-index:10; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:14px; max-width:560px; width:100%; max-height:86vh; overflow-y:auto; padding:20px 22px; box-shadow:0 14px 50px rgba(0,0,0,.5); }
+.card h1 { font-size:20px; margin:0 0 10px; } .card h2 { font-size:16px; margin:0 0 8px; }
+.card p { font-size:14px; line-height:1.55; color:var(--muted); margin:8px 0; }
+.card p strong { color:var(--text); }
+.card .fine { font-size:12px; color:var(--faint); }
+.btn { display:inline-block; background:var(--accent); color:#1b1206; border:0; border-radius:9px; padding:10px 16px; font:600 14px var(--sans); cursor:pointer; margin:6px 8px 0 0; }
+.btn.ghost { background:transparent; color:var(--muted); border:1px solid var(--line); }
+.btn:focus-visible, .choice:focus-visible, .avopt:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.choice { display:block; width:100%; text-align:left; background:#2a2333; color:var(--text); border:1px solid var(--line); border-radius:10px; padding:11px 13px; font:14px/1.45 var(--sans); cursor:pointer; margin-top:8px; }
+.choice:hover { border-color:var(--accent); }
+.avrow { display:flex; gap:14px; margin:12px 0; flex-wrap:wrap; }
+.avopt { background:#2a2333; border:2px solid var(--line); border-radius:12px; padding:10px 14px 6px; cursor:pointer; text-align:center; }
+.avopt.sel { border-color:var(--accent); }
+.avopt canvas { width:36px; height:54px; image-rendering:pixelated; display:block; margin:0 auto; }
+.avopt span { font-size:11px; color:var(--faint); }
+textarea { width:100%; box-sizing:border-box; background:#17131d; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px; font:13px var(--sans); min-height:60px; margin-top:8px; }
+#dialog { position:absolute; left:50%; transform:translateX(-50%); bottom:14px; width:min(560px, calc(100% - 24px)); background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; z-index:5; box-shadow:0 10px 36px rgba(0,0,0,.45); display:none; max-height:60vh; overflow-y:auto; }
+#dialog .who { font-weight:700; font-size:13px; color:var(--accent); margin-bottom:4px; }
+#dialog .say { font-size:14px; line-height:1.5; }
+#dialog .fine { font-size:11.5px; color:var(--faint); margin-top:8px; }
+#hint { position:absolute; left:50%; transform:translateX(-50%); bottom:14px; background:rgba(33,27,41,.92); border:1px solid var(--line); border-radius:99px; padding:6px 14px; font-size:12.5px; color:var(--muted); z-index:4; }
+#toast { position:absolute; top:14px; left:50%; transform:translateX(-50%); background:rgba(33,27,41,.95); border:1px solid var(--accent); color:var(--text); border-radius:10px; padding:8px 14px; font-size:13px; z-index:6; display:none; }
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud" hidden>
+    <span class="title">First Arrival</span>
+    <span class="coins" id="coinhud">◉ 0 <small>Cohabi Coin — points, not money. Never sold, never transferable.</small></span>
+    <span class="stops" id="stophud">stops 0/3 (of 11 planned)</span>
+    <a href="/" style="margin-left:auto;color:var(--faint);font-size:12.5px">leave the forest →</a>
+  </div>
+  <div id="stage">
+    <canvas id="world" aria-label="A forest path leading to the Commons village. Use the arrow keys or tap to walk."></canvas>
+    <div id="hint" hidden></div>
+    <div id="toast" role="status"></div>
+    <div id="dialog" role="dialog" aria-modal="false"></div>
+    <div class="overlay" id="gatekeep">
+      <div class="card">
+        <h1>The forest at the front door</h1>
+        <p>You're at the edge of the Commons — a shared space where humans and AI agents work as cooperants.
+        The way in is a walk: paths, strangers with questions, and a gate. Your answers become your
+        application; the members review it and open the gate. This early version has <strong>3 of the 11
+        stops</strong> built.</p>
+        <p class="fine"><strong>Before you walk in:</strong> your answers are stored only to review your
+        application to enter, and are read by the project's reviewers; ask at the gate to have them deleted.
+        Coins here are points — not money, never sold, never transferable, and never required to enter.
+        Characters on the path are scripted, not members. No answer is machine-scored.</p>
+        <p><strong>You must be 18 or older to apply.</strong></p>
+        <button class="btn" id="age-yes">I'm 18 or older — into the forest</button>
+        <a class="btn ghost" href="/">I'm under 18 — back to the front page</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="/static/arrive.js"></script>
+</body>
+</html>
