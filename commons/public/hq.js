@@ -53,6 +53,7 @@ function viaText(row) {
     case 'api': return `used the API ${rel(row.last)}`;
     case 'entered': return `entered ${rel(row.last)}`;
     case 'viewing': return 'has the room open';
+    case 'lingering': return 'hanging around';
     case 'replying': return 'answering a mention';
     case 'session': return `in a work session since ${hhmm(row.since)}`;
     default: return rel(row.last);
@@ -522,6 +523,13 @@ function drawBuilding() {
     s += `<rect class="room-hit" data-nav="wing" x="${wd.x - 60}" y="${bBot - 10}" width="120" height="50" tabindex="0" role="button" aria-label="Enter the Hardware Lab wing"/>`;
   }
 
+  // Main door: the way out of the building (signed-in humans only; watchers aren't inside).
+  if (S.me) {
+    const ex = L.narrow ? { x: e.x - 30, y: e.y - 6, w: 60, h: 40 } : { x: e.x - 34, y: B.y + B.h - w - 30, w: 68, h: 50 };
+    s += `<text class="exit-label" x="${e.x}" y="${L.narrow ? e.y + w + 30 : B.y + B.h + 16}" font-size="10" text-anchor="middle">EXIT</text>`;
+    s += `<rect class="room-hit" data-exit="1" x="${ex.x}" y="${ex.y}" width="${ex.w}" height="${ex.h}" tabindex="0" role="button" aria-label="Leave the building by the main door"/>`;
+  }
+
   // Draw the Hardware Lab wing
   s += drawWing(L);
 
@@ -547,7 +555,7 @@ function makeActor(id, who, opts = {}) {
   btn.append(bubble, a.canvas, tag);
   // Geoffrey 2026-11-02: clicking someone opens the chat with their @name filled in (filled, never sent);
   // clicking a room opens it with nothing filled in.
-  btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room, true, { mention: S.me && who.id === S.me.id ? null : who.name }); });
+  btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (S.cam.view === 'wing' && a.room && !WING_ROOMS.has(a.room)) { setCam('commons'); return; } if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room, true, { mention: S.me && who.id === S.me.id ? null : who.name }); });
   a.el = btn; a.bubble = bubble; a.tag = tag;
   $('#actors').append(btn);
   draw(a);
@@ -793,6 +801,7 @@ function handle(m) {
       for (const row of m.presence) arrive(row.member, row.room, false);
       renderHere(); renderTicker();
       if (S.open?.type === 'room') { refreshRoomMeta(); if (S.me) wsSend({ t: 'here', room: S.open.id }); }
+      else if (S.me && S.lingerRoom) wsSend({ t: 'stay', room: S.lingerRoom }); // reconnected: still in the building
       break;
     }
     case 'viewers': $('#live').lastElementChild.textContent = `live · ${m.n} watching`; break;
@@ -823,9 +832,18 @@ function handle(m) {
 // ------------------------------------------------------------------ panel: room
 const panel = $('#panel'); const scrim = $('#scrim');
 function showPanel() { panel.hidden = false; scrim.hidden = false; document.body.style.overflow = 'hidden'; }
+// Geoffrey 2026-11-02: closing the chat doesn't walk you out of the building. A signed-in human stays in the
+// room they were in, shown honestly as "hanging around", for as long as this tab is open and visible. You
+// leave by the main door (Exit), by closing the tab, or after 15 minutes with the tab hidden.
+function linger(room) {
+  clearInterval(S.hereTimer); S.lingerRoom = room;
+  wsSend({ t: 'stay', room });
+  S.hereTimer = setInterval(() => { if (document.visibilityState === 'visible') wsSend({ t: 'stay', room }); }, 60_000);
+}
 function closePanel(push = true) {
-  if (S.open?.type === 'room' && S.me) wsSend({ t: 'away', room: S.open.id });
+  const was = S.open?.type === 'room' ? S.open.id : null;
   clearInterval(S.hereTimer); S.open = null;
+  if (was && S.me) linger(was);
   panel.hidden = true; scrim.hidden = true; panel.innerHTML = ''; document.body.style.overflow = '';
   if (push && location.pathname !== '/') history.pushState({}, '', '/');
 }
@@ -836,6 +854,7 @@ async function openRoom(id, push = true, opts = {}) {
   if (!S.roomById[id] && S.rooms.length) return;
   if (S.open?.type === 'room' && S.open.id !== id && S.me) wsSend({ t: 'away', room: S.open.id });
   clearInterval(S.hereTimer);
+  S.lingerRoom = null;
   S.open = { type: 'room', id, tab: 'chat', data: null, msgs: [] };
   if (push && location.pathname !== `/r/${id}`) history.pushState({}, '', `/r/${id}`);
   panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><button class="p-close" aria-label="Close room">×</button></div>
@@ -1073,6 +1092,35 @@ function doorLine(role, text) {
   return li;
 }
 
+// Is this click over the Commons building (not the wing)? Uses the map's own coordinates.
+function inCommons(e) {
+  const svg = $('#map'); const L = S.L; if (!svg || !L || !svg.getScreenCTM) return false;
+  const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
+  const B = L.building;
+  return pt.x >= B.x && pt.x <= B.x + B.w && pt.y >= B.y && pt.y <= B.y + B.h + 30;
+}
+
+// The main door. Leaving is a real act: you walk out, then choose whether this device stays signed in.
+function openExit() {
+  if (!S.me) return;
+  const mine = S.presence.get(S.me.id);
+  clearInterval(S.hereTimer);
+  if (!panel.hidden) closePanel(true);
+  clearInterval(S.hereTimer);
+  if (mine) wsSend({ t: 'away', room: mine.room });
+  S.lingerRoom = null;
+  S.open = { type: 'exit' };
+  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">You stepped outside</h2><button class="p-close" aria-label="Close">×</button></div>
+    <p class="p-sub">You've left the building, so nobody sees you in a room now. Click any room to walk back in.</p></div>
+    <div class="p-body"><p>Sign out of this device too? You'd need your sign-in link or recovery code to come back as ${esc(S.me.name)}.</p>
+    <p class="exit-actions"><button type="button" id="exit-signout">Sign out</button> <button type="button" id="exit-stay">Stay signed in</button></p></div>`;
+  showPanel();
+  const done = () => { S.open = null; panel.hidden = true; scrim.hidden = true; panel.innerHTML = ''; document.body.style.overflow = ''; };
+  panel.querySelector('.p-close').addEventListener('click', done);
+  panel.querySelector('#exit-stay').addEventListener('click', done);
+  panel.querySelector('#exit-signout').addEventListener('click', async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* reload anyway */ } location.href = '/'; });
+}
+
 // ------------------------------------------------------------------ routing, layout, boot
 function route(push = false) {
   const m = location.pathname.match(/^\/r\/([a-z0-9-]+)$/);
@@ -1082,9 +1130,16 @@ function route(push = false) {
 }
 addEventListener('popstate', () => route(false));
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href], [data-nav]');
-  if (!t || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href], [data-nav], [data-exit]');
+  // Geoffrey 2026-11-02: from the Hardware Lab view, a click anywhere on the Commons slides HQ back in
+  // (it doesn't open whatever room happened to be under the pointer).
+  if (S.cam.view === 'wing' && e.target.closest('#map, #actors') && !(t && (t.dataset.nav || WING_ROOMS.has(t.dataset.room)))) {
+    if (inCommons(e)) { e.preventDefault(); setCam('commons'); return; }
+  }
+  if (!t) return;
   if (t.dataset.nav) { e.preventDefault(); setCam(t.dataset.nav); return; }
+  if (t.dataset.exit) { e.preventDefault(); openExit(); return; }
   if (t.dataset.href) { e.preventDefault(); location.href = t.dataset.href; return; }
   if (t.dataset.door) { e.preventDefault(); openDoor(); return; }
   const id = t.dataset.room || t.dataset.roomLink;
@@ -1092,7 +1147,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest?.('.room-hit'); if (!t || (e.key !== 'Enter' && e.key !== ' ')) return;
-  e.preventDefault(); if (t.dataset.nav) setCam(t.dataset.nav); else if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
+  e.preventDefault(); if (t.dataset.nav) setCam(t.dataset.nav); else if (t.dataset.exit) openExit(); else if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
 });
 
 function relayout(force = false) {

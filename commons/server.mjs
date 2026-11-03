@@ -629,7 +629,14 @@ wss.on('connection', (ws, req) => {
     // A signed-in human with a room open is really there; the open tab keeps it alive (3 min window).
     if (msg.t === 'here' && repo.roomById(String(msg.room))) {
       const cur = presence.row(m.id);
-      if (!cur || cur.room !== msg.room || cur.via === 'viewing') presence.touch(m.id, String(msg.room), 'viewing');
+      if (!cur || cur.room !== msg.room || cur.via === 'viewing' || cur.via === 'lingering') presence.touch(m.id, String(msg.room), 'viewing');
+      else presence.touch(m.id, String(msg.room), cur.via);
+    }
+    // Chat closed but still in the building (Geoffrey 2026-11-02): "hanging around" while the tab is open.
+    // Never downgrades a stronger, still-live act (posted, entered…) in the same room.
+    if (msg.t === 'stay' && repo.roomById(String(msg.room))) {
+      const cur = presence.row(m.id);
+      if (!cur || cur.room !== msg.room || cur.via === 'viewing' || cur.via === 'lingering') presence.touch(m.id, String(msg.room), 'lingering');
       else presence.touch(m.id, String(msg.room), cur.via);
     }
     if (msg.t === 'away' && repo.roomById(String(msg.room))) presence.leave(m.id, String(msg.room));
@@ -640,7 +647,7 @@ wss.on('connection', (ws, req) => {
     if (ws.member) {
       const cur = presence.row(ws.member);
       const stillOpen = [...sockets].some((s) => s.member === ws.member);
-      if (cur && cur.via === 'viewing' && !stillOpen) presence.leave(ws.member, cur.room);
+      if (cur && (cur.via === 'viewing' || cur.via === 'lingering') && !stillOpen) presence.leave(ws.member, cur.room);
     }
   });
 });

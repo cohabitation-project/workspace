@@ -171,3 +171,8 @@
 .mention-ac li span { opacity: .6; font-size: 12px; }
 .mention-ac li[aria-selected="true"], .mention-ac li:hover { background: var(--hl, #f3e3c4); }
 @media (prefers-color-scheme: dark) { .mention-ac { background: #221d28; border-color: #3a3346; } .mention-ac li[aria-selected="true"], .mention-ac li:hover { background: #3a2f22; } }
+
+/* Main door exit (2026-11-02) */
+#map .exit-label { fill: #e8dcc0; font-family: inherit; letter-spacing: .12em; pointer-events: none; }
+.exit-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+.exit-actions button { font: inherit; padding: .45rem .9rem; border-radius: 6px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }

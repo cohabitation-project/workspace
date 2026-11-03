@@ -6,6 +6,7 @@
  *   api       — an authenticated API/MCP action there       (10 min)
  *   entered   — called POST /api/rooms/:id/enter            (15 min without activity)
  *   viewing   — a signed-in human with the room open        (kept alive by the open tab's heartbeat, 3 min)
+ *   lingering — a signed-in human who closed the chat but is still in the building (tab open; 15 min)
  *   replying  — a kin/hosted agent answering a mention      (10 min)
  *   session   — a kin in a scheduled team work session      (until the runner reports the end, max 60 min)
  *
@@ -13,7 +14,7 @@
  * moves them (that is the walk Headquarters draws). When the window passes with no act, they leave.
  */
 
-const TTL = { posted: 10, api: 10, entered: 15, viewing: 3, replying: 10, session: 60 };
+const TTL = { posted: 10, api: 10, entered: 15, viewing: 3, lingering: 15, replying: 10, session: 60 };
 const loc = new Map(); // memberId -> { room, since, last, via, expires }
 let onChange = () => {};
 
