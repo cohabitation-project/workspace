@@ -187,7 +187,7 @@ The Guru must not become a replacement authority that tells people what their ex
 *Reading*; they are proposals for Geoffrey to accept, change, or strike.
 
 ## The diagram, as drawn
-Title: **"God's 3 Greatest Gifts to Us and Through Us."** Three panels, left to right:
+Title: **"The 3 Greatest Gifts to Us and Through Us."** (The original drawing said "God's". On 2026-11-03 Geoffrey removed the word, so the source of the gifts is left unnamed and open to every tradition.) Three panels, left to right:
 
 | Panel | Heading | Items |
 |---|---|---|
@@ -253,9 +253,12 @@ claim. The intervals (between waking and sleeping, thought and action, question 
 lens, not a proof about consciousness. They support the pause in `04`, step 0.
 
 ## A note on the word "God"
-The founder's title uses "God's." Nothing in this philosophy requires a reader to hold any belief
-about God to examine it (see `01`, `05`). The title is the founder's own language and is preserved
-as drawn. Whether working documents should keep it, add a gloss, or use another word is open question 20.
+The drawing's title used "God's." On 2026-11-03 Geoffrey removed it from the working title. That settles open
+question 20. In his words, he had added it because naming nothing at all made the gifts sound as if they "came from
+nowhere." Leaving the source unnamed doesn't claim they came from nowhere. It leaves the naming to each reader and
+tradition: God, the Tao, Brahman, nature, emptiness, the nothingness and intervals this teaching already starts from,
+or no name at all. Nothing here requires any belief about God to examine or use it (see `01`, `05`). The drawing
+itself is kept as drawn, as part of the record.
 
 ## Practical reflection (carried from v0.1, still a metaphor)
 - **Choice / mind:** How will I assemble my mind for this?
@@ -634,9 +637,9 @@ the end. Both point at teachings that are meant to be let go of once they have d
 
 ## Where it comes from
 
-This philosophy was formulated by Geoffrey Cooper, who drew it as a single diagram titled **"God's 3 Greatest Gifts to Us and Through Us."** It came out of a period of his life marked by addiction, homelessness, and grief — and out of the long work of re-examining what his own history meant. He discovered that identity need not be a fixed set of parameters that determines what a person can do: he came to understand himself not as identical to his accumulated identity, but as a co-signer of the events, experiences, and memories from which identity is continually formed. Painful memories, revisited, could be transformed from evidence for a fixed self into sources of learning and changed action — a backpack full of lead turned into blessings.
+This philosophy was formulated by Geoffrey Cooper, who drew it as a single diagram titled **"The 3 Greatest Gifts to Us and Through Us."** (The original drawing said "God's". On 2026-11-03 Geoffrey removed the word, so the source of the gifts is left unnamed and open to every tradition.) It came out of a period of his life marked by addiction, homelessness, and grief — and out of the long work of re-examining what his own history meant. He discovered that identity need not be a fixed set of parameters that determines what a person can do: he came to understand himself not as identical to his accumulated identity, but as a co-signer of the events, experiences, and memories from which identity is continually formed. Painful memories, revisited, could be transformed from evidence for a fixed self into sources of learning and changed action — a backpack full of lead turned into blessings.
 
-The word "God" in the title is the founder's own language, preserved as drawn. Nothing here requires any belief about God, consciousness, or ultimate reality to examine or use. The philosophy asks to be judged on its usefulness, coherence, consequences, and openness to correction — not on the explanation of its origin.
+The drawing's title said "God's"; in 2026-11 the founder removed the word, so the source of the gifts is left for each reader and tradition to name: God, the Tao, nature, emptiness, or nothing at all. Nothing here requires any belief about God, consciousness, or ultimate reality to examine or use. The philosophy asks to be judged on its usefulness, coherence, consequences, and openness to correction — not on the explanation of its origin.
 
 ## The three gifts
 
