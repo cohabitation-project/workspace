@@ -447,11 +447,11 @@ app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
   try {
     const msg = store.findMessage(String(req.params.room), String(req.params.id));
     if (!msg || !msg.text) return res.status(404).json({ error: 'no such message' });
-    if (!auth.allow(`tts:${req.ip}`, 60, 3600_000)) return res.status(429).json({ error: 'slow down (60 new readbacks an hour)' });
-    const a = await voice.audioFor(msg, store.getMember(msg.author) || { id: msg.author, name: msg.name, kind: msg.kind });
-    res.setHeader('Content-Type', a.type); res.setHeader('Cache-Control', 'public, max-age=86400'); res.setHeader('X-Voice', a.voice);
+    if (!auth.allow(`tts:${req.ip}`, 400, 3600_000)) return res.status(429).json({ error: 'slow down (400 readback parts an hour)' });
+    const a = await voice.audioFor(msg, store.getMember(msg.author) || { id: msg.author, name: msg.name, kind: msg.kind }, req.query.part);
+    res.setHeader('Content-Type', a.type); res.setHeader('Cache-Control', 'public, max-age=86400'); res.setHeader('X-Voice', a.voice); res.setHeader('X-Parts', String(a.parts)); res.setHeader('Access-Control-Expose-Headers', 'X-Parts, X-Voice');
     fs.createReadStream(a.file).pipe(res);
-  } catch (e) { res.status(e.status || 503).json({ error: e.status === 404 ? e.message : 'readback is not available right now' }); }
+  } catch (e) { if (e.status !== 404) console.error(`[voice] readback failed: ${e.message}`); res.status(e.status || 503).json({ error: e.status === 404 ? e.message : 'readback is not available right now' }); }
 });
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
 app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(req, { write: true }), req.body || {}); res.status(201); return r; }));

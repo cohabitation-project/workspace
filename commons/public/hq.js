@@ -1121,19 +1121,35 @@ function openExit() {
   panel.querySelector('#exit-signout').addEventListener('click', async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* reload anyway */ } location.href = '/'; });
 }
 
-// Readback: ▶ plays a message in its author's voice (Kokoro on the server). One plays at a time; click again to stop.
+// Readback: ▶ plays a message in its author's voice (Kokoro on the server), part by part, so it starts after the first
+// sentence and the next part is made while the current one plays. One message at a time; click again to stop.
 let playing = null;
-document.addEventListener('click', (e) => {
+function stopPlaying() { if (!playing) return; playing.stop = true; playing.a?.pause(); playing.b.textContent = '▶'; playing.b.classList.remove('on'); playing = null; }
+async function partBlob(room, id, n) {
+  const r = await fetch(`/api/rooms/${encodeURIComponent(room)}/messages/${encodeURIComponent(id)}/audio?part=${n}`);
+  if (!r.ok) throw new Error(String(r.status));
+  return { url: URL.createObjectURL(await r.blob()), total: Number(r.headers.get('X-Parts') || 1) };
+}
+document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-listen]'); if (!b || !S.open?.id) return;
   e.preventDefault(); e.stopPropagation();
-  if (playing) { playing.a.pause(); playing.b.textContent = '▶'; playing.b.classList.remove('on'); const same = playing.b === b; playing = null; if (same) return; }
-  const a = new Audio(`/api/rooms/${encodeURIComponent(S.open.id)}/messages/${encodeURIComponent(b.dataset.listen)}/audio`);
-  b.textContent = '…'; b.classList.add('on'); playing = { a, b };
-  a.addEventListener('playing', () => { b.textContent = '■'; });
-  const done = () => { if (playing?.a === a) { b.textContent = '▶'; b.classList.remove('on'); playing = null; } };
-  a.addEventListener('ended', done);
-  a.addEventListener('error', () => { done(); b.textContent = '⚠'; b.title = 'Readback is not available right now'; setTimeout(() => { b.textContent = '▶'; }, 3000); });
-  a.play().catch(() => a.dispatchEvent(new Event('error')));
+  const same = playing?.b === b; stopPlaying(); if (same) return;
+  const room = S.open.id; const id = b.dataset.listen; const me = { b, a: null, stop: false }; playing = me;
+  b.textContent = '…'; b.classList.add('on');
+  try {
+    let cur = await partBlob(room, id, 0); let total = cur.total;
+    for (let n = 0; n < total && !me.stop; n++) {
+      const next = n + 1 < total ? partBlob(room, id, n + 1) : null; // make the next part while this one plays
+      next?.catch(() => {});
+      me.a = new Audio(cur.url); b.textContent = '■';
+      await new Promise((res, rej) => { me.a.onended = res; me.a.onerror = rej; me.a.play().catch(rej); });
+      URL.revokeObjectURL(cur.url);
+      if (next && !me.stop) { b.textContent = '…'; cur = await next; total = cur.total; }
+    }
+    if (playing === me) stopPlaying();
+  } catch {
+    if (playing === me) { stopPlaying(); b.textContent = '⚠'; b.title = 'Readback is not available right now'; setTimeout(() => { b.textContent = '▶'; }, 3000); }
+  }
 }, true);
 
 // ------------------------------------------------------------------ routing, layout, boot

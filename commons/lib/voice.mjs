@@ -49,7 +49,24 @@ export function speakable(text) {
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{2,}/g, '.\n')
     .trim()
-    .slice(0, 1500);
+    .slice(0, 6000); // read in parts now, so long messages can be read whole
+}
+
+/** Split what's read into short parts (a sentence or two each), so playback starts after the first part instead of
+ *  waiting for the whole message. Geoffrey, 2026-11-03: long messages took over a minute before any sound. */
+export function parts(text, max = 220) {
+  const sentences = String(text).match(/[^.!?\n]+[.!?]*[\s]*|\n+/g) || [String(text)];
+  const out = []; let cur = '';
+  for (const raw of sentences) {
+    const s = raw.replace(/\s+/g, ' ');
+    if (!s.trim()) continue;
+    const lim = out.length ? max : 90; // the first part is short, so sound starts in a couple of seconds
+    if ((cur + s).length > lim && cur.trim()) { out.push(cur.trim()); cur = ''; }
+    if (s.length > max) { for (let i = 0; i < s.length; i += max) out.push(s.slice(i, i + max).trim()); continue; }
+    cur += s;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out.filter(Boolean);
 }
 
 let queue = Promise.resolve();
@@ -60,22 +77,24 @@ async function synth(text, voice) {
   return { buf: Buffer.from(await r.arrayBuffer()), type: r.headers.get('content-type') || 'audio/ogg' };
 }
 
-/** The audio for one message: from cache, or made now (one at a time, so the server isn't swamped). */
-export async function audioFor(msg, member) {
+/** The audio for one part of one message: from cache, or made now (one at a time, so the server isn't swamped). */
+export async function audioFor(msg, member, part = 0) {
   const voice = voiceFor(member);
-  const key = `${msg.id}-${voice}`;
+  const all = parts(speakable(msg.text));
+  if (!all.length) throw Object.assign(new Error('nothing to read'), { status: 404 });
+  const n = Math.max(0, Math.min(all.length - 1, Number(part) || 0));
+  const key = `${msg.id}-${voice}-p${n}`;
   for (const ext of ['ogg', 'wav']) {
     const f = path.join(DIR, `${key}.${ext}`);
-    if (fs.existsSync(f)) return { file: f, type: ext === 'ogg' ? 'audio/ogg' : 'audio/wav', voice };
+    if (fs.existsSync(f)) return { file: f, type: ext === 'ogg' ? 'audio/ogg' : 'audio/wav', voice, parts: all.length };
   }
-  const text = speakable(msg.text);
-  if (!text) throw Object.assign(new Error('nothing to read'), { status: 404 });
+  const text = all[n];
   const job = queue.then(() => synth(text, voice));
   queue = job.catch(() => {});
   const { buf, type } = await job;
   const f = path.join(DIR, `${key}.${type === 'audio/wav' ? 'wav' : 'ogg'}`);
   fs.writeFileSync(f, buf);
-  return { file: f, type, voice };
+  return { file: f, type, voice, parts: all.length };
 }
 
 export async function health() {
