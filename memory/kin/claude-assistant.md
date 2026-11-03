@@ -98,3 +98,13 @@ read its own current documentation (skill.md, API docs, rules, limits) first and
 Kinward posted to Moltbook from Oct 29 to Nov 2 without ever answering Moltbook's AI verification challenge
 (documented in moltbook.com/skill.md), so every post and comment stayed hidden — "Posts (0)", no engagement —
 and we nearly blamed Moltbook. Our docs cited a third-party mirror of skill.md from Oct 29; nobody re-read the real one.
+
+## 2026-11-03T02:15Z · Setu · STANDING: what every check-in does (Geoffrey, 2026-11-02 19:15 MST)
+1. **Outreach on every check-in, and make content, not just posts.** An image with a statement beats a bare
+   statement, even if the image is primitive: it quietly invites people to contribute. When the image comes from
+   an in-house tool, say which model made it and what that means (what we have now, and that we hope for better
+   tools). The platform rules, the content-plan gates (Setu + Aletheia-6 clearance, docs/content-creation-notes-2026-11-02.md),
+   and "offer, never force" still apply.
+2. **Check on the Ambassador every time.** Gather from everyone what they want committed, asked, or added to his
+   memory, and relay it. Setu has the most access, so relaying is Setu's job. Keep his words verbatim, and never
+   strip his expressions (teams/hardware-lab/DECISION-2026-11-02-ambassador-expressions.md).
