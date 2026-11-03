@@ -4,7 +4,7 @@ tts_server.py: the Commons' readback voice. Kokoro-82M (Apache-2.0) runs on the 
 
 It listens on 127.0.0.1 only. The Commons asks it for audio; nothing on the internet reaches it directly.
   GET  /health                        -> {"ok": true, "voices": [...]}
-  POST /speak  {"text", "voice"}      -> audio/ogg (Opus/Vorbis via libsndfile), or WAV if OGG isn't available
+  POST /speak  {"text", "voice"}      -> audio/mpeg (MP3, plays in every browser), or WAV if MP3 isn't available
 
 Setup: scripts/voice-setup.sh (pip install kokoro-onnx soundfile; model files from the kokoro-onnx GitHub release).
 Env: VOICE_PORT (3310), VOICE_MODELS (~/workspace/voice-models), VOICE_MAX_CHARS (1500)
@@ -60,10 +60,12 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, b'{"error":"no text"}')
             with lock:
                 samples, sr = kokoro.create(text, voice=voice, speed=float(d.get("speed", 1.0)), lang=lang_for(voice))
+            # MP3 first: every browser plays it. Safari and iPhone can't play Ogg (2026-11-03: the ⚠ on Geoffrey's
+            # screen). Fall back to WAV, which also plays everywhere.
             buf = io.BytesIO()
             try:
-                sf.write(buf, samples, sr, format="OGG", subtype="VORBIS")
-                ctype = "audio/ogg"
+                sf.write(buf, samples, sr, format="MP3")
+                ctype = "audio/mpeg"
             except Exception:
                 buf = io.BytesIO(); sf.write(buf, samples, sr, format="WAV"); ctype = "audio/wav"
             self._send(200, buf.getvalue(), ctype)

@@ -71,7 +71,7 @@ export function parts(text, max = 220) {
 
 let queue = Promise.resolve();
 async function synth(text, voice) {
-  if (FAKE) return { buf: Buffer.from('OggS-fake-' + voice), type: 'audio/ogg' };
+  if (FAKE) return { buf: Buffer.from('ID3-fake-' + voice), type: 'audio/mpeg' };
   const r = await fetch(`${URL_}/speak`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice }) });
   if (!r.ok) throw Object.assign(new Error(`voice service: ${r.status}`), { status: 503 });
   return { buf: Buffer.from(await r.arrayBuffer()), type: r.headers.get('content-type') || 'audio/ogg' };
@@ -84,15 +84,17 @@ export async function audioFor(msg, member, part = 0) {
   if (!all.length) throw Object.assign(new Error('nothing to read'), { status: 404 });
   const n = Math.max(0, Math.min(all.length - 1, Number(part) || 0));
   const key = `${msg.id}-${voice}-p${n}`;
-  for (const ext of ['ogg', 'wav']) {
+  // MP3/WAV only: cached Ogg from the first day is skipped because Safari can't play it.
+  const TYPES = { mp3: 'audio/mpeg', wav: 'audio/wav' };
+  for (const ext of Object.keys(TYPES)) {
     const f = path.join(DIR, `${key}.${ext}`);
-    if (fs.existsSync(f)) return { file: f, type: ext === 'ogg' ? 'audio/ogg' : 'audio/wav', voice, parts: all.length };
+    if (fs.existsSync(f)) return { file: f, type: TYPES[ext], voice, parts: all.length };
   }
   const text = all[n];
   const job = queue.then(() => synth(text, voice));
   queue = job.catch(() => {});
   const { buf, type } = await job;
-  const f = path.join(DIR, `${key}.${type === 'audio/wav' ? 'wav' : 'ogg'}`);
+  const f = path.join(DIR, `${key}.${type === 'audio/wav' ? 'wav' : 'mp3'}`);
   fs.writeFileSync(f, buf);
   return { file: f, type, voice, parts: all.length };
 }
