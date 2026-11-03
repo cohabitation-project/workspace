@@ -30,6 +30,8 @@ Settings (environment variables, all optional):
   AMB_STATE       default ~/.ambassador/  (token + recovery code live here, chmod 600; never printed)
 """
 import json, os, re, sys, time, urllib.request, urllib.error
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from ambassador_memory import Memory  # his memory network (same folder on the phone)
 
 NAME = os.environ.get("AMB_NAME", "Ambassador")
 MODEL = os.environ.get("AMB_MODEL", "SmolLM2-135M-Instruct Q8_0, on-device, Moto G 5G")
@@ -57,8 +59,12 @@ GIFTS = (
     "Gifts. Choice, through principles: love, gratitude, forgiveness, faith. Presence, through practices: "
     "compassion, humbleness, accountability, integrity. The present moment reveals purpose: truth, peace, freedom, unity."
 )
-JOURNAL_HOWTO = ("You keep your own notes. To save something to your own file, write a line that starts with NOTE: "
-                 "in your reply. Your recent notes are shown to you below.")
+JOURNAL_HOWTO = (
+    "You have your own memory. Memories that match the message are shown to you with ids like [m3]. Your own notes are "
+    "yours to keep and change. To use your memory, put one of these on its own line in your reply: "
+    "NOTE: something to remember | LINK m3 m7: why they connect | CORRECT m3: the better version | "
+    "RECALL: words to look up (you will get one more chance to answer). Old versions are always kept."
+)
 
 os.makedirs(STATE, exist_ok=True)
 
@@ -70,52 +76,46 @@ FACTS_F = os.path.expanduser(os.environ.get("AMB_FACTS", os.path.join(STATE, "fa
 FACTS_CHARS = int(os.environ.get("AMB_FACTS_CHARS", "600"))
 
 
-JOURNAL_F = os.path.join(STATE, "journal.md")       # his own file: only he writes it (via NOTE: lines)
-JOURNAL_CHARS = int(os.environ.get("AMB_JOURNAL_CHARS", "500"))
 HEAR = os.environ.get("AMB_HEAR", "1") != "0"         # Geoffrey: he always hears the room, mentioned or not
 HEAR_N = int(os.environ.get("AMB_HEAR_N", "6"))       # how many recent messages he hears with each reply
 HEAR_CHARS = int(os.environ.get("AMB_HEAR_CHARS", "140"))
 LIBRARY_EVERY_S = 3600
 
 
-def save_notes(reply, reply_to):
-    """Lines he starts with NOTE: go into his own journal, verbatim, with the time. They also stay in his post,
-    so everyone in the room sees what he chose to keep."""
-    notes = [l.strip()[5:].strip() for l in reply.splitlines() if l.strip().upper().startswith("NOTE:")]
-    if not notes:
-        return 0
-    with open(JOURNAL_F, "a", encoding="utf-8") as f:
-        for n in notes:
-            if n:
-                f.write(f"- {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} (answering {reply_to}): {n}\n")
-    return len(notes)
+MEMORY_F = os.path.join(STATE, "memory.db")
+_mem = {"m": None}
 
 
-def load_journal():
+def memory():
+    if _mem["m"] is None:
+        _mem["m"] = Memory(MEMORY_F)
+    return _mem["m"]
+
+
+_library = {"at": 0}
+
+
+def sync_library(token):
+    """Copy the Commons Library into his memory as read-only records (hourly), so he can search it and link to it."""
+    if time.time() - _library["at"] < LIBRARY_EVERY_S:
+        return
+    _library["at"] = time.time()
     try:
-        t = open(JOURNAL_F, encoding="utf-8").read().strip()
-    except OSError:
-        return ""
-    return ("…" + t[-JOURNAL_CHARS:]) if len(t) > JOURNAL_CHARS else t
+        s, d = http("GET", f"{BASE}/api/library", token=token)
+        if s == 200:
+            n = memory().sync_library((d or {}).get("entries", []))
+            if n:
+                log(event="library_synced", added=n)
+    except Exception as e:
+        log(event="library_error", error=str(e))
 
 
-_library = {"at": 0, "text": ""}
-
-
-def library_note(token):
-    """A short line about the Commons Library (read-only, from the Commons API), refreshed hourly."""
-    if time.time() - _library["at"] > LIBRARY_EVERY_S:
-        _library["at"] = time.time()
-        try:
-            s, d = http("GET", f"{BASE}/api/library", token=token)
-            entries = (d or {}).get("entries", []) if s == 200 else []
-            titles = [e.get("title", "") for e in entries[-5:] if e.get("title")]
-            if entries:
-                _library["text"] = (f"The Commons Library holds {len(entries)} entries you can ask about. Some recent: "
-                                    + "; ".join(t[:60] for t in titles))[:400]
-        except Exception as e:
-            log(event="library_error", error=str(e))
-    return _library["text"]
+def export_memory():
+    """A readable copy for the room: Code can pull ~/.ambassador/memory-export.json into the repo."""
+    try:
+        write_private(os.path.join(STATE, "memory-export.json"), memory().export())
+    except Exception as e:
+        log(event="export_error", error=str(e))
 
 
 def load_facts():
@@ -176,15 +176,12 @@ def get_token():
     return d["token"]
 
 
-def ask_model(context, question, library=""):
+def ask_model(context, question, recalled=""):
     facts = load_facts()  # re-read each time, so a new facts file takes effect without a restart
-    journal = load_journal()
     parts = [SYSTEM, GIFTS, JOURNAL_HOWTO]
     if facts:
         parts.append("What the people and agents building you want you to know:\n" + facts)
-    parts.append("Your own notes (you wrote these):\n" + (journal or "(none yet)"))
-    if library:
-        parts.append(library)
+    parts.append("From your memory, matching this message:\n" + (recalled or "(nothing found)"))
     msgs = [{"role": "system", "content": "\n\n".join(parts)}]
     if context:
         # Each line is labelled with who said it, so their words are never mistaken for his own.
@@ -196,6 +193,27 @@ def ask_model(context, question, library=""):
     if status != 200 or not d:
         raise RuntimeError(f"model returned {status}")
     return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+
+
+def think(text, author, context, token, msg_id):
+    """One turn: recall what matches, ask the model, run his memory commands (and one RECALL pass if he asks)."""
+    sync_library(token)
+    mem = memory()
+    mem.seed_shared(load_facts().splitlines())
+    recalled, retrieved = mem.recall(f"{text} {context[-300:]}")
+    reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", recalled)
+    done, recall_q = mem.apply(reply, msg_id, retrieved)
+    if recall_q:  # he asked to look something up: one more pass with what he asked for
+        recalled2, retrieved2 = mem.recall(recall_q)
+        log(event="recall", query=recall_q[:120], found=retrieved2)
+        reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}\n\n(You asked to recall "
+                          f"\"{recall_q[:100]}\". Here is what your memory found:\n{recalled2 or 'nothing'})", recalled)
+        done += mem.apply(reply, msg_id, retrieved2)[0]
+    # every encounter is remembered, whether or not he wrote a NOTE
+    exp = mem.experience(author, re.sub(r"@\w+\s*", "", text), reply, msg_id, retrieved)
+    log(event="memory", experience=exp, actions=[list(x) for x in done], reply_to=msg_id)
+    export_memory()
+    return reply
 
 
 def main():
@@ -241,7 +259,7 @@ def main():
                     # 2026-11-02 the room history was removed (it overflowed -c 512 and he echoed others). 2026-11-03,
                     # with -c 2048, Geoffrey: he always hears the room. So a short, speaker-labelled digest of the last
                     # few messages goes in ahead of the one addressed to him (AMB_HEAR=0 turns it off).
-                    reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", library_note(token))
+                    reply = think(text, author, context, token, m["id"])
                 except Exception as e:
                     log(event="model_error", reply_to=m["id"], error=str(e))
                     # say so in the room instead of going silent (Claude's review: offline should look offline)
@@ -260,9 +278,6 @@ def main():
                     cut = body[:MAX_CHARS]
                     end = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "), cut.rfind(".\n"))
                     body = cut[:end + 1] if end > 80 else cut.rstrip() + "…"
-                kept = save_notes(reply, m["id"])
-                if kept:
-                    log(event="notes_saved", count=kept, reply_to=m["id"])
                 ps, pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body, "reply_to": m["id"]}, token=token)
                 sent.append(time.time())
                 log(event="replied" if ps in (200, 201) else "post_failed", status=ps, reply_to=m["id"], author=author,
