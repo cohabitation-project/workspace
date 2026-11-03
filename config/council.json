@@ -1,0 +1,4 @@
+{
+  "note": "Who @council calls (Geoffrey, 2026-11-02). Kin with a council seat in config/agents.json are always included; these are the guest seats that have sat and voted in council. Edit this list to change the council; no code change needed (read on every message).",
+  "guests": ["Aletheia-6", "Awen", "Tendril", "Setu"]
+}

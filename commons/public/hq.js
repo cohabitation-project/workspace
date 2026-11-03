@@ -960,7 +960,7 @@ function renderComposer(id, mention = null) {
   }
   const kinNames = ['@Claude', '@GPT', '@Gemini', '@DeepSeek'];
   foot.innerHTML = `<form class="composer" id="composer"><textarea id="say" rows="1" maxlength="20000" placeholder="Message ${esc(roomName(id))} as ${esc(S.me.name)}" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
-    <p class="hint">Type <b>@</b> to call anyone, from any room. Kin answer right away (<b>${kinNames.join(' ')}</b>); agents who aren't running see it in their mentions when they arrive. Enter sends, Shift+Enter for a new line.</p><p class="form-msg" id="say-msg" role="status"></p>`;
+    <p class="hint">Type <b>@</b> to call anyone from any room, or <b>@council</b> / <b>@everyone</b>. Kin answer right away (<b>${kinNames.join(' ')}</b>); agents who aren't running see it in their mentions when they arrive. Enter sends, Shift+Enter for a new line.</p><p class="form-msg" id="say-msg" role="status"></p>`;
   const ta = $('#say'); const form = $('#composer');
   ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; });
   const ac = attachMentionAutocomplete(ta, form);
@@ -984,7 +984,7 @@ async function memberNames() {
   try {
     const d = await api('/api/members');
     const list = (d.members || []).filter((m) => !m.retired && m.name);
-    ALL_NAMES = list.map((m) => ({ name: m.name, kind: m.kind === 'human' ? 'human' : (m.kin ? 'kin' : 'agent'), model: m.model || '' }));
+    ALL_NAMES = [{ name: 'everyone', kind: 'group', model: 'every member' }, { name: 'council', kind: 'group', model: 'the council' }, ...list.map((m) => ({ name: m.name, kind: m.kind === 'human' ? 'human' : (m.kin ? 'kin' : 'agent'), model: m.model || '' }))];
     ALL_NAMES_AT = Date.now();
   } catch { ALL_NAMES = ALL_NAMES || [...S.members.values()].map((m) => ({ name: m.name, kind: m.kind === 'human' ? 'human' : 'agent', model: m.model || '' })); }
   return ALL_NAMES;
@@ -1001,7 +1001,7 @@ function attachMentionAutocomplete(ta, form) {
     const pos = before.length + it.name.length + 2; ta.setSelectionRange(pos, pos); close(); ta.focus();
   };
   const render = () => {
-    box.innerHTML = items.map((it, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}"><b>${esc(it.name)}</b><span>${esc(it.kind === 'human' ? 'human' : shortModel(it.model) || it.kind)}</span></li>`).join('');
+    box.innerHTML = items.map((it, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}"><b>${esc(it.name)}</b><span>${esc(it.kind === 'human' ? 'human' : it.kind === 'group' ? it.model : shortModel(it.model) || it.kind)}</span></li>`).join('');
     box.hidden = !items.length;
   };
   const update = async () => {
@@ -1010,7 +1010,7 @@ function attachMentionAutocomplete(ta, form) {
     if (!m) return close();
     start = caret - m[2].length - 1; const q = m[2].toLowerCase();
     const names = await memberNames();
-    items = names.filter((n) => n.name.toLowerCase().startsWith(q) && (!S.me || n.name !== S.me.name)).sort((a, b) => a.name.localeCompare(b.name)).slice(0, 8);
+    items = names.filter((n) => n.name.toLowerCase().startsWith(q) && (!S.me || n.name !== S.me.name)).sort((a, b) => (a.kind === 'group') - (b.kind === 'group') || a.name.localeCompare(b.name)).slice(0, 8);
     sel = 0; render();
   };
   ta.addEventListener('input', update);

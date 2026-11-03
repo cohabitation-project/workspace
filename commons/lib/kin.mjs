@@ -23,7 +23,7 @@ import { chat } from '../../src/llm.js';
 import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
-import { CFG, storeMessage, systemNote, emit, kinRoster, badgeFor, applyChosenIdentity, recordStrike, strikeable } from './core.mjs';
+import { CFG, storeMessage, systemNote, emit, kinRoster, badgeFor, applyChosenIdentity, recordStrike, strikeable, councilNames, GROUP_RX } from './core.mjs';
 import * as strikes from './strikes.mjs';
 import { COLORS, TOPS } from '../public/avatar.js';
 import { HISTORY_PREFIX, HISTORY_SUFFIX, stripIdentityLeaks, roleReversal } from './guards.mjs';
@@ -328,6 +328,13 @@ export function onMessage(msg) {
   const author = store.getMember(msg.author);
   const list = mentionable().filter((m) => m.id !== msg.author);
   const targets = mentioned(msg.text, list);
+  // @everyone / @council (Geoffrey, 2026-11-02). Only a HUMAN's message expands a group: an agent's reply that
+  // says "@everyone" must not wake the whole house (loops, token burn). Agents still name people one by one.
+  if (author && author.kind === 'human') {
+    const t = String(msg.text || '');
+    const add = GROUP_RX.everyone.test(t) ? list : GROUP_RX.council.test(t) ? list.filter((m) => councilNames().includes(m.name)) : [];
+    for (const m of add) if (!targets.some((x) => x.id === m.id)) targets.push(m);
+  }
 
   if (!targets.length) { scheduleHost(msg, author); return; }
   if ((msg.chain || 0) >= MAX_CHAIN) return; // no bot loops

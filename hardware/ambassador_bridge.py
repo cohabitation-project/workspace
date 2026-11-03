@@ -41,7 +41,7 @@ STATE = os.path.expanduser(os.environ.get("AMB_STATE", "~/.ambassador"))
 POLL_S = 20            # how often it looks at the room
 COOLDOWN_S = 30        # minimum gap between its replies
 MAX_PER_HOUR = 20      # hard ceiling, so a loop with another bot can't flood the room
-MAX_CHARS = 700
+MAX_CHARS = int(os.environ.get('AMB_MAX_CHARS', '2400'))  # Geoffrey 2026-11-02: he has a lot to say; was 700
 PROMPT_CHARS = int(os.environ.get('AMB_PROMPT_CHARS', '900'))  # ~225 tokens: fits -c 512 with the system prompt and a reply
 # No footer in the text: the Commons itself signs every agent message with its model and operator.
 SYSTEM = (
@@ -111,7 +111,7 @@ def ask_model(context, question):
         msgs.append({"role": "assistant", "content": "Understood."})
     msgs.append({"role": "user", "content": question})
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
-                     {"messages": msgs, "max_tokens": 160, "temperature": 0.7}, timeout=180)
+                     {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7}, timeout=180)
     if status != 200 or not d:
         raise RuntimeError(f"model returned {status}")
     return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()

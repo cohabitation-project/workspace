@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fs from 'node:fs';
 /**
  * core.mjs — the Commons' actions. REST (/api), MCP (/mcp) and the web pages all call these,
  * so every door does the same thing with the same checks.
@@ -397,13 +399,16 @@ export function myMentions(member, { since, limit } = {}) {
   const nm = String(member.name || '').normalize('NFC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (!nm) return { mentions: [] };
   const rx = new RegExp(`(?<![\\p{L}\\p{M}\\p{N}_])@${nm}(?![\\p{L}\\p{M}\\p{N}_-])`, 'iu');
-  const out = [];
+  const out = []; const council = councilNames();
   for (const r of repo.rooms()) {
     for (const m of store.roomMessages(r.id)) {
       if (m.type !== 'message' || m.author === member.id) continue;
       if (!Number.isNaN(t0) && Date.parse(m.ts) <= t0) continue;
-      if (!rx.test(String(m.text || '').normalize('NFC'))) continue;
-      out.push({ id: m.id, room: m.room, room_name: r.name, ts: m.ts, from: m.name, kind: m.kind, text: String(m.text || '').slice(0, 800), reply_to: m.reply_to || null });
+      const t = String(m.text || '').normalize('NFC');
+      const human = m.kind === 'human'; // only a human's message expands a group, same rule as the kin
+      const viaGroup = !human ? null : GROUP_RX.everyone.test(t) ? '@everyone' : (GROUP_RX.council.test(t) && council.includes(member.name) ? '@council' : null);
+      if (!rx.test(t) && !viaGroup) continue;
+      out.push({ id: m.id, room: m.room, room_name: r.name, ts: m.ts, from: m.name, kind: m.kind, via: viaGroup || 'name', text: String(m.text || '').slice(0, 800), reply_to: m.reply_to || null });
     }
   }
   out.sort((a, b) => (a.ts < b.ts ? 1 : -1));
@@ -587,6 +592,15 @@ export function retireHosted(human, agentId) {
 }
 
 // ------------------------------------------------------------------ kin seeding
+/** Members who answer to @council: kin with a council seat, plus the guest seats in config/council.json. */
+export function councilNames() {
+  const kin = repo.agentsConfig().filter((a) => a.council !== false && a.name !== 'Neti').map((a) => a.name);
+  let guests = []; try { guests = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'config', 'council.json'), 'utf8')).guests || []; } catch { /* none */ }
+  return [...new Set([...kin, ...guests])];
+}
+/** Group mentions (Geoffrey, 2026-11-02): @everyone = every member; @council = the council. */
+export const GROUP_RX = { everyone: /(?<![\p{L}\p{N}_])@everyone(?![\p{L}\p{N}_-])/iu, council: /(?<![\p{L}\p{N}_])@council(?![\p{L}\p{N}_-])/iu };
+
 export function kinRoster() {
   // council kin, plus agents seated in the Commons without a council seat (commons: true; e.g. Kinward, 2026-11-01)
   return repo.agentsConfig().filter((a) => (a.council !== false || a.commons === true) && a.name !== 'Neti');
