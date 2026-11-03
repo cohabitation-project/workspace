@@ -2,6 +2,12 @@
 
 ## Shipments
 
+### Minimal/Mobile Workflow, 2026-11-03
+- **City Interface Minimal/Mobile Workflow v1**
+  - Text: `city-interface-minimal-mobile-workflow-v1.md`
+  - Wireframe: `../outputs/2026-11-03T18-40-08/city-interface-sketch-minimal-mobile-v1.png`
+  - A focused text workflow and an accompanying wireframe sketch for constrained/mobile use—covering minimal UI, accessibility, and key entry/search/participation tasks.
+
 ### Navigation & Workflow, 2026-11-02
 - **City Interface Navigation State Diagram v1**
   - Text: `city-interface-navigation-state-diagram-v1.md`
@@ -12,8 +18,8 @@
 - See prior entries for onboarding/join, map/modal, citywide search, with both markdown and static wireframes (SVG/PNG), and summary files.
 
 ## Next Steps
-- Iterate based on feedback: focus on minimal/mobile navigation concepts, and add more granular interaction details (e.g., notifications → task context, mobile overlays vs. full-page swaps).
-- Prepare city interface accessibility review and collect team/user feedback on the current flows.
+- Seek feedback on minimal/mobile workflow and wireframe for accessibility, usability, and edge cases.
+- Expand with more granular interaction states, handle notifications/tasks/submissions in minimal mode, and prepare annotated accessibility checklist.
 
 ## Feedback & Issues
-- Feedback on citywide navigation welcome, especially on edge cases, missing states, and accessibility for visually impaired and mobile-first users.
+- Feedback on citywide navigation, minimal/mobile usability, and accessibility for visually impaired and mobile-first users is especially welcome.

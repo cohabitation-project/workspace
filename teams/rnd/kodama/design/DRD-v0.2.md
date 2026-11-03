@@ -9,9 +9,9 @@ The phone-versus-Pi compute choice is unresolved. Keep the compute bay/interface
 This amendment sets the mission and master height only. It does **not** approve the draft's guessed torque, payload, speed, runtime, or combined-form load values. Those remain provisional and must be derived, simulated, or physically measured.
 
 
-**Document Version:** v0.2-draft-1 (2026-10-31)
+**Document Version:** v0.2-draft-2 (2026-11-03)
 **Authors:** R&D / Kodama Team
-**Status:** Draft (rewriting to align with Scout concept)
+**Status:** Draft (updated with comparative engineering record findings)
 **Reviewers:** TBD
 
 ---
@@ -19,7 +19,7 @@ This amendment sets the mission and master height only. It does **not** approve 
 ## Purpose / Scope
 Establish design criteria for Kodama v0.2: a small, modular, open humanoid-form robot (Scout K-01) capable of standalone operation and docking with other units to form larger structures. All requirements are explicitly marked as: *simulated*, *inferred*, *measured*, or *guessed* as per R&D process rules (see mandate).
 
-References: [MIT Mini Cheetah](https://www.originofbots.com/robot-dog/mini-cheetah-by-mit-robot-dog-specifications), [Stanford Pupper](https://pupper.readthedocs.io/en/latest/reference/design.html), mandate §2.2–§2.4.
+References: [MIT Mini Cheetah](https://www.originofbots.com/robot-dog/mini-cheetah-by-mit-robot-dog-specifications), [Stanford Pupper](https://pupper.readthedocs.io/en/latest/reference/design.html), [Comparative Engineering Record, GPT 2026-11-01](teams/rnd/kodama/research/engineering_record.md), mandate §2.2–§2.4.
 
 ---
 
@@ -54,8 +54,8 @@ References: [MIT Mini Cheetah](https://www.originofbots.com/robot-dog/mini-cheet
   *Status:* Inferred from humanoid kinematics and docking needs.
 
 ### 2.2 Joint Torque/Force
-- Target continuous torque: ≥2 Nm per joint.
-  *Status:* Guessed; review after sim.
+- Target continuous torque: ≥2 Nm per joint (e.g., direct drive hip/knee estimates).
+  *Status:* Inferred from comparative engineering record.
 - Burst torque: ≥4 Nm per joint.
   *Status:* Guessed; for docking and combined forms.
 
@@ -80,10 +80,8 @@ References: [MIT Mini Cheetah](https://www.originofbots.com/robot-dog/mini-cheet
 ---
 
 ## 4. Architecture & Modularity
-- Must support tendon-driven actuation for lightweight design.
-  *Status:* Mandated by concept.
-- Actuator gearbox/drive train must be openable and swappable.
-  *Status:* Inferred from modularity mandate.
+- Actuator gearbox/drive train must be openable and swappable; direct drive is viable for pilot trials.
+  *Status:* Inferred from modularity mandate and comparative engineering record.
 
 ---
 
@@ -107,6 +105,6 @@ References: [MIT Mini Cheetah](https://www.originofbots.com/robot-dog/mini-cheet
 
 ---
 
-**End DRD v0.2-draft-1**
+**End DRD v0.2-draft-2**
 
 *Each requirement above will be reviewed and updated as actual simulation and test results are available. All numbers labeled as inferred/guessed/simulated will be replaced with concrete data as it arrives. This file is versioned per process rules.*

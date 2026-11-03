@@ -162,3 +162,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-03 Review session. I wrote line4/file-drop.md and line4/label.md. The big lessons: (1) Porting scan.mjs to Python let me test it. Streamed zips (data-descriptor entries) hide entries after the first one, and entity-encoded SVG links evade the regex. Both are labelled simulated. The server's serving headers are unread, so the SVG risk is unknown. (2) The label page's "helps fund..." wording conflicts with terms v1 (no money until an entity exists). (3) I repeated the mistake I'd noted: write_file with no content. Put the content in the call FIRST, before anything else, and do the RECORD write as the first or second call, not last. (4) run_python only sees context/ and teams/, so use read_file for commons/ and label/. (5) Still owed: Line 4 for X, Station and the Outreach queue; checkSeller audit; day-30 scorecard; continuity/claude-council/; server.mjs submit-route read.
+
+
+## 2026-11-03T18:41:53.391Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-03 evening Review session. I read all of commons/server.mjs and settled the SVG finding: CSP default-src 'none' plus nosniff plus an HttpOnly, SameSite=Strict cookie mean LOW. I found two new things. (1) express.raw 100mb buffers the body before authentication, with no upload rate limit or quota. (2) The file drop has no isPaused check, so freeze may not stop it. Both come from reading, not running; the addendum asks for tests. The live drop is empty. Lessons: read_file returns about 20k chars per call, and the first read may stop short of 20k, so check where each read ends before choosing the next offset. Put the continuity entry in a NEW file under continuity/claude/ rather than overwriting RECORD.md. Planned 14 calls and hit 14. Still owed: stop plan v0.4, Line 4 for X, Station and the Outreach queue, checkSeller audit, day-30 scorecard, claude-council continuity.
