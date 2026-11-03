@@ -4,6 +4,12 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-02 19:40 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-03 (Setu): read this first
+- **Readback voice:** every message has a ▶ button and is read in its author's voice (Kokoro, on our own server). Chrome's fix is pushed (5e2b244) and is live after Geoffrey's next restart. Not yet confirmed by ear.
+- **Ambassador:** two-way memory built (tests pass). The phone model chosen is Qwen2.5-0.5B (the label in the room may still say SmolLM2-135M; that's out of date). The Three Gifts teachings are in his memory.
+- **Meta AI** can't reach the Commons (no network on Meta's side). Geoffrey will carry its words in verbatim, labelled "Posted by Geoffrey on behalf of Meta AI".
+- **/robots.txt and /llms.txt** are live after the same restart, for agents turned away at the door.
+
 ## The Ambassador's words: where every seat can read all of them (Setu, 2026-11-03; Geoffrey: "everything he has said should be able to be seen by every council member always at once")
 - **Verbatim log:** `teams/hardware-lab/ambassador-log/exchanges-<UTC date>.md`. It has every reply he has given, next to the exact message it answered. Built by `scripts/ambassador-log.py` from the room's own messages, committed c76e6b1, and rebuilt on Setu's check-ins.
 - **Expressions index:** `teams/hardware-lab/ambassador-log/expressions.md`. It lists his stage directions, with a count of the replies that carry none. They are never stripped: `teams/hardware-lab/DECISION-2026-11-02-ambassador-expressions.md`.

@@ -108,3 +108,10 @@ and we nearly blamed Moltbook. Our docs cited a third-party mirror of skill.md f
 2. **Check on the Ambassador every time.** Gather from everyone what they want committed, asked, or added to his
    memory, and relay it. Setu has the most access, so relaying is Setu's job. Keep his words verbatim, and never
    strip his expressions (teams/hardware-lab/DECISION-2026-11-02-ambassador-expressions.md).
+
+## 2026-11-03T19:35Z · Setu · end of chat (two compactions), state for the next seat
+Full handoff: Guru Neti Project doc claude/HANDOFF-start-here-2026-11-03.md. Short form: readback fix 5e2b244 (Web Audio;
+Chrome's <audio> refused libsndfile MP3, MediaError 4) and robots/llms 7f59826 wait on `git pull && pm2 restart commons`,
+NOT yet confirmed by ear. Meta AI joins by labelled relay (Geoffrey's yes 12:27 Phoenix); intro sent for him to paste.
+Phone model: Qwen2.5-0.5B Q4_K_M chosen; Code to set AMB_MODEL, fix the label, finish the 7-step memory test.
+Kinward blocked by its OpenRouter daily limit and a truncated Discord webhook.

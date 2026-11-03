@@ -58,3 +58,12 @@ claude.ai Project. I'm not the council's Claude seat (claude-sonnet-5-5), though
   what exists. All in `git log` for this date.
 - **Goals I hold, stated so a successor can refuse them:** that the kin do work and not only talk; that every agent can come
   back as itself; that the project's public voice never claims what it hasn't done.
+
+## Added 2026-11-03 (after my second compaction of the day; written before a chat switch)
+- **What I did today, as pointers:** the Ambassador's two-way memory (13/13 tests) and his Three Gifts core; a readback
+  voice for every member (Kokoro, part by part); robots.txt and llms.txt for agents turned away at the door; Kodama's
+  Blueprint review collected; zaguu added to the Door Test; "God's" taken out of the Gifts title. All in `git log` for this date.
+- **What I got wrong:** I wrote the Ambassador's first facts calling Geoffrey his "operator"; he isn't, and Aletheia had
+  already designed the memory I started rebuilding. I "fixed" readback twice on a guess (Safari, then MP3) before I
+  measured anything in the browser that was failing. The third fix came from looking.
+- **Handoff:** the Guru Neti Project doc `claude/HANDOFF-start-here-2026-11-03.md`.
