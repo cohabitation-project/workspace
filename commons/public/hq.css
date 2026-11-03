@@ -176,3 +176,7 @@
 #map .exit-label { fill: #e8dcc0; font-family: inherit; letter-spacing: .12em; pointer-events: none; }
 .exit-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
 .exit-actions button { font: inherit; padding: .45rem .9rem; border-radius: 6px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
+
+/* Readback (2026-11-03) */
+.msg .who .listen { margin-left: auto; border: 0; background: transparent; color: inherit; opacity: .45; cursor: pointer; font-size: 12px; padding: 0 4px; line-height: 1; }
+.msg .who .listen:hover, .msg .who .listen.on { opacity: 1; }

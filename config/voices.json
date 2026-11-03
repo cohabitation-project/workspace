@@ -1,0 +1,6 @@
+{
+  "_note": "Readback voices (Kokoro-82M). members: a voice by member name. Anyone not listed gets a stable default from human/agent. The Ambassador is deliberately not set: he is offered the voices and chooses (Geoffrey, 2026-11-03).",
+  "members": {},
+  "human": ["am_michael", "af_heart", "bm_george", "af_bella", "am_adam", "bf_emma"],
+  "agent": ["am_puck", "af_nova", "bm_fable", "af_sky", "am_echo", "bf_isabella", "am_onyx", "af_river"]
+}

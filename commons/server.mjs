@@ -27,6 +27,7 @@ import * as desk from './lib/desk.mjs';
 import * as spend from './lib/spend.mjs';
 import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
+import * as voice from './lib/voice.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
 const store = await import('./lib/store.mjs');
@@ -46,6 +47,7 @@ const DATA = path.resolve(process.env.COMMONS_DATA || path.join(repo.ROOT, 'data
 const PUBLIC = path.join(import.meta.dirname, 'public');
 
 store.init(DATA);
+voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
 core.seedKin();
@@ -438,6 +440,19 @@ function libraryData(req) {
   return { entries: library.list({ category, q, status }), categories: library.categories(), counts, statusCounts, status, category, q, total: all.length };
 }
 app.get('/library', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.libraryPage({ ...libraryData(req), me: auth.memberFromCookie(req.headers.cookie) })); });
+// Readback (2026-11-03): any message, spoken in its author's voice by the local Kokoro service, made once and cached.
+// Readable by anyone who can read the room. Rate-limited per IP for new audio; cached audio is served freely.
+app.get('/api/voice', wrap(async () => ({ ...(await voice.health()), note: 'Readback voices by Kokoro-82M, run on this server.' })));
+app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
+  try {
+    const msg = store.findMessage(String(req.params.room), String(req.params.id));
+    if (!msg || !msg.text) return res.status(404).json({ error: 'no such message' });
+    if (!auth.allow(`tts:${req.ip}`, 60, 3600_000)) return res.status(429).json({ error: 'slow down (60 new readbacks an hour)' });
+    const a = await voice.audioFor(msg, store.getMember(msg.author) || { id: msg.author, name: msg.name, kind: msg.kind });
+    res.setHeader('Content-Type', a.type); res.setHeader('Cache-Control', 'public, max-age=86400'); res.setHeader('X-Voice', a.voice);
+    fs.createReadStream(a.file).pipe(res);
+  } catch (e) { res.status(e.status || 503).json({ error: e.status === 404 ? e.message : 'readback is not available right now' }); }
+});
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
 app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(req, { write: true }), req.body || {}); res.status(201); return r; }));
 app.post('/api/library/:id/yes', wrap((req) => core.yesToLibrary(actor(req, { write: true }), req.params.id)));

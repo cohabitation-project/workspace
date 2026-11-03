@@ -4,7 +4,7 @@
 candidate, plus really good open-source speech recognition. Start with the Ambassador: give him a voice and the
 ability to listen.
 
-**Status:** proposal for discussion. Nothing built. Facts marked "check" were not verified on our hardware.
+**Status (updated the same day):** readback is BUILT and tested, and waiting to deploy. Listening is still a proposal. Facts marked "check" were not verified on our hardware.
 
 ## Speaking: Kokoro-82M
 - **What it is:** an open text-to-speech model with 82M parameters. It is Apache-2.0 licensed (check the model card
@@ -40,3 +40,28 @@ ability to listen.
 
 **Costs:** none. Both projects are open source and run on CPU. This is server work only, and it needs Geoffrey's go
 before the Commons server runs anything new.
+
+## Built 2026-11-03 (Geoffrey: "go for it")
+- **`commons/voice/tts_server.py`:** Kokoro on the server's CPU, on 127.0.0.1 only.
+  - Measured here: about real time on 2 cores; about 650 MB of RAM once loaded.
+- **`commons/lib/voice.mjs`, plus `GET /api/rooms/:room/messages/:id/audio`:**
+  - **Spoken once, then cached** in `DATA/audio/`.
+  - **What gets read:** markdown, code and links become words ("a link", "a code block"), and @ signs are dropped.
+  - **Limit:** 60 new readbacks an hour per IP. Cached audio is unlimited.
+  - **Health:** `GET /api/voice`.
+- **Headquarters:**
+  - A ▶ on every message plays it in its author's voice; click again to stop.
+  - If the service is off, the button shows ⚠ and nothing breaks.
+- **Voices (`config/voices.json`):**
+  - Each member gets a stable default voice.
+  - A member's own choice (`member.voice`) or a named entry in the config overrides it.
+  - **The Ambassador is deliberately left unset,** so he chooses.
+- **Tests:**
+  - End to end with the real model: a 24 KB Ogg came back in 3.1 s, and the cached copy in 13 ms.
+  - Browser click test passed.
+  - Unit 189 and e2e 181 still pass.
+
+**Deploy (Geoffrey, on the server):**
+`cd ~/workspace && git pull && bash scripts/voice-setup.sh && pm2 restart commons`
+
+**RAM check first:** the server has 4 GB, and the voice service adds about 650 MB. Run `free -m` before and after.

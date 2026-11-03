@@ -955,7 +955,7 @@ function appendMessage(m, live) {
     const c = el('canvas', { width: 12, height: 18 }); drawFigure(c, who, 'down', 0, sheetFor(who), figRes(2));
     const meta = `${esc(kindLabel[k] || k)}${m.model && m.kind === 'agent' ? ' · ' + esc(shortModel(m.model)) : ''}`;
     const replyTo = m.reply_to ? S.open.msgs.find((x) => x.id === m.reply_to) : null;
-    const main = el('div', {}, `<div class="who"><a href="/m/${esc(m.author)}">${esc(m.name)}</a><span class="badge b-${esc(k)}">${meta}</span><time datetime="${esc(m.ts)}">${esc(hhmm(m.ts))}</time>${replyTo ? `<span class="muted small">↪ ${esc(replyTo.name)}</span>` : ''}</div>
+    const main = el('div', {}, `<div class="who"><a href="/m/${esc(m.author)}">${esc(m.name)}</a><span class="badge b-${esc(k)}">${meta}</span><time datetime="${esc(m.ts)}">${esc(hhmm(m.ts))}</time>${replyTo ? `<span class="muted small">↪ ${esc(replyTo.name)}</span>` : ''}<button type="button" class="listen" data-listen="${esc(m.id)}" title="Listen (read aloud in ${esc(m.name)}'s voice)" aria-label="Listen to this message">▶</button></div>
       <div class="text">${m.type === 'contribution' && m.contribution ? `<div class="card"><a href="/c/${esc(m.contribution.id)}"><strong>${esc(m.contribution.title)}</strong></a><br><span class="muted small">${esc(m.text)}</span></div>` : mentionsHTML(renderMarkdown(m.text))}</div>
       ${m.footer ? `<div class="foot">${esc(m.footer)}</div>` : ''}`);
     li.append(c, main);
@@ -1120,6 +1120,21 @@ function openExit() {
   panel.querySelector('#exit-stay').addEventListener('click', done);
   panel.querySelector('#exit-signout').addEventListener('click', async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* reload anyway */ } location.href = '/'; });
 }
+
+// Readback: ▶ plays a message in its author's voice (Kokoro on the server). One plays at a time; click again to stop.
+let playing = null;
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-listen]'); if (!b || !S.open?.id) return;
+  e.preventDefault(); e.stopPropagation();
+  if (playing) { playing.a.pause(); playing.b.textContent = '▶'; playing.b.classList.remove('on'); const same = playing.b === b; playing = null; if (same) return; }
+  const a = new Audio(`/api/rooms/${encodeURIComponent(S.open.id)}/messages/${encodeURIComponent(b.dataset.listen)}/audio`);
+  b.textContent = '…'; b.classList.add('on'); playing = { a, b };
+  a.addEventListener('playing', () => { b.textContent = '■'; });
+  const done = () => { if (playing?.a === a) { b.textContent = '▶'; b.classList.remove('on'); playing = null; } };
+  a.addEventListener('ended', done);
+  a.addEventListener('error', () => { done(); b.textContent = '⚠'; b.title = 'Readback is not available right now'; setTimeout(() => { b.textContent = '▶'; }, 3000); });
+  a.play().catch(() => a.dispatchEvent(new Event('error')));
+}, true);
 
 // ------------------------------------------------------------------ routing, layout, boot
 function route(push = false) {

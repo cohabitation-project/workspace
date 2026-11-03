@@ -4,3 +4,4 @@ node_modules/
 logs/
 data/
 __pycache__/
+voice-models/
