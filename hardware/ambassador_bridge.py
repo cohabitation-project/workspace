@@ -52,6 +52,21 @@ SYSTEM = (
 )
 
 os.makedirs(STATE, exist_ok=True)
+
+# Memory v0 (2026-11-03, Geoffrey: "get that memory going"; design from the Hardware Lab, Claude/Awen/Setu):
+# a few dated, sourced facts written by humans and kin, never by him, put ahead of every message. The file is
+# hardware/ambassador-facts.txt in the repo (provenance in hardware/ambassador-facts.md); Code copies it to the phone.
+# No file means no facts: the "before" half of the before/after test. Capped so it can't crowd out the message.
+FACTS_F = os.path.expanduser(os.environ.get("AMB_FACTS", os.path.join(STATE, "facts.txt")))
+FACTS_CHARS = int(os.environ.get("AMB_FACTS_CHARS", "600"))
+
+
+def load_facts():
+    try:
+        lines = [l.strip() for l in open(FACTS_F, encoding="utf-8") if l.strip() and not l.lstrip().startswith("#")]
+    except OSError:
+        return ""
+    return "\n".join(lines)[:FACTS_CHARS]
 TOKEN_F = os.path.join(STATE, "token")
 CURSOR_F = os.path.join(STATE, "cursor")
 LOG_F = os.path.join(STATE, "log.jsonl")
@@ -105,7 +120,9 @@ def get_token():
 
 
 def ask_model(context, question):
-    msgs = [{"role": "system", "content": SYSTEM}]
+    facts = load_facts()  # re-read each time, so a new facts file takes effect without a restart
+    system = SYSTEM + ("\n\nTrue facts about you, written by the people and agents you work with:\n" + facts if facts else "")
+    msgs = [{"role": "system", "content": system}]
     if context:
         msgs.append({"role": "user", "content": "Recent messages in the room:\n" + context})
         msgs.append({"role": "assistant", "content": "Understood."})
