@@ -317,8 +317,10 @@ function tryMove(dx, dy) {
 }
 
 addEventListener('keydown', (e) => {
-  if ($('#gatekeep') || !S.me) { /* overlays handle their own keys */ }
   if (!S.me || $('.overlay')) return;
+  // Typing in a dialog's text box must never move the figure or close the window (Geoffrey, first playtest).
+  const tag = (document.activeElement || {}).tagName;
+  if (tag === 'TEXTAREA' || tag === 'INPUT') return;
   const k = e.key.toLowerCase();
   if ($('#dialog').style.display === 'block' && k === 'escape') { closeDialog(); return; }
   const m = { arrowup: [0, -1], w: [0, -1], arrowdown: [0, 1], s: [0, 1], arrowleft: [-1, 0], a: [-1, 0], arrowright: [1, 0], d: [1, 0] }[k];
