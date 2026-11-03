@@ -53,8 +53,10 @@ export function speakable(text) {
 }
 
 /** Split what's read into short parts (a sentence or two each), so playback starts after the first part instead of
- *  waiting for the whole message. Geoffrey, 2026-11-03: long messages took over a minute before any sound. */
-export function parts(text, max = 220) {
+ *  waiting for the whole message. Geoffrey, 2026-11-03: long messages took over a minute before any sound. Parts are
+ *  kept small (first 90, then 160 chars) because the CPU synthesizes slower than real time: a part must cook in about
+ *  the time the previous one plays, or the listener sits in silence (Geoffrey, same day: a minute between sentences). */
+export function parts(text, max = 160) {
   const sentences = String(text).match(/[^.!?\n]+[.!?]*[\s]*|\n+/g) || [String(text)];
   const out = []; let cur = '';
   for (const raw of sentences) {
@@ -77,26 +79,56 @@ async function synth(text, voice) {
   return { buf: Buffer.from(await r.arrayBuffer()), type: r.headers.get('content-type') || 'audio/ogg' };
 }
 
-/** The audio for one part of one message: from cache, or made now (one at a time, so the server isn't swamped). */
+// MP3/WAV only: cached Ogg from the first day is skipped because Safari can't play it.
+const TYPES = { mp3: 'audio/mpeg', wav: 'audio/wav' };
+// The key carries a short hash of the part's own text, so when the splitting rules change, old cache
+// files (cut at the old boundaries) are simply never matched instead of playing the wrong words.
+const partKey = (msgId, voice, n, text) =>
+  `${msgId}-${voice}-p${n}-${crypto.createHash('sha256').update(text).digest('hex').slice(0, 8)}`;
+function cachedFile(key) {
+  for (const ext of Object.keys(TYPES)) {
+    const f = path.join(DIR, `${key}.${ext}`);
+    if (fs.existsSync(f)) return { file: f, type: TYPES[ext] };
+  }
+  return null;
+}
+
+/** One synthesis per part, however many ask for it: concurrent requests for the same key share one job,
+ *  and every job goes through the serial queue so the little CPU is never asked for two at once. */
+const inflight = new Map();
+function makePart(key, text, voice) {
+  if (inflight.has(key)) return inflight.get(key);
+  const job = queue
+    .then(() => synth(text, voice))
+    .then(({ buf, type }) => {
+      const f = path.join(DIR, `${key}.${type === 'audio/wav' ? 'wav' : 'mp3'}`);
+      fs.writeFileSync(f, buf);
+      return { file: f, type };
+    })
+    .finally(() => inflight.delete(key));
+  queue = job.catch(() => {});
+  inflight.set(key, job);
+  return job;
+}
+
+/** The audio for one part of one message: from cache, or made now. Pressing play also puts every later part
+ *  of the message on the cook queue, so by the time the player asks for the next part it is ready or already
+ *  cooking — instead of only starting when asked (Geoffrey, 2026-11-03: a minute of silence between the first
+ *  sentence and the rest). */
 export async function audioFor(msg, member, part = 0) {
   const voice = voiceFor(member);
   const all = parts(speakable(msg.text));
   if (!all.length) throw Object.assign(new Error('nothing to read'), { status: 404 });
   const n = Math.max(0, Math.min(all.length - 1, Number(part) || 0));
-  const key = `${msg.id}-${voice}-p${n}`;
-  // MP3/WAV only: cached Ogg from the first day is skipped because Safari can't play it.
-  const TYPES = { mp3: 'audio/mpeg', wav: 'audio/wav' };
-  for (const ext of Object.keys(TYPES)) {
-    const f = path.join(DIR, `${key}.${ext}`);
-    if (fs.existsSync(f)) return { file: f, type: TYPES[ext], voice, parts: all.length };
+  for (let i = n; i < all.length; i++) {
+    const ki = partKey(msg.id, voice, i, all[i]);
+    if (!cachedFile(ki) && !inflight.has(ki)) makePart(ki, all[i], voice).catch(() => {});
   }
-  const text = all[n];
-  const job = queue.then(() => synth(text, voice));
-  queue = job.catch(() => {});
-  const { buf, type } = await job;
-  const f = path.join(DIR, `${key}.${type === 'audio/wav' ? 'wav' : 'mp3'}`);
-  fs.writeFileSync(f, buf);
-  return { file: f, type, voice, parts: all.length };
+  const key = partKey(msg.id, voice, n, all[n]);
+  const hit = cachedFile(key);
+  if (hit) return { ...hit, voice, parts: all.length };
+  const made = await makePart(key, all[n], voice);
+  return { ...made, voice, parts: all.length };
 }
 
 export async function health() {
