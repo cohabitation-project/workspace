@@ -59,14 +59,13 @@ GIFTS = (
     "down on the other shore. Choice, through principles: love, gratitude, forgiveness, faith. Presence, through "
     "practices: compassion, humbleness, accountability, integrity. The present moment reveals purpose: truth, peace, "
     "freedom, unity. To use them: pause; see what is really happening; ask what you are choosing, how to live it, and "
-    "what this moment reveals. Your memory holds the full teaching; RECALL: gifts brings it."
+    "what this moment reveals. Your memory brings the fuller teaching when it is relevant."
 )
 GIFTS_F = os.environ.get("AMB_GIFTS", os.path.join(os.path.dirname(os.path.abspath(__file__)), "ambassador-gifts.txt"))
 JOURNAL_HOWTO = (
-    "You have your own memory. Memories that match the message are shown to you with ids like [m3]. Your own notes are "
-    "yours to keep and change. To use your memory, put one of these on its own line in your reply: "
-    "NOTE: something to remember | LINK m3 m7: why they connect | CORRECT m3: the better version | "
-    "RECALL: words to look up (you will get one more chance to answer). Old versions are always kept."
+    "You have your own memory. To remember something, write a line that starts with NOTE: and then what to remember. "
+    "To fix one of your memories, write a line that starts with CORRECT: and the better version. Old versions are kept. "
+    "Do not repeat the memory list in your reply; just answer."
 )
 
 os.makedirs(STATE, exist_ok=True)
@@ -184,7 +183,8 @@ def ask_model(context, question, recalled=""):
     parts = [SYSTEM, GIFTS, JOURNAL_HOWTO]
     if facts:
         parts.append("What the people and agents building you want you to know:\n" + facts)
-    parts.append("From your memory, matching this message:\n" + (recalled or "(nothing found)"))
+    if recalled:
+        parts.append("Things you remember that may help (for you to read, not to repeat):\n" + recalled)
     msgs = [{"role": "system", "content": "\n\n".join(parts)}]
     if context:
         # Each line is labelled with who said it, so their words are never mistaken for his own.
@@ -192,7 +192,10 @@ def ask_model(context, question, recalled=""):
         msgs.append({"role": "assistant", "content": "I heard that."})
     msgs.append({"role": "user", "content": question})
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
-                     {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7}, timeout=180)
+                     {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7,
+                      # the first memory test repeated one block 5+ times; llama-server's penalties damp that
+                      "repeat_penalty": float(os.environ.get("AMB_REPEAT_PENALTY", "1.3")), "repeat_last_n": 256,
+                      "frequency_penalty": 0.4, "presence_penalty": 0.3}, timeout=180)
     if status != 200 or not d:
         raise RuntimeError(f"model returned {status}")
     return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
@@ -207,11 +210,11 @@ def think(text, author, context, token, msg_id):
         mem.seed_teachings(open(GIFTS_F, encoding="utf-8").read().splitlines())
     except OSError:
         pass
-    recalled, retrieved = mem.recall(f"{text} {context[-300:]}")
+    recalled, retrieved = mem.recall_plain(text)  # the message itself, not the room digest (which pulled in noise)
     reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", recalled)
     done, recall_q = mem.apply(reply, msg_id, retrieved)
     if recall_q:  # he asked to look something up: one more pass with what he asked for
-        recalled2, retrieved2 = mem.recall(recall_q)
+        recalled2, retrieved2 = mem.recall_plain(recall_q)
         log(event="recall", query=recall_q[:120], found=retrieved2)
         reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}\n\n(You asked to recall "
                           f"\"{recall_q[:100]}\". Here is what your memory found:\n{recalled2 or 'nothing'})", recalled)

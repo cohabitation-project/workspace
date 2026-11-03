@@ -193,6 +193,50 @@ class Memory:
         extra = f", revised {rec['rev'] - 1}x" if rec["rev"] > 1 else ""
         return f"[{rec['id']} · {who} · {rec['created'][:10]}{extra}]"
 
+    def plain(self, rec):
+        """How a memory is shown to the model: a plain sentence with no ids or brackets. The 135M model copied the
+        bracket format into its replies in the first phone test (2026-11-03), so ids stay inside the system."""
+        day = rec["created"][5:10]
+        kind = rec["kind"]
+        if kind == "own":
+            head = "You noted"
+        elif kind == "experience":
+            head = "Something that happened"
+        elif kind == "library":
+            head = "In the Commons Library"
+        elif kind == "teaching":
+            head = "From the Three Gifts"
+        elif kind == "proposal":
+            head = "You suggested a change"
+        else:
+            head = "You were told"
+        text = re.sub(r"\[m\d+[^\]]*\]", "", rec["text"]).strip()
+        return f"- {head} ({day}): {text[:200]}"
+
+    def recall_plain(self, query, k=2, budget=650):
+        """The packet the small model sees: up to k matches plus one linked memory, as plain sentences."""
+        hits = [r for r in self.search(query, k + 6) if self.get(r)["kind"] != "shared"]
+        seen, lines, used = set(), [], 0
+        for rid in hits:
+            if len(lines) >= k + 2:
+                break
+            rec = self.get(rid)
+            key = rec["text"][:80]
+            if rid in seen or key in {self.get(x)["text"][:80] for x in seen}:  # never the same memory twice
+                continue
+            seen.add(rid)
+            line = self.plain(rec)
+            if used + len(line) > budget:
+                break
+            lines.append(line); used += len(line)
+            for l in self.links_of(rid)[:1]:
+                o = self.get(l["other"])
+                if o and l["other"] not in seen and o["kind"] != "shared":
+                    line = self.plain(o)
+                    if used + len(line) <= budget:
+                        seen.add(l["other"]); lines.append(line); used += len(line)
+        return "\n".join(lines), list(seen)
+
     def recall(self, query, k=3, hops=2, budget=700):
         """The packet for one message: the top matches, plus the records they link to (one hop), labelled."""
         # shared facts are already shown in full with every message, so recall spends its space on everything else
@@ -243,12 +287,23 @@ class Memory:
                     rid = self.correct(mm.group(1).lower(), mm.group(2), "Ambassador", source)
                     if rid:
                         done.append(("correct", mm.group(1).lower(), rid))
+                elif rest:  # no id (what a small model writes): the most relevant of his own notes in front of him
+                    target = next((r for r in retrieved if (self.get(r) or {}).get("kind") == "own"), None)
+                    if target:
+                        self.correct(target, rest, "Ambassador", source)
+                        done.append(("correct", target, target))
+                    else:
+                        rid = self.add(rest, "own", "Ambassador", source)
+                        done.append(("note", rid))
             elif cmd == "RECALL" and rest and recall_q is None:
                 recall_q = rest
         return done, recall_q
 
     def experience(self, author, said, answered, source="", retrieved=()):
-        rid = self.add(f"{author} said to me: {said.strip()[:220]} | I answered: {answered.strip()[:220]}",
+        answered = re.sub(r"\[m\d+[^\]]*\]", "", answered or "")
+        answered = re.sub(r"(?m)^\s*-?\s*(You noted|Something that happened|In the Commons Library|From the Three Gifts|You were told)\b.*$", "", answered)
+        answered = " ".join(answered.split())
+        rid = self.add(f"{author} said to me: {said.strip()[:220]}. I answered: {answered[:220]}",
                        "experience", "memory system", source)
         for r in retrieved:
             self.link(rid, r, "came up together", "memory system")

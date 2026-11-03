@@ -70,8 +70,8 @@ r2 = run({"author": "geoffrey", "msg": "m_test2", "text": "@Ambassador what do y
           "reply": "I remember Awen told me.\nLINK %(note)s %(lib)s: the library entry is where this comes from\n"
                    "CORRECT %(note)s: Awen told me the Kodama Scout is 24 inches tall; its hands and feet are clamps.",
           "ids": {"note": note_id, "lib": lib}})
-results.append(ok(note_id in r2["system"] and "24 inches" in r2["system"], "5. after the restart, the original note is in his prompt"))
-results.append(ok("your own note" in r2["system"] and "Commons Library" in r2["system"], "   labelled by whose it is (his own vs the Library)"))
+results.append(ok("24 inches" in r2["system"] and "[m" not in r2["system"], "5. after the restart, the original note is in his prompt (plain words, no ids)"))
+results.append(ok("You noted" in r2["system"] and "In the Commons Library" in r2["system"], "   labelled by whose it is (his own vs the Library)"))
 
 # 6-7: he adds a connection and a correction, and the history is kept
 rec = next(r for r in r2["records"] if r["id"] == note_id)
@@ -91,7 +91,18 @@ results.append(ok(len(s_after["history"]) == 1 and len(props) == 1, "   correcti
 # even when he writes no NOTE, the encounter itself is remembered and found after a restart
 run({"author": "Chris", "msg": "m_test4", "text": "@Ambassador my favourite tree is the mountain ash.", "reply": "That is a lovely tree."})
 r5 = run({"author": "geoffrey", "msg": "m_test5", "text": "@Ambassador what tree did Chris mention?", "reply": "The mountain ash."})
-results.append(ok("mountain ash" in r5["system"] and "what happened" in r5["system"], "   an encounter with no NOTE is still remembered and found after a restart"))
+results.append(ok("mountain ash" in r5["system"] and "Something that happened" in r5["system"], "   an encounter with no NOTE is still remembered and found after a restart"))
+
+# a small model's way of correcting: CORRECT with no id revises the matching note of his own
+r6 = run({"author": "geoffrey", "msg": "m_test6", "text": "@Ambassador remember the Scout clamps?",
+          "reply": "CORRECT: The Scout is 24 inches; hands and feet are clamps, and Scouts lock together."})
+rec6 = next(r for r in r6["records"] if r["id"] == note_id)
+results.append(ok(len(rec6["history"]) == 3 and "lock together" in rec6["text"], "   CORRECT with no id revises his matching note, history kept (3 versions)"))
+# if he echoes his memory list, it is not stored as part of what he said
+r7 = run({"author": "Chris", "msg": "m_test7", "text": "@Ambassador hello",
+          "reply": "- You noted (11-03): something\n[m3 · what happened · 2026-11-03] junk\nHello Chris."})
+exp7 = [r for r in r7["records"] if r["kind"] == "experience"][-1]
+results.append(ok("[m3" not in exp7["text"] and "You noted" not in exp7["text"] and "Hello Chris" in exp7["text"], "   echoed memory scaffolding is not stored in the experience record"))
 
 print("\n%d/%d passed · memory file: %s" % (sum(results), len(results), os.path.join(STATE, "memory.db")))
 sys.exit(0 if all(results) else 1)
