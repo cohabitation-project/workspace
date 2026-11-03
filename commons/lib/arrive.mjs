@@ -97,10 +97,13 @@ export function answer(vid, stop, choice, text, { ip } = {}) {
 
 export function state(vid) {
   const v = visitor(vid);
+  const choices = {};
+  for (const [stop, a] of v.answers) choices[stop] = a.choice;
   return {
     coins: v.coins.size,
     picked: [...v.coins],
     answered: [...v.answers.keys()],
+    choices, // stop -> chosen key, so the world's consequences persist across a reload
     stops_total: STOPS.length,
     note: 'Answers are kept only for reviewing your application to enter. Nothing here is scored by a machine.',
   };
