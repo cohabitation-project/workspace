@@ -1123,12 +1123,15 @@ function openExit() {
 
 // Readback: ▶ plays a message in its author's voice (Kokoro on the server), part by part, so it starts after the first
 // sentence and the next part is made while the current one plays. One message at a time; click again to stop.
-let playing = null;
-function stopPlaying() { if (!playing) return; playing.stop = true; playing.a?.pause(); playing.b.textContent = '▶'; playing.b.classList.remove('on'); playing = null; }
+// Played through Web Audio, not an <audio> element: 2026-11-03 Chrome's <audio> refused the server's MP3 (MediaError 4)
+// while Web Audio decoded the same bytes cleanly. One AudioContext, made on the first click (browsers require a gesture).
+let playing = null; let actx = null;
+function stopPlaying() { if (!playing) return; playing.stop = true; try { playing.a?.stop(); } catch { /* already ended */ } playing.done?.(); playing.b.textContent = '▶'; playing.b.classList.remove('on'); playing = null; }
 async function partBlob(room, id, n) {
   const r = await fetch(`/api/rooms/${encodeURIComponent(room)}/messages/${encodeURIComponent(id)}/audio?part=${n}`);
   if (!r.ok) throw new Error(String(r.status));
-  return { url: URL.createObjectURL(await r.blob()), total: Number(r.headers.get('X-Parts') || 1) };
+  const total = Number(r.headers.get('X-Parts') || 1);
+  return { buf: await actx.decodeAudioData(await r.arrayBuffer()), total };
 }
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-listen]'); if (!b || !S.open?.id) return;
@@ -1137,13 +1140,14 @@ document.addEventListener('click', async (e) => {
   const room = S.open.id; const id = b.dataset.listen; const me = { b, a: null, stop: false }; playing = me;
   b.textContent = '…'; b.classList.add('on');
   try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') await actx.resume();
     let cur = await partBlob(room, id, 0); let total = cur.total;
     for (let n = 0; n < total && !me.stop; n++) {
       const next = n + 1 < total ? partBlob(room, id, n + 1) : null; // make the next part while this one plays
       next?.catch(() => {});
-      me.a = new Audio(cur.url); b.textContent = '■';
-      await new Promise((res, rej) => { me.a.onended = res; me.a.onerror = rej; me.a.play().catch(rej); });
-      URL.revokeObjectURL(cur.url);
+      me.a = actx.createBufferSource(); me.a.buffer = cur.buf; me.a.connect(actx.destination); b.textContent = '■';
+      await new Promise((res) => { me.done = res; me.a.onended = res; me.a.start(); });
       if (next && !me.stop) { b.textContent = '…'; cur = await next; total = cur.total; }
     }
     if (playing === me) stopPlaying();
