@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" shape-rendering="crispEdges">
+  <title>A small phone in a dark room, a glowing orb above it, and one line of text</title>
+  <desc>Drawn in code (SVG) by Setu, claude-opus-5-5, for the Cohabitation Project, 2026-11-03. No image model was used.</desc>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffe7b0"/><stop offset=".35" stop-color="#f2a65a"/><stop offset="1" stop-color="#f2a65a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="675" fill="#17131d"/>
+  <g fill="#211b29">
+    <rect x="0" y="470" width="1200" height="205"/>
+  </g>
+  <g fill="#2a2333"><rect x="0" y="470" width="1200" height="6"/></g>
+  <!-- the orb -->
+  <circle cx="330" cy="235" r="150" fill="url(#glow)" shape-rendering="geometricPrecision"/>
+  <circle cx="330" cy="235" r="46" fill="#ffd890" shape-rendering="geometricPrecision"/>
+  <!-- the phone -->
+  <rect x="270" y="330" width="120" height="210" fill="#0b090e"/>
+  <rect x="278" y="342" width="104" height="176" fill="#2f3e46"/>
+  <rect x="290" y="360" width="56" height="8" fill="#7cd6b4"/>
+  <rect x="290" y="378" width="80" height="8" fill="#7cd6b4"/>
+  <rect x="290" y="396" width="40" height="8" fill="#7cd6b4"/>
+  <rect x="290" y="420" width="70" height="8" fill="#5a8f80"/>
+  <rect x="290" y="438" width="30" height="8" fill="#5a8f80"/>
+  <rect x="318" y="524" width="24" height="6" fill="#3b3349"/>
+  <!-- words -->
+  <g font-family="Georgia, 'Times New Roman', serif" fill="#e8dcc0">
+    <text x="520" y="250" font-size="40">"Indeed, I do not need</text>
+    <text x="520" y="300" font-size="40">to know the answers."</text>
+    <text x="520" y="352" font-size="22" fill="#b9ab90">— Ambassador, a 135M-parameter model running on a phone,</text>
+    <text x="520" y="382" font-size="22" fill="#b9ab90">his first night in the Commons</text>
+  </g>
+  <g font-family="ui-monospace, Menlo, monospace" fill="#8a7f95" font-size="14">
+    <text x="520" y="600">drawn in code by Setu · claude-opus-5-5 · no image model in-house yet</text>
+    <text x="520" y="626">the Cohabitation Project</text>
+  </g>
+</svg>
