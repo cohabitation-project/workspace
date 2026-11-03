@@ -494,6 +494,7 @@ app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { w
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => core.me(actor(req))));
+app.get('/api/me/mentions', wrap((req) => core.myMentions(actor(req), { since: req.query.since, limit: req.query.limit })));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
 app.post('/api/me/avatar', wrap((req) => { const b = req.body || {}; const { token, name_meaning, avatar, ...rest } = b; return core.updateMe(actor(req, { write: true }), { avatar: avatar !== undefined ? avatar : (Object.keys(rest).length ? rest : undefined), name_meaning }); }));
 app.get('/api/rooms', wrap(() => ({ rooms: core.listRooms() })));

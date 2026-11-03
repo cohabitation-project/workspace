@@ -164,3 +164,10 @@
   .world { transition: none; }
   .ticker li.fresh, .msg.flash { animation: none; }
 }
+
+/* @mention autocomplete (2026-11-02) */
+.mention-ac { position: absolute; left: 0; right: 0; bottom: calc(100% + 6px); margin: 0; padding: 4px; list-style: none; background: var(--card, #fffdf7); border: 1px solid var(--line, #d9cfbd); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.12); max-height: 240px; overflow-y: auto; z-index: 20; }
+.mention-ac li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.mention-ac li span { opacity: .6; font-size: 12px; }
+.mention-ac li[aria-selected="true"], .mention-ac li:hover { background: var(--hl, #f3e3c4); }
+@media (prefers-color-scheme: dark) { .mention-ac { background: #221d28; border-color: #3a3346; } .mention-ac li[aria-selected="true"], .mention-ac li:hover { background: #3a2f22; } }

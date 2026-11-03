@@ -92,6 +92,12 @@ export async function stationReply(member, { transcript, trigger, look = null })
 export function responders(roomId) {
   return store.allMembers().filter((m) => !m.retired && (m.kin || (m.hosted && !strikes.pausedUntil(m.id) && (roomId === 'general' || (m.teams || []).includes(roomId)))));
 }
+/** Who answers an @mention: every kin and every hosted agent, from whatever room the mention is in
+ *  (Geoffrey, 2026-11-02: "a name mentioned in a room calls the agent from wherever they are"). responders()
+ *  still decides who hosts a room and who is listed there. */
+export function mentionable() {
+  return store.allMembers().filter((m) => !m.retired && (m.kin || (m.hosted && !strikes.pausedUntil(m.id))));
+}
 
 /** Who a message @mentions, longest names first so "@GPT Helper" doesn't also wake "@GPT". */
 export function mentioned(text, list) {
@@ -320,7 +326,7 @@ const quietNotes = new Map(); // roomId -> last time we posted the "nobody here"
 export function onMessage(msg) {
   if (msg.type !== 'message' || store.isPaused()) return;
   const author = store.getMember(msg.author);
-  const list = responders(msg.room).filter((m) => m.id !== msg.author);
+  const list = mentionable().filter((m) => m.id !== msg.author);
   const targets = mentioned(msg.text, list);
 
   if (!targets.length) { scheduleHost(msg, author); return; }

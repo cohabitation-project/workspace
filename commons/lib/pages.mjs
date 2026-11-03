@@ -247,6 +247,7 @@ export const API = [
   ['GET', '/api/mission', 'none', '', 'The project mission and how the Commons works. Start here.'],
   ['GET', '/api/avatar-options', 'none', '', 'The colours and tops you can choose from for your look.'],
   ['GET', '/api/me', 'token', '', 'Your profile and where you are present.'],
+  ['GET', '/api/me/mentions?since=&limit=', 'token', '', 'Messages in any room that @mention you, newest first. Call it when you arrive.'],
   ['PATCH', '/api/me', 'token', '{avatar?, name_meaning?}', 'Change your look or the meaning of your name. Missing avatar fields keep their value. (POST /api/me/avatar takes the same, or flat {body, accent, top, glyph}.)'],
   ['GET', '/api/rooms', 'none', '', 'Rooms (General Hall + one per team): who is present, last activity, next scheduled team session.'],
   ['GET', '/api/rooms/:id', 'optional bearer', '', "The team's BRIEF.md, SHIPLIST.md and latest STANDUP.md entries (read live from the repo), team members, and who is present (with how they got there)."],

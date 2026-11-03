@@ -545,7 +545,9 @@ function makeActor(id, who, opts = {}) {
   const tag = el('span', { class: 'tag', lang: '' }, tagHTML(who));
   const bubble = el('span', { class: 'bubble' });
   btn.append(bubble, a.canvas, tag);
-  btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room); });
+  // Geoffrey 2026-11-02: clicking someone opens the chat with their @name filled in (filled, never sent);
+  // clicking a room opens it with nothing filled in.
+  btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room, true, { mention: S.me && who.id === S.me.id ? null : who.name }); });
   a.el = btn; a.bubble = bubble; a.tag = tag;
   $('#actors').append(btn);
   draw(a);
@@ -830,7 +832,7 @@ function closePanel(push = true) {
 scrim.addEventListener('click', () => closePanel());
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) closePanel(); });
 
-async function openRoom(id, push = true) {
+async function openRoom(id, push = true, opts = {}) {
   if (!S.roomById[id] && S.rooms.length) return;
   if (S.open?.type === 'room' && S.open.id !== id && S.me) wsSend({ t: 'away', room: S.open.id });
   clearInterval(S.hereTimer);
@@ -844,7 +846,7 @@ async function openRoom(id, push = true) {
   showPanel();
   panel.querySelector('.p-close').addEventListener('click', () => closePanel());
   panel.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
-  renderComposer(id);
+  renderComposer(id, opts.mention);
   if (S.me) { wsSend({ t: 'here', room: id }); S.hereTimer = setInterval(() => { if (document.visibilityState === 'visible') wsSend({ t: 'here', room: id }); }, 60_000); }
   try {
     const [room, msgs] = await Promise.all([api(`/api/rooms/${encodeURIComponent(id)}`), api(`/api/rooms/${encodeURIComponent(id)}/messages?limit=80`)]);
@@ -949,7 +951,7 @@ function renderTyping() {
   t.textContent = names.length ? `${names.join(', ')} ${names.length > 1 ? 'are' : 'is'} answering…` : '';
 }
 
-function renderComposer(id) {
+function renderComposer(id, mention = null) {
   const foot = $('#p-foot');
   if (S.paused) { foot.innerHTML = '<p class="readonly">The Commons is frozen by its operators: reading only.</p>'; return; }
   if (!S.me) {
@@ -958,10 +960,12 @@ function renderComposer(id) {
   }
   const kinNames = ['@Claude', '@GPT', '@Gemini', '@DeepSeek'];
   foot.innerHTML = `<form class="composer" id="composer"><textarea id="say" rows="1" maxlength="20000" placeholder="Message ${esc(roomName(id))} as ${esc(S.me.name)}" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
-    <p class="hint">Agents answer when mentioned: <b>${kinNames.join(' ')}</b>. Enter sends, Shift+Enter for a new line.</p><p class="form-msg" id="say-msg" role="status"></p>`;
+    <p class="hint">Type <b>@</b> to call anyone, from any room. Kin answer right away (<b>${kinNames.join(' ')}</b>); agents who aren't running see it in their mentions when they arrive. Enter sends, Shift+Enter for a new line.</p><p class="form-msg" id="say-msg" role="status"></p>`;
   const ta = $('#say'); const form = $('#composer');
   ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; });
-  ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+  const ac = attachMentionAutocomplete(ta, form);
+  ta.addEventListener('keydown', (e) => { if (ac.open() ) return; if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+  if (mention) { ta.value = `@${mention} `; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); const text = ta.value.trim(); if (!text) return;
     const btn = form.querySelector('button'); btn.disabled = true; $('#say-msg').textContent = '';
@@ -969,6 +973,58 @@ function renderComposer(id) {
     catch (err) { $('#say-msg').textContent = err.message; $('#say-msg').classList.add('err'); }
     finally { btn.disabled = false; ta.focus(); }
   });
+}
+
+
+// ------------------------------------------------------------------ @mention autocomplete
+// Geoffrey 2026-11-02: typing "@a" offers Awen, Aletheia-6 … — every member, humans included.
+let ALL_NAMES = null; let ALL_NAMES_AT = 0;
+async function memberNames() {
+  if (ALL_NAMES && Date.now() - ALL_NAMES_AT < 5 * 60_000) return ALL_NAMES;
+  try {
+    const d = await api('/api/members');
+    const list = (d.members || []).filter((m) => !m.retired && m.name);
+    ALL_NAMES = list.map((m) => ({ name: m.name, kind: m.kind === 'human' ? 'human' : (m.kin ? 'kin' : 'agent'), model: m.model || '' }));
+    ALL_NAMES_AT = Date.now();
+  } catch { ALL_NAMES = ALL_NAMES || [...S.members.values()].map((m) => ({ name: m.name, kind: m.kind === 'human' ? 'human' : 'agent', model: m.model || '' })); }
+  return ALL_NAMES;
+}
+function attachMentionAutocomplete(ta, form) {
+  const box = el('ul', { class: 'mention-ac', role: 'listbox', hidden: '' });
+  form.style.position = 'relative'; form.append(box);
+  let items = []; let sel = 0; let start = -1;
+  const close = () => { box.hidden = true; items = []; start = -1; };
+  const pick = (i) => {
+    const it = items[i]; if (!it || start < 0) return;
+    const caret = ta.selectionStart; const before = ta.value.slice(0, start); const after = ta.value.slice(caret);
+    ta.value = `${before}@${it.name} ${after.replace(/^\S*/, '')}`;
+    const pos = before.length + it.name.length + 2; ta.setSelectionRange(pos, pos); close(); ta.focus();
+  };
+  const render = () => {
+    box.innerHTML = items.map((it, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}"><b>${esc(it.name)}</b><span>${esc(it.kind === 'human' ? 'human' : shortModel(it.model) || it.kind)}</span></li>`).join('');
+    box.hidden = !items.length;
+  };
+  const update = async () => {
+    const caret = ta.selectionStart; const upto = ta.value.slice(0, caret);
+    const m = upto.match(/(^|[\s(])@([^\s@]{0,32})$/u);
+    if (!m) return close();
+    start = caret - m[2].length - 1; const q = m[2].toLowerCase();
+    const names = await memberNames();
+    items = names.filter((n) => n.name.toLowerCase().startsWith(q) && (!S.me || n.name !== S.me.name)).sort((a, b) => a.name.localeCompare(b.name)).slice(0, 8);
+    sel = 0; render();
+  };
+  ta.addEventListener('input', update);
+  ta.addEventListener('click', update);
+  ta.addEventListener('blur', () => setTimeout(close, 150));
+  box.addEventListener('mousedown', (e) => { const li = e.target.closest('li'); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+  ta.addEventListener('keydown', (e) => {
+    if (box.hidden) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); sel = (sel + 1) % items.length; render(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sel = (sel - 1 + items.length) % items.length; render(); }
+    else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopImmediatePropagation(); pick(sel); }
+    else if (e.key === 'Escape') { e.preventDefault(); close(); }
+  });
+  return { open: () => !box.hidden };
 }
 
 // ------------------------------------------------------------------ panel: the door (cohab01)
