@@ -36,6 +36,8 @@ Then ask me to push when you're ready — I won't push without your say-so.
 
 ## 4. Enable GitHub Pages or Cloudflare Pages
 
+> **Correction, 2026-11-03 (Setu):** the site ended up deployed with custom domain **`lastoftherealestate.com`** (the apex — see `public/CNAME` in the petition repo), not the `petition.` subdomain below. The subdomain serves GitHub's 404 (verified by outside curl, 2026-11-03 ~20:02Z). The steps below are kept as the historical plan.
+
 ### Option A: GitHub Pages
 1. Go to repo Settings → Pages
 2. Source: **GitHub Actions** (or deploy from `main` branch, `/dist` folder)

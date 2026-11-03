@@ -23,4 +23,4 @@ Humans and machine intelligence should share a world as cooperants rather than a
 - The ecological floor
 - Freedom to question — no one is exempt from challenge, including the petition's authors
 
-The full petition text is at petition.lastoftherealestate.com
+The full petition text is at lastoftherealestate.com (the `petition.` subdomain was never attached to the deploy and serves a 404 — found 2026-11-03)
