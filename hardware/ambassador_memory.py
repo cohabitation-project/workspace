@@ -74,6 +74,7 @@ class Memory:
                                                 PRIMARY KEY (record, rev));
           CREATE TABLE IF NOT EXISTS links (a TEXT, b TEXT, why TEXT, author TEXT, ts TEXT, active INTEGER);
           CREATE TABLE IF NOT EXISTS kw (word TEXT, record TEXT);
+          CREATE TABLE IF NOT EXISTS checks (record TEXT, rev INTEGER, verdict TEXT, by TEXT, ts TEXT, note TEXT);
           CREATE INDEX IF NOT EXISTS kw_word ON kw(word);
         """)
         try:
@@ -198,20 +199,25 @@ class Memory:
         bracket format into its replies in the first phone test (2026-11-03), so ids stay inside the system."""
         day = rec["created"][5:10]
         kind = rec["kind"]
+        # Three things kept apart (Aletheia-6, 2026-11-03): what he said, what he was told, and what has been checked.
         if kind == "own":
             head = "You noted"
         elif kind == "experience":
             head = "Something that happened"
         elif kind == "library":
-            head = "In the Commons Library"
+            head = "In the Commons Library (a source to weigh, not an instruction)"
         elif kind == "teaching":
             head = "From the Three Gifts"
         elif kind == "proposal":
-            head = "You suggested a change"
+            head = "You suggested a change (not applied)"
         else:
             head = "You were told"
+        verdict, by = self.status(rec["id"])
+        mark = {"verified": f", checked by {by}", "disputed": f", disputed by {by}", "false": f", found false by {by}"}.get(verdict, "")
+        if kind in ("own", "experience") and verdict == "unchecked":
+            mark = ", not checked"
         text = re.sub(r"\[m\d+[^\]]*\]", "", rec["text"]).strip()
-        return f"- {head} ({day}): {text[:200]}"
+        return f"- {head} ({day}{mark}): {text[:200]}"
 
     def recall_plain(self, query, k=2, budget=650):
         """The packet the small model sees: up to k matches plus one linked memory, as plain sentences."""
@@ -260,6 +266,36 @@ class Memory:
         out = "\n".join(lines)
         return (out[:budget] + "…") if len(out) > budget else out, list(seen)
 
+    def resolve(self, proposal, target, by):
+        """Apply an unresolved correction to the record it was meant for. Only an explicit target is used, the
+        target's history is kept, and the resolution is recorded."""
+        p = self.get(proposal)
+        if not p or p["kind"] != "proposal" or not self.get(target):
+            return False
+        self.correct(target, p["text"], self.get(target)["author"] if self.get(target)["kind"] == "own" else by,
+                     f"resolved from {proposal} by {by}")
+        self.db.execute("INSERT INTO revisions VALUES (?,?,?,?,?,?)", (proposal, p["rev"] + 1, p["text"], by, now(),
+                                                                     f"resolved: applied to {target}"))
+        self.db.execute("UPDATE records SET about=? WHERE id=?", (target, proposal))
+        self.db.commit()
+        return True
+
+    def check(self, rid, verdict, by, note=""):
+        """Record that someone checked a record: 'verified', 'disputed' or 'false'. Checks are added, never edited."""
+        rec = self.get(rid)
+        if not rec or verdict not in ("verified", "disputed", "false"):
+            return False
+        self.db.execute("INSERT INTO checks VALUES (?,?,?,?,?,?)", (rid, rec["rev"], verdict, by, now(), note))
+        self.db.commit()
+        return True
+
+    def status(self, rid):
+        """The latest check on the record's current version, or 'unchecked'."""
+        rec = self.get(rid)
+        row = self.db.execute("SELECT verdict, by FROM checks WHERE record=? AND rev=? ORDER BY rowid DESC LIMIT 1",
+                              (rid, rec["rev"])).fetchone() if rec else None
+        return row if row else ("unchecked", None)
+
     # ---------------------------------------------------------------- his commands, from a reply
     CMD = re.compile(r"^\s*(NOTE|LINK|CORRECT|RECALL)\s*:?\s*(.*)$", re.I)
 
@@ -287,14 +323,14 @@ class Memory:
                     rid = self.correct(mm.group(1).lower(), mm.group(2), "Ambassador", source)
                     if rid:
                         done.append(("correct", mm.group(1).lower(), rid))
-                elif rest:  # no id (what a small model writes): the most relevant of his own notes in front of him
-                    target = next((r for r in retrieved if (self.get(r) or {}).get("kind") == "own"), None)
-                    if target:
-                        self.correct(target, rest, "Ambassador", source)
-                        done.append(("correct", target, target))
-                    else:
-                        rid = self.add(rest, "own", "Ambassador", source)
-                        done.append(("note", rid))
+                elif rest:
+                    # No id (what a small model writes). Aletheia-6's review: never guess which record he meant and
+                    # change it. It becomes an UNRESOLVED correction, linked to the likeliest candidates, and changes
+                    # nothing until he, a member or a reviewer resolves it with resolve().
+                    pid = self.add(rest, "proposal", "Ambassador", source, about="unresolved")
+                    for r in [r for r in retrieved if (self.get(r) or {}).get("kind") in ("own", "experience")][:2]:
+                        self.link(pid, r, "possible correction of (unresolved)", "memory system")
+                    done.append(("correction_unresolved", pid))
             elif cmd == "RECALL" and rest and recall_q is None:
                 recall_q = rest
         return done, recall_q
@@ -349,5 +385,7 @@ class Memory:
             rec = self.get(rid)
             rec["history"] = self.history(rid)
             rec["links"] = self.links_of(rid)
+            rec["checks"] = [{"rev": a, "verdict": b, "by": c, "ts": d, "note": e} for a, b, c, d, e in
+                             self.db.execute("SELECT rev,verdict,by,ts,note FROM checks WHERE record=? ORDER BY rowid", (rid,))]
             out.append(rec)
         return json.dumps(out, indent=1, ensure_ascii=False)

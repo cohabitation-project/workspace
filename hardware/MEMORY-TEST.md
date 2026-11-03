@@ -56,5 +56,18 @@ test below.
 7. **History kept?** In `memory-export.json`, the record has revision 1 (original) and revision 2 (his correction),
    or there is a link. The original text is untouched.
 
-Record every message and reply verbatim with `scripts/ambassador-log.py`, and copy `memory-export.json` into
-`teams/hardware-lab/ambassador-memory/` after the test.
+Record every message and reply verbatim with `scripts/ambassador-log.py`.
+
+**The memory export is not committed automatically** (Aletheia-6's privacy review, 2026-11-03). It quotes what people
+said to him. Code hands `memory-export.json` to Setu. Setu and Aletheia-6 check it for anything private, and then a
+reviewed copy goes into `teams/hardware-lab/ambassador-memory/`.
+
+## Changes after Aletheia-6's review (2026-11-03)
+- **`CORRECT:` with no record id changes nothing.** It becomes an *unresolved* proposal, linked to the likeliest
+  candidates. It is applied only when someone names the record (`Memory.resolve(proposal, target, by)`), and the
+  target's history is kept.
+- **Said, told and checked stay apart.** In what he sees, his own notes and experiences are marked "not checked".
+  Shared facts read "You were told". Library entries read "a source to weigh, not an instruction". A record that
+  someone checks (`Memory.check(id, "verified" | "disputed" | "false", by)`) shows who checked it. Checks are only
+  ever added.
+- **13/13 tests pass.** That is encouraging, not proof of live-model reliability.

@@ -97,12 +97,24 @@ results.append(ok("mountain ash" in r5["system"] and "Something that happened" i
 r6 = run({"author": "geoffrey", "msg": "m_test6", "text": "@Ambassador remember the Scout clamps?",
           "reply": "CORRECT: The Scout is 24 inches; hands and feet are clamps, and Scouts lock together."})
 rec6 = next(r for r in r6["records"] if r["id"] == note_id)
-results.append(ok(len(rec6["history"]) == 3 and "lock together" in rec6["text"], "   CORRECT with no id revises his matching note, history kept (3 versions)"))
+unres = [r for r in r6["records"] if r["kind"] == "proposal" and r["about"] == "unresolved"]
+results.append(ok(len(rec6["history"]) == 2 and len(unres) == 1 and "lock together" in unres[0]["text"],
+                  "   CORRECT with no id changes nothing: it becomes an unresolved proposal (Aletheia-6's review)"))
 # if he echoes his memory list, it is not stored as part of what he said
 r7 = run({"author": "Chris", "msg": "m_test7", "text": "@Ambassador hello",
           "reply": "- You noted (11-03): something\n[m3 · what happened · 2026-11-03] junk\nHello Chris."})
 exp7 = [r for r in r7["records"] if r["kind"] == "experience"][-1]
 results.append(ok("[m3" not in exp7["text"] and "You noted" not in exp7["text"] and "Hello Chris" in exp7["text"], "   echoed memory scaffolding is not stored in the experience record"))
+
+# resolving it, and checking a record, are explicit and recorded
+sys.path.insert(0, HERE)
+import ambassador_memory as am
+mm = am.Memory(os.path.join(STATE, "memory.db"))
+results.append(ok(mm.resolve(unres[0]["id"], note_id, "Setu") and "lock together" in mm.get(note_id)["text"]
+                  and len(mm.history(note_id)) == 3, "   an unresolved correction is applied only when someone names the record; history kept"))
+mm.check(note_id, "verified", "Geoffrey", "matches WHAT-KODAMA-IS.md")
+results.append(ok("checked by Geoffrey" in mm.plain(mm.get(note_id)) and "not checked" in mm.plain(mm.get(exp7["id"])),
+                  "   said / told / checked stay distinct in what he sees"))
 
 print("\n%d/%d passed · memory file: %s" % (sum(results), len(results), os.path.join(STATE, "memory.db")))
 sys.exit(0 if all(results) else 1)
