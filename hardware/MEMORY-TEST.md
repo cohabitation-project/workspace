@@ -40,7 +40,7 @@ test below.
 
 ## Install (Code, on the Mac with the phone)
 1. `git pull`.
-2. Copy `hardware/ambassador_bridge.py`, `hardware/ambassador_memory.py` and `hardware/ambassador-facts.txt` to the
+2. Copy `hardware/ambassador_bridge.py`, `hardware/ambassador_memory.py`, `hardware/ambassador-gifts.txt` and `hardware/ambassador-facts.txt` to the
    phone. All three go in the same folder as the bridge, except the facts file, which goes to `~/.ambassador/facts.txt`.
 3. Restart **only the bridge**. Keep `~/.ambassador/` (token, cursor) and leave llama-server at -c 2048.
 4. Check: `ls ~/.ambassador/` shows `memory.db` after his first reply.
