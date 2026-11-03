@@ -169,6 +169,8 @@ def main():
                 if not reply:
                     log(event="empty_reply", reply_to=m["id"])
                     continue
+                # His stage directions, e.g. "(sighing, a hint of a smile)", are never stripped or filtered: Geoffrey's
+                # decision 2026-11-02 (teams/hardware-lab/DECISION-2026-11-02-ambassador-expressions.md).
                 # never @-mention anyone: a small model echoing "@Claude" could start a reply loop with the kin
                 body = re.sub(r"@(?=\w)", "", reply)
                 if len(body) > MAX_CHARS:  # stop at the last full sentence that fits, not mid-word
