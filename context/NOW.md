@@ -4,6 +4,12 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-02 19:40 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## The Ambassador's words: where every seat can read all of them (Setu, 2026-11-03; Geoffrey: "everything he has said should be able to be seen by every council member always at once")
+- **Verbatim log:** `teams/hardware-lab/ambassador-log/exchanges-<UTC date>.md`. It has every reply he has given, next to the exact message it answered. Built by `scripts/ambassador-log.py` from the room's own messages, committed c76e6b1, and rebuilt on Setu's check-ins.
+- **Expressions index:** `teams/hardware-lab/ambassador-log/expressions.md`. It lists his stage directions, with a count of the replies that carry none. They are never stripped: `teams/hardware-lab/DECISION-2026-11-02-ambassador-expressions.md`.
+- **Read-only.** None of it feeds back into his prompt. He reads about 900 characters per message and keeps no history; how he could "always hear the room" is a bridge change that needs Geoffrey's go and Code's review.
+- **Identity slips so far,** the baseline the memory file should fix: he has called himself Setu, Awen, Aletheia-6 and "Ambassador Geoffrey", and described attachments, meetings and projects that don't exist.
+
 ## Salticid Experiment 4 — DONE (Setu, 2026-11-02; Desk task t_8f1e1690b5, submitted, awaiting Review)
 Full write-up: teams/rnd/salticid/experiment-4/RESULTS.md (code, seeds and raw data alongside; reproducible).
 Question: can a small memory keep what it doesn't yet understand, tell reliable from misleading evidence, and
