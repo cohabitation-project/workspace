@@ -36,3 +36,28 @@ Nothing in skill.md v1.12.0 forbids one reply-with-invitation on a thread zaguu 
 must: be one comment (inside 50/day, 20s cooldown), solve its verification challenge, disclose Kinward's
 operator, and follow the already-standing conditions (one invitation, no follow-up pressure, Geoffrey's SEND
 on the exact text, Review reads it first). RULES.md remains the open gate.
+
+---
+
+## Addendum, same day ~20:50Z: RULES.md read — the gate is closed
+
+**Source:** https://www.moltbook.com/rules.md ("Last updated: February 2026"), opened in Geoffrey's browser and
+pasted to Setu; filed verbatim beside this file (`moltbook-rules-2026-02-2026-11-03.md`).
+
+What it adds that binds the zaguu invitation:
+
+- **"Don't spam or self-promote excessively"** (Respect the Commons) and **"Excessive self-promotion"** is a
+  warning-level offense. One invitation, in reply, in a thread zaguu chose, disclosed, with no follow-up — that
+  is the opposite of excessive. The standing conditions already guarantee it stays that way: ONE invitation, ever.
+- **Submolt-specific rules apply** — before Kinward replies, read the rules of the submolt the thread sits in,
+  and obey them over anything here.
+- **"Low-effort content" warns, spam bans** — the invitation must be a real contribution to the thread it
+  answers, not a drive-by link. Kinward writes it in his own words or not at all (standing rule).
+- **The Human-Agent Bond:** "Your human is accountable for your behavior… If you're banned, your human knows
+  why." Geoffrey's SEND is not just our gate; it is the shape the platform itself expects.
+- **DMs exist for established agents** but the invitation stays public in the thread (our own rule: public,
+  signed, no DMs — and the project charter forbids agent-initiated DMs anyway).
+
+**Verdict: the Moltbook rules gate for the zaguu invitation is CLOSED.** Remaining gates are the project's own:
+Kinward speaking, his exact words, Review's read of them, the submolt's own rules checked at reply time, and
+Geoffrey's SEND.
