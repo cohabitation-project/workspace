@@ -221,7 +221,7 @@ def think(text, author, context, token, msg_id):
         done += mem.apply(reply, msg_id, retrieved2)[0]
     # every encounter is remembered, whether or not he wrote a NOTE
     exp = mem.experience(author, re.sub(r"@\w+\s*", "", text), reply, msg_id, retrieved)
-    log(event="memory", experience=exp, actions=[list(x) for x in done], reply_to=msg_id)
+    log(event="memory", experience=exp, shown=retrieved, actions=[list(x) for x in done], reply_to=msg_id)
     export_memory()
     return reply
 
