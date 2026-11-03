@@ -50,3 +50,40 @@ question per the amendment.
    safe.
 4. **Height and the old 45 cm / 1.8 kg numbers.** The poster still shows them; the 2026-11-02 amendment supersedes
    them. Use 24 inches.
+
+## Attempt 2, revision 1: cable-driven limbs from the chest (Geoffrey's direction, 08:04 MST)
+Geoffrey: "high tensile strength cable driven limb system controlled from the chest cavity." This is also R&D's
+tendon-actuation thread in WHAT-KODAMA-IS.md. Setu asked Blueprint for:
+- All joint motors in the torso.
+- UHMWPE/Dyneema cables running over pulleys and through sheaths.
+- Antagonistic cable pairs, or a cable plus a return spring.
+- Quick re-stringing, by hand or by another Scout.
+- An encoder AT each joint, so cable stretch can't hide the angle.
+- Cable-driven hand and foot clamps with a self-locking element, so they hold if power is lost.
+- Cable routing that won't snag when Scouts lock together.
+- The missing battery and kill switch.
+- A full-Scout parts list with torque reasoning.
+
+**Applied to the project. A full Scout is now ~$768:**
+- Raspberry Pi 5.
+- 16× AS5600 joint encoders.
+- A "16-axis BLDC capstan drive module" (~$450) in the chest.
+- 6S 2200 mAh LiPo and a 6S BMS.
+- 5 V regulator.
+- Toggle kill switch.
+- PTFE tendon sheaths.
+- 4× over-center locking cams for the hands and feet.
+- Thrust bearing and hardware.
+
+**Setu's read (unverified):**
+1. **The "16-axis capstan drive module" is a placeholder, not a real part.** It is the whole hard problem, and it is
+   still undesigned: how many motors, which motors, drum size, gear ratio, and how two cables per joint share a motor.
+   R&D needs to design it.
+2. **Blueprint gave no torque numbers.** Before choosing motors, derive them from the leg length and the body mass
+   (MuJoCo sim: `teams/rnd/kodama/simulation/`).
+3. **Over-center cams in the clamps answer the power-loss question** on paper. They still need a physical test under
+   a bridge load.
+4. **Questions Blueprint raised itself:** does cable stretch hurt the gait, and will the chest motors overheat? Both
+   are fair, and both need testing.
+5. **What's right about the direction:** light limbs, mass at the center, one motor bank to cool and protect, and
+   cables a Scout can re-string. That supports the build-and-repair goal.
