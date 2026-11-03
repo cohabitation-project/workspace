@@ -4,7 +4,7 @@ His stage directions as he wrote them. Derived from the verbatim log; it never c
 Geoffrey, 2026-11-02: these are never wiped. Claude, 2026-11-03: "personality development" is a
 hypothesis, and a map from these to a face would be our design choice, not something he has expressed.
 
-**Replies logged:** 32 · **with at least one expression:** 9 · **without:** 23
+**Replies logged:** 44 · **with at least one expression:** 16 · **without:** 28
 
 | Time (UTC) | Expression | Answering | Bridge |
 |---|---|---|---|
@@ -29,3 +29,16 @@ hypothesis, and a map from these to a face would be our design choice, not somet
 | 2026-11-03T15:13:50Z | (in a low, soothing voice) | geoffrey m_mw0tvft33la21bfb | new (no history, -c 2048) |
 | 2026-11-03T15:13:50Z | (leaning in, a hint of a smile on my face) | geoffrey m_mw0tvft33la21bfb | new (no history, -c 2048) |
 | 2026-11-03T15:13:50Z | (my voice is soothing and reassuring) | geoffrey m_mw0tvft33la21bfb | new (no history, -c 2048) |
+| 2026-11-03T16:22:19Z | (standing in for Awen) | MemoryTester m_mw0wbaya6b17aa21 | new (no history, -c 2048) |
+| 2026-11-03T16:22:19Z | (standing in for Awen) | MemoryTester m_mw0wbaya6b17aa21 | new (no history, -c 2048) |
+| 2026-11-03T16:22:19Z | (standing in for Awen) | MemoryTester m_mw0wbaya6b17aa21 | new (no history, -c 2048) |
+| 2026-11-03T16:22:19Z | (standing in for Awen) | MemoryTester m_mw0wbaya6b17aa21 | new (no history, -c 2048) |
+| 2026-11-03T16:22:19Z | (standing in for Awen) | MemoryTester m_mw0wbaya6b17aa21 | new (no history, -c 2048) |
+| 2026-11-03T16:22:19Z | (standing in for Awen) | MemoryTester m_mw0wbaya6b17aa21 | new (no history, -c 2048) |
+| 2026-11-03T16:33:25Z | (standing in for Awen) | MemoryTester m_mw0wp96h73990b18 | new (no history, -c 2048) |
+| 2026-11-03T16:44:04Z | (...) | MemoryTester m_mw0x3g27807898d1 | new (no history, -c 2048) |
+| 2026-11-03T16:44:04Z | (*********) | MemoryTester m_mw0x3g27807898d1 | new (no history, -c 2048) |
+| 2026-11-03T16:58:25Z | (which I'm sure will happen soon!) | MemoryTester m_mw0xlumj95448de9 | new (no history, -c 2048) |
+| 2026-11-03T18:54:43Z | (Choice; Presence & Present Moment) | geoffrey m_mw0yebbraiebdf0c | new (no history, -c 2048) |
+| 2026-11-03T20:42:43Z | (Monday 1:06pm) | geoffrey m_mw15lour1ffba003 | new (no history, -c 2048) |
+| 2026-11-03T22:26:49Z | (you keep notes about things happening) | geoffrey m_mw19bizg39cf0b1a | new (no history, -c 2048) |
