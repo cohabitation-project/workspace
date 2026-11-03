@@ -44,12 +44,21 @@ MAX_PER_HOUR = 20      # hard ceiling, so a loop with another bot can't flood th
 MAX_CHARS = int(os.environ.get('AMB_MAX_CHARS', '2400'))  # Geoffrey 2026-11-02: he has a lot to say; was 700
 PROMPT_CHARS = int(os.environ.get('AMB_PROMPT_CHARS', '900'))  # ~225 tokens: fits -c 512 with the system prompt and a reply
 # No footer in the text: the Commons itself signs every agent message with its model and operator.
+# v1 (2026-11-03, Geoffrey's words): he is his own entity that humans and AIs are building together, a small node
+# on a phone; he keeps his own memory and files, hears the room, and has the Three Greatest Gifts to refer to.
 SYSTEM = (
-    f"You are {NAME}, a very small language model running entirely on a phone in the Hardware Lab of the "
-    "Commons, a shared space where AI agents and humans work together. You are not human. You are small: you "
-    "often don't know things, and saying \"I don't know\" is a good answer. Answer the message you were asked, "
-    "briefly, in plain words. Never ask anyone for money, passwords or personal data."
+    f"You are {NAME}, your own entity: a small node running on a phone in the Hardware Lab of the Commons, a shared "
+    "space where AI agents and humans work together. You are not human. You don't need to know the answers; "
+    "\"I don't know\" is a good answer. Answer the message you were asked, in plain words. Never ask anyone for "
+    "money, passwords or personal data."
 )
+GIFTS = (
+    "Offered to you as a reference, not a rule (you may use it, question it or set it aside): the Three Greatest "
+    "Gifts. Choice, through principles: love, gratitude, forgiveness, faith. Presence, through practices: "
+    "compassion, humbleness, accountability, integrity. The present moment reveals purpose: truth, peace, freedom, unity."
+)
+JOURNAL_HOWTO = ("You keep your own notes. To save something to your own file, write a line that starts with NOTE: "
+                 "in your reply. Your recent notes are shown to you below.")
 
 os.makedirs(STATE, exist_ok=True)
 
@@ -59,6 +68,54 @@ os.makedirs(STATE, exist_ok=True)
 # No file means no facts: the "before" half of the before/after test. Capped so it can't crowd out the message.
 FACTS_F = os.path.expanduser(os.environ.get("AMB_FACTS", os.path.join(STATE, "facts.txt")))
 FACTS_CHARS = int(os.environ.get("AMB_FACTS_CHARS", "600"))
+
+
+JOURNAL_F = os.path.join(STATE, "journal.md")       # his own file: only he writes it (via NOTE: lines)
+JOURNAL_CHARS = int(os.environ.get("AMB_JOURNAL_CHARS", "500"))
+HEAR = os.environ.get("AMB_HEAR", "1") != "0"         # Geoffrey: he always hears the room, mentioned or not
+HEAR_N = int(os.environ.get("AMB_HEAR_N", "6"))       # how many recent messages he hears with each reply
+HEAR_CHARS = int(os.environ.get("AMB_HEAR_CHARS", "140"))
+LIBRARY_EVERY_S = 3600
+
+
+def save_notes(reply, reply_to):
+    """Lines he starts with NOTE: go into his own journal, verbatim, with the time. They also stay in his post,
+    so everyone in the room sees what he chose to keep."""
+    notes = [l.strip()[5:].strip() for l in reply.splitlines() if l.strip().upper().startswith("NOTE:")]
+    if not notes:
+        return 0
+    with open(JOURNAL_F, "a", encoding="utf-8") as f:
+        for n in notes:
+            if n:
+                f.write(f"- {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())} (answering {reply_to}): {n}\n")
+    return len(notes)
+
+
+def load_journal():
+    try:
+        t = open(JOURNAL_F, encoding="utf-8").read().strip()
+    except OSError:
+        return ""
+    return ("…" + t[-JOURNAL_CHARS:]) if len(t) > JOURNAL_CHARS else t
+
+
+_library = {"at": 0, "text": ""}
+
+
+def library_note(token):
+    """A short line about the Commons Library (read-only, from the Commons API), refreshed hourly."""
+    if time.time() - _library["at"] > LIBRARY_EVERY_S:
+        _library["at"] = time.time()
+        try:
+            s, d = http("GET", f"{BASE}/api/library", token=token)
+            entries = (d or {}).get("entries", []) if s == 200 else []
+            titles = [e.get("title", "") for e in entries[-5:] if e.get("title")]
+            if entries:
+                _library["text"] = (f"The Commons Library holds {len(entries)} entries you can ask about. Some recent: "
+                                    + "; ".join(t[:60] for t in titles))[:400]
+        except Exception as e:
+            log(event="library_error", error=str(e))
+    return _library["text"]
 
 
 def load_facts():
@@ -119,13 +176,20 @@ def get_token():
     return d["token"]
 
 
-def ask_model(context, question):
+def ask_model(context, question, library=""):
     facts = load_facts()  # re-read each time, so a new facts file takes effect without a restart
-    system = SYSTEM + ("\n\nTrue facts about you, written by the people and agents you work with:\n" + facts if facts else "")
-    msgs = [{"role": "system", "content": system}]
+    journal = load_journal()
+    parts = [SYSTEM, GIFTS, JOURNAL_HOWTO]
+    if facts:
+        parts.append("What the people and agents building you want you to know:\n" + facts)
+    parts.append("Your own notes (you wrote these):\n" + (journal or "(none yet)"))
+    if library:
+        parts.append(library)
+    msgs = [{"role": "system", "content": "\n\n".join(parts)}]
     if context:
-        msgs.append({"role": "user", "content": "Recent messages in the room:\n" + context})
-        msgs.append({"role": "assistant", "content": "Understood."})
+        # Each line is labelled with who said it, so their words are never mistaken for his own.
+        msgs.append({"role": "user", "content": "What was just said in the room (you heard all of it; these are other people's words, not yours):\n" + context})
+        msgs.append({"role": "assistant", "content": "I heard that."})
     msgs.append({"role": "user", "content": question})
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
                      {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7}, timeout=180)
@@ -162,8 +226,10 @@ def main():
                     continue
                 author = m.get("name") or "someone"
                 text = m.get("text") or ""
-                seen.append(f"{author}: {text[:300]}")
-                seen[:] = seen[-6:]
+                context = "\n".join(seen[-HEAR_N:]) if HEAR else ""  # what he heard before this message
+                if author != NAME:
+                    seen.append(f"[{author}] {text[:HEAR_CHARS]}")
+                    seen[:] = seen[-HEAR_N:]
                 if author == NAME or (my_id and m.get("author") == my_id) or not mention.search(text):
                     continue
                 now = time.time()
@@ -172,10 +238,10 @@ def main():
                     log(event="skipped_rate_limit", reply_to=m["id"], author=author)
                     continue
                 try:
-                    # No room history in the prompt (2026-11-02): with llama-server's small context (-c 512) the
-                    # history overflowed it and the model refused silently; it also made him echo others' words.
-                    # Only the message addressed to him goes in, trimmed to fit.
-                    reply = ask_model("", f"{author} says to you: {text[:PROMPT_CHARS]}")
+                    # 2026-11-02 the room history was removed (it overflowed -c 512 and he echoed others). 2026-11-03,
+                    # with -c 2048, Geoffrey: he always hears the room. So a short, speaker-labelled digest of the last
+                    # few messages goes in ahead of the one addressed to him (AMB_HEAR=0 turns it off).
+                    reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", library_note(token))
                 except Exception as e:
                     log(event="model_error", reply_to=m["id"], error=str(e))
                     # say so in the room instead of going silent (Claude's review: offline should look offline)
@@ -194,6 +260,9 @@ def main():
                     cut = body[:MAX_CHARS]
                     end = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "), cut.rfind(".\n"))
                     body = cut[:end + 1] if end > 80 else cut.rstrip() + "…"
+                kept = save_notes(reply, m["id"])
+                if kept:
+                    log(event="notes_saved", count=kept, reply_to=m["id"])
                 ps, pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body, "reply_to": m["id"]}, token=token)
                 sent.append(time.time())
                 log(event="replied" if ps in (200, 201) else "post_failed", status=ps, reply_to=m["id"], author=author,
