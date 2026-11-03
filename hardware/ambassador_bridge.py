@@ -193,9 +193,9 @@ def ask_model(context, question, recalled=""):
     msgs.append({"role": "user", "content": question})
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
                      {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7,
-                      # the first memory test repeated one block 5+ times; llama-server's penalties damp that
-                      "repeat_penalty": float(os.environ.get("AMB_REPEAT_PENALTY", "1.3")), "repeat_last_n": 256,
-                      "frequency_penalty": 0.4, "presence_penalty": 0.3}, timeout=180)
+                      # A mild repeat penalty only. 1.3 plus frequency/presence penalties (ee661fc) pushed the 135M
+                      # model into broken characters and ASCII art in Code's 2026-11-03 run; small models need it gentle.
+                      "repeat_penalty": float(os.environ.get("AMB_REPEAT_PENALTY", "1.1")), "repeat_last_n": 128}, timeout=180)
     if status != 200 or not d:
         raise RuntimeError(f"model returned {status}")
     return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
