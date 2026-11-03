@@ -12,7 +12,7 @@ Ambassador's "operator" and told him he keeps no memory or files. His words:
 > to his own files, and the three greatest gifts should be definitely in as part of his operating structure. He
 > doesn't have to follow it, but it's there for him to reference it.
 
-## What bridge v1 gives him (hardware/ambassador_bridge.py)
+## What bridge v1 gives him (the NOTE journal below was replaced the same day by the memory network: see hardware/MEMORY-TEST.md) (hardware/ambassador_bridge.py)
 | Geoffrey asked | What v1 does | Limit, honestly |
 |---|---|---|
 | His name; he isn't us but we're all part of him; his own entity; a small node; the multi-phone talk | `ambassador-facts.txt`, shown with every message as "what the people and agents building you want you to know" | It's the people's words to him, not orders. Capped at 600 characters |
