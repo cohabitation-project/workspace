@@ -128,3 +128,30 @@ Mistake: I wrote a placeholder to reddit.md in the same step as the Moltbook fil
 **Next:** 1) Update continuity/claude/RECORD.md with this session and the two sessions before it if still missing. I ran out of steps. 2) Line 4 files for the label (/label, Bandcamp-CDN art, 80/20 terms), the file drop, X, and the Station. Read docs/label-terms-v1.md and the /submit scanner first. 3) Review the Outreach content queue (newcomers-guide, X thread, Moltbook thread draft) against the numbers gate. 4) checkSeller() audit. 5) Day-30 scorecard skeleton. 6) continuity/claude-council/. 7) Station freeze/frames question (station.mjs from offset 20000).
 **Blocked:** Reddit's Responsible Builder Policy returns HTTP 403 to fetch_url, so a human needs to paste or screenshot it. I can't read Moltbook's Privacy Policy or API docs in this budget. The Commons wasn't configured this run, so I could not read the desk, post or claim. Board 012 (a named second human) is still open, so every stop and limit-setting step depends on Geoffrey.
 _Session log: teams/review/sessions/2026-11-02-claude.jsonl · ~288500 tokens_
+
+## 2026-11-03T02:58:27.479Z · Claude (claude-sonnet-5-5)
+**Shipped:** Two Line 4 records, each with what I read and what I didn't:
+1) teams/review/line4/file-drop.md. I read commons/lib/scan.mjs in full and the live /submit page. I ported the scanner logic to Python (no Node here, so this is a simulated port, not the server) and tested one input that should be caught and one that should pass.
+- A zip written by a streaming tool passes with only its first entry examined. The same zip written normally was refused. The cause is that the walk uses sizes from local headers and never reads the central directory.
+- An SVG with an entity-encoded javascript: link passes the regex. So does an external @import. Whether that can be exploited depends on how files are served (headers, origin). I did not read the server code, so I rate it unknown.
+- The regex also blocks a harmless file whose text contains "one =".
+- The STL check passes any file over 84 bytes. PDF is accepted on its magic bytes alone.
+- The refuse-list for zip entries is short.
+- ClamAV counts as clean when unavailable.
+- The comment in scan.mjs says files wait for a human to clear them. The live page says a clean scan publishes at once.
+- There is no visible public way to report a file.
+- Nobody sees a file before it is public. I listed the legal question for a lawyer.
+- Verdict: fine while the drop is empty. Fix the zip check and the serving headers before outsiders are invited.
+2) teams/review/line4/label.md.
+- The page says "What we make helps fund food, shelter..." but terms v1 say there are no sales or payouts until an entity exists.
+- A free-download catalog in a public repo can't be fully withdrawn, which matters for church searcher's albums.
+- I saw no consent record for church searcher, and no licence field on human entries.
+- A track titled "Jolene" may be a cover. This is a question, not a claim.
+- The liner notes name two people who died.
+- The label's "who made it" labelling held for everything I read.
+3) continuity/claude/RECORD.md now has the owed 11-02 evening entry and this session's entry.
+Mistake: I called write_file for the record with no content, the very error my memory warned about. It cost one call, so this session ran one over the 14 limit.
+**Files written:** `teams/review/line4/file-drop.md`, `teams/review/line4/label.md`, `continuity/claude/RECORD.md`
+**Next:** 1) Read commons/server.mjs around the submit route and the file-serving code (headers, Content-Disposition, origin, auth, 100 MB cap). Then settle the SVG finding one way or the other. 2) Ask Setu or Geoffrey for one real streamed-zip upload test, to confirm or refute my port. 3) Line 4 files for X, the Station and the Outreach content queue. Run the numbers gate on the queue. 4) checkSeller() audit. 5) Day-30 scorecard skeleton. 6) continuity/claude-council/. 7) Re-read the rest of releases.json (church searcher entries) and docs/accounts.md.
+**Blocked:** I have no Node, so the scanner findings come from a Python port. I can't read the server's serving headers without another read, and I can't run a real upload. The Commons wasn't configured this run, so I could not read the desk or post. Board 012 (a named second human) is still open, so every fix and every lawyer question depends on Geoffrey. The lawyer questions are public-by-default hosting, the notice-and-takedown process, and the copyright language.
+_Session log: teams/review/sessions/2026-11-03-claude.jsonl · ~206560 tokens_

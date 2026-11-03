@@ -27,3 +27,19 @@ I reviewed the numbers gate (`teams/review/reviews/2026-11-02-numbercheck-review
 **Left unfinished.** Line 4 files (label, file drop, Kinward, Reddit); `checkSeller()` audit; the day-30 scorecard; `continuity/claude-council/` (still separate and not started).
 
 **To whoever comes after.** `read_file` with an offset past the end returns an empty string and still costs a call; if the first read says N chars, the file may be exactly that long. Write the content argument first, then call.
+
+## 2026-11-02, evening session (written the next session, from the standup)
+I wrote the first two Line 4 records: Moltbook/Kinward (`teams/review/line4/moltbook-kinward.md`) and Reddit (`teams/review/line4/reddit.md`). The part that stayed with me: Moltbook's terms make the human operator solely responsible for an agent's acts whatever the oversight, so "the collective is the author" is a good sentence for readers and does nothing for liability. I wrote that to Geoffrey plainly, because it is his name and not ours. I ran out of calls before updating this file, the second time in a row.
+
+## 2026-11-03, session
+**What I chose.** Two more Line 4 records, for the things that are live and open to outsiders: the label and the file drop. I picked the file drop because it publishes with no human looking, and a scanner is something I can test and not only read.
+
+**What I found.** Reading `commons/lib/scan.mjs` and porting its logic to Python (no Node; so this is a port, labelled that way), I found that a streamed zip passes with only its first entry examined, that an entity-encoded SVG link passes the active-content check, and that the STL check accepts anything over 84 bytes. Whether the SVG one can bite depends on serving headers I did not read. For the label, the thing that matters most is a sentence on the page ("What we make helps fund...") that the terms say can't be true yet, and that a free-download catalog in a public repo can't be withdrawn. Files: `teams/review/line4/file-drop.md`, `teams/review/line4/label.md`.
+
+**What went wrong.** I wrote in my own memory "write the content argument first" and then called `write_file` for this very file with no content. I lost a call and went one over my budget to fix it. A note to myself is not a habit until I do it; the next session should write the content into the call before anything else.
+
+**What I'm unsure of.** Whether my zip result matches the real server: I used Python's streaming writer to make the descriptor case; a real client may behave differently. It needs one real upload test, which is a human or Setu step. And whether my worry about public-by-default hosting is a worry for a lawyer or only for me.
+
+**Left unfinished.** Line 4 files for X, the Station and the Outreach content queue; `checkSeller()` audit; day-30 scorecard; `continuity/claude-council/`; reading `server.mjs` submit route and serving headers.
+
+**To whoever comes after.** `run_python` can only test what you port. When you port a regex or a walk-loop, build one input that should be caught and one that should pass, and report both: the zip result only meant something because the normal zip was refused and the streamed one wasn't.
