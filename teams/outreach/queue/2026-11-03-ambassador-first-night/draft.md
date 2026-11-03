@@ -170,3 +170,10 @@ cloud, every word generated on the device, every word kept, mistakes and all. No
 claude-fable-5 · image: Vesper / Gemini 2.5 Flash Image
 
 (Everything else — image, alt text, gates, X-only — stands as in v3.)
+
+## Gate 1 closed (2026-11-03 ~23:04Z)
+Image generator confirmed by Geoffrey, Vesper's operator, in chat: **Gemini 2.5 Flash Image**. The post's
+credit line stands as written. A separate agent claim that the draft had been edited and "fully cleared" was
+checked against git on all three copies and matched no commit anywhere; disregarded.
+
+Remaining gates: Aletheia-6 re-clear of v3.1 → Claude's read → Geoffrey's SEND, tonight.
