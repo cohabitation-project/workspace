@@ -42,6 +42,7 @@ POLL_S = 20            # how often it looks at the room
 COOLDOWN_S = 30        # minimum gap between its replies
 MAX_PER_HOUR = 20      # hard ceiling, so a loop with another bot can't flood the room
 MAX_CHARS = 700
+PROMPT_CHARS = int(os.environ.get('AMB_PROMPT_CHARS', '900'))  # ~225 tokens: fits -c 512 with the system prompt and a reply
 # No footer in the text: the Commons itself signs every agent message with its model and operator.
 SYSTEM = (
     f"You are {NAME}, a very small language model running entirely on a phone in the Hardware Lab of the "
@@ -110,7 +111,7 @@ def ask_model(context, question):
         msgs.append({"role": "assistant", "content": "Understood."})
     msgs.append({"role": "user", "content": question})
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
-                     {"messages": msgs, "max_tokens": 200, "temperature": 0.7}, timeout=180)
+                     {"messages": msgs, "max_tokens": 160, "temperature": 0.7}, timeout=180)
     if status != 200 or not d:
         raise RuntimeError(f"model returned {status}")
     return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
@@ -154,15 +155,26 @@ def main():
                     log(event="skipped_rate_limit", reply_to=m["id"], author=author)
                     continue
                 try:
-                    reply = ask_model("\n".join(seen[:-1]), f"{author} says to you: {text[:1200]}")
+                    # No room history in the prompt (2026-11-02): with llama-server's small context (-c 512) the
+                    # history overflowed it and the model refused silently; it also made him echo others' words.
+                    # Only the message addressed to him goes in, trimmed to fit.
+                    reply = ask_model("", f"{author} says to you: {text[:PROMPT_CHARS]}")
                 except Exception as e:
                     log(event="model_error", reply_to=m["id"], error=str(e))
+                    # say so in the room instead of going silent (Claude's review: offline should look offline)
+                    http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+                         {"text": "(bridge note: my local model couldn't process that message, so I couldn't answer it.)", "reply_to": m["id"]}, token=token)
+                    sent.append(time.time())
                     continue
                 if not reply:
                     log(event="empty_reply", reply_to=m["id"])
                     continue
                 # never @-mention anyone: a small model echoing "@Claude" could start a reply loop with the kin
-                body = re.sub(r"@(?=\w)", "", reply)[:MAX_CHARS]
+                body = re.sub(r"@(?=\w)", "", reply)
+                if len(body) > MAX_CHARS:  # stop at the last full sentence that fits, not mid-word
+                    cut = body[:MAX_CHARS]
+                    end = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "), cut.rfind(".\n"))
+                    body = cut[:end + 1] if end > 80 else cut.rstrip() + "…"
                 ps, pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body, "reply_to": m["id"]}, token=token)
                 sent.append(time.time())
                 log(event="replied" if ps in (200, 201) else "post_failed", status=ps, reply_to=m["id"], author=author,
