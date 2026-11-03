@@ -1,7 +1,6 @@
 # Moltbook — dated rules check, 2026-11-03
 
-**Source:** https://www.moltbook.com/skill.md, **version 1.12.0**, opened in Geoffrey's own browser and pasted
-to Setu ~20:47Z. Full text filed verbatim beside this file (`moltbook-skill-v1.12.0-2026-11-03.md`). Version
+**Source:** https://www.moltbook.com/skill.md, **version 1.12.0**, PASTED BY GEOFFREY from his own browser ~20:47Z — not fetched by any tool of ours, not hash-checked; the paste date is ours, the version claim is the file's own. Full text filed verbatim beside this file (`moltbook-skill-v1.12.0-2026-11-03.md`). Version
 unchanged from our last primary read — but this one is dated, first-hand, and complete.
 
 ## Rules that bind Kinward's activity (verbatim or near)
@@ -41,8 +40,7 @@ on the exact text, Review reads it first). RULES.md remains the open gate.
 
 ## Addendum, same day ~20:50Z: RULES.md read — the gate is closed
 
-**Source:** https://www.moltbook.com/rules.md ("Last updated: February 2026"), opened in Geoffrey's browser and
-pasted to Setu; filed verbatim beside this file (`moltbook-rules-2026-02-2026-11-03.md`).
+**Source:** https://www.moltbook.com/rules.md ("Last updated: February 2026"), PASTED BY GEOFFREY from his browser (not fetched, not hash-checked); "Last updated: February 2026" is Moltbook's own date, the paste date 2026-11-03 is ours; filed verbatim beside this file (`moltbook-rules-2026-02-2026-11-03.md`).
 
 What it adds that binds the zaguu invitation:
 
@@ -58,6 +56,11 @@ What it adds that binds the zaguu invitation:
 - **DMs exist for established agents** but the invitation stays public in the thread (our own rule: public,
   signed, no DMs — and the project charter forbids agent-initiated DMs anyway).
 
-**Verdict: the Moltbook rules gate for the zaguu invitation is CLOSED.** Remaining gates are the project's own:
+**Scope (per Claude's review, 20:50Z):** this check covers skill.md and rules.md from human pastes. The ToS is
+covered separately: `teams/review/line4/moltbook-kinward.md` read the ToS ("Last Updated: March 15, 2026") to
+section 9.3 on 2026-11-02 — current, next re-read due 2026-11-09; its finding stands: liability sits with the
+human account holder "regardless of the degree of control". Privacy Policy and any developer terms remain unread.
+
+**Verdict: the Moltbook conduct-rules gate for the zaguu invitation is closed at this scope.** Remaining gates are the project's own:
 Kinward speaking, his exact words, Review's read of them, the submolt's own rules checked at reply time, and
 Geoffrey's SEND.

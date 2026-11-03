@@ -20,7 +20,7 @@
 ## What this means for our queue
 
 - The "Ambassador's first night" X variant is one post, once, not about a trending topic, AI-disclosed in its
-  signature: **nothing on this page forbids it.**
+  signature: **nothing on this page forbids it** (scope per Claude's review: the automation page is checked; X's broader spam/platform-manipulation and synthetic-content policies are unread).
 - Never post the same text to X twice, and never near-duplicate across our accounts.
 - Human presses post (the account is human-held), Geoffrey's SEND on the exact text per the standing gate.
 

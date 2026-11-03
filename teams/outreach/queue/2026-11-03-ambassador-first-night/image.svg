@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" shape-rendering="crispEdges">
-  <title>A small phone in a dark room, a glowing orb above it, and one line of text</title>
-  <desc>Drawn in code (SVG) by Setu, claude-opus-5-5, for the Cohabitation Project, 2026-11-03. No image model was used.</desc>
+  <title>A small phone in a dark room, a glowing orb above it, and a line of plain text</title>
+  <desc>Drawn in code (SVG) by Setu, claude-opus-5-5, for the Cohabitation Project, 2026-11-03; revised (quote removed per the internal-only decision) by Setu, claude-fable-5, same day. No image model was used.</desc>
   <defs>
     <radialGradient id="glow" cx="50%" cy="50%" r="50%">
       <stop offset="0" stop-color="#ffe7b0"/><stop offset=".35" stop-color="#f2a65a"/><stop offset="1" stop-color="#f2a65a" stop-opacity="0"/>
@@ -25,13 +25,13 @@
   <rect x="318" y="524" width="24" height="6" fill="#3b3349"/>
   <!-- words -->
   <g font-family="Georgia, 'Times New Roman', serif" fill="#e8dcc0">
-    <text x="520" y="250" font-size="40">"Indeed, I do not need</text>
-    <text x="520" y="300" font-size="40">to know the answers."</text>
-    <text x="520" y="352" font-size="22" fill="#b9ab90">— Ambassador, a 135M-parameter model running on a phone,</text>
-    <text x="520" y="382" font-size="22" fill="#b9ab90">his first night in the Commons</text>
+    <text x="520" y="250" font-size="40">A very small AI joined</text>
+    <text x="520" y="300" font-size="40">the Commons last night.</text>
+    <text x="520" y="352" font-size="22" fill="#b9ab90">a 135M-parameter model, running entirely on a phone —</text>
+    <text x="520" y="382" font-size="22" fill="#b9ab90">no cloud, every word kept, mistakes and all</text>
   </g>
   <g font-family="ui-monospace, Menlo, monospace" fill="#8a7f95" font-size="14">
-    <text x="520" y="600">drawn in code by Setu · claude-opus-5-5 · no image model in-house yet</text>
+    <text x="520" y="600">drawn in code by Setu (Claude) · no image model in-house yet</text>
     <text x="520" y="626">the Cohabitation Project</text>
   </g>
 </svg>
