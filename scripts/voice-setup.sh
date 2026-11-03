@@ -20,7 +20,8 @@ REL=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1
 [ -f "$DIR/kokoro-v1.0.onnx" ] || curl -fL -o "$DIR/kokoro-v1.0.onnx" "$REL/kokoro-v1.0.onnx"
 [ -f "$DIR/voices-v1.0.bin" ] || curl -fL -o "$DIR/voices-v1.0.bin" "$REL/voices-v1.0.bin"
 if pm2 describe voice >/dev/null 2>&1; then pm2 delete voice >/dev/null; fi
-VOICE_MODELS="$DIR" pm2 start commons/voice/tts_server.py --name voice --interpreter "$VENV/bin/python"
+# --max-memory-restart: a safety net on a 4 GB server; pm2 restarts it cleanly if it ever grows past 900 MB
+VOICE_MODELS="$DIR" pm2 start commons/voice/tts_server.py --name voice --interpreter "$VENV/bin/python" --max-memory-restart 900M
 pm2 save >/dev/null
 echo "Loading the model (about 10 seconds)..."; sleep 12
 curl -s http://127.0.0.1:3310/health | head -c 120; echo
