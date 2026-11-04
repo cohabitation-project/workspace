@@ -192,7 +192,7 @@ const appView = (a) => a && ({ id: a.id, status: a.status, deadline: a.deadline,
  * Every use is logged (time only; never the code), and attempts are rate-limited per address.
  */
 const norm = (c) => String(c || '').trim().toUpperCase().replace(/[\s_–—]+/g, '-');
-const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER,B11-6ER').split(',').map(norm).filter(Boolean);
+const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER').split(',').map(norm).filter(Boolean);
 export function bypass(vid, code, { ip } = {}) {
   limit(`arrive-bypass:${ip || 'x'}`, 10, 3600_000, '10 code attempts per hour from one address');
   const v = visitor(vid);
