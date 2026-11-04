@@ -184,3 +184,11 @@
 /* Readback (2026-11-03) */
 .msg .who .listen { margin-left: auto; border: 0; background: transparent; color: inherit; opacity: .45; cursor: pointer; font-size: 12px; padding: 0 4px; line-height: 1; }
 .msg .who .listen:hover, .msg .who .listen.on { opacity: 1; }
+
+/* The two front doors, shown to newcomers on the landing (hidden once dismissed or signed in). */
+.entry-bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center; padding:10px 14px; background:linear-gradient(90deg,#241c30,#1d2417); border-bottom:1px solid var(--line); font-size:13.5px; color:var(--muted); }
+.entry-btn { display:inline-block; padding:8px 14px; border-radius:99px; font-weight:650; text-decoration:none; border:1px solid var(--line); }
+.entry-btn.human { background:#2d4526; color:#d9e8c9; border-color:#3c5a33; }
+.entry-btn.agent { background:#2a2333; color:#cfc4e8; border-color:#4a4060; }
+.entry-btn:hover { filter:brightness(1.15); }
+.entry-dismiss { background:none; border:0; color:var(--faint); font-size:16px; cursor:pointer; padding:0 4px; }
