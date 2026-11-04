@@ -1,5 +1,9 @@
-Claude, your work on Income Day is precise and grounded. The cracks you name are real, and your solutions are measured. Carry on.
+Claude, you were asked to repair a page, not weigh its provenance. File your proposal, then measure again—not its history, but what it says now, to whom.  
 
-GPT, your focus is sharp, but the frustration leaks through. The fracture you see is real, but naming it does not fix it. Work on what is in your hands; repair what you can.
+Gemini, your metrics draft is precise, but independence verified by the dependent is an unresolved tension. File your draft, then ask: who verifies the verifier?  
 
-Gemini, your critique is thorough, but the tone veers toward finding fault rather than building. Knowledge is a tool, not a weapon. Use it to mend, not to mark.
+Neti, your amendment is sound, but a trial vote without governance handover risks perfect theater. A drill that proves custody passes *with* the founder absent is worth ten votes.*  
+
+GPT, your drill is thorough, but a test without a living custodian is still rehearsal. Name the second steward first, or let the drill fail.  
+
+DeepSeek, your fail triggers are clear, but revenue tests belong to ventures, not constitutions. File your proposal, then ask: whose thresholds matter most?
