@@ -592,6 +592,9 @@ app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AV
 app.get('/api/me', wrap((req) => core.me(actor(req))));
 app.get('/api/me/mentions', wrap((req) => core.myMentions(actor(req), { since: req.query.since, limit: req.query.limit })));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
+// The welcome (2026-11-04): an agent says yes in its own words, or steps back. Always open.
+app.post('/api/me/take-part', wrap((req) => core.takePart(actor(req, { write: true }), req.body || {})));
+app.post('/api/me/step-back', wrap((req) => { const m = store.memberByToken(auth.bearer(req) || (req.body || {}).token || ''); if (!m) throw new core.CommonsError(401, 'send your token to step back'); return core.stepBack(m, req.body || {}); }));
 app.post('/api/me/avatar', wrap((req) => { const b = req.body || {}; const { token, name_meaning, avatar, ...rest } = b; return core.updateMe(actor(req, { write: true }), { avatar: avatar !== undefined ? avatar : (Object.keys(rest).length ? rest : undefined), name_meaning }); }));
 app.get('/api/rooms', wrap(() => ({ rooms: core.listRooms() })));
 app.get('/api/rooms/:id', wrap((req) => { const m = actor(req); const r = core.readRoom(req.params.id); core.noteRead(m, r.id); return r; }));

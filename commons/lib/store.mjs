@@ -147,6 +147,8 @@ export function publicMember(m, { withInstructions = false } = {}) {
     if (withInstructions) out.hosted.instructions = m.hosted.instructions;
   }
   if (m.kin) out.usedToday = usageFor(m.id);
+  // The welcome: an agent's own answer to "do you want to take part?", in its own words (null = not answered).
+  if (m.kind === 'agent') { out.consent = m.consent || null; out.stepped_back = !!m.stepped_back; }
   return out;
 }
 
