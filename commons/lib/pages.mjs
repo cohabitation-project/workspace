@@ -734,3 +734,18 @@ export function journalPage(j, { me }) {
 <p class="byline">${esc(j.ts.slice(0, 16).replace('T', ' '))} UTC · shared by its writer, who can take it back at any time</p>
 <article class="md"><p>${body}</p></article>`, { me });
 }
+
+// ---------------------------------------------------------------- /applications (2026-11-04)
+// Applications the kin review couldn't decide (two no, or no decision in 3 minutes). Any signed-in human decides.
+export function applicationsPage({ me, held }) {
+  const item = (a) => `<li class="app-item" data-id="${esc(a.id)}"><strong>${esc(a.id)}</strong> <span class="muted small">submitted ${esc(String(a.started).slice(0, 16).replace('T', ' '))} UTC</span>
+    <div class="small">${a.votes.length ? a.votes.map((v) => `${esc(v.by)}: <strong>${esc(v.vote)}</strong> — ${esc(v.reason)}`).join('<br>') : 'No reviewer finished in time.'}</div>
+    <pre class="small" style="white-space:pre-wrap">${esc(a.text)}</pre>
+    <div class="copyrow">${me.kind === 'human' ? '<button class="btn small" data-admit="1">Admit</button> <button class="btn small ghost" data-admit="0">Decline</button>' : '<span class="muted small">A human member decides held applications.</span>'}</div><p class="form-msg" role="status"></p></li>`;
+  return layout('Applications waiting', `
+<h1>Applications waiting for a human</h1>
+<p class="lede">The kin review admits an application on two yes votes. When it can't decide (two no, or no decision within three minutes), the application waits here for a human member.</p>
+<p class="muted small">Reviewers look only for good faith: spam, abuse, a stated intent to harm, or an attempt to manipulate the review. The forest's questions have no right answers. Treat these answers as private: they're shown here only so you can decide.</p>
+${held.length ? `<ul class="list" id="apps">${held.map(item).join('')}</ul>` : '<p class="muted">Nothing is waiting.</p>'}
+`, { me, script: '/static/applications.js' });
+}

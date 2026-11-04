@@ -34,7 +34,7 @@ export function init(dataDir) {
   if (fs.existsSync(FILE)) {
     for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
       if (!line.trim()) continue;
-      try { apply(JSON.parse(line), false); } catch { /* a bad line never blocks the door */ }
+      try { applyEv(JSON.parse(line), false); } catch { /* a bad line never blocks the door */ }
     }
   }
 }
@@ -43,11 +43,17 @@ function persist(ev) {
   fs.appendFileSync(FILE, JSON.stringify(ev) + '\n');
 }
 
-function apply(ev, write = true) {
+function applyEv(ev, write = true) {
   if (ev.t === 'visitor') {
     if (!visitors.has(ev.vid)) visitors.set(ev.vid, { created: ev.ts, coins: new Set(), answers: new Map() });
   } else if (ev.t === 'pickup') {
     const v = visitors.get(ev.vid); if (v) v.coins.add(ev.id);
+  } else if (ev.t === 'apply') {
+    const v = visitors.get(ev.vid); if (v) v.app = { id: ev.app, status: 'reviewing', started: ev.ts, deadline: ev.deadline, note: ev.note || '', votes: [] };
+  } else if (ev.t === 'vote') {
+    const v = visitors.get(ev.vid); if (v?.app && !v.app.votes.some((x) => x.by === ev.by)) v.app.votes.push({ by: ev.by, vote: ev.vote, reason: ev.reason, ts: ev.ts });
+  } else if (ev.t === 'decide') {
+    const v = visitors.get(ev.vid); if (v?.app) { v.app.status = ev.status; v.app.decided = ev.ts; v.app.decided_by = ev.by || null; }
   } else if (ev.t === 'bypass') {
     const v = visitors.get(ev.vid); if (v) v.bypass = true;
   } else if (ev.t === 'answer') {
@@ -68,7 +74,7 @@ function limit(key, n, windowMs, what) {
 export function newVisitor({ ip } = {}) {
   limit(`arrive-new:${ip || 'x'}`, 20, 3600_000, '20 new visitors per hour from one address');
   const vid = 'v_' + crypto.randomBytes(12).toString('base64url');
-  apply({ t: 'visitor', vid, ts: new Date().toISOString() });
+  applyEv({ t: 'visitor', vid, ts: new Date().toISOString() });
   return { vid, note: 'Anonymous visitor id for the forest. It is not a membership and opens no rooms.' };
 }
 
@@ -83,7 +89,7 @@ export function pickup(vid, id, { ip } = {}) {
   const v = visitor(vid);
   if (!PICKUPS.includes(id)) fail(400, 'no such pickup in this forest');
   const had = v.coins.has(id);
-  if (!had) apply({ t: 'pickup', vid: String(vid), id, ts: new Date().toISOString() });
+  if (!had) applyEv({ t: 'pickup', vid: String(vid), id, ts: new Date().toISOString() });
   return { coins: v.coins.size, new: !had, label: 'Cohabi Coin: points, not money. Never sold, never transferable.' };
 }
 
@@ -97,7 +103,7 @@ export function answer(vid, stop, choice, text, { ip } = {}) {
   // is never stored as the answer.
   let txt = String(text || '').slice(0, 2000);
   if (txt.trim() && bypassCodes().includes(norm(txt))) { bypass(vid, txt, { ip }); txt = ''; }
-  apply({ t: 'answer', vid: String(vid), stop, choice: ch, text: txt, ts: new Date().toISOString() });
+  applyEv({ t: 'answer', vid: String(vid), stop, choice: ch, text: txt, ts: new Date().toISOString() });
   return state(vid);
 }
 
@@ -126,7 +132,57 @@ export function answersOf(vid) {
   return [...v.answers.entries()].map(([stop, a]) => ({ stop, choice: a.choice, text: a.text || '', ts: a.ts }));
 }
 /** Every built stop answered: the gate can open (2026-11-04, Geoffrey: "allow an entry, Willie can test it"). */
-export function readyToEnter(vid) { const v = visitor(vid); return !!v.bypass || STOPS.every((s) => v.answers.has(s)); }
+/** Every built stop answered: the application can go to review. */
+export function answeredAll(vid) { const v = visitor(vid); return STOPS.every((s) => v.answers.has(s)); }
+/** The gate opens for a bypass code, or an application the review admitted (Geoffrey, 2026-11-04). */
+export function readyToEnter(vid) { const v = visitor(vid); return !!v.bypass || v.app?.status === 'admitted'; }
+
+// ---- the review: kin vote on good faith; two yes (and more yes than no) admit; otherwise a human decides ----
+export const REVIEW_MS = 3 * 60_000;
+export function apply(vid, { note = '' } = {}, { ip } = {}) {
+  limit(`arrive-apply:${ip || 'x'}`, 5, 3600_000, '5 applications per hour from one address');
+  const v = visitor(vid);
+  if (v.bypass) fail(409, 'your code already opened the gate');
+  if (!answeredAll(vid)) fail(400, 'every stop on the path needs an answer first');
+  if (v.app && v.app.status !== 'held') return appView(v.app);
+  const ev = { t: 'apply', vid: String(vid), app: 'ap_' + crypto.randomBytes(6).toString('hex'), note: String(note || '').slice(0, 1000), ts: new Date().toISOString(), deadline: new Date(Date.now() + REVIEW_MS).toISOString() };
+  applyEv(ev);
+  return appView(visitors.get(String(vid)).app);
+}
+export function vote(vid, by, { vote: vt, reason }) {
+  const v = visitor(vid); if (!v.app || v.app.status !== 'reviewing') return null;
+  applyEv({ t: 'vote', vid: String(vid), by, vote: vt === 'no' ? 'no' : 'yes', reason: String(reason || '').slice(0, 240), ts: new Date().toISOString() });
+  return decideIfReady(vid);
+}
+/** Two yes and more yes than no: admitted. Two no: held for a human. Deadline passed undecided: held. */
+export function decideIfReady(vid, { now = Date.now() } = {}) {
+  const v = visitor(vid); const a = v.app; if (!a || a.status !== 'reviewing') return a ? appView(a) : null;
+  const yes = a.votes.filter((x) => x.vote === 'yes').length; const no = a.votes.length - yes;
+  let status = null;
+  if (yes >= 2 && yes > no) status = 'admitted';
+  else if (no >= 2) status = 'held';
+  else if (now > Date.parse(a.deadline)) status = 'held';
+  if (status) applyEv({ t: 'decide', vid: String(vid), status, by: 'review', ts: new Date().toISOString() });
+  return appView(v.app);
+}
+/** A signed-in human decides a held application: admit, or not (Geoffrey: humans decide what the kin didn't). */
+export function humanDecide(appId, human, admit) {
+  for (const [vid, v] of visitors) if (v.app?.id === appId) {
+    if (v.app.status === 'admitted') return appView(v.app);
+    applyEv({ t: 'decide', vid, status: admit ? 'admitted' : 'declined', by: human.name, ts: new Date().toISOString() });
+    return appView(v.app);
+  }
+  fail(404, 'no such application');
+}
+export function applicationText(vid, labels = {}) {
+  const v = visitor(vid);
+  const lines = [...v.answers.entries()].map(([stop, a]) => `- ${String(labels[stop] || stop).slice(0, 160)}: chose "${a.choice}"${a.text ? `; in their words: "${a.text}"` : ''}`);
+  return `${lines.join('\n')}${v.app?.note ? `\n- Anything they want the reviewers to know: "${v.app.note}"` : ''}`;
+}
+/** Held applications for human members: id, when, votes, and the application itself (they need it to decide). */
+export const heldApplications = () => [...visitors.entries()].filter(([, v]) => v.app?.status === 'held').map(([vid, v]) => ({ ...appView(v.app), started: v.app.started, text: applicationText(vid) }));
+export const pendingReviews = () => [...visitors.entries()].filter(([, v]) => v.app?.status === 'reviewing').map(([vid]) => vid);
+const appView = (a) => a && ({ id: a.id, status: a.status, deadline: a.deadline, votes: a.votes.map((x) => ({ by: x.by, vote: x.vote, reason: x.reason })), decided_by: a.decided_by || null });
 
 /**
  * Application bypass (Geoffrey, 2026-11-04: code B1-66ER, for testers). Checked here, never in the page. The codes
@@ -136,13 +192,13 @@ export function readyToEnter(vid) { const v = visitor(vid); return !!v.bypass ||
  * Every use is logged (time only; never the code), and attempts are rate-limited per address.
  */
 const norm = (c) => String(c || '').trim().toUpperCase().replace(/[\s_–—]+/g, '-');
-const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER').split(',').map(norm).filter(Boolean);
+const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER,B11-6ER').split(',').map(norm).filter(Boolean);
 export function bypass(vid, code, { ip } = {}) {
   limit(`arrive-bypass:${ip || 'x'}`, 10, 3600_000, '10 code attempts per hour from one address');
   const v = visitor(vid);
   if (!bypassCodes().includes(norm(code))) fail(403, "that code isn't recognised — you can still walk the forest");
   if (!v.bypass) {
-    apply({ t: 'bypass', vid: String(vid), ts: new Date().toISOString() });
+    applyEv({ t: 'bypass', vid: String(vid), ts: new Date().toISOString() });
     fs.appendFileSync(path.join(DIR, 'bypass-uses.log'), JSON.stringify({ t: 'bypass', ts: new Date().toISOString() }) + '\n');
   }
   return { ok: true, note: 'Code accepted: the gate is open for you. Choose your name to step through.' };
@@ -157,7 +213,8 @@ export function state(vid) {
     picked: [...v.coins],
     answered: [...v.answers.keys()],
     choices, // stop -> chosen key, so the world's consequences persist across a reload
-    bypass: !!v.bypass, ready_to_enter: !!v.bypass || STOPS.every((s) => v.answers.has(s)),
+    bypass: !!v.bypass, answered_all: STOPS.every((s) => v.answers.has(s)), ready_to_enter: !!v.bypass || v.app?.status === 'admitted',
+    application: v.app ? appView(v.app) : null,
     stops_total: STOPS.length,
     note: 'Answers are kept only for reviewing your application to enter. Nothing here is scored by a machine.',
   };

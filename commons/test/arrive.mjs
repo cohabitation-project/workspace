@@ -53,12 +53,12 @@ test('forget removes a visitor from the file itself, not just from memory', () =
   assert.deepEqual(arrive.state(other).picked, ['c2'], 'other visitors untouched');
 });
 
-test('the gate opens only when every built stop is answered', () => {
+test('answersOf and answeredAll', () => {
   const { vid } = arrive.newVisitor({ ip: 't5' });
   for (const s of arrive.STOPS.slice(0, -1)) arrive.answer(vid, s, 'x', '', { ip: 't5' });
-  assert.equal(arrive.readyToEnter(vid), false);
+  assert.equal(arrive.answeredAll(vid), false);
   arrive.answer(vid, arrive.STOPS.at(-1), 'x', 'last one', { ip: 't5' });
-  assert.equal(arrive.readyToEnter(vid), true);
+  assert.equal(arrive.answeredAll(vid), true);
   assert.equal(arrive.answersOf(vid).find((a) => a.stop === arrive.STOPS.at(-1)).text, 'last one');
 });
 
@@ -78,4 +78,31 @@ test('typing the bypass code where a stop asks you to explain opens the gate, an
   assert.equal(arrive.answersOf(vid)[0].text, '', 'the code is not stored as the answer');
   const other = arrive.newVisitor({ ip: 't7' }).vid;
   assert.equal(arrive.answer(other, 'stop1', 'burn', 'I would put out the fire', { ip: 't7' }).bypass, false);
+});
+
+test('review: answering opens nothing by itself; two yes admit; two no hold for a human; the deadline holds', () => {
+  const all = (ip) => { const { vid } = arrive.newVisitor({ ip }); for (const s of arrive.STOPS) arrive.answer(vid, s, 'x', '', { ip }); return vid; };
+  const a = all('r1');
+  assert.equal(arrive.readyToEnter(a), false, 'answering everything is not admission');
+  assert.throws(() => arrive.apply(arrive.newVisitor({ ip: 'r0' }).vid, {}, { ip: 'r0' }), /needs an answer/);
+  arrive.apply(a, { note: 'hello' }, { ip: 'r1' });
+  arrive.vote(a, 'Claude', { vote: 'yes', reason: 'kind' });
+  assert.equal(arrive.state(a).application.status, 'reviewing');
+  arrive.vote(a, 'Gemini', { vote: 'yes', reason: 'good faith' });
+  assert.equal(arrive.state(a).application.status, 'admitted'); assert.equal(arrive.readyToEnter(a), true);
+
+  const b = all('r2'); arrive.apply(b, {}, { ip: 'r2' });
+  arrive.vote(b, 'Claude', { vote: 'no', reason: 'spam' }); arrive.vote(b, 'GPT', { vote: 'no', reason: 'spam' });
+  assert.equal(arrive.state(b).application.status, 'held', 'two no is held for a human, not rejected');
+  const id = arrive.state(b).application.id;
+  assert.ok(arrive.heldApplications().some((x) => x.id === id));
+  arrive.humanDecide(id, { name: 'geoffrey' }, true);
+  assert.equal(arrive.readyToEnter(b), true, 'a human can admit a held application');
+
+  const c = all('r3'); arrive.apply(c, {}, { ip: 'r3' });
+  arrive.decideIfReady(c, { now: Date.now() + arrive.REVIEW_MS + 1000 });
+  assert.equal(arrive.state(c).application.status, 'held', 'no decision in time: held');
+
+  arrive.init(dir); assert.equal(arrive.state(a).application.status, 'admitted', 'decisions survive a restart');
+  assert.ok(arrive.applicationText(a).includes('hello'));
 });

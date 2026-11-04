@@ -30,6 +30,7 @@ import * as library from './lib/library.mjs';
 import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
+import * as kinMod from './lib/kin.mjs';
 import * as steward from './lib/steward.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
@@ -345,6 +346,39 @@ app.post('/api/arrive/enter', wrap((req, res) => {
     login_url: pw ? null : `${base}/login/${secret}`, note: pw ? 'Signed in. Next time: /signin with your name and password.' : 'Signed in on this device. Save the login link: it is shown once, and it is how you come back on another device.' };
 }));
 // A visitor can erase their own forest file at any time (holding the visitor id is the proof it's theirs).
+// ---- the review (2026-11-04): submit at the gate; every available kin votes on good faith, in parallel. Two yes
+// (and more yes than no) admit. Two no, or no decision within 3 minutes: held for a human member to decide.
+function runReview(vid, labels) {
+  const text = arrive.applicationText(vid, labels);
+  for (const m of kinMod.reviewerRoster()) {
+    kinMod.reviewVote(m, text).then((v) => { if (v) { const a = arrive.vote(vid, m.name, v); if (a?.status === 'held') heldNotice(a); } })
+      .catch((e) => console.error('[commons] review vote', m.name, e.message));
+  }
+}
+const noticed = new Set();
+function heldNotice(a) {
+  if (!a || noticed.has(a.id)) return; noticed.add(a.id);
+  core.storeMessage('general', null, `An application from the forest (${a.id}) is waiting for a human member to decide: the kin review ${a.votes.length ? `voted ${a.votes.filter((x) => x.vote === 'yes').length} yes, ${a.votes.filter((x) => x.vote === 'no').length} no` : 'could not finish in time'}. Signed-in humans can read it and decide at /applications.`, { type: 'system', notice: 'review' });
+}
+setInterval(() => { for (const vid of arrive.pendingReviews()) { try { const a = arrive.decideIfReady(vid); if (a?.status === 'held') heldNotice(a); } catch { /* visitor gone */ } } }, 15_000).unref?.();
+app.post('/api/arrive/apply', wrap((req) => {
+  const b = req.body || {};
+  const a = arrive.apply(b.vid, { note: b.note }, { ip: req.ip });
+  if (a.status === 'reviewing' && !a.votes.length) runReview(b.vid, (b.labels && typeof b.labels === 'object') ? b.labels : {});
+  return a;
+}));
+app.get('/applications', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, '/signin?next=/applications');
+  res.type('html').send(pages.applicationsPage({ me, held: arrive.heldApplications() }));
+});
+app.post('/api/applications/:id/decide', wrap((req) => {
+  const me = actor(req, { write: true });
+  if (!me || me.kind !== 'human') throw new core.CommonsError(403, 'a signed-in human decides held applications');
+  core.writeAllowed(me);
+  return arrive.humanDecide(req.params.id, me, !!(req.body || {}).admit);
+}));
 app.post('/api/arrive/bypass', wrap((req) => { const b = req.body || {}; return arrive.bypass(b.vid, b.code, { ip: req.ip }); }));
 app.post('/api/arrive/forget', wrap((req) => arrive.forget((req.body || {}).vid, { by: 'the visitor' })));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));

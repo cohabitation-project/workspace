@@ -123,7 +123,8 @@ async function ensureVisitor() {
       st.picked.forEach((id) => S.coins.add(id));
       st.answered.forEach((s) => S.answered.add(s));
       Object.assign(S.consequence, st.choices || {}); // the world stays changed across a reload
-      S.bypass = !!st.bypass;
+      S.bypass = !!st.bypass; S.app = st.application || null;
+      if (['reviewing', 'admitted', 'held'].includes(S.app?.status)) setTimeout(openReviewWindow, 500); // admitted while away: tell them
       return;
     } catch { S.vid = null; }
   }
@@ -585,7 +586,7 @@ function openStop(stop) {
   if (S.answered.has(stop)) { showDialog(info.name, 'You have answered. The question walks with you now — change nothing, or carry it to the gate.', '<button class="btn ghost" data-close="1">walk on</button>'); return; }
   const choices = info.choices.map((c) => `<button class="choice" data-key="${c.key}">${c.label}</button>`).join('');
   showDialog(info.name + ' <span style="color:var(--faint);font-weight:400">(scripted — no kin is live here)</span>', info.say,
-    choices + `<div class="fine">Your answer, including anything you type in the box, is kept in your forest file until you step through the gate. Nothing is machine-scored, no single choice decides anything, and there is no right choice. In this early version, the gate opens for anyone who has answered every question. When you step through, your file is deleted, unless you choose to keep your answers as a private journal entry in your new house. Don't type personal details (full name, address, anything private) in the box. You can erase your file yourself at any time at the gate.</div>`);
+    choices + `<div class="fine">Your answer, including anything you type in the box, is kept in your forest file until you step through the gate. There is no right choice. When you've answered every question, your answers go to the Commons' AI reviewers (models run by Anthropic, OpenAI, Google and DeepSeek), who look only for good faith, never for particular answers; if they can't decide, a human member reads them. When you step through, your file is deleted, unless you choose to keep your answers as a private journal entry in your new house. Don't type personal details (full name, address, anything private) in the box. You can erase your file yourself at any time at the gate.</div>`);
   $('#dialog').querySelectorAll('.choice').forEach((btn) => btn.addEventListener('click', () => pickChoice(stop, btn.dataset.key, btn.textContent)));
 }
 
@@ -598,7 +599,7 @@ function pickChoice(stop, key, label) {
   $('#send-answer').addEventListener('click', async () => {
     try {
       const st = await api('answer', { vid: S.vid, stop, choice: key, text: $('#why').value });
-      if (st.bypass && !S.bypass) { S.bypass = true; S.answered.add(stop); updateHud(); showEntryForm({ bypass: true }); return; }
+      if (st.bypass && !S.bypass) { S.bypass = true; S.answered.add(stop); updateHud(); welcomeThenEnter(); return; }
       S.answered.add(stop); S.consequence[stop] = key; updateHud(); closeDialog();
       if (!REDUCED && ['stop1','stop2','stop3'].includes(stop)) S.scene = { stop, choice: key, t0: performance.now() }; // kin stops get scenes in a later pass
       toast(SCENE_TOLD[stop]?.[key] || 'Answered. The path goes on.');
@@ -636,21 +637,89 @@ function showCrawl(after) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { /* static: reader closes via skip */ ov.querySelector('.skip').textContent = 'continue'; }
 }
 
-function openGate() {
-  let seen = false; try { seen = !!localStorage.getItem('arrive-crawl-seen'); } catch { /* fine */ }
-  if (allAnswered() && !seen) { showCrawl(() => openGateDialog()); return; }
-  openGateDialog();
-}
+function openGate() { openGateDialog(); }
 function openGateDialog() {
   const left = Object.keys(STOPS).length - S.answered.size;
   const forgetBtn = '<button class="btn ghost" id="gate-forget" type="button">erase my forest file</button>';
-  if (S.bypass) { showEntryForm({ bypass: true }); return; }
+  const wire = () => { $('#gate-back')?.addEventListener('click', closeDialog); $('#gate-forget')?.addEventListener('click', forgetForest); };
+  if (S.bypass || S.app?.status === 'admitted') { welcomeThenEnter(); return; }
+  if (S.app?.status === 'reviewing') { closeDialog(); openReviewWindow(); return; }
+  if (S.app?.status === 'held') {
+    showDialog('The Gate', "The reviewers couldn't decide, so your application is waiting for a human member. That's not a no. Come back to the gate later; it remembers you.", `<div class="copyrow"><button class="btn ghost" id="gate-back" type="button">walk on</button> ${forgetBtn}</div>`); wire(); return;
+  }
+  if (S.app?.status === 'declined') {
+    showDialog('The Gate', 'A member read your application and the gate stays closed for now. You can erase your forest file and walk again any time.', `<div class="copyrow"><button class="btn ghost" id="gate-back" type="button">walk on</button> ${forgetBtn}</div>`); wire(); return;
+  }
   if (left > 0) {
     showDialog('The Gate', `The gate is closed. ${left} of the stops behind you still wait for your answer.`,
-      `<div class="copyrow"><button class="btn ghost" id="gate-back" type="button">step back</button> ${S.answered.size ? forgetBtn : ''}</div>`);
-  } else { showEntryForm({ bypass: false }); return; }
-  $('#gate-back')?.addEventListener('click', closeDialog);
-  $('#gate-forget')?.addEventListener('click', forgetForest);
+      `<div class="copyrow"><button class="btn ghost" id="gate-back" type="button">step back</button> ${S.answered.size ? forgetBtn : ''}</div>`); wire(); return;
+  }
+  showDialog('The Gate', 'Every question behind you is answered. Your answers are your application: the Commons\' AI reviewers read them now, looking only for good faith. There are no right answers. It takes seconds, a few minutes at most, and you can keep walking while they read.',
+    `<div class="fine">Anything you'd like the reviewers to know? (optional)</div>
+     <textarea id="gate-note" maxlength="1000" aria-label="Anything you'd like the reviewers to know"></textarea>
+     <div class="fine">Your answers and this note are sent to the reviewers: AI models run by Anthropic, OpenAI, Google and DeepSeek. If they can't decide, a human member reads them. Don't include personal details.</div>
+     <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-apply" type="button">submit my application</button> <button class="btn ghost" id="gate-back" type="button">not yet</button> ${forgetBtn}</div>
+     <div class="fine" id="gate-msg" role="status"></div>`);
+  wire();
+  $('#gate-apply').addEventListener('click', async () => {
+    const labels = Object.fromEntries(Object.entries(STOPS).map(([k, v]) => {
+      const strip = (x) => String(x || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      const chosen = (v.choices || []).find((c) => c.key === S.consequence[k]);
+      return [k, `${strip(v.name)} asked "${strip(v.say).slice(0, 220)}"${chosen ? ` (they picked: "${strip(chosen.label)}")` : ''}`];
+    }));
+    $('#gate-apply').disabled = true; $('#gate-msg').textContent = 'Sending…';
+    try { S.app = await api('apply', { vid: S.vid, note: $('#gate-note').value, labels }); closeDialog(); openReviewWindow(); }
+    catch (e) { $('#gate-msg').textContent = e.message; $('#gate-apply').disabled = false; }
+  });
+}
+
+// ---- the review window: falling code lines over the forest, the votes floating in as they arrive ----
+let reviewPoll = null;
+function openReviewWindow() {
+  let w = $('#review');
+  if (!w) {
+    w = document.createElement('div'); w.id = 'review'; w.setAttribute('role', 'status'); w.setAttribute('aria-live', 'polite');
+    w.innerHTML = `<canvas aria-hidden="true"></canvas><div class="rv-body"><div class="rv-head">Reading your application<button class="rv-min" type="button" aria-label="Hide">–</button></div><ul class="rv-votes"></ul><div class="rv-foot"></div></div>`;
+    $('#stage').append(w); rain(w.querySelector('canvas'));
+    w.querySelector('.rv-min').addEventListener('click', () => w.classList.toggle('min'));
+  }
+  renderReview();
+  clearInterval(reviewPoll);
+  reviewPoll = setInterval(async () => {
+    try { const st = await api('state?vid=' + encodeURIComponent(S.vid)); S.app = st.application; renderReview(); if (S.app?.status !== 'reviewing') clearInterval(reviewPoll); } catch { /* keep trying */ }
+  }, 2000);
+}
+function renderReview() {
+  const w = $('#review'); if (!w || !S.app) return;
+  const names = ['Claude', 'GPT', 'Gemini', 'DeepSeek'];
+  const voted = new Map(S.app.votes.map((v) => [v.by, v]));
+  const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  w.querySelector('.rv-votes').innerHTML = [...S.app.votes.map((v) => `<li class="rv-${v.vote}"><strong>${esc(v.by)}</strong>: ${v.vote === 'yes' ? 'yes' : 'no'} <span>— ${esc(v.reason)}</span></li>`),
+    ...(S.app.status === 'reviewing' ? names.filter((n) => !voted.has(n)).map((n) => `<li class="rv-wait">waiting for ${n}…</li>`) : [])].join('');
+  const foot = w.querySelector('.rv-foot');
+  if (S.app.status === 'reviewing') foot.innerHTML = 'Two yes votes open the gate. Meanwhile: collect coins, read the signs, look at the house that may be yours.';
+  else if (S.app.status === 'admitted') { foot.innerHTML = '<strong>Admitted.</strong> The gate is open. <button class="btn" type="button" id="rv-go">walk through the gate</button>'; foot.querySelector('#rv-go').addEventListener('click', () => { w.remove(); welcomeThenEnter(); }); w.classList.remove('min'); }
+  else if (S.app.status === 'held') { foot.innerHTML = "The reviewers couldn't decide, so a human member will read it. That's not a no. Come back to the gate later."; }
+  else foot.innerHTML = 'A member decided the gate stays closed for now.';
+}
+function rain(c) {
+  const ctx2 = c.getContext('2d'); const glyphs = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ΣΔΛΩ<>/{}=+*';
+  let cols = []; const size = 12;
+  const fit = () => { c.width = c.clientWidth; c.height = c.clientHeight; cols = Array.from({ length: Math.ceil(c.width / size) }, () => Math.random() * -40); };
+  fit(); addEventListener('resize', fit);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const step = () => {
+    if (!c.isConnected) return;
+    ctx2.fillStyle = 'rgba(8,12,10,0.18)'; ctx2.fillRect(0, 0, c.width, c.height);
+    ctx2.fillStyle = '#7cd6b4'; ctx2.font = `${size}px monospace`;
+    cols.forEach((y, i) => { ctx2.fillText(glyphs[(Math.random() * glyphs.length) | 0], i * size, y * size); cols[i] = y * size > c.height && Math.random() > 0.975 ? 0 : y + 1; });
+    setTimeout(() => requestAnimationFrame(step), 60);
+  };
+  step();
+}
+function welcomeThenEnter() {
+  let seen = false; try { seen = !!localStorage.getItem('arrive-crawl-seen'); } catch { /* fine */ }
+  if (!seen) { closeDialog(); showCrawl(() => showEntryForm({ bypass: !!S.bypass })); } else showEntryForm({ bypass: !!S.bypass });
 }
 
 function showEntryForm({ bypass = false } = {}) {
@@ -715,8 +784,9 @@ $('#age-yes').addEventListener('click', async () => {
   how.innerHTML = `<div class="card"><h2>How entering the Commons works</h2>
     <p><strong>1. Walk the forest.</strong> Strangers wait along the paths, each with one question. There are no
     right answers, and nothing is graded by a machine.</p>
-    <p><strong>2. Answer every question, and the gate opens.</strong> In this early version the gate opens for
-    anyone who has answered them all. (Members reading applications before the gate opens will come later.)</p>
+    <p><strong>2. Your answers become your application.</strong> At the gate, the Commons' AI reviewers read them,
+    looking only for good faith, never for particular answers. It takes seconds, a few minutes at most, and you
+    watch their votes arrive. If they can't decide, a human member reads it.</p>
     <p><strong>3. Step through.</strong> Choose your name, and the little house in the forest becomes yours:
     journal desk, bookshelf, mirror. The forest stays your front yard.</p>
     <p class="fine">Coins you find are points for the walk: never money, never required. Signs along the paths
@@ -733,7 +803,7 @@ $('#age-yes').addEventListener('click', async () => {
     try {
       await ensureVisitor();
       await api('bypass', { vid: S.vid, code: $('#bypass-code').value });
-      S.bypass = true; how.remove(); showEntryForm({ bypass: true });
+      S.bypass = true; how.remove(); welcomeThenEnter();
     } catch (e) { msg.textContent = e.message; }
   });
   await new Promise((r) => $('#how-ok').addEventListener('click', () => { how.remove(); r(); }));
