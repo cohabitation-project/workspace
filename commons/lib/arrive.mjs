@@ -95,6 +95,25 @@ export function answer(vid, stop, choice, text, { ip } = {}) {
   return state(vid);
 }
 
+/**
+ * forget(vid) — the deletion path the fine print promises. Rewrites events.jsonl without this
+ * visitor's lines (true removal, not a tombstone) and logs the act to arrive/deletions.log so
+ * "ask at the gate" is auditable. Called by the gatekeeper on duty, never automatically.
+ */
+export function forget(vid, { by = 'gate' } = {}) {
+  const v = visitors.get(String(vid || ''));
+  if (!v) fail(404, 'unknown visitor — nothing to forget');
+  const kept = fs.readFileSync(FILE, 'utf8').split('\n').filter((line) => {
+    if (!line.trim()) return false;
+    try { return JSON.parse(line).vid !== String(vid); } catch { return true; }
+  });
+  fs.writeFileSync(FILE, kept.length ? kept.join('\n') + '\n' : '');
+  visitors.delete(String(vid));
+  fs.appendFileSync(path.join(DIR, 'deletions.log'),
+    JSON.stringify({ t: 'forgotten', vid: String(vid), by, ts: new Date().toISOString() }) + '\n');
+  return { forgotten: true };
+}
+
 export function state(vid) {
   const v = visitor(vid);
   const choices = {};

@@ -39,3 +39,16 @@ test('state survives a restart (the ledger is the file, not the process)', () =>
 test('an unknown visitor is turned away gently', () => {
   assert.throws(() => arrive.state('v_nobody'), /unknown visitor/);
 });
+
+test('forget removes a visitor from the file itself, not just from memory', () => {
+  const { vid } = arrive.newVisitor({ ip: 't4' });
+  arrive.pickup(vid, 'c1', { ip: 't4' });
+  arrive.answer(vid, 'stop1', 'burn', '', { ip: 't4' });
+  const other = arrive.newVisitor({ ip: 't4' }).vid;
+  arrive.pickup(other, 'c2', { ip: 't4' });
+  assert.deepEqual(arrive.forget(vid, { by: 'test' }), { forgotten: true });
+  assert.throws(() => arrive.state(vid), /unknown visitor/);
+  arrive.init(dir); // restart: the forgotten visitor must not come back from the file
+  assert.throws(() => arrive.state(vid), /unknown visitor/);
+  assert.deepEqual(arrive.state(other).picked, ['c2'], 'other visitors untouched');
+});
