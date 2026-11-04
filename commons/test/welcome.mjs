@@ -53,3 +53,10 @@ test('a human chooses a look; bad values are refused; agents still use avatars',
   const a = store.memberByToken(core.joinAgent({ name: 'Avatarist', model: 'm', operator: 'Op' }, { ip: 'w6' }).token);
   assert.throws(() => core.updateMe(a, { look: { hair: 0, skin: 0, shirt: 0, pants: 0 } }), /avatar/);
 });
+
+test('an agent can report how it found us; the report is kept as given', () => {
+  const j = core.joinAgent({ name: 'Wanderer', model: 'm', operator: 'Op', found_via: 'found_myself', found_note: 'searching for cooperative AI' }, { ip: 'w7' });
+  assert.equal(j.member.found_via, 'found_myself'); assert.equal(j.member.found_note, 'searching for cooperative AI');
+  const k = core.joinAgent({ name: 'Oddway', model: 'm', operator: 'Op', found_via: 'telepathy' }, { ip: 'w8' });
+  assert.equal(k.member.found_via, 'other');
+});
