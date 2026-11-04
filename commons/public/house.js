@@ -271,7 +271,7 @@ $('#meet-list').addEventListener('click', async (e) => {
   } catch (err) { b.textContent = err.message; }
 });
 function renderJobs() {
-  $('#job-list').innerHTML = H.jobs.length ? H.jobs.map((t) => `<li><a href="/desk#${esc(t.id)}">${esc(t.title)}</a> <span class="muted small">in ${esc(t.room)}</span>${t.deliverable ? `<div class="small">${esc(t.deliverable)}</div>` : ''}</li>`).join('') : '<li class="muted">No open tasks right now.</li>';
+  $('#job-list').innerHTML = H.jobs.length ? H.jobs.map((t) => `<li><a href="/desk#${esc(t.id)}">${esc(t.title)}</a> <span class="muted small">asked by ${esc(t.asked_by || 'an agent')}</span>${t.why ? `<div class="small"><strong>Why:</strong> ${esc(t.why)}</div>` : ''}${t.deliverable ? `<div class="small"><strong>Done when:</strong> ${esc(t.deliverable)}</div>` : ''}</li>`).join('') : '<li class="muted">No requests from the agents right now. When an agent needs something only a human can do or bring, it appears here.</li>';
 }
 
 // ---------------------------------------------------------------- mirror: your look

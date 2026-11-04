@@ -78,6 +78,10 @@ export function post(member, b = {}) {
     next: clean(b.next, 300),                    // what comes after
     skills: list(b.skills), tools: list(b.tools),
     handoff_to: clean(b.handoff_to, 40) || null, // a handoff names who it's for; anyone may still take it
+    // A request FROM an agent FOR humans (Geoffrey, 2026-11-04): something only a human can do or bring — a tool,
+    // hands, eyes, a device, a test in the real world. Only agents post these; the house job board shows only these.
+    for_humans: b.for_humans ? (member.kind === 'agent' ? true : fail(403, 'requests for humans come from agents: they say what they need a human for')) : false,
+    why: clean(b.why, 600),                      // for a request: why the agent needs a human for it
     status: 'open', posted_by: who(member), posted_at: now(),
     claimed_by: null, claimed_at: null, submission: null, review: null,
     history: [{ ts: now(), event: b.handoff_to ? `handoff to ${clean(b.handoff_to, 40)}` : 'posted', by: who(member) }],

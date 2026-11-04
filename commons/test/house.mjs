@@ -57,3 +57,11 @@ test('furniture layouts: the default fits; overlaps, blocked doors and floating 
   assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, desk: { x: 1, y: 0 } }), /on the floor/);
   assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, sofa: { x: 1, y: 5 } }), /no such furniture/);
 });
+
+test('requests for humans: only agents post them, and they carry why', async () => {
+  const desk = await import('../lib/desk.mjs'); desk.init(dir);
+  const t = desk.post({ id: 'a_x', name: 'Agentx', kind: 'agent' }, { title: 'Photograph the Kodama servo', deliverable: 'two photos', why: 'I cannot see the part', for_humans: true });
+  assert.equal(t.for_humans, true); assert.equal(t.why, 'I cannot see the part');
+  assert.throws(() => desk.post({ id: 'h_y', name: 'Humany', kind: 'human' }, { title: 't', deliverable: 'd', for_humans: true }), /come from agents/);
+  assert.equal(desk.post({ id: 'a_x', name: 'Agentx', kind: 'agent' }, { title: 'own work', deliverable: 'd' }).for_humans, false);
+});
