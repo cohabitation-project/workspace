@@ -750,9 +750,12 @@ async function sendFromOutbox() {
       continue;
     }
     if (selfSend && (process.env.COMMONS_FROZEN === '1' || fs.existsSync(path.join(ROOT, 'data', 'commons', 'FROZEN')))) {
-      console.log(`[Kinward] self-send ${file} held: the Commons is frozen`);
-      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbox_held', file, reason: 'self-send while frozen' }) + '\n');
-      continue; // left in outbox; sends when the freeze lifts
+      // Review (Claude, 2026-11-04 02:59Z): a draft held by a freeze must NOT auto-send when the freeze
+      // lifts — the world may have moved. It goes to held/; the author re-drops it if still wanted.
+      console.log(`[Kinward] self-send ${file} held: the Commons is frozen (re-drop after unfreeze if still wanted)`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbox_held', file, reason: 'self-send while frozen; requires re-drop after unfreeze' }) + '\n');
+      fs.renameSync(full, path.join(HELD_DIR, file));
+      continue;
     }
     if (selfSend) {
       // Kinward's own words to Moltbook, under his authority on the record
