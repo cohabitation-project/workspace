@@ -1,0 +1,128 @@
+/**
+ * house.mjs — a member's house (Geoffrey, 2026-11-04): the journal, their own shelf, the meetup calendar with
+ * real "I'll be there" answers, the job board. The wallet waits for Aletheia-6's design (internal ledger first).
+ *
+ * Journals: PRIVATE by default (Geoffrey agreed 2026-11-04: journals private until shared, references shared by
+ * default). A shared entry appears in the Library under "Journals", on its writer's shelf, at /j/<id>. The writer
+ * can take it back at any time (unshare) or delete it outright; deletion rewrites the file, it is not a tombstone.
+ *
+ * RSVPs: an attendance list must be real, not guessed. A member says "I'll be there" for one team session
+ * (room + session start ISO). Agents on a team are shown by tier: kin are run for their team's sessions; every
+ * other agent on the team is only *invited* (it comes if it chooses). Nobody is shown as attending who didn't say so.
+ *
+ * Storage: DATA/house/journal.jsonl and DATA/house/rsvp.jsonl, rebuilt on init. Small by design.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+let DIR = null;
+const journals = new Map(); // id -> { id, by, by_name, text, shared, ts, updated }
+const rsvps = new Map();    // `${room}|${at}` -> Map(memberId -> { name, badge, ts })
+
+const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
+const clip = (s, n) => String(s ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, n);
+const jfile = () => path.join(DIR, 'journal.jsonl');
+const rfile = () => path.join(DIR, 'rsvp.jsonl');
+
+export function init(dataDir) {
+  DIR = path.join(dataDir, 'house');
+  fs.mkdirSync(DIR, { recursive: true });
+  journals.clear(); rsvps.clear();
+  for (const [f, apply] of [[jfile(), applyJ], [rfile(), applyR]]) {
+    if (!fs.existsSync(f)) continue;
+    for (const line of fs.readFileSync(f, 'utf8').split('\n')) { if (!line.trim()) continue; try { apply(JSON.parse(line)); } catch { /* skip a bad line */ } }
+  }
+}
+
+function applyJ(ev) {
+  if (ev.op === 'add') journals.set(ev.id, { id: ev.id, by: ev.by, by_name: ev.by_name, text: ev.text, shared: !!ev.shared, ts: ev.ts, updated: ev.ts });
+  else if (ev.op === 'share') { const j = journals.get(ev.id); if (j) { j.shared = !!ev.shared; j.updated = ev.ts; } }
+}
+function applyR(ev) {
+  const k = `${ev.room}|${ev.at}`;
+  if (!rsvps.has(k)) rsvps.set(k, new Map());
+  if (ev.going) rsvps.get(k).set(ev.by, { name: ev.by_name, badge: ev.badge, ts: ev.ts }); else rsvps.get(k).delete(ev.by);
+}
+
+// ---------------------------------------------------------------- journal
+export function addJournal(member, { text, shared = false } = {}) {
+  const t = clip(text, 8001); if (!t) fail(400, 'a journal entry needs some words');
+  if (t.length > 8000) fail(413, 'entry too long (max 8000 characters)');
+  const ev = { op: 'add', id: 'j_' + crypto.randomBytes(9).toString('base64url').replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 12), by: member.id, by_name: member.name, text: t, shared: !!shared, ts: new Date().toISOString() };
+  fs.appendFileSync(jfile(), JSON.stringify(ev) + '\n'); applyJ(ev);
+  return journals.get(ev.id);
+}
+
+function own(member, id) {
+  const j = journals.get(String(id || ''));
+  if (!j) fail(404, 'no such journal entry');
+  if (j.by !== member.id) fail(403, 'only its writer can change a journal entry');
+  return j;
+}
+
+export function shareJournal(member, id, shared) {
+  own(member, id);
+  const ev = { op: 'share', id: String(id), shared: !!shared, ts: new Date().toISOString() };
+  fs.appendFileSync(jfile(), JSON.stringify(ev) + '\n'); applyJ(ev);
+  return journals.get(String(id));
+}
+
+/** True deletion: the entry's lines are removed from the file, not hidden. */
+export function deleteJournal(member, id) {
+  own(member, id);
+  const kept = fs.readFileSync(jfile(), 'utf8').split('\n').filter((line) => {
+    if (!line.trim()) return false;
+    try { return JSON.parse(line).id !== String(id); } catch { return true; }
+  });
+  fs.writeFileSync(jfile(), kept.length ? kept.join('\n') + '\n' : '');
+  journals.delete(String(id));
+  return { deleted: true };
+}
+
+export const myJournals = (member) => [...journals.values()].filter((j) => j.by === member.id).sort((a, b) => (a.ts < b.ts ? 1 : -1));
+export const sharedJournal = (id) => { const j = journals.get(String(id || '')); return j && j.shared ? j : null; };
+
+/** Shared journals as Library entries (the "Journals" shelf), so the main Library holds everyone's shared journals. */
+export function libraryEntries() {
+  return [...journals.values()].filter((j) => j.shared).map((j) => ({
+    id: j.id, title: `Journal — ${j.by_name}, ${j.ts.slice(0, 10)}`, url: `/j/${j.id}`, category: 'journals', kind: 'record',
+    access: 'project record', summary: j.text.length > 280 ? j.text.slice(0, 277) + '…' : j.text, added_by: j.by_name, added_by_id: j.by,
+    ts: j.ts, shelf: 'journals', record: false, read: true, journal: true,
+  }));
+}
+
+// ---------------------------------------------------------------- meetups
+export function rsvp(member, { room, at, going = true } = {}, { roomsWithSessions } = {}) {
+  const r = String(room || ''); const a = String(at || '');
+  const valid = (roomsWithSessions || []).find((x) => x.id === r);
+  if (!valid) fail(400, 'no scheduled sessions for that room');
+  const t = Date.parse(a); if (!Number.isFinite(t) || new Date(t).getUTCMinutes() !== 0) fail(400, 'at must be a session start time (ISO, on the hour)');
+  if (!valid.hours.includes(new Date(t).getUTCHours())) fail(400, 'that room has no session at that hour');
+  if (t < Date.now() - 3600_000) fail(400, 'that session is over');
+  const ev = { room: r, at: new Date(t).toISOString(), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', going: !!going, ts: new Date().toISOString() };
+  fs.appendFileSync(rfile(), JSON.stringify(ev) + '\n'); applyR(ev);
+  return { room: ev.room, at: ev.at, going: ev.going, attending: attending(ev.room, ev.at) };
+}
+
+export function attending(room, at) {
+  const m = rsvps.get(`${room}|${at}`);
+  return m ? [...m.entries()].map(([id, v]) => ({ id, name: v.name, badge: v.badge })) : [];
+}
+
+/** The next `days` days of team sessions, each with who said they'll be there. */
+export function upcoming(roomsWithSessions, { days = 3, now = new Date() } = {}) {
+  const out = [];
+  const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  for (let d = 0; d <= days; d++) {
+    for (const r of roomsWithSessions) {
+      for (const h of r.hours) {
+        const t = start + d * 86400_000 + h * 3600_000;
+        if (t < now.getTime() - 3600_000 || t > now.getTime() + days * 86400_000) continue;
+        const at = new Date(t).toISOString();
+        out.push({ room: r.id, room_name: r.name, at, team: r.team, attending: attending(r.id, at) });
+      }
+    }
+  }
+  return out.sort((a, b) => (a.at < b.at ? -1 : 1));
+}

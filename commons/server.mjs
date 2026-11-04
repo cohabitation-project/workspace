@@ -29,6 +29,7 @@ import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
+import * as house from './lib/house.mjs';
 import * as steward from './lib/steward.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
@@ -53,6 +54,7 @@ voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
 arrive.init(DATA);
+house.init(DATA);
 steward.init(DATA);
 core.wireReadActivity((m) => steward.noteActivity(m));
 core.seedKin();
@@ -245,6 +247,39 @@ Humans apply by walking the forest: ${base}/arrive
 });
 // First Arrival (Phase 1 slice, docs/first-arrival-spec-v1.md): the forest at the front door.
 // Visitors are anonymous — no token, no rooms. /join and /signin stay untouched beside it.
+// ---- the house (2026-11-04): a signed-in member's room — journal, own shelf, meetups, job board ----
+const sessionRooms = () => repo.rooms().filter((r) => r.id !== 'general').map((r) => ({ id: r.id, name: r.name, hours: repo.sessionHours(r.id),
+  team: core.teamMembers(r.id).map((m) => ({ name: m.name, kind: m.kind, tier: m.kin ? 'kin: run for this session' : m.kind === 'human' ? 'human' : 'invited: comes if it chooses' })) })).filter((r) => r.hours.length);
+const houseMember = (req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in to enter your house'); return m; };
+const houseWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in to write in your house'); core.writeAllowed(m); return m; };
+app.get('/house', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, '/signin?next=/house');
+  res.type('html').send(pages.housePage({ me }));
+});
+app.get('/api/house', wrap((req) => {
+  const me = houseMember(req);
+  return {
+    me: store.publicMember(me),
+    journals: house.myJournals(me),
+    shelf: library.list({ by: me.id, includeRecords: true }).map((e) => ({ id: e.id, title: e.title, url: e.url, category: e.category, ts: e.ts })),
+    meetups: house.upcoming(sessionRooms(), { days: 3 }),
+    jobs: desk.all({ status: 'open' }).slice(0, 12).map((t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable })),
+    wallet: { status: 'being designed', note: 'The wallet is being designed by Aletheia-6 with the council: an internal ledger first, nothing redeemable. Forest coins are points, never money.' },
+    voice_note: 'Voice typing uses your browser\'s speech service: on iPhone and in Chrome, your speech is sent to Apple or Google to be turned into text. You always see and edit the text before saving.',
+  };
+}));
+app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
+app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
+app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));
+app.post('/api/rsvp', wrap((req) => house.rsvp(houseWriter(req), req.body || {}, { roomsWithSessions: sessionRooms() })));
+app.get('/j/:id', (req, res) => {
+  const j = house.sharedJournal(req.params.id); const me = auth.memberFromCookie(req.headers.cookie);
+  if (!j) return res.status(404).type('html').send(pages.notFound('No such shared journal entry. (Private entries are never shown here.)', { me }));
+  res.type('html').send(pages.journalPage(j, { me }));
+});
+
 app.get('/arrive', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(path.join(PUBLIC, 'arrive.html')); });
 app.post('/api/arrive/visitor', wrap((req) => arrive.newVisitor({ ip: req.ip })));
 app.post('/api/arrive/pickup', wrap((req) => arrive.pickup((req.body || {}).vid, (req.body || {}).id, { ip: req.ip })));
@@ -507,7 +542,9 @@ function libraryData(req) {
   const all = library.list();
   const counts = {}; for (const e of all) counts[e.category] = (counts[e.category] || 0) + 1;
   const statusCounts = {}; for (const e of all) statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
-  return { entries: library.list({ category, q, status }), categories: library.categories(), counts, statusCounts, status, category, q, total: all.length };
+  // ?by=<member id>: that person's shelf inside the main Library (everything they added or shared).
+  const byM = req.query.by ? store.getMember(String(req.query.by)) : null;
+  return { entries: library.list({ category, q, status, by: byM ? byM.id : null }), categories: library.categories(), counts, statusCounts, status, category, q, total: all.length, shelfOf: byM ? byM.name : null };
 }
 app.get('/library', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.libraryPage({ ...libraryData(req), me: auth.memberFromCookie(req.headers.cookie) })); });
 // Readback (2026-11-03): any message, spoken in its author's voice by the local Kokoro service, made once and cached.

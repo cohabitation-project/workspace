@@ -790,7 +790,8 @@ function handle(m) {
       if (S.me) {
         const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`;
         const so = $('#signout'); so.hidden = false;
-        so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.reload(); };
+        so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.replace('/'); };
+        if (S.me.kind === 'human' && !$('#house-link')) { const h = document.createElement('a'); h.id = 'house-link'; h.className = 'me'; h.href = '/house'; h.textContent = 'Your house'; l.after(h); }
       }
       $('#live').lastElementChild.textContent = `live · ${m.viewers} watching`;
       // Rebuild figures from the server's truth (no walking: they were already there).

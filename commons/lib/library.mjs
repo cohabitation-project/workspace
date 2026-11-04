@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import * as house from './house.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 let DIR = null;
@@ -96,10 +97,14 @@ export const findById = (id) => list({ includeRecords: true }).find((e) => e.id 
 export const normUrl = (u) => String(u || '').trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/[#?].*$/, '').replace(/\/+$/, '').toLowerCase();
 
 /** Every entry, newest first, optionally filtered by category and a text query. */
-export function list({ category = null, q = null, status = null, includeRecords = true } = {}) {
+export function list({ category = null, q = null, status = null, includeRecords = true, by = null } = {}) {
   const vs = votes();
   let all = [...repoEntries(), ...commonsEntries()].map((e) => { const yes = vs.get(e.id) || []; return { ...e, yes: yes.map((v) => v.by_name), status: yes.length >= YES_NEEDED ? 'shelved' : 'proposed' }; });
   if (includeRecords) all = all.concat(recordEntries().map((e) => ({ ...e, yes: [], status: 'record' })));
+  // Shared journals (house.mjs): everyone's shared journals live in the main Library, on the "Journals" shelf.
+  try { all = all.concat(house.libraryEntries().map((e) => ({ ...e, yes: (vs.get(e.id) || []).map((v) => v.by_name), status: 'shelved' }))); } catch { /* house not initialised */ }
+  // A person's own shelf (Geoffrey 2026-11-04): everything they added or shared, inside the main Library.
+  if (by) all = all.filter((e) => e.added_by_id === by);
   if (status) all = all.filter((e) => e.status === status);
   if (category) all = all.filter((e) => e.category === category);
   if (q) {

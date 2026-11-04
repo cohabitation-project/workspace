@@ -62,6 +62,11 @@
  {
   "id": "submitted-files",
   "name": "Submitted files",
-  "note": "Files dropped through /submit \u2014 scanned, then cleared by a signed-in human before they are served. The log shows who dropped and who cleared each one."
+  "note": "Files dropped through /submit — scanned, then cleared by a signed-in human before they are served. The log shows who dropped and who cleared each one."
+ },
+ {
+  "id": "journals",
+  "name": "Journals",
+  "note": "Members' journal entries that their writers chose to share. Private entries never appear here; a writer can take an entry back at any time."
  }
 ]

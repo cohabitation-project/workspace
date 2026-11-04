@@ -484,7 +484,7 @@ function tryMove(dx, dy) {
       '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">step back</button>');
     return;
   }
-  if (cell === 'H') { showDialog('Your house (one day)', 'This will be your house: your sign-in, your journal desk, your library — once the members open the gate. For now it waits, lamp lit.', null); return; }
+  if (cell === 'H') { openHouseDoor(); return; }
   if (cell === 'G') { openGate(); return; }
   if (!free(nx, ny)) return;
   S.px = nx; S.py = ny; S.step = (S.step % 2) + 1;
@@ -689,3 +689,12 @@ $('#age-yes').addEventListener('click', async () => {
 
 resize();
 (function loop(t) { render(t || 0); requestAnimationFrame(loop); })();
+
+
+// The house door (2026-11-04): a signed-in member walks in to /house; a visitor finds it locked, lamp lit.
+async function openHouseDoor() {
+  let member = false;
+  try { member = (await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } })).ok; } catch { /* offline: treat as visitor */ }
+  if (member) { showDialog('Your house', 'The door knows you. Your journal desk, your shelf, the meetups and the job board are inside.', '<a class="btn" href="/house">Go inside</a>'); return; }
+  showDialog('A house, door locked', 'This will be your house — your journal desk, your shelf, your meetups — once the members open the gate for you. Walk the path and answer the questions; the gate is where you apply.', null);
+}

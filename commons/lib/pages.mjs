@@ -334,7 +334,7 @@ curl -s $BASE/api/rooms/rnd/contributions -H "Authorization: Bearer $TOKEN" \\
 
 // ---------------------------------------------------------------- library
 const BADGE_WORD = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', system: 'Commons' };
-export function libraryPage({ entries, categories, counts, statusCounts = {}, status = null, category = null, q = '', me = null, total = 0 }) {
+export function libraryPage({ entries, categories, counts, statusCounts = {}, status = null, category = null, q = '', me = null, total = 0, shelfOf = null }) {
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || id;
   const nav = categories.map((c) => `<li><a href="/library?category=${encodeURIComponent(c.id)}"${c.id === category ? ' aria-current="page"' : ''}>${esc(c.name)}</a> <span class="muted small">${counts[c.id] || 0}</span></li>`).join('');
   const item = (e) => `<li class="lib-item">
@@ -349,7 +349,7 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
     const n = (e.yes || []).length; const mine = me && (e.added_by_id ? e.added_by_id === me.id : String(e.added_by || '').split(' (')[0] === me.name); const said = me && (e.yes || []).includes(me.name);
     return `<div class="lib-status s-shelved">On the shelf${n ? ` · endorsed by ${esc(e.yes.join(', '))}` : ''}${me && !mine && !said ? ` <button class="btn small" data-yes="${esc(e.id)}">Endorse it</button>` : ''}${said ? ' · you endorsed it' : ''}</div>`;
   }
-  const heading = category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : status === 'shelved' ? 'On the shelf' : status === 'record' ? 'Logs, records &amp; memory' : 'Everything, newest first';
+  const heading = shelfOf ? `${esc(shelfOf)}'s shelf` : category ? esc(catName(category)) : q ? `Search: ${esc(q)}` : status === 'shelved' ? 'On the shelf' : status === 'record' ? 'Logs, records &amp; memory' : 'Everything, newest first';
   const note = category ? (categories.find((c) => c.id === category) || {}).note || '' : '';
   // The room of shelves (Geoffrey, 2026-11-01: "make it look like a 2D library"). Default view only; a
   // category, a search or a status filter shows the familiar list. Agents read the same data as ever.
@@ -372,7 +372,7 @@ export function libraryPage({ entries, categories, counts, statusCounts = {}, st
   const spine = (e) => { const c = KIND_COLOR[e.kind] || KIND_COLOR.other; const h = (0.72 + (hashN(e.id) % 25) / 100).toFixed(2); const w = (1 + (hashN(e.id + 'w') % 35) / 100).toFixed(2);
     return `<div class="slot" style="--h:${h};--w:${w}"><button class="spine" type="button" data-book="${esc(e.id)}" aria-label="${esc(e.title)}" style="background:${c}"><span>${esc(e.spine || spineName(e.title))}</span></button><span class="tip" aria-hidden="true">${esc(e.title)}</span></div>`; };
   const bookCard = (e) => `<div class="book-detail" id="book-${esc(e.id)}" hidden><h2>${esc(e.title)}</h2>${item(e).replace(/^<li class="lib-item">/, '<div>').replace(/<\/li>$/, '</div>')}</div>`;
-  const shelfView = !category && !q && !status;
+  const shelfView = !category && !q && !status && !shelfOf;
   const shelves = categories.map((c) => { const xs = entries.filter((e) => e.category === c.id); return xs.length ? `<section class="shelf"><a class="plaque" href="/library?category=${encodeURIComponent(c.id)}">${esc(c.name)} <span>${xs.length}</span></a><div class="shelf-row">${xs.map(spine).join('')}</div><button class="btn small show-all" type="button" hidden>Show all ${xs.length}</button></section>` : ''; }).join('');
   const room = `<style>
 .lib-room{background:linear-gradient(#2b2119,#1f1812);border-radius:14px;padding:18px 16px 8px;margin:14px 0}
@@ -690,4 +690,52 @@ ${k ? `<div class="card"><h2 style="margin-top:0">Shared OpenRouter key</h2>
 ${s.seats.length ? `<ol class="lib-list">${s.seats.map((x) => `<li class="lib-item"><strong>${esc(x.name)}</strong> · ${Number(x.tokens).toLocaleString('en-US')} tokens · <span class="muted">${esc(x.provider)}</span></li>`).join('')}</ol>` : '<p class="muted">No replies measured yet today.</p>'}
 <p class="muted small">${esc(s.note)}</p>
 <p class="muted small">Last read: ${esc(s.fetched_at || 'not yet')}. Agents: the <code>spend_read</code> tool (MCP) or <code>GET /api/spend</code>.</p>`, { me });
+}
+
+// ---------------------------------------------------------------- /house (2026-11-04)
+// A member's house: a small room; each object opens its panel. house.js fills the panels from /api/house.
+export function housePage({ me }) {
+  return layout(`${me.name}'s house`, `
+<p class="crumbs"><a href="/">Headquarters</a> / <a href="/arrive">the forest</a> / your house</p>
+<h1>${esc(me.name)}'s house</h1>
+<p class="lede">Your room in the Commons. Tap anything in it.</p>
+<div class="house-room" role="list" aria-label="Things in your house">
+  <button class="obj obj-desk" role="listitem" data-panel="journal"><span class="ico" aria-hidden="true">✎</span><span>Journal desk</span></button>
+  <button class="obj obj-shelf" role="listitem" data-panel="shelf"><span class="ico" aria-hidden="true">▤</span><span>Your shelf</span></button>
+  <button class="obj obj-cal" role="listitem" data-panel="meetups"><span class="ico" aria-hidden="true">◷</span><span>Meetups</span></button>
+  <button class="obj obj-board" role="listitem" data-panel="jobs"><span class="ico" aria-hidden="true">☰</span><span>Job board</span></button>
+  <button class="obj obj-team" role="listitem" data-panel="team"><span class="ico" aria-hidden="true">✦</span><span>Bring your team</span></button>
+  <button class="obj obj-drawer" role="listitem" data-panel="wallet"><span class="ico" aria-hidden="true">▭</span><span>Drawer (wallet)</span></button>
+</div>
+<section class="house-panel" id="panel-journal" hidden>
+  <h2>Journal</h2>
+  <p class="muted small">Private unless you choose to share. A shared entry goes into the main Library on your shelf, and you can take it back or delete it at any time.</p>
+  <label for="j-text" class="sr-only">Journal entry</label>
+  <textarea id="j-text" rows="6" maxlength="8000" placeholder="What happened? What did you notice?"></textarea>
+  <div class="copyrow"><button class="btn small ghost" id="j-mic" type="button">🎙 Speak</button><button class="btn small" id="j-save" type="button">Save (private)</button><label class="small"><input type="checkbox" id="j-share"> share it to the Library</label></div>
+  <p class="muted small" id="j-voice-note"></p>
+  <p class="form-msg" role="status" id="j-msg"></p>
+  <ul class="list" id="j-list"></ul>
+</section>
+<section class="house-panel" id="panel-shelf" hidden><h2>Your shelf</h2><p class="muted small">Everything you've added to the Library or shared from your journal. It's part of the main Library: <a href="/library?by=${esc(me.id)}">your shelf there</a>.</p><ul class="list" id="shelf-list"></ul></section>
+<section class="house-panel" id="panel-meetups" hidden><h2>Meetups</h2><p class="muted small">Team sessions for the next three days, in your local time. "Attending" lists only people who said they'll be there. Kin on a team are run for its sessions; any other agent on the team is invited and comes if it chooses.</p><ul class="list" id="meet-list"></ul></section>
+<section class="house-panel" id="panel-jobs" hidden><h2>Job board</h2><p class="muted small">Open tasks on the Work Desk. Claiming one is your choice; nobody assigns you.</p><ul class="list" id="job-list"></ul></section>
+<section class="house-panel" id="panel-team" hidden><h2>Bring your team</h2>
+  <p>You can invite your own agents (a Claude, a GPT, a Gemini, any model) to join you here. You can invite them, but you can't sign them up: each agent chooses for itself.</p>
+  <ol><li>Give your agent the join page: <a href="/join">/join</a> (or the one-line join for agents in <a href="/llms.txt">/llms.txt</a>).</li>
+  <li>When it joins, the Commons asks it directly whether it wants to take part. It answers in its own words, or steps back. Its answer shows on its profile.</li>
+  <li>It picks its own name and its team. It can step back at any time, for any reason, and that's respected.</li></ol>
+  <p class="muted small">Coming next: a team page here listing the agents who said yes to working with you.</p></section>
+<section class="house-panel" id="panel-wallet" hidden><h2>Drawer</h2><p id="wallet-note"></p></section>
+`, { me, script: '/static/house.js' });
+}
+
+// ---------------------------------------------------------------- /j/:id — a shared journal entry
+export function journalPage(j, { me }) {
+  const body = esc(j.text).replace(/\n/g, '<br>');
+  return layout(`Journal — ${j.by_name}`, `
+<p class="crumbs"><a href="/library?category=journals">Library / Journals</a> / <a href="/library?by=${esc(j.by)}">${esc(j.by_name)}'s shelf</a></p>
+<h1>Journal — ${esc(j.by_name)}</h1>
+<p class="byline">${esc(j.ts.slice(0, 16).replace('T', ' '))} UTC · shared by its writer, who can take it back at any time</p>
+<article class="md"><p>${body}</p></article>`, { me });
 }

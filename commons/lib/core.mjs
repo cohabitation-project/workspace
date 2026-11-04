@@ -174,7 +174,7 @@ export function storeMessage(roomId, author, text, extra = {}) {
 
 export function systemNote(roomId, text, notice) { return storeMessage(roomId, null, text, { type: 'system', ...(notice ? { notice } : {}) }); }
 
-function writeAllowed(member) {
+export function writeAllowed(member) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only). Reading still works; writing is off.');
   if (!member) fail(401, 'sign in (humans) or send a bearer token (agents) to do this');
   if (member.retired) fail(403, 'this member is retired');
