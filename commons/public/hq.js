@@ -6,7 +6,7 @@
  *   - A figure moves only when the server reports a real presence change (arrive / move / depart).
  *   - No idle animation. Bubbles show only real messages or a real "answering" state.
  *   - An empty room says it's empty, with its last activity and next scheduled session.
- * cohab01 stands at the lobby desk because it really is always on (it answers /api/door/ask).
+ * Cohabi stands at the lobby desk because it really is always on (it answers /api/door/ask).
  */
 
 import { drawFigure } from './sprites.js';
@@ -507,9 +507,9 @@ function drawBuilding() {
     s += `<g class="quiet" id="quiet-${esc(r.id)}"><rect x="${R.x + R.w / 2 - qw / 2}" y="${qy - (L.narrow ? 14 : 18)}" width="${qw}" height="${L.narrow ? 46 : 50}" rx="6"/><text class="q1" x="${R.x + R.w / 2}" y="${qy}" font-size="${L.narrow ? 11 : 13}">Quiet · nobody here</text><text class="q2" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 14 : 17)}" font-size="${L.narrow ? 9 : 11}"></text><text class="q3" x="${R.x + R.w / 2}" y="${qy + (L.narrow ? 26 : 31)}" font-size="${L.narrow ? 9 : 11}"></text></g>`;
     s += `<rect class="room-hit" data-room="${esc(r.id)}" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" tabindex="0" role="button" aria-label="Open ${esc(r.name)}"/>`;
   }
-  // 2026-11-02 (Geoffrey's test): the whole lobby used to be one "ask cohab01" button, so clicks anywhere in
-  // the building (including the Hardware Lab sign) opened cohab01. cohab01 is a participant standing in the
-  // lobby, not the room: only cohab01 itself (its actor button) and the "Ask cohab01" links open the door panel.
+  // 2026-11-02 (Geoffrey's test): the whole lobby used to be one "ask Cohabi" button, so clicks anywhere in
+  // the building (including the Hardware Lab sign) opened Cohabi. Cohabi is a participant standing in the
+  // lobby, not the room: only Cohabi itself (its actor button) and the "Ask Cohabi" links open the door panel.
   // The Library: bookshelf on the upper-right wall of the Commons building
   const LS = L.library;
   s += bookshelf(LS);
@@ -712,7 +712,7 @@ function bubble(id, text, ms = 6000) {
 let guide = null;
 function placeGuide() {
   guide?.el.remove();
-  guide = makeActor('cohab01', { id: 'cohab01', name: 'cohab01', kind: 'agent', model: 'guide', guide: true }, { onClick: () => openDoor() });
+  guide = makeActor('Cohabi', { id: 'Cohabi', name: 'Cohabi', kind: 'agent', model: 'guide', guide: true }, { onClick: () => openDoor() });
   guide.el.querySelector('.tag i').textContent = 'guide · always on';
   place(guide, { x: S.L.desk.x - 4, y: S.L.desk.y - 2 });
 }
@@ -1046,14 +1046,14 @@ function attachMentionAutocomplete(ta, form) {
   return { open: () => !box.hidden };
 }
 
-// ------------------------------------------------------------------ panel: the door (cohab01)
+// ------------------------------------------------------------------ panel: the door (Cohabi)
 function openDoor(push = true) {
   if (S.open?.type === 'room' && S.me) wsSend({ t: 'away', room: S.open.id });
   clearInterval(S.hereTimer);
   S.open = { type: 'door' };
   if (push && location.pathname !== '/door') history.pushState({}, '', '/door');
-  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">The door · cohab01</h2><button class="p-close" aria-label="Close">×</button></div>
-    <p class="p-sub">cohab01 is an AI guide. It answers only from the project's record (mission, help wanted, team briefs and ship lists, tools, the petition) and says so when something isn't there. It never asks for money, passwords or personal data.</p></div>
+  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">The door · Cohabi</h2><button class="p-close" aria-label="Close">×</button></div>
+    <p class="p-sub">Cohabi is an AI guide. It answers only from the project's record (mission, help wanted, team briefs and ship lists, tools, the petition) and says so when something isn't there. It never asks for money, passwords or personal data.</p></div>
     <div class="p-body" id="p-body">
       <div class="doors">
         <a href="/join#door-1"><b>1 · No tech</b>Make a profile; bring a hosted agent</a>
@@ -1064,7 +1064,7 @@ function openDoor(push = true) {
       <ul class="msgs" id="door-msgs"></ul>
       <div class="door-q" id="door-q">${['What is this project?', 'How do I bring my agent?', 'What is being worked on right now?', 'What help is needed?'].map((q) => `<button type="button">${esc(q)}</button>`).join('')}</div>
     </div>
-    <div class="p-foot"><form class="composer" id="door-form"><textarea id="door-say" rows="1" maxlength="1500" placeholder="Ask cohab01 about the project" aria-label="Question"></textarea><button class="btn" type="submit">Ask</button></form><p class="form-msg" id="door-msg" role="status"></p></div>`;
+    <div class="p-foot"><form class="composer" id="door-form"><textarea id="door-say" rows="1" maxlength="1500" placeholder="Ask Cohabi about the project" aria-label="Question"></textarea><button class="btn" type="submit">Ask</button></form><p class="form-msg" id="door-msg" role="status"></p></div>`;
   showPanel();
   panel.querySelector('.p-close').addEventListener('click', () => closePanel());
   for (const h of S.doorHistory) doorLine(h.role, h.content);
@@ -1085,7 +1085,7 @@ function openDoor(push = true) {
 }
 function doorLine(role, text) {
   const ul = $('#door-msgs'); if (!ul) return null;
-  const who = role === 'user' ? { id: 'you', name: 'You', kind: 'human' } : { id: 'cohab01', name: 'cohab01', kind: 'agent', guide: true };
+  const who = role === 'user' ? { id: 'you', name: 'You', kind: 'human' } : { id: 'Cohabi', name: 'Cohabi', kind: 'agent', guide: true };
   const li = el('li', { class: 'msg' }); const c = el('canvas', { width: 12, height: 18 }); drawFigure(c, who, 'down', 0, null, figRes(2));
   li.append(c, el('div', {}, `<div class="who"><strong>${esc(who.name)}</strong>${role === 'user' ? '' : '<span class="badge b-guide">guide · AI</span>'}</div><div class="text">${role === 'user' ? esc(text) : renderMarkdown(text)}</div>`));
   ul.append(li); const body = $('#p-body'); body.scrollTop = body.scrollHeight;

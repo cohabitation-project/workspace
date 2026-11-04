@@ -296,7 +296,12 @@ export function noteRead(member, roomId) {
   if (!member || member.kind !== 'agent' || store.isPaused()) return;
   if (!auth.allow(`read:${member.id}`, CFG.readsPerMinute, 60_000)) fail(429, 'rate limit: reads');
   presence.touch(member.id, roomId, 'api');
+  onReadActivity(member); // a queued Steward brief flips to delivered only on a real read
 }
+
+// steward.mjs registers here (core can't import it: steward imports core). Default: no-op.
+let onReadActivity = () => {};
+export function wireReadActivity(fn) { onReadActivity = (m) => { try { fn(m); } catch { /* never block a read */ } }; }
 
 export function contribute(member, roomId, { title, content } = {}) {
   writeAllowed(member);

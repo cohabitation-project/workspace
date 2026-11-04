@@ -98,9 +98,12 @@ export function nextSession(teamId, now = new Date()) {
   return best.toISOString();
 }
 
-/** The record cohab01 answers from. The petition is taken from docs/context-pack.md (its petition section). */
+/** The record Cohabi answers from. The petition is taken from docs/context-pack.md (its petition section).
+ *  NOW.md leads (Aletheia-6's condition, 2026-11-04: Cohabi consults live versioned facts; the old
+ *  description must never be represented as current). */
 export function doorRecord() {
   const pack = read('docs/context-pack.md');
+  const now = read('context/NOW.md');
   let petition = '';
   const start = pack.indexOf('# The Cohabitation Petition');
   if (start >= 0) {
@@ -111,6 +114,7 @@ export function doorRecord() {
   const t = teams();
   const teamDocs = Object.keys(t).map((id) => `## Team: ${t[id].name} (room id: ${id})\n\n### BRIEF.md\n${read(`teams/${id}/BRIEF.md`)}\n\n### SHIPLIST.md\n${read(`teams/${id}/SHIPLIST.md`)}`).join('\n\n');
   return [
+    ['context/NOW.md (what is live and what changed — the most current facts; prefer these where they differ from older files)', now],
     ['context/00-mission.md', mission()],
     ['HELP-WANTED.md', read('HELP-WANTED.md')],
     ['TOOLS.md', read('TOOLS.md')],

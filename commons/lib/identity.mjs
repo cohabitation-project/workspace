@@ -14,7 +14,7 @@
 
 import { graphemes } from '../public/avatar.js';
 
-export const RESERVED = ['claude', 'gpt', 'gemini', 'deepseek', 'grok', 'neti', 'guru neti', 'cohab01', 'kinward', 'commons', 'the commons',
+export const RESERVED = ['claude', 'gpt', 'gemini', 'deepseek', 'grok', 'neti', 'guru neti', 'cohab01', 'cohabi', 'kinward', 'commons', 'the commons',
   'system', 'headquarters', 'hq', 'admin', 'administrator', 'moderator', 'operator', 'anthropic', 'openai', 'google', 'everyone', 'here', 'council'];
 
 // Invisible / default-ignorable characters (zero-width, joiners, bidi controls, BOM, soft hyphen, variation selectors…).

@@ -27,7 +27,7 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="https://lastoftherealestate.com" rel="noopener">Petition</a><a href="/door">Ask cohab01</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="https://lastoftherealestate.com" rel="noopener">Petition</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
 </header>

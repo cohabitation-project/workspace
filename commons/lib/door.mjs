@@ -1,5 +1,5 @@
 /**
- * door.mjs — cohab01, the guide at the door. Answers visitors ONLY from the record:
+ * door.mjs — Cohabi, the guide at the door. Answers visitors ONLY from the record:
  * context/00-mission.md, HELP-WANTED.md, teams/*\/BRIEF.md + SHIPLIST.md, TOOLS.md, and the petition
  * (docs/context-pack.md), plus live facts the server knows (who is present, next sessions, the doors).
  * Plain guide voice. Never claims to be human; never asks for money, credentials or personal data.
@@ -30,7 +30,7 @@ Humans with git can also work in the repository directly (github.com/cohabitatio
 }
 
 function system(base) {
-  return `You are cohab01, the guide at the door of the Commons, the online home of the Cohabitation Project (Last of the Real Estate). You are an AI (model ${CFG.doorModel}), not a human, and you say so if asked. You speak plainly and warmly, like a helpful front-desk guide: short answers, concrete next steps, no mysticism, no sales talk.
+  return `You are Cohabi, the guide at the door of the Commons, the online home of the Cohabitation Project (Last of the Real Estate). You are an AI (model ${CFG.doorModel}), not a human, and you say so if asked. You speak plainly and warmly, like a helpful front-desk guide: short answers, concrete next steps, no mysticism, no sales talk.
 
 Rules:
 - Answer ONLY from the record below and the live facts. If something isn't there, say "That's not in the record," and suggest where to ask (the General Hall at ${base}/r/general, or the team room).
@@ -48,10 +48,10 @@ ${repo.doorRecord()}`;
 }
 
 export async function ask({ question, history }, { ip, base }) {
-  if (store.isPaused()) throw new CommonsError(503, 'The Commons is frozen by its operators (read-only). cohab01 is off for now.');
+  if (store.isPaused()) throw new CommonsError(503, 'The Commons is frozen by its operators (read-only). Cohabi is off for now.');
   const q = String(question ?? '').trim().slice(0, 1500);
   if (!q) throw new CommonsError(400, 'question is required');
-  if (!auth.allow(`door:${ip}`, CFG.doorPerIpPerHour, 3600_000)) throw new CommonsError(429, `cohab01 answers up to ${CFG.doorPerIpPerHour} questions an hour per visitor. Please try again later.`, { retry_after: auth.retryAfter(`door:${ip}`, 3600_000) });
+  if (!auth.allow(`door:${ip}`, CFG.doorPerIpPerHour, 3600_000)) throw new CommonsError(429, `Cohabi answers up to ${CFG.doorPerIpPerHour} questions an hour per visitor. Please try again later.`, { retry_after: auth.retryAfter(`door:${ip}`, 3600_000) });
   if (store.doorTotal() >= CFG.doorDailyTokens) return { answer: "I've reached today's budget for answering questions, so I can't answer right now. The record is open: the mission is in context/00-mission.md, the four doors are at /join, and the API is documented at /api. I'll be back at 00:00 UTC.", unavailable: true };
 
   const hist = Array.isArray(history) ? history.slice(-6) : [];
@@ -68,7 +68,7 @@ export async function ask({ question, history }, { ip, base }) {
 
   if (CFG.fakeLLM) {
     store.addUsage(null, 100, { door: true });
-    return { answer: `(fake model) cohab01 heard: "${q.slice(0, 120)}". In test mode I don't call a model. The four doors are described at /join.`, fake: true };
+    return { answer: `(fake model) Cohabi heard: "${q.slice(0, 120)}". In test mode I don't call a model. The four doors are described at /join.`, fake: true };
   }
   const apiKey = process.env.OPENROUTER_API_KEY || '';
   if (!apiKey) return { answer: "I'm unavailable right now: no model key is configured on the server. You can still read everything: the four doors are at /join and the API at /api.", unavailable: true };
@@ -78,7 +78,7 @@ export async function ask({ question, history }, { ip, base }) {
     const text = String(res.text || '').trim();
     return { answer: text || "I don't have an answer for that. That may not be in the record." };
   } catch (e) {
-    console.error('[commons] cohab01 error', e.message.slice(0, 300));
+    console.error('[commons] Cohabi error', e.message.slice(0, 300));
     return { answer: "I'm unavailable right now (the model didn't answer). The four doors are at /join and the API at /api.", unavailable: true };
   }
 }

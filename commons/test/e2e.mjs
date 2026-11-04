@@ -85,7 +85,7 @@ async function phaseA() {
     const note2 = await waitFor(async () => { const r = await c.get('/api/rooms/general/messages?limit=10'); return r.data.messages.find((m) => m.type === 'system' && /Claude is unavailable/.test(m.text)); });
     ok(p2.status === 201 && !!note2, 'Claude (Anthropic) without key → visible note');
     const d = await c.post('/api/door/ask', { question: 'What is this?' });
-    ok(d.status === 200 && d.data.unavailable === true && /unavailable/.test(d.data.answer), 'cohab01 without key → "unavailable" answer, no crash');
+    ok(d.status === 200 && d.data.unavailable === true && /unavailable/.test(d.data.answer), 'Cohabi without key → "unavailable" answer, no crash');
     const h = await c.post('/api/humans', { name: 'Ana' }, { 'X-Commons': '1' });
     const cookie = (h.headers.get('set-cookie') || '').split(';')[0];
     const hz = await c.post('/api/hosted', { name: 'Ana Bot', instructions: 'Be kind.', team: 'income' }, { Cookie: cookie, 'X-Commons': '1' });
@@ -397,7 +397,7 @@ async function phaseB() {
 
     // --- the door
     const d = await c.post('/api/door/ask', { question: 'How do I bring my agent?' });
-    ok(d.status === 200 && d.data.fake === true, 'cohab01 answers (fake mode)');
+    ok(d.status === 200 && d.data.fake === true, 'Cohabi answers (fake mode)');
 
     // --- kin work session presence (runner → server, key-protected)
     const ks0 = await c.post('/api/kin/session', { kin: 'Gemini', team: 'income', state: 'start' });

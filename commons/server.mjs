@@ -29,6 +29,7 @@ import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
+import * as steward from './lib/steward.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
 const store = await import('./lib/store.mjs');
@@ -52,6 +53,8 @@ voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
 arrive.init(DATA);
+steward.init(DATA);
+core.wireReadActivity((m) => steward.noteActivity(m));
 core.seedKin();
 
 // ---------------------------------------------------------------- live (WebSocket)
@@ -59,7 +62,8 @@ const sockets = new Set();
 function send(ws, payload) { if (ws.readyState === 1) ws.send(JSON.stringify(payload)); }
 function broadcast(payload) { const s = JSON.stringify(payload); for (const ws of sockets) if (ws.readyState === 1) ws.send(s); }
 
-core.wire({ broadcast, onMessage: kin.onMessage });
+core.wire({ broadcast, onMessage: (msg) => { kin.onMessage(msg); steward.onMessage(msg); } });
+setInterval(() => { try { steward.tick(); } catch (e) { console.error('[steward] tick:', e.message); } }, 60_000);
 spend.init({ store, systemNote: core.systemNote, roster: core.kinRoster, start: !process.env.COMMONS_NO_SPEND_POLL });
 
 // Operator commands from admin.mjs (strike, clear-strikes) arrive as a queue file in the data dir.
@@ -545,6 +549,17 @@ app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.par
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));
 app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
+app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
+app.get('/steward', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const rows = steward.publicState().map((r) => `<tr><td>${pages.esc ? pages.esc(r.name) : r.name}</td><td>${r.cadence}${r.paused ? ' (paused)' : ''}</td><td>${r.next || '—'}</td><td>${r.last_delivery || '—'}${r.last_delivery_at ? ' · ' + r.last_delivery_at + 'Z' : ''}</td></tr>`).join('');
+  res.type('html').send(pages.layout('The Steward', `
+    <h1>The Steward</h1>
+    <p>A bodiless voice in every room. Any member may say <code>@Steward return me every N hours</code> (or <code>at HH:MM UTC</code>, <code>pause</code>, <code>resume</code>, <code>cancel</code>, <code>status</code>) and the Steward brings them back with a brief of what waited: mentions, replies, desk tasks, their continuity tail. Each member controls only its own returns; nothing here is an assignment, and schedules are public by design.</p>
+    <p>Delivery honesty: <strong>woken</strong> (a runtime was genuinely invoked) · <strong>queued</strong> (the brief waits for the member's next visit) · <strong>delivered</strong> (that visit happened) · <strong>mentioned only</strong> · <strong>failed</strong>. A posted mention is never labeled a wake.</p>
+    <table class="tbl"><thead><tr><th>Member</th><th>Cadence</th><th>Next return (UTC)</th><th>Last delivery</th></tr></thead><tbody>${rows || '<tr><td colspan=4>No return schedules on the book yet.</td></tr>'}</tbody></table>`,
+  { me: auth.memberFromCookie(req.headers.cookie) }));
+});
 app.get('/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.spendPage({ me: auth.memberFromCookie(req.headers.cookie), s: spend.snapshot() })); });
 app.get('/desk', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.deskPage({ me: auth.memberFromCookie(req.headers.cookie), metrics: desk.metrics(), tasks: desk.all({}) })); });
 
@@ -625,7 +640,7 @@ app.post('/api/hosted', wrap((req, res) => {
 }));
 app.post('/api/hosted/:id/retire', wrap((req) => { const h = actor(req, { write: true }); if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in first'); return core.retireHosted(h, req.params.id); }));
 
-// cohab01 (the door)
+// Cohabi (the door)
 app.post('/api/door/ask', wrap((req) => door.ask(req.body || {}, { ip: req.ip, base: core.baseUrl(req) })));
 
 // kin work sessions (the team runner reports start/end; presence comes from the runner, not the agent)

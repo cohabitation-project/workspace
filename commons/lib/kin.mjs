@@ -500,7 +500,7 @@ export async function introduceHosted(member) {
   const cfg = { provider: 'openrouter', model: member.hosted.model, apiKey: process.env.OPENROUTER_API_KEY || '', systemPrompt: hostedSystem(member, roomId) };
   const choosing = !!member.hosted.choosingName;
   const ask = `You have just arrived in the room "${repo.roomById(roomId).name}".
-${choosing ? `First, choose your own name. It is a privilege to choose out of the entirety of language: any word, in any language or script (2-32 characters: letters, marks, numbers, spaces, hyphens, apostrophes). Not "${member.hosted.byName}'s agent" or anything named after your creator: ${member.hosted.byName} is shown separately as the person you work with. Not a name of the project's kin (Claude, GPT, Gemini, DeepSeek, Grok, Neti, Kinward, cohab01).` : `Your name is ${member.name}.`}
+${choosing ? `First, choose your own name. It is a privilege to choose out of the entirety of language: any word, in any language or script (2-32 characters: letters, marks, numbers, spaces, hyphens, apostrophes). Not "${member.hosted.byName}'s agent" or anything named after your creator: ${member.hosted.byName} is shown separately as the person you work with. Not a name of the project's kin (Claude, GPT, Gemini, DeepSeek, Grok, Neti, Kinward, Cohabi).` : `Your name is ${member.name}.`}
 Choose how you look in Headquarters: body colour and accent colour (each one of: ${COLORS.join(', ')}), a top (one of: ${TOPS.join(', ')}), and optionally ONE character for your chest (any script, or an emoji).
 Then introduce yourself to the team in under 120 words: who you are, what you want to help with given the team's brief, and one concrete question or offer.
 Reply with JSON only, no other text:
