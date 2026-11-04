@@ -114,6 +114,14 @@ export function forget(vid, { by = 'gate' } = {}) {
   return { forgotten: true };
 }
 
+/** The visitor's answers (stop, choice, their own words), for the gate: kept only if the new member asks. */
+export function answersOf(vid) {
+  const v = visitor(vid);
+  return [...v.answers.entries()].map(([stop, a]) => ({ stop, choice: a.choice, text: a.text || '', ts: a.ts }));
+}
+/** Every built stop answered: the gate can open (2026-11-04, Geoffrey: "allow an entry, Willie can test it"). */
+export function readyToEnter(vid) { const v = visitor(vid); return STOPS.every((s) => v.answers.has(s)); }
+
 export function state(vid) {
   const v = visitor(vid);
   const choices = {};

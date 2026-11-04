@@ -177,6 +177,9 @@ const wrap = (fn) => async (req, res) => {
       return res.status(e.status).json({ error: e.message, ...e.extra });
     }
     if (e instanceof desk.DeskError) return res.status(e.status).json({ error: e.message });
+    // Modules like arrive.mjs and house.mjs throw plain errors carrying a 4xx status: those are meant for the person
+    // (2026-11-04: "unknown visitor", "that spot's taken" were all reaching people as "server error").
+    if (Number.isInteger(e?.status) && e.status >= 400 && e.status < 500 && e.message) return res.status(e.status).json({ error: e.message });
     console.error('[commons] error', e);
     res.status(500).json({ error: 'server error' });
   }
@@ -313,6 +316,34 @@ app.get('/arrive', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); r
 app.post('/api/arrive/visitor', wrap((req) => arrive.newVisitor({ ip: req.ip })));
 app.post('/api/arrive/pickup', wrap((req) => arrive.pickup((req.body || {}).vid, (req.body || {}).id, { ip: req.ip })));
 app.post('/api/arrive/answer', wrap((req) => { const b = req.body || {}; return arrive.answer(b.vid, b.stop, b.choice, b.text, { ip: req.ip }); }));
+// The gate opens (2026-11-04): a visitor who has answered every built stop chooses a name and steps through. They
+// become a human member, signed in on this device. If they ask, their answers become ONE private journal entry in
+// their new house; then the forest file is deleted either way, as the fine print promises (and logged).
+app.post('/api/arrive/enter', wrap((req, res) => {
+  if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
+  const b = req.body || {};
+  if (!arrive.readyToEnter(b.vid)) throw new core.CommonsError(400, 'the gate opens once every stop on the path is answered');
+  const pw = b.password ? String(b.password) : '';
+  if (pw && pw.length < 8) throw new core.CommonsError(400, 'a password needs at least 8 characters (or leave it empty and keep your login link)');
+  const answers = arrive.answersOf(b.vid);
+  const { member, secret } = core.createHuman({ name: b.name }, { ip: req.ip });
+  if (pw) store.updateMember(member.id, { passHash: auth.passwordHash(pw) });
+  let kept = false;
+  if (b.keep_answers) {
+    const names = (b.names && typeof b.names === 'object') ? b.names : {};
+    const lines = answers.map((a) => `• ${String(names[a.stop] || a.stop).slice(0, 80)}: chose “${a.choice}”${a.text ? ` — ${a.text}` : ''}`);
+    house.addJournal(member, { text: `My walk through the forest, ${new Date().toISOString().slice(0, 10)}.\n\n${lines.join('\n')}`.slice(0, 8000), shared: false });
+    kept = true;
+  }
+  arrive.forget(b.vid, { by: 'entered at the gate' });
+  const base = core.baseUrl(req);
+  res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion));
+  res.status(201);
+  return { member: store.publicMember(member), house: '/house', password_set: !!pw, answers_kept_as_private_journal: kept,
+    login_url: pw ? null : `${base}/login/${secret}`, note: pw ? 'Signed in. Next time: /signin with your name and password.' : 'Signed in on this device. Save the login link: it is shown once, and it is how you come back on another device.' };
+}));
+// A visitor can erase their own forest file at any time (holding the visitor id is the proof it's theirs).
+app.post('/api/arrive/forget', wrap((req) => arrive.forget((req.body || {}).vid, { by: 'the visitor' })));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
 
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));

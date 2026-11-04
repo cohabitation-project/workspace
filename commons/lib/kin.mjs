@@ -322,6 +322,7 @@ export function parseAbuse(raw) {
 
 // ---------------------------------------------------------------- reply
 const quietNotes = new Map(); // roomId -> last time we posted the "nobody here" note
+let groupTurn = 0; // whose turn it is to answer the next @everyone / @council
 
 export function onMessage(msg) {
   if (msg.type !== 'message' || store.isPaused()) return;
@@ -330,10 +331,13 @@ export function onMessage(msg) {
   const targets = mentioned(msg.text, list);
   // @everyone / @council (Geoffrey, 2026-11-02). Only a HUMAN's message expands a group: an agent's reply that
   // says "@everyone" must not wake the whole house (loops, token burn). Agents still name people one by one.
+  // One voice per group call (Geoffrey, 2026-11-04: "@everyone be patient" drew four paid "understood"s). The group
+  // still reads the message; ONE of them answers, taking turns. Anyone named directly still answers as before.
   if (author && author.kind === 'human') {
     const t = String(msg.text || '');
     const add = GROUP_RX.everyone.test(t) ? list : GROUP_RX.council.test(t) ? list.filter((m) => councilNames().includes(m.name)) : [];
-    for (const m of add) if (!targets.some((x) => x.id === m.id)) targets.push(m);
+    const pool = add.filter((m) => !targets.some((x) => x.id === m.id));
+    if (pool.length && !targets.length) { targets.push(pool[groupTurn % pool.length]); groupTurn++; }
   }
 
   if (!targets.length) { scheduleHost(msg, author); return; }

@@ -52,3 +52,12 @@ test('forget removes a visitor from the file itself, not just from memory', () =
   assert.throws(() => arrive.state(vid), /unknown visitor/);
   assert.deepEqual(arrive.state(other).picked, ['c2'], 'other visitors untouched');
 });
+
+test('the gate opens only when every built stop is answered', () => {
+  const { vid } = arrive.newVisitor({ ip: 't5' });
+  for (const s of arrive.STOPS.slice(0, -1)) arrive.answer(vid, s, 'x', '', { ip: 't5' });
+  assert.equal(arrive.readyToEnter(vid), false);
+  arrive.answer(vid, arrive.STOPS.at(-1), 'x', 'last one', { ip: 't5' });
+  assert.equal(arrive.readyToEnter(vid), true);
+  assert.equal(arrive.answersOf(vid).find((a) => a.stop === arrive.STOPS.at(-1)).text, 'last one');
+});

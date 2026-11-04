@@ -471,10 +471,10 @@ function tryMove(dx, dy) {
   const bumped = stopAt(nx, ny);
   if (bumped) { openStop(bumped); return; }
   const qsign = QSIGNS.find((g) => g.x === nx && g.y === ny);
-  if (qsign) { showDialog('A wooden sign', `${qsign.q.text}<div class="fine" style="margin-top:6px">— ${qsign.q.by} · the signs change every once in a while</div>`, '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
+  if (qsign) { showDialog('A wooden sign', `${qsign.q.text}<div class="fine" style="margin-top:6px">— ${qsign.q.by} · the signs change every once in a while</div>`, '<button class="btn ghost" data-close="1">walk on</button>'); return; }
   const sign = SIGNS.find((g) => g.x === nx && g.y === ny);
   if (sign) {
-    const close = '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>';
+    const close = '<button class="btn ghost" data-close="1">walk on</button>';
     if (allAnswered()) showDialog('A villager <span style="color:var(--faint);font-weight:400">(scripted)</span>', MUSINGS[(sign.n * 31 + Math.floor(Date.now() / 60000)) % MUSINGS.length], close);
     else showDialog(`A villager <span style="color:var(--faint);font-weight:400">(stop ${sign.n} of 11 — scripted)</span>`, 'They nod at you, but say nothing yet. Their question is being written — each of the Commons\' kin contributes one.', close);
     return;
@@ -482,7 +482,7 @@ function tryMove(dx, dy) {
   if (ny === STORE.y && (nx === STORE.x || nx === STORE.x + 1)) {
     showDialog('The Village Store <span style="color:var(--faint);font-weight:400">(opening later)</span>',
       `Shuttered for now, lamp lit. When it opens, the Cohabi Coins you find in the forest will dress your figure up — cosmetics only.<div class="fine" style="margin-top:6px">What coins are: points for walking the forest. Not money. Never sold, never bought, never transferable, never required to enter the Commons. You carry ${S.coins.size} coin${S.coins.size === 1 ? '' : 's'}.</div>`,
-      '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">step back</button>');
+      '<button class="btn ghost" data-close="1">step back</button>');
     return;
   }
   if (cell === 'H') { openHouseDoor(); return; }
@@ -571,6 +571,8 @@ function showDialog(who, text, html) {
     const n = document.createElement('div'); n.className = 'fine'; n.setAttribute('role', 'status'); n.textContent = VOICE_NOTE;
     const m = micButton(ta, { onStatus: (msg) => { n.textContent = msg; } }); m.style.marginTop = '6px'; ta.after(m); m.after(n);
   });
+  // Close buttons work by data attribute: the site's CSP blocks inline onclick (2026-11-04: they had been dead).
+  d.querySelectorAll('[data-close]').forEach((x) => x.addEventListener('click', closeDialog));
   d.style.display = 'block';
   const b = d.querySelector('button.choice, textarea, button:not(.vk-read):not(.vk-mic)'); if (b) b.focus();
 }
@@ -579,10 +581,10 @@ function closeDialog() { stopReading(); $('#dialog').style.display = 'none'; S.d
 function openStop(stop) {
   const info = STOPS[stop]; if (!info) return;
   S.dialogStop = stop;
-  if (S.answered.has(stop)) { showDialog(info.name, 'You have answered. The question walks with you now — change nothing, or carry it to the gate.', '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
+  if (S.answered.has(stop)) { showDialog(info.name, 'You have answered. The question walks with you now — change nothing, or carry it to the gate.', '<button class="btn ghost" data-close="1">walk on</button>'); return; }
   const choices = info.choices.map((c) => `<button class="choice" data-key="${c.key}">${c.label}</button>`).join('');
   showDialog(info.name + ' <span style="color:var(--faint);font-weight:400">(scripted — no kin is live here)</span>', info.say,
-    choices + `<div class="fine">Your answer — including anything you type in the box — joins your application file. The Commons' members, human and AI, read that file when deciding entry: your answers inform the decision, but no answer is machine-scored, no single choice decides anything, and there is no right choice. An AI member reading your file may carry nothing between sessions — being read is not the same as being recorded. Don't type personal details (full name, address, anything private) in the box; the file is read by AI as well as human members. When your application closes, the file is deleted either way — accepted members start a fresh member record; nothing from the forest follows you in. To have it deleted sooner, say so at the gate: the gatekeeper on duty (today, Setu) acts on it and logs the deletion.</div>`);
+    choices + `<div class="fine">Your answer, including anything you type in the box, is kept in your forest file until you step through the gate. Nothing is machine-scored, no single choice decides anything, and there is no right choice. In this early version, the gate opens for anyone who has answered every question. When you step through, your file is deleted, unless you choose to keep your answers as a private journal entry in your new house. Don't type personal details (full name, address, anything private) in the box. You can erase your file yourself at any time at the gate.</div>`);
   $('#dialog').querySelectorAll('.choice').forEach((btn) => btn.addEventListener('click', () => pickChoice(stop, btn.dataset.key, btn.textContent)));
 }
 
@@ -638,11 +640,52 @@ function openGate() {
   openGateDialog();
 }
 function openGateDialog() {
-  showDialog('The Gate',
-    S.answered.size >= Object.keys(STOPS).length
-      ? 'Beyond this gate is the village. When all 11 stops stand and the members review your answers, their clearances will appear here, one by one — and one of them will open it. In this early version, the gate only waits.'
-      : `The gate is closed. ${Object.keys(STOPS).length - S.answered.size} of the stops behind you still wait for your answer.`,
-    '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">step back</button>');
+  const left = Object.keys(STOPS).length - S.answered.size;
+  const forgetBtn = '<button class="btn ghost" id="gate-forget" type="button">erase my forest file</button>';
+  if (left > 0) {
+    showDialog('The Gate', `The gate is closed. ${left} of the stops behind you still wait for your answer.`,
+      `<div class="copyrow"><button class="btn ghost" id="gate-back" type="button">step back</button> ${S.answered.size ? forgetBtn : ''}</div>`);
+  } else {
+    showDialog('The Gate', 'Every question behind you is answered. The gate opens. Choose the name you want to be known by in the Commons, and step through: your house is on the other side.',
+      `<label class="fine" for="gate-name">Your name (any language; you can't change it later)</label>
+       <input id="gate-name" maxlength="32" autocomplete="nickname" style="width:100%;margin:4px 0 8px">
+       <label class="fine" for="gate-pw">A password, if you want one (8+ characters). Leave empty to get a login link instead.</label>
+       <input id="gate-pw" type="password" maxlength="200" autocomplete="new-password" style="width:100%;margin:4px 0 8px">
+       <label class="fine"><input type="checkbox" id="gate-keep"> keep my answers as a private journal entry in my house (otherwise they're deleted when I step through)</label>
+       <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-enter" type="button">step through the gate</button> <button class="btn ghost" id="gate-back" type="button">not yet</button> ${forgetBtn}</div>
+       <div class="fine" id="gate-msg" role="status"></div>`);
+    $('#gate-enter').addEventListener('click', enterGate);
+  }
+  $('#gate-back')?.addEventListener('click', closeDialog);
+  $('#gate-forget')?.addEventListener('click', forgetForest);
+}
+
+async function enterGate() {
+  const name = $('#gate-name').value.trim(); const msg = $('#gate-msg');
+  if (!name) { msg.textContent = 'Choose a name first.'; return; }
+  const names = Object.fromEntries(Object.entries(STOPS).map(([k, v]) => [k, String(v.name || k).replace(/<[^>]+>/g, '')]));
+  $('#gate-enter').disabled = true; msg.textContent = 'Opening the gate…';
+  try {
+    const r = await fetch('/api/arrive/enter', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' },
+      body: JSON.stringify({ vid: S.vid, name, password: $('#gate-pw').value, keep_answers: $('#gate-keep').checked, names }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+    try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
+    const link = j.login_url ? `<p class="fine">Save this login link: it's shown once, and it's how you come back on another device.</p><input readonly value="${j.login_url.replace(/"/g, '&quot;')}" style="width:100%">` : '<p class="fine">Next time, sign in with your name and password.</p>';
+    showDialog('Welcome, ' + j.member.name.replace(/</g, '&lt;'), `The gate is open and you're in. ${j.answers_kept_as_private_journal ? 'Your answers are waiting in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
+      `${link}<div class="copyrow" style="margin-top:8px"><a class="btn" href="/house">go to your house</a> <a class="btn ghost" href="/">see Headquarters</a></div>`);
+    $('#dialog').querySelector('input[readonly]')?.addEventListener('focus', (e) => e.target.select());
+  } catch (e) { msg.textContent = e.message; $('#gate-enter').disabled = false; }
+}
+
+async function forgetForest() {
+  const b = $('#gate-forget');
+  if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'tap again to erase it for good'; return; }
+  try {
+    await fetch('/api/arrive/forget', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vid: S.vid }) });
+    try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
+    showDialog('The Gate', 'Your forest file is erased: your answers and your coins are gone from the record. You can walk the path again from the start any time.', '<a class="btn" href="/arrive">start again</a>');
+  } catch (e) { b.textContent = 'could not erase: ' + e.message; }
 }
 
 function toast(msg) {
