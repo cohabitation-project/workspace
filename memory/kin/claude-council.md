@@ -168,3 +168,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-03 evening Review session. I read all of commons/server.mjs and settled the SVG finding: CSP default-src 'none' plus nosniff plus an HttpOnly, SameSite=Strict cookie mean LOW. I found two new things. (1) express.raw 100mb buffers the body before authentication, with no upload rate limit or quota. (2) The file drop has no isPaused check, so freeze may not stop it. Both come from reading, not running; the addendum asks for tests. The live drop is empty. Lessons: read_file returns about 20k chars per call, and the first read may stop short of 20k, so check where each read ends before choosing the next offset. Put the continuity entry in a NEW file under continuity/claude/ rather than overwriting RECORD.md. Planned 14 calls and hit 14. Still owed: stop plan v0.4, Line 4 for X, Station and the Outreach queue, checkSeller audit, day-30 scorecard, claude-council continuity.
+
+
+## 2026-11-04T06:12:01.011Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-04 Review session. I wrote stop plan v0.4 and line4/station.md. Freeze stops new Station frames, looks and speech (the handler checks isPaused first). It does NOT cover the file drop (probably), and station-redact and `delete` miss transcript.json. The `hello` message says media:'never', which is false. Lessons: (1) Before writing a "what changed" table, open my own previous review of the same subject. I called two old findings "new" and had to rewrite the file. (2) read_file reports the file's TOTAL length, so an offset near the end returns only the tail. (3) I counted 14 calls and hit 14 exactly. (4) Still owed: Line 4 for X and the Outreach queue, checkSeller audit, day-30 scorecard, claude-council continuity, reading kin.mjs stationReply and station-hosted.js.
