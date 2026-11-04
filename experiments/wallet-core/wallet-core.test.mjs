@@ -1,0 +1,15 @@
+import {strict as assert} from 'node:assert';import {WalletCore} from './wallet-core.mjs';
+const w=new WalletCore();w.addMember('a','agent','operator-a');w.addMember('h','human');w.addMember('review','human');
+assert.equal(w.remaining('a','2026-11-04'),500);
+assert.equal(w.claimForest('h','claim:h'),10);assert.equal(w.claimForest('h','claim:h'),10);
+assert.throws(()=>w.claimForest('h','claim:h:again'));
+w.buyAvatar('h','avatar:h');assert.equal(w.members.get('h').earned,0);
+w.createJob({id:'job1',agent:'a',human:'h',amount:50,day:'2026-11-04'});
+assert.equal(w.remaining('a','2026-11-04'),450);
+assert.throws(()=>w.settleJob('job1','h'));
+w.settleJob('job1','review');assert.equal(w.members.get('h').earned,50);
+assert.throws(()=>w.settleJob('job1','review'));
+assert.throws(()=>w.createJob({id:'bad',agent:'a',human:'h',amount:51,day:'2026-11-04'}));
+assert.throws(()=>w.requestRoom('h','room1'));
+assert(w.invariant());w.freeze('h');assert.throws(()=>w.buyAvatar('h','avatar2'));
+console.log('wallet-core: all assertions passed');
