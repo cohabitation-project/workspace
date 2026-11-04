@@ -749,6 +749,11 @@ async function sendFromOutbox() {
       fs.renameSync(full, path.join(HELD_DIR, file));
       continue;
     }
+    if (selfSend && (process.env.COMMONS_FROZEN === '1' || fs.existsSync(path.join(ROOT, 'data', 'commons', 'FROZEN')))) {
+      console.log(`[Kinward] self-send ${file} held: the Commons is frozen`);
+      fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), type: 'outbox_held', file, reason: 'self-send while frozen' }) + '\n');
+      continue; // left in outbox; sends when the freeze lifts
+    }
     if (selfSend) {
       // Kinward's own words to Moltbook, under his authority on the record
       // (teams/outreach/DECISION-2026-11-03-kinward-send-authority.md). This runner posts only to Moltbook,

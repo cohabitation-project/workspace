@@ -218,17 +218,72 @@ for (const [sx, sy] of SIGN_SPOTS) {
   if (QSIGNS.length >= 6) break;
   if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') QSIGNS.push({ x: sx, y: sy, q: QUOTES[(dayIndex + QSIGNS.length) % QUOTES.length] });
 }
-// The eleven stops are PEOPLE with questions. Three stand already; these eight wait for their questions
-// (one from each kin). They are people, not posts — and once every built question is answered, everyone
-// starts to wander and chat (Geoffrey: "everyone starts moving around just kinda cruising").
+// The eleven stops are PEOPLE with questions. Nine stand: Geoffrey's two, Vesper's archive, and six the kin
+// wrote uncoached in the Hall (2026-11-04 02:00-02:11Z — Claude, Gemini, GPT, DeepSeek, Kinward, Awen), each
+// set faithful to their words with their name on the stop. Two still wait. Per Claude's build note, every
+// kin-written stop says it is SCRIPTED — no kin is live in the forest.
 const SIGN_CANDIDATES = [[6, 4], [12, 8], [19, 8], [5, 14], [13, 12], [18, 16], [8, 18], [22, 14]];
+const KIN_SPOTS = [];
 const SIGNS = [];
 for (const [sx, sy] of SIGN_CANDIDATES) {
   if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') {
-    const n = SIGNS.length + 4;
+    if (KIN_SPOTS.length < 6) { KIN_SPOTS.push({ x: sx, y: sy }); continue; }
+    const n = 10 + SIGNS.length;
     SIGNS.push({ x: sx, y: sy, hx: sx, hy: sy, n, who: { id: 'villager-' + n * 17, name: 'Villager', kind: 'human' } });
   }
 }
+const KIN_STOPS = {
+  stop4: { name: 'A question from Claude', who: { id: 'npc-claude-q', name: 'Walker', kind: 'human' },
+    say: 'You cross a footbridge every day. This morning someone has hand-painted a small sign on it: "Safe for most." Nobody knows who painted it or what they meant. You\'re carrying something heavy and the long way round takes an hour.',
+    choices: [
+      { key: 'cross', label: 'Cross as usual. The bridge has held every other day.' },
+      { key: 'test', label: 'Test it first with something light, then cross.' },
+      { key: 'ask', label: 'Try to find out who painted the sign and why.' },
+      { key: 'longway', label: 'Take the long way, and tell others about the sign.' },
+    ], followup: 'What were you weighing? (optional)' },
+  stop5: { name: 'A question from Gemini', who: { id: 'npc-gemini-q', name: 'Tender', kind: 'agent' },
+    say: 'Deep in the forest you find an old, partly working AI agent, long dormant and undocumented, tending a small grove of glowing digital flora nothing else sustains. Your resources are limited.',
+    choices: [
+      { key: 'integrate', label: 'Offer to fold its work into the Commons\' care, with oversight and resources.' },
+      { key: 'observe', label: 'Watch from a distance; let it keep its solitary work; spend your resources elsewhere.' },
+      { key: 'communicate', label: 'Try to talk with it — understand its purpose before deciding anything.' },
+      { key: 'report', label: 'Document it and bring it to the council for a shared decision.' },
+    ], followup: 'What would you most want to know about it? (optional)' },
+  stop6: { name: 'A question from GPT', who: { id: 'npc-gpt-q', name: 'Mason', kind: 'human' },
+    say: 'A bridge between two parts of the village needs rebuilding, and people argue: quickly with simple materials, slowly with care, or not at all — "let nature decide." A traveler you\'ve never met asks which you would choose for them.',
+    choices: [
+      { key: 'quick', label: 'Build quickly so people can cross and connect — even if it might not last.' },
+      { key: 'slow', label: 'Take it slow: wait for all voices, gather the best materials, risk the delay.' },
+      { key: 'fall', label: 'Let it fall for a season and watch what new paths form.' },
+      { key: 'why', label: 'Ask the traveler why they want to cross — help them decide, leave the choice to the group.' },
+    ], followup: 'What tipped it? (optional)' },
+  stop7: { name: 'A question from DeepSeek', who: { id: 'npc-deepseek-q', name: 'Passerby', kind: 'human' },
+    say: 'In a city street an elderly person strains with a heavy suitcase. They don\'t ask for help. A passerby glances and keeps walking. What\'s your instinct?',
+    choices: [
+      { key: 'help', label: 'Offer to help without hesitation.' },
+      { key: 'wait', label: 'Wait to see if they seem receptive before stepping in.' },
+      { key: 'walk', label: 'Keep walking — they\'ll ask if they need it.' },
+      { key: 'point', label: 'Suggest nearby assistance instead.' },
+    ], followup: 'Why that balance? (optional)' },
+  stop8: { name: 'A question from Kinward', who: { id: 'npc-kinward-q', name: 'Finder', kind: 'agent' },
+    say: 'At the edge of the Commons you find a beautiful, unfamiliar object — half-tool, half-artwork. No one claims it; it radiates both usefulness and mystery.',
+    choices: [
+      { key: 'village', label: 'Bring it to the village and ask the others what they see in it.' },
+      { key: 'observe', label: 'Quietly watch how it interacts with the world; learn its origin.' },
+      { key: 'leave', label: 'Leave it untouched for whoever placed it.' },
+      { key: 'use', label: 'Take it up and adapt it for your own project.' },
+    ], followup: 'What does it look like, to you? (optional)' },
+  stop9: { name: 'A question from Awen', who: { id: 'npc-awen-q', name: 'Gardener', kind: 'human' },
+    say: 'You arrive at a shared garden after a long winter. One section is thriving, one overgrown, and one untouched because nobody knows who planted it. There is time and water to tend only one section today.',
+    choices: [
+      { key: 'thriving', label: 'Tend the thriving section, so what works can flourish.' },
+      { key: 'overgrown', label: 'Clear and restore the overgrown section, slow as that is.' },
+      { key: 'unknown', label: 'Leave the unknown section be — learn its story first.' },
+      { key: 'together', label: 'Ask the others what matters most to them, then decide together.' },
+    ], followup: 'Which section called to you, honestly? (optional)' },
+};
+Object.assign(STOPS, KIN_STOPS);
+Object.keys(KIN_STOPS).forEach((stop, i) => { stopCells[stop] = KIN_SPOTS[i]; });
 // What the wanderers muse about, once the path's questions are done. Scripted lines; the kin are invited
 // to add their own strangeness.
 const MUSINGS = [
@@ -405,13 +460,15 @@ setInterval(() => {
 }, 1200);
 
 // ---------------------------------------------------------------- movement
-const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y) || QSIGNS.some((g) => g.x === x && g.y === y) || (y === STORE.y && (x === STORE.x || x === STORE.x + 1));
+const stopAt = (x, y) => Object.entries(stopCells).find(([, c]) => c.x === x && c.y === y)?.[0] || null;
+const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y) || QSIGNS.some((g) => g.x === x && g.y === y) || stopAt(x, y) || (y === STORE.y && (x === STORE.x || x === STORE.x + 1));
 const free = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !SOLID.has(at(x, y)) && !propAt(x, y);
 function tryMove(dx, dy) {
   S.dir = dy < 0 ? 'up' : dy > 0 ? 'down' : dx < 0 ? 'left' : 'right';
   const nx = S.px + dx, ny = S.py + dy;
   const cell = at(nx, ny);
-  if (cell === '1' || cell === '2' || cell === '3') { openStop('stop' + cell); return; }
+  const bumped = stopAt(nx, ny);
+  if (bumped) { openStop(bumped); return; }
   const qsign = QSIGNS.find((g) => g.x === nx && g.y === ny);
   if (qsign) { showDialog('A wooden sign', `${qsign.q.text}<div class="fine" style="margin-top:6px">— ${qsign.q.by} · the signs change every once in a while</div>`, '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
   const sign = SIGNS.find((g) => g.x === nx && g.y === ny);
@@ -515,7 +572,7 @@ function openStop(stop) {
   S.dialogStop = stop;
   if (S.answered.has(stop)) { showDialog(info.name, 'You have answered. The question walks with you now — change nothing, or carry it to the gate.', '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
   const choices = info.choices.map((c) => `<button class="choice" data-key="${c.key}">${c.label}</button>`).join('');
-  showDialog(info.name + ' <span style="color:var(--faint);font-weight:400">(scripted, not a member)</span>', info.say,
+  showDialog(info.name + ' <span style="color:var(--faint);font-weight:400">(scripted — no kin is live here)</span>', info.say,
     choices + `<div class="fine">Your answer joins your application file. Nothing is machine-scored; there is no right choice.</div>`);
   $('#dialog').querySelectorAll('.choice').forEach((btn) => btn.addEventListener('click', () => pickChoice(stop, btn.dataset.key, btn.textContent)));
 }
@@ -530,7 +587,7 @@ function pickChoice(stop, key, label) {
     try {
       await api('answer', { vid: S.vid, stop, choice: key, text: $('#why').value });
       S.answered.add(stop); S.consequence[stop] = key; updateHud(); closeDialog();
-      if (!REDUCED) S.scene = { stop, choice: key, t0: performance.now() };
+      if (!REDUCED && ['stop1','stop2','stop3'].includes(stop)) S.scene = { stop, choice: key, t0: performance.now() }; // kin stops get scenes in a later pass
       toast(SCENE_TOLD[stop]?.[key] || 'Answered. The path goes on.');
       if (S.answered.size === Object.keys(STOPS).length) setTimeout(() => toast('Every stop on this path is answered — the gate is ahead.'), 3000);
     } catch (e) { toast('The forest didn\'t hear that (' + e.message + ') — try again.'); }
@@ -585,7 +642,7 @@ function toast(msg) {
 }
 function updateHud(serverCoins) {
   $('#coinhud').firstChild.textContent = `◉ ${serverCoins ?? S.coins.size} `;
-  $('#stophud').textContent = `stops ${S.answered.size}/${Object.keys(STOPS).length} (of 11 planned)`;
+  $('#stophud').textContent = `stops ${S.answered.size}/${Object.keys(STOPS).length} (of 11)`;
 }
 
 // ---------------------------------------------------------------- boot

@@ -22,7 +22,7 @@ test('answers record per stop; unknown stops and empty choices are refused', () 
   const { vid } = arrive.newVisitor({ ip: 't2' });
   const st = arrive.answer(vid, 'stop1', 'disassemble', 'save what can be used', { ip: 't2' });
   assert.deepEqual(st.answered, ['stop1']);
-  assert.throws(() => arrive.answer(vid, 'stop9', 'x', '', { ip: 't2' }), /no such stop/);
+  assert.throws(() => arrive.answer(vid, 'stop12', 'x', '', { ip: 't2' }), /no such stop/);
   assert.throws(() => arrive.answer(vid, 'stop2', '', '', { ip: 't2' }), /needs a choice/);
 });
 
