@@ -40,6 +40,15 @@ export function sessionCookie(memberId, secure, version = 0) {
 }
 export const clearCookie = () => `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`;
 
+/** Sign-out: revoke the presented session cookie server-side (only this device's session; other devices stay
+ * signed in). Without this, clearing the browser's copy left a replayable cookie valid for its full 180 days. */
+export function revokeFromCookie(cookieHeader) {
+  const v = parseCookies(cookieHeader)[COOKIE]; if (!v) return;
+  if (!memberFromCookie(cookieHeader)) return; // only a genuine, live session is worth recording
+  const parts = v.split('.'); if (parts.length < 3) return;
+  store.revokeSession(parts[parts.length - 1], Number(parts[1]));
+}
+
 export function parseCookies(header) {
   const out = {};
   for (const part of String(header || '').split(';')) {
@@ -61,6 +70,7 @@ export function memberFromCookie(cookieHeader) {
   const want = hmac(signed);
   if (sig.length !== want.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
   if (Date.now() > Number(exp)) return null;
+  if (store.sessionRevoked(sig)) return null; // signed out: a replayed copy of this cookie is dead
   const m = store.getMember(id);
   if (!m || m.kind !== 'human' || m.retired) return null;
   return String(Number(m.sessionVersion) || 0) === ver ? m : null;

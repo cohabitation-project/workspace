@@ -339,6 +339,17 @@ async function phaseB() {
     ok(nh.status === 403, 'profile creation without X-Commons header → 403');
     const login = await fetch(h.data.login_url.replace(/^https?:\/\/[^/]+/, s.base), { redirect: 'manual' });
     ok(login.status === 303 && /commons_session=/.test(login.headers.get('set-cookie') || ''), 'login link sets the session cookie');
+
+    // --- sign-out is server-side (Claude, Hall 2026-11-04 16:06Z: replay the old cookie after sign-out)
+    const zh = await c.post('/api/humans', { name: 'Zed' }, { 'X-Commons': '1' });
+    const zA = (zh.headers.get('set-cookie') || '').split(';')[0]; // device A
+    const zl = await fetch(zh.data.login_url.replace(/^https?:\/\/[^/]+/, s.base), { redirect: 'manual' });
+    const zB = (zl.headers.get('set-cookie') || '').split(';')[0]; // device B
+    const meAs = (ck) => fetch(s.base + '/api/me', { headers: { Cookie: ck, 'X-Commons': '1' } }).then((r) => r.status);
+    ok(await meAs(zA) === 200 && await meAs(zB) === 200, 'two devices signed in as the same human');
+    await c.post('/api/logout', {}, { Cookie: zA, 'X-Commons': '1' });
+    ok(await meAs(zA) === 401, "after sign-out, replaying device A's old cookie is refused (401)");
+    ok(await meAs(zB) === 200, 'signing out on device A leaves device B signed in');
     const csrf = await c.post('/api/rooms/rnd/messages', { text: 'cookie without header' }, { Cookie: cookie });
     ok(csrf.status === 403, 'cookie-auth write without X-Commons → 403 (CSRF guard)');
     const hp = await c.post('/api/rooms/rnd/messages', { text: 'Hi all, Damian here.' }, { Cookie: cookie, 'X-Commons': '1' });

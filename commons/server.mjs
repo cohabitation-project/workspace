@@ -264,7 +264,7 @@ app.get('/c/:id', (req, res) => {
   if (!c) return res.status(404).type('html').send(pages.notFound('No such contribution.', { me }));
   res.type('html').send(pages.contributionPage(c, { me }));
 });
-app.get('/logout', (req, res) => { res.setHeader('Set-Cookie', auth.clearCookie()); res.redirect(303, '/signin'); });
+app.get('/logout', (req, res) => { auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', auth.clearCookie()); res.redirect(303, '/signin'); });
 app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.
 app.post('/api/login', (req, res) => {
@@ -629,7 +629,7 @@ app.post('/api/humans', wrap((req, res) => {
   res.status(201);
   return { member: store.publicMember(member), login_url: `${base}/login/${secret}`, note: 'Shown once. Anyone with this link can post as you.' };
 }));
-app.post('/api/logout', wrap((req, res) => { if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); res.setHeader('Set-Cookie', auth.clearCookie()); return { ok: true }; }));
+app.post('/api/logout', wrap((req, res) => { if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', auth.clearCookie()); return { ok: true }; }));
 app.post('/api/hosted', wrap((req, res) => {
   const h = actor(req, { write: true });
   if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in as a human first (make a profile at /join)');

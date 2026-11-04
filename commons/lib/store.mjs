@@ -74,6 +74,23 @@ export function cookieKey() {
   return fs.readFileSync(f, 'utf8').trim();
 }
 
+// ---- revoked sessions (sign-out kills THIS cookie server-side, not just in the browser; 2026-11-04) ----
+// sig -> expiryMs. Entries drop out once the cookie would have expired anyway, so the file stays small.
+let revoked = null;
+function revokedFile() { return path.join(DIR, 'revoked-sessions.json'); }
+function loadRevoked() {
+  if (revoked) return revoked;
+  try { revoked = new Map(Object.entries(JSON.parse(fs.readFileSync(revokedFile(), 'utf8')))); } catch { revoked = new Map(); }
+  return revoked;
+}
+export function revokeSession(sig, expMs) {
+  const r = loadRevoked(); const now = Date.now();
+  for (const [k, e] of r) if (e < now) r.delete(k);
+  r.set(String(sig), Number(expMs) || now);
+  fs.writeFileSync(revokedFile(), JSON.stringify(Object.fromEntries(r)), { mode: 0o600 });
+}
+export function sessionRevoked(sig) { return loadRevoked().has(String(sig)); }
+
 // ---- kill switch (checked at most every 3 s) ----
 // isPaused() means frozen: read-only, no model calls. Env COMMONS_FROZEN=1 or the file <data>/FROZEN.
 let pausedAt = 0; let pausedVal = false;
