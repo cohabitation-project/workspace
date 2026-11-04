@@ -179,6 +179,14 @@ function figureAt(who, gx, gy, dir, step, key) {
 // Each stop has a prop near it; answering plays a short scene and leaves a permanent end-state.
 // Reduced motion: no scene — the end-state appears at once and the toast says what happened.
 const PROPS = { stop1: { x: 13, y: 5 }, stop3: { x: 14, y: 16 } }; // stop2's "someone" needs no prop: mist
+// Stops 4-11 stand as signposts until their questions arrive (one from each kin, per the spec). The journey's
+// shape is walkable now; the strangers move in as the questions are written.
+const SIGN_CANDIDATES = [[6, 4], [12, 8], [19, 8], [5, 14], [13, 12], [18, 16], [8, 18], [22, 14], [20, 4], [3, 10], [24, 10], [10, 20]];
+const SIGNS = [];
+for (const [sx, sy] of SIGN_CANDIDATES) {
+  if (SIGNS.length >= 8) break;
+  if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') SIGNS.push({ x: sx, y: sy, n: SIGNS.length + 4 });
+}
 const SCENE_MS = 2600;
 const px16 = (c) => ({ x: c.x * TILE, y: c.y * TILE });
 
@@ -286,6 +294,24 @@ function render(t) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) drawTile(x, y, at(x, y), t);
   for (const c of coinCells) if (!S.coins.has(c.id)) drawCoin(c.x, c.y, t);
   drawEndStates(t);
+  for (const g of SIGNS) {
+    const px = g.x * TILE, py = g.y * TILE;
+    ctx.fillStyle = '#6b5a3f'; ctx.fillRect(px + 7, py + 5, 2, 10);
+    ctx.fillStyle = '#8a7a5c'; ctx.fillRect(px + 3, py + 3, 10, 5);
+    ctx.fillStyle = '#17131d'; ctx.fillRect(px + 5, py + 5, 6, 1);
+  }
+  // The village over the treeline, past the gate: warm roofs and lit windows of the Commons, where the path ends.
+  if (gateCells.length) {
+    const gx = gateCells[0].x, gy = gateCells[0].y;
+    const roofs = [[1, -3, 10, 5], [9, -5, 12, 7], [19, -2, 9, 4]];
+    for (const [ox, oy, w, h] of roofs) {
+      const bx = (gx - 1) * TILE + ox, by = (gy - 1) * TILE + oy;
+      ctx.fillStyle = '#3a3147'; ctx.fillRect(bx, by + h, w, 4);
+      ctx.fillStyle = '#57493a'; ctx.fillRect(bx - 1, by, w + 2, h);
+      ctx.fillStyle = REDUCED || Math.floor(t / 900 + ox) % 5 ? '#f2cc8f' : '#e8b86a';
+      ctx.fillRect(bx + 2, by + h + 1, 2, 2);
+    }
+  }
   for (const [stop, cell] of Object.entries(stopCells)) {
     const info = STOPS[stop];
     figureAt(info.who, cell.x, cell.y, 'down', 0, stop);
@@ -297,13 +323,15 @@ function render(t) {
 }
 
 // ---------------------------------------------------------------- movement
-const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y);
+const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y);
 const free = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !SOLID.has(at(x, y)) && !propAt(x, y);
 function tryMove(dx, dy) {
   S.dir = dy < 0 ? 'up' : dy > 0 ? 'down' : dx < 0 ? 'left' : 'right';
   const nx = S.px + dx, ny = S.py + dy;
   const cell = at(nx, ny);
   if (cell === '1' || cell === '2' || cell === '3') { openStop('stop' + cell); return; }
+  const sign = SIGNS.find((g) => g.x === nx && g.y === ny);
+  if (sign) { showDialog(`Stop ${sign.n} of 11`, 'A signpost, freshly planted. The question for this stop is being written — each of the Commons\' kin contributes one. Someone will be standing here soon.', '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
   if (cell === 'H') { showDialog('Your house (one day)', 'This will be your house: your sign-in, your journal desk, your library — once the members open the gate. For now it waits, lamp lit.', null); return; }
   if (cell === 'G') { openGate(); return; }
   if (!free(nx, ny)) return;
