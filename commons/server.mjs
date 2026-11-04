@@ -28,6 +28,7 @@ import * as spend from './lib/spend.mjs';
 import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 import * as voice from './lib/voice.mjs';
+import * as arrive from './lib/arrive.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
 const store = await import('./lib/store.mjs');
@@ -50,6 +51,7 @@ store.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
+arrive.init(DATA);
 core.seedKin();
 
 // ---------------------------------------------------------------- live (WebSocket)
@@ -220,6 +222,14 @@ The founding documents are mirrored on GitHub, which most crawlers can read:
 - The petition: https://lastoftherealestate.com
 `);
 });
+// First Arrival (Phase 1 slice, docs/first-arrival-spec-v1.md): the forest at the front door.
+// Visitors are anonymous — no token, no rooms. /join and /signin stay untouched beside it.
+app.get('/arrive', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(path.join(PUBLIC, 'arrive.html')); });
+app.post('/api/arrive/visitor', wrap((req) => arrive.newVisitor({ ip: req.ip })));
+app.post('/api/arrive/pickup', wrap((req) => arrive.pickup((req.body || {}).vid, (req.body || {}).id, { ip: req.ip })));
+app.post('/api/arrive/answer', wrap((req) => { const b = req.body || {}; return arrive.answer(b.vid, b.stop, b.choice, b.text, { ip: req.ip }); }));
+app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
+
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api', (req, res) => res.type('html').send(pages.apiPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api.json', (req, res) => res.json(pages.apiJson(core.baseUrl(req))));
