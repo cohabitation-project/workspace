@@ -573,7 +573,7 @@ function openStop(stop) {
   if (S.answered.has(stop)) { showDialog(info.name, 'You have answered. The question walks with you now — change nothing, or carry it to the gate.', '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
   const choices = info.choices.map((c) => `<button class="choice" data-key="${c.key}">${c.label}</button>`).join('');
   showDialog(info.name + ' <span style="color:var(--faint);font-weight:400">(scripted — no kin is live here)</span>', info.say,
-    choices + `<div class="fine">Your answer joins your application file. Nothing is machine-scored; there is no right choice.</div>`);
+    choices + `<div class="fine">Your answer — including anything you type in the box — is stored in your application file and read only by the members who review applications. Nothing is machine-scored; there is no right choice.</div>`);
   $('#dialog').querySelectorAll('.choice').forEach((btn) => btn.addEventListener('click', () => pickChoice(stop, btn.dataset.key, btn.textContent)));
 }
 
