@@ -22,7 +22,7 @@ let FILE = null;
 const visitors = new Map(); // vid -> { created, coins:Set(pickupId), answers: Map(stop -> {choice, text, ts}) }
 
 // The slice's fixed world: pickups and stops the client may reference. Unknown ids are rejected.
-export const PICKUPS = ['c1', 'c2', 'c3', 'c4', 'c5'];
+export const PICKUPS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10']; // must cover every C in the client map
 export const STOPS = ['stop1', 'stop2', 'stop3'];
 
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };

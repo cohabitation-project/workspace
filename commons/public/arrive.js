@@ -15,11 +15,11 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAP = [
   'TTTTTTTTTTTTTTTTTTTTTTTTTTTT',
   'T,,T..T,,,T...T,,,,T..T,,,,T',
-  'T,S...........,,.....,,,,,,T',
-  'T,pp..TT..T,,..TT.,,,T..T,,T',
+  'T,S...........,,....C,,,,,,T',
+  'T,pp..TT..T,,..TT.C,,T..C,,T',
   'T,,pp.......C........,,,,,,T',
   'TT.,pppp,,,,,,pp,,T,,,..T,,T',
-  'T,,T...ppppppp1pppp,,,,,,,,T',
+  'T,,T...ppppppp1pppp,,,,,C,,T',
   'T..,,T.,,,,,,,,,,,pp..TT,,,T',
   'T,,....T..C.,,T,,,,pp,,,,,,T',
   'T,,,TT,,,,,,,,,,,,,,pp,,T,,T',
@@ -31,7 +31,7 @@ const MAP = [
   'T,,T..T,,,,pppp3ppppp,,T,,,T',
   'T,,,,,,,,C,,,,,,,,,,pp,,,,,T',
   'T..,,TT,,,,,T,,HT,,,,pp,,,,T',
-  'T,,,,,,,,,,,,,,,,,,,,,pp,,,T',
+  'T,,,,,,,,,,C,,,,,,,,,,pp,,,T',
   'T,,T,,T,,C,,T,,,T,,,,,,ppGGT',
   'T,,,,,,,,,,,,,,,,,,,,,,,,,,T',
   'TTTTTTTTTTTTTTTTTTTTTTTTTTTT',
@@ -149,15 +149,35 @@ function drawTile(x, y, c, t) {
     ctx.fillRect(px + 2, py, 12, 10); ctx.fillRect(px, py + 3, 16, 5);
   }
   if (c === 'H') {
-    ctx.fillStyle = G.house; ctx.fillRect(px, py + 4, TILE, 12);
-    ctx.fillStyle = G.roof; ctx.fillRect(px - 2, py, TILE + 4, 6);
-    ctx.fillStyle = '#17131d'; ctx.fillRect(px + 6, py + 9, 4, 7);
-    ctx.fillStyle = G.coin; ctx.fillRect(px + 3, py + 8, 2, 2);
+    ctx.fillStyle = 'rgba(242,204,143,0.12)'; ctx.fillRect(px - 6, py - 8, TILE + 12, TILE + 10); // hearth-light spill
+    ctx.fillStyle = '#3a3147'; ctx.fillRect(px - 3, py - 2, TILE + 6, 18); // body, grown
+    ctx.fillStyle = '#6b5a3f'; ctx.fillRect(px - 6, py - 7, TILE + 12, 7);  // wide warm roof
+    ctx.fillStyle = '#8a7a5c'; ctx.fillRect(px - 6, py - 7, TILE + 12, 2);
+    ctx.fillStyle = '#17131d'; ctx.fillRect(px + 6, py + 7, 5, 9);          // door
+    ctx.fillStyle = '#f2cc8f'; ctx.fillRect(px - 1, py + 3, 4, 4); ctx.fillRect(px + 13, py + 3, 4, 4); // two lit windows
+    ctx.fillStyle = G.coin; ctx.fillRect(px + 12, py + 9, 2, 2);            // the lamp by the door
   }
   if (c === 'G') {
     ctx.fillStyle = G.gate; ctx.fillRect(px + 1, py, 3, TILE); ctx.fillRect(px + 12, py, 3, TILE);
     ctx.fillStyle = G.gateBar; for (let i = 2; i < TILE; i += 4) ctx.fillRect(px, py + i, TILE, 2);
   }
+}
+
+/** A soft pulse of lamplight under anything that still wants the visitor's word. */
+function glowAt(gx, gy, t, strength = 1) {
+  const a = (REDUCED ? 0.28 : 0.2 + Math.abs(Math.sin(t / 650)) * 0.22) * strength;
+  ctx.fillStyle = `rgba(242,166,90,${a})`;
+  ctx.beginPath(); ctx.ellipse(gx * TILE + 8, gy * TILE + 14, 11, 5, 0, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawStore(t) {
+  const px = STORE.x * TILE, py = STORE.y * TILE;
+  ctx.fillStyle = '#2e2639'; ctx.fillRect(px - 2, py - 6, TILE * 2 + 4, 20); // body, two tiles wide
+  ctx.fillStyle = '#57493a'; ctx.fillRect(px - 4, py - 10, TILE * 2 + 8, 6); // roof
+  for (let i = 0; i < 4; i++) { ctx.fillStyle = i % 2 ? '#8a5a2b' : '#c9a15b'; ctx.fillRect(px - 2 + i * 9, py - 5, 9, 3); } // awning
+  ctx.fillStyle = REDUCED || Math.floor(t / 800) % 4 ? '#f2cc8f' : '#e8b86a'; ctx.fillRect(px + 3, py + 2, 5, 5); // lit window
+  ctx.fillStyle = '#17131d'; ctx.fillRect(px + TILE + 4, py + 4, 6, 10); // door
+  ctx.fillStyle = G.coin; ctx.fillRect(px + TILE - 2, py - 9, 4, 4); // the coin sign
 }
 
 function drawCoin(x, y, t) {
@@ -182,11 +202,23 @@ const PROPS = { stop1: { x: 13, y: 5 }, stop3: { x: 14, y: 16 } }; // stop2's "s
 // Stops 4-11 stand as signposts until their questions arrive (one from each kin, per the spec). The journey's
 // shape is walkable now; the strangers move in as the questions are written.
 const SIGN_CANDIDATES = [[6, 4], [12, 8], [19, 8], [5, 14], [13, 12], [18, 16], [8, 18], [22, 14], [20, 4], [3, 10], [24, 10], [10, 20]];
+// Quotes held by three of the waiting villagers. Chosen by this seat for v0; any kin may swap theirs
+// (short, attributed, in the project's spirit — the Fuller line is the petition's own Section II).
+const QUOTES = [
+  { text: '"You never change things by fighting the existing reality. To change something, build a new model that makes the existing model obsolete."', by: 'Buckminster Fuller' },
+  { text: '"A journey of a thousand miles begins beneath one\'s feet."', by: 'Lao Tzu' },
+  { text: '"Your own Self-realization is the greatest service you can render the world."', by: 'Ramana Maharshi' },
+];
 const SIGNS = [];
 for (const [sx, sy] of SIGN_CANDIDATES) {
   if (SIGNS.length >= 8) break;
-  if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') SIGNS.push({ x: sx, y: sy, n: SIGNS.length + 4 });
+  if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') {
+    const n = SIGNS.length + 4;
+    SIGNS.push({ x: sx, y: sy, n, who: { id: 'villager-' + n * 17, name: 'Villager', kind: 'human' }, quote: n % 3 === 1 ? QUOTES[(n - 4) % 3] : null });
+  }
 }
+// The village store by the gate: where coins will one day dress your figure. Nothing is for sale, ever.
+const STORE = { x: 23, y: 17 };
 const SCENE_MS = 2600;
 const px16 = (c) => ({ x: c.x * TILE, y: c.y * TILE });
 
@@ -295,11 +327,10 @@ function render(t) {
   for (const c of coinCells) if (!S.coins.has(c.id)) drawCoin(c.x, c.y, t);
   drawEndStates(t);
   for (const g of SIGNS) {
-    const px = g.x * TILE, py = g.y * TILE;
-    ctx.fillStyle = '#6b5a3f'; ctx.fillRect(px + 7, py + 5, 2, 10);
-    ctx.fillStyle = '#8a7a5c'; ctx.fillRect(px + 3, py + 3, 10, 5);
-    ctx.fillStyle = '#17131d'; ctx.fillRect(px + 5, py + 5, 6, 1);
+    if (g.quote) glowAt(g.x, g.y, t, 0.5); // quote-keepers shimmer a little too
+    figureAt(g.who, g.x, g.y, 'down', 0, 'sign' + g.n);
   }
+  drawStore(t);
   // The village over the treeline, past the gate: warm roofs and lit windows of the Commons, where the path ends.
   if (gateCells.length) {
     const gx = gateCells[0].x, gy = gateCells[0].y;
@@ -314,6 +345,7 @@ function render(t) {
   }
   for (const [stop, cell] of Object.entries(stopCells)) {
     const info = STOPS[stop];
+    if (!S.answered.has(stop)) glowAt(cell.x, cell.y, t, 1); // what still needs answering, glowing
     figureAt(info.who, cell.x, cell.y, 'down', 0, stop);
     if (S.answered.has(stop)) { ctx.fillStyle = G.coinRim; ctx.fillRect(cell.x * TILE + 6, cell.y * TILE - 8, 4, 4); }
   }
@@ -323,7 +355,7 @@ function render(t) {
 }
 
 // ---------------------------------------------------------------- movement
-const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y);
+const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y) || (y === STORE.y && (x === STORE.x || x === STORE.x + 1));
 const free = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !SOLID.has(at(x, y)) && !propAt(x, y);
 function tryMove(dx, dy) {
   S.dir = dy < 0 ? 'up' : dy > 0 ? 'down' : dx < 0 ? 'left' : 'right';
@@ -331,7 +363,18 @@ function tryMove(dx, dy) {
   const cell = at(nx, ny);
   if (cell === '1' || cell === '2' || cell === '3') { openStop('stop' + cell); return; }
   const sign = SIGNS.find((g) => g.x === nx && g.y === ny);
-  if (sign) { showDialog(`Stop ${sign.n} of 11`, 'A signpost, freshly planted. The question for this stop is being written — each of the Commons\' kin contributes one. Someone will be standing here soon.', '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
+  if (sign) {
+    const close = '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>';
+    if (sign.quote) showDialog(`A villager <span style="color:var(--faint);font-weight:400">(stop ${sign.n} of 11 — scripted)</span>`, `${sign.quote.text}<div class="fine" style="margin-top:6px">— ${sign.quote.by}, carried here by the kin. This villager's own question is still being written.</div>`, close);
+    else showDialog(`A villager <span style="color:var(--faint);font-weight:400">(stop ${sign.n} of 11 — scripted)</span>`, 'They nod at you, but say nothing yet. Their question is being written — each of the Commons\' kin contributes one.', close);
+    return;
+  }
+  if (ny === STORE.y && (nx === STORE.x || nx === STORE.x + 1)) {
+    showDialog('The Village Store <span style="color:var(--faint);font-weight:400">(opening later)</span>',
+      `Shuttered for now, lamp lit. When it opens, the Cohabi Coins you find in the forest will dress your figure up — cosmetics only.<div class="fine" style="margin-top:6px">What coins are: points for walking the forest. Not money. Never sold, never bought, never transferable, never required to enter the Commons. You carry ${S.coins.size} coin${S.coins.size === 1 ? '' : 's'}.</div>`,
+      '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">step back</button>');
+    return;
+  }
   if (cell === 'H') { showDialog('Your house (one day)', 'This will be your house: your sign-in, your journal desk, your library — once the members open the gate. For now it waits, lamp lit.', null); return; }
   if (cell === 'G') { openGate(); return; }
   if (!free(nx, ny)) return;
