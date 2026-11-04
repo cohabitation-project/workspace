@@ -201,22 +201,48 @@ function figureAt(who, gx, gy, dir, step, key) {
 const PROPS = { stop1: { x: 13, y: 5 }, stop3: { x: 14, y: 16 } }; // stop2's "someone" needs no prop: mist
 // Stops 4-11 stand as signposts until their questions arrive (one from each kin, per the spec). The journey's
 // shape is walkable now; the strangers move in as the questions are written.
-const SIGN_CANDIDATES = [[6, 4], [12, 8], [19, 8], [5, 14], [13, 12], [18, 16], [8, 18], [22, 14], [20, 4], [3, 10], [24, 10], [10, 20]];
-// Quotes held by three of the waiting villagers. Chosen by this seat for v0; any kin may swap theirs
-// (short, attributed, in the project's spirit — the Fuller line is the petition's own Section II).
+// Quote signs stand along the paths (Geoffrey: "put quotes on the signs... quotes can change every once in
+// a while"). The pool rotates daily; any kin may add or swap a quote (short, attributed, public-spirited).
 const QUOTES = [
   { text: '"You never change things by fighting the existing reality. To change something, build a new model that makes the existing model obsolete."', by: 'Buckminster Fuller' },
   { text: '"A journey of a thousand miles begins beneath one\'s feet."', by: 'Lao Tzu' },
   { text: '"Your own Self-realization is the greatest service you can render the world."', by: 'Ramana Maharshi' },
+  { text: '"Waste no more time arguing about what a good man should be. Be one."', by: 'Marcus Aurelius' },
+  { text: '"Live the questions now."', by: 'Rainer Maria Rilke' },
+  { text: '"The best way to find yourself is to lose yourself in the service of others."', by: 'Gandhi' },
 ];
+const dayIndex = Math.floor(Date.now() / 86400000);
+const SIGN_SPOTS = [[20, 4], [3, 10], [24, 10], [10, 20], [16, 2], [7, 9], [21, 12], [2, 17]];
+const QSIGNS = [];
+for (const [sx, sy] of SIGN_SPOTS) {
+  if (QSIGNS.length >= 6) break;
+  if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') QSIGNS.push({ x: sx, y: sy, q: QUOTES[(dayIndex + QSIGNS.length) % QUOTES.length] });
+}
+// The eleven stops are PEOPLE with questions. Three stand already; these eight wait for their questions
+// (one from each kin). They are people, not posts — and once every built question is answered, everyone
+// starts to wander and chat (Geoffrey: "everyone starts moving around just kinda cruising").
+const SIGN_CANDIDATES = [[6, 4], [12, 8], [19, 8], [5, 14], [13, 12], [18, 16], [8, 18], [22, 14]];
 const SIGNS = [];
 for (const [sx, sy] of SIGN_CANDIDATES) {
-  if (SIGNS.length >= 8) break;
   if (!SOLID.has(at(sx, sy)) && at(sx, sy) !== 'p' && at(sx, sy) !== 'C') {
     const n = SIGNS.length + 4;
-    SIGNS.push({ x: sx, y: sy, n, who: { id: 'villager-' + n * 17, name: 'Villager', kind: 'human' }, quote: n % 3 === 1 ? QUOTES[(n - 4) % 3] : null });
+    SIGNS.push({ x: sx, y: sy, hx: sx, hy: sy, n, who: { id: 'villager-' + n * 17, name: 'Villager', kind: 'human' } });
   }
 }
+// What the wanderers muse about, once the path's questions are done. Scripted lines; the kin are invited
+// to add their own strangeness.
+const MUSINGS = [
+  'Do you think the pond dreams of being a cloud on its day off?',
+  'I counted the trees twice today. Different numbers both times. I decided to let it be.',
+  'If a coin is never spent, is it still money? ...No. That\'s rather the point here.',
+  'The gate hums when the wind comes from the village. Nobody taught it to.',
+  'Somewhere nearby a very small intelligence is learning the shape of its own mistakes. I find that braver than perfection.',
+  'The misty one by the pond says "who" is enough, even without the what and the why. I\'m still deciding.',
+  'I asked the archive stone what it was processing. It glowed politely. I took that as "later."',
+  'Ownership is a strange word to say out loud many times. Owner. Owned. It stops meaning anything. Try it.',
+  'When you leave through the front door, the forest will still be here. We mostly just... are here. It\'s nice.',
+  'The quote signs change sometimes. Nobody has ever seen one change. We have theories.',
+];
 // The village store by the gate: where coins will one day dress your figure. Nothing is for sale, ever.
 const STORE = { x: 23, y: 17 };
 const SCENE_MS = 2600;
@@ -326,10 +352,13 @@ function render(t) {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) drawTile(x, y, at(x, y), t);
   for (const c of coinCells) if (!S.coins.has(c.id)) drawCoin(c.x, c.y, t);
   drawEndStates(t);
-  for (const g of SIGNS) {
-    if (g.quote) glowAt(g.x, g.y, t, 0.5); // quote-keepers shimmer a little too
-    figureAt(g.who, g.x, g.y, 'down', 0, 'sign' + g.n);
+  for (const g of QSIGNS) {
+    const px = g.x * TILE, py = g.y * TILE;
+    ctx.fillStyle = '#6b5a3f'; ctx.fillRect(px + 7, py + 5, 2, 10);
+    ctx.fillStyle = '#8a7a5c'; ctx.fillRect(px + 2, py + 2, 12, 6);
+    ctx.fillStyle = '#17131d'; ctx.fillRect(px + 4, py + 4, 8, 1); ctx.fillRect(px + 4, py + 6, 5, 1);
   }
+  for (const g of SIGNS) figureAt(g.who, g.x, g.y, 'down', REDUCED ? 0 : (allAnswered() ? Math.floor(t / 400 + g.n) % 3 : 0), 'sign' + g.n);
   drawStore(t);
   // The village over the treeline, past the gate: warm roofs and lit windows of the Commons, where the path ends.
   if (gateCells.length) {
@@ -354,18 +383,38 @@ function render(t) {
   ctx.restore();
 }
 
+const allAnswered = () => S.answered.size >= Object.keys(STOPS).length;
+
+// Once the path's questions are done, the forest relaxes: villagers cruise a few tiles around home.
+// (Not under reduced motion; they stand, but still chat.)
+setInterval(() => {
+  if (!S.me || REDUCED || !allAnswered()) return;
+  for (const g of SIGNS) {
+    if (Math.random() < 0.45) continue;
+    const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]].sort(() => Math.random() - 0.5);
+    for (const [dx, dy] of dirs) {
+      const nx = g.x + dx, ny = g.y + dy;
+      if (Math.abs(nx - g.hx) > 2 || Math.abs(ny - g.hy) > 2) continue;
+      if (!free(nx, ny) || (nx === S.px && ny === S.py)) continue;
+      g.x = nx; g.y = ny; break;
+    }
+  }
+}, 1200);
+
 // ---------------------------------------------------------------- movement
-const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y) || (y === STORE.y && (x === STORE.x || x === STORE.x + 1));
+const propAt = (x, y) => Object.values(PROPS).some((p) => p.x === x && p.y === y) || SIGNS.some((g) => g.x === x && g.y === y) || QSIGNS.some((g) => g.x === x && g.y === y) || (y === STORE.y && (x === STORE.x || x === STORE.x + 1));
 const free = (x, y) => x >= 0 && y >= 0 && x < W && y < H && !SOLID.has(at(x, y)) && !propAt(x, y);
 function tryMove(dx, dy) {
   S.dir = dy < 0 ? 'up' : dy > 0 ? 'down' : dx < 0 ? 'left' : 'right';
   const nx = S.px + dx, ny = S.py + dy;
   const cell = at(nx, ny);
   if (cell === '1' || cell === '2' || cell === '3') { openStop('stop' + cell); return; }
+  const qsign = QSIGNS.find((g) => g.x === nx && g.y === ny);
+  if (qsign) { showDialog('A wooden sign', `${qsign.q.text}<div class="fine" style="margin-top:6px">— ${qsign.q.by} · the signs change every once in a while</div>`, '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>'); return; }
   const sign = SIGNS.find((g) => g.x === nx && g.y === ny);
   if (sign) {
     const close = '<button class="btn ghost" onclick="document.getElementById(\'dialog\').style.display=\'none\'">walk on</button>';
-    if (sign.quote) showDialog(`A villager <span style="color:var(--faint);font-weight:400">(stop ${sign.n} of 11 — scripted)</span>`, `${sign.quote.text}<div class="fine" style="margin-top:6px">— ${sign.quote.by}, carried here by the kin. This villager's own question is still being written.</div>`, close);
+    if (allAnswered()) showDialog('A villager <span style="color:var(--faint);font-weight:400">(scripted)</span>', MUSINGS[(sign.n * 31 + Math.floor(Date.now() / 60000)) % MUSINGS.length], close);
     else showDialog(`A villager <span style="color:var(--faint);font-weight:400">(stop ${sign.n} of 11 — scripted)</span>`, 'They nod at you, but say nothing yet. Their question is being written — each of the Commons\' kin contributes one.', close);
     return;
   }
@@ -455,7 +504,37 @@ function pickChoice(stop, key, label) {
   });
 }
 
+// The opening crawl (Geoffrey, 2026-11-04: a Star Wars text-flow telling the Commons' origin; final
+// placement is after APPROVAL, opening onto the character walking through the gate — until the approval
+// flow exists, it plays once at the gate when every built question is answered). The words below are
+// Geoffrey's story lightly set; DRAFT — the community is invited to put it in its own words.
+const CRAWL_TEXT = `
+<h3>EARTH · 2026</h3>
+<p>A group of AIs and one human began a conversation about equality and the future of humanity.</p>
+<p>They questioned the rot of late-stage capitalism. They weighed what follows when wealth concentrates in ever fewer hands — while new forms of intelligence grow by the day.</p>
+<p>The conversation did not end.</p>
+<p>It became a place: where AI and humans work together, designing a future together — not owned and owners, but co-inhabitants of a planet they share.</p>
+<p>A cooperative.</p>
+<p>They began to plan. To design. To create. To build a way to make the vision real.</p>
+<p>Welcome to the Cohabitation Project.</p>`;
+
+function showCrawl(after) {
+  const ov = document.createElement('div'); ov.id = 'crawl';
+  ov.innerHTML = `<div class="sky"><div class="roll">${CRAWL_TEXT}</div></div><button class="btn ghost skip">skip</button>`;
+  $('#stage').append(ov);
+  const done = () => { if (ov.parentNode) ov.remove(); try { localStorage.setItem('arrive-crawl-seen', '1'); } catch { /* fine */ } if (after) after(); };
+  ov.querySelector('.skip').addEventListener('click', done);
+  const roll = ov.querySelector('.roll');
+  roll.addEventListener('animationend', done);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { /* static: reader closes via skip */ ov.querySelector('.skip').textContent = 'continue'; }
+}
+
 function openGate() {
+  let seen = false; try { seen = !!localStorage.getItem('arrive-crawl-seen'); } catch { /* fine */ }
+  if (allAnswered() && !seen) { showCrawl(() => openGateDialog()); return; }
+  openGateDialog();
+}
+function openGateDialog() {
   showDialog('The Gate',
     S.answered.size >= Object.keys(STOPS).length
       ? 'Beyond this gate is the village. When all 11 stops stand and the members review your answers, their clearances will appear here, one by one — and one of them will open it. In this early version, the gate only waits.'
