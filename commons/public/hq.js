@@ -1110,15 +1110,17 @@ function openExit() {
   if (mine) wsSend({ t: 'away', room: mine.room });
   S.lingerRoom = null;
   S.open = { type: 'exit' };
+  // Exactly two choices (council, 2026-11-04): sign out now, or visit the forest still signed in.
+  // The forest is optional, never a waypoint. Closing the box (×) does nothing: still signed in, still here.
   panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">You stepped outside</h2><button class="p-close" aria-label="Close">×</button></div>
     <p class="p-sub">You've left the building, so nobody sees you in a room now. Click any room to walk back in.</p></div>
-    <div class="p-body"><p>Sign out of this device too? You'd need your sign-in link or recovery code to come back as ${esc(S.me.name)}.</p>
-    <p class="exit-actions"><button type="button" id="exit-signout">Sign out</button> <button type="button" id="exit-stay">Stay signed in</button></p></div>`;
+    <div class="p-body"><p><strong>Sign out</strong> ends this device's session now — you'd need your sign-in link or recovery code to come back as ${esc(S.me.name)}.<br><strong>Go to forest</strong> visits the First Arrival forest, still signed in.</p>
+    <p class="exit-actions"><button type="button" id="exit-signout">Sign out</button> <button type="button" id="exit-forest">Go to forest</button></p></div>`;
   showPanel();
   const done = () => { S.open = null; panel.hidden = true; scrim.hidden = true; panel.innerHTML = ''; document.body.style.overflow = ''; };
   panel.querySelector('.p-close').addEventListener('click', done);
-  panel.querySelector('#exit-stay').addEventListener('click', done);
-  panel.querySelector('#exit-signout').addEventListener('click', async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* reload anyway */ } location.href = '/'; });
+  panel.querySelector('#exit-forest').addEventListener('click', () => { location.href = '/arrive'; });
+  panel.querySelector('#exit-signout').addEventListener('click', async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* reload anyway */ } location.replace('/'); });
 }
 
 // Readback: ▶ plays a message in its author's voice (Kokoro on the server), part by part, so it starts after the first
@@ -1207,3 +1209,7 @@ const boot = setInterval(() => { if (S.rooms.length) { clearInterval(boot); rout
 // Camera controls
 $('#cam-zoom')?.addEventListener('click', toggleZoom);
 $('#cam-home')?.addEventListener('click', () => setCam('commons'));
+
+// Back-button after sign-out (council test, 2026-11-04): a page restored from the back/forward cache
+// would show a stale signed-in HQ. Reload on restore so the server's real session state decides what shows.
+window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
