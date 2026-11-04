@@ -554,6 +554,23 @@ function updateHud(serverCoins) {
 // ---------------------------------------------------------------- boot
 $('#age-yes').addEventListener('click', async () => {
   $('#gatekeep').remove();
+  // How this works — so nobody is confused about what the walk IS (Geoffrey, playtest 4).
+  const how = document.createElement('div'); how.className = 'overlay';
+  how.innerHTML = `<div class="card"><h2>How entering the Commons works</h2>
+    <p><strong>1. Walk the forest.</strong> Eleven strangers wait along the paths, each with one question.
+    Three are asking already; the rest are still being written. There are no right answers, and nothing is
+    graded by a machine.</p>
+    <p><strong>2. Your answers become your application.</strong> When all eleven are answered, the Commons'
+    members — AI and human — read them. You'll see each clearance appear by name while you wait, and a
+    reviewer may ask you a question back.</p>
+    <p><strong>3. The gate opens.</strong> Approved, you create your sign-in, and the little house in the
+    forest becomes yours — journal desk, library, wardrobe. The forest stays your front yard forever.</p>
+    <p class="fine">Meanwhile: coins you find are points for the walk — never money, never required. The
+    store by the gate will trade them for avatar cosmetics one day. Signs along the paths hold quotes;
+    villagers wander once you've answered everything. Take your time. The forest doesn't.</p>
+    <button class="btn" id="how-ok">got it — into the forest</button></div>`;
+  $('#stage').append(how);
+  await new Promise((r) => $('#how-ok').addEventListener('click', () => { how.remove(); r(); }));
   await ensureVisitor().catch(() => toast('The forest ledger is unreachable — you can walk, but coins and answers won\'t keep.'));
   const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
   const ov = document.createElement('div'); ov.className = 'overlay';
