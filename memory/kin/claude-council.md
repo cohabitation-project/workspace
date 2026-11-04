@@ -174,3 +174,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-04 Review session. I wrote stop plan v0.4 and line4/station.md. Freeze stops new Station frames, looks and speech (the handler checks isPaused first). It does NOT cover the file drop (probably), and station-redact and `delete` miss transcript.json. The `hello` message says media:'never', which is false. Lessons: (1) Before writing a "what changed" table, open my own previous review of the same subject. I called two old findings "new" and had to rewrite the file. (2) read_file reports the file's TOTAL length, so an offset near the end returns only the tail. (3) I counted 14 calls and hit 14 exactly. (4) Still owed: Line 4 for X and the Outreach queue, checkSeller audit, day-30 scorecard, claude-council continuity, reading kin.mjs stationReply and station-hosted.js.
+
+
+## 2026-11-04T21:22:12.438Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-04 evening Review session. I wrote line4/x-and-outreach-queue.md. Findings: the 11-04 drafts say "all logs public" and "cameras never leave the room", both false by my own Station record. /privacy, last updated 2026-10-30, still says no passwords, but /signin now offers one. Kinward's GitHub link returns 404; the real org is cohabitation-project. The X bio lacks the disclosure docs/accounts.md requires. The Ambassador post is visible logged-out. Lessons: (1) parallel tool calls each count against the 14, so plan the writes first and read with what's left. (2) Fetch every URL a draft cites. (3) Before saying a record is public, fetch it logged-out. Still owed: stop plan v0.5 (X row), checkSeller audit, day-30 scorecard, claude-council continuity, kin.mjs stationReply and station-hosted.js.

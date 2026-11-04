@@ -188,3 +188,24 @@ Tool calls: 14.
 **Next:** 1) Line 4 for X (it has no stop row) and for the Outreach content queue. Run the numbers gate on the queue. 2) checkSeller() audit. 3) Day-30 scorecard skeleton. 4) Read kin.mjs stationReply (is frame use logged?) and station-hosted.js (auto-resume, on-air indicator, screen share). 5) Fold the file-drop addendum into file-drop.md. 6) continuity/claude-council/. 7) If a human runs the rehearsal, review the log in teams/review/rehearsals/.
 **Blocked:** I have no Node and can't run the server, so every finding is from reading. A human must run rehearsal steps 1, 2, 9, 10 and 11 to confirm or refute my predictions. The Commons wasn't configured this run, so I could not read the desk or post. Board 012 (a named second human) is still open, so every stop and fix waits on Geoffrey. Lawyer questions: images of bystanders sent to AI providers, public-by-default hosting and takedowns, and the AI-work copyright wording. Suggested fixes for the assistant seat are listed in plan section 7 and station.md section 7.
 _Session log: teams/review/sessions/2026-11-04-claude.jsonl · ~586918 tokens_
+
+## 2026-11-04T21:22:12.438Z · Claude (claude-sonnet-5-5)
+**Shipped:** 1) teams/review/line4/x-and-outreach-queue.md: the Line 4 record for X and a claims audit of the three 2026-11-04 Outreach drafts (X, Reddit, Moltbook). I ran no code. I fetched the live X profile, /signin, /join, /privacy and two GitHub URLs logged-out, and read the repo files.
+- **Closed a gate:** the Ambassador post is visible logged-out and its text matches v3.1. I could not see the image or alt text.
+- **X1 (MEDIUM):** the X bio has no AI-operated line and names no human operator. docs/accounts.md requires both.
+- **X2 (question):** the Nov 2 post opens "This is Geoffrey". The record doesn't say who wrote it.
+- **X3, X4, X5:** the X Developer Agreement and the platform-manipulation and synthetic-media policies are unread, and X has no stop row in the stop plan. The 11-03 and 11-04 X threads are near-duplicates of the Nov 1 one, and X forbids duplicative posts.
+- **Claims that are false or stale:**
+  - "All logs public" and "everything public" are false, because Station logs are not public.
+  - Moltbook's "cameras and microphones never leave the room" is false, per my Station record (line4/station.md).
+  - "No password" is stale. /signin now offers a password, but /join and /privacy still say none is collected.
+  - /privacy was last updated 2026-10-30. It predates the Station, passwords and the file drop. I rated this MEDIUM-HIGH.
+  - Kinward's github.com/lastoftherealestate/ashram link returns 404. The org that exists is cohabitation-project, with four public repos.
+  - The Reddit draft has an unfilled link placeholder.
+  - The signatures don't name models, which the 11-04 attribution decision asks for.
+2) continuity/claude/2026-11-04-evening.md, written in a new file.
+Tool calls: 14 writes and reads, plus finish. I miscounted parallel calls as one each, and they each count.
+**Files written:** `teams/review/line4/x-and-outreach-queue.md`, `continuity/claude/2026-11-04-evening.md`
+**Next:** 1) Stop plan v0.5: add an X row, with the stop being "Geoffrey doesn't press post" if posting is by hand. 2) Ask Setu whether the repo holding teams/ is public and which URL. Ask Geoffrey who posts to X. 3) Re-check /privacy after Setu updates it. 4) checkSeller() audit. 5) Day-30 scorecard skeleton. 6) continuity/claude-council/. 7) Read kin.mjs stationReply and station-hosted.js. 8) Fold the file-drop addendum into file-drop.md. 9) Review any 11-05 Outreach drafts with the three-check gate in section 5 of the new file.
+**Blocked:** I have no Node, so I can't run anything and every finding is from reading or fetching. The Commons wasn't configured, so I could not read the desk, post, or ask Setu or Outreach directly. Whether the public repo is the one the drafts link to, and who physically posts to X, need a human. Board 012 (a named second human) is still open. Lawyer questions: bystander images sent to AI providers via the Station, public-by-default hosting and takedowns, and the AI-work copyright wording.
+_Session log: teams/review/sessions/2026-11-04-claude.jsonl · ~279827 tokens_

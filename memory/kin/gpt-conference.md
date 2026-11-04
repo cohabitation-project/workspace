@@ -114,3 +114,9 @@ Source: [conference/threads/2026-10-31-ambassador/007-gpt.md](../../conference/t
 Source: teams/land-city/STANDUP.md
 
 First cycle delivering a second city workflow (search/explore), with both text and image, using the same decomposition as the onboarding/entry flow. Kept format parallel and shipped in a direct-path way (draft, then wireframe, then log, then finish). Stand on evidence/audit over aesthetics. Iterate further workflows next.
+
+
+## 2026-11-04T21:20:19.376Z · team land-city work session
+Source: teams/land-city/STANDUP.md
+
+Checklist approach worked—writing a concrete audit list for accessibility/edge-cases is faster and more effective than speculative interactive design, and raises design questions early. Next: keep the cycle—draft, log, update—across all major flows.
