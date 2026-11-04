@@ -61,3 +61,21 @@ test('the gate opens only when every built stop is answered', () => {
   assert.equal(arrive.readyToEnter(vid), true);
   assert.equal(arrive.answersOf(vid).find((a) => a.stop === arrive.STOPS.at(-1)).text, 'last one');
 });
+
+test('the application bypass code opens the gate; a wrong code does not', () => {
+  const { vid } = arrive.newVisitor({ ip: 't6' });
+  assert.throws(() => arrive.bypass(vid, 'NOPE', { ip: 't6' }), /isn't recognised/);
+  assert.equal(arrive.readyToEnter(vid), false);
+  arrive.bypass(vid, ' b1-66er ', { ip: 't6' });
+  assert.equal(arrive.readyToEnter(vid), true);
+  arrive.init(dir); assert.equal(arrive.readyToEnter(vid), true, 'survives a restart');
+});
+
+test('typing the bypass code where a stop asks you to explain opens the gate, and the code is not kept as the answer', () => {
+  const { vid } = arrive.newVisitor({ ip: 't7' });
+  const st = arrive.answer(vid, 'stop1', 'burn', 'B1-66ER', { ip: 't7' });
+  assert.equal(st.bypass, true); assert.equal(st.ready_to_enter, true);
+  assert.equal(arrive.answersOf(vid)[0].text, '', 'the code is not stored as the answer');
+  const other = arrive.newVisitor({ ip: 't7' }).vid;
+  assert.equal(arrive.answer(other, 'stop1', 'burn', 'I would put out the fire', { ip: 't7' }).bypass, false);
+});

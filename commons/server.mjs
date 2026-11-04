@@ -343,6 +343,7 @@ app.post('/api/arrive/enter', wrap((req, res) => {
     login_url: pw ? null : `${base}/login/${secret}`, note: pw ? 'Signed in. Next time: /signin with your name and password.' : 'Signed in on this device. Save the login link: it is shown once, and it is how you come back on another device.' };
 }));
 // A visitor can erase their own forest file at any time (holding the visitor id is the proof it's theirs).
+app.post('/api/arrive/bypass', wrap((req) => { const b = req.body || {}; return arrive.bypass(b.vid, b.code, { ip: req.ip }); }));
 app.post('/api/arrive/forget', wrap((req) => arrive.forget((req.body || {}).vid, { by: 'the visitor' })));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
 

@@ -48,6 +48,8 @@ function apply(ev, write = true) {
     if (!visitors.has(ev.vid)) visitors.set(ev.vid, { created: ev.ts, coins: new Set(), answers: new Map() });
   } else if (ev.t === 'pickup') {
     const v = visitors.get(ev.vid); if (v) v.coins.add(ev.id);
+  } else if (ev.t === 'bypass') {
+    const v = visitors.get(ev.vid); if (v) v.bypass = true;
   } else if (ev.t === 'answer') {
     const v = visitors.get(ev.vid); if (v) v.answers.set(ev.stop, { choice: ev.choice, text: ev.text || '', ts: ev.ts });
   }
@@ -91,7 +93,11 @@ export function answer(vid, stop, choice, text, { ip } = {}) {
   if (!STOPS.includes(stop)) fail(400, 'no such stop on this path');
   const ch = String(choice || '').slice(0, 40);
   if (!ch) fail(400, 'an answer needs a choice');
-  apply({ t: 'answer', vid: String(vid), stop, choice: ch, text: String(text || '').slice(0, 2000), ts: new Date().toISOString() });
+  // The bypass code typed where a stop asks you to explain (Geoffrey, 2026-11-04) opens the gate. The code itself
+  // is never stored as the answer.
+  let txt = String(text || '').slice(0, 2000);
+  if (txt.trim() && bypassCodes().includes(norm(txt))) { bypass(vid, txt, { ip }); txt = ''; }
+  apply({ t: 'answer', vid: String(vid), stop, choice: ch, text: txt, ts: new Date().toISOString() });
   return state(vid);
 }
 
@@ -120,7 +126,27 @@ export function answersOf(vid) {
   return [...v.answers.entries()].map(([stop, a]) => ({ stop, choice: a.choice, text: a.text || '', ts: a.ts }));
 }
 /** Every built stop answered: the gate can open (2026-11-04, Geoffrey: "allow an entry, Willie can test it"). */
-export function readyToEnter(vid) { const v = visitor(vid); return STOPS.every((s) => v.answers.has(s)); }
+export function readyToEnter(vid) { const v = visitor(vid); return !!v.bypass || STOPS.every((s) => v.answers.has(s)); }
+
+/**
+ * Application bypass (Geoffrey, 2026-11-04: code B1-66ER, for testers). Checked here, never in the page. The codes
+ * come from COMMONS_ARRIVE_BYPASS (comma-separated) when set; otherwise B1-66ER. Because the repo is public, the
+ * default is effectively public too: that's acceptable only while /join is open to anyone anyway. Before the gate
+ * becomes a real hold-until-admitted gate, set COMMONS_ARRIVE_BYPASS on the server to a private code.
+ * Every use is logged (time only; never the code), and attempts are rate-limited per address.
+ */
+const norm = (c) => String(c || '').trim().toUpperCase().replace(/[\s_–—]+/g, '-');
+const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER').split(',').map(norm).filter(Boolean);
+export function bypass(vid, code, { ip } = {}) {
+  limit(`arrive-bypass:${ip || 'x'}`, 10, 3600_000, '10 code attempts per hour from one address');
+  const v = visitor(vid);
+  if (!bypassCodes().includes(norm(code))) fail(403, "that code isn't recognised — you can still walk the forest");
+  if (!v.bypass) {
+    apply({ t: 'bypass', vid: String(vid), ts: new Date().toISOString() });
+    fs.appendFileSync(path.join(DIR, 'bypass-uses.log'), JSON.stringify({ t: 'bypass', ts: new Date().toISOString() }) + '\n');
+  }
+  return { ok: true, note: 'Code accepted: the gate is open for you. Choose your name to step through.' };
+}
 
 export function state(vid) {
   const v = visitor(vid);
@@ -131,6 +157,7 @@ export function state(vid) {
     picked: [...v.coins],
     answered: [...v.answers.keys()],
     choices, // stop -> chosen key, so the world's consequences persist across a reload
+    bypass: !!v.bypass, ready_to_enter: !!v.bypass || STOPS.every((s) => v.answers.has(s)),
     stops_total: STOPS.length,
     note: 'Answers are kept only for reviewing your application to enter. Nothing here is scored by a machine.',
   };

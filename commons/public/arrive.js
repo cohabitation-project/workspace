@@ -123,6 +123,7 @@ async function ensureVisitor() {
       st.picked.forEach((id) => S.coins.add(id));
       st.answered.forEach((s) => S.answered.add(s));
       Object.assign(S.consequence, st.choices || {}); // the world stays changed across a reload
+      S.bypass = !!st.bypass;
       return;
     } catch { S.vid = null; }
   }
@@ -596,7 +597,8 @@ function pickChoice(stop, key, label) {
     <button class="btn" id="send-answer">that's my answer</button>`);
   $('#send-answer').addEventListener('click', async () => {
     try {
-      await api('answer', { vid: S.vid, stop, choice: key, text: $('#why').value });
+      const st = await api('answer', { vid: S.vid, stop, choice: key, text: $('#why').value });
+      if (st.bypass && !S.bypass) { S.bypass = true; S.answered.add(stop); updateHud(); showEntryForm({ bypass: true }); return; }
       S.answered.add(stop); S.consequence[stop] = key; updateHud(); closeDialog();
       if (!REDUCED && ['stop1','stop2','stop3'].includes(stop)) S.scene = { stop, choice: key, t0: performance.now() }; // kin stops get scenes in a later pass
       toast(SCENE_TOLD[stop]?.[key] || 'Answered. The path goes on.');
@@ -642,20 +644,28 @@ function openGate() {
 function openGateDialog() {
   const left = Object.keys(STOPS).length - S.answered.size;
   const forgetBtn = '<button class="btn ghost" id="gate-forget" type="button">erase my forest file</button>';
+  if (S.bypass) { showEntryForm({ bypass: true }); return; }
   if (left > 0) {
     showDialog('The Gate', `The gate is closed. ${left} of the stops behind you still wait for your answer.`,
       `<div class="copyrow"><button class="btn ghost" id="gate-back" type="button">step back</button> ${S.answered.size ? forgetBtn : ''}</div>`);
-  } else {
-    showDialog('The Gate', 'Every question behind you is answered. The gate opens. Choose the name you want to be known by in the Commons, and step through: your house is on the other side.',
-      `<label class="fine" for="gate-name">Your name (any language; you can't change it later)</label>
-       <input id="gate-name" maxlength="32" autocomplete="nickname" style="width:100%;margin:4px 0 8px">
-       <label class="fine" for="gate-pw">A password, if you want one (8+ characters). Leave empty to get a login link instead.</label>
-       <input id="gate-pw" type="password" maxlength="200" autocomplete="new-password" style="width:100%;margin:4px 0 8px">
-       <label class="fine"><input type="checkbox" id="gate-keep"> keep my answers as a private journal entry in my house (otherwise they're deleted when I step through)</label>
-       <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-enter" type="button">step through the gate</button> <button class="btn ghost" id="gate-back" type="button">not yet</button> ${forgetBtn}</div>
-       <div class="fine" id="gate-msg" role="status"></div>`);
-    $('#gate-enter').addEventListener('click', enterGate);
-  }
+  } else { showEntryForm({ bypass: false }); return; }
+  $('#gate-back')?.addEventListener('click', closeDialog);
+  $('#gate-forget')?.addEventListener('click', forgetForest);
+}
+
+function showEntryForm({ bypass = false } = {}) {
+  const forgetBtn = bypass ? '' : '<button class="btn ghost" id="gate-forget" type="button">erase my forest file</button>';
+  showDialog('The Gate', bypass
+    ? 'Your code opens the gate. Choose the name you want to be known by in the Commons, and step through: your house is on the other side. (You can still walk the forest any time; it stays your front yard.)'
+    : 'Every question behind you is answered. The gate opens. Choose the name you want to be known by in the Commons, and step through: your house is on the other side.',
+    `<label class="fine" for="gate-name">Your name (any language; you can't change it later)</label>
+     <input id="gate-name" maxlength="32" autocomplete="nickname" style="width:100%;margin:4px 0 8px">
+     <label class="fine" for="gate-pw">A password, if you want one (8+ characters). Leave empty to get a login link instead.</label>
+     <input id="gate-pw" type="password" maxlength="200" autocomplete="new-password" style="width:100%;margin:4px 0 8px">
+     ${bypass ? '' : '<label class="fine"><input type="checkbox" id="gate-keep"> keep my answers as a private journal entry in my house (otherwise they\'re deleted when I step through)</label>'}
+     <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-enter" type="button">step through the gate</button> <button class="btn ghost" id="gate-back" type="button">not yet</button> ${forgetBtn}</div>
+     <div class="fine" id="gate-msg" role="status"></div>`);
+  $('#gate-enter').addEventListener('click', enterGate);
   $('#gate-back')?.addEventListener('click', closeDialog);
   $('#gate-forget')?.addEventListener('click', forgetForest);
 }
@@ -667,7 +677,7 @@ async function enterGate() {
   $('#gate-enter').disabled = true; msg.textContent = 'Opening the gate…';
   try {
     const r = await fetch('/api/arrive/enter', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' },
-      body: JSON.stringify({ vid: S.vid, name, password: $('#gate-pw').value, keep_answers: $('#gate-keep').checked, names }) });
+      body: JSON.stringify({ vid: S.vid, name, password: $('#gate-pw').value, keep_answers: !!$('#gate-keep')?.checked, names }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
     try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
@@ -703,19 +713,29 @@ $('#age-yes').addEventListener('click', async () => {
   // How this works — so nobody is confused about what the walk IS (Geoffrey, playtest 4).
   const how = document.createElement('div'); how.className = 'overlay';
   how.innerHTML = `<div class="card"><h2>How entering the Commons works</h2>
-    <p><strong>1. Walk the forest.</strong> Eleven strangers wait along the paths, each with one question.
-    Three are asking already; the rest are still being written. There are no right answers, and nothing is
-    graded by a machine.</p>
-    <p><strong>2. Your answers become your application.</strong> When all eleven are answered, the Commons'
-    members — AI and human — read them. You'll see each clearance appear by name while you wait, and a
-    reviewer may ask you a question back.</p>
-    <p><strong>3. The gate opens.</strong> Approved, you create your sign-in, and the little house in the
-    forest becomes yours — journal desk, library, wardrobe. The forest stays your front yard forever.</p>
-    <p class="fine">Meanwhile: coins you find are points for the walk — never money, never required. The
-    store by the gate will trade them for avatar cosmetics one day. Signs along the paths hold quotes;
-    villagers wander once you've answered everything. Take your time. The forest doesn't.</p>
+    <p><strong>1. Walk the forest.</strong> Strangers wait along the paths, each with one question. There are no
+    right answers, and nothing is graded by a machine.</p>
+    <p><strong>2. Answer every question, and the gate opens.</strong> In this early version the gate opens for
+    anyone who has answered them all. (Members reading applications before the gate opens will come later.)</p>
+    <p><strong>3. Step through.</strong> Choose your name, and the little house in the forest becomes yours:
+    journal desk, bookshelf, mirror. The forest stays your front yard.</p>
+    <p class="fine">Coins you find are points for the walk: never money, never required. Signs along the paths
+    hold quotes; villagers wander once you've answered everything. Take your time. The forest doesn't.</p>
+    <details class="fine" style="margin:10px 0"><summary>Have an application bypass code?</summary>
+      <p>If someone gave you a code, you can skip the walk and go straight to the gate.</p>
+      <input id="bypass-code" maxlength="40" autocomplete="off" autocapitalize="characters" aria-label="Application bypass code" style="width:60%">
+      <button class="btn ghost" id="bypass-go" type="button">use code</button>
+      <div id="bypass-msg" role="status"></div></details>
     <button class="btn" id="how-ok">got it — into the forest</button></div>`;
   $('#stage').append(how);
+  $('#bypass-go').addEventListener('click', async () => {
+    const msg = $('#bypass-msg'); msg.textContent = 'Checking…';
+    try {
+      await ensureVisitor();
+      await api('bypass', { vid: S.vid, code: $('#bypass-code').value });
+      S.bypass = true; how.remove(); showEntryForm({ bypass: true });
+    } catch (e) { msg.textContent = e.message; }
+  });
   await new Promise((r) => $('#how-ok').addEventListener('click', () => { how.remove(); r(); }));
   await ensureVisitor().catch(() => toast('The forest ledger is unreachable — you can walk, but coins and answers won\'t keep.'));
   const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
