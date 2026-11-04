@@ -358,7 +358,10 @@ function render(t) {
     ctx.fillStyle = '#8a7a5c'; ctx.fillRect(px + 2, py + 2, 12, 6);
     ctx.fillStyle = '#17131d'; ctx.fillRect(px + 4, py + 4, 8, 1); ctx.fillRect(px + 4, py + 6, 5, 1);
   }
-  for (const g of SIGNS) figureAt(g.who, g.x, g.y, 'down', REDUCED ? 0 : (allAnswered() ? Math.floor(t / 400 + g.n) % 3 : 0), 'sign' + g.n);
+  for (const g of SIGNS) {
+    if (!allAnswered()) glowAt(g.x, g.y, t, 0.45); // every stop of the 11 glows until answered — waiting ones faintly
+    figureAt(g.who, g.x, g.y, 'down', REDUCED ? 0 : (allAnswered() ? Math.floor(t / 400 + g.n) % 3 : 0), 'sign' + g.n);
+  }
   drawStore(t);
   // The village over the treeline, past the gate: warm roofs and lit windows of the Commons, where the path ends.
   if (gateCells.length) {
@@ -444,6 +447,7 @@ addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if ($('#dialog').style.display === 'block' && k === 'escape') { closeDialog(); return; }
   const m = { arrowup: [0, -1], w: [0, -1], arrowdown: [0, 1], s: [0, 1], arrowleft: [-1, 0], a: [-1, 0], arrowright: [1, 0], d: [1, 0] }[k];
+  if (m && walkTimer) clearInterval(walkTimer);
   if (m) { e.preventDefault(); tryMove(m[0], m[1]); }
   if (k === 'enter' || k === ' ') {
     for (const [stop, cell] of Object.entries(stopCells)) {
@@ -452,7 +456,38 @@ addEventListener('keydown', (e) => {
   }
 });
 
-// Tap/click: step toward the tapped point, or talk to a tapped neighbour.
+// Tap/click: walk THERE (BFS pathfinding), and if the target is someone or something, arrive and interact.
+function findPath(tx, ty) {
+  const key = (x, y) => x + ',' + y;
+  const prev = new Map(); const seen = new Set([key(S.px, S.py)]); const q = [[S.px, S.py]];
+  const walkTarget = free(tx, ty);
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx === tx && ny === ty && !walkTarget) { prev.set(key(nx, ny), [x, y]); q.length = 0; break; } // stop beside a solid target
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || seen.has(key(nx, ny)) || !free(nx, ny)) continue;
+      seen.add(key(nx, ny)); prev.set(key(nx, ny), [x, y]); q.push([nx, ny]);
+      if (nx === tx && ny === ty) { q.length = 0; break; }
+    }
+  }
+  if (!prev.has(key(tx, ty))) return null;
+  const path = []; let cur = [tx, ty];
+  while (key(cur[0], cur[1]) !== key(S.px, S.py)) { path.unshift(cur); cur = prev.get(key(cur[0], cur[1])); if (!cur) return null; }
+  return path;
+}
+let walkTimer = null;
+function walkPath(path) {
+  clearInterval(walkTimer);
+  const stepMs = REDUCED ? 60 : 150;
+  walkTimer = setInterval(() => {
+    if (!path.length || $('.overlay') || $('#dialog').style.display === 'block') { clearInterval(walkTimer); return; }
+    const [nx, ny] = path[0];
+    tryMove(Math.sign(nx - S.px), Math.sign(ny - S.py)); // tryMove handles coins, dialogs, interactions
+    if (S.px === nx && S.py === ny) path.shift();
+    else { clearInterval(walkTimer); } // blocked (a wanderer stepped in) — stop cleanly; tap again re-paths
+  }, stepMs);
+}
 $('#stage').addEventListener('pointerdown', (e) => {
   if (!S.me || $('.overlay')) return;
   if (e.target.closest('#dialog')) return;
@@ -461,11 +496,9 @@ $('#stage').addEventListener('pointerdown', (e) => {
   const camY = Math.max(0, Math.min(H * TILE - canvas.height, S.py * TILE - canvas.height / 2));
   const gx = Math.floor(((e.clientX - r.left) / viewScale + camX) / TILE);
   const gy = Math.floor(((e.clientY - r.top) / viewScale + camY) / TILE);
-  const cell = at(gx, gy);
-  if ((cell === '1' || cell === '2' || cell === '3') && Math.abs(gx - S.px) + Math.abs(gy - S.py) <= 2) { openStop('stop' + cell); return; }
-  const dx = Math.sign(gx - S.px), dy = Math.sign(gy - S.py);
-  if (Math.abs(gx - S.px) >= Math.abs(gy - S.py)) { if (dx) tryMove(dx, 0); else if (dy) tryMove(0, dy); }
-  else if (dy) tryMove(0, dy); else if (dx) tryMove(dx, 0);
+  if (gx === S.px && gy === S.py) return;
+  const path = findPath(gx, gy);
+  if (path) walkPath(path);
 });
 
 // ---------------------------------------------------------------- dialogs
