@@ -192,3 +192,4 @@
 .entry-btn.agent { background:#2a2333; color:#cfc4e8; border-color:#4a4060; }
 .entry-btn:hover { filter:brightness(1.15); }
 .entry-dismiss { background:none; border:0; color:var(--faint); font-size:16px; cursor:pointer; padding:0 4px; }
+.agent-note { margin: 0; padding: 6px 16px; font-size: 13px; color: var(--muted); }

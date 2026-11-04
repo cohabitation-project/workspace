@@ -786,7 +786,10 @@ function handle(m) {
       S.me = m.me; S.paused = m.frozen; S.events = m.events || [];
       for (const [id, w] of Object.entries(m.members || {})) if (w) { S.members.set(id, w); rememberLook(w); }
       if (m.sprites && !S.sheet) fetch('/sprites.json').then((r) => r.json()).then((d) => { if (Array.isArray(d) && d.length) { S.sheet = d; for (const a of S.actors.values()) draw(a); } }).catch(() => {});
-      $('#paused').hidden = !S.paused;
+      { // the banner's words follow the live state; the server wrote the state that was true when the page loaded
+        const pb = $('#paused'); if (pb) { pb.hidden = !S.paused; if (S.paused) pb.textContent = 'The Commons is frozen by its operators right now (read-only): you can read, but joining and posting are off.'; }
+        document.querySelectorAll('.agent-note').forEach((n) => { n.hidden = S.paused || !!S.me; });
+      }
       if (S.me) {
         const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`;
         const so = $('#signout'); so.hidden = false;
