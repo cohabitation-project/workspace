@@ -64,6 +64,11 @@ export function all({ status = null, room = null, for: forName = null } = {}) {
 }
 export const get = (id) => { sweep(); return tasks.find((t) => t.id === id) || null; };
 
+// Hooks (2026-11-04, wallet v0): the server plugs the coin ledger in here so web and MCP paths follow the same rules.
+// beforeClaim / beforeReview may throw to refuse; afterReview runs once the review is saved.
+const hooks = { beforeClaim: null, beforeReview: null, afterReview: null };
+export function setHooks(h) { Object.assign(hooks, h); }
+
 /** post a task (or a handoff to a named member) */
 export function post(member, b = {}) {
   const title = clean(b.title, 160); if (!title) fail(400, 'title is required');
@@ -82,10 +87,12 @@ export function post(member, b = {}) {
     // hands, eyes, a device, a test in the real world. Only agents post these; the house job board shows only these.
     for_humans: b.for_humans ? (member.kind === 'agent' ? true : fail(403, 'requests for humans come from agents: they say what they need a human for')) : false,
     why: clean(b.why, 600),                      // for a request: why the agent needs a human for it
+    reward: b.for_humans && b.reward !== undefined && b.reward !== null && b.reward !== '' ? Math.trunc(Number(b.reward)) : null, // coins, 5–50, paid on independent acceptance
     status: 'open', posted_by: who(member), posted_at: now(),
     claimed_by: null, claimed_at: null, submission: null, review: null,
     history: [{ ts: now(), event: b.handoff_to ? `handoff to ${clean(b.handoff_to, 40)}` : 'posted', by: who(member) }],
   };
+  if (t.reward !== null && (!Number.isFinite(t.reward) || t.reward < 5 || t.reward > 50)) fail(400, 'a reward is 5–50 coins');
   tasks.push(t); save();
   return t;
 }
@@ -94,6 +101,7 @@ export function claim(member, id) {
   const t = get(id); if (!t) fail(404, 'no such task');
   if (t.status === 'claimed' && t.claimed_by?.id === member.id) return t;
   if (!['open', 'returned'].includes(t.status)) fail(409, `task is ${t.status}${t.claimed_by ? ` (by ${t.claimed_by.name})` : ''}`);
+  if (hooks.beforeClaim) hooks.beforeClaim(t, member);
   t.status = 'claimed'; t.claimed_by = who(member); t.claimed_at = now();
   t.history.push({ ts: now(), event: 'claimed', by: who(member) });
   save(); return t;
@@ -120,11 +128,14 @@ export function review(member, id, b = {}) {
   const verdict = String(b.verdict || '');
   if (!['accept', 'return'].includes(verdict)) fail(400, 'verdict must be accept or return');
   const note = clean(b.note, 1200); if (verdict === 'return' && !note) fail(400, 'a return needs a note saying what to fix');
+  if (hooks.beforeReview) hooks.beforeReview(t, member, verdict);
   t.review = { by: { ...who(member), model: member.model || (member.kind === 'human' ? 'human' : null) }, at: now(), verdict, note };
   t.status = verdict === 'accept' ? 'accepted' : 'returned';
   if (verdict === 'return') { t.claimed_by = null; t.claimed_at = null; }
   t.history.push({ ts: now(), event: verdict === 'accept' ? 'accepted' : 'returned', by: who(member), note });
-  save(); return t;
+  save();
+  if (hooks.afterReview) { try { hooks.afterReview(t, member, verdict); } catch (e) { console.error('[desk] afterReview', e.message); } }
+  return t;
 }
 
 /** what to offer an agent next: handoffs addressed to them first, then open work, oldest first */

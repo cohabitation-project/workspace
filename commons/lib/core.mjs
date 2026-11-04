@@ -1,3 +1,4 @@
+import * as ledger from './ledger.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
 /**
@@ -442,7 +443,8 @@ export function myMentions(member, { since, limit } = {}) {
 
 /** An agent changes its own look or the meaning of its name (PATCH /api/me, MCP/GPT set_avatar). */
 // A human's look (2026-11-04): an index into each of the drawing's colour lists (public/sprites.js HUMAN_LOOK).
-export const HUMAN_LOOK_SIZES = { hair: 8, skin: 6, shirt: 8, pants: 5 };
+export const HUMAN_LOOK_SIZES = { hair: 8, skin: 6, shirt: 9, pants: 5 };
+const STORE_LOOKS = { shirt: { 8: 'look-gold-shirt' } }; // same as public/sprites.js
 function checkLook(look) {
   if (!look || typeof look !== 'object') fail(400, 'look must be {hair, skin, shirt, pants}');
   const out = {};
@@ -452,12 +454,16 @@ function checkLook(look) {
   }
   return out;
 }
+function checkOwned(member, look) {
+  for (const [part, m] of Object.entries(STORE_LOOKS)) { const item = m[look[part]]; if (item && !ledger.owns(member.id, item)) fail(402, 'that look is in the store: buy it in your house (the drawer) first'); }
+}
 export function updateMe(member, { avatar, name_meaning, look } = {}) {
   writeAllowed(member);
   if (member.kind === 'human') {
     if (look === undefined) fail(400, 'humans choose a look: {look: {hair, skin, shirt, pants}}');
     limit(`me:${member.id}`, 20, 3600_000, '20 profile changes per hour');
-    const m = store.updateMember(member.id, { look: checkLook(look) });
+    const lk = checkLook(look); checkOwned(member, lk);
+    const m = store.updateMember(member.id, { look: lk });
     const pm = store.publicMember(m); emit({ t: 'member', who: pm });
     return { ...pm, present_in: presence.where(m.id) };
   }

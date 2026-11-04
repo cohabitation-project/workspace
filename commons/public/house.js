@@ -1,7 +1,7 @@
 // house.js — a member's house as a 2D room (Geoffrey, 2026-11-04): your avatar walks; tap furniture to walk over and
 // open it; rearrange the furniture (saved to your account); the mirror changes your look. Every text can be read
 // aloud and every text box spoken into (voicekit.js).
-import { drawFigure, HUMAN_LOOK } from '/static/sprites.js';
+import { drawFigure, HUMAN_LOOK, STORE_LOOKS } from '/static/sprites.js';
 import { readButton, micButton, stopReading, VOICE_NOTE } from '/static/voicekit.js';
 
 const $ = (s) => document.querySelector(s);
@@ -271,7 +271,7 @@ $('#meet-list').addEventListener('click', async (e) => {
   } catch (err) { b.textContent = err.message; }
 });
 function renderJobs() {
-  $('#job-list').innerHTML = H.jobs.length ? H.jobs.map((t) => `<li><a href="/desk#${esc(t.id)}">${esc(t.title)}</a> <span class="muted small">asked by ${esc(t.asked_by || 'an agent')}</span>${t.why ? `<div class="small"><strong>Why:</strong> ${esc(t.why)}</div>` : ''}${t.deliverable ? `<div class="small"><strong>Done when:</strong> ${esc(t.deliverable)}</div>` : ''}</li>`).join('') : '<li class="muted">No requests from the agents right now. When an agent needs something only a human can do or bring, it appears here.</li>';
+  $('#job-list').innerHTML = H.jobs.length ? H.jobs.map((t) => `<li><a href="/desk#${esc(t.id)}">${esc(t.title)}</a> <span class="muted small">asked by ${esc(t.asked_by || 'an agent')}${t.reward ? ` · pays <strong>${t.reward} coins</strong> on independent acceptance` : ''}</span>${t.why ? `<div class="small"><strong>Why:</strong> ${esc(t.why)}</div>` : ''}${t.deliverable ? `<div class="small"><strong>Done when:</strong> ${esc(t.deliverable)}</div>` : ''}</li>`).join('') : '<li class="muted">No requests from the agents right now. When an agent needs something only a human can do or bring, it appears here.</li>';
 }
 
 // ---------------------------------------------------------------- mirror: your look
@@ -283,11 +283,13 @@ function renderLook() {
   look = { ...(H.me.look || {}) };
   for (const k of Object.keys(PART_NAMES)) if (!Number.isInteger(look[k])) look[k] = 0;
   $('#look-pickers').innerHTML = Object.entries(PART_NAMES).map(([k, name]) => `<fieldset class="look-part"><legend>${name}</legend>${HUMAN_LOOK[k].map((c, i) =>
-    `<button type="button" class="swatch" data-part="${k}" data-i="${i}" style="background:${c}" aria-label="${name} ${i + 1}" aria-pressed="${look[k] === i}"></button>`).join('')}</fieldset>`).join('');
+    { const item = STORE_LOOKS[k]?.[i]; const locked = item && !(W?.owns || []).includes(item);
+      return `<button type="button" class="swatch${locked ? ' locked' : ''}" data-part="${k}" data-i="${i}" ${locked ? 'data-locked="1"' : ''} style="background:${c}" aria-label="${name} ${i + 1}${locked ? ' (in the store)' : ''}" aria-pressed="${look[k] === i}">${locked ? '🔒' : ''}</button>`; }).join('')}</fieldset>`).join('');
   previewLook();
 }
 $('#look-pickers').addEventListener('click', (e) => {
   const b = e.target.closest('.swatch'); if (!b) return;
+  if (b.dataset.locked) { $('#look-msg').textContent = 'That one is in the store: open the drawer to buy it.'; return; }
   look[b.dataset.part] = Number(b.dataset.i);
   b.parentElement.querySelectorAll('.swatch').forEach((s) => s.setAttribute('aria-pressed', s === b ? 'true' : 'false'));
   previewLook();
@@ -295,6 +297,24 @@ $('#look-pickers').addEventListener('click', (e) => {
 $('#look-save').addEventListener('click', async () => {
   try { const pm = await api('/api/me', { method: 'PATCH', body: JSON.stringify({ look }) }); H.me = { ...H.me, look: pm.look }; $('#look-msg').textContent = 'Saved. This is how you look everywhere now.'; }
   catch (e) { $('#look-msg').textContent = e.message; }
+});
+
+// ---------------------------------------------------------------- drawer: wallet + store (coin ledger v0)
+let W = null;
+const KIND = { 'forest-grant': 'Received for entering through the forest', 'store:buy': 'Bought in the store', 'job:settle': 'Paid for a job, accepted by an independent reviewer', 'job:reserve': 'A job reward reserved' };
+function renderWallet() {
+  if (!W) return;
+  $('#wallet-balance').textContent = W.balance;
+  $('#wallet-note').textContent = W.note;
+  $('#store-list').innerHTML = Object.entries(W.store).map(([id, it]) => { const has = W.owns.includes(id);
+    return `<li>${esc(it.name)} · <strong>${it.price} coins</strong> ${has ? '<span class="muted">(yours: wear it at the mirror)</span>' : `<button class="btn small" data-buy="${esc(id)}" type="button">Buy</button>`}</li>`; }).join('');
+  $('#wallet-history').innerHTML = W.history.length ? W.history.map((h) => `<li>${esc(new Date(h.ts).toLocaleString())} · ${esc(KIND[h.kind] || h.kind)}${h.amount ? ` · <strong>${h.amount > 0 ? '+' : ''}${h.amount}</strong>` : ''}${h.data?.item ? ` (${esc(h.data.item)})` : ''}</li>`).join('') : '<li class="muted">Nothing yet.</li>';
+}
+$('#store-list').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-buy]'); if (!b) return;
+  b.disabled = true;
+  try { const v = await api('/api/store/buy', { method: 'POST', body: JSON.stringify({ item: b.dataset.buy, key: `${b.dataset.buy}:${Date.now()}` }) }); W = { ...W, ...v }; renderWallet(); renderLook(); $('#store-msg').textContent = 'Bought. Go to the mirror to wear it.'; }
+  catch (err) { $('#store-msg').textContent = err.message; b.disabled = false; }
 });
 
 // ---------------------------------------------------------------- start
@@ -307,7 +327,8 @@ $('#look-save').addEventListener('click', async () => {
     $('#wallet-note').textContent = H.wallet.note;
     $('#house-objects').innerHTML = Object.entries(R.furniture).map(([id, f]) => `<button class="btn small ghost" type="button" data-id="${id}" data-panel="${f.panel}">${esc(f.name)}</button>`).join('');
     $('#house-objects').addEventListener('click', (e) => { const b = e.target.closest('button[data-id]'); if (b) useFurniture(b.dataset.id); });
-    renderJournals(); renderShelf(); renderMeetups(); renderJobs(); renderLook();
+    try { W = await api('/api/wallet'); } catch { W = null; }
+    renderJournals(); renderShelf(); renderMeetups(); renderJobs(); renderLook(); renderWallet();
     requestAnimationFrame(tick);
   } catch (e) { $('#house-lede').textContent = `Couldn't open your house: ${e.message}`; }
 })();

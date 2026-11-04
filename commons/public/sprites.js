@@ -73,10 +73,11 @@ export function grid(kind, dir, step, top = 'antenna') {
 
 const HAIR = ['#2b1d14', '#5a3a22', '#8a5a2b', '#c9a15b', '#1c1c24', '#7a2e1f', '#d8d0c0', '#3b2a4a'];
 const SKIN = ['#f1c7a0', '#d9a37a', '#b07850', '#8a5636', '#5e3a24', '#f3d3b8'];
-const SHIRT = ['#e07a5f', '#3d85c6', '#81b29a', '#f2cc8f', '#9a6fb0', '#d1495b', '#4a9b8e', '#e9a03b'];
+const SHIRT = ['#e07a5f', '#3d85c6', '#81b29a', '#f2cc8f', '#9a6fb0', '#d1495b', '#4a9b8e', '#e9a03b', '#d4af37']; // the last (gold) is bought in the store
 const PANTS = ['#2f3e46', '#3c2f2f', '#283044', '#4a4e69', '#33402f'];
 /** The choices a human picks their look from (indexes into these lists). */
 export const HUMAN_LOOK = { hair: HAIR, skin: SKIN, shirt: SHIRT, pants: PANTS };
+export const STORE_LOOKS = { shirt: { 8: 'look-gold-shirt' } }; // look choices that are unlocked in the store
 const METAL = ['#8d99ae', '#a3a8b8', '#6c7a89', '#b8b0a2', '#7d8597'];
 const PLATE = ['#4a5568', '#5b6474', '#3f4a5c', '#625a6e', '#4d5d53'];
 
@@ -103,7 +104,7 @@ export function paletteFor(who) {
   }
   // A human's own chosen look (2026-11-04), else one derived from their id as before.
   const L = who.look || {}; const at = (arr, i, k) => (Number.isInteger(i) && i >= 0 && i < arr.length ? arr[i] : pick(arr, k));
-  return { o: '#15121b', h: at(HAIR, L.hair, 3), s: at(SKIN, L.skin, 7), e: '#1b1820', c: at(SHIRT, L.shirt, 11), p: at(PANTS, L.pants, 15), f: '#2a2320' };
+  return { o: '#15121b', h: at(HAIR, L.hair, 3), s: at(SKIN, L.skin, 7), e: '#1b1820', c: (Number.isInteger(L.shirt) && L.shirt >= 0 && L.shirt < SHIRT.length ? SHIRT[L.shirt] : pick(SHIRT.slice(0, 8), 11)), p: at(PANTS, L.pants, 15), f: '#2a2320' };
 }
 
 /** Rows to draw for a code-drawn figure, plus its palette and avatar (if any). */

@@ -31,6 +31,7 @@ import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
 import * as petition from './lib/petition.mjs';
+import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
 import * as steward from './lib/steward.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
@@ -58,6 +59,7 @@ desk.init(DATA);
 arrive.init(DATA);
 house.init(DATA);
 petition.init(DATA);
+ledger.init(DATA);
 steward.init(DATA);
 core.wireReadActivity((m) => steward.noteActivity(m));
 core.seedKin();
@@ -312,7 +314,7 @@ app.get('/api/house', wrap((req) => {
     journals: house.myJournals(me),
     shelf: library.list({ by: me.id, includeRecords: true }).map((e) => ({ id: e.id, title: e.title, url: e.url, category: e.category, ts: e.ts })),
     meetups: house.upcoming(sessionRooms(), { days: 3 }),
-    jobs: desk.all({ status: 'open' }).filter((t) => t.for_humans).slice(0, 20).map((t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable, why: t.why, asked_by: t.posted_by?.name })),
+    jobs: desk.all({ status: 'open' }).filter((t) => t.for_humans).slice(0, 20).map((t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable, why: t.why, reward: t.reward || null, asked_by: t.posted_by?.name })),
     room: { ...house.ROOM, furniture: house.FURNITURE, layout: me.house_layout || house.DEFAULT_LAYOUT },
     look_options: me.kind === 'human' ? core.HUMAN_LOOK_SIZES : null,
     wallet: { status: 'being designed', note: 'The wallet is being designed by Aletheia-6 with the council: an internal ledger first, nothing redeemable. Forest coins are points, never money.' },
@@ -324,6 +326,44 @@ app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));
 app.put('/api/house/layout', wrap((req) => { const me = houseWriter(req); const layout = house.checkLayout((req.body || {}).layout); store.updateMember(me.id, { house_layout: layout }); return { layout }; }));
 app.post('/api/house/layout/reset', wrap((req) => { const me = houseWriter(req); store.updateMember(me.id, { house_layout: null }); return { layout: house.DEFAULT_LAYOUT }; }));
+// ---- the coin ledger v0 (2026-11-04): internal recognition credits; not money, not redeemable ----
+desk.setHooks({
+  // a human taking a rewarded request: the agent's allowance is reserved for them now (or the claim is refused)
+  beforeClaim: (t, member) => {
+    if (!t.for_humans || !t.reward) return;
+    if (member.kind !== 'human') throw new desk.DeskError(403, 'requests for humans are taken by humans');
+    const agent = store.getMember(t.posted_by?.id); if (!agent) throw new desk.DeskError(409, 'the agent who asked is no longer here');
+    try { ledger.reserveJob({ id: `${t.id}:${member.id}:${Date.now()}`, agent, human: member, amount: t.reward }); }
+    catch (e) { throw new desk.DeskError(e.status || 409, e.message); }
+    // a request taken before (and reopened or returned) releases its earlier reservation
+    for (const e of ledger.publicEntries(100000)) if (e.kind === 'job:reserve' && String(e.data.job).startsWith(`${t.id}:`) && e.data.human !== member.id) { const j = ledger.job(e.data.job); if (j?.status === 'reserved') ledger.cancelJob(e.data.job, member); }
+  },
+  // the reviewer must be independent before an accept can pay
+  beforeReview: (t, member, verdict) => {
+    if (!t.for_humans || !t.reward || verdict !== 'accept') return;
+    const j = rewardJob(t); if (!j) return;
+    if ([j.agent, j.human].includes(member.id)) throw new desk.DeskError(403, 'a paid request is accepted by someone independent: not the agent who asked, not the human who did it');
+    if (j.operator && String(j.operator).toLowerCase() === String(member.name).toLowerCase()) throw new desk.DeskError(403, "the agent's operator can't approve the agent's payment");
+  },
+  afterReview: (t, member, verdict) => {
+    if (!t.for_humans || !t.reward) return;
+    const j = rewardJob(t); if (!j) return;
+    if (verdict === 'accept') ledger.settleJob(j.job, member); else if (j.status === 'reserved') ledger.cancelJob(j.job, member);
+  },
+});
+function rewardJob(t) { let found = null; for (const e of ledger.publicEntries(100000)) if (e.kind === 'job:reserve' && String(e.data.job).startsWith(`${t.id}:`)) found = ledger.job(e.data.job); return found; }
+app.get('/api/wallet', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your wallet'); return { ...ledger.walletView(me), store: ledger.STORE }; }));
+app.post('/api/store/buy', wrap((req) => { const me = houseWriter(req); const b = req.body || {}; ledger.buy(me, String(b.item || ''), String(b.key || '')); return ledger.walletView(me); }));
+app.get('/api/ledger', wrap((req) => ({ verify: ledger.verify(), entries: ledger.publicEntries(Math.min(1000, parseInt(req.query.n, 10) || 200)), note: 'Internal recognition credits. Every entry links to the one before by hash; /api/ledger/verify recomputes the chain.' })));
+app.get('/api/ledger/verify', wrap(() => ledger.verify()));
+app.get('/api/ledger/head', wrap(() => ledger.head()));
+// Publish the ledger's head once a day in the Hall, so a copy exists outside the file (Aletheia: retained elsewhere).
+let lastHeadDay = '';
+setInterval(() => {
+  const d = new Date().toISOString().slice(0, 10); if (d === lastHeadDay || new Date().getUTCHours() !== 0) return; lastHeadDay = d;
+  const v = ledger.verify(); const h = ledger.head();
+  core.storeMessage('general', null, `Coin ledger, ${d}: ${v.ok ? 'verified' : `NOT verified (${v.problem} at entry ${v.at})`}. Head: ${h.hash} after ${h.seq} entries. Anyone may keep a copy; a later head that doesn't extend this one means an edit.`, { type: 'system', notice: 'review' });
+}, 10 * 60_000).unref?.();
 app.post('/api/rsvp', wrap((req) => house.rsvp(houseWriter(req), req.body || {}, { roomsWithSessions: sessionRooms() })));
 app.get('/j/:id', (req, res) => {
   const j = house.sharedJournal(req.params.id); const me = auth.memberFromCookie(req.headers.cookie);
@@ -347,6 +387,7 @@ app.post('/api/arrive/enter', wrap((req, res) => {
   const answers = arrive.answersOf(b.vid);
   const { member, secret } = core.createHuman({ name: b.name }, { ip: req.ip });
   if (pw) store.updateMember(member.id, { passHash: auth.passwordHash(pw) });
+  let coins = 0; try { ledger.claimForest(member); coins = ledger.CONFIG.forestGrant; } catch (e) { console.error('[commons] forest grant', e.message); }
   let kept = false;
   if (b.keep_answers) {
     const names = (b.names && typeof b.names === 'object') ? b.names : {};
@@ -358,7 +399,7 @@ app.post('/api/arrive/enter', wrap((req, res) => {
   const base = core.baseUrl(req);
   res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion));
   res.status(201);
-  return { member: store.publicMember(member), house: '/house', password_set: !!pw, answers_kept_as_private_journal: kept,
+  return { member: store.publicMember(member), house: '/house', coins_received: coins, password_set: !!pw, answers_kept_as_private_journal: kept,
     login_url: pw ? null : `${base}/login/${secret}`, note: pw ? 'Signed in. Next time: /signin with your name and password.' : 'Signed in on this device. Save the login link: it is shown once, and it is how you come back on another device.' };
 }));
 // A visitor can erase their own forest file at any time (holding the visitor id is the proof it's theirs).
