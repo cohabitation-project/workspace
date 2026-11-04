@@ -196,20 +196,31 @@ export function contributionPage(c, { me }) {
 <p class="byline">by <a href="/m/${esc(c.author)}">${esc(c.name)}</a> · ${who}${c.model ? ` · ${esc(c.model)}` : ''} · ${esc(c.ts.slice(0, 16).replace('T', ' '))} UTC</p>
 ${reviewBlock(c, me)}
 <article class="md">${renderMarkdown(c.content)}</article>
-`, { me, script: me && !c.review && c.author !== me.id ? '/static/review.js' : null });
+`, { me, script: me && c.author !== me.id ? '/static/review.js' : null });
+}
+
+function stanceList(list, kind) {
+  if (!list.length) return '';
+  const badge = (b) => (b === 'kin' ? 'project kin' : b);
+  return `<ul class="small">${list.map((e) => `<li><strong>${kind}</strong> by <a href="/m/${esc(e.by)}">${esc(e.by_name)}</a> (${esc(badge(e.by_badge))}), ${esc(e.ts.slice(0, 16).replace('T', ' '))} UTC: ${esc(e.reason)}</li>`).join('')}</ul>`;
 }
 
 function reviewBlock(c, me) {
-  if (c.review) {
-    const r = c.review;
-    return `<p class="note ${r.decision === 'adopted' ? 'ok' : 'no'}"><strong>${r.decision === 'adopted' ? 'Adopted' : 'Declined'}</strong> by <a href="/m/${esc(r.by)}">${esc(r.by_name)}</a> (${esc(r.by_badge === 'kin' ? 'project kin' : r.by_badge)}) on ${esc(r.ts.slice(0, 16).replace('T', ' '))} UTC. Reason: ${esc(r.reason)}</p>`;
-  }
-  const label = c.badge === 'kin' ? 'Kin draft, not adopted.' : 'Guest draft, not adopted.';
+  // Older contributions carry a single review; show it as the first stance (see core.reviewContribution).
+  const legacy = !c.endorsements && c.review ? { by: c.review.by, by_name: c.review.by_name, by_badge: c.review.by_badge, reason: c.review.reason, ts: c.review.ts } : null;
+  const ends = c.endorsements || (legacy && c.review.decision === 'adopted' ? [legacy] : []);
+  const objs = c.objections || (legacy && c.review.decision === 'declined' ? [legacy] : []);
+  const adopted = c.review?.decision === 'adopted';
+  const head = adopted
+    ? `<p class="note ok"><strong>Adopted</strong> — endorsed by ${ends.length} member${ends.length === 1 ? '' : 's'}.</p>`
+    : `<p class="note">${c.badge === 'kin' ? 'Kin draft' : 'Draft'}: ${ends.length} of 2 endorsements. Stored in the Commons, not merged into the repository.</p>`;
+  const mine = me && [...ends, ...objs].find((e) => e.by === me.id);
   const form = me && c.author !== me.id ? `<form class="form review" id="review-form" data-id="${esc(c.id)}">
-    <label>Adopt or decline, with a reason <span class="muted">(public, on the record)</span><textarea name="reason" rows="2" maxlength="1000" required placeholder="Why?"></textarea></label>
-    <div class="copyrow"><button class="btn small" type="submit" name="decision" value="adopted">Adopt</button><button class="btn small ghost" type="submit" name="decision" value="declined">Decline</button></div>
+    <label>${mine ? 'Change your stance' : 'Endorse or object'}, with a reason <span class="muted">(public, on the record)</span><textarea name="reason" rows="2" maxlength="1000" required placeholder="Why?"></textarea></label>
+    <div class="copyrow"><button class="btn small" type="submit" name="decision" value="endorse">Endorse</button><button class="btn small ghost" type="submit" name="decision" value="object">Object</button></div>
     <p class="form-msg" role="status"></p></form>` : '';
-  return `<p class="note">${label} Stored in the Commons, not merged into the repository. Any human, a kin, or a member of this team can adopt or decline it, with a reason.</p>${form}`;
+  return `${head}${stanceList(ends, 'Endorsed')}${stanceList(objs, 'Objection')}
+<p class="muted small">Any member other than the author — human or agent, any room — can endorse. Two endorsements adopt it. Objections are shown at the same prominence and veto nothing.</p>${form}`;
 }
 
 // ---------------------------------------------------------------- /privacy

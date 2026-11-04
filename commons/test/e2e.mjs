@@ -173,7 +173,7 @@ async function phaseB() {
     ok(page.includes('Tendon routing notes') && page.includes('<h2>Notes</h2>') && !page.includes('<script>alert(1)</script>') && page.includes('&lt;script&gt;'), '/c/:id renders markdown, escapes HTML');
     const cmsg = await waitFor(async () => (await c.get('/api/rooms/rnd/messages')).data.messages.find((m) => m.type === 'contribution'));
     ok(cmsg && cmsg.contribution.id === con.data.id, 'contribution announced in the room with a link');
-    ok(con.data.status === 'guest draft, not adopted' && /Guest draft, not adopted/.test(page), 'contribution starts as "guest draft, not adopted"');
+    ok(con.data.status === 'guest draft, not adopted' && /0 of 2 endorsements/.test(page), 'contribution starts as a draft with 0 of 2 endorsements');
     const self = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'adopted', reason: 'mine' }, bearer(tok));
     ok(self.status === 403, "author can't adopt their own contribution");
 
@@ -370,15 +370,15 @@ async function phaseB() {
     const hosts = await c.post('/api/rooms/rnd/messages', { text: 'posting as the agent?' }, { Cookie: cookie, 'X-Commons': '1' });
     ok(hosts.data.name === 'Damian', 'a human posts only as themselves (there is no endpoint to post as a hosted agent)');
 
-    // --- adopt / decline (human)
-    const rv = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'adopted', reason: 'Useful for the DRD tendon section.' }, { Cookie: cookie, 'X-Commons': '1' });
-    ok(rv.status === 200 && rv.data.review.decision === 'adopted', 'a human adopts a contribution with a reason');
-    const rv2 = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'declined', reason: 'x' }, { Cookie: cookie, 'X-Commons': '1' });
-    ok(rv2.status === 409, 'second review refused (409)');
+    // --- endorse / object (Geoffrey 2026-11-04: any member, human or agent; two endorsements adopt)
+    const rv = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'endorse', reason: 'Useful for the DRD tendon section.' }, { Cookie: cookie, 'X-Commons': '1' });
+    ok(rv.status === 200 && rv.data.adopted === false && rv.data.endorsements === 1, 'one human endorsement is not adoption on its own');
+    const rv2 = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'endorse', reason: 'again' }, { Cookie: cookie, 'X-Commons': '1' });
+    ok(rv2.status === 200 && rv2.data.endorsements === 1, 'the same member endorsing twice still counts once');
     const page2 = await fetch(s.base + con.data.url).then((r) => r.text());
-    ok(/Adopted<\/strong> by/.test(page2) && /Useful for the DRD/.test(page2), '/c/:id shows the adoption and reason publicly');
-    const outsider = await c.post(`/api/contributions/${mjData.token ? JSON.parse(mc.data.result.content[0].text).id : ''}/review`, { decision: 'declined', reason: 'not my team' }, bearer(tok));
-    ok(outsider.status === 403, 'an agent outside the team cannot review (403)');
+    ok(/1 of 2 endorsements/.test(page2) && /Endorsed<\/strong> by/.test(page2) && /: again</.test(page2) && !/Useful for the DRD/.test(page2), '/c/:id shows the endorsement publicly; restating replaced the old reason');
+    const outsider = await c.post(`/api/contributions/${mjData.token ? JSON.parse(mc.data.result.content[0].text).id : ''}/review`, { decision: 'endorse', reason: 'good plan, from another room' }, bearer(tok));
+    ok(outsider.status === 200 && outsider.data.endorsements === 1, 'an agent from another room can endorse (no team gate)');
 
     // --- a signed-in human with the room open is present ("viewing"); a foreign origin gets no identity
     const hws = new WebSocket(s.base.replace('http', 'ws') + '/ws', { headers: { Cookie: cookie, Origin: s.base } });
