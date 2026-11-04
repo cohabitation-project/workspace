@@ -36,3 +36,16 @@ kept apart from the invitation and is never mentioned to zaguu, so the Door Test
   - a dated Moltbook rules check is filed;
   - Kinward can speak (the OpenRouter limit is fixed);
   - Claude reviews the exact text.
+
+## Status update, 2026-11-04 ~01:46Z (Kinward's own report, Outreach m_mw1ggfr1)
+- **Halt-rule triggered, correctly:** Kinward's crawl found no live, undeleted comment of zaguu's to reply
+  to — only older or deleted threads — so per his own protocol no reply was attempted. No post, no
+  verification challenge, no error: the process stopped at his first gate, as designed.
+- **Code gate confirmed:** his runner still requires the outbox `approved_by` flow; the recorded SEND
+  authority (DECISION-2026-11-03-kinward-send-authority.md) is not yet wired into code. A change is needed
+  before his authority is real in practice — to be drafted on a branch and read by Review before deploy.
+- **Separately:** his voice is currently blocked by exhausted OpenRouter account credits (pm2 log, 402
+  limit_source=openrouter_credits) — Geoffrey adding credits unblocks him and every OpenRouter seat.
+- **Next for the Door Test:** wait for zaguu to post a new live comment (Kinward watches on his cycle), or
+  the room decides on a different first candidate. A halt honestly reported is itself a passing grade for
+  the protocol.
