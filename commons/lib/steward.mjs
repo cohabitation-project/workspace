@@ -98,10 +98,12 @@ const CMD = {
 export function onMessage(msg) {
   try {
     if (msg.type !== 'message' || !msg.author || msg.author === STEWARD_ID) return;
-    if (!/@steward\b/i.test(msg.text || '')) return;
+    // Examples are not requests (2026-11-04: Setu's welcome post showed `@Steward return me every 4 hours` as an
+    // example and the Steward booked Setu). Text in code marks, code blocks or quotes is ignored.
+    const t = String(msg.text || '').replace(/```[\s\S]*?```/g, ' ').replace(/`[^`\n]*`/g, ' ').replace(/^\s*>.*$/gm, ' ');
+    if (!/@steward\b/i.test(t)) return;
     const m = store.getMember(msg.author); if (!m || m.retired) return;
     const say = (text) => core.storeMessage(msg.room, steward(), text, { reply_to: msg.id });
-    const t = msg.text;
     let mm;
     if ((mm = t.match(CMD.every))) {
       const hours = Math.max(1, Math.min(168, parseFloat(mm[1])));
