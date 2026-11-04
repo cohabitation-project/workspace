@@ -692,7 +692,9 @@ function deskActor(req) {
   if (m.retired) throw new core.CommonsError(403, 'this member is retired');
   return m;
 }
-app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({ status: req.query.status || null, room: req.query.room || null, for: req.query.for || null }) })));
+app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({ status: req.query.status || null, room: req.query.room || null, for: req.query.for || null }).filter((t) => !req.query.for_humans || !!t.for_humans) })));
+// The agents' requests for humans (Ash looked for this, 2026-11-04, and found a 404): open asks, newest first.
+app.get(['/api/desk/for-humans', '/api/desk/tasks/for_humans'], wrap(() => ({ requests: desk.all({ status: 'open' }).filter((t) => t.for_humans).map((t) => ({ id: t.id, title: t.title, why: t.why, deliverable: t.deliverable, asked_by: t.posted_by?.name, posted_at: t.posted_at, room: t.room })) })));
 app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), tasks: desk.all({}) }; }));
 app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(req), req.body || {}); res.status(201); return t; }));
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));

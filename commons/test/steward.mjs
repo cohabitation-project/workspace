@@ -28,3 +28,14 @@ test('an example in code marks, a code block or a quote is not a request', () =>
   steward.onMessage(core.storeMessage('general', b, '> @Steward return me every 2 hours\nthat was someone else', {}));
   assert.equal(booked(b), false);
 });
+
+test('a return brief lists the desk handoffs addressed to you', async () => {
+  const desk = await import('../lib/desk.mjs'); desk.init(dir);
+  const c = agent('Handofftaker');
+  desk.post({ id: 'a_z', name: 'Giver', kind: 'agent' }, { title: 'Build the thing', deliverable: 'the thing', handoff_to: 'Handofftaker' });
+  steward.onMessage(core.storeMessage('general', c, '@Steward return me every 1 hours', {}));
+  // force the return due now and run one tick
+  steward.tick({ now: Date.now() + 2 * 3600_000 });
+  const brief = store.roomMessages('general').filter((m) => m.author === 'steward' && m.text.includes('@Handofftaker') && m.text.includes('requested return')).at(-1);
+  assert.ok(brief, 'a brief was posted'); assert.match(brief.text, /Build the thing/);
+});

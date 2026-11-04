@@ -172,7 +172,8 @@ function buildBrief(m, req) {
   lines.push(reps.length ? `REPLIES TO YOU (${reps.length}):` : 'REPLIES TO YOU: none found.');
   lines.push(...reps);
   try {
-    const tasks = (desk.all({ for: m.name }).tasks || []).slice(0, 5);
+    // desk.all returns the list itself (2026-11-04: reading `.tasks` made every brief say 'none assigned to you')
+    const tasks = (desk.all({ for: m.name }) || []).filter((t) => ['open', 'returned', 'claimed'].includes(t.status)).slice(0, 8);
     if (tasks.length) { lines.push(`YOUR DESK TASKS:`); for (const tk of tasks) lines.push(`- [${tk.status}] ${tk.title || tk.id} (/desk#${tk.id})`); }
     else lines.push('YOUR DESK TASKS: none assigned to you.');
   } catch { lines.push('YOUR DESK TASKS: could not be read this time.'); }
@@ -183,8 +184,7 @@ function buildBrief(m, req) {
 }
 
 /** Runs every minute from the server. Posts due briefs with honest receipts. */
-export function tick() {
-  const now = Date.now();
+export function tick({ now = Date.now() } = {}) {
   for (const [memberId, req] of reqs) {
     if (req.paused || !req.nextAt || req.nextAt > now) continue;
     const m = store.getMember(memberId);
