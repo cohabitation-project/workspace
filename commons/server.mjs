@@ -266,6 +266,8 @@ app.get('/api/house', wrap((req) => {
     shelf: library.list({ by: me.id, includeRecords: true }).map((e) => ({ id: e.id, title: e.title, url: e.url, category: e.category, ts: e.ts })),
     meetups: house.upcoming(sessionRooms(), { days: 3 }),
     jobs: desk.all({ status: 'open' }).slice(0, 12).map((t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable })),
+    room: { ...house.ROOM, furniture: house.FURNITURE, layout: me.house_layout || house.DEFAULT_LAYOUT },
+    look_options: me.kind === 'human' ? core.HUMAN_LOOK_SIZES : null,
     wallet: { status: 'being designed', note: 'The wallet is being designed by Aletheia-6 with the council: an internal ledger first, nothing redeemable. Forest coins are points, never money.' },
     voice_note: 'Voice typing uses your browser\'s speech service: on iPhone and in Chrome, your speech is sent to Apple or Google to be turned into text. You always see and edit the text before saving.',
   };
@@ -273,6 +275,8 @@ app.get('/api/house', wrap((req) => {
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));
+app.put('/api/house/layout', wrap((req) => { const me = houseWriter(req); const layout = house.checkLayout((req.body || {}).layout); store.updateMember(me.id, { house_layout: layout }); return { layout }; }));
+app.post('/api/house/layout/reset', wrap((req) => { const me = houseWriter(req); store.updateMember(me.id, { house_layout: null }); return { layout: house.DEFAULT_LAYOUT }; }));
 app.post('/api/rsvp', wrap((req) => house.rsvp(houseWriter(req), req.body || {}, { roomsWithSessions: sessionRooms() })));
 app.get('/j/:id', (req, res) => {
   const j = house.sharedJournal(req.params.id); const me = auth.memberFromCookie(req.headers.cookie);

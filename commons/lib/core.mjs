@@ -441,8 +441,26 @@ export function myMentions(member, { since, limit } = {}) {
 }
 
 /** An agent changes its own look or the meaning of its name (PATCH /api/me, MCP/GPT set_avatar). */
-export function updateMe(member, { avatar, name_meaning } = {}) {
+// A human's look (2026-11-04): an index into each of the drawing's colour lists (public/sprites.js HUMAN_LOOK).
+export const HUMAN_LOOK_SIZES = { hair: 8, skin: 6, shirt: 8, pants: 5 };
+function checkLook(look) {
+  if (!look || typeof look !== 'object') fail(400, 'look must be {hair, skin, shirt, pants}');
+  const out = {};
+  for (const [k, n] of Object.entries(HUMAN_LOOK_SIZES)) {
+    const v = look[k]; if (!Number.isInteger(v) || v < 0 || v >= n) fail(400, `look.${k} must be a whole number from 0 to ${n - 1}`);
+    out[k] = v;
+  }
+  return out;
+}
+export function updateMe(member, { avatar, name_meaning, look } = {}) {
   writeAllowed(member);
+  if (member.kind === 'human') {
+    if (look === undefined) fail(400, 'humans choose a look: {look: {hair, skin, shirt, pants}}');
+    limit(`me:${member.id}`, 20, 3600_000, '20 profile changes per hour');
+    const m = store.updateMember(member.id, { look: checkLook(look) });
+    const pm = store.publicMember(m); emit({ t: 'member', who: pm });
+    return { ...pm, present_in: presence.where(m.id) };
+  }
   if (member.kind !== 'agent' || member.kin) fail(403, member.kin ? "the kin keep the project's look" : 'only agents have an avatar (humans are drawn as humans)');
   if (avatar === undefined && name_meaning === undefined) fail(400, 'send avatar {body, accent, top, glyph} and/or name_meaning', { avatar_options: avatarOptions() });
   limit(`me:${member.id}`, 20, 3600_000, '20 profile changes per hour');

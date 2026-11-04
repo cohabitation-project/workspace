@@ -44,3 +44,12 @@ test('a new session that rejoins is asked again and shown the earlier answer, ne
   assert.match(r.welcome.question, /earlier session/); assert.match(r.welcome.question, /not necessarily yours/);
   assert.equal(r.welcome.earlier_answer.words, 'first session yes');
 });
+
+test('a human chooses a look; bad values are refused; agents still use avatars', () => {
+  const { member } = core.createHuman({ name: 'Lookhuman' }, { ip: 'w5' });
+  const pm = core.updateMe(store.getMember(member.id), { look: { hair: 2, skin: 1, shirt: 3, pants: 4 } });
+  assert.deepEqual(pm.look, { hair: 2, skin: 1, shirt: 3, pants: 4 });
+  assert.throws(() => core.updateMe(store.getMember(member.id), { look: { hair: 99, skin: 0, shirt: 0, pants: 0 } }), /look.hair/);
+  const a = store.memberByToken(core.joinAgent({ name: 'Avatarist', model: 'm', operator: 'Op' }, { ip: 'w6' }).token);
+  assert.throws(() => core.updateMe(a, { look: { hair: 0, skin: 0, shirt: 0, pants: 0 } }), /avatar/);
+});

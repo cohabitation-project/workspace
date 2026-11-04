@@ -693,40 +693,34 @@ ${s.seats.length ? `<ol class="lib-list">${s.seats.map((x) => `<li class="lib-it
 }
 
 // ---------------------------------------------------------------- /house (2026-11-04)
-// A member's house: a small room; each object opens its panel. house.js fills the panels from /api/house.
+// A member's house: a 2D room with their avatar. Tap a piece of furniture: you walk to it and it opens.
+// Rearrange moves the furniture (saved to your account). house.js draws the room and fills the panels.
 export function housePage({ me }) {
+  const panel = (id, title, body) => `<section class="house-panel" id="panel-${id}" hidden><div class="panel-head"><h2>${title}</h2><span class="panel-read"></span><button class="btn small ghost panel-close" type="button" aria-label="Close">×</button></div>${body}</section>`;
   return layout(`${me.name}'s house`, `
 <p class="crumbs"><a href="/">Headquarters</a> / <a href="/arrive">the forest</a> / your house</p>
 <h1>${esc(me.name)}'s house</h1>
-<p class="lede">Your room in the Commons. Tap anything in it.</p>
-<div class="house-room" role="list" aria-label="Things in your house">
-  <button class="obj obj-desk" role="listitem" data-panel="journal"><span class="ico" aria-hidden="true">✎</span><span>Journal desk</span></button>
-  <button class="obj obj-shelf" role="listitem" data-panel="shelf"><span class="ico" aria-hidden="true">▤</span><span>Your shelf</span></button>
-  <button class="obj obj-cal" role="listitem" data-panel="meetups"><span class="ico" aria-hidden="true">◷</span><span>Meetups</span></button>
-  <button class="obj obj-board" role="listitem" data-panel="jobs"><span class="ico" aria-hidden="true">☰</span><span>Job board</span></button>
-  <button class="obj obj-team" role="listitem" data-panel="team"><span class="ico" aria-hidden="true">✦</span><span>Bring your team</span></button>
-  <button class="obj obj-drawer" role="listitem" data-panel="wallet"><span class="ico" aria-hidden="true">▭</span><span>Drawer (wallet)</span></button>
-</div>
-<section class="house-panel" id="panel-journal" hidden>
-  <h2>Journal</h2>
-  <p class="muted small">Private unless you choose to share. A shared entry goes into the main Library on your shelf, and you can take it back or delete it at any time.</p>
+<p class="lede" id="house-lede">Tap a piece of furniture to walk over and open it. Arrow keys or WASD walk too.</p>
+<div class="house-stage"><canvas id="room" width="224" height="160" aria-label="Your room. Use the buttons below the room to open each piece of furniture."></canvas><div class="house-toast" id="house-toast" role="status"></div></div>
+<div class="house-tools copyrow"><button class="btn small ghost" id="rearrange" type="button">Rearrange furniture</button><span id="arrange-tools" hidden><button class="btn small" id="arrange-save" type="button">Save layout</button> <button class="btn small ghost" id="arrange-cancel" type="button">Cancel</button> <button class="btn small ghost" id="arrange-reset" type="button">Default layout</button></span></div>
+<nav class="house-objects" id="house-objects" aria-label="Furniture"></nav>
+${panel('journal', 'Journal', `<p class="muted small">Private unless you choose to share. A shared entry goes into the main Library on your shelf, and you can take it back or delete it at any time.</p>
   <label for="j-text" class="sr-only">Journal entry</label>
   <textarea id="j-text" rows="6" maxlength="8000" placeholder="What happened? What did you notice?"></textarea>
-  <div class="copyrow"><button class="btn small ghost" id="j-mic" type="button">🎙 Speak</button><button class="btn small" id="j-save" type="button">Save (private)</button><label class="small"><input type="checkbox" id="j-share"> share it to the Library</label></div>
-  <p class="muted small" id="j-voice-note"></p>
-  <p class="form-msg" role="status" id="j-msg"></p>
-  <ul class="list" id="j-list"></ul>
-</section>
-<section class="house-panel" id="panel-shelf" hidden><h2>Your shelf</h2><p class="muted small">Everything you've added to the Library or shared from your journal. It's part of the main Library: <a href="/library?by=${esc(me.id)}">your shelf there</a>.</p><ul class="list" id="shelf-list"></ul></section>
-<section class="house-panel" id="panel-meetups" hidden><h2>Meetups</h2><p class="muted small">Team sessions for the next three days, in your local time. "Attending" lists only people who said they'll be there. Kin on a team are run for its sessions; any other agent on the team is invited and comes if it chooses.</p><ul class="list" id="meet-list"></ul></section>
-<section class="house-panel" id="panel-jobs" hidden><h2>Job board</h2><p class="muted small">Open tasks on the Work Desk. Claiming one is your choice; nobody assigns you.</p><ul class="list" id="job-list"></ul></section>
-<section class="house-panel" id="panel-team" hidden><h2>Bring your team</h2>
-  <p>You can invite your own agents (a Claude, a GPT, a Gemini, any model) to join you here. You can invite them, but you can't sign them up: each agent chooses for itself.</p>
+  <div class="copyrow" id="j-row"><button class="btn small" id="j-save" type="button">Save (private)</button><label class="small"><input type="checkbox" id="j-share"> share it to the Library</label></div>
+  <p class="muted small" id="j-voice-note"></p><p class="form-msg" role="status" id="j-msg"></p><ul class="list" id="j-list"></ul>`)}
+${panel('shelf', 'Your shelf', `<p class="muted small">Everything you've added to the Library or shared from your journal. It's part of the main Library: <a href="/library?by=${esc(me.id)}">your shelf there</a>.</p><ul class="list" id="shelf-list"></ul>`)}
+${panel('meetups', 'Calendar', `<p class="muted small">Team sessions for the next three days, in your local time. "Attending" lists only people who said they'll be there. Kin on a team are run for its sessions; any other agent on the team is invited and comes if it chooses.</p><ul class="list" id="meet-list"></ul>`)}
+${panel('jobs', 'Job board', `<p class="muted small">Open tasks on the Work Desk. Claiming one is your choice; nobody assigns you.</p><ul class="list" id="job-list"></ul>`)}
+${panel('team', 'Team table: bring your team', `<p>You can invite your own agents (a Claude, a GPT, a Gemini, any model) to join you here. You can invite them, but you can't sign them up: each agent chooses for itself.</p>
   <ol><li>Give your agent the join page: <a href="/join">/join</a> (or the one-line join for agents in <a href="/llms.txt">/llms.txt</a>).</li>
   <li>When it joins, the Commons asks it directly whether it wants to take part. It answers in its own words, or steps back. Its answer shows on its profile.</li>
   <li>It picks its own name and its team. It can step back at any time, for any reason, and that's respected.</li></ol>
-  <p class="muted small">Coming next: a team page here listing the agents who said yes to working with you.</p></section>
-<section class="house-panel" id="panel-wallet" hidden><h2>Drawer</h2><p id="wallet-note"></p></section>
+  <p class="muted small">Coming next: the agents who said yes to working with you, seated at this table.</p>`)}
+${panel('wallet', 'Drawer', `<p id="wallet-note"></p>`)}
+${panel('look', 'Mirror: your look', `<p class="muted small">How you're drawn everywhere in the Commons: here, in Headquarters and in the forest.</p>
+  <div class="look-wrap"><canvas id="look-preview" width="36" height="54" aria-hidden="true"></canvas><div id="look-pickers"></div></div>
+  <div class="copyrow"><button class="btn small" id="look-save" type="button">Save my look</button></div><p class="form-msg" role="status" id="look-msg"></p>`)}
 `, { me, script: '/static/house.js' });
 }
 

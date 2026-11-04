@@ -48,3 +48,12 @@ test('RSVPs: only real session times; the list shows exactly who said yes', () =
   assert.equal(r2.attending.length, 0);
   assert.ok(house.upcoming(rooms, { days: 3 }).some((m) => m.at === t.toISOString()));
 });
+
+test('furniture layouts: the default fits; overlaps, blocked doors and floating shelves are refused', () => {
+  const ok = house.checkLayout(house.DEFAULT_LAYOUT); assert.deepEqual(Object.keys(ok).sort(), Object.keys(house.FURNITURE).sort());
+  assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, shelf: { x: 1, y: 3 } }), /overlaps/);
+  assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, drawer: { x: 6, y: 9 } }), /block the door/);
+  assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, calendar: { x: 2, y: 4 } }), /back wall/);
+  assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, desk: { x: 1, y: 0 } }), /on the floor/);
+  assert.throws(() => house.checkLayout({ ...house.DEFAULT_LAYOUT, sofa: { x: 1, y: 5 } }), /no such furniture/);
+});

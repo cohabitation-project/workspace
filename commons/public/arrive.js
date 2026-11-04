@@ -5,6 +5,7 @@
  * Keyboard (arrows/WASD + Enter), touch (tap to walk, tap a neighbour to talk), reduced-motion honored.
  */
 import { drawFigure } from '/static/sprites.js';
+import { readButton, micButton, stopReading, VOICE_NOTE } from '/static/voicekit.js';
 
 const $ = (s) => document.querySelector(s);
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -561,11 +562,19 @@ $('#stage').addEventListener('pointerdown', (e) => {
 // ---------------------------------------------------------------- dialogs
 function showDialog(who, text, html) {
   const d = $('#dialog');
+  stopReading();
   d.innerHTML = `<div class="who">${who}</div><div class="say">${text}</div>` + (html || '');
+  // Every question can be heard and every answer spoken (Geoffrey, 2026-11-04).
+  const say = d.querySelector('.say'); const ask = () => [say.textContent, ...[...d.querySelectorAll('textarea')].map((t) => t.previousElementSibling?.classList.contains('fine') ? t.previousElementSibling.textContent : '')].join('. ');
+  say.after(readButton(ask, { label: 'Read this aloud' }));
+  d.querySelectorAll('textarea').forEach((ta) => {
+    const n = document.createElement('div'); n.className = 'fine'; n.setAttribute('role', 'status'); n.textContent = VOICE_NOTE;
+    const m = micButton(ta, { onStatus: (msg) => { n.textContent = msg; } }); m.style.marginTop = '6px'; ta.after(m); m.after(n);
+  });
   d.style.display = 'block';
-  const b = d.querySelector('button, textarea'); if (b) b.focus();
+  const b = d.querySelector('button.choice, textarea, button:not(.vk-read):not(.vk-mic)'); if (b) b.focus();
 }
-function closeDialog() { $('#dialog').style.display = 'none'; S.dialogStop = null; }
+function closeDialog() { stopReading(); $('#dialog').style.display = 'none'; S.dialogStop = null; }
 
 function openStop(stop) {
   const info = STOPS[stop]; if (!info) return;

@@ -197,3 +197,19 @@ table.tools th { font-weight: 600; width: 30%; }
 @media (max-width: 560px) { .house-room { grid-template-columns: repeat(2, 1fr); padding: 12px; gap: 10px; } }
 .house-panel .copyrow label { display: inline-flex; align-items: center; gap: 8px; margin: 0; width: auto; }
 .house-panel .copyrow input[type="checkbox"] { width: 18px; height: 18px; margin: 0; flex: none; }
+/* the house as a 2D room (2026-11-04) */
+.house-stage { position: relative; margin: 14px 0 8px; }
+#room { display: block; width: 100%; max-width: 672px; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; border: 2px solid var(--line-2); border-radius: 8px; background: #2f2839; cursor: pointer; touch-action: manipulation; }
+.house-toast { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: 90%; background: var(--panel); color: var(--text); border: 1px solid var(--line-2); border-radius: 6px; padding: 6px 10px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.house-toast.on { opacity: 1; }
+.house-objects { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 18px; }
+.house-objects button[aria-pressed="true"] { border-color: var(--accent); }
+.house-tools { margin: 4px 0; }
+.panel-head { display: flex; align-items: center; gap: 8px; } .panel-head h2 { margin: 0; flex: 1; } .panel-head h2:focus { outline: none; }
+.vk-read.on, .vk-mic.on { border-color: var(--accent); color: var(--accent); }
+.look-wrap { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+#look-preview { width: 72px; height: 108px; image-rendering: pixelated; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; }
+.look-part { border: 0; margin: 0 0 8px; padding: 0; } .look-part legend { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line-2); margin: 0 6px 6px 0; cursor: pointer; padding: 0; }
+.swatch[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+@media (prefers-reduced-motion: reduce) { .house-toast { transition: none; } }

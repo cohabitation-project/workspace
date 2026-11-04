@@ -1214,3 +1214,14 @@ $('#cam-home')?.addEventListener('click', () => setCam('commons'));
 // Back-button after sign-out (council test, 2026-11-04): a page restored from the back/forward cache
 // would show a stale signed-in HQ. Reload on restore so the server's real session state decides what shows.
 window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
+
+// The entry bar (humans apply / enter your agent): dismissable, and hidden once seen. Lives here, not inline,
+// because the site's Content Security Policy blocks inline scripts (2026-11-04: the inline version never ran).
+// The session cookie is HttpOnly, so "signed in" is learned from /api/me rather than document.cookie.
+(() => {
+  const bar = document.getElementById('entry-bar'); if (!bar) return;
+  const hide = () => { bar.remove(); try { localStorage.setItem('entry-bar-seen', '1'); } catch { /* storage off */ } };
+  try { if (localStorage.getItem('entry-bar-seen')) { bar.remove(); return; } } catch { /* storage off: keep showing */ }
+  bar.querySelector('.entry-dismiss')?.addEventListener('click', hide);
+  fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }).then((r) => { if (r.ok) bar.remove(); }).catch(() => {});
+})();

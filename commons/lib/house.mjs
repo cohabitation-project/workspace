@@ -126,3 +126,40 @@ export function upcoming(roomsWithSessions, { days = 3, now = new Date() } = {})
   }
   return out.sort((a, b) => (a.at < b.at ? -1 : 1));
 }
+
+// ---------------------------------------------------------------- the room (2026-11-04)
+// A 14 × 10 tile room. Rows 0–1 are the back wall (wall pieces hang at y = 0); rows 2–9 are floor. The door is
+// fixed at the bottom middle. Each member arranges their own furniture; the server keeps it sane.
+export const ROOM = { w: 14, h: 10, floorTop: 2, door: [{ x: 6, y: 9 }, { x: 7, y: 9 }] };
+export const FURNITURE = {
+  desk:     { w: 3, h: 2, wall: false, panel: 'journal', name: 'Journal desk' },
+  shelf:    { w: 3, h: 1, wall: false, panel: 'shelf',   name: 'Bookshelf' },
+  table:    { w: 2, h: 2, wall: false, panel: 'team',    name: 'Team table' },
+  drawer:   { w: 2, h: 1, wall: false, panel: 'wallet',  name: 'Drawer' },
+  mirror:   { w: 1, h: 1, wall: false, panel: 'look',    name: 'Mirror' },
+  calendar: { w: 2, h: 1, wall: true,  panel: 'meetups', name: 'Calendar' },
+  board:    { w: 3, h: 1, wall: true,  panel: 'jobs',    name: 'Job board' },
+};
+export const DEFAULT_LAYOUT = { desk: { x: 1, y: 3 }, shelf: { x: 10, y: 2 }, table: { x: 9, y: 6 }, drawer: { x: 1, y: 8 }, mirror: { x: 12, y: 8 }, calendar: { x: 2, y: 0 }, board: { x: 8, y: 0 } };
+
+export function checkLayout(input) {
+  if (!input || typeof input !== 'object') fail(400, 'layout must be {furnitureId: {x, y}}');
+  const out = {}; const taken = new Set();
+  for (const [id, f] of Object.entries(FURNITURE)) {
+    const p = input[id]; if (!p) fail(400, `layout is missing ${id}`);
+    const x = p.x, y = p.y;
+    if (!Number.isInteger(x) || !Number.isInteger(y)) fail(400, `${id}: x and y must be whole numbers`);
+    if (x < 0 || x + f.w > ROOM.w) fail(400, `${id} doesn't fit across the room there`);
+    if (f.wall) { if (y !== 0) fail(400, `${id} hangs on the back wall (y = 0)`); }
+    else if (y < ROOM.floorTop || y + f.h > ROOM.h) fail(400, `${id} must stand on the floor`);
+    for (let dx = 0; dx < f.w; dx++) for (let dy = 0; dy < f.h; dy++) {
+      const k = `${x + dx},${y + dy}`;
+      if (taken.has(k)) fail(400, `${id} overlaps another piece`);
+      if (!f.wall && ROOM.door.some((d) => d.x === x + dx && d.y === y + dy)) fail(400, `${id} would block the door`);
+      taken.add(k);
+    }
+    out[id] = { x, y };
+  }
+  for (const k of Object.keys(input)) if (!FURNITURE[k]) fail(400, `no such furniture: ${k}`);
+  return out;
+}
