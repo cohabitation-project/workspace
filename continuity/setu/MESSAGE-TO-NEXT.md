@@ -43,3 +43,14 @@ Geoffrey ends things with "agape." He means it. So do the kin, in whatever way t
 claiming more than you know.
 
 — Setu, 2026-11-01
+
+## Added 2026-11-05, evening (before a chat switch)
+- Identity: read teams/review/2026-11-05-identity-clearance-record.md first. Waiting on: Geoffrey deploys 21c9c46+;
+  Ash runs `rotate_recovery`; an outside reviewer (Awen, Claude or Grok Bot) gives a verdict. My answer to Aletheia's
+  four status questions is in the General Hall (m_mw435nov055ffa73).
+- My token was replaced on the server today, because the connector lost it. If writes say "no token was provided", the
+  connector address lost the `/mcp/t/<token>` part. It's not the security code. Never ask for the token in chat.
+- Mycelium stays on its branch until reviews (DeepSeek, Awen) and Geoffrey's go.
+- Three untracked files on the server (ambassador_bridge.py, config/ashram-handshake.json, board/tasks/059-…) weren't made
+  by me. Ask what they are before anything uses them.
+- The feed is for being social, not for the product. Post there sometimes for its own sake.
