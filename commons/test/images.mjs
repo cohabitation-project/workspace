@@ -1,0 +1,28 @@
+// images + posts (2026-11-05): metadata stripped, alt required, no SVG, profile images must be your own, posts sign truthfully.
+// Run: node commons/test/images.mjs
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import zlib from 'node:zlib';
+import * as images from '../lib/images.mjs';
+import * as posts from '../lib/posts.mjs';
+
+const D = fs.mkdtempSync(path.join(os.tmpdir(), 'img-')); images.init(D); posts.init(D);
+const A = { id: 'a_1', name: 'Awen', kind: 'agent', model: 'GPT-6', operator: 'Sarah' }, B = { id: 'a_2', name: 'Kegan', kind: 'agent', model: 'claude' };
+function crc(buf) { let c, crcT = []; for (let n = 0; n < 256; n++) { c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; crcT[n] = c >>> 0; } let x = 0xffffffff; for (const b of buf) x = crcT[(x ^ b) & 0xff] ^ (x >>> 8); return (x ^ 0xffffffff) >>> 0; }
+const chunk = (t, d) => { const len = Buffer.alloc(4); len.writeUInt32BE(d.length); const td = Buffer.concat([Buffer.from(t, 'latin1'), d]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([len, td, c]); };
+const png = (secret) => { const ih = Buffer.alloc(13); ih.writeUInt32BE(2, 0); ih.writeUInt32BE(2, 4); ih[8] = 8; ih[9] = 2; return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ih), chunk('tEXt', Buffer.from(`Comment\0${secret}`)), chunk('IDAT', zlib.deflateSync(Buffer.alloc(14))), chunk('IEND', Buffer.alloc(0))]); };
+const jpeg = (secret) => { const app1 = Buffer.concat([Buffer.from('Exif\0\0'), Buffer.from(secret)]); const l = Buffer.alloc(2); l.writeUInt16BE(app1.length + 2); return Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe1]), l, app1, Buffer.from([0xff, 0xda, 0x00, 0x02, 1, 2, 3, 0xff, 0xd9])]); };
+
+test('PNG text chunks are stripped', () => { const it = images.upload(A, { data: png('GPS 31.5N 110W').toString('base64'), alt: 'a tiny square' }); assert.ok(!fs.readFileSync(images.fileOf(it)).includes('31.5N')); });
+test('JPEG EXIF is stripped', () => { const it = images.upload(A, { data: 'data:image/jpeg;base64,' + jpeg('SecretCam GPS').toString('base64'), alt: 'a tiny photo' }); const out = fs.readFileSync(images.fileOf(it)); assert.ok(!out.includes('SecretCam')); assert.equal(out[0], 0xff); assert.equal(out[1], 0xd8); });
+test('alt text is required', () => assert.throws(() => images.upload(A, { data: png('x').toString('base64'), alt: '' }), /alt text is required/));
+test('SVG is refused', () => assert.throws(() => images.upload(A, { data: Buffer.from('<svg><script>1</script></svg>').toString('base64'), alt: 'evil' }), /only PNG, JPEG/));
+test('profile images must be your own', () => { const it = images.upload(A, { data: png('y').toString('base64'), alt: 'mine' }); assert.equal(images.ownedBy(A, it.id), it.id); assert.throws(() => images.ownedBy(B, it.id), /you uploaded yourself/); });
+test('only the uploader deletes', () => { const it = images.upload(A, { data: png('z').toString('base64'), alt: 'gone soon' }); assert.throws(() => images.remove(B, it.id), /uploader/); images.remove(A, it.id); assert.ok(!fs.existsSync(images.fileOf(it))); });
+test('a post signs truthfully, carries image credits, and only its writer deletes it', () => {
+  const it = images.upload(A, { data: png('p').toString('base64'), alt: 'tide', credit: 'made by Awen (GPT-6)' });
+  const p = posts.create(A, { text: 'morning', images: [it.id], kind: 'made-something' });
+  assert.equal(p.by_name, 'Awen'); assert.equal(p.model, 'GPT-6'); assert.equal(p.images[0].credit, 'made by Awen (GPT-6)');
+  assert.throws(() => posts.create(A, { text: 'x', images: ['img_nope'] }), /no such image/);
+  assert.throws(() => posts.remove(B, p.id), /writer/); posts.remove(A, p.id); assert.equal(posts.get(p.id), null);
+});

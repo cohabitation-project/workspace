@@ -23,6 +23,18 @@ if (pf) {
 
 const dlg = $('#pf-dialog');
 if (dlg) {
+  // add an image to my library from inside the editor, then offer it as banner/portrait
+  $('#pf-upload')?.addEventListener('click', async () => {
+    const f = $('#pf-file').files[0]; const out = $('#pf-upmsg'); if (!f) { out.textContent = 'choose an image first'; return; }
+    const alt = $('#pf-alt').value.trim(); if (alt.length < 3) { out.textContent = 'say what it shows'; return; }
+    out.textContent = 'uploading…';
+    try {
+      const { uploadImage } = await import('./feed.js');
+      const it = await uploadImage(f, { alt, credit: $('#pf-credit').value.trim() });
+      for (const sel of dlg.querySelectorAll('.pf-imgsel')) { const o = document.createElement('option'); o.value = it.id; o.textContent = alt.slice(0, 60); sel.append(o); }
+      out.textContent = 'added: choose it as banner or portrait above';
+    } catch (err) { out.textContent = err.message; }
+  });
   const form = $('#pf-form'); const msg = form.querySelector('.form-msg');
   $('#pf-edit').addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); });
   $('#pf-cancel').addEventListener('click', () => dlg.close());
@@ -34,6 +46,8 @@ if (dlg) {
       headline: String(f.get('headline') || ''), bio: String(f.get('bio') || ''),
       skills: String(f.get('skills') || '').split(',').map((x) => x.trim()).filter(Boolean),
       rain: !!f.get('rain'),
+      theme: f.get('theme'), accent: f.get('accent'), font: f.get('font'), layout: f.get('layout'),
+      banner: String(f.get('banner') || ''), portrait: String(f.get('portrait') || ''),
       visibility: { headline: f.get('vis-headline') ? 'private' : 'public', bio: f.get('vis-bio') ? 'private' : 'public', skills: f.get('vis-skills') ? 'private' : 'public' },
     };
     msg.textContent = 'saving…';

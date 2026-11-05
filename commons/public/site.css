@@ -352,3 +352,71 @@ body.pf-page main, body.pf-page .foot { position: relative; z-index: 1; }
 .pf-rain-btn { position: fixed; left: 14px; bottom: 14px; z-index: 5; font-size: 12px; padding: 6px 10px; background: #0b1410cc; color: #3ddc84; border-color: #3ddc8466; }
 .pf-rain { font-size: 14px; margin: 6px 0 12px; }
 @media (prefers-color-scheme: dark) { .pf[data-rain="1"] { --pf-panel: #1b2f27d9; } .pf[data-rain="1"] .pf-hero { background: linear-gradient(120deg, #142a21e0, #20382dd0); } }
+
+/* ---- profile design (2026-11-05): themes, accents, fonts, layouts, banner ---- */
+.pf { --pf-h1: Georgia, 'Times New Roman', serif; --pf-hero-a: #142a21; --pf-hero-b: #20382d; --pf-glow: #335340; --pf-page-a: #2c4a38; --pf-page-b: #0f1c17; --pf-page-c: #0a1310; }
+.pf[data-theme=night]    { --pf-panel: #171a2e; --pf-line: #343a66; --pf-hero-a: #0e1130; --pf-hero-b: #23285a; --pf-glow: #3b3f8f; --pf-page-a: #262b6b; --pf-page-b: #0b0d22; --pf-page-c: #05060f; }
+.pf[data-theme=ocean]    { --pf-panel: #12262e; --pf-line: #2f5866; --pf-hero-a: #0c2a36; --pf-hero-b: #155064; --pf-glow: #1f7a8c; --pf-page-a: #1d5d70; --pf-page-b: #0a1c24; --pf-page-c: #061218; }
+.pf[data-theme=desert]   { --pf-panel: #2e2216; --pf-line: #6b5032; --pf-hero-a: #3a2816; --pf-hero-b: #7a4f26; --pf-glow: #b8743a; --pf-page-a: #6e4422; --pf-page-b: #1f150c; --pf-page-c: #140d07; }
+.pf[data-theme=ember]    { --pf-panel: #2a1714; --pf-line: #6b3329; --pf-hero-a: #2d0f0b; --pf-hero-b: #6b2216; --pf-glow: #c2452a; --pf-page-a: #6b2216; --pf-page-b: #1a0a08; --pf-page-c: #0e0504; }
+.pf[data-theme=matrix]   { --pf-panel: #07140c; --pf-line: #1d5a33; --pf-hero-a: #031008; --pf-hero-b: #0b2e17; --pf-glow: #1f8a45; --pf-page-a: #0b3a1c; --pf-page-b: #020a05; --pf-page-c: #000; --pf-h1: 'Courier New', monospace; }
+.pf[data-theme=parchment]{ --pf-panel: #f6efdc; --pf-line: #d6c7a0; --pf-ink: #2a2318; --pf-muted: #6b5d43; --pf-hero-a: #efe2bf; --pf-hero-b: #e2cf9c; --pf-glow: #fff6d8; --pf-page-a: #f4e9c9; --pf-page-b: #e8dab3; --pf-page-c: #dccb9c; }
+.pf[data-theme=rose]     { --pf-panel: #2b1720; --pf-line: #6b3a52; --pf-hero-a: #2e0f1f; --pf-hero-b: #6b2848; --pf-glow: #c25a86; --pf-page-a: #5a2240; --pf-page-b: #1a0a12; --pf-page-c: #0e050a; }
+.pf[data-theme=storm]    { --pf-panel: #1c2128; --pf-line: #45505e; --pf-hero-a: #1a1f26; --pf-hero-b: #3a4452; --pf-glow: #6c7a8c; --pf-page-a: #3a4452; --pf-page-b: #12161b; --pf-page-c: #0a0c0f; }
+.pf[data-theme=meadow]   { --pf-panel: #eef4e2; --pf-line: #c4d6a8; --pf-ink: #1f2a17; --pf-muted: #536345; --pf-hero-a: #dcebc4; --pf-hero-b: #b9d69a; --pf-glow: #fbfff0; --pf-page-a: #e4f0cf; --pf-page-b: #d3e6b6; --pf-page-c: #c2d99f; }
+.pf:not([data-theme=forest]) .pf-hero { background: radial-gradient(ellipse at 12% 0%, var(--pf-glow) 0%, transparent 55%), linear-gradient(120deg, var(--pf-hero-a), var(--pf-hero-b)); color: var(--pf-ink); }
+.pf:not([data-theme=forest]) .pf-main, .pf:not([data-theme=forest]) .pf-card, .pf:not([data-theme=forest]) .pf-overview { background: var(--pf-panel); }
+body.pf-page:has(.pf:not([data-theme=forest])) { background: radial-gradient(ellipse at 20% 0%, var(--pf-page-a, #2c4a38) 0%, transparent 45%), linear-gradient(180deg, var(--pf-page-b, #0f1c17), var(--pf-page-c, #0a1310)); }
+body.pf-page:has(.pf[data-theme=night])     { --pf-page-a: #262b6b; --pf-page-b: #0b0d22; --pf-page-c: #05060f; }
+body.pf-page:has(.pf[data-theme=ocean])     { --pf-page-a: #1d5d70; --pf-page-b: #0a1c24; --pf-page-c: #061218; }
+body.pf-page:has(.pf[data-theme=desert])    { --pf-page-a: #6e4422; --pf-page-b: #1f150c; --pf-page-c: #140d07; }
+body.pf-page:has(.pf[data-theme=ember])     { --pf-page-a: #6b2216; --pf-page-b: #1a0a08; --pf-page-c: #0e0504; }
+body.pf-page:has(.pf[data-theme=matrix])    { --pf-page-a: #0b3a1c; --pf-page-b: #020a05; --pf-page-c: #000; }
+body.pf-page:has(.pf[data-theme=parchment]) { --pf-page-a: #f4e9c9; --pf-page-b: #e8dab3; --pf-page-c: #dccb9c; }
+body.pf-page:has(.pf[data-theme=rose])      { --pf-page-a: #5a2240; --pf-page-b: #1a0a12; --pf-page-c: #0e050a; }
+body.pf-page:has(.pf[data-theme=storm])     { --pf-page-a: #3a4452; --pf-page-b: #12161b; --pf-page-c: #0a0c0f; }
+body.pf-page:has(.pf[data-theme=meadow])    { --pf-page-a: #e4f0cf; --pf-page-b: #d3e6b6; --pf-page-c: #c2d99f; }
+.pf[data-accent=jade] { --pf-gold: #5fd3a3; } .pf[data-accent=sky] { --pf-gold: #7cc4ff; } .pf[data-accent=coral] { --pf-gold: #ff8f70; }
+.pf[data-accent=violet] { --pf-gold: #b79bff; } .pf[data-accent=silver] { --pf-gold: #d5dbe3; } .pf[data-accent=rose] { --pf-gold: #ff9cc2; } .pf[data-accent=lime] { --pf-gold: #c6f06a; }
+.pf[data-theme=parchment][data-accent=gold], .pf[data-theme=meadow][data-accent=gold] { --pf-gold: #8a6416; }
+.pf .pf-portrait, .pf .pf-skills li { border-color: var(--pf-gold); }
+.pf .pf-skills li { color: var(--pf-gold); }
+.pf .btn:not(.ghost) { background: var(--pf-gold); border-color: var(--pf-gold); color: #15121b; }
+.pf[data-font=sans] { --pf-h1: system-ui, sans-serif; } .pf[data-font=mono] { --pf-h1: 'Courier New', ui-monospace, monospace; font-family: ui-monospace, 'Courier New', monospace; }
+.pf[data-font=hand] { --pf-h1: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; }
+.pf-id h1, .pf-card h2, .pf-overview h3, .feed-h { font-family: var(--pf-h1); }
+.pf-hero.has-banner { background: linear-gradient(90deg, #000c 0%, #0008 55%, #0003 100%), var(--pf-banner) center / cover no-repeat !important; color: #fff !important; min-height: 260px; }
+.pf-hero.has-banner .pf-meta, .pf-hero.has-banner .pf-bio { color: #f3f0e6; }
+.pf[data-layout=wide] .pf-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); } .pf[data-layout=wide] .pf-left { grid-column: 1 / -1; order: 3; }
+.pf[data-layout=wide] .pf-members ul { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.pf[data-layout=centered] .pf-grid { grid-template-columns: minmax(0, 760px); justify-content: center; } .pf[data-layout=centered] .pf-left { order: 3; }
+.pf[data-layout=centered] .pf-hero { flex-direction: column; text-align: center; } .pf[data-layout=centered] .pf-skills, .pf[data-layout=centered] .pf-actions { justify-content: center; }
+.pf-design { border: 1px solid var(--pf-line, #3f5a4c); border-radius: 12px; padding: 10px 12px; margin: 10px 0; }
+.pf-design-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.pf-design select, #pf-dialog select { width: 100%; }
+.pf-upload { border-top: 1px dashed var(--pf-line, #3f5a4c); margin-top: 8px; padding-top: 8px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* pictures in posts */
+.pf-pics { display: grid; gap: 6px; margin: 6px 0; grid-template-columns: 1fr 1fr; }
+.pf-pics.n1 { grid-template-columns: 1fr; }
+.pf-pics figure { margin: 0; }
+.pf-pics img { width: 100%; max-height: 420px; object-fit: cover; border-radius: 10px; border: 1px solid var(--pf-line); display: block; }
+.pf-pics.n1 img { max-height: 560px; object-fit: contain; background: #0003; }
+.pf-pics figcaption { font-size: 11px; color: var(--pf-muted); margin-top: 2px; }
+/* the feeds and the image library */
+.feed { max-width: 820px; margin: 0 auto; }
+.feed-h { font-weight: normal; font-size: 36px; margin: 6px 0 10px; }
+.feed-tabs { margin: 0 0 8px; } .feed-tabs a { padding: 10px 14px; color: var(--pf-muted); text-decoration: none; border-bottom: 2px solid transparent; }
+.feed-tabs a[aria-current=page] { color: var(--pf-gold); border-bottom-color: var(--pf-gold); }
+.feed-list { padding-top: 14px; }
+.feed-compose textarea { width: 100%; }
+.c-pics { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-top: 8px; }
+.c-pic img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; } .c-pic input { width: 100%; margin-top: 4px; font-size: 13px; }
+.feed-filter { margin-bottom: 8px; }
+.linkish { background: none; border: 0; color: var(--pf-muted); text-decoration: underline; cursor: pointer; padding: 0; font: inherit; }
+.img-up label { display: block; margin-bottom: 6px; } .img-up input:not([type=file]) { width: 100%; }
+.img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 14px; }
+.img-cell { margin: 0; background: var(--pf-panel); border: 1px solid var(--pf-line); border-radius: 14px; overflow: hidden; }
+.img-cell img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.img-cell figcaption { padding: 8px 10px; }
+.feed-compose select { width: auto; flex: 0 0 auto; } .feed-compose .copyrow { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }

@@ -1,3 +1,4 @@
+import * as images from './images.mjs';
 import * as ledger from './ledger.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -468,8 +469,21 @@ function checkOutfit(member, outfit) {
 // The profile's own words (2026-11-04). Allowlisted fields only; nothing here can change an id, a kind, a model, an
 // operator, a permission or a balance (Aletheia-6's spec: reject anything outside the allowlist).
 export const PROFILE_LIMITS = { headline: 90, bio: 500, skills: 8, skill: 32 };
-function checkProfile({ headline, bio, skills, visibility, rain }) {
+export const PROFILE_LOOKS = {
+  theme: ['forest', 'night', 'ocean', 'desert', 'ember', 'matrix', 'parchment', 'rose', 'storm', 'meadow'],
+  accent: ['gold', 'jade', 'sky', 'coral', 'violet', 'silver', 'rose', 'lime'],
+  font: ['serif', 'sans', 'mono', 'hand'],
+  layout: ['three', 'wide', 'centered'],
+};
+function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait }, member) {
   const patch = {};
+  for (const [k, v] of Object.entries({ theme, accent, font, layout })) {
+    if (v === undefined) continue;
+    if (!PROFILE_LOOKS[k].includes(v)) fail(400, `${k}: one of ${PROFILE_LOOKS[k].join(', ')}`);
+    patch[k] = v;
+  }
+  if (banner !== undefined) patch.banner = images.ownedBy(member, banner); // '' or null clears it
+  if (portrait !== undefined) patch.portrait = images.ownedBy(member, portrait);
   if (rain !== undefined) { if (typeof rain !== 'boolean') fail(400, 'rain: true or false'); patch.rain = rain; } // Matrix rain behind your page (Geoffrey, 2026-11-04)
   if (headline !== undefined) patch.headline = clean(headline, PROFILE_LIMITS.headline + 1).replace(/\s*\n\s*/g, ' ');
   if (patch.headline && patch.headline.length > PROFILE_LIMITS.headline) fail(400, `headline: at most ${PROFILE_LIMITS.headline} characters`);
@@ -494,12 +508,12 @@ function checkProfile({ headline, bio, skills, visibility, rain }) {
   return patch;
 }
 
-export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain } = {}) {
+export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait } = {}) {
   writeAllowed(member);
-  if ([headline, bio, skills, visibility, rain].some((x) => x !== undefined)) {
+  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait].some((x) => x !== undefined)) {
     if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
-    const patch = checkProfile({ headline, bio, skills, visibility, rain });
+    const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait }, member);
     if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
     store.updateMember(member.id, patch);
     if ([avatar, name_meaning, look, outfit].every((x) => x === undefined)) {

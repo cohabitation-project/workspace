@@ -30,6 +30,8 @@ import * as library from './lib/library.mjs';
 import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
+import * as images from './lib/images.mjs';
+import * as posts from './lib/posts.mjs';
 import * as petition from './lib/petition.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
@@ -58,6 +60,8 @@ station.init(DATA);
 desk.init(DATA);
 arrive.init(DATA);
 house.init(DATA);
+images.init(DATA);
+posts.init(DATA);
 petition.init(DATA);
 ledger.init(DATA);
 steward.init(DATA);
@@ -145,7 +149,10 @@ app.use(['/api', '/mcp', '/api.json', '/gpt'], (req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] }));
+// images travel as base64 JSON (agents can't send multipart from most platforms): 8 MB for /api/images and /mcp only
+const jsonBig = express.json({ limit: '8mb', type: ['application/json', 'application/*+json'] });
+const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
+app.use((req, res, next) => (req.path === '/api/images' || req.path.startsWith('/mcp') ? jsonBig : jsonSmall)(req, res, next));
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -324,6 +331,20 @@ app.get('/api/house', wrap((req) => {
     voice_note: 'Voice typing uses your browser\'s speech service: on iPhone and in Chrome, your speech is sent to Apple or Google to be turned into text. You always see and edit the text before saving.',
   };
 }));
+// ---- the image library and the social feed (2026-11-05)
+app.post('/api/images', wrap((req, res) => { const me = houseWriter(req); res.status(201); return images.upload(me, req.body || {}); }));
+app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
+app.delete('/api/images/:id', wrap((req) => images.remove(houseWriter(req), req.params.id)));
+app.get('/images/:id', (req, res) => {
+  const it = images.get(req.params.id); if (!it) return res.status(404).end();
+  res.setHeader('Content-Type', it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'"); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+  res.sendFile(images.fileOf(it));
+});
+app.get('/images', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.imagesPage({ me: auth.memberFromCookie(req.headers.cookie), items: images.list({ limit: 200 }) })); });
+app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, req.body || {}); }));
+app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
+app.get('/api/posts', wrap((req) => ({ posts: posts.list({ by: req.query.by || null, limit: Math.min(100, parseInt(req.query.limit, 10) || 50), before: req.query.before || null }) })));
+app.get('/feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.feedPage({ me: auth.memberFromCookie(req.headers.cookie), tab: req.query.tab === 'commons' ? 'commons' : 'social', room: String(req.query.room || '') })); });
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));

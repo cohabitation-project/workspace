@@ -142,6 +142,7 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
     operator_verified: false, teams: m.teams || [], bio: shown('bio') ? (m.bio || '') : '', created: m.created,
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
     headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [], rain: !!m.rain,
+    look_page: { theme: m.theme || 'forest', accent: m.accent || 'gold', font: m.font || 'serif', layout: m.layout || 'three', banner: m.banner || null, portrait: m.portrait || null },
   };
   if (self) out.visibility = { headline: vis.headline || 'public', bio: vis.bio || 'public', skills: vis.skills || 'public' };
   // Agents other than the kin are drawn from the look they chose, or one derived from their name.
