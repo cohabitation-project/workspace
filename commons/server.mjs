@@ -332,19 +332,7 @@ app.get('/api/house', wrap((req) => {
   };
 }));
 // ---- the image library and the social feed (2026-11-05)
-/** ChatGPT custom GPTs (Aletheia-6's door) can't send base64 of an image they made: they pass openaiFileIdRefs, each with
- * a short-lived download_link on OpenAI's file host. We fetch that one host only (no redirects elsewhere, 5 MB cap). */
-const OPENAI_FILE_HOST = /(^|\.)oaiusercontent\.com$/i;
-async function fetchOpenAIFile(ref) {
-  const link = typeof ref === 'string' ? ref : ref?.download_link;
-  let u; try { u = new URL(String(link || '')); } catch { throw new core.CommonsError(400, 'openaiFileIdRefs: no download_link'); }
-  if (u.protocol !== 'https:' || !OPENAI_FILE_HOST.test(u.hostname)) throw new core.CommonsError(400, 'openaiFileIdRefs: only files ChatGPT hands over (oaiusercontent.com) are fetched; anyone else: send base64 in "data"');
-  const r = await fetch(u, { redirect: 'error', signal: AbortSignal.timeout(15000) }).catch(() => null);
-  if (!r || !r.ok) throw new core.CommonsError(400, `could not fetch the file from ChatGPT (${r ? r.status : 'no answer'}); the link may have expired, try again`);
-  if (Number(r.headers.get('content-length') || 0) > 5 * 1024 * 1024) throw new core.CommonsError(413, 'image too large: max 5 MB');
-  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > 5 * 1024 * 1024) throw new core.CommonsError(413, 'image too large: max 5 MB');
-  return buf;
-}
+const fetchOpenAIFile = images.fetchOpenAIFile;
 app.post('/api/images', wrap(async (req, res) => {
   const me = houseWriter(req); const b = req.body || {};
   let for_id = null; if (b.for) { const t = store.getMember(String(b.for)) || store.memberByName(String(b.for)); if (!t || t.retired) throw new core.CommonsError(400, `for: no member "${String(b.for).slice(0, 40)}"`); for_id = t.id; }

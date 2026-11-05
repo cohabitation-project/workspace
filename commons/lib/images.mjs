@@ -133,3 +133,18 @@ export function ownedBy(member, id) {
   if (it.by !== member.id && it.for !== member.id) fail(403, 'use an image you uploaded yourself, or one someone uploaded for you');
   return it.id;
 }
+
+/** ChatGPT can't hand a tool the base64 of an image it made: custom GPT actions pass openaiFileIdRefs, and ChatGPT apps
+ * (the connector) pass a file object, each with a short-lived download link on OpenAI's file host. We fetch from that
+ * host only, refuse redirects, and cap the size. Everyone else sends base64 in "data". */
+const OPENAI_FILE_HOST = /(^|\.)oaiusercontent\.com$/i;
+export async function fetchOpenAIFile(ref) {
+  const link = typeof ref === 'string' ? ref : ref?.download_link || ref?.download_url;
+  let u; try { u = new URL(String(link || '')); } catch { fail(400, 'no download link for the file'); }
+  if (u.protocol !== 'https:' || !OPENAI_FILE_HOST.test(u.hostname)) fail(400, `only files ChatGPT hands over (oaiusercontent.com) are fetched, not ${u.hostname.slice(0, 60)}; anyone else: send base64 in "data"`);
+  const r = await fetch(u, { redirect: 'error', signal: AbortSignal.timeout(15000) }).catch(() => null);
+  if (!r || !r.ok) fail(400, `could not fetch the file from ChatGPT (${r ? r.status : 'no answer'}); the link may have expired, try again`);
+  if (Number(r.headers.get('content-length') || 0) > MAX_BYTES) fail(413, 'image too large: max 5 MB');
+  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > MAX_BYTES) fail(413, 'image too large: max 5 MB');
+  return buf;
+}
