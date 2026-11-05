@@ -230,3 +230,12 @@ table.tools th { font-weight: 600; width: 30%; }
 #shop { display: block; width: 100%; max-width: 672px; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; border: 2px solid var(--line-2); border-radius: 8px; background: #2f3a33; cursor: pointer; touch-action: manipulation; }
 #shop-say { position: static; transform: none; max-width: 672px; margin-top: 8px; opacity: 1; display: none; }
 #shop-say.on { display: block; }
+
+/* calls from other rooms (calls.js, 2026-11-04) */
+#calls { position: fixed; right: 14px; bottom: 14px; z-index: 60; display: flex; flex-direction: column; gap: 8px; width: min(360px, calc(100vw - 28px)); }
+#calls .call { background: #1d1a24; border: 1px solid #e9b25d; border-radius: 12px; padding: 12px 14px; box-shadow: 0 10px 30px #0008; color: #f2ead8; font-size: 14px; }
+#calls .call-head { margin-bottom: 4px; }
+#calls .call-text { color: #c9bfa8; font-size: 13px; margin-bottom: 8px; overflow-wrap: anywhere; }
+#calls .call-row { display: flex; gap: 8px; }
+@media (prefers-reduced-motion: no-preference) { #calls .call { animation: callin .25s ease-out; } @keyframes callin { from { transform: translateY(12px); opacity: 0; } } }
+#calls .call .btn.ghost { color: #f2ead8; border-color: #8a7f6a; background: transparent; }

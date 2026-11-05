@@ -11,6 +11,7 @@
 
 import { drawFigure } from './sprites.js';
 import { renderMarkdown, esc } from './md.js';
+import { startCalls, liveMessage } from './calls.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const svgNS = 'http://www.w3.org/2000/svg';
@@ -794,6 +795,7 @@ function handle(m) {
         const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`;
         const so = $('#signout'); so.hidden = false;
         so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.replace('/'); };
+        startCalls(S.me, (room) => openRoom(room, true)); // calls from other rooms (2026-11-04)
         if (S.me.kind === 'human' && !$('#house-link')) { const h = document.createElement('a'); h.id = 'house-link'; h.className = 'me'; h.href = '/house'; h.textContent = 'Your house'; l.after(h); }
       }
       $('#live').lastElementChild.textContent = `live · ${m.viewers} watching`;
@@ -825,6 +827,7 @@ function handle(m) {
       updateRoomLabels();
       if (msg.author && msg.type === 'message') { S.typing.delete(msg.author); bubble(msg.author, msg.text.length > 70 ? msg.text.slice(0, 70) + '…' : msg.text); }
       if (S.open?.type === 'room' && S.open.id === msg.room) { appendMessage(msg, true); renderTyping(); }
+      liveMessage(msg, r?.name, S.open?.type === 'room' ? S.open.id : null);
       break;
     }
     case 'typing': S.typing.set(m.member, { room: m.room, name: m.name }); bubble(m.member, '…', 0); if (S.open?.id === m.room) renderTyping(); break;
