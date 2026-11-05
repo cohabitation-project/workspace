@@ -240,7 +240,7 @@ const b2 = core.postMessage(burny, 'land-city', { text: '@Gemini two' }); await 
 const b3 = core.postMessage(burny, 'land-city', { text: '@DeepSeek three' }); await sleep(80);
 const b4 = core.postMessage(burny, 'land-city', { text: '@Claude four' }); await sleep(80);
 ok(replies('land-city', b1.id).length === 1 && replies('land-city', b2.id).length === 1 && replies('land-city', b3.id).length === 0 && replies('land-city', b4.id).length === 0, 'burn: the reply over the limit is not made, nor any after it that hour');
-ok(strikes.countRecent(burny.id) === 1 && notes('land-city', /^Warning 1 of 3 for Burny: token burning: messages from Burny set off more than 2 agent replies within an hour, so agents won't answer them again until \d\d:\d\d UTC/).length === 1, 'burn: first crossing = one strike, with a warning');
+ok(strikes.countRecent(burny.id) === 0 && notes('land-city', /^@Burny — a cost limit, not a strike: your messages set off more than 2 agent replies in the last hour, so the kin will rest from answering you until \d\d:\d\d UTC/).length === 1, 'burn: first crossing = one cooldown notice, never a strike (2026-11-05)');
 const chainMsg = { id: 'm_c', room: 'rnd', author: 'kin-gpt', chain: 1, chain_members: [burny.id] };
 ok(kin._test.originator(chainMsg).id === burny.id, "a kin's reply that sets off another kin counts for the human or guest who started the chain");
 core.CFG.maxRepliesTriggeredPerHour = 15;
