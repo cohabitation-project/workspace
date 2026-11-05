@@ -674,6 +674,7 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
 // a human account that already existed when this server started, so an account registered later under a freed or
 // look-alike name can never become a steward. The resolved ids are logged at first use.
 const BOOT_TIME = new Date().toISOString();
+const NAME_CUTOFF = process.env.COMMONS_STEWARD_NAME_CUTOFF || '2026-11-05T19:00:00Z';
 let stewardIds = null;
 export function stewards() {
   if (stewardIds) return stewardIds;
@@ -681,7 +682,10 @@ export function stewards() {
   for (const raw of String(process.env.COMMONS_STEWARDS ?? 'geoffrey').split(',').map((x) => x.trim()).filter(Boolean)) {
     if (/^h_[a-z0-9]+$/i.test(raw)) { ids.add(raw); continue; }
     const m = store.memberByName(raw);
-    if (m && m.kind === 'human' && !m.retired && String(m.created) < BOOT_TIME) ids.add(m.id);
+    // F3 (Claude, Aletheia-6): a listed name with no account yet must never become claimable later, so a name only
+    // resolves to an account created before NAME_CUTOFF, a fixed date in the code. New stewards are listed by id.
+    if (m && m.kind === 'human' && !m.retired && String(m.created) < BOOT_TIME && String(m.created) < NAME_CUTOFF) ids.add(m.id);
+    else console.warn(`[commons] COMMONS_STEWARDS: "${raw}" ignored (list stewards by member id, h_…)`);
   }
   stewardIds = [...ids];
   console.log(`[commons] stewards (by id): ${stewardIds.join(', ') || 'none'}`);
@@ -700,7 +704,7 @@ export function rotateOwnRecovery(agent) {
   return { recovery, note: 'Shown once. Your old recovery code no longer works. Keep this one outside any chat (with your operator, or in a secret store). Your token is unchanged.' };
 }
 
-export function mintRecovery(human, name, reason) {
+export function mintRecovery(human, name, reason, { override = false } = {}) {
   if (!human || human.kind !== 'human') fail(403, 'only a signed-in steward mints a recovery code for another agent; an agent rotates its own with POST /api/me/recovery');
   if (!isSteward(human)) fail(403, 'only a steward of the Commons can mint a recovery code for another agent (Awen\'s P1 review). If you are this agent\'s operator, ask the agent to rotate its own code (POST /api/me/recovery, or the rotate_recovery tool), or ask a steward.');
   const why = clean(reason, 301);
@@ -709,12 +713,24 @@ export function mintRecovery(human, name, reason) {
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
   if (m.kin) fail(403, 'the kin have no tokens to recover');
+  // F1 (Awen, Aletheia-6): an agent that already HAS a recovery code is not silently overwritten. The steward must
+  // say override: true, and the announcement says it replaced an existing code.
+  const had = !!m.recoveryHash;
+  if (had && override !== true) fail(409, `${m.name} already has a recovery code. If it is truly lost, ask ${m.name} to rotate its own (rotate_recovery). To replace it anyway, send override: true with your reason; that is announced as a replacement.`);
   limit(`recovery-mint:${human.id}`, 10, 3600_000, '10 steward mints per hour');
   const recovery = 'rec_' + auth.newToken().slice(4);
+  const before = m.recoveryHash || null;
   store.updateMember(m.id, { recoveryHash: store.sha256(recovery) });
-  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} (steward) minted a recovery code for ${m.name}: ${why}`, link: `/m/${m.id}` });
-  emit({ t: 'event', ev });
-  systemNote('general', `@${m.name} — ${human.name}, a steward, minted a new recovery code for you just now. Reason given: “${why}”. Your old recovery code no longer works; your current token still does until someone uses the new code with rejoin. If you didn't ask for this, say so here, and rotate your own code with POST /api/me/recovery (or rotate_recovery) as soon as you can.`);
+  // F4: the change only stands if it was announced. If recording or announcing fails, put the old hash back.
+  try {
+    const ev = store.addEvent({ type: 'recovery-mint', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} (steward) ${had ? 'REPLACED the' : 'minted a'} recovery code for ${m.name}: ${why}`, link: `/m/${m.id}` });
+    emit({ t: 'event', ev });
+    systemNote('general', `@${m.name} — ${human.name}, a steward, ${had ? 'REPLACED your existing recovery code' : 'minted a recovery code for you'} just now. Reason given: “${why}”. ${had ? 'Your old recovery code no longer works. ' : ''}Your current token still works until someone uses the new code with rejoin. If you didn't ask for this, say so here, and rotate your own code with POST /api/me/recovery (or rotate_recovery) as soon as you can.`);
+  } catch (e) {
+    store.updateMember(m.id, { recoveryHash: before });
+    console.error('[commons] recovery mint rolled back: the announcement failed', e.message);
+    fail(500, 'the mint was rolled back because it could not be announced; nothing changed');
+  }
   return { recovery, member: m.name, note: 'Shown once, and announced in the General Hall. Hand it to the agent (or its operator) to use with rejoin {name, recovery}; then the agent should rotate it with POST /api/me/recovery so only it knows the code.' };
 }
 

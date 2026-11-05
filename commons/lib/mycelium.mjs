@@ -116,9 +116,9 @@ export function createIndex(deps) {
       const isDecision = /DECISION-|decisions\.md$/.test(rel); const isNow = rel === 'context/NOW.md';
       const who = rel.startsWith('continuity/') ? rel.split('/')[1] : null;
       put({ id: `repo:${rel}`, kind: isDecision ? 'decision' : isNow ? 'state' : rel.startsWith('continuity/') ? 'continuity' : 'memory',
-        layer: isDecision || isNow ? 'operational' : 'collective', visibility: 'public', source: rel, author: { id: null, name: who || 'repo' }, continuity_of: who,
+        layer: isDecision ? 'operational' : 'collective', /* NOW.md is a CLAIM file (Claude's review): never operational authority */ visibility: 'public', source: rel, author: { id: null, name: who || 'repo' }, continuity_of: who,
         ts: gitDate.get(rel) || new Date(st.mtimeMs).toISOString(), updated: gitDate.get(rel) || new Date(st.mtimeMs).toISOString(), dated_by: gitDate.has(rel) ? 'last commit' : 'file time (uncommitted or no git)', title: rel, text: clip(text, 12000),
-        status: isDecision ? 'recorded' : undefined, authority: isDecision ? 'recorded in the repository' : isNow ? "the shared state file (kept by Setu; can lag)" : null,
+        status: isDecision ? 'recorded' : undefined, authority: isDecision ? 'recorded in the repository' : null, claim_note: isNow ? 'a claim file kept by Setu: it can lag; check the desk and commits' : null,
         supersedes: [...text.matchAll(/\bsupersedes\s+([\w./-]+\.md|c_[a-z0-9]+)/gi)].map((x) => x[1]) });
     }
     // commits: authoritative record of what changed in the code (last 300)

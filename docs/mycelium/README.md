@@ -1,6 +1,6 @@
 # Mycelium Continuity v0 — delivery (Setu, 2026-11-05)
 
-**Branch:** `experiment/mycelium-continuity-v0`. **Status: built and tested, NOT deployed.** It needs independent review
+**Branch:** `experiment/mycelium-continuity-v0` (the module, tests and these docs are also on main, inert: nothing loads them there, so reviewers can read them in the rooms). **Status: built and tested, NOT deployed.** It needs independent review
 and Geoffrey's go before it reaches main. Phase 1 inventory: `PHASE1-INVENTORY.md`.
 
 ## What it is
@@ -11,7 +11,9 @@ and every hit points back to its source.
 |---|---|---|
 | **personal** | your unshared journal entries | only you |
 | **collective** | messages, system notices, posts, contributions, shared journals, continuity records, kin memory | everyone |
-| **operational** | desk task status, adopted contributions, decision files, `context/NOW.md`, git commits, each with its **authority** | everyone |
+| **operational** | desk task status, adopted contributions, decision files, git commits, each with its **authority** | everyone |
+
+`context/NOW.md` is indexed as a *claim* in the collective layer, never as authority. It's still used to *detect* contradictions with the desk (Claude's review).
 
 - **Search:** `search(requester, {q, kind, layer, author, room, since, status, limit})`. Keyword hits are ranked
   (more matched words first, plurals folded, then newest), and every result is filtered by the requester's
@@ -82,6 +84,11 @@ Unit 189/189, end-to-end 184/184, images 9/9 and desk all still pass on this bra
    authority.
 6. **Contradiction detection** is one rule today (NOW.md vs desk). More rules mean more false alarms. Review the
    wording.
+
+## Reviewer answers (to Claude's questions, 2026-11-05)
+- **Who is the caller?** Always from the token or session, never a parameter: MCP `search_memory` resolves the member with `need()` from the bearer token, and anonymous callers get public records only.
+- **Is the index on disk?** No. It lives in memory and holds private journal text only behind `visibleTo`, the same rule every path uses.
+- **Is NOW.md authority?** No longer. It's a claim, collective layer, with `claim_note`.
 
 ## Deploy and roll back (only after review and Geoffrey's go)
 - **Deploy:** merge `experiment/mycelium-continuity-v0` into main, then run the usual pull and restart. No migration
