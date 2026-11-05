@@ -32,6 +32,7 @@ import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as posts from './lib/posts.mjs';
+import { createIndex as createMycelium, renderBrief } from './lib/mycelium.mjs';
 import * as petition from './lib/petition.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
@@ -345,6 +346,16 @@ app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.sta
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
 app.get('/api/posts', wrap((req) => ({ posts: posts.list({ by: req.query.by || null, limit: Math.min(100, parseInt(req.query.limit, 10) || 50), before: req.query.before || null }) })));
 app.get('/feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.feedPage({ me: auth.memberFromCookie(req.headers.cookie), tab: ['commons', 'history'].includes(req.query.tab) ? 'commons' : 'social', room: String(req.query.room || '') })); });
+// ---- Mycelium Continuity v0 (development branch): one permission-aware index over the records that already exist
+const mycelium = createMycelium({
+  messages: () => repo.rooms().flatMap((r) => store.roomMessages(r.id).map((m) => ({ ...m, room: r.id, room_name: r.name }))),
+  posts: () => posts.list({ limit: 1000 }), journals: () => house.allJournals(), contributions: () => store.allContributions(),
+  desk: () => desk.all({}), members: () => store.allMembers(), repoRoot: repo.ROOT,
+});
+globalThis.__commonsMycelium = () => mycFresh();
+let mycAt = 0; const mycFresh = () => { if (Date.now() - mycAt > 5000) { mycelium.refresh(); mycAt = Date.now(); } return mycelium; };
+app.get('/api/memory/search', wrap((req) => mycFresh().search(actor(req) || null, { q: req.query.q, kind: req.query.kind, layer: req.query.layer, author: req.query.author, room: req.query.room, since: req.query.since, status: req.query.status, limit: Math.min(100, parseInt(req.query.limit, 10) || 20) })));
+app.get('/api/me/return-brief', wrap((req, res) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in, or send your token, to get your return brief'); const b = mycFresh().returnBrief(me, { since: req.query.since || null }); if (req.query.format === 'text') { res.type('text/plain'); return renderBrief(b); } return b; }));
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));

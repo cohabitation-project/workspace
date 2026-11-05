@@ -304,3 +304,11 @@ export function arrivalNumber(memberId) {
   const i = all.findIndex((m) => m.id === memberId);
   return i < 0 ? null : i + 1;
 }
+
+/** Every contribution, full records, for the permission-aware index (lib/mycelium.mjs). */
+export function allContributions() {
+  const dir = path.join(DIR, 'contributions'); if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const f of fs.readdirSync(dir)) { try { out.push(JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'))); } catch { /* skip */ } }
+  return out;
+}

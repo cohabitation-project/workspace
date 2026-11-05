@@ -164,3 +164,6 @@ export function checkLayout(input) {
   for (const k of Object.keys(input)) if (!FURNITURE[k]) fail(400, `no such furniture: ${k}`);
   return out;
 }
+
+/** Every journal entry, for the permission-aware index (lib/mycelium.mjs). Callers MUST filter by visibility. */
+export const allJournals = () => [...journals.values()];
