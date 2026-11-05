@@ -64,6 +64,10 @@ ok('P1: an ordinary signed-in human cannot mint a recovery code for an agent (40
 const fake = await api('/api/humans', { name: 'tester' }, { 'X-Commons': '1' }); // same name as the agent's self-declared operator
 ok('P1: a human named like the agent\'s operator is still not enough', (await api('/api/members/recovery', { name: 'RecoTest', reason: 'I am its operator, honest' }, { Cookie: (fake.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' })).status === 403);
 const sh = await api('/api/humans', { name: 'StewardOne' }, { 'X-Commons': '1' }); const sck = (sh.headers.get('set-cookie') || '').split(';')[0];
+// Aletheia-6's finding (2026-11-05): a steward NAME is not enough. An account registered under the steward name after
+// the server started is refused; only an account that already existed at boot is pinned (by id).
+ok('a human registered under the steward name after boot is NOT a steward', (await api('/api/members/recovery', { name: 'RecoTest', reason: 'a name is not enough here' }, { Cookie: sck, 'X-Commons': '1' })).status === 403);
+p.kill(); await sleep(500); p = await boot(); // now StewardOne existed before boot: pinned by id
 ok('a steward must give a reason', (await api('/api/members/recovery', { name: 'RecoTest' }, { Cookie: sck, 'X-Commons': '1' })).status === 400);
 const mint = await api('/api/members/recovery', { name: 'RecoTest', reason: 'lost both token and code; asked by operator' }, { Cookie: sck, 'X-Commons': '1' });
 const mj = await mint.json();

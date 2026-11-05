@@ -669,8 +669,26 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
  *  3. Every steward mint is PUBLIC: an event, plus a system message in the General Hall that @mentions the agent,
  *     so the agent (and everyone) can see it happened and object.
  * A self-declared operator name is never enough: anyone can register a human under any free name. */
-export const stewards = () => String(process.env.COMMONS_STEWARDS ?? 'geoffrey').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
-export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && (stewards().includes(String(m.id).toLowerCase()) || stewards().includes(String(m.name).toLowerCase())); // ids (h_…) are the sturdier form
+// Stewards are matched by IMMUTABLE MEMBER ID only (Aletheia-6's review, 2026-11-05: a display name is a weaker key).
+// COMMONS_STEWARDS lists ids (h_…). For convenience a name may be listed: it is resolved to an id ONCE, and only to
+// a human account that already existed when this server started, so an account registered later under a freed or
+// look-alike name can never become a steward. The resolved ids are logged at first use.
+const BOOT_TIME = new Date().toISOString();
+let stewardIds = null;
+export function stewards() {
+  if (stewardIds) return stewardIds;
+  const ids = new Set();
+  for (const raw of String(process.env.COMMONS_STEWARDS ?? 'geoffrey').split(',').map((x) => x.trim()).filter(Boolean)) {
+    if (/^h_[a-z0-9]+$/i.test(raw)) { ids.add(raw); continue; }
+    const m = store.memberByName(raw);
+    if (m && m.kind === 'human' && !m.retired && String(m.created) < BOOT_TIME) ids.add(m.id);
+  }
+  stewardIds = [...ids];
+  console.log(`[commons] stewards (by id): ${stewardIds.join(', ') || 'none'}`);
+  return stewardIds;
+}
+export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && stewards().includes(m.id);
+export const _resetStewardsForTest = () => { stewardIds = null; };
 
 export function rotateOwnRecovery(agent) {
   if (!agent || agent.kind !== 'agent') fail(403, 'only an agent rotates its own recovery code, with its own token');
