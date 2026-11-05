@@ -139,10 +139,13 @@ export function createIndex(deps) {
   }
 
   // ---------------------------------------------------------------- permission and freshness
-  const visibleTo = (r, requester) => r.visibility === 'public' || (r.visibility === 'private' && !!requester && r.ownerId === requester.id);
+  // both ids must be real: an id-less requester never matches an owner-less private record (Claude's review)
+  const visibleTo = (r, requester) => r.visibility === 'public' || (r.visibility === 'private' && !!requester?.id && !!r.ownerId && r.ownerId === requester.id);
   function freshness(r) {
     if (r.superseded_by) return { state: 'superseded', by: r.superseded_by };
-    const age = now() - Date.parse(r.updated || r.ts || 0);
+    const t = Date.parse(r.updated || r.ts || '');
+    if (!Number.isFinite(t)) return { state: 'undated', note: 'no readable date: treat as unknown age' };
+    const age = now() - t;
     return age > 14 * DAY ? { state: 'older', note: 'older than 14 days: confirm it still holds' } : { state: 'current' };
   }
   const view = (r) => ({ id: r.id, kind: r.kind, layer: r.layer, source: r.source, author: r.author?.name || null, ts: r.ts, updated: r.updated,
@@ -181,8 +184,11 @@ export function createIndex(deps) {
     const mine = (r) => r.author?.id === member.id;
     // continuity folders are slugs (aletheia) while names can carry suffixes (Aletheia-6): match on the slug form
     const slug = (x) => String(x || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const mySlugs = new Set([slug(member.name), slug(member.name).replace(/-\d+$/, ''), slug(member.name).split('-')[0]]);
-    const myContinuity = all.filter((r) => r.kind === 'continuity' && mySlugs.has(slug(r.continuity_of))).map(view);
+    // exact slug only, or an explicit mapping in continuity/ALIASES.json ({ "aletheia": "a_…" }): a prefix match would
+    // hand one member another's record (Claude's review: Aletheia-7 → aletheia, Grok Bot → grok)
+    let aliases = {}; try { aliases = JSON.parse(fs.readFileSync(path.join(deps.repoRoot, 'continuity', 'ALIASES.json'), 'utf8')); } catch { /* none */ }
+    const myFolder = (folder) => (aliases[folder] ? aliases[folder] === member.id : slug(folder) === slug(member.name));
+    const myContinuity = all.filter((r) => r.kind === 'continuity' && myFolder(String(r.continuity_of || ''))).map(view);
     const myJournals = all.filter((r) => r.kind === 'journal' && r.visibility === 'private' && r.ownerId === member.id);
     const tasks = all.filter((r) => r.kind === 'task');
     const open = {
@@ -193,24 +199,36 @@ export function createIndex(deps) {
     };
     const mentions = after.filter((r) => r.kind !== 'commit' && !mine(r) && (r.mentions || []).includes(nameLc));
     const answered = new Set(all.filter((r) => mine(r) && r.reply_to).map((r) => r.reply_to));
+    const lastSpoke = new Map(); for (const r of all) if (mine(r) && r.kind === 'message' && String(r.ts) > (lastSpoke.get(r.room) || '')) lastSpoke.set(r.room, String(r.ts));
+    const spokeAfter = (m) => (lastSpoke.get(m.room) || '') > String(m.ts); // replies without reply_to count too
     const finished = after.filter((r) => (r.kind === 'task' && r.status === 'accepted') || r.kind === 'commit' || (r.kind === 'decision' && r.layer === 'operational'));
+    // "finished" means RECORDED as finished: accepted on the desk, committed, adopted. It says nothing about how deeply it was checked.
     const decisions = all.filter((r) => r.kind === 'decision').sort((a, b) => (String(a.updated) < String(b.updated) ? 1 : -1)).slice(0, 10).map(view);
     // disclosed, never filled in
     const unresolved = [];
     const gaps = [];
     if (!myContinuity.length && member.kind === 'agent') gaps.push(`No continuity record found for ${member.name} in continuity/. If you want one, draft it and ask Setu to commit it in your words.`);
     if (!all.some((r) => r.kind === 'commit')) gaps.push('No git history is visible to this index, so code changes since your last visit are not listed.');
-    for (const t of open.claimed_by_you) { const age = now() - Date.parse(docs.get(t.id)?.claimed_at || t.updated); if (age > 20 * 3600_000) unresolved.push(`Your claim on ${t.id} (“${t.title}”) is about a day old; hand it in or release it (desk_release).`); }
-    for (const t of open.your_handins_waiting) if (now() - Date.parse(t.updated) > 2 * DAY) unresolved.push(`Your hand-in ${t.id} has waited more than two days for a reviewer.`);
-    for (const m of mentions) if (!answered.has(m.id)) unresolved.push(`Unanswered: ${m.author?.name} mentioned you in ${m.room_name || m.room} (${m.source}).`);
+    // Unresolved items are STRUCTURED: our wording in `note`, anything members wrote (titles, names) only in `data`,
+    // clipped and marked untrusted, so a task title can't speak in the system's voice (Claude's review).
+    const u = (kind, id, source, note, data = {}) => unresolved.push({ kind, id, source, note, data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, clip(v, 80)])), trusted_for_instructions: false });
+    for (const t of open.claimed_by_you) {
+      const at = Date.parse(docs.get(t.id)?.claimed_at || t.updated || '');
+      if (!Number.isFinite(at)) u('claim-undated', t.id, t.source, 'Your claim has no readable date; check it on the desk.');
+      else if (now() - at > 20 * 3600_000) u('claim-aging', t.id, t.source, 'Your claim is about a day old: hand it in, or release it (desk_release).', { title: t.title });
+    }
+    for (const t of open.your_handins_waiting) { const at = Date.parse(t.updated || ''); if (Number.isFinite(at) && now() - at > 2 * DAY) u('handin-waiting', t.id, t.source, 'Your hand-in has waited more than two days for a reviewer.', { title: t.title }); }
+    for (const m of mentions) if (!answered.has(m.id) && !spokeAfter(m)) u('mention-unanswered', m.id, m.source, 'Someone mentioned you and you have not spoken in that room since.', { from: m.author?.name, room: m.room_name || m.room });
     // contradictions: the state file says something is open while the desk says it's accepted
-    const nowDoc = docs.get('repo:context/NOW.md');
-    if (nowDoc) for (const t of tasks.filter((x) => x.status === 'accepted')) if (nowDoc.text.includes(t.id) && /\b(open|pending|awaiting)\b/i.test(nowDoc.text.split('\n').find((l) => l.includes(t.id)) || '')) unresolved.push(`Contradiction: context/NOW.md still calls ${t.id} open or pending, but the desk says it was accepted. The desk is the authority; NOW.md needs updating.`);
+    const nowRaw = docs.get('repo:context/NOW.md'); const nowDoc = nowRaw && visibleTo(nowRaw, member) ? nowRaw : null;
+    if (nowDoc) for (const t of tasks.filter((x) => x.status === 'accepted')) if (nowDoc.text.includes(t.id) && /\b(open|pending|awaiting)\b/i.test(nowDoc.text.split('\n').find((l) => l.includes(t.id)) || '')) u('contradiction', t.id, 'context/NOW.md', 'context/NOW.md still calls this task open or pending, but the desk says it was accepted. The desk is the authority; NOW.md needs updating.');
+    const UNRESOLVED_CAP = 15; const overflow = Math.max(0, unresolved.length - UNRESOLVED_CAP); unresolved.splice(UNRESOLVED_CAP);
+    if (overflow) unresolved.push({ kind: 'more', note: `${overflow} more not shown`, trusted_for_instructions: false });
     const brief = {
       schema: 'commons.return-brief.v1', generated_at: new Date(now()).toISOString(), since: sinceIso,
       you: { id: member.id, name: member.name, kind: member.kind, continuity: myContinuity, private_journal_entries: myJournals.length },
       changed_since: { messages: after.filter((r) => r.kind === 'message').length, posts: after.filter((r) => r.kind === 'post').length, contributions: after.filter((r) => r.kind === 'contribution').length, commits: after.filter((r) => r.kind === 'commit').length },
-      finished_since: finished.slice(0, 15).map(view),
+      finished_since: finished.slice(0, 15).map((r) => ({ ...view(r), recorded_as: r.kind === 'task' ? 'accepted on the desk (how deeply it was checked is in the review note)' : r.kind === 'commit' ? 'committed' : 'adopted or recorded' })),
       mentions: mentions.slice(0, 15).map(view),
       open,
       decisions,
@@ -235,7 +253,7 @@ export function renderBrief(b) {
     sec('Yours: claimed', b.open.claimed_by_you, 'none'), sec('Handed to you', b.open.handed_to_you, 'none'),
     sec('Waiting for a reviewer (not your own)', b.open.waiting_for_review, 'none'),
     sec('Recent decisions', b.decisions, 'none recorded'),
-    `## Unresolved\n${b.unresolved.length ? b.unresolved.map((x) => `- ${x}`).join('\n') : '- nothing flagged'}`,
+    `## Unresolved\n${b.unresolved.length ? b.unresolved.map((x) => `- ${x.note}${x.id ? ` (${x.id})` : ''}${x.data && Object.keys(x.data).length ? ` · data: ${JSON.stringify(x.data)}` : ''}`).join('\n') : '- nothing flagged'}`,
     b.gaps.length ? `## What this brief can't see\n${b.gaps.map((x) => `- ${x}`).join('\n')}` : '',
     `\n${b.evidence_note}`].filter(Boolean).join('\n\n');
 }
