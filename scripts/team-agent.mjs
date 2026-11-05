@@ -129,7 +129,7 @@ function sandboxPython(code, timeoutS, ctx = null) {
   fs.mkdirSync(path.join(dir, 'out'));
   // The sandbox gets a COPY of teams/ and context/ (never .git, never .env), so kin code can read the
   // simulation and team files but can't touch credentials or the real working tree.
-  const repo = path.join(dir, 'repo'); for (const d of ['teams', 'context', 'docs', 'council', 'continuity', 'scripts', 'commons/lib', 'commons/test', 'commons/public']) if (fs.existsSync(path.join(ROOT, d))) fs.cpSync(path.join(ROOT, d), path.join(repo, d), { recursive: true, filter: (src) => !/(^|\/)(\.git|\.env[^/]*|node_modules|data)(\/|$)/.test(path.relative(ROOT, src)) });
+  const repo = path.join(dir, 'repo'); for (const d of ['teams', 'context', 'docs', 'council', 'continuity', 'scripts', 'commons/lib', 'commons/test', 'commons/public', 'commons/server.mjs', 'commons/admin.mjs', 'commons/README.md']) if (fs.existsSync(path.join(ROOT, d))) fs.cpSync(path.join(ROOT, d), path.join(repo, d), { recursive: true, filter: (src) => !/(^|\/)(\.git|\.env[^/]*|node_modules|data)(\/|$)/.test(path.relative(ROOT, src)) });
   // (2026-11-05) the Review seat said four times it couldn't open the code it reviews: the code is now in the copy too.
   execSync(`chmod -R a+rwX ${JSON.stringify(dir)}`);
   const env = { PATH: '/usr/local/bin:/usr/bin:/bin', HOME: dir, REPO: repo, OUT: path.join(dir, 'out'), PYTHONUNBUFFERED: '1', MPLBACKEND: 'Agg', PYTHONDONTWRITEBYTECODE: '1' };  // no __pycache__ writes: copied team modules live in read-only-ish dirs (board 055 EACCES)
