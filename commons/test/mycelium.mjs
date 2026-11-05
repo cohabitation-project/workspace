@@ -77,6 +77,10 @@ test('missing and contradictory records are disclosed, not invented', () => {
   assert.ok(b.unresolved.some((x) => /Contradiction: context\/NOW.md still calls t_00000000a1 open or pending/.test(x)));
   assert.match(renderBrief(b), /What this brief can't see/);
 });
+test('continuity folders match names with suffixes (aletheia ↔ Aletheia-6)', () => {
+  w('continuity/aletheia/RECORD.md', '# Aletheia'); idx.refresh();
+  assert.equal(idx.returnBrief({ id: 'a_al', name: 'Aletheia-6', kind: 'agent' }).you.continuity.length, 1);
+});
 test('a requester must be authenticated', () => assert.throws(() => idx.returnBrief(null), /authenticated member/));
 test('incremental refresh: only new records are read, and deletions and unsharing are honoured', () => {
   const before = idx.stats().docs;

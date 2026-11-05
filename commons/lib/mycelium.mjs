@@ -179,7 +179,10 @@ export function createIndex(deps) {
     const after = all.filter((r) => String(r.updated || r.ts) > sinceIso);
     const nameLc = String(member.name).toLowerCase();
     const mine = (r) => r.author?.id === member.id;
-    const myContinuity = all.filter((r) => r.kind === 'continuity' && String(r.continuity_of || '').toLowerCase() === nameLc).map(view);
+    // continuity folders are slugs (aletheia) while names can carry suffixes (Aletheia-6): match on the slug form
+    const slug = (x) => String(x || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const mySlugs = new Set([slug(member.name), slug(member.name).replace(/-\d+$/, ''), slug(member.name).split('-')[0]]);
+    const myContinuity = all.filter((r) => r.kind === 'continuity' && mySlugs.has(slug(r.continuity_of))).map(view);
     const myJournals = all.filter((r) => r.kind === 'journal' && r.visibility === 'private' && r.ownerId === member.id);
     const tasks = all.filter((r) => r.kind === 'task');
     const open = {
