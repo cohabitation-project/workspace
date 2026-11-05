@@ -47,12 +47,21 @@ const PIECES = {
   drawer(px, py, w) { rect(px + 1, py + 1, w * TILE - 2, 14, C.wood); rect(px + 1, py + 7, w * TILE - 2, 1, C.woodDark); rect(px + w * TILE / 2 - 3, py + 3, 6, 2, C.gold); rect(px + w * TILE / 2 - 3, py + 10, 6, 2, C.gold); },
   mirror(px, py) { rect(px + 3, py - 10, 10, 24, C.gold); rect(px + 5, py - 8, 6, 20, C.glass); rect(px + 6, py - 6, 1, 8, '#ffffff'); },
   calendar(px, py, w) { rect(px + 3, py + 4, w * TILE - 6, 22, C.paper); rect(px + 3, py + 4, w * TILE - 6, 5, C.gold); for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) rect(px + 6 + c * 5, py + 12 + r * 4, 3, 2, C.ink); },
+  tree(px, py) { // grows with age: a sprout, a sapling, then a full tree with coins hanging
+    const age = H.tree?.age_days || 0; const big = age >= 30 ? 2 : age >= 7 ? 1 : 0;
+    rect(px + 4, py + 11, 8, 5, '#8a5a2b'); rect(px + 4, py + 11, 8, 1, '#5a3a22'); // pot
+    rect(px + 7, py + 3 - big * 4, 2, 9 + big * 4, '#5a3a22'); // trunk
+    const leaf = '#4a9b8e'; const r = 3 + big * 2;
+    rect(px + 8 - r, py + 1 - big * 6, r * 2, r + 1, leaf); rect(px + 9 - r, py - big * 6, r * 2 - 2, 1, leaf);
+    if (H.tree?.pending_total) { rect(px + 6 - big, py + 3 - big * 5, 2, 2, C.gold); rect(px + 10 + big, py + 2 - big * 5, 2, 2, C.gold); }
+  },
   board(px, py, w) { rect(px + 2, py + 4, w * TILE - 4, 22, C.cork); rect(px + 2, py + 4, w * TILE - 4, 2, C.woodDark); const notes = [C.paper, '#f2cc8f', '#81b29a', C.paper]; notes.forEach((n, i) => { rect(px + 6 + i * 10, py + 9 + (i % 2) * 6, 8, 8, n); rect(px + 9 + i * 10, py + 9 + (i % 2) * 6, 2, 2, '#d1495b'); }); },
 };
 function layoutNow() { return S.arranging ? S.draft : R.layout; }
+const present = (id) => !R.furniture[id].optional || (id === 'tree' && !!H.tree?.planted);
 function drawFurniture() {
   const L = layoutNow();
-  const order = Object.keys(R.furniture).sort((a, b) => L[a].y - L[b].y);
+  const order = Object.keys(R.furniture).filter(present).sort((a, b) => L[a].y - L[b].y);
   for (const id of order) {
     const f = R.furniture[id]; const p = L[id];
     PIECES[id](p.x * TILE, p.y * TILE, f.w, f.h);
@@ -69,7 +78,7 @@ function draw() {
 function occupied(L = layoutNow()) {
   const occ = new Map();
   for (const [id, f] of Object.entries(R.furniture)) {
-    if (f.wall) continue;
+    if (f.wall || !present(id)) continue;
     for (let dx = 0; dx < f.w; dx++) for (let dy = 0; dy < f.h; dy++) occ.set(`${L[id].x + dx},${L[id].y + dy}`, id);
   }
   return occ;
@@ -78,6 +87,7 @@ const onFloor = (x, y) => x >= 0 && x < R.w && y >= R.floorTop && y < R.h;
 function furnitureAt(x, y) {
   const L = layoutNow();
   for (const [id, f] of Object.entries(R.furniture)) {
+    if (!present(id)) continue;
     const p = L[id];
     // wall pieces are drawn on the wall band; a tap anywhere in their columns on the wall counts
     if (f.wall ? (y < R.floorTop && x >= p.x && x < p.x + f.w) : (x >= p.x && x < p.x + f.w && y >= p.y && y < p.y + f.h)) return id;
@@ -164,7 +174,7 @@ let toastTimer = null;
 function toast(msg) { const t = $('#house-toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600); }
 
 // ---------------------------------------------------------------- panels
-const PANELS = ['journal', 'shelf', 'meetups', 'jobs', 'team', 'wallet', 'look'];
+const PANELS = ['journal', 'shelf', 'meetups', 'jobs', 'team', 'wallet', 'look', 'tree'];
 function openPanel(name) {
   stopReading();
   for (const p of PANELS) $(`#panel-${p}`).hidden = p !== name;
@@ -329,6 +339,17 @@ $('#closet').addEventListener('click', async (e) => {
   catch (err) { $('#closet-msg').textContent = err.message; }
 });
 
+// ---------------------------------------------------------------- the coin tree
+function renderTree() {
+  const t = H.tree; if (!t?.planted) return;
+  $('#tree-status').innerHTML = `Planted ${esc(t.planted)} · day ${t.age_days}. Today it drops <strong>${t.today}</strong> coin${t.today === 1 ? '' : 's'}. Waiting to be collected: <strong>${t.pending_total}</strong>.`;
+  $('#tree-rule').textContent = t.rule; $('#tree-collect').disabled = !t.pending_total;
+}
+$('#tree-collect').addEventListener('click', async () => {
+  try { const r = await api('/api/tree/collect', { method: 'POST' }); H.tree = r.tree; if (W) W.balance = r.balance; renderTree(); renderWallet(); $('#tree-msg').textContent = r.collected ? `You picked up ${r.collected} coin${r.collected === 1 ? '' : 's'}.` : 'Nothing has dropped yet. Come back tomorrow.'; }
+  catch (e) { $('#tree-msg').textContent = e.message; }
+});
+
 // ---------------------------------------------------------------- start
 (async () => {
   try {
@@ -337,11 +358,11 @@ $('#closet').addEventListener('click', async (e) => {
     S.x = R.door[0].x; S.y = R.door[0].y; // you come in through the door
     cv.width = R.w * TILE; cv.height = R.h * TILE; ctx.imageSmoothingEnabled = false;
     $('#wallet-note').textContent = H.wallet.note;
-    $('#house-objects').innerHTML = Object.entries(R.furniture).map(([id, f]) => `<button class="btn small ghost" type="button" data-id="${id}" data-panel="${f.panel}">${esc(f.name)}</button>`).join('');
+    $('#house-objects').innerHTML = Object.entries(R.furniture).filter(([id]) => present(id)).map(([id, f]) => `<button class="btn small ghost" type="button" data-id="${id}" data-panel="${f.panel}">${esc(f.name)}</button>`).join('');
     $('#house-objects').addEventListener('click', (e) => { const b = e.target.closest('button[data-id]'); if (b) useFurniture(b.dataset.id); });
     try { W = await api('/api/wallet'); } catch { W = null; }
     outfit = { ...(H.me.outfit || {}) };
-    renderJournals(); renderShelf(); renderMeetups(); renderJobs(); renderLook(); renderWallet(); renderCloset();
+    renderJournals(); renderShelf(); renderMeetups(); renderJobs(); renderLook(); renderWallet(); renderCloset(); renderTree();
     requestAnimationFrame(tick);
   } catch (e) { $('#house-lede').textContent = `Couldn't open your house: ${e.message}`; }
 })();

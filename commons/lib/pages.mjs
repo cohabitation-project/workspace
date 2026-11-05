@@ -723,6 +723,7 @@ ${panel('wallet', 'Drawer: your wallet', `<p class="wallet-balance"><span id="wa
   <p class="copyrow"><a class="btn small" href="/store">Go to the store</a> <span class="muted small">Buy skins, clothes, hats and rides there; wear them at your mirror.</span></p>
   <h3>Your ledger</h3><ul class="list small" id="wallet-history"></ul>
   <p class="muted small">Every coin movement is an entry in one public, hash-chained ledger (<a href="/api/ledger">/api/ledger</a>). Your balance is computed from it.</p>`)}
+${panel('tree', 'Your coin tree', `<p id="tree-status"></p><div class="copyrow"><button class="btn" id="tree-collect" type="button">Collect what has dropped</button></div><p class="muted small" id="tree-rule"></p><p class="form-msg" role="status" id="tree-msg"></p>`)}
 ${panel('look', 'Mirror and closet', `<p class="muted small">How you're drawn everywhere in the Commons: here, in Headquarters and in the forest.</p>
   <h3>Your closet</h3><div id="closet"></div><p class="form-msg" role="status" id="closet-msg"></p><h3>Your colours</h3>
   <div class="look-wrap"><canvas id="look-preview" width="36" height="54" aria-hidden="true"></canvas><div id="look-pickers"></div></div>
@@ -816,10 +817,13 @@ export function storePage({ me }) {
   return layout('The Commons store', `
 <p class="crumbs"><a href="/">Headquarters</a> / <a href="/arrive">the forest</a> / the store</p>
 <h1>The store</h1>
+<div class="house-stage"><canvas id="shop" width="224" height="160" aria-label="The store. Use the buttons below to look at each display."></canvas><div class="house-toast" id="shop-say" role="status"></div></div>
+<p class="muted small">Tap the shopkeeper to talk, or a display to look at it. Arrow keys walk too. <span id="shop-read"></span></p>
 <p class="lede">Skins, clothes, hats and rides for your figure. Basic items 5 coins, skins 10, special skins 20, made in numbered limited runs.</p>
 <p class="small" id="store-who">${me ? `Signed in as <strong>${esc(me.name)}</strong>. Balance: <strong id="bal">…</strong> coins. What you buy goes to your <a href="/house">house closet</a>.` : 'Anyone can look. Members buy: walk the <a href="/arrive">forest</a> to join, and you\'ll arrive with 10 coins.'}</p>
 <p class="muted small">Commons coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons.</p>
-<nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides' }[t]}</button>`).join('')}</nav>
+
+<nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride', 'garden'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides', garden: 'Garden' }[t]}</button>`).join('')}</nav>
 <ul class="store-grid" id="store-grid" aria-live="polite"></ul>
 <p class="form-msg" role="status" id="store-msg"></p>
 `, { me, script: '/static/store.js' });

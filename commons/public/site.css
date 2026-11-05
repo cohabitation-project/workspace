@@ -225,3 +225,8 @@ table.tools th { font-weight: 600; width: 30%; }
 .store-card canvas { width: 60px; height: 90px; image-rendering: pixelated; background: var(--panel-2); border-radius: 6px; }
 .store-name { font-weight: 700; }
 .closet-slot { border: 0; padding: 0; margin: 0 0 8px; } .closet-slot legend { font-size: 13px; color: var(--muted); }
+
+/* the store room */
+#shop { display: block; width: 100%; max-width: 672px; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; border: 2px solid var(--line-2); border-radius: 8px; background: #2f3a33; cursor: pointer; touch-action: manipulation; }
+#shop-say { position: static; transform: none; max-width: 672px; margin-top: 8px; opacity: 1; display: none; }
+#shop-say.on { display: block; }

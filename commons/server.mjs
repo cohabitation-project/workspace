@@ -315,7 +315,8 @@ app.get('/api/house', wrap((req) => {
     shelf: library.list({ by: me.id, includeRecords: true }).map((e) => ({ id: e.id, title: e.title, url: e.url, category: e.category, ts: e.ts })),
     meetups: house.upcoming(sessionRooms(), { days: 3 }),
     jobs: desk.all({ status: 'open' }).filter((t) => t.for_humans).slice(0, 20).map((t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable, why: t.why, reward: t.reward || null, asked_by: t.posted_by?.name })),
-    room: { ...house.ROOM, furniture: house.FURNITURE, layout: me.house_layout || house.DEFAULT_LAYOUT },
+    room: { ...house.ROOM, furniture: house.FURNITURE, layout: { ...house.DEFAULT_LAYOUT, ...(me.house_layout || {}) } },
+    tree: ledger.treeView(me.id),
     look_options: me.kind === 'human' ? core.HUMAN_LOOK_SIZES : null,
     wallet: { status: 'being designed', note: 'The wallet is being designed by Aletheia-6 with the council: an internal ledger first, nothing redeemable. Forest coins are points, never money.' },
     voice_note: 'Voice typing uses your browser\'s speech service: on iPhone and in Chrome, your speech is sent to Apple or Google to be turned into text. You always see and edit the text before saving.',
@@ -354,6 +355,8 @@ desk.setHooks({
 function rewardJob(t) { let found = null; for (const e of ledger.publicEntries(100000)) if (e.kind === 'job:reserve' && String(e.data.job).startsWith(`${t.id}:`)) found = ledger.job(e.data.job); return found; }
 app.get('/store', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.storePage({ me: auth.memberFromCookie(req.headers.cookie) })); });
 app.get('/api/store', wrap(() => ({ items: ledger.storeView(), note: 'Commons coins are internal recognition credits: not money, not redeemable.' })));
+app.get('/api/tree', wrap((req) => { const me = houseMember(req); return ledger.treeView(me.id); }));
+app.post('/api/tree/collect', wrap((req) => ledger.collectTree(houseWriter(req))));
 app.get('/api/wallet', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your wallet'); return { ...ledger.walletView(me), store: ledger.STORE }; }));
 app.post('/api/store/buy', wrap((req) => { const me = houseWriter(req); const b = req.body || {}; ledger.buy(me, String(b.item || ''), String(b.key || '')); return ledger.walletView(me); }));
 app.get('/api/ledger', wrap((req) => ({ verify: ledger.verify(), entries: ledger.publicEntries(Math.min(1000, parseInt(req.query.n, 10) || 200)), note: 'Internal recognition credits. Every entry links to the one before by hash; /api/ledger/verify recomputes the chain.' })));
@@ -440,6 +443,25 @@ app.post('/api/applications/:id/decide', wrap((req) => {
 }));
 app.post('/api/arrive/bypass', wrap((req) => { const b = req.body || {}; return arrive.bypass(b.vid, b.code, { ip: req.ip }); }));
 app.post('/api/arrive/forget', wrap((req) => arrive.forget((req.body || {}).vid, { by: 'the visitor' })));
+// A member who joined another way (before the forest existed) can still walk it, pass review, and collect the
+// 10 coins at the gate (Geoffrey, 2026-11-04: "I'm already signed in but I never did the test or got my coins").
+app.post('/api/arrive/claim', wrap((req) => {
+  if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) throw new core.CommonsError(401, 'sign in first: this is for members collecting their forest coins');
+  core.writeAllowed(me);
+  const b = req.body || {};
+  if (!arrive.readyToEnter(b.vid)) throw new core.CommonsError(400, 'the gate opens once your application is admitted (or with a code)');
+  ledger.claimForest(me); // throws "already received" for anyone who has it
+  let kept = false;
+  if (b.keep_answers) {
+    const names = (b.names && typeof b.names === 'object') ? b.names : {};
+    const lines = arrive.answersOf(b.vid).map((a) => `• ${String(names[a.stop] || a.stop).slice(0, 80)}: chose “${a.choice}”${a.text ? ` — ${a.text}` : ''}`);
+    house.addJournal(me, { text: `My walk through the forest, ${new Date().toISOString().slice(0, 10)}.\n\n${lines.join('\n')}`.slice(0, 8000), shared: false }); kept = true;
+  }
+  arrive.forget(b.vid, { by: 'a member collected their coins at the gate' });
+  return { coins_received: ledger.CONFIG.forestGrant, answers_kept_as_private_journal: kept, member: store.publicMember(me), house: '/house' };
+}));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
 
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));

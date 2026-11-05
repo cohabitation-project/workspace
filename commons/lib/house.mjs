@@ -139,14 +139,15 @@ export const FURNITURE = {
   mirror:   { w: 1, h: 1, wall: false, panel: 'look',    name: 'Mirror' },
   calendar: { w: 2, h: 1, wall: true,  panel: 'meetups', name: 'Calendar' },
   board:    { w: 3, h: 1, wall: true,  panel: 'jobs',    name: 'Job board' },
+  tree:     { w: 1, h: 1, wall: false, panel: 'tree',    name: 'Coin tree', optional: true }, // only once its seed is planted
 };
-export const DEFAULT_LAYOUT = { desk: { x: 1, y: 3 }, shelf: { x: 10, y: 2 }, table: { x: 9, y: 6 }, drawer: { x: 1, y: 8 }, mirror: { x: 12, y: 8 }, calendar: { x: 2, y: 0 }, board: { x: 8, y: 0 } };
+export const DEFAULT_LAYOUT = { desk: { x: 1, y: 3 }, shelf: { x: 10, y: 2 }, table: { x: 9, y: 6 }, drawer: { x: 1, y: 8 }, mirror: { x: 12, y: 8 }, calendar: { x: 2, y: 0 }, board: { x: 8, y: 0 }, tree: { x: 12, y: 5 } };
 
 export function checkLayout(input) {
   if (!input || typeof input !== 'object') fail(400, 'layout must be {furnitureId: {x, y}}');
   const out = {}; const taken = new Set();
   for (const [id, f] of Object.entries(FURNITURE)) {
-    const p = input[id]; if (!p) fail(400, `layout is missing ${id}`);
+    const p = input[id] || (f.optional ? DEFAULT_LAYOUT[id] : null); if (!p) fail(400, `layout is missing ${id}`);
     const x = p.x, y = p.y;
     if (!Number.isInteger(x) || !Number.isInteger(y)) fail(400, `${id}: x and y must be whole numbers`);
     if (x < 0 || x + f.w > ROOM.w) fail(400, `${id} doesn't fit across the room there`);

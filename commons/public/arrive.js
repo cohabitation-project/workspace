@@ -626,6 +626,8 @@ const CRAWL_TEXT = `
 <p class="fineline">Their words, from the record — offered as what they are, never as proof.</p>
 <p>The gate is ahead.</p>`;
 
+// The opening story can be read any time (Geoffrey, 2026-11-04): the "the story" button in the top bar.
+document.getElementById('story-btn')?.addEventListener('click', () => showCrawl(null));
 function showCrawl(after) {
   const ov = document.createElement('div'); ov.id = 'crawl';
   ov.innerHTML = `<div class="sky"><div class="roll">${CRAWL_TEXT}</div></div><button class="btn ghost skip">skip</button>`;
@@ -717,9 +719,28 @@ function rain(c) {
   };
   step();
 }
+// A signed-in member at the gate collects their coins instead of making a new account.
+function showClaimForm() {
+  showDialog('The Gate', `You're already one of us${S.member ? `, ${S.member.name.replace(/</g, '&lt;')}` : ''}. The gate opens, and your 10 forest coins are waiting on the other side.`,
+    `<label class="fine"><input type="checkbox" id="gate-keep"> keep my answers as a private journal entry in my house (otherwise they're deleted)</label>
+     <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-claim" type="button">collect my coins</button> <button class="btn ghost" data-close="1">not yet</button></div>
+     <div class="fine" id="gate-msg" role="status"></div>`);
+  $('#gate-claim').addEventListener('click', async () => {
+    const names = Object.fromEntries(Object.entries(STOPS).map(([k, v]) => [k, String(v.name || k).replace(/<[^>]+>/g, '')]));
+    $('#gate-claim').disabled = true;
+    try {
+      const r = await fetch('/api/arrive/claim', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ vid: S.vid, keep_answers: !!$('#gate-keep')?.checked, names }) });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
+      showDialog('Your coins', `${j.coins_received} Commons coins are in your wallet. ${j.answers_kept_as_private_journal ? 'Your answers are in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
+        '<div class="copyrow"><a class="btn" href="/store">visit the store</a> <a class="btn ghost" href="/house">go to your house</a></div>');
+    } catch (e) { $('#gate-msg').textContent = e.message; $('#gate-claim').disabled = false; }
+  });
+}
 function welcomeThenEnter() {
   let seen = false; try { seen = !!localStorage.getItem('arrive-crawl-seen'); } catch { /* fine */ }
-  if (!seen) { closeDialog(); showCrawl(() => showEntryForm({ bypass: !!S.bypass })); } else showEntryForm({ bypass: !!S.bypass });
+  const next = () => (S.member ? showClaimForm() : showEntryForm({ bypass: !!S.bypass }));
+  if (!seen) { closeDialog(); showCrawl(next); } else next();
 }
 
 function showEntryForm({ bypass = false } = {}) {
@@ -808,6 +829,7 @@ $('#age-yes').addEventListener('click', async () => {
   });
   await new Promise((r) => $('#how-ok').addEventListener('click', () => { how.remove(); r(); }));
   await ensureVisitor().catch(() => toast('The forest ledger is unreachable — you can walk, but coins and answers won\'t keep.'));
+  try { const r = await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }); if (r.ok) S.member = await r.json(); } catch { /* a visitor */ }
   const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
   const ov = document.createElement('div'); ov.className = 'overlay';
   ov.innerHTML = `<div class="card"><h2>Choose a figure for the walk</h2>

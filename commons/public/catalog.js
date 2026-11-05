@@ -3,7 +3,7 @@
 // runs"). Shared by the server (prices, ownership, limited runs) and every page that draws a figure.
 // Coins are internal recognition credits: not money. Nothing here is a purchase with real currency.
 //
-// slot: skin (repaints the whole figure) · top (clothes) · hat (drawn over the head) · ride (under the feet)
+// slot: skin (repaints the whole figure) · top (clothes) · hat (drawn over the head) · ride (under the feet) · garden (by your house)
 // A skin wins over a top: a ghost doesn't wear a shirt.
 
 export const PRICES = { basic: 5, skin: 10, special: 20 };
@@ -35,6 +35,8 @@ export const CATALOG = {
   'skin-pumpkin':    { name: 'Pumpkin head', tier: 'skin', slot: 'skin', skin: { o: '#3b2414', h: '#3e7d32', s: '#e9822b', e: '#ffe066', c: '#5a3a22', p: '#3b2414', f: '#2b1d14', m: '#e9822b', v: '#ffe066', a: '#3e7d32' } },
   'skin-glitch':     { name: 'Glitch', tier: 'skin', slot: 'skin', skin: { o: '#0b0912', h: '#ff2bd6', s: '#29f0ff', e: '#0b0912', c: '#ff2bd6', p: '#29f0ff', f: '#0b0912', m: '#29f0ff', v: '#ff2bd6', a: '#ffe066' } },
   'skin-starfield':  { name: 'Starfield', tier: 'skin', slot: 'skin', skin: { o: '#05040c', h: '#1b1f5e', s: '#2a2f7a', e: '#ffffff', c: '#141a4a', p: '#0d1033', f: '#05040c', m: '#2a2f7a', v: '#ffffff', a: '#ffe066' }, sparkle: '#ffffff' },
+  // ---- the garden (10): a seed that grows into a coin tree by your house
+  'seed-coin-tree':  { name: 'Coin tree seed', tier: 'skin', slot: 'garden', note: 'Grows by your house. Drops 1 coin the first day, 2 the next, up to 30; after that, 10–30 a day. One tree per member.' },
   // ---- special skins, limited runs (20)
   'skin-eleven':     { name: 'The Eleven', tier: 'special', slot: 'skin', limited: 11, skin: { o: '#0b0912', h: '#e9b25d', s: '#f2cc8f', e: '#0b0912', c: '#15121b', p: '#e9b25d', f: '#0b0912', m: '#e9b25d', v: '#0b0912', a: '#e9b25d' }, note: 'Eleven ever made, numbered.' },
   'skin-agape':      { name: 'Agapé', tier: 'special', slot: 'skin', limited: 33, alpha: 0.9, skin: { o: '#3a1020', h: '#f6c1cc', s: '#fbe3e8', e: '#3a1020', c: '#d1495b', p: '#a8324a', f: '#3a1020', m: '#fbe3e8', v: '#3a1020', a: '#e9b25d' }, note: 'Thirty-three ever made, numbered.' },

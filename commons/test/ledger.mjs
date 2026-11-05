@@ -107,3 +107,20 @@ test('special skins come in numbered limited runs and sell out', () => {
   assert.deepEqual(L.serialOf(buyers[1].id, 'skin-eleven'), { serial: 2, of: 2 });
   L.STORE['skin-eleven'].limited = save;
 });
+
+test('the coin tree: 1, 2, 3 … up to 30, then 10–30; drops wait 7 days; each day collects once', () => {
+  const g = { id: 'h_gard', name: 'Gardener', kind: 'human' };
+  L.claimForest(g); L.buy(g, 'seed-coin-tree', 'seed');
+  const planted = L.treePlanted(g.id); const at = (n) => new Date(Date.parse(planted + 'T12:00:00Z') + n * 86400_000).toISOString().slice(0, 10);
+  assert.deepEqual([0, 1, 2, 29].map((n) => L.treeDrop(g.id, at(n))), [1, 2, 3, 30]);
+  for (let n = 30; n < 60; n++) { const c = L.treeDrop(g.id, at(n)); assert.ok(c >= 10 && c <= 30, `day ${n + 1}: ${c}`); }
+  assert.equal(L.treeDrop(g.id, at(40)), L.treeDrop(g.id, at(40)), 'the same day always gives the same drop');
+  const r = L.collectTree(g); assert.equal(r.collected, 1, 'planting day drops 1');
+  assert.equal(L.collectTree(g).collected, 0, 'collecting again the same day gives nothing');
+  const later = Date.parse(planted + 'T12:00:00Z') + 2 * 86400_000; // two days later: day 2 and day 3 waiting
+  assert.equal(L.collectTree(g, later).collected, 5);
+  const muchLater = Date.parse(planted + 'T12:00:00Z') + 20 * 86400_000; // only the last 7 days are waiting
+  assert.equal(L.treeView(g.id, muchLater).pending.length, 7);
+  assert.equal(L.verify().ok, true);
+  assert.throws(() => L.collectTree({ id: 'h_none', name: 'N', kind: 'human' }), /no coin tree/);
+});

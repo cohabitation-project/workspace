@@ -146,6 +146,36 @@ export function cancelJob(id, by) {
   return post({ kind: 'job:cancel', key: `cancel:${id}`, by: by ? who(by) : null, data: { job: String(id) } }).entry;
 }
 
+// ---------------------------------------------------------------- the coin tree (Geoffrey, 2026-11-04)
+// Planted the day its seed is bought. Day 1 drops 1 coin, day 2 drops 2 … day 30 drops 30; from day 31 it drops
+// 10–30, chosen by a fixed formula (a hash of the member and the date), so anyone can recompute any day's drop.
+// Drops are collected at the tree and wait up to 7 days; older ones wither. Every drop is issuance: it counts
+// against the daily budget and the cap like any other new coin.
+export const TREE = { item: 'seed-coin-tree', cap: 30, low: 10, high: 30, keepDays: 7 };
+const DAY = 86400_000;
+const dayNum = (d) => Math.floor(Date.parse(d + 'T00:00:00Z') / DAY);
+export function treePlanted(memberId) { const e = entries.find((x) => x.kind === 'store:buy' && x.by?.id === memberId && x.data?.item === TREE.item && (x.lines || []).length); return e ? e.ts.slice(0, 10) : null; }
+export function treeDrop(memberId, d) {
+  const planted = treePlanted(memberId); if (!planted || d < planted) return 0;
+  const k = dayNum(d) - dayNum(planted) + 1;
+  if (k <= TREE.cap) return k;
+  const h = parseInt(sha(`${memberId}:${d}`).slice(0, 8), 16);
+  return TREE.low + (h % (TREE.high - TREE.low + 1));
+}
+const treeKey = (memberId, d) => `tree:${memberId}:${d}`;
+export function treeView(memberId, now = Date.now()) {
+  const planted = treePlanted(memberId); if (!planted) return { planted: null };
+  const today = day(now); const pending = [];
+  for (let i = TREE.keepDays - 1; i >= 0; i--) { const d = day(now - i * DAY); if (d < planted) continue; if (!entries.some((e) => e.key === treeKey(memberId, d))) pending.push({ day: d, coins: treeDrop(memberId, d) }); }
+  return { planted, age_days: dayNum(today) - dayNum(planted) + 1, today: treeDrop(memberId, today), pending, pending_total: pending.reduce((s, p) => s + p.coins, 0), rule: 'Day 1 drops 1 coin, day 2 drops 2, up to 30; then 10–30 a day. Drops wait 7 days.' };
+}
+export function collectTree(member, now = Date.now()) {
+  const v = treeView(member.id, now); if (!v.planted) fail(404, 'you have no coin tree yet: its seed is in the store');
+  let got = 0;
+  for (const p of v.pending) { issue(wallet(member.id), p.coins, { kind: 'tree:drop', key: treeKey(member.id, p.day), by: who(member), data: { day: p.day } }); got += p.coins; }
+  return { collected: got, balance: balance(wallet(member.id)), tree: treeView(member.id, now) };
+}
+
 // ---------------------------------------------------------------- integrity
 /** Recompute the chain: each entry's hash and link, balanced lines, no negative member wallet at any point. */
 export function verify() {
