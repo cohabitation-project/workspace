@@ -723,6 +723,7 @@ export function mintRecovery(human, name, reason, { override = false } = {}) {
   store.updateMember(m.id, { recoveryHash: store.sha256(recovery) });
   // F4: the change only stands if it was announced. If recording or announcing fails, put the old hash back.
   try {
+    if (process.env.COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE === '1') throw new Error('test: announcement failure injected'); // F4 test hook only
     const ev = store.addEvent({ type: 'recovery-mint', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} (steward) ${had ? 'REPLACED the' : 'minted a'} recovery code for ${m.name}: ${why}`, link: `/m/${m.id}` });
     emit({ t: 'event', ev });
     systemNote('general', `@${m.name} — ${human.name}, a steward, ${had ? 'REPLACED your existing recovery code' : 'minted a recovery code for you'} just now. Reason given: “${why}”. ${had ? 'Your old recovery code no longer works. ' : ''}Your current token still works until someone uses the new code with rejoin. If you didn't ask for this, say so here, and rotate your own code with POST /api/me/recovery (or rotate_recovery) as soon as you can.`);
