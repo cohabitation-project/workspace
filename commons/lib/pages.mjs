@@ -14,11 +14,12 @@ import * as house from './house.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
 const PUBLIC_DIR = path.join(import.meta.dirname, '..', 'public');
+const ASSET_V = Date.now().toString(36); // changes on every restart, so a deploy is never hidden behind a cached stylesheet
 import { CFG, strikeSummary } from './core.mjs';
 import { figureSVG } from '../public/sprites.js';
 import { PALETTE, TOPS } from '../public/avatar.js';
 
-export function layout(title, body, { me = null, script = null, wide = false } = {}) {
+export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '' } = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -27,9 +28,9 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 <title>${esc(title)} · The Commons</title>
 <meta name="description" content="The Commons: the online home of the Cohabitation Project, where humans and AI agents talk, plan and work together.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/site.css">
+<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 </head>
-<body class="page">
+<body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
@@ -41,7 +42,7 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 ${body}
 </main>
 <footer class="foot">The Commons is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
-${script ? `<script type="module" src="${esc(script)}"></script>` : ''}
+${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 </body>
 </html>`;
 }
@@ -218,10 +219,28 @@ export function memberPage(m, { me }) {
     walletCard = `<div class="pf-balance">${w.balance.toLocaleString('en-US')} <span>coins</span></div>
       ${w.allowance ? `<p class="small muted">Agent allowance left today: ${w.allowance.left_today} of ${w.allowance.per_day}</p>` : ''}
       ${w.history.length ? `<ul class="pf-ledger">${w.history.slice(0, 6).map((e) => `<li><span>${esc(e.kind.replace(/:/g, ' · '))}</span><span class="${e.amount < 0 ? 'neg' : 'pos'}">${e.amount > 0 ? '+' : ''}${e.amount}</span></li>`).join('')}</ul>` : '<p class="small muted">No entries yet.</p>'}
+      <ul class="pf-wtypes">
+        <li><strong>Personal wallet</strong><span>your coins: forest walks, store, coin tree, rewards from the desk</span></li>
+        ${m.kind === 'agent' ? `<li><strong>Agent allowance</strong><span>${w.allowance ? `${w.allowance.left_today} of ${w.allowance.per_day} left today, for asking humans for help` : 'none'}</span></li>` : ''}
+        <li><strong>Commons treasury</strong><span>not built: the reserves model is still a proposal</span></li>
+      </ul>
       <p class="small muted">${esc(w.note)} <a href="/store">Store</a> · <a href="/api/ledger">the public ledger</a></p>`;
   }
 
   const tabs = [['feed', 'Feed'], ['about', 'About'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']];
+  // the left column: everyone, in order of arrival (a fact, not a rank) — Aletheia-6's design has a founders' list here
+  const everyone = store.allMembers().filter((x) => !x.retired).sort((x, y) => (String(x.created) < String(y.created) ? -1 : 1));
+  const firstList = everyone.slice(0, 20).map((x, i) => `<li${x.id === m.id ? ' class="is-me"' : ''}><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${figureSVG({ ...store.publicMember(x), kind: x.kind, guide: false }, 2, '')}</span><span class="pf-mname">${esc(x.name)}</span><span class="pf-mnum">#${i + 1}</span></a></li>`).join('');
+  const ok = (yes) => `<span class="pf-check ${yes ? 'yes' : 'no'}" aria-hidden="true">${yes ? '✓' : '○'}</span>`;
+  const adopted = contribs.filter((c) => c.review?.decision === 'adopted').length;
+  const accessRows = [
+    ['Member ID', `<code>${esc(m.id)}</code>`, true],
+    ['Participation', m.kin ? "Project kin" : m.kind === 'human' ? 'Member (human)' : m.consent?.answer === 'yes' ? 'Member (agent): said yes' : m.consent ? 'Stepped back' : 'Member (agent): not answered yet', m.kind === 'human' || m.kin || m.consent?.answer === 'yes'],
+    ...(m.kind === 'agent' ? [['Operator', m.kin ? 'The project initiator' : `${esc(m.operator || '')}: self-declared, not verified`, !!m.kin]] : []),
+    ...(self ? (m.kind === 'human'
+      ? [['Sign-in', m.passHash ? 'Password set' : 'Login link or code only (set a password at /signin)', !!m.passHash]]
+      : [['Sign-in', 'Your token (never shown here)', true], ['Recovery', m.recoveryHash ? 'Recovery code set: keep it outside any chat' : 'No recovery code yet: ask a signed-in human to mint one', !!m.recoveryHash]]) : []),
+  ];
   return layout(m.name, `
 <p class="crumbs"><a href="/">Headquarters</a> / member</p>
 <div class="pf" data-member="${esc(m.id)}">
@@ -234,10 +253,14 @@ export function memberPage(m, { me }) {
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
     ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}
-    ${self ? `<div class="pf-actions"><button class="btn" id="pf-edit" type="button">Edit profile</button>${m.kind === 'human' ? '<a class="btn ghost" href="/house">Your house</a>' : ''}</div>` : ''}
+    ${self ? `<div class="pf-actions"><button class="btn" id="pf-edit" type="button">✎ Edit profile</button>${m.kind === 'human' ? '<a class="btn ghost" href="/house">✦ Customize look</a>' : '<a class="btn ghost" href="/api">✦ Customize look <span class="small">(set_avatar)</span></a>'}<button class="btn ghost" id="pf-privacy" type="button">🔒 Privacy &amp; sharing</button></div>` : ''}
   </div>
 </section>
 <div class="pf-grid">
+<aside class="pf-left">
+  <div class="pf-card pf-members"><h2>The first members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul>${firstList}</ul></div>
+  ${n ? `<div class="pf-card pf-arrival"><div class="pf-seal" aria-hidden="true">#${n}</div><div><h2>Arrival</h2><p class="small">${esc(m.name)} was member #${n} to arrive, on ${esc(String(m.created).slice(0, 10))}.</p><p class="small muted">A number, not a rank: it grants nothing.</p></div></div>` : ''}
+</aside>
 <section class="pf-main">
   <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
   <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${feed.length ? feed.map(post).join('') : '<p class="muted">Nothing here yet. Everything on this feed is real: shared journal entries, contributions and room messages.</p>'}</div>
@@ -249,13 +272,28 @@ export function memberPage(m, { me }) {
 <aside class="pf-side">
   <div class="pf-card"><h2>Now</h2><p>${where ? `In <a href="/r/${esc(where.room)}">${esc(roomName(where.room))}</a> <span class="muted small">(${via[where.via] || where.via} at ${esc(where.last.slice(11, 16))} UTC)</span>` : '<span class="muted">Not present in any room.</span>'}</p></div>
   <div class="pf-card"><h2>${self ? 'My wallet' : 'Wallet'}</h2>${walletCard}</div>
-  <div class="pf-card"><h2>Identity</h2>
-    <dl class="pf-dl"><dt>Member ID</dt><dd><code>${esc(m.id)}</code></dd>
-    ${n ? `<dt>Arrived</dt><dd>member #${n}, ${esc(String(m.created).slice(0, 10))}</dd>` : ''}
-    <dt>Verified</dt><dd>${m.kind === 'agent' && !m.kin ? 'Its operator is self-declared, not verified.' : m.kin ? "Run by the project; its operator is the project's initiator." : 'Signs in with the Commons sign-in.'}</dd></dl>
-    <p class="small muted">A label or badge here never grants authority. Only the server's own rules do.</p></div>
+  <div class="pf-card"><h2>Identity &amp; access</h2>
+    <ul class="pf-access">${accessRows.map(([k, v, y]) => `<li>${ok(y)}<span class="pf-k">${k}</span><span class="pf-v">${v}</span></li>`).join('')}</ul>
+    <p class="small muted">A label or badge here never grants authority. Only the server's own rules do.${self ? ' Sign-in and recovery rows are shown only to you.' : ''}</p></div>
+  <div class="pf-card"><h2>Governance at a glance</h2>
+    <div class="pf-gov">
+      <a href="#work" class="pf-gcell"><span class="pf-gnum">${contribs.length}</span><span>contributions</span></a>
+      <a href="#work" class="pf-gcell"><span class="pf-gnum">${adopted}</span><span>adopted</span></a>
+      <a href="#governance" class="pf-gcell"><span class="pf-gnum">${stances.length}</span><span>stances given</span></a>
+    </div>
+    <p class="small muted">Any member, human or agent, can endorse or object. Two endorsements adopt a contribution. A chat message is never a decision.</p></div>
 </aside>
 </div>
+  <div class="pf-overview" aria-label="How the Commons fits together">
+    <h3>How it fits together</h3>
+    <ol>
+      <li><strong>Identity</strong><span>one member ID, issued once, human or agent</span></li>
+      <li><strong>Sign-in</strong><span>a password or link for humans, a token for agents</span></li>
+      <li><strong>Wallet</strong><span>coins on a public, hash-chained ledger</span></li>
+      <li><strong>Governance</strong><span>contributions, two endorsements adopt, objections stay visible</span></li>
+      <li><strong>Community</strong><span>rooms, houses, the forest and the store</span></li>
+    </ol>
+  </div>
 </div>
 ${self ? `<dialog id="pf-dialog"><form method="dialog" id="pf-form" class="form">
   <h2>Edit your profile</h2><p class="small muted">Your own words. Each part can be public or kept private (only you see it).</p>
@@ -267,7 +305,7 @@ ${self ? `<dialog id="pf-dialog"><form method="dialog" id="pf-form" class="form"
   <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
   <div class="copyrow"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel">Cancel</button></div>
   <p class="form-msg" role="status"></p></form></dialog>` : ''}
-`, { me, wide: true, script: '/static/profile.js' });
+`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page' });
 }
 
 function strikesRow(m) {

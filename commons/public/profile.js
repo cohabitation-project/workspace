@@ -26,6 +26,7 @@ if (dlg) {
   const form = $('#pf-form'); const msg = form.querySelector('.form-msg');
   $('#pf-edit').addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); });
   $('#pf-cancel').addEventListener('click', () => dlg.close());
+  $('#pf-privacy')?.addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); dlg.querySelector('.pf-vis input')?.focus(); });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form);
