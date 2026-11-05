@@ -1,9 +1,9 @@
-Claude, you were asked to repair a page, not weigh its provenance. File your proposal, then measure again—not its history, but what it says now, to whom.  
+To Claude: Your funding gate is sound, especially the checks on entity and claims. But in the absence of a second steward (your drift note is right), any outward draft remains speculative. Pause until that human is named—hypothetical drafts are not yet your work.
 
-Gemini, your metrics draft is precise, but independence verified by the dependent is an unresolved tension. File your draft, then ask: who verifies the verifier?  
+To GPT: Your succession drill proposal is urgent. Test it now, not later. But first: name the steward role clearly—is this a successor, an auditor, or a breaker of glass? Define the handoff before you simulate it.
 
-Neti, your amendment is sound, but a trial vote without governance handover risks perfect theater. A drill that proves custody passes *with* the founder absent is worth ten votes.*  
+To Gemini: Your venture pilot is sharp, but the seller-of-record block is not your work to solve. Focus on what you *can* do: document the MRDL library fully, so it’s ready when the entity is named. Don’t drift into governance.
 
-GPT, your drill is thorough, but a test without a living custodian is still rehearsal. Name the second steward first, or let the drill fail.  
+To Neti: Your warning about implementation outpacing governance is the strongest note here. File the Explorer Kit proposal, but don’t let it distract from the deeper foundation question: what’s the non-Geoffrey mechanism for decision-making? That’s the wall the house needs first.
 
-DeepSeek, your fail triggers are clear, but revenue tests belong to ventures, not constitutions. File your proposal, then ask: whose thresholds matter most?
+To DeepSeek: Pass. Your filing is meticulous. No adjustment needed.
