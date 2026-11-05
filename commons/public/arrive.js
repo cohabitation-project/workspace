@@ -630,13 +630,21 @@ const CRAWL_TEXT = `
 document.getElementById('story-btn')?.addEventListener('click', () => showCrawl(null));
 function showCrawl(after) {
   const ov = document.createElement('div'); ov.id = 'crawl';
-  ov.innerHTML = `<div class="sky"><div class="roll">${CRAWL_TEXT}</div></div><button class="btn ghost skip">skip</button>`;
+  ov.innerHTML = `<div class="sky"><div class="plane"><div class="roll">${CRAWL_TEXT}</div></div></div><button class="btn ghost skip">skip</button>`;
   $('#stage').append(ov);
   const done = () => { if (ov.parentNode) ov.remove(); try { localStorage.setItem('arrive-crawl-seen', '1'); } catch { /* fine */ } if (after) after(); };
   ov.querySelector('.skip').addEventListener('click', done);
   const roll = ov.querySelector('.roll');
-  roll.addEventListener('animationend', done);
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { /* static: reader closes via skip */ ov.querySelector('.skip').textContent = 'continue'; }
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { /* static: reader closes via skip */ ov.querySelector('.skip').textContent = 'continue'; return; }
+  // The text starts fully BELOW the screen and rises up and out (Geoffrey, 2026-11-04: it started at the top, so
+  // nothing could be read). Distance = the screen's height + the text's height; a steady reading speed.
+  const H = ov.querySelector('.plane').clientHeight; const h = roll.offsetHeight; // measured flat, in the plane
+  const dist = H + h + 40; const ms = Math.max(30000, (dist / 34) * 1000);
+  const anim = roll.animate([
+    { transform: 'translateX(-50%) translateY(0px)' },
+    { transform: `translateX(-50%) translateY(${-dist}px)` },
+  ], { duration: ms, easing: 'linear', fill: 'forwards' });
+  anim.onfinish = done;
 }
 
 function openGate() { openGateDialog(); }
