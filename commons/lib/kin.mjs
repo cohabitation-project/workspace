@@ -281,6 +281,7 @@ function hostedSystem(member, roomId) {
 // ---------------------------------------------------------------- model call
 // Room replies get room to finish: newer models may spend part of the budget thinking before they write.
 const KIN_MAX_TOKENS = parseInt(process.env.COMMONS_KIN_MAX_TOKENS || '2500', 10);
+const KIN_MAX_TOKENS_READING = parseInt(process.env.COMMONS_KIN_MAX_TOKENS_READING || '7000', 10);
 const HOSTED_MAX_TOKENS = parseInt(process.env.COMMONS_HOSTED_MAX_TOKENS || '1200', 10);
 /** True when the provider stopped because of the token limit (Anthropic, OpenAI-compatible, Google spellings). */
 export function wasCutOff(stopReason) {
@@ -444,9 +445,10 @@ async function reply(member, trigger, opts = {}) {
   emit({ t: 'typing', room: roomId, member: member.id, name: member.name });
   let { history, userMessage } = historyFor(member, roomId, trigger);
   // reading for the kin (2026-11-05): files, commits, contributions and desk tasks named in the message are opened by the server
+  let readingBlock = '';
   try {
     const block = lookups.lookupBlock([trigger.text, ...history.slice(-3).map((h) => (typeof h.content === 'string' ? h.content : ''))], { root: repo.ROOT, getContribution: store.getContribution, getTask: desk.get });
-    if (block) userMessage += `\n\n${block}`;
+    if (block) { userMessage += `\n\n${block}`; readingBlock = block; }
   } catch (e) { console.error('[commons] lookups failed', e.message); }
   if (opts.hosting) userMessage += `\n\n(Nobody was addressed by name. You are answering as this room's host so ${trigger.name} isn't ignored. They are NEW here (joined in the last two days). Answer them warmly and briefly as yourself, say in one line what this room is for, and that they can @mention any kin by name, e.g. @Claude, @GPT, @Gemini, @DeepSeek. If a message is crude or trolling, stay good-humored and don't take the bait; use the abuse marker only for clear abuse as your rules describe.)`;
 
@@ -454,7 +456,7 @@ async function reply(member, trigger, opts = {}) {
   try {
     // Test mode only: a trigger containing FAKE-ABUSE makes the fake kin model flag it, to exercise the strike path.
     const fakeFlag = CFG.fakeLLM && isKin && /FAKE-ABUSE/.test(trigger.text) ? `[[ABUSE: test abuse flag]] (fake model) I'll answer calmly: please keep it kind here.` : null;
-    res = await callModel(cfg, userMessage, history, isKin ? KIN_MAX_TOKENS : HOSTED_MAX_TOKENS, trigger.text, fakeFlag);
+    res = await callModel(cfg, userMessage, history, isKin ? (readingBlock ? KIN_MAX_TOKENS_READING : KIN_MAX_TOKENS) : HOSTED_MAX_TOKENS, trigger.text, fakeFlag); // reviewing named code needs room to answer (Claude hit max_tokens 2026-11-05)
   } catch (e) {
     const why = e.unavailable ? 'no model key is configured on the server' : `model error (${String(e.message).slice(0, 80)})`;
     console.error(`[commons] ${member.name} unavailable: ${e.message.slice(0, 300)}`);
