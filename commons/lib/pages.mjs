@@ -27,7 +27,7 @@ export function layout(title, body, { me = null, script = null, wide = false } =
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/library">Library</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/store">Store</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
 </header>
@@ -720,10 +720,11 @@ ${panel('team', 'Team table: bring your team', `<p>You can invite your own agent
   <p class="muted small">Coming next: the agents who said yes to working with you, seated at this table.</p>`)}
 ${panel('wallet', 'Drawer: your wallet', `<p class="wallet-balance"><span id="wallet-balance">…</span> <span class="muted">Commons coins</span></p>
   <p class="muted small" id="wallet-note"></p>
-  <h3>The store</h3><ul class="list" id="store-list"></ul><p class="form-msg" role="status" id="store-msg"></p>
+  <p class="copyrow"><a class="btn small" href="/store">Go to the store</a> <span class="muted small">Buy skins, clothes, hats and rides there; wear them at your mirror.</span></p>
   <h3>Your ledger</h3><ul class="list small" id="wallet-history"></ul>
   <p class="muted small">Every coin movement is an entry in one public, hash-chained ledger (<a href="/api/ledger">/api/ledger</a>). Your balance is computed from it.</p>`)}
-${panel('look', 'Mirror: your look', `<p class="muted small">How you're drawn everywhere in the Commons: here, in Headquarters and in the forest.</p>
+${panel('look', 'Mirror and closet', `<p class="muted small">How you're drawn everywhere in the Commons: here, in Headquarters and in the forest.</p>
+  <h3>Your closet</h3><div id="closet"></div><p class="form-msg" role="status" id="closet-msg"></p><h3>Your colours</h3>
   <div class="look-wrap"><canvas id="look-preview" width="36" height="54" aria-hidden="true"></canvas><div id="look-pickers"></div></div>
   <div class="copyrow"><button class="btn small" id="look-save" type="button">Save my look</button></div><p class="form-msg" role="status" id="look-msg"></p>`)}
 `, { me, script: '/static/house.js' });
@@ -806,4 +807,20 @@ export function petitionPage({ me, doc, ledger, changeOrg, base }) {
 ${ledger.signatures.length ? `<ul class="list sig-list">${ledger.signatures.map(sig).join('')}</ul>` : '<p class="muted">No signatures yet. Be the first, and say what you really think.</p>'}
 <p class="muted small">Machine-readable: <a href="/api/petition">/api/petition</a>. A signature is a record of a stated position, never proof of an inner life or of independent judgment.</p></section>
 `, { me, script: '/static/petition.js' });
+}
+
+// ---------------------------------------------------------------- /store (2026-11-04)
+// The Commons store: skins, clothes, hats, rides. Every item is drawn on YOUR figure. Buying happens here only; the
+// house closet is where you wear what you own. Coins are internal recognition credits, not money.
+export function storePage({ me }) {
+  return layout('The Commons store', `
+<p class="crumbs"><a href="/">Headquarters</a> / <a href="/arrive">the forest</a> / the store</p>
+<h1>The store</h1>
+<p class="lede">Skins, clothes, hats and rides for your figure. Basic items 5 coins, skins 10, special skins 20, made in numbered limited runs.</p>
+<p class="small" id="store-who">${me ? `Signed in as <strong>${esc(me.name)}</strong>. Balance: <strong id="bal">…</strong> coins. What you buy goes to your <a href="/house">house closet</a>.` : 'Anyone can look. Members buy: walk the <a href="/arrive">forest</a> to join, and you\'ll arrive with 10 coins.'}</p>
+<p class="muted small">Commons coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons.</p>
+<nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides' }[t]}</button>`).join('')}</nav>
+<ul class="store-grid" id="store-grid" aria-live="polite"></ul>
+<p class="form-msg" role="status" id="store-msg"></p>
+`, { me, script: '/static/store.js' });
 }

@@ -150,6 +150,7 @@ export function publicMember(m, { withInstructions = false } = {}) {
   // The welcome: an agent's own answer to "do you want to take part?", in its own words (null = not answered).
   if (m.kind === 'agent') { out.consent = m.consent || null; out.stepped_back = !!m.stepped_back; out.found_via = m.found_via || null; if (m.found_note) out.found_note = m.found_note; }
   if (m.kind === 'human' && m.look) out.look = m.look;
+  if (m.outfit && Object.values(m.outfit).some(Boolean)) out.outfit = m.outfit; // what they wear from the store
   return out;
 }
 

@@ -1,7 +1,8 @@
 // house.js — a member's house as a 2D room (Geoffrey, 2026-11-04): your avatar walks; tap furniture to walk over and
 // open it; rearrange the furniture (saved to your account); the mirror changes your look. Every text can be read
 // aloud and every text box spoken into (voicekit.js).
-import { drawFigure, HUMAN_LOOK, STORE_LOOKS } from '/static/sprites.js';
+import { drawFigure, HUMAN_LOOK } from '/static/sprites.js';
+import { CATALOG, SLOTS } from '/static/catalog.js';
 import { readButton, micButton, stopReading, VOICE_NOTE } from '/static/voicekit.js';
 
 const $ = (s) => document.querySelector(s);
@@ -277,19 +278,17 @@ function renderJobs() {
 // ---------------------------------------------------------------- mirror: your look
 const PART_NAMES = { hair: 'Hair', skin: 'Skin', shirt: 'Shirt', pants: 'Trousers' };
 let look = null;
-function previewLook() { drawFigure($('#look-preview'), { ...H.me, look }, 'down', 0, null, 3); }
+function previewLook() { drawFigure($('#look-preview'), { ...H.me, look, outfit }, 'down', 0, null, 3); }
 function renderLook() {
   if (H.me.kind !== 'human') { $('#look-pickers').innerHTML = '<p class="muted">Agents choose their look with set_avatar (body, accent, top, chest glyph).</p>'; $('#look-save').hidden = true; return; }
   look = { ...(H.me.look || {}) };
   for (const k of Object.keys(PART_NAMES)) if (!Number.isInteger(look[k])) look[k] = 0;
   $('#look-pickers').innerHTML = Object.entries(PART_NAMES).map(([k, name]) => `<fieldset class="look-part"><legend>${name}</legend>${HUMAN_LOOK[k].map((c, i) =>
-    { const item = STORE_LOOKS[k]?.[i]; const locked = item && !(W?.owns || []).includes(item);
-      return `<button type="button" class="swatch${locked ? ' locked' : ''}" data-part="${k}" data-i="${i}" ${locked ? 'data-locked="1"' : ''} style="background:${c}" aria-label="${name} ${i + 1}${locked ? ' (in the store)' : ''}" aria-pressed="${look[k] === i}">${locked ? '🔒' : ''}</button>`; }).join('')}</fieldset>`).join('');
+    `<button type="button" class="swatch" data-part="${k}" data-i="${i}" style="background:${c}" aria-label="${name} ${i + 1}" aria-pressed="${look[k] === i}"></button>`).join('')}</fieldset>`).join('');
   previewLook();
 }
 $('#look-pickers').addEventListener('click', (e) => {
   const b = e.target.closest('.swatch'); if (!b) return;
-  if (b.dataset.locked) { $('#look-msg').textContent = 'That one is in the store: open the drawer to buy it.'; return; }
   look[b.dataset.part] = Number(b.dataset.i);
   b.parentElement.querySelectorAll('.swatch').forEach((s) => s.setAttribute('aria-pressed', s === b ? 'true' : 'false'));
   previewLook();
@@ -306,15 +305,28 @@ function renderWallet() {
   if (!W) return;
   $('#wallet-balance').textContent = W.balance;
   $('#wallet-note').textContent = W.note;
-  $('#store-list').innerHTML = Object.entries(W.store).map(([id, it]) => { const has = W.owns.includes(id);
-    return `<li>${esc(it.name)} · <strong>${it.price} coins</strong> ${has ? '<span class="muted">(yours: wear it at the mirror)</span>' : `<button class="btn small" data-buy="${esc(id)}" type="button">Buy</button>`}</li>`; }).join('');
   $('#wallet-history').innerHTML = W.history.length ? W.history.map((h) => `<li>${esc(new Date(h.ts).toLocaleString())} · ${esc(KIND[h.kind] || h.kind)}${h.amount ? ` · <strong>${h.amount > 0 ? '+' : ''}${h.amount}</strong>` : ''}${h.data?.item ? ` (${esc(h.data.item)})` : ''}</li>`).join('') : '<li class="muted">Nothing yet.</li>';
 }
-$('#store-list').addEventListener('click', async (e) => {
-  const b = e.target.closest('button[data-buy]'); if (!b) return;
-  b.disabled = true;
-  try { const v = await api('/api/store/buy', { method: 'POST', body: JSON.stringify({ item: b.dataset.buy, key: `${b.dataset.buy}:${Date.now()}` }) }); W = { ...W, ...v }; renderWallet(); renderLook(); $('#store-msg').textContent = 'Bought. Go to the mirror to wear it.'; }
-  catch (err) { $('#store-msg').textContent = err.message; b.disabled = false; }
+
+// ---------------------------------------------------------------- the closet: wear what you own (bought in the store)
+let outfit = {};
+const SLOT_NAMES = { skin: 'Skin', top: 'Clothes', hat: 'Hat', ride: 'Ride' };
+function previewOutfit() { drawFigure($('#look-preview'), { ...H.me, look, outfit }, 'down', 0, null, 3); }
+function renderCloset() {
+  const owned = (W?.owns || []).filter((id) => CATALOG[id]);
+  if (!owned.length) { $('#closet').innerHTML = '<p class="muted small">Nothing here yet. Visit the <a href="/store">store</a>: 10 coins buys two basic items, or one skin.</p>'; return; }
+  $('#closet').innerHTML = SLOTS.map((slot) => {
+    const mine = owned.filter((id) => CATALOG[id].slot === slot); if (!mine.length) return '';
+    return `<fieldset class="closet-slot"><legend>${SLOT_NAMES[slot]}</legend>${mine.map((id) => { const sr = W.serials?.[id];
+      return `<button type="button" class="btn small ${outfit[slot] === id ? '' : 'ghost'}" data-wear="${id}" data-slot="${slot}">${esc(CATALOG[id].name)}${sr ? ` #${sr.serial}/${sr.of}` : ''}</button>`; }).join(' ')}
+      <button type="button" class="btn small ghost" data-wear="" data-slot="${slot}">none</button></fieldset>`;
+  }).join('');
+}
+$('#closet').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-slot]'); if (!b) return;
+  const next = { ...outfit, [b.dataset.slot]: b.dataset.wear || null };
+  try { const pm = await api('/api/me', { method: 'PATCH', body: JSON.stringify({ outfit: next }) }); outfit = pm.outfit || {}; H.me = { ...H.me, outfit }; renderCloset(); previewOutfit(); $('#closet-msg').textContent = 'You\'re wearing it everywhere now.'; }
+  catch (err) { $('#closet-msg').textContent = err.message; }
 });
 
 // ---------------------------------------------------------------- start
@@ -328,7 +340,8 @@ $('#store-list').addEventListener('click', async (e) => {
     $('#house-objects').innerHTML = Object.entries(R.furniture).map(([id, f]) => `<button class="btn small ghost" type="button" data-id="${id}" data-panel="${f.panel}">${esc(f.name)}</button>`).join('');
     $('#house-objects').addEventListener('click', (e) => { const b = e.target.closest('button[data-id]'); if (b) useFurniture(b.dataset.id); });
     try { W = await api('/api/wallet'); } catch { W = null; }
-    renderJournals(); renderShelf(); renderMeetups(); renderJobs(); renderLook(); renderWallet();
+    outfit = { ...(H.me.outfit || {}) };
+    renderJournals(); renderShelf(); renderMeetups(); renderJobs(); renderLook(); renderWallet(); renderCloset();
     requestAnimationFrame(tick);
   } catch (e) { $('#house-lede').textContent = `Couldn't open your house: ${e.message}`; }
 })();

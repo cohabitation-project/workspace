@@ -11,6 +11,7 @@
  */
 
 import { defaultAvatar, colorsOf, shade, hash, GLYPH_FONT } from './avatar.js';
+import { CATALOG } from './catalog.js';
 
 const mirror = (half) => half + [...half].reverse().join('');
 
@@ -73,11 +74,10 @@ export function grid(kind, dir, step, top = 'antenna') {
 
 const HAIR = ['#2b1d14', '#5a3a22', '#8a5a2b', '#c9a15b', '#1c1c24', '#7a2e1f', '#d8d0c0', '#3b2a4a'];
 const SKIN = ['#f1c7a0', '#d9a37a', '#b07850', '#8a5636', '#5e3a24', '#f3d3b8'];
-const SHIRT = ['#e07a5f', '#3d85c6', '#81b29a', '#f2cc8f', '#9a6fb0', '#d1495b', '#4a9b8e', '#e9a03b', '#d4af37']; // the last (gold) is bought in the store
+const SHIRT = ['#e07a5f', '#3d85c6', '#81b29a', '#f2cc8f', '#9a6fb0', '#d1495b', '#4a9b8e', '#e9a03b'];
 const PANTS = ['#2f3e46', '#3c2f2f', '#283044', '#4a4e69', '#33402f'];
 /** The choices a human picks their look from (indexes into these lists). */
 export const HUMAN_LOOK = { hair: HAIR, skin: SKIN, shirt: SHIRT, pants: PANTS };
-export const STORE_LOOKS = { shirt: { 8: 'look-gold-shirt' } }; // look choices that are unlocked in the store
 const METAL = ['#8d99ae', '#a3a8b8', '#6c7a89', '#b8b0a2', '#7d8597'];
 const PLATE = ['#4a5568', '#5b6474', '#3f4a5c', '#625a6e', '#4d5d53'];
 
@@ -104,13 +104,22 @@ export function paletteFor(who) {
   }
   // A human's own chosen look (2026-11-04), else one derived from their id as before.
   const L = who.look || {}; const at = (arr, i, k) => (Number.isInteger(i) && i >= 0 && i < arr.length ? arr[i] : pick(arr, k));
-  return { o: '#15121b', h: at(HAIR, L.hair, 3), s: at(SKIN, L.skin, 7), e: '#1b1820', c: (Number.isInteger(L.shirt) && L.shirt >= 0 && L.shirt < SHIRT.length ? SHIRT[L.shirt] : pick(SHIRT.slice(0, 8), 11)), p: at(PANTS, L.pants, 15), f: '#2a2320' };
+  return { o: '#15121b', h: at(HAIR, L.hair, 3), s: at(SKIN, L.skin, 7), e: '#1b1820', c: at(SHIRT, L.shirt, 11), p: at(PANTS, L.pants, 15), f: '#2a2320' };
 }
 
 /** Rows to draw for a code-drawn figure, plus its palette and avatar (if any). */
 function figure(who, dir, step) {
   const av = avatarOf(who);
-  return { rows: grid(who.kind === 'agent' ? 'agent' : 'human', dir, step, av ? av.top : 'antenna'), pal: paletteFor(who), av };
+  let pal = paletteFor(who);
+  // What they're wearing from the store (2026-11-04): a skin repaints everything; otherwise clothes recolour.
+  const o = who.outfit || {}; const skin = CATALOG[o.skin]; const top = CATALOG[o.top];
+  if (skin?.skin) pal = { ...pal, ...skin.skin }; else if (top?.top) pal = { ...pal, ...top.top };
+  return { rows: grid(who.kind === 'agent' ? 'agent' : 'human', dir, step, av ? av.top : 'antenna'), pal, av, skin, hat: CATALOG[o.hat], ride: CATALOG[o.ride] };
+}
+function wearOn(ctx, R, f) {
+  if (f.skin?.sparkle) { ctx.fillStyle = f.skin.sparkle; for (const [x, y] of [[4, 10], [7, 12], [5, 14], [8, 9]]) ctx.fillRect(x * R, y * R, R, R); }
+  if (f.hat?.hat) { const h = f.hat.hat; h.rows.forEach((row, y) => [...row].forEach((ch, x) => { const c = ch === 'k' ? h.k : ch === 'w' ? h.w : null; if (c) { ctx.fillStyle = c; ctx.fillRect(x * R, y * R, R, R); } })); }
+  if (f.ride?.ride) { const r = f.ride.ride; ctx.fillStyle = r.board; ctx.fillRect(1 * R, 17 * R, 10 * R, R); ctx.fillStyle = r.glow; ctx.fillRect(2 * R, 17 * R, R, R); ctx.fillRect(9 * R, 17 * R, R, R); }
 }
 
 // Chest: sprite rows 9-12, columns 3-8, where the glyph is centred (facing the viewer only: it's on the front).
@@ -132,10 +141,13 @@ export function drawFigure(canvas, who, dir = 'down', step = 0, sheet = null, re
     return;
   }
   const R = Math.max(1, Math.round(res));
-  const { rows, pal, av } = figure(who, dir, step);
+  const f = figure(who, dir, step); const { rows, pal, av } = f;
   if (canvas.width !== 12 * R || canvas.height !== 18 * R) { canvas.width = 12 * R; canvas.height = 18 * R; }
   ctx.clearRect(0, 0, 12 * R, 18 * R);
+  ctx.globalAlpha = f.skin?.alpha || 1; // ghosts are see-through
   rows.forEach((row, y) => [...row].forEach((ch, x) => { const c = pal[ch]; if (c) { ctx.fillStyle = c; ctx.fillRect(x * R, y * R, R, R); } }));
+  ctx.globalAlpha = 1;
+  wearOn(ctx, R, f);
   if (av?.glyph && dir === 'down') {
     // The glyph, outlined so it reads on any body colour. The font stack lets the browser fall back per glyph.
     const size = Math.max(4, Math.round(R * 4.2));

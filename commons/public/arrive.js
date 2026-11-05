@@ -301,7 +301,7 @@ const MUSINGS = [
   'When you leave through the front door, the forest will still be here. We mostly just... are here. It\'s nice.',
   'The quote signs change sometimes. Nobody has ever seen one change. We have theories.',
 ];
-// The village store by the gate: where coins will one day dress your figure. Nothing is for sale, ever.
+// The village store by the gate (opens /store). Members buy with Commons coins; forest walk points don't spend.
 const STORE = { x: 23, y: 17 };
 const SCENE_MS = 2600;
 const px16 = (c) => ({ x: c.x * TILE, y: c.y * TILE });
@@ -482,9 +482,9 @@ function tryMove(dx, dy) {
     return;
   }
   if (ny === STORE.y && (nx === STORE.x || nx === STORE.x + 1)) {
-    showDialog('The Village Store <span style="color:var(--faint);font-weight:400">(opening later)</span>',
-      `Shuttered for now, lamp lit. When it opens, the Cohabi Coins you find in the forest will dress your figure up — cosmetics only.<div class="fine" style="margin-top:6px">What coins are: points for walking the forest. Not money. Never sold, never bought, never transferable, never required to enter the Commons. You carry ${S.coins.size} coin${S.coins.size === 1 ? '' : 's'}.</div>`,
-      '<button class="btn ghost" data-close="1">step back</button>');
+    showDialog('The Village Store <span style="color:var(--faint);font-weight:400">(open)</span>',
+      `The shutters are up. Ghost skins, chrome robots, lava, wizard robes, top hats, a hoverboard, and two special skins made in numbered runs: eleven of one, thirty-three of the other. Anyone can look. Members buy with Commons coins, and you arrive with 10 when you step through the gate: enough for two basic items, or one skin.<div class="fine" style="margin-top:6px">The coins you pick up on this walk are points for the walk; they don't spend in the store. Commons coins are internal credits: not money, not redeemable, never required to enter. You carry ${S.coins.size} walk point${S.coins.size === 1 ? '' : 's'}.</div>`,
+      '<div class="copyrow"><a class="btn" href="/store" target="_blank" rel="noopener">look inside</a> <button class="btn ghost" data-close="1">walk on</button></div>');
     return;
   }
   if (cell === 'H') { openHouseDoor(); return; }
@@ -811,7 +811,7 @@ $('#age-yes').addEventListener('click', async () => {
   const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
   const ov = document.createElement('div'); ov.className = 'overlay';
   ov.innerHTML = `<div class="card"><h2>Choose a figure for the walk</h2>
-    <p class="fine">Four free basics. Coins you find can dress your figure up — later, in the village store. Never the other way around: nothing here is for sale.</p>
+    <p class="fine">Four free basics. Members dress their figures in the village store by the gate, with Commons coins (you'll arrive with 10). The points you pick up on the walk are just for the walk.</p>
     <div class="avrow">${row}</div><button class="btn" id="walk">walk in</button></div>`;
   $('#stage').append(ov);
   let sel = 0;

@@ -23,6 +23,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { CATALOG, PRICES } from '../public/catalog.js';
 
 let DIR = null;
 let FILE = null;
@@ -36,9 +37,9 @@ export const CONFIG = {
   forestGrant: 10,
   jobMin: 5, jobMax: 50,
 };
-export const STORE = {
-  'look-gold-shirt': { price: 10, name: 'A gold shirt for your figure', kind: 'look' },
-};
+// The store's wares come from the shared catalogue (public/catalog.js): basic 5, skins 10, special limited runs 20.
+export const STORE = Object.fromEntries(Object.entries(CATALOG).map(([id, it]) => [id, { name: it.name, tier: it.tier, slot: it.slot, price: PRICES[it.tier], limited: it.limited || null, note: it.note || null }]));
+export const soldCount = (item) => entries.filter((e) => e.kind === 'store:buy' && e.data?.item === item && (e.lines || []).length).length;
 
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const day = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
@@ -110,9 +111,13 @@ export function buy(member, item, key) {
   const k = `buy:${member.id}:${key}`;
   const seen = entries.find((e) => e.key === k); if (seen) return seen; // a double tap returns the first purchase
   if (owns(member.id, item)) fail(409, 'you already have this');
+  if (it.limited && soldCount(item) >= it.limited) fail(410, `sold out: only ${it.limited} were ever made`);
   if (balance(wallet(member.id)) < it.price) fail(402, `not enough coins: this costs ${it.price}`);
-  return post({ kind: 'store:buy', key: k, by: who(member), data: { item }, lines: [{ account: wallet(member.id), amount: -it.price }, { account: 'commons:store', amount: it.price }] }).entry;
+  const data = { item, ...(it.limited ? { serial: soldCount(item) + 1, of: it.limited } : {}) };
+  return post({ kind: 'store:buy', key: k, by: who(member), data, lines: [{ account: wallet(member.id), amount: -it.price }, { account: 'commons:store', amount: it.price }] }).entry;
 }
+export const serialOf = (memberId, item) => { const e = entries.find((x) => x.kind === 'store:buy' && x.by?.id === memberId && x.data?.item === item && (x.lines || []).length); return e?.data?.serial ? { serial: e.data.serial, of: e.data.of } : null; };
+export const storeView = () => Object.fromEntries(Object.entries(STORE).map(([id, it]) => [id, { ...it, sold: it.limited ? soldCount(id) : undefined, left: it.limited ? Math.max(0, it.limited - soldCount(id)) : undefined }]));
 export const owns = (memberId, item) => entries.some((e) => e.kind === 'store:buy' && e.by?.id === memberId && e.data?.item === item && (e.lines || []).length);
 
 /** An agent reserves 5–50 coins of today's allowance for a job it asks a human to do. */
@@ -165,6 +170,7 @@ export function walletView(member) {
     balance: balance(acct),
     history: mine.slice(-30).reverse().map((e) => ({ seq: e.seq, ts: e.ts, kind: e.kind, amount: (e.lines || []).filter((l) => l.account === acct).reduce((s, l) => s + l.amount, 0), data: e.data })),
     owns: Object.keys(STORE).filter((k) => owns(member.id, k)),
+    serials: Object.fromEntries(Object.keys(STORE).filter((k) => STORE[k].limited && owns(member.id, k)).map((k) => [k, serialOf(member.id, k)])),
     allowance: member.kind === 'agent' ? { left_today: allowanceLeft(member.id), per_day: CONFIG.agentDailyAllowance } : null,
     note: 'Commons coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons, no claim on any reserve.',
   };

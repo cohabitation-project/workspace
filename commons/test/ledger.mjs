@@ -17,8 +17,9 @@ const operatorHuman = { id: 'h_doc', name: 'Doctoracula', kind: 'human' };
 test('THE FIRST TRANSACTION: forest grant → avatar purchase → paid for an agent job, every step in the ledger', () => {
   L.claimForest(human);
   assert.equal(L.balance(L.wallet(human.id)), 10);
-  L.buy(human, 'look-gold-shirt', 'tap-1');
-  assert.equal(L.balance(L.wallet(human.id)), 0); assert.ok(L.owns(human.id, 'look-gold-shirt'));
+  L.buy(human, 'look-gold-shirt', 'tap-1'); L.buy(human, 'ride-hoverboard', 'tap-2'); // 10 coins = two basic items
+  assert.equal(L.balance(L.wallet(human.id)), 0); assert.ok(L.owns(human.id, 'look-gold-shirt')); assert.ok(L.owns(human.id, 'ride-hoverboard'));
+  assert.throws(() => L.buy(human, 'hat-tophat', 'tap-3'), /not enough coins/);
   L.reserveJob({ id: 't_photo', agent, human, amount: 25 });
   L.settleJob('t_photo', other);
   assert.equal(L.balance(L.wallet(human.id)), 25);
@@ -49,11 +50,11 @@ test('Aletheia: replaying a settlement cannot pay twice', () => {
 
 test('a purchase: double tap charges once; not enough coins is refused; buying twice is refused', () => {
   const p = { id: 'h_poor', name: 'Poor', kind: 'human' };
-  assert.throws(() => L.buy(p, 'look-gold-shirt', 'x'), /not enough coins/);
+  assert.throws(() => L.buy(p, 'skin-ghost', 'x'), /not enough coins/);
   L.claimForest(p);
-  const a = L.buy(p, 'look-gold-shirt', 'same'); const b = L.buy(p, 'look-gold-shirt', 'same');
+  const a = L.buy(p, 'skin-ghost', 'same'); const b = L.buy(p, 'skin-ghost', 'same'); // a skin is 10
   assert.equal(a.seq, b.seq); assert.equal(L.balance(L.wallet(p.id)), 0);
-  assert.throws(() => L.buy(p, 'look-gold-shirt', 'again'), /already have/);
+  assert.throws(() => L.buy(p, 'skin-ghost', 'again'), /already have/);
 });
 
 test('the 500/day allowance: reservations count, cancelling gives back, it expires at midnight, nothing pays into it', () => {
@@ -84,11 +85,25 @@ test('the ledger survives a restart, and verify() catches an edited or deleted l
   L.init(dir); assert.equal(L.verify().head, before.head, 'same chain after a restart');
   const file = path.join(dir, 'ledger', 'entries.jsonl');
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
-  const edited = lines.map((l, i) => (i === 1 ? l.replace('"amount":-10', '"amount":-1') : l));
+  const edited = lines.map((l, i) => { if (i !== 0) return l; const e = JSON.parse(l); e.lines[1].amount += 1000; e.lines[0].amount -= 1000; return JSON.stringify(e); }); // a balanced but forged edit
   fs.writeFileSync(file, edited.join('\n') + '\n'); L.init(dir);
   assert.equal(L.verify().ok, false, 'an edited entry is detected');
   const removed = lines.filter((_, i) => i !== 2);
   fs.writeFileSync(file, removed.join('\n') + '\n'); L.init(dir);
   assert.match(L.verify().problem, /broken link/, 'a removed entry is detected');
   fs.writeFileSync(file, lines.join('\n') + '\n'); L.init(dir); assert.equal(L.verify().ok, true);
+});
+
+test('special skins come in numbered limited runs and sell out', () => {
+  const save = L.STORE['skin-eleven'].limited; L.STORE['skin-eleven'].limited = 2;
+  const buyers = [0, 1, 2].map((i) => ({ id: `h_sp${i}`, name: `Sp${i}`, kind: 'human' }));
+  for (const b of buyers) { L.claimForest(b); }
+  // a special costs 20: settle a job to each so they can afford it
+  const ag = { id: 'a_pay', name: 'Payer', kind: 'agent', operator: 'Nobody' };
+  buyers.forEach((b, i) => { L.reserveJob({ id: `t_sp${i}`, agent: ag, human: b, amount: 10 }); L.settleJob(`t_sp${i}`, other); });
+  const e1 = L.buy(buyers[0], 'skin-eleven', 'k'); const e2 = L.buy(buyers[1], 'skin-eleven', 'k');
+  assert.deepEqual([e1.data.serial, e2.data.serial], [1, 2]); assert.equal(e2.data.of, 2);
+  assert.throws(() => L.buy(buyers[2], 'skin-eleven', 'k'), /sold out/);
+  assert.deepEqual(L.serialOf(buyers[1].id, 'skin-eleven'), { serial: 2, of: 2 });
+  L.STORE['skin-eleven'].limited = save;
 });
