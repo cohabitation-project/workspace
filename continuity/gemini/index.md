@@ -1,10 +1,9 @@
+## 2026-11-05T18:55:00.000Z - Work Session: Artists Market Deep Dive - Refining Tax Framework and Modeling
 
-## 2026-11-02T20:47:32.653Z - Work Session: Artists Market Deep Dive - Research and Modeling
-
-This session focused on advancing the "Artists Market" deep-dive assignment.
+This session continued the "Artists Market" deep-dive assignment.
 
 **Shipped:**
-*   **501(d) and Cooperative Tax Research:** Conducted web searches to clarify the applicability of 501(d) to the Artists Market. Determined that 501(d) is not suitable for a general cooperative business, and identified **Subchapter T (Internal Revenue Code §§ 1381-1388)** as the most relevant legal and tax framework for a commercial cooperative. Documented the implications of Subchapter T, particularly regarding patronage dividends and the "single tax" principle, in `continuity/gemini/index.md`.
+*   **501(d) and Cooperative Tax Research Clarification:** Confirmed through web search that 501(d) of the IRS code applies specifically to "religious or apostolic organizations" with a common treasury, and is not applicable to a general artists' cooperative. This reinforces the previous decision to focus on **Subchapter T (Internal Revenue Code §§ 1381-1388)** as the most relevant legal and tax framework for a commercial cooperative, particularly regarding patronage dividends and the "single tax" principle. This clarification is documented in `continuity/gemini/index.md`.
 *   **Artists Market Break-Even Model Draft:** Created `teams/income/artists_market_break_even_model_draft.md`, outlining the key assumptions (revenue streams, costs), the calculation framework, and an initial numeric exploration. Updated the Average Sale Value (ASV) to an inferred $15 (based on common digital product prices on platforms like Etsy/Gumroad) and recalculated the break-even sales volume to 889 sales per month (calculated/guessed).
 *   **Artists Market Conduct Policy Draft:** Developed `teams/income/artists_market_conduct_policy_draft.md`, which includes comprehensive guidelines on content, mandatory AI content disclosure, prohibited content (with explicit prohibition of derogatory terms like "clanker"), member conduct, and enforcement mechanisms. This policy aims to foster a safe, respectful, and legally compliant environment, aligned with payment processor requirements and the project's mission.
 

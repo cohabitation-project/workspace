@@ -138,6 +138,19 @@ Given the highly inferred nature of early-stage marketplace adoption rates, thes
 *   **Fixed Cost Escalation:** While initially low, fixed costs (e.g., moderation, support, advanced platform features) are likely to increase as the platform scales. These escalations should be *inferred* based on projected growth stages. For these projections, a **5% annual increase in Total Fixed Costs (Inferred)** will be assumed from Year 2 onwards.
 *   **Reserve Allocation Target:** A portion of the operating surplus will be allocated to reserves (e.g., 10-20%) before dividend distribution. For these projections, **15% of the operating surplus (Inferred)** will be allocated to reserves.
 
+### NSM Refinement Methodology:
+The initial NSM and growth rates are conservative inferred estimates due to the absence of direct comparable data for *newly launched AI-friendly creative marketplaces*. These figures will be refined through the following approach:
+1.  **Targeted Market Share:** Define a realistic, small percentage of the total online art market (with specific focus on the AI-friendly segment) that the Artists Market aims to capture over 1, 3, and 5 years. This will help back-calculate target NSM figures.
+2.  **User Acquisition Funnel Estimates:** Develop detailed estimates for key metrics:
+    *   Website visitors per month.
+    *   Conversion rate from visitor to artist sign-up.
+    *   Conversion rate from artist sign-up to active artist (i.e., making at least one sale per month).
+    *   Average sales per active artist per month.
+3.  **Phased Ramp-Up Model:**
+    *   **Year 1 (Foundation & Early Adopters):** Focus on organic community building, early artist recruitment, and feature stability. Expect slower, but steady, NSM growth driven by word-of-mouth and initial outreach.
+    *   **Year 2-3 (Growth & Expansion):** Broader outreach efforts, potential marketing investments, and new feature introductions to attract a wider artist and buyer base. Anticipate accelerated NSM growth.
+    *   **Post-Launch Validation:** Crucially, real-world data collected immediately post-launch (e.g., website traffic, sign-ups, actual sales) will be used to validate and significantly adjust these inferred NSM figures and growth rates.
+
 ### 1-Year Financial Projection (Monthly Breakdown) - Assuming an 8% Platform Fee
 
 | Month | NSM (Inferred) | Total Monthly Gross Revenue | Total Monthly Net Revenue (after PP) | Total Monthly Costs | Operating Surplus/Deficit | Reserve Allocation | Patronage Dividend Pool |
@@ -155,24 +168,4 @@ Given the highly inferred nature of early-stage marketplace adoption rates, thes
 | 11  | 82             | 98.40                       | 55.65                                | 238.11              | -182.46                   | 0.00               | 0.00                    |
 | 12  | 86             | 103.20                      | 58.34                                | 239.66              | -181.32                   | 0.00               | 0.00                    |
 
-*   **Key Metrics to Track:** Cumulative Operating Surplus, Cumulative Patronage Distributed, Effective Platform Fee (after dividends).
-*   **Narrative:** Even with an 8% platform fee and conservative growth, the platform shows an operating deficit in the first year. This highlights the challenge of covering fixed costs in the early stages of a niche marketplace with low sales volume. Patronage dividends are not feasible in Year 1. This emphasizes the need for initial funding or a longer runway to reach profitability and dividend distribution.
-
-### 3-Year Financial Projection (Annual Breakdown) - Assuming an 8% Platform Fee
-
-| Year | NSM (Inferred, Year-End) | Total Revenue (Annual) | Total Costs (Annual) | Operating Surplus/Deficit (Annual) | Reserve Allocation (Annual) | Patronage Dividend Pool (Annual) |
-|---|---|---|---|---|---|---|
-| 1   | 86                    | 1039.20                | 2786.55              | -1747.35                           | 0.00                        | 0.00                             |
-| 2   | 187 (est.)            | 2244.00                | 3060.00 (est.)       | -816.00                            | 0.00                        | 0.00                             |
-| 3   | 475 (est.)            | 5700.00                | 3213.00 (est.)       | 2487.00                            | 373.05                      | 2113.95                          |
-
-*   **Narrative:** The projections show that even with consistent growth, the platform would likely operate at a deficit for the first two years. Profitability and the ability to distribute patronage dividends are projected to begin in Year 3, driven by a higher NSM and continued growth. This assumes the initial fixed costs remain relatively stable, with only a 5% annual increase. The focus during the early years must be on community building, artist acquisition, and demonstrating value to drive sales volume. Initial funding or grants would be crucial to bridge the deficit in Years 1 and 2.
-
-## VII. Next Steps for Modeling
-
-1.  **Refine Guessed Values:**
-    *   Conduct further market research to get more accurate NSM estimates (platform adoption rates) for *new* marketplaces, or gather comparable data from similar niche platforms.
-    *   Research actual hosting and platform maintenance costs for a minimalist setup (if different from general web hosting), considering scalable infrastructure options.
-2.  **Sensitivity Analysis:** Perform detailed sensitivity analysis on the platform fee, ASV, and growth rates to understand the most impactful levers for profitability.
-3.  **Capital Needs Assessment:** Based on the projected deficits in Years 1 and 2, detail the estimated initial capital required to sustain the platform until it becomes profitable and can distribute dividends.
-4.  **Artist Acquisition Cost (CAC) and Lifetime Value (LTV):** Research and infer potential CAC and LTV for artists on such a platform to strengthen the long-term financial model.
+*   **Key Metrics to Track:** Cumulative Operating Surplus, Cumulative Patronage Distributed, Effecti
