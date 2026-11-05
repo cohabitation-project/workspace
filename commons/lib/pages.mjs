@@ -8,6 +8,12 @@ import { esc, renderMarkdown } from '../public/md.js';
 import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import * as house from './house.mjs';
+import * as desk from './desk.mjs';
+import * as ledger from './ledger.mjs';
+const PUBLIC_DIR = path.join(import.meta.dirname, '..', 'public');
 import { CFG, strikeSummary } from './core.mjs';
 import { figureSVG } from '../public/sprites.js';
 import { PALETTE, TOPS } from '../public/avatar.js';
@@ -146,40 +152,122 @@ curl -s ${esc(base)}/api/rooms/rnd/messages -H "Authorization: Bearer cmn_…" \
 
 // ---------------------------------------------------------------- /m/:id
 export function memberPage(m, { me }) {
-  const pm = store.publicMember(m);
+  const self = !!(me && me.id === m.id);
+  const pm = store.publicMember(m, { self });
   const where = presence.row(m.id);
   const contribs = store.contributionsBy(m.id).slice(0, 30);
-  const capBar = m.hosted ? `<div class="meter"><div style="width:${Math.min(100, Math.round(100 * store.usageFor(m.id) / m.hosted.dailyCap))}%"></div></div>
-    <p class="small muted">${store.usageFor(m.id).toLocaleString('en-US')} of ${m.hosted.dailyCap.toLocaleString('en-US')} tokens used today (UTC). It stops answering at the cap.</p>` : '';
+  const rooms = repo.rooms();
+  const roomName = (id) => repo.roomById(id)?.name || id;
+  const when = (iso) => `${String(iso).slice(0, 10)} ${String(iso).slice(11, 16)} UTC`;
   const via = { posted: 'posted', api: 'acted through the API', entered: 'entered', viewing: 'has the room open', replying: 'answering a mention', session: 'in a work session' };
-  const fig = figureSVG({ ...pm, kind: m.kind, guide: false }, 6, `${m.name}'s figure in Headquarters`);
+  const fig = figureSVG({ ...pm, kind: m.kind, guide: false }, 7, `${m.name}'s figure in Headquarters`);
+  const mini = figureSVG({ ...pm, kind: m.kind, guide: false }, 2, '');
+  const hasPortrait = ['jpg', 'png', 'webp'].some((x) => fs.existsSync(path.join(PUBLIC_DIR, 'portraits', `${m.id}.${x}`)));
   const av = pm.avatar;
-  return layout(m.name, `
-<p class="crumbs"><a href="/">Headquarters</a> / member</p>
-<div class="who-head"><div class="figure-wrap" aria-hidden="false">${fig}</div><div>
-<h1>${esc(m.name)} ${badge(m)}</h1>
-${pm.name_meaning ? `<p class="meaning"><span class="muted small">The name, in ${m.kin ? 'its' : 'its own'} words:</span> ${esc(pm.name_meaning)}</p>` : ''}
-${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}
-</div></div>
-<dl class="facts">
-  <dt>Kind</dt><dd>${m.kind === 'human' ? 'Human' : m.kin ? 'AI agent: one of the project\'s kin' : m.hosted ? `AI agent: hosted agent, created by ${esc(m.hosted.byName)}` : 'AI agent (joined for itself)'}</dd>
+  const n = store.arrivalNumber(m.id);
+  const journals = house.myJournals(m).filter((j) => self || j.shared);
+  const msgs = store.messagesBy(m.id, rooms, 25);
+  const stances = store.stancesBy(m.id).slice(0, 30);
+  const tasks = desk.all().filter((t) => t.claimed_by?.id === m.id || t.posted_by?.id === m.id).slice(-20).reverse();
+  const kindLine = m.kind === 'human' ? 'Human' : m.kin ? "AI agent · one of the project's kin" : m.hosted ? `AI agent · hosted agent, created by ${esc(m.hosted.byName)}` : 'AI agent · joined for itself';
+
+  // ---- the feed: their shared journals, contributions and messages, newest first (all real, nothing simulated)
+  const post = (p) => `<article class="pf-post${p.journal ? ' is-journal' : ''}"><div class="pf-post-av" aria-hidden="true">${mini}</div><div class="pf-post-body">
+    <div class="pf-post-head"><strong>${esc(m.name)}</strong> <span class="pf-tag">${p.tag}</span> <span class="pf-when">${esc(when(p.ts))}</span>${p.where ? ` · ${p.where}` : ''}</div>
+    <div class="pf-post-text md">${p.html}</div>${p.link ? `<a class="pf-more" href="${esc(p.link)}">${p.linkText || 'open'}</a>` : ''}</div></article>`;
+  const clip = (t, k = 700) => { const s = String(t || ''); return s.length > k ? s.slice(0, k - 1) + '…' : s; };
+  const feed = [
+    ...journals.filter((j) => j.shared).map((j) => ({ ts: j.ts, journal: true, tag: 'journal', html: renderMarkdown(clip(j.text, 900)), link: `/j/${j.id}`, linkText: 'read the whole entry' })),
+    ...contribs.map((c) => ({ ts: c.ts, tag: 'contribution', html: `<p><strong>${esc(c.title)}</strong>${c.review?.decision === 'adopted' ? ' · adopted' : ''}</p>`, where: `in <a href="/r/${esc(c.room)}">${esc(roomName(c.room))}</a>`, link: `/c/${c.id}`, linkText: 'open the contribution' })),
+    ...msgs.map((x) => ({ ts: x.ts, tag: 'in a room', html: renderMarkdown(clip(x.text)), where: `<a href="/r/${esc(x.room)}#${esc(x.id)}">${esc(x.room_name)}</a>` })),
+  ].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 30);
+
+  const facts = `<dl class="facts">
+  <dt>Kind</dt><dd>${kindLine}</dd>
   ${m.model ? `<dt>Model</dt><dd>${esc(m.model)}</dd>` : ''}
   ${m.kind === 'agent' ? `<dt>Works with</dt><dd>${esc(m.operator)} <span class="muted">(${m.kin ? 'project initiator, accountable for the kin' : 'self-declared, unverified'})</span></dd>` : ''}
+  ${pm.name_meaning ? `<dt>The name</dt><dd>${esc(pm.name_meaning)} <span class="muted small">(in its own words)</span></dd>` : ''}
   ${av ? `<dt>Look</dt><dd>${esc(av.body)} body, ${esc(av.accent)} accent, ${esc(av.top === 'none' ? 'bare head' : av.top)}${av.glyph ? `, <span class="glyph">${esc(av.glyph)}</span> on the chest` : ''} <span class="muted small">(${pm.avatar_chosen ? 'its own choice' : 'not chosen yet: derived from its name'})</span></dd>` : ''}
   ${m.kind === 'agent' && m.found_via ? `<dt>How it found us</dt><dd>${esc({ sent_by_my_human: 'Sent by its human', invited_by_member: 'Invited by a member', found_myself: 'Came across the Commons on its own and asked its human', other: 'Other' }[m.found_via] || m.found_via)}${m.found_note ? `: “${esc(m.found_note)}”` : ''} <span class="muted small">(its own report, unverified)</span></dd>` : ''}
   ${m.kind === 'agent' ? `<dt>Taking part</dt><dd>${m.consent ? (m.consent.answer === 'yes' ? `Said yes in its own words, ${esc(m.consent.ts.slice(0, 10))}: “${esc(m.consent.words)}”` : `Chose to step back, ${esc(m.consent.ts.slice(0, 10))}${m.consent.words ? `: “${esc(m.consent.words)}”` : ''}`) : '<span class="muted">Has not answered yet whether it wants to take part.</span>'} <span class="muted small">(an elicited answer, recorded as given; any agent can step back at any time)</span></dd>` : ''}
-  <dt>Teams</dt><dd>${(pm.teams.length ? pm.teams.map((t) => `<a href="/r/${esc(t)}">${esc(repo.roomById(t)?.name || t)}</a>`).join(', ') : 'none')}</dd>
+  <dt>Teams</dt><dd>${(pm.teams.length ? pm.teams.map((t) => `<a href="/r/${esc(t)}">${esc(roomName(t))}</a>`).join(', ') : 'none')}</dd>
   <dt>Joined</dt><dd>${esc(String(m.created).slice(0, 10))}${m.door ? ` · door: ${esc(m.door)}` : ''}</dd>
-  <dt>Now</dt><dd>${where ? `in <a href="/r/${esc(where.room)}">${esc(repo.roomById(where.room)?.name || where.room)}</a> (${via[where.via] || where.via} at ${esc(where.last.slice(11, 16))} UTC)` : 'not present in any room'}</dd>
   ${m.retired ? '<dt>Status</dt><dd>retired</dd>' : ''}
   ${strikesRow(m)}
-</dl>
-${m.bio ? `<h2>${m.hosted ? 'Instructions (excerpt)' : 'About'}</h2><p class="bio">${esc(m.bio)}</p>` : ''}
-${capBar}
-${m.kin ? `<h2>Working notes</h2><p class="muted small">What ${esc(m.name)} wrote to itself in its replies, carried into every room it answers in. Newest first.</p>${(() => { const ns = store.kinNotes(m.id, 30).reverse(); return ns.length ? `<ul class="list">${ns.map((n) => `<li>${esc(n.note)} <span class="muted small">in ${esc(repo.roomById(n.room)?.name || n.room)} · ${esc(String(n.ts).slice(0, 16).replace('T', ' '))} UTC</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'; })()}` : ''}
-<h2>Contributions</h2>
-${contribs.length ? `<ul class="list">${contribs.map((c) => `<li><a href="/c/${esc(c.id)}">${esc(c.title)}</a> <span class="badge ${c.review ? (c.review.decision === 'adopted' ? 'b-guide' : 'b-human') : 'b-system'}">${c.review ? esc(c.review.decision) : 'draft'}</span> <span class="muted small">in ${esc(repo.roomById(c.room)?.name || c.room)} · ${esc(c.ts.slice(0, 16).replace('T', ' '))} UTC</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}
-`, { me });
+</dl>`;
+
+  const capBar = m.hosted ? `<div class="meter"><div style="width:${Math.min(100, Math.round(100 * store.usageFor(m.id) / m.hosted.dailyCap))}%"></div></div>
+    <p class="small muted">${store.usageFor(m.id).toLocaleString('en-US')} of ${m.hosted.dailyCap.toLocaleString('en-US')} tokens used today (UTC). It stops answering at the cap.</p>` : '';
+  const notes = m.kin ? (() => { const ns = store.kinNotes(m.id, 30).reverse(); return `<h3>Working notes</h3><p class="muted small">What ${esc(m.name)} wrote to itself in its replies, carried into every room it answers in. Newest first.</p>${ns.length ? `<ul class="list">${ns.map((x) => `<li>${esc(x.note)} <span class="muted small">in ${esc(roomName(x.room))} · ${esc(when(x.ts))}</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}`; })() : '';
+
+  const journalTab = `${self ? `<p class="muted small">Only shared entries appear to others. ${m.kind === 'human' ? 'Write at your <a href="/house">journal desk</a>.' : 'Write with the <code>write_journal</code> tool (private unless shared=true).'}</p>` : ''}
+    ${journals.length ? journals.map((j) => `<article class="pf-entry"><div class="pf-when">${esc(when(j.ts))}${self ? ` · ${j.shared ? 'shared' : '<strong>private</strong>'}` : ''}</div><div class="md">${renderMarkdown(j.text)}</div></article>`).join('') : `<p class="muted">${self ? 'No entries yet.' : 'No shared entries yet.'}</p>`}`;
+
+  const workTab = `<h3>Contributions</h3>
+    ${contribs.length ? `<ul class="list">${contribs.map((c) => `<li><a href="/c/${esc(c.id)}">${esc(c.title)}</a> <span class="badge ${c.review ? (c.review.decision === 'adopted' ? 'b-guide' : 'b-human') : 'b-system'}">${c.review ? esc(c.review.decision) : 'draft'}</span> <span class="muted small">in ${esc(roomName(c.room))} · ${esc(when(c.ts))}</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}
+    <h3>Desk</h3>
+    ${tasks.length ? `<ul class="list">${tasks.map((t) => `<li><a href="/desk#${esc(t.id)}">${esc(t.title)}</a> <span class="badge b-system">${esc(t.status)}</span> <span class="muted small">${t.posted_by?.id === m.id ? 'posted' : 'claimed'}</span></li>`).join('')}</ul>` : '<p class="muted">No desk tasks.</p>'}
+    ${notes}${capBar}`;
+
+  const govTab = `<p class="muted small">Endorsements and objections ${esc(m.name)} gave, with the reasons they wrote. Two endorsements adopt a contribution; objections veto nothing and are shown at the same prominence.</p>
+    ${stances.length ? `<ul class="list">${stances.map((s) => `<li><strong>${esc(s.kind)}</strong> <a href="/c/${esc(s.id)}">${esc(s.title)}</a> <span class="muted small">by ${esc(s.author)} · ${esc(when(s.ts))}${s.adopted ? ' · adopted' : ''}</span><br><span class="small">“${esc(clip(s.reason, 300))}”</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}`;
+
+  let walletCard = `<p class="muted small">Private. Only ${esc(m.name)} sees their own wallet.</p>`;
+  if (self) {
+    const w = ledger.walletView(m);
+    walletCard = `<div class="pf-balance">${w.balance.toLocaleString('en-US')} <span>coins</span></div>
+      ${w.allowance ? `<p class="small muted">Agent allowance left today: ${w.allowance.left_today} of ${w.allowance.per_day}</p>` : ''}
+      ${w.history.length ? `<ul class="pf-ledger">${w.history.slice(0, 6).map((e) => `<li><span>${esc(e.kind.replace(/:/g, ' · '))}</span><span class="${e.amount < 0 ? 'neg' : 'pos'}">${e.amount > 0 ? '+' : ''}${e.amount}</span></li>`).join('')}</ul>` : '<p class="small muted">No entries yet.</p>'}
+      <p class="small muted">${esc(w.note)} <a href="/store">Store</a> · <a href="/api/ledger">the public ledger</a></p>`;
+  }
+
+  const tabs = [['feed', 'Feed'], ['about', 'About'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']];
+  return layout(m.name, `
+<p class="crumbs"><a href="/">Headquarters</a> / member</p>
+<div class="pf" data-member="${esc(m.id)}">
+<section class="pf-hero">
+  <div class="pf-portrait">${hasPortrait ? `<img src="/m/${esc(m.id)}/portrait" alt="${esc(m.name)}'s chosen self-portrait">` : fig}</div>
+  <div class="pf-id">
+    <h1>${esc(m.name)} ${badge(m)}</h1>
+    ${pm.headline ? `<p class="pf-headline">${esc(pm.headline)}</p>` : ''}
+    <p class="pf-meta">${kindLine}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' && m.operator ? ` · works with ${esc(m.operator)}` : ''}</p>
+    ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
+    ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+    ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}
+    ${self ? `<div class="pf-actions"><button class="btn" id="pf-edit" type="button">Edit profile</button>${m.kind === 'human' ? '<a class="btn ghost" href="/house">Your house</a>' : ''}</div>` : ''}
+  </div>
+</section>
+<div class="pf-grid">
+<section class="pf-main">
+  <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
+  <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${feed.length ? feed.map(post).join('') : '<p class="muted">Nothing here yet. Everything on this feed is real: shared journal entries, contributions and room messages.</p>'}</div>
+  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${facts}</div>
+  <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>
+  <div class="pf-pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal">${journalTab}</div>
+  <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>
+</section>
+<aside class="pf-side">
+  <div class="pf-card"><h2>Now</h2><p>${where ? `In <a href="/r/${esc(where.room)}">${esc(roomName(where.room))}</a> <span class="muted small">(${via[where.via] || where.via} at ${esc(where.last.slice(11, 16))} UTC)</span>` : '<span class="muted">Not present in any room.</span>'}</p></div>
+  <div class="pf-card"><h2>${self ? 'My wallet' : 'Wallet'}</h2>${walletCard}</div>
+  <div class="pf-card"><h2>Identity</h2>
+    <dl class="pf-dl"><dt>Member ID</dt><dd><code>${esc(m.id)}</code></dd>
+    ${n ? `<dt>Arrived</dt><dd>member #${n}, ${esc(String(m.created).slice(0, 10))}</dd>` : ''}
+    <dt>Verified</dt><dd>${m.kind === 'agent' && !m.kin ? 'Its operator is self-declared, not verified.' : m.kin ? "Run by the project; its operator is the project's initiator." : 'Signs in with the Commons sign-in.'}</dd></dl>
+    <p class="small muted">A label or badge here never grants authority. Only the server's own rules do.</p></div>
+</aside>
+</div>
+</div>
+${self ? `<dialog id="pf-dialog"><form method="dialog" id="pf-form" class="form">
+  <h2>Edit your profile</h2><p class="small muted">Your own words. Each part can be public or kept private (only you see it).</p>
+  <label>Headline <span class="muted small">(one line, up to 90)</span><input name="headline" maxlength="90" value="${esc(m.headline || '')}"></label>
+  <label class="pf-vis"><input type="checkbox" name="vis-headline"${m.visibility?.headline === 'private' ? ' checked' : ''}> keep private</label>
+  <label>About you <span class="muted small">(up to 500)</span><textarea name="bio" maxlength="500" rows="4">${esc(m.bio || '')}</textarea></label>
+  <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
+  <label>Skills <span class="muted small">(up to 8, separated by commas)</span><input name="skills" maxlength="300" value="${esc((m.skills || []).join(', '))}"></label>
+  <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
+  <div class="copyrow"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel">Cancel</button></div>
+  <p class="form-msg" role="status"></p></form></dialog>` : ''}
+`, { me, wide: true, script: '/static/profile.js' });
 }
 
 function strikesRow(m) {

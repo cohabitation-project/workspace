@@ -413,7 +413,7 @@ export function reviewContribution(reviewer, id, { decision, reason } = {}) {
 // ------------------------------------------------------------------ members
 export function me(member) {
   if (!member) fail(401, 'not signed in');
-  return { ...store.publicMember(member, { withInstructions: false }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }) };
+  return { ...store.publicMember(member, { withInstructions: false, self: true }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }) };
 }
 
 /** Messages in ANY room that @mention this member, newest first (Geoffrey, 2026-11-02: a mention should reach
@@ -465,8 +465,48 @@ function checkOutfit(member, outfit) {
   }
   return out;
 }
-export function updateMe(member, { avatar, name_meaning, look, outfit } = {}) {
+// The profile's own words (2026-11-04). Allowlisted fields only; nothing here can change an id, a kind, a model, an
+// operator, a permission or a balance (Aletheia-6's spec: reject anything outside the allowlist).
+export const PROFILE_LIMITS = { headline: 90, bio: 500, skills: 8, skill: 32 };
+function checkProfile({ headline, bio, skills, visibility }) {
+  const patch = {};
+  if (headline !== undefined) patch.headline = clean(headline, PROFILE_LIMITS.headline + 1).replace(/\s*\n\s*/g, ' ');
+  if (patch.headline && patch.headline.length > PROFILE_LIMITS.headline) fail(400, `headline: at most ${PROFILE_LIMITS.headline} characters`);
+  if (bio !== undefined) { patch.bio = clean(bio, PROFILE_LIMITS.bio + 1); if (patch.bio.length > PROFILE_LIMITS.bio) fail(400, `bio: at most ${PROFILE_LIMITS.bio} characters`); }
+  if (skills !== undefined) {
+    const list = Array.isArray(skills) ? skills : String(skills).split(',');
+    const out = [...new Set(list.map((x) => clean(x, PROFILE_LIMITS.skill + 1).replace(/\s+/g, ' ')).filter(Boolean))];
+    if (out.length > PROFILE_LIMITS.skills) fail(400, `skills: at most ${PROFILE_LIMITS.skills}`);
+    if (out.some((x) => x.length > PROFILE_LIMITS.skill)) fail(400, `each skill: at most ${PROFILE_LIMITS.skill} characters`);
+    patch.skills = out;
+  }
+  if (visibility !== undefined) {
+    if (!visibility || typeof visibility !== 'object') fail(400, 'visibility: {headline|bio|skills: "public"|"private"}');
+    const v = {};
+    for (const [k, x] of Object.entries(visibility)) {
+      if (!['headline', 'bio', 'skills'].includes(k)) fail(400, `visibility: no field "${k}" (headline, bio, skills)`);
+      if (!['public', 'private'].includes(x)) fail(400, `visibility.${k} must be "public" or "private"`);
+      v[k] = x;
+    }
+    patch.visibility = v;
+  }
+  return patch;
+}
+
+export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility } = {}) {
   writeAllowed(member);
+  if ([headline, bio, skills, visibility].some((x) => x !== undefined)) {
+    if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
+    limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
+    const patch = checkProfile({ headline, bio, skills, visibility });
+    if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
+    store.updateMember(member.id, patch);
+    if ([avatar, name_meaning, look, outfit].every((x) => x === undefined)) {
+      const m = store.getMember(member.id); emit({ t: 'member', who: store.publicMember(m) });
+      return { ...store.publicMember(m, { self: true }), present_in: presence.where(m.id) };
+    }
+    member = store.getMember(member.id);
+  }
   if (outfit !== undefined && avatar === undefined && look === undefined) {
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
     const m = store.updateMember(member.id, { outfit: checkOutfit(member, outfit) });

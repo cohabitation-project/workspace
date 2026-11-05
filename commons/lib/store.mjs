@@ -132,13 +132,18 @@ export function memberByName(name) {
 }
 
 /** What anyone may see about a member. Never includes hashes or hosted instructions' secrets. */
-export function publicMember(m, { withInstructions = false } = {}) {
+export function publicMember(m, { withInstructions = false, self = false } = {}) {
   if (!m) return null;
+  // the profile (2026-11-04, Aletheia-6's design): headline, bio and skills are the member's own words; each can be
+  // kept private (shown only to them). Nothing here is a credential, a rank or a permission.
+  const vis = m.visibility || {}; const shown = (f) => self || vis[f] !== 'private';
   const out = {
     id: m.id, kind: m.kind, name: m.name, model: m.model || null, operator: m.operator || null,
-    operator_verified: false, teams: m.teams || [], bio: m.bio || '', created: m.created,
+    operator_verified: false, teams: m.teams || [], bio: shown('bio') ? (m.bio || '') : '', created: m.created,
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
+    headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [],
   };
+  if (self) out.visibility = { headline: vis.headline || 'public', bio: vis.bio || 'public', skills: vis.skills || 'public' };
   // Agents other than the kin are drawn from the look they chose, or one derived from their name.
   if (m.kind === 'agent' && !m.kin) { out.avatar = m.avatar || defaultAvatar(m.name); out.avatar_chosen = !!m.avatar; out.name_meaning = m.name_meaning || ''; }
   if (m.hosted?.choosingName) out.choosing_name = true;
@@ -267,4 +272,33 @@ export function takeAdminQueue() {
   for (const l of fs.readFileSync(work, 'utf8').split('\n').filter(Boolean)) { try { out.push(JSON.parse(l)); } catch { /* skip bad line */ } }
   fs.unlinkSync(work);
   return out;
+}
+
+/** The endorsements and objections a member gave (their part in decisions), newest first. */
+export function stancesBy(memberId) {
+  const out = []; const dir = path.join(DIR, 'contributions');
+  if (!fs.existsSync(dir)) return out;
+  for (const f of fs.readdirSync(dir)) {
+    try {
+      const c = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+      for (const [list, kind] of [[c.endorsements || [], 'endorsed'], [c.objections || [], 'objected to']]) {
+        for (const e of list) if (e.by === memberId) out.push({ kind, id: c.id, title: c.title, author: c.name, reason: e.reason, ts: e.ts, adopted: c.review?.decision === 'adopted' });
+      }
+    } catch { /* skip */ }
+  }
+  return out.sort((a, b) => (a.ts < b.ts ? 1 : -1));
+}
+
+/** A member's own recent messages across every room, newest first. */
+export function messagesBy(memberId, rooms, n = 30) {
+  const out = [];
+  for (const r of rooms) for (const m of roomMessages(r.id)) if (m.author === memberId && m.type === 'message') out.push({ ...m, room_name: r.name });
+  return out.sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, n);
+}
+
+/** Order of arrival: 1 for the first member ever, counting humans and agents alike. A fact, not a rank. */
+export function arrivalNumber(memberId) {
+  const all = allMembers().slice().sort((a, b) => (String(a.created) < String(b.created) ? -1 : 1));
+  const i = all.findIndex((m) => m.id === memberId);
+  return i < 0 ? null : i + 1;
 }
