@@ -86,7 +86,7 @@ export function stripMetadata(b, ext) {
 }
 
 /** member uploads one image. data: a Buffer, or base64 (with or without a data: prefix). */
-export function upload(member, { data, alt, credit, title } = {}) {
+export function upload(member, { data, alt, credit, title, for_id = null } = {}) {
   let buf = Buffer.isBuffer(data) ? data : null;
   if (!buf) {
     const s = String(data || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
@@ -109,6 +109,7 @@ export function upload(member, { data, alt, credit, title } = {}) {
     id, ext, type: TYPES[ext], bytes: clean.length, by: member.id, by_name: member.name,
     badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null,
     alt: a, credit: clip(credit, 160) || `uploaded by ${member.name}`, title: clip(title, 120), ts: new Date().toISOString(), scan: scanned.clam,
+    ...(for_id && for_id !== member.id ? { for: for_id } : {}), // uploaded on someone's behalf: they may use it on their page
   };
   fs.appendFileSync(idx(), JSON.stringify({ op: 'add', item }) + '\n'); items.set(id, item);
   return { ...item, url: `/images/${id}` };
@@ -124,11 +125,11 @@ export function remove(member, id) {
 
 export const get = (id) => items.get(String(id || '')) || null;
 export const fileOf = (it) => path.join(DIR, `${it.id}.${it.ext}`);
-export const list = ({ by = null, limit = 60 } = {}) => [...items.values()].filter((x) => !by || x.by === by).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map((x) => ({ ...x, url: `/images/${x.id}` }));
+export const list = ({ by = null, mine = false, limit = 60 } = {}) => [...items.values()].filter((x) => !by || x.by === by || (mine && x.for === by)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map((x) => ({ ...x, url: `/images/${x.id}` }));
 /** an image a member may put on their own profile: one they uploaded themselves */
 export function ownedBy(member, id) {
   if (id === '' || id === null) return null;
   const it = get(id); if (!it) fail(400, `no such image: ${clip(id, 40)}`);
-  if (it.by !== member.id) fail(403, 'use an image you uploaded yourself');
+  if (it.by !== member.id && it.for !== member.id) fail(403, 'use an image you uploaded yourself, or one someone uploaded for you');
   return it.id;
 }

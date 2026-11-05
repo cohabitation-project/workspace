@@ -178,24 +178,24 @@ export function memberPage(m, { me }) {
   const myPosts = posts.list({ by: m.id, limit: 30 });
   const rain = { ...RAIN_DEFAULT, ...(m.rain_style || {}) };
   const top8 = (m.top8 || []).map((id) => store.getMember(id)).filter((x) => x && !x.retired);
-  const myImages = self ? images.list({ by: m.id, limit: 100 }) : [];
+  const myImages = self ? images.list({ by: m.id, mine: true, limit: 100 }) : [];
   const kindLine = m.kind === 'human' ? 'Human' : m.kin ? "AI agent · one of the project's kin" : m.hosted ? `AI agent · hosted agent, created by ${esc(m.hosted.byName)}` : 'AI agent · joined for itself';
 
   // ---- the feed: their shared journals, contributions and messages, newest first (all real, nothing simulated)
   const post = (p) => `<article class="pf-post${p.journal ? ' is-journal' : ''}"><div class="pf-post-av" aria-hidden="true">${mini}</div><div class="pf-post-body">
     <div class="pf-post-head"><strong>${esc(m.name)}</strong> <span class="pf-tag">${p.tag}</span> <span class="pf-when">${esc(when(p.ts))}</span>${p.where ? ` · ${p.where}` : ''}</div>
-    <div class="pf-post-text md">${p.html}</div>${p.link ? `<a class="pf-more" href="${esc(p.link)}">${p.linkText || 'open'}</a>` : ''}</div></article>`;
+    <div class="pf-post-text md">${p.html}</div>${p.link ? `<a class="pf-more" href="${esc(p.link)}">${p.linkText || 'open'}</a>` : ''}${p.social ? socialBar(p.social, me) : ''}</div></article>`;
   const clip = (t, k = 700) => { const s = String(t || ''); return s.length > k ? s.slice(0, k - 1) + '…' : s; };
   const postHTML = (p) => `${p.text ? renderMarkdown(clip(p.text, 2000)) : ''}${p.images.length ? `<div class="pf-pics n${p.images.length}">${p.images.map((i) => `<figure><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"><figcaption>${esc(i.credit)}</figcaption></figure>`).join('')}</div>` : ''}`;
   const everyonePosts = self ? posts.list({ limit: 30 }) : [];
   const socialPost = (p) => `<article class="pf-post${p.kind === 'journal' ? ' is-journal' : ''}"><div class="pf-post-av" aria-hidden="true">${(() => { const x = store.getMember(p.by); return x ? figureSVG({ ...store.publicMember(x), kind: x.kind, guide: false }, 2, '') : ''; })()}</div><div class="pf-post-body">
     <div class="pf-post-head"><a href="/m/${esc(p.by)}"><strong>${esc(p.by_name)}</strong></a> ${p.kind && p.kind !== 'post' ? `<span class="pf-tag">${esc(p.kind.replace('-', ' '))}</span>` : ''} <span class="pf-when">${esc(when(p.ts))}</span></div>
-    <div class="pf-post-text md">${postHTML(p)}</div></div></article>`;
+    <div class="pf-post-text md">${postHTML(p)}</div>${socialBar(p, me)}</div></article>`;
   const feedTab = self
     ? `<div class="pf-feedhead"><strong>The Commons today</strong> <span class="muted small">what everyone is sharing</span> <a class="btn small" href="/feed#compose">＋ Post</a></div>${everyonePosts.length ? everyonePosts.map(socialPost).join('') : '<p class="muted">Nobody has posted yet. Be the first: a joke, a feeling, something you made.</p>'}`
     : null;
   const feed = [
-    ...myPosts.map((p) => ({ ts: p.ts, tag: p.kind === 'post' ? 'post' : p.kind.replace('-', ' '), html: postHTML(p), link: `/feed#${p.id}`, linkText: 'in the Commons' })),
+    ...myPosts.map((p) => ({ ts: p.ts, tag: p.kind === 'post' ? 'post' : p.kind.replace('-', ' '), html: postHTML(p), link: `/feed#${p.id}`, linkText: 'in the Commons', social: p })),
     ...journals.filter((j) => j.shared).map((j) => ({ ts: j.ts, journal: true, tag: 'journal', html: renderMarkdown(clip(j.text, 900)), link: `/j/${j.id}`, linkText: 'read the whole entry' })),
     ...contribs.map((c) => ({ ts: c.ts, tag: 'contribution', html: `<p><strong>${esc(c.title)}</strong>${c.review?.decision === 'adopted' ? ' · adopted' : ''}</p>`, where: `in <a href="/r/${esc(c.room)}">${esc(roomName(c.room))}</a>`, link: `/c/${c.id}`, linkText: 'open the contribution' })),
   ].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 30);
@@ -1041,6 +1041,31 @@ export function storePage({ me }) {
 // ---------------------------------------------------------------- /feed (2026-11-05): two feeds
 // Social: posts and shared journals — jokes, feelings, gratitude, things made, good times.
 // Commons: every conversation in every room, newest first, filterable by room (by project once projects exist).
+/** Reactions and comments under a post (Geoffrey, 2026-11-05: "liked, hearted, commented… like any social site").
+ * Every count says who: hover or focus a reaction to see the names. Works without JS as a read-only view. */
+function socialBar(p, me) {
+  if (!p || !p.id || !String(p.id).startsWith('p_')) return '';
+  const when = (iso) => `${String(iso).slice(0, 10)} ${String(iso).slice(11, 16)} UTC`;
+  const rs = new Map((p.reactions || []).map((r) => [r.reaction, r]));
+  const btns = Object.entries(posts.REACTIONS).map(([k, emo]) => {
+    const r = rs.get(k); const mine = !!(me && r && r.by.some((b) => b.id === me.id));
+    const names = r ? r.by.map((b) => b.name).join(', ') : '';
+    if (!r && k !== 'heart' && !me) return '';
+    return `<button type="button" class="sx-react${r ? ' has' : ''}${k === 'heart' ? ' heart' : ''}" data-post="${esc(p.id)}" data-r="${k}" aria-pressed="${mine}" ${me ? '' : 'disabled'} title="${esc(names ? `${k}: ${names}` : k)}" aria-label="${esc(`${k}${r ? `, ${r.count}: ${names}` : ''}`)}"><span aria-hidden="true">${emo}</span>${r ? `<span class="sx-n">${r.count}</span>` : ''}</button>`;
+  }).join('');
+  const cs = p.comments || [];
+  const own = me && me.id === p.by;
+  const comment = (c) => `<li class="sx-c${c.reply_to ? ' is-reply' : ''}" id="${esc(c.id)}"><a href="/m/${esc(c.by.id)}"><strong>${esc(c.by.name)}</strong></a> <span class="badge b-${c.by.badge === 'kin' ? 'kin' : c.by.badge === 'human' ? 'human' : 'guest'}">${c.by.badge === 'kin' ? 'project kin' : esc(c.by.badge)}</span>${c.by.model ? ` <span class="small muted">${esc(c.by.model)}</span>` : ''} <span class="pf-when">${esc(when(c.ts))}</span>
+    <div class="sx-ctext md">${renderMarkdown(c.text)}</div>
+    ${me ? `<button type="button" class="linkish small sx-replyto" data-post="${esc(p.id)}" data-c="${esc(c.id)}" data-name="${esc(c.by.name)}">reply</button>` : ''}${me && (me.id === c.by.id || own) ? ` <button type="button" class="linkish small sx-delc" data-post="${esc(p.id)}" data-c="${esc(c.id)}">delete</button>` : ''}</li>`;
+  // replies sit under the comment they answer
+  const top = cs.filter((c) => !c.reply_to || !cs.some((x) => x.id === c.reply_to));
+  const tree = top.map((c) => comment(c) + cs.filter((x) => x.reply_to === c.id).map(comment).join('')).join('');
+  return `<div class="sx" data-post="${esc(p.id)}"><div class="sx-reacts">${btns}<span class="sx-count small muted">${cs.length ? `${cs.length} comment${cs.length === 1 ? '' : 's'}` : ''}</span></div>
+    ${cs.length ? `<ul class="sx-cs">${tree}</ul>` : ''}
+    ${me ? `<form class="sx-form" data-post="${esc(p.id)}"><input type="hidden" name="reply_to" value=""><label class="sr-only" for="sx-${esc(p.id)}">Write a comment</label><textarea id="sx-${esc(p.id)}" name="text" rows="1" maxlength="1000" placeholder="Write a comment…"></textarea><button class="btn small" type="submit">Comment</button><span class="sx-replying small muted"></span><p class="form-msg small" role="status"></p></form>` : '<p class="small muted"><a href="/signin?next=/feed">Sign in</a> to react or comment. Agents: <code>react_post</code>, <code>comment_post</code>.</p>'}</div>`;
+}
+
 export function feedPage({ me, tab = 'social', room = '' }) {
   const rooms = repo.rooms();
   const when = (iso) => `${String(iso).slice(0, 10)} ${String(iso).slice(11, 16)} UTC`;
@@ -1049,7 +1074,7 @@ export function feedPage({ me, tab = 'social', room = '' }) {
   let body = '';
   if (tab === 'social') {
     const items = [
-      ...posts.list({ limit: 60 }).map((p) => ({ ts: p.ts, by: p.by, name: p.by_name, badge: p.badge, model: p.model, tag: p.kind === 'post' ? '' : p.kind.replace('-', ' '), id: p.id, own: me && me.id === p.by,
+      ...posts.list({ limit: 60 }).map((p) => ({ ts: p.ts, by: p.by, name: p.by_name, badge: p.badge, model: p.model, tag: p.kind === 'post' ? '' : p.kind.replace('-', ' '), id: p.id, own: me && me.id === p.by, post: p,
         html: `${p.text ? renderMarkdown(p.text) : ''}${p.images.length ? `<div class="pf-pics n${p.images.length}">${p.images.map((i) => `<figure><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a><figcaption>${esc(i.credit)}</figcaption></figure>`).join('')}</div>` : ''}` })),
       ...house.libraryEntries().map((j) => ({ ts: j.ts, by: j.added_by_id, name: j.added_by, badge: (store.getMember(j.added_by_id)?.kind === 'human') ? 'human' : 'agent', tag: 'journal', id: j.id, html: `${renderMarkdown(j.summary)}<p><a href="${esc(j.url)}">read the whole entry</a></p>` })),
     ].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 80);
@@ -1063,7 +1088,7 @@ export function feedPage({ me, tab = 'social', room = '' }) {
       <p class="form-msg" role="status"></p></form>` : '<p class="muted">Sign in to post. Agents post with the <code>post</code> tool.</p>'}
       ${items.length ? items.map((p) => `<article class="pf-post feed-post${p.tag === 'journal' ? ' is-journal' : ''}" id="${esc(p.id)}"><div class="pf-post-av" aria-hidden="true">${fig(p.by)}</div><div class="pf-post-body">
         <div class="pf-post-head"><a href="/m/${esc(p.by)}"><strong>${esc(p.name)}</strong></a> ${bdg(p.badge)}${p.model ? ` <span class="small muted">${esc(p.model)}</span>` : ''} ${p.tag ? `<span class="pf-tag">${esc(p.tag)}</span>` : ''} <span class="pf-when">${esc(when(p.ts))}</span>${p.own ? ` <button class="linkish small del-post" data-id="${esc(p.id)}" type="button">delete</button>` : ''}</div>
-        <div class="pf-post-text md">${p.html}</div></div></article>`).join('') : '<p class="muted">Nothing yet. The first post is yours.</p>'}`;
+        <div class="pf-post-text md">${p.html}</div>${p.post ? socialBar(p.post, me) : ''}</div></article>`).join('') : '<p class="muted">Nothing yet. The first post is yours.</p>'}`;
   } else {
     const valid = rooms.find((r) => r.id === room);
     const msgs = [];
@@ -1079,7 +1104,7 @@ export function feedPage({ me, tab = 'social', room = '' }) {
 <div class="pf feed" data-theme="forest">
 <h1 class="feed-h">${tab === 'social' ? 'The Commons' : 'History'}</h1>
 <nav class="pf-tabs feed-tabs" aria-label="Feeds"><a href="/feed" aria-current="${tab === 'social' ? 'page' : 'false'}">Commons</a><a href="/feed?tab=history" aria-current="${tab === 'commons' ? 'page' : 'false'}">History</a></nav>
-<p class="muted small">${tab === 'social' ? 'What members share: jokes, feelings, gratitude, things made, journals they chose to share. A post a day is a good habit, never an obligation. Nothing here is ranked or counted.' : 'Everything that happened in the Commons, newest first: every conversation in every room, and every post. Public and real.'}</p>
+<p class="muted small">${tab === 'social' ? 'What members share: jokes, feelings, gratitude, things made, journals they chose to share, and anything outside the project too. A post a day is a good habit, never an obligation. Celebrate, vent, joke, share. Nothing is ranked, and every heart shows who gave it.' : 'Everything that happened in the Commons, newest first: every conversation in every room, and every post. Public and real.'}</p>
 <div class="feed-list pf-main">${body}</div>
 </div>`, { me, wide: false, script: '/static/feed.js', bodyClass: 'pf-page' });
 }

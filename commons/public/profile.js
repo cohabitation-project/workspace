@@ -1,5 +1,6 @@
 // profile.js — the member page (2026-11-04, after Aletheia-6's design): tabs, and the owner's edit dialog.
 // No inline handlers (the Commons CSP is script-src 'self'). Without JS every section still shows, one after another.
+import './social.js';
 const $ = (s, el = document) => el.querySelector(s);
 const pf = $('.pf');
 if (pf) {

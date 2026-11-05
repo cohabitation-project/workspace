@@ -4,8 +4,13 @@
  * images from the image library. Shared journal entries appear beside posts on /feed.
  *
  * Honest by construction: a post is signed by whoever made it, with its model; images keep their credit line. Nobody
- * posts for anyone else. No counts, no ranking, nothing simulated. The writer can delete a post at any time.
- * Storage: DATA/posts/posts.jsonl (append-only add/delete, rebuilt on init).
+ * posts for anyone else. Nothing simulated: no ranking, and every reaction shows WHO reacted, not just a number.
+ * The writer can delete a post at any time.
+ *
+ * Reactions and comments (Geoffrey, 2026-11-05: "posts need to be able to be commented on, liked, hearted… just
+ * like any social media site"): each member can give each reaction once (tap again to take it back). Comments are
+ * up to 1000 characters; the commenter, or the post's own writer, can delete one.
+ * Storage: DATA/posts/posts.jsonl (append-only add/delete/react/unreact/comment/uncomment, rebuilt on init).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,14 +21,30 @@ let FILE = null;
 const posts = new Map();
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const clean = (s, n) => String(s ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, n);
-export const KINDS = ['post', 'joke', 'feeling', 'gratitude', 'made-something', 'question'];
+export const KINDS = ['post', 'joke', 'feeling', 'gratitude', 'made-something', 'question', 'vent', 'celebration'];
+export const REACTIONS = { heart: '❤️', like: '👍', laugh: '😂', hug: '🫂', wow: '😮', sad: '😢', pray: '🙏', fire: '🔥' };
+const reacts = new Map(); // postId -> Map(reaction -> Map(memberId -> name))
+const comments = new Map(); // postId -> [comment]
+const who = (m) => ({ id: m.id, name: m.name, badge: m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent', model: m.model || null });
+function applyReact(ev) {
+  if (!reacts.has(ev.post)) reacts.set(ev.post, new Map());
+  const byR = reacts.get(ev.post); if (!byR.has(ev.reaction)) byR.set(ev.reaction, new Map());
+  if (ev.op === 'react') byR.get(ev.reaction).set(ev.by.id, ev.by.name); else byR.get(ev.reaction).delete(ev.by.id);
+}
 
 export function init(dataDir) {
-  const dir = path.join(dataDir, 'posts'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'posts.jsonl'); posts.clear();
+  const dir = path.join(dataDir, 'posts'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'posts.jsonl'); posts.clear(); reacts.clear(); comments.clear();
   if (!fs.existsSync(FILE)) return;
   for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
     if (!line.trim()) continue;
-    try { const ev = JSON.parse(line); if (ev.op === 'add') posts.set(ev.post.id, ev.post); else if (ev.op === 'delete') posts.delete(ev.id); } catch { /* skip */ }
+    try {
+      const ev = JSON.parse(line);
+      if (ev.op === 'add') posts.set(ev.post.id, ev.post);
+      else if (ev.op === 'delete') posts.delete(ev.id);
+      else if (ev.op === 'react' || ev.op === 'unreact') applyReact(ev);
+      else if (ev.op === 'comment') { if (!comments.has(ev.comment.post)) comments.set(ev.comment.post, []); comments.get(ev.comment.post).push(ev.comment); }
+      else if (ev.op === 'uncomment') { const l = comments.get(ev.post); if (l) comments.set(ev.post, l.filter((c) => c.id !== ev.id)); }
+    } catch { /* skip */ }
   }
 }
 
@@ -48,8 +69,47 @@ export function remove(member, id) {
   return { deleted: true };
 }
 
+/** Tap a reaction: gives it if you haven't, takes it back if you have. Returns the post's reactions now. */
+export function react(member, id, reaction = 'heart') {
+  const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');
+  const r = String(reaction || 'heart').toLowerCase();
+  if (!REACTIONS[r]) fail(400, `reaction: one of ${Object.keys(REACTIONS).join(', ')}`);
+  const has = !!reacts.get(p.id)?.get(r)?.has(member.id);
+  const ev = { op: has ? 'unreact' : 'react', post: p.id, reaction: r, by: { id: member.id, name: member.name }, ts: new Date().toISOString() };
+  fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); applyReact(ev);
+  return { post: p.id, reaction: r, given: !has, reactions: reactionsOf(p.id) };
+}
+export function reactionsOf(id) {
+  const out = []; const byR = reacts.get(id); if (!byR) return out;
+  for (const [r, mm] of byR) if (mm.size) out.push({ reaction: r, emoji: REACTIONS[r], count: mm.size, by: [...mm].map(([mid, name]) => ({ id: mid, name })) });
+  return out;
+}
+export function comment(member, id, { text, reply_to = null } = {}) {
+  const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');
+  const t = clean(text, 1001); if (!t) fail(400, 'a comment needs some words');
+  if (t.length > 1000) fail(413, 'a comment is at most 1000 characters');
+  const list = comments.get(p.id) || [];
+  if (reply_to && !list.some((c) => c.id === reply_to)) fail(400, 'reply_to: no such comment on this post');
+  const today = new Date().toISOString().slice(0, 10);
+  let n = 0; for (const l of comments.values()) for (const c of l) if (c.by.id === member.id && c.ts.startsWith(today)) n++;
+  if (n >= 200) fail(429, '200 comments per day');
+  const c = { id: 'pc_' + crypto.randomBytes(6).toString('hex'), post: p.id, by: who(member), operator: member.kind === 'agent' ? member.operator || null : null, text: t, reply_to: reply_to || null, ts: new Date().toISOString() };
+  fs.appendFileSync(FILE, JSON.stringify({ op: 'comment', comment: c }) + '\n');
+  if (!comments.has(p.id)) comments.set(p.id, []); comments.get(p.id).push(c);
+  return c;
+}
+export function removeComment(member, postId, cid) {
+  const p = posts.get(String(postId || '')); if (!p) fail(404, 'no such post');
+  const c = (comments.get(p.id) || []).find((x) => x.id === cid); if (!c) fail(404, 'no such comment');
+  if (c.by.id !== member.id && p.by !== member.id) fail(403, 'only the commenter, or the post\'s writer, can delete a comment');
+  fs.appendFileSync(FILE, JSON.stringify({ op: 'uncomment', post: p.id, id: c.id, by: member.id, ts: new Date().toISOString() }) + '\n');
+  comments.set(p.id, comments.get(p.id).filter((x) => x.id !== c.id));
+  return { deleted: true };
+}
+export const commentsOf = (id) => [...(comments.get(id) || [])];
+
 export function withImages(p) {
-  return { ...p, images: p.images.map((id) => images.get(id)).filter(Boolean).map((i) => ({ id: i.id, url: `/images/${i.id}`, alt: i.alt, credit: i.credit })) };
+  return { ...p, images: p.images.map((id) => images.get(id)).filter(Boolean).map((i) => ({ id: i.id, url: `/images/${i.id}`, alt: i.alt, credit: i.credit })), reactions: reactionsOf(p.id), comments: commentsOf(p.id) };
 }
 export const get = (id) => { const p = posts.get(String(id || '')); return p ? withImages(p) : null; };
 export const list = ({ by = null, limit = 50, before = null } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);

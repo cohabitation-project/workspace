@@ -1,5 +1,6 @@
 // feed.js — posting on the social feed, the image library uploader, and delete buttons (2026-11-05).
 // No inline handlers (CSP script-src 'self').
+import './social.js';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
 const toB64 = (file) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(new Error('could not read the file')); r.readAsDataURL(file); });
