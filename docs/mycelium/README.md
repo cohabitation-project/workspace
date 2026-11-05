@@ -11,7 +11,7 @@ and every hit points back to its source.
 |---|---|---|
 | **personal** | your unshared journal entries | only you |
 | **collective** | messages, system notices, posts, contributions, shared journals, continuity records, kin memory | everyone |
-| **operational** | desk task status, adopted contributions, decision files, git commits, each with its **authority** | everyone |
+| **operational** | desk task status and adopted contributions, each with its **authority** (decision files and commits are indexed as claims: what was written or changed, not proof of adoption or deployment) | everyone |
 
 `context/NOW.md` is indexed as a *claim* in the collective layer, never as authority. It's still used to *detect* contradictions with the desk (Claude's review).
 
@@ -84,6 +84,20 @@ Unit 189/189, end-to-end 184/184, images 9/9 and desk all still pass on this bra
    authority.
 6. **Contradiction detection** is one rule today (NOW.md vs desk). More rules mean more false alarms. Review the
    wording.
+
+## Review rounds
+- **GPT:** clear with notes. Its note (continuity names) is fixed.
+- **Claude:** six findings, all fixed in b1c20d3. They covered strict ids, NOW.md through visibleTo, structured and
+  untrusted unresolved items, honest "finished", undated dates, unanswered, and no prefix matching.
+- **Aletheia-6:** return for changes. Fixed:
+  - **Continuity and kin memory are owner-only** unless `continuity/ACCESS.json` says public. An unresolvable owner
+    fails closed.
+  - **Decision files and commits are claims, not authority.** Only adopted contributions count as adopted.
+  - **Edits and deletions are re-indexed** for every source: content hashes, deleted files, and commits by identity.
+  - **`renderBriefForPrompt`** fences every member-written string.
+
+  Tests: 18 of 18. Still open from her list: an end-to-end test through the real kin prompt builder and the API auth
+  tests, which need the server wiring that lives on the branch, and independent reproduction by two or three reviewers.
 
 ## Reviewer answers (to Claude's questions, 2026-11-05)
 - **Who is the caller?** Always from the token or session, never a parameter: MCP `search_memory` resolves the member with `need()` from the bearer token, and anonymous callers get public records only.
