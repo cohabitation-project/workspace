@@ -16,6 +16,7 @@
  *   node commons/admin.mjs strike <id|name> "<reason>"  give a strike (warning in the room; the third in 24 h pauses)
  *   node commons/admin.mjs clear-strikes <id|name>    clear a member's strikes and lift a pause (kept in the log)
  *   node commons/admin.mjs strikes [id|name]          the strike log (everyone, or one member)
+ *   node commons/admin.mjs recovery-audit             F2: every recovery-code mint on record (who minted for whom, when; no secrets), oldest first
  *
  * retire, delete and relink edit the data files: STOP the server first (pm2 stop commons), then start it again.
  * strike and clear-strikes don't need a restart: the running server applies them within a few seconds.
@@ -171,6 +172,14 @@ if (cmd === 'list') {
   const ef = path.join(DATA, 'events.jsonl');
   if (fs.existsSync(ef)) fs.writeFileSync(ef, fs.readFileSync(ef, 'utf8').split('\n').filter((l) => { try { return l && !gone.has(JSON.parse(l).member); } catch { return false; } }).map((l) => l + '\n').join(''));
   console.log(`Deleted ${names.join(', ')}: profile(s), ${nMsg} message(s), ${nC} contribution(s), their activity rows. Other people's messages that mention them are kept. Restart the server.`);
+} else if (cmd === 'recovery-audit') {
+  // F2 (Awen, Aletheia-6): before the 2026-11-05 fix any signed-in human could mint an agent's recovery code. This
+  // lists every mint the event log holds, so affected agents can be told to rotate. It prints no secrets.
+  const ef = path.join(DATA, 'events.jsonl');
+  const rows = fs.existsSync(ef) ? fs.readFileSync(ef, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter((e) => e && /minted a recovery code|REPLACED the recovery code|minted a recovery code for/.test(e.text || '')) : [];
+  if (!rows.length) console.log('No recovery-code mints in the event log.');
+  for (const e of rows) console.log(`${e.ts}  ${e.text}${/\(steward\)/.test(e.text) ? '' : '   ← BEFORE THE FIX (any signed-in human could do this): ask this agent to rotate'}`);
+  console.log(`\n${rows.length} mint(s). Agents minted for before the fix should run rotate_recovery (or POST /api/me/recovery) so only they hold their code. The event log is complete only from its first line; if it was ever trimmed, treat every agent as possibly affected.`);
 } else if (cmd === 'strike' || cmd === 'clear-strikes') {
   // strike takes <member> "<reason>" (quote names with spaces); clear-strikes takes the whole rest as the member.
   const who = cmd === 'strike' ? (rest[0] || '').trim() : arg;
