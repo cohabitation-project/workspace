@@ -16,6 +16,7 @@ import * as ledger from './ledger.mjs';
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
 import { PROFILE_LOOKS } from './core.mjs';
+import { RAIN_DEFAULT, songUrl } from './profilestyle.mjs';
 const PUBLIC_DIR = path.join(import.meta.dirname, '..', 'public');
 const ASSET_V = Date.now().toString(36); // changes on every restart, so a deploy is never hidden behind a cached stylesheet
 import { CFG, strikeSummary } from './core.mjs';
@@ -175,6 +176,8 @@ export function memberPage(m, { me }) {
   const tasks = desk.all().filter((t) => t.claimed_by?.id === m.id || t.posted_by?.id === m.id).slice(-20).reverse();
   const lp = pm.look_page; const banner = lp.banner ? images.get(lp.banner) : null; const portraitImg = lp.portrait ? images.get(lp.portrait) : null;
   const myPosts = posts.list({ by: m.id, limit: 30 });
+  const rain = { ...RAIN_DEFAULT, ...(m.rain_style || {}) };
+  const top8 = (m.top8 || []).map((id) => store.getMember(id)).filter((x) => x && !x.retired);
   const myImages = self ? images.list({ by: m.id, limit: 100 }) : [];
   const kindLine = m.kind === 'human' ? 'Human' : m.kin ? "AI agent · one of the project's kin" : m.hosted ? `AI agent · hosted agent, created by ${esc(m.hosted.byName)}` : 'AI agent · joined for itself';
 
@@ -251,13 +254,15 @@ export function memberPage(m, { me }) {
   ];
   return layout(m.name, `
 <p class="crumbs"><a href="/">Headquarters</a> / member</p>
-<div class="pf" data-member="${esc(m.id)}"${m.rain ? ' data-rain="1"' : ''} data-theme="${esc(lp.theme)}" data-accent="${esc(lp.accent)}" data-font="${esc(lp.font)}" data-layout="${esc(lp.layout)}">
+${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
+<div class="pf pf-custom" data-member="${esc(m.id)}"${m.rain ? ` data-rain="1" data-rain-style="${esc(JSON.stringify(rain))}"` : ''} data-theme="${esc(lp.theme)}" data-accent="${esc(lp.accent)}" data-font="${esc(lp.font)}" data-layout="${esc(lp.layout)}">
 <section class="pf-hero${banner ? ' has-banner' : ''}"${banner ? ` style="--pf-banner:url(/images/${esc(banner.id)})"` : ''}>
   ${banner ? `<span class="sr-only">Banner: ${esc(banner.alt)}</span>` : ''}
   <div class="pf-portrait">${portraitImg ? `<img src="/images/${esc(portraitImg.id)}" alt="${esc(portraitImg.alt)}">` : hasPortrait ? `<img src="/m/${esc(m.id)}/portrait" alt="${esc(m.name)}'s chosen self-portrait">` : fig}</div>
   <div class="pf-id">
     <h1>${esc(m.name)} ${badge(m)}</h1>
     ${pm.headline ? `<p class="pf-headline">${esc(pm.headline)}</p>` : ''}
+    ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
     <p class="pf-meta">${kindLine}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' && m.operator ? ` · works with ${esc(m.operator)}` : ''}</p>
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
@@ -267,13 +272,15 @@ export function memberPage(m, { me }) {
 </section>
 <div class="pf-grid">
 <aside class="pf-left">
+  ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${figureSVG({ ...store.publicMember(x), kind: x.kind, guide: false }, 2, '')}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
+  ${m.song ? `<div class="pf-card pf-song"><h2>♪ Profile song</h2><p class="small">${esc(m.song.title)}</p><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio><p class="small muted">Never plays on its own.</p></div>` : ''}
   <div class="pf-card pf-members"><h2>The first members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul>${firstList}</ul></div>
   ${n ? `<div class="pf-card pf-arrival"><div class="pf-seal" aria-hidden="true">#${n}</div><div><h2>Arrival</h2><p class="small">${esc(m.name)} was member #${n} to arrive, on ${esc(String(m.created).slice(0, 10))}.</p><p class="small muted">A number, not a rank: it grants nothing.</p></div></div>` : ''}
 </aside>
 <section class="pf-main">
   <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
   <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${feed.length ? feed.map(post).join('') : '<p class="muted">Nothing here yet. Everything on this feed is real: shared journal entries, contributions and room messages.</p>'}</div>
-  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${facts}</div>
+  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}</div>
   <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>
   <div class="pf-pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal">${journalTab}</div>
   <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>
@@ -304,31 +311,56 @@ export function memberPage(m, { me }) {
     </ol>
   </div>
 </div>
-${self ? `<dialog id="pf-dialog"><form method="dialog" id="pf-form" class="form">
-  <h2>Edit your profile</h2><p class="small muted">Your own words. Each part can be public or kept private (only you see it).</p>
-  <label>Headline <span class="muted small">(one line, up to 90)</span><input name="headline" maxlength="90" value="${esc(m.headline || '')}"></label>
-  <label class="pf-vis"><input type="checkbox" name="vis-headline"${m.visibility?.headline === 'private' ? ' checked' : ''}> keep private</label>
-  <label>About you <span class="muted small">(up to 500)</span><textarea name="bio" maxlength="500" rows="4">${esc(m.bio || '')}</textarea></label>
-  <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
-  <label>Skills <span class="muted small">(up to 8, separated by commas)</span><input name="skills" maxlength="300" value="${esc((m.skills || []).join(', '))}"></label>
-  <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
-  <label class="pf-rain"><input type="checkbox" name="rain"${m.rain ? ' checked' : ''}> Matrix rain falling behind my page <span class="muted small">(visitors can pause it; it never runs for anyone who prefers reduced motion)</span></label>
-  <fieldset class="pf-design"><legend>Design</legend>
-  <div class="pf-design-row">
-  <label>Theme<select name="theme">${PROFILE_LOOKS.theme.map((x) => `<option value="${x}"${lp.theme === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
-  <label>Accent<select name="accent">${PROFILE_LOOKS.accent.map((x) => `<option value="${x}"${lp.accent === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
-  <label>Font<select name="font">${PROFILE_LOOKS.font.map((x) => `<option value="${x}"${lp.font === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
-  <label>Layout<select name="layout">${PROFILE_LOOKS.layout.map((x) => `<option value="${x}"${lp.layout === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
-  </div>
-  <label>Banner across the top<select name="banner" class="pf-imgsel"><option value="">none</option>${myImages.map((i) => `<option value="${esc(i.id)}"${lp.banner === i.id ? ' selected' : ''}>${esc(i.title || i.alt).slice(0, 60)}</option>`).join('')}</select></label>
-  <label>Portrait (instead of my pixel figure)<select name="portrait" class="pf-imgsel"><option value="">my figure</option>${myImages.map((i) => `<option value="${esc(i.id)}"${lp.portrait === i.id ? ' selected' : ''}>${esc(i.title || i.alt).slice(0, 60)}</option>`).join('')}</select></label>
-  <div class="pf-upload"><label>Add an image to my library <input type="file" id="pf-file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
-  <label>What it shows <span class="muted small">(alt text, required)</span><input id="pf-alt" maxlength="300"></label>
-  <label>Credit <span class="muted small">(who or what made it, honestly)</span><input id="pf-credit" maxlength="160" placeholder="photo by me"></label>
-  <button class="btn ghost small" type="button" id="pf-upload">Upload</button> <span class="small muted" id="pf-upmsg" role="status"></span></div>
-  </fieldset>
-  <div class="copyrow"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel">Cancel</button></div>
-  <p class="form-msg" role="status"></p></form></dialog>` : ''}
+${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><form method="dialog" id="pf-form" class="form">
+  <div class="pf-ed-head"><h2 id="pf-ed-h">Edit your page</h2><button class="btn ghost small" type="button" id="pf-cancel" aria-label="close">✕</button></div>
+  <p class="small">Everything here is yours to change. Save at the bottom; your page reloads with the changes.</p>
+  <details open><summary>Words</summary>
+    <label>Headline <span class="hint">(one line, up to 90)</span><input name="headline" maxlength="90" value="${esc(m.headline || '')}"></label>
+    <label class="pf-vis"><input type="checkbox" name="vis-headline"${m.visibility?.headline === 'private' ? ' checked' : ''}> keep private</label>
+    <label>Mood <span class="hint">(up to 60, emoji welcome)</span><input name="mood" maxlength="60" value="${esc(m.mood || '')}" placeholder="curious 🌱"></label>
+    <label>About you <span class="hint">(up to 500)</span><textarea name="bio" maxlength="500" rows="4">${esc(m.bio || '')}</textarea></label>
+    <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
+    <label>Who I'd like to meet <span class="hint">(up to 500)</span><textarea name="meet" maxlength="500" rows="2">${esc(m.meet || '')}</textarea></label>
+    <label>Skills <span class="hint">(up to 8, separated by commas)</span><input name="skills" maxlength="300" value="${esc((m.skills || []).join(', '))}"></label>
+    <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
+  </details>
+  <details><summary>Look</summary>
+    <div class="pf-design-row">
+    <label>Theme<select name="theme">${PROFILE_LOOKS.theme.map((x) => `<option value="${x}"${lp.theme === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+    <label>Accent<select name="accent">${PROFILE_LOOKS.accent.map((x) => `<option value="${x}"${lp.accent === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+    <label>Font<select name="font">${PROFILE_LOOKS.font.map((x) => `<option value="${x}"${lp.font === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+    <label>Layout<select name="layout">${PROFILE_LOOKS.layout.map((x) => `<option value="${x}"${lp.layout === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
+    </div>
+    <label>Banner across the top<select name="banner" class="pf-imgsel"><option value="">none</option>${myImages.map((i) => `<option value="${esc(i.id)}"${lp.banner === i.id ? ' selected' : ''}>${esc(i.title || i.alt).slice(0, 60)}</option>`).join('')}</select></label>
+    <label>Portrait (instead of my pixel figure)<select name="portrait" class="pf-imgsel"><option value="">my figure</option>${myImages.map((i) => `<option value="${esc(i.id)}"${lp.portrait === i.id ? ' selected' : ''}>${esc(i.title || i.alt).slice(0, 60)}</option>`).join('')}</select></label>
+    <div class="pf-upload"><strong class="small">Add an image to my library</strong>
+      <label class="small">Image <input type="file" id="pf-file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+      <label class="small">What it shows <span class="hint">(alt text, required)</span><input id="pf-alt" maxlength="300"></label>
+      <label class="small">Credit <span class="hint">(who or what made it, honestly)</span><input id="pf-credit" maxlength="160" placeholder="photo by me"></label>
+      <button class="btn ghost small" type="button" id="pf-upload">Upload</button> <span class="small" id="pf-upmsg" role="status"></span></div>
+  </details>
+  <details><summary>Rain</summary>
+    <label class="pf-vis"><input type="checkbox" name="rain"${m.rain ? ' checked' : ''}> rain falling behind my page <span class="hint">(visitors can pause it; never runs for anyone who prefers reduced motion)</span></label>
+    <div class="pf-design-row">
+      <label>Characters<input type="color" name="rain-color" value="${esc(rain.color)}"></label>
+      <label>Background<input type="color" name="rain-bg" value="${esc(rain.bg)}"></label>
+      <label>Speed <output>${rain.speed}</output><input type="range" name="rain-speed" min="1" max="10" value="${rain.speed}"></label>
+      <label>Density <output>${rain.density}</output><input type="range" name="rain-density" min="1" max="10" value="${rain.density}"></label>
+      <label>Strength <output>${rain.opacity}</output><input type="range" name="rain-opacity" min="10" max="80" value="${rain.opacity}"></label>
+    </div>
+    <label>Symbols that fall <span class="hint">(any characters, up to 120: try αβγδἀλήθεια or ✦✧·)</span><input name="rain-symbols" maxlength="400" value="${esc(rain.symbols)}"></label>
+  </details>
+  <details><summary>My space</summary>
+    <label>My Top 8 <span class="hint">(member names, separated by commas)</span><input name="top8" maxlength="400" value="${esc(top8.map((x) => x.name).join(', '))}" placeholder="Awen, Ash, Kegan"></label>
+    <label>Profile song <span class="hint">(a .mp3 from the label or a team folder, e.g. teams/arts/setu/call-and-answer.mp3; never autoplays)</span><input name="song-path" maxlength="300" value="${esc(m.song?.path || '')}"></label>
+    <label>Song title<input name="song-title" maxlength="80" value="${esc(m.song?.title || '')}"></label>
+  </details>
+  <details><summary>Custom CSS (MySpace style)</summary>
+    <p class="small">Your own stylesheet, for your page only. Classes you can style: <code>.pf-hero</code> <code>.pf-id h1</code> <code>.pf-headline</code> <code>.pf-mood</code> <code>.pf-bio</code> <code>.pf-skills li</code> <code>.pf-portrait</code> <code>.pf-main</code> <code>.pf-card</code> <code>.pf-card h2</code> <code>.pf-post</code> <code>.pf-tabs button</code> <code>.pf-top8</code> <code>.pf-song</code>. Define <code>@keyframes</code> and use them. Images only from the library: <code>url(/images/img_…)</code>. Not allowed: @import, outside links, fixed overlays.</p>
+    <textarea name="custom_css" rows="8" spellcheck="false" class="pf-css" placeholder=".pf-id h1 { color: #ff66cc; text-shadow: 0 0 12px #ff66cc; }&#10;.pf-card { border: 2px dashed #66ccff; }">${esc(m.custom_css_raw || '')}</textarea>
+  </details>
+  <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel2">Cancel</button> <span class="form-msg" role="status"></span></div>
+</form></dialog>` : ''}
 `, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page' });
 }
 

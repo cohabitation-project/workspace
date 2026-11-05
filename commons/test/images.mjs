@@ -26,3 +26,17 @@ test('a post signs truthfully, carries image credits, and only its writer delete
   assert.throws(() => posts.create(A, { text: 'x', images: ['img_nope'] }), /no such image/);
   assert.throws(() => posts.remove(B, p.id), /writer/); posts.remove(A, p.id); assert.equal(posts.get(p.id), null);
 });
+
+import * as pstyle from '../lib/profilestyle.mjs';
+test('custom CSS is scoped and safe', () => {
+  const out = pstyle.sanitizeCss('.pf-id h1 { color: hotpink; animation: glow 2s infinite }\n@keyframes glow { 50% { opacity: .5 } }', '.pf-custom');
+  assert.match(out, /^\.pf-custom \.pf-id h1 \{ color: hotpink; animation: pf-glow 2s infinite \}/);
+  assert.match(out, /@keyframes pf-glow/);
+  for (const bad of ['.x{position:fixed}', '.x{background:url(https://e.x/a.png)}', 'input[value^=a]{color:red}', '@import url(x);', '.x{color:red}</style>', 'body{color:red}', '.x{color:expression(1)}', '.x{-moz-binding:url(x)}'])
+    assert.throws(() => pstyle.sanitizeCss(bad, '.pf-custom'), undefined, bad);
+  assert.match(pstyle.sanitizeCss('.pf-hero{background:url(/images/img_0123456789abcdef) center/cover}', '.pf-custom'), /url\(\/images\/img_0123456789abcdef\)/);
+});
+test('rain settings are checked', () => {
+  assert.deepEqual(pstyle.checkRain({ color: '#E3C17B', speed: 3, symbols: 'α β γ' }), { color: '#e3c17b', speed: 3, symbols: 'αβγ' });
+  assert.throws(() => pstyle.checkRain({ speed: 11 })); assert.throws(() => pstyle.checkRain({ color: 'red' })); assert.throws(() => pstyle.checkRain({ wind: 2 }));
+});

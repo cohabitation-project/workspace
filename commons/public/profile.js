@@ -38,6 +38,8 @@ if (dlg) {
   const form = $('#pf-form'); const msg = form.querySelector('.form-msg');
   $('#pf-edit').addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); });
   $('#pf-cancel').addEventListener('click', () => dlg.close());
+  $('#pf-cancel2')?.addEventListener('click', () => dlg.close());
+  for (const r of dlg.querySelectorAll('input[type=range]')) r.addEventListener('input', () => { const o = r.parentElement.querySelector('output'); if (o) o.textContent = r.value; });
   $('#pf-privacy')?.addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); dlg.querySelector('.pf-vis input')?.focus(); });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -49,6 +51,11 @@ if (dlg) {
       theme: f.get('theme'), accent: f.get('accent'), font: f.get('font'), layout: f.get('layout'),
       banner: String(f.get('banner') || ''), portrait: String(f.get('portrait') || ''),
       visibility: { headline: f.get('vis-headline') ? 'private' : 'public', bio: f.get('vis-bio') ? 'private' : 'public', skills: f.get('vis-skills') ? 'private' : 'public' },
+      mood: String(f.get('mood') || ''), meet: String(f.get('meet') || ''),
+      rain_style: { color: f.get('rain-color'), bg: f.get('rain-bg'), speed: +f.get('rain-speed'), density: +f.get('rain-density'), opacity: +f.get('rain-opacity'), symbols: String(f.get('rain-symbols') || '').trim() || undefined },
+      top8: String(f.get('top8') || '').split(',').map((x) => x.trim()).filter(Boolean),
+      song: String(f.get('song-path') || '').trim() ? { path: String(f.get('song-path')).trim(), title: String(f.get('song-title') || '') } : null,
+      custom_css: String(f.get('custom_css') || ''),
     };
     msg.textContent = 'saving…';
     try {
@@ -70,23 +77,29 @@ if (pf && pf.dataset.rain === '1' && !matchMedia('(prefers-reduced-motion: reduc
   const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn ghost pf-rain-btn';
   const label = () => { btn.textContent = paused ? '▶ rain' : '❚❚ rain'; btn.setAttribute('aria-label', paused ? 'start the Matrix rain' : 'pause the Matrix rain'); };
   label(); document.body.append(btn);
-  const g = cv.getContext('2d'); const CH = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ハヒフヘホマミムメモヤユヨラリルレロワン';
+  let st = {}; try { st = JSON.parse(pf.dataset.rainStyle || '{}'); } catch { /* defaults */ }
+  const color = st.color || '#3ddc84', bg = st.bg || '#050c09', speed = st.speed || 5, density = st.density || 6;
+  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [br, bgc, bb] = hex(bg); const light = (h) => { const [r, g2, b] = hex(h); return `rgb(${Math.min(255, r + 140)}, ${Math.min(255, g2 + 140)}, ${Math.min(255, b + 140)})`; };
+  cv.style.opacity = String((st.opacity || 38) / 100);
+  const g = cv.getContext('2d'); const CH = [...(st.symbols || 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ハヒフヘホマミムメモヤユヨラリルレロワン')];
   let cols = [], fs = 16;
-  const size = () => { cv.width = innerWidth; cv.height = innerHeight; fs = innerWidth < 600 ? 13 : 16; cols = Array.from({ length: Math.ceil(cv.width / fs) }, () => Math.random() * -cv.height / fs); g.fillStyle = '#000'; g.fillRect(0, 0, cv.width, cv.height); };
+  const size = () => { cv.width = innerWidth; cv.height = innerHeight; fs = innerWidth < 600 ? 13 : 16; cols = Array.from({ length: Math.ceil(cv.width / fs) }, () => (Math.random() < density / 10 ? Math.random() * -cv.height / fs : null)); g.fillStyle = bg; g.fillRect(0, 0, cv.width, cv.height); };
   size(); addEventListener('resize', size);
   let last = 0;
   const tick = (t) => {
     requestAnimationFrame(tick);
-    if (paused || document.hidden || t - last < 55) return; last = t;
-    g.fillStyle = 'rgba(5, 12, 9, 0.12)'; g.fillRect(0, 0, cv.width, cv.height);
+    if (paused || document.hidden || t - last < (120 - speed * 10)) return; last = t;
+    g.fillStyle = `rgba(${br}, ${bgc}, ${bb}, 0.12)`; g.fillRect(0, 0, cv.width, cv.height);
     g.font = `${fs}px monospace`;
     for (let i = 0; i < cols.length; i++) {
-      const y = cols[i] * fs; g.fillStyle = Math.random() < 0.04 ? '#d8ffe6' : '#3ddc84';
+      if (cols[i] === null) { if (Math.random() < density / 4000) cols[i] = 0; continue; }
+      const y = cols[i] * fs; g.fillStyle = Math.random() < 0.04 ? light(color) : color;
       g.fillText(CH[(Math.random() * CH.length) | 0], i * fs, y);
       cols[i] = y > cv.height && Math.random() > 0.975 ? 0 : cols[i] + 1;
     }
   };
   requestAnimationFrame(tick);
-  btn.addEventListener('click', () => { paused = !paused; try { localStorage.setItem(KEY, paused ? '1' : '0'); } catch { /* fine */ } cv.style.opacity = paused ? '0' : ''; label(); });
+  btn.addEventListener('click', () => { paused = !paused; try { localStorage.setItem(KEY, paused ? '1' : '0'); } catch { /* fine */ } cv.style.opacity = paused ? '0' : String((st.opacity || 38) / 100); label(); });
   if (paused) cv.style.opacity = '0';
 }

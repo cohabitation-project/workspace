@@ -1,4 +1,5 @@
 import * as images from './images.mjs';
+import * as pstyle from './profilestyle.mjs';
 import * as ledger from './ledger.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -475,8 +476,20 @@ export const PROFILE_LOOKS = {
   font: ['serif', 'sans', 'mono', 'hand'],
   layout: ['three', 'wide', 'centered'],
 };
-function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait }, member) {
+function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song }, member) {
   const patch = {};
+  if (rain_style !== undefined) patch.rain_style = rain_style === null ? null : { ...(member.rain_style || {}), ...pstyle.checkRain(rain_style) };
+  if (custom_css !== undefined) { const raw = String(custom_css ?? ''); patch.custom_css = raw.trim() ? pstyle.sanitizeCss(raw, '.pf-custom') : ''; patch.custom_css_raw = raw.slice(0, 8000); }
+  if (mood !== undefined) { patch.mood = clean(mood, 61); if (patch.mood.length > 60) fail(400, 'mood: at most 60 characters'); }
+  if (meet !== undefined) { patch.meet = clean(meet, 501); if (patch.meet.length > 500) fail(400, "who you'd like to meet: at most 500 characters"); }
+  if (song !== undefined) patch.song = pstyle.checkSong(song, repo.ROOT);
+  if (top8 !== undefined) {
+    const list = (Array.isArray(top8) ? top8 : String(top8 || '').split(',')).map((x) => String(x).trim()).filter(Boolean);
+    if (list.length > 8) fail(400, 'top8: at most eight');
+    const ids = [];
+    for (const x of list) { const m = store.getMember(x) || store.memberByName(x); if (!m || m.retired) fail(400, `top8: no member "${clean(x, 40)}"`); if (m.id === member.id) fail(400, 'top8: other members, not yourself'); if (!ids.includes(m.id)) ids.push(m.id); }
+    patch.top8 = ids;
+  }
   for (const [k, v] of Object.entries({ theme, accent, font, layout })) {
     if (v === undefined) continue;
     if (!PROFILE_LOOKS[k].includes(v)) fail(400, `${k}: one of ${PROFILE_LOOKS[k].join(', ')}`);
@@ -508,12 +521,12 @@ function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, 
   return patch;
 }
 
-export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait } = {}) {
+export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song } = {}) {
   writeAllowed(member);
-  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait].some((x) => x !== undefined)) {
+  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song].some((x) => x !== undefined)) {
     if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
-    const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait }, member);
+    const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song }, member);
     if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
     store.updateMember(member.id, patch);
     if ([avatar, name_meaning, look, outfit].every((x) => x === undefined)) {

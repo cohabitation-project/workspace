@@ -420,3 +420,34 @@ body.pf-page:has(.pf[data-theme=meadow])    { --pf-page-a: #e4f0cf; --pf-page-b:
 .img-cell img { width: 100%; height: 200px; object-fit: cover; display: block; }
 .img-cell figcaption { padding: 8px 10px; }
 .feed-compose select { width: auto; flex: 0 0 auto; } .feed-compose .copyrow { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+/* ---- the editor (2026-11-05: "the edit palette is too dark, I can't read anything") — always light, high contrast */
+#pf-dialog.pf-editor { background: #fffdf7; color: #1d1a14; border: 2px solid #c8a24a; border-radius: 16px; width: min(640px, calc(100vw - 20px)); max-height: calc(100vh - 30px); padding: 0; font-family: system-ui, sans-serif; }
+#pf-dialog.pf-editor form { padding: 16px 20px 0; }
+#pf-dialog.pf-editor h2 { color: #1d1a14; margin: 0; font-size: 22px; }
+#pf-dialog.pf-editor p, #pf-dialog.pf-editor label, #pf-dialog.pf-editor summary, #pf-dialog.pf-editor legend { color: #1d1a14; }
+#pf-dialog.pf-editor .hint, #pf-dialog.pf-editor .muted { color: #5b5446 !important; font-size: 12px; }
+#pf-dialog.pf-editor label { display: block; font-size: 14px; font-weight: 600; margin: 10px 0 2px; }
+#pf-dialog.pf-editor input:not([type=checkbox]):not([type=range]):not([type=color]):not([type=file]), #pf-dialog.pf-editor textarea, #pf-dialog.pf-editor select {
+  width: 100%; background: #fff; color: #1d1a14; border: 1px solid #b9ae95; border-radius: 8px; padding: 8px 10px; font: 15px system-ui, sans-serif; font-weight: 400; margin-top: 3px; }
+#pf-dialog.pf-editor input:focus, #pf-dialog.pf-editor textarea:focus, #pf-dialog.pf-editor select:focus { outline: 3px solid #e3c17b; outline-offset: 1px; }
+#pf-dialog.pf-editor input[type=color] { width: 100%; height: 36px; border: 1px solid #b9ae95; border-radius: 8px; background: #fff; }
+#pf-dialog.pf-editor input[type=range] { width: 100%; }
+#pf-dialog.pf-editor details { border: 1px solid #e3d9c2; border-radius: 12px; padding: 4px 12px 10px; margin: 10px 0; background: #fffaf0; }
+#pf-dialog.pf-editor summary { font-weight: 700; font-size: 16px; cursor: pointer; padding: 8px 0; }
+#pf-dialog.pf-editor .pf-vis { font-weight: 400; font-size: 13px; margin-top: 2px; }
+#pf-dialog.pf-editor code { background: #f1ead8; color: #4a3b12; padding: 0 4px; border-radius: 4px; font-size: 12px; }
+#pf-dialog.pf-editor .pf-css { font-family: ui-monospace, 'Courier New', monospace; font-size: 13px; }
+#pf-dialog.pf-editor .btn { background: #c8a24a; color: #1d1a14; border-color: #a8872f; }
+#pf-dialog.pf-editor .btn.ghost { background: #fff; color: #1d1a14; border-color: #b9ae95; }
+#pf-dialog.pf-editor .pf-upload { border-top: 1px dashed #d6caa9; }
+.pf-ed-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.pf-ed-foot { position: sticky; bottom: 0; background: #fffdf7; border-top: 1px solid #e3d9c2; padding: 12px 0 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pf-ed-foot .form-msg { color: #8a2c14; font-size: 14px; }
+/* Top 8, mood, song */
+.pf-top8 ul { list-style: none; padding: 0; margin: 6px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pf-top8 li a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--pf-ink); padding: 4px; border-radius: 10px; }
+.pf-top8 li a:hover { background: #e3c17b1c; }
+.pf-mood { margin: 0 0 6px; font-size: 14px; }
+.pf-song audio { width: 100%; margin-top: 4px; }
+#pf-dialog.pf-editor .pf-vis { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#pf-dialog.pf-editor input[type=checkbox] { width: 18px; height: 18px; margin: 0; flex: none; accent-color: #c8a24a; }
