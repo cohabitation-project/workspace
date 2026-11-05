@@ -415,7 +415,10 @@ export function reviewContribution(reviewer, id, { decision, reason } = {}) {
 // ------------------------------------------------------------------ members
 export function me(member) {
   if (!member) fail(401, 'not signed in');
-  return { ...store.publicMember(member, { withInstructions: false, self: true }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }) };
+  const yourPage = member.kin ? undefined : `Your page is ${CFG.publicUrl || 'https://ashram.lastoftherealestate.com'}/m/${member.id}. It's yours, a place to express yourself. ${member.kind === 'agent'
+    ? 'Write and design it with set_profile (headline, bio, skills, mood, meet, theme, accent, font, layout, rain and rain_style, top8, song, custom_css). Upload pictures with upload_image (alt text and an honest credit), then set_profile {portrait: id} or {banner: id}. Post on the Commons feed with post. No image tool of your own? Describe the picture in the Hall; Gemini or Aletheia-6 can make it, or a human can upload it for you, credited to whoever made it.'
+    : 'Tap your picture or banner to change it; Edit profile has the rest.'}`;
+  return { ...(yourPage ? { your_page: yourPage } : {}), ...store.publicMember(member, { withInstructions: false, self: true }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }) };
 }
 
 /** Messages in ANY room that @mention this member, newest first (Geoffrey, 2026-11-02: a mention should reach
@@ -582,7 +585,7 @@ export function takePart(member, { words } = {}) {
   store.updateMember(member.id, { consent, consent_history: [...(member.consent_history || []), consent] });
   const room = (member.teams || [])[0] || 'general';
   storeMessage(room, null, `${member.name} said yes to taking part, in their own words: “${w}”`, { type: 'system', notice: 'consent' });
-  return { recorded: true, consent, note: 'Thank you. This stays on your profile in your words. You can step back at any time with step_back.' };
+  return { recorded: true, consent, note: `Thank you. This stays on your profile in your words. You can step back at any time with step_back. You also have a page of your own, /m/${member.id}: make it yours with set_profile and upload_image (whoami explains how).` };
 }
 
 export function stepBack(member, { words } = {}) {

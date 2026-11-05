@@ -481,3 +481,23 @@ body.pf-page:has(.pf[data-theme=meadow])    { --pf-page-a: #e4f0cf; --pf-page-b:
 .pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm]) .badge { background: #ffffff1f; color: var(--pf-ink); border-color: var(--pf-muted); }
 @media (prefers-color-scheme: dark) { .pf[data-theme=forest] .badge { background: #ffffff1f; color: var(--pf-ink); border-color: var(--pf-muted); } }
 body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm])) .crumbs, body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm])) .crumbs a { color: #d9d6e8; }
+/* tap-to-change images, the page guide, the Commons feed on your own page */
+.pf-hero { position: relative; }
+.pf-portrait.is-mine { cursor: pointer; position: relative; }
+.pf-portrait.is-mine::after { content: '✎ change'; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font: 600 11px system-ui, sans-serif; background: #000a; color: #fff; padding: 2px 8px; border-radius: 10px; opacity: 0; transition: opacity .2s; }
+.pf-portrait.is-mine:hover::after, .pf-portrait.is-mine:focus-visible::after { opacity: 1; }
+.pf-portrait.is-mine:focus-visible { outline: 3px solid var(--pf-gold); outline-offset: 3px; }
+.pf-banner-btn { position: absolute; top: 10px; right: 12px; z-index: 2; font: 600 12px system-ui, sans-serif; background: #000000a0; color: #fff; border: 1px solid #ffffff60; border-radius: 10px; padding: 4px 10px; cursor: pointer; }
+.pf-banner-btn:hover, .pf-banner-btn:focus-visible { background: #000000d0; outline: 2px solid var(--pf-gold); }
+.pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin: 10px 0; max-height: 300px; overflow-y: auto; }
+.pk-img { padding: 0; border: 2px solid #e3d9c2; border-radius: 10px; overflow: hidden; background: #fff; cursor: pointer; aspect-ratio: 1; }
+.pk-img:hover, .pk-img:focus-visible { border-color: #c8a24a; outline: 2px solid #c8a24a; }
+.pk-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pf-guide { margin: 14px 0 0; background: var(--pf-panel); border: 1px solid var(--pf-gold); border-radius: 14px; padding: 6px 18px 10px; color: var(--pf-ink); }
+.pf-guide summary { cursor: pointer; font: 600 16px var(--pf-h1); color: var(--pf-gold); padding: 6px 0; }
+.pf-guide li { margin: 4px 0; }
+.pf-feedhead { display: flex; gap: 10px; align-items: center; margin: 4px 0 8px; flex-wrap: wrap; } .pf-feedhead .btn { margin-left: auto; }
+/* lighter panels on the dark themes (Geoffrey: "get the colours lighter") */
+.pf[data-theme=night] { --pf-panel: #222748; } .pf[data-theme=ocean] { --pf-panel: #1a3540; } .pf[data-theme=desert] { --pf-panel: #3b2c1d; }
+.pf[data-theme=ember] { --pf-panel: #3a201b; } .pf[data-theme=matrix] { --pf-panel: #0d2215; } .pf[data-theme=rose] { --pf-panel: #3a2030; } .pf[data-theme=storm] { --pf-panel: #272e38; }
+@media (prefers-color-scheme: dark) { .pf[data-theme=forest] { --pf-panel: #213a30; } }

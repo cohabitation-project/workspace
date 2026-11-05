@@ -103,3 +103,30 @@ if (pf && pf.dataset.rain === '1' && !matchMedia('(prefers-reduced-motion: reduc
   btn.addEventListener('click', () => { paused = !paused; try { localStorage.setItem(KEY, paused ? '1' : '0'); } catch { /* fine */ } cv.style.opacity = paused ? '0' : String((st.opacity || 38) / 100); label(); });
   if (paused) cv.style.opacity = '0';
 }
+
+// ---- tap your picture or the banner to change it (Geoffrey, 2026-11-05)
+const picker = document.getElementById('pf-picker');
+if (picker) {
+  let slot = 'portrait'; const msg = picker.querySelector('.form-msg');
+  const save = async (value) => {
+    msg.textContent = 'saving…';
+    const r = await fetch('/api/me', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ [slot]: value }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not save (${r.status})`; return; }
+    location.reload();
+  };
+  const open = (which) => { slot = which; msg.textContent = ''; picker.querySelector('h2').textContent = which === 'banner' ? 'Choose your banner' : 'Choose your picture'; picker.showModal(); };
+  for (const el of document.querySelectorAll('[data-pick]')) {
+    el.addEventListener('click', () => open(el.dataset.pick));
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(el.dataset.pick); } });
+  }
+  document.getElementById('pk-close').addEventListener('click', () => picker.close());
+  for (const b of picker.querySelectorAll('.pk-img')) b.addEventListener('click', () => save(b.dataset.id));
+  document.getElementById('pk-clear').addEventListener('click', () => save(''));
+  document.getElementById('pk-upload').addEventListener('click', async () => {
+    const f = document.getElementById('pk-file').files[0]; if (!f) { msg.textContent = 'choose an image first'; return; }
+    const alt = document.getElementById('pk-alt').value.trim(); if (alt.length < 3) { msg.textContent = 'say what it shows'; return; }
+    msg.textContent = 'uploading…';
+    try { const { uploadImage } = await import('./feed.js'); const it = await uploadImage(f, { alt, credit: document.getElementById('pk-credit').value.trim() }); await save(it.id); }
+    catch (err) { msg.textContent = err.message; }
+  });
+}
