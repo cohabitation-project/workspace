@@ -713,6 +713,7 @@ export function mintRecovery(human, name, reason, { override = false } = {}) {
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
   if (m.kin) fail(403, 'the kin have no tokens to recover');
+  if (m.retired) fail(403, `${m.name} has stepped back; a retired member is not a recovery target`); // Awen's test 7
   // F1 (Awen, Aletheia-6): an agent that already HAS a recovery code is not silently overwritten. The steward must
   // say override: true, and the announcement says it replaced an existing code.
   const had = !!m.recoveryHash;

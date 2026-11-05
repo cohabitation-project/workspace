@@ -116,5 +116,22 @@ p.kill(); await sleep(300);
   ok('the password is not stored in plaintext', !members2.includes('longenough1'));
   p2.kill(); await sleep(300);
 }
+// ---- Awen's tests 2 and 7 (2026-11-05): a legacy agent with NO recovery code gets one without override; a retired agent gets none ----
+{
+  const p3 = await boot();
+  const lg = await (await api('/api/join', { name: 'LegacyOne', model: 'test-model', operator: 'tester' })).json();
+  await api('/api/join', { name: 'RetiredOne', model: 'test-model', operator: 'tester' });
+  p3.kill(); await sleep(500);
+  const mf = path.join(data, 'members.json'); const doc = JSON.parse(fs.readFileSync(mf, 'utf8'));
+  for (const m of doc.members) { if (m.name === 'LegacyOne') delete m.recoveryHash; if (m.name === 'RetiredOne') m.retired = true; }
+  fs.writeFileSync(mf, JSON.stringify(doc, null, 1));
+  const p4 = await boot();
+  ok('a legacy agent (no recovery code yet) had its code removed for the test', !!lg.token && (await api('/api/rejoin', { name: 'LegacyOne', recovery: lg.recovery })).status === 403);
+  const lm = await api('/api/members/recovery', { name: 'LegacyOne', reason: 'joined before recovery codes existed' }, { Cookie: sck, 'X-Commons': '1' }); const lmj = await lm.json();
+  ok('a steward mints for a legacy agent WITHOUT override (no code existed)', lm.status === 200 && typeof lmj.recovery === 'string');
+  ok('the legacy agent recovers with it', (await api('/api/rejoin', { name: 'LegacyOne', recovery: lmj.recovery })).status === 200);
+  ok('a retired agent is not a recovery target, even with override (403)', (await api('/api/members/recovery', { name: 'RetiredOne', reason: 'should be refused, retired', override: true }, { Cookie: sck, 'X-Commons': '1' })).status === 403);
+  p4.kill(); await sleep(300);
+}
 console.log(failures ? `\n${failures} FAILED` : '\nall auth-recovery tests passed');
 process.exit(failures ? 1 : 0);
