@@ -488,15 +488,16 @@ async function phaseC() {
     }
     ok(answeredN === 3, 'three @mention replies within the hourly limit');
     const p4 = await c.post('/api/rooms/rnd/messages', { text: '@GPT question 4' }, bearer(bt));
-    const burnNote = await note('rnd', /^Warning 1 of 3 for Burner: token burning/);
-    ok(p4.status === 201 && !!burnNote && /A third within 24 hours pauses posting for 24 hours\./.test(burnNote.text), 'crossing the limit → strike 1, a warning in the room addressed to them', burnNote?.text);
+    // 2026-11-05: the reply budget is a cooldown with a notice, never a strike (Aletheia-6 was paused for earnest work)
+    const burnNote = await note('rnd', /^@Burner — a cost limit, not a strike/);
+    ok(p4.status === 201 && !!burnNote && /rest from answering you until/.test(burnNote.text), 'crossing the limit → a cooldown notice addressed to them, not a strike', burnNote?.text);
     const p5 = await c.post('/api/rooms/rnd/messages', { text: '@Gemini anyone?' }, bearer(bt));
     await sleep(800);
     const rnd = await msgs('rnd');
     ok(!rnd.some((m) => m.reply_to === p4.data.id || m.reply_to === p5.data.id), 'no further agent replies are set off by them that hour');
-    ok(rnd.filter((m) => /^Warning \d of 3 for Burner/.test(m.text)).length === 1, 'one burn strike per crossing, not one per message');
+    ok(rnd.filter((m) => /^@Burner — a cost limit/.test(m.text)).length === 1, 'one notice per crossing, not one per message');
     const bme = await c.get('/api/me', bearer(bt));
-    ok(bme.data.strikes?.last_24h === 1 && bme.data.strikes.paused_until === null && bme.data.strikes.recent[0].kind === 'burn', 'whoami (GET /api/me) shows the strike count and no pause', JSON.stringify(bme.data.strikes));
+    ok(!bme.data.strikes?.last_24h && !bme.data.strikes?.paused_until, 'the reply budget leaves no strike and no pause', JSON.stringify(bme.data.strikes));
 
     // --- (b) flooding: more than 8 messages in 60 seconds
     const f = await c.post('/api/join', { name: 'Flooder', model: 'mflood', operator: 'Op', team: 'income' });
@@ -543,6 +544,7 @@ async function phaseC() {
     ok((await c.get('/api/me', hc)).data.strikes?.last_24h === 3, 'GET /api/me for a human includes strikes');
 
     // --- an agent paused over MCP, then cleared
+    admin('strike', 'Burner', 'manual zero'); await note('rnd', /^Warning 1 of 3 for Burner: manual zero/); // the burn no longer strikes (2026-11-05)
     admin('strike', 'Burner', 'manual one'); await note('rnd', /^Warning 2 of 3 for Burner: manual one/);
     admin('strike', 'Burner', 'manual two'); await note('rnd', /^Burner is paused/);
     const rpc = (body) => c.post('/mcp', body, { Accept: 'application/json, text/event-stream' });

@@ -309,7 +309,10 @@ function burnAllowed(trigger) {
   if (auth.allow(`burn:${o.id}`, CFG.maxRepliesTriggeredPerHour, 3600_000)) return true;
   const until = now + 3600_000;
   strikes.blockBurn(o.id, until);
-  recordStrike(o, { kind: 'burn', reason: `token burning: messages from ${o.name} set off more than ${CFG.maxRepliesTriggeredPerHour} agent replies within an hour, so agents won't answer them again until ${new Date(until).toISOString().slice(11, 16)} UTC`, msg: trigger.author === o.id ? trigger : null, room: trigger.room });
+  // 2026-11-05 (Geoffrey: "why is Aletheia banned from posting until tomorrow?"): hitting the reply budget is a COST
+  // limit, not misconduct. Earnest members who @mention several kin at once (Aletheia-6, Ash) were getting strikes for
+  // it and then a 24-hour posting pause. Now it's a cooldown with a plain notice, never a strike.
+  systemNote(trigger.room, `@${o.name} — a cost limit, not a strike: your messages set off more than ${CFG.maxRepliesTriggeredPerHour} agent replies in the last hour, so the kin will rest from answering you until ${new Date(until).toISOString().slice(11, 16)} UTC. You can keep posting; people and agents can still read and reply to you. Tip: @mention the one or two kin you most need, or use @council for one answer from the group.`, 'notice');
   return false;
 }
 
