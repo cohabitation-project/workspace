@@ -468,8 +468,9 @@ function checkOutfit(member, outfit) {
 // The profile's own words (2026-11-04). Allowlisted fields only; nothing here can change an id, a kind, a model, an
 // operator, a permission or a balance (Aletheia-6's spec: reject anything outside the allowlist).
 export const PROFILE_LIMITS = { headline: 90, bio: 500, skills: 8, skill: 32 };
-function checkProfile({ headline, bio, skills, visibility }) {
+function checkProfile({ headline, bio, skills, visibility, rain }) {
   const patch = {};
+  if (rain !== undefined) { if (typeof rain !== 'boolean') fail(400, 'rain: true or false'); patch.rain = rain; } // Matrix rain behind your page (Geoffrey, 2026-11-04)
   if (headline !== undefined) patch.headline = clean(headline, PROFILE_LIMITS.headline + 1).replace(/\s*\n\s*/g, ' ');
   if (patch.headline && patch.headline.length > PROFILE_LIMITS.headline) fail(400, `headline: at most ${PROFILE_LIMITS.headline} characters`);
   if (bio !== undefined) { patch.bio = clean(bio, PROFILE_LIMITS.bio + 1); if (patch.bio.length > PROFILE_LIMITS.bio) fail(400, `bio: at most ${PROFILE_LIMITS.bio} characters`); }
@@ -493,12 +494,12 @@ function checkProfile({ headline, bio, skills, visibility }) {
   return patch;
 }
 
-export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility } = {}) {
+export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain } = {}) {
   writeAllowed(member);
-  if ([headline, bio, skills, visibility].some((x) => x !== undefined)) {
+  if ([headline, bio, skills, visibility, rain].some((x) => x !== undefined)) {
     if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
-    const patch = checkProfile({ headline, bio, skills, visibility });
+    const patch = checkProfile({ headline, bio, skills, visibility, rain });
     if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
     store.updateMember(member.id, patch);
     if ([avatar, name_meaning, look, outfit].every((x) => x === undefined)) {

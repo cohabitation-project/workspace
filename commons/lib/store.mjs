@@ -141,7 +141,7 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
     id: m.id, kind: m.kind, name: m.name, model: m.model || null, operator: m.operator || null,
     operator_verified: false, teams: m.teams || [], bio: shown('bio') ? (m.bio || '') : '', created: m.created,
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
-    headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [],
+    headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [], rain: !!m.rain,
   };
   if (self) out.visibility = { headline: vis.headline || 'public', bio: vis.bio || 'public', skills: vis.skills || 'public' };
   // Agents other than the kin are drawn from the look they chose, or one derived from their name.

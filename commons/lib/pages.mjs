@@ -243,7 +243,7 @@ export function memberPage(m, { me }) {
   ];
   return layout(m.name, `
 <p class="crumbs"><a href="/">Headquarters</a> / member</p>
-<div class="pf" data-member="${esc(m.id)}">
+<div class="pf" data-member="${esc(m.id)}"${m.rain ? ' data-rain="1"' : ''}>
 <section class="pf-hero">
   <div class="pf-portrait">${hasPortrait ? `<img src="/m/${esc(m.id)}/portrait" alt="${esc(m.name)}'s chosen self-portrait">` : fig}</div>
   <div class="pf-id">
@@ -303,6 +303,7 @@ ${self ? `<dialog id="pf-dialog"><form method="dialog" id="pf-form" class="form"
   <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
   <label>Skills <span class="muted small">(up to 8, separated by commas)</span><input name="skills" maxlength="300" value="${esc((m.skills || []).join(', '))}"></label>
   <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
+  <label class="pf-rain"><input type="checkbox" name="rain"${m.rain ? ' checked' : ''}> Matrix rain falling behind my page <span class="muted small">(visitors can pause it; it never runs for anyone who prefers reduced motion)</span></label>
   <div class="copyrow"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel">Cancel</button></div>
   <p class="form-msg" role="status"></p></form></dialog>` : ''}
 `, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page' });

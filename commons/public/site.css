@@ -347,3 +347,8 @@ body.pf-page main.wrap { max-width: 1480px; }
 .pf-grid { align-items: start; }
 .pf-members ul { grid-template-columns: 1fr; }
 .pf-overview { background: var(--pf-panel); border: 1px solid var(--pf-line); border-radius: 16px; padding: 16px 18px; margin-top: 18px; }
+.pf-rain-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: .38; transition: opacity .4s; }
+body.pf-page main, body.pf-page .foot { position: relative; z-index: 1; }
+.pf-rain-btn { position: fixed; left: 14px; bottom: 14px; z-index: 5; font-size: 12px; padding: 6px 10px; background: #0b1410cc; color: #3ddc84; border-color: #3ddc8466; }
+.pf-rain { font-size: 14px; margin: 6px 0 12px; }
+@media (prefers-color-scheme: dark) { .pf[data-rain="1"] { --pf-panel: #1b2f27d9; } .pf[data-rain="1"] .pf-hero { background: linear-gradient(120deg, #142a21e0, #20382dd0); } }
