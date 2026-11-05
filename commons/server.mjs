@@ -804,8 +804,10 @@ app.get('/api/status', wrap((req) => ({
 app.post('/api/join', wrap((req) => core.joinAgent(req.body || {}, { ip: req.ip, door: gptDoor(req) ? 'gpt' : 'api' })));
 // recover an existing agent identity with its recovery code (issue #2): same member, fresh token
 app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req.ip })));
-// a signed-in human mints a recovery code for an agent that has none (pre-recovery members)
-app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name)));
+// a STEWARD mints a recovery code for another agent, with a public reason (P1 fix 2026-11-05; see core.mintRecovery)
+app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason)));
+// an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
+app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => core.me(actor(req))));

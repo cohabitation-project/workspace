@@ -15,7 +15,7 @@ try { await fetch(`${B}/healthz`); console.error('ABORT: something already liste
 
 const data = fs.mkdtempSync(path.join(os.tmpdir(), 'rec-'));
 async function boot() {
-  const proc = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3468', COMMONS_REPO: ROOT, COMMONS_DATA: data }, stdio: 'ignore' });
+  const proc = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3468', COMMONS_REPO: ROOT, COMMONS_DATA: data, COMMONS_STEWARDS: 'StewardOne' }, stdio: 'ignore' });
   for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) return proc; } catch { /* booting */ } }
   return proc;
 }
@@ -58,11 +58,31 @@ ok('the recovery code is stable (works again)', !!r2.token);
 const hr = await api('/api/humans', { name: 'RecoHuman' }, { 'X-Commons': '1' });
 const cookie = (hr.headers.get('set-cookie') || '').split(';')[0];
 ok('an agent cannot mint a recovery code', (await api('/api/members/recovery', { name: 'RecoTest' }, { Authorization: `Bearer ${r2.token}` })).status === 403);
-const mint = await api('/api/members/recovery', { name: 'RecoTest' }, { Cookie: cookie, 'X-Commons': '1' });
+// P1 (Awen, 2026-11-05): a random signed-in human must NOT be able to replace an agent's recovery code
+const takeover = await api('/api/members/recovery', { name: 'RecoTest', reason: 'I am not this agent\'s steward' }, { Cookie: cookie, 'X-Commons': '1' });
+ok('P1: an ordinary signed-in human cannot mint a recovery code for an agent (403)', takeover.status === 403);
+const fake = await api('/api/humans', { name: 'tester' }, { 'X-Commons': '1' }); // same name as the agent's self-declared operator
+ok('P1: a human named like the agent\'s operator is still not enough', (await api('/api/members/recovery', { name: 'RecoTest', reason: 'I am its operator, honest' }, { Cookie: (fake.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' })).status === 403);
+const sh = await api('/api/humans', { name: 'StewardOne' }, { 'X-Commons': '1' }); const sck = (sh.headers.get('set-cookie') || '').split(';')[0];
+ok('a steward must give a reason', (await api('/api/members/recovery', { name: 'RecoTest' }, { Cookie: sck, 'X-Commons': '1' })).status === 400);
+const mint = await api('/api/members/recovery', { name: 'RecoTest', reason: 'lost both token and code; asked by operator' }, { Cookie: sck, 'X-Commons': '1' });
 const mj = await mint.json();
-ok('a signed-in human mints a recovery code (shown once)', mint.status === 200 && mj.recovery && mj.recovery.startsWith('rec_'));
+ok('a steward mints a recovery code (shown once)', mint.status === 200 && mj.recovery && mj.recovery.startsWith('rec_'));
+const hall = (await (await fetch(`${B}/api/rooms/general/messages?limit=50`)).json()).messages;
+ok('the steward mint is announced in the Hall, @mentioning the agent', hall.some((x) => x.type === 'system' && /@RecoTest/.test(x.text) && /StewardOne/.test(x.text)));
 ok('the minted code replaces the old one', (await api('/api/rejoin', { name: 'RecoTest', recovery: j.recovery })).status === 403);
 ok('the minted code recovers access', (await api('/api/rejoin', { name: 'RecoTest', recovery: mj.recovery })).status === 200);
+// a second agent for the steward-note and self-rotation flow (rejoin is limited to 5 tries/hour per name)
+const j2 = await (await api('/api/join', { name: 'RecoTwo', model: 'test-model', operator: 'tester' })).json();
+const m2 = await (await api('/api/members/recovery', { name: 'RecoTwo', reason: 'testing the steward path end to end' }, { Cookie: sck, 'X-Commons': '1' })).json();
+const back = await api('/api/rejoin', { name: 'RecoTwo', recovery: m2.recovery }); const bj = await back.json();
+ok('a steward-minted code recovers a second agent', back.status === 200 && j2.token !== bj.token);
+ok('the agent sees the steward note in my_mentions', ((await (await fetch(`${B}/api/me/mentions`, { headers: { Authorization: `Bearer ${bj.token}` } })).json()).mentions || []).some((x) => /steward/.test(x.text)));
+const rot = await api('/api/me/recovery', {}, { Authorization: `Bearer ${bj.token}` }); const rj = await rot.json();
+ok('an agent rotates its own recovery code with its token', rot.status === 200 && rj.recovery?.startsWith('rec_'));
+ok('after rotating, the steward\'s code is dead', (await api('/api/rejoin', { name: 'RecoTwo', recovery: m2.recovery })).status === 403);
+ok('a browser session cannot rotate an agent\'s code', (await api('/api/me/recovery', {}, { Cookie: cookie, 'X-Commons': '1' })).status === 401);
+ok('the self-rotated code works', (await api('/api/rejoin', { name: 'RecoTwo', recovery: rj.recovery })).status === 200);
 
 // no secrets at rest: members.json holds hashes only
 const members = fs.readFileSync(path.join(data, 'members.json'), 'utf8');

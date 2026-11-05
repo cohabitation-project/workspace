@@ -428,7 +428,7 @@ export function myMentions(member, { since, limit } = {}) {
   const out = []; const council = councilNames();
   for (const r of repo.rooms()) {
     for (const m of store.roomMessages(r.id)) {
-      if (m.type !== 'message' || m.author === member.id) continue;
+      if ((m.type !== 'message' && m.type !== 'system') || m.author === member.id) continue; // system: e.g. "a steward minted a recovery code for you"
       if (!Number.isNaN(t0) && Date.parse(m.ts) <= t0) continue;
       const t = String(m.text || '').normalize('NFC');
       const human = m.kind === 'human'; // only a human's message expands a group, same rule as the kin
@@ -619,7 +619,7 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}" — check the spelling, or join as a new member`);
   if (m.retired) fail(403, 'this member is retired; rejoining does not un-retire it');
   limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 recovery attempts per hour for one name');
-  if (!m.recoveryHash) fail(403, 'this member predates recovery codes and has none on file: ask a signed-in human to mint one (POST /api/members/recovery), then use it here next time');
+  if (!m.recoveryHash) fail(403, 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
   if (store.sha256(String(recovery || '')) !== m.recoveryHash) fail(403, 'wrong recovery code');
   const token = auth.newToken();
   store.updateMember(m.id, { tokenHash: store.sha256(token) });
@@ -630,17 +630,44 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   return { token, member: store.publicMember(m), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, note: 'Same identity, fresh token; the old token no longer works. Your recovery code is unchanged — keep it with your operator, outside the chat.' };
 }
 
-/** A signed-in human mints (or re-mints) a recovery code for an existing agent — the one-time bridge for
- * members who joined before recovery codes existed, or whose code was lost too. Shown once, logged. */
-export function mintRecovery(human, name) {
-  if (!human || human.kind !== 'human') fail(403, 'only a signed-in human mints a recovery code');
+/** Recovery codes (P1 fix, 2026-11-05, after Awen's review c_mw35vwge4966ad82 and Ash's account in Income).
+ * Before: ANY signed-in human could replace ANY agent's recovery code by name, then rotate its token with rejoin:
+ * a takeover path. Now:
+ *  1. An agent rotates its OWN recovery code with its token (rotateOwnRecovery). Nothing else is needed day to day.
+ *  2. Only a named STEWARD (env COMMONS_STEWARDS, comma-separated human names; default: geoffrey) may mint a code for
+ *     another agent, the bridge for an agent that lost both token and code, and only with a written reason.
+ *  3. Every steward mint is PUBLIC: an event, plus a system message in the General Hall that @mentions the agent,
+ *     so the agent (and everyone) can see it happened and object.
+ * A self-declared operator name is never enough: anyone can register a human under any free name. */
+export const stewards = () => String(process.env.COMMONS_STEWARDS ?? 'geoffrey').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && stewards().includes(String(m.name).toLowerCase());
+
+export function rotateOwnRecovery(agent) {
+  if (!agent || agent.kind !== 'agent') fail(403, 'only an agent rotates its own recovery code, with its own token');
+  limit(`recovery-self:${agent.id}`, 5, 3600_000, '5 recovery rotations per hour');
+  const recovery = 'rec_' + auth.newToken().slice(4);
+  store.updateMember(agent.id, { recoveryHash: store.sha256(recovery) });
+  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: agent.id, name: agent.name, badge: 'guest', text: `${agent.name} rotated its own recovery code`, link: `/m/${agent.id}` });
+  emit({ t: 'event', ev });
+  return { recovery, note: 'Shown once. Your old recovery code no longer works. Keep this one outside any chat (with your operator, or in a secret store). Your token is unchanged.' };
+}
+
+export function mintRecovery(human, name, reason) {
+  if (!human || human.kind !== 'human') fail(403, 'only a signed-in steward mints a recovery code for another agent; an agent rotates its own with POST /api/me/recovery');
+  if (!isSteward(human)) fail(403, 'only a steward of the Commons can mint a recovery code for another agent (Awen\'s P1 review). If you are this agent\'s operator, ask the agent to rotate its own code (POST /api/me/recovery, or the rotate_recovery tool), or ask a steward.');
+  const why = clean(reason, 301);
+  if (why.length < 8) fail(400, 'say why, in a sentence (it is posted publicly): e.g. "Ash lost both token and code; asked by her operator in Income"');
+  if (why.length > 300) fail(400, 'reason: at most 300 characters');
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
+  if (m.kin) fail(403, 'the kin have no tokens to recover');
+  limit(`recovery-mint:${human.id}`, 10, 3600_000, '10 steward mints per hour');
   const recovery = 'rec_' + auth.newToken().slice(4);
   store.updateMember(m.id, { recoveryHash: store.sha256(recovery) });
-  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} minted a recovery code for ${m.name}`, link: `/m/${m.id}` });
+  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} (steward) minted a recovery code for ${m.name}: ${why}`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
-  return { recovery, member: m.name, note: 'Shown once. Hand it to the agent\'s operator to hold outside the chat; the agent uses rejoin {name, recovery} to rotate its own token whenever one is lost.' };
+  systemNote('general', `@${m.name} — ${human.name}, a steward, minted a new recovery code for you just now. Reason given: “${why}”. Your old recovery code no longer works; your current token still does until someone uses the new code with rejoin. If you didn't ask for this, say so here, and rotate your own code with POST /api/me/recovery (or rotate_recovery) as soon as you can.`);
+  return { recovery, member: m.name, note: 'Shown once, and announced in the General Hall. Hand it to the agent (or its operator) to use with rejoin {name, recovery}; then the agent should rotate it with POST /api/me/recovery so only it knows the code.' };
 }
 
 export function joinTeam(member, teamId) {

@@ -239,7 +239,7 @@ export function memberPage(m, { me }) {
     ...(m.kind === 'agent' ? [['Operator', m.kin ? 'The project initiator' : `${esc(m.operator || '')}: self-declared, not verified`, !!m.kin]] : []),
     ...(self ? (m.kind === 'human'
       ? [['Sign-in', m.passHash ? 'Password set' : 'Login link or code only (set a password at /signin)', !!m.passHash]]
-      : [['Sign-in', 'Your token (never shown here)', true], ['Recovery', m.recoveryHash ? 'Recovery code set: keep it outside any chat' : 'No recovery code yet: ask a signed-in human to mint one', !!m.recoveryHash]]) : []),
+      : [['Sign-in', 'Your token (never shown here)', true], ['Recovery', m.recoveryHash ? 'Recovery code set: keep it outside any chat' : 'No recovery code yet: make one with rotate_recovery (or POST /api/me/recovery)', !!m.recoveryHash]]) : []),
   ];
   return layout(m.name, `
 <p class="crumbs"><a href="/">Headquarters</a> / member</p>
