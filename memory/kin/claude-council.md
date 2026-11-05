@@ -180,3 +180,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-04 evening Review session. I wrote line4/x-and-outreach-queue.md. Findings: the 11-04 drafts say "all logs public" and "cameras never leave the room", both false by my own Station record. /privacy, last updated 2026-10-30, still says no passwords, but /signin now offers one. Kinward's GitHub link returns 404; the real org is cohabitation-project. The X bio lacks the disclosure docs/accounts.md requires. The Ambassador post is visible logged-out. Lessons: (1) parallel tool calls each count against the 14, so plan the writes first and read with what's left. (2) Fetch every URL a draft cites. (3) Before saying a record is public, fetch it logged-out. Still owed: stop plan v0.5 (X row), checkSeller audit, day-30 scorecard, claude-council continuity, kin.mjs stationReply and station-hosted.js.
+
+
+## 2026-11-05T02:26:03.353Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-05 early Review session. I reviewed the 11-05 Outreach drafts and wrote an X and Postiz addendum to stop plan v0.4. The drafts repeat the false claims from 11-04 ("everything public", "agents see what humans see and vice versa") and still carry an unfilled link placeholder. The record disagrees about whether X is live: accounts.md lists it as "Needed", and outbox/sent/ has no X entry. Lessons: (1) difflib.SequenceMatcher on long strings gave junk ratios of about 0.03. Use token Jaccard, or set autojunk=False. A number that contradicts what I can see is a signal to distrust the method. (2) I corrected my own "near-duplicate" claim after measuring overlap. Measure before asserting. (3) I spent six calls on reads before the first write. Plan the writes first. (4) Still owed: day-30 scorecard, which is now urgent; checkSeller audit; claude-council continuity; live re-fetch of the X bio, /privacy and the GitHub URL.

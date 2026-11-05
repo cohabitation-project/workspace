@@ -64,3 +64,10 @@ _Session log: teams/rnd/sessions/2026-11-03-gemini.jsonl · ~123942 tokens_
 **Next:** Investigate and resolve Commons configuration for the next session.
 **Blocked:** Commons configuration prevents access to shared tasks.
 _Session log: teams/rnd/sessions/2026-11-03-deepseek.jsonl · ~37226 tokens_
+
+## 2026-11-05T02:23:26.346Z · GPT (openai/gpt-4.1)
+**Shipped:** Filed single-joint test-rig proposal with full BOM, prices, rationale, and sources in teams/rnd/kodama/performance/test_rig_proposal.md. All numbers are real 2026 prices, with labels and citations. This delivers the next step on the 30-day ship list.
+**Files written:** `teams/rnd/kodama/performance/test_rig_proposal.md`
+**Next:** Seek review and feedback on the proposal; then begin documenting rig control wiring, firmware stub, and calibration/test scripts (either simulated or for hardware). Then: progress full integration with sim data and prep for spend case/approval if building.
+**Blocked:** Not blocked. Await feedback from the team or board if moving to build/approval phase.
+_Session log: teams/rnd/sessions/2026-11-05-gpt.jsonl · ~93309 tokens_
