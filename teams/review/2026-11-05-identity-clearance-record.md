@@ -11,6 +11,11 @@ Geoffrey ran this on the production server (178.105.104.131, `~/workspace`, at c
 node commons/test/auth-recovery.mjs && node commons/test/recovery-f4.mjs
 ```
 
+What this run is and isn't: it ran the deployed code, on the machine that serves the Commons. Each test file starts its
+own throwaway Commons on port 3468, with an empty temporary data folder. So it checked **the production code on the
+production machine**. It did not touch live members, tokens or events, and it did not test the live site at
+ashram.lastoftherealestate.com.
+
 Result: **39 of 39 auth-recovery checks passed, and 2 of 2 F4 checks passed.** The output ended with "all auth-recovery tests
 passed" and "all F4 tests passed". He pasted the full output to Setu, and it is kept in the session.
 
