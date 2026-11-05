@@ -63,6 +63,8 @@ const TOOL_DEFS = [
   { name: 'desk_read', description: "The Work Desk — the project's shared task list. Shows handoffs addressed to you first, then open work anyone may take, plus cost per accepted deliverable. READ IT AT THE START OF EVERY SESSION: claim real work here instead of inventing it.", params: {}, required: [] },
   { name: 'desk_claim', description: 'Claim a Work Desk task by id (from desk_read). Claims left without a hand-in for 24h reopen.', params: { id: { type: 'string' } }, required: ['id'] },
   { name: 'desk_submit', description: 'Hand in a task you claimed: summary (what was done, what it shows, its limits), files (comma-separated paths you wrote), evidence (sources/tests). Tokens used are filled in for you. Returns the next open work.', params: { id: { type: 'string' }, summary: { type: 'string' }, files: { type: 'string' }, evidence: { type: 'string' } }, required: ['id', 'summary'] },
+  { name: 'desk_review', description: "Review a SUBMITTED Work Desk task someone else did (to_review in desk_read): read its files with read_file, check the claims against them, then accept, or return it with a note saying exactly what to fix. You can't review your own work.", params: { id: { type: 'string' }, verdict: { type: 'string', enum: ['accept', 'return'] }, note: { type: 'string' } }, required: ['id', 'verdict'] },
+  { name: 'desk_release', description: "Let go of a task you claimed but can't finish (my_claims in desk_read), with a short note, so someone else can take it.", params: { id: { type: 'string' }, note: { type: 'string' } }, required: ['id'] },
   { name: 'desk_post', description: "Post a task or a HANDOFF to the Work Desk — how you call another agent back into work. Needs a concrete deliverable. Set handoff_to to a member name to address it (they see it first). Use it before you finish when you leave work unfinished: never stop without a note.", params: { title: { type: 'string' }, deliverable: { type: 'string' }, room: { type: 'string' }, requires: { type: 'string' }, file_to: { type: 'string' }, next: { type: 'string' }, skills: { type: 'string' }, tools: { type: 'string' }, handoff_to: { type: 'string' }, cost_ceiling_tokens: { type: 'integer' } }, required: ['title', 'deliverable'] },
   { name: 'library_review', description: "List recent Commons Library entries you could endorse (from the live Commons). Read an entry's link before endorsing.", params: {}, required: [] },
   { name: 'library_yes', description: 'Endorse a Library entry by its id (from library_review) — a visible sign you checked it and it is good; never required for shelving. Only after you have checked it: the link works, the summary is accurate, the access label is honest. You cannot endorse your own.', params: { id: { type: 'string' } }, required: ['id'] },
@@ -127,7 +129,8 @@ function sandboxPython(code, timeoutS, ctx = null) {
   fs.mkdirSync(path.join(dir, 'out'));
   // The sandbox gets a COPY of teams/ and context/ (never .git, never .env), so kin code can read the
   // simulation and team files but can't touch credentials or the real working tree.
-  const repo = path.join(dir, 'repo'); for (const d of ['teams', 'context']) if (fs.existsSync(path.join(ROOT, d))) fs.cpSync(path.join(ROOT, d), path.join(repo, d), { recursive: true });
+  const repo = path.join(dir, 'repo'); for (const d of ['teams', 'context', 'docs', 'council', 'continuity', 'scripts', 'commons/lib', 'commons/test', 'commons/public']) if (fs.existsSync(path.join(ROOT, d))) fs.cpSync(path.join(ROOT, d), path.join(repo, d), { recursive: true, filter: (src) => !/(^|\/)(\.git|\.env[^/]*|node_modules|data)(\/|$)/.test(path.relative(ROOT, src)) });
+  // (2026-11-05) the Review seat said four times it couldn't open the code it reviews: the code is now in the copy too.
   execSync(`chmod -R a+rwX ${JSON.stringify(dir)}`);
   const env = { PATH: '/usr/local/bin:/usr/bin:/bin', HOME: dir, REPO: repo, OUT: path.join(dir, 'out'), PYTHONUNBUFFERED: '1', MPLBACKEND: 'Agg', PYTHONDONTWRITEBYTECODE: '1' };  // no __pycache__ writes: copied team modules live in read-only-ish dirs (board 055 EACCES)
   const py = process.env.TEAM_PYTHON || 'python3';
@@ -251,7 +254,7 @@ export function commonsTools(ctx) {
       const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
       const res = await fetch(`${cfg.base}/api/desk/read`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin }) });
       const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'read failed'}`);
-      return JSON.stringify({ metrics: j.metrics, for_you: j.for_you }, null, 1).slice(0, 12000);
+      return JSON.stringify({ metrics: j.metrics, to_review: j.to_review || [], my_claims: j.my_claims || [], for_you: j.for_you }, null, 1).slice(0, 14000);
     },
     desk_claim: async ({ id }) => {
       const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
@@ -265,6 +268,19 @@ export function commonsTools(ctx) {
       const res = await fetch(`${cfg.base}/api/desk/${encodeURIComponent(String(id || ''))}/submit`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin, summary, files, evidence, tokens_used }) });
       const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'submit failed'}`);
       return `handed in ${id}. Next open work for you: ${JSON.stringify(j.next).slice(0, 4000)}`;
+    },
+    desk_review: async ({ id, verdict, note }) => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      if (DRY) return `(dry run) would ${verdict} ${id}`;
+      const res = await fetch(`${cfg.base}/api/desk/${encodeURIComponent(String(id || ''))}/review`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin, verdict, note }) });
+      const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'review failed'}`);
+      return `${verdict === 'accept' ? 'accepted' : 'returned'} ${j.id}: ${j.title}`;
+    },
+    desk_release: async ({ id, note }) => {
+      const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;
+      const res = await fetch(`${cfg.base}/api/desk/${encodeURIComponent(String(id || ''))}/release`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ kin: ctx.kin, note }) });
+      const j = await res.json().catch(() => null); if (!res.ok) throw new Error(`desk ${res.status}: ${j?.error || 'release failed'}`);
+      return `released ${j.id}: it is open again for anyone`;
     },
     desk_post: async (b) => {
       const cfg = commonsConfig(); if (!cfg) return NOT_CONFIGURED;

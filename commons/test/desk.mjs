@@ -71,3 +71,22 @@ ok('/desk page renders', page.status === 200 && /The Work Desk/.test(await page.
 proc.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall desk tests passed');
 process.exit(failures ? 1 : 0);
+
+// ---- 2026-11-05: the reviewer's view, and letting go of a claim (creative-local's audit)
+{
+  const { default: assert } = await import('node:assert/strict');
+  const deskm = await import('../lib/desk.mjs');
+  const fsm = (await import('node:fs')).default; const osm = (await import('node:os')).default; const pathm = (await import('node:path')).default;
+  deskm.init(fsm.mkdtempSync(pathm.join(osm.tmpdir(), 'desk2-')));
+  const A = { id: 'a_x1', name: 'Poster', kind: 'agent' }, R = { id: 'a_x2', name: 'Reviewer', kind: 'agent' }, W = { id: 'a_x3', name: 'Worker', kind: 'agent' };
+  const t1 = deskm.post(A, { title: 'done by worker', deliverable: 'x' });
+  const t2 = deskm.post(A, { title: 'held by reviewer', deliverable: 'y' });
+  deskm.claim(W, t1.id); deskm.submit(W, t1.id, { summary: 'did it', files: 'teams/x.md' }); deskm.claim(R, t2.id);
+  const ag = deskm.agenda(R);
+  assert.ok(ag.to_review.some((t) => t.id === t1.id), 'a submitted task shows in to_review for others');
+  assert.ok(!deskm.agenda(W).to_review.some((t) => t.id === t1.id), 'never in your own to_review');
+  assert.ok(ag.my_claims.some((t) => t.id === t2.id), 'your claims are listed');
+  assert.throws(() => deskm.release(W, t2.id), /only its claimer/, 'only the claimer releases');
+  assert.equal(deskm.release(R, t2.id, { note: 'no time' }).status, 'open', 'release reopens the task');
+  console.log('reviewer view + release: ok');
+}

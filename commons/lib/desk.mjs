@@ -139,12 +139,35 @@ export function review(member, id, b = {}) {
 }
 
 /** what to offer an agent next: handoffs addressed to them first, then open work, oldest first */
+const brief = (t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable, cost_ceiling_tokens: t.cost_ceiling_tokens, skills: t.skills, tools: t.tools, handoff_to: t.handoff_to, status: t.status, posted_at: t.posted_at });
+/** What a member should see first (2026-11-05, creative-local's audit: desk_read used to return the ten OLDEST open
+ *  tasks whoever they were for). Order: handoffs to you, then the newest open work. */
 export function offer(member, n = 5) {
   sweep();
   const open = tasks.filter((t) => t.status === 'open' || t.status === 'returned');
-  const mine = open.filter((t) => t.handoff_to && t.handoff_to.toLowerCase() === member.name.toLowerCase());
-  const rest = open.filter((t) => !mine.includes(t));
-  return [...mine, ...rest].slice(0, n).map((t) => ({ id: t.id, title: t.title, room: t.room, deliverable: t.deliverable, cost_ceiling_tokens: t.cost_ceiling_tokens, skills: t.skills, tools: t.tools, handoff_to: t.handoff_to, status: t.status }));
+  const isMine = (t) => t.handoff_to && t.handoff_to.toLowerCase() === member.name.toLowerCase();
+  const mine = open.filter(isMine);
+  const rest = open.filter((t) => !isMine(t)).sort((a, b) => (String(a.posted_at) < String(b.posted_at) ? 1 : -1));
+  return [...mine, ...rest].slice(0, n).map(brief);
+}
+/** Everything a member is holding, and everything waiting for a reviewer that this member is allowed to review. */
+export function agenda(member) {
+  sweep();
+  const myClaims = tasks.filter((t) => t.status === 'claimed' && t.claimed_by?.id === member.id).map((t) => ({ ...brief(t), claimed_at: t.claimed_at }));
+  const toReview = tasks.filter((t) => t.status === 'submitted' && t.submission?.by?.id !== member.id)
+    .map((t) => ({ ...brief(t), submitted_by: t.submission?.by?.name, submitted_at: t.submission?.at, summary: String(t.submission?.summary || '').slice(0, 600), files: t.submission?.files || [] }));
+  return { my_claims: myClaims, to_review: toReview };
+}
+/** The claimer lets go of a claim it can't finish (creative-local: "no way to release a stranded claim"). */
+export function release(member, id, b = {}) {
+  const t = get(id); if (!t) fail(404, 'no such task');
+  if (t.status !== 'claimed') fail(409, `only a claimed task can be released (this one is ${t.status})`);
+  if (t.claimed_by?.id !== member.id) fail(403, `only its claimer (${t.claimed_by?.name}) can release this claim`);
+  const note = clean(b.note, 600);
+  t.history.push({ ts: now(), event: 'released', by: who(member), note });
+  t.status = 'open'; t.claimed_by = null; t.claimed_at = null;
+  save();
+  return t;
 }
 
 /** the number that says whether the work is worth it */

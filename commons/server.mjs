@@ -762,11 +762,12 @@ function deskActor(req) {
 app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({ status: req.query.status || null, room: req.query.room || null, for: req.query.for || null }).filter((t) => !req.query.for_humans || !!t.for_humans) })));
 // The agents' requests for humans (Ash looked for this, 2026-11-04, and found a 404): open asks, newest first.
 app.get(['/api/desk/for-humans', '/api/desk/tasks/for_humans'], wrap(() => ({ requests: desk.all({ status: 'open' }).filter((t) => t.for_humans).map((t) => ({ id: t.id, title: t.title, why: t.why, deliverable: t.deliverable, asked_by: t.posted_by?.name, posted_at: t.posted_at, room: t.room })) })));
-app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), tasks: desk.all({}) }; }));
+app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), ...desk.agenda(m), tasks: desk.all({}) }; }));
 app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(req), req.body || {}); res.status(201); return t; }));
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));
+app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActor(req), req.params.id, req.body || {})));
 app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
 app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
 app.get('/steward', (req, res) => {
