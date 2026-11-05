@@ -451,3 +451,33 @@ body.pf-page:has(.pf[data-theme=meadow])    { --pf-page-a: #e4f0cf; --pf-page-b:
 .pf-song audio { width: 100%; margin-top: 4px; }
 #pf-dialog.pf-editor .pf-vis { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 #pf-dialog.pf-editor input[type=checkbox] { width: 18px; height: 18px; margin: 0; flex: none; accent-color: #c8a24a; }
+/* ---- 2026-11-05: every theme carries its own text colours, so text and icons stay readable in light AND dark mode */
+.pf[data-theme=night]  { --pf-ink: #f1f0ff; --pf-muted: #c3c6ee; }
+.pf[data-theme=ocean]  { --pf-ink: #eefaff; --pf-muted: #b6dbe6; }
+.pf[data-theme=desert] { --pf-ink: #fff4e4; --pf-muted: #e7cfa9; }
+.pf[data-theme=ember]  { --pf-ink: #fff0ea; --pf-muted: #f0c1b1; }
+.pf[data-theme=matrix] { --pf-ink: #dcffe8; --pf-muted: #9ee6b6; }
+.pf[data-theme=rose]   { --pf-ink: #fff0f6; --pf-muted: #f1bfd5; }
+.pf[data-theme=storm]  { --pf-ink: #f1f4f8; --pf-muted: #c3ccd8; }
+.pf[data-theme=forest] { --pf-ink: #f3ecd9; --pf-muted: #c8d1c0; --pf-panel: #1b2f27; --pf-line: #3f5a4c; }
+@media (prefers-color-scheme: light) { .pf[data-theme=forest] { --pf-ink: #1f2a22; --pf-muted: #4a5844; --pf-panel: #f8f6ee; --pf-line: #c9d1bd; } }
+.pf[data-theme=parchment] { --pf-ink: #2a2318; --pf-muted: #5c4f37; }
+.pf[data-theme=meadow]    { --pf-ink: #1f2a17; --pf-muted: #46573a; }
+/* dark themes: a lighter accent where gold would be too dim, and readable small print everywhere */
+.pf[data-theme=night][data-accent=violet], .pf[data-theme=rose][data-accent=rose] { --pf-gold: #ffd98a; }
+.pf .pf-main, .pf .pf-card, .pf .pf-overview, .pf .pf-hero, .pf .facts dd, .pf .pf-access .pf-v, .pf .pf-post-text, .pf p, .pf li, .pf dd { color: var(--pf-ink); }
+.pf .muted, .pf .small.muted, .pf .pf-when, .pf .pf-post-head, .pf .facts dt, .pf .pf-dl dt, .pf .pf-access .pf-k, .pf figcaption { color: var(--pf-muted); }
+.pf .pf-post-head strong, .pf .pf-post-head a strong { color: var(--pf-ink); }
+.pf .pf-tabs button, .pf .feed-tabs a { color: var(--pf-muted); }
+.pf .pf-tabs button[aria-selected=true], .pf .feed-tabs a[aria-current=page] { color: var(--pf-gold); }
+.pf .pf-tag { color: var(--pf-muted); border-color: var(--pf-line); }
+.pf .pf-check.no { color: var(--pf-muted); border-color: var(--pf-muted); }
+.pf .pf-mini, .pf .pf-post-av, .pf .pf-portrait { background-color: #ffffff14; }
+.pf .badge { filter: none; }
+.pf[data-accent=gold]:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm]) { --pf-gold: #f0c96e; }
+@media (prefers-color-scheme: dark) { .pf[data-accent=gold][data-theme=forest] { --pf-gold: #e3c17b; } }
+.pf code { background: #00000038; color: var(--pf-ink); border: 1px solid var(--pf-line); }
+.pf:is([data-theme=parchment], [data-theme=meadow]) code { background: #0000000d; }
+.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm]) .badge { background: #ffffff1f; color: var(--pf-ink); border-color: var(--pf-muted); }
+@media (prefers-color-scheme: dark) { .pf[data-theme=forest] .badge { background: #ffffff1f; color: var(--pf-ink); border-color: var(--pf-muted); } }
+body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm])) .crumbs, body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm])) .crumbs a { color: #d9d6e8; }

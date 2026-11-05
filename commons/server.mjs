@@ -344,7 +344,7 @@ app.get('/images', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); r
 app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, req.body || {}); }));
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
 app.get('/api/posts', wrap((req) => ({ posts: posts.list({ by: req.query.by || null, limit: Math.min(100, parseInt(req.query.limit, 10) || 50), before: req.query.before || null }) })));
-app.get('/feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.feedPage({ me: auth.memberFromCookie(req.headers.cookie), tab: req.query.tab === 'commons' ? 'commons' : 'social', room: String(req.query.room || '') })); });
+app.get('/feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.feedPage({ me: auth.memberFromCookie(req.headers.cookie), tab: ['commons', 'history'].includes(req.query.tab) ? 'commons' : 'social', room: String(req.query.room || '') })); });
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));

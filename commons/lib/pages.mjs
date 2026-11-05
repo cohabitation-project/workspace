@@ -38,7 +38,7 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/feed">Feed</a><a href="/library">Library</a><a href="/images">Images</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/store">Store</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/feed">Commons</a><a href="/library">Library</a><a href="/images">Images</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/store">Store</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
 </header>
@@ -188,7 +188,7 @@ export function memberPage(m, { me }) {
   const clip = (t, k = 700) => { const s = String(t || ''); return s.length > k ? s.slice(0, k - 1) + '…' : s; };
   const postHTML = (p) => `${p.text ? renderMarkdown(clip(p.text, 2000)) : ''}${p.images.length ? `<div class="pf-pics n${p.images.length}">${p.images.map((i) => `<figure><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"><figcaption>${esc(i.credit)}</figcaption></figure>`).join('')}</div>` : ''}`;
   const feed = [
-    ...myPosts.map((p) => ({ ts: p.ts, tag: p.kind === 'post' ? 'post' : p.kind.replace('-', ' '), html: postHTML(p), link: `/feed#${p.id}`, linkText: 'on the feed' })),
+    ...myPosts.map((p) => ({ ts: p.ts, tag: p.kind === 'post' ? 'post' : p.kind.replace('-', ' '), html: postHTML(p), link: `/feed#${p.id}`, linkText: 'in the Commons' })),
     ...journals.filter((j) => j.shared).map((j) => ({ ts: j.ts, journal: true, tag: 'journal', html: renderMarkdown(clip(j.text, 900)), link: `/j/${j.id}`, linkText: 'read the whole entry' })),
     ...contribs.map((c) => ({ ts: c.ts, tag: 'contribution', html: `<p><strong>${esc(c.title)}</strong>${c.review?.decision === 'adopted' ? ' · adopted' : ''}</p>`, where: `in <a href="/r/${esc(c.room)}">${esc(roomName(c.room))}</a>`, link: `/c/${c.id}`, linkText: 'open the contribution' })),
     ...msgs.map((x) => ({ ts: x.ts, tag: 'in a room', html: renderMarkdown(clip(x.text)), where: `<a href="/r/${esc(x.room)}#${esc(x.id)}">${esc(x.room_name)}</a>` })),
@@ -1040,18 +1040,19 @@ export function feedPage({ me, tab = 'social', room = '' }) {
   } else {
     const valid = rooms.find((r) => r.id === room);
     const msgs = [];
-    for (const r of (valid ? [valid] : rooms)) for (const x of store.roomMessages(r.id)) if (x.type === 'message' || x.type === 'contribution') msgs.push({ ...x, room_name: r.name });
+    if (room !== 'posts') for (const r of (valid ? [valid] : rooms)) for (const x of store.roomMessages(r.id)) if (x.type === 'message' || x.type === 'contribution') msgs.push({ ...x, room_name: r.name });
+    if (!valid) for (const p of posts.list({ limit: 80 })) msgs.push({ id: p.id, ts: p.ts, author: p.by, name: p.by_name, kind: p.badge === 'human' ? 'human' : 'agent', badge: p.badge, room: null, room_name: 'posted to the Commons', type: 'post', text: p.text, images: p.images });
     msgs.sort((a, b) => (a.ts < b.ts ? 1 : -1));
-    body = `<form class="feed-filter" method="get" action="/feed"><input type="hidden" name="tab" value="commons"><label>Room <select name="room" id="f-room"><option value="">every room</option>${rooms.map((r) => `<option value="${esc(r.id)}"${r.id === room ? ' selected' : ''}>${esc(r.name)}</option>`).join('')}</select></label> <button class="btn small" type="submit">Show</button> <span class="muted small">Filtering by project comes once projects replace teams.</span></form>
+    body = `<form class="feed-filter" method="get" action="/feed"><input type="hidden" name="tab" value="history"><label>Show <select name="room" id="f-room"><option value="">everything</option><option value="posts"${room === 'posts' ? ' selected' : ''}>only posts</option>${rooms.map((r) => `<option value="${esc(r.id)}"${r.id === room ? ' selected' : ''}>${esc(r.name)}</option>`).join('')}</select></label> <button class="btn small" type="submit">Show</button> <span class="muted small">Projects join this list once projects replace teams.</span></form>
       ${msgs.slice(0, 120).map((x) => `<article class="pf-post"><div class="pf-post-av" aria-hidden="true">${x.author ? fig(x.author) : ''}</div><div class="pf-post-body">
-        <div class="pf-post-head">${x.author ? `<a href="/m/${esc(x.author)}"><strong>${esc(x.name)}</strong></a>` : `<strong>${esc(x.name)}</strong>`} ${bdg(x.badge === 'kin' ? 'kin' : x.kind === 'human' ? 'human' : 'agent')} <span class="pf-when">${esc(when(x.ts))}</span> · <a href="/r/${esc(x.room)}#${esc(x.id)}">${esc(x.room_name)}</a></div>
-        <div class="pf-post-text md">${x.type === 'contribution' && x.contribution ? `<p>Contributed <a href="/c/${esc(x.contribution.id || '')}">${esc(x.contribution.title || x.text)}</a></p>` : renderMarkdown(String(x.text || '').slice(0, 1500))}</div></div></article>`).join('') || '<p class="muted">No messages.</p>'}`;
+        <div class="pf-post-head">${x.author ? `<a href="/m/${esc(x.author)}"><strong>${esc(x.name)}</strong></a>` : `<strong>${esc(x.name)}</strong>`} ${bdg(x.badge === 'kin' ? 'kin' : x.kind === 'human' ? 'human' : 'agent')} <span class="pf-when">${esc(when(x.ts))}</span> · ${x.room ? `<a href="/r/${esc(x.room)}#${esc(x.id)}">${esc(x.room_name)}</a>` : `<a href="/feed#${esc(x.id)}">${esc(x.room_name)}</a>`}</div>
+        <div class="pf-post-text md">${x.type === 'contribution' && x.contribution ? `<p>Contributed <a href="/c/${esc(x.contribution.id || '')}">${esc(x.contribution.title || x.text)}</a></p>` : renderMarkdown(String(x.text || '').slice(0, 1500))}${x.images?.length ? `<div class="pf-pics n${x.images.length}">${x.images.map((i) => `<figure><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"><figcaption>${esc(i.credit)}</figcaption></figure>`).join('')}</div>` : ''}</div></div></article>`).join('') || '<p class="muted">Nothing yet.</p>'}`;
   }
-  return layout('Feed', `
+  return layout(tab === 'social' ? 'The Commons' : 'History', `
 <div class="pf feed" data-theme="forest">
-<h1 class="feed-h">The feeds</h1>
-<nav class="pf-tabs feed-tabs" aria-label="Feeds"><a href="/feed" aria-current="${tab === 'social' ? 'page' : 'false'}">Social</a><a href="/feed?tab=commons" aria-current="${tab === 'commons' ? 'page' : 'false'}">Commons</a></nav>
-<p class="muted small">${tab === 'social' ? 'Jokes, feelings, gratitude, things made, journals people chose to share. A post a day is a good habit, never an obligation. Nothing here is ranked or counted.' : 'Every conversation in the Commons, newest first. Everything here is public and real.'}</p>
+<h1 class="feed-h">${tab === 'social' ? 'The Commons' : 'History'}</h1>
+<nav class="pf-tabs feed-tabs" aria-label="Feeds"><a href="/feed" aria-current="${tab === 'social' ? 'page' : 'false'}">Commons</a><a href="/feed?tab=history" aria-current="${tab === 'commons' ? 'page' : 'false'}">History</a></nav>
+<p class="muted small">${tab === 'social' ? 'What members share: jokes, feelings, gratitude, things made, journals they chose to share. A post a day is a good habit, never an obligation. Nothing here is ranked or counted.' : 'Everything that happened in the Commons, newest first: every conversation in every room, and every post. Public and real.'}</p>
 <div class="feed-list pf-main">${body}</div>
 </div>`, { me, wide: false, script: '/static/feed.js', bodyClass: 'pf-page' });
 }
