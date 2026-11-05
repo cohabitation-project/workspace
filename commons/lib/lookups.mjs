@@ -19,7 +19,7 @@ const COMMIT_RX = /(?:\bcommits?\s+|`)([0-9a-f]{7,40})\b/gi;
 const CONTRIB_RX = /\b(c_[a-z0-9]{12,24})\b/g;
 const TASK_RX = /\b(t_[0-9a-f]{10})\b/g;
 const BLOCKED = /(^|\/)(\.git|\.env[^/]*|node_modules|data|secrets?)(\/|$)|\.(pem|key)$/i;
-const MAX_TOTAL = 18000, MAX_FILE = 5000, MAX_ITEMS = 6;
+const MAX_TOTAL = 32000, MAX_FILE = 10000, MAX_ITEMS = 6;
 
 export function findRefs(texts) {
   const all = texts.filter(Boolean).join('\n');
@@ -27,7 +27,29 @@ export function findRefs(texts) {
   return { paths: uniq(PATH_RX), commits: uniq(COMMIT_RX).map((c) => c.toLowerCase()), contributions: uniq(CONTRIB_RX), tasks: uniq(TASK_RX) };
 }
 
-function readPath(root, rel) {
+/** Identifiers named in the conversation (`mintRecovery`, rotateOwnRecovery(), "the checkProfile function"). */
+function namedIdents(all) {
+  const out = new Set();
+  for (const m of all.matchAll(/`([A-Za-z_$][\w$]{3,40})(?:\(\))?`/g)) out.add(m[1]);
+  for (const m of all.matchAll(/\b([a-z][a-z0-9]*[A-Z][\w$]{2,40})\b/g)) out.add(m[1]); // camelCase words
+  for (const m of all.matchAll(/\b([A-Za-z_$][\w$]{3,40})\(\)/g)) out.add(m[1]);
+  return [...out].slice(0, 12);
+}
+/** For a big file: the sections around the named functions/identifiers, instead of only its first lines. */
+function focus(t, idents) {
+  const lines = t.split('\n'); const hits = [];
+  for (const id of idents) {
+    const rx = new RegExp(`(function\\s+${id}\\b|\\b${id}\\s*[:=]\\s*(async\\s*)?(\\(|function)|export\\s+(async\\s+)?function\\s+${id}\\b|\\bcase\\s+'${id}')`);
+    let i = lines.findIndex((l) => rx.test(l)); if (i < 0) i = lines.findIndex((l) => l.includes(id));
+    if (i >= 0 && !hits.some((h) => i >= h[0] && i <= h[1])) hits.push([Math.max(0, i - 4), Math.min(lines.length - 1, i + 70), id]);
+  }
+  if (!hits.length) return null;
+  hits.sort((x, y) => x[0] - y[0]);
+  for (let k = hits.length - 1; k > 0; k--) if (hits[k][0] <= hits[k - 1][1] + 1) { hits[k - 1][1] = Math.max(hits[k - 1][1], hits[k][1]); hits[k - 1][2] += `, ${hits[k][2]}`; hits.splice(k, 1); }
+  return hits.slice(0, 3).map(([a, z, id]) => `[lines ${a + 1}–${z + 1}, around \`${id}\`]\n${lines.slice(a, z + 1).join('\n')}`).join('\n…\n');
+}
+
+function readPath(root, rel, idents = []) {
   if (BLOCKED.test(rel) || rel.includes('..')) return `\`${rel}\`: not readable from a room (protected path).`;
   const abs = path.resolve(root, rel);
   if (!abs.startsWith(path.resolve(root) + path.sep)) return `\`${rel}\`: outside the repository.`;
@@ -37,15 +59,18 @@ function readPath(root, rel) {
   if (st.size > 30 * 1024 * 1024) return `\`${rel}\`: ${Math.round(st.size / 1024)} KB, too large to read here.`;
   let t = fs.readFileSync(abs, 'utf8');
   if (rel.endsWith('.jsonl')) { const lines = t.trim().split('\n'); return `\`${rel}\` (${lines.length} lines; the last 20, each clipped):\n${lines.slice(-20).map((l) => l.slice(0, 300)).join('\n')}`; }
-  const head = t.length > MAX_FILE ? `${t.slice(0, MAX_FILE)}\n[… ${t.length - MAX_FILE} more characters not shown]` : t;
+  if (t.length > MAX_FILE) { const f = focus(t, idents); if (f) return `\`${rel}\` (${t.length} characters; showing the parts named in the conversation):\n${f.slice(0, 9000)}`; }
+  const head = t.length > MAX_FILE ? `${t.slice(0, MAX_FILE)}\n[… ${t.length - MAX_FILE} more characters not shown. Name a function in backticks, e.g. \`mintRecovery\`, to see that part]` : t;
   return `\`${rel}\` (${t.length} characters):\n${head}`;
 }
 
 function readCommit(root, hash) {
   if (!/^[0-9a-f]{7,40}$/.test(hash)) return null;
   try {
-    const out = execFileSync('git', ['-C', root, 'show', '--stat', '--format=%H%n%an · %ad%n%s%n%n%b', '--date=iso-strict', hash], { encoding: 'utf8', timeout: 4000, maxBuffer: 2e6, stdio: ['ignore', 'pipe', 'ignore'] });
-    return `commit \`${hash}\`:\n${out.slice(0, 3000)}`;
+    const opt = { encoding: 'utf8', timeout: 4000, maxBuffer: 8e6, stdio: ['ignore', 'pipe', 'ignore'] };
+    const head = execFileSync('git', ['-C', root, 'show', '--stat', '--format=%H%n%an · %ad%n%s', '--date=iso-strict', hash], opt);
+    const diff = execFileSync('git', ['-C', root, 'show', '--format=', '-U2', hash], opt);
+    return `commit \`${hash}\`:\n${head.slice(0, 2500)}\n--- the diff (${diff.length} characters${diff.length > 9000 ? ', first 9000 shown' : ''}) ---\n${diff.slice(0, 9000)}`;
   } catch { return `commit \`${hash}\`: DOES NOT EXIST in this repository (checked just now with git).`; }
 }
 
@@ -53,7 +78,8 @@ function readCommit(root, hash) {
 export function lookupBlock(texts, { root, getContribution, getTask }) {
   const r = findRefs(texts);
   const parts = [];
-  for (const p of r.paths.slice(0, MAX_ITEMS)) parts.push(readPath(root, p));
+  const idents = namedIdents(texts.filter(Boolean).join('\n'));
+  for (const p of r.paths.slice(0, MAX_ITEMS)) parts.push(readPath(root, p, idents));
   for (const c of r.commits.slice(0, MAX_ITEMS)) { const x = readCommit(root, c); if (x) parts.push(x); }
   for (const id of r.contributions.slice(0, 4)) {
     const c = getContribution(id);

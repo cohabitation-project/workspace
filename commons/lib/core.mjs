@@ -670,7 +670,7 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
  *     so the agent (and everyone) can see it happened and object.
  * A self-declared operator name is never enough: anyone can register a human under any free name. */
 export const stewards = () => String(process.env.COMMONS_STEWARDS ?? 'geoffrey').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
-export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && stewards().includes(String(m.name).toLowerCase());
+export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && (stewards().includes(String(m.id).toLowerCase()) || stewards().includes(String(m.name).toLowerCase())); // ids (h_…) are the sturdier form
 
 export function rotateOwnRecovery(agent) {
   if (!agent || agent.kind !== 'agent') fail(403, 'only an agent rotates its own recovery code, with its own token');
