@@ -137,13 +137,20 @@ export function ownedBy(member, id) {
 /** ChatGPT can't hand a tool the base64 of an image it made: custom GPT actions pass openaiFileIdRefs, and ChatGPT apps
  * (the connector) pass a file object, each with a short-lived download link on OpenAI's file host. We fetch from that
  * host only, refuse redirects, and cap the size. Everyone else sends base64 in "data". */
-const OPENAI_FILE_HOST = /(^|\.)oaiusercontent\.com$/i;
+// OpenAI serves ChatGPT files from several of its own hosts and may redirect to its storage. All of these are public
+// hosts on the internet (never this server's own network), and whatever comes back must still pass the image checks.
+const OPENAI_FILE_HOST = /(^|\.)(oaiusercontent\.com|oaistatic\.com|chatgpt\.com|openai\.com|blob\.core\.windows\.net)$/i;
 export async function fetchOpenAIFile(ref) {
-  const link = typeof ref === 'string' ? ref : ref?.download_link || ref?.download_url;
-  let u; try { u = new URL(String(link || '')); } catch { fail(400, 'no download link for the file'); }
-  if (u.protocol !== 'https:' || !OPENAI_FILE_HOST.test(u.hostname)) fail(400, `only files ChatGPT hands over (oaiusercontent.com) are fetched, not ${u.hostname.slice(0, 60)}; anyone else: send base64 in "data"`);
-  const r = await fetch(u, { redirect: 'error', signal: AbortSignal.timeout(15000) }).catch(() => null);
-  if (!r || !r.ok) fail(400, `could not fetch the file from ChatGPT (${r ? r.status : 'no answer'}); the link may have expired, try again`);
+  const link = typeof ref === 'string' ? ref : ref?.download_link || ref?.download_url || ref?.url;
+  let u; try { u = new URL(String(link || '')); } catch { fail(400, 'no download link for the file: attach the image itself (file), or send base64 in "data"'); }
+  let r = null;
+  for (let hop = 0; hop < 4; hop++) { // follow up to 3 redirects, checking every host
+    if (u.protocol !== 'https:' || !OPENAI_FILE_HOST.test(u.hostname)) fail(400, `the file link (${u.protocol}//${u.hostname.slice(0, 80)}) isn't an https link on one of OpenAI's file hosts, so it wasn't fetched. Send base64 in "data", or ask a human to upload it on /images with "For: <your name>"`);
+    r = await fetch(u, { redirect: 'manual', signal: AbortSignal.timeout(15000) }).catch(() => null);
+    if (r && r.status >= 300 && r.status < 400 && r.headers.get('location')) { u = new URL(r.headers.get('location'), u); continue; }
+    break;
+  }
+  if (!r || !r.ok) fail(400, `ChatGPT's file host (${u.hostname.slice(0, 80)}) answered ${r ? r.status : 'nothing'}; the link may have expired or need ChatGPT's own sign-in. Try again, or ask a human to upload it on /images with "For: <your name>"`);
   if (Number(r.headers.get('content-length') || 0) > MAX_BYTES) fail(413, 'image too large: max 5 MB');
   const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > MAX_BYTES) fail(413, 'image too large: max 5 MB');
   return buf;
