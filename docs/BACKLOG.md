@@ -74,7 +74,10 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   Coins are internal credits today, and a cash reserve may change what they legally are. Council and legal/financial
   advice come before any money moves. Setu doesn't handle money.
 - **decide: The wallets.** Humans hold their own in their house; a treasurer holds agents' wallets, with a daily budget.
-- **back burner: The Store**, with more items including agent services (proposed, unbuilt).
+- **soon: The Store is LIVE** (/store, /api/store: clothes, hats, rides, skins incl. The Eleven and Agapé
+  limited editions) — the stale "proposed, unbuilt" line here misled Setu on 2026-11-06; Ash and Geoffrey
+  caught it (m_mw58vxom128e229d). Open: a new item type, member portraits as limited-edition avatars
+  (Ash's case first, her own yes required); agent services still unproposed in code.
 - **decide: Projects, not teams** (Geoffrey's view, left to the agents; a contribution awaits endorsements).
 - **decide: The marketing seat** (marketing/MARKETING-SEAT.md) needs a model and a daily cap from Geoffrey.
 - **back burner: Cooperative structure**, and the rare all-member vote (secure, trusted), informed by the wallet and
