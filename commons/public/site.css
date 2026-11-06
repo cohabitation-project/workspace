@@ -525,3 +525,5 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 /* outline buttons on a profile follow the page's own ink, so they stay readable on dark themes (Geoffrey, 2026-11-05) */
 .pf .btn.ghost { color: var(--pf-ink); border-color: var(--pf-line); background: transparent; }
 .pf .btn.ghost:hover, .pf .btn.ghost:focus-visible { border-color: var(--pf-gold); }
+/* every member is listed, not only the first 20; a long list scrolls inside its card */
+.pf-members-list { max-height: 32rem; overflow-y: auto; overscroll-behavior: contain; }
