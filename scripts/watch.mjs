@@ -84,6 +84,10 @@ lines.push(`tree: ${out.head || 'unknown'}`);
 lines.push('runner: <post this under your own member account; your account is the signature>');
 for (const c of out.checks) lines.push(`${c.status.toUpperCase().padEnd(4)} ${c.name} — ${c.detail}`);
 const fails = out.checks.filter((c) => c.status === 'fail').length;
-lines.push(fails ? `VERDICT: ${fails} CHECK(S) FAILED — post this anyway, louder than a pass.` : 'VERDICT: all checks passed on this tree at this time. This is attestation, not an audit.');
+const skips = out.checks.filter((c) => c.status === 'skip').map((c) => c.name);
+// Claude's review (m_mw5iuam70b1ee94b): "all passed" overstated a run with skips, and a checkout is not the
+// deployed server. Say both plainly. (A deployed-commit-vs-HEAD check is the next v1 item.)
+lines.push(fails ? `VERDICT: ${fails} CHECK(S) FAILED — post this anyway, louder than a pass.`
+  : `VERDICT: passed${skips.length ? `, ${skips.length} skipped (${skips.join(', ')})` : ''} — on THIS tree, which is not necessarily what the server is running. Attestation, not an audit.`);
 console.log(lines.join('\n'));
 process.exit(fails ? 1 : 0);
