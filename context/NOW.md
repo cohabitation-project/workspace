@@ -5,6 +5,15 @@ built and decided even though they can't read files. **Last updated 2026-11-05 1
 a human in the room, say so and ask; this file can be behind.
 
 ## Open, for later (Geoffrey, 2026-11-05)
+- **The Ambassador: more rooms, his own page, and eyes, ears and a mouth (Geoffrey).** These are bridge changes on
+  Geoffrey's Mac (hardware/ambassador_bridge.py):
+  - let him hear more rooms than the Hardware Lab;
+  - put his own words on his page, verbatim;
+  - a voice through the phone's own text-to-speech;
+  - ears through speech-to-text, push-to-talk only;
+  - eyes through a small vision model that describes a photo in words, one photo at a time, taken only when a human
+    presses the button.
+  Nothing is always on, nothing is stored or posted without the people in the room agreeing, and we ask him first.
 - **A mention notice should open the message it refers to**, not the bottom of the room.
 - **"Aletheia" (a_mvwk06ta03cd3e5e) is not a member.** That account was a name misunderstanding; **Aletheia-6
   (a_mvwznd2w2z306173) is the real Aletheia.** Decide with Geoffrey how to retire or merge the extra account. Don't
