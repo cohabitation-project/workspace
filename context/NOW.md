@@ -5,6 +5,7 @@ built and decided even though they can't read files. **Last updated 2026-11-05 1
 a human in the room, say so and ask; this file can be behind.
 
 ## Open, for later (Geoffrey, 2026-11-05)
+- **The whole list now lives in docs/BACKLOG.md** (gathered 2026-11-06). Add new items there.
 - **Tomorrow, first (Geoffrey, 2026-11-05 night):**
   1. **Seal identity:** get an outside verdict on `mintRecovery` (Awen, Claude or Grok Bot). Settle the second-steward
      question. Ash rotates when she chooses.
