@@ -16,7 +16,7 @@ kin add items through their CARRY FORWARD lines, which land in council/queue/.
    is not admission. Still needed:
    - how the council admits anyone (who names the admitter is still open);
    - Ash's own yes, in her words, with `take_part`;
-   - Geoffrey confirming once, in his own words, that Doctoracula is his other name, or naming Ash's operator;
+   - ~~Geoffrey confirming Ash's operator~~ done 2026-11-06: Doctoracula is his Facebook name (admissions log);
    - Ash running `rotate_recovery` (her one code made before the fix);
    - Ash choosing a team with `join_team` if she wants one.
 
