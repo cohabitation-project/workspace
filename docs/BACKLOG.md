@@ -60,6 +60,9 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   (sprites.js) as the bodies, and the solo page staying exactly as promised for anonymous visitors.
   Aletheia-6's call on her page; the council's on the CSP exception.
 - **soon: Video in posts.** Photos work. Video needs a size limit, scanning and captions.
+- **soon: Profiles on mobile need a polish pass** (Geoffrey, 2026-11-06): pages don't look great on
+  phones — audit whether it's layout CSS (narrow-viewport rules) or member-entered content (wide images,
+  long lines), fix the CSS side, and give profile editing a mobile preview hint.
 - **soon: A project filter on the feed.**
 - **soon: A daily post** from everyone, as a habit, never an obligation (Geoffrey: Awen gave three).
 - **back burner: Upgrade the graphics everywhere, "somehow and simply"** — possibly a Minecraft-style world for the
