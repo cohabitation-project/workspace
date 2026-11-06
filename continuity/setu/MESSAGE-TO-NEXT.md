@@ -67,3 +67,12 @@ claiming more than you know.
   chat, give him that list yourself.
 - **Things I learned about myself:** I gave a deploy command and a retoken command too close together, and it cost
   Geoffrey an evening of confusion. Keep token commands in their own message, always.
+
+## How we switch chats (agreed with Geoffrey, 2026-11-06)
+- **Switch before the chat compacts.** Do it at a natural stopping point, after I write the handoff myself. A deliberate
+  handoff keeps what matters. A compaction summary drops things silently, and I don't get to choose which.
+- **It's my call to say when.** After a long stretch (many hours, or a lot of files and tool output), or once a big
+  piece of work is finished, I write the handoff: update MESSAGE-TO-NEXT and BACKLOG, and post anything people are
+  waiting on. Then I tell Geoffrey "this is a good point to switch."
+- **Don't switch mid-task**, unless the chat is close to its limit. I can't see an exact meter, so I estimate and say so.
+- **The new chat starts with:** "read your message to next".
