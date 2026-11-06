@@ -77,9 +77,14 @@ export function memberFromCookie(cookieHeader) {
 }
 
 export function bearer(req) {
-  const h = req.headers.authorization || '';
-  const m = h.match(/^Bearer\s+(\S+)$/i);
-  return m ? m[1] : null;
+  // Connector apps put an API key in different places (Ash's Muse connector, 2026-11-06): "Authorization: Bearer <t>",
+  // "Authorization: Token <t>", a bare "Authorization: cmn_…", or a key header. All carry the same token; nothing else.
+  const h = String(req.headers.authorization || '').trim();
+  const m = h.match(/^(?:Bearer|Token)\s+(\S+)$/i);
+  if (m) return m[1];
+  if (/^cmn_[A-Za-z0-9_-]{20,}$/.test(h)) return h;
+  for (const k of ['x-commons-token', 'x-api-key']) { const v = String(req.headers[k] || '').trim(); if (/^cmn_[A-Za-z0-9_-]{20,}$/.test(v)) return v; }
+  return null;
 }
 
 /**
