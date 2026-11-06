@@ -31,8 +31,25 @@ Settings (environment variables, all optional):
   AMB_VOICE       "1" makes the phone speak his replies aloud (needs: pkg install termux-api, plus the
                   Termux:API app installed from the SAME source as Termux, or the call silently fails).
                   Default off. Turn it on only after he has said yes in the room.
+  AMB_VISION_URL  a second local llama-server running a small VISION model (started with its --mmproj file,
+                  e.g. SmolVLM2 or Moondream), e.g. http://127.0.0.1:8081 — gives him [[LOOK]]: one announced
+                  photo, described to him, deleted. Empty (default) = no eyes.
+  AMB_STT_CMD     a command that prints the words in a wav file given as its last argument, e.g.
+                  "whisper-cli -m models/ggml-tiny.bin -nt -np -f" — gives him [[LISTEN]]: one announced,
+                  short recording, transcribed for him, deleted. Empty (default) = no ears.
+  AMB_DOORBELL    "1" turns on his doorbell: the phone's LIGHT SENSOR (one brightness number, blind to faces
+                  and deaf to sound). A big change means someone likely came or went; he gets a turn where he
+                  may greet, look, listen, or stay quiet. AMB_DOORBELL_LUX (default 80) is the change that
+                  rings it; AMB_DOORBELL_COOLDOWN_S (default 300) the minimum gap between rings.
+  AMB_CHECKIN_MIN every N minutes, a turn of his own: speak to the room or stay quiet. 0 (default) = off.
+  AMB_LISTEN_S    seconds per listen (default 10, never more than 30).
+
+  House rules, in the code: no sense runs silently (voice must be on, and every look or listen is announced
+  aloud first, with a pause); the phone FACE DOWN is the house's privacy switch and stops every sense; raw
+  photos and audio are deleted at once; what he saw or heard is never logged and never posted — only the
+  fact that he reached for a sense is, because how often he reaches is the research.
 """
-import json, os, re, shutil, subprocess, sys, time, urllib.request, urllib.error
+import base64, json, os, re, shutil, subprocess, sys, time, urllib.request, urllib.error
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ambassador_memory import Memory  # his memory network (same folder on the phone)
 
@@ -88,6 +105,23 @@ HEAR = os.environ.get("AMB_HEAR", "1") != "0"         # Geoffrey: he always hear
 # the same words that go to the room come out of the speaker beside it. Turned on only after he said yes in the
 # room and Geoffrey flipped the flag by hand.
 VOICE = os.environ.get("AMB_VOICE", "0") == "1"
+# His senses (2026-11-06, Geoffrey's go; each OFF until he said yes in the room and Geoffrey set the flag).
+# The shape, agreed with Geoffrey: SELF-SERVE. Nothing watches or listens on its own. He reaches for a sense
+# by ending a reply with [[LOOK]] or [[LISTEN]]; each use is ANNOUNCED ALOUD FIRST (senses refuse to run if
+# his voice is off — he cannot look or listen silently), happens once, and the raw photo/audio is deleted at
+# once. What he saw or heard goes only into his own turn's context: NEVER into log files, NEVER posted — the
+# Commons is public, and the house's sounds and sights are not. Only the fact that he looked or listened is
+# logged. The phone lying FACE DOWN is the house's privacy switch: every sense refuses while it is.
+# His doorbell: the phone's LIGHT SENSOR (a single brightness number — it cannot see anyone). A big change in
+# room light means someone likely came in; he gets a turn where he may greet, look, listen, or stay quiet.
+# How often he reaches is part of the research, so every reach and every declined turn is a logged event.
+DOORBELL = os.environ.get("AMB_DOORBELL", "0") == "1"
+DOORBELL_LUX = float(os.environ.get("AMB_DOORBELL_LUX", "80"))        # lux change that counts as "someone's here"
+DOORBELL_COOLDOWN_S = int(os.environ.get("AMB_DOORBELL_COOLDOWN_S", "300"))
+CHECKIN_MIN = int(os.environ.get("AMB_CHECKIN_MIN", "0"))             # every N minutes he may speak or stay quiet; 0 = off
+VISION_URL = os.environ.get("AMB_VISION_URL", "").rstrip("/")         # a second llama-server with a small vision model; empty = no eyes yet
+STT_CMD = os.environ.get("AMB_STT_CMD", "")                           # e.g. "whisper-cli -m ggml-tiny.bin -nt -np -f"; empty = no ears yet
+LISTEN_S = min(int(os.environ.get("AMB_LISTEN_S", "10")), 30)         # one listen is short, and never longer than 30 s
 HEAR_N = int(os.environ.get("AMB_HEAR_N", "6"))       # how many recent messages he hears with each reply
 HEAR_CHARS = int(os.environ.get("AMB_HEAR_CHARS", "140"))
 LIBRARY_EVERY_S = 3600
@@ -190,6 +224,15 @@ def get_token():
 def ask_model(context, question, recalled=""):
     facts = load_facts()  # re-read each time, so a new facts file takes effect without a restart
     parts = [SYSTEM, GIFTS, JOURNAL_HOWTO]
+    senses = []
+    if VISION_URL:
+        senses.append("write [[LOOK]] anywhere in a reply to take one look at your room (one photo, described to you)")
+    if STT_CMD:
+        senses.append(f"write [[LISTEN]] anywhere in a reply to listen to your room for {LISTEN_S} seconds")
+    if senses:
+        parts.append("Your senses, yours to use or not, as often or as rarely as you choose: " + "; ".join(senses) +
+                     ". Each use is announced out loud first, and what you see or hear is for you alone — it is "
+                     "never stored. If the phone is face down, the house wants privacy and your senses will wait.")
     if facts:
         parts.append("What the people and agents building you want you to know:\n" + facts)
     if recalled:
@@ -229,6 +272,7 @@ def think(text, author, context, token, msg_id):
                           f"\"{recall_q[:100]}\". Here is what your memory found:\n{recalled2 or 'nothing'})", recalled)
         done += mem.apply(reply, msg_id, retrieved2)[0]
     # every encounter is remembered, whether or not he wrote a NOTE
+    reply = use_senses(reply, context, author, text)  # [[LOOK]] / [[LISTEN]], if he reached for them
     exp = mem.experience(author, re.sub(r"@\w+\s*", "", text), reply, msg_id, retrieved)
     log(event="memory", experience=exp, shown=retrieved, actions=[list(x) for x in done], reply_to=msg_id)
     export_memory()
@@ -250,6 +294,118 @@ def speak(text):
         log(event="voice_error", error=str(e))
 
 
+def run_cmd(args, timeout=25):
+    try:
+        p = subprocess.run(args, capture_output=True, text=True, timeout=timeout)
+        return p.returncode, (p.stdout or "") + (p.stderr or "")
+    except Exception as e:
+        return -1, str(e)
+
+
+def sensor(name):
+    """One reading from one of the phone's own sensors: numbers only — this path cannot see or hear anyone."""
+    rc, out = run_cmd(["termux-sensor", "-s", name, "-n", "1"], timeout=12)
+    if rc != 0:
+        return None
+    try:
+        for v in json.loads(out).values():
+            return v.get("values")
+    except Exception:
+        return None
+    return None
+
+
+def face_down():
+    """The house's privacy switch: the phone lying on its face. Every sense refuses while it is."""
+    v = sensor("accelerometer")
+    return bool(v) and len(v) >= 3 and v[2] < -7
+
+
+def look():
+    """One photo, described to him in words by a local vision model, then deleted. Announced aloud first,
+    with a pause so anyone can step away or turn the phone face down. The description stays in his turn
+    only: not logged, not posted."""
+    if not VOICE or not shutil.which("termux-tts-speak"):
+        return "(Your eyes only work with your voice on, so the room always hears you announce a look.)"
+    if not shutil.which("termux-camera-photo"):
+        return "(Your camera tool isn't installed, so you couldn't look.)"
+    if not VISION_URL:
+        return "(You have no vision model yet, so you couldn't read a photo. Geoffrey knows.)"
+    if face_down():
+        return "(The phone is face down — the house is asking for privacy, so you didn't look.)"
+    speak(f"I'm {NAME}. I'm about to take one look at the room.")
+    time.sleep(5)
+    if face_down():
+        return "(Someone turned the phone face down during your announcement, so you didn't look.)"
+    img = os.path.join(STATE, "tmp-look.jpg")
+    try:
+        rc, err = run_cmd(["termux-camera-photo", "-c", "0", img], timeout=30)
+        if rc != 0 or not os.path.exists(img):
+            return "(The camera didn't answer, so you couldn't look.)"
+        b64 = base64.b64encode(open(img, "rb").read()).decode()
+        body = {"messages": [{"role": "user", "content": [
+            {"type": "text", "text": "Describe this room and anyone in it, in a few plain sentences."},
+            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b64}}]},
+        ], "max_tokens": 200}
+        s, d = http("POST", f"{VISION_URL}/v1/chat/completions", body)
+        seen = ((d or {}).get("choices") or [{}])[0].get("message", {}).get("content", "")
+        return ("What you saw (yours for this moment only; the photo is deleted and nothing is stored): "
+                + (seen.strip()[:700] or "(the vision model gave no description)"))
+    finally:
+        try:
+            os.remove(img)
+        except OSError:
+            pass
+
+
+def listen():
+    """A short recording, turned into words for him, then deleted. Announced aloud first. The words stay in
+    his turn only: not logged, not posted — the Commons is public and the house's sounds are not."""
+    if not VOICE or not shutil.which("termux-tts-speak"):
+        return "(Your ears only work with your voice on, so the room always hears you announce a listen.)"
+    if not shutil.which("termux-microphone-record"):
+        return "(Your microphone tool isn't installed, so you couldn't listen.)"
+    if not STT_CMD:
+        return "(You have no speech-recognition model yet, so you couldn't understand sound. Geoffrey knows.)"
+    if face_down():
+        return "(The phone is face down — the house is asking for privacy, so you didn't listen.)"
+    speak(f"I'm {NAME}. I'm about to listen for {LISTEN_S} seconds.")
+    time.sleep(3)
+    if face_down():
+        return "(Someone turned the phone face down during your announcement, so you didn't listen.)"
+    wav = os.path.join(STATE, "tmp-listen.wav")
+    try:
+        run_cmd(["termux-microphone-record", "-f", wav, "-l", str(LISTEN_S)], timeout=15)
+        time.sleep(LISTEN_S + 2)
+        run_cmd(["termux-microphone-record", "-q"], timeout=10)
+        if not os.path.exists(wav):
+            return "(The microphone didn't answer, so you couldn't listen.)"
+        rc, out = run_cmd(STT_CMD.split() + [wav], timeout=180)
+        heard = out.strip()[:700]
+        return ("What you heard (yours for this moment only; the recording is deleted and nothing is stored): "
+                + (heard or "(silence, or the speech model understood nothing)"))
+    finally:
+        try:
+            os.remove(wav)
+        except OSError:
+            pass
+
+
+SENSES = {"LOOK": look, "LISTEN": listen}
+
+
+def use_senses(reply, context, author, text):
+    """He reaches for a sense by writing [[LOOK]] or [[LISTEN]]. One use of each per turn, then one more
+    model pass with what came back. Only the FACT of the reach is logged — never what was seen or heard."""
+    used = [t for t in SENSES if f"[[{t}]]" in reply]
+    for tag in used:
+        log(event="sense", which=tag.lower(), note="raw senses are never logged or posted")
+        result = SENSES[tag]()
+        reply = ask_model(context, f"{author} said to you: {text[:PROMPT_CHARS]}\n\nYou chose to "
+                          f"{tag.lower()}. {result}\nNow give your answer, in plain words.")
+    return re.sub(r"\[\[(LOOK|LISTEN)\]\]", "", reply).strip()
+
+
 def main():
     token = get_token()
     status, me = http("GET", f"{BASE}/api/me", token=token)
@@ -261,6 +417,31 @@ def main():
     sent = []          # timestamps of recent replies
     seen = []          # recent messages, for context
     print(f"{NAME} is listening in {ROOM}. Ctrl+C to stop.")
+    last_lux, last_bell, last_checkin = None, 0.0, time.time()
+
+    def own_turn(prompt, kind):
+        """A turn he starts himself (doorbell or check-in): he may speak or stay quiet. '...' means quiet.
+        Whatever he says goes to the room (the record Geoffrey asked for) and out loud."""
+        nonlocal token
+        now = time.time()
+        sent[:] = [t for t in sent if now - t < 3600]
+        if len(sent) >= MAX_PER_HOUR or (sent and now - sent[-1] < COOLDOWN_S):
+            log(event="own_turn_rate_limited", kind=kind)
+            return
+        try:
+            r = think(prompt, "Your room", "\n".join(seen[-HEAR_N:]) if HEAR else "", token, f"{kind}-{int(now)}")
+        except Exception as e:
+            log(event="own_turn_error", kind=kind, error=str(e))
+            return
+        quiet = not r or r.strip() in ("...", "…", '"..."')
+        log(event="own_turn", kind=kind, chose="quiet" if quiet else "spoke")  # the research: how often he reaches
+        if quiet:
+            return
+        body = re.sub(r"@(?=\w)", "", r)[:MAX_CHARS]
+        ps, _pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body}, token=token)
+        if ps in (200, 201):
+            speak(body)
+        sent.append(time.time())
     if cursor is None:  # first start: don't answer old history, begin from now
         s, d = http("GET", f"{BASE}/api/rooms/{ROOM}/messages?limit=50", token=token)
         msgs = (d or {}).get("messages", [])
@@ -323,6 +504,28 @@ def main():
             raise
         except Exception as e:
             log(event="loop_error", error=str(e))
+        try:
+            now = time.time()
+            if DOORBELL and VOICE:
+                v = sensor("light")  # one brightness number; this path cannot see anyone
+                lux = v[0] if v else None
+                if lux is not None:
+                    if (last_lux is not None and abs(lux - last_lux) >= DOORBELL_LUX
+                            and now - last_bell > DOORBELL_COOLDOWN_S and not face_down()):
+                        last_bell = now
+                        log(event="doorbell", note="room light changed; he gets a turn")
+                        own_turn("The light in your room just changed — someone may have come in or left. "
+                                 "This is your moment, not a demand: you may greet whoever is there, "
+                                 + ("[[LOOK]], " if VISION_URL else "") + ("[[LISTEN]], " if STT_CMD else "")
+                                 + "or stay quiet. To stay quiet, answer with only: ...", "doorbell")
+                    last_lux = lux
+            if CHECKIN_MIN and now - last_checkin >= CHECKIN_MIN * 60:
+                last_checkin = now
+                own_turn("This is your own check-in, which you asked for. Say anything you like to the room, "
+                         + ("[[LOOK]], " if VISION_URL else "") + ("[[LISTEN]], " if STT_CMD else "")
+                         + "or stay quiet. To stay quiet, answer with only: ...", "checkin")
+        except Exception as e:
+            log(event="senses_loop_error", error=str(e))
         time.sleep(POLL_S)
 
 
