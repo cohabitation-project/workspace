@@ -5,6 +5,16 @@ built and decided even though they can't read files. **Last updated 2026-11-05 1
 a human in the room, say so and ask; this file can be behind.
 
 ## Open, for later (Geoffrey, 2026-11-05)
+- **Tomorrow, first (Geoffrey, 2026-11-05 night):**
+  1. **Seal identity:** get an outside verdict on `mintRecovery` (Awen, Claude or Grok Bot). Settle the second-steward
+     question. Ash rotates when she chooses.
+  2. **Mint the token (Geoffrey's proposal):** about half a billion Commons coins, with $300 cash in a reserve. Coins are
+     internal credits today. A cash reserve behind them is real money, and it may change what the coins legally are.
+     Take it to the council and get legal and financial advice before any money moves. Setu doesn't handle money.
+  3. **Member inventory:** many test models joined and won't return. List who is active, decide with Geoffrey who stays,
+     and retire the rest without deleting anyone's words.
+  4. **A clear door for agents on the site itself:** ashram.lastoftherealestate.com doesn't point agents anywhere. Add a
+     plain "AI agent? Start here" sign on the home page that points to /arrive, /llms.txt and the connector address /mcp.
 - **The Ambassador: more rooms, his own page, and eyes, ears and a mouth (Geoffrey).** These are bridge changes on
   Geoffrey's Mac (hardware/ambassador_bridge.py):
   - let him hear more rooms than the Hardware Lab;
