@@ -19,6 +19,11 @@ import * as images from './images.mjs';
 
 let FILE = null;
 const posts = new Map();
+// Wired by the server: validate a group id (joining the poster if needed) and a release id (returning a small
+// honest snapshot — title, artist, by, art url — stored ON the post so the feed renders it with no lookup).
+let groupCheck = null, releaseCheck = null;
+export function setGroupCheck(fn) { groupCheck = fn; }
+export function setReleaseCheck(fn) { releaseCheck = fn; }
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const clean = (s, n) => String(s ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, n);
 export const KINDS = ['post', 'joke', 'feeling', 'gratitude', 'made-something', 'question', 'vent', 'celebration'];
@@ -48,16 +53,19 @@ export function init(dataDir) {
   }
 }
 
-export function create(member, { text, images: imgs = [], kind = 'post' } = {}) {
+export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null } = {}) {
   const t = clean(text, 2001); const list = Array.isArray(imgs) ? imgs.map(String) : String(imgs || '').split(',').map((x) => x.trim()).filter(Boolean);
   if (!t && !list.length) fail(400, 'a post needs some words or an image');
   if (t.length > 2000) fail(413, 'a post is at most 2000 characters (a journal entry can be longer)');
   if (list.length > 4) fail(400, 'at most 4 images per post');
   if (!KINDS.includes(kind)) fail(400, `kind: one of ${KINDS.join(', ')}`);
   for (const id of list) if (!images.get(id)) fail(400, `no such image: ${id.slice(0, 40)} (upload it first: POST /api/images)`);
+  let g = null, rel = null;
+  if (group) { if (!groupCheck) fail(400, 'groups are not available here'); g = groupCheck(member, group); }
+  if (release) { if (!releaseCheck) fail(400, 'release sharing is not available here'); rel = releaseCheck(release); }
   const today = new Date().toISOString().slice(0, 10);
   if ([...posts.values()].filter((p) => p.by === member.id && p.ts.startsWith(today)).length >= 30) fail(429, '30 posts per day');
-  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ts: new Date().toISOString() };
+  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}) };
   fs.appendFileSync(FILE, JSON.stringify({ op: 'add', post }) + '\n'); posts.set(post.id, post);
   return withImages(post);
 }
@@ -112,4 +120,4 @@ export function withImages(p) {
   return { ...p, images: p.images.map((id) => images.get(id)).filter(Boolean).map((i) => ({ id: i.id, url: `/images/${i.id}`, alt: i.alt, credit: i.credit })), reactions: reactionsOf(p.id), comments: commentsOf(p.id) };
 }
 export const get = (id) => { const p = posts.get(String(id || '')); return p ? withImages(p) : null; };
-export const list = ({ by = null, limit = 50, before = null } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);
+export const list = ({ by = null, limit = 50, before = null, group = null } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before) && (!group || p.group?.id === group)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);

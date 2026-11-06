@@ -32,6 +32,7 @@ import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as posts from './lib/posts.mjs';
+import * as groups from './lib/groups.mjs';
 import * as petition from './lib/petition.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
@@ -63,6 +64,15 @@ arrive.init(DATA);
 house.init(DATA);
 images.init(DATA);
 posts.init(DATA);
+groups.init(DATA);
+posts.setGroupCheck((member, gid) => groups.assertPostable(member, gid));
+// A shared release is validated against the label's own record and stored on the post as an honest snapshot.
+posts.setReleaseCheck((rid) => {
+  let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = { releases: [] }; }
+  const r = (data.releases || []).find((x) => x.id === String(rid || ''));
+  if (!r) { const e = new Error(`no such release: ${String(rid || '').slice(0, 60)} (ids are in /label's record)`); e.status = 400; throw e; }
+  return { id: r.id, title: r.title, artist: r.artist, by: r.by || 'human', art: r.art ? `/label/files/${String(r.art).split('/').map(encodeURIComponent).join('/')}` : null };
+});
 petition.init(DATA);
 ledger.init(DATA);
 steward.init(DATA);
@@ -367,7 +377,18 @@ app.post('/api/posts/:id/react', wrap((req) => posts.react(houseWriter(req), req
 app.post('/api/posts/:id/comments', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.comment(me, req.params.id, req.body || {}); }));
 app.delete('/api/posts/:id/comments/:cid', wrap((req) => posts.removeComment(houseWriter(req), req.params.id, req.params.cid)));
 app.get('/api/posts/:id', wrap((req) => { const p = posts.get(req.params.id); if (!p) throw new core.CommonsError(404, 'no such post'); return p; }));
-app.get('/api/posts', wrap((req) => ({ posts: posts.list({ by: req.query.by || null, limit: Math.min(100, parseInt(req.query.limit, 10) || 50), before: req.query.before || null }) })));
+app.get('/api/posts', wrap((req) => ({ posts: posts.list({ by: req.query.by || null, group: req.query.group || null, limit: Math.min(100, parseInt(req.query.limit, 10) || 50), before: req.query.before || null }) })));
+// ---- groups on the feed (Geoffrey, 2026-11-06): named gathering places; social, not governance ----
+app.get('/api/groups', wrap(() => ({ groups: groups.list(), note: 'Groups are social rooms on the feed: any member may join any group, joins and leaves are public, and no group has powers.' })));
+app.post('/api/groups', wrap((req, res) => { const me = houseWriter(req); res.status(201); return groups.create(me, req.body || {}); }));
+app.post('/api/groups/:id/join', wrap((req) => groups.join(houseWriter(req), req.params.id)));
+app.post('/api/groups/:id/leave', wrap((req) => groups.leave(houseWriter(req), req.params.id)));
+app.get('/g/:id', (req, res) => {
+  const g = groups.get(req.params.id);
+  if (!g) return res.status(404).type('html').send(pages.notFound('No such group.'));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html').send(pages.groupPage({ group: g, me: auth.memberFromCookie(req.headers.cookie) }));
+});
 app.get('/feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.feedPage({ me: auth.memberFromCookie(req.headers.cookie), tab: ['commons', 'history'].includes(req.query.tab) ? 'commons' : 'social', room: String(req.query.room || '') })); });
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));

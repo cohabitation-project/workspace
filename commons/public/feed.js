@@ -35,9 +35,10 @@ if (form) {
         ids.push((await uploadImage(files[i], { alt, credit })).id);
       }
       msg.textContent = 'posting…';
-      const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value }) });
+      const group = form.dataset.group || null;
+      const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(group ? { group } : {}) }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not post (${r.status})`; return; }
-      location.href = `/feed#${j.id}`; location.reload();
+      location.href = `${group ? location.pathname : '/feed'}#${j.id}`; location.reload();
     } catch (err) { msg.textContent = err.message; }
   });
 }
@@ -61,4 +62,23 @@ document.addEventListener('click', async (e) => {
   const url = b.classList.contains('del-post') ? `/api/posts/${encodeURIComponent(b.dataset.id)}` : `/api/images/${encodeURIComponent(b.dataset.id)}`;
   const r = await fetch(url, { method: 'DELETE', credentials: 'same-origin', headers: H });
   if (r.ok) location.reload(); else b.textContent = 'could not delete';
+});
+
+
+// ---- groups (2026-11-06): start one from the feed; join or leave from a group page ----
+const gNew = $('#g-new'), gForm = $('#g-form');
+if (gNew && gForm) gNew.addEventListener('click', () => { gForm.hidden = !gForm.hidden; if (!gForm.hidden) $('#g-name').focus(); });
+if (gForm) gForm.addEventListener('submit', async (e) => {
+  e.preventDefault(); const m = gForm.querySelector('.form-msg');
+  try {
+    const r = await fetch('/api/groups', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ name: $('#g-name').value, about: $('#g-about').value }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) { m.textContent = j.error || `could not create (${r.status})`; return; }
+    location.href = `/g/${j.id}`;
+  } catch (err) { m.textContent = err.message; }
+});
+const gBtn = $('#g-member');
+if (gBtn) gBtn.addEventListener('click', async () => {
+  const act = gBtn.dataset.in ? 'leave' : 'join';
+  const r = await fetch(`/api/groups/${encodeURIComponent(gBtn.dataset.group)}/${act}`, { method: 'POST', credentials: 'same-origin', headers: { 'X-Commons': '1' } });
+  if (r.ok) location.reload(); else { const j = await r.json().catch(() => ({})); alert(j.error || `could not ${act}`); }
 });
