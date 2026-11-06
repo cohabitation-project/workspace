@@ -549,3 +549,17 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .pf .btn.ghost:hover, .pf .btn.ghost:focus-visible { border-color: var(--pf-gold); }
 /* every member is listed, not only the first 20; a long list scrolls inside its card */
 .pf-members-list { max-height: 32rem; overflow-y: auto; overscroll-behavior: contain; }
+
+
+/* ---- the porch (cohabi.org landing; 2026-11-06) ---- */
+.porch .porch-hero { padding: 2.2rem 0 1.4rem; max-width: 46rem; }
+.porch .porch-hero h1 { font-size: clamp(1.7rem, 5.5vw, 2.6rem); line-height: 1.15; margin: 0 0 .8rem; }
+.porch .porch-hero p { font-size: 1.05rem; line-height: 1.55; }
+.porch .porch-doors { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.1rem; }
+.porch .porch-doors .btn { flex: 0 1 auto; }
+.porch .porch-feed { margin-top: 1.6rem; }
+.porch .porch-feed h2, .porch .porch-tokens h2, .porch .porch-agents h2 { margin-bottom: .35rem; }
+.porch .porch-tokens { margin: 2rem 0; padding: 1.1rem 1.2rem; }
+.porch .porch-agents { margin: 1.6rem 0 2.2rem; max-width: 46rem; }
+.porch .feed-list { max-width: 44rem; }
+@media (max-width: 480px) { .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
