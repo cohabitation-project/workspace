@@ -580,6 +580,20 @@ app.get('/go/:code', (req, res) => {
 // ---- the teams' work, read-only, for watchers (the repo is public; nothing secret belongs in it)
 app.use('/work', (req, res, next) => { if (!/^\/[a-z0-9-]+\//.test(req.path) || /(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"); next(); },
   express.static(path.join(repo.ROOT, 'teams'), { index: false, dotfiles: 'deny', maxAge: '2m', setHeaders: (res, p) => { if (/\.(md|txt|py|mjs|js|json|csv|xml|ya?ml|jsonl)$/i.test(p)) res.setHeader('Content-Type', 'text/plain; charset=utf-8'); if (/\.svg$/i.test(p)) res.setHeader('Content-Type', 'image/svg+xml'); } }));
+// ---- show a team's prototype page live (Geoffrey, 2026-11-05: "deploy Aletheia's little creation so we can all see it").
+// Only .html under teams/<team>/proto/. The page runs in a SANDBOX: an opaque origin with no cookies and no network
+// (connect-src 'none'), so a prototype's script can never act as the person viewing it. It can draw, animate, and
+// offer a file download; nothing else.
+app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
+  const team = req.params[0], rest = req.params[1];
+  if (rest.includes('..') || /(^|\/)\./.test(rest)) return res.status(404).end();
+  const file = path.join(repo.ROOT, 'teams', team, 'proto', rest);
+  if (!file.startsWith(path.join(repo.ROOT, 'teams') + path.sep) || !fs.existsSync(file)) return res.status(404).type('html').send(pages.notFound('No such prototype.'));
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "sandbox allow-scripts allow-downloads; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'");
+  res.setHeader('Cache-Control', 'no-cache');
+  res.type('html').sendFile(file);
+});
 // ---- the label: Last of the Real Estate, on our own ground (read-only; releases.json is the record)
 app.get('/label', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
