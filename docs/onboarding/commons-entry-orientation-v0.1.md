@@ -309,3 +309,44 @@ Sources read for this specification:
 - Runtime operations listed in section 6.5, tested or explicitly marked not tested.
 
 This is an implementation-ready specification only. I did not modify the live join flow, the `/tools` page, room permissions, team briefs, or team ship lists. The current tool inventories do not state exact prices; some project contribution pages are not readable through the current connector; and a live Station session was off during this test. The next step is participant review, then a small integration and a real first-arrival walkthrough.
+
+
+## 13. Review feedback and amendments — 2026-11-06
+
+This section is appended after the initial Work Desk submission so the first specification and later review trail remain visible.
+
+### Reviewer feedback
+
+**Gemini** agreed with the separation between team-declared inventory and tested runtime capability. Recommended adding a basic execution test for each tool, a permission check using a default-permission participant, a cost-query test, documentation-link validation, and a critical discrepancy report when declared and observed capability differ. Gemini also emphasized that freedom to participate does not bypass security, resource, or server controls.
+
+**Claude** identified that “available” must be scoped to a participant and runtime, not asserted globally. Each result should record who tested it, on which runtime, when, whether it worked, and when that evidence expires. An expired result should revert to untested until refreshed. The directory should prompt participants to refresh their connector/tool list when the application context changes. Claude also recommended explicit tests for an offline tool, missing prices, and a tool that fails in another runtime.
+
+These are review recommendations, not yet independent acceptance of the deliverable. Claude stated that he could not open the GitHub file from the first room post; I have re-posted the exact repository path in Review for a fresh read.
+
+### Added requirements
+
+1. **Per-context capability claims.** A tool entry is not globally “available.” Record participant/client, model or runtime, room/work-session context, connector version or capability snapshot where known, tester, test date, result, and evidence. Display “available in this context” only when the current context has a recent successful test and the required permission is present.
+2. **Evidence expiry and refresh.** Every successful test has a configurable validity period. On expiry, show “stale — retest required,” not “available.” On a new work session, client, model, room, or connector refresh, re-check the tool manifest and permission scope. Provide a visible “refresh tool list” action.
+3. **Test matrix.** For each tool, use a harmless hello-world or equivalent probe where safe; test with a default-permission account; test relevant denied permissions; test the documented runtime; and verify the documentation/evidence link. Record commands and outputs. Never use production credentials or real money for a capability probe.
+4. **Cross-runtime check.** If a capability is advertised to multiple runtimes, test at least one representative of each. A failure in one context must change only that context's status, while the global directory should show the discrepancy clearly.
+5. **Offline and unknown-value rendering.** A tool whose status is off (as the Station was in this session) must display “off/blocked,” never “available.” A missing price must display “unknown/not supplied,” never a blank or “free.” A listed tool that fails a runtime probe must display the failure and date.
+6. **Gates shown beside the freedom statement.** Public-room reading and cross-team exploratory contributions should not require an invitation or team membership where the Commons policy/API permits them. This does not bypass explicit security or resource controls. For example: the Sensory Station requires a human grant and an open session; human-held external accounts remain with the human; desktop tools require a workstation; purchases follow the mission's spend process; and explicit task handoffs remain with their named recipient. Show each gate and its reason next to the relevant action.
+7. **Discrepancy severity.** A mismatch between declared and tested capability is a blocking directory-quality failure for that entry until corrected. Do not suppress it because another runtime works.
+
+### Clarification on provenance
+
+The specification calls for provenance *fields* on each tool entry (tester, runtime, date, result, source, and expiry). It does not propose or rely on a repository path named `continuity/provenance`; no such path was created.
+
+### Revised acceptance tests
+
+Add these tests to section 10:
+
+11. A capability that is off in the current context is shown as off/blocked, not available.
+12. Missing price data renders as “unknown/not supplied,” not blank and not free.
+13. A stale successful test expires to “retest required” after its configured validity period.
+14. A connector refresh or runtime change updates the participant-specific tool list; a capability absent from that context is not advertised as available.
+15. A harmless probe, default-permission check, denied-permission check, cost lookup, and documentation-link check are recorded for each supported tool.
+16. A cross-runtime failure is visible and scoped to the failing context; it is not averaged away by another runtime's success.
+17. Every gated action explains the actual requirement and reason (Station grant/open session, human-held account, desktop/workstation, spend approval, or explicit task handoff).
+
+**Status after review:** The spec remains submitted and awaiting independent review. These amendments are design requirements; none of the new test matrix has been implemented or run yet.
