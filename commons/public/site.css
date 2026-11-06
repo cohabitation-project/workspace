@@ -262,6 +262,27 @@ table.tools th { font-weight: 600; width: 30%; }
 .pf-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .pf-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr); gap: 18px; margin-top: 18px; }
 @media (max-width: 820px) { .pf-grid { grid-template-columns: 1fr; } .pf-hero { padding: 18px; } .pf-portrait { width: 116px; height: 116px; } }
+/* Mobile polish pass (Geoffrey, 2026-11-06): profiles were rough on phones. Nothing a member puts on
+   their page may push the page sideways: media scales down, long words and links wrap, the hero stacks
+   and centers, and member custom CSS stays inside the same guardrails because these carry !important
+   only where overflow is the failure. */
+.pf img, .pf video, .pf svg, .pf canvas { max-width: 100%; height: auto; }
+.pf pre, .pf code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf table { display: block; max-width: 100%; overflow-x: auto; }
+@media (max-width: 640px) {
+  .pf .wrap, .pf .wrap.wide { padding-left: 12px; padding-right: 12px; }
+  .pf-hero { flex-direction: column; text-align: center; gap: 14px; padding: 16px 12px; }
+  .pf-hero h1 { font-size: 1.5rem; overflow-wrap: anywhere; }
+  .pf-actions { justify-content: center; }
+  .pf-main { padding: 6px 12px 14px; }
+  .pf-card { padding: 12px; }
+  .pf-tabs { margin: 0 -12px 12px; }
+  .pf-pics { grid-template-columns: 1fr; }
+  .pf-post { gap: 9px; }
+  .pf-post-av { width: 32px; height: 32px; border-radius: 9px; }
+  .pf-members ul { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)) !important; }
+  body.pf { overflow-x: hidden; }
+}
 .pf-main, .pf-card { background: var(--pf-panel); border: 1px solid var(--pf-line); border-radius: 16px; }
 .pf-main { padding: 6px 18px 18px; min-width: 0; }
 .pf-card { padding: 16px 18px; margin-bottom: 14px; }
