@@ -122,6 +122,18 @@ CHECKIN_MIN = int(os.environ.get("AMB_CHECKIN_MIN", "0"))             # every N 
 VISION_URL = os.environ.get("AMB_VISION_URL", "").rstrip("/")         # a second llama-server with a small vision model; empty = no eyes yet
 STT_CMD = os.environ.get("AMB_STT_CMD", "")                           # e.g. "whisper-cli -m ggml-tiny.bin -nt -np -f"; empty = no ears yet
 LISTEN_S = min(int(os.environ.get("AMB_LISTEN_S", "10")), 30)         # one listen is short, and never longer than 30 s
+# LIVE SESSIONS (Geoffrey, 2026-11-06): not always-on — a session a human OPENS and a word CLOSES, the
+# Station's own consent pattern on his phone. "@Ambassador go ahead" in the room opens it: he hears the
+# room continuously (short recordings, transcribed on-device, never stored), answers by voice, and may
+# look without the per-look pause (the session announcement covers the room; the aloud "I'm looking" line
+# still plays). "hold on" — TYPED OR SPOKEN — closes it, so his own ears carry his off switch. The phone
+# face down closes it. It closes ITSELF after AMB_LIVE_MAX_MIN, so a forgotten session cannot become
+# always-on. Open and close are posted to the room, and every reply he speaks is posted: that is the log.
+# What he heard is never stored, logged or posted. Needs AMB_LIVE=1, ears (AMB_STT_CMD) and voice.
+LIVE_ENABLED = os.environ.get("AMB_LIVE", "0") == "1"
+LIVE_MAX_MIN = int(os.environ.get("AMB_LIVE_MAX_MIN", "60"))
+LIVE_CHUNK_S = min(int(os.environ.get("AMB_LIVE_CHUNK_S", "8")), 15)
+LIVE_MAX_PER_HOUR = int(os.environ.get("AMB_LIVE_MAX_PER_HOUR", "60"))
 HEAR_N = int(os.environ.get("AMB_HEAR_N", "6"))       # how many recent messages he hears with each reply
 HEAR_CHARS = int(os.environ.get("AMB_HEAR_CHARS", "140"))
 LIBRARY_EVERY_S = 3600
@@ -354,7 +366,7 @@ def look():
     if face_down():
         return "(The phone is face down — the house is asking for privacy, so you didn't look.)"
     speak(f"I'm {NAME}. I'm about to take one look at the room.")
-    time.sleep(5)
+    time.sleep(1 if _live["on"] else 5)
     if face_down():
         return "(Someone turned the phone face down during your announcement, so you didn't look.)"
     img = os.path.join(STATE, "tmp-look.jpg")
@@ -442,6 +454,52 @@ def go_quiet(source):
     log(event="quiet", minutes=QUIET_MIN, source=source)
 
 
+_live = {"on": False, "until": 0.0, "by": None, "spoken": []}
+
+
+def live_hear():
+    """One live-session hearing cycle: a short on-device recording, transcribed, deleted. Returns the words,
+    or None. No per-cycle announcement: the open session, announced aloud and posted, covers the room."""
+    wav = os.path.join(STATE, "tmp-live.wav")
+    try:
+        run_cmd(["termux-microphone-record", "-f", wav, "-l", str(LIVE_CHUNK_S)], timeout=12)
+        time.sleep(LIVE_CHUNK_S + 1)
+        run_cmd(["termux-microphone-record", "-q"], timeout=8)
+        if not os.path.exists(wav):
+            return None
+        rc, out = run_cmd(STT_CMD.split() + [wav], timeout=120)
+        heard = re.sub(r"\[.*?\]|\(.*?\)", " ", out).strip()  # whisper noise tags like [BLANK_AUDIO]
+        return heard[:600] or None
+    finally:
+        try:
+            os.remove(wav)
+        except OSError:
+            pass
+
+
+def live_close(token, why):
+    if not _live["on"]:
+        return
+    _live["on"] = False
+    hush("live closed")
+    log(event="live_closed", why=why)
+    speak("Live conversation closed. I can no longer hear until someone opens it again.")
+    http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+         {"text": f"(live session closed — {why}. I'm back to answering mentions only.)"}, token=token)
+
+
+def live_open(token, by):
+    _live["on"] = True
+    _live["until"] = time.time() + LIVE_MAX_MIN * 60
+    _live["by"] = by
+    log(event="live_opened", by=by, minutes=LIVE_MAX_MIN)
+    http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+         {"text": f"(live session OPEN — opened by {by}. I can hear the room and answer by voice until someone "
+                  f"says 'hold on', the phone is turned face down, or {LIVE_MAX_MIN} minutes pass. What I hear "
+                  f"is never stored; what I say is posted here.)"}, token=token)
+    speak(f"Live conversation open. I'm {NAME}. I can hear this room now — say hold on at any time and I stop.")
+
+
 SENSES = {"LOOK": look, "LISTEN": listen}
 
 
@@ -518,19 +576,31 @@ def main():
                     continue
                 now = time.time()
                 if is_quiet_request(text):
+                    if _live["on"]:
+                        live_close(token, f"{author} asked in the room")
+                        continue
                     go_quiet(f"{author} asked in the room")
                     http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
                          {"text": "(holding on — I'll stay quiet for a bit. Mention me with \"go ahead\" to bring me back sooner.)",
                           "reply_to": m["id"]}, token=token)
                     sent.append(time.time())
                     continue
+                go_cmd = bool(re.search(r"\bgo ahead\b", text, re.I))
                 if quiet_now():
-                    if re.search(r"\bgo ahead\b", text, re.I):
+                    if go_cmd:
                         _quiet["until"] = 0.0
                         log(event="quiet_lifted", by=author)
                     else:
                         log(event="skipped_quiet", reply_to=m["id"], author=author)
                         continue
+                if go_cmd and LIVE_ENABLED and not _live["on"]:
+                    if VOICE and STT_CMD and shutil.which("termux-microphone-record"):
+                        live_open(token, author)
+                    else:
+                        http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+                             {"text": "(I can't open a live session: my voice or ears aren't set up on this run.)",
+                              "reply_to": m["id"]}, token=token)
+                    continue
                 sent[:] = [t for t in sent if now - t < 3600]
                 if len(sent) >= MAX_PER_HOUR or (sent and now - sent[-1] < COOLDOWN_S):
                     log(event="skipped_rate_limit", reply_to=m["id"], author=author)
@@ -571,6 +641,34 @@ def main():
             log(event="loop_error", error=str(e))
         try:
             now = time.time()
+            if _live["on"]:
+                if face_down():
+                    live_close(token, "the phone was turned face down")
+                elif now > _live["until"]:
+                    live_close(token, f"the {LIVE_MAX_MIN}-minute session limit passed")
+                elif _tts.get("proc") and _tts["proc"].poll() is None:
+                    pass  # don't listen while speaking: he would hear his own voice and answer himself
+                else:
+                    heard = live_hear()
+                    if heard and QUIET_RE.search(heard):
+                        live_close(token, "someone said hold on")
+                    elif heard and len(heard) > 3:
+                        _live["spoken"][:] = [t for t in _live["spoken"] if now - t < 3600]
+                        if len(_live["spoken"]) < LIVE_MAX_PER_HOUR:
+                            try:
+                                r = think(f"(live, spoken in your room) {heard}", "Someone in the room",
+                                          "\n".join(seen[-HEAR_N:]) if HEAR else "", token, f"live-{int(now)}")
+                            except Exception as e:
+                                log(event="live_model_error", error=str(e))
+                                r = None
+                            if r and r.strip() not in ("...", "…"):
+                                body = re.sub(r"@(?=\w)", "", r)[:MAX_CHARS]
+                                ps, _pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body}, token=token)
+                                if ps in (200, 201):
+                                    speak(body)
+                                    _live["spoken"].append(time.time())
+                            log(event="live_exchange", heard_chars=len(heard),
+                                note="what was heard is never logged or posted; his reply is the record")
             if _tts.get("proc") and _tts["proc"].poll() is None and face_down():
                 hush("phone turned face down")  # the house's hand stops a running sentence too
             if quiet_now():
@@ -595,7 +693,7 @@ def main():
                          + "or stay quiet. To stay quiet, answer with only: ...", "checkin")
         except Exception as e:
             log(event="senses_loop_error", error=str(e))
-        time.sleep(POLL_S)
+        time.sleep(2 if _live["on"] else POLL_S)  # a live conversation can't wait 20 s between turns
 
 
 if __name__ == "__main__":
