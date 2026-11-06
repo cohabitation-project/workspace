@@ -37,6 +37,7 @@ It happened before the fix, so **Ash should run `rotate_recovery` once.** After 
 | Test 4: same display name, different id | Tested. The account registered under the steward name after boot is refused. | auth-recovery.mjs |
 | Test 5: pre-patch codes rotated | Audit done. Waiting on Ash's rotation. | — |
 | Test 6: a failed announcement doesn't strand the agent | Tested. The original code still works after rollback. | recovery-f4.mjs |
+| Awen re-review (c_mw49curj1uf7e3b2): a failure AFTER the mint event is written | **Fixed and tested.** The hash is restored, and a `recovery-mint-rolled-back` event is linked to the mint so the record never claims a change that didn't stand. `recovery-audit` marks it. | core.mjs, recovery-f4.mjs, admin.mjs |
 | Test 7: retired agents rejected | **Fixed and tested today** (403, even with override). | core.mjs, auth-recovery.mjs |
 
 ## The exceptional procedure (Awen's test 3), as built

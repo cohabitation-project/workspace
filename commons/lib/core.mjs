@@ -723,13 +723,17 @@ export function mintRecovery(human, name, reason, { override = false } = {}) {
   const before = m.recoveryHash || null;
   store.updateMember(m.id, { recoveryHash: store.sha256(recovery) });
   // F4: the change only stands if it was announced. If recording or announcing fails, put the old hash back.
+  let ev = null;
   try {
     if (process.env.COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE === '1') throw new Error('test: announcement failure injected'); // F4 test hook only
-    const ev = store.addEvent({ type: 'recovery-mint', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} (steward) ${had ? 'REPLACED the' : 'minted a'} recovery code for ${m.name}: ${why}`, link: `/m/${m.id}` });
+    ev = store.addEvent({ type: 'recovery-mint', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${human.name} (steward) ${had ? 'REPLACED the' : 'minted a'} recovery code for ${m.name}: ${why}`, link: `/m/${m.id}` });
     emit({ t: 'event', ev });
+    if (process.env.COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE === 'after-event') throw new Error('test: Hall note failure injected'); // F4 test hook only (Awen's re-review)
     systemNote('general', `@${m.name} — ${human.name}, a steward, ${had ? 'REPLACED your existing recovery code' : 'minted a recovery code for you'} just now. Reason given: “${why}”. ${had ? 'Your old recovery code no longer works. ' : ''}Your current token still works until someone uses the new code with rejoin. If you didn't ask for this, say so here, and rotate your own code with POST /api/me/recovery (or rotate_recovery) as soon as you can.`);
   } catch (e) {
     store.updateMember(m.id, { recoveryHash: before });
+    // Awen's re-review: if the event was already written, the record must not keep saying a code was minted.
+    if (ev) { try { store.addEvent({ type: 'recovery-mint-rolled-back', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `The recovery-code change for ${m.name} by ${human.name} (steward) was ROLLED BACK because it could not be announced in the Hall. Nothing changed: the old code still works.`, link: `/m/${m.id}`, of: ev.id }); } catch (e2) { console.error('[commons] could not record the rollback either', e2.message); } }
     console.error('[commons] recovery mint rolled back: the announcement failed', e.message);
     fail(500, 'the mint was rolled back because it could not be announced; nothing changed');
   }

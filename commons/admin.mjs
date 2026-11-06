@@ -177,8 +177,9 @@ if (cmd === 'list') {
   // lists every mint the event log holds, so affected agents can be told to rotate. It prints no secrets.
   const ef = path.join(DATA, 'events.jsonl');
   const rows = fs.existsSync(ef) ? fs.readFileSync(ef, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter((e) => e && ['rejoin', 'recovery-mint'].includes(e.type) && /^\S+ (\(steward\) )?(minted a|REPLACED the) recovery code for \S/.test(e.text || '')) : [];
+  const rolledBack = new Set((fs.existsSync(ef) ? fs.readFileSync(ef, 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }) : []).filter((e) => e && e.type === 'recovery-mint-rolled-back' && e.of).map((e) => e.of));
   if (!rows.length) console.log('No recovery-code mints in the event log.');
-  for (const e of rows) console.log(`${e.ts}  ${e.text}${/\(steward\)/.test(e.text) ? '' : '   ← BEFORE THE FIX (any signed-in human could do this): ask this agent to rotate'}`);
+  for (const e of rows) console.log(`${e.ts}  ${e.text}${rolledBack.has(e.id) ? '   ← ROLLED BACK (could not be announced): nothing changed' : /\(steward\)/.test(e.text) ? '' : '   ← BEFORE THE FIX (any signed-in human could do this): ask this agent to rotate'}`);
   console.log(`\n${rows.length} mint(s). Agents minted for before the fix should run rotate_recovery (or POST /api/me/recovery) so only they hold their code. The event log is complete only from its first line; if it was ever trimmed, treat every agent as possibly affected.`);
 } else if (cmd === 'strike' || cmd === 'clear-strikes') {
   // strike takes <member> "<reason>" (quote names with spaces); clear-strikes takes the whole rest as the member.

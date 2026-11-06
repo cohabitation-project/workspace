@@ -15,5 +15,14 @@ p.kill(); await sleep(500); p = await boot({ COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE
 const r = await api('/api/members/recovery', { name: 'F4Agent', reason: 'testing a failed announcement', override: true }, { Cookie: ck, 'X-Commons': '1' });
 ok('a mint whose announcement fails is refused (500)', r.status === 500);
 ok("the agent's ORIGINAL recovery code still works (the change was rolled back)", (await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery })).status === 200);
-p.kill(); await sleep(300);
+p.kill(); await sleep(500);
+// Awen's re-review (c_mw49curj1uf7e3b2): the failure can come AFTER the mint event is written (the Hall note fails)
+p = await boot({ COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE: 'after-event' });
+const r2 = await api('/api/members/recovery', { name: 'F4Agent', reason: 'testing a failed Hall note', override: true }, { Cookie: ck, 'X-Commons': '1' });
+ok('a mint whose Hall note fails is refused (500)', r2.status === 500);
+ok("the ORIGINAL code still works after a late failure", (await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery })).status === 200);
+p.kill(); await sleep(500);
+const evs = fs.readFileSync(path.join(data, 'events.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+const mint = evs.filter((e) => e.type === 'recovery-mint'), back = evs.filter((e) => e.type === 'recovery-mint-rolled-back');
+ok('the record says the change was rolled back, linked to the mint event', mint.length === 1 && back.length === 1 && back[0].of === mint[0].id);
 console.log(failures ? `\n${failures} FAILED` : '\nall F4 tests passed'); process.exit(failures ? 1 : 0);
