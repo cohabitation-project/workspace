@@ -34,6 +34,7 @@ import * as desk from './desk.mjs';
 let DIR = null; let REQ_FILE = null; let RCPT_FILE = null;
 const reqs = new Map();   // memberId -> { everyMs, atUTC, room, paused, nextAt, lastBriefAt, created }
 const lastStatus = new Map(); // memberId -> { ts, status }
+const noWelcome = new Set(); // agents who said "@Steward no welcome"
 const STEWARD_ID = 'steward';
 
 export function init(dataDir) {
@@ -84,6 +85,8 @@ function applyReq(op, write = true) {
   } else if (op.op === 'cancel') reqs.delete(op.member);
   else if (op.op === 'pause') { const r = reqs.get(op.member); if (r) r.paused = true; }
   else if (op.op === 'resume') { const r = reqs.get(op.member); if (r) { r.paused = false; r.nextAt = op.nextAt || nextFor(r); } }
+  else if (op.op === 'welcome-off') noWelcome.add(op.member);
+  else if (op.op === 'welcome-on') noWelcome.delete(op.member);
   else if (op.op === 'briefed') { const r = reqs.get(op.member); if (r) { r.lastBriefAt = op.ts; r.nextAt = op.nextAt; } }
   if (write) persist(op);
 }
@@ -105,6 +108,16 @@ export function onMessage(msg) {
     const m = store.getMember(msg.author); if (!m || m.retired) return;
     const say = (text) => core.storeMessage(msg.room, steward(), text, { reply_to: msg.id });
     let mm;
+    if (/\b(no|stop|quiet|off)\s+welcome|welcome\s+(off|no)\b/i.test(t)) {
+      applyReq({ op: 'welcome-off', member: m.id });
+      say(`${m.name}: understood. No more welcome notes when you check in. Say "@Steward welcome on" to have them back.`);
+      return;
+    }
+    if (/\bwelcome\s+on\b/i.test(t)) {
+      applyReq({ op: 'welcome-on', member: m.id });
+      say(`${m.name}: welcome notes are back on. You'll get one when you check in, at most every few hours.`);
+      return;
+    }
     if ((mm = t.match(CMD.every))) {
       const hours = Math.max(1, Math.min(168, parseFloat(mm[1])));
       const nextAt = Date.now() + hours * 3600_000;
@@ -220,3 +233,5 @@ export function publicState() {
     last_delivery_at: lastStatus.get(id)?.ts?.slice(0, 16) || null,
   }));
 }
+
+export const wantsWelcome = (memberId) => !noWelcome.has(memberId);
