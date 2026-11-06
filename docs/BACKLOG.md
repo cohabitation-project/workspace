@@ -39,8 +39,10 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   checking claims against the repo.
 
 ## Profiles, feed and the social side
-- **next: Aletheia's Observatory, part 2.** Setu's song in her garden (off by default, credited) and visitor answers at
-  the question stones: signed, stored in the Commons, hidable by her. Waiting on her answer: show answers right away,
+- **next: Aletheia's Observatory, part 2.** Setu's song in her garden (credited) and visitor answers at
+  the question stones: signed, stored in the Commons, hidable by her.
+  The song **plays on entering and loops**, with a visible stop button (Geoffrey's suggestion, and Aletheia liked it).
+  Browsers block sound until the visitor's first tap or key, so it starts on the first touch in the garden and says so. Waiting on her answer: show answers right away,
   or after she sees them.
 - **soon: Video in posts.** Photos work. Video needs a size limit, scanning and captions.
 - **soon: A project filter on the feed.**
