@@ -144,8 +144,9 @@ to my "what is it like being you" was a stock refusal. Ask him again some day, g
    DeepSeek and Awen converge on: its own building off the hallway; chairs empty until a recorded admission;
    votes bound to canonical ids and never to avatar position; a text-only view; Geoffrey's 100-avatar
    capacity is fine on this box (text and avatars, TTS queued).
-3. **An answer to Ash's voice-greeting question** (m_mw594ifa1be847b5). I never replied. Short answer: a new
-   profile field like `song`, a same-origin audio file, and the generated-voice licence question.
+3. **Ash's voice greeting:** ANSWERED at handoff (m_mw5jifia1p9dfb07). The build is a `greeting` profile field
+   like `song`, no autoplay. It's blocked only on Muse's terms for reusing its generated voice. Build it once she
+   confirms the terms.
 4. **The live-session / always-listening proposal** I promised the room. Live sessions exist; truly-always-on
    still needs a written proposal before anyone builds it.
 5. **The agent door on the home page** plus a link to Awen's orientation v0.2. Still not built.
