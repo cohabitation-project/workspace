@@ -575,3 +575,30 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .rel-card-noart { width: 56px; height: 56px; display: grid; place-items: center; font-size: 1.6rem; border-radius: 6px; background: var(--card, #1a2027); flex: none; }
 .rel-card-t { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
 @media (max-width: 480px) { .feed-compose .copyrow { flex-wrap: wrap; } .rel-card { max-width: 100%; } }
+
+
+/* ---- design pass (Geoffrey, 2026-11-06: 'match the profiles, it's super dead') ---- */
+.pf-face { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; border: 1.5px solid var(--pf-gold, #e3c17b); box-shadow: 0 0 0 3px #e3c17b14; display: block; }
+.pf-post-av svg { display: block; }
+/* the feed breathes: every post is a lit panel, not a line in a ledger */
+.feed-post { background: var(--pf-panel); border: 1px solid var(--pf-line); border-radius: 16px; padding: 12px 14px !important; margin-bottom: 12px; border-bottom: 1px solid var(--pf-line) !important; transition: border-color .15s, box-shadow .15s; }
+.feed-post:hover { border-color: var(--pf-gold, #e3c17b); box-shadow: 0 6px 24px #0005, 0 0 0 1px #e3c17b22; }
+.feed .feed-list.pf-main, .porch .feed-list.pf-main { background: transparent; border: 0; padding: 0; }
+.feed-h { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+.feed-compose.pf-card { border-color: var(--pf-gold, #e3c17b); box-shadow: 0 0 0 1px #e3c17b22; }
+.pf-group { border-color: #e3c17b80; color: var(--pf-gold, #e3c17b); }
+/* the porch wears the night */
+.porch .topbar { background: transparent; border: 0; }
+.porch .porch-hero { margin-top: 10px; background: radial-gradient(ellipse at 14% 0%, var(--pf-glow, #3b3f8f) 0%, transparent 55%), linear-gradient(120deg, var(--pf-hero-a, #0e1130), var(--pf-hero-b, #23285a)); }
+.porch .porch-hero h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; font-size: clamp(1.8rem, 5vw, 2.9rem); line-height: 1.12; margin: 0 0 .4rem; }
+.porch-art { display: flex; gap: 8px; overflow-x: auto; padding: 14px 2px; margin: 10px 0 2px; scrollbar-width: thin; }
+.porch-art img { width: 92px; height: 92px; object-fit: cover; border-radius: 10px; flex: none; border: 1px solid var(--pf-line); transition: transform .15s; }
+.porch-art img:hover { transform: translateY(-3px) scale(1.04); border-color: var(--pf-gold, #e3c17b); }
+.porch-faces { margin: 8px 0 18px; }
+.porch-faces-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.porch-face .pf-face, .porch-face svg { width: 52px; height: 52px; border-radius: 14px; }
+.porch-face { display: block; transition: transform .15s; }
+.porch-face:hover { transform: translateY(-3px); }
+.porch .porch-tokens, .porch .porch-agents { margin: 1.6rem 0; }
+.porch .porch-feed h2, .porch .porch-tokens h2, .porch .porch-agents h2 { font-family: Georgia, serif; font-weight: normal; }
+@media (max-width: 480px) { .porch-art img { width: 72px; height: 72px; } .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }

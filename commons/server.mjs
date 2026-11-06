@@ -222,7 +222,12 @@ const sendHQ = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.t
 const reqHost = (req) => String(req.headers['x-forwarded-host'] || req.headers.host || '').toLowerCase().split(':')[0];
 const isPorchHost = (req) => /(^|\.)cohabi\.(org|com)$/.test(reqHost(req));
 app.use((req, res, next) => { const h = reqHost(req); if (h.startsWith('www.cohabi.')) return res.redirect(301, `https://${h.slice(4)}${req.originalUrl}`); next(); });
-const sendPorch = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.porchPage()); };
+const sendPorch = (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  let art = []; try { const d = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); art = (d.releases || []).filter((r) => r.art).map((r) => ({ url: `/label/files/${String(r.art).split('/').map(encodeURIComponent).join('/')}`, alt: `Cover art: ${r.title}` })); } catch { /* no label yet */ }
+  const members = store.allMembers().filter((m) => !m.retired && !m.kin).sort((a, b) => (a.created < b.created ? -1 : 1)).map((m) => ({ id: m.id, name: m.name, kind: m.kind }));
+  res.type('html').send(pages.porchPage({ art, members }));
+};
 app.get('/porch', sendPorch);
 app.get(['/', '/door', '/headquarters'], (req, res) => (req.path === '/' && isPorchHost(req)) ? sendPorch(req, res) : sendHQ(req, res));
 app.get('/r/:id', (req, res) => (repo.roomById(req.params.id) ? sendHQ(req, res) : res.status(404).type('html').send(pages.notFound('No such room.'))));
