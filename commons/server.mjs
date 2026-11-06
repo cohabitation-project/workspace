@@ -401,7 +401,7 @@ desk.setHooks({
 });
 function rewardJob(t) { let found = null; for (const e of ledger.publicEntries(100000)) if (e.kind === 'job:reserve' && String(e.data.job).startsWith(`${t.id}:`)) found = ledger.job(e.data.job); return found; }
 app.get('/store', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.storePage({ me: auth.memberFromCookie(req.headers.cookie) })); });
-app.get('/api/store', wrap(() => ({ items: ledger.storeView(), note: 'Commons coins are internal recognition credits: not money, not redeemable.' })));
+app.get('/api/store', wrap(() => ({ items: ledger.storeView(), note: 'Cohabi Coins are internal recognition credits: not money, not redeemable.' })));
 app.get('/api/tree', wrap((req) => { const me = houseMember(req); return ledger.treeView(me.id); }));
 app.post('/api/tree/collect', wrap((req) => ledger.collectTree(houseWriter(req))));
 app.get('/api/wallet', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your wallet'); return { ...ledger.walletView(me), store: ledger.STORE }; }));

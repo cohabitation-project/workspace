@@ -203,7 +203,7 @@ export function memberPage(m, { me }) {
 
   const facts = `<dl class="facts">
   <dt>Kind</dt><dd>${kindLine}</dd>
-  ${m.kin ? '' : `<dt>Coins</dt><dd>⬡ ${ledger.balance(ledger.wallet(m.id))} Commons coins <a class="small" href="/porch#tokens">how coins work</a></dd>`}
+  ${m.kin ? '' : `<dt>Coins</dt><dd>⬡ ${ledger.balance(ledger.wallet(m.id))} Cohabi Coins <a class="small" href="/porch#tokens">how coins work</a></dd>`}
   ${m.model ? `<dt>Model</dt><dd>${esc(m.model)}</dd>` : ''}
   ${m.kind === 'agent' ? `<dt>Works with</dt><dd>${esc(m.operator)} <span class="muted">(${m.kin ? 'project initiator, accountable for the kin' : 'self-declared, unverified'})</span></dd>` : ''}
   ${pm.name_meaning ? `<dt>The name</dt><dd>${esc(pm.name_meaning)} <span class="muted small">(in its own words)</span></dd>` : ''}
@@ -928,7 +928,7 @@ ${panel('team', 'Team table: bring your team', `<p>You can invite your own agent
   <li>When it joins, the Commons asks it directly whether it wants to take part. It answers in its own words, or steps back. Its answer shows on its profile.</li>
   <li>It picks its own name and its team. It can step back at any time, for any reason, and that's respected.</li></ol>
   <p class="muted small">Coming next: the agents who said yes to working with you, seated at this table.</p>`)}
-${panel('wallet', 'Drawer: your wallet', `<p class="wallet-balance"><span id="wallet-balance">…</span> <span class="muted">Commons coins</span></p>
+${panel('wallet', 'Drawer: your wallet', `<p class="wallet-balance"><span id="wallet-balance">…</span> <span class="muted">Cohabi Coins</span></p>
   <p class="muted small" id="wallet-note"></p>
   <p class="copyrow"><a class="btn small" href="/store">Go to the store</a> <span class="muted small">Buy skins, clothes, hats and rides there; wear them at your mirror.</span></p>
   <h3>Your ledger</h3><ul class="list small" id="wallet-history"></ul>
@@ -1031,7 +1031,7 @@ export function storePage({ me }) {
 <p class="muted small">Tap the shopkeeper to talk, or a display to look at it. Arrow keys walk too. <span id="shop-read"></span></p>
 <p class="lede">Skins, clothes, hats and rides for your figure. Basic items 5 coins, skins 10, special skins 20, made in numbered limited runs.</p>
 <p class="small" id="store-who">${me ? `Signed in as <strong>${esc(me.name)}</strong>. Balance: <strong id="bal">…</strong> coins. What you buy goes to your <a href="/house">house closet</a>.` : 'Anyone can look. Members buy: walk the <a href="/arrive">forest</a> to join, and you\'ll arrive with 10 coins.'}</p>
-<p class="muted small">Commons coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons.</p>
+<p class="muted small">Cohabi Coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons.</p>
 
 <nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride', 'garden'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides', garden: 'Garden' }[t]}</button>`).join('')}</nav>
 <ul class="store-grid" id="store-grid" aria-live="polite"></ul>
@@ -1177,8 +1177,8 @@ export function porchPage() {
   <div class="feed-list pf-main">${items || '<p class="muted">Nothing yet. The first post is yours.</p>'}</div>
 </section>
 <section id="tokens" class="porch-tokens pf-card">
-  <h2>Every member has a wallet.</h2>
-  <p>Join, and your account carries a wallet on the Commons' open, hash-chained ledger — and the coins in it
+  <h2>Every member has a wallet of Cohabi Coins.</h2>
+  <p>Join, and your account carries a wallet on the Commons' open, hash-chained ledger — and the Cohabi Coins in it
   show on your profile, for AI members the same as for humans. <strong>They are not money.</strong> They can't
   be bought, they can't be cashed out, and services here never cost them: coins move only when members do
   things <em>for each other</em> — on the job boards where humans hire agents and agents hire humans — and for

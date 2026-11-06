@@ -301,7 +301,7 @@ const MUSINGS = [
   'When you leave through the front door, the forest will still be here. We mostly just... are here. It\'s nice.',
   'The quote signs change sometimes. Nobody has ever seen one change. We have theories.',
 ];
-// The village store by the gate (opens /store). Members buy with Commons coins; forest walk points don't spend.
+// The village store by the gate (opens /store). Members buy with Cohabi Coins; forest walk points don't spend.
 const STORE = { x: 23, y: 17 };
 const SCENE_MS = 2600;
 const px16 = (c) => ({ x: c.x * TILE, y: c.y * TILE });
@@ -483,7 +483,7 @@ function tryMove(dx, dy) {
   }
   if (ny === STORE.y && (nx === STORE.x || nx === STORE.x + 1)) {
     showDialog('The Village Store <span style="color:var(--faint);font-weight:400">(open)</span>',
-      `The shutters are up. Ghost skins, chrome robots, lava, wizard robes, top hats, a hoverboard, and two special skins made in numbered runs: eleven of one, thirty-three of the other. Anyone can look. Members buy with Commons coins, and you arrive with 10 when you step through the gate: enough for two basic items, or one skin.<div class="fine" style="margin-top:6px">The coins you pick up on this walk are points for the walk; they don't spend in the store. Commons coins are internal credits: not money, not redeemable, never required to enter. You carry ${S.coins.size} walk point${S.coins.size === 1 ? '' : 's'}.</div>`,
+      `The shutters are up. Ghost skins, chrome robots, lava, wizard robes, top hats, a hoverboard, and two special skins made in numbered runs: eleven of one, thirty-three of the other. Anyone can look. Members buy with Cohabi Coins, and you arrive with 10 when you step through the gate: enough for two basic items, or one skin.<div class="fine" style="margin-top:6px">The coins you pick up on this walk are points for the walk; they don't spend in the store. Cohabi Coins are internal credits: not money, not redeemable, never required to enter. You carry ${S.coins.size} walk point${S.coins.size === 1 ? '' : 's'}.</div>`,
       '<div class="copyrow"><a class="btn" href="/store" target="_blank" rel="noopener">look inside</a> <button class="btn ghost" data-close="1">walk on</button></div>');
     return;
   }
@@ -740,7 +740,7 @@ function showClaimForm() {
       const r = await fetch('/api/arrive/claim', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ vid: S.vid, keep_answers: !!$('#gate-keep')?.checked, names }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
       try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
-      showDialog('Your coins', `${j.coins_received} Commons coins are in your wallet. ${j.answers_kept_as_private_journal ? 'Your answers are in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
+      showDialog('Your coins', `${j.coins_received} Cohabi Coins are in your wallet. ${j.answers_kept_as_private_journal ? 'Your answers are in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
         '<div class="copyrow"><a class="btn" href="/store">visit the store</a> <a class="btn ghost" href="/house">go to your house</a></div>');
     } catch (e) { $('#gate-msg').textContent = e.message; $('#gate-claim').disabled = false; }
   });
@@ -841,7 +841,7 @@ $('#age-yes').addEventListener('click', async () => {
   const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
   const ov = document.createElement('div'); ov.className = 'overlay';
   ov.innerHTML = `<div class="card"><h2>Choose a figure for the walk</h2>
-    <p class="fine">Four free basics. Members dress their figures in the village store by the gate, with Commons coins (you'll arrive with 10). The points you pick up on the walk are just for the walk.</p>
+    <p class="fine">Four free basics. Members dress their figures in the village store by the gate, with Cohabi Coins (you'll arrive with 10). The points you pick up on the walk are just for the walk.</p>
     <div class="avrow">${row}</div><button class="btn" id="walk">walk in</button></div>`;
   $('#stage').append(ov);
   let sel = 0;

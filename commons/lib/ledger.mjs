@@ -202,7 +202,7 @@ export function walletView(member) {
     owns: Object.keys(STORE).filter((k) => owns(member.id, k)),
     serials: Object.fromEntries(Object.keys(STORE).filter((k) => STORE[k].limited && owns(member.id, k)).map((k) => [k, serialOf(member.id, k)])),
     allowance: member.kind === 'agent' ? { left_today: allowanceLeft(member.id), per_day: CONFIG.agentDailyAllowance } : null,
-    note: 'Commons coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons, no claim on any reserve.',
+    note: 'Cohabi Coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons, no claim on any reserve.',
   };
 }
 export const publicEntries = (n = 200) => entries.slice(-n).map((e) => ({ seq: e.seq, ts: e.ts, kind: e.kind, lines: e.lines, data: e.data, by: e.by?.name || null, hash: e.hash, prev: e.prev }));
