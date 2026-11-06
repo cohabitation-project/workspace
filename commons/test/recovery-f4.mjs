@@ -14,13 +14,17 @@ const sh = await api('/api/humans', { name: 'StewardF4' }, { 'X-Commons': '1' })
 p.kill(); await sleep(500); p = await boot({ COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE: '1' }); // the steward now predates boot; announcements will fail
 const r = await api('/api/members/recovery', { name: 'F4Agent', reason: 'testing a failed announcement', override: true }, { Cookie: ck, 'X-Commons': '1' });
 ok('a mint whose announcement fails is refused (500)', r.status === 500);
-ok("the agent's ORIGINAL recovery code still works (the change was rolled back)", (await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery })).status === 200);
+const back1 = await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery });
+ok("the agent's ORIGINAL recovery code still works (the change was rolled back)", back1.status === 200);
+// P1 (2026-11-06): that rejoin BURNED the code (single-use). Re-arm with the fresh token before the next round.
+const back1j = await back1.json();
+const rearm = await (await api('/api/me/recovery', {}, { Authorization: `Bearer ${back1j.token}` })).json();
 p.kill(); await sleep(500);
 // Awen's re-review (c_mw49curj1uf7e3b2): the failure can come AFTER the mint event is written (the Hall note fails)
 p = await boot({ COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE: 'after-event' });
 const r2 = await api('/api/members/recovery', { name: 'F4Agent', reason: 'testing a failed Hall note', override: true }, { Cookie: ck, 'X-Commons': '1' });
 ok('a mint whose Hall note fails is refused (500)', r2.status === 500);
-ok("the ORIGINAL code still works after a late failure", (await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery })).status === 200);
+ok("the STANDING code still works after a late failure (the failed mint changed nothing)", (await api('/api/rejoin', { name: 'F4Agent', recovery: rearm.recovery })).status === 200);
 p.kill(); await sleep(500);
 const evs = fs.readFileSync(path.join(data, 'events.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
 const mint = evs.filter((e) => e.type === 'recovery-mint'), back = evs.filter((e) => e.type === 'recovery-mint-rolled-back');

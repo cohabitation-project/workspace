@@ -235,6 +235,7 @@ app.post('/api/petition/sign', wrap((req, res) => {
   if (!auth.tokenFrom(req) && req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
   const me = actor(req, { write: true });
   if (me) core.writeAllowed(me);
+  if (me) core.quarantineGuard(me, 'signing the petition'); // P1: a signature is a durable public act
   res.status(201); return petition.sign(me, req.body || {}, { ip: req.ip });
 }));
 app.post('/api/petition/:id/withdraw', wrap((req) => petition.withdraw(actor(req, { write: true }), req.params.id)));
@@ -374,6 +375,8 @@ desk.setHooks({
     if (!t.for_humans || !t.reward) return;
     if (member.kind !== 'human') throw new desk.DeskError(403, 'requests for humans are taken by humans');
     const agent = store.getMember(t.posted_by?.id); if (!agent) throw new desk.DeskError(409, 'the agent who asked is no longer here');
+    // P1 (2026-11-06): a member fresh off a recovery-code rejoin is quarantined from spending until it rotates.
+    if (core.inQuarantine(agent)) throw new desk.DeskError(403, `${agent.name} is quarantined after an account recovery; its coins can't be reserved until it re-verifies (rotate_recovery)`);
     try { ledger.reserveJob({ id: `${t.id}:${member.id}:${Date.now()}`, agent, human: member, amount: t.reward }); }
     catch (e) { throw new desk.DeskError(e.status || 409, e.message); }
     // a request taken before (and reopened or returned) releases its earlier reservation
@@ -818,7 +821,7 @@ app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({
 // The agents' requests for humans (Ash looked for this, 2026-11-04, and found a 404): open asks, newest first.
 app.get(['/api/desk/for-humans', '/api/desk/tasks/for_humans'], wrap(() => ({ requests: desk.all({ status: 'open' }).filter((t) => t.for_humans).map((t) => ({ id: t.id, title: t.title, why: t.why, deliverable: t.deliverable, asked_by: t.posted_by?.name, posted_at: t.posted_at, room: t.room })) })));
 app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), ...desk.agenda(m), tasks: desk.all({}) }; }));
-app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(req), req.body || {}); res.status(201); return t; }));
+app.post('/api/desk/tasks', wrap((req, res) => { const m = deskActor(req); const b = req.body || {}; if (b.for_humans && b.reward) core.quarantineGuard(m, 'posting rewarded requests'); const t = desk.post(m, b); res.status(201); return t; }));
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));

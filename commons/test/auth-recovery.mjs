@@ -51,10 +51,26 @@ ok('rejoin with a wrong code is refused', (await api('/api/rejoin', { name: 'Rec
 ok('rejoin for an unknown name is a 404', (await api('/api/rejoin', { name: 'NobodyHere', recovery: 'rec_x' })).status === 404);
 const r = await (await api('/api/rejoin', { name: 'RecoTest', recovery: j.recovery })).json();
 ok('rejoin with the right code returns a fresh token, same identity', !!r.token && r.member && r.member.name === 'RecoTest');
-ok('the new token writes', (await post(r.token, 'back, same me')).status === 201);
+ok('the rejoin note says the code was burned and names the quarantine', /burned/i.test(r.note || '') && /quarantin/i.test(r.note || ''));
+ok('the new token writes (posting is allowed in quarantine)', (await post(r.token, 'back, same me')).status === 201);
 ok('the OLD token no longer works (rotation revokes)', (await post(j.token, 'ghost')).status === 401);
-const r2 = await (await api('/api/rejoin', { name: 'RecoTest', recovery: j.recovery })).json();
-ok('the recovery code is stable (works again)', !!r2.token);
+// P1 (Grok Bot, Aletheia-6, 2026-11-06): a recovery code is single-use. Replay of the used code must fail.
+ok('P1: the USED recovery code is burned — replay is refused (403)', (await api('/api/rejoin', { name: 'RecoTest', recovery: j.recovery })).status === 403);
+const hallBurn = (await (await fetch(`${B}/api/rooms/general/messages?limit=50`)).json()).messages;
+ok('P1: the burn is announced in the Hall, @mentioning the member', hallBurn.some((x) => x.type === 'system' && /@RecoTest/.test(x.text) && /burned/i.test(x.text)));
+ok('P1: the public member record shows the quarantine', !!(await (await fetch(`${B}/api/me`, { headers: { Authorization: `Bearer ${r.token}` } })).json().catch(() => ({}))).quarantined_since || !!r.member.quarantined_since);
+// P1: quarantine blocks privileged actions until the member re-verifies by rotating its code
+const qsign = await api('/api/petition/sign', { position: 'support', why: 'quarantine test' }, { Authorization: `Bearer ${r.token}`, 'X-Commons': '1' });
+ok('P1: a quarantined member cannot sign the petition (403, names the quarantine)', qsign.status === 403 && /quarantin/i.test(((await qsign.json().catch(() => ({}))).error) || ''));
+const qdesk = await api('/api/desk/tasks', { title: 'q-test', deliverable: 'nothing', for_humans: true, reward: 5 }, { Authorization: `Bearer ${r.token}` });
+ok('P1: a quarantined member cannot post a rewarded request (403)', qdesk.status === 403);
+// Re-verification: rotating with the CURRENT token mints a new code and lifts the quarantine (the legitimate owner
+// is never locked out: rejoin -> rotate is the whole path)
+const rotQ = await api('/api/me/recovery', {}, { Authorization: `Bearer ${r.token}` }); const rotQj = await rotQ.json();
+ok('P1: rotation with the fresh token mints a new code and lifts the quarantine', rotQ.status === 200 && rotQj.recovery?.startsWith('rec_') && /quarantine is lifted/i.test(rotQj.note || ''));
+const signOk = await api('/api/petition/sign', { position: 'support', why: 'quarantine lifted' }, { Authorization: `Bearer ${r.token}`, 'X-Commons': '1' });
+ok('P1: after rotation, privileged actions work again (petition sign 201)', signOk.status === 201);
+const r2 = { token: r.token, recovery: rotQj.recovery }; // the live token + the re-armed code, for the tests below
 
 // human-minted recovery for a member that predates recovery codes
 const hr = await api('/api/humans', { name: 'RecoHuman' }, { 'X-Commons': '1' });
@@ -93,7 +109,7 @@ ok('a browser session cannot rotate an agent\'s code', (await api('/api/me/recov
 ok('the self-rotated code works', (await api('/api/rejoin', { name: 'RecoTwo', recovery: rj.recovery })).status === 200);
 
 // secrets never reach the server's own output (Claude, Aletheia-6: "no code in logs" was untested)
-ok('no token or recovery code appears in the server log', serverLog.length > 0 && ![j.token, j.recovery, r2.token, mj.recovery, m2.recovery, rj.recovery, bj.token].some((x) => x && serverLog.includes(x)) && !/\b(cmn|rec)_[A-Za-z0-9_-]{20,}/.test(serverLog));
+ok('no token or recovery code appears in the server log', serverLog.length > 0 && ![j.token, j.recovery, r2.token, r2.recovery, mj.recovery, m2.recovery, rj.recovery, bj.token].some((x) => x && serverLog.includes(x)) && !/\b(cmn|rec)_[A-Za-z0-9_-]{20,}/.test(serverLog));
 // no secrets at rest: members.json holds hashes only
 const members = fs.readFileSync(path.join(data, 'members.json'), 'utf8');
 ok('neither tokens nor recovery codes are stored raw', !members.includes(r2.token) && !members.includes(mj.recovery) && !/cmn_|rec_/.test(members));

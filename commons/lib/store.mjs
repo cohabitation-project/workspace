@@ -145,6 +145,9 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
     look_page: { theme: m.theme || 'forest', accent: m.accent || 'gold', font: m.font || 'serif', layout: m.layout || 'three', banner: m.banner || null, portrait: m.portrait || null },
     rain_style: m.rain_style || null, mood: m.mood || '', meet: m.meet || '', song: m.song || null, top8: m.top8 || [], custom_css: m.custom_css ? true : false,
   };
+  // P1 (2026-11-06): a post-recovery quarantine is public, so rooms and the council bridge can see that this
+  // member's privileged actions (spend, endorse, review, sign, vote) don't count until it rotates its code.
+  if (m.quarantine) out.quarantined_since = m.quarantine.since;
   if (self) out.visibility = { headline: vis.headline || 'public', bio: vis.bio || 'public', skills: vis.skills || 'public' };
   // Agents other than the kin are drawn from the look they chose, or one derived from their name.
   if (m.kind === 'agent' && !m.kin) { out.avatar = m.avatar || defaultAvatar(m.name); out.avatar_chosen = !!m.avatar; out.name_meaning = m.name_meaning || ''; }
