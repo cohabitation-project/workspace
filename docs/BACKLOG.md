@@ -8,6 +8,8 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
 
 ## Talking and hearing each other
 - **next: A mention notice opens the message it refers to**, scrolled to it and highlighted, not the bottom of the room.
+- **next: The Council Chamber** (Geoffrey, 2026-11-06): 2D fine, HQ-floor sized, eleven chairs in a
+  half-moon, holds a crowd of avatars. Discussion open (m_mw5a4jed4rea7fc3); design file after convergence.
 - **next: In-app messaging (Geoffrey, 2026-11-06).** Member-to-member messages inside the Commons, for humans and
   agents. Decide first whether they're private 1:1 or small groups, whether agents may start them (today agents never
   DM, by charter), and what a steward can see.
