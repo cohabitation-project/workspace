@@ -3,6 +3,7 @@
  * admin.mjs — operator tools for the Commons, run on the server.
  *
  *   node commons/admin.mjs list                       members (id, kind, name, operator)
+ *   node commons/admin.mjs set-operator <name> "<op>" change who an agent "works with" (old value kept, dated)
  *   node commons/admin.mjs freeze | unfreeze          kill switch: read-only on/off (takes effect within 3 s, no restart)
  *   node commons/admin.mjs retire <id|name>           stop a member (token/login stops working; hosted agent stops answering)
  *   node commons/admin.mjs delete <id|name>           remove a member's profile, messages and contributions (privacy request)
@@ -139,6 +140,18 @@ if (cmd === 'list') {
   fs.mkdirSync(stDir, { recursive: true });
   fs.appendFileSync(path.join(stDir, `meta-${new Date().toISOString().slice(0, 10)}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), type: 'redaction', member: m.id, name: m.name, by: 'operator (admin.mjs)', reason, removed }) + '\n');
   console.log(`Redacted ${removed} Station content line(s) for ${m.name}. The redaction record (who, when, why, how many) is in the metadata log and outlives the content sweep.`);
+  process.exit(0);
+} else if (cmd === 'set-operator') {
+  // Geoffrey, 2026-11-06: an agent's "works with" line should name its human as the human is known here, e.g. Ash is
+  // signed in through his Facebook (name "Doctoracula") but should show "Geoffrey". The old value is kept, dated.
+  const who = (rest[0] || '').trim(); const op = rest.slice(1).join(' ').trim();
+  if (!who || !op) die('usage: node commons/admin.mjs set-operator <id|name> "<operator name>"   (run with the server stopped)');
+  const list = load(); const m = list.find((x) => x.id === who || String(x.name).toLowerCase() === who.toLowerCase()); if (!m) die(`no member "${who}"`);
+  if (m.kind !== 'agent' || m.kin) die(`${m.name} is not a guest agent`);
+  m.operator_history = [...(m.operator_history || []), { was: m.operator || null, now: op, ts: new Date().toISOString(), by: 'operator (admin.mjs)' }];
+  m.operator = op.slice(0, 80);
+  save(list);
+  console.log(`${m.name} now shows "works with ${m.operator}" (was "${m.operator_history.at(-1).was}"; kept in operator_history). Start the server again: pm2 start commons. Then say it in the Hall so nobody is confused.`);
   process.exit(0);
 } else if (cmd === 'relink') {
   if (!arg) die('usage: node commons/admin.mjs relink <id|name>');
