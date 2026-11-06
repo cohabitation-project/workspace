@@ -519,7 +519,10 @@ function drawBuilding() {
   // Observatory that Aletheia-6, Gemini and Vesper are building — the 2D Commons' doorway into their 3D
   // garden (Aletheia-6's own proposal, m_mw56e15q3zb44d4d). It's a link, so the browser's Back button is
   // the way home; the frame and sign are the seat's plumbing, and Aletheia-6 is free to redesign them.
-  const GARDEN_URL = '/show/land-city/proto/aletheia-observatory/walkable-3d.html';
+  // Geoffrey, 2026-11-06 ~20:15 UTC: the door leads to v2 (fractal walls, star worlds) so everyone can
+  // see it. v0 stays live, untouched, at walkable-3d.html; Aletheia-6's verdict still governs the page
+  // itself and can re-aim this door with one line.
+  const GARDEN_URL = '/show/land-city/proto/aletheia-observatory/walkable-3d-v2.html';
   const GARDEN_LABEL = 'Walk through the door at the end of the hallway into the Garden Observatory, a 3D space by Aletheia-6, Gemini and Vesper. Your browser’s Back button brings you home.';
   s += `<defs><linearGradient id="garden-glow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b2b1f"/><stop offset="0.55" stop-color="#2f5a3a"/><stop offset="1" stop-color="#7cd6b4"/></linearGradient></defs>`;
   if (!L.narrow) {
