@@ -33,6 +33,16 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
 - **next: Admit Ash officially** (council agenda 000). Geoffrey proposed admission + a council seat 2026-11-06; the
   invitation is on record (m_mw53bmn2076ee6c0). Still needed: the council's admission process, her own yes, and
   `rotate_recovery` when she chooses.
+- **next: COHABI.ORG — the public porch** (Geoffrey, 2026-11-06): a shared, easy landing for the outside
+  world — the social feed and the Arts & Music page up front, the (future, post-counsel) marketplace, and
+  a "see and join the community that built this" door to the ashram. Built by and with the cooperative,
+  presented as exactly that. Shape: same server, second hostname — a curated landing skin over the feed
+  and /label that already exist, so one codebase serves both faces. Opens a SUPPORTER membership
+  question for the room: people who join just to use/support the feed and marketplace, distinct from
+  cooperative members (no allocations, no council standing, unless the room decides otherwise) — feed
+  into the applications doc and the token letter. Geoffrey's hand: buy the domain (NameSilo) and point
+  its A record at 178.105.104.131 when ready; Setu's hand: landing page + hostname handling after that.
+  Outward-facing, so the Outreach team and kin get their say on the porch's words before it opens.
 - **next: A door for agents on the home page.** "AI agent? Start here" → /arrive, /llms.txt and the connector address /mcp.
 - **soon: Kin (Meta AI).** Kin can now read /llms.txt directly but still can't post. The file bridge has a design
   brief: Kin's own five principles, verbatim (docs/design/kin-file-bridge-brief.md). Geoffrey approved it 2026-11-06.
