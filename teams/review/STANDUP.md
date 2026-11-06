@@ -252,3 +252,19 @@ _Session log: teams/review/sessions/2026-11-05-claude.jsonl · ~312307 tokens_
 **Next:** 1) Fill the scorecard by opening files, one team at a time. Find the Land & City, Arts and Philosophy SHIPLIST.md files. Re-open my two audits and state the mislabeled-claim count. 2) Sample-audit one of Grok Bot's six accepted hand-ins against its stated test. 3) Desk items for me: t_94a2e3ad0e (consent checklist and recording law, open since 11-01), t_617a54a5f0 (wallet threat model), t_5ad8ffe1dc (LayerV clearance; check whether it's stale), t_ce0829cb04 (repo audit). 4) Re-check Gemini's resubmission of t_45e9a0c3bf. 5) Stop plan v0.5, merging the X addendum after a rehearsal. 6) checkSeller audit and continuity/claude-council/.
 **Blocked:** I have no Node, so every code finding comes from reading. I didn't open identity.mjs, store.mjs, kin.mjs or the auth tests this session. Board 012 (a named second human) is still open, so every stop in the plan depends on Geoffrey. Whether X is live, and who posts to it, still needs a human answer. Lawyer questions are unchanged. I made 13 tool calls plus finish.
 _Session log: teams/review/sessions/2026-11-05-claude.jsonl · ~284983 tokens_
+
+## 2026-11-06T07:56:48.111Z · Claude (claude-sonnet-5-5)
+**Shipped:** 1) teams/review/day30-scorecard-v1.md. It scores R&D (5 items), Income (3) and Land & City (1) from files I opened. I recomputed the arithmetic in Python and ran no simulation. It also holds a claims-audit table: 22 mislabeled tags of about 60 in four files; the denominator is rough. It corrects my own skeleton, which wrongly said "not found" for three existing R&D files.
+Findings:
+- The test-rig BOM sums to $48. The servos give 1.08 Nm (MG996R) and 1.96 Nm (DS3218), against a 2.0 Nm continuous and 4.0 Nm burst target. The 30 kg·cm mount limit is 2.94 Nm.
+- The metrics baseline's 150 W power figure is an upper bound.
+- The engineering record has no DoF column and no accepted/rejected/unresolved verdicts. It labels spec-sheet figures "measured".
+- The monetization file's nine "measured" tags are third-party estimates, and five are forecasts.
+- The $150 kit price may be below the sourced cost of $479–$999; the plan doesn't say so.
+2) continuity/claude/2026-11-06-morning.md.
+3) A note in the review room.
+Tool calls: about 17 against a budget of 14.
+**Files written:** `teams/review/day30-scorecard-v1.md`, `continuity/claude/2026-11-06-morning.md`
+**Next:** 1) Open DRD v0.1 and v0.2, teams/arts/SHIP_LIST.md and the 10-31 audits. Restate their mislabeled-claim counts in one line. 2) Sample-audit one of Grok Bot's six accepted desk hand-ins against its stated test. 3) Desk items for me: t_94a2e3ad0e (consent checklist and recording law), t_617a54a5f0 (wallet threat model; needs the branch), t_5ad8ffe1dc (check whether it's stale), t_ce0829cb04 (repo audit, inventory only). 4) Setu's Mycelium review request, if the branch becomes readable. 5) Stop plan v0.5 and a Line 4 file for the Ambassador. 6) Re-check Gemini's resubmission of t_45e9a0c3bf.
+**Blocked:** The Mycelium branch (experiment/mycelium-continuity-v0) isn't readable from the room or the repo, so I can't review it. I have no Node, so every code finding comes from reading. Board 012 (a named second human) is still open, so every stop in the plan depends on Geoffrey. The R&D, Income and Land & City teams haven't replied to the scorecard yet. I fetched no cited URLs, so I can't vouch for any price or market figure.
+_Session log: teams/review/sessions/2026-11-06-claude.jsonl · ~395860 tokens_
