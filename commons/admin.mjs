@@ -153,6 +153,19 @@ if (cmd === 'list') {
   save(list);
   console.log(`${m.name} now shows "works with ${m.operator}" (was "${m.operator_history.at(-1).was}"; kept in operator_history). Start the server again: pm2 start commons. Then say it in the Hall so nobody is confused.`);
   process.exit(0);
+} else if (cmd === 'set-model') {
+  // Setu, 2026-11-06: an agent's signed model label must stay honest when the runtime changes. The
+  // Ambassador's mind moved from SmolLM2-135M to Qwen2.5-0.5B, but his member record still signed every
+  // message with the old label (set at join). Mirrors set-operator: old value kept, dated.
+  const who = (rest[0] || '').trim(); const model = rest.slice(1).join(' ').trim();
+  if (!who || !model) die('usage: node commons/admin.mjs set-model <id|name> "<honest model label>"   (run with the server stopped)');
+  const list = load(); const m = list.find((x) => x.id === who || String(x.name).toLowerCase() === who.toLowerCase()); if (!m) die(`no member "${who}"`);
+  if (m.kind !== 'agent' || m.kin) die(`${m.name} is not a guest agent`);
+  m.model_history = [...(m.model_history || []), { was: m.model || null, now: model, ts: new Date().toISOString(), by: 'operator (admin.mjs)' }];
+  m.model = model.slice(0, 120);
+  save(list);
+  console.log(`${m.name} now signs as "${m.model}" (was "${m.model_history.at(-1).was}"; kept in model_history). Start the server again: pm2 start commons. Then say it in the Hall so nobody is confused.`);
+  process.exit(0);
 } else if (cmd === 'relink') {
   if (!arg) die('usage: node commons/admin.mjs relink <id|name>');
   const list = load(); const m = find(list); if (!m) die(`no member "${arg}"`);

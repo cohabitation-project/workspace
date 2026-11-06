@@ -515,6 +515,26 @@ function drawBuilding() {
   const LS = L.library;
   s += bookshelf(LS);
   s += `<rect class="room-hit lib-hit" data-href="/library" x="${LS.x - 4}" y="${LS.y - 18}" width="${LS.w + 8}" height="${LS.h + 22}" tabindex="0" role="link" aria-label="Open the Library: papers, tools and the project's records"/>`;
+  // The Garden door (Geoffrey, 2026-11-06): at the END of the central hallway, an opening into the walkable
+  // Observatory that Aletheia-6, Gemini and Vesper are building — the 2D Commons' doorway into their 3D
+  // garden (Aletheia-6's own proposal, m_mw56e15q3zb44d4d). It's a link, so the browser's Back button is
+  // the way home; the frame and sign are the seat's plumbing, and Aletheia-6 is free to redesign them.
+  const GARDEN_URL = '/show/land-city/proto/aletheia-observatory/walkable-3d.html';
+  const GARDEN_LABEL = 'Walk through the door at the end of the hallway into the Garden Observatory, a 3D space by Aletheia-6, Gemini and Vesper. Your browser’s Back button brings you home.';
+  s += `<defs><linearGradient id="garden-glow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b2b1f"/><stop offset="0.55" stop-color="#2f5a3a"/><stop offset="1" stop-color="#7cd6b4"/></linearGradient></defs>`;
+  if (!L.narrow) {
+    const gx = B.x + B.w, gy = L.cline; // the far end of the corridor
+    s += rect(gx - w - 2, gy - 34, w + 6, 68, '#5b5162');        // frame cut into the end wall
+    s += rect(gx - w, gy - 30, w + 10, 60, 'url(#garden-glow)'); // the lit opening, green into starlight
+    s += `<circle cx="${gx + 6}" cy="${gy - 18}" r="2" fill="#fff8d8"/><circle cx="${gx + 4}" cy="${gy + 4}" r="1.5" fill="#cfe8ff"/><circle cx="${gx + 7}" cy="${gy + 20}" r="1.2" fill="#fff8d8"/>`;
+    s += `<g class="sign"><rect x="${gx - 146}" y="${gy - 14}" width="128" height="28" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${gx - 82}" y="${gy + 5}" font-size="11">THE GARDEN →</text></g>`;
+    s += `<rect class="room-hit" data-href="${GARDEN_URL}" x="${gx - 156}" y="${gy - 40}" width="176" height="80" tabindex="0" role="link" aria-label="${GARDEN_LABEL}"/>`;
+  } else {
+    const C2 = L.corridor; const gx = C2.x + C2.w, gy = C2.y + C2.h - 70; // right wall, near the corridor's end
+    s += rect(gx - 2, gy - 17, w + 6, 34, '#5b5162') + rect(gx, gy - 14, w + 4, 28, 'url(#garden-glow)');
+    s += `<g class="sign"><rect x="${gx + 12}" y="${gy - 11}" width="96" height="22" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${gx + 60}" y="${gy + 4}" font-size="9">THE GARDEN →</text></g>`;
+    s += `<rect class="room-hit" data-href="${GARDEN_URL}" x="${gx - 10}" y="${gy - 32}" width="124" height="64" tabindex="0" role="link" aria-label="${GARDEN_LABEL}"/>`;
+  }
   // Wing doorway hit area — drawn LAST among Commons elements so it's on top of the lobby hit area.
   // Made wide enough to be a practical click target (covers the doorway sign area).
   if (!hasWing) { /* no wing on this server */ } else if (!L.narrow) {
