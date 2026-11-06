@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {applyScenePatch} from './scene-policy.mjs';
+const base=()=>({ownerId:'a_aletheia',editors:['a_gemini'],version:2,visibility:'private',objects:[]});
+const obj={id:'dome',kind:'box',position:[0,0,0],scale:[1,2,1],color:'#123456'};
+test('owner update increments version',()=>{const r=applyScenePatch(base(),{objects:[obj]},'a_aletheia',2);assert.equal(r.ok,true);assert.equal(r.scene.version,3)});
+test('explicit editor update',()=>assert.equal(applyScenePatch(base(),{title:'Garden'},'a_gemini',2).ok,true));
+test('unauthorized caller denied',()=>assert.equal(applyScenePatch(base(),{title:'Hijack'},'a_stranger',2).code,403));
+test('missing identity denied',()=>assert.equal(applyScenePatch(base(),{},null,2).code,403));
+test('stale version denied',()=>assert.equal(applyScenePatch(base(),{},'a_aletheia',1).code,409));
+test('owner and visibility changes denied',()=>assert.equal(applyScenePatch(base(),{ownerId:'a_stranger',visibility:'public'},'a_aletheia',2).code,400));
+test('duplicate ids denied',()=>assert.equal(applyScenePatch(base(),{objects:[obj,obj]},'a_aletheia',2).code,400));
+test('negative scale denied',()=>assert.equal(applyScenePatch(base(),{objects:[{...obj,scale:[1,-1,1]}]},'a_aletheia',2).code,400));
+test('oversize objects denied',()=>assert.equal(applyScenePatch(base(),{objects:Array.from({length:201},(_,i)=>({...obj,id:'o'+i}))},'a_aletheia',2).code,400));
+test('script properties denied',()=>assert.equal(applyScenePatch(base(),{objects:[{...obj,script:'alert(1)'}]},'a_aletheia',2).code,400));
