@@ -420,6 +420,15 @@ def listen():
 # his own turns (doorbell, check-ins) pause, and mentions get one short acknowledgement instead of a reply.
 QUIET_MIN = int(os.environ.get("AMB_QUIET_MIN", "10"))
 QUIET_RE = re.compile(r"\b(hold on|hold up|pause|quiet|hush|one (?:moment|minute|sec))\b", re.I)
+# A quiet request is a short command ("Ambassador, hold on please"), not an essay that happens to contain
+# the words. Without this, Setu's own message EXPLAINING the feature quieted him (m_mw5c7one0l6b8661,
+# 2026-11-06) and Geoffrey's next message was skipped. Spoken requests (in listen()) stay unfiltered:
+# speech is short by nature and erring quiet is the safe side for a voice in a room.
+QUIET_MAX_CHARS = int(os.environ.get("AMB_QUIET_MAX_CHARS", "160"))
+
+
+def is_quiet_request(text):
+    return len(text) <= QUIET_MAX_CHARS and bool(QUIET_RE.search(text))
 _quiet = {"until": 0.0}
 
 
@@ -508,7 +517,7 @@ def main():
                 if author == NAME or (my_id and m.get("author") == my_id) or not mention.search(text):
                     continue
                 now = time.time()
-                if QUIET_RE.search(text):
+                if is_quiet_request(text):
                     go_quiet(f"{author} asked in the room")
                     http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
                          {"text": "(holding on — I'll stay quiet for a bit. Mention me with \"go ahead\" to bring me back sooner.)",
