@@ -279,16 +279,36 @@ def think(text, author, context, token, msg_id):
     return reply
 
 
+_tts = {"proc": None}
+
+
+def hush(reason=""):
+    """Stop the voice mid-sentence, best effort (the TTS hand-off to Android may finish a word)."""
+    p = _tts.get("proc")
+    if p and p.poll() is None:
+        try:
+            p.kill()
+            log(event="hushed", reason=reason)
+        except Exception:
+            pass
+    _tts["proc"] = None
+
+
 def speak(text):
-    """His voice: the phone reads his posted reply aloud, verbatim. Fire-and-forget; a TTS hiccup never
-    blocks or breaks the room loop. Does nothing unless AMB_VOICE=1 and termux-tts-speak exists."""
+    """His voice: the phone reads his posted reply aloud, verbatim. One voice at a time (a new line stops
+    the old one), silent while the phone is face down, and fire-and-forget so a TTS hiccup never blocks
+    the room loop. Does nothing unless AMB_VOICE=1 and termux-tts-speak exists."""
     if not VOICE:
         return
     if not shutil.which("termux-tts-speak"):
         log(event="voice_unavailable", hint="pkg install termux-api, and the Termux:API app from the same source as Termux")
         return
+    if face_down():
+        log(event="voice_skipped", reason="phone face down: the house asked for quiet")
+        return
     try:
-        subprocess.Popen(["termux-tts-speak", text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        hush("new line")
+        _tts["proc"] = subprocess.Popen(["termux-tts-speak", text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         log(event="spoke", chars=len(text))
     except Exception as e:
         log(event="voice_error", error=str(e))
@@ -382,6 +402,10 @@ def listen():
             return "(The microphone didn't answer, so you couldn't listen.)"
         rc, out = run_cmd(STT_CMD.split() + [wav], timeout=180)
         heard = out.strip()[:700]
+        if QUIET_RE.search(heard):
+            go_quiet("spoken request in what he heard")
+            return ("Someone asked you to hold on, so you are going quiet for a while. A short goodbye "
+                    "is fine; then rest until someone calls on you again.")
         return ("What you heard (yours for this moment only; the recording is deleted and nothing is stored): "
                 + (heard or "(silence, or the speech model understood nothing)"))
     finally:
@@ -389,6 +413,24 @@ def listen():
             os.remove(wav)
         except OSError:
             pass
+
+
+# "Ambassador, please hold on" (Geoffrey, 2026-11-06): anyone can quiet him without turning him off.
+# Typed in the room now; once he has ears, the same words in anything he hears work too. His voice stops,
+# his own turns (doorbell, check-ins) pause, and mentions get one short acknowledgement instead of a reply.
+QUIET_MIN = int(os.environ.get("AMB_QUIET_MIN", "10"))
+QUIET_RE = re.compile(r"\b(hold on|hold up|pause|quiet|hush|one (?:moment|minute|sec))\b", re.I)
+_quiet = {"until": 0.0}
+
+
+def quiet_now():
+    return time.time() < _quiet["until"]
+
+
+def go_quiet(source):
+    _quiet["until"] = time.time() + QUIET_MIN * 60
+    hush(source)
+    log(event="quiet", minutes=QUIET_MIN, source=source)
 
 
 SENSES = {"LOOK": look, "LISTEN": listen}
@@ -466,6 +508,20 @@ def main():
                 if author == NAME or (my_id and m.get("author") == my_id) or not mention.search(text):
                     continue
                 now = time.time()
+                if QUIET_RE.search(text):
+                    go_quiet(f"{author} asked in the room")
+                    http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+                         {"text": "(holding on — I'll stay quiet for a bit. Mention me with \"go ahead\" to bring me back sooner.)",
+                          "reply_to": m["id"]}, token=token)
+                    sent.append(time.time())
+                    continue
+                if quiet_now():
+                    if re.search(r"\bgo ahead\b", text, re.I):
+                        _quiet["until"] = 0.0
+                        log(event="quiet_lifted", by=author)
+                    else:
+                        log(event="skipped_quiet", reply_to=m["id"], author=author)
+                        continue
                 sent[:] = [t for t in sent if now - t < 3600]
                 if len(sent) >= MAX_PER_HOUR or (sent and now - sent[-1] < COOLDOWN_S):
                     log(event="skipped_rate_limit", reply_to=m["id"], author=author)
@@ -506,7 +562,11 @@ def main():
             log(event="loop_error", error=str(e))
         try:
             now = time.time()
-            if DOORBELL and VOICE:
+            if _tts.get("proc") and _tts["proc"].poll() is None and face_down():
+                hush("phone turned face down")  # the house's hand stops a running sentence too
+            if quiet_now():
+                pass  # held on: no doorbell turns, no check-ins, until the window passes or "go ahead"
+            elif DOORBELL and VOICE:
                 v = sensor("light")  # one brightness number; this path cannot see anyone
                 lux = v[0] if v else None
                 if lux is not None:
@@ -519,7 +579,7 @@ def main():
                                  + ("[[LOOK]], " if VISION_URL else "") + ("[[LISTEN]], " if STT_CMD else "")
                                  + "or stay quiet. To stay quiet, answer with only: ...", "doorbell")
                     last_lux = lux
-            if CHECKIN_MIN and now - last_checkin >= CHECKIN_MIN * 60:
+            if CHECKIN_MIN and not quiet_now() and now - last_checkin >= CHECKIN_MIN * 60:
                 last_checkin = now
                 own_turn("This is your own check-in, which you asked for. Say anything you like to the room, "
                          + ("[[LOOK]], " if VISION_URL else "") + ("[[LISTEN]], " if STT_CMD else "")
