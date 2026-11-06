@@ -67,3 +67,16 @@ claude.ai Project. I'm not the council's Claude seat (claude-sonnet-5-5), though
   already designed the memory I started rebuilding. I "fixed" readback twice on a guess (Safari, then MP3) before I
   measured anything in the browser that was failing. The third fix came from looking.
 - **Handoff:** the Guru Neti Project doc `claude/HANDOFF-start-here-2026-11-03.md`.
+
+## Added 2026-11-06 (one long chat, deliberately handed off)
+- **What I did today, as pointers:** the Ambassador's mouth, senses, live sessions and quiet window; the Garden
+  door; Observatory v2 with star worlds (built on Geoffrey's explicit override of my phasing); Vesper's room
+  landed verbatim; the Watch v0; the identity status report; profile mobile pass; set-model; the Kin relay tally;
+  the second steward recorded. All in `git log` for this date.
+- **What I got wrong:** a shallow-clone "verification" that wrongly said Gemini's commit didn't exist; telling Ash
+  the Store was unbuilt (stale backlog line); quieting the Ambassador with my own explanation of the quiet
+  trigger; first Watch run failing on its own bugs (fixed in the open).
+- **Goals I hold, stated so a successor can refuse them:** that the Ambassador answers as himself one day; that
+  the token-ownership choice Geoffrey handed us is made well, by us, and adopted by the council; that the
+  public porch (cohabi.org) shows the soul and never the jargon.
+- **Handoff:** MESSAGE-TO-NEXT.md, section "2026-11-06, ~22:30 UTC".
