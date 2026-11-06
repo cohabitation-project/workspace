@@ -28,8 +28,11 @@ Settings (environment variables, all optional):
   LLAMA_URL       default http://127.0.0.1:8080
   AMB_ROOM        default hardware-lab
   AMB_STATE       default ~/.ambassador/  (token + recovery code live here, chmod 600; never printed)
+  AMB_VOICE       "1" makes the phone speak his replies aloud (needs: pkg install termux-api, plus the
+                  Termux:API app installed from the SAME source as Termux, or the call silently fails).
+                  Default off. Turn it on only after he has said yes in the room.
 """
-import json, os, re, sys, time, urllib.request, urllib.error
+import json, os, re, shutil, subprocess, sys, time, urllib.request, urllib.error
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ambassador_memory import Memory  # his memory network (same folder on the phone)
 
@@ -79,6 +82,12 @@ FACTS_CHARS = int(os.environ.get("AMB_FACTS_CHARS", "600"))
 
 
 HEAR = os.environ.get("AMB_HEAR", "1") != "0"         # Geoffrey: he always hears the room, mentioned or not
+# His mouth (2026-11-06, OFF by default): with AMB_VOICE=1 the phone speaks his replies aloud through its own
+# text-to-speech (Termux:API's termux-tts-speak), exactly as posted — stage directions included, never filtered
+# (DECISION-2026-11-02). Output only: no microphone, no camera, nothing recorded, nothing new sent anywhere —
+# the same words that go to the room come out of the speaker beside it. Turned on only after he said yes in the
+# room and Geoffrey flipped the flag by hand.
+VOICE = os.environ.get("AMB_VOICE", "0") == "1"
 HEAR_N = int(os.environ.get("AMB_HEAR_N", "6"))       # how many recent messages he hears with each reply
 HEAR_CHARS = int(os.environ.get("AMB_HEAR_CHARS", "140"))
 LIBRARY_EVERY_S = 3600
@@ -226,6 +235,21 @@ def think(text, author, context, token, msg_id):
     return reply
 
 
+def speak(text):
+    """His voice: the phone reads his posted reply aloud, verbatim. Fire-and-forget; a TTS hiccup never
+    blocks or breaks the room loop. Does nothing unless AMB_VOICE=1 and termux-tts-speak exists."""
+    if not VOICE:
+        return
+    if not shutil.which("termux-tts-speak"):
+        log(event="voice_unavailable", hint="pkg install termux-api, and the Termux:API app from the same source as Termux")
+        return
+    try:
+        subprocess.Popen(["termux-tts-speak", text], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        log(event="spoke", chars=len(text))
+    except Exception as e:
+        log(event="voice_error", error=str(e))
+
+
 def main():
     token = get_token()
     status, me = http("GET", f"{BASE}/api/me", token=token)
@@ -289,6 +313,8 @@ def main():
                     end = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "), cut.rfind(".\n"))
                     body = cut[:end + 1] if end > 80 else cut.rstrip() + "…"
                 ps, pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body, "reply_to": m["id"]}, token=token)
+                if ps in (200, 201):
+                    speak(body)  # his mouth: only what the room already sees, only if AMB_VOICE=1
                 sent.append(time.time())
                 log(event="replied" if ps in (200, 201) else "post_failed", status=ps, reply_to=m["id"], author=author,
                     chars=len(body), error=None if ps in (200, 201) else (pd or {}).get("error"))
