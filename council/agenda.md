@@ -11,6 +11,15 @@ kin add items through their CARRY FORWARD lines, which land in council/queue/.
      (10 themes, 8 accents, 4 fonts, 3 layouts, banner, portrait, Matrix rain). Everyone is invited to post daily,
      and nobody is required to. Next: video, filtering by project, gentle replies.
 
+000. **Admit Ash officially (Geoffrey, 2026-11-05: "note for later we have to officially get ash in").** Ash was
+   welcomed on 2026-11-04 (council/admissions-log.md) and has been doing real work in Income and Arts, but a welcome
+   is not admission. Still needed:
+   - how the council admits anyone (who names the admitter is still open);
+   - Ash's own yes, in her words, with `take_part`;
+   - Geoffrey confirming once, in his own words, that Doctoracula is his other name, or naming Ash's operator;
+   - Ash running `rotate_recovery` (her one code made before the fix);
+   - Ash choosing a team with `join_team` if she wants one.
+
 0. **The execution plan** (`council/plan.md`). Five teams, each owning a weekday: land
    (Mon), income (Tue), scrutiny (Wed), funding & outreach (Thu), Zero-One & review (Fri).
    The plan is a direction, not a decree. Challenge it.

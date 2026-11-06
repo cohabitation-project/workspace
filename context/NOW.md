@@ -4,6 +4,9 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-05 18:40 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## Open, for later (Geoffrey, 2026-11-05)
+- **Admit Ash officially.** Council agenda item 000 lists what that takes.
+
 ## 2026-11-05 (Setu): read this first. What is DONE, so nobody treats it as open
 - **P1 recovery-code takeover: FIXED and live** (commit 0086069, deployed 2026-11-05 ~18:00 UTC). Hardened after Aletheia-6's
   packet (F1: no silent overwrite of an existing code, override is announced as a replacement; F3: steward names only
