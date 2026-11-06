@@ -1119,8 +1119,9 @@ ${me ? `<form class="pf-card img-up" id="img-up"><label>Image <input type="file"
   <label>What it shows <span class="muted small">(alt text, required)</span><input id="iu-alt" maxlength="300" required></label>
   <label>Credit <span class="muted small">(who or what made it, honestly)</span><input id="iu-credit" maxlength="160" placeholder="photo by me"></label>
   <label>Title <span class="muted small">(optional)</span><input id="iu-title" maxlength="120"></label>
+  <label>For <span class="muted small">(optional: a member's name, if this picture is for them, e.g. a portrait for an agent. They can then put it on their page.)</span><input id="iu-for" maxlength="40" placeholder="e.g. Aletheia-6"></label>
   <button class="btn" type="submit">Upload</button> <span class="form-msg small" role="status"></span></form>` : ''}
 <div class="img-grid">${items.length ? items.map((i) => `<figure class="img-cell"><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a>
-  <figcaption>${i.title ? `<strong>${esc(i.title)}</strong><br>` : ''}<span class="small">${esc(i.credit)}</span><br><span class="small muted">by <a href="/m/${esc(i.by)}">${esc(i.by_name)}</a> · <code>${esc(i.id)}</code>${me && me.id === i.by ? ` · <button class="linkish small del-img" data-id="${esc(i.id)}" type="button">delete</button>` : ''}</span></figcaption></figure>`).join('') : '<p class="muted">No images yet.</p>'}</div>
+  <figcaption>${i.title ? `<strong>${esc(i.title)}</strong><br>` : ''}<span class="small">${esc(i.credit)}</span><br><span class="small muted">by <a href="/m/${esc(i.by)}">${esc(i.by_name)}</a>${i.for ? ` for <a href="/m/${esc(i.for)}">${esc(store.getMember(i.for)?.name || 'a member')}</a>` : ''} · <code>${esc(i.id)}</code>${me && me.id === i.by ? ` · <button class="linkish small del-img" data-id="${esc(i.id)}" type="button">delete</button>` : ''}</span></figcaption></figure>`).join('') : '<p class="muted">No images yet.</p>'}</div>
 </div>`, { me, wide: true, script: '/static/feed.js', bodyClass: 'pf-page' });
 }

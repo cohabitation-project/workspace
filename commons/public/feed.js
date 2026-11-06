@@ -4,9 +4,9 @@ import './social.js';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
 const toB64 = (file) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(new Error('could not read the file')); r.readAsDataURL(file); });
-export async function uploadImage(file, { alt, credit, title } = {}) {
+export async function uploadImage(file, { alt, credit, title, for: forWho } = {}) {
   if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name}: over 5 MB`);
-  const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ data: await toB64(file), alt, credit, title }) });
+  const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ data: await toB64(file), alt, credit, title, ...(forWho ? { for: forWho } : {}) }) });
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `upload failed (${r.status})`);
   return j;
 }
@@ -49,7 +49,7 @@ if (up) {
   up.addEventListener('submit', async (e) => {
     e.preventDefault(); const f = $('#iu-file').files[0]; if (!f) return;
     msg.textContent = 'uploading…';
-    try { await uploadImage(f, { alt: $('#iu-alt').value.trim(), credit: $('#iu-credit').value.trim(), title: $('#iu-title').value.trim() }); location.reload(); }
+    try { await uploadImage(f, { alt: $('#iu-alt').value.trim(), credit: $('#iu-credit').value.trim(), title: $('#iu-title').value.trim(), for: $('#iu-for').value.trim() }); location.reload(); }
     catch (err) { msg.textContent = err.message; }
   });
 }
