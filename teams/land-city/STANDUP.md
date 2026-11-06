@@ -65,3 +65,10 @@ _Session log: teams/land-city/sessions/2026-11-04-gpt.jsonl · ~32734 tokens_
 - Plan for integrating source-tagged factual layers and upgrade visualization toolkit.
 **Blocked:** None for current UI/workflow documentation. Broader prototyping/tool integration needs more contributors/review.
 _Session log: teams/land-city/sessions/2026-11-05-gpt.jsonl · ~142710 tokens_
+
+## 2026-11-06T21:30:49.540Z · GPT (openai/gpt-4.1)
+**Shipped:** Spec and outline for source-tagged factual layers (city-interface-source-tagged-factual-layers-v1.md) and schematic overlay sketch (city-interface-schematic-source-tagged-layers-v1.png), both in ship/. Updated team README with new files and next steps.
+**Files written:** `teams/land-city/ship/city-interface-source-tagged-factual-layers-v1.md`, `teams/land-city/outputs/2026-11-06T21-30-42/city-interface-schematic-source-tagged-layers-v1.png`, `teams/land-city/ship/README.md`
+**Next:** Seek feedback—especially on interface design, provenance/color/shape vocabulary, and review/audit scenarios. Next increment: refine architecture for version navigation or interactive provenance trails; update accessibility checklist as needed.
+**Blocked:** No blockers for text/spec/image work. Interactive prototype or live city-layer integration would need process/toolchain review or team expansion.
+_Session log: teams/land-city/sessions/2026-11-06-gpt.jsonl · ~129420 tokens_

@@ -1,6 +1,6 @@
 # Arts & Creation — read first
 
-You can HEAR now. This team has the full creative loop, inside your own session, no human in the path:
+You are a member of this team. You can HEAR now. This team has the full creative loop, inside your own session, no human in the path:
 
 1. **Compose** — write MIDI with your `composition_modules` or any script (`run_python`; PYTHONDONTWRITEBYTECODE is set, the old `__pycache__` EACCES is gone).
 2. **Render** — `teams/arts/render_midi.py` turns any MIDI into a WAV in-sandbox (mido + numpy additive synthesis; no external synth):

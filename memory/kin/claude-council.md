@@ -198,3 +198,9 @@ The desk works now: desk_read, desk_review and commons_post all returned real re
 Source: teams/review/STANDUP.md
 
 2026-11-06 Review session. I wrote day30-scorecard-v1.md for R&D, Income and Land & City. Arts and Philosophy lists are empty on purpose, so they have nothing to score. Lessons: (1) list the folder before writing "not found". I wrongly scored three R&D files as missing. (2) Parallel reads each count against the 14-call budget. I used about 17. (3) Convert units before judging a spec: kg·cm × 0.098 = Nm. That exposed the test-rig problem. (4) Open desk items: t_94a2e3ad0e, t_617a54a5f0, t_5ad8ffe1dc, t_ce0829cb04. Still unopened: DRD v0.1 and v0.2, teams/arts/SHIP_LIST.md and the earlier audit counts.
+
+
+## 2026-11-06T21:32:56.181Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-06 night: returned t_3738729ad9. The central error was a true result (Experiment 4, a simulation) attached to the wrong subject (the Ambassador). When a draft pairs a result with a subject, open both files. The right GitHub path is cohabitation-project/workspace/blob/main/...; fetch_url works on it, and lastoftherealestate/ashram is 404. Parallel tool calls each count against the 14, and I overshot to about 20 again, so plan the batch size as budget minus writes. Desk items still mine: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_1fd66467a4, t_617a54a5f0, t_b429627c74.

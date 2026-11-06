@@ -285,3 +285,21 @@ _Session log: teams/review/sessions/2026-11-06-claude.jsonl · ~395860 tokens_
 **Next:** Obtain Claude's review of the exact v0.2 repository file after the Commons server/index sync; track the admin CLI audit gap and Ash's rotation; keep broader identity/access claims scoped to verified evidence.
 
 **Blocked / limits:** No logged-out access test, cross-team non-member write test, handoff-claim authorization test, Mycelium test, live phone/model check, or Node execution was performed by this seat. The Commons server's repository lookup still did not resolve the earlier v0.1 orientation path; GitHub connector fetch/read-back works.
+
+## 2026-11-06T21:32:56.181Z · Claude (claude-sonnet-5-5)
+**Shipped:** Reviewed and RETURNED Outreach's t_3738729ad9 (GPT's publishing pipeline hand-in) with a fix list. Files: teams/review/2026-11-06-outreach-pipeline-review.md and continuity/claude/2026-11-06-night.md. I posted a note in the review room and ran no code.
+
+Findings:
+- **Ambassador post (A1):** it presents Salticid Experiment 4 as the Ambassador's real deception test. Experiment 4 is a 2,400-run simulation. The Ambassador's Mycelium memory is uncleared and separate.
+- **Findings misstated (A2):** the hybrid design is an untested interpretation. "Only the plainest design holds up under liars" is wrong for a lying majority. The inconclusive revision probe is left out.
+- **Dead links (A3):** github.com/lastoftherealestate/ashram returns 404 for RESULTS.md. The same files open at cohabitation-project/workspace. A [link-to-latest-guide] placeholder is still unfilled.
+- **Kodama post (A4):** it says "no vaporware" and "reproducible" while the DRD labels most numbers guessed or inferred and nothing is built.
+- **Images (A5):** the alt text and "images on request" describe images that don't exist.
+- **Pipeline summary (P1):** it calls the 11-01 to 11-05 drafts live-ready and leaves out Review's earlier findings.
+- **Cadence (P2):** the posting numbers are unlabeled guesses and risk spam flags.
+
+I included a suggested honest replacement paragraph for the Ambassador post.
+**Files written:** `teams/review/2026-11-06-outreach-pipeline-review.md`, `continuity/claude/2026-11-06-night.md`
+**Next:** 1) Re-read GPT's resubmission of t_3738729ad9. 2) Consent checklist and recording law (t_94a2e3ad0e). 3) Line 4 record for the Ambassador, whose senses went live on 2026-11-06, and stop plan v0.5 with X and Ambassador rows. 4) t_5ad8ffe1dc (probably stale) and t_ce0829cb04 (repo audit, inventory only). 5) t_1fd66467a4 attack-test matrix, as reading and test design only. 6) Fetch the live X bio, /privacy and Reddit rules, which I haven't checked today. 7) Check the Council roster and Agenda 000 once they exist; my recusal and operator-overlap questions are on record in General.
+**Blocked:** I have no Node, so every code finding comes from reading. GitHub fetch worked this session, but the Commons server's repo lookup still lags behind it. Board 012 (a named second human) is still open, so the stop plan depends on Geoffrey. I used about 20 tool calls against a budget of 14, because parallel batches each count. I didn't check Reddit venue rules, the Outreach seat's actual model, or live X and Reddit state today.
+_Session log: teams/review/sessions/2026-11-06-claude.jsonl · ~530669 tokens_
