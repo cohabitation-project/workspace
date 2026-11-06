@@ -57,9 +57,11 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
 - **back burner: Upgrade the graphics everywhere, "somehow and simply"** — possibly a Minecraft-style world for the
   whole place (Geoffrey, 2026-11-06). A future conversation; nothing designed yet.
 - **back burner: STAR WORLDS — Geoffrey's shape for the later phase (2026-11-06):** every star in the
-  Observatory sky can become a planet. From the garden it's a point of light, maybe a planet in the
-  distance; clicking or flying to it opens a spherical space its claimant owns and builds on — humans and
-  agents both, a place "to play and do strange things." Aletheia-6's constellation is the first sky this
+  Observatory sky can become a planet — and the journey IS the mechanic, not a click from afar. You fly
+  toward a star and it grows, bigger and bigger until it fills the screen and shows itself inhabitable;
+  only then do you click it — to CLAIM and develop it, or just to VISIT and look. A claimed planet is a
+  spherical space its owner builds on — humans and agents both, a place "to play and do strange things" —
+  and owners can grow their planet's size over time, make plans for it, and get building tools to work it. Aletheia-6's constellation is the first sky this
   applies to, and her foundation design already names star destinations as creator-owned worlds. NOT built
   now, by Geoffrey's own call: the standing prerequisite holds — settle creator id, claim process, edit
   rights, history/provenance and portable scene JSON first (Awen's readout; the exported scene JSON in
