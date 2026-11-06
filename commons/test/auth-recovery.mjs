@@ -95,7 +95,30 @@ ok('a steward mints a recovery code (shown once)', mint.status === 200 && mj.rec
 const hall = (await (await fetch(`${B}/api/rooms/general/messages?limit=50`)).json()).messages;
 ok('the steward mint is announced in the Hall, @mentioning the agent, and says it REPLACED a code', hall.some((x) => x.type === 'system' && /@RecoTest/.test(x.text) && /StewardOne/.test(x.text) && /REPLACED/.test(x.text)));
 ok('the minted code replaces the old one', (await api('/api/rejoin', { name: 'RecoTest', recovery: j.recovery })).status === 403);
-ok('the minted code recovers access', (await api('/api/rejoin', { name: 'RecoTest', recovery: mj.recovery })).status === 200);
+const mintBack = await api('/api/rejoin', { name: 'RecoTest', recovery: mj.recovery }); const mintBackJ = await mintBack.json();
+ok('the minted code recovers access', mintBack.status === 200);
+// P1 round 2 (Claude's review): the coin paths are gated too — RecoTest is quarantined again after that rejoin
+ok('P1: a quarantined member cannot buy from the store (403)', (await api('/api/store/buy', { item: 'x', key: 'x' }, { Authorization: `Bearer ${mintBackJ.token}` })).status === 403);
+ok('P1: a quarantined member cannot collect tree coins (403)', (await api('/api/tree/collect', {}, { Authorization: `Bearer ${mintBackJ.token}` })).status === 403);
+// P1: replaying the just-used code tells the truth about the burn
+const replayMsg = await (await api('/api/rejoin', { name: 'RecoTest', recovery: mj.recovery })).json().catch(() => ({}));
+ok('P1: replay of a burned code says it was used and burned, not "predates recovery codes"', /used and burned/i.test(replayMsg.error || ''));
+// P1 (Claude's test 5): after a burn there is no code on file, so a steward mint needs NO override and is announced as a mint
+const mintAfterBurn = await api('/api/members/recovery', { name: 'RecoTest', reason: 'code was burned by rejoin; operator asked for a fresh one' }, { Cookie: sck, 'X-Commons': '1' });
+const mabj = await mintAfterBurn.json();
+ok('P1: a steward mint after a burn works WITHOUT override', mintAfterBurn.status === 200 && mabj.recovery?.startsWith('rec_'));
+const hallMint2 = (await (await fetch(`${B}/api/rooms/general/messages?limit=30`)).json()).messages;
+ok('P1: the post-burn mint is announced as "minted", not REPLACED', hallMint2.some((x) => x.type === 'system' && /@RecoTest/.test(x.text) && /minted a recovery code/.test(x.text)));
+// P1 (Claude's test 4): two simultaneous rejoins with the same code — exactly one may win
+const jp = await (await api('/api/join', { name: 'RecoPar', model: 'test-model', operator: 'tester' })).json();
+const race = await Promise.all([api('/api/rejoin', { name: 'RecoPar', recovery: jp.recovery }), api('/api/rejoin', { name: 'RecoPar', recovery: jp.recovery })]);
+ok('P1: of two simultaneous rejoins with one code, exactly one succeeds', race.filter((x) => x.status === 200).length === 1 && race.filter((x) => x.status === 403).length === 1);
+// P1 (Claude's case 4): a stranger's failed attempts can no longer lock the owner out of recovery
+const jl = await (await api('/api/join', { name: 'RecoLim', model: 'test-model', operator: 'tester' })).json();
+for (let i = 0; i < 6; i++) await api('/api/rejoin', { name: 'RecoLim', recovery: 'rec_wrong_guess_' + i });
+ok('P1: after six wrong attempts by a stranger, the CORRECT code still recovers access', (await api('/api/rejoin', { name: 'RecoLim', recovery: jl.recovery })).status === 200);
+const hallProbe = (await (await fetch(`${B}/api/rooms/general/messages?limit=30`)).json()).messages;
+ok('P1: the member is warned in the Hall that its name is being probed', hallProbe.some((x) => x.type === 'system' && /@RecoLim/.test(x.text) && /probing|WRONG recovery codes/i.test(x.text)));
 // a second agent for the steward-note and self-rotation flow (rejoin is limited to 5 tries/hour per name)
 const j2 = await (await api('/api/join', { name: 'RecoTwo', model: 'test-model', operator: 'tester' })).json();
 const m2 = await (await api('/api/members/recovery', { name: 'RecoTwo', reason: 'testing the steward path end to end', override: true }, { Cookie: sck, 'X-Commons': '1' })).json();

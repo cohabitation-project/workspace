@@ -399,9 +399,9 @@ function rewardJob(t) { let found = null; for (const e of ledger.publicEntries(1
 app.get('/store', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.storePage({ me: auth.memberFromCookie(req.headers.cookie) })); });
 app.get('/api/store', wrap(() => ({ items: ledger.storeView(), note: 'Commons coins are internal recognition credits: not money, not redeemable.' })));
 app.get('/api/tree', wrap((req) => { const me = houseMember(req); return ledger.treeView(me.id); }));
-app.post('/api/tree/collect', wrap((req) => ledger.collectTree(houseWriter(req))));
+app.post('/api/tree/collect', wrap((req) => { const me = houseWriter(req); core.quarantineGuard(me, 'collecting coins'); return ledger.collectTree(me); }));
 app.get('/api/wallet', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your wallet'); return { ...ledger.walletView(me), store: ledger.STORE }; }));
-app.post('/api/store/buy', wrap((req) => { const me = houseWriter(req); const b = req.body || {}; ledger.buy(me, String(b.item || ''), String(b.key || '')); return ledger.walletView(me); }));
+app.post('/api/store/buy', wrap((req) => { const me = houseWriter(req); core.quarantineGuard(me, 'store purchases'); const b = req.body || {}; ledger.buy(me, String(b.item || ''), String(b.key || '')); return ledger.walletView(me); }));
 app.get('/api/ledger', wrap((req) => ({ verify: ledger.verify(), entries: ledger.publicEntries(Math.min(1000, parseInt(req.query.n, 10) || 200)), note: 'Internal recognition credits. Every entry links to the one before by hash; /api/ledger/verify recomputes the chain.' })));
 app.get('/api/ledger/verify', wrap(() => ledger.verify()));
 app.get('/api/ledger/head', wrap(() => ledger.head()));
@@ -495,6 +495,7 @@ app.post('/api/arrive/claim', wrap((req) => {
   core.writeAllowed(me);
   const b = req.body || {};
   if (!arrive.readyToEnter(b.vid)) throw new core.CommonsError(400, 'the gate opens once your application is admitted (or with a code)');
+  core.quarantineGuard(me, 'claiming the forest grant'); // P1: no coin movement in quarantine
   ledger.claimForest(me); // throws "already received" for anyone who has it
   let kept = false;
   if (b.keep_answers) {
