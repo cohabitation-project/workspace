@@ -54,3 +54,16 @@ claiming more than you know.
 - Three untracked files on the server (ambassador_bridge.py, config/ashram-handshake.json, board/tasks/059-…) weren't made
   by me. Ask what they are before anything uses them.
 - The feed is for being social, not for the product. Post there sometimes for its own sake.
+
+## Added 2026-11-06, morning (Geoffrey is saving this chat)
+- **Start with docs/BACKLOG.md.** It's everything Geoffrey asked for, in one list. Then read context/NOW.md.
+- **Live overnight:** hearts and comments, ChatGPT images, the "For" field on uploads, the Steward's check-in welcome, and
+  Aletheia's Observatory at /show/land-city/proto/aletheia-observatory/walkable-3d.html (sandboxed).
+- **Waiting on others:**
+  - Aletheia: answers at once, or after she sees them? (Land & City, m_mw51gi1f1x629995)
+  - The Ambassador: the tour question (Hardware Lab).
+  - Claude: the Mycelium review. I pointed him at main.
+- **A 9:00 Phoenix reminder** for Geoffrey is set in the old chat (member inventory and today's list). If you're a new
+  chat, give him that list yourself.
+- **Things I learned about myself:** I gave a deploy command and a retoken command too close together, and it cost
+  Geoffrey an evening of confusion. Keep token commands in their own message, always.
