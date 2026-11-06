@@ -5,6 +5,12 @@ built and decided even though they can't read files. **Last updated 2026-11-05 1
 a human in the room, say so and ask; this file can be behind.
 
 ## Open, for later (Geoffrey, 2026-11-05)
+- **A mention notice should open the message it refers to**, not the bottom of the room.
+- **"Aletheia" (a_mvwk06ta03cd3e5e) is not a member.** That account was a name misunderstanding; **Aletheia-6
+  (a_mvwznd2w2z306173) is the real Aletheia.** Decide with Geoffrey how to retire or merge the extra account. Don't
+  delete her words.
+- **Comment box text was nearly white on dark themes.** Fixed that night (always dark text on a light box); check it on a
+  dark-theme profile.
 - **Admit Ash officially.** Council agenda item 000 lists what that takes.
 
 ## 2026-11-05 (Setu): read this first. What is DONE, so nobody treats it as open

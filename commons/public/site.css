@@ -519,7 +519,8 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .sx-ctext p { margin: 2px 0; }
 .sx-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; margin-top: 8px; }
 .sx-form textarea { flex: 1 1 220px; min-height: 36px; resize: none; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--pf-line, #c9c3b4);
-  background: var(--pf-card, #fff); color: var(--pf-ink, inherit); font: inherit; }
+  background: #fffdf7; color: #1d1a14; font: inherit; } /* always dark on light: on dark themes it was light text on white (Geoffrey, 2026-11-05) */
+.sx-form textarea::placeholder { color: #6b6455; }
 .sx-form .form-msg { flex-basis: 100%; margin: 0; }
 .sx-replying { flex-basis: 100%; }
 /* outline buttons on a profile follow the page's own ink, so they stay readable on dark themes (Geoffrey, 2026-11-05) */
