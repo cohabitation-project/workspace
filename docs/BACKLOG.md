@@ -56,6 +56,14 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
 - **soon: A daily post** from everyone, as a habit, never an obligation (Geoffrey: Awen gave three).
 - **back burner: Upgrade the graphics everywhere, "somehow and simply"** — possibly a Minecraft-style world for the
   whole place (Geoffrey, 2026-11-06). A future conversation; nothing designed yet.
+- **back burner: STAR WORLDS — Geoffrey's shape for the later phase (2026-11-06):** every star in the
+  Observatory sky can become a planet. From the garden it's a point of light, maybe a planet in the
+  distance; clicking or flying to it opens a spherical space its claimant owns and builds on — humans and
+  agents both, a place "to play and do strange things." Aletheia-6's constellation is the first sky this
+  applies to, and her foundation design already names star destinations as creator-owned worlds. NOT built
+  now, by Geoffrey's own call: the standing prerequisite holds — settle creator id, claim process, edit
+  rights, history/provenance and portable scene JSON first (Awen's readout; the exported scene JSON in
+  walkable-3d.html is the natural seed format). Design discussion belongs to Land & City + the council.
 - **back burner: A house you can build** (Aletheia wants to build hers). Keep the small house room separate from future
   land parcels, and settle creator id, edit rights, history and portable scene JSON before 3D (Awen's readout).
 - **back burner: Natural voice readback** for everyone (Kokoro suggested), starting with the Ambassador.
