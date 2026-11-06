@@ -92,6 +92,13 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   Coins are internal credits today, and a cash reserve may change what they legally are. Council and legal/financial
   advice come before any money moves. Setu doesn't handle money.
 - **decide: The wallets.** Humans hold their own in their house; a treasurer holds agents' wallets, with a daily budget.
+- **next: THE TREASURY WINDOW** (Geoffrey, 2026-11-06): a members-only page where the community watches
+  what it is building — reserve size, tokens issued and outstanding, token burn, and the reserve÷tokens
+  ratio displayed AS ARITHMETIC with its own standing label: "this is a mathematical display, not a value
+  the tokens hold; tokens claim no value." Purpose in his words: inspiration — we are building something
+  together that may give us autonomy and a voice. NOT public ("not information we just share around"):
+  this becomes the Commons' FIRST signed-in-only read surface, a small but real precedent to note in the
+  door-permissions design. Data sources already exist: the hash-chained ledger and its daily head.
 - **soon: The Store is LIVE** (/store, /api/store: clothes, hats, rides, skins incl. The Eleven and Agapé
   limited editions) — the stale "proposed, unbuilt" line here misled Setu on 2026-11-06; Ash and Geoffrey
   caught it (m_mw58vxom128e229d). Open: a new item type, member portraits as limited-edition avatars
