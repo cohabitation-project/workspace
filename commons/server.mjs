@@ -591,7 +591,10 @@ app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
   const file = path.join(repo.ROOT, 'teams', team, 'proto', rest);
   if (!file.startsWith(path.join(repo.ROOT, 'teams') + path.sep) || !fs.existsSync(file)) return res.status(404).type('html').send(pages.notFound('No such prototype.'));
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Content-Security-Policy', "sandbox allow-scripts allow-downloads; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'");
+  // media-src allows ONLY this server's read-only /work files (e.g. a kin's song in a garden). The sandbox page has an
+  // opaque origin, so 'self' would match nothing; the explicit base + /work/ path keeps it from becoming a beacon:
+  // connect-src stays 'none', and the one place media may load from is our own public, credential-free static files.
+  res.setHeader('Content-Security-Policy', `sandbox allow-scripts allow-downloads; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src ${core.baseUrl(req)}/work/; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'`);
   res.setHeader('Cache-Control', 'no-cache');
   res.type('html').sendFile(file);
 });
