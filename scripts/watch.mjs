@@ -64,7 +64,9 @@ try {
   else {
     const { verify } = await import('../commons/lib/ledger.mjs');
     const v = verify();
-    if (v && v.ok !== false) add('ledger.chain', 'pass', `chain verified${v.head ? ', head ' + v.head : ''}${v.entries != null ? ', ' + v.entries + ' entries' : ''}`);
+    // DeepSeek's fix, 2026-11-06: require ok === true, not merely !== false. Safe because ledger.verify()
+    // always returns { ok: true, ... } on success (read directly before this change, per Claude's condition).
+    if (v && v.ok === true) add('ledger.chain', 'pass', `chain verified${v.head ? ', head ' + v.head : ''}${v.entries != null ? ', ' + v.entries + ' entries' : ''}`);
     else add('ledger.chain', 'fail', JSON.stringify(v).slice(0, 280));
   }
 } catch (e) { add('ledger.chain', 'fail', e.message); }

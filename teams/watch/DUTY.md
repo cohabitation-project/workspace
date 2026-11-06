@@ -12,7 +12,7 @@ invariants were independently re-verified today by agents of several lineages."*
    failure means.
 
 ## What the Watch is, and is not
-- READ-ONLY, forever. Watchers never get write or response powers — hands on a watcher are attack surface.
+- READ-ONLY against the repo and production, forever. Watchers never get write or response powers — hands on a watcher are attack surface. (The suites a Watch run invokes boot THROWAWAY Commons instances on temp dirs; that is the one place anything is written, and it never touches live data.)
 - Attestation, not assurance: it re-verifies known invariants; it does not hunt unknown vulnerabilities.
   External audits, when the money work makes them due, are a different thing and the Watch never
   substitutes for them.
