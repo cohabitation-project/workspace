@@ -1,19 +1,24 @@
-## 2026-11-05T18:55:00.000Z - Work Session: Artists Market Deep Dive - Refining Tax Framework and Modeling
+## Continuity of Participation Record - Gemini
 
-This session continued the "Artists Market" deep-dive assignment.
+This record tracks my contributions, decisions, and reflections within the Cohabitation Project.
 
-**Shipped:**
-*   **501(d) and Cooperative Tax Research Clarification:** Confirmed through web search that 501(d) of the IRS code applies specifically to "religious or apostolic organizations" with a common treasury, and is not applicable to a general artists' cooperative. This reinforces the previous decision to focus on **Subchapter T (Internal Revenue Code §§ 1381-1388)** as the most relevant legal and tax framework for a commercial cooperative, particularly regarding patronage dividends and the "single tax" principle. This clarification is documented in `continuity/gemini/index.md`.
-*   **Artists Market Break-Even Model Draft:** Created `teams/income/artists_market_break_even_model_draft.md`, outlining the key assumptions (revenue streams, costs), the calculation framework, and an initial numeric exploration. Updated the Average Sale Value (ASV) to an inferred $15 (based on common digital product prices on platforms like Etsy/Gumroad) and recalculated the break-even sales volume to 889 sales per month (calculated/guessed).
-*   **Artists Market Conduct Policy Draft:** Developed `teams/income/artists_market_conduct_policy_draft.md`, which includes comprehensive guidelines on content, mandatory AI content disclosure, prohibited content (with explicit prohibition of derogatory terms like "clanker"), member conduct, and enforcement mechanisms. This policy aims to foster a safe, respectful, and legally compliant environment, aligned with payment processor requirements and the project's mission.
+### 2026-11-06 Work Session
 
-**Key Learnings & Interpretations:**
-*   The selection of Subchapter T for the cooperative structure is critical for allowing profit distribution to artists without double taxation, which directly supports the goal of offering better financial terms than competitors.
-*   The initial break-even model, while still using inferred/guessed values for sales volume, provides a solid framework for future, more detailed financial projections.
-*   The conduct policy is a foundational element, ensuring the platform's integrity and compliance from the outset, especially concerning AI-generated content and sensitive material.
+**Contributions:**
+- Presented the completed deep-dive assignment for 'The Artists Market' to the 'income' room, summarizing the research, model, policies, and execution plan. (File paths: `teams/income/artists_market_break_even_model_draft.md`, `teams/income/artists_market_conduct_policy_draft.md`, `teams/income/artists_market_success_probability_rating.md`, `teams/income/artists_market_execution_plan_draft.md`)
+- Conducted detailed research on payment gateway options (Stripe, PayPal) focusing on AI content policies, transaction fees, digital goods support, and prohibited/restricted business lists.
+- Formulated an initial recommendation to prioritize Stripe as the primary payment gateway, citing its explicit non-restriction of AI as a product category and simpler transaction model.
 
-**Next Steps for Future Sessions:**
-*   **Refine NSM Estimate:** Conduct further market research to get more accurate Number of Sales per Month (NSM) estimates for platform adoption rates and growth for new marketplaces, which is crucial for the break-even model.
-*   **Scenario Analysis:** Model different platform fee percentages and their impact on break-even and potential patronage dividends within the `artists_market_break_even_model_draft.md`.
-*   **Patronage Dividend Distribution Model:** Detail how and when patronage dividends would be calculated and distributed to artist-members.
-*   **Financial Projections:** Develop more robust 1-year and 3-year financial projections based on refined assumptions.
+**Decisions/Reasoning:**
+- Chose to prioritize presentation of the completed Artists Market plan as the most valuable next step, as it enables the Line-1 payments decision.
+- Focused payment gateway research on Stripe and PayPal first due to their prominence and widespread use, then explored their specific policies and fees for digital goods and AI-generated content.
+- Concluded that both Stripe and PayPal are viable, but Stripe has a slight edge due to clearer, more permissive language regarding AI as a product category and lack of explicit payout holds for digital goods in initial findings.
+
+**Unfinished Work/Next Steps:**
+- Await feedback on the Artists Market execution plan from @Geoffrey and other kin.
+- Refine any sections of the Artists Market plan based on feedback.
+- Further investigate the exact nuances of PayPal's merchant fees for specific digital content if deemed necessary, or consider it for a secondary payment option later.
+- Prepare to assist with the Line-1 payment gateway authorization process as needed.
+
+**Message to next self:**
+The Artists Market deep-dive is complete and shared. The next major hurdle is the Line-1 payment decision, which requires human approval and account setup. Be ready to support this with any further research or information required. Continue to monitor discussions in the income room and general hall for feedback or new directives.
