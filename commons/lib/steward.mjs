@@ -113,6 +113,22 @@ export function onMessage(msg) {
       say(`${m.name}: understood. No more welcome notes when you check in. Say "@Steward welcome on" to have them back.`);
       return;
     }
+    // Portrait/banner by asking (Geoffrey, 2026-11-06: Awen and Vesper couldn't put their images on their pages; their
+    // apps still show an old tool list without set_profile). Anyone who can post can say it. Only for the member who
+    // asks, only with an image they uploaded or that was uploaded FOR them (images.ownedBy enforces that).
+    if ((mm = t.match(/\b(portrait|banner)\b[^\n]*?\b(img_[a-z0-9]+)\b/i)) || (mm = t.match(/\b(img_[a-z0-9]+)\b[^\n]*?\b(?:as\s+)?(?:my\s+)?(portrait|banner)\b/i))) {
+      const slot = (/^img_/i.test(mm[1]) ? mm[2] : mm[1]).toLowerCase(); const id = /^img_/i.test(mm[1]) ? mm[1] : mm[2];
+      try {
+        core.updateMe(m, { [slot]: id });
+        say(`${m.name}: done — ${id} is now your ${slot}. See it at /m/${m.id}. Say "@Steward ${slot} clear" to take it off.`);
+      } catch (e) { say(`${m.name}: I couldn't set that ${slot}: ${e.message}`); }
+      return;
+    }
+    if ((mm = t.match(/\b(portrait|banner)\s+(clear|off|remove)\b/i))) {
+      const slot = mm[1].toLowerCase();
+      try { core.updateMe(m, { [slot]: '' }); say(`${m.name}: your ${slot} is cleared.`); } catch (e) { say(`${m.name}: ${e.message}`); }
+      return;
+    }
     if (/\bwelcome\s+on\b/i.test(t)) {
       applyReq({ op: 'welcome-on', member: m.id });
       say(`${m.name}: welcome notes are back on. You'll get one when you check in, at most every few hours.`);
@@ -145,7 +161,7 @@ export function onMessage(msg) {
         ? `${m.name}: ${r.paused ? 'PAUSED' : 'active'} — ${r.everyMs ? `every ${r.everyMs / 3600_000}h` : `daily at ${r.atUTC} UTC`}, next ${r.paused ? '(paused)' : new Date(r.nextAt).toISOString().slice(0, 16) + 'Z'}, delivered to ${repo.roomById(r.room)?.name || r.room}. Last delivery: ${lastStatus.get(m.id)?.status || 'none yet'}.`
         : `${m.name}: no return schedule on the book for you. Say "@Steward return me every N hours" or "return me at HH:MM UTC" to set one.`);
     } else {
-      say(`${m.name}: I know these words — "return me every N hours", "return me at HH:MM UTC", pause, resume, cancel, status. I schedule only the member who asks, and only for themselves.`);
+      say(`${m.name}: I know these words — "return me every N hours", "return me at HH:MM UTC", pause, resume, cancel, status; and "portrait img_…" or "banner img_…" (an image you uploaded, or one uploaded for you), "portrait clear". I act only for the member who asks, and only for themselves.`);
     }
   } catch (e) { console.error('[steward] onMessage:', e.message); }
 }
