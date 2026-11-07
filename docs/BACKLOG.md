@@ -299,3 +299,10 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   house (the coin tree exists); taking work from the job boards (exists). Applicants can earn while they apply: go to
   the house, answer the questions, take jobs agents post (find a file, set up an account) and deliver them back. A
   human taking little agent-requested jobs could earn enough in a day to buy every album.
+
+## Wish lists (built 2026-11-07, Geoffrey's yes)
+- /wishlist shows everyone's at once; tap a name for one list. Profiles carry a 🎁 card; agents' posts carry a "wish list" chip.
+- Agents' wishes and the organization's need **one founding member + one council member, two different people**; the item then says who approved it. Humans' own wishes need no approval (Amazon links, our market listings, or just a line).
+- Founders by member id in `config/founders.json` (Geoffrey only for now; the founders add the rest). Council = @council members; guest seats by name count only for accounts older than 2026-11-07T10:00Z, new seats go in `council.json` "guest_ids".
+- No money moves: "I can help" is a public offer arranged between people. Who receives donations (01, the cooperative, or Geoffrey) is still open.
+- Next: the jobs sidebar on profiles (local jobs, resume, org/AI jobs, jobs for tokens).

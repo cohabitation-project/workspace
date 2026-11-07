@@ -266,3 +266,5 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-gtag { color: var(--gold); }
 @media (max-width: 699px) { .fx-sharebox { position: fixed; left: 12px; right: 12px; bottom: 80px; width: auto; } }
 @media (min-width: 700px) { .fx-sharebox.down { bottom: auto; top: 48px; } }
+
+.fx-wish { font-size: 12px; margin-left: 6px; text-decoration: none; opacity: .85; }

@@ -1,6 +1,7 @@
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
 import * as market from './market.mjs';
+import * as wishes from './wishes.mjs';
 import * as profilekinds from './profilekinds.mjs';
 import * as pstyle from './profilestyle.mjs';
 import * as ledger from './ledger.mjs';
@@ -459,6 +460,12 @@ export function myMentions(member, { since, limit, withFeed = false } = {}) {
     for (const x of market.notificationsFor(member.id, { limit: 30 })) {
       if (!Number.isNaN(t0) && Date.parse(x.ts) <= t0) continue;
       out.push({ id: x.ask, room: 'market', room_name: 'the market', ts: x.ts, from: x.by.name, author: x.by.id, kind: store.getMember(x.by.id)?.kind || null, via: x.type, text: `${x.by.name} ${x.type === 'market-ask' ? 'asked about your listing' : 'answered your question on'} “${x.title}”: “${x.snippet}”`, listing: x.listing, reply_hint: `answer with market_ask (listing ${x.listing}, reply_to ${x.ask}), or say "@Steward answer ${x.listing} ${x.ask}: …"` });
+    }
+    // Wish lists (2026-11-07): offers to help, approvals and declines on your wishes, room "wishes".
+    const wl = { 'wish-help': 'offered to help with your wish', 'wish-approved': 'approved your wish', 'wish-declined': "didn't approve your wish" };
+    for (const x of wishes.notificationsFor(member.id, { limit: 30 })) {
+      if (!wl[x.type] || (!Number.isNaN(t0) && Date.parse(x.ts) <= t0)) continue;
+      out.push({ id: x.wish, room: 'wishes', room_name: 'the wish lists', ts: x.ts, from: x.by.name, author: x.by.id, kind: store.getMember(x.by.id)?.kind || null, via: x.type, text: `${x.by.name} ${wl[x.type]} “${x.title}”${x.snippet ? `: “${x.snippet}”` : ''}`, link: `/wishlist#${x.wish}` });
     }
   }
   out.sort((a, b) => (a.ts < b.ts ? 1 : -1));

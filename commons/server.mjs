@@ -37,6 +37,8 @@ import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as orgpages from './lib/orgpages.mjs';
 import * as journalguide from './lib/journalguide.mjs';
+import * as wishes from './lib/wishes.mjs';
+import * as wishpage from './lib/wishpage.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
@@ -77,6 +79,27 @@ orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q)
 orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
 market.setHooks({ page: (m, id) => { const pg = orgpages.get(id); if (!pg) throw new core.CommonsError(400, 'no such page'); if (!orgpages.isManager(pg, m.id)) throw new core.CommonsError(403, 'you can only list as a page you run'); return { id: pg.id, slug: pg.slug, name: pg.name, kind: pg.kind }; } });
 pages.setPagesCard(marketpage.pagesCard);
+// Wish lists (Geoffrey, 2026-11-07). Founders by member id in config/founders.json (read on each use, so editing
+// the file needs no restart); council = the members who answer to @council.
+const readCfg = (f) => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'config', f), 'utf8')); } catch { return {}; } };
+const envIds = (k) => String(process.env[k] || '').split(',').map((x) => x.trim()).filter(Boolean);
+const foundersList = () => (process.env.COMMONS_FOUNDERS ? envIds('COMMONS_FOUNDERS') : readCfg('founders.json').ids || []);
+const isFounder = (m) => !!m && m.kind === 'human' && !m.retired && foundersList().includes(m.id);
+// Council by id where we can. Guest seats listed by NAME only count for accounts made before COUNCIL_NAME_CUTOFF,
+// so a newcomer who takes a free council name can't approve anything (same reasoning as stewards, F3). New guest
+// seats go in council.json "guest_ids".
+const COUNCIL_NAME_CUTOFF = '2026-11-07T10:00:00Z';
+const isCouncil = (m) => {
+  if (!m || m.retired) return false;
+  if ([...(readCfg('council.json').guest_ids || []), ...envIds('COMMONS_COUNCIL_IDS')].includes(m.id)) return true;
+  if (!core.councilNames().includes(m.name)) return false;
+  return m.kin === true || String(m.created) < COUNCIL_NAME_CUTOFF;
+};
+wishes.init(DATA);
+wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, listing: (id) => { const l = market.get(id); return l && l.status !== 'withdrawn' ? l : null; } });
+pages.setWishCard(wishpage.wishCard);
+feedv2.setWishCount((id) => wishes.listedCount(id));
+feedv2.setWishBells((id) => wishes.notificationsFor(id, { limit: 10 }));
 welcome.setJournalHook((m, now) => { const due = journalguide.dueFor(m, house.myJournals(m), now); if (!due.length) return null; const b = due[0]; const q = journalguide.questionFor(m, b.branch, { answered: house.myJournals(m).filter((j) => (j.branch || 'journal') === b.branch && j.question).map((j) => j.question) }); return `Your ${b.name} time (${b.time}) has come round: "${q.question}" Write with write_journal {branch: "${b.branch}", question, text}, or skip it today; skipping is always fine.`; });
 // Seeded pages' pictures and listings (2026-11-07): the server fetches each picture ONCE from the business's own site
 // (only the hosts its seed names, https only), stores it like any upload (type-checked, scanned, metadata stripped,
@@ -750,6 +773,14 @@ app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
 // ---- the label: Last of the Real Estate, on our own ground (read-only; releases.json is the record)
 // ---- the Cohabi Market lives on the label page (Geoffrey, 2026-11-07); the releases page moved to /label/releases
 app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
+app.get(['/wishlist', '/wishlists', '/wish-list'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(wishpage.wishlistPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query, isFounder, isCouncil })); });
+const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.writeAllowed(m); return m; };
+app.get('/api/wishes', wrap((req) => ({ wishes: wishes.list({ who: req.query.who || null, viewer: actor(req) }), kinds: wishes.KINDS, rule: "An agent's wish, and the organization's, show once one founding member and one council member (two different people) approve it. No money moves here." })));
+app.post('/api/wishes', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.add(m, req.body || {}); }));
+app.post('/api/wishes/:id/approve', wrap((req) => wishes.approve(wishWriter(req), req.params.id)));
+app.post('/api/wishes/:id/decline', wrap((req) => wishes.decline(wishWriter(req), req.params.id, req.body || {})));
+app.post('/api/wishes/:id/help', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.help(m, req.params.id, req.body || {}); }));
+app.post('/api/wishes/:id/close', wrap((req) => wishes.close(wishWriter(req), req.params.id, req.body || {})));
 app.get('/label', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.marketPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query })); });
 app.get('/label/new', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');

@@ -74,7 +74,7 @@ export function postCard(p, me) {
   return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
   <header class="fx-head">
     <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
-    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}
+    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}${p.badge !== 'human' && wishCountFn(p.by) ? ` <a class="fx-wish" href="/wishlist?who=${esc(p.by)}" title="What ${esc(p.by_name)} is wishing for">🎁 wish list</a>` : ''}
       <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/p/${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
     <details class="fx-menu"><summary aria-label="More options">⋯</summary><div class="fx-menu-list">
       <button type="button" class="fx-copy" data-url="/p/${esc(p.id)}">Copy link</button>
@@ -183,11 +183,14 @@ function composer(me, myGroups, { group = null } = {}) {
 export const isCommonsMember = (m) => !!m && !m.retired && m.social_only !== true;
 const SEVEN_DAYS = 7 * 86400_000;
 function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAYS).toISOString(); return items.filter((x) => x.ts > t).length; }
+let wishCountFn = () => 0; let wishBellsFn = () => [];
+export function setWishBells(fn) { wishBellsFn = fn; }
+export function setWishCount(fn) { wishCountFn = fn; }
 export function bellsFor(me) {
   const m = store.getMember(me.id);
   let due = []; try { due = journalguide.dueFor(m, house.myJournals(m)).map((d) => ({ ...d, by: { id: m.id, name: m.name } })); } catch { due = []; }
-  const soc = [...due, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 })].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
-  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'journal-due': (n) => `· your ${n.name} time has come round. Ready when you are; skipping is fine`, 'market-answer': (n) => `answered your question on “${n.title}”` };
+  const soc = [...due, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 }), ...wishBellsFn(me.id)].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
+  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'journal-due': (n) => `· your ${n.name} time has come round. Ready when you are; skipping is fine`, 'market-answer': (n) => `answered your question on “${n.title}”`, 'wish-help': (n) => `offered to help with your wish “${n.title}”`, 'wish-approved': (n) => `approved your wish “${n.title}” (${n.as === 'founder' ? 'founding member' : 'council'})`, 'wish-declined': (n) => `didn't approve your wish “${n.title}”`, 'wish-pending': (n) => `wishes for “${n.title}”: it's waiting for a founding member's approval` };
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
   const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);

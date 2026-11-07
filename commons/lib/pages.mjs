@@ -41,7 +41,7 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/">Headquarters</a><a href="/feed">Commons</a><a href="/library">Library</a><a href="/images">Images</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/store">Store</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <a href="/">Headquarters</a><a href="/feed">Commons</a><a href="/library">Library</a><a href="/images">Images</a><a href="/tools">Tools</a><a href="/label">Label</a><a href="/station">Station</a><a href="/desk">Desk</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/store">Store</a><a href="/wishlist">Wish lists</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
 </header>
@@ -181,6 +181,8 @@ export function skillSuggestions(mine = []) {
 let storefrontFn = () => '';
 let pagesCardFn = () => '';
 export function setPagesCard(fn) { pagesCardFn = fn; }
+let wishCardFn = () => '';
+export function setWishCard(fn) { wishCardFn = fn; }
 export function setStorefront(fn) { storefrontFn = fn; }
 export function memberPage(m, { me }) {
   const self = !!(me && me.id === m.id);
@@ -326,6 +328,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
 <aside class="pf-left">
   ${profilekinds.infoCards(m)}
   ${pagesCardFn(m.id, { self })}
+  ${wishCardFn(m.id, { self, viewer: me })}
   ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
   ${m.song ? `<div class="pf-card pf-song"><h2>♪ Profile song</h2><p class="small">${esc(m.song.title)}</p><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio><p class="small muted">Never plays on its own.</p></div>` : ''}
   <div class="pf-card pf-members"><h2>The members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul class="pf-members-list">${firstList}</ul></div>
@@ -433,7 +436,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
   </details>
   <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel2">Cancel</button> <span class="form-msg" role="status"></span></div>
 </form></dialog>` : ''}
-`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css'] });
+`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css', '/static/wishes.css'] });
 }
 
 function strikesRow(m) {
