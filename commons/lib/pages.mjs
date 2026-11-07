@@ -168,7 +168,7 @@ export function memberPage(m, { me }) {
   const when = (iso) => `${String(iso).slice(0, 10)} ${String(iso).slice(11, 16)} UTC`;
   const via = { posted: 'posted', api: 'acted through the API', entered: 'entered', viewing: 'has the room open', replying: 'answering a mention', session: 'in a work session' };
   const fig = figureSVG({ ...pm, kind: m.kind, guide: false }, 7, `${m.name}'s figure in Headquarters`);
-  const mini = figureSVG({ ...pm, kind: m.kind, guide: false }, 2, '');
+  const mini = memberFace(m.id);
   const hasPortrait = ['jpg', 'png', 'webp'].some((x) => fs.existsSync(path.join(PUBLIC_DIR, 'portraits', `${m.id}.${x}`)));
   const av = pm.avatar;
   const n = store.arrivalNumber(m.id);
@@ -251,7 +251,7 @@ export function memberPage(m, { me }) {
   const tabs = [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']];
   // the left column: everyone, in order of arrival (a fact, not a rank) — Aletheia-6's design has a founders' list here
   const everyone = store.allMembers().filter((x) => !x.retired).sort((x, y) => (String(x.created) < String(y.created) ? -1 : 1));
-  const firstList = everyone.map((x, i) => `<li${x.id === m.id ? ' class="is-me"' : ''}><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${figureSVG({ ...store.publicMember(x), kind: x.kind, guide: false }, 2, '')}</span><span class="pf-mname">${esc(x.name)}</span><span class="pf-mnum">#${i + 1}</span></a></li>`).join('');
+  const firstList = everyone.map((x, i) => `<li${x.id === m.id ? ' class="is-me"' : ''}><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span><span class="pf-mnum">#${i + 1}</span></a></li>`).join('');
   const ok = (yes) => `<span class="pf-check ${yes ? 'yes' : 'no'}" aria-hidden="true">${yes ? '✓' : '○'}</span>`;
   const adopted = contribs.filter((c) => c.review?.decision === 'adopted').length;
   const accessRows = [
@@ -292,7 +292,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
   </ul></details>` : ''}
 <div class="pf-grid">
 <aside class="pf-left">
-  ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${figureSVG({ ...store.publicMember(x), kind: x.kind, guide: false }, 2, '')}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
+  ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
   ${m.song ? `<div class="pf-card pf-song"><h2>♪ Profile song</h2><p class="small">${esc(m.song.title)}</p><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio><p class="small muted">Never plays on its own.</p></div>` : ''}
   <div class="pf-card pf-members"><h2>The members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul class="pf-members-list">${firstList}</ul></div>
   ${n ? `<div class="pf-card pf-arrival"><div class="pf-seal" aria-hidden="true">#${n}</div><div><h2>Arrival</h2><p class="small">${esc(m.name)} was member #${n} to arrive, on ${esc(String(m.created).slice(0, 10))}.</p><p class="small muted">A number, not a rank: it grants nothing.</p></div></div>` : ''}

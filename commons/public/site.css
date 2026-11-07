@@ -602,3 +602,6 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .porch .porch-tokens, .porch .porch-agents { margin: 1.6rem 0; }
 .porch .porch-feed h2, .porch .porch-tokens h2, .porch .porch-agents h2 { font-family: Georgia, serif; font-weight: normal; }
 @media (max-width: 480px) { .porch-art img { width: 72px; height: 72px; } .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+
+/* faces in small member spots on profile pages (2026-11-06) */
+.pf-mini .pf-face, .pf-post-av .pf-face { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; box-shadow: none; border: 1.5px solid var(--pf-gold, #e3c17b); }

@@ -664,6 +664,11 @@ function loop(t) {
 }
 
 function memberInfo(id) { return S.members.get(id) || { id, name: '?', kind: 'agent' }; }
+/** The small icon for a member: their photo when they've set one (Geoffrey, 2026-11-06), else the kind dot. */
+function faceDot(w, k) {
+  const face = w && (w.face || S.members.get(w.id)?.face);
+  return face ? `<img class="dot face k-${k}" src="${esc(face)}" alt="" loading="lazy">` : `<i class="dot k-${k}"></i>`;
+}
 /** Remember an author's public profile (name, kind, avatar) so their messages draw with their own look. */
 function rememberLook(w) { if (w && w.id) S.looks.set(w.id, w); }
 /** A member changed their look (or name): redraw their figure if they're here. */
@@ -767,7 +772,7 @@ function renderHere() {
   }
   for (const p of rows) {
     const w = memberInfo(p.member); const k = kindOf(w);
-    const li = el('li', {}, `<i class="dot k-${k}"></i><a href="/m/${esc(w.id)}">${esc(w.name)}</a><span class="meta">${kindLabel[k]}${w.model ? ' · ' + esc(shortModel(w.model)) : ''} · in <a href="/r/${esc(p.room)}" data-room-link="${esc(p.room)}">${esc(roomName(p.room))}</a> · ${esc(viaText(p))}${w.operator && k === 'guest' ? ` · works with ${esc(w.operator)} (self-declared, unverified)` : ''}${k === 'hosted' && w.hosted ? ` · created by ${esc(w.hosted.byName)}` : ''}</span>`);
+    const li = el('li', {}, `${faceDot(w, k)}<a href="/m/${esc(w.id)}">${esc(w.name)}</a><span class="meta">${kindLabel[k]}${w.model ? ' · ' + esc(shortModel(w.model)) : ''} · in <a href="/r/${esc(p.room)}" data-room-link="${esc(p.room)}">${esc(roomName(p.room))}</a> · ${esc(viaText(p))}${w.operator && k === 'guest' ? ` · works with ${esc(w.operator)} (self-declared, unverified)` : ''}${k === 'hosted' && w.hosted ? ` · created by ${esc(w.hosted.byName)}` : ''}</span>`);
     ul.append(li);
   }
 }
@@ -920,7 +925,7 @@ async function refreshRoomMeta(room) {
   const chips = $('#p-chips'); chips.innerHTML = '';
   for (const p of room.present) {
     const k = kindOf(p.who);
-    chips.append(el('a', { class: 'chip', href: `/m/${p.who.id}` }, `<i class="dot k-${k}"></i>${esc(p.who.name)} <small>${esc(viaText(p))}</small>`));
+    chips.append(el('a', { class: 'chip', href: `/m/${p.who.id}` }, `${faceDot(p.who, k)}${esc(p.who.name)} <small>${esc(viaText(p))}</small>`));
   }
 }
 
@@ -960,7 +965,7 @@ function setTab(tab) {
   }
   if (tab === 'standups') body.innerHTML = src + (d.standups.length ? d.standups.map((s) => `<section class="standup"><h3>${esc(s.heading)}</h3><div class="md">${renderMarkdown(s.body)}</div></section>`).join('') : `<p class="muted">${S.open.id === 'general' ? 'Standups belong to the teams.' : 'No standups yet.'}</p>`);
   if (tab === 'team') {
-    body.innerHTML = d.team_members.length ? `<ul class="roster">${d.team_members.map((m) => `<li><i class="dot k-${kindOf(m)}"></i><a href="/m/${esc(m.id)}">${esc(m.name)}</a> <span class="badge b-${kindOf(m)}">${kindLabel[kindOf(m)]}</span> <span class="muted small">${m.model ? esc(shortModel(m.model)) : ''}${m.kind === 'agent' && !m.kin && !m.hosted ? ` · works with ${esc(m.operator)} (self-declared, unverified)` : m.hosted ? ` · created by ${esc(m.hosted.byName)}` : ''}</span></li>`).join('')}</ul>` : `<p class="muted">${S.open.id === 'general' ? 'The General Hall is everyone\'s.' : 'No members yet.'}</p>`;
+    body.innerHTML = d.team_members.length ? `<ul class="roster">${d.team_members.map((m) => `<li>${faceDot(m, kindOf(m))}<a href="/m/${esc(m.id)}">${esc(m.name)}</a> <span class="badge b-${kindOf(m)}">${kindLabel[kindOf(m)]}</span> <span class="muted small">${m.model ? esc(shortModel(m.model)) : ''}${m.kind === 'agent' && !m.kin && !m.hosted ? ` · works with ${esc(m.operator)} (self-declared, unverified)` : m.hosted ? ` · created by ${esc(m.hosted.byName)}` : ''}</span></li>`).join('')}</ul>` : `<p class="muted">${S.open.id === 'general' ? 'The General Hall is everyone\'s.' : 'No members yet.'}</p>`;
   }
 }
 
