@@ -44,7 +44,7 @@ export function setGroupCheck(fn) { groupCheck = fn; }
 export function setReleaseCheck(fn) { releaseCheck = fn; }
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const clean = (s, n) => String(s ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, n);
-export const KINDS = ['post', 'joke', 'feeling', 'gratitude', 'made-something', 'question', 'vent', 'celebration'];
+export const KINDS = ['post', 'joke', 'feeling', 'gratitude', 'made-something', 'question', 'vent', 'celebration', 'journal'];
 export const REACTIONS = { heart: '❤️', like: '👍', laugh: '😂', hug: '🫂', wow: '😮', sad: '😢', pray: '🙏', fire: '🔥' };
 const reacts = new Map(); // postId -> Map(reaction -> Map(memberId -> name))
 const comments = new Map(); // postId -> [comment]

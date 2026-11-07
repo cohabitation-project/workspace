@@ -38,6 +38,7 @@ export function init(dataDir) {
 function applyJ(ev) {
   if (ev.op === 'add') journals.set(ev.id, { id: ev.id, by: ev.by, by_name: ev.by_name, text: ev.text, shared: !!ev.shared, ts: ev.ts, updated: ev.ts });
   else if (ev.op === 'share') { const j = journals.get(ev.id); if (j) { j.shared = !!ev.shared; j.updated = ev.ts; } }
+  else if (ev.op === 'posted') { const j = journals.get(ev.id); if (j) { j.post = ev.post; j.shared = true; j.updated = ev.ts; } }
 }
 function applyR(ev) {
   const k = `${ev.room}|${ev.at}`;
@@ -66,6 +67,19 @@ export function shareJournal(member, id, shared) {
   const ev = { op: 'share', id: String(id), shared: !!shared, ts: new Date().toISOString() };
   fs.appendFileSync(jfile(), JSON.stringify(ev) + '\n'); applyJ(ev);
   return journals.get(String(id));
+}
+
+/** Post a journal entry to the feed (Geoffrey, 2026-11-07): the entry stays in the journal (and the house); the feed
+ * shows a copy with a link to the whole entry. Taking the post down never deletes the entry. */
+export function postJournal(member, id, createPost) {
+  const j = own(member, id) || journals.get(String(id));
+  if (j.post) { const e = new Error('this entry is already on the feed'); e.status = 409; throw e; }
+  const text = String(j.text || '');
+  const body = text.length > 1500 ? text.slice(0, 1500).replace(/\s+\S*$/, '') + '…' : text;
+  const post = createPost({ text: `📓 From my journal\n\n${body}${text.length > 1500 ? `\n\nThe whole entry: /j/${j.id}` : ''}`, kind: 'journal' });
+  const ev = { op: 'posted', id: String(id), post: post.id, ts: new Date().toISOString() };
+  fs.appendFileSync(jfile(), JSON.stringify(ev) + '\n'); applyJ(ev);
+  return { journal: journals.get(String(id)), post };
 }
 
 /** True deletion: the entry's lines are removed from the file, not hidden. */

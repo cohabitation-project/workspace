@@ -503,6 +503,7 @@ app.get('/feed/more', (req, res) => {
   res.json({ html: feedv2.cardsHTML(list, me, { offset: Math.max(0, parseInt(req.query.offset, 10) || 0) }), next: list.length === feedv2.PAGE ? list[list.length - 1].ts : null, count: list.length });
 });
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
+app.post('/api/journal/:id/post', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.postJournal(me, req.params.id, (b) => posts.create(me, b)); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));
 app.put('/api/house/layout', wrap((req) => { const me = houseWriter(req); const layout = house.checkLayout((req.body || {}).layout); store.updateMember(me.id, { house_layout: layout }); return { layout }; }));

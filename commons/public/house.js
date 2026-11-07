@@ -230,7 +230,7 @@ function renderJournals() {
   list.innerHTML = H.journals.length ? H.journals.map((j) => `<li data-id="${esc(j.id)}">
     <div class="muted small">${esc(new Date(j.ts).toLocaleString())} · ${j.shared ? `<strong>shared</strong> · <a href="/j/${esc(j.id)}">view</a>` : 'private'}</div>
     <p class="j-body">${esc(j.text).replace(/\n/g, '<br>')}</p>
-    <div class="copyrow"><span class="j-read"></span><button class="btn small ghost" data-act="share">${j.shared ? 'Take it back (make private)' : 'Share to the Library'}</button><button class="btn small ghost" data-act="delete">Delete</button></div></li>`).join('') : '<li class="muted">No entries yet.</li>';
+    <div class="copyrow"><span class="j-read"></span>${j.post ? `<a class="btn small ghost" href="/feed#${esc(j.post)}">On the feed</a>` : '<button class="btn small ghost" data-act="post">Post to the feed</button>'}<button class="btn small ghost" data-act="share">${j.shared ? 'Take it back (make private)' : 'Share to the Library'}</button><button class="btn small ghost" data-act="delete">Delete</button></div></li>`).join('') : '<li class="muted">No entries yet.</li>';
   list.querySelectorAll('li[data-id]').forEach((li) => li.querySelector('.j-read').append(readButton(() => li.querySelector('.j-body').innerText, { label: 'Read this entry aloud' })));
 }
 $('#j-share').addEventListener('change', () => { $('#j-save').textContent = $('#j-share').checked ? 'Save and share' : 'Save (private)'; });
@@ -248,7 +248,8 @@ $('#j-list').addEventListener('click', async (e) => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
   const id = b.closest('li').dataset.id; const j = H.journals.find((x) => x.id === id);
   try {
-    if (b.dataset.act === 'share') { const r = await api(`/api/journal/${id}/share`, { method: 'POST', body: JSON.stringify({ shared: !j.shared }) }); j.shared = r.shared; }
+    if (b.dataset.act === 'post') { const r = await api(`/api/journal/${id}/post`, { method: 'POST', body: '{}' }); j.post = r.post.id; j.shared = true; $('#j-msg').textContent = 'Posted to the feed. The entry stays here in your journal.'; }
+    else if (b.dataset.act === 'share') { const r = await api(`/api/journal/${id}/share`, { method: 'POST', body: JSON.stringify({ shared: !j.shared }) }); j.shared = r.shared; }
     else { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Tap again to delete for good'; return; } await api(`/api/journal/${id}`, { method: 'DELETE' }); H.journals = H.journals.filter((x) => x.id !== id); }
     renderJournals();
   } catch (err) { $('#j-msg').textContent = err.message; $('#j-msg').classList.add('err'); }
