@@ -169,72 +169,96 @@ export const artsRoomBody = roomBody;
 
 // ---- The Great Hall (a bookable venue that changes with its theme) ----
 const THEME_LABEL = { podcast: 'Podcast', lecture: 'Shared lecture', yoga: 'Yoga class', concert: 'Concert', event: 'Event', council: 'Council meeting' };
+// council & lectures/live-streams read business-grey; concerts read purple; yoga calm; events warm (Geoffrey 2026-11-07)
+const THEME_SKIN = {
+  council: { wall: '#3a3f49', fl1: '#454b57', fl2: '#4e5563', stage: '#2b2f38', door: '#20242c' },
+  lecture: { wall: '#3a3f49', fl1: '#454b57', fl2: '#4e5563', stage: '#22312b', door: '#20242c' },
+  podcast: { wall: '#3a3f49', fl1: '#454b57', fl2: '#4e5563', stage: '#22312b', door: '#20242c' },
+  concert: { wall: '#3a2a42', fl1: '#4a3f52', fl2: '#524760', stage: '#2a2030', door: '#2a1b33' },
+  yoga: { wall: '#2e4038', fl1: '#3a4d44', fl2: '#425650', stage: '#2a3a32', door: '#1c2a24' },
+  event: { wall: '#4a3526', fl1: '#5a4230', fl2: '#64492f', stage: '#3a2a1a', door: '#2a1b10' },
+};
+const skinFor = (t) => THEME_SKIN[t] || THEME_SKIN.event;
 const chairSmall = (x, y, c = '#6b5a4a') => box(x, y, 18, 16, c, '#8c7660') + box(x + 2, y - 10, 14, 10, '#5d4a3a', '#7a6450');
-const chairRow = (x, y, n, gap = 26) => { let g = ''; for (let i = 0; i < n; i++) g += chairSmall(x + i * gap, y); return g; };
 
-function greatHallStage(theme, W, wall) {
+// a small placeholder flag (two or three stripes); the real 01 flag + world flags come later
+const flag = (x, y, cols) => { let g = r(x, y, 2, 30, '#3a3024'); const w = 26, h = 16; cols.forEach((c, i) => g += r(x + 2, y + 2 + i * (h / cols.length), w, h / cols.length, c)); g += r(x + 2, y + 2, w, h, 'none', 'stroke="#15121b" stroke-width="1"'); return g; };
+
+function greatHallStage(theme, W, wall, skin) {
   const stageY = wall + 8, stageH = 150, cx = W / 2;
-  let g = r(10, stageY, W - 20, stageH, '#2a2030', 'rx="6"') + r(10, stageY + stageH, W - 20, 6, '#17101c'); // raised stage
+  let g = r(10, stageY, W - 20, stageH, skin.stage, 'rx="6"') + r(10, stageY + stageH, W - 20, 6, '#0e0b12');
   g += `<text x="${cx}" y="${stageY - 2}" font-size="13" fill="#cdbfa6" text-anchor="middle" font-family="ui-monospace,monospace">— stage —</text>`;
   if (theme === 'council') {
-    // a half-moon of 11 chairs on the stage, facing the audience
-    for (let i = 0; i < 11; i++) { const a = Math.PI * (0.12 + 0.76 * i / 10); const x = cx - Math.cos(a) * 340 - 9, y = stageY + 36 + Math.sin(a) * 60; g += chairSmall(x, y, '#5d4a3a'); }
-    g += `<text x="${cx}" y="${stageY + 128}" font-size="12" fill="#e9c46a" text-anchor="middle" font-family="ui-monospace,monospace">the eleven</text>`;
+    // the flag wall behind the eleven: our 01 flag centre, flanked by world flags (placeholders for now)
+    g += flag(cx - 13, stageY + 6, ['#14121a', '#e9c46a']) + `<text x="${cx}" y="${stageY + 20}" font-size="9" fill="#14121a" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="bold">01</text>`;
+    const palettes = [['#e5534b', '#e9e2d0'], ['#3d85c6', '#e9e2d0', '#e5534b'], ['#2e7a5a', '#e9e2d0'], ['#e9c46a', '#e5534b'], ['#3d85c6', '#e9e2d0'], ['#5a2e7a', '#e9c46a'], ['#2e5a7a', '#e9e2d0'], ['#7a2e55', '#e9e2d0']];
+    for (let i = 0; i < 8; i++) { const side = i < 4 ? -1 : 1; const k = i % 4; g += flag(cx + side * (70 + k * 60) - 13, stageY + 8, palettes[i]); }
+    // the eleven, a half-moon across the stage front
+    for (let i = 0; i < 11; i++) { const a = Math.PI * (0.1 + 0.8 * i / 10); const x = cx - Math.cos(a) * 300 - 9, y = stageY + 70 + Math.sin(a) * 44; g += chairSmall(x, y, '#44464f'); }
+    g += `<text x="${cx}" y="${stageY + 140}" font-size="12" fill="#e9c46a" text-anchor="middle" font-family="ui-monospace,monospace">the eleven</text>`;
   } else if (theme === 'concert') {
-    g += box(cx - 46, stageY + 70, 92, 40, '#1d1a26', '#2a2632') + r(cx - 34, stageY + 84, 68, 4, '#7cd6b4') + r(cx - 34, stageY + 92, 68, 4, '#dc8aa8'); // DJ booth
-    g += box(cx - 150, stageY + 40, 30, 70, '#2f2a3a', '#3b3549') + box(cx + 120, stageY + 40, 30, 70, '#2f2a3a', '#3b3549'); // speaker stacks
-    for (const [bx, c] of [[cx - 120, '#ff9b5c'], [cx - 40, '#7cd6b4'], [cx + 40, '#dc8aa8'], [cx + 120, '#a89cff']]) g += `<path d="M${bx} ${stageY + 8} L${bx - 26} ${stageY + 150} L${bx + 26} ${stageY + 150} Z" fill="${c}" opacity="0.18"/>`; // light beams
-    g += `<circle cx="${cx}" cy="${stageY + 20}" r="12" fill="#cfd6df"/><circle cx="${cx}" cy="${stageY + 20}" r="12" fill="url(#gh-disco)"/>`;
+    g += box(cx - 46, stageY + 70, 92, 40, '#1d1a26', '#2a2632') + r(cx - 34, stageY + 84, 68, 4, '#7cd6b4') + r(cx - 34, stageY + 92, 68, 4, '#dc8aa8');
+    g += box(cx - 150, stageY + 40, 30, 70, '#2f2a3a', '#3b3549') + box(cx + 120, stageY + 40, 30, 70, '#2f2a3a', '#3b3549');
+    // light beams that sweep (spin) — animated
+    g += `<g transform-origin="${cx} ${stageY + 20}"><animateTransform attributeName="transform" type="rotate" from="-14 ${cx} ${stageY + 20}" to="14 ${cx} ${stageY + 20}" dur="3s" repeatCount="indefinite" additive="sum" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" values="-14 ${cx} ${stageY + 20};14 ${cx} ${stageY + 20};-14 ${cx} ${stageY + 20}"/>`;
+    for (const [bx, c] of [[cx - 120, '#ff9b5c'], [cx - 40, '#7cd6b4'], [cx + 40, '#dc8aa8'], [cx + 120, '#a89cff']]) g += `<path d="M${cx} ${stageY + 20} L${bx - 30} ${stageY + 150} L${bx + 30} ${stageY + 150} Z" fill="${c}" opacity="0.16"><animate attributeName="opacity" values="0.08;0.24;0.08" dur="2.2s" repeatCount="indefinite"/></path>`;
+    g += `</g>`;
+    // disco ball, spinning
+    g += `<g><circle cx="${cx}" cy="${stageY + 20}" r="12" fill="#cfd6df"/><g transform-origin="${cx} ${stageY + 20}"><animateTransform attributeName="transform" type="rotate" from="0 ${cx} ${stageY + 20}" to="360 ${cx} ${stageY + 20}" dur="4s" repeatCount="indefinite"/><circle cx="${cx}" cy="${stageY + 20}" r="12" fill="url(#gh-disco)"/><line x1="${cx - 12}" y1="${stageY + 20}" x2="${cx + 12}" y2="${stageY + 20}" stroke="#8aa" stroke-width="1"/><line x1="${cx}" y1="${stageY + 8}" x2="${cx}" y2="${stageY + 32}" stroke="#8aa" stroke-width="1"/></g></g>`;
   } else if (theme === 'lecture' || theme === 'podcast') {
-    g += box(cx - 70, stageY + 24, 140, 86, '#0e1512', '#1c2a24'); for (let i = 0; i < 4; i++) g += r(cx - 58, stageY + 36 + i * 14, 90 - i * 16, 4, '#4a9b8e'); // big screen
-    g += box(cx - 150, stageY + 70, 30, 40, '#6b5a4a', '#8c7660') + r(cx - 138, stageY + 54, 4, 18, O) + box(cx - 146, stageY + 44, 20, 12, '#3a3546', '#4a4458'); // podium + mic
+    g += box(cx - 70, stageY + 24, 140, 86, '#0e1512', '#1c2a24'); for (let i = 0; i < 4; i++) g += r(cx - 58, stageY + 36 + i * 14, 90 - i * 16, 4, '#4a9b8e');
+    g += box(cx - 150, stageY + 70, 30, 40, '#5a606c', '#71788a') + r(cx - 138, stageY + 54, 4, 18, O) + box(cx - 146, stageY + 44, 20, 12, '#3a3546', '#4a4458');
+    g += `<text x="${cx}" y="${stageY + 128}" font-size="12" fill="#8d99ae" text-anchor="middle" font-family="ui-sans-serif">live feed</text>`;
   } else if (theme === 'yoga') {
     for (const [i, c] of [[0, '#7ad0a8'], [1, '#dc8aa8'], [2, '#7aa2ff'], [3, '#e8a33d']]) g += r(cx - 150 + i * 80, stageY + 70, 60, 26, c, 'rx="6" opacity="0.8"');
     g += `<text x="${cx}" y="${stageY + 48}" font-size="12" fill="#cdbfa6" text-anchor="middle" font-family="ui-sans-serif">breathe</text>`;
-  } else { // event
-    g += box(cx - 40, stageY + 70, 80, 40, '#3a2a1a', '#5d3d26'); g += `<text x="${cx}" y="${stageY + 94}" font-size="12" fill="#e9c46a" text-anchor="middle" font-family="ui-monospace,monospace">welcome</text>`;
+  } else {
+    g += box(cx - 40, stageY + 70, 80, 40, '#5d3d26', '#7a5134'); g += `<text x="${cx}" y="${stageY + 94}" font-size="12" fill="#e9c46a" text-anchor="middle" font-family="ui-monospace,monospace">welcome</text>`;
   }
   return { g, stageBottom: stageY + stageH + 14 };
 }
 
-function greatHallSeating(theme, W, y0, H) {
-  const cx = W / 2; let g = '';
-  if (theme === 'concert') { // dance floor
-    g += `<rect x="${cx - 260}" y="${y0}" width="520" height="${H - y0 - 40}" fill="url(#gh-dance)" opacity="0.5" rx="8"/>`;
-    g += `<text x="${cx}" y="${H - 50}" font-size="12" fill="#a89cff" text-anchor="middle" font-family="ui-sans-serif">dance floor</text>`;
-  } else if (theme === 'yoga') {
-    for (let rI = 0; rI < 3; rI++) for (let cI = 0; cI < 6; cI++) g += r(cx - 230 + cI * 80, y0 + rI * 90, 60, 24, ['#7ad0a8', '#dc8aa8', '#7aa2ff'][cI % 3], 'rx="6" opacity="0.65"');
-  } else { // rows of audience chairs (council / lecture / podcast / event)
-    const rows = theme === 'council' ? 5 : 4; const n = 14;
-    for (let rI = 0; rI < rows; rI++) g += chairRow(cx - (n / 2) * 26 + 4, y0 + rI * 40, n);
-    g += `<text x="${cx}" y="${H - 44}" font-size="12" fill="#9a9284" text-anchor="middle" font-family="ui-sans-serif">${theme === 'council' ? 'the hundred seats — big votes happen here' : 'seating'}</text>`;
+function greatHallSeating(theme, W, y0, H, skin) {
+  const cx = W / 2;
+  if (theme === 'concert') {
+    return `<rect x="${cx - 300}" y="${y0}" width="600" height="${H - y0 - 40}" fill="url(#gh-dance)" opacity="0.55" rx="8"/><text x="${cx}" y="${H - 46}" font-size="12" fill="#a89cff" text-anchor="middle" font-family="ui-sans-serif">dance floor</text>`;
   }
+  if (theme === 'yoga') {
+    let g = '';
+    for (let rI = 0; rI < 4; rI++) for (let cI = 0; cI < 7; cI++) g += r(70 + cI * 150, y0 + rI * 70, 60, 24, ['#7ad0a8', '#dc8aa8', '#7aa2ff'][cI % 3], 'rx="6" opacity="0.6"');
+    return g;
+  }
+  // chairs spread across the WHOLE hall so up to ~100 avatars each take a seat (Geoffrey 2026-11-07)
+  let g = ''; const cols = 20, rows = 5, gapX = (W - 120) / (cols - 1), gapY = Math.max(40, (H - y0 - 70) / rows);
+  let n = 0;
+  for (let rI = 0; rI < rows; rI++) for (let cI = 0; cI < cols; cI++) { if (n >= 100) break; g += chairSmall(60 + cI * gapX, y0 + 8 + rI * gapY, '#4e5563'); n++; }
+  g += `<text x="${cx}" y="${H - 42}" font-size="12" fill="#9aa4b4" text-anchor="middle" font-family="ui-sans-serif">${theme === 'council' ? 'the hundred seats — take your place; your seat is logged when you sit' : 'seating'}</text>`;
   return g;
 }
 
 export function greatHallBody({ room, bookings = [], current = null, present = [], figureHTML, me, isCouncil = false }) {
   const theme = (current && current.theme) || 'event';
+  const skin = skinFor(theme);
   const W = 1120, H = 740, wall = 84;
-  const { g: stage, stageBottom } = greatHallStage(theme, W, wall);
+  const { g: stage, stageBottom } = greatHallStage(theme, W, wall, skin);
   let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
 <defs>
-<pattern id="gh-floor" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#4a3f52"/><rect width="17" height="17" fill="#524760"/><rect x="17" y="17" width="17" height="17" fill="#524760"/></pattern>
+<pattern id="gh-floor" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="${skin.fl1}"/><rect width="17" height="17" fill="${skin.fl2}"/><rect x="17" y="17" width="17" height="17" fill="${skin.fl2}"/></pattern>
 <radialGradient id="gh-disco"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#7aa2ff"/></radialGradient>
 <pattern id="gh-dance" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#dc8aa8"/><rect x="20" y="20" width="20" height="20" fill="#7aa2ff"/><rect x="20" width="20" height="20" fill="#7ad0a8"/><rect y="20" width="20" height="20" fill="#e8a33d"/></pattern>
 </defs>
 <rect width="${W}" height="${H}" fill="#120f17"/>
-<rect x="0" y="0" width="${W}" height="${wall}" fill="#3a2a42"/><rect x="0" y="${wall - 3}" width="${W}" height="4" fill="#1c1322"/>
+<rect x="0" y="0" width="${W}" height="${wall}" fill="${skin.wall}"/><rect x="0" y="${wall - 3}" width="${W}" height="4" fill="#15121b"/>
 <rect x="0" y="${wall}" width="${W}" height="${H - wall}" fill="url(#gh-floor)"/>
 <rect class="rv-floor-hit" data-zone="floor" x="0" y="${stageBottom}" width="${W}" height="${H - stageBottom}" fill="transparent"/>
 <g><rect x="26" y="20" width="200" height="30" rx="3" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="40" y="41" font-size="16" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">THE GREAT HALL</text></g>
 <text x="238" y="41" font-size="13" fill="#e9c46a" font-family="ui-monospace,monospace">— set for: ${esc(THEME_LABEL[theme] || theme)}</text>
 ${stage}
-${greatHallSeating(theme, W, stageBottom + 6, H)}
+${greatHallSeating(theme, W, stageBottom + 6, H, skin)}
 <a class="rv-hit" data-zone="list:schedule" role="button" tabindex="0"><rect x="${W - 360}" y="10" width="150" height="40" rx="6" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="${W - 345}" y="35" font-size="14" fill="#e9c46a" font-family="ui-monospace,monospace">📅 Schedule</text></a>
 <a class="rv-hit" data-zone="list:book" role="button" tabindex="0"><rect x="${W - 196}" y="10" width="150" height="40" rx="6" fill="#e9c46a"/><text x="${W - 181}" y="35" font-size="14" fill="#14121a" font-family="ui-monospace,monospace" font-weight="bold">＋ Book the Hall</text></a>
-<a class="rv-hit" data-zone="door"><rect x="${W / 2 - 46}" y="${H - 26}" width="92" height="26" fill="#1c1322"/><rect x="${W / 2 - 42}" y="${H - 24}" width="84" height="22" fill="#2a1b33"/><text x="${W / 2}" y="${H - 8}" font-size="13" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">↓ back to the Hall</text></a>`;
-  // present members, standing in the body
-  const spots = [[380, 480], [470, 500], [560, 486], [650, 504], [740, 482]];
+<a class="rv-hit" data-zone="door"><rect x="${W / 2 - 46}" y="${H - 26}" width="92" height="26" fill="${skin.door}"/><rect x="${W / 2 - 42}" y="${H - 24}" width="84" height="22" fill="#2a1b10" opacity="0.5"/><text x="${W / 2}" y="${H - 8}" font-size="13" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">↓ back to the Hall</text></a>`;
+  const spots = [[380, 470], [470, 490], [560, 476], [650, 494], [740, 472]];
   let who = present.slice(); if (me && me.id && !who.some((p) => p.id === me.id)) who = [...who, me];
   who.slice(0, 5).forEach((m, i) => { const [x, y] = spots[i % spots.length]; const meCls = me && m.id === me.id ? ' rv-me' : ''; s += `<g class="rv-figure${meCls}" data-member="${esc(m.id)}" transform="translate(${x} ${y})"><g class="rv-figbody">${figureHTML(m)}</g><g transform="translate(18 76)"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">${esc(m.name)}</text></g></g>`; });
   s += '</svg>';
