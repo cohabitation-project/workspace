@@ -1,6 +1,7 @@
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
 import * as market from './market.mjs';
+import * as profilekinds from './profilekinds.mjs';
 import * as pstyle from './profilestyle.mjs';
 import * as ledger from './ledger.mjs';
 import path from 'node:path';
@@ -557,13 +558,18 @@ function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, 
   return patch;
 }
 
-export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links } = {}) {
+export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links, profile_kind, kind_info, kind_merge } = {}) {
   writeAllowed(member);
-  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links].some((x) => x !== undefined)) {
+  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links, profile_kind, kind_info, kind_merge].some((x) => x !== undefined)) {
     if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
     const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links }, member);
     if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
+    // the kind of profile (band, artist, business) and its details (2026-11-07). kind_merge sets single fields (the Steward).
+    try {
+      Object.assign(patch, profilekinds.check({ profile_kind, kind_info }, member));
+      if (kind_merge !== undefined) Object.assign(patch, profilekinds.check({ kind_info: kind_merge }, { kind_info: patch.kind_info || member.kind_info }, { merge: true }));
+    } catch (e) { fail(400, e.message); }
     store.updateMember(member.id, patch);
     if ([avatar, name_meaning, look, outfit].every((x) => x === undefined)) {
       const m = store.getMember(member.id); emit({ t: 'member', who: store.publicMember(m) });

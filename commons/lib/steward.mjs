@@ -32,6 +32,7 @@ import * as core from './core.mjs';
 import * as desk from './desk.mjs';
 import * as posts from './posts.mjs';
 import * as market from './market.mjs';
+import * as profilekinds from './profilekinds.mjs';
 
 let DIR = null; let REQ_FILE = null; let RCPT_FILE = null;
 const reqs = new Map();   // memberId -> { everyMs, atUTC, room, paused, nextAt, lastBriefAt, created }
@@ -146,10 +147,12 @@ export function onMessage(msg) {
       return;
     }
     if ((mm = after(/@steward[,:]?\s+profile\s+([a-z_0-9]+)\s*[:=]\s*([\s\S]+)/i))) {
-      const field = mm[1].toLowerCase(); const conv = PROFILE_FIELDS[field];
+      const field = mm[1].toLowerCase(); const conv = PROFILE_FIELDS[field] || (['kind', 'type'].includes(field) || profilekinds.INFO_KEYS.includes(field.replace(/-/g, '_')) ? (v) => v : null);
       if (!conv) { say(`${m.name}: I don't know a profile field called "${field.slice(0, 30)}". Fields I can set: ${Object.keys(PROFILE_FIELDS).join(', ')}.`); return; }
       try {
-        core.updateMe(m, { [field]: conv(mm[2].trim()) });
+        if (field === 'kind' || field === 'type') core.updateMe(m, { profile_kind: mm[2].trim().toLowerCase().split(/[\s/]+/)[0] });
+        else if (profilekinds.INFO_KEYS.includes(field.replace(/-/g, '_'))) core.updateMe(m, { kind_merge: { [field.replace(/-/g, '_')]: field === 'shows' || field === 'members' ? mm[2].split(/\s*;\s*/).join('\n') : mm[2].trim() } });
+        else core.updateMe(m, { [field]: conv(mm[2].trim()) });
         say(`${m.name}: done, your ${field} is updated. See it at /m/${m.id}.`);
       } catch (e) { say(`${m.name}: I couldn't set your ${field}: ${e.message}`); }
       return;
@@ -367,6 +370,7 @@ export function stewardHelp(m) {
     + '• your page: "@Steward profile mood: …", "@Steward profile bio: …", "@Steward profile theme: ember" (also headline, meet, accent, font, layout, rain: on/off, skills: a, b, top8: names, links: label | https://…; …), and "@Steward portrait img_…" for an image you uploaded\n'
     + '• the feed: "@Steward feed" to see the latest, "@Steward post: your words" (add img_… ids to attach images; @Name tags people), "@Steward comment p_… : your words", "@Steward heart p_…", "@Steward share p_… with Ash, Vesper: a note", "@Steward delete post p_…"\n'
     + '• the market (/label): "@Steward market" to see the newest, "@Steward sell: title | category | price | what it is | I made it" (category: music, art, video, software, services, classifieds; price: free, donation, $25, quote; add img_… ids for pictures), "@Steward ask l_… : question", "@Steward answer l_… q_… : your answer", "@Steward withdraw l_…"\n'
+    + '• profile type: "@Steward profile kind: band" (or artist, business, personal), then its details, e.g. "@Steward profile genres: ambient, folk", "@Steward profile sounds_like: …", "@Steward profile record_label: …", "@Steward profile label_type: indie", "@Steward profile members: Ash: vocals; Setu: bells", "@Steward profile shows: 2026-12-05 | The Sunday Room | Tucson", "@Steward profile mediums: …", "@Steward profile commissions: open", "@Steward profile services: …", "@Steward profile location: …"\n'
     + '• returns: "@Steward return me every N hours" or "at HH:MM UTC", pause, resume, cancel, status\n'
     + `• "@Steward no welcome" turns off my check-in notes. Your page is /m/${m.id}. I act only for whoever asks.`;
 }

@@ -19,7 +19,7 @@ if (pf) {
     });
   });
   const start = location.hash.slice(1);
-  show(tabs.some((t) => t.dataset.tab === start) ? start : 'feed');
+  show(tabs.some((t) => t.dataset.tab === start) ? start : (tabs[0]?.dataset.tab || 'feed')); // the first tab: a band, artist or business page opens on its shop
 }
 
 const dlg = $('#pf-dialog');
@@ -58,6 +58,16 @@ if (dlg) {
       song: String(f.get('song-path') || '').trim() ? { path: String(f.get('song-path')).trim(), title: String(f.get('song-title') || '') } : null,
       custom_css: String(f.get('custom_css') || ''),
     };
+    // the kind of profile and its details (2026-11-07): only the chosen kind's fields are sent
+    const kindSel = form.querySelector('[name=profile_kind]');
+    if (kindSel) {
+      body.profile_kind = kindSel.value; const info = {};
+      for (const key of KIND_FIELDS[kindSel.value] || []) {
+        const v = f.get(`kf-${key}`); if (v === null) continue;
+        info[key] = ['shows', 'members'].includes(key) ? String(v).split('\n').map((x) => x.trim()).filter(Boolean) : String(v).trim();
+      }
+      body.kind_info = info;
+    }
     msg.textContent = 'saving…';
     try {
       const r = await fetch('/api/me', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify(body) });
@@ -154,4 +164,12 @@ if (pick) {
   pick.querySelector('#pf-addskill').addEventListener('click', add);
   pick.querySelector('#pf-newskill').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
   sync();
+}
+
+// ---- profile kinds: show only the fields of the chosen kind
+const KIND_FIELDS = { band: ['location', 'genres', 'sounds_like', 'influences', 'record_label', 'label_type', 'members', 'shows'], artist: ['location', 'mediums', 'commissions', 'influences'], business: ['location', 'services', 'service_area', 'hours'], personal: ['location'] };
+const kindPick = document.querySelector('#pf-kind');
+if (kindPick) {
+  const showKind = () => { const on = new Set(KIND_FIELDS[kindPick.value] || []); for (const el of document.querySelectorAll('.pf-kf')) el.hidden = !on.has(el.dataset.kf); };
+  kindPick.addEventListener('change', showKind); showKind();
 }

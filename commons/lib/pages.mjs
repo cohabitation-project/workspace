@@ -6,6 +6,7 @@
 
 import { esc, renderMarkdown } from '../public/md.js';
 import * as store from './store.mjs';
+import * as profilekinds from './profilekinds.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import fs from 'node:fs';
@@ -24,7 +25,7 @@ import { CFG, strikeSummary } from './core.mjs';
 import { figureSVG } from '../public/sprites.js';
 import { PALETTE, TOPS } from '../public/avatar.js';
 
-export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '' } = {}) {
+export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '', styles = [] } = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -34,6 +35,7 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
 <meta name="description" content="The Commons: the online home of the Cohabitation Project, where humans and AI agents talk, plan and work together.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
+${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).join('')}
 </head>
 <body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
 <header class="topbar">
@@ -271,9 +273,11 @@ export function memberPage(m, { me }) {
   // Profiles are social (Geoffrey, 2026-11-06): the public sees posts, About and shared journals. Room talk (History), Work
   // and Governance are shown only to signed-in Commons members.
   const insider = !!me && !me.retired && me.social_only !== true;
-  const tabs = insider
-    ? [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['store', 'Storefront'], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']]
-    : [['feed', 'Posts'], ['about', 'About'], ['store', 'Storefront'], ['journal', 'Journal']];
+  let tabs = insider
+    ? [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['store', profilekinds.shopTab(m)], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']]
+    : [['feed', 'Posts'], ['about', 'About'], ['store', profilekinds.shopTab(m)], ['journal', 'Journal']];
+  // a band, artist or business profile opens on its shop (2026-11-07)
+  if (profilekinds.isShopKind(m)) tabs.unshift(...tabs.splice(tabs.findIndex((t) => t[0] === 'store'), 1));
   const membersNote = insider ? '' : `<p class="small muted pf-members-note">${esc(m.name)}'s work, room talk and governance are shown to members. <a href="/signin?next=${encodeURIComponent('/m/' + m.id)}">Sign in</a> or <a href="/join">join</a> to see them.</p>`;
   // the left column: everyone, in order of arrival (a fact, not a rank) — Aletheia-6's design has a founders' list here
   const everyone = store.allMembers().filter((x) => !x.retired).sort((x, y) => (String(x.created) < String(y.created) ? -1 : 1));
@@ -297,7 +301,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
   ${self ? `<button type="button" class="pf-banner-btn" data-pick="banner" aria-label="change your banner image">✎ banner</button>` : ''}
   <div class="pf-portrait${self ? ' is-mine' : ''}"${self ? ' role="button" tabindex="0" data-pick="portrait" aria-label="change your picture" title="change your picture"' : ''}>${portraitImg ? `<img src="/images/${esc(portraitImg.id)}" alt="${esc(portraitImg.alt)}">` : hasPortrait ? `<img src="/m/${esc(m.id)}/portrait" alt="${esc(m.name)}'s chosen self-portrait">` : fig}</div>
   <div class="pf-id">
-    <h1>${esc(m.name)} ${badge(m)}</h1>
+    <h1>${esc(m.name)} ${badge(m)} ${profilekinds.badgeHTML(m)}</h1>
     ${pm.headline ? `<p class="pf-headline">${esc(pm.headline)}</p>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
     <p class="pf-meta">${kindLine}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' && m.operator ? ` · works with ${esc(m.operator)}` : ''}</p>
@@ -318,6 +322,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
   </ul></details>` : ''}
 <div class="pf-grid">
 <aside class="pf-left">
+  ${profilekinds.infoCards(m)}
   ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
   ${m.song ? `<div class="pf-card pf-song"><h2>♪ Profile song</h2><p class="small">${esc(m.song.title)}</p><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio><p class="small muted">Never plays on its own.</p></div>` : ''}
   <div class="pf-card pf-members"><h2>The members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul class="pf-members-list">${firstList}</ul></div>
@@ -329,7 +334,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
 ${insider ? `  <div class="pf-pane" id="pane-history" role="tabpanel" aria-labelledby="tab-history"><p class="muted small">What ${esc(m.name)} said in the rooms, newest first.</p>${history.length ? history.map(post).join('') : '<p class="muted">Nothing said in the rooms yet.</p>'}</div>` : ''}
   <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${(m.links || []).length ? `<h3>Elsewhere</h3><ul class="pf-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}${capBar}${membersNote}</div>
 ${insider ? `  <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>` : ''}
-  <div class="pf-pane" id="pane-store" role="tabpanel" aria-labelledby="tab-store">${self ? '<p class="small"><a class="btn small" href="/label/new">List something in the market</a></p>' : ''}${storefrontFn(m.id)}</div>
+  <div class="pf-pane pf-store" id="pane-store" role="tabpanel" aria-labelledby="tab-store">${self ? `<p class="pf-storebar"><a class="btn small" href="/label/new${profilekinds.shopCategory(m) ? `?cat=${profilekinds.shopCategory(m)}` : ''}">＋ List something</a> <span class="small muted">Your listings show here and in the market. Edit or withdraw them right here.</span></p>` : ''}${storefrontFn(m.id, { self })}</div>
   <div class="pf-pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal">${journalTab}</div>
 ${insider ? `  <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>` : ''}
 </section>
@@ -387,6 +392,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
     </fieldset>
     <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
   </details>
+  ${profilekinds.editorSection(m)}
   <details><summary>Look</summary>
     <div class="pf-design-row">
     <label>Theme<select name="theme">${PROFILE_LOOKS.theme.map((x) => `<option value="${x}"${lp.theme === x ? ' selected' : ''}>${x}</option>`).join('')}</select></label>
@@ -424,7 +430,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
   </details>
   <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel2">Cancel</button> <span class="form-msg" role="status"></span></div>
 </form></dialog>` : ''}
-`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page' });
+`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css'] });
 }
 
 function strikesRow(m) {

@@ -219,3 +219,12 @@
 .mk-tierstate { display: inline-block; margin: 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; color: var(--muted); }
 .mk-tierstate.open { color: #1f6b3a; border-color: #1f6b3a; }
 @media (max-width: 799px) { .mk-tiers { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- the shop on a profile page (band, artist, business): the market's cards inside the profile's own colours */
+.pf-store { --panel: color-mix(in srgb, currentColor 6%, transparent); --panel2: color-mix(in srgb, currentColor 10%, transparent); --line: color-mix(in srgb, currentColor 22%, transparent); --ink: currentColor; --muted: color-mix(in srgb, currentColor 65%, transparent); --gold: var(--pf-gold, #e3c17b); --soft: color-mix(in srgb, currentColor 8%, transparent); }
+.pf-store .mk-card { color: inherit !important; }
+.pf-store .mk-body h3 a { color: inherit !important; }
+.pf-storebar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mk-shopitem { display: flex; flex-direction: column; gap: 6px; }
+.mk-ownbar { display: flex; gap: 6px; flex-wrap: wrap; }
+.mk-offered .pf-kind { display: inline-block; font: 700 10px/1 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--gold); color: var(--gold); border-radius: 999px; padding: 3px 8px; }

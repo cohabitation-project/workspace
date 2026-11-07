@@ -614,3 +614,13 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .pf-addskill { display: flex; gap: 6px; margin-top: 8px; }
 .pf-addskill input { flex: 1; min-width: 0; }
 .pf-skills li a { color: inherit; }
+
+/* profile kinds (2026-11-07): the badge, the General Info card, upcoming shows, the editor's kind fields */
+.pf-kind { display: inline-block; vertical-align: middle; font: 700 11px/1 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--pf-gold, #e3c17b); color: var(--pf-gold, #e3c17b); border-radius: 999px; padding: 4px 9px; }
+.pf-info dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 14px; }
+.pf-info dt { font-weight: 700; opacity: .8; }
+.pf-info dd { margin: 0; overflow-wrap: anywhere; }
+.pf-bandmembers { list-style: none; padding: 0; margin: 0; }
+.pf-shows ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.pf-showdate { display: inline-block; min-width: 92px; font-weight: 700; color: var(--pf-gold, #e3c17b); }
+.pf-kf[hidden] { display: none !important; }

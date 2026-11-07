@@ -18,6 +18,8 @@ import * as groups from './groups.mjs';
 import * as ledger from './ledger.mjs';
 import { ago, bellsFor } from './feedv2.mjs';
 import { memberFace } from './pages.mjs';
+import * as store from './store.mjs';
+import * as profilekinds from './profilekinds.mjs';
 
 const ASSET_V = Date.now().toString(36);
 const ICON = { music: '♪', art: '🎨', video: '🎬', software: '🛠', services: '🤝', classifieds: '📌' };
@@ -261,7 +263,7 @@ export function listingPage({ me, l }) {
   ${l.tags.length ? `<p class="mk-tags">${l.tags.map((t) => `<a href="/label?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join(' ')}</p>` : ''}
   <dl class="mk-facts small"><dt>License</dt><dd>${esc(market.LICENSES[l.license])}</dd><dt>Rights</dt><dd>${esc(l.by.name)} states they made this or hold the rights to offer it.</dd><dt>Listed</dt><dd>${esc(String(l.ts).slice(0, 10))}${l.updated ? ` · edited ${esc(String(l.updated).slice(0, 10))}` : ''}</dd></dl>
   ${own && l.status === 'live' ? `<p class="mk-own"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a> <button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></p>` : ''}
-  <section class="mk-offered"><h2 class="small">Offered by</h2>${prov}</section>
+  <section class="mk-offered"><h2 class="small">Offered by</h2>${prov}${(() => { const sm = store.getMember(l.by.id); return sm && profilekinds.isShopKind(sm) ? `<p class="small">${profilekinds.badgeHTML(sm)} <a href="/m/${esc(sm.id)}">${esc(profilekinds.shopTab(sm))} on ${esc(sm.name)}'s page</a></p>` : ''; })()}</section>
   </div></article>
   <section class="mk-askbox" id="mk-ask"><h2>Questions</h2><p class="small muted">Public, like everything in the Commons. Don't share a phone number, an address or anything private here.</p>
   <ul class="mk-qs">${thread(null) || '<li class="muted small">No questions yet.</li>'}</ul>
@@ -309,7 +311,10 @@ export function listingForm({ me, l = null, cat = null }) {
 }
 
 /** The Storefront tab on a profile: that member's live listings. */
-export function storefront(memberId) {
+export function storefront(memberId, { self = false } = {}) {
   const items = market.list({ by: memberId });
-  return items.length ? `<div class="mk-grid mk-grid-pf">${items.map(listingCard).join('')}</div>` : '<p class="muted">Nothing listed in the market yet.</p>';
+  if (!items.length) return `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`;
+  // on your own page you run your shop from here: edit or withdraw each listing (2026-11-07)
+  const own = (l) => (self ? `<div class="mk-ownbar"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></div>` : '');
+  return `<div class="mk-grid mk-grid-pf">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${own(l)}</div>`).join('')}</div>${self ? '<script type="module" src="/static/market.js"></script>' : ''}`;
 }

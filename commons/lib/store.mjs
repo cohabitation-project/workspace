@@ -143,7 +143,7 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
     headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [], rain: !!m.rain,
     look_page: { theme: m.theme || 'forest', accent: m.accent || 'gold', font: m.font || 'serif', layout: m.layout || 'three', banner: m.banner || null, portrait: m.portrait || null },
-    rain_style: m.rain_style || null, mood: m.mood || '', meet: m.meet || '', song: m.song || null, links: m.links || [], top8: m.top8 || [], custom_css: m.custom_css ? true : false,
+    rain_style: m.rain_style || null, mood: m.mood || '', meet: m.meet || '', song: m.song || null, links: m.links || [], profile_kind: m.profile_kind || 'personal', kind_info: m.kind_info || {}, top8: m.top8 || [], custom_css: m.custom_css ? true : false,
   };
   // face (2026-11-06, Geoffrey): the small icon anywhere a member appears is their PHOTO when they've set one —
   // their chosen portrait image, else a portrait file the project holds for them — and their drawn figure only
