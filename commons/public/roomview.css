@@ -97,3 +97,12 @@
 /* Booking: poster picker + invite select (Geoffrey 2026-11-07). */
 .rv-book-form .rv-poster { display: block; width: 100%; margin: 4px 0 2px; font-size: 13px; color: #cdbfa6; }
 .rv-book-form select { width: 100%; margin: 4px 0; padding: 8px; background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; font: inherit; }
+
+/* Manage your own Great Hall bookings (Geoffrey 2026-11-07). */
+.rv-bk-ctl { margin-left: 8px; white-space: nowrap; }
+.rv-bk-ctl button, .rv-bk-cancel { background: #2a2632; color: #e9dfcd; border: 1px solid #4a4458; border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.rv-bk-ctl button:hover, .rv-bk-cancel:hover { background: #3a3546; }
+.rv-bk-del { color: #e58a8a !important; }
+.rv-bk-form { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; align-items: center; }
+.rv-bk-form select, .rv-bk-form input { background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; padding: 6px 8px; font: inherit; font-size: 13px; }
+.rv-bk-form input[name="title"] { flex: 1 1 180px; }

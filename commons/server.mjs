@@ -1139,6 +1139,8 @@ app.post('/api/great-hall/bookings', wrap((req, res) => {
   res.status(201);
   return { ...b, announced: announced ? { id: announced.id } : null, inviteNote };
 }));
+app.patch('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.edit(m, req.params.id, req.body || {}, { isCouncil: isCouncil(m) }); }));
+app.delete('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.remove(m, req.params.id, { isCouncil: isCouncil(m) }); }));
 app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: true }); return core.enterRoom(m, req.params.id, m?.kind === 'human' ? 'viewing' : 'entered'); }));
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));

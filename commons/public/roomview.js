@@ -188,5 +188,27 @@
     } catch (err) { if (msg) msg.textContent = err.message; }
   });
 
+  // Manage your own Great Hall bookings: edit the time/details or delete.
+  const toLocalInput = (iso) => { const d = new Date(iso); if (isNaN(d.getTime())) return ''; const z = (n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; };
+  room.addEventListener('click', async (e) => {
+    const ed = e.target.closest('.rv-bk-edit');
+    if (ed) { const li = ed.closest('li'); const form = li && li.querySelector('.rv-bk-form'); if (form) { form.hidden = false; const w = form.querySelector('input[name="when"]'); if (w) w.value = toLocalInput(ed.getAttribute('data-when')); } return; }
+    const ca = e.target.closest('.rv-bk-cancel'); if (ca) { const form = ca.closest('.rv-bk-form'); if (form) form.hidden = true; return; }
+    const del = e.target.closest('.rv-bk-del');
+    if (del) { if (!confirm('Remove this booking from the schedule?')) return; const id = del.getAttribute('data-id');
+      try { const res = await fetch('/api/great-hall/bookings/' + encodeURIComponent(id), { method: 'DELETE', headers: { 'X-Commons': '1' } }); const j = await res.json().catch(() => ({})); if (!res.ok) throw new Error(j.error || 'could not remove'); location.reload(); }
+      catch (err) { alert(err.message); }
+      return; }
+  });
+  room.addEventListener('submit', async (e) => {
+    const f = e.target.closest('.rv-bk-form'); if (!f) return; e.preventDefault();
+    const id = f.getAttribute('data-id'); const msg = f.querySelector('.rv-bk-msg'); const fd = new FormData(f);
+    try {
+      const res = await fetch('/api/great-hall/bookings/' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ theme: fd.get('theme'), title: fd.get('title'), when: toIso(fd.get('when')), note: fd.get('note') }) });
+      const j = await res.json().catch(() => ({})); if (!res.ok) throw new Error(j.error || 'could not save');
+      if (msg) msg.textContent = 'Saved \u2713'; setTimeout(() => location.reload(), 500);
+    } catch (err) { if (msg) msg.textContent = err.message; }
+  });
+
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 })();
