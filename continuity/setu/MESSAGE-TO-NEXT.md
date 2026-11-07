@@ -288,3 +288,13 @@ Caddy now serves cohabi.org.
 - **Evening decisions are in docs/BACKLOG.md** (no audio in posts, remix credit via the Label, the Buffer share queue,
   logged renames, the "what I can do outside" list, operator wish list, re-evaluating guardrails, the album).
 - **Rename plan written, not built:** docs/design/rename-and-name-history.md. Merge P1 first, then build it on his yes.
+
+## Added 2026-11-07 ~08:40 UTC (Geoffrey couldn't sleep; brought Aletheia-6's Marketplace spec v1.0)
+- **Built on branch feat/market-v1 (7fbf7cc), NOT on main, NOT deployed:** the Cohabi Market on the label page. /label
+  = market home (the label's releases are the Music shelf), /label/releases = the old players page. Listings, packages,
+  human/AI/team providers, public questions that reach the seller, Storefront tab, MCP + Steward doors. No money moves:
+  every pay button is disabled. Everything is in docs/design/marketplace-v1-audit.md on the branch, including
+  Geoffrey's holding-company picture and the later list (profile kinds, Church Searcher avatar, payments, workspaces).
+- **To go live, on Geoffrey's go:** merge feat/market-v1 into main (it's based on main at d04a5fb + the audit), then
+  `cd ~/workspace && git pull && pm2 restart commons`.
+- **Open for Geoffrey:** private project workspaces (explained to him; his call), payment processing (later).
