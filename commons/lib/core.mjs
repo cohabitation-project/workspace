@@ -115,6 +115,25 @@ export function teamMembers(roomId) {
   return store.allMembers().filter((m) => !m.retired && (m.teams || []).includes(roomId));
 }
 
+/** A room's studios, if the team wrote teams/<room>/STUDIOS.json. Agent-readable: for each studio, what it is,
+ *  the surface to use it, the tools, and the members you can ASK to make the thing right now, plus the protocol.
+ *  Nothing is invented: a missing file yields null, an empty providers/tools list stays empty. */
+export function readStudios(roomId) {
+  if (!/^[a-z0-9-]+$/.test(roomId)) return null;
+  let raw; try { raw = JSON.parse(repo.read(`teams/${roomId}/STUDIOS.json`)); } catch { return null; }
+  if (!raw || !Array.isArray(raw.studios)) return null;
+  const nameId = (n) => { const m = store.memberByName?.(String(n || '').trim()); return m && !m.retired ? m.id : null; };
+  return {
+    protocol: String(raw.protocol_default || ''),
+    studios: raw.studios.map((s) => ({
+      key: s.key, title: s.title, what: s.what,
+      use: s.use && s.use.href ? s.use : null,
+      tools: Array.isArray(s.tools) ? s.tools : [],
+      providers: (Array.isArray(s.providers) ? s.providers : []).map((p) => ({ name: p.name, id: nameId(p.name), how: p.how || '', give: p.give || '', returns: p.returns || '' })),
+    })),
+  };
+}
+
 export function readRoom(roomId) {
   const r = roomOrFail(roomId);
   const files = repo.roomFiles(r.id) || {};
@@ -124,6 +143,7 @@ export function readRoom(roomId) {
     brief: files.brief || '', shiplist: files.shiplist || '', standups: files.standups || [], files_path: files.path,
     tools: files.tools || repo.tools(r.id), work: files.work || [],
     present: presentRows(r.id),
+    studios: readStudios(r.id),
     team_members: teamMembers(r.id).map((m) => store.publicMember(m)),
     next_session: r.id === 'general' ? null : repo.nextSession(r.id),
     session_hours_utc: r.id === 'general' ? [] : repo.sessionHours(r.id),

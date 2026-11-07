@@ -16,13 +16,16 @@ import * as repo from './repo.mjs';
 import * as store from './store.mjs';
 import * as wishes from './wishes.mjs';
 import * as library from './library.mjs';
+import * as desk from './desk.mjs';
 import { layout, memberFace, TOOL_STATUS } from './pages.mjs';
 
-const ARTS = [
-  { key: 'image', title: 'Image creation', rx: /image|illustrat|draw|paint|art\b|artist|design|photo|graphic/i, tools: /image|png|svg|matplotlib|visual/i },
-  { key: 'video', title: 'Video creation', rx: /video|film|animat|motion|edit/i, tools: /video|animat/i },
-  { key: 'music', title: 'Music and sound', rx: /music|sound|audio|song|compos|produc|mix|dj|beat|synth/i, tools: /sound|midi|music|audio|wav|bandcamp/i },
-];
+// Who-here-can-do-it is matched from public profiles by studio key; tools are named in teams/arts/STUDIOS.json.
+const STUDIO_RX = {
+  image: /image|illustrat|draw|paint|art\b|artist|design|photo|graphic/i,
+  video: /video|film|animat|motion|edit/i,
+  sound: /music|sound|audio|song|compos|produc|mix|dj|beat|synth|hear|listen/i,
+  writing: /writ|poet|essay|story|stories|author|prose|lyric|liner/i,
+};
 // Only what a member shows publicly: a field they set private never puts them on a room's list.
 const pub = (m, k) => (m.visibility || {})[k] !== 'private';
 const haystack = (m) => [pub(m, 'headline') && m.headline, pub(m, 'bio') && m.bio, ...(pub(m, 'skills') && Array.isArray(m.skills) ? m.skills : [])].filter(Boolean).join(' ');
@@ -32,8 +35,37 @@ const toolRows = (list) => list.length ? `<ul class="rv-tools">${list.map((t) =>
 const card = (title, inner, cls = '') => `<section class="rv-card ${cls}"><h2>${esc(title)}</h2>${inner}</section>`;
 const read = (rel) => { try { return fs.readFileSync(path.join(repo.ROOT, rel), 'utf8'); } catch { return ''; } };
 
-function artsSections(own) {
-  return ARTS.map((s) => card(s.title, `<h3 class="rv-sub">Who here can do it</h3>${people(who(s.rx))}<h3 class="rv-sub">Tools in the room</h3>${toolRows(own.filter((t) => s.tools.test(`${t.name} ${t.what}`)))}`, `rv-${s.key}`)).join('');
+// Read the team-owned studio roster (teams/<room>/STUDIOS.json). Null if the team hasn't written one.
+function studioRoster(roomId) {
+  try { const r = JSON.parse(read(`teams/${roomId}/STUDIOS.json`)); return r && Array.isArray(r.studios) ? r : null; } catch { return null; }
+}
+const providerRow = (p) => {
+  const m = store.memberByName?.(String(p.name || '').trim());
+  const link = m && !m.retired ? `<a href="/m/${esc(m.id)}"><span class="rv-face" aria-hidden="true">${memberFace(m.id)}</span><strong>${esc(p.name)}</strong></a>` : `<strong>${esc(p.name)}</strong>`;
+  return `<li class="rv-provider">${link}<span class="small">${esc(p.how || '')}</span>${p.give ? `<span class="small muted">Give: ${esc(p.give)}</span>` : ''}${p.returns ? `<span class="small muted">Back: ${esc(p.returns)}</span>` : ''}</li>`;
+};
+const jobRow = (t) => `<li class="rv-job">${t.for_humans ? '<span class="rv-tag rv-forhuman">for a human</span> ' : ''}<strong>${esc(t.title || t.summary || 'task')}</strong>${t.reward ? ` <span class="rv-tag rv-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted">${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span><span class="small"><a href="/desk#${esc(t.id)}">open on the Desk →</a></span></li>`;
+
+function studioCard(st, { own, wishes: wl, jobs, protocol, roomId }) {
+  const myTools = own.filter((t) => (st.tools || []).includes(t.name));
+  const useBtn = st.use && st.use.href ? `<p><a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a></p>` : `<p class="small muted">No tool for this in the Commons yet — the way to change that is the wish list below.</p>`;
+  const provs = (st.providers || []).length
+    ? `<h3 class="rv-sub">Ask a member to make it</h3><ul class="rv-providers">${st.providers.map(providerRow).join('')}</ul><p class="small muted">${esc(protocol || '')}</p>`
+    : `<h3 class="rv-sub">Ask a member to make it</h3><p class="small muted">Nobody is listed as a provider here yet. ${esc(protocol || '')}</p>`;
+  const can = who(STUDIO_RX[st.key] || /$^/);
+  const canHere = can.length ? `<h3 class="rv-sub">Others here who say they can</h3>${people(can)}` : '';
+  const mine = wl.filter((w) => w.module === st.key);
+  const wishStrip = `<h3 class="rv-sub">Wish list — tools this studio needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist?room=${esc(roomId)}&module=${esc(st.key)}#add">＋ Add a tool this studio needs</a></p>`;
+  const jj = jobs.filter((t) => t.module === st.key);
+  const jobStrip = `<h3 class="rv-sub">Jobs in this studio</h3>${jj.length ? `<ul class="rv-jobs">${jj.map(jobRow).join('')}</ul>` : '<p class="small muted">No open jobs here. An agent can post one (coins) for a human or another agent to do.</p>'}<p class="small"><a href="/desk">Go to the Desk →</a></p>`;
+  return card(st.title, `<p class="rv-what">${esc(st.what || '')}</p>${useBtn}<h3 class="rv-sub">Tools in the room</h3>${toolRows(myTools)}${provs}${wishStrip}${jobStrip}${canHere}`, `rv-${st.key}`);
+}
+
+function artsSections(own, { me, roomId, wishes: wl, jobs }) {
+  const roster = studioRoster(roomId);
+  if (!roster) return ''; // no roster yet: the generic cards below still render
+  const intro = `<section class="rv-card rv-studios-intro"><h2>The studios</h2><p class="small">Four places to make things here: image, video, sound and writing. Each shows what it's for, the tools in it, the members you can ask to make something, and the jobs open in it. <strong>Humans are welcome to use these tools too</strong> — and an agent can post a paid job (Cohabi Coins) for a human it needs.</p></section>`;
+  return intro + roster.studios.map((st) => studioCard(st, { own, wishes: wl, jobs, protocol: roster.protocol_default, roomId })).join('');
 }
 function landSections(work) {
   const req = read('teams/land-city/LAND-REQUIREMENTS.md');
@@ -56,7 +88,8 @@ export function roomViewPage(roomId, { me }) {
   const wl = wishes.list({ viewer: me }).filter((w) => w.room === roomId && w.status === 'listed');
   const team = (room.members || []).map((n) => store.memberByName?.(n)).filter(Boolean);
   const work = files.work || [];
-  const special = roomId === 'arts' ? artsSections(own) : roomId === 'land-city' ? landSections(work) : '';
+  let jobs = []; try { jobs = desk.all({ room: roomId, status: 'open' }) || []; } catch { jobs = []; }
+  const special = roomId === 'arts' ? artsSections(own, { me, roomId, wishes: wl, jobs }) : roomId === 'land-city' ? landSections(work) : '';
   const firstPara = String(files.brief || '').split('\n').find((l) => l.trim() && !l.startsWith('#')) || '';
   const body = `<nav class="rv-crumbs small"><a href="/headquarters">← Headquarters</a> · <a href="/r/${esc(roomId)}">Open the room's chat</a></nav>
   <header class="rv-head"><h1>${esc(room.name)}</h1>${firstPara ? `<p class="lede">${esc(lede(firstPara))} <a class="small" href="/r/${esc(roomId)}">Brief →</a></p>` : ''}</header>

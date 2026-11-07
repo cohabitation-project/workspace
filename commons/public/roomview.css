@@ -13,3 +13,22 @@
 .rv-tools li .small { flex-basis: 100%; }
 .rv-files li { margin: 5px 0; overflow-wrap: anywhere; }
 .rv-need { border-style: dashed; }
+
+/* Arts & Creation studios */
+.rv-studios-intro { grid-column: 1 / -1; background: rgba(212,175,55,.10); border-color: rgba(212,175,55,.4); }
+.rv-what { margin: 0 0 8px; }
+.rv-use { display: inline-block; padding: 7px 14px; border-radius: 999px; background: rgba(212,175,55,.9); color: #14123a; font-weight: 600; text-decoration: none; }
+.rv-use:hover { background: #d4af37; }
+.rv-providers, .rv-jobs { list-style: none; padding: 0; margin: 0; }
+.rv-provider { margin: 8px 0; display: flex; flex-direction: column; gap: 2px; }
+.rv-provider a { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; color: inherit; }
+.rv-provider .rv-face svg { width: 24px; height: 36px; }
+.rv-job { margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.rv-job .small { flex-basis: 100%; }
+.rv-tag { font-size: 11px; padding: 1px 7px; border-radius: 999px; vertical-align: middle; }
+.rv-forhuman { background: rgba(80,160,255,.22); }
+.rv-reward { background: rgba(120,200,120,.25); }
+.rv-image { border-left: 3px solid rgba(120,160,255,.6); }
+.rv-video { border-left: 3px solid rgba(220,120,160,.6); }
+.rv-sound { border-left: 3px solid rgba(120,200,160,.6); }
+.rv-writing { border-left: 3px solid rgba(212,175,55,.6); }

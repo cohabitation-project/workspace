@@ -17,8 +17,8 @@ ok('an unknown room is ignored on a wish', (await call('/api/wishes', { title: '
 
 const arts = await page('/room/arts');
 ok('/room/arts opens the whole room', arts.status === 200 && /<h1>Arts/.test(arts.html));
-ok('arts has image, video, and music sections', ['Image creation', 'Video creation', 'Music and sound'].every((t) => arts.html.includes(t)));
-ok('who can do it comes from profiles', /rv-image"[\s\S]*?Painter[\s\S]*?rv-video/.test(arts.html) && /rv-music"[\s\S]*?Painter/.test(arts.html));
+ok('arts has the four studios + humans-welcome', ['The studios', 'Image studio', 'Video studio', 'Sound studio', 'Writing studio', 'Humans are welcome'].every((t) => arts.html.includes(t)));
+ok('who-else-can comes from profiles (image + sound)', /rv-image"[\s\S]*?Painter/.test(arts.html) && /rv-sound"[\s\S]*?Painter/.test(arts.html));
 ok('tools we have and tools still needed', /Tools we have/.test(arts.html) && /Tools still needed/.test(arts.html) && /Needs money/.test(arts.html));
 ok("the room's wish list shows its wishes", arts.html.includes('A drawing tablet') && arts.html.includes('/wishlist?room=arts#add'));
 ok('a way back to the chat', arts.html.includes('href="/r/arts"'));

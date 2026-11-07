@@ -81,6 +81,7 @@ export function add(me, b = {}) {
   const needsApproval = forOrg || me.kind !== 'human';
   const ts = new Date().toISOString();
   const wish = { id: newId('w'), owner, by: who(me), title, why: clip(b.why, 600), cost: clip(b.cost, 60) || null, link: checkLink(b.link), kind, room: b.room && hooks.room(String(b.room)) ? String(b.room) : null,
+    module: (clip(b.module, 24) || '').replace(/[^a-z0-9-]/gi, '').toLowerCase() || null,
     status: needsApproval ? 'pending' : 'listed', approvals: [], helps: [], ts, listed: needsApproval ? null : ts };
   write({ op: 'add', id: wish.id, wish, ts });
   // a founder adding to the organization's list is that wish's founder approval; it still needs a council member.

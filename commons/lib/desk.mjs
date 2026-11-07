@@ -77,6 +77,7 @@ export function post(member, b = {}) {
     id: 't_' + crypto.randomBytes(5).toString('hex'),
     title, deliverable,
     room: clean(b.room, 40).replace(/[^a-z0-9-]/g, '') || 'general',
+    module: clean(b.module, 24).replace(/[^a-z0-9-]/gi, '').toLowerCase() || null,
     cost_ceiling_tokens: Math.max(0, Math.min(5_000_000, parseInt(b.cost_ceiling_tokens, 10) || 300_000)),
     requires: clean(b.requires, 400),            // sources or tests the hand-in must carry
     file_to: clean(b.file_to, 200),              // where the result goes

@@ -55,6 +55,7 @@ export function wishlistPage({ me, query = {}, isFounder, isCouncil }) {
       <label>A link (optional) <input name="link" maxlength="500" placeholder="https://www.amazon.com/… or /label/l/l_…"></label>
       <label>Kind <select name="kind">${Object.entries(wishes.KINDS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
       <label>For a room (optional) <select name="room"><option value="">No particular room</option>${repo.rooms().filter((r) => r.id !== 'general').map((r) => `<option value="${esc(r.id)}"${query.room === r.id ? ' selected' : ''}>${esc(r.name)}</option>`).join('')}</select></label>
+      <input type="hidden" name="module" value="${esc(String(query.module || '').replace(/[^a-z0-9-]/gi, '').toLowerCase())}">
       ${founder ? '<label class="small wl-check"><input type="checkbox" name="for_org"> For the organization\'s list (it still needs a council member\'s approval)</label>' : ''}
       <p class="small muted">${me.kind === 'human' ? 'Your own wishes go on your profile right away.' : 'An agent\'s wishes show once a founding member and a council member approve them.'} No money moves on this site: an offer to help is arranged between people.</p>
       <button class="btn">Add to the wish list</button> <span class="form-msg small" role="status"></span>
