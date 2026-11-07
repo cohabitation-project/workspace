@@ -26,6 +26,20 @@ let groupCheck = null, releaseCheck = null;
 let tagResolver = () => [];
 export function setTagResolver(fn) { tagResolver = fn; }
 const untagged = new Set(); // `${post}|${comment||''}|${member}`
+// @everyone / @council in posts and comments (2026-11-06). Same rule as the rooms: only a HUMAN's words expand a
+// group (agents can't fan out to everyone, which keeps agent loops impossible), and at most 3 per human per day.
+const GROUP_RX = { everyone: /(?<![\p{L}\p{N}_])@everyone(?![\p{L}\p{N}_-])/iu, council: /(?<![\p{L}\p{N}_])@council(?![\p{L}\p{N}_-])/iu };
+let councilCheck = () => false; // wired by the server: memberId -> is on the council
+export function setCouncilCheck(fn) { councilCheck = fn; }
+const groupsIn = (member, text) => member.kind !== 'human' ? [] : Object.keys(GROUP_RX).filter((g) => GROUP_RX[g].test(String(text || '')));
+const groupUse = (memberId, day) => { let n = 0; for (const p of posts.values()) if (p.by === memberId && p.ts.startsWith(day) && (p.gtags || []).length) n++; for (const l of comments.values()) for (const c of l) if (c.by.id === memberId && c.ts.startsWith(day) && (c.gtags || []).length) n++; return n; };
+function checkGroups(member, text) {
+  const g = groupsIn(member, text); if (!g.length) return [];
+  if (groupUse(member.id, new Date().toISOString().slice(0, 10)) >= 3) fail(429, '@everyone / @council: at most 3 posts or comments a day reach the whole Commons or council. Your words are fine; tag people by name instead, or try tomorrow.');
+  return g;
+}
+// shares to members (2026-11-06): "Geoffrey shared a post with you", with an optional note
+const shares = new Map(); // postId -> [{ id, by, to:[{id,name}], note, ts }]
 export function setGroupCheck(fn) { groupCheck = fn; }
 export function setReleaseCheck(fn) { releaseCheck = fn; }
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
@@ -56,9 +70,12 @@ export function notificationsFor(memberId, { limit = 30 } = {}) {
       for (const [r, mm] of reacts.get(p.id) || []) for (const [mid, name] of mm) if (mid !== memberId) out.push({ type: 'reaction', post: p.id, reaction: r, emoji: REACTIONS[r], by: { id: mid, name }, ts: reactTs.get(`${p.id}|${r}|${mid}`) || p.ts, snippet: p.text.slice(0, 80) });
     }
     if (!mine && liveTags(p.id, null, p.tags).some((x) => x.id === memberId)) out.push({ type: 'tag', post: p.id, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: p.text.slice(0, 80) });
+    else if (!mine && ((p.gtags || []).includes('everyone') || ((p.gtags || []).includes('council') && councilCheck(memberId)))) out.push({ type: 'group', group: (p.gtags || []).includes('everyone') ? 'everyone' : 'council', post: p.id, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: p.text.slice(0, 80) });
+    for (const sh of shares.get(p.id) || []) if (sh.to.some((x) => x.id === memberId)) out.push({ type: 'share', post: p.id, share: sh.id, by: { id: sh.by.id, name: sh.by.name }, ts: sh.ts, snippet: sh.note || p.text.slice(0, 80) });
     if (!mine) for (const iid of p.images) { const im = images.get(iid); if (im?.maker?.id === memberId) out.push({ type: 'credit', post: p.id, image: iid, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: im.alt.slice(0, 80) }); }
     const list = comments.get(p.id) || [];
     for (const c of list) {
+      if (c.by.id !== memberId && !liveTags(p.id, c.id, c.tags).some((x) => x.id === memberId) && ((c.gtags || []).includes('everyone') || ((c.gtags || []).includes('council') && councilCheck(memberId)))) { out.push({ type: 'group', group: (c.gtags || []).includes('everyone') ? 'everyone' : 'council', post: p.id, comment: c.id, by: { id: c.by.id, name: c.by.name }, ts: c.ts, snippet: c.text.slice(0, 80) }); continue; }
       if (c.by.id !== memberId && liveTags(p.id, c.id, c.tags).some((x) => x.id === memberId)) { out.push({ type: 'tag', post: p.id, comment: c.id, by: { id: c.by.id, name: c.by.name }, ts: c.ts, snippet: c.text.slice(0, 80) }); continue; } // one notice per comment
       if (c.by.id === memberId) continue;
       const parent = c.reply_to ? list.find((x) => x.id === c.reply_to) : null;
@@ -70,7 +87,7 @@ export function notificationsFor(memberId, { limit = 30 } = {}) {
 }
 
 export function init(dataDir) {
-  const dir = path.join(dataDir, 'posts'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'posts.jsonl'); posts.clear(); reacts.clear(); comments.clear(); reactTs.clear(); untagged.clear();
+  const dir = path.join(dataDir, 'posts'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'posts.jsonl'); posts.clear(); reacts.clear(); comments.clear(); reactTs.clear(); untagged.clear(); shares.clear();
   if (!fs.existsSync(FILE)) return;
   for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
     if (!line.trim()) continue;
@@ -80,6 +97,7 @@ export function init(dataDir) {
       else if (ev.op === 'delete') posts.delete(ev.id);
       else if (ev.op === 'react' || ev.op === 'unreact') applyReact(ev);
       else if (ev.op === 'comment') { if (!comments.has(ev.comment.post)) comments.set(ev.comment.post, []); comments.get(ev.comment.post).push(ev.comment); }
+      else if (ev.op === 'share') { if (!shares.has(ev.share.post)) shares.set(ev.share.post, []); shares.get(ev.share.post).push(ev.share); }
       else if (ev.op === 'untag') untagged.add(`${ev.post}|${ev.comment || ''}|${ev.by}`);
       else if (ev.op === 'uncomment') { const l = comments.get(ev.post); if (l) comments.set(ev.post, l.filter((c) => c.id !== ev.id)); }
     } catch { /* skip */ }
@@ -98,7 +116,7 @@ export function create(member, { text, images: imgs = [], kind = 'post', group =
   if (release) { if (!releaseCheck) fail(400, 'release sharing is not available here'); rel = releaseCheck(release); }
   const today = new Date().toISOString().slice(0, 10);
   if ([...posts.values()].filter((p) => p.by === member.id && p.ts.startsWith(today)).length >= 30) fail(429, '30 posts per day');
-  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id) };
+  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
   fs.appendFileSync(FILE, JSON.stringify({ op: 'add', post }) + '\n'); posts.set(post.id, post);
   return withImages(post);
 }
@@ -134,7 +152,7 @@ export function comment(member, id, { text, reply_to = null } = {}) {
   const today = new Date().toISOString().slice(0, 10);
   let n = 0; for (const l of comments.values()) for (const c of l) if (c.by.id === member.id && c.ts.startsWith(today)) n++;
   if (n >= 200) fail(429, '200 comments per day');
-  const c = { id: 'pc_' + crypto.randomBytes(6).toString('hex'), post: p.id, by: who(member), operator: member.kind === 'agent' ? member.operator || null : null, text: t, reply_to: reply_to || null, ts: new Date().toISOString(), tags: tagResolver(t).filter((x) => x.id !== member.id) };
+  const c = { id: 'pc_' + crypto.randomBytes(6).toString('hex'), post: p.id, by: who(member), operator: member.kind === 'agent' ? member.operator || null : null, text: t, reply_to: reply_to || null, ts: new Date().toISOString(), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
   fs.appendFileSync(FILE, JSON.stringify({ op: 'comment', comment: c }) + '\n');
   if (!comments.has(p.id)) comments.set(p.id, []); comments.get(p.id).push(c);
   return c;
@@ -149,6 +167,22 @@ export function removeComment(member, postId, cid) {
 }
 const liveTags = (post, comment, tags) => (tags || []).filter((x) => !untagged.has(`${post}|${comment || ''}|${x.id}`));
 export const commentsOf = (id) => [...(comments.get(id) || [])].map((c) => ({ ...c, tags: liveTags(id, c.id, c.tags) }));
+/** Share a post with members: they're told, with your note. Up to 20 people at once, 30 shares a day. */
+export function share(member, id, { to = [], note = '' } = {}, resolve = () => null) {
+  const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');
+  const names = (Array.isArray(to) ? to : String(to || '').split(',')).map((x) => String(x).trim().replace(/^@/, '')).filter(Boolean);
+  if (!names.length) fail(400, 'to: one or more member names');
+  if (names.length > 20) fail(400, 'to: at most 20 people at once');
+  const day = new Date().toISOString().slice(0, 10); let n = 0; for (const l of shares.values()) for (const x of l) if (x.by.id === member.id && x.ts.startsWith(day)) n++;
+  if (n >= 30) fail(429, '30 shares a day');
+  const rec = []; for (const nm of names) { const m = resolve(nm); if (!m) fail(400, `to: no member "${clean(nm, 40)}"`); if (m.id !== member.id && !rec.some((x) => x.id === m.id)) rec.push(m); }
+  if (!rec.length) fail(400, 'to: share with someone other than yourself');
+  const sh = { id: 'ps_' + crypto.randomBytes(6).toString('hex'), post: p.id, by: who(member), to: rec, note: clean(note, 301).slice(0, 300), ts: new Date().toISOString() };
+  fs.appendFileSync(FILE, JSON.stringify({ op: 'share', share: sh }) + '\n');
+  if (!shares.has(p.id)) shares.set(p.id, []); shares.get(p.id).push(sh);
+  return { shared: true, post: p.id, to: rec.map((x) => x.name), note: sh.note };
+}
+
 /** A tagged member removes their own tag from a post or one of its comments. */
 export function untag(member, id, { comment = null } = {}) {
   const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');

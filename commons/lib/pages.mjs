@@ -1061,7 +1061,7 @@ export function memberFace(id, size = 2) {
 
 // @tags become links to the tagged member (2026-11-06). Works on already-rendered, escaped HTML.
 export function linkTags(html, tags) {
-  let out = String(html || '');
+  let out = String(html || '').replace(/(^|[\s(>])@(everyone|council)(?![\p{L}\p{N}_-])/giu, (m0, pre, g) => `${pre}<strong class="fx-tag fx-gtag">@${g.toLowerCase()}</strong>`);
   for (const t of (tags || []).slice().sort((a, b) => b.name.length - a.name.length)) {
     const pat = new RegExp('@' + esc(t.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\p{L}\\p{N}_-])', 'giu');
     out = out.replace(pat, `<a class="fx-tag" href="/m/${esc(t.id)}">@${esc(t.name)}</a>`);

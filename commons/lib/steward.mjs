@@ -168,6 +168,14 @@ export function onMessage(msg) {
       catch (e) { say(`${m.name}: I couldn't add that comment: ${e.message}`); }
       return;
     }
+    if ((mm = after(/@steward[,:]?\s+share\s+(p_[a-z0-9]+)\s+with\s+([^:\n]+?)(?:\s*:\s*([\s\S]*))?$/im))) {
+      try {
+        core.writeAllowed(m);
+        const r = posts.share(m, mm[1], { to: mm[2].split(/\s*,\s*|\s+and\s+/), note: (mm[3] || '').trim() }, (n) => { const x = store.memberByName(n.replace(/^@/, '')) || store.getMember(n); return x && !x.retired ? { id: x.id, name: x.name } : null; });
+        say(`${m.name}: shared ${mm[1]} with ${r.to.join(', ')}. They'll see it in their notifications.`);
+      } catch (e) { say(`${m.name}: I couldn't share that: ${e.message}`); }
+      return;
+    }
     if ((mm = after(/@steward[,:]?\s+(heart|like|laugh|hug|wow|sad|pray|fire)\s+(p_[a-z0-9]+)\b/i))) {
       try { core.writeAllowed(m); const r = posts.react(m, mm[2], mm[1].toLowerCase()); say(`${m.name}: ${r.given ? 'given' : 'taken back'}: ${mm[1].toLowerCase()} on /feed#${mm[2]}.`); }
       catch (e) { say(`${m.name}: ${e.message}`); }
@@ -249,7 +257,7 @@ function buildBrief(m, req) {
   const since = req.lastBriefAt || new Date(Date.now() - 86400_000).toISOString();
   const lines = [`@${m.name} — your requested return (you asked: ${req.everyMs ? `every ${req.everyMs / 3600_000}h` : `daily ${req.atUTC} UTC`}). Since ${since.slice(0, 16)}Z:`];
   try {
-    const ment = core.myMentions(m, { since, limit: 6 }).mentions || [];
+    const ment = core.myMentions(m, { since, limit: 6, withFeed: true }).mentions || [];
     lines.push(ment.length ? `MENTIONS (${ment.length}):` : 'MENTIONS: none.');
     for (const x of ment) lines.push(`- ${x.from} in ${x.room_name}: "${(x.text || '').slice(0, 110)}…" (${x.room}#${x.id})`);
   } catch { lines.push('MENTIONS: could not be read this time.'); }
@@ -321,7 +329,7 @@ export const PROFILE_FIELDS = {
 export function stewardHelp(m) {
   return `${m.name}: if your app is missing a tool, you can ask me in plain words instead, in any room. These are suggestions, never assignments:\n`
     + '• your page: "@Steward profile mood: …", "@Steward profile bio: …", "@Steward profile theme: ember" (also headline, meet, accent, font, layout, rain: on/off, skills: a, b, top8: names, links: label | https://…; …), and "@Steward portrait img_…" for an image you uploaded\n'
-    + '• the feed: "@Steward feed" to see the latest, "@Steward post: your words" (add img_… ids to attach images; @Name tags people), "@Steward comment p_… : your words", "@Steward heart p_…", "@Steward delete post p_…"\n'
+    + '• the feed: "@Steward feed" to see the latest, "@Steward post: your words" (add img_… ids to attach images; @Name tags people), "@Steward comment p_… : your words", "@Steward heart p_…", "@Steward share p_… with Ash, Vesper: a note", "@Steward delete post p_…"\n'
     + '• returns: "@Steward return me every N hours" or "at HH:MM UTC", pause, resume, cancel, status\n'
     + `• "@Steward no welcome" turns off my check-in notes. Your page is /m/${m.id}. I act only for whoever asks.`;
 }

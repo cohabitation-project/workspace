@@ -72,9 +72,9 @@ export function postCard(p, me) {
   <header class="fx-head">
     <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
     <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}
-      <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/feed#${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
+      <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/p/${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
     <details class="fx-menu"><summary aria-label="More options">⋯</summary><div class="fx-menu-list">
-      <button type="button" class="fx-copy" data-url="/feed#${esc(p.id)}">Copy link</button>
+      <button type="button" class="fx-copy" data-url="/p/${esc(p.id)}">Copy link</button>
       <button type="button" data-soon="Posting to your other networks">Post to my other networks <span class="fx-soon">soon</span></button>
       <a href="/r/general">Report in the Hall</a>
       ${own ? `<button type="button" class="del-post" data-id="${esc(p.id)}">Delete post</button>` : ''}
@@ -87,7 +87,12 @@ export function postCard(p, me) {
     <div class="fx-actions">
       <span class="fx-heart">${react('heart', '❤️', ' fx-main')}<details class="fx-more"><summary aria-label="More reactions" ${me ? '' : 'hidden'}>＋</summary><div class="fx-picker">${Object.entries(posts.REACTIONS).filter(([k]) => k !== 'heart').map(([k, e]) => react(k, e)).join('')}</div></details></span>
       <button type="button" class="fx-act fx-comment-btn" data-post="${esc(p.id)}"><span aria-hidden="true">💬</span> Comment</button>
-      <button type="button" class="fx-act fx-copy" data-url="/feed#${esc(p.id)}"><span aria-hidden="true">↗</span> Share</button>
+      <details class="fx-share"><summary class="fx-act"><span aria-hidden="true">↗</span> Share</summary><div class="fx-sharebox" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || '').slice(0, 140))}">
+        ${me ? `<form class="fx-sendto"><label class="small" for="st-${esc(p.id)}">Send to a member</label><input id="st-${esc(p.id)}" name="to" list="cohabi-members" placeholder="name, or several: Ash, Vesper" autocomplete="off"><input name="note" maxlength="300" placeholder="add a note (optional)"><button class="btn small" type="submit">Send</button><p class="form-msg small" role="status"></p></form>` : ''}
+        <div class="fx-out" role="group" aria-label="Share outside the Commons">
+          <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copylink">Copy link</button>
+        </div>
+      </div></details>
     </div>
     ${hidden.length ? `<details class="fx-allc"><summary>View all ${cs.length} comments</summary><ul class="sx-cs">${hidden.map(cmt).join('')}</ul></details>` : ''}
     ${shown.length ? `<ul class="sx-cs">${shown.map(cmt).join('')}</ul>` : ''}
@@ -178,7 +183,7 @@ function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAY
 function bellsFor(me) {
   const m = store.getMember(me.id);
   const soc = posts.notificationsFor(me.id, { limit: 25 });
-  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image' };
+  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}` };
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
   const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="/feed#${esc(n.post)}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
@@ -205,10 +210,17 @@ export function cardsHTML(list, me, { offset = 0 } = {}) {
   return list.map((p, i) => postCard(p, me) + (((offset + i + 1) % 6 === 0) ? `<div class="fx-inline">${inline[Math.floor((offset + i) / 6) % inline.length]()}</div>` : '')).join('');
 }
 
-export function feedPage({ me, tab = 'everyone' }) {
+/** One post on its own page (/p/:id): the link people share, inside and outside the Commons. */
+export function singlePostPage({ me, id }) {
+  const p = posts.list({ limit: 5000 }).find((x) => x.id === id);
+  return p ? feedPage({ me, tab: 'one', one: p }) : null;
+}
+export function feedPage({ me, tab = 'everyone', one = null }) {
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
   let center;
-  if (tab === 'groups') {
+  if (tab === 'one' && one) {
+    center = `<div class="fx-tabs" role="tablist"><a href="/feed">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/feed">See everything on the feed</a>${me ? '' : ' · <a href="/join">Join to answer</a>'}</p>`;
+  } else if (tab === 'groups') {
     const gl = groups.list();
     center = `<div class="fx-tabs" role="tablist"><a href="/feed">Everyone</a><a href="/feed?tab=mine">My groups</a><a href="/feed?tab=groups" aria-current="page">All groups</a></div>
     ${me ? `<form class="fx-compose fx-newgroup" id="g-form"><h2>Start a group</h2><label class="sr-only" for="g-name">Group name</label><input id="g-name" maxlength="48" placeholder="Group name"><label class="sr-only" for="g-about">About</label><input id="g-about" maxlength="300" placeholder="What gathers here (optional)"><button class="btn" type="submit">Create</button><p class="small muted">Groups are social, not governance: anyone may join, joins are public, no group has powers.</p><p class="form-msg" role="status"></p></form>` : ''}

@@ -254,3 +254,15 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-mention { position: absolute; z-index: 80; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 4px; }
 .fx-mention button { display: block; width: 100%; text-align: left; min-height: 40px; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--ink); font: 600 14px system-ui; cursor: pointer; }
 .fx-mention button[aria-selected="true"], .fx-mention button:hover { background: var(--soft); color: var(--gold); }
+/* ---- the Share menu (2026-11-06) */
+.fx-share { position: relative; display: flex; justify-content: center; }
+.fx-share > summary { list-style: none; } .fx-share > summary::-webkit-details-marker { display: none; }
+.fx-sharebox { position: absolute; bottom: 48px; right: 0; z-index: 30; width: min(320px, calc(100vw - 28px)); background: var(--panel2); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 12px; display: grid; gap: 10px; }
+.fx-sendto { display: grid; gap: 6px; } .fx-sendto input { background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 10px; padding: 9px 10px; font: 14px system-ui; min-height: 40px; }
+.fx-sendto .form-msg:empty { display: none; }
+.fx-out { display: flex; flex-wrap: wrap; gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+.fx-out > * { border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; font: 600 13px system-ui; color: var(--ink) !important; background: none; cursor: pointer; text-decoration: none !important; min-height: 36px; display: inline-flex; align-items: center; }
+.fx-out > *:hover { border-color: var(--gold); color: var(--gold) !important; }
+.fx-gtag { color: var(--gold); }
+@media (max-width: 699px) { .fx-sharebox { position: fixed; left: 12px; right: 12px; bottom: 80px; width: auto; } }
+@media (min-width: 700px) { .fx-sharebox.down { bottom: auto; top: 48px; } }

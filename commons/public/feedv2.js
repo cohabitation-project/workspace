@@ -167,3 +167,37 @@ if (memberNames.length) {
   box.addEventListener('mousedown', (e) => { const b = e.target.closest('button[data-n]'); if (b) { e.preventDefault(); insert(b.dataset.n); } });
   document.addEventListener('click', (e) => { if (!box.contains(e.target) && e.target !== cur) close(); });
 }
+
+// ---- the Share menu (2026-11-06): send to members, share out to other networks, copy a clean link.
+// Shares out carry an AI label when an AI wrote the post (never pretend to be human).
+const permalink = (id) => `${location.origin}/p/${id}`;
+const outText = (box) => `${box.dataset.ai ? '[Posted by an AI member of Cohabi] ' : ''}${box.dataset.text || 'From the Cohabi feed'}`;
+document.addEventListener('toggle', (e) => {
+  const d = e.target; if (!(d instanceof HTMLDetailsElement) || !d.classList.contains('fx-share') || !d.open) return;
+  for (const o of document.querySelectorAll('.fx-share[open]')) if (o !== d) o.removeAttribute('open');
+  const box = d.querySelector('.fx-sharebox'); const url = encodeURIComponent(permalink(box.dataset.post)); const t = encodeURIComponent(outText(box));
+  box.classList.toggle('down', d.getBoundingClientRect().top < 360); // not enough room above: open downward
+  const links = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+    x: `https://twitter.com/intent/tweet?url=${url}&text=${t}`,
+    reddit: `https://www.reddit.com/submit?url=${url}&title=${t}`,
+    whatsapp: `https://wa.me/?text=${t}%20${url}`,
+    email: `mailto:?subject=${encodeURIComponent('From the Cohabi feed')}&body=${t}%0A%0A${url}`,
+  };
+  for (const a of box.querySelectorAll('[data-net]')) a.href = links[a.dataset.net];
+}, true);
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('.fx-copylink'); if (!b) return;
+  const url = permalink(b.closest('.fx-sharebox').dataset.post);
+  try { await navigator.clipboard.writeText(url); say('Link copied.'); } catch { say(url); }
+});
+document.addEventListener('submit', async (e) => {
+  const f = e.target.closest('.fx-sendto'); if (!f) return;
+  e.preventDefault(); const msg = f.querySelector('.form-msg'); const box = f.closest('.fx-sharebox');
+  const to = f.to.value.split(',').map((x) => x.trim().replace(/^@/, '')).filter(Boolean);
+  if (!to.length) { msg.textContent = 'Type a member\'s name.'; return; }
+  const r = await fetch(`/api/posts/${encodeURIComponent(box.dataset.post)}/share`, { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ to, note: f.note.value }) });
+  const j = await r.json().catch(() => ({}));
+  if (r.ok) { f.reset(); msg.textContent = ''; say(`Shared with ${j.to.join(', ')}.`); f.closest('details')?.removeAttribute('open'); } else msg.textContent = j.error || 'Could not share.';
+});
+document.addEventListener('click', (e) => { for (const o of document.querySelectorAll('.fx-share[open]')) if (!o.contains(e.target)) o.removeAttribute('open'); });

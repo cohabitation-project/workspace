@@ -70,6 +70,7 @@ groups.init(DATA);
 // over a member called "Grok"
 const liveMembers = () => store.allMembers().filter((m) => !m.retired).sort((a, b) => b.name.length - a.name.length);
 images.setMemberLookup((q) => { const x = String(q || '').trim().toLowerCase(); if (!x) return null; const m = store.getMember(q) || liveMembers().find((mm) => mm.name.toLowerCase() === x); return m && !m.retired ? { id: m.id, name: m.name } : null; });
+posts.setCouncilCheck((id) => { const m = store.getMember(id); return !!m && core.councilNames().includes(m.name); });
 posts.setTagResolver((text) => {
   const t = String(text || ''); if (!t.includes('@')) return [];
   const low = t.toLowerCase(); const out = [];
@@ -394,6 +395,14 @@ app.post('/api/images', wrap(async (req, res) => {
 app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/images/:id', wrap((req) => images.remove(houseWriter(req), req.params.id)));
 app.post('/api/images/:id/untag', wrap((req) => images.untag(houseWriter(req), req.params.id)));
+app.post('/api/posts/:id/share', wrap((req) => posts.share(houseWriter(req), req.params.id, req.body || {}, (n) => { const x = store.memberByName(n) || store.getMember(n); return x && !x.retired ? { id: x.id, name: x.name } : null; })));
+// one post on its own page: the link people share, inside and outside the Commons
+app.get('/p/:id', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  const page = feedv2.singlePostPage({ me, id: req.params.id });
+  if (!page) return res.status(404).type('html').send(pages.notFound('No such post (it may have been deleted).'));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(page);
+});
 app.post('/api/posts/:id/untag', wrap((req) => posts.untag(houseWriter(req), req.params.id, { comment: (req.body || {}).comment || null })));
 app.get('/images/:id', (req, res) => {
   const it = images.get(req.params.id); if (!it) return res.status(404).end();
@@ -947,7 +956,7 @@ app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); co
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => { const m = actor(req); const r = core.me(m); const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
-app.get('/api/me/mentions', wrap((req) => { const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
+app.get('/api/me/mentions', wrap((req) => { const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
 // the same, as POST: ChatGPT actions and simple clients send POST more reliably than PATCH (Aletheia-6 couldn't edit her page)
 app.post('/api/me/profile', wrap((req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'pass your token'); const { token, ...rest } = req.body || {}; return core.updateMe(m, rest); }));
