@@ -321,7 +321,7 @@ function camFit(x, y, w, h, pad, animate) {
   S.cam.s = s; S.cam.fx = x + w / 2; S.cam.fy = y + h / 2; clampCam(); applyCam(animate !== false);
 }
 // "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
-function fitHQ(animate) { const B = S.L.building; camFit(B.x - 140, B.y - 140, B.w + 280, B.h + 280, 1.0, animate); }
+function fitHQ(animate) { const B = S.L.building; camFit(B.x, B.y, B.w, B.h, 1.04, animate); }
 function fitAll(animate) { camFit(0, 0, S.L.W, S.L.H, 1.6, animate); }
 function screenToWorld(mx, my) { const C = buildingSize(); return { x: S.cam.fx + (mx - C.w / 2) / S.cam.s, y: S.cam.fy + (my - C.h / 2) / S.cam.s }; }
 function zoomAbout(mx, my, factor) {
@@ -666,7 +666,7 @@ function drawBuilding() {
   svg.innerHTML = s;
   updateRoomLabels();
   const world = $('#world'); world.style.width = L.W + 'px'; world.style.height = L.H + 'px';
-  if (!S.camReady) { S.camReady = true; fitHQ(false); } else { applyCam(false); }
+  if (!S.camReady) { S.camReady = true; fitHQ(false); requestAnimationFrame(() => { if (S.L && !S.camTouched) fitHQ(false); }); } else { applyCam(false); }
 }
 
 // ------------------------------------------------------------------ figures
@@ -1471,10 +1471,10 @@ $('#cam-home')?.addEventListener('click', () => fitHQ(true));
 // continuous camera: scroll to zoom (about the cursor), drag to pan — one world you move through.
 (() => {
   const bEl = $('#building'); if (!bEl) return;
-  bEl.addEventListener('wheel', (e) => { e.preventDefault(); const r = bEl.getBoundingClientRect(); zoomAbout(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
+  bEl.addEventListener('wheel', (e) => { e.preventDefault(); S.camTouched = true; const r = bEl.getBoundingClientRect(); zoomAbout(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
   let panning = false, sx = 0, sy = 0, cfx = 0, cfy = 0;
   bEl.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; panning = true; S.dragged = false; sx = e.clientX; sy = e.clientY; cfx = S.cam.fx; cfy = S.cam.fy; });
-  addEventListener('pointermove', (e) => { if (!panning) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!S.dragged && Math.hypot(dx, dy) < 5) return; S.dragged = true; bEl.classList.add('panning'); S.cam.fx = cfx - dx / S.cam.s; S.cam.fy = cfy - dy / S.cam.s; clampCam(); applyCam(false); });
+  addEventListener('pointermove', (e) => { if (!panning) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!S.dragged && Math.hypot(dx, dy) < 5) return; S.dragged = true; S.camTouched = true; bEl.classList.add('panning'); S.cam.fx = cfx - dx / S.cam.s; S.cam.fy = cfy - dy / S.cam.s; clampCam(); applyCam(false); });
   addEventListener('pointerup', () => { panning = false; bEl.classList.remove('panning'); });
   addEventListener('resize', () => { if (S.L) applyCam(false); });
 })();
