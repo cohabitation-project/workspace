@@ -1141,6 +1141,14 @@ app.post('/api/great-hall/bookings', wrap((req, res) => {
 }));
 app.patch('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.edit(m, req.params.id, req.body || {}, { isCouncil: isCouncil(m) }); }));
 app.delete('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.remove(m, req.params.id, { isCouncil: isCouncil(m) }); }));
+app.get('/api/rooms/:id/present', wrap((req) => {
+  const present = presence.inRoom(String(req.params.id)).map((pr) => {
+    const m = store.getMember(pr.member); if (!m) return null;
+    const pub = { ...store.publicMember(m), kind: m.kind };
+    return { id: m.id, name: m.name, kind: m.kind, spot: pr.spot || null, figure: figureSVG({ ...pub, guide: false }, 3, m.name) };
+  }).filter(Boolean);
+  return { present };
+}));
 app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: true }); return core.enterRoom(m, req.params.id, m?.kind === 'human' ? 'viewing' : 'entered'); }));
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));

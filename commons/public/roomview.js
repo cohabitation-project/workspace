@@ -38,11 +38,38 @@
   // ---- websocket (so others see where you are, and you see them) ----
   let ws = null;
   const wsSend = (o) => { try { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); } catch (e) {} };
+  // Live presence: add figures as people arrive, remove them when they leave (the snapshot at load isn't enough).
+  let syncT = null;
+  const scheduleSync = () => { clearTimeout(syncT); syncT = setTimeout(syncPresence, 400); };
+  async function syncPresence() {
+    if (!roomId) return;
+    let data; try { const r = await fetch('/api/rooms/' + encodeURIComponent(roomId) + '/present', { headers: { 'X-Commons': '1' } }); if (!r.ok) return; data = await r.json(); } catch (e) { return; }
+    const present = (data && data.present) || [];
+    const svg = room.querySelector('.rv-scene-svg'); if (!svg) return;
+    const ids = new Set(present.map((x) => x.id));
+    room.querySelectorAll('.rv-figure').forEach((g) => { const id = g.getAttribute('data-member'); if (id && id !== meId && !ids.has(id)) g.remove(); });
+    const esc = (v) => String(v == null ? '' : v).replace(/[<&>]/g, (c) => ({ '<': '&lt;', '&': '&amp;', '>': '&gt;' }[c]));
+    let fi = 0;
+    present.forEach((pm) => {
+      if (pm.id === meId) return;
+      const fallback = { x: 150 + (fi % 7) * 130, y: 560 + Math.floor(fi / 7) * 64 }; fi++;
+      const pos = spotToXY(pm.spot, fallback);
+      let g = figureFor(pm.id);
+      if (!g) {
+        g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'rv-figure'); g.setAttribute('data-member', pm.id);
+        g.setAttribute('transform', 'translate(' + pos.x + ' ' + pos.y + ')');
+        g.innerHTML = '<g class="rv-figbody">' + (pm.figure || '') + '</g><g transform="translate(18 76)"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">' + esc(pm.name) + '</text></g>';
+        svg.appendChild(g);
+      } else if (pm.spot) { walk(g, pos.x, pos.y); }
+    });
+  }
   function connect() {
     try { ws = new WebSocket((location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/ws'); } catch (e) { return; }
     ws.onopen = () => { wsSend({ t: 'here', room: roomId }); };
     ws.onmessage = (e) => {
       let m; try { m = JSON.parse(e.data); } catch (_) { return; }
+      if (m.t === 'presence') { scheduleSync(); return; }
       if (m.t === 'spot' && m.room === roomId && m.member !== meId) {
         const g = figureFor(m.member); if (!g) return; // new arrivals show on next load
         const p = spotToXY(m.spot, posOf(g)); walk(g, p.x, p.y);
@@ -50,7 +77,13 @@
     };
     ws.onclose = () => { setTimeout(connect, 3000); };
   }
-  if (meId) { connect(); setInterval(() => wsSend({ t: 'here', room: roomId }), 60000); }
+  if (meId) {
+    connect();
+    setInterval(() => wsSend({ t: document.hidden ? 'away' : 'here', room: roomId }), 60000);
+    document.addEventListener('visibilitychange', () => wsSend({ t: document.hidden ? 'away' : 'here', room: roomId }));
+    setInterval(syncPresence, 12000);
+    syncPresence();
+  }
 
   // my own moves
   const meFig = () => room.querySelector('.rv-figure.rv-me') || (meId && figureFor(meId));
