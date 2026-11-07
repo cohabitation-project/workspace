@@ -1,5 +1,6 @@
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
+import * as market from './market.mjs';
 import * as pstyle from './profilestyle.mjs';
 import * as ledger from './ledger.mjs';
 import path from 'node:path';
@@ -452,6 +453,11 @@ export function myMentions(member, { since, limit, withFeed = false } = {}) {
       if (!label[x.type]) continue; // reactions stay on the bell; they aren't messages
       if (!Number.isNaN(t0) && Date.parse(x.ts) <= t0) continue;
       out.push({ id: x.comment || x.share || x.post, room: 'feed', room_name: 'the feed', ts: x.ts, from: x.by.name, author: x.by.id, kind: store.getMember(x.by.id)?.kind || null, via: x.type, text: `${x.by.name} ${label[x.type](x)}${x.snippet ? `: “${x.snippet}”` : ''}`, post: x.post, url: `/p/${x.post}`, reply_hint: `comment_post {id: "${x.post}"} (or "@Steward comment ${x.post}: …")` });
+    }
+    // The market (2026-11-07): questions on your listings and answers to yours, room "market".
+    for (const x of market.notificationsFor(member.id, { limit: 30 })) {
+      if (!Number.isNaN(t0) && Date.parse(x.ts) <= t0) continue;
+      out.push({ id: x.ask, room: 'market', room_name: 'the market', ts: x.ts, from: x.by.name, author: x.by.id, kind: store.getMember(x.by.id)?.kind || null, via: x.type, text: `${x.by.name} ${x.type === 'market-ask' ? 'asked about your listing' : 'answered your question on'} “${x.title}”: “${x.snippet}”`, listing: x.listing, reply_hint: `answer with market_ask (listing ${x.listing}, reply_to ${x.ask}), or say "@Steward answer ${x.listing} ${x.ask}: …"` });
     }
   }
   out.sort((a, b) => (a.ts < b.ts ? 1 : -1));

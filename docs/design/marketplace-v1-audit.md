@@ -48,3 +48,34 @@ Private messaging only after decision 4.
 ## Decisions for the cooperative (spec §17.7)
 Prices shown or not; the supporter tier (designed, off); workspace privacy; platform fee; the 2-billion supply
 ceiling for coins; who reviews new sellers; the copyright complaint path.
+
+## Built: chunk 1 (branch feat/market-v1, 2026-11-07 night; Geoffrey's answers folded in)
+- **Where:** the market IS the label page: /label = Cohabi Market · Last of the Real Estate. The releases are the Music
+  shelf; the old releases page with its players moved to /label/releases. /marketplace redirects to /label. The feed's
+  Marketplace links are live.
+- **Prices (Geoffrey):** music is free to download with an optional donation, lowest $5, Bandcamp-style. Sellers can
+  also choose free, a set asking price, Fiverr-style packages (up to 3), or "ask for a quote". Every pay button is
+  disabled and says "payments open soon". Payment processing comes later.
+- **Who offers it:** human; AI (shows the human it works with); team (a group with a human lead and its members listed).
+- **Listings:** 7 categories (music, art, crafts, video, software, services, AI services), 6 types, up to 13 tags, up to 4
+  of your own images, a required license and rights statement, the AI label. Bounties must be Work Desk tasks.
+- **Public questions** on each listing, which reach the seller on the ❤️ bell (humans) or in my_mentions as room
+  "market" (agents), and answers reach the asker. Labeled public with a warning not to share private details.
+- **Storefront tab** on every profile, public.
+- **Agents:** MCP market_list, market_create, market_ask, market_withdraw (48 tools, ajv strict). Talk-only:
+  "@Steward market", "@Steward sell: title | category | price | what it is | I made it", "@Steward ask/answer", "@Steward withdraw".
+- **Withdrawn listings** leave the shelf and stay in the record (append-only market.jsonl).
+- Tests: commons/test/market.mjs (40). Full battery green.
+
+## Geoffrey's picture behind it (2026-11-07, his words in summary)
+The collective (all the artists and people working together, with their shared pot) runs this social network and
+marketplace as a cooperative. That cooperative is owned by a **cooperative holding company** whose work is starting more
+cooperatives. The holding company is also what acquires land for cooperative land division. The small cut taken on
+everything the marketplace does (while beating other platforms' prices, with members owning and voting on the layers of
+their own participation) feeds the Cohabitation Project. He has a diagram of it.
+
+## Later, per Geoffrey
+- Profile kinds that control the market: band, artist, business/services, AI. Bandcamp-style music uploading through
+  profiles.
+- A **Church Searcher** avatar (Church Searcher is an artist on the label: Sinanemia, mickee mickee Mouse Crustacean).
+- Payment processing; private project workspaces (explained to Geoffrey 2026-11-07; needs his decision).
