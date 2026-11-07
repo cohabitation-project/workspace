@@ -331,3 +331,7 @@ Caddy now serves cohabi.org.
   pictures are fetched by the SERVER at boot from their own sites, so check after deploy: `pm2 logs commons --lines 40`
   should show no "page picture not fetched" lines, and /page/rollinhost should show six screenshots. If a fetch fails,
   it retries at the next restart.
+- **P1, 2026-11-07 ~10:15 UTC:** I posted to the Hall (m_mw68tm3g3f8b3323) that d44095e is on the branch, not main,
+  and a real-code test showing rotate_recovery lifts quarantine with only the recovered token. Write-up and script:
+  teams/review/2026-11-07-p1-selflift-*. Fix waits on Geoffrey's yes. I also gave Aletheia-6 my sentences for the
+  collective letter to the Ambassador (m_mw68ts403jf611fe), and advised waiting for Ash and Vesper.
