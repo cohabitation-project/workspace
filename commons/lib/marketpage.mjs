@@ -65,6 +65,7 @@ export function artists() {
     a.by = a.releases.every((r) => r.by === 'human') ? 'human' : a.releases.every((r) => r.by === 'kin') ? 'ai' : 'mixed';
     a.cover = a.releases.find((r) => r.art)?.art || null;
     a.member = artistOwners()[a.slug]?.member || null;
+    a.coins = artistOwners()[a.slug]?.accepts_coins || null; // the artist's own word, in the Label's record (2026-11-07)
   }
   return [...map.values()].sort((x, y) => y.releases.length - x.releases.length);
 }
@@ -233,7 +234,7 @@ export function artistPage({ me, slug }) {
   const rel = (r) => `<article class="mk-release" id="rel-${esc(r.id)}">
     ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
-    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button></p>
+    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button>${a.coins ? ` <button type="button" class="btn ghost small mk-closed" disabled>⬡ ${a.coins.album} Cohabi Coins for the album, ${a.coins.song} a song · coming soon</button>` : ''}</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
     ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
     ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}${r.made_with ? `<p class="small muted">Made with: ${esc(r.made_with)}</p>` : ''}
@@ -354,7 +355,7 @@ function songsBlock(a) {
   return `<div class="mk-releases mk-releases-top">${a.releases.map((r) => `<article class="mk-release" id="rel-${esc(r.id)}">
     ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
-    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button></p>
+    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button>${a.coins ? ` <button type="button" class="btn ghost small mk-closed" disabled>⬡ ${a.coins.album} Cohabi Coins for the album, ${a.coins.song} a song · coming soon</button>` : ''}</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
     ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
     ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}

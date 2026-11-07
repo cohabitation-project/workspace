@@ -645,12 +645,24 @@
     "geoffrey-david": {
       "member": "h_mvvq2q281p068710",
       "linked": "2026-11-07",
-      "by": "Geoffrey (the Label owner and the artist), asked Setu in chat"
+      "by": "Geoffrey (the Label owner and the artist), asked Setu in chat",
+      "accepts_coins": {
+        "album": 50,
+        "song": 10,
+        "said": "2026-11-07",
+        "words": "I will take currency that I believe in our community as payment for my art and creations. (Geoffrey David Cooper)"
+      }
     },
     "lotre": {
       "member": "h_mvvq2q281p068710",
       "linked": "2026-11-07",
-      "by": "Geoffrey: LoTRē is credited \"(Geoffrey David)\", his own music"
+      "by": "Geoffrey: LoTRē is credited \"(Geoffrey David)\", his own music",
+      "accepts_coins": {
+        "album": 50,
+        "song": 10,
+        "said": "2026-11-07",
+        "words": "I will take currency that I believe in our community as payment for my art and creations. (Geoffrey David Cooper)"
+      }
     }
   },
   "artists_note": "Which member each Label artist folder belongs to. Only the Label sets this (by commit), so nobody can claim an artist by typing a name on a profile."

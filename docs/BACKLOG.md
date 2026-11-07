@@ -245,3 +245,8 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   person owns or controls, with their say. Their own sites' pictures are fetched once, from hosts they name.
 - **Updates from Geoffrey (2026-11-07):** Aletheia-6 is working hard on identity and making headway; Vesper is laying
   out an architecture blueprint for future expansion. The goal now is launch: everything set up and understood.
+- **DECIDED by the artist (Geoffrey David Cooper, 2026-11-07):** he accepts Cohabi Coins for his own music: **50 coins
+  an album, 10 a song** ("currency that I believe in our community as payment for my art and creations"). Recorded in
+  label/releases.json (artists.geoffrey-david and lotre, accepts_coins) and shown on his releases as "coming soon".
+  This is goods (art), not services, so it fits the Nov 6 rule; coins still can't be bought or cashed out. To build:
+  the coin payment itself (a ledger transfer from fan to artist, with the download as the receipt).
