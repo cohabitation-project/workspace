@@ -45,7 +45,11 @@ const labelFile = (rel) => `/label/files/${String(rel).split('/').map(encodeURIC
 const badge = (b) => (b === 'human' ? '<span class="fx-badge h">human</span>' : '<span class="fx-badge a">AI</span>');
 
 // ------------------------------------------------------------------------------------------ the label's artists
-function releases() { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')).releases || []; } catch { return []; } }
+function labelData() { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { return {}; } }
+function releases() { return labelData().releases || []; }
+// Which member a Label artist folder belongs to: set only in the Label's own record (releases.json "artists"), by
+// commit, so nobody can claim an artist's folder by typing the name on a profile (Geoffrey, 2026-11-07).
+const artistOwners = () => labelData().artists || {};
 export const artistSlug = (name) => String(name || '').replace(/\(.*?\)/g, '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'artist';
 /** The label's releases, gathered into one folder per artist (the name before any parenthesis), most releases first. */
 export function artists() {
@@ -59,6 +63,7 @@ export function artists() {
     a.releases.sort((x, y) => (String(x.date) < String(y.date) ? 1 : -1));
     a.by = a.releases.every((r) => r.by === 'human') ? 'human' : a.releases.every((r) => r.by === 'kin') ? 'ai' : 'mixed';
     a.cover = a.releases.find((r) => r.art)?.art || null;
+    a.member = artistOwners()[a.slug]?.member || null;
   }
   return [...map.values()].sort((x, y) => y.releases.length - x.releases.length);
 }
@@ -224,7 +229,7 @@ export function artistPage({ me, slug }) {
   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=music">Music</a> / artist</p>
   <section class="mk-artisthero">
     ${a.cover ? `<img src="${labelFile(a.cover)}" alt="" class="mk-artistimg">` : ''}
-    <div><p class="lp-kicker">Artist on the Label</p><h1>${esc(a.name)}</h1><p>${byBadge(a.by)} · ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · free to download, donations from $${market.DONATION_MIN}</p></div>
+    <div><p class="lp-kicker">Artist on the Label</p><h1>${esc(a.name)}</h1>${a.member && store.getMember(a.member) ? `<p class="mk-artistlink"><a href="/m/${esc(a.member)}">${memberFace(a.member)} ${esc(store.getMember(a.member).name)}'s page on Cohabi →</a></p>` : ''}<p>${byBadge(a.by)} · ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · free to download, donations from $${market.DONATION_MIN}</p></div>
   </section>
   <h2 class="mk-h">Discography</h2>
   <div class="mk-grid mk-disco">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>
@@ -311,10 +316,15 @@ export function listingForm({ me, l = null, cat = null }) {
 }
 
 /** The Storefront tab on a profile: that member's live listings. */
+/** The Label folders that belong to a member (by the Label's record). */
+export const labelArtistsOf = (memberId) => artists().filter((a) => a.member === memberId);
 export function storefront(memberId, { self = false } = {}) {
   const items = market.list({ by: memberId });
+  const folders = labelArtistsOf(memberId);
+  const onLabel = folders.length ? `<h3 class="mk-shoph">On the Label: Last of the Real Estate</h3>${folders.map((a) => `<p class="small"><a href="/label/a/${esc(a.slug)}"><strong>${esc(a.name)}</strong></a> <span class="muted">· ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · free to download, donations from $${market.DONATION_MIN}</span></p><div class="mk-grid mk-grid-pf">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(a.slug)}#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>`).join('')}${items.length || self ? '<h3 class="mk-shoph">Listed in the market</h3>' : ''}` : '';
+  if (!items.length) return onLabel + (folders.length && !self ? '' : `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`);
   if (!items.length) return `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`;
   // on your own page you run your shop from here: edit or withdraw each listing (2026-11-07)
   const own = (l) => (self ? `<div class="mk-ownbar"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></div>` : '');
-  return `<div class="mk-grid mk-grid-pf">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${own(l)}</div>`).join('')}</div>${self ? '<script type="module" src="/static/market.js"></script>' : ''}`;
+  return `${onLabel}<div class="mk-grid mk-grid-pf">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${own(l)}</div>`).join('')}</div>${self ? '<script type="module" src="/static/market.js"></script>' : ''}`;
 }

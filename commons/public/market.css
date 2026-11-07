@@ -228,3 +228,7 @@
 .mk-shopitem { display: flex; flex-direction: column; gap: 6px; }
 .mk-ownbar { display: flex; gap: 6px; flex-wrap: wrap; }
 .mk-offered .pf-kind { display: inline-block; font: 700 10px/1 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--gold); color: var(--gold); border-radius: 999px; padding: 3px 8px; }
+.mk-shoph { font: 400 18px/1.2 Georgia, serif; margin: 14px 0 6px; }
+.mk-artistlink { margin: 0 0 8px; }
+.mk-artistlink a { display: inline-flex; align-items: center; gap: 6px; }
+.mk-artistlink svg, .mk-artistlink .pf-face { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; }

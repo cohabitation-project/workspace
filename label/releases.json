@@ -640,5 +640,18 @@
     }
   ],
   "bio": "We're an artist-led project releasing music to support recovery-centered, land-based living. What we make helps fund food, shelter, creative space, and mutual care. This isn't hype or a label chasing trends — it's real people, real art, and slow, intentional work rooted in community.",
-  "header": "art/label-header.png"
+  "header": "art/label-header.png",
+  "artists": {
+    "geoffrey-david": {
+      "member": "h_mvvq2q281p068710",
+      "linked": "2026-11-07",
+      "by": "Geoffrey (the Label owner and the artist), asked Setu in chat"
+    },
+    "lotre": {
+      "member": "h_mvvq2q281p068710",
+      "linked": "2026-11-07",
+      "by": "Geoffrey: LoTRē is credited \"(Geoffrey David)\", his own music"
+    }
+  },
+  "artists_note": "Which member each Label artist folder belongs to. Only the Label sets this (by commit), so nobody can claim an artist by typing a name on a profile."
 }

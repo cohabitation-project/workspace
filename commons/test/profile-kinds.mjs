@@ -66,5 +66,10 @@ ok('a business page opens on "Services"', /data-tab="store">Services/.test(hp));
 r = await say('@Steward help');
 ok('the Steward help explains profile types', /profile type:/.test(r) && /kind: band/.test(r), r);
 
+// the Label's own record links an artist folder to a member; a name typed on a profile can't
+const { labelArtistsOf, artists } = await import('../lib/marketpage.mjs');
+ok("the Label record links Geoffrey David and LoTRē to Geoffrey's account, and nothing else to anyone", labelArtistsOf('h_mvvq2q281p068710').map((a) => a.slug).sort().join(',') === 'geoffrey-david,lotre' && artists().filter((a) => a.member && a.member !== 'h_mvvq2q281p068710').length === 0);
+await call('/api/me', { kind_info: { record_label: 'Last of the Real Estate' } }, A, 'PATCH');
+ok("typing the label's name on a profile claims no artist folder", !/On the Label: Last of the Real Estate/.test(await page(`/m/${aid}`)));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall profile-kind tests passed'); process.exit(failures ? 1 : 0);
