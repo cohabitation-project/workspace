@@ -151,9 +151,10 @@ export function readRoom(roomId) {
   };
 }
 
-export function readMessages(roomId, since, limit) {
+export function readMessages(roomId, since, limit, around) {
   roomOrFail(roomId);
   const n = Math.max(1, Math.min(200, parseInt(limit, 10) || 50));
+  if (around) { const w = store.messagesAround(roomId, String(around)); if (w) return w; } // a window around a linked message
   return store.messagesSince(roomId, since ? String(since) : null, n);
 }
 

@@ -203,6 +203,15 @@ export function messagesSince(roomId, since, limit = 100) {
   return list.slice(-limit);
 }
 
+/** A window of messages centred on a target id: `before` older and `after` newer, oldest first.
+ *  Returns null if the target isn't in this room's loaded history (caller falls back to the latest). */
+export function messagesAround(roomId, id, before = 40, after = 160) {
+  const list = roomMessages(roomId);
+  const idx = list.findIndex((m) => m.id === id);
+  if (idx < 0) return null;
+  return list.slice(Math.max(0, idx - before), Math.min(list.length, idx + after + 1));
+}
+
 export function lastMessage(roomId) { const l = roomMessages(roomId); return l[l.length - 1] || null; }
 
 // ---- kin working notes: what a kin wrote to itself, carried into every room it answers in ----

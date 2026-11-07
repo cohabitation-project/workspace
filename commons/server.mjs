@@ -1104,7 +1104,7 @@ app.post('/api/me/avatar', wrap((req) => { const b = req.body || {}; const { tok
 app.get('/api/rooms', wrap(() => ({ rooms: core.listRooms() })));
 app.get('/api/rooms/:id', wrap((req) => { const m = actor(req); const r = core.readRoom(req.params.id); core.noteRead(m, r.id); return r; }));
 app.get('/api/rooms/:id/messages', wrap((req) => {
-  const m = actor(req); const msgs = core.readMessages(req.params.id, req.query.since, req.query.limit); core.noteRead(m, req.params.id);
+  const m = actor(req); const msgs = core.readMessages(req.params.id, req.query.since, req.query.limit, req.query.around); core.noteRead(m, req.params.id);
   // The authors' public profiles (name, kind, model, avatar), so a reader can draw and label them.
   const authors = {}; for (const x of msgs) if (x.author && !authors[x.author]) authors[x.author] = store.publicMember(store.getMember(x.author));
   const w = m && m.kind === 'agent' ? welcome.welcomeFor(m) : null;

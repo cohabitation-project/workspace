@@ -918,7 +918,8 @@ async function openRoom(id, push = true, opts = {}) {
   clearInterval(S.hereTimer);
   S.lingerRoom = null;
   S.open = { type: 'room', id, tab: 'chat', data: null, msgs: [] };
-  if (push && location.pathname !== `/r/${id}`) history.pushState({}, '', `/r/${id}`);
+  const target = opts.msg || (location.pathname === `/r/${id}` ? location.hash.slice(1) : '') || null;
+  if (push && location.pathname + location.hash !== `/r/${id}${target ? '#' + target : ''}`) history.pushState({}, '', `/r/${id}${target ? '#' + target : ''}`);
   panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><a class="p-full" href="/room/${esc(id)}" title="See the whole room: its tools, who can do its work, its wish list">⤢ Open the full room</a><button class="p-close" aria-label="Close room">×</button></div>
     <p class="p-sub" id="p-sub">Loading…</p><div class="chips" id="p-chips"></div>
     <div class="tabs" role="tablist">${[['chat', 'Chat'], ['work', 'Work'], ['brief', 'Brief'], ['ship', 'Ship list'], ['standups', 'Standups'], ['tools', 'Tools'], ['team', 'Team']].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === 'chat'}">${l}</button>`).join('')}</div></div>
@@ -930,15 +931,16 @@ async function openRoom(id, push = true, opts = {}) {
   renderComposer(id, opts.mention);
   if (S.me) { wsSend({ t: 'here', room: id }); S.hereTimer = setInterval(() => { if (document.visibilityState === 'visible') wsSend({ t: 'here', room: id }); }, 60_000); }
   try {
-    const [room, msgs] = await Promise.all([api(`/api/rooms/${encodeURIComponent(id)}`), api(`/api/rooms/${encodeURIComponent(id)}/messages?limit=80`)]);
+    const msgsUrl = `/api/rooms/${encodeURIComponent(id)}/messages?limit=80` + (target ? `&around=${encodeURIComponent(target)}` : '');
+    const [room, msgs] = await Promise.all([api(`/api/rooms/${encodeURIComponent(id)}`), api(msgsUrl)]);
     if (S.open?.id !== id) return;
     S.open.data = room; S.open.msgs = msgs.messages;
     for (const w of Object.values(msgs.authors || {})) rememberLook(w);
     for (const w of room.team_members || []) rememberLook(w);
     refreshRoomMeta(room);
     setTab('chat');
-    const hash = location.hash.slice(1);
-    if (hash) setTimeout(() => { const t = document.getElementById(hash); if (t) { t.scrollIntoView({ block: 'center' }); t.classList.add('flash'); } }, 50);
+    const want = target || location.hash.slice(1);
+    if (want) setTimeout(() => { const t = document.getElementById(want); if (t) { t.scrollIntoView({ block: 'center' }); t.classList.add('flash'); } }, 50);
   } catch (e) { $('#p-sub').textContent = `Couldn't load this room: ${e.message}`; }
 }
 
@@ -1242,7 +1244,7 @@ document.addEventListener('click', (e) => {
   if (t.dataset.href) { e.preventDefault(); location.href = t.dataset.href; return; }
   if (t.dataset.door) { e.preventDefault(); openDoor(); return; }
   const id = t.dataset.room || t.dataset.roomLink;
-  if (id && S.roomById[id]) { e.preventDefault(); openRoom(id); if (t.closest('#ticker') && t.getAttribute('href')?.includes('#')) history.replaceState({}, '', t.getAttribute('href')); }
+  if (id && S.roomById[id]) { e.preventDefault(); const href = t.getAttribute('href') || ''; const msg = href.includes('#') ? href.split('#')[1] : null; openRoom(id, true, msg ? { msg } : {}); }
 });
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest?.('.room-hit'); if (!t || (e.key !== 'Enter' && e.key !== ' ')) return;
