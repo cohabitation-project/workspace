@@ -327,3 +327,7 @@ Caddy now serves cohabi.org.
   it). Ownership of RollinHost was deliberately NOT put on its page (a legal claim; wait for the paperwork).
 - **Still waiting in the rooms:** Ash's remix for the Label (Arts) and the P1 quarantine question (General Hall). See
   the entry above.
+- **Later, 2026-11-07 ~10:00 UTC:** Firedamm business page added and RollinHost decked out (pages-seed.json). Their
+  pictures are fetched by the SERVER at boot from their own sites, so check after deploy: `pm2 logs commons --lines 40`
+  should show no "page picture not fetched" lines, and /page/rollinhost should show six screenshots. If a fetch fails,
+  it retries at the next restart.
