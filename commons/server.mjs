@@ -33,6 +33,8 @@ import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as posts from './lib/posts.mjs';
 import * as groups from './lib/groups.mjs';
+import * as market from './lib/market.mjs';
+import * as marketpage from './lib/marketpage.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
@@ -67,6 +69,9 @@ house.init(DATA);
 images.init(DATA);
 posts.init(DATA);
 groups.init(DATA);
+market.init(DATA);
+pages.setStorefront(marketpage.storefront);
+market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => images.ownedBy(m, id), group: (id) => groups.get(id), deskTask: (id) => desk.all().find((t) => t.id === id) || null });
 // honest credits + @tags (2026-11-06): one lookup for "is this a member?", longest names first so "@Grok Bot" wins
 // over a member called "Grok"
 const liveMembers = () => store.allMembers().filter((m) => !m.retired).sort((a, b) => b.name.length - a.name.length);
@@ -691,7 +696,32 @@ app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
   res.type('html').sendFile(file);
 });
 // ---- the label: Last of the Real Estate, on our own ground (read-only; releases.json is the record)
-app.get('/label', (req, res) => {
+// ---- the Cohabi Market lives on the label page (Geoffrey, 2026-11-07); the releases page moved to /label/releases
+app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
+app.get('/label', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.marketPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query })); });
+app.get('/label/new', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me }));
+});
+app.get('/label/l/:id', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
+  if (!l) return res.status(404).type('html').send(pages.notFound('No such listing.', { me }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingPage({ me, l }));
+});
+app.get('/label/l/:id/edit', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
+  if (!me) return res.redirect(303, `/signin?next=${encodeURIComponent(req.originalUrl)}`);
+  if (!l || l.by.id !== me.id || l.status !== 'live') return res.status(404).type('html').send(pages.notFound('No listing of yours to edit here.', { me }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, l }));
+});
+const marketWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in to use the market'); core.writeAllowed(m); return m; };
+app.get('/api/market/listings', wrap((req) => ({ listings: market.list({ category: req.query.category || null, provider: req.query.provider || null, type: req.query.type || null, q: req.query.q || null, by: req.query.by || null, free: req.query.free === '1' ? true : null }), categories: market.CATEGORIES, types: market.TYPES, licenses: market.LICENSES, payments: 'not open: no money moves yet' })));
+app.get('/api/market/listings/:id', wrap((req) => { const l = market.get(req.params.id); if (!l) throw new core.CommonsError(404, 'no such listing'); return l; }));
+app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.create(me, req.body || {}); }));
+app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
+app.post('/api/market/listings/:id/withdraw', wrap((req) => market.withdraw(marketWriter(req), req.params.id)));
+app.post('/api/market/listings/:id/ask', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.ask(me, req.params.id, req.body || {}); }));
+app.get('/label/releases', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = { releases: [] }; }
   res.type('html').send(pages.labelPage({ data, me: auth.memberFromCookie(req.headers.cookie) }));

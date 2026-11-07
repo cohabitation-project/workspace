@@ -17,6 +17,7 @@ import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as posts from './posts.mjs';
+import * as market from './market.mjs';
 import * as groups from './groups.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
@@ -130,7 +131,7 @@ const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a co
 // ------------------------------------------------------------------------------------------ left rail
 function leftRail(me, myGroups) {
   const nav = [
-    ['🏠', 'Home', '/feed', null], ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', null, 'The marketplace'],
+    ['🏠', 'Home', '/feed', null], ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null],
     ['🏛', 'Headquarters', '/headquarters', null], ['🧰', 'Jobs', '/desk', null], ['🎵', 'Arts & Music', '/label', null],
     ['🏪', 'Store', '/store', null], ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', null, 'Messages'],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
@@ -182,10 +183,10 @@ const SEVEN_DAYS = 7 * 86400_000;
 function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAYS).toISOString(); return items.filter((x) => x.ts > t).length; }
 function bellsFor(me) {
   const m = store.getMember(me.id);
-  const soc = posts.notificationsFor(me.id, { limit: 25 });
-  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}` };
+  const soc = [...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 })].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
+  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'market-answer': (n) => `answered your question on “${n.title}”` };
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
-  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="/feed#${esc(n.post)}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
+  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
   const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
   if (!isCommonsMember(m)) return social;
@@ -214,6 +215,51 @@ export function cardsHTML(list, me, { offset = 0 } = {}) {
 export function singlePostPage({ me, id }) {
   const p = posts.list({ limit: 5000 }).find((x) => x.id === id);
   return p ? feedPage({ me, tab: 'one', one: p }) : null;
+}
+/** The Cohabi frame shared by the feed's sister pages (the market): same header, bells, themes and bottom bar. */
+export function shell({ me, title, description = '', active = 'market', center, right = '', scripts = [], bodyAttrs = '' }) {
+  const bal = me ? ledger.balance(ledger.wallet(me.id)) : 0;
+  const cur = (k) => (k === active ? ' aria-current="page"' : '');
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>${esc(title)} · Cohabi</title>
+<meta name="description" content="${esc(description)}">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/market.css?v=${ASSET_V}">
+</head>
+<body class="fx-page" data-theme="${esc(themeOf(me))}" style="--gold:${accentHex(me)}"${bodyAttrs}>
+<header class="fx-top">
+  <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
+  <nav class="fx-topnav" aria-label="Cohabi">
+    <a href="/feed"${cur('home')}><span aria-hidden="true">🏠</span> Home</a>
+    <a href="/label"${cur('market')}><span aria-hidden="true">🛍</span> Marketplace</a>
+    <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
+  </nav>
+  <div class="fx-topr">
+    ${me ? `<a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}
+  </div>
+</header>
+<div class="fx-shell mk-shell">
+  <main class="fx-center mk-center" id="main">${center}</main>
+  <aside class="fx-right" aria-label="About the market">${right}${footNote}</aside>
+</div>
+<nav class="fx-bottom" aria-label="Main">
+  <a href="/feed"><span aria-hidden="true">🏠</span>Home</a>
+  <a href="/feed?tab=groups"><span aria-hidden="true">👥</span>Groups</a>
+  ${me ? '<a class="fx-plus" href="/label/new" aria-label="List something">＋</a>' : '<a class="fx-plus" href="/join" aria-label="Join to list something">＋</a>'}
+  <a href="/label"${cur('market')}><span aria-hidden="true">🛍</span>Market</a>
+  <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
+</nav>
+<div class="fx-toast" id="fx-toast" role="status" hidden></div>
+<script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script>
+${scripts.map((u) => `<script type="module" src="${esc(u)}?v=${ASSET_V}"></script>`).join('\n')}
+</body>
+</html>`;
 }
 export function feedPage({ me, tab = 'everyone', one = null }) {
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
@@ -255,7 +301,7 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
   <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
   <nav class="fx-topnav" aria-label="Cohabi">
     <a href="/feed" aria-current="page"><span aria-hidden="true">🏠</span> Home</a>
-    <button type="button" data-soon="The marketplace"><span aria-hidden="true">🛍</span> Marketplace <span class="fx-soon">soon</span></button>
+    <a href="/label"><span aria-hidden="true">🛍</span> Marketplace</a>
     <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
   </nav>
   <div class="fx-topr">
@@ -271,7 +317,7 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
   <a href="/feed"${tab !== 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">🏠</span>Home</a>
   <a href="/feed?tab=groups"${tab === 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">👥</span>Groups</a>
   ${me ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/join" aria-label="Join to post">＋</a>'}
-  <button type="button" data-soon="The marketplace"><span aria-hidden="true">🛍</span>Market</button>
+  <a href="/label"><span aria-hidden="true">🛍</span>Market</a>
   <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
 </nav>
 ${me ? membersDatalist() : ''}

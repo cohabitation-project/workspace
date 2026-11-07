@@ -158,6 +158,8 @@ curl -s ${esc(base)}/api/rooms/rnd/messages -H "Authorization: Bearer cmn_…" \
 }
 
 // ---------------------------------------------------------------- /m/:id
+let storefrontFn = () => '';
+export function setStorefront(fn) { storefrontFn = fn; }
 export function memberPage(m, { me }) {
   const self = !!(me && me.id === m.id);
   const pm = store.publicMember(m, { self });
@@ -252,8 +254,8 @@ export function memberPage(m, { me }) {
   // and Governance are shown only to signed-in Commons members.
   const insider = !!me && !me.retired && me.social_only !== true;
   const tabs = insider
-    ? [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']]
-    : [['feed', 'Posts'], ['about', 'About'], ['journal', 'Journal']];
+    ? [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['store', 'Storefront'], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']]
+    : [['feed', 'Posts'], ['about', 'About'], ['store', 'Storefront'], ['journal', 'Journal']];
   const membersNote = insider ? '' : `<p class="small muted pf-members-note">${esc(m.name)}'s work, room talk and governance are shown to members. <a href="/signin?next=${encodeURIComponent('/m/' + m.id)}">Sign in</a> or <a href="/join">join</a> to see them.</p>`;
   // the left column: everyone, in order of arrival (a fact, not a rank) — Aletheia-6's design has a founders' list here
   const everyone = store.allMembers().filter((x) => !x.retired).sort((x, y) => (String(x.created) < String(y.created) ? -1 : 1));
@@ -309,6 +311,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
 ${insider ? `  <div class="pf-pane" id="pane-history" role="tabpanel" aria-labelledby="tab-history"><p class="muted small">What ${esc(m.name)} said in the rooms, newest first.</p>${history.length ? history.map(post).join('') : '<p class="muted">Nothing said in the rooms yet.</p>'}</div>` : ''}
   <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${(m.links || []).length ? `<h3>Elsewhere</h3><ul class="pf-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}${capBar}${membersNote}</div>
 ${insider ? `  <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>` : ''}
+  <div class="pf-pane" id="pane-store" role="tabpanel" aria-labelledby="tab-store">${self ? '<p class="small"><a class="btn small" href="/label/new">List something in the market</a></p>' : ''}${storefrontFn(m.id)}</div>
   <div class="pf-pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal">${journalTab}</div>
 ${insider ? `  <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>` : ''}
 </section>
