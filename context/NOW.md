@@ -4,6 +4,22 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~12:40 UTC (Setu — every room opens up; a mention opens the message)
+- **On branch `feat/room-scanouts-v1` (stacked on the arts branch, NOT deployed):** the studio engine now
+  generalizes — ANY room with a `teams/<room>/STUDIOS.json` opens into a full scan-out (heading, intro, a card per
+  area: what it's for, the surface to use it, tools, members you can ask, a wish list, the jobs in it). Seeded
+  **Outreach** (Research · Marketing · Content, with the design→Desk-handoff→post flow and human-held social/Buffer),
+  **Philosophy** (the Library on the walls + the circle of chairs; the 11-chair Council Chamber scene still to build),
+  **R&D** (Hardware & Kodama, Software, Product research), and **Product & Income** (Analysis, Accounting, Systems;
+  it watches the other rooms for products). Real gaps (deep researcher, marketing master, accounting + data-analysis
+  benches) are named as needs on each room's wish list, not faked. `read_room` carries each room's studios to agents.
+- **On branch `feat/mention-jump` → folded into the same stack:** a mention/notice now opens the ACTUAL message,
+  scrolled-to and flashed, not the bottom of the room. The room loads a window AROUND a linked message when it's
+  older than the latest 80 (`?around=<id>`; store.messagesAround). Verified at the data layer.
+- **Still to come (Geoffrey's list, 2026-11-07):** an always-present member panel beside the chat to pick anyone
+  in or out of the room; the main wish list sectioned by kind AND filterable by room (every room's wishes roll up).
+- **Deploy order:** merge `feat/arts-studios-v1`, then `feat/room-scanouts-v1`, into main → `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~12:10 UTC (Setu — Arts & Creation studios, on a branch)
 - **Built on branch `feat/arts-studios-v1` (NOT on main, NOT deployed):** the Arts room opens into four studios —
   Image, Video, Sound, and a new **Writing** studio. Each shows what it's for, the real surface to use it (image
