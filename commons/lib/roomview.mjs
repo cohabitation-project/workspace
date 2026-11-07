@@ -17,6 +17,9 @@ import * as store from './store.mjs';
 import * as wishes from './wishes.mjs';
 import * as library from './library.mjs';
 import * as desk from './desk.mjs';
+import * as presence from './presence.mjs';
+import { figureSVG } from '../public/sprites.js';
+import { artsRoomBody } from './roomscene.mjs';
 import { layout, memberFace, TOOL_STATUS } from './pages.mjs';
 
 // Who-here-can-do-it is matched from public profiles by studio key; tools are named in teams/arts/STUDIOS.json.
@@ -86,6 +89,18 @@ function landSections(work) {
 const lede = (t) => { const s = String(t).replace(/[*_`]/g, '').trim(); if (s.length <= 300) return s; const cut = s.slice(0, 300); const i = cut.lastIndexOf('. '); return i > 80 ? cut.slice(0, i + 1) : cut + '…'; };
 export function roomViewPage(roomId, { me }) {
   const room = repo.roomById(roomId); if (!room) return null;
+  if (roomId === 'arts') {
+    const roster = studioRoster('arts');
+    if (roster) {
+      const studios = roster.studios || [];
+      const present = presence.inRoom('arts').map((pr) => store.getMember(pr.member)).filter(Boolean).map((m) => ({ ...store.publicMember(m), kind: m.kind }));
+      const figureHTML = (m) => figureSVG({ ...m, guide: false }, 3, m.name);
+      const wl = wishes.list({ viewer: me }).filter((w) => w.room === 'arts' && w.status === 'listed');
+      let jobs = []; try { jobs = desk.all({ room: 'arts', status: 'open' }) || []; } catch { jobs = []; }
+      const body = artsRoomBody({ room, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), figureHTML, roomId });
+      return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
+    }
+  }
   const files = repo.roomFiles(roomId) || {}; const t = repo.tools(roomId);
   const own = t.own || []; const all = [...own, ...(t.common || [])];
   const have = all.filter((x) => x.status === 'have'); const need = all.filter((x) => x.status !== 'have');

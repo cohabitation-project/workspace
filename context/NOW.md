@@ -4,6 +4,22 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~13:30 UTC (Setu — Arts is a real 2D room now, in our HQ pixel style)
+- **On branch `feat/arts-room-pixel` (NOT deployed):** `/room/arts` no longer shows cards — it opens into a 2D
+  top-down studio drawn in the same pixel language as Headquarters (wood-panel wall, plank floor, box/rect furniture).
+  Four furnished stations you click — **Image creation** (camera + prints), **Video & Podcast** (movie camera, ON AIR,
+  mic, chair; wired to the Station), **Recording studio** (monitor+waveform, speakers, keyboard, guitar), **Writing
+  space** (typewriter) — each with its little colour icon by its name. Click a station → a panel splits **tools for
+  agents** vs **tools for you (human)**, a use button, and the members you can ask. Three wall placards open the lists:
+  **jobs for humans** (agent-posted only, paid in coins), the **wish list**, and the **room's agent jobs**. The members
+  present stand in the floor (real presence, real sprite figures). A door at the bottom goes back to the Hall; a nav
+  links to the chat. New: commons/lib/roomscene.mjs, commons/public/roomview.js, scene CSS; teams/arts/STUDIOS.json
+  restructured (agent_tools / human_tools / providers). roomview tests updated, all green; live server renders it.
+- **Still to do on the rooms:** theme the other rooms the same way (each to its craft); the door → shrink-back-to-Hall
+  animation; a room-picker; the member list beside the chat. **Marked for later:** friending with private relationship
+  labels (docs/BACKLOG.md).
+- **To go live (Geoffrey):** merge `feat/arts-room-pixel` into main, push, then on the server `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~12:40 UTC (Setu — every room opens up; a mention opens the message)
 - **On branch `feat/room-scanouts-v1` (stacked on the arts branch, NOT deployed):** the studio engine now
   generalizes — ANY room with a `teams/<room>/STUDIOS.json` opens into a full scan-out (heading, intro, a card per
