@@ -97,12 +97,39 @@
   function schedule() { const tk = setlist.tracks[trackIx]; clearInterval(timer); timer = setInterval(tick, (60 / tk.bpm / 4) * 1000); }
   function togglePlay() {
     if (!setlist) return;
+    stopAlbum();
     if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { return; } }
     if (AC.state === 'suspended') AC.resume();
     playing = !playing;
     const L = document.getElementById('gh-play-label'), B = document.getElementById('gh-play-btn');
-    if (playing) { stepIx = 0; loops = 0; showTrack(); schedule(); if (L) L.textContent = '⏸ Pause'; if (B) B.setAttribute('fill', '#7cd6b4'); }
-    else { clearInterval(timer); timer = null; if (L) L.textContent = '▶ Listen'; if (B) B.setAttribute('fill', '#dc8aa8'); }
+    if (playing) { stepIx = 0; loops = 0; showTrack(); schedule(); if (L) L.textContent = '⏸ Pause (synth)'; if (B) B.setAttribute('fill', '#7cd6b4'); }
+    else { clearInterval(timer); timer = null; if (L) L.textContent = '▶ Hear the score (synth)'; if (B) B.setAttribute('fill', '#dc8aa8'); }
+  }
+
+  // ---- Live album: the real recording (Geoffrey's own label), played start to finish for everyone.
+  let audioEl = null, albumPlaying = false;
+  const albumLabel = (t) => { const L = document.getElementById('gh-album-label'); if (L) L.textContent = t; };
+  function showTrackLive(tk) {
+    const T = document.getElementById('gh-now-title'); if (T) T.textContent = String(tk.n).padStart(2, '0') + ' \u00b7 ' + tk.title;
+    const M = document.getElementById('gh-now-meta'); if (M) M.textContent = '\u25cf LIVE \u00b7 ' + tk.bpm + ' BPM \u00b7 ' + tk.key;
+    const C = document.getElementById('gh-now-code');
+    if (C) { const x = C.getAttribute('x'); while (C.firstChild) C.removeChild(C.firstChild); tk.code.split('\n').forEach((ln, k) => { const ts = document.createElementNS('http://www.w3.org/2000/svg', 'tspan'); ts.setAttribute('x', x); ts.setAttribute('dy', k ? 13 : 0); ts.textContent = ln; C.appendChild(ts); }); }
+  }
+  function stopAlbum() { if (audioEl && albumPlaying) { audioEl.pause(); albumPlaying = false; albumLabel('\u25b6 Live album'); } }
+  function stopSynthForAlbum() { if (playing) { playing = false; clearInterval(timer); timer = null; const L = document.getElementById('gh-play-label'); if (L) L.textContent = '\u25b6 Hear the score (synth)'; } }
+  function playAlbum() {
+    if (!setlist) return;
+    stopSynthForAlbum();
+    audioEl = audioEl || document.getElementById('gh-audio');
+    if (!audioEl) return;
+    if (albumPlaying) { audioEl.pause(); albumPlaying = false; albumLabel('\u25b6 Live album'); return; }
+    if (!audioEl.src) trackIx = 0; // a fresh show starts at track 1
+    const tk = setlist.tracks[trackIx];
+    if (!tk || !tk.audio) { albumLabel('no audio'); return; }
+    if (!audioEl.src || audioEl.src.indexOf(tk.audio) === -1) audioEl.src = tk.audio;
+    audioEl.onended = () => { trackIx = (trackIx + 1) % setlist.tracks.length; const nx = setlist.tracks[trackIx]; if (nx && nx.audio && albumPlaying) { audioEl.src = nx.audio; showTrackLive(nx); audioEl.play().catch(() => {}); } else { albumPlaying = false; albumLabel('\u25b6 Live album'); } };
+    showTrackLive(tk);
+    audioEl.play().then(() => { albumPlaying = true; albumLabel('\u23f8 Pause album'); }).catch(() => { albumLabel('tap again to allow sound'); });
   }
 
   room.addEventListener('click', (e) => {
@@ -115,11 +142,12 @@
     if (zone === 'floor') { goFloor(e); return; }
     if (zone.indexOf('studio:') === 0) { goStation(zone.slice(7)); return; }
     if (zone === 'play') { togglePlay(); return; }
+    if (zone === 'album') { playAlbum(); return; }
     openPanel(zone); // a wall list
   });
   room.addEventListener('keydown', (e) => {
     const hit = e.target.closest('[data-zone]');
-    if (hit && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const z = hit.getAttribute('data-zone'); if (z.indexOf('studio:') === 0) goStation(z.slice(7)); else if (z === 'play') togglePlay(); else if (z !== 'floor' && z !== 'door') openPanel(z); }
+    if (hit && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const z = hit.getAttribute('data-zone'); if (z.indexOf('studio:') === 0) goStation(z.slice(7)); else if (z === 'play') togglePlay(); else if (z === 'album') playAlbum(); else if (z !== 'floor' && z !== 'door') openPanel(z); }
   });
   // datetime-local gives a bare local time; send a real UTC instant so the server compares it correctly.
   const toIso = (v) => { const d = new Date(v); return isNaN(d.getTime()) ? v : d.toISOString(); };

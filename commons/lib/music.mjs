@@ -84,7 +84,9 @@ export function setlistFor(release) {
   if (!release) return null;
   const tracks = (release.tracks || []).map((title, i) => {
     const sc = score(title, i);
-    return { n: i + 1, title: String(title), bpm: sc.bpm, key: sc.key, mood: sc.mood, root: sc.root, steps: sc.steps, code: scoreText(sc) };
+    const f = (release.files || [])[i];
+    const audio = f && f.path ? '/label/files/' + String(f.path).split('/').map(encodeURIComponent).join('/') : null;
+    return { n: i + 1, title: String(title), bpm: sc.bpm, key: sc.key, mood: sc.mood, root: sc.root, steps: sc.steps, code: scoreText(sc), audio };
   });
   return { id: release.id, title: release.title, artist: release.artist, tracks };
 }
