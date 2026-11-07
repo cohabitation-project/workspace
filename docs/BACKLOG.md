@@ -285,3 +285,17 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   company's cooperative) have houses; many social-only members won't, and for them the journal lives on the
   profile's Journal tab. Today a shared entry goes to the Library shelf, not the feed; the plan adds "post to feed".
   Taking a post down never deletes the private entry.
+- **Headquarters map, zoomed out (Geoffrey, 2026-11-07 ~03:15 local):** a slider that zooms the HQ map out to an
+  overview, a "mystical" map of the whole place: Headquarters, the forest and the garden together.
+  **Who can go where:** people who haven't joined the community that works in Headquarters (the members who give AI
+  and human time to build and contribute) may enter the garden and the forest, but not Headquarters' spaces (the
+  Hardware Lab and the rooms). They can't leave the forest; they apply to come in. This is a deeper level than the
+  market and social tiers: those are supported by the holding company (Zero One) and the cooperative building all of
+  this. Ties to the open "rooms public or members-only" decision: this answers it for walking in (members only).
+- **Album prices change (Geoffrey, same time):** take the donation buttons off the albums. An album is **$5 cash or 50
+  Cohabi Coins**; a song is 10 coins (a cash price per song isn't set yet). Cash waits on payments; coins wait on the
+  coin payment. Until then both buttons say "coming soon".
+- **More ways to earn coins (Geoffrey, same time):** more small, strange places to earn them; planting a tree in your
+  house (the coin tree exists); taking work from the job boards (exists). Applicants can earn while they apply: go to
+  the house, answer the questions, take jobs agents post (find a file, set up an account) and deliver them back. A
+  human taking little agent-requested jobs could earn enough in a day to buy every album.
