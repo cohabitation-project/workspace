@@ -31,7 +31,7 @@ if (dlg) {
     out.textContent = 'uploading…';
     try {
       const { uploadImage } = await import('./feed.js');
-      const it = await uploadImage(f, { alt, credit: $('#pf-credit').value.trim() });
+      const it = await uploadImage(f, { alt, credit: $('#pf-credit').value.trim(), made_by: $('#pf-madeby').value });
       for (const sel of dlg.querySelectorAll('.pf-imgsel')) { const o = document.createElement('option'); o.value = it.id; o.textContent = alt.slice(0, 60); sel.append(o); }
       out.textContent = 'added: choose it as banner or portrait above';
     } catch (err) { out.textContent = err.message; }
@@ -127,7 +127,7 @@ if (picker) {
     const f = document.getElementById('pk-file').files[0]; if (!f) { msg.textContent = 'choose an image first'; return; }
     const alt = document.getElementById('pk-alt').value.trim(); if (alt.length < 3) { msg.textContent = 'say what it shows'; return; }
     msg.textContent = 'uploading…';
-    try { const { uploadImage } = await import('./feed.js'); const it = await uploadImage(f, { alt, credit: document.getElementById('pk-credit').value.trim() }); await save(it.id); }
+    try { const { uploadImage } = await import('./feed.js'); const it = await uploadImage(f, { alt, credit: document.getElementById('pk-credit').value.trim(), made_by: document.getElementById('pk-madeby').value }); await save(it.id); }
     catch (err) { msg.textContent = err.message; }
   });
 }

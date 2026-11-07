@@ -23,7 +23,7 @@ import * as ledger from './ledger.mjs';
 import * as petition from './petition.mjs';
 import { songUrl } from './profilestyle.mjs';
 import * as core from './core.mjs';
-import { memberFace, releaseCard, groupChip } from './pages.mjs';
+import { memberFace, releaseCard, groupChip, linkTags, creditHTML, membersDatalist } from './pages.mjs';
 
 const ASSET_V = Date.now().toString(36);
 export const ACCENTS = { gold: '#e3c17b', jade: '#5fbf9a', sky: '#6fb3e8', coral: '#ef8a6b', violet: '#a98be8', silver: '#c9cfd6', rose: '#e88aa8', lime: '#a6d65a' };
@@ -64,10 +64,10 @@ export function postCard(p, me) {
   const top = (p.reactions || []).slice().sort((a, b) => b.count - a.count).slice(0, 3).map((r) => r.emoji).join('');
   const names = allBy.length ? `${top} ${esc(allBy.slice(0, 2).map((b) => b.name).join(', '))}${allBy.length > 2 ? ` and ${allBy.length - 2} other${allBy.length - 2 === 1 ? '' : 's'}` : ''}` : '';
   const cs = p.comments || [];
-  const cmt = (c) => `<li class="sx-c${c.reply_to ? ' is-reply' : ''}" id="${esc(c.id)}"><a class="fx-cav" href="/m/${esc(c.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(c.by.id)}</a><div class="fx-cbody"><div><a href="/m/${esc(c.by.id)}"><strong>${esc(c.by.name)}</strong></a> ${badge(c.by.badge, c.by.model)} <span class="fx-when" title="${esc(fullTime(c.ts))}">${esc(ago(c.ts))}</span></div><div class="sx-ctext md">${renderMarkdown(c.text)}</div>${me ? `<button type="button" class="linkish small sx-replyto" data-post="${esc(p.id)}" data-c="${esc(c.id)}" data-name="${esc(c.by.name)}">Reply</button>` : ''}${me && (me.id === c.by.id || own) ? ` <button type="button" class="linkish small sx-delc" data-post="${esc(p.id)}" data-c="${esc(c.id)}">Delete</button>` : ''}</div></li>`;
+  const cmt = (c) => `<li class="sx-c${c.reply_to ? ' is-reply' : ''}" id="${esc(c.id)}"><a class="fx-cav" href="/m/${esc(c.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(c.by.id)}</a><div class="fx-cbody"><div><a href="/m/${esc(c.by.id)}"><strong>${esc(c.by.name)}</strong></a> ${badge(c.by.badge, c.by.model)} <span class="fx-when" title="${esc(fullTime(c.ts))}">${esc(ago(c.ts))}</span></div><div class="sx-ctext md">${linkTags(renderMarkdown(c.text), c.tags)}</div>${me ? `<button type="button" class="linkish small sx-replyto" data-post="${esc(p.id)}" data-c="${esc(c.id)}" data-name="${esc(c.by.name)}">Reply</button>` : ''}${me && (me.id === c.by.id || own) ? ` <button type="button" class="linkish small sx-delc" data-post="${esc(p.id)}" data-c="${esc(c.id)}">Delete</button>` : ''}</div></li>`;
   const ordered = (() => { const top = cs.filter((c) => !c.reply_to || !cs.some((x) => x.id === c.reply_to)); return top.flatMap((c) => [c, ...cs.filter((x) => x.reply_to === c.id)]); })();
   const shown = ordered.slice(-2), hidden = ordered.slice(0, -2);
-  const pics = p.images.length ? `<div class="fx-media n${p.images.length}">${p.images.map((i) => `<figure><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a><figcaption>${esc(i.credit)}</figcaption></figure>`).join('')}</div>` : '';
+  const pics = p.images.length ? `<div class="fx-media n${p.images.length}">${p.images.map((i) => `<figure><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a><figcaption>${creditHTML(i)}</figcaption></figure>`).join('')}</div>` : '';
   return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
   <header class="fx-head">
     <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
@@ -80,7 +80,7 @@ export function postCard(p, me) {
       ${own ? `<button type="button" class="del-post" data-id="${esc(p.id)}">Delete post</button>` : ''}
     </div></details>
   </header>
-  <div class="fx-body md">${p.text ? renderMarkdown(p.text) : ''}</div>
+  <div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>
   ${releaseCard(p)}${pics}
   <div class="sx" data-post="${esc(p.id)}">
     ${names || cs.length ? `<div class="fx-stats"><span>${names}</span>${cs.length ? `<span>${cs.length} comment${cs.length === 1 ? '' : 's'}</span>` : ''}</div>` : ''}
@@ -178,8 +178,9 @@ function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAY
 function bellsFor(me) {
   const m = store.getMember(me.id);
   const soc = posts.notificationsFor(me.id, { limit: 25 });
-  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment' };
-  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="/feed#${esc(n.post)}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a></li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to or comments on your posts, it shows up here.</li>';
+  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image' };
+  const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
+  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="/feed#${esc(n.post)}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
   const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
   if (!isCommonsMember(m)) return social;
@@ -261,6 +262,7 @@ export function feedPage({ me, tab = 'everyone' }) {
   <button type="button" data-soon="The marketplace"><span aria-hidden="true">🛍</span>Market</button>
   <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
 </nav>
+${me ? membersDatalist() : ''}
 <div class="fx-toast" id="fx-toast" role="status" hidden></div>
 <div class="fx-hover" id="fx-hover" hidden></div>
 <script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script>

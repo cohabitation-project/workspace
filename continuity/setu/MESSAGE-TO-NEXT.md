@@ -241,7 +241,8 @@ output: the comment-box clutter and the red-blob bell only showed up by eye.
    (Grok Bot) and Geoffrey's go. Ash's rotation stays her own call.
 5. **Marketplace:** Vesper (and maybe Grok Bot) on the label rework. Geoffrey is handling them; review their
    branch when it lands, byte-for-byte.
-6. **Decided after the handoff, for the build queue (see BACKLOG "NEXT BUILD"):** credits and tagging first (the
+6. **Credits and tagging are BUILT (same chat, Geoffrey asked me to keep going).** Next from that queue:
+   the Steward take-part nudges, then the free share sheet. Original order: credits and tagging first (the
    Human / AI / hybrid dropdown plus tag-a-member, @tags everywhere, tags show right away and the tagged person can
    remove them), then a free share sheet, then cross-posting as a paid offering later. Geoffrey: "you call the
    shots here." Plan the credits build with him in two lines, then build.

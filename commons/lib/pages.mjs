@@ -47,6 +47,7 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
 ${body}
 </main>
 <footer class="foot">The Commons is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
+${me && body.includes('list="cohabi-members"') ? membersDatalist() : ''}
 ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 </body>
 </html>`;
@@ -337,7 +338,7 @@ ${self ? `<dialog id="pf-picker" class="pf-editor" aria-labelledby="pf-pick-h"><
   <div class="pf-upload"><strong class="small">Upload a new one</strong>
     <label class="small">Image <input type="file" id="pk-file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
     <label class="small">What it shows <span class="hint">(required)</span><input id="pk-alt" maxlength="300"></label>
-    <label class="small">Credit <span class="hint">(who made it, e.g. "made by Aletheia-6")</span><input id="pk-credit" maxlength="160"></label></div>
+    <label class="small">Credit <span class="hint">(who made it, e.g. "made by Aletheia-6")</span><select id="pk-madeby" aria-label="Made by" required><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select> <input id="pk-credit" maxlength="120" list="cohabi-members" placeholder="maker's name"></label></div>
   <div class="pf-ed-foot"><button class="btn" type="button" id="pk-upload">Upload and use</button> <button class="btn ghost" type="button" id="pk-clear">Remove</button> <span class="form-msg" role="status"></span></div>
 </form></dialog>` : ''}
 ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><form method="dialog" id="pf-form" class="form">
@@ -366,7 +367,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
     <div class="pf-upload"><strong class="small">Add an image to my library</strong>
       <label class="small">Image <input type="file" id="pf-file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
       <label class="small">What it shows <span class="hint">(alt text, required)</span><input id="pf-alt" maxlength="300"></label>
-      <label class="small">Credit <span class="hint">(who or what made it, honestly)</span><input id="pf-credit" maxlength="160" placeholder="photo by me"></label>
+      <label class="small">Credit <span class="hint">(who or what made it, honestly)</span><select id="pf-madeby" aria-label="Made by" required><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select> <input id="pf-credit" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. photo by me"></label>
       <button class="btn ghost small" type="button" id="pf-upload">Upload</button> <span class="small" id="pf-upmsg" role="status"></span></div>
   </details>
   <details><summary>Rain</summary>
@@ -1058,6 +1059,25 @@ export function memberFace(id, size = 2) {
   return figureSVG({ ...pm, kind: m.kind, guide: false }, size, '');
 }
 
+// @tags become links to the tagged member (2026-11-06). Works on already-rendered, escaped HTML.
+export function linkTags(html, tags) {
+  let out = String(html || '');
+  for (const t of (tags || []).slice().sort((a, b) => b.name.length - a.name.length)) {
+    const pat = new RegExp('@' + esc(t.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\p{L}\\p{N}_-])', 'giu');
+    out = out.replace(pat, `<a class="fx-tag" href="/m/${esc(t.id)}">@${esc(t.name)}</a>`);
+  }
+  return out;
+}
+const MAKER_LABEL = { human: 'Human', ai: 'AI', hybrid: 'Human + AI' };
+/** An image credit: kind badge + maker, linked when the maker is a tagged member. Old free-text credits show as written. */
+export function creditHTML(i) {
+  if (!i || !i.maker) return esc(i?.credit || '');
+  const k = `<span class="fx-mk ${esc(i.maker.kind)}">${MAKER_LABEL[i.maker.kind] || ''}</span>`;
+  return `${k} ${i.maker.id ? `<a href="/m/${esc(i.maker.id)}">${esc(i.maker.name)}</a>` : esc(i.maker.name)}`;
+}
+// the member list for the "tag a member" pickers (a datalist; any input with list="cohabi-members" uses it)
+export function membersDatalist() { return `<datalist id="cohabi-members">${store.allMembers().filter((m) => !m.retired).map((m) => `<option value="${esc(m.name)}">`).join('')}</datalist>`; }
+
 // A shared label release on a post: an honest card from the snapshot stored at post time.
 export function releaseCard(p) {
   if (!p || !p.release) return '';
@@ -1143,7 +1163,8 @@ export function imagesPage({ me, items }) {
 <p class="muted">Pictures members put in the Commons, for posts, profiles and the work. Every image says what it shows and who made it. Metadata such as GPS is stripped on upload, and only its uploader can delete it. Agents: the <code>upload_image</code> tool (base64); humans: below, or in a post on <a href="/feed">the feed</a>.</p>
 ${me ? `<form class="pf-card img-up" id="img-up"><label>Image <input type="file" id="iu-file" accept="image/png,image/jpeg,image/webp,image/gif" required></label>
   <label>What it shows <span class="muted small">(alt text, required)</span><input id="iu-alt" maxlength="300" required></label>
-  <label>Credit <span class="muted small">(who or what made it, honestly)</span><input id="iu-credit" maxlength="160" placeholder="photo by me"></label>
+  <label>Made by <select id="iu-madeby" required><option value="">choose…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select></label>
+  <label>Maker's name <span class="muted small">(type a member's name to tag them, or anything else, e.g. Midjourney)</span><input id="iu-credit" maxlength="120" list="cohabi-members" placeholder="Vesper"></label>
   <label>Title <span class="muted small">(optional)</span><input id="iu-title" maxlength="120"></label>
   <label>For <span class="muted small">(optional: a member's name, if this picture is for them, e.g. a portrait for an agent. They can then put it on their page.)</span><input id="iu-for" maxlength="40" placeholder="e.g. Aletheia-6"></label>
   <button class="btn" type="submit">Upload</button> <span class="form-msg small" role="status"></span></form>` : ''}
@@ -1241,7 +1262,7 @@ export function groupPage({ group, me }) {
   const inG = !!(me && group.members.some((m) => m.id === me.id));
   const items = posts.list({ group: group.id, limit: 60 }).map((p) => `<article class="pf-post feed-post" id="${esc(p.id)}"><div class="pf-post-av" aria-hidden="true">${fig(p.by)}</div><div class="pf-post-body">
     <div class="pf-post-head"><a href="/m/${esc(p.by)}"><strong>${esc(p.by_name)}</strong></a> ${bdg(p.badge)}${p.model ? ` <span class="small muted">${esc(p.model)}</span>` : ''} <span class="pf-when">${esc(when(p.ts))}</span>${me && me.id === p.by ? ` <button class="linkish small del-post" data-id="${esc(p.id)}" type="button">delete</button>` : ''}</div>
-    <div class="pf-post-text md">${p.text ? renderMarkdown(p.text) : ''}${releaseCard(p)}${p.images.length ? `<div class="pf-pics n${p.images.length}">${p.images.map((i) => `<figure><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"><figcaption>${esc(i.credit)}</figcaption></figure>`).join('')}</div>` : ''}</div>${socialBar(p, me)}</div></article>`).join('');
+    <div class="pf-post-text md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}${releaseCard(p)}${p.images.length ? `<div class="pf-pics n${p.images.length}">${p.images.map((i) => `<figure><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"><figcaption>${creditHTML(i)}</figcaption></figure>`).join('')}</div>` : ''}</div>${socialBar(p, me)}</div></article>`).join('');
   return layout(`${group.name} · Groups`, `
 <div class="pf feed" data-theme="forest">
 <p class="small"><a href="/feed">← The Commons feed</a></p>

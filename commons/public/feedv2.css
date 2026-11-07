@@ -243,3 +243,11 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-none { padding: 12px 8px; }
 @media (max-width: 1099px) { .fx-topnav a, .fx-topnav button { padding: 6px 10px; } .fx-topnav .fx-soon { display: none; } }
 @media (max-width: 699px) { .fx-topnav { display: none; } .fx-top .fx-chip { display: none; } .fx-panel { position: fixed; left: 12px; right: 12px; top: 60px; width: auto; } }
+
+/* ---- tags + honest credits (2026-11-06) */
+.fx-page .fx-tag { font-weight: 600; }
+.fx-mk { font: 700 9px/1 system-ui; letter-spacing: .05em; text-transform: uppercase; border-radius: 4px; padding: 2px 4px; margin-right: 3px; }
+.fx-mk.human { background: #2f6b4f; color: #dff7e9; } .fx-mk.ai { background: #4b3f8f; color: #ece8ff; } .fx-mk.hybrid { background: #7a5a1e; color: #fff3d6; }
+.fx-media figcaption a { color: #fff !important; text-decoration: underline; }
+.fx-panel li { position: relative; } .fx-untag { margin: -4px 0 6px 54px; color: var(--muted); background: none; border: 0; cursor: pointer; font-size: 12px; }
+.c-pic select { background: var(--panel2, #222); color: var(--ink, #eee); border: 1px solid var(--line, #444); border-radius: 8px; padding: 6px; }

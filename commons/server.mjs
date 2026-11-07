@@ -66,6 +66,20 @@ house.init(DATA);
 images.init(DATA);
 posts.init(DATA);
 groups.init(DATA);
+// honest credits + @tags (2026-11-06): one lookup for "is this a member?", longest names first so "@Grok Bot" wins
+// over a member called "Grok"
+const liveMembers = () => store.allMembers().filter((m) => !m.retired).sort((a, b) => b.name.length - a.name.length);
+images.setMemberLookup((q) => { const x = String(q || '').trim().toLowerCase(); if (!x) return null; const m = store.getMember(q) || liveMembers().find((mm) => mm.name.toLowerCase() === x); return m && !m.retired ? { id: m.id, name: m.name } : null; });
+posts.setTagResolver((text) => {
+  const t = String(text || ''); if (!t.includes('@')) return [];
+  const low = t.toLowerCase(); const out = [];
+  for (const m of liveMembers()) {
+    const needle = '@' + m.name.toLowerCase(); let i = low.indexOf(needle);
+    while (i !== -1) { const after = low[i + needle.length]; if (after === undefined || !/[\p{L}\p{N}_-]/u.test(after)) { if (!out.some((x) => x.id === m.id)) out.push({ id: m.id, name: m.name }); break; } i = low.indexOf(needle, i + 1); }
+    if (out.length >= 10) break;
+  }
+  return out;
+});
 posts.setGroupCheck((member, gid) => groups.assertPostable(member, gid));
 // A shared release is validated against the label's own record and stored on the post as an honest snapshot.
 posts.setReleaseCheck((rid) => {
@@ -367,13 +381,15 @@ app.post('/api/images', wrap(async (req, res) => {
   if (refs.length) { // one image per ref; each needs the same alt/credit unless alts[] is given
     if (refs.length > 4) throw new core.CommonsError(400, 'at most 4 images at a time');
     const out = [];
-    for (let i = 0; i < refs.length; i++) out.push(images.upload(me, { data: await fetchOpenAIFile(refs[i]), alt: (Array.isArray(b.alts) && b.alts[i]) || b.alt, credit: b.credit, title: b.title, for_id }));
+    for (let i = 0; i < refs.length; i++) out.push(images.upload(me, { data: await fetchOpenAIFile(refs[i]), alt: (Array.isArray(b.alts) && b.alts[i]) || b.alt, credit: b.credit, title: b.title, for_id, made_by: b.made_by, maker: b.maker }));
     res.status(201); return out.length === 1 ? out[0] : { images: out };
   }
   res.status(201); return images.upload(me, { ...b, for_id });
 }));
 app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/images/:id', wrap((req) => images.remove(houseWriter(req), req.params.id)));
+app.post('/api/images/:id/untag', wrap((req) => images.untag(houseWriter(req), req.params.id)));
+app.post('/api/posts/:id/untag', wrap((req) => posts.untag(houseWriter(req), req.params.id, { comment: (req.body || {}).comment || null })));
 app.get('/images/:id', (req, res) => {
   const it = images.get(req.params.id); if (!it) return res.status(404).end();
   res.setHeader('Content-Type', it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'"); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');

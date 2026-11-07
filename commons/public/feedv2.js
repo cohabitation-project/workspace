@@ -128,3 +128,12 @@ for (const box of document.querySelectorAll('.fx-bellbox')) {
   });
 }
 document.addEventListener('click', (e) => { for (const o of document.querySelectorAll('.fx-bellbox[open]')) if (!o.contains(e.target)) o.removeAttribute('open'); });
+
+// ---- remove a tag of yourself (posts, comments, image credits)
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('.fx-untag'); if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const url = b.dataset.image ? `/api/images/${encodeURIComponent(b.dataset.image)}/untag` : `/api/posts/${encodeURIComponent(b.dataset.post)}/untag`;
+  const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify(b.dataset.comment ? { comment: b.dataset.comment } : {}) });
+  if (r.ok) { b.closest('li')?.remove(); say('Tag removed.'); } else { const j = await r.json().catch(() => ({})); say(j.error || 'Could not remove the tag.'); }
+});

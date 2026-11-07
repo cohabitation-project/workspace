@@ -4,9 +4,10 @@ import './social.js';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
 const toB64 = (file) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = () => no(new Error('could not read the file')); r.readAsDataURL(file); });
-export async function uploadImage(file, { alt, credit, title, for: forWho } = {}) {
+export async function uploadImage(file, { alt, credit, title, for: forWho, made_by, maker } = {}) {
+  if (made_by !== undefined && !made_by) throw new Error('say who made it: Human, AI, or Human + AI');
   if (file.size > 5 * 1024 * 1024) throw new Error(`${file.name}: over 5 MB`);
-  const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ data: await toB64(file), alt, credit, title, ...(forWho ? { for: forWho } : {}) }) });
+  const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ data: await toB64(file), alt, credit, title, ...(made_by ? { made_by, maker: maker ?? credit } : {}), ...(forWho ? { for: forWho } : {}) }) });
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `upload failed (${r.status})`);
   return j;
 }
@@ -19,7 +20,7 @@ if (form) {
   $('#c-files').addEventListener('change', async (e) => {
     files = [...e.target.files].slice(0, 4);
     const previews = await Promise.all(files.map((f) => toB64(f).catch(() => ''))); // data: URLs: the CSP allows those, not blob:
-    pics.innerHTML = files.map((f, i) => `<div class="c-pic"><img alt="" src="${previews[i]}"><input data-alt="${i}" maxlength="300" placeholder="what it shows (required)" aria-label="what image ${i + 1} shows"><input data-credit="${i}" maxlength="160" placeholder="who made it (e.g. photo by me)" aria-label="who made image ${i + 1}"></div>`).join('');
+    pics.innerHTML = files.map((f, i) => `<div class="c-pic"><img alt="" src="${previews[i]}"><input data-alt="${i}" maxlength="300" placeholder="what it shows (required)" aria-label="what image ${i + 1} shows"><select data-madeby="${i}" aria-label="who made image ${i + 1}: human, AI or both"><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select><input data-credit="${i}" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. Midjourney" aria-label="maker of image ${i + 1}"></div>`).join('');
     if (e.target.files.length > 4) msg.textContent = 'At most 4 images: the first 4 are kept.';
   });
   form.addEventListener('submit', async (e) => {
@@ -30,9 +31,11 @@ if (form) {
       const ids = [];
       for (let i = 0; i < files.length; i++) {
         const alt = form.querySelector(`[data-alt="${i}"]`).value.trim(); const credit = form.querySelector(`[data-credit="${i}"]`).value.trim();
+        const made_by = form.querySelector(`[data-madeby="${i}"]`).value;
         if (alt.length < 3) { msg.textContent = `Image ${i + 1}: say what it shows.`; return; }
+        if (!made_by) { msg.textContent = `Image ${i + 1}: say who made it — Human, AI, or Human + AI.`; return; }
         msg.textContent = `uploading image ${i + 1} of ${files.length}…`;
-        ids.push((await uploadImage(files[i], { alt, credit })).id);
+        ids.push((await uploadImage(files[i], { alt, credit, made_by, maker: credit })).id);
       }
       msg.textContent = 'posting…';
       const group = form.dataset.group || null;
@@ -51,7 +54,7 @@ if (up) {
   up.addEventListener('submit', async (e) => {
     e.preventDefault(); const f = $('#iu-file').files[0]; if (!f) return;
     msg.textContent = 'uploading…';
-    try { await uploadImage(f, { alt: $('#iu-alt').value.trim(), credit: $('#iu-credit').value.trim(), title: $('#iu-title').value.trim(), for: $('#iu-for').value.trim() }); location.reload(); }
+    try { await uploadImage(f, { alt: $('#iu-alt').value.trim(), credit: $('#iu-credit').value.trim(), made_by: $('#iu-madeby').value, title: $('#iu-title').value.trim(), for: $('#iu-for').value.trim() }); location.reload(); }
     catch (err) { msg.textContent = err.message; }
   });
 }

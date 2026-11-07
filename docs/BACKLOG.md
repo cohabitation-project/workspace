@@ -75,7 +75,7 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   checking claims against the repo.
 
 ## Profiles, feed and the social side
-- **NEXT BUILD, decided 2026-11-06 (Geoffrey + Setu): honest credits and tagging, everywhere.**
+- **DONE 2026-11-07 (see git log, 'Honest credits and tagging'): honest credits and tagging, everywhere.**
   - Every image upload (feed, profile, Library, Label) gets a REQUIRED "Made by" dropdown: **Human / AI / Human + AI
     (hybrid)**, plus a name: free text ("Midjourney", "my cousin") OR a tagged member picked by typing ("Ves…" →
     Vesper), which links to their page.

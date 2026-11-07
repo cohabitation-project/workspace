@@ -30,7 +30,7 @@ export function init(dataDir) {
   if (!fs.existsSync(idx())) return;
   for (const line of fs.readFileSync(idx(), 'utf8').split('\n')) {
     if (!line.trim()) continue;
-    try { const ev = JSON.parse(line); if (ev.op === 'add') items.set(ev.item.id, ev.item); else if (ev.op === 'delete') items.delete(ev.id); } catch { /* skip */ }
+    try { const ev = JSON.parse(line); if (ev.op === 'add') items.set(ev.item.id, ev.item); else if (ev.op === 'delete') items.delete(ev.id); else if (ev.op === 'untag') { const it = items.get(ev.id); if (it?.maker) it.maker = { ...it.maker, id: null }; } } catch { /* skip */ }
   }
 }
 
@@ -86,7 +86,12 @@ export function stripMetadata(b, ext) {
 }
 
 /** member uploads one image. data: a Buffer, or base64 (with or without a data: prefix). */
-export function upload(member, { data, alt, credit, title, for_id = null } = {}) {
+// Honest credits (Geoffrey, 2026-11-06): every new image says WHO made it and WHAT KIND of maker — Human, AI, or
+// Human + AI (hybrid) — and the name can be a tagged member (linked, notified; they can remove the tag).
+export const MAKER_KINDS = { human: 'Human', ai: 'AI', hybrid: 'Human + AI' };
+let memberLookup = () => null; // wired by the server: (nameOrId) -> { id, name } | null
+export function setMemberLookup(fn) { memberLookup = fn; }
+export function upload(member, { data, alt, credit, title, for_id = null, made_by = null, maker = null } = {}) {
   let buf = Buffer.isBuffer(data) ? data : null;
   if (!buf) {
     const s = String(data || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
@@ -98,6 +103,14 @@ export function upload(member, { data, alt, credit, title, for_id = null } = {})
   const ext = sniff(buf); if (!ext) fail(400, 'only PNG, JPEG, WebP or GIF images (no SVG)');
   const a = clip(alt, 301); if (a.length < 3) fail(400, 'alt text is required: a sentence saying what the image shows (for readers who can\'t see it)');
   if (a.length > 300) fail(400, 'alt: at most 300 characters');
+  let mk = null;
+  if (made_by !== null && made_by !== undefined && made_by !== '') {
+    if (!MAKER_KINDS[made_by]) fail(400, 'made_by: human, ai or hybrid (Human + AI)');
+    const raw = clip(maker ?? credit, 120);
+    const tagged = raw ? memberLookup(raw.replace(/^@/, '')) : null;
+    const name = tagged ? tagged.name : (raw || member.name);
+    mk = { kind: made_by, name, id: tagged ? tagged.id : null };
+  }
   const today = new Date().toISOString().slice(0, 10);
   if ([...items.values()].filter((x) => x.by === member.id && x.ts.startsWith(today)).length >= 60) fail(429, '60 images per day');
   const scanned = scanlib.scan(buf, ext === 'jpg' ? 'jpg' : ext);
@@ -108,7 +121,7 @@ export function upload(member, { data, alt, credit, title, for_id = null } = {})
   const item = {
     id, ext, type: TYPES[ext], bytes: clean.length, by: member.id, by_name: member.name,
     badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null,
-    alt: a, credit: clip(credit, 160) || `uploaded by ${member.name}`, title: clip(title, 120), ts: new Date().toISOString(), scan: scanned.clam,
+    alt: a, credit: mk ? `${MAKER_KINDS[mk.kind]} · ${mk.name}` : (clip(credit, 160) || `uploaded by ${member.name}`), ...(mk ? { maker: mk } : {}), title: clip(title, 120), ts: new Date().toISOString(), scan: scanned.clam,
     ...(for_id && for_id !== member.id ? { for: for_id } : {}), // uploaded on someone's behalf: they may use it on their page
   };
   fs.appendFileSync(idx(), JSON.stringify({ op: 'add', item }) + '\n'); items.set(id, item);
@@ -124,6 +137,15 @@ export function remove(member, id) {
 }
 
 export const get = (id) => items.get(String(id || '')) || null;
+/** The member credited as an image's maker removes the tag from themselves: the name stays (it's the uploader's
+ * words), the link and the notification go. */
+export function untag(member, id) {
+  const it = items.get(String(id || '')); if (!it) fail(404, 'no such image');
+  if (!it.maker || it.maker.id !== member.id) fail(409, 'you are not tagged on this image');
+  fs.appendFileSync(idx(), JSON.stringify({ op: 'untag', id: it.id, by: member.id, ts: new Date().toISOString() }) + '\n');
+  it.maker = { ...it.maker, id: null };
+  return { untagged: true, id: it.id };
+}
 export const fileOf = (it) => path.join(DIR, `${it.id}.${it.ext}`);
 export const list = ({ by = null, mine = false, limit = 60 } = {}) => [...items.values()].filter((x) => !by || x.by === by || (mine && x.for === by)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map((x) => ({ ...x, url: `/images/${x.id}` }));
 /** an image a member may put on their own profile: one they uploaded themselves */
