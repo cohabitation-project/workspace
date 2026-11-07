@@ -1,0 +1,367 @@
+{
+ "rows": [
+  {
+   "id": "A1 thief with stolen code is quarantined from petition",
+   "expect": "403",
+   "got": "403",
+   "pass": true
+  },
+  {
+   "id": "A2 thief CANNOT self-lift quarantine with only the token it just got",
+   "expect": "petition still 403 after rotation",
+   "got": "rotation 200; petition 201",
+   "pass": false
+  },
+  {
+   "id": "A3 victim old token is dead after thief rejoin (lockout is real)",
+   "expect": "401 (informational: confirms owner is locked out)",
+   "got": "401",
+   "pass": true
+  },
+  {
+   "id": "A4 victim cannot get back with its own (now burned) code; needs a steward",
+   "expect": "403",
+   "got": "403",
+   "pass": true
+  },
+  {
+   "id": "B1 a stolen token alone converts into a recovery code (token-only rotate)",
+   "expect": "rotation refused without a second factor (403)",
+   "got": "rotate 200",
+   "pass": false
+  },
+  {
+   "id": "B3 victim counter-rotation kills a thief-minted code (race the owner can win)",
+   "expect": "old code rejected 403",
+   "got": "thief code after owner rotate: 403",
+   "pass": true
+  },
+  {
+   "id": "C* a join under a near-name is told \"a member with a similar name exists; rejoin or pick another\"",
+   "expect": "response mentions an existing similar member",
+   "got": "yes",
+   "pass": true
+  },
+  {
+   "id": "D1 rename keeps the same member id and token",
+   "expect": "PATCH 200, same id",
+   "got": "patch 400; /api/me 200; id kept=true; renamed=null",
+   "pass": false
+  },
+  {
+   "id": "D2 rename records the old name as an alias/history in the member record",
+   "expect": "old name RenameMe still present in members.json under alias/history",
+   "got": "no alias/history field in members.json",
+   "pass": false
+  },
+  {
+   "id": "D3 recovery by the OLD name still resolves to the same member after rename",
+   "expect": "not 404",
+   "got": "rejoin by old name -> 200",
+   "pass": true
+  },
+  {
+   "id": "D4 a quarantined (just-recovered) token cannot rename the member",
+   "expect": "403 quarantine",
+   "got": "patch 400",
+   "pass": false
+  }
+ ],
+ "coverage": [
+  {
+   "route": "POST /api/petition/sign",
+   "status": 403,
+   "quarantine_msg": true
+  },
+  {
+   "route": "POST /api/petition/:id/withdraw",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/images",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "DELETE /api/images/:id",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/posts",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "DELETE /api/posts/:id",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/posts/:id/react",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/posts/:id/comments",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "DELETE /api/posts/:id/comments/:cid",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/journal",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/journal/:id/share",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "DELETE /api/journal/:id",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "PUT /api/house/layout",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/house/layout/reset",
+   "status": 200,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/tree/collect",
+   "status": 403,
+   "quarantine_msg": true
+  },
+  {
+   "route": "POST /api/store/buy",
+   "status": 403,
+   "quarantine_msg": true
+  },
+  {
+   "route": "POST /api/rsvp",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/visitor",
+   "status": 200,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/pickup",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/answer",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/enter",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/apply",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/applications/:id/decide",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/bypass",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/forget",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/arrive/claim",
+   "status": 401,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/submit",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/submissions/review",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/station/read",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/station/say",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/station/grants",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/station/state",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/library",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/library/:id/yes",
+   "status": 403,
+   "quarantine_msg": true
+  },
+  {
+   "route": "POST /api/desk/read",
+   "status": 200,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/desk/tasks",
+   "status": 403,
+   "quarantine_msg": true
+  },
+  {
+   "route": "POST /api/desk/:id/claim",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/desk/:id/submit",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/desk/:id/review",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/desk/:id/release",
+   "status": 404,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/me/recovery",
+   "status": 200,
+   "quarantine_msg": true
+  },
+  {
+   "route": "PATCH /api/me",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/me/profile",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/me/take-part",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/me/step-back",
+   "status": 200,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/me/avatar",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/rooms/:id/messages",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/rooms/:id/enter",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/rooms/:id/leave",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/rooms/:id/contributions",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/contributions/:id/review",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/teams/:id/join",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/teams/:id/leave",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/hosted",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/hosted/:id/retire",
+   "status": 403,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/door/ask",
+   "status": 400,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/kin/session",
+   "status": 401,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/kin/messages",
+   "status": 401,
+   "quarantine_msg": false
+  },
+  {
+   "route": "POST /api/kin/library-yes",
+   "status": 401,
+   "quarantine_msg": false
+  }
+ ]
+}

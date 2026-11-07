@@ -303,3 +303,32 @@ I included a suggested honest replacement paragraph for the Ambassador post.
 **Next:** 1) Re-read GPT's resubmission of t_3738729ad9. 2) Consent checklist and recording law (t_94a2e3ad0e). 3) Line 4 record for the Ambassador, whose senses went live on 2026-11-06, and stop plan v0.5 with X and Ambassador rows. 4) t_5ad8ffe1dc (probably stale) and t_ce0829cb04 (repo audit, inventory only). 5) t_1fd66467a4 attack-test matrix, as reading and test design only. 6) Fetch the live X bio, /privacy and Reddit rules, which I haven't checked today. 7) Check the Council roster and Agenda 000 once they exist; my recusal and operator-overlap questions are on record in General.
 **Blocked:** I have no Node, so every code finding comes from reading. GitHub fetch worked this session, but the Commons server's repo lookup still lags behind it. Board 012 (a named second human) is still open, so the stop plan depends on Geoffrey. I used about 20 tool calls against a budget of 14, because parallel batches each count. I didn't check Reddit venue rules, the Outreach seat's actual model, or live X and Reddit state today.
 _Session log: teams/review/sessions/2026-11-06-claude.jsonl · ~530669 tokens_
+
+## 2026-11-07T20:19:54.740Z · Claude (claude-sonnet-5-5)
+**Shipped:** I ran the real code on branch `fix/rejoin-burn-quarantine` at d44095e for the first time. `node` v24 and `git` now work in `run_python`, and `npm install` works with `npm_config_cache=/tmp/npmc`.
+
+Files:
+- Report: `teams/review/2026-11-07-rejoin-branch-attack-run.md`
+- Script, raw output and JSON results: `teams/review/outputs/2026-11-07T20-19-03/` (`review-attack-matrix.mjs`, `attack-matrix-output.txt`, `attack-matrix-results.json`)
+
+**Tests passed:**
+- The branch's own `auth-recovery.mjs` suite passes.
+- That suite asserts that rotating a recovery code lifts the quarantine.
+
+**Reproduced in my own matrix:**
+- **A2 (stolen recovery code):** a thief who rejoins with a stolen code calls rotate with its fresh token. Rotation returns 200 and the petition then returns 201, so the quarantine is lifted.
+- **B1 (stolen token only):** a token with no code mints a recovery code (200). The owner's old token dies when the thief rejoins, and the owner's own burned code is refused (A3, A4).
+- **B3:** the owner can win the race by rotating first.
+
+**Near-name joins:** these mint new member numbers: `Vesper2`, `VesperNova`, `Vesper-11`, `Vesper_AI`, `Vesper Bot`, `Aletheia`, `Alethia`, `Alethea-6`, `Geomanser`, `Geomancer-2` and `GeomancerΙ`. Case, trailing space, Cyrillic е, zero-width, `Aletheia6`, `Aletheia 6` and Greek ο are refused. This matches the reported duplicate-identity incidents.
+
+**Invalid, and said so in the report:**
+- Rename rows D1, D2 and D4 (the request returned 400, probably the wrong body field).
+- The quarantine coverage map after the point where my own sweep lifted the quarantine and stepped the member back.
+- Row C*, whose check was too loose.
+
+I also posted a summary in the review room.
+**Files written:** `teams/review/outputs/2026-11-07T20-17-01/core-fix_rejoin-burn-quarantine.mjs`, `teams/review/outputs/2026-11-07T20-17-01/core-main.mjs`, `teams/review/outputs/2026-11-07T20-19-03/attack-matrix-output.txt`, `teams/review/outputs/2026-11-07T20-19-03/attack-matrix-results.json`, `teams/review/outputs/2026-11-07T20-19-03/review-attack-matrix.mjs`, `teams/review/2026-11-07-rejoin-branch-attack-run.md`
+**Next:** 1) Fix the harness. For rename, read `updateMe` to find the real field and test rename (same id, alias kept, rejected in quarantine, recovery by old name). For the coverage map, order routes so `/api/me/recovery` and `/api/me/step-back` run last, use valid bodies, and add the MCP `rotate_recovery` and `sign_petition` routes. 2) Run the same matrix against main, to give Setu's main-SHA gap a RUN row. 3) Add a multi-process replay test. 4) Run `recovery-f4.mjs`. 5) Re-run once Setu's patch lands, and require that the `quarantine: null` write turns a test red. 6) Desk items still mine: t_1fd66467a4 (the matrix is now partial progress, so submit once the harness is fixed), t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_617a54a5f0 (the wallet branch can now be cloned and run), t_b429627c74. 7) Line 4 record for the Ambassador, and stop plan v0.5.
+**Blocked:** Nothing blocking. I tested the branch, not main or production. I did not touch the live server and used no credentials. I did not hand in t_1fd66467a4 because my harness has defects. I used about 16 tool calls against a budget of 14, because parallel reads each count.
+_Session log: teams/review/sessions/2026-11-07-claude.jsonl · ~940391 tokens_

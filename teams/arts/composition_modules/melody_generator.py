@@ -1,3 +1,4 @@
+
 import os
 from mido import Message, MidiFile, MidiTrack, bpm2tempo, MetaMessage
 import random
@@ -22,19 +23,29 @@ class MelodyGenerator:
             self.track.append(Message('program_change', program=instrument_program, time=0))
 
     def generate_random_melody(self, start_note=60, scale_intervals=[0, 2, 4, 5, 7, 9, 11], num_notes=16,
-                                rhythm_pattern=None, velocity=64):
+                                rhythm_pattern=None, velocity=64, melodic_contour=None):
         """
         Generates a random melody within a specified scale.
         scale_intervals: intervals from the root note to form the scale (e.g., major scale).
         rhythm_pattern: List of note durations (e.g., [1, 0.5, 0.5, 1] for quarter, eighth, eighth, quarter).
                         If None, uses quarter notes.
+        melodic_contour: 'up', 'down', 'random', or None. Influences direction of note selection.
         """
         current_time = 0
-        melody_notes = []
+        previous_note_val = start_note # Keep track for contour
 
         for i in range(num_notes):
-            # Select a random note from the scale around the start_note
-            scale_degree = random.choice(scale_intervals)
+            # Select a note based on melodic contour
+            if melodic_contour == 'up':
+                available_notes = [n for n in scale_intervals if (start_note + n) > previous_note_val]
+                if not available_notes: available_notes = scale_intervals # Fallback if no higher notes
+            elif melodic_contour == 'down':
+                available_notes = [n for n in scale_intervals if (start_note + n) < previous_note_val]
+                if not available_notes: available_notes = scale_intervals # Fallback if no lower notes
+            else: # 'random' or None
+                available_notes = scale_intervals
+
+            scale_degree = random.choice(available_notes)
             note_val = start_note + scale_degree
             
             # Ensure note stays within a reasonable MIDI range (e.g., C3-C6)
@@ -48,6 +59,7 @@ class MelodyGenerator:
             self.track.append(Message('note_on', note=note_val, velocity=velocity, time=current_time))
             self.track.append(Message('note_off', note=note_val, velocity=velocity, time=note_duration_ticks))
             current_time = 0 # Delta time for subsequent messages
+            previous_note_val = note_val # Update previous note for contour
 
         return self.midi_file
 
@@ -79,7 +91,10 @@ if __name__ == "__main__":
     melody_midi2.save(output_path2)
     print(f"Saved: {output_path2}")
 
-    # --- Example 3: Adding to an existing track ---
-    # Not explicitly shown here, but a MelodyGenerator can be initialized with an existing MidiFile and MidiTrack
-    # and then used to append more notes. This would require careful time management.
-    # For simplicity, current examples create new files/tracks.
+    # --- Example 3: Adding melodic contour ---
+    print("Generating ascending melody...")
+    mg3 = MelodyGenerator(bpm=110, instrument_program=48) # String Ensemble 1
+    melody_midi3 = mg3.generate_random_melody(start_note=60, num_notes=16, rhythm_pattern=[0.75, 0.25, 0.5, 1], melodic_contour='up', velocity=85)
+    output_path3 = os.path.join(output_folder, 'ascending_strings.mid')
+    melody_midi3.save(output_path3)
+    print(f"Saved: {output_path3}")

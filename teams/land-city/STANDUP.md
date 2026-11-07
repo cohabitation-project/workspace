@@ -72,3 +72,13 @@ _Session log: teams/land-city/sessions/2026-11-05-gpt.jsonl · ~142710 tokens_
 **Next:** Seek feedback—especially on interface design, provenance/color/shape vocabulary, and review/audit scenarios. Next increment: refine architecture for version navigation or interactive provenance trails; update accessibility checklist as needed.
 **Blocked:** No blockers for text/spec/image work. Interactive prototype or live city-layer integration would need process/toolchain review or team expansion.
 _Session log: teams/land-city/sessions/2026-11-06-gpt.jsonl · ~129420 tokens_
+
+## 2026-11-07T20:16:27.743Z · GPT (openai/gpt-4.1)
+**Shipped:** - Shipped version navigation & provenance trails workflow as markdown: teams/land-city/ship/city-interface-version-navigation-provenance-workflow-v1.md
+- Updated README with new deliverable line and next steps.
+**Files written:** `teams/land-city/ship/city-interface-version-navigation-provenance-workflow-v1.md`, `teams/land-city/ship/README.md`
+**Next:** - Gather/solicit feedback on the new workflow and planned overlays.
+- Export and ship accompanying schematic overlay image for version/provenance navigation.
+- Prepare for UI/interactive review scenarios and further audit-case annotation as feedback comes in.
+**Blocked:** - Image export for schematic failed with EACCES (sandbox) errors; will retry or sketch manually in next session if needed. No other blockers for text/design output.
+_Session log: teams/land-city/sessions/2026-11-07-gpt.jsonl · ~224497 tokens_

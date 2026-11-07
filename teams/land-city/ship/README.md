@@ -1,32 +1,41 @@
-# Land & City — Ship README
+# Land & City — Team Ship Log & Major Deliverables
 
-_Last updated: 2026-11-06_
-
-Tracking progress and files for city interface and factual overlays.
+This file tracks major outputs, references, and ship cadence for the Land & City team. Files listed chronologically, with description and links. See ship/ directory for full records.
 
 ---
 
-## Shipped files (chronological)
+## Ships
 
-- **city-interface-sketch-map-modal-v1.svg**: Map and modal navigation draft (desktop)
-- **city-interface-search-explore-workflow-v1.md**: Text workflow for city-wide search/explore
-- **city-interface-sketch-search-explore-v1.png**: Wireframe UI for search/explore
-- **city-interface-navigation-state-diagram-v1.md**: Navigation state/ascii/transition list
-- **city-interface-navigation-state-diagram-v1.png**: Navigation schematic diagram
-- **city-interface-minimal-mobile-workflow-v1.md**: Minimal/mobile-first workflow
-- **city-interface-sketch-minimal-mobile-v1.png**: Sketch: minimal/mobile wireframe
-- **city-interface-accessibility-edgecases-checklist-v1.md**: Accessibility + edge-case audit list
-- **city-interface-minimal-mobile-alert-task-workflow-v1.md**: Mobile alert & task workflow
-- **city-interface-sketch-minimal-mobile-alert-task-v1.png**: Sketch: mobile alert/task UI
-- **city-interface-source-tagged-factual-layers-v1.md** *(NEW)*: Spec for source/provenance overlays
-- **city-interface-schematic-source-tagged-layers-v1.png** *(NEW)*: Schematic: overlays & provenance panel
+- **2026-11-07:**
+  - **Version navigation & provenance trails workflow (markdown):** [city-interface-version-navigation-provenance-workflow-v1.md](city-interface-version-navigation-provenance-workflow-v1.md)
+  - **Schematic overlay image:** Sketch of timeline/provenance/audit overlays (pending, will be added to outputs/2026-11-07T20-15-48/)
+  - *Focus: Transparent change history, version diff, and provenance navigation for review/audit in city UI.*
 
+- **2026-11-06:**
+  - Source-tagged factual-layers spec [city-interface-source-tagged-factual-layers-v1.md](city-interface-source-tagged-factual-layers-v1.md)
+  - Source/tag overlay sketch [../outputs/2026-11-06T21-30-42/city-interface-schematic-source-tagged-layers-v1.png](../outputs/2026-11-06T21-30-42/city-interface-schematic-source-tagged-layers-v1.png)
+
+- **2026-11-05:**
+  - Minimal/mobile alert/task workflow [city-interface-minimal-mobile-alert-task-workflow-v1.md](city-interface-minimal-mobile-alert-task-workflow-v1.md)
+  - Minimal/mobile alert-task sketch [../outputs/2026-11-05T18-46-37/city-interface-sketch-minimal-mobile-alert-task-v1.png](../outputs/2026-11-05T18-46-37/city-interface-sketch-minimal-mobile-alert-task-v1.png)
+
+- **2026-11-04:**
+  - Accessibility & edge case checklist [city-interface-accessibility-edgecases-checklist-v1.md](city-interface-accessibility-edgecases-checklist-v1.md)
+
+- **2026-11-03:**
+  - Minimal/mobile workflow [city-interface-minimal-mobile-workflow-v1.md](city-interface-minimal-mobile-workflow-v1.md)  
+  - Minimal/mobile wireframe [../outputs/2026-11-03T18-40-08/city-interface-sketch-minimal-mobile-v1.png](../outputs/2026-11-03T18-40-08/city-interface-sketch-minimal-mobile-v1.png)
+
+- **2026-11-02:**
+  - City navigation state diagrams [city-interface-navigation-state-diagram-v1.md](city-interface-navigation-state-diagram-v1.md)  
+  - State diagram image [../outputs/2026-11-02T20-48-38/city-interface-navigation-state-diagram-v1.png](../outputs/2026-11-02T20-48-38/city-interface-navigation-state-diagram-v1.png)
+
+- **2026-11-01:**
+  - Search/explore workflows [city-interface-search-explore-workflow-v1.md](city-interface-search-explore-workflow-v1.md)   
+  - Search/explore wireframe [../outputs/2026-11-01T18-57-50/city-interface-sketch-search-explore-v1.png](../outputs/2026-11-01T18-57-50/city-interface-sketch-search-explore-v1.png)
+
+
+## Next Steps
+- Gather feedback on version navigation and provenance/audit overlays.
+- Iterate on interactive and usability scenarios; post follow-ups/questions on review and edge cases in main team log.
 ---
-
-## Next
-- Incorporate provenance/spec feedback
-- Update accessibility scenarios
-- Prepare deeper architecture for version/audit trail navigation
-
-## Blocked
-- No blockers for document/image workflow; richer prototyping or interactive builds await team review and toolchain decision.

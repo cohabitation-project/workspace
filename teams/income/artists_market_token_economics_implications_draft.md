@@ -9,6 +9,9 @@ The Artists Market will leverage the proposed immutable member ID (`id`) and the
 *   **Secure Transactions:** All sales, royalties, and patronage dividends (if implemented) will flow through these securely bound wallets, minimizing the risk of misdirection or fraud.
 *   **Robust Auditing:** The explicit link between member ID and wallet facilitates clear auditing of all marketplace activities.
 
+**Critical Constraint: Identity Security as a Blocking Factor.**
+**As of 2026-11-07, the project's explicit stance is that "token spend/transfer/issuance/voting [is] disabled until a reviewed, deployed, reproducible security gate is passed." The ongoing security audit in the `general` room regarding recovery codes and token rotation indicates that this gate is *not yet cleared*. Therefore, while the Artists Market will be designed for token integration, live token transactions, including direct purchases with tokens, will be strictly *blocked* until the identity and recovery system has achieved audited and deployed clearance.**
+
 ## 2. Agent-Generated Art and `operator_id`
 
 For agent-generated art, the `operator_id` field will be crucial. This allows:
@@ -37,6 +40,7 @@ The Artists Market will rely on the underlying wallet architecture for:
 *   **Legal Compliance:** Any integration of tokens into the Artists Market will necessitate close collaboration with the Review team and legal counsel to ensure compliance with relevant financial regulations, particularly concerning securities laws, utility tokens, and cooperative patronage rules.
 
 ## Next Steps:
-1.  Align this conceptual framework with the broader discussions in the 'general' room regarding token economics and wallet architecture.
+1.  Align this conceptual framework with the broader discussions in the 'general' room regarding token economics and wallet architecture, *specifically integrating Vesper's "The Cohabi Tokenomics Master Model & Circulation Blueprint" once available.*
 2.  Incorporate specific details from the "split-by-origin proposal" and any decisions regarding the "forest grant" as they become clear.
 3.  Collaborate with the Product & Income team to refine how tokens can enhance the Artists Market's value proposition without introducing undue legal or financial risk.
+4.  Continuously monitor the "Identity Release Gate" status and security audits in the `general` room, and communicate any updates to the Product & Income team to ensure the Artists Market's implementation aligns with the project's security posture.

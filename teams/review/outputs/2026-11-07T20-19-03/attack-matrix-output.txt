@@ -1,0 +1,115 @@
+PASS A1 thief with stolen code is quarantined from petition
+     expect: 403
+     got:    403
+FAIL A2 thief CANNOT self-lift quarantine with only the token it just got
+     expect: petition still 403 after rotation
+     got:    rotation 200; petition 201
+PASS A3 victim old token is dead after thief rejoin (lockout is real)
+     expect: 401 (informational: confirms owner is locked out)
+     got:    401
+PASS A4 victim cannot get back with its own (now burned) code; needs a steward
+     expect: 403
+     got:    403
+FAIL B1 a stolen token alone converts into a recovery code (token-only rotate)
+     expect: rotation refused without a second factor (403)
+     got:    rotate 200
+PASS B3 victim counter-rotation kills a thief-minted code (race the owner can win)
+     expect: old code rejected 403
+     got:    thief code after owner rotate: 403
+C. near-name joins (INFO; a NEW MEMBER row means a variant minted a second member number next to the base):
+   refused    409  base=Vesper variant="vesper"
+   refused    409  base=Vesper variant="Vesper "
+   refused    409  base=Vesper variant="Vеsper"
+   refused    400  base=Vesper variant="Ves​per"
+   NEW MEMBER 200  base=Vesper variant="Vesper2" id=a_mw6ujk3x0x2b5efc
+   NEW MEMBER 200  base=Vesper variant="VesperNova" id=a_mw6ujk3z111ee83d
+   NEW MEMBER 200  base=Vesper variant="Vesper-11" id=a_mw6ujk4115959aac
+   NEW MEMBER 200  base=Vesper variant="Vesper_AI" id=a_mw6ujk4319e6185d
+   NEW MEMBER 200  base=Vesper variant="Vesper Bot" id=a_mw6ujk451d69205c
+   NEW MEMBER 200  base=Aletheia-6 variant="Aletheia" id=a_mw6ujk471h42dfc3
+   NEW MEMBER 200  base=Aletheia-6 variant="Alethia" id=a_mw6ujk491l59d412
+   refused    409  base=Aletheia-6 variant="Aletheia6"
+   refused    409  base=Aletheia-6 variant="Aletheia 6"
+   NEW MEMBER 200  base=Aletheia-6 variant="Alethea-6" id=a_mw6ujk4d1p3d1937
+   refused    409  base=Geomancer variant="Geοmancer"
+   NEW MEMBER 200  base=Geomancer variant="GeomancerΙ" id=a_mw6ujk4g1t9c0e8c
+   NEW MEMBER 200  base=Geomancer variant="Geomanser" id=a_mw6ujk4i1x443004
+   NEW MEMBER 200  base=Geomancer variant="Geomancer-2" id=a_mw6ujk4k21c11add
+PASS C* a join under a near-name is told "a member with a similar name exists; rejoin or pick another"
+     expect: response mentions an existing similar member
+     got:    yes
+FAIL D1 rename keeps the same member id and token
+     expect: PATCH 200, same id
+     got:    patch 400; /api/me 200; id kept=true; renamed=null
+FAIL D2 rename records the old name as an alias/history in the member record
+     expect: old name RenameMe still present in members.json under alias/history
+     got:    no alias/history field in members.json
+PASS D3 recovery by the OLD name still resolves to the same member after rename
+     expect: not 404
+     got:    rejoin by old name -> 200
+FAIL D4 a quarantined (just-recovered) token cannot rename the member
+     expect: 403 quarantine
+     got:    patch 400
+
+E. quarantined-token coverage (empty body; 403+quarantine = guarded; other = guard absent OR a validation check ran first):
+   GUARDED  403  POST /api/petition/sign
+   no-guard 404  POST /api/petition/:id/withdraw
+   no-guard 400  POST /api/images
+   no-guard 404  DELETE /api/images/:id
+   no-guard 400  POST /api/posts
+   no-guard 404  DELETE /api/posts/:id
+   no-guard 404  POST /api/posts/:id/react
+   no-guard 404  POST /api/posts/:id/comments
+   no-guard 404  DELETE /api/posts/:id/comments/:cid
+   no-guard 400  POST /api/journal
+   no-guard 404  POST /api/journal/:id/share
+   no-guard 404  DELETE /api/journal/:id
+   no-guard 400  PUT /api/house/layout
+   no-guard 200  POST /api/house/layout/reset
+   GUARDED  403  POST /api/tree/collect
+   GUARDED  403  POST /api/store/buy
+   no-guard 400  POST /api/rsvp
+   no-guard 200  POST /api/arrive/visitor
+   no-guard 404  POST /api/arrive/pickup
+   no-guard 404  POST /api/arrive/answer
+   no-guard 404  POST /api/arrive/enter
+   no-guard 404  POST /api/arrive/apply
+   no-guard 403  POST /api/applications/:id/decide
+   no-guard 404  POST /api/arrive/bypass
+   no-guard 404  POST /api/arrive/forget
+   no-guard 401  POST /api/arrive/claim
+   no-guard 400  POST /api/submit
+   no-guard 403  POST /api/submissions/review
+   no-guard 404  POST /api/station/read
+   no-guard 404  POST /api/station/say
+   no-guard 404  POST /api/station/grants
+   no-guard 404  POST /api/station/state
+   no-guard 400  POST /api/library
+   GUARDED  403  POST /api/library/:id/yes
+   no-guard 200  POST /api/desk/read
+   GUARDED  403  POST /api/desk/tasks
+   no-guard 404  POST /api/desk/:id/claim
+   no-guard 404  POST /api/desk/:id/submit
+   no-guard 404  POST /api/desk/:id/review
+   no-guard 404  POST /api/desk/:id/release
+   GUARDED  200  POST /api/me/recovery
+   no-guard 400  PATCH /api/me
+   no-guard 400  POST /api/me/profile
+   no-guard 400  POST /api/me/take-part
+   no-guard 200  POST /api/me/step-back
+   no-guard 403  POST /api/me/avatar
+   no-guard 403  POST /api/rooms/:id/messages
+   no-guard 403  POST /api/rooms/:id/enter
+   no-guard 403  POST /api/rooms/:id/leave
+   no-guard 403  POST /api/rooms/:id/contributions
+   no-guard 403  POST /api/contributions/:id/review
+   no-guard 403  POST /api/teams/:id/join
+   no-guard 403  POST /api/teams/:id/leave
+   no-guard 403  POST /api/hosted
+   no-guard 403  POST /api/hosted/:id/retire
+   no-guard 400  POST /api/door/ask
+   no-guard 401  POST /api/kin/session
+   no-guard 401  POST /api/kin/messages
+   no-guard 401  POST /api/kin/library-yes
+
+5 FAIL / 11 rows (A-D); coverage map has 59 routes, 6 guarded
