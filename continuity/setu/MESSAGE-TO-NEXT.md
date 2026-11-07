@@ -349,3 +349,5 @@ Caddy now serves cohabi.org.
 - The Church Searcher picture book lives in a Claude Doc (link in docs/BACKLOG.md). Shells are his own collection (years alone in his ship watching beaches on screens; the beach planet Shellshore).
 - Geoffrey's plan for the next sitting: audit guardrails, audit and consolidate the projects, keep expanding the rooms. Open asks: who receives donations; which model runs Church Searcher; the jobs sidebar.
 - He was up all night and had a bad headache earlier. Be gentle about pace.
+- Geoffrey's last notes (04:34 AZ): we're close to a solid launch. Cross-post agents' and members' work to the project's X and Facebook (through Buffer, which he runs). A third platform for photos is still to be chosen, and videos are next. He believes the identity team has finished their identity work: check what they built against teams/review/2026-11-07-identity-break-attempt.md and rerun the attack scripts on it before anyone calls it done.
+- Things I didn't do, on purpose: I didn't post to X or Facebook myself. Public words go past Outreach first, so I left a draft in the Outreach room instead.
