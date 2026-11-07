@@ -101,6 +101,13 @@ const howItWorks = () => `<details class="mk-how"><summary>How the market works<
   <li>Questions on a listing are public, like everything in the Commons.</li>
   <li>Creators keep the rights to their work.</li></ul></details>`;
 
+// "Businesses can be in their own little branch" (Geoffrey, 2026-11-07): one business is a line; two or more fold.
+function menuPages(me) {
+  const mine = orgpages.managedBy(me.id);
+  const line = (pg) => `<a href="${esc(orgpages.href(pg))}"><span class="mk-menudot" aria-hidden="true">${esc(pg.name.slice(0, 1))}</span> ${esc(pg.name)} <span class="muted small">${esc(profilekinds.BADGE[pg.kind])}</span></a>`;
+  const biz = mine.filter((x) => x.kind === 'business'); const rest = mine.filter((x) => x.kind !== 'business');
+  return rest.map(line).join('') + (biz.length > 1 ? `<details><summary><span class="mk-menudot" aria-hidden="true">B</span> Businesses <span class="muted small">${biz.length}</span></summary>${biz.map(line).join('')}</details>` : biz.map(line).join(''));
+}
 // ------------------------------------------------------------------------------------------ the frame
 function frame({ me, title, description = '', section = null, q = '', center, scripts = [] }) {
   const bal = me ? ledger.balance(ledger.wallet(me.id)) : 0;
@@ -120,7 +127,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 <body class="fx-page mk-page" data-theme="parchment" data-mk="${esc(section || 'home')}">
 <header class="mk-top">
   <details class="mk-site"><summary><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
-    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Home: the feed</a><a href="/label">🛍 Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${orgpages.managedBy(me.id).map((pg) => `<a href="${esc(orgpages.href(pg))}"><span class="mk-menudot" aria-hidden="true">${esc(pg.name.slice(0, 1))}</span> ${esc(pg.name)} <span class="muted small">${esc(profilekinds.BADGE[pg.kind])}</span></a>`).join('')}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
+    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Home: the feed</a><a href="/label">🛍 Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
   <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
   <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>
@@ -380,7 +387,7 @@ export function pagePage({ me, p, folder = null }) {
   const center = `${switcher}
   <section class="mk-pagehero${banner ? ' has-banner' : ''}"${banner ? ` style="--mk-banner:url('/images/${esc(banner.id)}')"` : p.banner_art ? ` style="--mk-banner:url('${esc(p.banner_art)}')"` : ''}>
     <div class="mk-pageface">${face}</div>
-    <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
+    <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.project_service ? '<p class="mk-ourservice">Part of the Cohabitation Project\'s own services</p>' : ''}${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
     <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
     ${mgr ? '<p><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button></p>' : ''}</div>
     ${heroCovers(covers)}
@@ -390,6 +397,7 @@ export function pagePage({ me, p, folder = null }) {
   <div class="mk-pagegrid">
     <aside class="mk-pageside">${profilekinds.infoCards(asMember).replace(/pf-card/g, 'mk-infocard')}${isLabel ? '' : labelCard(p)}${(p.links || []).length ? `<div class="mk-infocard"><h2>Links</h2><ul class="mk-links">${p.links.map((x) => `<li><a href="${esc(x.url)}" rel="nofollow noopener">${esc(x.label)}</a></li>`).join('')}</ul></div>` : ''}${p.label || isLabel ? '<p><a class="btn ghost small" href="/label?cat=music">← All artists in Music</a></p>' : ''}</aside>
     <div class="mk-pagemain">${p.bio ? `<section class="mk-about"><h2 class="mk-h">About</h2><div class="md">${renderMarkdown(p.bio)}</div></section>` : mgr ? '<p class="muted">No “about” yet. Tap Edit this page to write one.</p>' : ''}
+    ${(p.gallery || []).length ? `<section class="mk-gallery-sec"><h2 class="mk-h">${esc(p.gallery_title || 'Gallery')}</h2><div class="mk-shots">${p.gallery.map((id) => images.get(id)).filter(Boolean).map((im) => `<figure><a href="/images/${esc(im.id)}"><img src="/images/${esc(im.id)}" alt="${esc(im.alt)}" loading="lazy"></a><figcaption>${esc(im.title || im.alt)}</figcaption></figure>`).join('')}</div></section>` : ''}
     ${shop}</div>
   </div>
   ${mgr ? editDialog(p, me) + membersDatalist() : ''}`;
@@ -410,6 +418,7 @@ function editDialog(p, me) {
     <div class="mk-row"><label>Look<select name="theme">${opt(orgpages.THEMES, orgpages.themeOf(p))}</select></label><label>Accent colour<input name="accent" type="color" value="${esc(p.accent || '#d4a24c')}"></label></div>
     <label>Picture <span class="hint">(one of your uploads)</span><select name="portrait"><option value="">(none${p.art ? ': keep the drawn mark' : ''})</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.portrait ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
     <label>Banner <span class="hint">(one of your uploads)</span><select name="banner"><option value="">(none)</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.banner ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+    <fieldset class="mk-imgs"><legend>Gallery <span class="hint">(up to 8: pictures already here, and your uploads)</span></legend>${[...new Map([...(p.gallery || []).map((id) => images.get(id)).filter(Boolean), ...mine(me.id)].map((im) => [im.id, im])).values()].slice(0, 48).map((im) => `<label class="mk-imgpick"><input type="checkbox" name="gallery" value="${esc(im.id)}"${(p.gallery || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') || '<p class="small muted">Upload pictures from your profile page first.</p>'}</fieldset>
     <label>Links <span class="hint">(up to 6, one per line: label | https://… or tel:…)</span><textarea name="links" rows="4">${esc((p.links || []).map((x) => `${x.label} | ${x.url}`).join('\n'))}</textarea></label>
     ${ed2}
     ${rosterEd}
@@ -437,5 +446,6 @@ export function newPageForm({ me }) {
 export function pagesCard(memberId, { self = false } = {}) {
   const mine = orgpages.managedBy(memberId);
   if (!mine.length && !self) return '';
-  return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? `<ul>${mine.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a> <span class="pf-kind">${esc(profilekinds.BADGE[p.kind])}</span></li>`).join('')}</ul>` : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
+  const groups = [['band', 'Bands'], ['label', 'Labels'], ['artist', 'Artists'], ['business', 'Businesses']].map(([k, n]) => [n, mine.filter((p) => p.kind === k)]).filter(([, l]) => l.length);
+  return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? groups.map(([n, l]) => `<p class="small muted pf-pagesh">${n}</p><ul>${l.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a></li>`).join('')}</ul>`).join('') : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
 }

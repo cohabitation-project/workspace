@@ -44,6 +44,82 @@
           "label": "Call 626-ROLLIN1",
           "url": "tel:6267655461"
         }
+      ],
+      "project_service": true,
+      "gallery_title": "Screenshots",
+      "asset_hosts": [
+        "www.rollinhost.com",
+        "rollinhost.com"
+      ],
+      "assets": [
+        {
+          "url": "https://www.rollinhost.com/photos/og-image.png",
+          "role": "banner",
+          "alt": "RollinHost: run your entire park from one system. Flat monthly rate, zero booking fees.",
+          "credit": "From rollinhost.com (Roll In Host LLC)"
+        },
+        {
+          "url": "https://www.rollinhost.com/photos/feature-booking.jpg",
+          "role": "gallery",
+          "alt": "The demo park's booking page: a map of 24 spaces coloured by availability, with nightly, weekly and monthly rates",
+          "caption": "Booking: a live space map with rates",
+          "credit": "Screenshot from rollinhost.com"
+        },
+        {
+          "url": "https://www.rollinhost.com/photos/feature-schedule.jpg",
+          "role": "gallery",
+          "alt": "A schedule grid with spaces down the side and nights across the top; monthly tenants in gold, short stays in green",
+          "caption": "The schedule: monthly tenants and short stays",
+          "credit": "Screenshot from rollinhost.com"
+        },
+        {
+          "url": "https://www.rollinhost.com/photos/shot-map.png",
+          "role": "gallery",
+          "alt": "A live occupancy map of the park's space grid",
+          "caption": "Live occupancy map",
+          "credit": "Screenshot from rollinhost.com"
+        },
+        {
+          "url": "https://www.rollinhost.com/photos/feature-tenants.jpg",
+          "role": "gallery",
+          "alt": "The long-term tenants page with check-ins, active tenants with space and move-in date, check-outs and history",
+          "caption": "Long-term tenants",
+          "credit": "Screenshot from rollinhost.com"
+        },
+        {
+          "url": "https://www.rollinhost.com/photos/feature-meter.jpg",
+          "role": "gallery",
+          "alt": "The meter reading screen for space 2: tenant, rate, a meter-scanning panel and the kWh reading",
+          "caption": "Utility metering, read from a photo",
+          "credit": "Screenshot from rollinhost.com"
+        },
+        {
+          "url": "https://www.rollinhost.com/photos/shot-mobile-2.png",
+          "role": "gallery",
+          "alt": "RollinHost's field workflow on a phone",
+          "caption": "Field workflow on a phone",
+          "credit": "Screenshot from rollinhost.com"
+        }
+      ],
+      "listings": [
+        {
+          "title": "RollinHost: park software for independent RV parks",
+          "text": "Reservations, long-term tenants, utility metering, financials, staff and an AI assistant, in one system with one database. Flat monthly rate, no per-booking fees.\n\n**Plans** (as listed on rollinhost.com)\n- Founders (parks 1 to 10): $99 a month, locked, 4 months free\n- Early access (parks 11 to 50, through January 2028): $99 a month for the first year\n- Standard: $129 a month under 50 sites, $179 for 50 or more\n- Onboarding: $250, or $500 with a website rebuild\n\nTry the live demo at demo.rollinhost.com, or ask here.",
+          "category": "software",
+          "type": "service",
+          "price": {
+            "mode": "quote"
+          },
+          "license": "service",
+          "made_by": "hybrid",
+          "tags": [
+            "rv parks",
+            "park software",
+            "reservations",
+            "saas"
+          ],
+          "link": "https://demo.rollinhost.com/"
+        }
       ]
     },
     {
@@ -73,7 +149,120 @@
           "url": "https://lastoftherealestate.com/"
         }
       ],
-      "banner_art": "/label/files/art/label-header.png"
+      "banner_art": "/label/files/art/label-header.png",
+      "project_service": true
+    },
+    {
+      "slug": "firedamm",
+      "kind": "business",
+      "name": "Firedamm",
+      "manager": "h_mvvq2q281p068710",
+      "theme": "midnight",
+      "accent": "#ff7a1a",
+      "project_service": true,
+      "headline": "AI builds fast. Humans build right.",
+      "bio": "Firedamm builds custom, hand-coded websites and business software: accelerated by AI, reviewed by a human, with no templates and no WordPress. It's for small businesses of every kind: service businesses, restaurants, real estate, healthcare, shops, nonprofits, portfolios and towns. You own what's built, with no subscription.\n\n**How it works**\n1. Get a price from the online calculator in about a minute.\n2. Reserve a build slot ($250, credited toward the price).\n3. Your site goes live in 5 to 14 days, depending on scope.\n4. Pay the balance and own it outright.\n\n**What we build**\n- Mobile-first, hand-coded sites with on-page SEO\n- Contact forms, galleries, blogs\n- Booking and reservations\n- Shops with Stripe checkout\n- An AI chat agent trained on your business\n- Google setup: analytics, Business Profile, phone\n- AI search optimization (structured data for AI and Google results)\n- Multilingual sites, hand-translated\n- Site rescue: getting your domain, site and leads back from a former developer\n- Custom business tools: quoting, CRM, job tracking, booking\n\n**Pricing** (as listed on firedamm.com, November 2026)\n- **Launch package:** $1,195 flat: 4 pages, a contact form, Google setup and SEO, live in about a week\n- **Custom build:** $300 setup plus $200 a page\n- **Add-ons:** contact form $50 · gallery $100 · blog $200 · booking $500 · e-commerce $1,500 · AI chat agent $500 plus $50 a month · Google setup $150 · AI search optimization $300 · languages $300 · writing $100 a page · rush +30%\n- **Care plan:** $150 a month · more development $95 an hour\n- **Custom business tools** from $750\n\n**Work**\n- **LA Domes** (domes.la): an event-dome company's hand-coded site, SEO 100 and Accessibility 100, with an AI concierge and a custom CRM\n- **Freedom Star Belize** (freedomstarbelize.com): a lead-generation site for 27.5 bayfront acres in Northern Belize\n- **Roll In Host** (rollinhost.com): white-label RV park booking software, live at Mustang Corner with 37 spaces and Stripe payments\n- **Dome Desk:** a CRM with job tracking, a prospect library and a P&L module, for a live client\n\n**The human who builds it:** Geoffrey Cooper, a former head rigger on touring productions who taught himself software. He's the builder and your direct contact.",
+      "kind_info": {
+        "services": [
+          "Hand-coded websites",
+          "Booking systems",
+          "Online shops",
+          "AI chat agents",
+          "Google setup",
+          "AI search optimization",
+          "Site rescue",
+          "Custom business tools"
+        ],
+        "service_area": "Small businesses, anywhere, online",
+        "location": ""
+      },
+      "links": [
+        {
+          "label": "firedamm.com",
+          "url": "https://www.firedamm.com/"
+        },
+        {
+          "label": "Get a price in 60 seconds",
+          "url": "https://www.firedamm.com/#calculator"
+        },
+        {
+          "label": "See the work",
+          "url": "https://www.firedamm.com/work.html"
+        }
+      ],
+      "gallery_title": "The human who builds it",
+      "asset_hosts": [
+        "www.firedamm.com",
+        "firedamm.com"
+      ],
+      "assets": [
+        {
+          "url": "https://www.firedamm.com/firedamm-logo-transparent.png",
+          "role": "portrait",
+          "alt": "The Firedamm logo",
+          "credit": "From firedamm.com"
+        },
+        {
+          "url": "https://www.firedamm.com/geoffrey.webp",
+          "role": "gallery",
+          "alt": "Geoffrey Cooper, founder of Firedamm",
+          "caption": "Geoffrey Cooper, founder and builder",
+          "credit": "From firedamm.com"
+        }
+      ],
+      "listings": [
+        {
+          "title": "Launch package: a hand-coded website, live in about a week",
+          "text": "Four pages, a contact form, Google setup and SEO, built by hand and reviewed by a human. You own it outright, with no subscription. A $250 reservation is credited toward the price. Add-ons and custom builds are on firedamm.com.",
+          "category": "services",
+          "type": "service",
+          "price": {
+            "mode": "fixed",
+            "amount": 1195
+          },
+          "license": "service",
+          "made_by": "hybrid",
+          "tags": [
+            "websites",
+            "web design",
+            "small business",
+            "seo"
+          ],
+          "link": "https://www.firedamm.com/#calculator"
+        },
+        {
+          "title": "Site rescue: get your domain, site and leads back",
+          "text": "Locked out by a former developer? A free 15-minute review, then a flat quote. No fix, no fee.",
+          "category": "services",
+          "type": "service",
+          "price": {
+            "mode": "quote"
+          },
+          "license": "service",
+          "made_by": "human",
+          "tags": [
+            "websites",
+            "site rescue",
+            "domains"
+          ]
+        },
+        {
+          "title": "Custom business tools: quoting, CRM, job tracking, booking",
+          "text": "Software built for the chore you do by hand every week, from $750. Describe the chore and get a quote.",
+          "category": "software",
+          "type": "service",
+          "price": {
+            "mode": "quote"
+          },
+          "license": "service",
+          "made_by": "hybrid",
+          "tags": [
+            "crm",
+            "business software",
+            "automation"
+          ]
+        }
+      ]
     }
   ]
 }

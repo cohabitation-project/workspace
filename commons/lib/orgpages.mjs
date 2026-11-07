@@ -21,7 +21,7 @@ import * as profilekinds from './profilekinds.mjs';
 // A record label is a page too (Geoffrey, 2026-11-07): it gathers band pages, like a label page on Bandcamp. Starting a
 // label will cost money one day (pricing to be decided, competitively); during the beta it is free.
 export const KINDS = { band: 'Band / musician', artist: 'Artist / maker', business: 'Business / services', label: 'Record label' };
-export const THEMES = { navy: 'Navy and gold', music: 'Dark, like a listening app', art: 'Gallery white', video: 'Cinema', software: 'Terminal', services: 'Clean studio', classifieds: 'Newsprint', home: 'Cream' };
+export const THEMES = { navy: 'Navy and gold', midnight: 'Midnight and ember', music: 'Dark, like a listening app', art: 'Gallery white', video: 'Cinema', software: 'Terminal', services: 'Clean studio', classifieds: 'Newsprint', home: 'Cream' };
 const DEFAULT_THEME = { band: 'music', artist: 'art', business: 'services', label: 'music' };
 const ACCENT_RX = /^#[0-9a-f]{6}$/i;
 
@@ -52,7 +52,7 @@ function seed(file) {
   for (const s of list) {
     if (bySlug(s.slug)) continue;
     const m = hooks.member(s.manager); if (!m) continue; // the manager must exist on this server
-    const { manager, ...rest } = s;
+    const { manager, assets, listings, asset_hosts, ...rest } = s;
     write({ op: 'create', ts: new Date().toISOString(), page: { id: newId(), created: new Date().toISOString(), by: { id: m.id, name: m.name }, managers: [{ id: m.id, name: m.name }], label: false, seeded: true, kind_info: {}, links: [], ...rest } });
   }
 }
@@ -99,6 +99,8 @@ export function create(member, { kind, name } = {}) {
   write({ op: 'create', page, ts: page.created });
   return page;
 }
+/** The server's own changes to a page (seeded pictures and listings), never a member's. */
+export function systemPatch(id, patch) { const p = get(id); if (!p) return null; write({ op: 'update', id: p.id, patch, by: 'system', ts: new Date().toISOString() }); return get(p.id); }
 export function update(member, id, b = {}) {
   const p = get(id); if (!p) fail(404, 'no such page');
   if (!isManager(p, member?.id)) fail(403, 'only the members who run this page can change it');
@@ -117,6 +119,12 @@ export function update(member, id, b = {}) {
     if (out.length > 6) fail(400, 'up to 6 links'); patch.links = out;
   }
   for (const k of ['portrait', 'banner']) if (b[k] !== undefined) patch[k] = b[k] ? hooks.imageOwned(member, String(b[k])) : null;
+  if (b.gallery !== undefined) {
+    const ids = Array.isArray(b.gallery) ? b.gallery : String(b.gallery || '').split(',').map((x) => x.trim()).filter(Boolean);
+    if (ids.length > 8) fail(400, 'up to 8 pictures in the gallery');
+    const keep = new Set(p.gallery || []); // pictures already on the page (e.g. seeded from the business's own site) may stay
+    patch.gallery = ids.map((id) => (keep.has(id) ? id : hooks.imageOwned(member, String(id)))).filter(Boolean);
+  }
   // a label's artists: a label's managers add band or artist pages they also run (asking other bands comes later)
   if (b.add_artist !== undefined) {
     if (p.kind !== 'label') fail(400, 'only a label page has artists');

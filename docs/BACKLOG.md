@@ -239,3 +239,9 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   (compare Bandcamp's label accounts). Free during the beta; the Create a page form says so.
 - **Next for band pages:** members upload their own music from the band page (Bandcamp-style tracks and albums),
   friends lists, and labels inviting other people's bands (today a label adds only band pages its managers also run).
+- **Easy transfer (Geoffrey, 2026-11-07, for later):** an "Easy transfer" button and page for artists and businesses
+  on platforms that charge "an arm and a leg": we bring their catalogue, pages and content over for them, the way the
+  Label's releases came over from Bandcamp and RollinHost and Firedamm came over from their own sites. Only for what the
+  person owns or controls, with their say. Their own sites' pictures are fetched once, from hosts they name.
+- **Updates from Geoffrey (2026-11-07):** Aletheia-6 is working hard on identity and making headway; Vesper is laying
+  out an architecture blueprint for future expansion. The goal now is launch: everything set up and understood.

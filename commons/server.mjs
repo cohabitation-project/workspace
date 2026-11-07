@@ -76,6 +76,44 @@ orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q)
 orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
 market.setHooks({ page: (m, id) => { const pg = orgpages.get(id); if (!pg) throw new core.CommonsError(400, 'no such page'); if (!orgpages.isManager(pg, m.id)) throw new core.CommonsError(403, 'you can only list as a page you run'); return { id: pg.id, slug: pg.slug, name: pg.name, kind: pg.kind }; } });
 pages.setPagesCard(marketpage.pagesCard);
+// Seeded pages' pictures and listings (2026-11-07): the server fetches each picture ONCE from the business's own site
+// (only the hosts its seed names, https only), stores it like any upload (type-checked, scanned, metadata stripped,
+// credited to the site), and lists the business's own services under the page. Retried at the next boot if a fetch fails.
+async function seedPageAssets() {
+  let seed = []; try { seed = JSON.parse(fs.readFileSync(process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json'), 'utf8')).pages || []; } catch { return; }
+  orgpages.ensureLabelPages();
+  for (const s of seed) {
+    const pg = orgpages.bySlug(s.slug); if (!pg) continue;
+    const mgr = store.getMember(pg.managers[0]?.id); if (!mgr) continue;
+    if ((s.assets || []).length && !pg.assets_done) {
+      const got = { ...(pg.assets_got || {}) }; let failed = 0;
+      for (const a of s.assets) {
+        if (got[a.url]) continue;
+        try {
+          const u = new URL(a.url); const testLocal = process.env.COMMONS_TEST_ASSETS === '1' && u.protocol === 'http:' && u.hostname === '127.0.0.1';
+          if (!(u.protocol === 'https:' || testLocal) || !(s.asset_hosts || []).includes(u.hostname)) throw new Error('host not allowed by the seed');
+          const r = await fetch(u.href, { signal: AbortSignal.timeout(20000), redirect: 'follow' });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const buf = Buffer.from(await r.arrayBuffer());
+          const im = images.upload(mgr, { data: buf, alt: a.alt, credit: a.credit, title: a.caption || '' });
+          got[a.url] = im.id;
+        } catch (e) { failed++; console.log(`[commons] page picture not fetched (${s.slug}): ${a.url}: ${e.message}`); }
+      }
+      const pick = (role) => s.assets.filter((a) => a.role === role).map((a) => got[a.url]).filter(Boolean);
+      const patch = { assets_got: got, assets_done: failed === 0 };
+      if (!pg.portrait && pick('portrait')[0]) patch.portrait = pick('portrait')[0];
+      if (!pg.banner && pick('banner')[0]) patch.banner = pick('banner')[0];
+      if (pick('gallery').length) patch.gallery = [...new Set([...(pg.gallery || []), ...pick('gallery')])].slice(0, 8);
+      orgpages.systemPatch(pg.id, patch);
+    }
+    if ((s.listings || []).length && !orgpages.get(pg.id).listings_done) {
+      let ok = 0;
+      for (const l of s.listings) { try { market.create(mgr, { ...l, page: pg.id, rights: true }); ok++; } catch (e) { console.log(`[commons] seeded listing not made (${s.slug}): ${e.message}`); } }
+      orgpages.systemPatch(pg.id, { listings_done: ok === s.listings.length || ok > 0 });
+    }
+  }
+}
+setTimeout(() => { seedPageAssets().catch((e) => console.log('[commons] page seeding:', e.message)); }, 1500);
 market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => images.ownedBy(m, id), group: (id) => groups.get(id), deskTask: (id) => desk.all().find((t) => t.id === id) || null });
 // honest credits + @tags (2026-11-06): one lookup for "is this a member?", longest names first so "@Grok Bot" wins
 // over a member called "Grok"

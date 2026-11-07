@@ -13,7 +13,7 @@ if (dlg) {
     const f = new FormData(form); const k = kind?.value;
     const info = {};
     for (const key of KIND_FIELDS[k] || []) { const v = f.get(`kf-${key}`); if (v === null) continue; info[key] = ['shows', 'members'].includes(key) ? String(v).split('\n').map((x) => x.trim()).filter(Boolean) : String(v).trim(); }
-    const body = { headline: f.get('headline') || '', bio: f.get('bio') || '', theme: f.get('theme'), accent: f.get('accent'), portrait: f.get('portrait') || '', banner: f.get('banner') || '', links: String(f.get('links') || ''), kind_info: info };
+    const body = { headline: f.get('headline') || '', bio: f.get('bio') || '', theme: f.get('theme'), accent: f.get('accent'), portrait: f.get('portrait') || '', banner: f.get('banner') || '', links: String(f.get('links') || ''), kind_info: info, gallery: f.getAll('gallery') };
     if (k) body.kind = k;
     if (f.get('name') !== null) body.name = f.get('name');
     const add = String(f.get('add_manager') || '').trim(); if (add) body.add_manager = add;
