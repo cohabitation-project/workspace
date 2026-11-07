@@ -101,7 +101,9 @@ export function roomViewPage(roomId, { me }) {
       let jobs = []; try { jobs = desk.all({ room: roomId, status: 'open' }) || []; } catch { jobs = []; }
       let mtgs = []; try { mtgs = meetings.all({ room: roomId }) || []; } catch { mtgs = []; }
       const sessions = { hours: repo.sessionHours(roomId), next: repo.nextSession(roomId) };
-      const body = roomBody({ room, roomId, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), meetings: mtgs, sessions, figureHTML, me: meObj });
+      const libCfg = roster.library || null;
+      let libItems = []; if (libCfg && libCfg.category) { try { libItems = library.list({ category: libCfg.category }).slice(0, 10); } catch { libItems = []; } }
+      const body = roomBody({ room, roomId, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), meetings: mtgs, sessions, library: libCfg, libraryItems: libItems, figureHTML, me: meObj });
       return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
     }
   }

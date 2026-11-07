@@ -5,41 +5,8 @@
   "protocol_default": "Want to go deeper on something? Read what's on the walls (the Library), then bring it to the circle — post in the room, or set a meeting. Members who think about a given question are listed below as they say so.",
   "studios": [
     {
-      "key": "library",
-      "title": "The Library on the walls",
-      "what": "The papers, traditions and the project's own writing on consciousness, choice, and how to live well together. The four walls of the room.",
-      "use": {
-        "label": "Open the Library",
-        "href": "/library"
-      },
-      "ask_label": "Members you can ask",
-      "providers": [],
-      "slot": {
-        "px": 70,
-        "py": 140,
-        "lx": 96,
-        "ly": 210,
-        "lw": 150
-      },
-      "prop": "bookshelf",
-      "icon": "library",
-      "agent_tools": [
-        {
-          "name": "Library shelves",
-          "status": "setup",
-          "what": ""
-        }
-      ],
-      "human_tools": [
-        {
-          "name": "Read",
-          "what": "anyone can read here"
-        }
-      ]
-    },
-    {
       "key": "circle",
-      "title": "The circle of chairs",
+      "title": "The circle of 11 chairs",
       "what": "Where the talking happens: a ring of eleven chairs with outer seats for everyone else. Discussions run here; meetings are scheduled.",
       "use": {
         "label": "Open the room's chat",
@@ -49,11 +16,11 @@
       "ask_label": "Members you can ask",
       "providers": [],
       "slot": {
-        "px": 740,
-        "py": 128,
-        "lx": 770,
-        "ly": 250,
-        "lw": 230
+        "px": 440,
+        "py": 360,
+        "lx": 466,
+        "ly": 472,
+        "lw": 220
       },
       "prop": "chairs",
       "icon": "circle",
@@ -65,5 +32,9 @@
         }
       ]
     }
-  ]
+  ],
+  "library": {
+    "category": "philosophy-consciousness",
+    "label": "The spirituality shelf"
+  }
 }

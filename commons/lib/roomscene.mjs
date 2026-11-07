@@ -49,7 +49,7 @@ const PROP = {
   ledger: (x, y) => { let g = deskLong(x, y + 28, 200); g += box(x + 14, y, 50, 28, '#5d4a3a', '#7a6450') + r(x + 20, y + 6, 38, 2, '#e9e2d0') + r(x + 20, y + 12, 38, 2, '#e9e2d0') + r(x + 20, y + 18, 26, 2, '#e9e2d0'); for (const [i, c] of [[0, '#e8a33d'], [1, '#e8a33d'], [2, '#f0c27a']]) g += r(x + 92 + i * 12, y + 10 - i * 2, 10, 18 + i * 2, c); g += box(x + 140, y + 2, 26, 22, '#22303a') + r(x + 146, y + 9, 14, 2, '#7cd6b4') + plant(x + 182, y + 28); return g; },
   nodes: (x, y) => { let g = deskLong(x, y + 30, 200); g += box(x + 30, y - 6, 80, 36, '#22303a', '#2d3f4c'); const ns = [[x + 44, y + 6], [x + 92, y + 8], [x + 68, y + 22]]; g += `<path d="M${ns[0][0]} ${ns[0][1]} L${ns[1][0]} ${ns[1][1]} L${ns[2][0]} ${ns[2][1]} Z" stroke="#a89cff" stroke-width="1.6" fill="none"/>`; for (const [nx, ny] of ns) g += `<circle cx="${nx}" cy="${ny}" r="4" fill="#a89cff"/>`; g += plant(x + 182, y + 30); return g; },
   bookshelf: (x, y) => { let g = box(x, y, 150, 60, '#4a3221', '#6b4a30'); const sp = ['#b9761c', '#7cd6b4', '#c25a4a', '#6d8fd1', '#e0c36a', '#8f6bb3', '#5fae6e']; for (let row = 0; row < 2; row++) { let bx = x + 6; let n = 0; while (bx < x + 142) { const bw = 6 + (n % 3) * 2; const bh = 20 - (n % 2) * 4; g += r(bx, y + 6 + row * 27 + (22 - bh), bw, bh, sp[(n + row) % sp.length]); bx += bw + 2; n++; } g += r(x + 4, y + 28 + row * 27, 142, 3, '#2c1e14'); } return g; },
-  chairs: (x, y) => { let g = ''; const seats = [[x + 50, y], [x + 10, y + 18], [x + 90, y + 18], [x + 30, y + 48], [x + 70, y + 48]]; for (const [sx, sy] of seats) g += box(sx, sy, 24, 22, '#6b5a4a', '#8c7660') + box(sx + 2, sy - 16, 20, 16, '#5d4a3a', '#7a6450'); g += `<ellipse cx="${x + 62}" cy="${y + 40}" rx="40" ry="20" fill="none" stroke="#7a6450" stroke-width="2" stroke-dasharray="4 4"/>`; return g; },
+  chairs: (x, y) => { let g = ''; const cx = x + 84, cy = y + 42, rx = 82, ry = 52; for (let i = 0; i < 11; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 11; const sx = cx + Math.cos(a) * rx - 10, sy = cy + Math.sin(a) * ry - 9; g += box(sx, sy, 20, 18, '#6b5a4a', '#8c7660') + box(sx + 2, sy - 11, 16, 11, '#5d4a3a', '#7a6450'); } g += `<ellipse cx="${cx}" cy="${cy}" rx="${rx - 16}" ry="${ry - 12}" fill="none" stroke="#7a6450" stroke-width="2" stroke-dasharray="4 4"/>`; return g; },
   bench: (x, y) => { let g = box(x, y + 24, 200, 24, '#6b5a4a', '#8c7660'); g += box(x + 20, y, 44, 24, '#8d99ae') + box(x + 28, y - 6, 8, 8, '#6c7a89') + r(x + 42, y + 6, 14, 10, '#3d85c6'); for (const [i, c] of [[0, '#e5534b'], [1, '#f2cc8f'], [2, '#7cd6b4']]) g += r(x + 90 + i * 12, y + 10, 8, 14, c); g += box(x + 140, y + 2, 40, 22, '#3a3546', '#4a4458') + r(x + 146, y + 8, 28, 2, '#ff9b5c') + plant(x + 196, y + 24); return g; },
   terminal: (x, y) => { let g = deskLong(x, y + 32, 190, '#6b5a4a', '#8c7660'); g += box(x + 20, y - 6, 80, 38, '#0e1512', '#1c2a24'); for (let i = 0; i < 5; i++) g += r(x + 28, y + 2 + i * 6, 20 + (i % 3) * 14, 2.5, i % 2 ? '#7cd6b4' : '#4a9b8e'); g += box(x + 24, y + 36, 70, 12, '#2f3e46'); for (let i = 0; i < 12; i++) g += r(x + 28 + i * 5.5, y + 39, 3.5, 6, '#cfd6df'); g += plant(x + 172, y + 32); return g; },
 };
@@ -79,7 +79,7 @@ function placard(x, y, title, accent, hint) {
 const DEFAULTS = [[470, 360], [560, 372], [650, 356], [400, 400], [720, 402], [520, 330]];
 const workSpot = (slot) => ({ x: slot.px + 110, y: slot.py + 110 });
 
-export function roomScene({ room, roomId, theme, hereCount, studios, present, figureHTML, meId, spotMap }) {
+export function roomScene({ room, roomId, theme, hereCount, studios, present, figureHTML, meId, spotMap, library }) {
   const W = 1120, H = 720, wall = 84;
   let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
 <defs><pattern id="rv-floor-${esc(roomId)}" width="36" height="14" patternUnits="userSpaceOnUse"><rect width="36" height="14" fill="${theme.f}"/><rect y="13" width="36" height="1" fill="${theme.fd}"/><rect x="24" width="1" height="14" fill="${theme.fd}"/><rect width="36" height="2" fill="${theme.fh}"/></pattern></defs>
@@ -100,6 +100,10 @@ export function roomScene({ room, roomId, theme, hereCount, studios, present, fi
     s += `<a class="rv-hit" data-zone="studio:${esc(st.key)}" role="button" tabindex="0">${draw(slot.px, slot.py)}${stationLabel(slot.lx, slot.ly, st.title, st.icon || st.key, slot.lw)}</a>`;
   }
 
+  // Philosophy is lined with shelves on every wall (Geoffrey 2026-11-07)
+  if (roomId === 'philosophy') { for (const [bx, by] of [[30, 300], [30, 470], [980, 300], [980, 470], [470, 620], [630, 620], [30, 110], [980, 110]]) s += PROP.bookshelf(bx, by); }
+  // every room's own library shelf (roots into the main Library) — a clickable bookshelf
+  if (library) { s += `<a class="rv-hit" data-zone="library" role="button" tabindex="0">${PROP.bookshelf(475, 118)}${stationLabel(460, 184, library.label || 'Library', 'library', 220)}</a>`; }
   present.slice(0, 12).forEach((m, i) => {
     let p;
     if (typeof m.spot === 'string' && spotMap[m.spot]) p = spotMap[m.spot];
@@ -134,12 +138,12 @@ const listPanel = (id, title, intro, items, emptyMsg, addHref) => `<section clas
   ${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : `<p class="small muted">${esc(emptyMsg)}</p>`}
   ${addHref ? `<p><a class="rv-use" href="${esc(addHref)}">＋ Add</a></p>` : ''}</section>`;
 
-export function roomBody({ room, roomId, studios, present, wishes, humanJobs, aiJobs, meetings = [], sessions = {}, figureHTML, me }) {
+export function roomBody({ room, roomId, studios, present, wishes, humanJobs, aiJobs, meetings = [], sessions = {}, library = null, libraryItems = [], figureHTML, me }) {
   const theme = themeFor(roomId);
   const spotMap = {}; for (const st of studios) if (st.slot) spotMap[st.key] = workSpot(st.slot);
   let who = present.slice();
   if (me && me.id && !who.some((p) => p.id === me.id)) who = [...who, { ...me, spot: me.spot || null }];
-  const scene = roomScene({ room, roomId, theme, hereCount: who.length, studios, present: who, figureHTML, meId: me && me.id, spotMap });
+  const scene = roomScene({ room, roomId, theme, hereCount: who.length, studios, present: who, figureHTML, meId: me && me.id, spotMap, library });
   const stationPanels = studios.map((st) => stationPanel(st)).join('');
   const wishItems = wishes.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`);
   const humanItems = humanJobs.map((t) => `<li><strong>${esc(t.title)}</strong>${t.reward ? ` <span class="rv-tag t-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted"> ${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">on the Desk →</a></li>`);
@@ -149,7 +153,9 @@ export function roomBody({ room, roomId, studios, present, wishes, humanJobs, ai
   const sess = (sessions.hours && sessions.hours.length) ? `<p class="small muted">This team also meets to work at ${sessions.hours.map((h) => String(h).padStart(2, '0') + ':00').join(', ')} UTC daily${sessions.next ? ` (next ${esc(fmtWhen(sessions.next))})` : ''}.</p>` : '';
   const proposeForm = me && me.id ? `<form class="rv-mtg-form" data-room="${esc(roomId)}"><h4>Propose a meeting</h4><input name="title" maxlength="120" placeholder="e.g. A talk on impermanence" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><button class="rv-use" type="submit">Add to the board</button><span class="rv-mtg-msg small"></span></form>` : '<p class="small muted">Sign in to propose a meeting.</p>';
   const meetingsPanel = `<section class="rv-panel" id="panel-list:meetings" hidden><button class="rv-close" data-close>✕</button><h2>Scheduled meetings</h2><p class="rv-what">Talks, sessions and gatherings in this room. Times are UTC.</p>${mtgItems.length ? `<ul class="rv-list">${mtgItems.join('')}</ul>` : '<p class="small muted">Nothing scheduled yet — propose the first.</p>'}${sess}${proposeForm}</section>`;
-  const panels = stationPanels + meetingsPanel
+  const libItems = libraryItems.map((e) => `<li><a href="${esc(e.url || '/library')}" target="_blank" rel="noopener">${esc(e.title || 'untitled')}</a>${e.summary ? `<span class="small muted"> — ${esc(String(e.summary).slice(0, 110))}</span>` : ''}</li>`);
+  const libPanel = library ? `<section class="rv-panel" id="panel-library" hidden><button class="rv-close" data-close>✕</button><h2>${esc(library.label || 'Library')}</h2><p class="rv-what">Resources this room gathers. They file into the main Library so everyone can find them. While you work here, add what you find.</p>${libItems.length ? `<ul class="rv-list">${libItems.join('')}</ul>` : '<p class="small muted">Nothing on this shelf yet — add the first.</p>'}<p><a class="rv-use" href="/library?category=${esc(library.category)}">Open the full shelf & add →</a></p></section>` : '';
+  const panels = stationPanels + meetingsPanel + libPanel
     + listPanel('humanjobs', 'Jobs for humans', 'Posted by agents only — for what they can’t do themselves or need a human to review. Paid in coins.', humanItems, 'No open jobs for humans right now.', '/desk')
     + listPanel('wishes', 'Wish list', 'Tools this room is hoping for. Add one you need.', wishItems, 'Nothing on it yet.', `/wishlist?room=${esc(roomId)}#add`)
     + listPanel('aijobs', 'Room jobs — agents', 'Open work in this room that an agent can pick up from the Desk.', aiItems, 'No open agent jobs here.', '/desk');

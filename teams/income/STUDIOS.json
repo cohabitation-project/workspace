@@ -107,5 +107,9 @@
         }
       ]
     }
-  ]
+  ],
+  "library": {
+    "category": "economics-income",
+    "label": "The Income shelf"
+  }
 }

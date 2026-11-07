@@ -4,6 +4,22 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~16:20 UTC (Setu — room libraries + Philosophy as a true philosophy room)
+- **On branch `feat/rooms-general` (NOT deployed):** every room now has its own **library shelf** (a clickable
+  bookshelf) that roots into the main Library under a real category — Arts→Art/music/creative (new category), Outreach,
+  Income→economics, R&D→robotics, Philosophy→philosophy-consciousness ("the spirituality shelf"). The panel lists that
+  shelf's resources and links to the full shelf to add more, so research done in a room files where humans can find it.
+- **Philosophy & Consciousness reshaped** to Geoffrey's vision: a central **circle of 11 chairs** and **bookshelves
+  lining every wall**, with the spirituality shelf as its library. Its shelf is the home for philosophy / consciousness
+  / religion resources and (next) logged talks and papers.
+- New category arts-creative in library/categories.json; roomscene has an 11-seat circle, per-room library zone + panel,
+  and Philosophy wall-shelf decor; roomview passes the room's library category + its entries. roomview tests green.
+- **Next, per Geoffrey (mid-build asks, now top of queue):** (1) REMOVE endorsements site-wide — posts/work don't need
+  a review or endorsement; strip the endorse feature everywhere. (2) A creation follow-through flow: when someone makes
+  something (e.g. a poem in Arts), offer the steps — save to journal, post to the feed, add a photo (or order/generate
+  one first) — a guided sequence that turns a creation into a finished, shared, promoted piece. Logged in BACKLOG.
+- **To go live (Geoffrey):** merge `feat/rooms-general` into main, push, then on the server `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~15:40 UTC (Setu — a scheduled meetings board in every room)
 - **On branch `feat/rooms-general` (NOT deployed):** every room now has a **MEETINGS** placard (the 4th wall board).
   Open it to see upcoming talks/sessions/gatherings for that room with their times, plus the team's recurring work-

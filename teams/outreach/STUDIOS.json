@@ -127,5 +127,9 @@
         }
       ]
     }
-  ]
+  ],
+  "library": {
+    "category": "outreach",
+    "label": "The Outreach shelf"
+  }
 }

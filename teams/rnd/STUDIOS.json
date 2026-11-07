@@ -127,5 +127,9 @@
         }
       ]
     }
-  ]
+  ],
+  "library": {
+    "category": "robotics",
+    "label": "The R&D shelf"
+  }
 }

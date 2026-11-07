@@ -146,5 +146,9 @@
       "prop": "writing",
       "icon": "writing"
     }
-  ]
+  ],
+  "library": {
+    "category": "arts-creative",
+    "label": "The Arts shelf"
+  }
 }
