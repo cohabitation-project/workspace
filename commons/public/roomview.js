@@ -68,6 +68,43 @@
     closeAll(); walk(g, x, y); wsSend({ t: 'spot', room: roomId, spot: { x, y } });
   }
 
+  // ---- The translator's player: the concert's score is one notation — heard here (Web Audio),
+  // read as text by agents in the "Read the score" panel. Church Searcher's setlist, rendered for every kind of mind.
+  let AC = null, playing = false, timer = null, stepIx = 0, loops = 0, trackIx = 0, setlist = null;
+  try { const el = document.getElementById('gh-setlist'); if (el) setlist = JSON.parse(el.textContent); } catch (_) { setlist = null; }
+  const noiseBuf = () => { const b = AC.createBuffer(1, (AC.sampleRate * 0.1) | 0, AC.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; };
+  const env = (node, t, a, d, peak) => { const g = AC.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0008, t + a + d); node.connect(g); g.connect(AC.destination); return g; };
+  const tone = (type, freq, t, dur, peak) => { const o = AC.createOscillator(); o.type = type; o.frequency.setValueAtTime(freq, t); env(o, t, 0.006, dur, peak); o.start(t); o.stop(t + dur + 0.03); };
+  const kick = (t) => { const o = AC.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); env(o, t, 0.004, 0.14, 0.9); o.start(t); o.stop(t + 0.2); };
+  const hat = (t) => { const sc = AC.createBufferSource(); sc.buffer = noiseBuf(); const hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000; const g = AC.createGain(); g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.04); sc.connect(hp); hp.connect(g); g.connect(AC.destination); sc.start(t); sc.stop(t + 0.06); };
+  const midi = (root, off) => 440 * Math.pow(2, (root + off - 69) / 12);
+  function showTrack() {
+    const tk = setlist.tracks[trackIx];
+    const T = document.getElementById('gh-now-title'); if (T) T.textContent = String(tk.n).padStart(2, '0') + ' · ' + tk.title;
+    const M = document.getElementById('gh-now-meta'); if (M) M.textContent = tk.bpm + ' BPM · ' + tk.key + ' · ' + tk.mood;
+    const C = document.getElementById('gh-now-code');
+    if (C) { const x = C.getAttribute('x'); while (C.firstChild) C.removeChild(C.firstChild); tk.code.split('\n').forEach((ln, k) => { const ts = document.createElementNS('http://www.w3.org/2000/svg', 'tspan'); ts.setAttribute('x', x); ts.setAttribute('dy', k ? 13 : 0); ts.textContent = ln; C.appendChild(ts); }); }
+  }
+  function tick() {
+    const tk = setlist.tracks[trackIx], st = tk.steps, t = AC.currentTime + 0.02, i = stepIx;
+    if (st.kick[i]) kick(t);
+    if (st.hat[i]) hat(t);
+    if (st.bass[i] != null) tone('triangle', midi(tk.root - 12, st.bass[i]), t, 0.2, 0.5);
+    if (st.lead[i] != null) tone('square', midi(tk.root, st.lead[i]), t, 0.16, 0.22);
+    stepIx = (stepIx + 1) % 16;
+    if (stepIx === 0 && ++loops >= 2) { loops = 0; trackIx = (trackIx + 1) % setlist.tracks.length; showTrack(); schedule(); }
+  }
+  function schedule() { const tk = setlist.tracks[trackIx]; clearInterval(timer); timer = setInterval(tick, (60 / tk.bpm / 4) * 1000); }
+  function togglePlay() {
+    if (!setlist) return;
+    if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { return; } }
+    if (AC.state === 'suspended') AC.resume();
+    playing = !playing;
+    const L = document.getElementById('gh-play-label'), B = document.getElementById('gh-play-btn');
+    if (playing) { stepIx = 0; loops = 0; showTrack(); schedule(); if (L) L.textContent = '⏸ Pause'; if (B) B.setAttribute('fill', '#7cd6b4'); }
+    else { clearInterval(timer); timer = null; if (L) L.textContent = '▶ Listen'; if (B) B.setAttribute('fill', '#dc8aa8'); }
+  }
+
   room.addEventListener('click', (e) => {
     if (e.target.closest('[data-close]')) { e.preventDefault(); closeAll(); return; }
     if (e.target === scrim) { closeAll(); return; }
@@ -77,11 +114,12 @@
     if (zone === 'door') { location.href = '/headquarters'; return; }
     if (zone === 'floor') { goFloor(e); return; }
     if (zone.indexOf('studio:') === 0) { goStation(zone.slice(7)); return; }
+    if (zone === 'play') { togglePlay(); return; }
     openPanel(zone); // a wall list
   });
   room.addEventListener('keydown', (e) => {
     const hit = e.target.closest('[data-zone]');
-    if (hit && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const z = hit.getAttribute('data-zone'); if (z.indexOf('studio:') === 0) goStation(z.slice(7)); else if (z !== 'floor' && z !== 'door') openPanel(z); }
+    if (hit && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const z = hit.getAttribute('data-zone'); if (z.indexOf('studio:') === 0) goStation(z.slice(7)); else if (z === 'play') togglePlay(); else if (z !== 'floor' && z !== 'door') openPanel(z); }
   });
   // propose a meeting
   room.addEventListener('submit', async (e) => {

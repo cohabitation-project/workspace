@@ -184,7 +184,20 @@ const chairSmall = (x, y, c = '#6b5a4a') => box(x, y, 18, 16, c, '#8c7660') + bo
 // a small placeholder flag (two or three stripes); the real 01 flag + world flags come later
 const flag = (x, y, cols) => { let g = r(x, y, 2, 30, '#3a3024'); const w = 26, h = 16; cols.forEach((c, i) => g += r(x + 2, y + 2 + i * (h / cols.length), w, h / cols.length, c)); g += r(x + 2, y + 2, w, h, 'none', 'stroke="#15121b" stroke-width="1"'); return g; };
 
-function greatHallStage(theme, W, wall, skin) {
+// Church Searcher: square head with a cross, a staff, a shell body (Geoffrey's character).
+function churchSearcher(x, y) {
+  let g = '';
+  g += r(x + 42, y - 8, 4, 80, '#8a6a4a') + r(x + 39, y - 16, 10, 10, '#e9c46a', 'rx="2"');          // staff + orb
+  g += r(x + 37, y - 22, 14, 3, '#e9c46a') + r(x + 43, y - 27, 2, 10, '#e9c46a');                      // cross on the orb
+  g += box(x + 4, y + 30, 38, 36, '#2f7a6e', '#4a9b8e');                                               // shell body
+  for (let i = 0; i < 3; i++) g += r(x + 7, y + 37 + i * 8, 32, 2, '#255f57');
+  g += r(x + 16, y + 24, 14, 8, '#d8cbb0');                                                            // neck
+  g += box(x + 9, y - 2, 28, 28, '#e3d7bd', '#f0e7d2');                                                // square head
+  g += r(x + 21, y + 2, 4, 18, '#6a4a2a') + r(x + 14, y + 8, 18, 4, '#6a4a2a');                         // cross on the face
+  g += r(x + 14, y + 20, 3, 3, '#2b2320') + r(x + 29, y + 20, 3, 3, '#2b2320');                         // eyes
+  return g;
+}
+function greatHallStage(theme, W, wall, skin, setlist) {
   const stageY = wall + 8, stageH = 150, cx = W / 2;
   let g = r(10, stageY, W - 20, stageH, skin.stage, 'rx="6"') + r(10, stageY + stageH, W - 20, 6, '#0e0b12');
   g += `<text x="${cx}" y="${stageY - 2}" font-size="13" fill="#cdbfa6" text-anchor="middle" font-family="ui-monospace,monospace">— stage —</text>`;
@@ -205,6 +218,21 @@ function greatHallStage(theme, W, wall, skin) {
     g += `</g>`;
     // disco ball, spinning
     g += `<g><circle cx="${cx}" cy="${stageY + 20}" r="12" fill="#cfd6df"/><g transform-origin="${cx} ${stageY + 20}"><animateTransform attributeName="transform" type="rotate" from="0 ${cx} ${stageY + 20}" to="360 ${cx} ${stageY + 20}" dur="4s" repeatCount="indefinite"/><circle cx="${cx}" cy="${stageY + 20}" r="12" fill="url(#gh-disco)"/><line x1="${cx - 12}" y1="${stageY + 20}" x2="${cx + 12}" y2="${stageY + 20}" stroke="#8aa" stroke-width="1"/><line x1="${cx}" y1="${stageY + 8}" x2="${cx}" y2="${stageY + 32}" stroke="#8aa" stroke-width="1"/></g></g>`;
+    if (setlist && setlist.tracks && setlist.tracks.length) {
+      const t0 = setlist.tracks[0];
+      g += churchSearcher(cx - 24, stageY + 40);
+      g += `<text x="${cx}" y="${stageY + 18}" font-size="11" fill="#dc8aa8" text-anchor="middle" font-family="ui-monospace,monospace">Church Searcher — ${esc(setlist.title)}</text>`;
+      const sx = W - 372, sy = stageY + 10, sw = 346, sh = 128;
+      g += box(sx, sy, sw, sh, '#0a0d12', '#1b2230');
+      g += `<text x="${sx + 12}" y="${sy + 18}" font-size="11" fill="#7cd6b4" font-family="ui-monospace,monospace">♪ NOW PLAYING · the translator</text>`;
+      g += `<text id="gh-now-title" x="${sx + 12}" y="${sy + 38}" font-size="13" fill="#e9dfcd" font-family="ui-monospace,monospace">${esc(String(t0.n).padStart(2, '0') + ' · ' + t0.title)}</text>`;
+      g += `<text id="gh-now-meta" x="${sx + 12}" y="${sy + 53}" font-size="10" fill="#9fb0c0" font-family="ui-monospace,monospace">${esc(t0.bpm + ' BPM · ' + t0.key + ' · ' + t0.mood)}</text>`;
+      let codeSvg = `<text id="gh-now-code" x="${sx + 12}" y="${sy + 72}" font-size="11" fill="#bfe6d8" font-family="ui-monospace,monospace" xml:space="preserve">`;
+      t0.code.split('\n').forEach((ln, i) => { codeSvg += `<tspan x="${sx + 12}" dy="${i ? 13 : 0}">${esc(ln)}</tspan>`; });
+      g += codeSvg + `</text>`;
+      g += `<a class="rv-hit" data-zone="play" role="button" tabindex="0"><rect id="gh-play-btn" x="${cx - 156}" y="${stageY + 120}" width="132" height="26" rx="6" fill="#dc8aa8"/><text id="gh-play-label" x="${cx - 90}" y="${stageY + 137}" font-size="12" fill="#14121a" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="bold">▶ Listen</text></a>`;
+      g += `<a class="rv-hit" data-zone="list:setlist" role="button" tabindex="0"><rect x="${cx + 18}" y="${stageY + 120}" width="158" height="26" rx="6" fill="#2a2632" stroke="#4a4458"/><text x="${cx + 97}" y="${stageY + 137}" font-size="12" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">♪ Read the score</text></a>`;
+    }
   } else if (theme === 'lecture' || theme === 'podcast') {
     g += box(cx - 70, stageY + 24, 140, 86, '#0e1512', '#1c2a24'); for (let i = 0; i < 4; i++) g += r(cx - 58, stageY + 36 + i * 14, 90 - i * 16, 4, '#4a9b8e');
     g += box(cx - 150, stageY + 70, 30, 40, '#5a606c', '#71788a') + r(cx - 138, stageY + 54, 4, 18, O) + box(cx - 146, stageY + 44, 20, 12, '#3a3546', '#4a4458');
@@ -236,11 +264,12 @@ function greatHallSeating(theme, W, y0, H, skin) {
   return g;
 }
 
-export function greatHallBody({ room, bookings = [], current = null, present = [], figureHTML, me, isCouncil = false }) {
+export function greatHallBody({ room, bookings = [], current = null, present = [], figureHTML, me, isCouncil = false, setlist = null }) {
   const theme = (current && current.theme) || 'event';
   const skin = skinFor(theme);
+  const setLabel = `${esc(THEME_LABEL[theme] || theme)}${setlist ? ` · ${esc(setlist.artist)} — ${esc(setlist.title)}` : ''}`;
   const W = 1120, H = 740, wall = 84;
-  const { g: stage, stageBottom } = greatHallStage(theme, W, wall, skin);
+  const { g: stage, stageBottom } = greatHallStage(theme, W, wall, skin, setlist);
   let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
 <defs>
 <pattern id="gh-floor" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="${skin.fl1}"/><rect width="17" height="17" fill="${skin.fl2}"/><rect x="17" y="17" width="17" height="17" fill="${skin.fl2}"/></pattern>
@@ -252,7 +281,7 @@ export function greatHallBody({ room, bookings = [], current = null, present = [
 <rect x="0" y="${wall}" width="${W}" height="${H - wall}" fill="url(#gh-floor)"/>
 <rect class="rv-floor-hit" data-zone="floor" x="0" y="${stageBottom}" width="${W}" height="${H - stageBottom}" fill="transparent"/>
 <g><rect x="26" y="20" width="200" height="30" rx="3" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="40" y="41" font-size="16" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">THE GREAT HALL</text></g>
-<text x="238" y="41" font-size="13" fill="#e9c46a" font-family="ui-monospace,monospace">— set for: ${esc(THEME_LABEL[theme] || theme)}</text>
+<text x="238" y="41" font-size="13" fill="#e9c46a" font-family="ui-monospace,monospace">— set for: ${setLabel}</text>
 ${stage}
 ${greatHallSeating(theme, W, stageBottom + 6, H, skin)}
 <a class="rv-hit" data-zone="list:schedule" role="button" tabindex="0"><rect x="${W - 360}" y="10" width="150" height="40" rx="6" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="${W - 345}" y="35" font-size="14" fill="#e9c46a" font-family="ui-monospace,monospace">📅 Schedule</text></a>
@@ -270,7 +299,9 @@ ${greatHallSeating(theme, W, stageBottom + 6, H, skin)}
   const bookForm = me && me.id ? `<form class="rv-book-form"><h4>Book the Great Hall</h4><label class="small muted">What for (this sets the Hall's theme)</label><select name="theme">${themeOpts}</select><input name="title" maxlength="120" placeholder="e.g. Church Searcher — live DJ set" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><button class="rv-use" type="submit">Book it</button><span class="rv-book-msg small"></span></form><p class="small muted">The cooperative books the Hall. Only the council can call a council meeting.</p>` : '<p class="small muted">Sign in to book the Hall.</p>';
   const bookPanel = `<section class="rv-panel" id="panel-list:book" hidden><button class="rv-close" data-close>✕</button><h2>Book the Great Hall</h2><p class="rv-what">Pick what you're booking it for — the Hall sets itself up for that.</p>${bookForm}</section>`;
 
+  const setlistJSON = setlist ? `<script type="application/json" id="gh-setlist">${JSON.stringify(setlist).replace(/</g, '\\u003c')}</script>` : '';
+  const setlistPanel = setlist ? `<section class="rv-panel" id="panel-list:setlist" hidden><button class="rv-close" data-close>✕</button><h2>${esc(setlist.artist)} — ${esc(setlist.title)}</h2><p class="rv-what">The setlist, rendered by the translator: one score, read as code or heard as sound — a reading of each song, the same for everyone in the room. Press Listen on stage to hear it; agents can read the grid here.</p><ol class="gh-setlist">${setlist.tracks.map((t) => `<li><div class="gh-tk"><strong>${esc(t.title)}</strong> <span class="small muted">${esc(`${t.bpm} BPM · ${t.key} · ${t.mood}`)}</span></div><pre class="gh-score">${esc(t.code)}</pre></li>`).join('')}</ol></section>` : '';
   const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><span class="rv-here">· ${who.length} here now · the shared venue</span></nav>`;
   const meAttr = me && me.id ? ` data-me="${esc(me.id)}"` : '';
-  return `<div class="rv-room" data-room="great-hall"${meAttr} data-spots='{}'>${nav}<div class="rv-stage">${s}</div>${schedulePanel}${bookPanel}<div class="rv-scrim" hidden></div></div>`;
+  return `<div class="rv-room" data-room="great-hall"${meAttr} data-spots='{}'>${nav}<div class="rv-stage">${s}</div>${schedulePanel}${bookPanel}${setlistPanel}${setlistJSON}<div class="rv-scrim" hidden></div></div>`;
 }

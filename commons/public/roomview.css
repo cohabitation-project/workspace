@@ -87,3 +87,9 @@
 .rv-book-form select, .rv-book-form input { background: #0e1130; border: 1px solid rgba(255,255,255,.16); color: #eef0ff; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
 .rv-book-form button { align-self: start; }
 .rv-book-msg { color: #9aa4b4; }
+
+/* The setlist / score panel — the translator's reading of each song (Geoffrey 2026-11-07). */
+.gh-setlist { list-style: decimal; padding-left: 1.4em; margin: 0; }
+.gh-setlist li { margin: 0 0 14px; }
+.gh-tk { margin-bottom: 4px; }
+.gh-score { margin: 0; padding: 8px 10px; background: #0a0d12; border: 1px solid #1b2230; border-radius: 6px; color: #bfe6d8; font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.35; white-space: pre; overflow-x: auto; }

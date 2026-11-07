@@ -22,6 +22,7 @@ import * as meetings from './meetings.mjs';
 import * as bookings from './bookings.mjs';
 import { figureSVG } from '../public/sprites.js';
 import { roomBody, greatHallBody } from './roomscene.mjs';
+import * as music from './music.mjs';
 import { layout, memberFace, TOOL_STATUS } from './pages.mjs';
 
 // Who-here-can-do-it is matched from public profiles by studio key; tools are named in teams/arts/STUDIOS.json.
@@ -96,7 +97,9 @@ export function roomViewPage(roomId, { me, isCouncil = false } = {}) {
     const meObj = me ? { ...store.publicMember(me), kind: me.kind } : null;
     const figureHTML = (mm) => figureSVG({ ...mm, guide: false }, 3, mm.name);
     let all = [], cur = null; try { all = bookings.all(); cur = bookings.current(); } catch { /* empty */ }
-    const body = greatHallBody({ room, bookings: all, current: cur, present, figureHTML, me: meObj, isCouncil });
+    // A concert booking that names an album loads its setlist — the translator renders it to a playable/readable score.
+    let setlist = null; try { if (cur && cur.theme === 'concert') setlist = music.setlistFromText(`${cur.title || ''} ${cur.note || ''}`); } catch { setlist = null; }
+    const body = greatHallBody({ room, bookings: all, current: cur, present, figureHTML, me: meObj, isCouncil, setlist });
     return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
   }
   {
