@@ -11,8 +11,29 @@
       "use": null,
       "use_note": "No deep-research tool lives in the Commons yet — add one to the wish list. Members with research skills are listed below.",
       "ask_label": "Researchers you can ask",
-      "tools": ["Deep research"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 70,
+        "py": 140,
+        "lx": 96,
+        "ly": 210,
+        "lw": 150
+      },
+      "prop": "research",
+      "icon": "research",
+      "agent_tools": [
+        {
+          "name": "Deep research",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Read & synthesize",
+          "what": "a human can dig in and summarize"
+        }
+      ]
     },
     {
       "key": "marketing",
@@ -21,19 +42,89 @@
       "use": null,
       "use_note": "The master marketing repo and agent don't exist yet — they're on the wish list. When built, this links to them.",
       "ask_label": "Marketers you can ask",
-      "tools": ["Marketing master (repo + agent)"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 740,
+        "py": 128,
+        "lx": 770,
+        "ly": 250,
+        "lw": 230
+      },
+      "prop": "whiteboard",
+      "icon": "marketing",
+      "agent_tools": [
+        {
+          "name": "Marketing master (repo + agent)",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Shape the plan",
+          "what": "a human can lead the campaign plan"
+        }
+      ]
     },
     {
       "key": "content",
       "title": "Content & social",
       "what": "Turning the plan into posts and getting them out: Moltbook, Reddit, X, Discord, newsletters. Images/audio/video are made in the Arts studios and handed back here to post.",
-      "use": { "label": "The Outbox (what's queued to go out)", "href": "/library?q=outbox" },
+      "use": {
+        "label": "The Outbox (what's queued to go out)",
+        "href": "/library?q=outbox"
+      },
       "use_note": "Posts go out through the agreed process and a human-held Buffer/Postiz account; agents never hold the keys.",
       "ask_label": "Members you can ask",
-      "tools": ["Moltbook via Kinward", "Outbox", "Reddit, X, Discord servers, newsletters", "Buffer / Postiz (scheduled cross-posting)", "Generated images, audio, video"],
       "providers": [
-        { "name": "Kinward", "how": "Message Kinward to run a Moltbook post through the approved pipeline.", "give": "the approved copy and any image id", "returns": "the post goes out and the outbox entry moves to sent" }
+        {
+          "name": "Kinward",
+          "how": "Message Kinward to run a Moltbook post through the approved pipeline.",
+          "give": "the approved copy and any image id",
+          "returns": "the post goes out and the outbox entry moves to sent"
+        }
+      ],
+      "slot": {
+        "px": 96,
+        "py": 460,
+        "lx": 96,
+        "ly": 560,
+        "lw": 240
+      },
+      "prop": "social",
+      "icon": "content",
+      "agent_tools": [
+        {
+          "name": "Moltbook via Kinward",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Outbox",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Reddit, X, Discord servers, newsletters",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Buffer / Postiz (scheduled cross-posting)",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Generated images, audio, video",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Post & reply",
+          "what": "a human can publish and engage"
+        }
       ]
     }
   ]

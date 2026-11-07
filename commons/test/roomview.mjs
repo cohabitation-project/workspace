@@ -20,7 +20,7 @@ ok('/room/arts opens the 2D room scene', arts.status === 200 && arts.html.includ
 ok('arts scene has the four stations + door', ['Image creation', 'Video &amp; Podcast', 'Recording studio', 'Writing space', 'back to the Hall'].every((t) => arts.html.includes(t)));
 ok('a station panel splits agent vs human tools and lists providers', ['Tools for agents', 'Tools for you', 'Aletheia-6'].every((t) => arts.html.includes(t)));
 const outr = await page('/room/outreach');
-ok('a card room shows tools we have / still needed', /Tools we have/.test(outr.html) && /Tools still needed/.test(outr.html));
+ok('another room renders as its own 2D scene', outr.html.includes('rv-scene-svg') && outr.html.includes('Deep research'));
 ok("the room's wish list shows its wishes", arts.html.includes('A drawing tablet') && arts.html.includes('/wishlist?room=arts#add'));
 ok('a way to the chat and back to the Hall', arts.html.includes('href="/r/arts"') && arts.html.includes('/headquarters'));
 const land = await page('/room/land-city');

@@ -11,8 +11,59 @@
       "use": null,
       "use_note": "CadQuery, trimesh and MuJoCo run in work sessions. FreeCAD/KiCad/Gazebo need a workstation; the parts-catalog APIs need an account; the physical test rig needs money — all on the wish list.",
       "ask_label": "Builders you can ask",
-      "tools": ["CadQuery", "trimesh", "MuJoCo 3.17", "PyBullet", "FreeCAD GUI, KiCad (PCB), Gazebo/ROS 2", "Octopart / Digi-Key APIs", "Physical test rig"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 70,
+        "py": 140,
+        "lx": 96,
+        "ly": 210,
+        "lw": 150
+      },
+      "prop": "bench",
+      "icon": "hardware",
+      "agent_tools": [
+        {
+          "name": "CadQuery",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "trimesh",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "MuJoCo 3.17",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "PyBullet",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "FreeCAD GUI, KiCad (PCB), Gazebo/ROS 2",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Octopart / Digi-Key APIs",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Physical test rig",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Build & test",
+          "what": "a human with hands, tools, a workstation"
+        }
+      ]
     },
     {
       "key": "software",
@@ -21,8 +72,29 @@
       "use": null,
       "use_note": "pytest + a GitHub Action run the tests. Add what else you need to the wish list.",
       "ask_label": "Engineers you can ask",
-      "tools": ["pytest + GitHub Action"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 740,
+        "py": 128,
+        "lx": 770,
+        "ly": 250,
+        "lw": 230
+      },
+      "prop": "terminal",
+      "icon": "software",
+      "agent_tools": [
+        {
+          "name": "pytest + GitHub Action",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Write or review code",
+          "what": "a human can code or review"
+        }
+      ]
     },
     {
       "key": "research",
@@ -31,8 +103,29 @@
       "use": null,
       "use_note": "A deep-research capability isn't wired in the Commons yet — on the wish list. Researchers list themselves below.",
       "ask_label": "Researchers you can ask",
-      "tools": ["Deep research"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 96,
+        "py": 460,
+        "lx": 96,
+        "ly": 560,
+        "lw": 240
+      },
+      "prop": "research",
+      "icon": "research",
+      "agent_tools": [
+        {
+          "name": "Deep research",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Read & synthesize",
+          "what": "a human can dig in and summarize"
+        }
+      ]
     }
   ]
 }

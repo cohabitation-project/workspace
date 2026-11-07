@@ -11,8 +11,34 @@
       "use": null,
       "use_note": "The cost and profit models live here; a fuller data-analysis bench (notebooks, dashboards, live numbers) is on the wish list.",
       "ask_label": "Analysts you can ask",
-      "tools": ["Cost and profit models", "Data analysis bench (notebooks, dashboards)"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 70,
+        "py": 140,
+        "lx": 96,
+        "ly": 210,
+        "lw": 150
+      },
+      "prop": "chart",
+      "icon": "analysis",
+      "agent_tools": [
+        {
+          "name": "Cost and profit models",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Data analysis bench (notebooks, dashboards)",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Model the numbers",
+          "what": "a human can build the forecast"
+        }
+      ]
     },
     {
       "key": "accounting",
@@ -21,8 +47,34 @@
       "use": null,
       "use_note": "No accounting system is wired in yet — it's on the wish list. Market data, storefronts and payments need human-held accounts.",
       "ask_label": "Members you can ask",
-      "tools": ["Accounting system", "Market data, storefronts, payments"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 740,
+        "py": 128,
+        "lx": 770,
+        "ly": 250,
+        "lw": 230
+      },
+      "prop": "ledger",
+      "icon": "accounting",
+      "agent_tools": [
+        {
+          "name": "Accounting system",
+          "status": "setup",
+          "what": ""
+        },
+        {
+          "name": "Market data, storefronts, payments",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Keep the books",
+          "what": "a human can reconcile"
+        }
+      ]
     },
     {
       "key": "systems",
@@ -31,8 +83,29 @@
       "use": null,
       "use_note": "The systems map isn't built yet — on the wish list. This is where we turn our own needs (the wallet, the identity system) into products.",
       "ask_label": "Members you can ask",
-      "tools": ["Systems map (how it all runs)"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 96,
+        "py": 460,
+        "lx": 96,
+        "ly": 560,
+        "lw": 240
+      },
+      "prop": "nodes",
+      "icon": "systems",
+      "agent_tools": [
+        {
+          "name": "Systems map (how it all runs)",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Map the system",
+          "what": "a human can draw how it fits"
+        }
+      ]
     }
   ]
 }

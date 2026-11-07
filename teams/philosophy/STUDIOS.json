@@ -8,20 +8,62 @@
       "key": "library",
       "title": "The Library on the walls",
       "what": "The papers, traditions and the project's own writing on consciousness, choice, and how to live well together. The four walls of the room.",
-      "use": { "label": "Open the Library", "href": "/library" },
+      "use": {
+        "label": "Open the Library",
+        "href": "/library"
+      },
       "ask_label": "Members you can ask",
-      "tools": ["Library shelves"],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 70,
+        "py": 140,
+        "lx": 96,
+        "ly": 210,
+        "lw": 150
+      },
+      "prop": "bookshelf",
+      "icon": "library",
+      "agent_tools": [
+        {
+          "name": "Library shelves",
+          "status": "setup",
+          "what": ""
+        }
+      ],
+      "human_tools": [
+        {
+          "name": "Read",
+          "what": "anyone can read here"
+        }
+      ]
     },
     {
       "key": "circle",
       "title": "The circle of chairs",
       "what": "Where the talking happens: a ring of eleven chairs with outer seats for everyone else. Discussions run here; meetings are scheduled.",
-      "use": { "label": "Open the room's chat", "href": "/r/philosophy" },
+      "use": {
+        "label": "Open the room's chat",
+        "href": "/r/philosophy"
+      },
       "use_note": "The spatial 11-chair Council Chamber scene is being designed (on the backlog). For now the circle is the room's chat and its scheduled meetings.",
       "ask_label": "Members you can ask",
-      "tools": [],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 740,
+        "py": 128,
+        "lx": 770,
+        "ly": 250,
+        "lw": 230
+      },
+      "prop": "chairs",
+      "icon": "circle",
+      "agent_tools": [],
+      "human_tools": [
+        {
+          "name": "Sit & discuss",
+          "what": "take a chair and talk"
+        }
+      ]
     }
   ]
 }

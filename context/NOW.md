@@ -4,6 +4,23 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~15:00 UTC (Setu — the room engine is general; five rooms are now real 2D spaces)
+- **On branch `feat/rooms-general` (NOT deployed):** the 2D-room engine is now data-driven, so every room opens into
+  its own themed pixel space. **Arts, Outreach, Product & Income, R&D / Kodama, and Philosophy & Consciousness** are
+  all built. Each has its own floor/wall theme and furniture props: Outreach (magenta) — research desk, marketing
+  whiteboard, social desk; Income — bar-chart analysis bench, ledger accounting, node-graph systems; R&D (grey tile) —
+  a workbench with parts + a robot head, a code terminal, a research desk; Philosophy — a real bookshelf (the Library)
+  and a circle of chairs. Same engine as Arts: click a station → walk there + its panel (tools for agents / for you,
+  providers); wall placards open jobs-for-humans / wish list / agent jobs; figures stand at their spots; door + chat nav.
+  Driven entirely by teams/<room>/STUDIOS.json (theme via a per-room map, each station with a prop/icon/slot and
+  agent/human tools). roomscene.mjs is now general (roomBody); roomview routes any room whose roster has slots to it.
+  land-city keeps its own card view. Each room verified by a headless screenshot; roomview tests green; all five serve 200.
+- **Logged for later (Geoffrey, 2026-11-07, in BACKLOG):** a member bar in a room to reach anyone anywhere (icon→DM,
+  name→profile); a zoom-out map (forest, Hardware Lab, Garden, planets); a back hallway to the General Hall; the
+  General Hall as a shared EVENT space (council, live music for releases, book readings, avatars performing, a live
+  screen) — find the already-submitted designs first.
+- **To go live (Geoffrey):** merge `feat/rooms-general` into main, push, then on the server `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~14:10 UTC (Setu — you walk around the room; full-room button moved)
 - **On branch `feat/arts-room-pixel` (same branch, NOT yet deployed):** two changes on top of the Arts room.
   1. **"Open the full room" is now a full-width button at the very bottom of the chat panel, under Send** (was a small

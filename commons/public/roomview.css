@@ -77,3 +77,4 @@
 .rv-figure.rv-me .rv-figbody { filter: drop-shadow(0 0 2px #e8a33d); }
 .rv-floor-hit { cursor: pointer; }
 .rv-figure.rv-walking { }
+.rv-topnav .rv-here { color: #9a9284; font-size: 13px; }

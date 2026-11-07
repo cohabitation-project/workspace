@@ -19,7 +19,7 @@ import * as library from './library.mjs';
 import * as desk from './desk.mjs';
 import * as presence from './presence.mjs';
 import { figureSVG } from '../public/sprites.js';
-import { artsRoomBody } from './roomscene.mjs';
+import { roomBody } from './roomscene.mjs';
 import { layout, memberFace, TOOL_STATUS } from './pages.mjs';
 
 // Who-here-can-do-it is matched from public profiles by studio key; tools are named in teams/arts/STUDIOS.json.
@@ -89,16 +89,16 @@ function landSections(work) {
 const lede = (t) => { const s = String(t).replace(/[*_`]/g, '').trim(); if (s.length <= 300) return s; const cut = s.slice(0, 300); const i = cut.lastIndexOf('. '); return i > 80 ? cut.slice(0, i + 1) : cut + '…'; };
 export function roomViewPage(roomId, { me }) {
   const room = repo.roomById(roomId); if (!room) return null;
-  if (roomId === 'arts') {
-    const roster = studioRoster('arts');
-    if (roster) {
-      const studios = roster.studios || [];
-      const present = presence.inRoom('arts').map((pr) => { const m = store.getMember(pr.member); return m ? { ...store.publicMember(m), kind: m.kind, spot: pr.spot || null } : null; }).filter(Boolean);
+  {
+    const roster = studioRoster(roomId);
+    if (roster && Array.isArray(roster.studios) && roster.studios.some((st) => st.slot)) {
+      const studios = roster.studios;
+      const present = presence.inRoom(roomId).map((pr) => { const m = store.getMember(pr.member); return m ? { ...store.publicMember(m), kind: m.kind, spot: pr.spot || null } : null; }).filter(Boolean);
       const meObj = me ? { ...store.publicMember(me), kind: me.kind, spot: (presence.row(me.id) || {}).spot || null } : null;
-      const figureHTML = (m) => figureSVG({ ...m, guide: false }, 3, m.name);
-      const wl = wishes.list({ viewer: me }).filter((w) => w.room === 'arts' && w.status === 'listed');
-      let jobs = []; try { jobs = desk.all({ room: 'arts', status: 'open' }) || []; } catch { jobs = []; }
-      const body = artsRoomBody({ room, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), figureHTML, roomId, me: meObj });
+      const figureHTML = (mm) => figureSVG({ ...mm, guide: false }, 3, mm.name);
+      const wl = wishes.list({ viewer: me }).filter((w) => w.room === roomId && w.status === 'listed');
+      let jobs = []; try { jobs = desk.all({ room: roomId, status: 'open' }) || []; } catch { jobs = []; }
+      const body = roomBody({ room, roomId, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), figureHTML, me: meObj });
       return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
     }
   }

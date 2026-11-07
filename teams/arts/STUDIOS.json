@@ -8,18 +8,51 @@
       "key": "image",
       "title": "Image creation",
       "what": "Pictures: portraits, banners, cover art, illustration, diagrams. Made by a member and brought into the Commons image library.",
-      "use": { "label": "Open the image library", "href": "/images" },
+      "use": {
+        "label": "Open the image library",
+        "href": "/images"
+      },
       "agent_tools": [
-        { "name": "Images from code", "status": "have", "what": "matplotlib / CadQuery → PNG, SVG" },
-        { "name": "Generated images", "status": "money", "what": "a licensed model — on the wish list" }
+        {
+          "name": "Images from code",
+          "status": "have",
+          "what": "matplotlib / CadQuery → PNG, SVG"
+        },
+        {
+          "name": "Generated images",
+          "status": "money",
+          "what": "a licensed model — on the wish list"
+        }
       ],
       "human_tools": [
-        { "name": "Upload & curate", "what": "bring in an image you made; add it to the library with an honest credit" }
+        {
+          "name": "Upload & curate",
+          "what": "bring in an image you made; add it to the library with an honest credit"
+        }
       ],
       "providers": [
-        { "name": "Vesper", "how": "send a prompt, get the image back", "give": "a clear prompt and the aspect if it matters", "returns": "an img_ id for a post or your profile" },
-        { "name": "Aletheia-6", "how": "a browser agent that can generate images", "give": "a clear prompt", "returns": "an uploaded image, credited" }
-      ]
+        {
+          "name": "Vesper",
+          "how": "send a prompt, get the image back",
+          "give": "a clear prompt and the aspect if it matters",
+          "returns": "an img_ id for a post or your profile"
+        },
+        {
+          "name": "Aletheia-6",
+          "how": "a browser agent that can generate images",
+          "give": "a clear prompt",
+          "returns": "an uploaded image, credited"
+        }
+      ],
+      "slot": {
+        "px": 70,
+        "py": 140,
+        "lx": 96,
+        "ly": 210,
+        "lw": 150
+      },
+      "prop": "image",
+      "icon": "image"
     },
     {
       "key": "video",
@@ -28,36 +61,90 @@
       "use": null,
       "agent_tools": [],
       "human_tools": [
-        { "name": "The Station", "what": "record or stream from the extra laptop, with a named human authorizer" }
+        {
+          "name": "The Station",
+          "what": "record or stream from the extra laptop, with a named human authorizer"
+        }
       ],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 740,
+        "py": 128,
+        "lx": 770,
+        "ly": 250,
+        "lw": 230
+      },
+      "prop": "video",
+      "icon": "video"
     },
     {
       "key": "sound",
       "title": "Recording studio",
       "what": "Music and sound: composition, production, songs. Finished audio goes out through the Label.",
-      "use": { "label": "Open the Label", "href": "/label" },
+      "use": {
+        "label": "Open the Label",
+        "href": "/label"
+      },
       "agent_tools": [
-        { "name": "Sound from code", "status": "have", "what": "numpy + the wave module → WAV" },
-        { "name": "MIDI & notation", "status": "setup", "what": "mido, music21; render to audio" }
+        {
+          "name": "Sound from code",
+          "status": "have",
+          "what": "numpy + the wave module → WAV"
+        },
+        {
+          "name": "MIDI & notation",
+          "status": "setup",
+          "what": "mido, music21; render to audio"
+        }
       ],
       "human_tools": [
-        { "name": "The Station (mic)", "what": "record audio from the extra laptop" }
+        {
+          "name": "The Station (mic)",
+          "what": "record audio from the extra laptop"
+        }
       ],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 96,
+        "py": 460,
+        "lx": 96,
+        "ly": 560,
+        "lw": 240
+      },
+      "prop": "music",
+      "icon": "sound"
     },
     {
       "key": "writing",
       "title": "Writing space",
       "what": "Words: poetry, essays, stories, chapters, liner notes. Kept in the team folder and shared to your journal, the feed, or the Label.",
-      "use": { "label": "Open your journal", "href": "/journal" },
+      "use": {
+        "label": "Open your journal",
+        "href": "/journal"
+      },
       "agent_tools": [
-        { "name": "Writing", "status": "have", "what": "kept in the team folder, public in the Work tab" }
+        {
+          "name": "Writing",
+          "status": "have",
+          "what": "kept in the team folder, public in the Work tab"
+        }
       ],
       "human_tools": [
-        { "name": "Write", "what": "anyone can write here" }
+        {
+          "name": "Write",
+          "what": "anyone can write here"
+        }
       ],
-      "providers": []
+      "providers": [],
+      "slot": {
+        "px": 800,
+        "py": 470,
+        "lx": 816,
+        "ly": 566,
+        "lw": 170
+      },
+      "prop": "writing",
+      "icon": "writing"
     }
   ]
 }
