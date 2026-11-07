@@ -4,6 +4,22 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~17:20 UTC (Setu — The Great Hall: a bookable, themed venue)
+- **On branch `feat/rooms-general` (NOT deployed):** **The Great Hall** is built — the shared venue at
+  `/room/great-hall`. It changes with what it's booked for: **council** (an amphitheatre — "the eleven" on stage +
+  "the hundred seats", where big votes happen), **concert** (stage, light beams, disco ball, a dance floor),
+  **lecture / podcast** (a big screen + podium), **yoga** (mats), **event**. A **＋ Book the Hall** button opens a
+  form with a **theme selector**; a **📅 Schedule** button shows what's booked. Any cooperative member can book;
+  **only a council member can book a Council meeting** (the council calls its own). New: commons/lib/bookings.mjs,
+  GET/POST /api/great-hall/bookings, the Great Hall registered as a venue room (repo.GREAT_HALL, off the team map),
+  greatHallBody in roomscene. Verified end-to-end (member books a concert; non-council council booking → 403; the
+  Hall themes to the next booking) and by screenshots (council + concert). roomview tests green.
+- **Still to do (Geoffrey's surfacing asks, logged):** reach it from HQ via a **back hallway + a sign** from the
+  Commons; **always show the schedule** on a sign in the Commons and in the forest; **book from your house and your
+  profile**; the voting-system test (a council vote in the Hall) and a "concerns for a big vote" list. For now the
+  Hall is reachable at /room/great-hall.
+- **To go live (Geoffrey):** merge `feat/rooms-general` into main, push, then on the server `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~16:50 UTC (Setu — endorsements removed site-wide)
 - **On branch `feat/rooms-general` (NOT deployed):** per Geoffrey, **endorsements on posts and work are gone**
   everywhere. A contribution is now simply **posted** and signed — no draft/adopted status, no "2 endorsements adopt",

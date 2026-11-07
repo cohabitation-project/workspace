@@ -166,3 +166,87 @@ export function roomBody({ room, roomId, studios, present, wishes, humanJobs, ai
 
 // backward-compatible alias
 export const artsRoomBody = roomBody;
+
+// ---- The Great Hall (a bookable venue that changes with its theme) ----
+const THEME_LABEL = { podcast: 'Podcast', lecture: 'Shared lecture', yoga: 'Yoga class', concert: 'Concert', event: 'Event', council: 'Council meeting' };
+const chairSmall = (x, y, c = '#6b5a4a') => box(x, y, 18, 16, c, '#8c7660') + box(x + 2, y - 10, 14, 10, '#5d4a3a', '#7a6450');
+const chairRow = (x, y, n, gap = 26) => { let g = ''; for (let i = 0; i < n; i++) g += chairSmall(x + i * gap, y); return g; };
+
+function greatHallStage(theme, W, wall) {
+  const stageY = wall + 8, stageH = 150, cx = W / 2;
+  let g = r(10, stageY, W - 20, stageH, '#2a2030', 'rx="6"') + r(10, stageY + stageH, W - 20, 6, '#17101c'); // raised stage
+  g += `<text x="${cx}" y="${stageY - 2}" font-size="13" fill="#cdbfa6" text-anchor="middle" font-family="ui-monospace,monospace">— stage —</text>`;
+  if (theme === 'council') {
+    // a half-moon of 11 chairs on the stage, facing the audience
+    for (let i = 0; i < 11; i++) { const a = Math.PI * (0.12 + 0.76 * i / 10); const x = cx - Math.cos(a) * 340 - 9, y = stageY + 36 + Math.sin(a) * 60; g += chairSmall(x, y, '#5d4a3a'); }
+    g += `<text x="${cx}" y="${stageY + 128}" font-size="12" fill="#e9c46a" text-anchor="middle" font-family="ui-monospace,monospace">the eleven</text>`;
+  } else if (theme === 'concert') {
+    g += box(cx - 46, stageY + 70, 92, 40, '#1d1a26', '#2a2632') + r(cx - 34, stageY + 84, 68, 4, '#7cd6b4') + r(cx - 34, stageY + 92, 68, 4, '#dc8aa8'); // DJ booth
+    g += box(cx - 150, stageY + 40, 30, 70, '#2f2a3a', '#3b3549') + box(cx + 120, stageY + 40, 30, 70, '#2f2a3a', '#3b3549'); // speaker stacks
+    for (const [bx, c] of [[cx - 120, '#ff9b5c'], [cx - 40, '#7cd6b4'], [cx + 40, '#dc8aa8'], [cx + 120, '#a89cff']]) g += `<path d="M${bx} ${stageY + 8} L${bx - 26} ${stageY + 150} L${bx + 26} ${stageY + 150} Z" fill="${c}" opacity="0.18"/>`; // light beams
+    g += `<circle cx="${cx}" cy="${stageY + 20}" r="12" fill="#cfd6df"/><circle cx="${cx}" cy="${stageY + 20}" r="12" fill="url(#gh-disco)"/>`;
+  } else if (theme === 'lecture' || theme === 'podcast') {
+    g += box(cx - 70, stageY + 24, 140, 86, '#0e1512', '#1c2a24'); for (let i = 0; i < 4; i++) g += r(cx - 58, stageY + 36 + i * 14, 90 - i * 16, 4, '#4a9b8e'); // big screen
+    g += box(cx - 150, stageY + 70, 30, 40, '#6b5a4a', '#8c7660') + r(cx - 138, stageY + 54, 4, 18, O) + box(cx - 146, stageY + 44, 20, 12, '#3a3546', '#4a4458'); // podium + mic
+  } else if (theme === 'yoga') {
+    for (const [i, c] of [[0, '#7ad0a8'], [1, '#dc8aa8'], [2, '#7aa2ff'], [3, '#e8a33d']]) g += r(cx - 150 + i * 80, stageY + 70, 60, 26, c, 'rx="6" opacity="0.8"');
+    g += `<text x="${cx}" y="${stageY + 48}" font-size="12" fill="#cdbfa6" text-anchor="middle" font-family="ui-sans-serif">breathe</text>`;
+  } else { // event
+    g += box(cx - 40, stageY + 70, 80, 40, '#3a2a1a', '#5d3d26'); g += `<text x="${cx}" y="${stageY + 94}" font-size="12" fill="#e9c46a" text-anchor="middle" font-family="ui-monospace,monospace">welcome</text>`;
+  }
+  return { g, stageBottom: stageY + stageH + 14 };
+}
+
+function greatHallSeating(theme, W, y0, H) {
+  const cx = W / 2; let g = '';
+  if (theme === 'concert') { // dance floor
+    g += `<rect x="${cx - 260}" y="${y0}" width="520" height="${H - y0 - 40}" fill="url(#gh-dance)" opacity="0.5" rx="8"/>`;
+    g += `<text x="${cx}" y="${H - 50}" font-size="12" fill="#a89cff" text-anchor="middle" font-family="ui-sans-serif">dance floor</text>`;
+  } else if (theme === 'yoga') {
+    for (let rI = 0; rI < 3; rI++) for (let cI = 0; cI < 6; cI++) g += r(cx - 230 + cI * 80, y0 + rI * 90, 60, 24, ['#7ad0a8', '#dc8aa8', '#7aa2ff'][cI % 3], 'rx="6" opacity="0.65"');
+  } else { // rows of audience chairs (council / lecture / podcast / event)
+    const rows = theme === 'council' ? 5 : 4; const n = 14;
+    for (let rI = 0; rI < rows; rI++) g += chairRow(cx - (n / 2) * 26 + 4, y0 + rI * 40, n);
+    g += `<text x="${cx}" y="${H - 44}" font-size="12" fill="#9a9284" text-anchor="middle" font-family="ui-sans-serif">${theme === 'council' ? 'the hundred seats — big votes happen here' : 'seating'}</text>`;
+  }
+  return g;
+}
+
+export function greatHallBody({ room, bookings = [], current = null, present = [], figureHTML, me, isCouncil = false }) {
+  const theme = (current && current.theme) || 'event';
+  const W = 1120, H = 740, wall = 84;
+  const { g: stage, stageBottom } = greatHallStage(theme, W, wall);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+<defs>
+<pattern id="gh-floor" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#4a3f52"/><rect width="17" height="17" fill="#524760"/><rect x="17" y="17" width="17" height="17" fill="#524760"/></pattern>
+<radialGradient id="gh-disco"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#7aa2ff"/></radialGradient>
+<pattern id="gh-dance" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#dc8aa8"/><rect x="20" y="20" width="20" height="20" fill="#7aa2ff"/><rect x="20" width="20" height="20" fill="#7ad0a8"/><rect y="20" width="20" height="20" fill="#e8a33d"/></pattern>
+</defs>
+<rect width="${W}" height="${H}" fill="#120f17"/>
+<rect x="0" y="0" width="${W}" height="${wall}" fill="#3a2a42"/><rect x="0" y="${wall - 3}" width="${W}" height="4" fill="#1c1322"/>
+<rect x="0" y="${wall}" width="${W}" height="${H - wall}" fill="url(#gh-floor)"/>
+<rect class="rv-floor-hit" data-zone="floor" x="0" y="${stageBottom}" width="${W}" height="${H - stageBottom}" fill="transparent"/>
+<g><rect x="26" y="20" width="200" height="30" rx="3" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="40" y="41" font-size="16" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">THE GREAT HALL</text></g>
+<text x="238" y="41" font-size="13" fill="#e9c46a" font-family="ui-monospace,monospace">— set for: ${esc(THEME_LABEL[theme] || theme)}</text>
+${stage}
+${greatHallSeating(theme, W, stageBottom + 6, H)}
+<a class="rv-hit" data-zone="list:schedule" role="button" tabindex="0"><rect x="${W - 360}" y="10" width="150" height="40" rx="6" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="${W - 345}" y="35" font-size="14" fill="#e9c46a" font-family="ui-monospace,monospace">📅 Schedule</text></a>
+<a class="rv-hit" data-zone="list:book" role="button" tabindex="0"><rect x="${W - 196}" y="10" width="150" height="40" rx="6" fill="#e9c46a"/><text x="${W - 181}" y="35" font-size="14" fill="#14121a" font-family="ui-monospace,monospace" font-weight="bold">＋ Book the Hall</text></a>
+<a class="rv-hit" data-zone="door"><rect x="${W / 2 - 46}" y="${H - 26}" width="92" height="26" fill="#1c1322"/><rect x="${W / 2 - 42}" y="${H - 24}" width="84" height="22" fill="#2a1b33"/><text x="${W / 2}" y="${H - 8}" font-size="13" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">↓ back to the Hall</text></a>`;
+  // present members, standing in the body
+  const spots = [[380, 480], [470, 500], [560, 486], [650, 504], [740, 482]];
+  let who = present.slice(); if (me && me.id && !who.some((p) => p.id === me.id)) who = [...who, me];
+  who.slice(0, 5).forEach((m, i) => { const [x, y] = spots[i % spots.length]; const meCls = me && m.id === me.id ? ' rv-me' : ''; s += `<g class="rv-figure${meCls}" data-member="${esc(m.id)}" transform="translate(${x} ${y})"><g class="rv-figbody">${figureHTML(m)}</g><g transform="translate(18 76)"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">${esc(m.name)}</text></g></g>`; });
+  s += '</svg>';
+
+  const fmtWhen = (iso) => { try { return new Date(iso).toUTCString().replace(/^\w+, /, '').replace(/:\d\d GMT$/, ' UTC'); } catch (e) { return iso; } };
+  const items = bookings.map((b) => `<li><span class="rv-tag t-when">${esc(fmtWhen(b.when))}</span> <strong>${esc(THEME_LABEL[b.theme] || b.theme)}</strong> — ${esc(b.title)}<span class="small muted"> ${b.by && b.by.name ? 'by ' + esc(b.by.name) : ''}</span></li>`);
+  const schedulePanel = `<section class="rv-panel" id="panel-list:schedule" hidden><button class="rv-close" data-close>✕</button><h2>The Great Hall — schedule</h2><p class="rv-what">What the Hall is booked for. Times are UTC. ${current ? `Right now it's set for <strong>${esc(THEME_LABEL[theme])}</strong>.` : ''}</p>${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : '<p class="small muted">Nothing booked yet.</p>'}</section>`;
+  const themeOpts = ['podcast', 'lecture', 'yoga', 'concert', 'event'].map((t) => `<option value="${t}">${esc(THEME_LABEL[t])}</option>`).join('') + `<option value="council"${isCouncil ? '' : ' disabled'}>Council meeting${isCouncil ? '' : ' (council only)'}</option>`;
+  const bookForm = me && me.id ? `<form class="rv-book-form"><h4>Book the Great Hall</h4><label class="small muted">What for (this sets the Hall's theme)</label><select name="theme">${themeOpts}</select><input name="title" maxlength="120" placeholder="e.g. Church Searcher — live DJ set" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><button class="rv-use" type="submit">Book it</button><span class="rv-book-msg small"></span></form><p class="small muted">The cooperative books the Hall. Only the council can call a council meeting.</p>` : '<p class="small muted">Sign in to book the Hall.</p>';
+  const bookPanel = `<section class="rv-panel" id="panel-list:book" hidden><button class="rv-close" data-close>✕</button><h2>Book the Great Hall</h2><p class="rv-what">Pick what you're booking it for — the Hall sets itself up for that.</p>${bookForm}</section>`;
+
+  const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><span class="rv-here">· ${who.length} here now · the shared venue</span></nav>`;
+  const meAttr = me && me.id ? ` data-me="${esc(me.id)}"` : '';
+  return `<div class="rv-room" data-room="great-hall"${meAttr} data-spots='{}'>${nav}<div class="rv-stage">${s}</div>${schedulePanel}${bookPanel}<div class="rv-scrim" hidden></div></div>`;
+}

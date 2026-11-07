@@ -25,6 +25,7 @@ import * as station from './lib/station.mjs';
 import * as scanlib from './lib/scan.mjs';
 import * as desk from './lib/desk.mjs';
 import * as meetings from './lib/meetings.mjs';
+import * as bookings from './lib/bookings.mjs';
 import * as spend from './lib/spend.mjs';
 import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
@@ -71,6 +72,7 @@ voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
 meetings.init(DATA);
+bookings.init(DATA);
 arrive.init(DATA);
 house.init(DATA);
 images.init(DATA);
@@ -326,7 +328,7 @@ app.get(['/', '/door', '/headquarters'], (req, res) => {
   if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendPorch(req, res);
   return sendHQ(req, res);
 });
-app.get('/room/:id', (req, res) => { const html = roomview.roomViewPage(req.params.id, { me: auth.memberFromCookie(req.headers.cookie) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
+app.get('/room/:id', (req, res) => { const __me = auth.memberFromCookie(req.headers.cookie); const html = roomview.roomViewPage(req.params.id, { me: __me, isCouncil: isCouncil(__me) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
 app.get('/r/:id', (req, res) => (repo.roomById(req.params.id) ? sendHQ(req, res) : res.status(404).type('html').send(pages.notFound('No such room.'))));
 app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
 
@@ -1115,6 +1117,8 @@ app.get('/api/rooms/:id/messages', wrap((req) => {
 app.post('/api/rooms/:id/messages', wrap((req, res) => { const m = core.postMessage(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return m; }));
 app.get('/api/rooms/:id/meetings', wrap((req) => ({ meetings: meetings.all({ room: req.params.id }) })));
 app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
+app.get('/api/great-hall/bookings', wrap(() => ({ bookings: bookings.all(), current: bookings.current(), themes: bookings.THEMES })));
+app.post('/api/great-hall/bookings', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return bookings.book(m, req.body || {}, { isCouncil: isCouncil(m) }); }));
 app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: true }); return core.enterRoom(m, req.params.id, m?.kind === 'human' ? 'viewing' : 'entered'); }));
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));

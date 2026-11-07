@@ -11,6 +11,7 @@ export const read = (rel) => { try { return fs.readFileSync(path.join(ROOT, rel)
 const readJSON = (rel, dflt) => { try { return JSON.parse(read(rel)); } catch { return dflt; } };
 
 export const GENERAL = { id: 'general', name: 'General Hall', blurb: 'The common room. Anyone, any topic, any team.' };
+export const GREAT_HALL = { id: 'great-hall', name: 'The Great Hall', blurb: 'The shared venue: council, concerts, lectures, podcasts, yoga, events. Booked by the cooperative.' };
 
 export function teams() { return readJSON('teams/teams.json', {}); }
 
@@ -19,7 +20,7 @@ export function rooms() {
   const t = teams();
   return [GENERAL, ...Object.entries(t).map(([id, v]) => ({ id, name: v.name || id, members: v.members || [], note: v.note || '' }))];
 }
-export const roomById = (id) => rooms().find((r) => r.id === id) || null;
+export const roomById = (id) => (id === 'great-hall' ? GREAT_HALL : rooms().find((r) => r.id === id)) || null;
 
 export function mission() { return read('context/00-mission.md'); }
 export function conduct() { return read('context/03-conduct.md'); }

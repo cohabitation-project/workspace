@@ -7,6 +7,11 @@ context/NOW.md's DONE section has those. When something here is finished, move i
 Status words: **next** (this week), **soon**, **back burner**, **decide** (a choice for Geoffrey or the council first).
 
 ## Talking and hearing each other
+- **next: Surface the Great Hall everywhere (Geoffrey, 2026-11-07).** The Hall (built, at /room/great-hall) should be
+  reachable and bookable from many places: a **back hallway + sign from the Commons** in the HQ map; the Hall
+  **schedule always shown** on a sign in the Commons and a sign in the forest; **book it from your house and from your
+  profile** (a "Book the Great Hall" control for cooperative members). Plus the voting-system test — a real council
+  vote held in the Hall — and a list of "concerns that may need a big vote".
 - **next: A member bar when you\'re in a room (Geoffrey, 2026-11-07).** Pick ANY member from ANY room, all at once,
   from a bar beside the chat / in the room — the chat itself is isolated to who\'s in the room, so this is how you reach
   someone elsewhere. Clicking a member\'s **icon** → message them; clicking their **name** → their profile (the

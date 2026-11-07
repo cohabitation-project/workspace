@@ -95,5 +95,17 @@
     } catch (err) { if (msg) msg.textContent = err.message; }
   });
 
+  // book the Great Hall
+  room.addEventListener('submit', async (e) => {
+    const f = e.target.closest('.rv-book-form'); if (!f) return; e.preventDefault();
+    const msg = f.querySelector('.rv-book-msg'); const fd = new FormData(f);
+    try {
+      const res = await fetch('/api/great-hall/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ theme: fd.get('theme'), title: fd.get('title'), when: fd.get('when'), note: fd.get('note') }) });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || 'could not book');
+      if (msg) msg.textContent = 'Booked \u2713'; setTimeout(() => location.reload(), 700);
+    } catch (err) { if (msg) msg.textContent = err.message; }
+  });
+
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 })();

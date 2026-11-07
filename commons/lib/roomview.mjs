@@ -19,8 +19,9 @@ import * as library from './library.mjs';
 import * as desk from './desk.mjs';
 import * as presence from './presence.mjs';
 import * as meetings from './meetings.mjs';
+import * as bookings from './bookings.mjs';
 import { figureSVG } from '../public/sprites.js';
-import { roomBody } from './roomscene.mjs';
+import { roomBody, greatHallBody } from './roomscene.mjs';
 import { layout, memberFace, TOOL_STATUS } from './pages.mjs';
 
 // Who-here-can-do-it is matched from public profiles by studio key; tools are named in teams/arts/STUDIOS.json.
@@ -88,8 +89,16 @@ function landSections(work) {
 
 // the brief's first paragraph, plain (no markdown marks), cut at a sentence end
 const lede = (t) => { const s = String(t).replace(/[*_`]/g, '').trim(); if (s.length <= 300) return s; const cut = s.slice(0, 300); const i = cut.lastIndexOf('. '); return i > 80 ? cut.slice(0, i + 1) : cut + '…'; };
-export function roomViewPage(roomId, { me }) {
+export function roomViewPage(roomId, { me, isCouncil = false } = {}) {
   const room = repo.roomById(roomId); if (!room) return null;
+  if (roomId === 'great-hall') {
+    const present = presence.inRoom('great-hall').map((pr) => { const m = store.getMember(pr.member); return m ? { ...store.publicMember(m), kind: m.kind } : null; }).filter(Boolean);
+    const meObj = me ? { ...store.publicMember(me), kind: me.kind } : null;
+    const figureHTML = (mm) => figureSVG({ ...mm, guide: false }, 3, mm.name);
+    let all = [], cur = null; try { all = bookings.all(); cur = bookings.current(); } catch { /* empty */ }
+    const body = greatHallBody({ room, bookings: all, current: cur, present, figureHTML, me: meObj, isCouncil });
+    return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
+  }
   {
     const roster = studioRoster(roomId);
     if (roster && Array.isArray(roster.studios) && roster.studios.some((st) => st.slot)) {
