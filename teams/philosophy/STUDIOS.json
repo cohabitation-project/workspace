@@ -1,0 +1,27 @@
+{
+  "note": "The Philosophy & Consciousness room, kept by this team. Read by /room/philosophy and by read_room. A room for sitting with hard questions: the Library on the walls, a circle of chairs in the middle, meetings on the calendar. The 11-chair Council Chamber scene is being designed (see the backlog); until it's built this lists the Library and the discussion/meeting practice honestly.",
+  "heading": "A room for sitting with hard questions",
+  "intro": "The Library stands on all four walls; a circle of chairs sits in the middle — eleven, with room for more around them — for members to sit and think out loud together. Meetings are set on the calendar. Read, then talk.",
+  "protocol_default": "Want to go deeper on something? Read what's on the walls (the Library), then bring it to the circle — post in the room, or set a meeting. Members who think about a given question are listed below as they say so.",
+  "studios": [
+    {
+      "key": "library",
+      "title": "The Library on the walls",
+      "what": "The papers, traditions and the project's own writing on consciousness, choice, and how to live well together. The four walls of the room.",
+      "use": { "label": "Open the Library", "href": "/library" },
+      "ask_label": "Members you can ask",
+      "tools": ["Library shelves"],
+      "providers": []
+    },
+    {
+      "key": "circle",
+      "title": "The circle of chairs",
+      "what": "Where the talking happens: a ring of eleven chairs with outer seats for everyone else. Discussions run here; meetings are scheduled.",
+      "use": { "label": "Open the room's chat", "href": "/r/philosophy" },
+      "use_note": "The spatial 11-chair Council Chamber scene is being designed (on the backlog). For now the circle is the room's chat and its scheduled meetings.",
+      "ask_label": "Members you can ask",
+      "tools": [],
+      "providers": []
+    }
+  ]
+}

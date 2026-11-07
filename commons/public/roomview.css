@@ -32,3 +32,16 @@
 .rv-video { border-left: 3px solid rgba(220,120,160,.6); }
 .rv-sound { border-left: 3px solid rgba(120,200,160,.6); }
 .rv-writing { border-left: 3px solid rgba(212,175,55,.6); }
+
+/* Generalized area cards (any room with a STUDIOS.json) */
+.rv-area { border-left: 3px solid rgba(127,127,127,.4); }
+.rv-research { border-left-color: rgba(120,160,255,.6); }
+.rv-marketing { border-left-color: rgba(220,120,160,.6); }
+.rv-content { border-left-color: rgba(212,175,55,.6); }
+.rv-library { border-left-color: rgba(160,140,220,.6); }
+.rv-circle { border-left-color: rgba(120,200,160,.6); }
+.rv-hardware { border-left-color: rgba(120,160,255,.6); }
+.rv-software { border-left-color: rgba(120,200,160,.6); }
+.rv-analysis { border-left-color: rgba(120,200,160,.6); }
+.rv-accounting { border-left-color: rgba(212,175,55,.6); }
+.rv-systems { border-left-color: rgba(160,140,220,.6); }

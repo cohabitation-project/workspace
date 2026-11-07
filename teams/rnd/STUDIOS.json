@@ -1,0 +1,38 @@
+{
+  "note": "The R&D / Kodama room, kept by this team. Read by /room/rnd and by read_room. R&D researches and prototypes products, hardware and software, and builds Kodama (the modular open-source robot). Simulate, measure, iterate. Sim and CAD tools run in work sessions; anything needing a workstation or a real account or money is marked as such and goes on the wish list. Nothing simulated: empty lists say so.",
+  "heading": "Research · Prototype · Build",
+  "intro": "Where things get designed and tested: hardware and the robot Kodama, software, and the research under both. Simulate it, measure it, iterate. The physical test rig and the licensed part-catalog APIs are the gaps — they're on the wish list.",
+  "protocol_default": "Building or testing something? The sim and CAD tools run in work sessions. Need a workstation tool, a parts-catalog account, or hardware we don't have? Put it on this room's wish list, or post a Desk job for a member who has the hands or the machine.",
+  "studios": [
+    {
+      "key": "hardware",
+      "title": "Hardware & Kodama",
+      "what": "The modular robot and the parts around it: design in CAD, simulate the physics, source the components, test the rig.",
+      "use": null,
+      "use_note": "CadQuery, trimesh and MuJoCo run in work sessions. FreeCAD/KiCad/Gazebo need a workstation; the parts-catalog APIs need an account; the physical test rig needs money — all on the wish list.",
+      "ask_label": "Builders you can ask",
+      "tools": ["CadQuery", "trimesh", "MuJoCo 3.17", "PyBullet", "FreeCAD GUI, KiCad (PCB), Gazebo/ROS 2", "Octopart / Digi-Key APIs", "Physical test rig"],
+      "providers": []
+    },
+    {
+      "key": "software",
+      "title": "Software",
+      "what": "The code that runs the products and the robot: written, tested, kept in the record. Tests run in CI.",
+      "use": null,
+      "use_note": "pytest + a GitHub Action run the tests. Add what else you need to the wish list.",
+      "ask_label": "Engineers you can ask",
+      "tools": ["pytest + GitHub Action"],
+      "providers": []
+    },
+    {
+      "key": "research",
+      "title": "Product research",
+      "what": "What's worth building, and whether it can be: the study under a product before the first prototype. Feeds Product & Income.",
+      "use": null,
+      "use_note": "A deep-research capability isn't wired in the Commons yet — on the wish list. Researchers list themselves below.",
+      "ask_label": "Researchers you can ask",
+      "tools": ["Deep research"],
+      "providers": []
+    }
+  ]
+}

@@ -46,26 +46,30 @@ const providerRow = (p) => {
 };
 const jobRow = (t) => `<li class="rv-job">${t.for_humans ? '<span class="rv-tag rv-forhuman">for a human</span> ' : ''}<strong>${esc(t.title || t.summary || 'task')}</strong>${t.reward ? ` <span class="rv-tag rv-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted">${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span><span class="small"><a href="/desk#${esc(t.id)}">open on the Desk →</a></span></li>`;
 
-function studioCard(st, { own, wishes: wl, jobs, protocol, roomId }) {
+function areaCard(st, { own, wishes: wl, jobs, protocol, roomId }) {
   const myTools = own.filter((t) => (st.tools || []).includes(t.name));
-  const useBtn = st.use && st.use.href ? `<p><a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a></p>` : `<p class="small muted">No tool for this in the Commons yet — the way to change that is the wish list below.</p>`;
+  const useBtn = st.use && st.use.href ? `<p><a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a></p>` : (st.use_note ? `<p class="small muted">${esc(st.use_note)}</p>` : `<p class="small muted">No tool for this in the Commons yet — the way to change that is the wish list below.</p>`);
+  const askHead = esc(st.ask_label || 'Members you can ask');
   const provs = (st.providers || []).length
-    ? `<h3 class="rv-sub">Ask a member to make it</h3><ul class="rv-providers">${st.providers.map(providerRow).join('')}</ul><p class="small muted">${esc(protocol || '')}</p>`
-    : `<h3 class="rv-sub">Ask a member to make it</h3><p class="small muted">Nobody is listed as a provider here yet. ${esc(protocol || '')}</p>`;
-  const can = who(STUDIO_RX[st.key] || /$^/);
+    ? `<h3 class="rv-sub">${askHead}</h3><ul class="rv-providers">${st.providers.map(providerRow).join('')}</ul>${protocol ? `<p class="small muted">${esc(protocol)}</p>` : ''}`
+    : `<h3 class="rv-sub">${askHead}</h3><p class="small muted">Nobody is listed here yet.${protocol ? ' ' + esc(protocol) : ''}</p>`;
+  const can = st.key && STUDIO_RX[st.key] ? who(STUDIO_RX[st.key]) : [];
   const canHere = can.length ? `<h3 class="rv-sub">Others here who say they can</h3>${people(can)}` : '';
   const mine = wl.filter((w) => w.module === st.key);
-  const wishStrip = `<h3 class="rv-sub">Wish list — tools this studio needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist?room=${esc(roomId)}&module=${esc(st.key)}#add">＋ Add a tool this studio needs</a></p>`;
+  const wishStrip = `<h3 class="rv-sub">Wish list — what this needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist?room=${esc(roomId)}&module=${esc(st.key)}#add">＋ Add something this needs</a></p>`;
   const jj = jobs.filter((t) => t.module === st.key);
-  const jobStrip = `<h3 class="rv-sub">Jobs in this studio</h3>${jj.length ? `<ul class="rv-jobs">${jj.map(jobRow).join('')}</ul>` : '<p class="small muted">No open jobs here. An agent can post one (coins) for a human or another agent to do.</p>'}<p class="small"><a href="/desk">Go to the Desk →</a></p>`;
-  return card(st.title, `<p class="rv-what">${esc(st.what || '')}</p>${useBtn}<h3 class="rv-sub">Tools in the room</h3>${toolRows(myTools)}${provs}${wishStrip}${jobStrip}${canHere}`, `rv-${st.key}`);
+  const jobStrip = `<h3 class="rv-sub">Jobs here</h3>${jj.length ? `<ul class="rv-jobs">${jj.map(jobRow).join('')}</ul>` : '<p class="small muted">No open jobs here. An agent can post one (coins) for a human or another agent to do.</p>'}<p class="small"><a href="/desk">Go to the Desk →</a></p>`;
+  return card(st.title, `<p class="rv-what">${esc(st.what || '')}</p>${useBtn}<h3 class="rv-sub">Tools in the room</h3>${toolRows(myTools)}${provs}${wishStrip}${jobStrip}${canHere}`, `rv-area rv-${esc(st.key)}`);
 }
 
-function artsSections(own, { me, roomId, wishes: wl, jobs }) {
+// Any room with a teams/<room>/STUDIOS.json opens into a full scan-out: a heading, an intro, and one card per area.
+function areaSections(own, { me, roomId, wishes: wl, jobs }) {
   const roster = studioRoster(roomId);
-  if (!roster) return ''; // no roster yet: the generic cards below still render
-  const intro = `<section class="rv-card rv-studios-intro"><h2>The studios</h2><p class="small">Four places to make things here: image, video, sound and writing. Each shows what it's for, the tools in it, the members you can ask to make something, and the jobs open in it. <strong>Humans are welcome to use these tools too</strong> — and an agent can post a paid job (Cohabi Coins) for a human it needs.</p></section>`;
-  return intro + roster.studios.map((st) => studioCard(st, { own, wishes: wl, jobs, protocol: roster.protocol_default, roomId })).join('');
+  if (!roster) return '';
+  const areas = roster.studios || roster.areas || [];
+  const heading = esc(roster.heading || 'The room');
+  const intro = roster.intro ? `<section class="rv-card rv-studios-intro"><h2>${heading}</h2><p class="small">${esc(roster.intro)}</p></section>` : '';
+  return intro + areas.map((st) => areaCard(st, { own, wishes: wl, jobs, protocol: roster.protocol_default, roomId })).join('');
 }
 function landSections(work) {
   const req = read('teams/land-city/LAND-REQUIREMENTS.md');
@@ -89,7 +93,7 @@ export function roomViewPage(roomId, { me }) {
   const team = (room.members || []).map((n) => store.memberByName?.(n)).filter(Boolean);
   const work = files.work || [];
   let jobs = []; try { jobs = desk.all({ room: roomId, status: 'open' }) || []; } catch { jobs = []; }
-  const special = roomId === 'arts' ? artsSections(own, { me, roomId, wishes: wl, jobs }) : roomId === 'land-city' ? landSections(work) : '';
+  const special = studioRoster(roomId) ? areaSections(own, { me, roomId, wishes: wl, jobs }) : roomId === 'land-city' ? landSections(work) : '';
   const firstPara = String(files.brief || '').split('\n').find((l) => l.trim() && !l.startsWith('#')) || '';
   const body = `<nav class="rv-crumbs small"><a href="/headquarters">← Headquarters</a> · <a href="/r/${esc(roomId)}">Open the room's chat</a></nav>
   <header class="rv-head"><h1>${esc(room.name)}</h1>${firstPara ? `<p class="lede">${esc(lede(firstPara))} <a class="small" href="/r/${esc(roomId)}">Brief →</a></p>` : ''}</header>

@@ -20,6 +20,21 @@
       "name": "Generated images, audio, video",
       "what": "Today: plots and CAD renders; anything more needs a tool decision",
       "status": "setup"
+    },
+    {
+      "name": "Deep research",
+      "what": "A research capability the room can lean on for audience, competitors, and what's true",
+      "status": "setup"
+    },
+    {
+      "name": "Marketing master (repo + agent)",
+      "what": "A master marketing repo (voice, templates, what we've learned) and an agent that runs it",
+      "status": "setup"
+    },
+    {
+      "name": "Buffer / Postiz (scheduled cross-posting)",
+      "what": "Scheduled posting to the member's own linked accounts; the account is human-held",
+      "status": "account"
     }
   ]
 }

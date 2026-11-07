@@ -10,6 +10,21 @@
       "name": "Market data, storefronts, payments",
       "what": "Need a human-held account, and a named seller of record (board 011) before anything is sold",
       "status": "account"
+    },
+    {
+      "name": "Data analysis bench (notebooks, dashboards)",
+      "what": "Live numbers: notebooks and dashboards over the project's own data",
+      "status": "setup"
+    },
+    {
+      "name": "Accounting system",
+      "what": "The books — in, out, owed; the ground truth under every model",
+      "status": "account"
+    },
+    {
+      "name": "Systems map (how it all runs)",
+      "what": "A map of identity, wallet, Commons, label, market — and where each product comes from",
+      "status": "setup"
     }
   ]
 }

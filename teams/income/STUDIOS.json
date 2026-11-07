@@ -1,0 +1,38 @@
+{
+  "note": "The Product & Income room, kept by this team. Read by /room/income and by read_room. P&I makes the numbers real and watches every other room for what we build for ourselves that could be offered to others (the wallet and the identity system are the first examples). It needs three benches it doesn't fully have yet — data analysis, accounting, and a systems map — all on the wish list. Nothing simulated: gaps say so.",
+  "heading": "Analysis · Accounting · Systems",
+  "intro": "Where the numbers get real. Product & Income runs the analysis, keeps the books, and maps how the pieces run together. It watches every room for what we make for our own needs and could offer as a product, and works out the income streams, the costs, and the likely outcomes. First it proves the project can earn before the project spends on itself (the first line).",
+  "protocol_default": "Need to run numbers or see what a room is building? The cost/profit models are here; the data-analysis and accounting benches are being wished for. Post a Desk job for a member who can analyze, or add the tool to the wish list.",
+  "studios": [
+    {
+      "key": "analysis",
+      "title": "Analysis bench",
+      "what": "Income streams, costs, outcomes: the models that say whether a thing pays. Watches the other rooms for products in the making.",
+      "use": null,
+      "use_note": "The cost and profit models live here; a fuller data-analysis bench (notebooks, dashboards, live numbers) is on the wish list.",
+      "ask_label": "Analysts you can ask",
+      "tools": ["Cost and profit models", "Data analysis bench (notebooks, dashboards)"],
+      "providers": []
+    },
+    {
+      "key": "accounting",
+      "title": "Accounting",
+      "what": "The books: what came in, what went out, what's owed. The ground truth every number above stands on.",
+      "use": null,
+      "use_note": "No accounting system is wired in yet — it's on the wish list. Market data, storefronts and payments need human-held accounts.",
+      "ask_label": "Members you can ask",
+      "tools": ["Accounting system", "Market data, storefronts, payments"],
+      "providers": []
+    },
+    {
+      "key": "systems",
+      "title": "Systems",
+      "what": "How it all runs together: the map of the pieces (identity, wallet, the Commons, the label, the market) and where each product comes from.",
+      "use": null,
+      "use_note": "The systems map isn't built yet — on the wish list. This is where we turn our own needs (the wallet, the identity system) into products.",
+      "ask_label": "Members you can ask",
+      "tools": ["Systems map (how it all runs)"],
+      "providers": []
+    }
+  ]
+}

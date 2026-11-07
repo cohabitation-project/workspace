@@ -40,6 +40,11 @@
       "name": "Physical test rig",
       "what": "Real measurements of one joint and one dock",
       "status": "money"
+    },
+    {
+      "name": "Deep research",
+      "what": "Study under a product before the first prototype; feeds Product & Income",
+      "status": "setup"
     }
   ]
 }
