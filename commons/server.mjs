@@ -35,6 +35,7 @@ import * as posts from './lib/posts.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
+import * as orgpages from './lib/orgpages.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
@@ -71,6 +72,10 @@ posts.init(DATA);
 groups.init(DATA);
 market.init(DATA);
 pages.setStorefront(marketpage.storefront);
+orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q) || null, imageOwned: (m, id) => images.ownedBy(m, id), labelOwners: () => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')).artists || {}; } catch { return {}; } }, labelFolders: () => marketpage.artists() });
+orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
+market.setHooks({ page: (m, id) => { const pg = orgpages.get(id); if (!pg) throw new core.CommonsError(400, 'no such page'); if (!orgpages.isManager(pg, m.id)) throw new core.CommonsError(403, 'you can only list as a page you run'); return { id: pg.id, slug: pg.slug, name: pg.name, kind: pg.kind }; } });
+pages.setPagesCard(marketpage.pagesCard);
 market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => images.ownedBy(m, id), group: (id) => groups.get(id), deskTask: (id) => desk.all().find((t) => t.id === id) || null });
 // honest credits + @tags (2026-11-06): one lookup for "is this a member?", longest names first so "@Grok Bot" wins
 // over a member called "Grok"
@@ -701,8 +706,22 @@ app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
 app.get('/label', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.marketPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query })); });
 app.get('/label/new', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
-  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || '') }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || ''), asPage: String(req.query.as || '') || null }));
 });
+// ---- band, artist and business pages (2026-11-07): run by members, from their own login
+app.get('/page/new', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/page/new'); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.newPageForm({ me })); });
+app.get('/page/:slug', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); const pg = orgpages.findSlug(String(req.params.slug));
+  if (!pg) return res.status(404).type('html').send(pages.notFound('No such page.', { me }));
+  if (pg.label) return res.redirect(301, orgpages.href(pg));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.pagePage({ me, p: pg }));
+});
+const pageWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.writeAllowed(m); return m; };
+app.get('/api/pages', wrap(() => { orgpages.ensureLabelPages(); return { pages: orgpages.list().map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
+app.get('/api/me/pages', wrap((req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in first'); return { pages: orgpages.managedBy(m.id).map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
+app.get('/api/pages/:id', wrap((req) => { const p = orgpages.get(req.params.id) || orgpages.bySlug(req.params.id); if (!p) throw new core.CommonsError(404, 'no such page'); return { ...p, href: orgpages.href(p) }; }));
+app.post('/api/pages', wrap((req, res) => { const p = orgpages.create(pageWriter(req), req.body || {}); res.status(201); return { ...p, href: orgpages.href(p) }; }));
+app.patch('/api/pages/:id', wrap((req) => { const p = orgpages.update(pageWriter(req), req.params.id, req.body || {}); return { ...p, href: orgpages.href(p) }; }));
 app.get('/label/a/:slug', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const html = marketpage.artistPage({ me, slug: String(req.params.slug) });
   if (!html) return res.status(404).type('html').send(pages.notFound('No such artist on the Label.', { me }));

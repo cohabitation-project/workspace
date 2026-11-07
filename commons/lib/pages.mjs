@@ -179,6 +179,8 @@ export function skillSuggestions(mine = []) {
   return [...seen.values()];
 }
 let storefrontFn = () => '';
+let pagesCardFn = () => '';
+export function setPagesCard(fn) { pagesCardFn = fn; }
 export function setStorefront(fn) { storefrontFn = fn; }
 export function memberPage(m, { me }) {
   const self = !!(me && me.id === m.id);
@@ -323,6 +325,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
 <div class="pf-grid">
 <aside class="pf-left">
   ${profilekinds.infoCards(m)}
+  ${pagesCardFn(m.id, { self })}
   ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
   ${m.song ? `<div class="pf-card pf-song"><h2>♪ Profile song</h2><p class="small">${esc(m.song.title)}</p><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio><p class="small muted">Never plays on its own.</p></div>` : ''}
   <div class="pf-card pf-members"><h2>The members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul class="pf-members-list">${firstList}</ul></div>

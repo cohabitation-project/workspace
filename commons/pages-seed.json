@@ -1,0 +1,50 @@
+{
+  "note": "Pages the project creates once at boot if missing (orgpages.mjs). The manager must already be a member on the server. Content from rollinhost.com, fetched 2026-11-07; Geoffrey can edit everything from the page.",
+  "pages": [
+    {
+      "slug": "rollinhost",
+      "kind": "business",
+      "name": "RollinHost",
+      "manager": "h_mvvq2q281p068710",
+      "theme": "navy",
+      "accent": "#d4a24c",
+      "art": "/static/pages/rollinhost-mark.svg",
+      "art_note": "placeholder mark until the real logo is uploaded",
+      "headline": "Run your entire park from one system. Built for parks. Designed for people.",
+      "bio": "RollinHost is park operations software for independent RV parks, made by Roll In Host LLC in Sierra Vista, Arizona. Reservations, long-term tenants, utility metering, financial reporting, staff and AI assistance live in one platform with one database. It's mobile-first, with a flat monthly rate and no per-booking fees. It replaces the separate booking tool, the spreadsheets, the invoicing app and the clipboard of meter readings.\n\n**What it does**\n- **Reservations:** a live space map, walk-in booking, rate stacking and a timeline view\n- **Long-term tenants:** leases, recurring invoicing, renewals and ledgers\n- **Utility metering:** readings per space, billed to tenants automatically, including meter reads from a photo\n- **Financials:** P&L by space, period locks, line-item rates\n- **Staff and roles:** permissions, invitations and an audit log\n- **Notifications:** email and SMS, every message logged\n- **AI built in:** plain-language answers about your live park data, and accountant-ready exports\n- **On your phone:** everything works from any phone\n- **Your website:** an embeddable booking engine and pricing widget, or a full rebuild\n\n**Pricing** (as listed on rollinhost.com, November 2026)\n- **Founders** (parks 1 to 10): $99 a month, locked, 4 months free, free onboarding and 50% off a website rebuild\n- **Early access** (parks 11 to 50, through January 2028): $99 a month for the first year, 2 months free\n- **Standard:** $129 a month under 50 sites, $179 for 50 or more, 1 month free\n- **Onboarding:** $250 for dashboard setup, or $500 with a website rebuild, one time",
+      "kind_info": {
+        "location": "Sierra Vista, AZ",
+        "services": [
+          "Reservations",
+          "Long-term tenants",
+          "Utility metering",
+          "Financials",
+          "Staff and roles",
+          "AI assistant",
+          "Booking widget",
+          "Website rebuilds"
+        ],
+        "service_area": "Independent RV parks, anywhere in the US",
+        "hours": ""
+      },
+      "links": [
+        {
+          "label": "rollinhost.com",
+          "url": "https://www.rollinhost.com/"
+        },
+        {
+          "label": "Try the live demo",
+          "url": "https://demo.rollinhost.com/"
+        },
+        {
+          "label": "Book a call",
+          "url": "https://www.rollinhost.com/#contact"
+        },
+        {
+          "label": "Call 626-ROLLIN1",
+          "url": "tel:6267655461"
+        }
+      ]
+    }
+  ]
+}

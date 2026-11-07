@@ -232,3 +232,49 @@
 .mk-artistlink { margin: 0 0 8px; }
 .mk-artistlink a { display: inline-flex; align-items: center; gap: 6px; }
 .mk-artistlink svg, .mk-artistlink .pf-face { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; }
+
+/* ---- a navy-and-gold theme for business pages (RollinHost's colours: #1b2a3a and gold) */
+.mk-page[data-mk=navy] { --bg: #121d29; --panel: #1b2a3a; --panel2: #223448; --line: #33485f; --ink: #f3ede0; --muted: #aab6c4; --gold: #d4a24c; --gold-ink: #1b2a3a; --soft: #ffffff10;
+  background: radial-gradient(ellipse at 80% -10%, #2b4157 0%, transparent 55%), #121d29 fixed; }
+
+/* ---- band, artist and business pages */
+.mk-switch { margin: 12px 0 0; padding: 8px 12px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); }
+.mk-pagehero { position: relative; display: flex; gap: 22px; align-items: center; padding: 22px; margin-top: 12px; border-radius: 20px; border: 1px solid var(--line); overflow: hidden; isolation: isolate;
+  background: radial-gradient(ellipse at 85% 0%, color-mix(in srgb, var(--gold) 22%, transparent), transparent 60%), linear-gradient(120deg, var(--panel2), var(--panel)); }
+.mk-pagehero.has-banner { background: linear-gradient(90deg, color-mix(in srgb, var(--panel) 92%, transparent), color-mix(in srgb, var(--panel) 55%, transparent)), var(--mk-banner) center / cover no-repeat; }
+.mk-pageface { width: 168px; height: 168px; flex: none; border-radius: 22px; overflow: hidden; display: grid; place-items: center; background: var(--panel2); box-shadow: var(--shadow); border: 2px solid color-mix(in srgb, var(--gold) 60%, transparent); }
+.mk-pageface img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mk-pageface .mk-icon { font-size: 70px; }
+.mk-pageid h1 { font: 700 42px/1.05 Georgia, serif; margin: 4px 0 6px; }
+.mk-pageid .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
+.mk-pagehead { font-size: 18px; margin: 0 0 8px; }
+.mk-runby a { display: inline-flex; align-items: center; gap: 4px; }
+.mk-runby svg, .mk-runby .pf-face { width: 22px; height: 22px; border-radius: 50%; }
+.mk-pagegrid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; margin-top: 18px; align-items: start; }
+.mk-pageside { display: grid; gap: 14px; }
+.mk-infocard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.mk-infocard h2 { font: 400 18px/1.2 Georgia, serif; margin: 0 0 10px; }
+.mk-infocard dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 14px; }
+.mk-infocard dt { font-weight: 700; color: var(--muted); }
+.mk-infocard dd { margin: 0; overflow-wrap: anywhere; }
+.mk-infocard ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.mk-infocard .pf-showdate { color: var(--gold); font-weight: 700; display: inline-block; min-width: 92px; }
+.mk-links { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.mk-about .md { font-size: 16px; line-height: 1.6; }
+.mk-about .md ul { padding-left: 20px; }
+.mk-pgdialog { max-width: 640px; width: calc(100% - 24px); background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; }
+.mk-pgdialog label { display: grid; font-weight: 600; font-size: 14px; margin: 8px 0; }
+.mk-pgdialog input:not([type=checkbox]):not([type=color]), .mk-pgdialog select, .mk-pgdialog textarea { width: 100%; box-sizing: border-box; background: var(--panel2); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; margin-top: 4px; }
+.mk-pgdialog input[type=color] { width: 64px; height: 40px; border: 1px solid var(--line); border-radius: 10px; background: none; }
+.mk-pgdialog details { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin: 10px 0; }
+.mk-menuh { padding: 10px 12px 4px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); margin-top: 4px; }
+.mk-sitemenu svg, .mk-sitemenu .pf-face { width: 20px; height: 20px; border-radius: 50%; vertical-align: middle; }
+.mk-menudot { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: var(--gold); color: var(--gold-ink); font-size: 11px; font-weight: 700; vertical-align: middle; }
+@media (max-width: 799px) {
+  .mk-pagehero { flex-direction: column; align-items: flex-start; }
+  .mk-pageface { width: 128px; height: 128px; }
+  .mk-pageid h1 { font-size: 32px; }
+  .mk-pagegrid { grid-template-columns: minmax(0, 1fr); }
+}
+.mk-sitemenu a { display: flex; align-items: center; gap: 8px; }
+.mk-sitemenu a > span:first-child:not(.mk-menudot), .mk-runby a > span:first-child { display: inline-flex; }

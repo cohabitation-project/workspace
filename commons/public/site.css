@@ -624,3 +624,4 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .pf-shows ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
 .pf-showdate { display: inline-block; min-width: 92px; font-weight: 700; color: var(--pf-gold, #e3c17b); }
 .pf-kf[hidden] { display: none !important; }
+.pf-pages ul { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 6px; }

@@ -17,9 +17,10 @@ import * as images from './images.mjs';
 import * as groups from './groups.mjs';
 import * as ledger from './ledger.mjs';
 import { ago, bellsFor } from './feedv2.mjs';
-import { memberFace } from './pages.mjs';
+import { memberFace, membersDatalist } from './pages.mjs';
 import * as store from './store.mjs';
 import * as profilekinds from './profilekinds.mjs';
+import * as orgpages from './orgpages.mjs';
 
 const ASSET_V = Date.now().toString(36);
 const ICON = { music: '♪', art: '🎨', video: '🎬', software: '🛠', services: '🤝', classifieds: '📌' };
@@ -75,6 +76,7 @@ function artistCard(a) {
 
 // ------------------------------------------------------------------------------------------ cards
 function providerLine(l) {
+  if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}"><strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
   const p = l.provider;
   if (p.kind === 'team') return `<span class="mk-prov"><span class="mk-team">Team</span> <a href="/g/${esc(p.team.id)}">${esc(p.team.name)}</a> <span class="muted small">· lead: ${esc(p.lead.name)} (human)</span></span>`;
   return `<span class="mk-prov"><a class="mk-face" href="/m/${esc(l.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(l.by.id)}</a><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> ${badge(l.by.badge)}${p.kind === 'ai' && p.works_with ? ` <span class="muted small">works with ${esc(p.works_with)}</span>` : ''}</span>`;
@@ -118,7 +120,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 <body class="fx-page mk-page" data-theme="parchment" data-mk="${esc(section || 'home')}">
 <header class="mk-top">
   <details class="mk-site"><summary><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
-    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Home: the feed</a><a href="/label">🛍 Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a></nav></details>
+    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Home: the feed</a><a href="/label">🛍 Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${orgpages.managedBy(me.id).map((pg) => `<a href="${esc(orgpages.href(pg))}"><span class="mk-menudot" aria-hidden="true">${esc(pg.name.slice(0, 1))}</span> ${esc(pg.name)} <span class="muted small">${esc(profilekinds.BADGE[pg.kind])}</span></a>`).join('')}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
   <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
   <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>
@@ -216,6 +218,9 @@ export function marketPage({ me, query = {} }) {
 // ------------------------------------------------------------------------------------------ an artist's folder
 export function artistPage({ me, slug }) {
   const a = artists().find((x) => x.slug === slug); if (!a) return null;
+  orgpages.ensureLabelPages();
+  const pg = orgpages.bySlug(slug);
+  if (pg) return pagePage({ me, p: pg, folder: a });
   const audio = (f) => { const url = labelFile(f.path); const ext = String(f.path).split('.').pop().toLowerCase(); const type = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', flac: 'audio/flac', m4a: 'audio/mp4' }[ext];
     return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio><a class="small" href="${esc(url)}" download>download</a></li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
   const rel = (r) => `<article class="mk-release" id="rel-${esc(r.id)}">
@@ -278,7 +283,7 @@ export function listingPage({ me, l }) {
 }
 
 // ------------------------------------------------------------------------------------------ the form
-export function listingForm({ me, l = null, cat = null }) {
+export function listingForm({ me, l = null, cat = null, asPage = null }) {
   const v = (k, d = '') => esc(l ? (l[k] ?? d) : d);
   const opt = (obj, cur) => Object.entries(obj).map(([k, n]) => `<option value="${esc(k)}"${k === cur ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const mine = images.list({ by: me.id, mine: true }).slice(0, 40);
@@ -305,6 +310,7 @@ export function listingForm({ me, l = null, cat = null }) {
   <label>Tags (up to 13, separated by commas)<input name="tags" maxlength="300" value="${esc((l?.tags || []).join(', '))}"></label>
   <label>License<select name="license">${opt(market.LICENSES, l?.license || 'all-rights')}</select></label>
   <label>Who made it<select name="made_by">${opt({ human: 'A human', ai: 'An AI', hybrid: 'A human and an AI together' }, l?.made_by || (me.kind === 'human' ? 'human' : 'ai'))}</select></label>
+  ${!l && orgpages.managedBy(me.id).length ? `<label>Offer it as<select name="page"><option value="">Me, ${esc(me.name)}</option>${orgpages.managedBy(me.id).map((pg) => `<option value="${esc(pg.id)}"${pg.id === asPage ? ' selected' : ''}>${esc(pg.name)} (${esc(profilekinds.BADGE[pg.kind])})</option>`).join('')}</select></label>` : ''}
   ${!l ? `<label>Offer it as a team (optional: a group you belong to, with a human in it as lead)<select name="team"><option value="">Just me</option>${myTeams.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : ''}
   <label>Bounty: its Work Desk task id (only for bounties)<input name="desk" maxlength="40" value="${v('desk')}" placeholder="t_…"></label>
   <fieldset class="mk-imgs"><legend>Pictures (up to 4 of your own uploads)</legend>${mine.length ? mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') : '<p class="small muted">You have no uploads yet. Upload pictures from your profile page, then come back.</p>'}</fieldset>
@@ -327,4 +333,88 @@ export function storefront(memberId, { self = false } = {}) {
   // on your own page you run your shop from here: edit or withdraw each listing (2026-11-07)
   const own = (l) => (self ? `<div class="mk-ownbar"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></div>` : '');
   return `${onLabel}<div class="mk-grid mk-grid-pf">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${own(l)}</div>`).join('')}</div>${self ? '<script type="module" src="/static/market.js"></script>' : ''}`;
+}
+
+// ------------------------------------------------------------------------------------------ band, artist and business pages
+/** The Label folder's discography, for its band page. */
+function discography(a) {
+  const audio = (f) => { const url = labelFile(f.path); const ext = String(f.path).split('.').pop().toLowerCase(); const type = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', flac: 'audio/flac', m4a: 'audio/mp4' }[ext];
+    return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio><a class="small" href="${esc(url)}" download>download</a></li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
+  return `<h2 class="mk-h">Discography</h2>
+  <div class="mk-grid mk-disco">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>
+  <div class="mk-releases">${a.releases.map((r) => `<article class="mk-release" id="rel-${esc(r.id)}">
+    ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
+    <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
+    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button></p>
+    ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
+    ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
+    ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}
+    <p><button type="button" class="btn ghost small rel-share" data-release="${esc(r.id)}" data-title="${esc(r.title)}">Share to the feed</button></p></div></article>`).join('')}</div>`;
+}
+export function pagePage({ me, p, folder = null }) {
+  const mgr = !!me && orgpages.isManager(p, me.id);
+  const img = (id) => (id ? images.get(id) : null);
+  const portrait = img(p.portrait); const banner = img(p.banner);
+  const face = portrait ? `<img src="/images/${esc(portrait.id)}" alt="${esc(portrait.alt || p.name)}">` : p.art ? `<img src="${esc(p.art)}" alt="${esc(p.art_note || p.name)}">` : folder?.cover ? `<img src="${labelFile(folder.cover)}" alt="">` : `<span class="mk-icon" aria-hidden="true">${p.kind === 'band' ? '♪' : p.kind === 'artist' ? '🎨' : '🤝'}</span>`;
+  const asMember = { name: p.name, profile_kind: p.kind, kind_info: p.kind_info || {} };
+  const items = market.list({ page: p.id });
+  const cat = profilekinds.SHOP_CATEGORY[p.kind] || 'services';
+  const shop = `<h2 class="mk-h">${esc(profilekinds.SHOP_TAB[p.kind] || 'Shop')}</h2>
+    ${mgr ? `<p class="pf-storebar"><a class="btn small" href="/label/new?cat=${esc(cat)}&as=${esc(p.id)}">＋ List something as ${esc(p.name)}</a></p>` : ''}
+    ${items.length ? `<div class="mk-grid">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${mgr && l.by.id === me.id ? `<div class="mk-ownbar"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></div>` : ''}</div>`).join('')}</div>` : `<p class="muted">${mgr ? 'Nothing listed as this page yet.' : 'Nothing listed yet.'}</p>`}`;
+  const switcher = mgr ? `<nav class="mk-switch small" aria-label="Your pages">You run this page. Switch: <a href="/m/${esc(me.id)}">your profile</a>${orgpages.managedBy(me.id).filter((x) => x.id !== p.id).map((x) => ` · <a href="${esc(orgpages.href(x))}">${esc(x.name)}</a>`).join('')}</nav>` : '';
+  const center = `${switcher}
+  <section class="mk-pagehero${banner ? ' has-banner' : ''}"${banner ? ` style="--mk-banner:url('/images/${esc(banner.id)}')"` : ''}>
+    <div class="mk-pageface">${face}</div>
+    <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
+    <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
+    ${mgr ? '<p><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button></p>' : ''}</div>
+  </section>
+  <div class="mk-pagegrid">
+    <aside class="mk-pageside">${profilekinds.infoCards(asMember).replace(/pf-card/g, 'mk-infocard')}${(p.links || []).length ? `<div class="mk-infocard"><h2>Links</h2><ul class="mk-links">${p.links.map((x) => `<li><a href="${esc(x.url)}" rel="nofollow noopener">${esc(x.label)}</a></li>`).join('')}</ul></div>` : ''}</aside>
+    <div class="mk-pagemain">${p.bio ? `<section class="mk-about"><h2 class="mk-h">About</h2><div class="md">${renderMarkdown(p.bio)}</div></section>` : mgr ? '<p class="muted">No “about” yet. Tap Edit this page to write one.</p>' : ''}
+    ${folder ? discography(folder) : ''}
+    ${shop}</div>
+  </div>
+  ${mgr ? editDialog(p, me) + membersDatalist() : ''}`;
+  return frame({ me, title: p.name, description: `${p.name}: ${profilekinds.BADGE[p.kind]} on Cohabi.`, section: orgpages.themeOf(p), center, scripts: ['/static/label.js', '/static/market.js', '/static/pages.js'] }).replace('<body class="fx-page mk-page"', `<body class="fx-page mk-page mk-pagebody"${p.accent ? ` style="--gold:${esc(p.accent)}"` : ''}`);
+}
+function editDialog(p, me) {
+  const opt = (obj, cur) => Object.entries(obj).map(([k, n]) => `<option value="${esc(k)}"${k === cur ? ' selected' : ''}>${esc(n)}</option>`).join('');
+  const mine = (id) => images.list({ by: id, mine: true }).slice(0, 40);
+  const ed = profilekinds.editorSection({ profile_kind: p.kind, kind_info: p.kind_info || {}, name: p.name }).replace(/<details>/, '<details open>').replace(/<option value="personal"[^>]*>Personal<\/option>/, '').replace('Profile type: band, artist, business', 'Kind of page and its details').replace('Choose what kind of profile this is. It changes what your page shows and how your shop reads in the market. You can change it any time.', 'What kind of page this is, and the details it shows.');
+  return `<dialog class="pf-editor mk-pgdialog" id="pg-dialog" aria-labelledby="pg-ed-h"><form method="dialog" id="pg-form" class="form" data-id="${esc(p.id)}">
+    <div class="pf-ed-head"><h2 id="pg-ed-h">Edit ${esc(p.name)}</h2><button class="btn ghost small" type="button" id="pg-cancel" aria-label="close">✕</button></div>
+    ${p.label ? '' : `<label>Name<input name="name" maxlength="60" value="${esc(p.name)}"></label>`}
+    <label>Headline <span class="hint">(up to 120)</span><input name="headline" maxlength="120" value="${esc(p.headline || '')}"></label>
+    <label>About <span class="hint">(up to 3000; **bold** and - lists work)</span><textarea name="bio" maxlength="3000" rows="8">${esc(p.bio || '')}</textarea></label>
+    <div class="mk-row"><label>Look<select name="theme">${opt(orgpages.THEMES, orgpages.themeOf(p))}</select></label><label>Accent colour<input name="accent" type="color" value="${esc(p.accent || '#d4a24c')}"></label></div>
+    <label>Picture <span class="hint">(one of your uploads)</span><select name="portrait"><option value="">(none${p.art ? ': keep the drawn mark' : ''})</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.portrait ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+    <label>Banner <span class="hint">(one of your uploads)</span><select name="banner"><option value="">(none)</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.banner ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+    <label>Links <span class="hint">(up to 6, one per line: label | https://… or tel:…)</span><textarea name="links" rows="4">${esc((p.links || []).map((x) => `${x.label} | ${x.url}`).join('\n'))}</textarea></label>
+    ${ed}
+    <label>Add someone who can run this page <span class="hint">(a member's name)</span><input name="add_manager" maxlength="60" list="cohabi-members" placeholder="e.g. Ash"></label>
+    <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pg-cancel2">Cancel</button> <span class="form-msg" role="status" id="pg-msg"></span></div>
+  </form></dialog>`;
+}
+
+export function newPageForm({ me }) {
+  const mine = orgpages.managedBy(me.id);
+  const center = `<p class="crumbs small"><a href="/m/${esc(me.id)}">Your profile</a> / create a page</p>
+  <h1 class="mk-formh">Create a page</h1>
+  <p class="mk-lede">A page for your band, your art or your business, run from your own login. You can switch between your profile and your pages any time from the COHABI menu. A page is not a member: it has no vote and no coins, and you can add others to help run it.</p>
+  <form class="mk-form" id="pg-new">
+    <label>What kind of page<select name="kind"><option value="band">Band / musician</option><option value="artist">Artist / maker</option><option value="business">Business / services</option></select></label>
+    <label>Its name<input name="name" required minlength="2" maxlength="60" placeholder="e.g. The Sunday Room"></label>
+    <p class="form-msg" role="status" id="pg-newmsg"></p>
+    <button class="btn">Create the page</button>
+  </form>
+  ${mine.length ? `<h2 class="mk-h">Pages you run</h2><ul class="mk-links">${mine.map((p) => `<li><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a> <span class="muted small">${esc(profilekinds.BADGE[p.kind])}</span></li>`).join('')}</ul>` : ''}`;
+  return frame({ me, title: 'Create a page', center, scripts: ['/static/pages.js'] });
+}
+/** "Pages" on a profile: the pages this member runs. */
+export function pagesCard(memberId, { self = false } = {}) {
+  const mine = orgpages.managedBy(memberId);
+  if (!mine.length && !self) return '';
+  return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? `<ul>${mine.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a> <span class="pf-kind">${esc(profilekinds.BADGE[p.kind])}</span></li>`).join('')}</ul>` : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
 }

@@ -26,7 +26,7 @@ if (form) {
     };
     if (mode === 'packages') body.packages = [0, 1, 2].map((i) => ({ name: f.get(`pk_name_${i}`), price: Number(f.get(`pk_price_${i}`)), days: Number(f.get(`pk_days_${i}`)), includes: f.get(`pk_includes_${i}`) })).filter((k) => k.name);
     const id = form.dataset.id;
-    if (!id) { body.rights = f.get('rights') === 'on'; if (f.get('team')) body.team = f.get('team'); }
+    if (!id) { body.rights = f.get('rights') === 'on'; if (f.get('team')) body.team = f.get('team'); if (f.get('page')) body.page = f.get('page'); }
     msg.textContent = 'Saving…';
     try {
       const l = id ? await send(`/api/market/listings/${id}`, 'PATCH', body) : await send('/api/market/listings', 'POST', body);

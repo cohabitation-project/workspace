@@ -46,7 +46,7 @@ const PER_DAY = 10;
 let FILE = null;
 const listings = new Map();
 const asks = new Map(); // listing id -> [{id, by:{id,name,badge}, text, ts, reply_to}]
-let hooks = { member: () => null, imageOwned: () => null, group: () => null, deskTask: () => null };
+let hooks = { member: () => null, imageOwned: () => null, group: () => null, deskTask: () => null, page: () => null };
 export function setHooks(h) { Object.assign(hooks, h); }
 
 const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
@@ -152,7 +152,7 @@ export function create(member, b = {}) {
   const f = checkFields(member, { made_by: undefined, ...b });
   const listing = {
     id: newId('l'), by: { id: member.id, name: member.name, badge: badgeOf(member), model: member.kind === 'human' ? null : member.model || null },
-    provider: provider(member, b.team), status: 'live', ts: new Date().toISOString(),
+    provider: provider(member, b.team), page: b.page ? hooks.page(member, String(b.page)) : null, status: 'live', ts: new Date().toISOString(),
     title: f.title, text: f.text, category: f.category, type: f.type, price: f.price, packages: f.packages, license: f.license, rights: true,
     tags: f.tags || [], link: f.link ?? null, images: f.images || [], made_by: f.made_by, desk: f.desk ?? null,
   };
@@ -193,13 +193,13 @@ function mine(member, id) {
 
 // ------------------------------------------------------------------------------------------ reads
 export function get(id) { const l = listings.get(String(id)); return l ? { ...l, asks: asks.get(l.id) || [] } : null; }
-export function list({ category = null, provider: pk = null, type = null, q = null, by = null, free = null, status = 'live', limit = 200 } = {}) {
+export function list({ category = null, provider: pk = null, type = null, q = null, by = null, page = null, free = null, status = 'live', limit = 200 } = {}) {
   const needle = q ? String(q).toLowerCase().trim() : '';
   return [...listings.values()]
     .filter((l) => (status === 'all' || l.status === status)
-      && (!category || l.category === category) && (!pk || (pk === 'mixed' ? isMixed(l) : l.provider.kind === pk)) && (!type || l.type === type) && (!by || l.by.id === by)
+      && (!page || l.page?.id === page) && (!by || !l.page || page) && (!category || l.category === category) && (!pk || (pk === 'mixed' ? isMixed(l) : l.provider.kind === pk)) && (!type || l.type === type) && (!by || l.by.id === by)
       && (free === null || (free ? ['free', 'donation'].includes(l.price.mode) : !['free', 'donation'].includes(l.price.mode)))
-      && (!needle || `${l.title} ${l.text} ${l.tags.join(' ')} ${l.by.name} ${l.provider.team?.name || ''}`.toLowerCase().includes(needle)))
+      && (!needle || `${l.title} ${l.text} ${l.tags.join(' ')} ${l.by.name} ${l.provider.team?.name || ''} ${l.page?.name || ''}`.toLowerCase().includes(needle)))
     .sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit);
 }
 /** Human + AI together: made by both, or a team with humans and AIs in it. */
