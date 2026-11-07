@@ -801,6 +801,18 @@ app.post('/api/wishes/:id/decline', wrap((req) => wishes.decline(wishWriter(req)
 app.post('/api/wishes/:id/help', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.help(m, req.params.id, req.body || {}); }));
 app.post('/api/wishes/:id/close', wrap((req) => wishes.close(wishWriter(req), req.params.id, req.body || {})));
 app.get('/label', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.marketPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query })); });
+// Church Searcher's records, as data for his in-canvas pitch (public; same info as /label). (Geoffrey 2026-11-07)
+app.get('/api/label/artist/:slug', (req, res) => {
+  let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = {}; }
+  const norm = (s) => String(s || '').toLowerCase().replace(/\(.*?\)/g, '').replace(/[^a-z0-9]+/g, '');
+  const want = norm(req.params.slug);
+  const fileUrl = (p) => '/label/files/' + String(p).split('/').map(encodeURIComponent).join('/');
+  const albums = (data.releases || [])
+    .filter((r) => { const a = norm(r.artist); return a === want || a.includes(want) || want.includes(a); })
+    .map((r) => ({ id: r.id, title: r.title, artist: r.artist, art: r.art ? fileUrl(r.art) : null, url: `/label/l/${encodeURIComponent(r.id)}`, tracks: (r.files || []).map((f, i) => ({ title: f.label || (r.tracks || [])[i] || `Track ${i + 1}`, url: fileUrl(f.path) })) }));
+  res.setHeader('Cache-Control', 'no-cache'); res.json({ artist: want, albums });
+});
+
 app.get('/label/new', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || ''), asPage: String(req.query.as || '') || null }));

@@ -860,8 +860,75 @@ function wander(a) {
   const id = ids[Math.floor(Math.random() * ids.length)]; const R = S.L.rooms[id];
   const pts = [a.pos, corrPoint(a.pos), corrPoint(R.door)];
   if (Math.random() < 0.6) pts.push(doorStep(id, true)); // peek in
-  walk(a, pts, () => { a.timer = setTimeout(() => wander(a), 3000 + Math.random() * 6000); });
+  walk(a, pts, () => {
+    csMaybePitch(id); // Church Searcher greets whoever he finds, and offers a free listen
+    a.timer = setTimeout(() => wander(a), 3000 + Math.random() * 6000);
+  });
 }
+
+// ---------------------------------------------------------------- Church Searcher's record (Geoffrey 2026-11-07)
+// When he finds someone in a room he greets them and offers a free listen: a small card you can play
+// and keep exploring behind (not a blocking pop-up). The music keeps going while you wander.
+let csAlbums = null, csIdx = 0, csLastPitch = 0, csCardEl = null;
+let csAudio = null, csQueue = [], csQi = 0, csChip = null;
+async function csLoad() {
+  if (csAlbums) return csAlbums;
+  try { const d = await api('/api/label/artist/church-searcher'); csAlbums = (d.albums || []).filter((a) => a.tracks && a.tracks.length); }
+  catch { csAlbums = []; }
+  return csAlbums;
+}
+function csSay(text) {
+  if (!searcher) return;
+  searcher.bubble.textContent = text; searcher.bubble.classList.add('show');
+  clearTimeout(searcher.bubbleTimer); searcher.bubbleTimer = setTimeout(() => searcher.bubble.classList.remove('show'), 7000);
+}
+function csMaybePitch(roomId) {
+  const now = Date.now();
+  if (now - csLastPitch < 150000) return; // at most once every ~2.5 min, so he stays charming
+  const someone = [...S.presence.values()].some((p) => p.room === roomId && p.member !== 'church-searcher');
+  if (!someone) return;
+  csLastPitch = now;
+  csLoad().then((als) => {
+    if (!als.length) return;
+    const al = als[csIdx % als.length]; csIdx++;
+    csSay("Hi \u2014 I'm Church Searcher. Have one of my records, on me \uD83C\uDFB5");
+    csCard(al);
+  });
+}
+function csCard(al) {
+  csCloseCard();
+  const d = el('div', { class: 'cs-card', role: 'dialog', 'aria-label': `Church Searcher \u2014 ${al.title}` });
+  d.innerHTML = `
+    <button class="cs-x" type="button" aria-label="Close">\u00d7</button>
+    <div class="cs-top">
+      ${al.art ? `<img class="cs-cover" src="${esc(al.art)}" alt="Cover: ${esc(al.title)}">` : '<div class="cs-cover cs-noart">\u266a</div>'}
+      <div class="cs-meta"><div class="cs-artist">Church Searcher</div><div class="cs-title">${esc(al.title)}</div><div class="cs-free">Free download</div></div>
+    </div>
+    <div class="cs-actions"><button class="cs-play" type="button">\u25b6 Play</button><a class="cs-link" href="${esc(al.url)}">Get the album \u2192</a></div>
+    <div class="cs-note">Listen right here while you keep exploring.</div>`;
+  d.querySelector('.cs-x').addEventListener('click', csCloseCard);
+  d.querySelector('.cs-play').addEventListener('click', () => csPlay(al));
+  document.body.appendChild(d); csCardEl = d;
+  requestAnimationFrame(() => d.classList.add('show'));
+}
+function csCloseCard() { if (csCardEl) { csCardEl.remove(); csCardEl = null; } }
+function csPlay(al) {
+  if (!csAudio) {
+    csAudio = new Audio(); csAudio.preload = 'none';
+    csAudio.addEventListener('ended', () => { csQi++; if (csQi < csQueue.length) { csAudio.src = csQueue[csQi].url; csAudio.play().catch(() => {}); csChipLabel(); } else csStop(); });
+  }
+  csQueue = al.tracks.slice(); csQi = 0;
+  csAudio.src = csQueue[0].url; csAudio.play().catch(() => {});
+  if (!csChip) { csChip = el('div', { class: 'cs-chip' }); document.body.appendChild(csChip); }
+  csChipLabel(); csChip.classList.add('show');
+}
+function csChipLabel() {
+  if (!csChip) return;
+  const t = csQueue[csQi] ? csQueue[csQi].title : '';
+  csChip.innerHTML = `<span class="cs-chip-dot">\u266a</span><span class="cs-chip-txt">Church Searcher \u00b7 ${esc(t)}</span><button class="cs-chip-stop" type="button" aria-label="Stop">\u25a0</button>`;
+  csChip.querySelector('.cs-chip-stop').addEventListener('click', csStop);
+}
+function csStop() { if (csAudio) { try { csAudio.pause(); } catch (e) {} } if (csChip) csChip.classList.remove('show'); }
 
 // ------------------------------------------------------------------ rooms, lists
 function countIn(roomId) { return [...S.presence.values()].filter((p) => p.room === roomId).length; }
