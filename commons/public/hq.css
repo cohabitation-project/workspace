@@ -201,3 +201,4 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .k-npc { --k: #ffd25e; }
 .actor.k-npc .tag { max-width: 140px; }
 .dot.k-npc { background: #ffd25e; }
+.p-full { margin-left: auto; margin-right: 10px; font-size: 13px; white-space: nowrap; align-self: center; }

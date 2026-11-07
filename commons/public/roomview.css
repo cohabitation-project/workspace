@@ -1,0 +1,15 @@
+.rv-crumbs { margin: 6px 0 4px; }
+.rv-head h1 { margin: 6px 0 4px; }
+.rv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 14px; }
+.rv-card { border: 1px solid rgba(127,127,127,.3); border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,.35); }
+.rv-card h2 { margin: 0 0 8px; font-size: 19px; }
+.rv-sub { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; margin: 12px 0 6px; opacity: .75; }
+.rv-people, .rv-tools, .rv-files { list-style: none; padding: 0; margin: 0; }
+.rv-people li { margin: 6px 0; }
+.rv-people a { display: flex; gap: 10px; align-items: center; text-decoration: none; color: inherit; }
+.rv-face svg { width: 28px; height: 42px; }
+.rv-hl { display: block; }
+.rv-tools li { margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.rv-tools li .small { flex-basis: 100%; }
+.rv-files li { margin: 5px 0; overflow-wrap: anywhere; }
+.rv-need { border-style: dashed; }

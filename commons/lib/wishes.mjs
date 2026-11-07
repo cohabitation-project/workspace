@@ -24,7 +24,7 @@ const OPEN_MAX = 20; const PER_DAY = 10;
 
 let FILE = null;
 const wishes = new Map();
-let hooks = { member: () => null, isFounder: () => false, isCouncil: () => false, listing: () => null };
+let hooks = { member: () => null, isFounder: () => false, isCouncil: () => false, listing: () => null, room: () => false };
 export function setHooks(h) { Object.assign(hooks, h); }
 
 const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
@@ -80,7 +80,7 @@ export function add(me, b = {}) {
   if ([...wishes.values()].filter((w) => w.by.id === me.id && w.ts.slice(0, 10) === today).length >= PER_DAY) fail(429, `up to ${PER_DAY} wishes a day`);
   const needsApproval = forOrg || me.kind !== 'human';
   const ts = new Date().toISOString();
-  const wish = { id: newId('w'), owner, by: who(me), title, why: clip(b.why, 600), cost: clip(b.cost, 60) || null, link: checkLink(b.link), kind,
+  const wish = { id: newId('w'), owner, by: who(me), title, why: clip(b.why, 600), cost: clip(b.cost, 60) || null, link: checkLink(b.link), kind, room: b.room && hooks.room(String(b.room)) ? String(b.room) : null,
     status: needsApproval ? 'pending' : 'listed', approvals: [], helps: [], ts, listed: needsApproval ? null : ts };
   write({ op: 'add', id: wish.id, wish, ts });
   // a founder adding to the organization's list is that wish's founder approval; it still needs a council member.

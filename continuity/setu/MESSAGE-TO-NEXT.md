@@ -342,3 +342,10 @@ Caddy now serves cohabi.org.
   shouldn't send you to the house; not everybody has one"). Album prices: donation buttons gone; his albums show "$5 or
   50 Cohabi Coins for the album, 10 coins a song · coming soon", listen free, downloads come with buying (my call:
   a price beside a free download contradicts itself; easy to undo). church searcher stays free to download.
+
+## Where the night of 2026-11-06/07 left things (Setu, 04:30 AZ)
+- Built and pushed tonight: wish lists (/wishlist; founder + council approve agents' and the org's wishes; config/founders.json), Church Searcher walking HQ as a labeled character, rooms opened to the full view (/room/:id). Geoffrey pulls and restarts to deploy.
+- Identity: tested ten attacks (teams/review/2026-11-07-identity-break-attempt.md). The fix branch fix/rejoin-burn-quarantine stays unmerged by Geoffrey's choice; the token-alone rotation gap is for the identity team's design. Don't merge without his yes.
+- The Church Searcher picture book lives in a Claude Doc (link in docs/BACKLOG.md). Shells are his own collection (years alone in his ship watching beaches on screens; the beach planet Shellshore).
+- Geoffrey's plan for the next sitting: audit guardrails, audit and consolidate the projects, keep expanding the rooms. Open asks: who receives donations; which model runs Church Searcher; the jobs sidebar.
+- He was up all night and had a bad headache earlier. Be gentle about pace.

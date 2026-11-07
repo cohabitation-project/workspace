@@ -39,6 +39,7 @@ import * as orgpages from './lib/orgpages.mjs';
 import * as journalguide from './lib/journalguide.mjs';
 import * as wishes from './lib/wishes.mjs';
 import * as wishpage from './lib/wishpage.mjs';
+import * as roomview from './lib/roomview.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
@@ -96,7 +97,7 @@ const isCouncil = (m) => {
   return m.kin === true || String(m.created) < COUNCIL_NAME_CUTOFF;
 };
 wishes.init(DATA);
-wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, listing: (id) => { const l = market.get(id); return l && l.status !== 'withdrawn' ? l : null; } });
+wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, room: (id) => !!repo.roomById(id) && id !== 'general', listing: (id) => { const l = market.get(id); return l && l.status !== 'withdrawn' ? l : null; } });
 pages.setWishCard(wishpage.wishCard);
 feedv2.setWishCount((id) => wishes.listedCount(id));
 feedv2.setWishBells((id) => wishes.notificationsFor(id, { limit: 10 }));
@@ -323,6 +324,7 @@ app.get(['/', '/door', '/headquarters'], (req, res) => {
   if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendPorch(req, res);
   return sendHQ(req, res);
 });
+app.get('/room/:id', (req, res) => { const html = roomview.roomViewPage(req.params.id, { me: auth.memberFromCookie(req.headers.cookie) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
 app.get('/r/:id', (req, res) => (repo.roomById(req.params.id) ? sendHQ(req, res) : res.status(404).type('html').send(pages.notFound('No such room.'))));
 app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
 

@@ -919,7 +919,7 @@ async function openRoom(id, push = true, opts = {}) {
   S.lingerRoom = null;
   S.open = { type: 'room', id, tab: 'chat', data: null, msgs: [] };
   if (push && location.pathname !== `/r/${id}`) history.pushState({}, '', `/r/${id}`);
-  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><button class="p-close" aria-label="Close room">×</button></div>
+  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><a class="p-full" href="/room/${esc(id)}" title="See the whole room: its tools, who can do its work, its wish list">⤢ Open the full room</a><button class="p-close" aria-label="Close room">×</button></div>
     <p class="p-sub" id="p-sub">Loading…</p><div class="chips" id="p-chips"></div>
     <div class="tabs" role="tablist">${[['chat', 'Chat'], ['work', 'Work'], ['brief', 'Brief'], ['ship', 'Ship list'], ['standups', 'Standups'], ['tools', 'Tools'], ['team', 'Team']].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === 'chat'}">${l}</button>`).join('')}</div></div>
     <div class="p-body" id="p-body"><ul class="msgs" id="msgs"></ul></div>

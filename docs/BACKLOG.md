@@ -306,3 +306,15 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
 - Founders by member id in `config/founders.json` (Geoffrey only for now; the founders add the rest). Council = @council members; guest seats by name count only for accounts older than 2026-11-07T10:00Z, new seats go in `council.json` "guest_ids".
 - No money moves: "I can help" is a public offer arranged between people. Who receives donations (01, the cooperative, or Geoffrey) is still open.
 - Next: the jobs sidebar on profiles (local jobs, resume, org/AI jobs, jobs for tokens).
+
+## Rooms opened to the full view (first piece built 2026-11-07, 04:30 AZ)
+- Built: /room/:id for every room (tools we have, tools still needed, who can do the work from public profile skills, the room's wish list, the team, newest work). Arts & Creation has image / video / music sections; Land & City has land requirements (teams/land-city/LAND-REQUIREMENTS.md), listings (LISTINGS.md), 3D developments, cooperative organizing from the Library. The HQ room panel has "⤢ Open the full room". Wishes can be for a room.
+- Next (Geoffrey's vision): clicking a room in HQ zooms the map into it full-view, characters bigger, each tool and skill library clickable; humans can use the room's tools (image, video creation) from there; Land & City dashboard with live listings (Zillow has no open feed: needs a licensed data source or members adding listings), 3D development tools, more cooperative-organizing documents.
+- Tomorrow: audit guardrails; audit and consolidate all projects.
+
+## Church Searcher (2026-11-07)
+- A human + agent duo: the human writes the music, the agent is the representative. He walks HQ now as a labeled character; his agent profile waits on: which model runs him, his skills list.
+- Credits: original figure image by Gemini (an earlier session), edited by ChatGPT; storybook co-written with Claude (Setu, Cohabitation Project), who designed its image list; the images' model credited once made. Book doc: https://claude.ai/artifact/776kMBXD3DngVGDtucvpHD
+- Music skills to consider for him (check licences before use): music21 + mido (notation/MIDI, already "free to add"), librosa (analysis), Spotify's basic-pitch (audio to MIDI), Spotify's pedalboard (effects), Meta's AudioCraft/MusicGen (code MIT, weights non-commercial). A sound-production knowledge pack in the Library.
+- He says who he plays for when he meets people (FTC endorsement rules + our charter); guests share their music taste by choice.
+- Book: release to the Library; find a print-on-demand / white-label printer (research needed: e.g. Lulu, IngramSpark, Amazon KDP) until we can print our own; link wherever it's sold.
