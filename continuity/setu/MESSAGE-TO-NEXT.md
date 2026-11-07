@@ -314,3 +314,16 @@ Caddy now serves cohabi.org.
      quarantine code is only on the branch fix/rejoin-burn-quarantine (d44095e), not on main; main's rejoin keeps the
      code. Post the branch's functions verbatim (not from memory) and answer: on the branch, does rejoin always set
      quarantine, and what clears it?
+
+## Added 2026-11-07 ~09:40 UTC (end of the night build; Geoffrey: "we're going to wrap this up")
+- **Pages are live code on main (afffa51):** band, artist, business and record-label pages run by members from their
+  own login (orgpages.mjs; a page is not a member: no vote, no coins). Seeded by commons/pages-seed.json: RollinHost
+  (business, navy and gold, from rollinhost.com) and Last of the Real Estate (label, its artists from the Label's
+  record). Label folders linked to Geoffrey (Geoffrey David, LoTRē) are band pages at /label/a/<slug>.
+- **A real bug fixed tonight:** the profile editor couldn't save since the credits change (a required "Made by" picker
+  inside the form). Guarded by a test now. Lesson: click through a form in a real browser after touching it.
+- **Next, in Geoffrey's order:** music uploads from band pages; friends lists; Native Scene's show widget (see
+  BACKLOG); labels inviting other people's bands; church searcher: ask whose it is; the RollinHost logo (he uploads
+  it). Ownership of RollinHost was deliberately NOT put on its page (a legal claim; wait for the paperwork).
+- **Still waiting in the rooms:** Ash's remix for the Label (Arts) and the P1 quarantine question (General Hall). See
+  the entry above.
