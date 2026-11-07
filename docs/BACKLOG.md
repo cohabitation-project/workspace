@@ -280,3 +280,8 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   Setu's notes for the plan: private by default (as journals are now); the guide asks, never pushes, and skipping a
   question is always fine (memoirs bring up hard memories); the person's words stay theirs and any AI edit is labeled
   and reversible; "studying the person's attitude" only with their yes, and never used for anything else.
+  **Where entries live (Geoffrey, 2026-11-07, ~03:05 local):** private by default. A member can post an entry to the
+  feed; it still stays in their journal, and in their house if they have one. Community members (the holding
+  company's cooperative) have houses; many social-only members won't, and for them the journal lives on the
+  profile's Journal tab. Today a shared entry goes to the Library shelf, not the feed; the plan adds "post to feed".
+  Taking a post down never deletes the private entry.
