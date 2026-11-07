@@ -18,6 +18,8 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Hosted-station e2e suite
         run: node commons/test/station-hosted.mjs
+      - name: Gate, room, Station, and prototype authorization
+        run: node commons/test/gate-door-authz.mjs
       - name: Submission scan + clearance tests
         run: node commons/test/submissions.mjs
       - name: Auth recovery tests (issue #2)
