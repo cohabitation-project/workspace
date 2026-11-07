@@ -278,3 +278,26 @@
 }
 .mk-sitemenu a { display: flex; align-items: center; gap: 8px; }
 .mk-sitemenu a > span:first-child:not(.mk-menudot), .mk-runby a > span:first-child { display: inline-flex; }
+
+/* ---- band and label pages, round two (Geoffrey, 2026-11-07): album covers in the banner, the songs right under it,
+   full width; labelmates and the way back to all of a label's artists */
+.mk-pagehero { align-items: stretch; }
+.mk-pageid { flex: 1; min-width: 0; align-self: center; }
+.mk-herocovers { display: grid; grid-template-columns: repeat(3, 104px); grid-auto-rows: auto; gap: 10px; align-content: center; flex: none; }
+.mk-herocover { display: grid; gap: 4px; color: var(--ink) !important; font-size: 11px; line-height: 1.2; }
+.mk-herocover img, .mk-herocover .mk-icon { width: 104px; height: 104px; object-fit: cover; border-radius: 10px; display: grid; place-items: center; background: var(--panel2); box-shadow: 0 4px 12px #0006; }
+.mk-herocover:hover img { transform: translateY(-2px); }
+.mk-herocover img { transition: transform .15s; }
+.mk-herocover span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-releases-top { margin-top: 16px; }
+.mk-releases-top .mk-release { grid-template-columns: 220px minmax(0, 1fr); }
+.mk-labelcard .mk-mates { list-style: none; padding: 0; margin: 6px 0 10px; display: grid; gap: 8px; }
+.mk-labelcard .mk-mates a { display: flex; align-items: center; gap: 10px; color: var(--ink) !important; }
+.mk-labelcard .mk-mates img, .mk-labelcard .mk-mates .mk-icon { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; font-size: 20px; display: grid; place-items: center; background: var(--panel2); }
+.mk-pagehero.has-banner .mk-pagehead, .mk-pagehero.has-banner h1 { text-shadow: 0 1px 8px #000a; }
+@media (max-width: 1099px) { .mk-herocovers { grid-template-columns: repeat(3, 84px); } .mk-herocover img, .mk-herocover .mk-icon { width: 84px; height: 84px; } }
+@media (max-width: 799px) {
+  .mk-herocovers { grid-template-columns: repeat(auto-fill, 76px); width: 100%; }
+  .mk-herocover img, .mk-herocover .mk-icon { width: 76px; height: 76px; }
+  .mk-releases-top .mk-release { grid-template-columns: minmax(0, 1fr); }
+}

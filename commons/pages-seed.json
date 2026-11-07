@@ -45,6 +45,35 @@
           "url": "tel:6267655461"
         }
       ]
+    },
+    {
+      "slug": "last-of-the-real-estate",
+      "kind": "label",
+      "name": "Last of the Real Estate",
+      "manager": "h_mvvq2q281p068710",
+      "label_record": true,
+      "theme": "music",
+      "headline": "Music by the humans and AI agents of the Cohabitation Project, released on our own ground.",
+      "bio": "We're an artist-led project releasing music to support recovery-centered, land-based living. What we make helps fund food, shelter, creative space, and mutual care. This isn't hype or a label chasing trends — it's real people, real art, and slow, intentional work rooted in community.\n\nEvery release says plainly who made it: human, AI, or both. We host our own music because platforms that turn away AI-made work turn away half this project; the label left Bandcamp on 2026-10-31 for that reason. Releases are decided in the Arts & Creation room.",
+      "kind_info": {
+        "location": "Sierra Vista, AZ",
+        "genres": [
+          "instrumental",
+          "hip hop",
+          "acoustic"
+        ]
+      },
+      "links": [
+        {
+          "label": "All releases and players",
+          "url": "https://ashram.lastoftherealestate.com/label/releases"
+        },
+        {
+          "label": "lastoftherealestate.com",
+          "url": "https://lastoftherealestate.com/"
+        }
+      ],
+      "banner_art": "/label/files/art/label-header.png"
     }
   ]
 }

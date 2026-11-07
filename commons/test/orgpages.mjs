@@ -66,5 +66,19 @@ ok('the COHABI menu switches between your profile and your pages', /<span class=
 ok('Create a page has its own form', /id="pg-new"/.test(await page('/page/new', owner.ck)));
 ok('/api/me/pages lists them', (await call('/api/me/pages', null, owner.H, 'GET')).j.pages.some((x) => x.slug === 'rollinhost'));
 
+// record labels: a page that gathers band and artist pages
+const lr = await page('/page/last-of-the-real-estate');
+ok("the Label's own page lists its artists from the Label's record", /<h1>Last of the Real Estate<\/h1>/.test(lr) && /href="\/label\/a\/geoffrey-david"/.test(lr) && /href="\/label\/a\/church-searcher"/.test(lr) && /href="\/label\/a\/lotre"/.test(lr) && /<h2 class="mk-h">Releases<\/h2>/.test(lr), lr.slice(0, 300));
+ok('its banner shows the album covers', /class="mk-herocovers"/.test(lr));
+const ol = await call('/api/pages', { kind: 'label', name: 'Otto Records' }, other.H);
+ok('a member starts a record label page', ol.status === 201 && ol.j.kind === 'label');
+ok('the Create a page form offers a record label, and says it will cost something one day', /<option value="label">Record label<\/option>/.test(await page('/page/new', other.ck)) && /Starting a record label will cost something one day/.test(await page('/page/new', other.ck)));
+const addA = await call(`/api/pages/${ol.j.id}`, { add_artist: 'the-sunday-room' }, other.H, 'PATCH');
+ok('a label adds a band page its manager also runs', addA.status === 200 && addA.j.roster.includes('the-sunday-room'));
+const gl = await call('/api/pages', { kind: 'label', name: 'Gemma Label' }, g.H);
+ok("a label can't add a band it doesn't run", (await call(`/api/pages/${gl.j.id}`, { add_artist: 'the-sunday-room' }, g.H, 'PATCH')).status === 403);
+const band = await page('/page/the-sunday-room');
+ok('the band page says which label it is on, with the way back to all its artists', /On the label/.test(band) && /<strong>Otto Records<\/strong>/.test(band) && /← All artists on Otto Records/.test(band));
+ok('the label page lists the band', (await page('/page/otto-records')).includes('The Sunday Room'));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall page tests passed'); process.exit(failures ? 1 : 0);

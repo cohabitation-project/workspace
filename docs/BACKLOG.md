@@ -230,3 +230,12 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   "durable value") read as money/investment claims, which the site says coins are not; the coin face itself is fine.
 - **Tokens (Geoffrey, 2026-11-07):** "think of it as a game": earned by playing, no cash value, the community's own
   currency; to be worked out later with payments.
+- **Native Scene (nativescene.com) show listings (Geoffrey, 2026-11-07):** use their widget for shows. Post a show from
+  your band page; the widget shows on the band page and on the member's profile. Geoffrey expects Native Scene to join
+  the cooperative. To do: see what Native Scene offers for embedding (an iframe or script widget). The Commons'
+  content policy blocks outside scripts and frames today, so it needs an explicit allowance for their domain only,
+  reviewed like any outside code.
+- **Label pages cost money one day** (Geoffrey): starting a record label on Cohabi will be paid, priced competitively
+  (compare Bandcamp's label accounts). Free during the beta; the Create a page form says so.
+- **Next for band pages:** members upload their own music from the band page (Bandcamp-style tracks and albums),
+  friends lists, and labels inviting other people's bands (today a label adds only band pages its managers also run).

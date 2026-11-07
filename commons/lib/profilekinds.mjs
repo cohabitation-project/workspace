@@ -10,9 +10,9 @@
 import { esc } from '../public/md.js';
 
 export const KINDS = { personal: 'Personal', band: 'Band / musician', artist: 'Artist / maker', business: 'Business / services' };
-export const BADGE = { band: 'Band', artist: 'Artist', business: 'Business' };
-export const SHOP_TAB = { band: 'Music & merch', artist: 'Gallery & shop', business: 'Services', personal: 'Storefront' };
-export const SHOP_CATEGORY = { band: 'music', artist: 'art', business: 'services', personal: null };
+export const BADGE = { band: 'Band', artist: 'Artist', business: 'Business', label: 'Label' };
+export const SHOP_TAB = { band: 'Music & merch', artist: 'Gallery & shop', business: 'Services', label: 'Releases & merch', personal: 'Storefront' };
+export const SHOP_CATEGORY = { band: 'music', artist: 'art', business: 'services', label: 'music', personal: null };
 export const LABEL_TYPES = { unsigned: 'Unsigned', indie: 'Indie', major: 'Major', cohabi: 'On the Cohabi Label' };
 export const COMMISSIONS = { open: 'Open for commissions', waitlist: 'Waitlist', closed: 'Closed for commissions' };
 // the fields each kind uses (location is everyone's)
@@ -20,6 +20,7 @@ export const FIELDS = {
   band: ['location', 'genres', 'sounds_like', 'influences', 'record_label', 'label_type', 'members', 'shows'],
   artist: ['location', 'mediums', 'commissions', 'influences'],
   business: ['location', 'services', 'service_area', 'hours'],
+  label: ['location', 'genres'],
   personal: ['location'],
 };
 
@@ -69,7 +70,7 @@ export function check({ profile_kind, kind_info } = {}, current = {}, { merge = 
 }
 
 // ------------------------------------------------------------------------------------------ what the profile shows
-const kindOf = (m) => (KINDS[m.profile_kind] ? m.profile_kind : 'personal');
+const kindOf = (m) => (KINDS[m.profile_kind] || m.profile_kind === 'label' ? m.profile_kind : 'personal');
 export const shopTab = (m) => SHOP_TAB[kindOf(m)];
 export const shopCategory = (m) => SHOP_CATEGORY[kindOf(m)];
 export const isShopKind = (m) => kindOf(m) !== 'personal';
@@ -82,6 +83,8 @@ export function infoCards(m) {
   const row = (t, v) => (v && (!Array.isArray(v) || v.length) ? `<dt>${t}</dt><dd>${Array.isArray(v) ? v.map(esc).join(', ') : esc(v)}</dd>` : '');
   const rows = k === 'band'
     ? row('Genre', i.genres) + row('Location', i.location) + (i.members?.length ? `<dt>Members</dt><dd><ul class="pf-bandmembers">${i.members.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></dd>` : '') + row('Influences', i.influences) + row('Sounds like', i.sounds_like) + row('Record label', i.record_label) + row('Type of label', LABEL_TYPES[i.label_type])
+    : k === 'label'
+      ? row('Genres', i.genres) + row('Location', i.location)
     : k === 'artist'
       ? row('Mediums', i.mediums) + row('Commissions', COMMISSIONS[i.commissions]) + row('Location', i.location) + row('Influences', i.influences)
       : row('What we do', i.services) + row('Service area', i.service_area) + row('Hours', i.hours) + row('Location', i.location);

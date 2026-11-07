@@ -1,7 +1,7 @@
 // pages.js — editing a band, artist or business page (only its managers see the editor).
 const $ = (s, r = document) => r.querySelector(s);
 const dlg = $('#pg-dialog');
-const KIND_FIELDS = { band: ['location', 'genres', 'sounds_like', 'influences', 'record_label', 'label_type', 'members', 'shows'], artist: ['location', 'mediums', 'commissions', 'influences'], business: ['location', 'services', 'service_area', 'hours'] };
+const KIND_FIELDS = { band: ['location', 'genres', 'sounds_like', 'influences', 'record_label', 'label_type', 'members', 'shows'], artist: ['location', 'mediums', 'commissions', 'influences'], business: ['location', 'services', 'service_area', 'hours'], label: ['location', 'genres'] };
 if (dlg) {
   const form = $('#pg-form'); const msg = $('#pg-msg'); const kind = $('#pf-kind', form);
   $('#pg-edit')?.addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); });
@@ -17,6 +17,7 @@ if (dlg) {
     if (k) body.kind = k;
     if (f.get('name') !== null) body.name = f.get('name');
     const add = String(f.get('add_manager') || '').trim(); if (add) body.add_manager = add;
+    const art = String(f.get('add_artist') || '').trim(); if (art) body.add_artist = art;
     msg.textContent = 'Saving…';
     try {
       const r = await fetch(`/api/pages/${form.dataset.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify(body) });

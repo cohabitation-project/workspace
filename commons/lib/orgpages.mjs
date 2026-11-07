@@ -18,9 +18,11 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import * as profilekinds from './profilekinds.mjs';
 
-export const KINDS = { band: 'Band / musician', artist: 'Artist / maker', business: 'Business / services' };
+// A record label is a page too (Geoffrey, 2026-11-07): it gathers band pages, like a label page on Bandcamp. Starting a
+// label will cost money one day (pricing to be decided, competitively); during the beta it is free.
+export const KINDS = { band: 'Band / musician', artist: 'Artist / maker', business: 'Business / services', label: 'Record label' };
 export const THEMES = { navy: 'Navy and gold', music: 'Dark, like a listening app', art: 'Gallery white', video: 'Cinema', software: 'Terminal', services: 'Clean studio', classifieds: 'Newsprint', home: 'Cream' };
-const DEFAULT_THEME = { band: 'music', artist: 'art', business: 'services' };
+const DEFAULT_THEME = { band: 'music', artist: 'art', business: 'services', label: 'music' };
 const ACCENT_RX = /^#[0-9a-f]{6}$/i;
 
 let FILE = null;
@@ -73,6 +75,13 @@ export const bySlug = (slug) => [...pages.values()].find((p) => p.slug === Strin
 export const list = ({ kind = null } = {}) => [...pages.values()].filter((p) => !kind || p.kind === kind).sort((a, b) => (a.created < b.created ? -1 : 1));
 export const managedBy = (memberId) => { ensureLabelPages(); return [...pages.values()].filter((p) => p.managers.some((x) => x.id === memberId)); };
 export const isManager = (p, memberId) => !!p && p.managers.some((x) => x.id === memberId);
+/** The artists on a label page: the Label's own folders for the Label's record, else its roster of pages. */
+export function rosterOf(lbl, folders = hooks.labelFolders()) {
+  if (lbl.label_record) return folders.map((a) => ({ slug: a.slug, name: a.name, page: bySlug(a.slug), folder: a }));
+  return (lbl.roster || []).map((slug) => { const pg = bySlug(slug); return pg ? { slug, name: pg.name, page: pg, folder: folders.find((a) => a.slug === slug) || null } : null; }).filter(Boolean);
+}
+/** The label pages a band or artist page is on. */
+export const labelsFor = (pg) => [...pages.values()].filter((l) => l.kind === 'label' && (l.label_record ? pg.label : (l.roster || []).includes(pg.slug)));
 export const href = (p) => (p.label ? `/label/a/${p.slug}` : `/page/${p.slug}`);
 export const themeOf = (p) => (THEMES[p.theme] ? p.theme : DEFAULT_THEME[p.kind] || 'home');
 
@@ -108,6 +117,16 @@ export function update(member, id, b = {}) {
     if (out.length > 6) fail(400, 'up to 6 links'); patch.links = out;
   }
   for (const k of ['portrait', 'banner']) if (b[k] !== undefined) patch[k] = b[k] ? hooks.imageOwned(member, String(b[k])) : null;
+  // a label's artists: a label's managers add band or artist pages they also run (asking other bands comes later)
+  if (b.add_artist !== undefined) {
+    if (p.kind !== 'label') fail(400, 'only a label page has artists');
+    if (p.label_record) fail(400, "this label's artists come from the Label's own record");
+    const a = bySlug(String(b.add_artist)) || get(String(b.add_artist)); if (!a || !['band', 'artist'].includes(a.kind)) fail(400, 'no such band or artist page');
+    if (!isManager(a, member.id)) fail(403, `you can add ${a.name} once you also run its page (or its managers add you)`);
+    const roster = p.roster || []; if (roster.includes(a.slug)) fail(409, `${a.name} is already on this label`);
+    patch.roster = [...roster, a.slug];
+  }
+  if (b.remove_artist !== undefined) { const roster = (p.roster || []).filter((x) => x !== String(b.remove_artist)); if (roster.length === (p.roster || []).length) fail(400, 'that artist is not on this label'); patch.roster = roster; }
   if (b.add_manager !== undefined) {
     const m = hooks.member(String(b.add_manager)); if (!m || m.retired) fail(400, 'no such member to add');
     if (p.managers.some((x) => x.id === m.id)) fail(409, `${m.name} already runs this page`);
