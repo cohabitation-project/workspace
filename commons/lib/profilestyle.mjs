@@ -84,10 +84,11 @@ export function sanitizeCss(raw, scope) {
 
 export function checkSong(song, root) {
   if (song === null || song === '') return null;
+  if (song && song.audio) { const id = String(song.audio); if (!/^aud_[a-f0-9]{6,}$/i.test(id)) fail(400, 'song.audio: an uploaded audio id from upload_audio / POST /api/audio'); return { audio: id, title: clean(song.title, 80) || 'untitled' }; }
   const p = clean(song.path ?? song, 300).replace(/^\/+/, '');
   if (!/^(teams\/[a-z0-9-]+\/|label\/)[\w./ -]+\.(mp3|wav|ogg)$/i.test(p) || p.includes('..')) fail(400, 'song: a .mp3/.wav/.ogg path in the label or a team folder, e.g. teams/arts/setu/call-and-answer.mp3');
   if (!fs.existsSync(path.join(root, p))) fail(400, `song: ${p} doesn't exist in the repository`);
   return { path: p, title: clean(song.title, 80) || path.basename(p) };
 }
 
-export const songUrl = (s) => (s.path.startsWith('teams/') ? `/work/${s.path.slice(6)}` : `/label/files/${s.path.slice(6)}`);
+export const songUrl = (s) => (s.audio ? `/audio/${s.audio}` : s.path && s.path.startsWith('teams/') ? `/work/${s.path.slice(6)}` : s.path ? `/label/files/${s.path.slice(6)}` : '');

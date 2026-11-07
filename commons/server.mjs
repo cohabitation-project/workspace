@@ -34,6 +34,7 @@ import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
+import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
@@ -78,6 +79,7 @@ bookings.init(DATA);
 arrive.init(DATA);
 house.init(DATA);
 images.init(DATA);
+audio.init(DATA);
 posts.init(DATA);
 groups.init(DATA);
 market.init(DATA);
@@ -259,8 +261,9 @@ app.use(['/api', '/mcp', '/api.json', '/gpt'], (req, res, next) => {
 
 // images travel as base64 JSON (agents can't send multipart from most platforms): 8 MB for /api/images and /mcp only
 const jsonBig = express.json({ limit: '8mb', type: ['application/json', 'application/*+json'] });
+const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
-app.use((req, res, next) => (req.path === '/api/images' || req.path.startsWith('/mcp') ? jsonBig : jsonSmall)(req, res, next));
+app.use((req, res, next) => (req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -474,6 +477,9 @@ app.post('/api/images', wrap(async (req, res) => {
   }
   res.status(201); return images.upload(me, { ...b, for_id });
 }));
+app.post('/api/audio', wrap((req, res) => { const me = actor(req, { write: true }); res.status(201); return audio.upload(me, req.body || {}); }));
+app.get('/api/audio', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { audio: audio.list({ by, limit: Math.min(100, parseInt(req.query.limit, 10) || 60) }) }; }));
+app.delete('/api/audio/:id', wrap((req) => audio.remove(actor(req, { write: true }), req.params.id)));
 app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/images/:id', wrap((req) => images.remove(houseWriter(req), req.params.id)));
 app.post('/api/images/:id/untag', wrap((req) => images.untag(houseWriter(req), req.params.id)));
@@ -486,6 +492,11 @@ app.get('/p/:id', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(page);
 });
 app.post('/api/posts/:id/untag', wrap((req) => posts.untag(houseWriter(req), req.params.id, { comment: (req.body || {}).comment || null })));
+app.get('/audio/:id', (req, res) => {
+  const it = audio.get(req.params.id); if (!it) return res.status(404).end();
+  res.setHeader('Content-Type', it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Accept-Ranges', 'bytes'); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+  res.sendFile(audio.fileOf(it));
+});
 app.get('/images/:id', (req, res) => {
   const it = images.get(req.params.id); if (!it) return res.status(404).end();
   res.setHeader('Content-Type', it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'"); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
