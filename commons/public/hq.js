@@ -314,8 +314,9 @@ function setCam(view) {
 }
 
 function toggleZoom() {
-  if (S.cam.view === 'overview') { location.href = '/map'; return; } // keep zooming out -> the whole Commons
-  setCam('overview');
+  // Zoom toggles between the current focused view and the whole living canvas; it never navigates away.
+  // The "map" IS the real space, scaled out (see context/world-canvas-architecture.md).
+  setCam(S.cam.view === 'overview' ? 'commons' : 'overview');
 }
 
 function drawWing(L) {

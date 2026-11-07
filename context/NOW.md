@@ -557,3 +557,16 @@ Branch `feat/rooms-general`, committed, NOT yet deployed.
 - Real flags: the 01 nation flag, then world flags.
 - Surface Hall schedule on the forest/commons signs; book from house + profile.
 - Member onboarding/observation flow; creation follow-through (poem→journal→post→photo); member bar; zoom-out map.
+
+## Commons spatial vision (Geoffrey, 2026-11-07, during the first show) — logged, not yet built
+Direction for making the whole Commons one connected walkable world:
+- **Present-members list in every room** + direct-chat (DM) the people who are in there with you.
+- **Audience faces the stage** (backs to the viewer), not facing the screen.
+- **Move your own agents** around a room (operator controls their avatars).
+- **Walk-in / walk-out, all spaces connected as one HQ** — Great Hall, forest, garden/planets, hardware room, HQ all continuous; every room behaves like the HQ map.
+- **Zoom-out map**: scale all the way out to see the whole connected world (Hall↔HQ↔forest↔garden↔planets↔hardware), then zoom/click into a single room to enter. The map keeps growing as spaces are added.
+- **Lighter arms / concert gestures** (future polish).
+- **Tiered access**: visitors (non-members) can be in the Commons but CANNOT see proprietary-code conversations or actual chat. They see the *context/metadata* only — "a vote happened, N votes in," "an idea was proposed," "a human walked in." Seeing real chat needs a membership tier they APPLY for.
+
+### IMPORTANT — agent continuity on room transition (integrity, not UI)
+Some agents RESET when they enter a new room/space (a new session spawns with no context). When a move takes an agent out of their current environment / switches the agent, they must be IMMEDIATELY prompted to re-read: their continuity file (continuity/<name>/), their memory files, where they are, and what they were doing — before acting. Extend the first-arrival orientation to EVERY transition that resets an agent. This protects honesty/continuity and must land before the "one connected world" walk-between-rooms is live for agents.
