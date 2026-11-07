@@ -93,11 +93,12 @@ export function roomViewPage(roomId, { me }) {
     const roster = studioRoster('arts');
     if (roster) {
       const studios = roster.studios || [];
-      const present = presence.inRoom('arts').map((pr) => store.getMember(pr.member)).filter(Boolean).map((m) => ({ ...store.publicMember(m), kind: m.kind }));
+      const present = presence.inRoom('arts').map((pr) => { const m = store.getMember(pr.member); return m ? { ...store.publicMember(m), kind: m.kind, spot: pr.spot || null } : null; }).filter(Boolean);
+      const meObj = me ? { ...store.publicMember(me), kind: me.kind, spot: (presence.row(me.id) || {}).spot || null } : null;
       const figureHTML = (m) => figureSVG({ ...m, guide: false }, 3, m.name);
       const wl = wishes.list({ viewer: me }).filter((w) => w.room === 'arts' && w.status === 'listed');
       let jobs = []; try { jobs = desk.all({ room: 'arts', status: 'open' }) || []; } catch { jobs = []; }
-      const body = artsRoomBody({ room, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), figureHTML, roomId });
+      const body = artsRoomBody({ room, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), figureHTML, roomId, me: meObj });
       return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
     }
   }

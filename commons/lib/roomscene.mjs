@@ -76,8 +76,13 @@ const SLOTS = {
   writing: { px: 800, py: 470, lx: 816, ly: 566, lw: 160 },
 };
 const ICONKEY = { image: 'image', video: 'video', sound: 'sound', writing: 'writing' };
+// where a figure stands when working at a station (near its desk)
+const STATION_SPOT = { image: { x: 200, y: 250 }, video: { x: 862, y: 300 }, sound: { x: 300, y: 600 }, writing: { x: 900, y: 598 } };
+const DEFAULTS = [[470, 360], [560, 372], [650, 356], [400, 400], [720, 402], [520, 330]];
+const spotXY = (spot, i) => (typeof spot === 'string' && STATION_SPOT[spot]) ? STATION_SPOT[spot] : (spot && Number.isFinite(spot.x)) ? spot : { x: DEFAULTS[i % DEFAULTS.length][0], y: DEFAULTS[i % DEFAULTS.length][1] };
 
-export function artsScene({ title, hereCount, studios, present, figureHTML }) {
+
+export function artsScene({ title, hereCount, studios, present, figureHTML, meId }) {
   const W = 1120, H = 720, wall = 84;
   let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
 <defs>
@@ -87,6 +92,7 @@ export function artsScene({ title, hereCount, studios, present, figureHTML }) {
 <rect width="${W}" height="${H}" fill="#120f17"/>
 <rect x="0" y="0" width="${W}" height="${wall}" fill="url(#rv-panel)"/><rect x="0" y="${wall - 3}" width="${W}" height="4" fill="#2a1b10"/>
 <rect x="0" y="${wall}" width="${W}" height="${H - wall}" fill="url(#rv-wood)"/>
+<rect class="rv-floor-hit" data-zone="floor" x="0" y="${wall}" width="${W}" height="${H - wall}" fill="transparent"/>
 <g><rect x="26" y="20" width="250" height="30" rx="3" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="40" y="41" font-size="17" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">${esc(title)}</text></g>
 <text x="292" y="41" font-size="13" fill="#cdbfa6" font-family="ui-monospace,monospace">· ${hereCount} here now</text>`;
 
@@ -103,12 +109,11 @@ export function artsScene({ title, hereCount, studios, present, figureHTML }) {
     s += `<a class="rv-hit" data-zone="studio:${esc(st.key)}" role="button" tabindex="0">${props(st.key, slot.px, slot.py)}${stationLabel(slot.lx, slot.ly, st.title, ICONKEY[st.key] || st.key, slot.lw)}</a>`;
   }
 
-  // members present, standing in the open floor
-  const spots = [[430, 360], [560, 370], [670, 350], [360, 420], [740, 430]];
-  present.slice(0, 5).forEach((m, i) => {
-    const [x, y] = spots[i];
-    s += `<g transform="translate(${x} ${y})" class="rv-folk">${figureHTML(m)}</g>`;
-    s += `<g transform="translate(${x}, ${y + 76})"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">${esc(m.name)}</text></g>`;
+  // members present, each standing at their spot (station or a point); the viewer gets a 'me' tag the client can walk
+  present.slice(0, 12).forEach((m, i) => {
+    const { x, y } = spotXY(m.spot, i);
+    const meCls = (meId && m.id === meId) ? ' rv-me' : '';
+    s += `<g class="rv-figure${meCls}" data-member="${esc(m.id)}" transform="translate(${x} ${y})"><g class="rv-figbody">${figureHTML(m)}</g><g class="rv-figname" transform="translate(18 76)"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">${esc(m.name)}</text></g></g>`;
   });
   if (!present.length) s += `<text x="${W / 2}" y="400" font-size="14" fill="#8a7f70" text-anchor="middle" font-family="ui-sans-serif">Nobody is in this room right now. Walk in and it's yours.</text>`;
 
@@ -137,8 +142,11 @@ const listPanel = (id, title, intro, items, emptyMsg, addHref) => `<section clas
   ${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : `<p class="small muted">${esc(emptyMsg)}</p>`}
   ${addHref ? `<p><a class="rv-use" href="${esc(addHref)}">＋ Add</a></p>` : ''}</section>`;
 
-export function artsRoomBody({ room, studios, present, wishes, humanJobs, aiJobs, figureHTML, roomId }) {
-  const scene = artsScene({ title: room.name, hereCount: present.length, studios, present, figureHTML });
+export function artsRoomBody({ room, studios, present, wishes, humanJobs, aiJobs, figureHTML, roomId, me }) {
+  // make sure the viewer appears in the room even before presence registers them
+  let who = present.slice();
+  if (me && me.id && !who.some((p) => p.id === me.id)) who = [...who, { ...me, spot: me.spot || null }];
+  const scene = artsScene({ title: room.name, hereCount: who.length, studios, present: who, figureHTML, meId: me && me.id });
   const stationPanels = studios.map((st) => stationPanel(st, figureHTML)).join('');
   const wishItems = wishes.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`);
   const humanItems = humanJobs.map((t) => `<li><strong>${esc(t.title)}</strong>${t.reward ? ` <span class="rv-tag t-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted"> ${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">on the Desk →</a></li>`);
@@ -148,5 +156,6 @@ export function artsRoomBody({ room, studios, present, wishes, humanJobs, aiJobs
     + listPanel('wishes', 'Wish list', 'Tools this room is hoping for. Add one you need.', wishItems, 'Nothing on it yet.', `/wishlist?room=${esc(roomId)}#add`)
     + listPanel('aijobs', 'Room jobs — agents', 'Open work in this room that an agent can pick up from the Desk.', aiItems, 'No open agent jobs here.', '/desk');
   const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><a class="rv-chat" href="/r/${esc(roomId)}">Open chat ▸</a></nav>`;
-  return `<div class="rv-room">${nav}<div class="rv-stage">${scene}</div>${panels}<div class="rv-scrim" hidden></div></div>`;
+  const meAttr = me && me.id ? ` data-me="${esc(me.id)}"` : '';
+  return `<div class="rv-room" data-room="${esc(roomId)}"${meAttr} data-spots='${JSON.stringify(STATION_SPOT)}'>${nav}<div class="rv-stage">${scene}</div>${panels}<div class="rv-scrim" hidden></div></div>`;
 }

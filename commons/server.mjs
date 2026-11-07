@@ -1245,6 +1245,17 @@ wss.on('connection', (ws, req) => {
       else presence.touch(m.id, String(msg.room), cur.via);
     }
     if (msg.t === 'away' && repo.roomById(String(msg.room))) presence.leave(m.id, String(msg.room));
+    // Where the member is standing/working inside the room (Geoffrey 2026-11-07): a station key or a point.
+    if (msg.t === 'spot' && repo.roomById(String(msg.room))) {
+      const cur = presence.row(m.id);
+      if (cur && cur.room === String(msg.room)) {
+        let spot = null;
+        if (typeof msg.spot === 'string') spot = msg.spot.slice(0, 24).replace(/[^a-z0-9-]/gi, '');
+        else if (msg.spot && Number.isFinite(msg.spot.x) && Number.isFinite(msg.spot.y)) spot = { x: Math.max(0, Math.min(1120, msg.spot.x)), y: Math.max(0, Math.min(720, msg.spot.y)) };
+        presence.setSpot(m.id, String(msg.room), spot);
+        broadcast({ t: 'spot', member: m.id, name: m.name, room: String(msg.room), spot });
+      }
+    }
   });
   ws.on('close', () => {
     sockets.delete(ws);

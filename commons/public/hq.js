@@ -920,11 +920,12 @@ async function openRoom(id, push = true, opts = {}) {
   S.open = { type: 'room', id, tab: 'chat', data: null, msgs: [] };
   const target = opts.msg || (location.pathname === `/r/${id}` ? location.hash.slice(1) : '') || null;
   if (push && location.pathname + location.hash !== `/r/${id}${target ? '#' + target : ''}`) history.pushState({}, '', `/r/${id}${target ? '#' + target : ''}`);
-  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><a class="p-full" href="/room/${esc(id)}" title="See the whole room: its tools, who can do its work, its wish list">⤢ Open the full room</a><button class="p-close" aria-label="Close room">×</button></div>
+  panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">${esc(roomName(id))}</h2><button class="p-close" aria-label="Close room">×</button></div>
     <p class="p-sub" id="p-sub">Loading…</p><div class="chips" id="p-chips"></div>
     <div class="tabs" role="tablist">${[['chat', 'Chat'], ['work', 'Work'], ['brief', 'Brief'], ['ship', 'Ship list'], ['standups', 'Standups'], ['tools', 'Tools'], ['team', 'Team']].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === 'chat'}">${l}</button>`).join('')}</div></div>
     <div class="p-body" id="p-body"><ul class="msgs" id="msgs"></ul></div>
-    <div class="p-foot" id="p-foot"></div>`;
+    <div class="p-foot" id="p-foot"></div>
+    <a class="p-enter" href="/room/${esc(id)}">⤢ Open the full room</a>`;
   showPanel();
   panel.querySelector('.p-close').addEventListener('click', () => closePanel());
   panel.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));

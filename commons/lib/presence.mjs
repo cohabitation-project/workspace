@@ -52,7 +52,14 @@ setInterval(sweep, 10_000).unref();
 
 export function row(memberId) {
   const p = loc.get(memberId); if (!p) return null;
-  return { member: memberId, room: p.room, since: new Date(p.since).toISOString(), last: new Date(p.last).toISOString(), via: p.via, expires: new Date(p.expires).toISOString() };
+  return { member: memberId, room: p.room, since: new Date(p.since).toISOString(), last: new Date(p.last).toISOString(), via: p.via, expires: new Date(p.expires).toISOString(), spot: p.spot || null };
+}
+
+// Where in the room a member is standing/working: a station key ('image') or a point {x,y}. Cleared when they move rooms.
+export function setSpot(memberId, room, spot) {
+  const p = loc.get(memberId); if (!p || p.room !== room) return false;
+  p.spot = spot; p.last = Date.now();
+  return true;
 }
 export const where = (memberId) => loc.get(memberId)?.room || null;
 export const inRoom = (room) => [...loc.keys()].filter((id) => loc.get(id).room === room).map(row);

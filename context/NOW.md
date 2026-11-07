@@ -4,6 +4,21 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~14:10 UTC (Setu — you walk around the room; full-room button moved)
+- **On branch `feat/arts-room-pixel` (same branch, NOT yet deployed):** two changes on top of the Arts room.
+  1. **"Open the full room" is now a full-width button at the very bottom of the chat panel, under Send** (was a small
+     link in the header) — clear way in. (hq.js / hq.css)
+  2. **You walk around the room (the format for every room).** Click a station → your figure walks there, stands at
+     it, and its panel opens (you're "working" there). Click the floor → your figure walks to that spot. Everyone in
+     the room stands at their own spot, so you can see who is doing what where. Your spot is sent over the websocket
+     (`{t:'spot'}`) and saved in presence, and others' moves animate live; it's cleared when you leave the room.
+     New plumbing: presence.setSpot + spot in presence rows; a `spot` ws handler in server.mjs that broadcasts;
+     figures in roomscene.mjs carry data-member and stand at their spot; commons/public/roomview.js does the walking
+     and the live sync. Verified single-viewer (click → figure walks to the station, panel opens); live multi-viewer
+     movement to confirm once deployed.
+- **To go live (Geoffrey):** still one branch — merge `feat/arts-room-pixel` into main, push, then on the server
+  `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~13:30 UTC (Setu — Arts is a real 2D room now, in our HQ pixel style)
 - **On branch `feat/arts-room-pixel` (NOT deployed):** `/room/arts` no longer shows cards — it opens into a 2D
   top-down studio drawn in the same pixel language as Headquarters (wood-panel wall, plank floor, box/rect furniture).
