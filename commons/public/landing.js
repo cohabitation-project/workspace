@@ -15,3 +15,9 @@ if (track) {
   ['pointerdown', 'touchstart', 'focusin', 'mouseenter'].forEach((ev) => track.addEventListener(ev, hold, { passive: true }));
   if (!paused) setInterval(() => { if (Date.now() > until && !document.hidden) go(cur() + 1); }, 7000);
 }
+
+// the photos behind the page fade one into the next every 8 s (still, for reduced motion)
+const bgs = [...document.querySelectorAll('.lp-bgimg')];
+if (bgs.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  let i = 0; setInterval(() => { if (document.hidden) return; bgs[i].classList.remove('on'); i = (i + 1) % bgs.length; bgs[i].classList.add('on'); }, 8000);
+}

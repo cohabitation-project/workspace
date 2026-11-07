@@ -11,6 +11,8 @@ ok('the landing says what Cohabi is: social network, sealed identity, Cohabi Coi
 ok('it says plainly that Cohabi is an experiment and its token is not money', /Cohabi is an experiment\. Its token is not money/.test(html));
 ok('the cooperative is described: consciousness and land for cohabitative living', /consciousness/.test(html) && /cohabitative living/.test(html));
 ok('the four doors: sign up, apply, watch the cooperative, sign the petition', ['href="/join"', 'href="/arrive"', 'href="/headquarters"', 'href="/petition"'].every((x) => html.includes(x)));
+ok('unbuilt offers are labeled coming soon, and the cooperative is called in formation', /Post to all your platforms at once, straight from your feed <span class="fx-soon">coming soon/.test(html) && /Artist development plans and goal-setting schedules <span class="fx-soon">coming soon/.test(html) && /The cooperative, in formation/.test(html));
+ok('the cream palette is the front door', /data-theme="parchment"/.test(html) && /An experiment in cohabitation/.test(html) && /isn't just another social network/.test(html));
 ok('a five-slide slideshow with controls', (html.match(/class="lp-slide"/g) || []).length === 5 && /lp-dots/.test(html) && /landing\.js/.test(html));
 ok('link previews: og:title, og:description, og:image', /property="og:title"/.test(html) && /property="og:image" content="http/.test(html));
 ok('the cooperative image is labeled as a concept until the real one arrives', /Logo concept by Gemini \(AI\), a candidate, not yet adopted/.test(html) || /Image chosen by Geoffrey/.test(html));

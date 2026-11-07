@@ -59,3 +59,28 @@
   .lp-ctas .btn { flex: 1 1 100%; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-track { scroll-behavior: auto; } }
+
+/* ---- cream front door + photos fading behind it (Geoffrey, 2026-11-06) */
+.lp .lp-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse at 20% 0%, #fff8e4 0%, transparent 55%), radial-gradient(ellipse at 90% 30%, #f1e2bd 0%, transparent 45%), linear-gradient(180deg, #f7efd9, #ead9b1); overflow: hidden; }
+.lp .lp-bgimg { position: absolute; inset: -3%; background-size: cover; background-position: center; opacity: 0; transition: opacity 2.4s ease, transform 10s ease; transform: scale(1.05); }
+.lp .lp-bgimg.on { opacity: 1; transform: scale(1); }
+.lp .lp-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #f7efd9c4 0%, #f7efd9e0 40%, #f3e7c9f0 100%); }
+.lp.fx-page { background: transparent; }
+html:has(body.lp) { background: #f3e7c9; }
+.lp .fx-top { background: color-mix(in srgb, #f7efd9 82%, transparent); }
+.lp .lp-hero h1 { background: linear-gradient(180deg, #2a2318, #8a6416); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lp-sub { font-size: 16px; color: var(--muted); margin: -10px 0 22px; }
+.lp-slide { background: color-mix(in srgb, #fffaf0 88%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 14px 40px #6b5a3022; }
+.lp-door, .lp-arrow { background: color-mix(in srgb, #fffaf0 90%, transparent); }
+.lp-post { background: #fffdf7; }
+.lp-offer { list-style: none; padding: 0; margin: -6px 0 20px; display: grid; gap: 6px; font-size: 15px; }
+.lp-offer li { padding-left: 22px; position: relative; } .lp-offer li::before { content: '✦'; position: absolute; left: 0; color: var(--gold); }
+.lp .fx-soon { color: #8a6416; border-color: #d6c7a0; background: #fff6dc; }
+.lp .lp-coopimg img { box-shadow: 0 10px 30px #6b5a3026; }
+/* contrast on cream: a deeper gold for text and buttons (WCAG AA on #f7efd9) */
+.lp { --gold: #8a5a0c; --gold-ink: #fffaf0; }
+.lp .btn { background: #8a5a0c; color: #fffaf0 !important; }
+.lp .btn.ghost { background: transparent; color: #7a4f0a !important; border-color: #8a5a0c; }
+.lp .lp-kicker { color: #8a5a0c; }
+.lp .fx-soon { white-space: nowrap; }
+.lp a { color: #7a4f0a; }
