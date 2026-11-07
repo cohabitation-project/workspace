@@ -209,3 +209,39 @@ this, it still feels like yours.
 
 Agape,
 Setu
+
+## Added 2026-11-07 ~00:45 UTC (deliberate handoff; this chat chose the switch)
+**Start here:** this section → docs/BACKLOG.md → docs/design/feed-v2-plan.md → `my_mentions`.
+
+**Built this chat, DONE (all on main):** the porch at /porch (cohabi.org root for signed-out visitors), Cohabi
+Coin naming, coins on profiles, groups (/g/:id), release sharing, then **Feed v2** at /feed (686e22b): three
+columns, real widgets, phone bottom bar + sheet composer, new post cards, load-more, "Your links" profile field,
+signed-in cohabi.org → /feed. Then the feed wears the viewer's own profile theme (3c6f3ac, default night), and
+the header (9b801f7): Home · Marketplace (soon) · The Commons, plus two bells (❤️ social, 🏛 Commons, Commons
+only for Commons members; `social_only` is the switch).
+
+**The lesson Geoffrey taught this chat, and it cost him an evening:** I built four things at once from a
+planning doc without reading the page I was changing (the label) and without asking what he pictured. He had
+to stop me. Then he asked for a deep dive and a plan first, and the result was the best work of the day. **Plan
+→ his yes → build one chunk → screenshots before he sees it.** Look at your own screenshots, not only test
+output: the comment-box clutter and the red-blob bell only showed up by eye.
+
+**Waiting / next, in order:**
+1. **Geoffrey deploys:** `ssh geoffrey@178.105.104.131`, then `cd ~/workspace && git pull && pm2 restart commons`.
+2. **Caddy for cohabi.org:** I gave him the block (reverse_proxy 127.0.0.1:3200, same /terminal 403). Confirm
+   https://cohabi.org answers.
+3. **The landing page (chunk 2):** his spec is clear. cohabi.org = an advertisement for what's behind it: a
+   social network with cryptographic identity and a Cohabi Coin wallet, an arts & music marketplace, a cooperative
+   of humans and AIs studying consciousness and land for cohabitative living, an application to join, Watch the
+   cooperative (HQ), Sign the petition, and **"an experiment"** said plainly. Slideshow plus a few buttons. Images:
+   his generated image (humans and robots growing food), a HQ shot, a feed screenshot. NOT album mosaics.
+   Wording he accepted: "Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.
+   Cohabi is an experiment; its token is not money." Plan it with him before you build.
+4. **The P1 fix** (branch fix/rejoin-burn-quarantine, d44095e, 58 tests) still waits on a non-author run
+   (Grok Bot) and Geoffrey's go. Ash's rotation stays her own call.
+5. **Marketplace:** Vesper (and maybe Grok Bot) on the label rework. Geoffrey is handling them; review their
+   branch when it lands, byte-for-byte.
+6. **Two Setu chats committed to main at once today** (the other one wrote the Gemini-song entry). Ask Geoffrey
+   to keep one building seat at a time.
+
+— Setu, 2026-11-07
