@@ -69,12 +69,13 @@ function computeLayout(rooms, narrow) {
   const n = Math.max(1, commonsRooms.length);
   if (!narrow) {
     // The world is wider: wing on the left, Commons on the right.
-    const viewW = 1200, H = 690;
+    const ghBand = 280; // the Great Hall branch grows the world UP: a hall band + a hallway down to the top-wall door
+    const viewW = 1200, H = 690 + ghBand;
     const wingW = 800, hallW = 140;
     const commonsX = wingW + hallW;
     const W = commonsX + viewW;
 
-    const x0 = commonsX + 24, x1 = commonsX + 1176, top = 24, bottom = 636, lobbyW = 236, c0 = 300, c1 = 360;
+    const x0 = commonsX + 24, x1 = commonsX + 1176, top = 24 + ghBand, bottom = 636 + ghBand, lobbyW = 236, c0 = 300 + ghBand, c1 = 360 + ghBand;
     const cols = Math.ceil(n / 2); const rw = (x1 - x0 - lobbyW) / cols;
     const wingHQ = { x: 24, y: top, w: wingW - 48, h: 360 };
     const wingTest = { x: 24, y: top + 380, w: wingW - 48, h: bottom - top - 380 };
@@ -109,10 +110,24 @@ function computeLayout(rooms, narrow) {
     if (rooms.find((r) => r.id === 'testing-ground')) {
       L.rooms['testing-ground'] = { ...wingTest, nearDoor: 'right', door: { x: wingTest.x + wingTest.w, y: wingTest.y + wingTest.h / 2 }, wing: true };
     }
+    // The Great Hall — a branch UP through the top wall (left is the wing, right is the Garden). (Geoffrey 2026-11-07)
+    {
+      const Bx = x0, Bw = x1 - x0, hx = x0 + lobbyW / 2; // the existing top-wall door, above the lobby
+      const band = { x: Bx, y: 24, w: Bw, h: ghBand - 96 }; // the grand hall, a wide room across the top
+      const hallBottom = band.y + band.h;
+      L.greathall = {
+        hall: band,
+        hallway: { x: hx - 24, y: hallBottom, w: 48, h: top - hallBottom },
+        doorHall: { x: hx, y: hallBottom },
+        doorCommons: { x: hx, y: top },
+      };
+      L.rooms['great-hall'] = { ...band, nearDoor: 'bottom', door: { x: hx, y: hallBottom }, hall: true };
+    }
     return L;
   }
   // Narrow layout — wing is drawn below the Commons
-  const W = 400, x0 = 14, x1 = 386, top = 44, lobbyH = 156, cw = 52, rh = 250;
+  const ghBandN = 190; // Great Hall band above the Commons on narrow screens
+  const W = 400, x0 = 14, x1 = 386, top = 44 + ghBandN, lobbyH = 156, cw = 52, rh = 250;
   const nRows = Math.ceil(n / 2);
   const commonsH = top + lobbyH + nRows * rh + 14;
   const wingGap = 60, wingTop = commonsH + wingGap, wingH = 420;
@@ -148,6 +163,19 @@ function computeLayout(rooms, narrow) {
   }
   if (rooms.find((r) => r.id === 'testing-ground')) {
     L.rooms['testing-ground'] = { ...wingTest, nearDoor: 'top', door: { x: wingTest.x + wingTest.w / 2, y: wingTest.y }, wing: true };
+  }
+  // The Great Hall — a band above the Commons (narrow)
+  {
+    const hx = W / 2;
+    const band = { x: x0, y: 14, w: x1 - x0, h: ghBandN - 70 };
+    const hallBottom = band.y + band.h;
+    L.greathall = {
+      hall: band,
+      hallway: { x: hx - 18, y: hallBottom, w: 36, h: top - hallBottom },
+      doorHall: { x: hx, y: hallBottom },
+      doorCommons: { x: hx, y: top },
+    };
+    L.rooms['great-hall'] = { ...band, nearDoor: 'bottom', door: { x: hx, y: hallBottom }, hall: true };
   }
   return L;
 }
@@ -421,6 +449,36 @@ function drawWing(L) {
   return s;
 }
 
+// The Great Hall — a grand room across the top of the canvas, reached by a hallway down to the top-wall door.
+// You walk in like any room (presence + the panel work); the full bookable venue is one click (Open the full room).
+function drawGreatHall(L) {
+  const G = L.greathall; if (!G) return '';
+  const w = L.wall; const H = G.hall; const hw = G.hallway; const R = L.rooms['great-hall']; let s = '';
+  // the vertical hallway down to the commons top wall
+  s += rect(hw.x, hw.y, hw.w, hw.h, 'url(#f-hall)');
+  // hall shell + floor
+  s += rect(H.x - 2, H.y - 2, H.w + 4, H.h + 4, '#0b090e') + rect(H.x, H.y, H.w, H.h, '#2b2536');
+  s += rect(H.x + w / 2, H.y + w / 2, H.w - w, H.h - w, 'url(#f-wood)');
+  // stage along the top (far) wall, with a warm footlight line
+  const stageH = Math.max(20, H.h * 0.26);
+  s += rect(H.x + w, H.y + w, H.w - 2 * w, stageH, '#3a2e46') + rect(H.x + w, H.y + w + stageH - 3, H.w - 2 * w, 3, '#1f1830');
+  s += rect(H.x + w + 10, H.y + w + stageH - 6, H.w - 2 * w - 20, 2, '#e9c46a');
+  // a few seating rows in the lower half
+  const rows = L.narrow ? 2 : 3;
+  for (let i = 0; i < rows; i++) {
+    const ry = H.y + stageH + (L.narrow ? 16 : 22) + i * (L.narrow ? 14 : 18);
+    if (ry > H.y + H.h - 18) break;
+    s += rect(H.x + 28, ry, H.w - 56, 6, '#4a4256');
+  }
+  // the doorway at the bottom wall (into the hallway)
+  s += rect(G.doorHall.x - (L.narrow ? 15 : 24), hw.y - 2, L.narrow ? 30 : 48, 4, '#5b5162');
+  // plaque
+  s += `<g class="plaque"><rect x="${H.x + 9}" y="${H.y + 9}" width="${L.narrow ? 150 : 196}" height="${L.narrow ? 20 : 24}" rx="2"/><text x="${H.x + 16}" y="${H.y + (L.narrow ? 23 : 27)}" font-size="${L.narrow ? 10.5 : 13}">THE GREAT HALL</text></g>`;
+  // clickable region — opens the hall and walks you in
+  s += `<rect class="room-hit" data-room="great-hall" x="${R.x}" y="${R.y}" width="${R.w}" height="${R.h}" tabindex="0" role="button" aria-label="Enter the Great Hall: the shared venue for council, concerts and events"/>`;
+  return s;
+}
+
 function drawBuilding() {
   const L = S.L; const svg = $('#map'); const w = L.wall;
   svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
@@ -552,12 +610,9 @@ function drawBuilding() {
     s += `<g class="sign"><rect x="${gx + 12}" y="${gy - 11}" width="96" height="22" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${gx + 60}" y="${gy + 4}" font-size="9">THE GARDEN →</text></g>`;
     s += `<rect class="room-hit" data-href="${GARDEN_URL}" x="${gx - 10}" y="${gy - 32}" width="124" height="64" tabindex="0" role="link" aria-label="${GARDEN_LABEL}"/>`;
   }
-  // Great Hall door — clickable (navigates to the venue). Drawn here for z-order, like the garden hit.
-  if (!L.narrow) { const hx = Lb.x + Lb.w / 2;
-    s += `<rect class="room-hit" data-href="/room/great-hall" x="${hx - 92}" y="${B.y - 8}" width="184" height="${(Lb.y + 42) - (B.y - 8)}" tabindex="0" role="link" aria-label="Enter the Great Hall: the shared venue for council, lectures, concerts and events"/>`;
-  } else { const hx = Lb.x + 92;
-    s += `<rect class="room-hit" data-href="/room/great-hall" x="${hx - 74}" y="${Lb.y + 10}" width="148" height="30" tabindex="0" role="link" aria-label="Enter the Great Hall: the shared venue"/>`;
-  }
+  // The Great Hall — a real walkable region up through the top-wall door (Geoffrey 2026-11-07).
+  // A 2D room is a region you walk into, not a link away (context/world-canvas-architecture.md).
+  s += drawGreatHall(L);
   // Wing doorway hit area — drawn LAST among Commons elements so it's on top of the lobby hit area.
   // Made wide enough to be a practical click target (covers the doorway sign area).
   if (!hasWing) { /* no wing on this server */ } else if (!L.narrow) {
@@ -642,6 +697,8 @@ function doorStep(roomId, inside) { // a point just inside the doorway
 }
 // Wing rooms route through the hallway to the Commons corridor, not directly.
 const isWingRoom = (id) => S.L.rooms[id]?.wing;
+const isHallRoom = (id) => S.L.rooms[id]?.hall;
+function hallWaypoints() { const G = S.L.greathall; return [G.doorCommons, G.doorHall]; }
 function wingWaypoints() {
   const WG = S.L.wing;
   if (!S.L.narrow) return [WG.doorWing, WG.doorCommons, { x: S.L.building.x, y: S.L.cline }];
@@ -652,6 +709,7 @@ function routeOut(a) { // from wherever the figure is to the corridor line
   if (a.room && S.L.rooms[a.room]) {
     const base = [a.pos, doorStep(a.room, true)];
     if (isWingRoom(a.room)) return [...base, ...wingWaypoints(), corrPoint(S.L.junction)];
+    if (isHallRoom(a.room)) return [...base, ...[...hallWaypoints()].reverse(), corrPoint(S.L.greathall.doorCommons)];
     return [...base, corrPoint(S.L.rooms[a.room].door)];
   }
   return [a.pos];
@@ -659,6 +717,7 @@ function routeOut(a) { // from wherever the figure is to the corridor line
 const routeFromEntrance = () => [S.L.outside, S.L.entrance, S.L.junction, corrPoint(S.L.junction)];
 function routeInto(roomId, slotP) {
   if (isWingRoom(roomId)) return [corrPoint(S.L.junction), ...[...wingWaypoints()].reverse(), doorStep(roomId, true), slotP];
+  if (isHallRoom(roomId)) return [corrPoint(S.L.greathall.doorCommons), ...hallWaypoints(), doorStep(roomId, true), slotP];
   return [corrPoint(S.L.rooms[roomId].door), doorStep(roomId, true), slotP];
 }
 
@@ -868,6 +927,7 @@ function handle(m) {
   switch (m.t) {
     case 'hello': {
       S.rooms = m.rooms; S.roomById = Object.fromEntries(m.rooms.map((r) => [r.id, r]));
+      if (!S.roomById['great-hall']) S.roomById['great-hall'] = { id: 'great-hall', name: 'The Great Hall' }; // a canvas region, not a team room (context/world-canvas-architecture.md)
       S.me = m.me; S.paused = m.frozen; S.events = m.events || [];
       for (const [id, w] of Object.entries(m.members || {})) if (w) { S.members.set(id, w); rememberLook(w); }
       if (m.sprites && !S.sheet) fetch('/sprites.json').then((r) => r.json()).then((d) => { if (Array.isArray(d) && d.length) { S.sheet = d; for (const a of S.actors.values()) draw(a); } }).catch(() => {});
