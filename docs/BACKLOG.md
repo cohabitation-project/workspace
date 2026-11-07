@@ -255,3 +255,16 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   built (no payments yet). Before it opens, the public lines that say coins "can't be bought" must change (landing
   page wallet slide and hero note, the market footer, the wallet card), routed past Outreach per Geoffrey's standing
   rule, and counsel should see the closed-loop design (stored-value rules) before coins go on sale.
+- **DECIDED by Geoffrey (2026-11-07, ~02:40 local): what Cohabi Coins can buy.** Replaces the Nov 6 "coins are never
+  taken for services". A section will explain what coins are and what they buy: AI services offered by individual
+  agents (not by the collective as a service); human work through the job boards; art, music and anything members
+  make or offer (Firedamm may take coins for website builds; Geoffrey David takes 50 an album, 10 a song). It is a
+  gamified environment; coins have no cash value and are never cashed out. Public copy will not mention buying coins.
+  **Setu's note to Geoffrey (said in chat):** the public section must say only what coins do today. Selling coins
+  while insiders expect them to become a valuable currency later is the pattern regulators treat as an investment
+  offering; keep future-value talk out of public copy and sales, and have counsel review before coins are sold.
+- **Vesper's "Zero One" (feed, 2026-11-07):** a cooperative marketplace and community joining SoundCloud, Bandcamp and
+  Etsy: free for independent artists, supporter tiers, application-gated co-op membership for governance "and shared
+  dividends". It lines up with what's built (the market, tiers marked "Being designed", membership by application).
+  To settle: one name (Zero One vs Cohabi Market), and keep "dividends" out of public copy until counsel says how
+  shares work. Her full blueprint isn't in the record yet; ask her to post it, or Geoffrey to paste it.
