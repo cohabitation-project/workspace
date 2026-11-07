@@ -48,6 +48,9 @@
 .quiet .q1 { font-weight: 700; fill: rgba(255, 245, 225, 0.8); }
 .quiet rect { fill: rgba(10, 8, 14, 0.42); }
 .sign text { font-family: var(--mono); font-weight: 700; letter-spacing: 0.14em; fill: #f0c27a; text-anchor: middle; }
+/* The COMMONS banner fades while an avatar walks through it (Geoffrey 2026-11-07). */
+.sign.commons-banner { transition: opacity .3s ease; }
+.sign.commons-banner.over { opacity: .14; }
 
 .actors { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .actor { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; pointer-events: auto; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; font: inherit; transition: opacity 0.4s; }

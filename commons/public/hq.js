@@ -463,12 +463,25 @@ function drawBuilding() {
   const dk = L.desk;
   s += box(dk.x - 34, dk.y - 4, 68, 16, '#5d3d26', '#8a5a34') + box(dk.x + 14, dk.y - 12, 12, 8, '#2f3e46') + rect(dk.x + 16, dk.y - 10, 8, 4, '#7cd6b4');
   if (!L.narrow) {
-    s += `<g class="sign"><rect x="${Lb.x + 24}" y="${Lb.y + 22}" width="${Lb.w - 48}" height="34" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + Lb.w / 2}" y="${Lb.y + 44}" font-size="15">THE COMMONS</text></g>`;
+    // Great Hall doorway cut into the top wall of the Commons, where the banner used to sit (Geoffrey 2026-11-07).
+    s += `<defs><linearGradient id="hall-glow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9c46a"/><stop offset="0.6" stop-color="#6b5a4a"/><stop offset="1" stop-color="#2b2536"/></linearGradient></defs>`;
+    { const hx = Lb.x + Lb.w / 2;
+      s += rect(hx - 26, B.y - 2, 52, w + 4, '#5b5162') + rect(hx - 22, B.y - 2, 44, w + 4, 'url(#hall-glow)');
+      s += `<circle cx="${hx - 10}" cy="${B.y + w - 2}" r="1.6" fill="#fff8d8"/><circle cx="${hx + 9}" cy="${B.y + w - 4}" r="1.3" fill="#ffe9b8"/>`;
+      s += `<g class="sign"><rect x="${hx - 86}" y="${Lb.y + 12}" width="172" height="26" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${hx}" y="${Lb.y + 30}" font-size="13">↑ THE GREAT HALL</text></g>`;
+    }
+    // the COMMONS banner, moved down so the Great Hall door sits above it; it fades as an avatar walks through
+    s += `<g class="sign commons-banner" id="commons-banner"><rect x="${Lb.x + 24}" y="${Lb.y + 60}" width="${Lb.w - 48}" height="34" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + Lb.w / 2}" y="${Lb.y + 82}" font-size="15">THE COMMONS</text></g>`;
+    S.commonsBanner = { x: Lb.x + 24, y: Lb.y + 60, w: Lb.w - 48, h: 34 };
     // Plant in the lobby (replacing the old directory)
     s += box(Lb.x + Lb.w / 2 - 11, Lb.y + 140, 22, 22, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w / 2 - 15, Lb.y + 118, 30, 24, '#3f8f4f', '#57b066');
     s += box(Lb.x + Lb.w - 44, Lb.y + Lb.h - 70, 22, 22, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w - 48, Lb.y + Lb.h - 92, 30, 24, '#3f8f4f', '#57b066');
   } else {
-    s += `<g class="sign"><rect x="${Lb.x + 196}" y="${Lb.y + 18}" width="${Lb.w - 214}" height="28" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + 196 + (Lb.w - 214) / 2}" y="${Lb.y + 37}" font-size="12">THE COMMONS</text></g>`;
+    { const hx = Lb.x + 92;
+      s += `<g class="sign"><rect x="${hx - 72}" y="${Lb.y + 12}" width="144" height="24" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${hx}" y="${Lb.y + 29}" font-size="11">↑ THE GREAT HALL</text></g>`;
+    }
+    s += `<g class="sign commons-banner" id="commons-banner"><rect x="${Lb.x + 196}" y="${Lb.y + 18}" width="${Lb.w - 214}" height="28" fill="#17131d" stroke="#0b090e"/><text x="${Lb.x + 196 + (Lb.w - 214) / 2}" y="${Lb.y + 37}" font-size="12">THE COMMONS</text></g>`;
+    S.commonsBanner = { x: Lb.x + 196, y: Lb.y + 18, w: Lb.w - 214, h: 28 };
     s += box(Lb.x + Lb.w - 40, Lb.y + Lb.h - 56, 18, 18, '#8a5a34', '#a8703f') + box(Lb.x + Lb.w - 44, Lb.y + Lb.h - 74, 26, 20, '#3f8f4f', '#57b066');
   }
   // Left-wall doorway to Hardware Lab wing (visual elements only — hit area drawn last for z-order)
@@ -538,6 +551,12 @@ function drawBuilding() {
     s += `<g class="sign"><rect x="${gx + 12}" y="${gy - 11}" width="96" height="22" fill="#17131d" stroke="#0b090e" rx="2"/><text x="${gx + 60}" y="${gy + 4}" font-size="9">THE GARDEN →</text></g>`;
     s += `<rect class="room-hit" data-href="${GARDEN_URL}" x="${gx - 10}" y="${gy - 32}" width="124" height="64" tabindex="0" role="link" aria-label="${GARDEN_LABEL}"/>`;
   }
+  // Great Hall door — clickable (navigates to the venue). Drawn here for z-order, like the garden hit.
+  if (!L.narrow) { const hx = Lb.x + Lb.w / 2;
+    s += `<rect class="room-hit" data-href="/room/great-hall" x="${hx - 92}" y="${B.y - 8}" width="184" height="${(Lb.y + 42) - (B.y - 8)}" tabindex="0" role="link" aria-label="Enter the Great Hall: the shared venue for council, lectures, concerts and events"/>`;
+  } else { const hx = Lb.x + 92;
+    s += `<rect class="room-hit" data-href="/room/great-hall" x="${hx - 74}" y="${Lb.y + 10}" width="148" height="30" tabindex="0" role="link" aria-label="Enter the Great Hall: the shared venue"/>`;
+  }
   // Wing doorway hit area — drawn LAST among Commons elements so it's on top of the lobby hit area.
   // Made wide enough to be a practical click target (covers the doorway sign area).
   if (!hasWing) { /* no wing on this server */ } else if (!L.narrow) {
@@ -593,7 +612,16 @@ function sheetFor(who) {
 }
 function draw(a) { drawFigure(a.canvas, a.who, a.dir, a.step, sheetFor(a.who), figRes(scale())); }
 function tagHTML(who) { return `${esc(who.name)}${who.kind === 'agent' ? `<i>${esc(shortModel(who.model))}</i>` : '<i>human</i>'}`; }
-function place(a, p) { a.pos = { ...p }; const q = pct(p); a.el.style.left = q.left; a.el.style.top = q.top; a.el.style.zIndex = String(Math.round(p.y)); }
+function place(a, p) { a.pos = { ...p }; const q = pct(p); a.el.style.left = q.left; a.el.style.top = q.top; a.el.style.zIndex = String(Math.round(p.y)); checkCommonsBanner(); }
+
+/** Fade the COMMONS banner while an avatar is standing on or walking through it (Geoffrey 2026-11-07). */
+function checkCommonsBanner() {
+  const b = S.commonsBanner; if (!b) return;
+  const el = document.getElementById('commons-banner'); if (!el) return;
+  let over = false;
+  for (const a of S.actors.values()) { const p = a.pos; if (!p) continue; if (p.x > b.x - 20 && p.x < b.x + b.w + 20 && p.y > b.y - 20 && p.y < b.y + b.h + 40) { over = true; break; } }
+  el.classList.toggle('over', over);
+}
 
 function freeSlot(roomId) {
   const R = S.L.rooms[roomId]; if (!R) return { i: -1, p: S.L.junction };
