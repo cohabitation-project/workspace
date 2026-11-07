@@ -405,7 +405,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
     <div class="pf-upload"><strong class="small">Add an image to my library</strong>
       <label class="small">Image <input type="file" id="pf-file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
       <label class="small">What it shows <span class="hint">(alt text, required)</span><input id="pf-alt" maxlength="300"></label>
-      <label class="small">Credit <span class="hint">(who or what made it, honestly)</span><select id="pf-madeby" aria-label="Made by" required><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select> <input id="pf-credit" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. photo by me"></label>
+      <label class="small">Credit <span class="hint">(who or what made it, honestly)</span><select id="pf-madeby" aria-label="Made by"><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select> <input id="pf-credit" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. photo by me"></label>
       <button class="btn ghost small" type="button" id="pf-upload">Upload</button> <span class="small" id="pf-upmsg" role="status"></span></div>
   </details>
   <details><summary>Rain</summary>

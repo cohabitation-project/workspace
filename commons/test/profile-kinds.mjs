@@ -19,6 +19,7 @@ let mine = await page(`/m/${id}`, ck);
 ok('the page shows the Artist badge and a General info card', /class="pf-kind">Artist</.test(mine) && /general info/.test(mine) && /woodwork, oil paint/.test(mine) && /Open for commissions/.test(mine));
 ok('an artist page opens on its shop, "Gallery & shop"', /role="tab" id="tab-store"[^>]*aria-selected="true"[^>]*>Gallery &amp; shop|aria-selected="true" data-tab="store">Gallery & shop/.test(mine) || /data-tab="store">Gallery & shop<\/button>/.test(mine.slice(mine.indexOf('pf-tabs'), mine.indexOf('pf-tabs') + 400)), mine.slice(mine.indexOf('pf-tabs'), mine.indexOf('pf-tabs') + 300));
 ok('on your own page, "List something" starts in Arts & Crafts', /href="\/label\/new\?cat=art">＋ List something/.test(mine));
+ok('nothing in the profile editor is required (a hidden required field blocked every save)', !/<form method="dialog" id="pf-form"[\s\S]*?<\/form>/.exec(mine)?.[0].match(/\srequired[\s>=]/));
 ok('the editor offers the profile types', /<select name="profile_kind" id="pf-kind">/.test(mine) && /Band \/ musician/.test(mine) && /Business \/ services/.test(mine));
 
 // listing from the profile; it shows on the profile and in Arts & Crafts

@@ -28,6 +28,8 @@ if (dlg) {
   $('#pf-upload')?.addEventListener('click', async () => {
     const f = $('#pf-file').files[0]; const out = $('#pf-upmsg'); if (!f) { out.textContent = 'choose an image first'; return; }
     const alt = $('#pf-alt').value.trim(); if (alt.length < 3) { out.textContent = 'say what it shows'; return; }
+    // checked here, not with `required`: a required field inside the profile form blocked every save (fixed 2026-11-07)
+    if (!$('#pf-madeby').value) { out.textContent = 'say who made it: human, AI, or human + AI'; $('#pf-madeby').focus(); return; }
     out.textContent = 'uploading…';
     try {
       const { uploadImage } = await import('./feed.js');
