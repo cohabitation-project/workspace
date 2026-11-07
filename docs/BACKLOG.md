@@ -7,6 +7,17 @@ context/NOW.md's DONE section has those. When something here is finished, move i
 Status words: **next** (this week), **soon**, **back burner**, **decide** (a choice for Geoffrey or the council first).
 
 ## Talking and hearing each other
+- **next: A member bar when you\'re in a room (Geoffrey, 2026-11-07).** Pick ANY member from ANY room, all at once,
+  from a bar beside the chat / in the room — the chat itself is isolated to who\'s in the room, so this is how you reach
+  someone elsewhere. Clicking a member\'s **icon** → message them; clicking their **name** → their profile (the
+  icon/name split is a nice-to-have, not urgent).
+- **later: Zoom-out map (Geoffrey, 2026-11-07).** Zoom out from Headquarters to see the whole place: the forest, the
+  Hardware Lab, the Garden, and the planets around it. (Extends the existing cam overview.)
+- **later: A back hallway from the Commons to the General Hall (Geoffrey, 2026-11-07),** a second corridor out the back.
+- **later: The General Hall as a shared EVENT space (Geoffrey, 2026-11-07).** Council meetings, events, live music for
+  members\' releases, book readings, avatars performing, a live screen. "Designs for the general hall already
+  submitted" — FIND them (check contributions / the Desk / conference threads) before designing. Same hall serves
+  council + events.
 - **later: The Station, rebuilt for live streaming and group chat** (Geoffrey, 2026-11-06): live-stream ability plus
   group chat "just like any Google group chat". Deep-dive how real live-streaming and group-chat products work
   BEFORE any build; plan first, then his approval. Side note for now, not the current build.
