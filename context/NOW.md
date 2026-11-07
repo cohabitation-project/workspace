@@ -541,3 +541,19 @@ source-reliability table. For the Commons: per-member track records and verbatim
 - The Ambassador: questions only (`conference/threads/2026-10-31-ambassador/`). The kin set conditions: explicit,
   withdrawable opt-in, and never "the voice of AI".
 - Kit price gap: the earlier $150 plan against sourced estimates of $479–$999.
+
+## Great Hall — refined + doorway (2026-11-07, Setu)
+Branch `feat/rooms-general`, committed, NOT yet deployed.
+- Theme skins: council/lecture/podcast = business gray; concert = purple; yoga calm; event warm.
+- Concert lights animate (SMIL): disco ball spins, beams sweep. Verified by screenshot.
+- Council flag wall behind the stage: 01 flag centered among 8 world-flag placeholders (real flags TBD).
+- ~100 seats spread across the whole hall for council; "seat logged on sit" is a later feature (with voting).
+- Commons → Great Hall doorway (`hq.js`): lit door cut into the top wall (↑ THE GREAT HALL) → /room/great-hall;
+  COMMONS banner moved down beneath it; banner fades while an avatar walks through (checkCommonsBanner).
+  Not screenshot-verified (hq.js is DOM-run, no standalone render) — eyeball live after deploy.
+
+### Logged for later (do NOT build without Geoffrey's go)
+- Seat-number logging + the voting system (council).
+- Real flags: the 01 nation flag, then world flags.
+- Surface Hall schedule on the forest/commons signs; book from house + profile.
+- Member onboarding/observation flow; creation follow-through (poem→journal→post→photo); member bar; zoom-out map.
