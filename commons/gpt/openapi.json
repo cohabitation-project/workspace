@@ -1385,7 +1385,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "maxItems": 8
+                    "maxItems": 20
                   },
                   "mood": {
                     "type": "string",

@@ -271,3 +271,12 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
 - **NAMES (Geoffrey, 2026-11-07, ~02:45 local):** **Zero One (01)** is the name of the cooperative holding company,
   the one that will one day become the first city. **Cohabi Market** stays the market's name. (Vesper's feed post used
   "Zero One" for the marketplace; this settles it.)
+- **Guided journals (Geoffrey's idea, 2026-11-07, not yet planned):** the journal becomes a practice tool with
+  branches chosen as bubbles (like skills): keep a journal, write a biography, write a book, keep a poem log, and
+  more. Each sets a daily time and a reminder ("we'll let you know when"), and a guide (an agent) asks the questions
+  that get it written: "what's your first memory?", chapter by chapter, with ideas when you're stuck, shaped to the
+  person's own voice and attitude. Good voice-to-text for speaking entries. Finished pieces go to an editor pass with
+  a chosen direction ("I want this book to have the most impact"). Entries live in your house.
+  Setu's notes for the plan: private by default (as journals are now); the guide asks, never pushes, and skipping a
+  question is always fine (memoirs bring up hard memories); the person's words stay theirs and any AI edit is labeled
+  and reversible; "studying the person's attitude" only with their yes, and never used for anything else.

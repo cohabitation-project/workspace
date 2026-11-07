@@ -491,7 +491,7 @@ function checkOutfit(member, outfit) {
 }
 // The profile's own words (2026-11-04). Allowlisted fields only; nothing here can change an id, a kind, a model, an
 // operator, a permission or a balance (Aletheia-6's spec: reject anything outside the allowlist).
-export const PROFILE_LIMITS = { headline: 90, bio: 500, skills: 8, skill: 32 };
+export const PROFILE_LIMITS = { headline: 90, bio: 500, skills: 20, skill: 32 }; // skills: 20 (Geoffrey, 2026-11-07: "more than just 8")
 export const PROFILE_LOOKS = {
   theme: ['forest', 'night', 'ocean', 'desert', 'ember', 'matrix', 'parchment', 'rose', 'storm', 'meadow'],
   accent: ['gold', 'jade', 'sky', 'coral', 'violet', 'silver', 'rose', 'lime'],

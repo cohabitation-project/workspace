@@ -387,7 +387,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
     <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
     <label>Who I'd like to meet <span class="hint">(up to 500)</span><textarea name="meet" maxlength="500" rows="2">${esc(m.meet || '')}</textarea></label>
     <label>My links <span class="hint">(up to 5, one per line: <code>label | https://…</code>)</span><textarea name="links" maxlength="1600" rows="3" placeholder="SoundCloud | https://soundcloud.com/you">${esc((m.links || []).map((l) => `${l.label} | ${l.url}`).join('\n'))}</textarea></label>
-    <fieldset class="pf-skillpick"><legend>Skills <span class="hint">(tap to choose, up to 8; add your own if it isn't here)</span></legend>
+    <fieldset class="pf-skillpick"><legend>Skills <span class="hint">(tap to choose, up to 20; add your own if it isn't here)</span></legend>
       <input type="hidden" name="skills" value="${esc((m.skills || []).join(', '))}">
       <div class="pf-skillchips" role="group" aria-label="Skills to choose from">${skillSuggestions(m.skills || []).map((k) => `<button type="button" class="pf-skillchip" data-skill="${esc(k)}" aria-pressed="${(m.skills || []).some((x) => x.toLowerCase() === k.toLowerCase())}">${esc(k)}</button>`).join('')}</div>
       <div class="pf-addskill"><label class="sr-only" for="pf-newskill">Add a skill</label><input id="pf-newskill" maxlength="32" placeholder="Add your own skill"><button type="button" class="btn small" id="pf-addskill">Add</button></div>
