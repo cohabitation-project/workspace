@@ -9,10 +9,6 @@
   background: radial-gradient(ellipse at 15% -5%, #2a2f6e 0%, transparent 45%), radial-gradient(ellipse at 95% 20%, #1d2350 0%, transparent 40%), linear-gradient(180deg, #0e1126, #07080f) fixed;
   font: 15px/1.45 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
-@media (prefers-color-scheme: light) {
-  .fx-page { --bg: #f4f2ec; --panel: #ffffff; --panel2: #f8f6f0; --line: #e2ddd0; --ink: #1d1b16; --muted: #6b6455; --gold: #9a6b12; --gold-ink: #fffaf0; --soft: #0000000a; --shadow: 0 8px 24px #0000001a;
-    background: radial-gradient(ellipse at 15% -5%, #efe4c8 0%, transparent 45%), linear-gradient(180deg, #f7f5ef, #ece8dd) fixed; }
-}
 .fx-page a { color: var(--gold); text-decoration: none; }
 .fx-page a:hover { text-decoration: underline; }
 .fx-page .muted { color: var(--muted); }
@@ -208,5 +204,20 @@
 .fx-post .sx-replyto, .fx-post .sx-delc { font-size: 12px; font-weight: 600; color: var(--muted); text-decoration: none; padding: 2px 0; margin-right: 10px; background: none; border: 0; cursor: pointer; }
 .fx-post .sx-replyto:hover, .fx-post .sx-delc:hover { color: var(--ink); }
 .fx-post .sx-form textarea { border-radius: 999px; }
-html:has(body.fx-page) { background: #07080f; }
-@media (prefers-color-scheme: light) { html:has(body.fx-page) { background: #ece8dd; } }
+
+/* ---- the viewer's own profile theme (same palettes as the profile pages) ---- */
+.fx-page { --pa: #262b6b; --pb: #0b0d22; --pc: #05060f; --glow2: #1d2350;
+  background: radial-gradient(ellipse at 15% -5%, var(--pa) 0%, transparent 48%), radial-gradient(ellipse at 95% 20%, var(--glow2) 0%, transparent 40%), linear-gradient(180deg, var(--pb), var(--pc)) fixed; }
+html:has(body.fx-page) { background: var(--pc, #05060f); }
+.fx-page[data-theme=night]  { --bg: #0b0d22; --panel: #171a2e; --panel2: #222748; --line: #343a66; --ink: #f1f0ff; --muted: #a9addb; --pa: #262b6b; --pb: #0e1126; --pc: #05060f; --glow2: #1d2350; }
+.fx-page[data-theme=forest] { --bg: #0f1c17; --panel: #1b2f27; --panel2: #213a30; --line: #3f5a4c; --ink: #f3ecd9; --muted: #b9c3b2; --pa: #2c4a38; --pb: #0f1c17; --pc: #0a1310; --glow2: #1f3a2c; }
+.fx-page[data-theme=ocean]  { --bg: #0a1c24; --panel: #12262e; --panel2: #1a3540; --line: #2f5866; --ink: #eefaff; --muted: #a6cdd9; --pa: #1d5d70; --pb: #0a1c24; --pc: #061218; --glow2: #155064; }
+.fx-page[data-theme=desert] { --bg: #1f150c; --panel: #2e2216; --panel2: #3b2c1d; --line: #6b5032; --ink: #fff4e4; --muted: #dcc29b; --pa: #6e4422; --pb: #1f150c; --pc: #140d07; --glow2: #7a4f26; }
+.fx-page[data-theme=ember]  { --bg: #1a0a08; --panel: #2a1714; --panel2: #3a201b; --line: #6b3329; --ink: #fff0ea; --muted: #e6b3a3; --pa: #6b2216; --pb: #1a0a08; --pc: #0e0504; --glow2: #6b2216; }
+.fx-page[data-theme=matrix] { --bg: #020a05; --panel: #07140c; --panel2: #0d2215; --line: #1d5a33; --ink: #dcffe8; --muted: #8fd9a8; --pa: #0b3a1c; --pb: #020a05; --pc: #000; --glow2: #0b2e17; }
+.fx-page[data-theme=rose]   { --bg: #1a0a12; --panel: #2b1720; --panel2: #3a2030; --line: #6b3a52; --ink: #fff0f6; --muted: #e6b2ca; --pa: #5a2240; --pb: #1a0a12; --pc: #0e050a; --glow2: #6b2848; }
+.fx-page[data-theme=storm]  { --bg: #12161b; --panel: #1c2128; --panel2: #272e38; --line: #45505e; --ink: #f1f4f8; --muted: #b5bfcc; --pa: #3a4452; --pb: #12161b; --pc: #0a0c0f; --glow2: #3a4452; }
+.fx-page[data-theme=parchment] { --bg: #f4e9c9; --panel: #fbf6e8; --panel2: #f3ead3; --line: #d6c7a0; --ink: #2a2318; --muted: #5c4f37; --pa: #fff6d8; --pb: #f4e9c9; --pc: #dccb9c; --glow2: #efe2bf; --soft: #0000000a; --shadow: 0 8px 24px #0000001a; --gold-ink: #fffaf0; }
+.fx-page[data-theme=meadow] { --bg: #e4f0cf; --panel: #f6faee; --panel2: #eef4e2; --line: #c4d6a8; --ink: #1f2a17; --muted: #46573a; --pa: #fbfff0; --pb: #e4f0cf; --pc: #c2d99f; --glow2: #dcebc4; --soft: #0000000a; --shadow: 0 8px 24px #0000001a; --gold-ink: #fffaf0; }
+.fx-page[data-theme=matrix] .fx-name, .fx-page[data-theme=matrix] .fx-brand { font-family: 'Courier New', monospace; }
+.fx-page .btn { color: var(--gold-ink, #1a1408); }

@@ -28,6 +28,12 @@ import { memberFace, releaseCard, groupChip } from './pages.mjs';
 const ASSET_V = Date.now().toString(36);
 export const ACCENTS = { gold: '#e3c17b', jade: '#5fbf9a', sky: '#6fb3e8', coral: '#ef8a6b', violet: '#a98be8', silver: '#c9cfd6', rose: '#e88aa8', lime: '#a6d65a' };
 const accentOf = (id) => ACCENTS[store.getMember(id)?.accent] || ACCENTS.gold;
+// The feed wears the VIEWER's own profile theme and accent (Geoffrey, 2026-11-06). Signed out, or no theme
+// chosen: night (deep blue) — never the device's light palette.
+export const FEED_THEMES = ['forest', 'night', 'ocean', 'desert', 'ember', 'matrix', 'parchment', 'rose', 'storm', 'meadow'];
+const themeOf = (me) => { const t = me ? store.getMember(me.id)?.theme : null; return FEED_THEMES.includes(t) ? t : 'night'; };
+const LIGHT = new Set(['parchment', 'meadow']);
+const accentHex = (me) => { const m = me ? store.getMember(me.id) : null; const t = themeOf(me); if (!m?.accent || m.accent === 'gold') return LIGHT.has(t) ? '#8a6416' : '#e3c17b'; return ACCENTS[m.accent] || '#e3c17b'; };
 const labelFiles = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
 
 /** "now", "5m", "3h", "2d", then a date. Short, like every feed; the full time is in the tooltip. */
@@ -211,7 +217,7 @@ export function feedPage({ me, tab = 'everyone' }) {
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 <link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
 </head>
-<body class="fx-page">
+<body class="fx-page" data-theme="${esc(themeOf(me))}" style="--gold:${accentHex(me)}">
 <header class="fx-top">
   <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
   <div class="fx-topr">
