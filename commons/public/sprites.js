@@ -162,8 +162,8 @@ export function drawFigure(canvas, who, dir = 'down', step = 0, sheet = null, re
 const escXml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 /** The same figure as an SVG string (facing the viewer), `px` screen px per sprite px. Safe to inline. */
-export function figureSVG(who, px = 6, label = '') {
-  const { rows, pal, av } = figure(who, 'down', 0);
+export function figureSVG(who, px = 6, label = '', dir = 'down') {
+  const { rows, pal, av } = figure(who, dir, 0);
   let s = '';
   rows.forEach((row, y) => [...row].forEach((ch, x) => { const c = pal[ch]; if (c) s += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c}"/>`; }));
   if (av?.glyph) {

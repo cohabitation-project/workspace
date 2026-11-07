@@ -95,7 +95,7 @@ export function roomViewPage(roomId, { me, isCouncil = false } = {}) {
   if (roomId === 'great-hall') {
     const present = presence.inRoom('great-hall').map((pr) => { const m = store.getMember(pr.member); return m ? { ...store.publicMember(m), kind: m.kind } : null; }).filter(Boolean);
     const meObj = me ? { ...store.publicMember(me), kind: me.kind } : null;
-    const figureHTML = (mm) => figureSVG({ ...mm, guide: false }, 3, mm.name);
+    const figureHTML = (mm) => figureSVG({ ...mm, guide: false }, 3, mm.name, 'up'); // audience faces the stage
     let all = [], cur = null; try { all = bookings.all(); cur = bookings.current(); } catch { /* empty */ }
     // A concert booking that names an album loads its setlist — the translator renders it to a playable/readable score.
     let setlist = null; try { if (cur && cur.theme === 'concert') setlist = music.setlistFromText(`${cur.title || ''} ${cur.note || ''}`); } catch { setlist = null; }

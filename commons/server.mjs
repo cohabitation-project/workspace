@@ -1145,7 +1145,7 @@ app.get('/api/rooms/:id/present', wrap((req) => {
   const present = presence.inRoom(String(req.params.id)).map((pr) => {
     const m = store.getMember(pr.member); if (!m) return null;
     const pub = { ...store.publicMember(m), kind: m.kind };
-    return { id: m.id, name: m.name, kind: m.kind, spot: pr.spot || null, figure: figureSVG({ ...pub, guide: false }, 3, m.name) };
+    return { id: m.id, name: m.name, kind: m.kind, spot: pr.spot || null, figure: figureSVG({ ...pub, guide: false }, 3, m.name, String(req.params.id) === 'great-hall' ? 'up' : 'down') };
   }).filter(Boolean);
   return { present };
 }));
