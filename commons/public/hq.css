@@ -233,3 +233,10 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .building { touch-action: none; cursor: grab; }
 .building.panning { cursor: grabbing; }
 .world { will-change: transform; }
+
+/* Drifting non-live figures in the Garden and Forest tiles — they wiggle, they don't interact (Geoffrey 2026-11-07) */
+@keyframes amb-wiggle { 0%,100% { transform: translate(0,0); } 25% { transform: translate(1.5px,-1.2px); } 50% { transform: translate(0,1.2px); } 75% { transform: translate(-1.5px,-0.6px); } }
+.amb { transform-box: fill-box; transform-origin: center; animation: amb-wiggle 2.6s ease-in-out infinite; }
+.amb:nth-of-type(2n) { animation-duration: 3.2s; animation-delay: -0.9s; }
+.amb:nth-of-type(3n) { animation-duration: 2.1s; animation-delay: -1.5s; }
+@media (prefers-reduced-motion: reduce) { .amb { animation: none; } }

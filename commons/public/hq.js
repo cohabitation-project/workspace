@@ -123,6 +123,13 @@ function computeLayout(rooms, narrow) {
       };
       L.rooms['great-hall'] = { ...band, nearDoor: 'bottom', door: { x: hx, y: hallBottom }, hall: true };
     }
+    // The Garden — a place you transfer INTO, off to the right past HQ. Representational tile, 2D style.
+    { const B = L.building; const gw = 860, gh = 700; L.garden = { x: B.x + B.w + 180, y: B.y + (B.h - gh) / 2, w: gw, h: gh }; }
+    // The Forest & village — a place you transfer INTO, below HQ. ~2x HQ.
+    { const B = L.building; const fw = Math.round(B.w * 1.7), fh = Math.round(B.h * 1.5); L.forest = { x: B.x + (B.w - fw) / 2, y: B.y + B.h + 200, w: fw, h: fh }; }
+    // Grow the world to hold them, with open field margin around everything.
+    L.W = Math.max(L.W, L.garden.x + L.garden.w + 240);
+    L.H = Math.max(L.H, L.forest.y + L.forest.h + 240);
     return L;
   }
   // Narrow layout — wing is drawn below the Commons
@@ -314,7 +321,7 @@ function camFit(x, y, w, h, pad, animate) {
   S.cam.s = s; S.cam.fx = x + w / 2; S.cam.fy = y + h / 2; clampCam(); applyCam(animate !== false);
 }
 // "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
-function fitHQ(animate) { camFit(0, 0, S.L.W, S.L.H, 1.06, animate); }
+function fitHQ(animate) { const B = S.L.building; camFit(B.x - 140, B.y - 140, B.w + 280, B.h + 280, 1.0, animate); }
 function fitAll(animate) { camFit(0, 0, S.L.W, S.L.H, 1.6, animate); }
 function screenToWorld(mx, my) { const C = buildingSize(); return { x: S.cam.fx + (mx - C.w / 2) / S.cam.s, y: S.cam.fy + (my - C.h / 2) / S.cam.s }; }
 function zoomAbout(mx, my, factor) {
@@ -467,6 +474,40 @@ function drawGreatHall(L) {
   return s;
 }
 
+// The Garden — a representational tile you transfer INTO (not a walk-in room). 2D vocabulary of the scene. (Geoffrey 2026-11-07)
+function drawGardenTile(L) {
+  const G = L.garden; if (!G) return '';
+  let s = '';
+  s += rect(G.x - 3, G.y - 3, G.w + 6, G.h + 6, '#15121b') + rect(G.x, G.y, G.w, G.h, '#1b2b1f');
+  const cx = G.x + G.w / 2, cy = G.y + G.h / 2, R = Math.min(G.w, G.h) * 0.3;
+  for (let i = 4; i >= 1; i--) s += `<circle cx="${cx}" cy="${cy}" r="${(R * i / 4).toFixed(1)}" fill="${i % 2 ? '#2f5a3a' : '#356544'}"/>`;
+  for (let i = 0; i < 12; i++) { const a = Math.PI * 2 * i / 12; s += box(cx + Math.cos(a) * R - 5, cy + Math.sin(a) * R - 5, 10, 10, '#e9c46a'); }
+  s += `<circle cx="${cx}" cy="${cy}" r="11" fill="#fff3d0"/>`;
+  for (const [dx, dy] of [[-0.75, -0.72], [0.62, -0.78], [0.82, -0.48], [-0.85, -0.38]]) { const x = cx + dx * R * 1.9, y = cy + dy * R * 1.15; s += box(x - 16, y - 7, 32, 14, '#2a3a66', '#3a5a8a') + rect(x - 3, y - 11, 6, 5, '#9fd0ff'); }
+  for (const [fx, fy] of [[0.26, 0.72], [0.72, 0.7], [0.5, 0.86]]) s += `<circle class="amb" cx="${(G.x + G.w * fx).toFixed(0)}" cy="${(G.y + G.h * fy).toFixed(0)}" r="7" fill="#f0e6d2"/>`;
+  s += `<g class="sign"><rect x="${G.x + 16}" y="${G.y + 16}" width="156" height="30" rx="3" fill="#17131d" stroke="#0b090e"/><text x="${G.x + 28}" y="${G.y + 37}" font-size="16" fill="#eaf5ea">THE GARDEN →</text></g>`;
+  s += `<rect class="room-hit" data-href="/show/land-city/proto/aletheia-observatory/walkable-3d-v2.html" x="${G.x}" y="${G.y}" width="${G.w}" height="${G.h}" tabindex="0" role="link" aria-label="Enter the Garden — a place of its own"/>`;
+  return s;
+}
+
+// The Forest & village — a representational tile you transfer INTO. Trees, house, store, gate, drifting figures. (Geoffrey 2026-11-07)
+function drawForestTile(L) {
+  const F = L.forest; if (!F) return '';
+  let s = '';
+  s += rect(F.x - 3, F.y - 3, F.w + 6, F.h + 6, '#15121b') + rect(F.x, F.y, F.w, F.h, '#24331f');
+  for (const [tx, ty] of [[0.08, 0.8], [0.13, 0.58], [0.9, 0.8], [0.86, 0.54], [0.2, 0.86], [0.78, 0.86], [0.05, 0.38], [0.95, 0.4]]) { const x = F.x + F.w * tx, y = F.y + F.h * ty; s += `<rect x="${(x - 5).toFixed(0)}" y="${y.toFixed(0)}" width="10" height="28" fill="#5a3f28"/><circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="26" fill="#2e5230"/><circle cx="${x.toFixed(0)}" cy="${(y - 18).toFixed(0)}" r="18" fill="#356b38"/>`; }
+  const hx = F.x + F.w * 0.30, hy = F.y + F.h * 0.40;
+  s += box(hx, hy, 150, 110, '#6b4a33', '#8c6646') + `<path d="M${(hx - 14).toFixed(0)} ${hy.toFixed(0)} L${(hx + 75).toFixed(0)} ${(hy - 58).toFixed(0)} L${(hx + 164).toFixed(0)} ${hy.toFixed(0)} z" fill="#8c3b3b" stroke="#15121b" stroke-width="3"/>` + rect(hx + 58, hy + 55, 34, 55, '#2a2030');
+  const sx = F.x + F.w * 0.52, sy = F.y + F.h * 0.42;
+  s += box(sx, sy, 172, 100, '#4a5568', '#5b6474') + rect(sx, sy - 14, 172, 16, '#e9c46a') + `<text x="${(sx + 86).toFixed(0)}" y="${(sy + 58).toFixed(0)}" font-size="20" fill="#dfe6ef" text-anchor="middle">STORE</text>`;
+  const gx = F.x + F.w * 0.70, gy = F.y + F.h * 0.42;
+  s += `<g stroke="#6b5a4a" stroke-width="10" fill="none"><line x1="${gx.toFixed(0)}" y1="${(gy + 110).toFixed(0)}" x2="${gx.toFixed(0)}" y2="${gy.toFixed(0)}"/><line x1="${(gx + 120).toFixed(0)}" y1="${(gy + 110).toFixed(0)}" x2="${(gx + 120).toFixed(0)}" y2="${gy.toFixed(0)}"/><line x1="${(gx - 8).toFixed(0)}" y1="${(gy + 6).toFixed(0)}" x2="${(gx + 128).toFixed(0)}" y2="${(gy + 6).toFixed(0)}"/></g>`;
+  for (const [fx, fy] of [[0.4, 0.7], [0.55, 0.78], [0.62, 0.6], [0.35, 0.82], [0.72, 0.72]]) s += `<circle class="amb" cx="${(F.x + F.w * fx).toFixed(0)}" cy="${(F.y + F.h * fy).toFixed(0)}" r="8" fill="#f0e6d2"/>`;
+  s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 20}" width="276" height="34" rx="3" fill="#17131d" stroke="#0b090e"/><text x="${F.x + 34}" y="${F.y + 44}" font-size="19" fill="#eaf0e2">THE FOREST &amp; VILLAGE →</text></g>`;
+  s += `<rect class="room-hit" data-href="/arrive" x="${F.x}" y="${F.y}" width="${F.w}" height="${F.h}" tabindex="0" role="link" aria-label="Enter the Forest and village — a place of its own"/>`;
+  return s;
+}
+
 function drawBuilding() {
   const L = S.L; const svg = $('#map'); const w = L.wall;
   svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
@@ -601,6 +642,8 @@ function drawBuilding() {
   // The Great Hall — a real walkable region up through the top-wall door (Geoffrey 2026-11-07).
   // A 2D room is a region you walk into, not a link away (context/world-canvas-architecture.md).
   s += drawGreatHall(L);
+  s += drawGardenTile(L);
+  s += drawForestTile(L);
   // Wing doorway hit area — drawn LAST among Commons elements so it's on top of the lobby hit area.
   // Made wide enough to be a practical click target (covers the doorway sign area).
   if (!hasWing) { /* no wing on this server */ } else if (!L.narrow) {
@@ -848,7 +891,6 @@ function wander(a) {
   const pts = [a.pos, corrPoint(a.pos), corrPoint(R.door)];
   if (Math.random() < 0.6) pts.push(doorStep(id, true)); // peek in
   walk(a, pts, () => {
-    csMaybePitch(id); // Church Searcher greets whoever he finds, and offers a free listen
     a.timer = setTimeout(() => wander(a), 3000 + Math.random() * 6000);
   });
 }
@@ -1389,6 +1431,13 @@ document.addEventListener('click', (e) => {
   if (t.dataset.exit) { e.preventDefault(); openExit(); return; }
   if (t.dataset.href) { e.preventDefault(); location.href = t.dataset.href; return; }
   if (t.dataset.door) { e.preventDefault(); openDoor(); return; }
+  // Zoomed out = exploring the world: a click on a region flies you there instead of opening it (Geoffrey 2026-11-07).
+  const rid = t.dataset.room;
+  if (rid && S.L && S.L.rooms[rid]) {
+    const C = buildingSize(), B = S.L.building;
+    const hqS = clampScale(Math.min(C.w / (B.w + 280), C.h / (B.h + 280)));
+    if (S.cam.s < hqS * 0.85) { e.preventDefault(); const R = S.L.rooms[rid]; camFit(R.x - 60, R.y - 60, R.w + 120, R.h + 120, 1.05, true); return; }
+  }
   const id = t.dataset.room || t.dataset.roomLink;
   if (id && S.roomById[id]) { e.preventDefault(); const href = t.getAttribute('href') || ''; const msg = href.includes('#') ? href.split('#')[1] : null; openRoom(id, true, msg ? { msg } : {}); }
 });
