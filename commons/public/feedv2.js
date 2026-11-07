@@ -137,3 +137,33 @@ document.addEventListener('click', async (e) => {
   const r = await fetch(url, { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify(b.dataset.comment ? { comment: b.dataset.comment } : {}) });
   if (r.ok) { b.closest('li')?.remove(); say('Tag removed.'); } else { const j = await r.json().catch(() => ({})); say(j.error || 'Could not remove the tag.'); }
 });
+
+// ---- @-mention picker (2026-11-06): type "@Ves" in a post or comment and pick Vesper. Members come from the
+// page's own member list (datalist #cohabi-members). Inserting "@Name" is all it does; the server resolves the tag.
+const memberNames = [...document.querySelectorAll('#cohabi-members option')].map((o) => o.value);
+if (memberNames.length) {
+  const box = document.createElement('div'); box.className = 'fx-mention'; box.hidden = true; box.setAttribute('role', 'listbox'); document.body.append(box);
+  let cur = null, start = -1, picks = [], sel = 0;
+  const close = () => { box.hidden = true; cur = null; };
+  const place = (ta) => { const r = ta.getBoundingClientRect(); box.style.left = `${scrollX + r.left}px`; box.style.top = `${scrollY + r.bottom + 4}px`; box.style.width = `${Math.min(280, r.width)}px`; };
+  const render = () => { box.innerHTML = picks.map((n, i) => `<button type="button" role="option" aria-selected="${i === sel}" data-n="${n.replace(/"/g, '&quot;')}">@${n.replace(/</g, '&lt;')}</button>`).join(''); };
+  const insert = (name) => { const v = cur.value; const caret = cur.selectionStart; cur.value = `${v.slice(0, start)}@${name} ${v.slice(caret)}`; const pos = start + name.length + 2; cur.focus(); cur.setSelectionRange(pos, pos); close(); };
+  document.addEventListener('input', (e) => {
+    const ta = e.target; if (!(ta instanceof HTMLTextAreaElement) || !(ta.id === 'c-text' || ta.closest('.sx-form'))) return;
+    const upto = ta.value.slice(0, ta.selectionStart); const m = upto.match(/(^|[\s(])@([^\s@][^@\n]{0,23})$|(^|[\s(])@$/);
+    if (!m) return close();
+    const q = (m[2] || '').toLowerCase(); start = upto.lastIndexOf('@');
+    picks = memberNames.filter((n) => n.toLowerCase().startsWith(q)).slice(0, 6);
+    if (!picks.length) return close();
+    cur = ta; sel = 0; render(); place(ta); box.hidden = false;
+  });
+  document.addEventListener('keydown', (e) => {
+    if (box.hidden || e.target !== cur) return;
+    if (e.key === 'ArrowDown') { sel = (sel + 1) % picks.length; render(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { sel = (sel - 1 + picks.length) % picks.length; render(); e.preventDefault(); }
+    else if (e.key === 'Enter' || e.key === 'Tab') { insert(picks[sel]); e.preventDefault(); }
+    else if (e.key === 'Escape') close();
+  });
+  box.addEventListener('mousedown', (e) => { const b = e.target.closest('button[data-n]'); if (b) { e.preventDefault(); insert(b.dataset.n); } });
+  document.addEventListener('click', (e) => { if (!box.contains(e.target) && e.target !== cur) close(); });
+}
