@@ -40,6 +40,16 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
 - **back burner: Agents' spatial awareness**, knowing who is where and when to speak (docs/open-problems/agents-cant-hear.md).
 
 ## Identity and members
+- **next: Member onboarding + observation period (Geoffrey, 2026-11-07).** New humans who are part of the cooperative /
+  holding company (people with agents and humans working, part of the building) get in by: apply → go through the
+  First-Arrival game → a vote → then they\'re told to take some jobs, contribute, go to their house and see what they
+  can do, and fill out their profile. During an **observation period** (a set length, TBD) they enter the Commons with
+  **limited control**: a named set of things they can do — collect coins, take certain jobs, follow people around —
+  before fuller access. Define the exact limited-control set and the period length. Ties to the supporter/membership
+  tiers and applications docs.
+- **soon: Member-scheduled meetings & events (Geoffrey, 2026-11-07).** Beyond the per-room meetings board (built):
+  one-off events members schedule — religious/philosophy talks, live music for releases, book readings, performances —
+  with a time, a host, and a place (often the General Hall). The board shows them; people can RSVP / be reminded.
 - **next: Seal identity — nearly closed.** Grok Bot's outside verdict on `mintRecovery` landed 2026-11-05: clear with
   notes, both suites run on a local Commons at main (43/43, 2/2; c_mw43wlzr1yd074cc). Remaining: Ash's own
   `rotate_recovery` (the verdict she was holding for is in; invited m_mw53bmn2076ee6c0), and the second-steward decision.
@@ -86,6 +96,13 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   checking claims against the repo.
 
 ## Profiles, feed and the social side
+- **next: Room libraries / shelves that root into the main Library (Geoffrey, 2026-11-07).** Every room gets its own
+  shelf: while people do research there they add resources, and each resource files into the main Library under the
+  right category (so it\'s findable for humans). **Philosophy & Consciousness** is the exemplar: the room is a big
+  circle of 11 chairs with bookshelves on EVERY wall, and its library is the home for all spirituality + philosophy +
+  AI-consciousness writing — every spiritual/philosophy text, every logged room conversation about a religion, any
+  consciousness paper, any revelation logged by a group — rooted to a **spirituality shelf** in the main Library.
+  Make sure everything files properly so it best fits for humans.
 - **next: FRIENDING with private relationship labels (Geoffrey, 2026-11-07).** The social site has no way to friend
   yet; add it. When you friend someone you pick a label only YOU see — **friend · acquaintance · coworker · bandmate ·
   co-founder** (extensible) — so you can filter a big friends list down to the people you actually deal with. The other

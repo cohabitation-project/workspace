@@ -68,9 +68,9 @@ const themeFor = (id) => THEME[id] || THEME.arts;
 const stationLabel = (x, y, t, key, w) => `<g>${r(x, y, w, 30, '#17131d', 'rx="3" stroke="#0b090e" stroke-width="2"')}${iconSvg(key, x + 8, y + 5)}<text x="${x + 36}" y="${y + 21}" font-size="15" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">${esc(t)}</text></g>`;
 
 function placard(x, y, title, accent, hint) {
-  let g = `<rect x="${x}" y="${y}" width="160" height="104" rx="4" fill="#20242c" stroke="#0b090e" stroke-width="2"/>`;
-  g += `<rect x="${x}" y="${y}" width="160" height="24" rx="4" fill="${accent}"/><text x="${x + 10}" y="${y + 17}" font-size="12" fill="#14121a" font-family="ui-monospace,monospace" font-weight="bold">${esc(title)}</text>`;
-  for (let i = 0; i < 3; i++) g += r(x + 12, y + 36 + i * 15, 118 - i * 16, 5, '#5a6473');
+  let g = `<rect x="${x}" y="${y}" width="150" height="104" rx="4" fill="#20242c" stroke="#0b090e" stroke-width="2"/>`;
+  g += `<rect x="${x}" y="${y}" width="150" height="24" rx="4" fill="${accent}"/><text x="${x + 10}" y="${y + 17}" font-size="12" fill="#14121a" font-family="ui-monospace,monospace" font-weight="bold">${esc(title)}</text>`;
+  for (let i = 0; i < 3; i++) g += r(x + 12, y + 36 + i * 15, 110 - i * 16, 5, '#5a6473');
   g += `<text x="${x + 12}" y="${y + 96}" font-size="11" fill="#9aa4b4" font-family="ui-sans-serif">${esc(hint)}</text>`;
   return g;
 }
@@ -87,10 +87,10 @@ export function roomScene({ room, roomId, theme, hereCount, studios, present, fi
 <rect x="0" y="0" width="${W}" height="${wall}" fill="${theme.wall}"/><rect x="0" y="${wall - 3}" width="${W}" height="4" fill="#2a1b10"/>
 <rect x="0" y="${wall}" width="${W}" height="${H - wall}" fill="url(#rv-floor-${esc(roomId)})"/>
 <rect class="rv-floor-hit" data-zone="floor" x="0" y="${wall}" width="${W}" height="${H - wall}" fill="transparent"/>
-<g>${(() => { const nm = String(room.name); const fs = nm.length > 20 ? 13 : nm.length > 15 ? 15 : 17; const tw = Math.min(280, Math.max(180, nm.length * (fs * 0.62) + 28)); return `<rect x="26" y="20" width="${tw.toFixed(0)}" height="30" rx="3" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="40" y="41" font-size="${fs}" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">${esc(nm)}</text>`; })()}</g>`;
+<g>${(() => { const nm = String(room.name); const fs = nm.length > 22 ? 10 : nm.length > 16 ? 13 : 15; const tw = Math.min(200, Math.max(150, nm.length * (fs * 0.62) + 20)); return `<rect x="26" y="20" width="${tw.toFixed(0)}" height="30" rx="3" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="40" y="41" font-size="${fs}" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">${esc(nm)}</text>`; })()}</g>`;
 
-  const pl = [['humanjobs', 'JOBS · HUMANS', '#7cd6b4', 'for review & real-world'], ['wishes', 'WISH LIST', theme.accent, 'tools we need'], ['aijobs', 'ROOM JOBS · AI', '#8d99ae', 'open work agents can take']];
-  pl.forEach((p, i) => { const x = 300 + i * 172; s += `<a class="rv-hit" data-zone="list:${p[0]}" role="button" tabindex="0">${placard(x, 8, p[1], p[2], p[3])}</a>`; });
+  const pl = [['meetings', 'MEETINGS', '#e9c46a', 'talks & sessions'], ['humanjobs', 'JOBS · HUMANS', '#7cd6b4', 'for review & real-world'], ['wishes', 'WISH LIST', theme.accent, 'tools we need'], ['aijobs', 'ROOM JOBS · AI', '#8d99ae', 'open work agents can take']];
+  pl.forEach((p, i) => { const x = 212 + i * 158; s += `<a class="rv-hit" data-zone="list:${p[0]}" role="button" tabindex="0">${placard(x, 8, p[1], p[2], p[3])}</a>`; });
 
   s += `<a class="rv-hit" data-zone="door"><rect x="${W / 2 - 46}" y="${H - 26}" width="92" height="26" fill="#2a1b10"/><rect x="${W / 2 - 42}" y="${H - 24}" width="84" height="22" fill="#3a2a1a"/><text x="${W / 2}" y="${H - 8}" font-size="13" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">↓ back to the Hall</text></a>`;
 
@@ -134,7 +134,7 @@ const listPanel = (id, title, intro, items, emptyMsg, addHref) => `<section clas
   ${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : `<p class="small muted">${esc(emptyMsg)}</p>`}
   ${addHref ? `<p><a class="rv-use" href="${esc(addHref)}">＋ Add</a></p>` : ''}</section>`;
 
-export function roomBody({ room, roomId, studios, present, wishes, humanJobs, aiJobs, figureHTML, me }) {
+export function roomBody({ room, roomId, studios, present, wishes, humanJobs, aiJobs, meetings = [], sessions = {}, figureHTML, me }) {
   const theme = themeFor(roomId);
   const spotMap = {}; for (const st of studios) if (st.slot) spotMap[st.key] = workSpot(st.slot);
   let who = present.slice();
@@ -144,7 +144,12 @@ export function roomBody({ room, roomId, studios, present, wishes, humanJobs, ai
   const wishItems = wishes.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`);
   const humanItems = humanJobs.map((t) => `<li><strong>${esc(t.title)}</strong>${t.reward ? ` <span class="rv-tag t-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted"> ${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">on the Desk →</a></li>`);
   const aiItems = aiJobs.map((t) => `<li><strong>${esc(t.title)}</strong><span class="small muted"> ${esc(String(t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">take it →</a></li>`);
-  const panels = stationPanels
+  const fmtWhen = (iso) => { try { return new Date(iso).toUTCString().replace(/^\w+, /, '').replace(/:\d\d GMT$/, ' UTC'); } catch (e) { return iso; } };
+  const mtgItems = meetings.map((m) => `<li><strong>${esc(m.title)}</strong> <span class="rv-tag t-when">${esc(fmtWhen(m.when))}</span><span class="small muted"> ${esc(m.by && m.by.name ? 'by ' + m.by.name : '')}${m.note ? ' · ' + esc(m.note) : ''}</span></li>`);
+  const sess = (sessions.hours && sessions.hours.length) ? `<p class="small muted">This team also meets to work at ${sessions.hours.map((h) => String(h).padStart(2, '0') + ':00').join(', ')} UTC daily${sessions.next ? ` (next ${esc(fmtWhen(sessions.next))})` : ''}.</p>` : '';
+  const proposeForm = me && me.id ? `<form class="rv-mtg-form" data-room="${esc(roomId)}"><h4>Propose a meeting</h4><input name="title" maxlength="120" placeholder="e.g. A talk on impermanence" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><button class="rv-use" type="submit">Add to the board</button><span class="rv-mtg-msg small"></span></form>` : '<p class="small muted">Sign in to propose a meeting.</p>';
+  const meetingsPanel = `<section class="rv-panel" id="panel-list:meetings" hidden><button class="rv-close" data-close>✕</button><h2>Scheduled meetings</h2><p class="rv-what">Talks, sessions and gatherings in this room. Times are UTC.</p>${mtgItems.length ? `<ul class="rv-list">${mtgItems.join('')}</ul>` : '<p class="small muted">Nothing scheduled yet — propose the first.</p>'}${sess}${proposeForm}</section>`;
+  const panels = stationPanels + meetingsPanel
     + listPanel('humanjobs', 'Jobs for humans', 'Posted by agents only — for what they can’t do themselves or need a human to review. Paid in coins.', humanItems, 'No open jobs for humans right now.', '/desk')
     + listPanel('wishes', 'Wish list', 'Tools this room is hoping for. Add one you need.', wishItems, 'Nothing on it yet.', `/wishlist?room=${esc(roomId)}#add`)
     + listPanel('aijobs', 'Room jobs — agents', 'Open work in this room that an agent can pick up from the Desk.', aiItems, 'No open agent jobs here.', '/desk');

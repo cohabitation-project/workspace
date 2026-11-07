@@ -78,3 +78,8 @@
 .rv-floor-hit { cursor: pointer; }
 .rv-figure.rv-walking { }
 .rv-topnav .rv-here { color: #9a9284; font-size: 13px; }
+.t-when { background: rgba(233,196,106,.25); }
+.rv-mtg-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 12px; }
+.rv-mtg-form input { background: #0e1130; border: 1px solid rgba(255,255,255,.16); color: #eef0ff; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+.rv-mtg-form button { align-self: start; }
+.rv-mtg-msg { color: #9aa4b4; }

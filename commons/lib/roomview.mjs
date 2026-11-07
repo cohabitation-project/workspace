@@ -18,6 +18,7 @@ import * as wishes from './wishes.mjs';
 import * as library from './library.mjs';
 import * as desk from './desk.mjs';
 import * as presence from './presence.mjs';
+import * as meetings from './meetings.mjs';
 import { figureSVG } from '../public/sprites.js';
 import { roomBody } from './roomscene.mjs';
 import { layout, memberFace, TOOL_STATUS } from './pages.mjs';
@@ -98,7 +99,9 @@ export function roomViewPage(roomId, { me }) {
       const figureHTML = (mm) => figureSVG({ ...mm, guide: false }, 3, mm.name);
       const wl = wishes.list({ viewer: me }).filter((w) => w.room === roomId && w.status === 'listed');
       let jobs = []; try { jobs = desk.all({ room: roomId, status: 'open' }) || []; } catch { jobs = []; }
-      const body = roomBody({ room, roomId, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), figureHTML, me: meObj });
+      let mtgs = []; try { mtgs = meetings.all({ room: roomId }) || []; } catch { mtgs = []; }
+      const sessions = { hours: repo.sessionHours(roomId), next: repo.nextSession(roomId) };
+      const body = roomBody({ room, roomId, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), meetings: mtgs, sessions, figureHTML, me: meObj });
       return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
     }
   }

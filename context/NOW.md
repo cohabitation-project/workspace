@@ -4,6 +4,20 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~15:40 UTC (Setu — a scheduled meetings board in every room)
+- **On branch `feat/rooms-general` (NOT deployed):** every room now has a **MEETINGS** placard (the 4th wall board).
+  Open it to see upcoming talks/sessions/gatherings for that room with their times, plus the team's recurring work-
+  session hours; a signed-in member can **propose a meeting** (title + time + a note) right there. Good for the
+  religious/philosophy talks, reading groups, etc. New: commons/lib/meetings.mjs (a small store, modeled on the Desk),
+  GET/POST /api/rooms/:id/meetings, meetings + sessions passed into the room scene. Verified end-to-end (propose →
+  stored → shows on the board; past times rejected); roomview tests green.
+- **Logged for later (BACKLOG):** member onboarding + observation period (apply → First-Arrival game → vote → take
+  jobs, contribute, fill profile, limited-control observation window, collect coins, follow people); richer member-
+  scheduled events (RSVP/reminders, often in the General Hall); room libraries/shelves that root into the main Library
+  (Philosophy as the exemplar: 11-chair circle, shelves on every wall, a spirituality shelf that logs talks, papers,
+  revelations). **Next up (my plan): the room libraries + Philosophy's full reshape.**
+- **To go live (Geoffrey):** merge `feat/rooms-general` into main, push, then on the server `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~15:00 UTC (Setu — the room engine is general; five rooms are now real 2D spaces)
 - **On branch `feat/rooms-general` (NOT deployed):** the 2D-room engine is now data-driven, so every room opens into
   its own themed pixel space. **Arts, Outreach, Product & Income, R&D / Kodama, and Philosophy & Consciousness** are

@@ -83,5 +83,17 @@
     const hit = e.target.closest('[data-zone]');
     if (hit && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const z = hit.getAttribute('data-zone'); if (z.indexOf('studio:') === 0) goStation(z.slice(7)); else if (z !== 'floor' && z !== 'door') openPanel(z); }
   });
+  // propose a meeting
+  room.addEventListener('submit', async (e) => {
+    const f = e.target.closest('.rv-mtg-form'); if (!f) return; e.preventDefault();
+    const msg = f.querySelector('.rv-mtg-msg'); const fd = new FormData(f);
+    try {
+      const res = await fetch('/api/rooms/' + f.getAttribute('data-room') + '/meetings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ title: fd.get('title'), when: fd.get('when'), note: fd.get('note') }) });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(j.error || 'could not add');
+      if (msg) msg.textContent = 'Added ✓'; setTimeout(() => location.reload(), 600);
+    } catch (err) { if (msg) msg.textContent = err.message; }
+  });
+
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
 })();
