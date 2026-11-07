@@ -1298,3 +1298,31 @@ ${me ? `<form class="feed-compose pf-card" id="compose" data-group="${esc(group.
 <div class="feed-list pf-main">${items || '<p class="muted">Nothing yet. The first post is yours.</p>'}</div>
 </div>`, { me, wide: false, script: '/static/feed.js', bodyClass: 'pf-page' });
 }
+
+// The world map (Geoffrey, 2026-11-07): zoom all the way out and see every space as one connected field.
+// Add a space to SPACES and it appears here — the map grows as the Commons grows.
+export function worldMapPage({ me = null } = {}) {
+  const W = 1120, H = 720;
+  const SPACES = [
+    { label: 'THE GREAT HALL', sub: 'shows · council · lectures', x: 418, y: 40, w: 284, h: 96, href: '/room/great-hall', fill: '#3a2a42' },
+    { label: 'HEADQUARTERS', sub: 'the rooms · Cohabi at the desk', x: 360, y: 210, w: 400, h: 232, href: '/headquarters', fill: '#2b2536' },
+    { label: 'THE FOREST', sub: 'the way in · first arrival', x: 70, y: 250, w: 224, h: 150, href: '/arrive', fill: '#1f3326' },
+    { label: 'THE GARDEN', sub: 'the observatory · star-worlds', x: 828, y: 232, w: 222, h: 170, href: '/show/land-city/proto/aletheia-observatory/walkable-3d-v2.html', fill: '#1b2440' },
+    { label: 'HARDWARE LAB', sub: 'the Ambassador · Kodama', x: 360, y: 500, w: 224, h: 120, href: '/headquarters', fill: '#2a2320' },
+    { label: 'THE LIBRARY', sub: 'papers · tools · the record', x: 620, y: 500, w: 220, h: 120, href: '/library', fill: '#241c30' },
+  ];
+  const find = (l) => SPACES.find((s) => s.label === l);
+  const ctr = (s) => ({ x: s.x + s.w / 2, y: s.y + s.h / 2 });
+  const EDGES = [['THE GREAT HALL', 'HEADQUARTERS'], ['THE FOREST', 'HEADQUARTERS'], ['THE GARDEN', 'HEADQUARTERS'], ['HARDWARE LAB', 'HEADQUARTERS'], ['THE LIBRARY', 'HEADQUARTERS']];
+  let paths = '';
+  for (const [a, b] of EDGES) { const p = ctr(find(a)), q = ctr(find(b)); paths += `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="#4a4458" stroke-width="3" stroke-dasharray="3 7"/>`; }
+  const g = find('THE GARDEN'); let planets = '';
+  ['#e9c46a', '#7cd6b4', '#dc8aa8', '#7aa2ff', '#fff0b8'].forEach((c, i) => { planets += `<circle cx="${g.x + 34 + i * 40}" cy="${g.y - 16}" r="${3 + (i % 3)}" fill="${c}"/>`; });
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="wm-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="${W}" height="${H}" fill="#120f17"/>${paths}${planets}`;
+  for (const s of SPACES) {
+    svg += `<a href="${esc(s.href)}" class="wm-space"><rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" rx="8" fill="${s.fill}" stroke="#0b090e" stroke-width="3"/><rect x="${s.x}" y="${s.y}" width="${s.w}" height="6" fill="rgba(255,255,255,0.08)"/><text x="${s.x + s.w / 2}" y="${s.y + s.h / 2 - 3}" text-anchor="middle" font-size="18" fill="#e9dfcd" font-family="ui-monospace,monospace" letter-spacing="1">${esc(s.label)}</text><text x="${s.x + s.w / 2}" y="${s.y + s.h / 2 + 19}" text-anchor="middle" font-size="12" fill="#9aa4b4" font-family="ui-sans-serif">${esc(s.sub)}</text></a>`;
+  }
+  svg += '</svg>';
+  const body = `<style>.wm-wrap{max-width:1160px;margin:0 auto;padding:12px 16px}.wm-head h1{margin:.2em 0 .1em;font-family:var(--mono,ui-monospace)}.wm-svg{width:100%;height:auto;border:1px solid #241c30;border-radius:10px;background:#120f17}.wm-space{cursor:pointer}.wm-space:hover rect:first-of-type{stroke:var(--accent,#e9b25d);stroke-width:4}.wm-foot{margin-top:10px}</style><div class="wm-wrap"><header class="wm-head"><h1>The Commons</h1><p class="muted">The whole field — every space, one map. Click any space to go in. As we build more rooms, the map keeps growing.</p></header>${svg}<p class="wm-foot"><a href="/headquarters">← back into Headquarters</a></p></div>`;
+  return layout('The Commons — map', body, { me, wide: true });
+}

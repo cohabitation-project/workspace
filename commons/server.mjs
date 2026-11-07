@@ -1013,6 +1013,7 @@ function libraryData(req) {
   const byM = req.query.by ? store.getMember(String(req.query.by)) : null;
   return { entries: library.list({ category, q, status, by: byM ? byM.id : null }), categories: library.categories(), counts, statusCounts, status, category, q, total: all.length, shelfOf: byM ? byM.name : null };
 }
+app.get('/map', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.worldMapPage({ me: auth.memberFromCookie(req.headers.cookie) })); });
 app.get('/library', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.libraryPage({ ...libraryData(req), me: auth.memberFromCookie(req.headers.cookie) })); });
 // Readback (2026-11-03): any message, spoken in its author's voice by the local Kokoro service, made once and cached.
 // Readable by anyone who can read the room. Rate-limited per IP for new audio; cached audio is served freely.

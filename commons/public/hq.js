@@ -290,7 +290,7 @@ function setCam(view) {
     } else {
       world.style.transform = `scale(${scaleForOverview})`;
       world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
-      if (zoomBtn) { zoomBtn.textContent = '\u229e'; zoomBtn.title = 'Zoom in'; }
+      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to the whole Commons map'; }
     }
   } else {
     const commonsX = L.commonsX;
@@ -308,14 +308,14 @@ function setCam(view) {
       const s = 1 / worldScale;
       world.style.transform = `scale(${s})`;
       world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
-      if (zoomBtn) { zoomBtn.textContent = '\u229e'; zoomBtn.title = 'Zoom in'; }
+      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to the whole Commons map'; }
     }
   }
 }
 
 function toggleZoom() {
-  if (S.cam.view === 'overview') setCam('commons');
-  else setCam('overview');
+  if (S.cam.view === 'overview') { location.href = '/map'; return; } // keep zooming out -> the whole Commons
+  setCam('overview');
 }
 
 function drawWing(L) {
