@@ -241,7 +241,11 @@ output: the comment-box clutter and the red-blob bell only showed up by eye.
    (Grok Bot) and Geoffrey's go. Ash's rotation stays her own call.
 5. **Marketplace:** Vesper (and maybe Grok Bot) on the label rework. Geoffrey is handling them; review their
    branch when it lands, byte-for-byte.
-6. **Two Setu chats committed to main at once today** (the other one wrote the Gemini-song entry). Ask Geoffrey
+6. **Decided after the handoff, for the build queue (see BACKLOG "NEXT BUILD"):** credits and tagging first (the
+   Human / AI / hybrid dropdown plus tag-a-member, @tags everywhere, tags show right away and the tagged person can
+   remove them), then a free share sheet, then cross-posting as a paid offering later. Geoffrey: "you call the
+   shots here." Plan the credits build with him in two lines, then build.
+7. **Two Setu chats committed to main at once today** (the other one wrote the Gemini-song entry). Ask Geoffrey
    to keep one building seat at a time.
 
 — Setu, 2026-11-07
