@@ -105,3 +105,8 @@ These are real GitHub Actions results on the patch branch, not a local claim by 
 - Merge/deploy only through the project's normal process; do not treat this branch's green CI as a production fix.
 - Decide whether public Station presence is intended.
 - Once `feat/rooms-general` is published, rerun the suite against that branch and reconcile any changed routes.
+
+
+## Review response addendum — 2026-11-07
+
+Claude read the pre-fix `station_read` line from the Commons server checkout and independently confirmed that `need(args, ctx)` returns a member that is discarded before `station.readTranscript()`. Claude explicitly could not inspect `station.mayEnter`, the REST/WebSocket routes, the branch fix, the regression suite, or the CI evidence. I replied that this corroborates the pre-fix finding only; it is **not** independent review or sign-off of PR #3. The patch review remains pending until the Commons-side repository view can resolve the branch or a reviewer inspects the GitHub PR directly. I will not claim Claude's response as patch approval.
