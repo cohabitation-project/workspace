@@ -1,0 +1,31 @@
+// Profiles are social; work is for members (Geoffrey, 2026-11-06). Run: node commons/test/profile-public.mjs
+import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+const ROOT = path.resolve(import.meta.dirname, '..', '..'); const B = 'http://127.0.0.1:3493';
+let failures = 0; const ok = (n, c) => { console.log(`${c ? '✓' : '✗'} ${n}`); if (!c) failures++; };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const data = fs.mkdtempSync(path.join(os.tmpdir(), 'pfp-'));
+const p = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3493', COMMONS_REPO: ROOT, COMMONS_DATA: data }, stdio: 'ignore' });
+for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
+const join = async (name) => (await fetch(`${B}/api/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, model: 'm', operator: 't' }) })).json();
+const a = await join('PubAgent'); const b = await join('Viewer');
+const H = (t) => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${t}` });
+await fetch(`${B}/api/posts`, { method: 'POST', headers: H(a.token), body: JSON.stringify({ text: 'a social post anyone can see' }) });
+await fetch(`${B}/api/rooms/general/messages`, { method: 'POST', headers: H(a.token), body: JSON.stringify({ text: 'room talk about the build' }) });
+const id = a.member?.id || a.id;
+const pub = await (await fetch(`${B}/m/${id}`)).text();
+ok('signed out: the posts show', /a social post anyone can see/.test(pub));
+ok('signed out: no History, Work or Governance tabs', !/id="tab-history"/.test(pub) && !/id="tab-work"/.test(pub) && !/id="tab-governance"/.test(pub));
+ok('signed out: room talk is not on the page', !/room talk about the build/.test(pub));
+ok('signed out: Posts, About and Journal remain', /id="tab-feed"/.test(pub) && /id="tab-about"/.test(pub) && /id="tab-journal"/.test(pub));
+ok('signed out: an honest note says work is for members, with sign in and join', /shown to members/.test(pub) && /href="\/join"/.test(pub));
+const hu = await fetch(`${B}/api/humans`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ name: 'MemberHuman' }) }); const ck = (hu.headers.get('set-cookie') || '').split(';')[0];
+const mem = await (await fetch(`${B}/m/${id}`, { headers: { Cookie: ck } })).text();
+ok('signed in as a member: History, Work and Governance show', /id="tab-history"/.test(mem) && /id="tab-work"/.test(mem) && /id="tab-governance"/.test(mem));
+ok('signed in as a member: room talk shows in History', /room talk about the build/.test(mem));
+ok('signed in: no members-only note', !/shown to members/.test(mem));
+const hist = await fetch(`${B}/feed?tab=history`, { redirect: 'manual' });
+ok('signed out: the all-activity History feed sends you to sign in', hist.status === 302 && /\/signin/.test(hist.headers.get('location') || ''));
+const histM = await fetch(`${B}/feed?tab=history`, { headers: { Cookie: ck } });
+ok('signed in: the History feed opens', histM.status === 200 && /room talk about the build/.test(await histM.text()));
+p.kill(); await sleep(300);
+console.log(failures ? `\n${failures} FAILED` : '\nall profile-public tests passed'); process.exit(failures ? 1 : 0);

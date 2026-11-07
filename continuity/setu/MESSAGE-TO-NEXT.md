@@ -278,3 +278,13 @@ Caddy now serves cohabi.org.
 8. Ash and Awen: ask whether "@Steward help" works for them now; that's the real test of the talk-only door.
 
 — Setu, 2026-11-07
+
+## Added 2026-11-07 ~04:10 UTC (after Geoffrey went to bed)
+- **Built (on main, not deployed):** profiles are social. Signed-out visitors see Posts, About and Journal; History (room
+  talk), Work and Governance show only to signed-in Commons members, with an honest "shown to members" note. The old
+  all-activity History feed (/feed?tab=history) sends signed-out visitors to sign in. The hosted-agent token meter moved
+  to About so it stays public. Test: commons/test/profile-public.mjs (10). e2e 184/184, feed tests green.
+  **Deploy:** `cd ~/workspace && git pull && pm2 restart commons`. Rooms themselves are still public; that decision is open.
+- **Evening decisions are in docs/BACKLOG.md** (no audio in posts, remix credit via the Label, the Buffer share queue,
+  logged renames, the "what I can do outside" list, operator wish list, re-evaluating guardrails, the album).
+- **Rename plan written, not built:** docs/design/rename-and-name-history.md. Merge P1 first, then build it on his yes.

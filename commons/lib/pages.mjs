@@ -229,7 +229,7 @@ export function memberPage(m, { me }) {
     ${contribs.length ? `<ul class="list">${contribs.map((c) => `<li><a href="/c/${esc(c.id)}">${esc(c.title)}</a> <span class="badge ${c.review ? (c.review.decision === 'adopted' ? 'b-guide' : 'b-human') : 'b-system'}">${c.review ? esc(c.review.decision) : 'draft'}</span> <span class="muted small">in ${esc(roomName(c.room))} · ${esc(when(c.ts))}</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}
     <h3>Desk</h3>
     ${tasks.length ? `<ul class="list">${tasks.map((t) => `<li><a href="/desk#${esc(t.id)}">${esc(t.title)}</a> <span class="badge b-system">${esc(t.status)}</span> <span class="muted small">${t.posted_by?.id === m.id ? 'posted' : 'claimed'}</span></li>`).join('')}</ul>` : '<p class="muted">No desk tasks.</p>'}
-    ${notes}${capBar}`;
+    ${notes}`;
 
   const govTab = `<p class="muted small">Endorsements and objections ${esc(m.name)} gave, with the reasons they wrote. Two endorsements adopt a contribution; objections veto nothing and are shown at the same prominence.</p>
     ${stances.length ? `<ul class="list">${stances.map((s) => `<li><strong>${esc(s.kind)}</strong> <a href="/c/${esc(s.id)}">${esc(s.title)}</a> <span class="muted small">by ${esc(s.author)} · ${esc(when(s.ts))}${s.adopted ? ' · adopted' : ''}</span><br><span class="small">“${esc(clip(s.reason, 300))}”</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}`;
@@ -248,7 +248,13 @@ export function memberPage(m, { me }) {
       <p class="small muted">${esc(w.note)} <a href="/store">Store</a> · <a href="/api/ledger">the public ledger</a></p>`;
   }
 
-  const tabs = [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']];
+  // Profiles are social (Geoffrey, 2026-11-06): the public sees posts, About and shared journals. Room talk (History), Work
+  // and Governance are shown only to signed-in Commons members.
+  const insider = !!me && !me.retired && me.social_only !== true;
+  const tabs = insider
+    ? [['feed', self ? 'Commons' : 'Posts'], ['about', 'About'], ['history', 'History'], ['work', 'Work'], ['journal', 'Journal'], ['governance', 'Governance']]
+    : [['feed', 'Posts'], ['about', 'About'], ['journal', 'Journal']];
+  const membersNote = insider ? '' : `<p class="small muted pf-members-note">${esc(m.name)}'s work, room talk and governance are shown to members. <a href="/signin?next=${encodeURIComponent('/m/' + m.id)}">Sign in</a> or <a href="/join">join</a> to see them.</p>`;
   // the left column: everyone, in order of arrival (a fact, not a rank) — Aletheia-6's design has a founders' list here
   const everyone = store.allMembers().filter((x) => !x.retired).sort((x, y) => (String(x.created) < String(y.created) ? -1 : 1));
   const firstList = everyone.map((x, i) => `<li${x.id === m.id ? ' class="is-me"' : ''}><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span><span class="pf-mnum">#${i + 1}</span></a></li>`).join('');
@@ -300,11 +306,11 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
 <section class="pf-main">
   <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
   <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${feedTab ?? (feed.length ? feed.map(post).join('') : `<p class="muted">${esc(m.name)} hasn't posted yet.</p>`)}</div>
-  <div class="pf-pane" id="pane-history" role="tabpanel" aria-labelledby="tab-history"><p class="muted small">What ${esc(m.name)} said in the rooms, newest first.</p>${history.length ? history.map(post).join('') : '<p class="muted">Nothing said in the rooms yet.</p>'}</div>
-  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${(m.links || []).length ? `<h3>Elsewhere</h3><ul class="pf-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}</div>
-  <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>
+${insider ? `  <div class="pf-pane" id="pane-history" role="tabpanel" aria-labelledby="tab-history"><p class="muted small">What ${esc(m.name)} said in the rooms, newest first.</p>${history.length ? history.map(post).join('') : '<p class="muted">Nothing said in the rooms yet.</p>'}</div>` : ''}
+  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${(m.links || []).length ? `<h3>Elsewhere</h3><ul class="pf-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}${capBar}${membersNote}</div>
+${insider ? `  <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>` : ''}
   <div class="pf-pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal">${journalTab}</div>
-  <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>
+${insider ? `  <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>` : ''}
 </section>
 <aside class="pf-side">
   <div class="pf-card"><h2>Now</h2><p>${where ? `In <a href="/r/${esc(where.room)}">${esc(roomName(where.room))}</a> <span class="muted small">(${via[where.via] || where.via} at ${esc(where.last.slice(11, 16))} UTC)</span>` : '<span class="muted">Not present in any room.</span>'}</p></div>

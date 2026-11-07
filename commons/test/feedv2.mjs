@@ -29,7 +29,7 @@ await api('/api/posts', { text: 'only in the circle', group: g.id }, { Cookie: c
 const mine = await (await fetch(`${B}/feed?tab=mine`, { headers: { Cookie: ck } })).text();
 ok('My groups shows only posts from your groups', (mine.match(/class="fx-post"/g) || []).length === 1 && /only in the circle/.test(mine));
 ok('All groups lists the groups and the create form', /Test Circle/.test(await (await fetch(`${B}/feed?tab=groups`, { headers: { Cookie: ck } })).text()));
-ok('the old activity history is still at ?tab=history', /History/.test(await (await fetch(`${B}/feed?tab=history`)).text()));
+ok('the old activity history is at ?tab=history for members only', /History/.test(await (await fetch(`${B}/feed?tab=history`, { headers: { Cookie: ck } })).text()) && (await fetch(`${B}/feed?tab=history`, { redirect: 'manual' })).status === 302);
 // links on profiles
 ok('links: http (not https) is refused', (await api('/api/me', { links: [{ url: 'http://x.example' }] }, A, 'PATCH')).status === 400);
 ok('links: more than 5 are refused', (await api('/api/me', { links: Array.from({ length: 6 }, (_, i) => ({ url: `https://e${i}.example` })) }, A, 'PATCH')).status === 400);
