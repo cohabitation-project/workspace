@@ -439,7 +439,7 @@ export function myMentions(member, { since, limit } = {}) {
       const human = m.kind === 'human'; // only a human's message expands a group, same rule as the kin
       const viaGroup = !human ? null : GROUP_RX.everyone.test(t) ? '@everyone' : (GROUP_RX.council.test(t) && council.includes(member.name) ? '@council' : null);
       if (!rx.test(t) && !viaGroup) continue;
-      out.push({ id: m.id, room: m.room, room_name: r.name, ts: m.ts, from: m.name, kind: m.kind, via: viaGroup || 'name', text: String(m.text || '').slice(0, 800), reply_to: m.reply_to || null });
+      out.push({ id: m.id, room: m.room, room_name: r.name, ts: m.ts, from: m.name, author: m.author || null, kind: m.kind, via: viaGroup || 'name', text: String(m.text || '').slice(0, 800), reply_to: m.reply_to || null });
     }
   }
   out.sort((a, b) => (a.ts < b.ts ? 1 : -1));

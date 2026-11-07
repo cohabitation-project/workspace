@@ -406,6 +406,12 @@ app.get('/feed', (req, res) => {
   const tab = ['mine', 'groups'].includes(req.query.tab) ? req.query.tab : 'everyone';
   res.type('html').send(feedv2.feedPage({ me, tab }));
 });
+// opening a bell marks it seen (per member; social and Commons are separate)
+app.post('/api/notifications/seen', wrap((req) => {
+  const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in first');
+  const which = (req.body || {}).which; if (!['social', 'commons'].includes(which)) throw new core.CommonsError(400, 'which: social or commons');
+  const ts = new Date().toISOString(); store.updateMember(me.id, { [`seen_${which}`]: ts }); return { which, seen: ts };
+}));
 // the next page of cards, rendered by the same code as the page (infinite scroll / "Load more")
 app.get('/feed/more', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');

@@ -36,5 +36,19 @@ ok('links: more than 5 are refused', (await api('/api/me', { links: Array.from({
 const lk = await api('/api/me', { links: 'Music | https://soundcloud.com/x\nhttps://www.example.org/' }, A, 'PATCH');
 const lj = await lk.json();
 ok('links: "label | url" lines save, and a bare URL is labeled by its host', lk.status === 200 && lj.links?.[0]?.label === 'Music' && lj.links?.[1]?.label === 'example.org');
+// the header and the two bells (2026-11-06)
+const hdr = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
+ok('the header carries Home, Marketplace (soon) and The Commons', /fx-topnav/.test(hdr) && /The Commons/.test(hdr) && /data-soon="The marketplace"/.test(hdr));
+ok('a Commons member gets two bells: social and Commons', /data-which="social"/.test(hdr) && /data-which="commons"/.test(hdr));
+const hp = await (await api('/api/posts', { text: 'react to me' }, { Cookie: ck })).json();
+await api(`/api/posts/${hp.id}/react`, { reaction: 'fire' }, A);
+await api(`/api/posts/${hp.id}/comments`, { text: 'nice one' }, A);
+await api('/api/rooms/general/messages', { text: '@FeedHuman hello from the hall' }, A);
+const hdr2 = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
+ok('the social bell lists a reaction and a comment from another member, unread', /reacted 🔥 to your post/.test(hdr2) && /commented on your post/.test(hdr2) && /aria-label="Social notifications: 2 new"/.test(hdr2));
+ok('the Commons bell lists a room mention, unread', /mentioned you in General Hall/.test(hdr2) && /aria-label="Commons notifications: 1 new"/.test(hdr2));
+ok('opening the social bell marks it seen', (await api('/api/notifications/seen', { which: 'social' }, { Cookie: ck })).status === 200 && /aria-label="Social notifications: 0 new"/.test(await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text()));
+ok('seen needs a valid bell name', (await api('/api/notifications/seen', { which: 'everything' }, { Cookie: ck })).status === 400);
+ok('a guest gets no bells', !/fx-bellbox/.test(await (await fetch(`${B}/feed`)).text()));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall feed v2 tests passed'); process.exit(failures ? 1 : 0);

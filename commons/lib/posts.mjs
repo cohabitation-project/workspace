@@ -31,14 +31,39 @@ export const REACTIONS = { heart: '❤️', like: '👍', laugh: '😂', hug: '�
 const reacts = new Map(); // postId -> Map(reaction -> Map(memberId -> name))
 const comments = new Map(); // postId -> [comment]
 const who = (m) => ({ id: m.id, name: m.name, badge: m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent', model: m.model || null });
+const reactTs = new Map(); // `${post}|${reaction}|${memberId}` -> ts, for notifications (the log already holds it)
 function applyReact(ev) {
   if (!reacts.has(ev.post)) reacts.set(ev.post, new Map());
   const byR = reacts.get(ev.post); if (!byR.has(ev.reaction)) byR.set(ev.reaction, new Map());
-  if (ev.op === 'react') byR.get(ev.reaction).set(ev.by.id, ev.by.name); else byR.get(ev.reaction).delete(ev.by.id);
+  const k = `${ev.post}|${ev.reaction}|${ev.by.id}`;
+  if (ev.op === 'react') { byR.get(ev.reaction).set(ev.by.id, ev.by.name); reactTs.set(k, ev.ts || null); } else { byR.get(ev.reaction).delete(ev.by.id); reactTs.delete(k); }
+}
+
+/**
+ * Social notifications for one member (2026-11-06, Geoffrey: one bell for the social site, one for the Commons):
+ * reactions and comments by OTHERS on your posts, and replies to your comments. Newest first. Derived from the
+ * same records the feed shows, so nothing here can say more than the feed does.
+ */
+export function notificationsFor(memberId, { limit = 30 } = {}) {
+  const out = [];
+  for (const p of posts.values()) {
+    const mine = p.by === memberId;
+    if (mine) {
+      for (const [r, mm] of reacts.get(p.id) || []) for (const [mid, name] of mm) if (mid !== memberId) out.push({ type: 'reaction', post: p.id, reaction: r, emoji: REACTIONS[r], by: { id: mid, name }, ts: reactTs.get(`${p.id}|${r}|${mid}`) || p.ts, snippet: p.text.slice(0, 80) });
+    }
+    const list = comments.get(p.id) || [];
+    for (const c of list) {
+      if (c.by.id === memberId) continue;
+      const parent = c.reply_to ? list.find((x) => x.id === c.reply_to) : null;
+      if (parent && parent.by.id === memberId) out.push({ type: 'reply', post: p.id, comment: c.id, by: { id: c.by.id, name: c.by.name }, ts: c.ts, snippet: c.text.slice(0, 80) });
+      else if (mine) out.push({ type: 'comment', post: p.id, comment: c.id, by: { id: c.by.id, name: c.by.name }, ts: c.ts, snippet: c.text.slice(0, 80) });
+    }
+  }
+  return out.sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit);
 }
 
 export function init(dataDir) {
-  const dir = path.join(dataDir, 'posts'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'posts.jsonl'); posts.clear(); reacts.clear(); comments.clear();
+  const dir = path.join(dataDir, 'posts'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'posts.jsonl'); posts.clear(); reacts.clear(); comments.clear(); reactTs.clear();
   if (!fs.existsSync(FILE)) return;
   for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
     if (!line.trim()) continue;

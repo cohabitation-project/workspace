@@ -24,7 +24,7 @@
 .fx-topr { display: flex; align-items: center; gap: 10px; }
 .fx-chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-weight: 600; min-height: 34px; display: inline-flex; align-items: center; }
 .fx-bell { position: relative; font-size: 18px; min-width: 40px; min-height: 40px; display: grid; place-items: center; }
-.fx-bell span { position: absolute; top: 2px; right: 0; background: #e5484d; color: #fff; font: 700 10px/1 system-ui; border-radius: 999px; padding: 3px 5px; }
+.fx-bell > span[aria-hidden] { font-size: 19px; line-height: 1; }
 .fx-me .pf-face, .fx-me svg { width: 34px; height: 34px; border-radius: 50%; }
 
 /* ---- shell */
@@ -221,3 +221,25 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-page[data-theme=meadow] { --bg: #e4f0cf; --panel: #f6faee; --panel2: #eef4e2; --line: #c4d6a8; --ink: #1f2a17; --muted: #46573a; --pa: #fbfff0; --pb: #e4f0cf; --pc: #c2d99f; --glow2: #dcebc4; --soft: #0000000a; --shadow: 0 8px 24px #0000001a; --gold-ink: #fffaf0; }
 .fx-page[data-theme=matrix] .fx-name, .fx-page[data-theme=matrix] .fx-brand { font-family: 'Courier New', monospace; }
 .fx-page .btn { color: var(--gold-ink, #1a1408); }
+
+/* ---- header: Home · Marketplace · The Commons, and the two bells (2026-11-06) */
+.fx-topnav { display: flex; gap: 4px; flex: 1; justify-content: center; }
+.fx-topnav a, .fx-topnav button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 6px 16px; border-radius: 999px; color: var(--muted) !important; font: 600 15px system-ui; background: none; border: 0; cursor: pointer; text-decoration: none !important; }
+.fx-topnav a:hover, .fx-topnav button:hover { background: var(--soft); color: var(--ink) !important; }
+.fx-topnav [aria-current="page"] { color: var(--ink) !important; background: var(--soft); box-shadow: inset 0 -3px 0 var(--gold); }
+.fx-bellbox { position: relative; }
+.fx-bellbox summary { list-style: none; cursor: pointer; } .fx-bellbox summary::-webkit-details-marker { display: none; }
+.fx-bell { position: relative; min-width: 42px; min-height: 42px; display: grid; place-items: center; border-radius: 50%; font-size: 18px; }
+.fx-bell:hover, .fx-bellbox[open] .fx-bell { background: var(--soft); }
+.fx-n { position: absolute; top: 2px; right: 0; background: #e5484d; color: #fff; font: 700 10px/1 system-ui; border-radius: 999px; padding: 3px 5px; }
+.fx-panel { position: absolute; right: 0; top: 48px; z-index: 45; width: min(380px, calc(100vw - 24px)); max-height: 70vh; overflow-y: auto; background: var(--panel2); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 10px; }
+.fx-panel h3 { font: 18px Georgia, serif; margin: 4px 8px 8px; }
+.fx-panel ul { list-style: none; margin: 0; padding: 0; }
+.fx-panel li a { display: flex; gap: 10px; align-items: flex-start; padding: 8px; border-radius: 12px; color: var(--ink) !important; text-decoration: none !important; }
+.fx-panel li a:hover { background: var(--soft); }
+.fx-panel li.new a { background: color-mix(in srgb, var(--gold) 10%, transparent); }
+.fx-panel li a > span:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 14px; overflow-wrap: anywhere; }
+.fx-panel .pf-face, .fx-panel svg { width: 36px; height: 36px; border-radius: 50%; flex: none; }
+.fx-none { padding: 12px 8px; }
+@media (max-width: 1099px) { .fx-topnav a, .fx-topnav button { padding: 6px 10px; } .fx-topnav .fx-soon { display: none; } }
+@media (max-width: 699px) { .fx-topnav { display: none; } .fx-top .fx-chip { display: none; } .fx-panel { position: fixed; left: 12px; right: 12px; top: 60px; width: auto; } }

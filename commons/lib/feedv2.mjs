@@ -168,6 +168,28 @@ function composer(me, myGroups, { group = null } = {}) {
 </form>`;
 }
 
+// ------------------------------------------------------------------------------------------ the two bells
+// Geoffrey, 2026-11-06: one bell for the social site, one for the Commons, and Commons notices only for people who
+// are part of the Commons. Today every account is a Commons member; an account made only for the social site
+// (the supporter question, still the council's) will carry social_only: true and get the social bell alone.
+export const isCommonsMember = (m) => !!m && !m.retired && m.social_only !== true;
+const SEVEN_DAYS = 7 * 86400_000;
+function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAYS).toISOString(); return items.filter((x) => x.ts > t).length; }
+function bellsFor(me) {
+  const m = store.getMember(me.id);
+  const soc = posts.notificationsFor(me.id, { limit: 25 });
+  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment' };
+  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="/feed#${esc(n.post)}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a></li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to or comments on your posts, it shows up here.</li>';
+  const socN = unread(soc, m.seen_social);
+  const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
+  if (!isCommonsMember(m)) return social;
+  let com = []; try { com = (core.myMentions(me, { limit: 25 }).mentions || []); } catch { com = []; }
+  const comList = com.length ? com.map((x) => `<li class="${x.ts > (m.seen_commons || '') ? 'new' : ''}"><a href="/r/${esc(x.room)}#${esc(x.id)}">${x.author ? memberFace(x.author) : '<span class="fx-gdot">⌂</span>'}<span><strong>${esc(x.from)}</strong> mentioned you in ${esc(x.room_name)}<span class="muted small">“${esc(String(x.text || '').slice(0, 90))}”</span><span class="fx-when">${esc(ago(x.ts))}</span></span></a></li>`).join('') : '<li class="fx-none muted small">No mentions in the Commons rooms.</li>';
+  const comN = unread(com, m.seen_commons);
+  const commons = `<details class="fx-bellbox" data-which="commons"><summary class="fx-bell" aria-label="Commons notifications: ${comN} new"><span aria-hidden="true">🏛</span>${comN ? `<span class="fx-n">${comN > 99 ? '99+' : comN}</span>` : ''}</summary><div class="fx-panel"><h3>The Commons</h3><ul>${comList}</ul><a class="fx-wmore" href="/headquarters">Go to Headquarters →</a></div></details>`;
+  return social + commons;
+}
+
 // ------------------------------------------------------------------------------------------ the page
 export const PAGE = 15;
 export function streamFor({ tab, me, before = null }) {
@@ -203,9 +225,7 @@ export function feedPage({ me, tab = 'everyone' }) {
     ${list.length === PAGE ? `<button type="button" class="btn ghost fx-loadmore" id="fx-more" data-before="${esc(list[list.length - 1].ts)}">Load more</button>` : (list.length ? '<p class="fx-end muted small">You are all caught up.</p>' : '')}`;
   }
   const bal = me ? ledger.balance(ledger.wallet(me.id)) : 0;
-  let mentions = 0;
-  // the bell counts mentions of you in the last 24 hours (real, from the rooms)
-  if (me) { try { const since = new Date(Date.now() - 86400_000).toISOString(); mentions = (core.myMentions(me, { since, limit: 100 }).mentions || []).length; } catch { mentions = 0; } }
+  const bells = me ? bellsFor(me) : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -220,8 +240,13 @@ export function feedPage({ me, tab = 'everyone' }) {
 <body class="fx-page" data-theme="${esc(themeOf(me))}" style="--gold:${accentHex(me)}">
 <header class="fx-top">
   <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
+  <nav class="fx-topnav" aria-label="Cohabi">
+    <a href="/feed" aria-current="page"><span aria-hidden="true">🏠</span> Home</a>
+    <button type="button" data-soon="The marketplace"><span aria-hidden="true">🛍</span> Marketplace <span class="fx-soon">soon</span></button>
+    <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
+  </nav>
   <div class="fx-topr">
-    ${me ? `<a class="fx-chip" href="/porch#tokens" title="Your Cohabi Coins">⬡ ${bal}</a><a class="fx-bell" href="/r/general" aria-label="Mentions in the last day: ${mentions}">🔔${mentions ? `<span>${mentions > 99 ? '99+' : mentions}</span>` : ''}</a><a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
+    ${me ? `<a class="fx-chip" href="/porch#tokens" title="Your Cohabi Coins">⬡ ${bal}</a>${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
   </div>
 </header>
 <div class="fx-shell">
@@ -234,7 +259,7 @@ export function feedPage({ me, tab = 'everyone' }) {
   <a href="/feed?tab=groups"${tab === 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">👥</span>Groups</a>
   ${me ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/join" aria-label="Join to post">＋</a>'}
   <button type="button" data-soon="The marketplace"><span aria-hidden="true">🛍</span>Market</button>
-  <a href="${me ? `/m/${esc(me.id)}` : '/signin?next=/feed'}"><span aria-hidden="true">👤</span>Me</a>
+  <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
 </nav>
 <div class="fx-toast" id="fx-toast" role="status" hidden></div>
 <div class="fx-hover" id="fx-hover" hidden></div>

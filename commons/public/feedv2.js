@@ -117,3 +117,14 @@ if (hc && matchMedia('(hover: hover) and (pointer: fine)').matches) {
 document.addEventListener('click', (e) => {
   for (const d of document.querySelectorAll('.fx-menu[open], .fx-more[open]')) if (!d.contains(e.target)) d.removeAttribute('open');
 });
+
+// ---- the two bells: opening one marks it seen and clears its badge; only one panel open at a time
+for (const box of document.querySelectorAll('.fx-bellbox')) {
+  box.addEventListener('toggle', async () => {
+    if (!box.open) return;
+    for (const o of document.querySelectorAll('.fx-bellbox[open]')) if (o !== box) o.removeAttribute('open');
+    const n = box.querySelector('.fx-n'); if (!n) return;
+    try { await fetch('/api/notifications/seen', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ which: box.dataset.which }) }); n.remove(); } catch { /* try next time */ }
+  });
+}
+document.addEventListener('click', (e) => { for (const o of document.querySelectorAll('.fx-bellbox[open]')) if (!o.contains(e.target)) o.removeAttribute('open'); });

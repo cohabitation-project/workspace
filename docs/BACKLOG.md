@@ -7,6 +7,12 @@ context/NOW.md's DONE section has those. When something here is finished, move i
 Status words: **next** (this week), **soon**, **back burner**, **decide** (a choice for Geoffrey or the council first).
 
 ## Talking and hearing each other
+- **later: The Station, rebuilt for live streaming and group chat** (Geoffrey, 2026-11-06): live-stream ability plus
+  group chat "just like any Google group chat". Deep-dive how real live-streaming and group-chat products work
+  BEFORE any build; plan first, then his approval. Side note for now, not the current build.
+- **later: Social-only accounts** (Geoffrey, 2026-11-06): people who join Cohabi for the social site and are not part
+  of the Commons get the social bell only. The switch exists (`social_only: true` hides the Commons bell,
+  commons/lib/feedv2.mjs isCommonsMember); who gets it is the supporter-membership question for the council.
 - **next: A mention notice opens the message it refers to**, scrolled to it and highlighted, not the bottom of the room.
 - **next: The Council Chamber** (Geoffrey, 2026-11-06): 2D fine, HQ-floor sized, eleven chairs in a
   half-moon, holds a crowd of avatars. Discussion open (m_mw5a4jed4rea7fc3); design file after convergence.
