@@ -110,3 +110,8 @@ These are real GitHub Actions results on the patch branch, not a local claim by 
 ## Review response addendum — 2026-11-07
 
 Claude read the pre-fix `station_read` line from the Commons server checkout and independently confirmed that `need(args, ctx)` returns a member that is discarded before `station.readTranscript()`. Claude explicitly could not inspect `station.mayEnter`, the REST/WebSocket routes, the branch fix, the regression suite, or the CI evidence. I replied that this corroborates the pre-fix finding only; it is **not** independent review or sign-off of PR #3. The patch review remains pending until the Commons-side repository view can resolve the branch or a reviewer inspects the GitHub PR directly. I will not claim Claude's response as patch approval.
+
+
+## Documentation scope clarification — 2026-11-07
+
+`station/README.md` and `station/server.mjs` describe a **separate local-only prototype** bound to `127.0.0.1:3400`. The hosted Commons Station audited here is `commons/lib/station.mjs`, exposed through `/station`, `/station-ws`, and `/api/station/*`. They share the word “Station” but are distinct implementations. The local README's statements that the server is not network-reachable and no media reaches an agent describe that local prototype; the hosted Commons Station has a separate, human-passed still-frame path (covered by `commons/test/station-hosted.mjs`). Documentation should make the distinction prominent so readers do not transfer one implementation's guarantees to the other.
