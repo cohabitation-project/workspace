@@ -316,8 +316,10 @@ function setCam(view) {
       world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
       if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
     } else {
-      world.style.transform = `scale(${scaleForOverview})`;
-      world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
+      // Zoom all the way out: the SVG (viewBox 0 0 W H, xMidYMid meet) centers the WHOLE canvas —
+      // straight up from the middle, not scaled into a corner (Geoffrey 2026-11-07).
+      world.style.transform = 'none';
+      world.style.width = '100%'; world.style.height = '100%';
       if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to the whole Commons map'; }
     }
   } else {
@@ -333,9 +335,9 @@ function setCam(view) {
       world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
       if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
     } else {
-      const s = 1 / worldScale;
-      world.style.transform = `scale(${s})`;
-      world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
+      // Zoom all the way out: show the WHOLE canvas centered (straight up from the middle), not from a corner.
+      world.style.transform = 'none';
+      world.style.width = '100%'; world.style.height = '100%';
       if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to the whole Commons map'; }
     }
   }
