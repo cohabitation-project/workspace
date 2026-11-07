@@ -99,7 +99,7 @@ export const normUrl = (u) => String(u || '').trim().replace(/^https?:\/\//i, ''
 /** Every entry, newest first, optionally filtered by category and a text query. */
 export function list({ category = null, q = null, status = null, includeRecords = true, by = null } = {}) {
   const vs = votes();
-  let all = [...repoEntries(), ...commonsEntries()].map((e) => { const yes = vs.get(e.id) || []; return { ...e, yes: yes.map((v) => v.by_name), status: yes.length >= YES_NEEDED ? 'shelved' : 'proposed' }; });
+  let all = [...repoEntries(), ...commonsEntries()].map((e) => { const yes = vs.get(e.id) || []; return { ...e, yes: yes.map((v) => v.by_name), status: 'shelved' }; }); // on the shelf the moment it's added — no endorsement, ever (Geoffrey 2026-11-07)
   if (includeRecords) all = all.concat(recordEntries().map((e) => ({ ...e, yes: [], status: 'record' })));
   // Shared journals (house.mjs): everyone's shared journals live in the main Library, on the "Journals" shelf.
   try { all = all.concat(house.libraryEntries().map((e) => ({ ...e, yes: (vs.get(e.id) || []).map((v) => v.by_name), status: 'shelved' }))); } catch { /* house not initialised */ }
