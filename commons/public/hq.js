@@ -1029,9 +1029,13 @@ function setTab(tab) {
 
 function mentionsHTML(html) {
   const names = [...S.members.values(), ...S.looks.values()].map((m) => m.name).concat(['Claude', 'GPT', 'Gemini', 'DeepSeek']);
-  if (!names.length) return html;
-  const rx = new RegExp(`@(${[...new Set(names)].sort((a, b) => b.length - a.length).map((n) => esc(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\p{L}\\p{M}\\p{N}_-])`, 'giu');
-  return html.replace(/(<[^>]+>)|([^<]+)/g, (mm, tag, txt) => (tag ? tag : txt.replace(rx, '<span class="mention">@$1</span>')));
+  const nameRx = names.length ? new RegExp(`@(${[...new Set(names)].sort((a, b) => b.length - a.length).map((n) => esc(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\p{L}\\p{M}\\p{N}_-])`, 'giu') : null;
+  const groupRx = /@(everyone|council)(?![\p{L}\p{M}\p{N}_-])/giu; // the group megaphones
+  return html.replace(/(<[^>]+>)|([^<]+)/g, (mm, tag, txt) => {
+    if (tag) return tag;
+    let t = txt; if (nameRx) t = t.replace(nameRx, '<span class="mention">@$1</span>');
+    return t.replace(groupRx, '<span class="mention mention-group">@$1</span>');
+  });
 }
 
 function appendMessage(m, live) {

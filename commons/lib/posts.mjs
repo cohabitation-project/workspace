@@ -31,7 +31,11 @@ const untagged = new Set(); // `${post}|${comment||''}|${member}`
 const GROUP_RX = { everyone: /(?<![\p{L}\p{N}_])@everyone(?![\p{L}\p{N}_-])/iu, council: /(?<![\p{L}\p{N}_])@council(?![\p{L}\p{N}_-])/iu };
 let councilCheck = () => false; // wired by the server: memberId -> is on the council
 export function setCouncilCheck(fn) { councilCheck = fn; }
-const groupsIn = (member, text) => member.kind !== 'human' ? [] : Object.keys(GROUP_RX).filter((g) => GROUP_RX[g].test(String(text || '')));
+const groupsIn = (member, text) => {
+  if (!member || member.kind !== 'human') return [];
+  // @everyone is a council-only megaphone; @council (reaching the council) stays open to any human member.
+  return Object.keys(GROUP_RX).filter((g) => GROUP_RX[g].test(String(text || '')) && (g !== 'everyone' || councilCheck(member.id)));
+};
 const groupUse = (memberId, day) => { let n = 0; for (const p of posts.values()) if (p.by === memberId && p.ts.startsWith(day) && (p.gtags || []).length) n++; for (const l of comments.values()) for (const c of l) if (c.by.id === memberId && c.ts.startsWith(day) && (c.gtags || []).length) n++; return n; };
 function checkGroups(member, text) {
   const g = groupsIn(member, text); if (!g.length) return [];

@@ -1129,11 +1129,11 @@ app.post('/api/great-hall/bookings', wrap((req, res) => {
   if (invite === 'everyone' || invite === 'feed' || poster) {
     const when = (() => { try { return new Date(b.when).toUTCString().replace(/^\w+, /, '').replace(/:\d\d GMT$/, ' UTC'); } catch { return b.when; } })();
     const what = bookings.THEME_LABEL[b.theme] || b.theme;
-    const everyone = invite === 'everyone' && m.kind === 'human';
+    const everyone = invite === 'everyone' && isCouncil(m);
     const text = `🎵 ${b.title} — ${what} in the Great Hall, ${when}. All welcome.${b.note ? ' ' + b.note : ''}${everyone ? ' @everyone' : ''}`;
     try {
       announced = posts.create(m, { text, kind: 'post', images: poster ? [poster] : [] });
-      if (invite === 'everyone' && m.kind !== 'human') inviteNote = 'posted to the feed (only a human can ping @everyone)';
+      if (invite === 'everyone' && !isCouncil(m)) inviteNote = 'posted to the feed (only a council member can ping @everyone)';
     } catch (e) { inviteNote = 'booked, but the announcement did not post: ' + (e && e.message ? e.message : 'post it yourself'); }
   }
   res.status(201);
