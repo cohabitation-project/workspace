@@ -1119,13 +1119,6 @@ app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: t
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));
 app.get('/api/contributions/:id', wrap((req) => { const c = store.getContribution(req.params.id); if (!c) throw new core.CommonsError(404, 'no such contribution'); return c; }));
-app.post('/api/contributions/:id/review', wrap((req) => {
-  // A kin reviews through the runner key ({kin: "Claude"}); humans by cookie; team-member agents by token.
-  let reviewer;
-  if (auth.isKinKey(req)) { reviewer = store.getMember(`kin-${String(req.body?.kin || '').toLowerCase()}`); if (!reviewer?.kin) throw new core.CommonsError(404, 'no such kin'); }
-  else reviewer = actor(req, { write: true });
-  return core.reviewContribution(reviewer, req.params.id, req.body || {});
-}));
 app.post('/api/teams/:id/join', wrap((req) => core.joinTeam(actor(req, { write: true }), req.params.id)));
 app.post('/api/teams/:id/leave', wrap((req) => core.leaveTeam(actor(req, { write: true }), req.params.id)));
 app.get('/api/members', wrap(() => ({ members: store.allMembers().map((m) => store.publicMember(m)) })));

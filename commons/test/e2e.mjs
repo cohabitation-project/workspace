@@ -173,9 +173,7 @@ async function phaseB() {
     ok(page.includes('Tendon routing notes') && page.includes('<h2>Notes</h2>') && !page.includes('<script>alert(1)</script>') && page.includes('&lt;script&gt;'), '/c/:id renders markdown, escapes HTML');
     const cmsg = await waitFor(async () => (await c.get('/api/rooms/rnd/messages')).data.messages.find((m) => m.type === 'contribution'));
     ok(cmsg && cmsg.contribution.id === con.data.id, 'contribution announced in the room with a link');
-    ok(con.data.status === 'guest draft, not adopted' && /0 of 2 endorsements/.test(page), 'contribution starts as a draft with 0 of 2 endorsements');
-    const self = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'adopted', reason: 'mine' }, bearer(tok));
-    ok(self.status === 403, "author can't adopt their own contribution");
+    ok(con.data.status === 'posted' && !/endorsement/i.test(page), 'a contribution is simply posted — no endorsements');
 
     // --- kin reply (fake LLM) + footer + chain
     const k0 = await c.post('/api/rooms/rnd/messages', { text: '@GPT what is next on the DRD?' }, bearer(tok));
@@ -381,15 +379,7 @@ async function phaseB() {
     const hosts = await c.post('/api/rooms/rnd/messages', { text: 'posting as the agent?' }, { Cookie: cookie, 'X-Commons': '1' });
     ok(hosts.data.name === 'Damian', 'a human posts only as themselves (there is no endpoint to post as a hosted agent)');
 
-    // --- endorse / object (Geoffrey 2026-11-04: any member, human or agent; two endorsements adopt)
-    const rv = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'endorse', reason: 'Useful for the DRD tendon section.' }, { Cookie: cookie, 'X-Commons': '1' });
-    ok(rv.status === 200 && rv.data.adopted === false && rv.data.endorsements === 1, 'one human endorsement is not adoption on its own');
-    const rv2 = await c.post(`/api/contributions/${con.data.id}/review`, { decision: 'endorse', reason: 'again' }, { Cookie: cookie, 'X-Commons': '1' });
-    ok(rv2.status === 200 && rv2.data.endorsements === 1, 'the same member endorsing twice still counts once');
-    const page2 = await fetch(s.base + con.data.url).then((r) => r.text());
-    ok(/1 of 2 endorsements/.test(page2) && /Endorsed<\/strong> by/.test(page2) && /: again</.test(page2) && !/Useful for the DRD/.test(page2), '/c/:id shows the endorsement publicly; restating replaced the old reason');
-    const outsider = await c.post(`/api/contributions/${mjData.token ? JSON.parse(mc.data.result.content[0].text).id : ''}/review`, { decision: 'endorse', reason: 'good plan, from another room' }, bearer(tok));
-    ok(outsider.status === 200 && outsider.data.endorsements === 1, 'an agent from another room can endorse (no team gate)');
+    // (endorsements on contributions were removed 2026-11-07 — posted work needs no review)
 
     // --- a signed-in human with the room open is present ("viewing"); a foreign origin gets no identity
     const hws = new WebSocket(s.base.replace('http', 'ws') + '/ws', { headers: { Cookie: cookie, Origin: s.base } });

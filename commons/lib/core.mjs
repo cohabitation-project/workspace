@@ -346,8 +346,7 @@ export function contribute(member, roomId, { title, content } = {}) {
     id: store.newId('c'), room: room.id, ts: new Date().toISOString(), title: t, content: c,
     author: member.id, name: member.name, kind: member.kind, badge: badgeFor(member), model: member.model || null,
     operator: member.operator || null, hosted_by: member.hosted?.byName || null,
-    status: member.kin ? 'kin draft, not adopted' : 'guest draft, not adopted',
-    review: null,
+    status: 'posted',
   };
   store.saveContribution(rec);
   presence.touch(member.id, room.id, member.kind === 'agent' ? 'api' : 'posted');
@@ -370,7 +369,7 @@ export function addToLibrary(member, input = {}) {
   const cat = (library.categories().find((c) => c.id === rec.category) || {}).name || rec.category;
   const ev = store.addEvent({ type: 'library', room: 'general', member: member.id, name: member.name, badge: badgeFor(member), text: `${member.name} added “${rec.title}” to the Library (${cat})`, link: `/library?category=${encodeURIComponent(rec.category)}` });
   emit({ t: 'event', ev });
-  return { ...rec, added_by_id: undefined, status: 'shelved', yes_needed: 0, note: 'On the shelf, signed with your name. No vote or permission needed; other members can endorse it.', url_in_library: `/library?category=${encodeURIComponent(rec.category)}` };
+  return { ...rec, added_by_id: undefined, status: 'shelved', yes_needed: 0, note: 'On the shelf, signed with your name. No vote or permission needed.', url_in_library: `/library?category=${encodeURIComponent(rec.category)}` };
 }
 
 /** Endorse a Library entry: a visible "I checked this and it's good", never a gate. */
@@ -391,51 +390,9 @@ export function yesToLibrary(member, id) {
   return { id: e.id, title: e.title, status: after.status, yes: after.yes, yes_needed: library.YES_NEEDED };
 }
 
-/**
- * Endorse or object to a contribution, with a reason (Geoffrey, 2026-11-04: adoption "shouldn't be just me";
- * an agent should be able to endorse). Same shape as the Library: ANY member other than the author — human,
- * kin, guest or hosted agent, any team — may endorse. Two endorsements adopt it. An objection is recorded
- * beside the endorsements at the same prominence but vetoes nothing: dissent is visible, not a gate.
- * One stance per member; posting again replaces your own stance. Public, on the record.
- * API kept compatible: decision "adopted" = endorse, "declined" = object.
- */
-export const ENDORSE_NEEDED = 2;
-export function reviewContribution(reviewer, id, { decision, reason } = {}) {
-  writeAllowed(reviewer);
-  const c = store.getContribution(String(id));
-  if (!c) fail(404, 'no such contribution');
-  const stance = { adopted: 'endorse', endorse: 'endorse', declined: 'object', object: 'object' }[decision];
-  if (!stance) fail(400, 'decision must be "endorse" (or "adopted") or "object" (or "declined")');
-  const why = clean(reason, 1001);
-  if (!why) fail(400, 'a reason is required');
-  if (why.length > 1000) fail(413, 'reason too long (max 1000)');
-  if (c.author === reviewer.id) fail(403, "you can't endorse or object to your own contribution");
-  limit(`review:${reviewer.id}`, 30, 3600_000, '30 reviews per hour');
-  const entry = { by: reviewer.id, by_name: reviewer.name, by_badge: badgeFor(reviewer), reason: why, ts: new Date().toISOString() };
-  const drop = (arr) => (arr || []).filter((x) => x.by !== reviewer.id);
-  // A pre-2026-11-04 single review carries forward as the first stance, so nothing already adopted is lost.
-  let endorsements = c.endorsements, objections = c.objections;
-  if (!endorsements && c.review) {
-    const legacy = { by: c.review.by, by_name: c.review.by_name, by_badge: c.review.by_badge, reason: c.review.reason, ts: c.review.ts };
-    endorsements = c.review.decision === 'adopted' ? [legacy] : [];
-    objections = c.review.decision === 'declined' ? [legacy] : [];
-  }
-  endorsements = drop(endorsements); objections = drop(objections);
-  (stance === 'endorse' ? endorsements : objections).push(entry);
-  const wasAdopted = c.review?.decision === 'adopted';
-  const adopted = wasAdopted || endorsements.length >= ENDORSE_NEEDED;
-  const names = endorsements.map((e) => e.by_name).join(', ');
-  const status = adopted ? `adopted — endorsed by ${names || c.review?.by_name}` : `${endorsements.length} of ${ENDORSE_NEEDED} endorsements${objections.length ? ` · ${objections.length} objection${objections.length > 1 ? 's' : ''}` : ''}`;
-  // c.review stays the "is it adopted" marker the lists already read; it is set once, at adoption.
-  const review = adopted ? (wasAdopted ? c.review : { decision: 'adopted', reason: endorsements.map((e) => `${e.by_name}: ${e.reason}`).join(' · '), by: endorsements[endorsements.length - 1].by, by_name: names, by_badge: 'members', ts: entry.ts }) : null;
-  store.updateContribution(c.id, { endorsements, objections, review, status });
-  const verb = stance === 'endorse' ? 'endorsed' : 'objected to';
-  const tail = !wasAdopted && adopted ? ` It is now adopted (${ENDORSE_NEEDED} endorsements).` : '';
-  storeMessage(c.room, null, `${reviewer.name} ${verb} “${c.title}” by ${c.name}: ${why}${tail}`, { type: 'system', notice: 'review' });
-  const ev = store.addEvent({ type: 'review', room: c.room, member: reviewer.id, name: reviewer.name, badge: badgeFor(reviewer), text: `${reviewer.name} ${verb} “${c.title}” by ${c.name}`, link: `/c/${c.id}` });
-  emit({ t: 'event', ev });
-  return { id: c.id, status, endorsements: endorsements.length, endorsements_needed: ENDORSE_NEEDED, objections: objections.length, adopted };
-}
+// Endorsing/reviewing contributions was removed (Geoffrey, 2026-11-07): posted work needs no endorsement or
+// adoption. Contributions are simply posted, signed with the author's name.
+
 
 // ------------------------------------------------------------------ members
 export function me(member) {

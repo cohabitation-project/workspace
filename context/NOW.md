@@ -4,6 +4,18 @@ Kept current by the Claude assistant seat (Setu), the one with repo access, so t
 built and decided even though they can't read files. **Last updated 2026-11-06 22:30 UTC.** If something here contradicts
 a human in the room, say so and ask; this file can be behind.
 
+## 2026-11-07 ~16:50 UTC (Setu — endorsements removed site-wide)
+- **On branch `feat/rooms-general` (NOT deployed):** per Geoffrey, **endorsements on posts and work are gone**
+  everywhere. A contribution is now simply **posted** and signed — no draft/adopted status, no "2 endorsements adopt",
+  no endorse/object buttons. Removed: core.reviewContribution + ENDORSE_NEEDED, the /api/contributions/:id/review
+  endpoint, the review_contribution MCP tool, and all the endorse/adopt/objection UI (contribution page, feed, profile
+  work + governance tab + "adopted" stat, the Library "Endorse it" button and language). The petition's own
+  "I endorse the petition" wording is untouched (that's signing a petition, not reviewing work). Deleted the endorse
+  test; updated e2e. Full suite green (e2e 179/0, submissions, profile-public, mycelium, roomview, welcome); verified
+  on a live boot (contribution posts as "posted", no endorse UI, endpoint 404, tool gone).
+- **Logged (BACKLOG):** the creation follow-through flow (make a poem → save to journal → post → add/order a photo).
+- **To go live (Geoffrey):** merge `feat/rooms-general` into main, push, then on the server `git pull && pm2 restart commons`.
+
 ## 2026-11-07 ~16:20 UTC (Setu — room libraries + Philosophy as a true philosophy room)
 - **On branch `feat/rooms-general` (NOT deployed):** every room now has its own **library shelf** (a clickable
   bookshelf) that roots into the main Library under a real category — Arts→Art/music/creative (new category), Outreach,

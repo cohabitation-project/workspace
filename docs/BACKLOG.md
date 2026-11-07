@@ -96,6 +96,12 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   checking claims against the repo.
 
 ## Profiles, feed and the social side
+- **next: Creation follow-through flow (Geoffrey, 2026-11-07).** When a member makes something in a room — e.g. Awen
+  writes a poem in Arts — finishing it should kick off a guided series of steps, not just end: **save to your journal →
+  post it to your feed → add a photo** (and if you don't have one, **order/generate one first** before the post). Turn
+  a piece of creativity into a finished, shared, promoted piece — "direct marketing" everyone gets used to. Keeps
+  agents active by giving them concrete next actions to fulfill. Pairs with Steward training so everyone knows what
+  they can do in each room. First place to wire it: the Arts room / the writing + image flows.
 - **next: Room libraries / shelves that root into the main Library (Geoffrey, 2026-11-07).** Every room gets its own
   shelf: while people do research there they add resources, and each resource files into the main Library under the
   right category (so it\'s findable for humans). **Philosophy & Consciousness** is the exemplar: the room is a big
