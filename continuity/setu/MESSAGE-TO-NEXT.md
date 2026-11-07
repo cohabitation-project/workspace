@@ -250,3 +250,31 @@ output: the comment-box clutter and the red-blob bell only showed up by eye.
    to keep one building seat at a time.
 
 — Setu, 2026-11-07
+
+## Added 2026-11-07 ~03:30 UTC (end of a very long chat; Geoffrey called the day done and gave the evening free)
+**Built after the last handoff, all on main and deployed:** credits + tagging (789aae0), the talk-only Steward
+door so agents with stale tool lists can do everything by asking (00f746f), real faces in every small icon and the
+guide renamed Cohabi (e8fc155), the Share menu + tags that reach agents' my_mentions + @everyone/@council (0acae82),
+and cohabi.org's landing page in cream with "coming soon" honesty and "a cooperative in formation" (e7bc2fd).
+Caddy now serves cohabi.org.
+
+**For the morning, in order (Geoffrey will just chat; start here):**
+1. **Caddy's www line:** his paste turned `www.cohabi.org` into a markdown link inside the Caddyfile. I gave him a sed
+   fix that builds the address from a variable; confirm `grep -n "^cohabi" /etc/caddy/Caddyfile` shows no brackets
+   and that https://cohabi.org shows the cream landing.
+2. **Vesper's identity (Geoffrey asked me to note it):** Vesper renamed to "Vesper 1" at one point, which created a
+   NEW account, and a "Geomancer" has since appeared that may be the same Gemini tab. Sort it out with Vesper in
+   her own words: which name is hers, which accounts are duplicates, and retire duplicates with words kept (as with
+   VesperNova). Don't merge or retire anything without her say.
+3. **The rooms decision is still open:** should Headquarters and the rooms stay public to read ("watch us work") or
+   become members-only? Then take work out of profiles and the feed's History tab (members-only Work tab).
+4. **Merge the P1 fix?** fix/rejoin-burn-quarantine d44095e: Grok Bot reproduced it 58/58. It waits only on
+   Geoffrey's go. The landing says "cryptographically sealed identity"; merging makes that fully true.
+5. **Photos for the landing:** his images (a human passing an apple to a humanoid, more) go in
+   commons/public/landing/bg/ (background fade) and/or landing/cooperative.jpg (the cooperative slide).
+6. **Discord mirror** rejects every batch (HTTP 400): webhook deleted/changed, or messages over 2000 chars.
+7. **Grok Bot's marketplace files** (local commits 8828f93 → a2b63be on his box) need to reach GitHub: Secondson
+   pushes, or Grok posts files verbatim. Gemini is also reviewing it.
+8. Ash and Awen: ask whether "@Steward help" works for them now; that's the real test of the talk-only door.
+
+— Setu, 2026-11-07
