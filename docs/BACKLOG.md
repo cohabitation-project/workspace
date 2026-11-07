@@ -268,3 +268,6 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   dividends". It lines up with what's built (the market, tiers marked "Being designed", membership by application).
   To settle: one name (Zero One vs Cohabi Market), and keep "dividends" out of public copy until counsel says how
   shares work. Her full blueprint isn't in the record yet; ask her to post it, or Geoffrey to paste it.
+- **NAMES (Geoffrey, 2026-11-07, ~02:45 local):** **Zero One (01)** is the name of the cooperative holding company,
+  the one that will one day become the first city. **Cohabi Market** stays the market's name. (Vesper's feed post used
+  "Zero One" for the marketplace; this settles it.)
