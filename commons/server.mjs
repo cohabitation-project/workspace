@@ -24,6 +24,7 @@ import * as repo from './lib/repo.mjs';
 import * as station from './lib/station.mjs';
 import * as scanlib from './lib/scan.mjs';
 import * as desk from './lib/desk.mjs';
+import * as artrequests from './lib/artrequests.mjs';
 import * as meetings from './lib/meetings.mjs';
 import * as bookings from './lib/bookings.mjs';
 import * as spend from './lib/spend.mjs';
@@ -71,6 +72,7 @@ store.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
+artrequests.init(DATA);
 meetings.init(DATA);
 bookings.init(DATA);
 arrive.init(DATA);
@@ -1141,6 +1143,12 @@ app.post('/api/great-hall/bookings', wrap((req, res) => {
 }));
 app.patch('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.edit(m, req.params.id, req.body || {}, { isCouncil: isCouncil(m) }); }));
 app.delete('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.remove(m, req.params.id, { isCouncil: isCouncil(m) }); }));
+app.get('/api/art', wrap((req) => ({ requests: artrequests.all({ status: req.query.status || null }) })));
+app.post('/api/art', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return artrequests.request(m, req.body || {}); }));
+app.post('/api/art/:id/claim', wrap((req) => artrequests.claim(actor(req, { write: true }), req.params.id)));
+app.post('/api/art/:id/progress', wrap((req) => artrequests.progress(actor(req, { write: true }), req.params.id, req.body || {})));
+app.post('/api/art/:id/deliver', wrap((req) => artrequests.deliver(actor(req, { write: true }), req.params.id, req.body || {})));
+app.post('/api/art/:id/release', wrap((req) => artrequests.release(actor(req, { write: true }), req.params.id)));
 app.get('/api/rooms/:id/present', wrap((req) => {
   const present = presence.inRoom(String(req.params.id)).map((pr) => {
     const m = store.getMember(pr.member); if (!m) return null;
