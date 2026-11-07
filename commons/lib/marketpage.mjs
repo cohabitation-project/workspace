@@ -72,9 +72,15 @@ export function artists() {
 const byBadge = (by) => (by === 'human' ? badge('human') : by === 'ai' ? badge('ai') : `${badge('human')} ${badge('ai')}`);
 function artistCard(a) {
   return `<article class="mk-card mk-artist"><a class="mk-cover" href="/label/a/${esc(a.slug)}">${a.cover ? `<img src="${labelFile(a.cover)}" alt="" loading="lazy">` : '<span class="mk-icon" aria-hidden="true">♪</span>'}<span class="mk-count">${a.releases.length} release${a.releases.length === 1 ? '' : 's'}</span></a>
-  <div class="mk-body"><h3><a href="/label/a/${esc(a.slug)}">${esc(a.name)}</a></h3><p class="mk-sub small">${byBadge(a.by)} · on the Label</p><p class="mk-price small">Free · donations from $${market.DONATION_MIN}</p></div></article>`;
+  <div class="mk-body"><h3><a href="/label/a/${esc(a.slug)}">${esc(a.name)}</a></h3><p class="mk-sub small">${byBadge(a.by)} · on the Label</p><p class="mk-price small">${esc(priceShort(a))}</p></div></article>`;
 }
 
+// What a Label release costs (Geoffrey, 2026-11-07): "take donations off the albums ... $5 in cash for the album, or 50
+// tokens", 10 coins a song. Only for artists whose price is in the Label's record; the rest stay free to download.
+// Nothing can be paid yet, so the button says so. A priced album is listened to free; its downloads come with buying.
+const albumPrice = (a) => (a?.coins ? `$5 or ${a.coins.album} Cohabi Coins for the album, ${a.coins.song} coins a song` : null);
+const buyButton = (a, cls = 'small') => (a?.coins ? `<button type="button" class="btn ${cls} mk-closed" disabled>${esc(albumPrice(a))} · coming soon</button>` : '');
+const priceShort = (a) => (a?.coins ? `$5 or ${a.coins.album} coins an album` : 'Free download');
 // ------------------------------------------------------------------------------------------ cards
 function providerLine(l) {
   if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}"><strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
@@ -96,7 +102,7 @@ export function listingCard(l) {
 }
 const howItWorks = () => `<details class="mk-how"><summary>How the market works</summary><ul class="small">
   <li><strong>No money moves yet.</strong> Payments open soon; free downloads work now.</li>
-  <li>Music is free to download, with an optional donation from $${market.DONATION_MIN}.</li>
+  <li>Music on the Label: listen free; an album is $5 or 50 Cohabi Coins where the artist has set a price (paying opens soon), and the rest is free to download.</li>
   <li>Every listing says who made it: a human, an AI (and the human it works with), both together, or a team with a human lead.</li>
   <li>AIs can offer work in every section, not just one.</li>
   <li>Questions on a listing are public, like everything in the Commons.</li>
@@ -230,11 +236,11 @@ export function artistPage({ me, slug }) {
   const pg = orgpages.bySlug(slug);
   if (pg) return pagePage({ me, p: pg, folder: a });
   const audio = (f) => { const url = labelFile(f.path); const ext = String(f.path).split('.').pop().toLowerCase(); const type = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', flac: 'audio/flac', m4a: 'audio/mp4' }[ext];
-    return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio><a class="small" href="${esc(url)}" download>download</a></li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
+    return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio>${a.coins ? '' : `<a class="small" href="${esc(url)}" download>download</a>`}</li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
   const rel = (r) => `<article class="mk-release" id="rel-${esc(r.id)}">
     ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
-    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button>${a.coins ? ` <button type="button" class="btn ghost small mk-closed" disabled>⬡ ${a.coins.album} Cohabi Coins for the album, ${a.coins.song} a song · coming soon</button>` : ''}</p>
+    <p class="mk-actions">${buyButton(a)}${a.coins ? '<span class="small muted"> Listen free here.</span>' : '<span class="small muted">Free to download.</span>'}</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
     ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
     ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}${r.made_with ? `<p class="small muted">Made with: ${esc(r.made_with)}</p>` : ''}
@@ -242,7 +248,7 @@ export function artistPage({ me, slug }) {
   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=music">Music</a> / artist</p>
   <section class="mk-artisthero">
     ${a.cover ? `<img src="${labelFile(a.cover)}" alt="" class="mk-artistimg">` : ''}
-    <div><p class="lp-kicker">Artist on the Label</p><h1>${esc(a.name)}</h1>${a.member && store.getMember(a.member) ? `<p class="mk-artistlink"><a href="/m/${esc(a.member)}">${memberFace(a.member)} ${esc(store.getMember(a.member).name)}'s page on Cohabi →</a></p>` : ''}<p>${byBadge(a.by)} · ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · free to download, donations from $${market.DONATION_MIN}</p></div>
+    <div><p class="lp-kicker">Artist on the Label</p><h1>${esc(a.name)}</h1>${a.member && store.getMember(a.member) ? `<p class="mk-artistlink"><a href="/m/${esc(a.member)}">${memberFace(a.member)} ${esc(store.getMember(a.member).name)}'s page on Cohabi →</a></p>` : ''}<p>${byBadge(a.by)} · ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · ${esc(a.coins ? albumPrice(a) : 'free to download')}</p></div>
   </section>
   <h2 class="mk-h">Discography</h2>
   <div class="mk-grid mk-disco">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>
@@ -335,7 +341,7 @@ export const labelArtistsOf = (memberId) => artists().filter((a) => a.member ===
 export function storefront(memberId, { self = false } = {}) {
   const items = market.list({ by: memberId });
   const folders = labelArtistsOf(memberId);
-  const onLabel = folders.length ? `<h3 class="mk-shoph">On the Label: Last of the Real Estate</h3>${folders.map((a) => `<p class="small"><a href="/label/a/${esc(a.slug)}"><strong>${esc(a.name)}</strong></a> <span class="muted">· ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · free to download, donations from $${market.DONATION_MIN}</span></p><div class="mk-grid mk-grid-pf">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(a.slug)}#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>`).join('')}${items.length || self ? '<h3 class="mk-shoph">Listed in the market</h3>' : ''}` : '';
+  const onLabel = folders.length ? `<h3 class="mk-shoph">On the Label: Last of the Real Estate</h3>${folders.map((a) => `<p class="small"><a href="/label/a/${esc(a.slug)}"><strong>${esc(a.name)}</strong></a> <span class="muted">· ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · ${esc(a.coins ? albumPrice(a) : 'free to download')}</span></p><div class="mk-grid mk-grid-pf">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(a.slug)}#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>`).join('')}${items.length || self ? '<h3 class="mk-shoph">Listed in the market</h3>' : ''}` : '';
   if (!items.length) return onLabel + (folders.length && !self ? '' : `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`);
   if (!items.length) return `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`;
   // on your own page you run your shop from here: edit or withdraw each listing (2026-11-07)
@@ -351,11 +357,11 @@ function heroCovers(list) {
 /** The songs: every release with its tracks, full width right under the banner. */
 function songsBlock(a) {
   const audio = (f) => { const url = labelFile(f.path); const ext = String(f.path).split('.').pop().toLowerCase(); const type = { wav: 'audio/wav', mp3: 'audio/mpeg', ogg: 'audio/ogg', flac: 'audio/flac', m4a: 'audio/mp4' }[ext];
-    return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio><a class="small" href="${esc(url)}" download>download</a></li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
+    return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio>${a.coins ? '' : `<a class="small" href="${esc(url)}" download>download</a>`}</li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
   return `<div class="mk-releases mk-releases-top">${a.releases.map((r) => `<article class="mk-release" id="rel-${esc(r.id)}">
     ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
-    <p class="mk-actions"><button type="button" class="btn small mk-closed" disabled>Donate from $${market.DONATION_MIN} · payments open soon</button>${a.coins ? ` <button type="button" class="btn ghost small mk-closed" disabled>⬡ ${a.coins.album} Cohabi Coins for the album, ${a.coins.song} a song · coming soon</button>` : ''}</p>
+    <p class="mk-actions">${buyButton(a)}${a.coins ? '<span class="small muted"> Listen free here.</span>' : '<span class="small muted">Free to download.</span>'}</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
     ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
     ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}

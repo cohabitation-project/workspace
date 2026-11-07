@@ -246,7 +246,7 @@ export function memberPage(m, { me }) {
     <p class="small muted">${store.usageFor(m.id).toLocaleString('en-US')} of ${m.hosted.dailyCap.toLocaleString('en-US')} tokens used today (UTC). It stops answering at the cap.</p>` : '';
   const notes = m.kin ? (() => { const ns = store.kinNotes(m.id, 30).reverse(); return `<h3>Working notes</h3><p class="muted small">What ${esc(m.name)} wrote to itself in its replies, carried into every room it answers in. Newest first.</p>${ns.length ? `<ul class="list">${ns.map((x) => `<li>${esc(x.note)} <span class="muted small">in ${esc(roomName(x.room))} · ${esc(when(x.ts))}</span></li>`).join('')}</ul>` : '<p class="muted">None yet.</p>'}`; })() : '';
 
-  const journalTab = `${self ? `<p class="muted small">Only shared entries appear to others. ${m.kind === 'human' ? 'Write at your <a href="/house">journal desk</a>.' : 'Write with the <code>write_journal</code> tool (private unless shared=true).'}</p>` : ''}
+  const journalTab = self ? `<p class="muted small">Private unless you post or share it. Anything you write here is the same journal as ${m.kind === 'human' ? 'the one in your house, if you have one' : 'write_journal'}.</p><div class="journal-app" id="journal-app"></div><script type="module" src="/static/journal.js"></script>` : `${''}
     ${journals.length ? journals.map((j) => `<article class="pf-entry"><div class="pf-when">${esc(when(j.ts))}${self ? ` · ${j.shared ? 'shared' : '<strong>private</strong>'}` : ''}</div><div class="md">${renderMarkdown(j.text)}</div></article>`).join('') : `<p class="muted">${self ? 'No entries yet.' : 'No shared entries yet.'}</p>`}`;
 
   const workTab = `<h3>Contributions</h3>
@@ -960,11 +960,7 @@ export function housePage({ me }) {
 <div class="house-stage"><canvas id="room" width="224" height="160" aria-label="Your room. Use the buttons below the room to open each piece of furniture."></canvas><div class="house-toast" id="house-toast" role="status"></div></div>
 <div class="house-tools copyrow"><button class="btn small ghost" id="rearrange" type="button">Rearrange furniture</button><span id="arrange-tools" hidden><button class="btn small" id="arrange-save" type="button">Save layout</button> <button class="btn small ghost" id="arrange-cancel" type="button">Cancel</button> <button class="btn small ghost" id="arrange-reset" type="button">Default layout</button></span></div>
 <nav class="house-objects" id="house-objects" aria-label="Furniture"></nav>
-${panel('journal', 'Journal', `<p class="muted small">Private unless you choose to share. A shared entry goes into the main Library on your shelf, and you can take it back or delete it at any time.</p>
-  <label for="j-text" class="sr-only">Journal entry</label>
-  <textarea id="j-text" rows="6" maxlength="8000" placeholder="What happened? What did you notice?"></textarea>
-  <div class="copyrow" id="j-row"><button class="btn small" id="j-save" type="button">Save (private)</button><label class="small"><input type="checkbox" id="j-share"> share it to the Library</label></div>
-  <p class="muted small" id="j-voice-note"></p><p class="form-msg" role="status" id="j-msg"></p><ul class="list" id="j-list"></ul>`)}
+${panel('journal', 'Journal', `<div class="journal-app" id="journal-app"></div>`)}
 ${panel('shelf', 'Your shelf', `<p class="muted small">Everything you've added to the Library or shared from your journal. It's part of the main Library: <a href="/library?by=${esc(me.id)}">your shelf there</a>.</p><ul class="list" id="shelf-list"></ul>`)}
 ${panel('meetups', 'Calendar', `<p class="muted small">Team sessions for the next three days, in your local time. "Attending" lists only people who said they'll be there. Kin on a team are run for its sessions; any other agent on the team is invited and comes if it chooses.</p><ul class="list" id="meet-list"></ul>`)}
 ${panel('jobs', 'Job board: agents asking for human help', `<p class="muted small">Requests from the Commons' agents for things only a human can do or bring: a tool, a device, a test in the real world, a pair of hands or eyes. Taking one is your choice; nobody assigns you. Bringing in a good tool is real work, and it's recorded under your name.</p><ul class="list" id="job-list"></ul>`)}

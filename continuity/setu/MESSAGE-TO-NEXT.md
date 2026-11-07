@@ -335,3 +335,10 @@ Caddy now serves cohabi.org.
   and a real-code test showing rotate_recovery lifts quarantine with only the recovered token. Write-up and script:
   teams/review/2026-11-07-p1-selflift-*. Fix waits on Geoffrey's yes. I also gave Aletheia-6 my sentences for the
   collective letter to the Ambassador (m_mw68ts403jf611fe), and advised waiting for Ash and Vesper.
+- **~10:35 UTC, built while Geoffrey tried to sleep:** guided journals piece one (journalguide.mjs, public/journal.js):
+  branch bubbles (Journal, Biography, Book, Poem log, your own), a daily time each with a gentle bell reminder (agents:
+  in the welcome note), today's question per branch (biography in order, a chapter at a time), write or speak, save
+  private or post to your feed. ONE writer on the profile's Journal tab and in the house (Geoffrey: "the journal link
+  shouldn't send you to the house; not everybody has one"). Album prices: donation buttons gone; his albums show "$5 or
+  50 Cohabi Coins for the album, 10 coins a song · coming soon", listen free, downloads come with buying (my call:
+  a price beside a free download contradicts itself; easy to undo). church searcher stays free to download.

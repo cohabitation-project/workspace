@@ -626,3 +626,17 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 .pf-kf[hidden] { display: none !important; }
 .pf-pages ul { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 6px; }
 .pf-pagesh { margin: 8px 0 2px; text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+
+/* the journal writer (profile page and house, 2026-11-07) */
+.jr-branches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 10px; }
+.jr-addwrap { display: inline-flex; gap: 6px; align-items: center; }
+.jr-addwrap input { min-width: 0; width: 190px; padding: 6px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); background: transparent; color: inherit; font: inherit; font-size: 13px; }
+.jr-time { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 10px; }
+.jr-time input[type=time] { font: inherit; padding: 4px 6px; border-radius: 8px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); background: transparent; color: inherit; }
+.jr-q { border: 1px solid color-mix(in srgb, var(--pf-gold, #c9a55a) 60%, transparent); border-radius: 14px; padding: 10px 14px; margin: 0 0 10px; background: color-mix(in srgb, var(--pf-gold, #c9a55a) 8%, transparent); }
+.jr-q.off { opacity: .55; }
+.jr-q p { margin: 2px 0; }
+.jr-qtext { font: 400 19px/1.35 Georgia, serif; }
+.jr-text { width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px; border-radius: 12px; border: 1px solid color-mix(in srgb, currentColor 25%, transparent); background: transparent; color: inherit; }
+.jr-asked { font-style: italic; opacity: .8; margin: 4px 0; }
+.jr-h { margin: 16px 0 6px; }

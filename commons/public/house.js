@@ -225,39 +225,10 @@ $('#arrange-reset').addEventListener('click', async () => {
 });
 
 // ---------------------------------------------------------------- journal
-function renderJournals() {
-  const list = $('#j-list');
-  list.innerHTML = H.journals.length ? H.journals.map((j) => `<li data-id="${esc(j.id)}">
-    <div class="muted small">${esc(new Date(j.ts).toLocaleString())} · ${j.shared ? `<strong>shared</strong> · <a href="/j/${esc(j.id)}">view</a>` : 'private'}</div>
-    <p class="j-body">${esc(j.text).replace(/\n/g, '<br>')}</p>
-    <div class="copyrow"><span class="j-read"></span>${j.post ? `<a class="btn small ghost" href="/feed#${esc(j.post)}">On the feed</a>` : '<button class="btn small ghost" data-act="post">Post to the feed</button>'}<button class="btn small ghost" data-act="share">${j.shared ? 'Take it back (make private)' : 'Share to the Library'}</button><button class="btn small ghost" data-act="delete">Delete</button></div></li>`).join('') : '<li class="muted">No entries yet.</li>';
-  list.querySelectorAll('li[data-id]').forEach((li) => li.querySelector('.j-read').append(readButton(() => li.querySelector('.j-body').innerText, { label: 'Read this entry aloud' })));
-}
-$('#j-share').addEventListener('change', () => { $('#j-save').textContent = $('#j-share').checked ? 'Save and share' : 'Save (private)'; });
-$('#j-save').addEventListener('click', async () => {
-  const text = $('#j-text').value.trim(); const msg = $('#j-msg'); msg.classList.remove('err');
-  if (!text) { msg.textContent = 'Write or speak something first.'; msg.classList.add('err'); return; }
-  try {
-    const j = await api('/api/journal', { method: 'POST', body: JSON.stringify({ text, shared: $('#j-share').checked }) });
-    H.journals.unshift(j); renderJournals(); $('#j-text').value = ''; $('#j-share').checked = false; $('#j-save').textContent = 'Save (private)';
-    msg.textContent = j.shared ? 'Saved and shared to the Library.' : 'Saved. Only you can see it.';
-    try { localStorage.removeItem('house-draft'); } catch { /* ignore */ }
-  } catch (e) { msg.textContent = e.message; msg.classList.add('err'); }
-});
-$('#j-list').addEventListener('click', async (e) => {
-  const b = e.target.closest('button[data-act]'); if (!b) return;
-  const id = b.closest('li').dataset.id; const j = H.journals.find((x) => x.id === id);
-  try {
-    if (b.dataset.act === 'post') { const r = await api(`/api/journal/${id}/post`, { method: 'POST', body: '{}' }); j.post = r.post.id; j.shared = true; $('#j-msg').textContent = 'Posted to the feed. The entry stays here in your journal.'; }
-    else if (b.dataset.act === 'share') { const r = await api(`/api/journal/${id}/share`, { method: 'POST', body: JSON.stringify({ shared: !j.shared }) }); j.shared = r.shared; }
-    else { if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = 'Tap again to delete for good'; return; } await api(`/api/journal/${id}`, { method: 'DELETE' }); H.journals = H.journals.filter((x) => x.id !== id); }
-    renderJournals();
-  } catch (err) { $('#j-msg').textContent = err.message; $('#j-msg').classList.add('err'); }
-});
-$('#j-row').prepend(micButton($('#j-text'), { onStatus: (m) => { $('#j-msg').textContent = m; } }));
-$('#j-voice-note').textContent = VOICE_NOTE;
-try { const d = localStorage.getItem('house-draft'); if (d) $('#j-text').value = d; } catch { /* ignore */ }
-$('#j-text').addEventListener('input', () => { try { localStorage.setItem('house-draft', $('#j-text').value); } catch { /* ignore */ } });
+// The journal (2026-11-07): one writer shared with the profile page (public/journal.js), so an entry written here
+// shows on your profile's Journal tab and the other way round.
+function renderJournals() { /* the shared journal writer renders itself */ }
+import('/static/journal.js').then((m) => { const el = document.getElementById('journal-app'); if (el) m.mountJournal(el); }).catch(() => {});
 
 // ---------------------------------------------------------------- shelf, calendar, board, drawer
 function renderShelf() {

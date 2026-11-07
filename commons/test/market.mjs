@@ -19,7 +19,7 @@ ok('/label is the Cohabi Market', /<h1>Cohabi Market<\/h1>/.test(html) && /Last 
 ok('the home shows six blocks: music, arts & crafts, video & design, software & hardware, services, classifieds', ['music', 'art', 'video', 'software', 'services', 'classifieds'].every((k) => html.includes(`data-block="${k}" href="/label?cat=${k}"`)));
 ok('featured rows under the blocks, honest about what they are', /Featured music/.test(html) && /Featured human \+ AI teams/.test(html) && /Classifieds<\/h2>/.test(html) && /Nothing here is ranked or paid for/.test(html));
 ok('empty featured spots say they are open, never fake names', /This spot is open/.test(html));
-ok('the Label releases are gathered into artist folders: free, donations from $5', /href="\/label\/a\/geoffrey-david"/.test(html) && /Free · donations from \$5/.test(html) && /Artists on the Label/.test(await page('/label?cat=music')));
+ok('the Label releases are gathered into artist folders, priced as their artists set them', /href="\/label\/a\/geoffrey-david"/.test(html) && /\$5 or 50 coins an album/.test(html) && /Free download/.test(html) && /Artists on the Label/.test(await page('/label?cat=music')));
 const gd = await page('/label/a/geoffrey-david');
 ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
 ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd));
@@ -133,5 +133,9 @@ const myPage = await page(`/m/${meH.id || meH.member?.id}`, ck);
 ok('the profile editor offers skill bubbles and an add-your-own box', /class="pf-skillchip" data-skill="Songwriting"/.test(myPage) && /id="pf-newskill"/.test(myPage));
 await call('/api/me', { skills: ['Didgeridoo'] }, A, 'PATCH');
 ok('a skill a member adds becomes a bubble for others', /data-skill="Didgeridoo"/.test(await page(`/m/${meH.id || meH.member?.id}`, ck)));
+const gdp = await page('/label/a/geoffrey-david');
+ok('no donation buttons on the albums; $5 or 50 coins, coming soon', !/Donate from/.test(gdp) && /\$5 or 50 Cohabi Coins for the album, 10 coins a song · coming soon/.test(gdp));
+ok('a priced album is listened to free, and its downloads come with buying', /<audio controls/.test(gdp) && !/ download>download<\/a>/.test(gdp));
+ok('an album with no price set stays free to download', / download>download<\/a>/.test(await page('/label/a/church-searcher')) || !/<audio controls/.test(await page('/label/a/church-searcher')));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall market tests passed'); process.exit(failures ? 1 : 0);

@@ -18,6 +18,8 @@ import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as posts from './posts.mjs';
 import * as market from './market.mjs';
+import * as journalguide from './journalguide.mjs';
+import * as house from './house.mjs';
 import * as groups from './groups.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
@@ -183,10 +185,11 @@ const SEVEN_DAYS = 7 * 86400_000;
 function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAYS).toISOString(); return items.filter((x) => x.ts > t).length; }
 export function bellsFor(me) {
   const m = store.getMember(me.id);
-  const soc = [...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 })].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
-  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'market-answer': (n) => `answered your question on “${n.title}”` };
+  let due = []; try { due = journalguide.dueFor(m, house.myJournals(m)).map((d) => ({ ...d, by: { id: m.id, name: m.name } })); } catch { due = []; }
+  const soc = [...due, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 })].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
+  const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'journal-due': (n) => `· your ${n.name} time has come round. Ready when you are; skipping is fine`, 'market-answer': (n) => `answered your question on “${n.title}”` };
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
-  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
+  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
   const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
   if (!isCommonsMember(m)) return social;

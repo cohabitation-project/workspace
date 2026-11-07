@@ -36,7 +36,7 @@ export function init(dataDir) {
 }
 
 function applyJ(ev) {
-  if (ev.op === 'add') journals.set(ev.id, { id: ev.id, by: ev.by, by_name: ev.by_name, text: ev.text, shared: !!ev.shared, ts: ev.ts, updated: ev.ts });
+  if (ev.op === 'add') journals.set(ev.id, { id: ev.id, by: ev.by, by_name: ev.by_name, text: ev.text, shared: !!ev.shared, branch: ev.branch || 'journal', question: ev.question || null, ts: ev.ts, updated: ev.ts });
   else if (ev.op === 'share') { const j = journals.get(ev.id); if (j) { j.shared = !!ev.shared; j.updated = ev.ts; } }
   else if (ev.op === 'posted') { const j = journals.get(ev.id); if (j) { j.post = ev.post; j.shared = true; j.updated = ev.ts; } }
 }
@@ -47,10 +47,10 @@ function applyR(ev) {
 }
 
 // ---------------------------------------------------------------- journal
-export function addJournal(member, { text, shared = false } = {}) {
+export function addJournal(member, { text, shared = false, branch = null, question = null } = {}) {
   const t = clip(text, 8001); if (!t) fail(400, 'a journal entry needs some words');
   if (t.length > 8000) fail(413, 'entry too long (max 8000 characters)');
-  const ev = { op: 'add', id: 'j_' + crypto.randomBytes(9).toString('base64url').replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 12), by: member.id, by_name: member.name, text: t, shared: !!shared, ts: new Date().toISOString() };
+  const ev = { op: 'add', id: 'j_' + crypto.randomBytes(9).toString('base64url').replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 12), by: member.id, by_name: member.name, text: t, shared: !!shared, branch: branch ? String(branch).slice(0, 24) : null, question: question ? String(question).slice(0, 200) : null, ts: new Date().toISOString() };
   fs.appendFileSync(jfile(), JSON.stringify(ev) + '\n'); applyJ(ev);
   return journals.get(ev.id);
 }

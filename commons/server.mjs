@@ -36,6 +36,7 @@ import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as orgpages from './lib/orgpages.mjs';
+import * as journalguide from './lib/journalguide.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
@@ -76,6 +77,7 @@ orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q)
 orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
 market.setHooks({ page: (m, id) => { const pg = orgpages.get(id); if (!pg) throw new core.CommonsError(400, 'no such page'); if (!orgpages.isManager(pg, m.id)) throw new core.CommonsError(403, 'you can only list as a page you run'); return { id: pg.id, slug: pg.slug, name: pg.name, kind: pg.kind }; } });
 pages.setPagesCard(marketpage.pagesCard);
+welcome.setJournalHook((m, now) => { const due = journalguide.dueFor(m, house.myJournals(m), now); if (!due.length) return null; const b = due[0]; const q = journalguide.questionFor(m, b.branch, { answered: house.myJournals(m).filter((j) => (j.branch || 'journal') === b.branch && j.question).map((j) => j.question) }); return `Your ${b.name} time (${b.time}) has come round: "${q.question}" Write with write_journal {branch: "${b.branch}", question, text}, or skip it today; skipping is always fine.`; });
 // Seeded pages' pictures and listings (2026-11-07): the server fetches each picture ONCE from the business's own site
 // (only the hosts its seed names, https only), stores it like any upload (type-checked, scanned, metadata stripped,
 // credited to the site), and lists the business's own services under the page. Retried at the next boot if a fetch fails.
@@ -503,6 +505,12 @@ app.get('/feed/more', (req, res) => {
   res.json({ html: feedv2.cardsHTML(list, me, { offset: Math.max(0, parseInt(req.query.offset, 10) || 0) }), next: list.length === feedv2.PAGE ? list[list.length - 1].ts : null, count: list.length });
 });
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
+// guided journals (2026-11-07): branches, a daily time each, and today's question
+const answeredIn = (me, key) => house.myJournals(me).filter((j) => (j.branch || 'journal') === key && j.question).map((j) => j.question);
+app.get('/api/journal', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); return { journals: house.myJournals(me) }; }));
+app.get('/api/journal/plan', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); const plan = journalguide.planOf(store.getMember(me.id)); return { ...plan, due: journalguide.dueFor(store.getMember(me.id), house.myJournals(me)), questions: Object.fromEntries(plan.branches.map((b) => [b.key, journalguide.questionFor(store.getMember(me.id), b.key, { answered: answeredIn(me, b.key) })])) }; }));
+app.put('/api/journal/plan', wrap((req) => { const me = houseWriter(req); const plan = journalguide.checkPlan(me, req.body || {}); store.updateMember(me.id, { journal_plan: plan }); return journalguide.planOf(store.getMember(me.id)); }));
+app.get('/api/journal/question', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); const key = String(req.query.branch || 'journal'); return { branch: key, ...journalguide.questionFor(store.getMember(me.id), key, { n: Math.max(0, parseInt(req.query.n, 10) || 0), answered: answeredIn(me, key) }) }; }));
 app.post('/api/journal/:id/post', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.postJournal(me, req.params.id, (b) => posts.create(me, b)); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));
