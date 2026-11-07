@@ -36,7 +36,8 @@ if (form) {
       }
       msg.textContent = 'posting…';
       const group = form.dataset.group || null;
-      const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(group ? { group } : {}) }) });
+      const release = $('#c-release')?.value || null;
+      const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(group ? { group } : {}), ...(release ? { release } : {}) }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not post (${r.status})`; return; }
       location.href = `${group ? location.pathname : '/feed'}#${j.id}`; location.reload();
     } catch (err) { msg.textContent = err.message; }

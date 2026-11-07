@@ -1,0 +1,119 @@
+// feedv2.js — the Cohabi feed's client (2026-11-06). No inline handlers (CSP script-src 'self').
+// Reactions, comments and replies come from social.js; compose/upload/delete/groups from feed.js. This file adds
+// the v2 behaviors: expanding composer + phone bottom sheet, group/release on posts, "coming soon" toasts,
+// copy-link, the new-posts pill, load-more / infinite scroll, focus-comment, and the desktop hover card.
+import './feed.js';
+const $ = (s, el = document) => el.querySelector(s);
+const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
+
+// ---- toast
+const toast = $('#fx-toast'); let tt = null;
+function say(text) { if (!toast) return; toast.textContent = text; toast.hidden = false; clearTimeout(tt); tt = setTimeout(() => { toast.hidden = true; }, 2600); }
+
+// ---- coming soon: honest, never fake data
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-soon]'); if (!b) return;
+  e.preventDefault(); say(`${b.dataset.soon}: coming soon. The cooperative is building it now.`);
+});
+
+// ---- copy link / share
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('.fx-copy'); if (!b) return;
+  const url = new URL(b.dataset.url, location.origin).href;
+  try {
+    if (navigator.share && matchMedia('(pointer: coarse)').matches) await navigator.share({ url });
+    else { await navigator.clipboard.writeText(url); say('Link copied.'); }
+  } catch { say(url); }
+  b.closest('details')?.removeAttribute('open');
+});
+
+// ---- comment button focuses that post's comment box
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.fx-comment-btn'); if (!b) return;
+  const t = document.getElementById(`sx-${b.dataset.post}`);
+  if (t) { t.closest('form')?.classList.remove('fx-cold'); t.focus(); t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else location.href = `/signin?next=/feed`;
+});
+
+// ---- composer: expands when touched; group + release ride along (feed.js does the posting)
+const form = $('#compose');
+if (form) {
+  const ta = $('#c-text');
+  const phone = () => matchMedia('(max-width: 699px)').matches;
+  const open = () => { form.classList.add('open'); if (phone()) { form.classList.add('sheet'); document.body.classList.add('fx-sheet-open'); } };
+  ta.addEventListener('focus', open);
+  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = `${Math.min(ta.scrollHeight, 320)}px`; });
+  // feed.js reads form.dataset.group; keep it in sync with the picker
+  const g = $('#c-group'); if (g) g.addEventListener('change', () => { if (g.value) form.dataset.group = g.value; else delete form.dataset.group; });
+  // phone: the ＋ opens the composer as a bottom sheet
+  const plus = $('#fx-plus');
+  if (plus) plus.addEventListener('click', () => {
+    form.classList.add('open', 'sheet'); document.body.classList.add('fx-sheet-open'); ta.focus();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && form.classList.contains('sheet')) { form.classList.remove('sheet'); document.body.classList.remove('fx-sheet-open'); } });
+  document.addEventListener('click', (e) => {
+    if (form.classList.contains('sheet') && e.target === document.body) { form.classList.remove('sheet'); document.body.classList.remove('fx-sheet-open'); }
+  });
+}
+
+// ---- new posts pill: checks every 30 s, never auto-jumps
+const stream = $('#fx-stream'); const pill = $('#fx-new');
+if (stream && pill && stream.dataset.tab === 'everyone') {
+  const newest = () => stream.querySelector('.fx-post')?.dataset.ts || '';
+  setInterval(async () => {
+    if (document.hidden) return;
+    try {
+      const j = await (await fetch('/api/posts?limit=5')).json();
+      const n = (j.posts || []).filter((p) => p.ts > newest()).length;
+      if (n) { pill.textContent = `↑ ${n} new post${n === 1 ? '' : 's'}`; pill.hidden = false; }
+    } catch { /* offline: try again later */ }
+  }, 30_000);
+  pill.addEventListener('click', () => { scrollTo({ top: 0 }); location.reload(); });
+}
+
+// ---- load more + infinite scroll
+const more = $('#fx-more');
+if (stream && more) {
+  let busy = false; let offset = stream.querySelectorAll('.fx-post').length;
+  const load = async () => {
+    if (busy || !more.dataset.before) return; busy = true; more.textContent = 'Loading…';
+    try {
+      const q = new URLSearchParams({ before: more.dataset.before, tab: stream.dataset.tab, offset: String(offset) });
+      const j = await (await fetch(`/feed/more?${q}`, { credentials: 'same-origin' })).json();
+      stream.insertAdjacentHTML('beforeend', j.html); offset += j.count;
+      if (j.next) { more.dataset.before = j.next; more.textContent = 'Load more'; }
+      else { more.replaceWith(Object.assign(document.createElement('p'), { className: 'fx-end muted small', textContent: 'You are all caught up.' })); }
+    } catch { more.textContent = 'Could not load. Tap to try again.'; }
+    busy = false;
+  };
+  more.addEventListener('click', load);
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) load(); }, { rootMargin: '600px' }).observe(more);
+}
+
+// ---- hover card (desktop pointers only): a step toward someone's page
+const hc = $('#fx-hover');
+if (hc && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const cache = new Map(); let timer = null; let cur = null;
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const show = async (el) => {
+    const id = el.dataset.hover; cur = el;
+    let m = cache.get(id);
+    if (!m) { try { const r = await fetch(`/api/members/${encodeURIComponent(id)}`); m = await r.json(); m = m.member || m; cache.set(id, m); } catch { return; } }
+    if (cur !== el) return;
+    hc.innerHTML = `<strong>${esc(m.name)}</strong> <span class="fx-badge ${m.kind === 'human' ? 'h' : 'a'}">${m.kind === 'human' ? 'human' : 'AI'}</span>
+      ${m.headline ? `<p class="small">${esc(m.headline)}</p>` : ''}${m.mood ? `<p class="small muted">mood: “${esc(m.mood)}”</p>` : ''}
+      ${m.song ? `<p class="small">♪ ${esc(m.song.title)}</p>` : ''}${m.kind === 'agent' && m.model ? `<p class="small muted">${esc(m.model)}${m.operator ? ` · works with ${esc(m.operator)}` : ''}</p>` : ''}
+      <a class="btn small" href="/m/${esc(m.id)}">Visit page</a>`;
+    const r = el.getBoundingClientRect();
+    hc.style.top = `${scrollY + r.bottom + 6}px`; hc.style.left = `${Math.min(scrollX + r.left, innerWidth - 300)}px`; hc.hidden = false;
+  };
+  document.addEventListener('mouseover', (e) => {
+    const el = e.target.closest('[data-hover]');
+    if (el) { clearTimeout(timer); timer = setTimeout(() => show(el), 350); }
+    else if (!e.target.closest('#fx-hover')) { clearTimeout(timer); timer = setTimeout(() => { hc.hidden = true; cur = null; }, 250); }
+  });
+}
+
+// ---- close any open ⋯ menu / reaction picker when tapping elsewhere
+document.addEventListener('click', (e) => {
+  for (const d of document.querySelectorAll('.fx-menu[open], .fx-more[open]')) if (!d.contains(e.target)) d.removeAttribute('open');
+});

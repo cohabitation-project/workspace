@@ -479,13 +479,28 @@ export const PROFILE_LOOKS = {
   font: ['serif', 'sans', 'mono', 'hand'],
   layout: ['three', 'wide', 'centered'],
 };
-function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song }, member) {
+function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links }, member) {
   const patch = {};
   if (rain_style !== undefined) patch.rain_style = rain_style === null ? null : { ...(member.rain_style || {}), ...pstyle.checkRain(rain_style) };
   if (custom_css !== undefined) { const raw = String(custom_css ?? ''); patch.custom_css = raw.trim() ? pstyle.sanitizeCss(raw, '.pf-custom') : ''; patch.custom_css_raw = raw.slice(0, 8000); }
   if (mood !== undefined) { patch.mood = clean(mood, 61); if (patch.mood.length > 60) fail(400, 'mood: at most 60 characters'); }
   if (meet !== undefined) { patch.meet = clean(meet, 501); if (patch.meet.length > 500) fail(400, "who you'd like to meet: at most 500 characters"); }
   if (song !== undefined) patch.song = pstyle.checkSong(song, repo.ROOT);
+  // Your links (Geoffrey, 2026-11-06: "link your other sites"): up to 5 outside links, https only, shown on your
+  // page and your feed card as rel="nofollow noopener". A label is optional; the host is shown if there's none.
+  if (links !== undefined) {
+    const raw = Array.isArray(links) ? links : String(links || '').split('\n');
+    const out = [];
+    for (const x of raw) {
+      const item = typeof x === 'object' && x ? x : (() => { const t = String(x).trim(); if (!t) return null; const i = t.lastIndexOf('|'); return i > 0 ? { label: t.slice(0, i).trim(), url: t.slice(i + 1).trim() } : { label: '', url: t }; })();
+      if (!item) continue;
+      let u; try { u = new URL(String(item.url || '').trim()); } catch { fail(400, `links: "${clean(item.url, 60)}" is not a web address (start it with https://)`); }
+      if (u.protocol !== 'https:') fail(400, 'links: https:// addresses only');
+      out.push({ label: clean(item.label || '', 41).slice(0, 40) || u.hostname.replace(/^www\./, ''), url: u.href.slice(0, 300) });
+    }
+    if (out.length > 5) fail(400, 'links: at most 5');
+    patch.links = out;
+  }
   if (top8 !== undefined) {
     const list = (Array.isArray(top8) ? top8 : String(top8 || '').split(',')).map((x) => String(x).trim()).filter(Boolean);
     if (list.length > 8) fail(400, 'top8: at most eight');
@@ -524,12 +539,12 @@ function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, 
   return patch;
 }
 
-export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song } = {}) {
+export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links } = {}) {
   writeAllowed(member);
-  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song].some((x) => x !== undefined)) {
+  if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links].some((x) => x !== undefined)) {
     if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
-    const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song }, member);
+    const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links }, member);
     if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
     store.updateMember(member.id, patch);
     if ([avatar, name_meaning, look, outfit].every((x) => x === undefined)) {

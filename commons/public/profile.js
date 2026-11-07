@@ -52,7 +52,7 @@ if (dlg) {
       theme: f.get('theme'), accent: f.get('accent'), font: f.get('font'), layout: f.get('layout'),
       banner: String(f.get('banner') || ''), portrait: String(f.get('portrait') || ''),
       visibility: { headline: f.get('vis-headline') ? 'private' : 'public', bio: f.get('vis-bio') ? 'private' : 'public', skills: f.get('vis-skills') ? 'private' : 'public' },
-      mood: String(f.get('mood') || ''), meet: String(f.get('meet') || ''),
+      mood: String(f.get('mood') || ''), meet: String(f.get('meet') || ''), links: String(f.get('links') || ''),
       rain_style: { color: f.get('rain-color'), bg: f.get('rain-bg'), speed: +f.get('rain-speed'), density: +f.get('rain-density'), opacity: +f.get('rain-opacity'), symbols: String(f.get('rain-symbols') || '').trim() || undefined },
       top8: String(f.get('top8') || '').split(',').map((x) => x.trim()).filter(Boolean),
       song: String(f.get('song-path') || '').trim() ? { path: String(f.get('song-path')).trim(), title: String(f.get('song-title') || '') } : null,

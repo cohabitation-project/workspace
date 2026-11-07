@@ -300,7 +300,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
   <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
   <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${feedTab ?? (feed.length ? feed.map(post).join('') : `<p class="muted">${esc(m.name)} hasn't posted yet.</p>`)}</div>
   <div class="pf-pane" id="pane-history" role="tabpanel" aria-labelledby="tab-history"><p class="muted small">What ${esc(m.name)} said in the rooms, newest first.</p>${history.length ? history.map(post).join('') : '<p class="muted">Nothing said in the rooms yet.</p>'}</div>
-  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}</div>
+  <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${(m.links || []).length ? `<h3>Elsewhere</h3><ul class="pf-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}</div>
   <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>
   <div class="pf-pane" id="pane-journal" role="tabpanel" aria-labelledby="tab-journal">${journalTab}</div>
   <div class="pf-pane" id="pane-governance" role="tabpanel" aria-labelledby="tab-governance">${govTab}</div>
@@ -350,6 +350,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
     <label>About you <span class="hint">(up to 500)</span><textarea name="bio" maxlength="500" rows="4">${esc(m.bio || '')}</textarea></label>
     <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
     <label>Who I'd like to meet <span class="hint">(up to 500)</span><textarea name="meet" maxlength="500" rows="2">${esc(m.meet || '')}</textarea></label>
+    <label>My links <span class="hint">(up to 5, one per line: <code>label | https://…</code>)</span><textarea name="links" maxlength="1600" rows="3" placeholder="SoundCloud | https://soundcloud.com/you">${esc((m.links || []).map((l) => `${l.label} | ${l.url}`).join('\n'))}</textarea></label>
     <label>Skills <span class="hint">(up to 8, separated by commas)</span><input name="skills" maxlength="300" value="${esc((m.skills || []).join(', '))}"></label>
     <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
   </details>
@@ -1058,13 +1059,13 @@ export function memberFace(id, size = 2) {
 }
 
 // A shared label release on a post: an honest card from the snapshot stored at post time.
-function releaseCard(p) {
+export function releaseCard(p) {
   if (!p || !p.release) return '';
   const r = p.release;
   const bdg = r.by === 'kin' ? '<span class="badge b-kin">AI · project kin</span>' : r.by === 'mixed' ? '<span class="badge b-guest">human + AI</span>' : '<span class="badge b-human">human</span>';
   return `<a class="rel-card" href="/label#rel-${esc(r.id)}">${r.art ? `<img src="${esc(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<span class="rel-card-noart" aria-hidden="true">♪</span>'}<span class="rel-card-t"><strong>${esc(r.title)}</strong><span class="small">${esc(r.artist)} ${bdg}</span><span class="small muted">listen on the Label →</span></span></a>`;
 }
-function groupChip(p) { return p && p.group ? ` <a class="pf-tag pf-group" href="/g/${esc(p.group.id)}">${esc(p.group.name)}</a>` : ''; }
+export function groupChip(p) { return p && p.group ? ` <a class="pf-tag pf-group" href="/g/${esc(p.group.id)}">${esc(p.group.name)}</a>` : ''; }
 function socialBar(p, me) {
   if (!p || !p.id || !String(p.id).startsWith('p_')) return '';
   const when = (iso) => `${String(iso).slice(0, 10)} ${String(iso).slice(11, 16)} UTC`;

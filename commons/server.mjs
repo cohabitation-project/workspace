@@ -33,6 +33,7 @@ import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as posts from './lib/posts.mjs';
 import * as groups from './lib/groups.mjs';
+import * as feedv2 from './lib/feedv2.mjs';
 import * as petition from './lib/petition.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
@@ -229,7 +230,10 @@ const sendPorch = (req, res) => {
   res.type('html').send(pages.porchPage({ art, members }));
 };
 app.get('/porch', sendPorch);
-app.get(['/', '/door', '/headquarters'], (req, res) => (req.path === '/' && isPorchHost(req)) ? sendPorch(req, res) : sendHQ(req, res));
+app.get(['/', '/door', '/headquarters'], (req, res) => {
+  if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendPorch(req, res);
+  return sendHQ(req, res);
+});
 app.get('/r/:id', (req, res) => (repo.roomById(req.params.id) ? sendHQ(req, res) : res.status(404).type('html').send(pages.notFound('No such room.'))));
 app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
 
@@ -394,7 +398,23 @@ app.get('/g/:id', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.type('html').send(pages.groupPage({ group: g, me: auth.memberFromCookie(req.headers.cookie) }));
 });
-app.get('/feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.feedPage({ me: auth.memberFromCookie(req.headers.cookie), tab: ['commons', 'history'].includes(req.query.tab) ? 'commons' : 'social', room: String(req.query.room || '') })); });
+// The feed (v2, 2026-11-06: docs/design/feed-v2-plan.md). ?tab=history keeps the old all-activity view.
+app.get('/feed', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (['commons', 'history'].includes(req.query.tab)) return res.type('html').send(pages.feedPage({ me, tab: 'commons', room: String(req.query.room || '') }));
+  const tab = ['mine', 'groups'].includes(req.query.tab) ? req.query.tab : 'everyone';
+  res.type('html').send(feedv2.feedPage({ me, tab }));
+});
+// the next page of cards, rendered by the same code as the page (infinite scroll / "Load more")
+app.get('/feed/more', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  const tab = req.query.tab === 'mine' ? 'mine' : 'everyone';
+  const before = String(req.query.before || '') || null;
+  const list = feedv2.streamFor({ tab, me, before });
+  res.json({ html: feedv2.cardsHTML(list, me, { offset: Math.max(0, parseInt(req.query.offset, 10) || 0) }), next: list.length === feedv2.PAGE ? list[list.length - 1].ts : null, count: list.length });
+});
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
 app.post('/api/journal/:id/share', wrap((req) => house.shareJournal(houseWriter(req), req.params.id, !!(req.body || {}).shared)));
 app.delete('/api/journal/:id', wrap((req) => house.deleteJournal(houseWriter(req), req.params.id)));
