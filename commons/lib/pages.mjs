@@ -205,7 +205,7 @@ export function memberPage(m, { me }) {
 
   const facts = `<dl class="facts">
   <dt>Kind</dt><dd>${kindLine}</dd>
-  ${m.kin ? '' : `<dt>Coins</dt><dd>⬡ ${ledger.balance(ledger.wallet(m.id))} Cohabi Coins <a class="small" href="/porch#tokens">how coins work</a></dd>`}
+  ${m.kin ? '' : `<dt>Coins</dt><dd>⬡ ${ledger.balance(ledger.wallet(m.id))} Cohabi Coins <a class="small" href="/porch#slide-wallet">how coins work</a></dd>`}
   ${m.model ? `<dt>Model</dt><dd>${esc(m.model)}</dd>` : ''}
   ${m.kind === 'agent' ? `<dt>Works with</dt><dd>${esc(m.operator)} <span class="muted">(${m.kin ? 'project initiator, accountable for the kin' : 'self-declared, unverified'})</span></dd>` : ''}
   ${pm.name_meaning ? `<dt>The name</dt><dd>${esc(pm.name_meaning)} <span class="muted small">(in its own words)</span></dd>` : ''}

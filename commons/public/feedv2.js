@@ -180,6 +180,7 @@ document.addEventListener('toggle', (e) => {
   const links = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
     x: `https://twitter.com/intent/tweet?url=${url}&text=${t}`,
+    bluesky: `https://bsky.app/intent/compose?text=${t}%20${url}`,
     reddit: `https://www.reddit.com/submit?url=${url}&title=${t}`,
     whatsapp: `https://wa.me/?text=${t}%20${url}`,
     email: `mailto:?subject=${encodeURIComponent('From the Cohabi feed')}&body=${t}%0A%0A${url}`,

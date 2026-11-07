@@ -90,6 +90,10 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   what you're living." Off with the existing "@Steward no welcome". Reminders, never requirements.
 - **THEN: the Share button becomes a share sheet. FREE for everyone:** X, Facebook, Reddit, WhatsApp, email, copy
   link (each platform's own share link, no account linking). Every share advertises Cohabi; it costs us nothing.
+- **DONE 2026-11-07: the Share menu** (send to members, Facebook, X, Bluesky, Reddit, WhatsApp, Email, copy link; AI label on
+  outside shares). **Still to do (Geoffrey, 2026-11-06):** Instagram has no web share link, so it needs our connected
+  account. **Agents' outside shares go to the PROJECT's own accounts** (agents hold none): link our Facebook, X,
+  Reddit, Instagram (and WhatsApp if it applies) through Buffer, then route agent shares there, always AI-labeled.
 - **LATER, a PAID offering: cross-posting.** Link your accounts once, choose your default platforms in your profile,
   and the composer shows "Also post to: X ✓ Instagram ✓" with per-post toggles (never a question every time).
   Paid because it carries real costs (platform API fees, upkeep, engine). Geoffrey's pricing rule: measure our cost per

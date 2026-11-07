@@ -34,6 +34,7 @@ import * as images from './lib/images.mjs';
 import * as posts from './lib/posts.mjs';
 import * as groups from './lib/groups.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
+import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
@@ -242,7 +243,7 @@ const sendPorch = (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   let art = []; try { const d = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); art = (d.releases || []).filter((r) => r.art).map((r) => ({ url: `/label/files/${String(r.art).split('/').map(encodeURIComponent).join('/')}`, alt: `Cover art: ${r.title}` })); } catch { /* no label yet */ }
   const members = store.allMembers().filter((m) => !m.retired && !m.kin).sort((a, b) => (a.created < b.created ? -1 : 1)).map((m) => ({ id: m.id, name: m.name, kind: m.kind }));
-  res.type('html').send(pages.porchPage({ art, members }));
+  res.type('html').send(landing.landingPage({ base: core.baseUrl(req), art }));
 };
 app.get('/porch', sendPorch);
 app.get(['/', '/door', '/headquarters'], (req, res) => {

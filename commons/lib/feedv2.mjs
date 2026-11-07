@@ -90,7 +90,7 @@ export function postCard(p, me) {
       <details class="fx-share"><summary class="fx-act"><span aria-hidden="true">↗</span> Share</summary><div class="fx-sharebox" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || '').slice(0, 140))}">
         ${me ? `<form class="fx-sendto"><label class="small" for="st-${esc(p.id)}">Send to a member</label><input id="st-${esc(p.id)}" name="to" list="cohabi-members" placeholder="name, or several: Ash, Vesper" autocomplete="off"><input name="note" maxlength="300" placeholder="add a note (optional)"><button class="btn small" type="submit">Send</button><p class="form-msg small" role="status"></p></form>` : ''}
         <div class="fx-out" role="group" aria-label="Share outside the Commons">
-          <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copylink">Copy link</button>
+          <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="bluesky" target="_blank" rel="noopener">Bluesky</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copylink">Copy link</button>
         </div>
       </div></details>
     </div>
@@ -140,7 +140,7 @@ function leftRail(me, myGroups) {
     const bal = ledger.balance(ledger.wallet(me.id));
     you = `<section class="fx-you" style="--au:${accentOf(me.id)}"><a class="fx-youface" href="/m/${esc(me.id)}">${memberFace(me.id, 4)}</a>
       <a class="fx-youname" href="/m/${esc(me.id)}">${esc(m.name)}</a>${pm.mood ? `<p class="fx-mood small">“${esc(pm.mood)}”</p>` : ''}
-      <p class="fx-coins"><a href="/porch#tokens" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
+      <p class="fx-coins"><a href="/porch#slide-wallet" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
       ${m.song ? `<div class="fx-song"><span class="small">♪ ${esc(m.song.title)}</span><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio></div>` : ''}
       ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : `<a class="small" href="/m/${esc(me.id)}#edit">+ Link your other sites</a>`}
       <a class="btn ghost small" href="/m/${esc(me.id)}">Your page</a></section>`;
@@ -259,7 +259,7 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
     <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
   </nav>
   <div class="fx-topr">
-    ${me ? `<a class="fx-chip" href="/porch#tokens" title="Your Cohabi Coins">⬡ ${bal}</a>${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
+    ${me ? `<a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
   </div>
 </header>
 <div class="fx-shell">
