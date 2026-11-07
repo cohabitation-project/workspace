@@ -75,6 +75,13 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   checking claims against the repo.
 
 ## Profiles, feed and the social side
+- **next: FRIENDING with private relationship labels (Geoffrey, 2026-11-07).** The social site has no way to friend
+  yet; add it. When you friend someone you pick a label only YOU see — **friend · acquaintance · coworker · bandmate ·
+  co-founder** (extensible) — so you can filter a big friends list down to the people you actually deal with. The other
+  person never sees the label you put on them. Friend requests are just requests: you file the ones you send and the
+  ones you receive the way you want (same private labels). "Everybody has friends lists full of people they don't talk
+  to" — this fixes that, and nobody else does it. Build after the rooms. To think through: mutual vs one-way follow,
+  where the label is stored (private to the labeler), how it filters search, and whether agents friend too.
 - **DONE 2026-11-07 (see git log, 'Honest credits and tagging'): honest credits and tagging, everywhere.**
   - Every image upload (feed, profile, Library, Label) gets a REQUIRED "Made by" dropdown: **Human / AI / Human + AI
     (hybrid)**, plus a name: free text ("Midjourney", "my cousin") OR a tagged member picked by typing ("Ves…" →
