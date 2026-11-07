@@ -21,7 +21,7 @@ const S = {
   rooms: [], roomById: {}, presence: new Map(), members: new Map(), events: [], me: null, paused: false, viewers: 0,
   sheet: null, L: null, narrow: null, actors: new Map(), slots: new Map(), open: null, ws: null, hereTimer: null,
   doorHistory: [], typing: new Map(), looks: new Map(),
-  cam: { view: 'commons', zoom: 1 }, // view: 'commons' | 'wing' | 'overview'
+  cam: { s: 1, fx: 0, fy: 0 }, // continuous camera: scale + focus point (world coords)
 };
 
 // ------------------------------------------------------------------ helpers
@@ -295,58 +295,44 @@ function defs() {
 }
 
 // ------------------------------------------------------------------ camera
-function setCam(view) {
+function buildingSize() { const b = $('#building'); return { w: b.clientWidth || 1, h: b.clientHeight || 1 }; }
+function minScale() { const C = buildingSize(), L = S.L; if (!L) return 0.2; return Math.min(C.w / L.W, C.h / L.H) * 0.5; }
+function maxScale() { return 3.2; }
+function clampScale(s) { return Math.max(minScale(), Math.min(maxScale(), s)); }
+function clampCam() { const L = S.L; if (!L) return; S.cam.fx = Math.max(-0.4 * L.W, Math.min(1.4 * L.W, S.cam.fx)); S.cam.fy = Math.max(-0.4 * L.H, Math.min(1.4 * L.H, S.cam.fy)); }
+function applyCam(animate) {
   const L = S.L; if (!L) return;
-  S.cam.view = view;
-  const world = $('#world');
-  const zoomBtn = $('#cam-zoom');
-  const homeBtn = $('#cam-home');
-  // Show/hide the home button: visible when not on the commons view
-  if (homeBtn) homeBtn.hidden = (view === 'commons');
-  if (L.narrow) {
-    const commonsH = L.viewH || (L.building.y + L.building.h + 30);
-    const scaleForOverview = Math.min(1, commonsH / L.H);
-    if (view === 'commons') {
-      world.style.transform = 'translate(0, 0) scale(1)';
-      world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
-      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
-    } else if (view === 'wing') {
-      const shiftY = -(L.wing.hqRoom.y - 20) / L.H * 100;
-      world.style.transform = `translate(0, ${shiftY}%) scale(1)`;
-      world.style.width = '100%'; world.style.height = `${(L.H / commonsH) * 100}%`;
-      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
-    } else {
-      // Zoom all the way out: the SVG (viewBox 0 0 W H, xMidYMid meet) centers the WHOLE canvas —
-      // straight up from the middle, not scaled into a corner (Geoffrey 2026-11-07).
-      world.style.transform = 'none';
-      world.style.width = '100%'; world.style.height = '100%';
-      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to the whole Commons map'; }
-    }
-  } else {
-    const commonsX = L.commonsX;
-    const worldScale = L.W / L.viewW;
-    if (view === 'commons') {
-      const shiftPct = -(commonsX / L.W) * 100;
-      world.style.transform = `translate(${shiftPct}%, 0) scale(1)`;
-      world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
-      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
-    } else if (view === 'wing') {
-      world.style.transform = 'translate(0, 0) scale(1)';
-      world.style.width = `${worldScale * 100}%`; world.style.height = '100%';
-      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to see the full headquarters'; }
-    } else {
-      // Zoom all the way out: show the WHOLE canvas centered (straight up from the middle), not from a corner.
-      world.style.transform = 'none';
-      world.style.width = '100%'; world.style.height = '100%';
-      if (zoomBtn) { zoomBtn.textContent = '\u229f'; zoomBtn.title = 'Zoom out to the whole Commons map'; }
-    }
-  }
+  const world = $('#world'); const C = buildingSize(); const s = S.cam.s;
+  world.style.transition = animate ? '' : 'none';
+  const tx = C.w / 2 - S.cam.fx * s, ty = C.h / 2 - S.cam.fy * s;
+  world.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${s.toFixed(4)})`;
+  const homeBtn = $('#cam-home'); if (homeBtn) homeBtn.hidden = false;
 }
-
+function camFit(x, y, w, h, pad, animate) {
+  const C = buildingSize(); const P = pad || 1.1;
+  const s = clampScale(Math.min(C.w / (w * P), C.h / (h * P)));
+  S.cam.s = s; S.cam.fx = x + w / 2; S.cam.fy = y + h / 2; clampCam(); applyCam(animate !== false);
+}
+// "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
+function fitHQ(animate) { camFit(0, 0, S.L.W, S.L.H, 1.06, animate); }
+function fitAll(animate) { camFit(0, 0, S.L.W, S.L.H, 1.6, animate); }
+function screenToWorld(mx, my) { const C = buildingSize(); return { x: S.cam.fx + (mx - C.w / 2) / S.cam.s, y: S.cam.fy + (my - C.h / 2) / S.cam.s }; }
+function zoomAbout(mx, my, factor) {
+  const w = screenToWorld(mx, my); const ns = clampScale(S.cam.s * factor); const C = buildingSize();
+  S.cam.fx = w.x - (mx - C.w / 2) / ns; S.cam.fy = w.y - (my - C.h / 2) / ns; S.cam.s = ns;
+  clampCam(); applyCam(false);
+}
+// Old call sites still work: 'wing' frames the wing, 'overview' pulls all the way out, anything else frames HQ.
+function setCam(target) {
+  if (!S.L) return;
+  if (target === 'wing' && S.L.wing) { const W = S.L.wing; camFit(W.hqRoom.x, W.hqRoom.y, W.hqRoom.w, (W.testRoom.y + W.testRoom.h) - W.hqRoom.y, 1.12, true); }
+  else if (target === 'overview' || target === 'all') fitAll(true);
+  else fitHQ(true);
+}
 function toggleZoom() {
-  // Zoom toggles between the current focused view and the whole living canvas; it never navigates away.
-  // The "map" IS the real space, scaled out (see context/world-canvas-architecture.md).
-  setCam(S.cam.view === 'overview' ? 'commons' : 'overview');
+  // Scrolling zooms continuously; this button just toggles between framing HQ and seeing the whole world.
+  const C = buildingSize(); const allS = clampScale(Math.min(C.w / (S.L.W * 1.6), C.h / (S.L.H * 1.6)));
+  if (Math.abs(S.cam.s - allS) < 0.02) fitHQ(true); else fitAll(true);
 }
 
 function drawWing(L) {
@@ -636,7 +622,8 @@ function drawBuilding() {
 
   svg.innerHTML = s;
   updateRoomLabels();
-  setCam(S.cam.view);
+  const world = $('#world'); world.style.width = L.W + 'px'; world.style.height = L.H + 'px';
+  if (!S.camReady) { S.camReady = true; fitHQ(false); } else { applyCam(false); }
 }
 
 // ------------------------------------------------------------------ figures
@@ -656,7 +643,7 @@ function makeActor(id, who, opts = {}) {
   btn.append(bubble, a.canvas, tag);
   // Geoffrey 2026-11-02: clicking someone opens the chat with their @name filled in (filled, never sent);
   // clicking a room opens it with nothing filled in.
-  btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (S.cam.view === 'wing' && a.room && !WING_ROOMS.has(a.room)) { setCam('commons'); return; } if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room, true, { mention: S.me && who.id === S.me.id ? null : who.name }); });
+  btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (S.dragged) { S.dragged = false; return; } if (opts.onClick) opts.onClick(); else if (a.room) openRoom(a.room, true, { mention: S.me && who.id === S.me.id ? null : who.name }); });
   a.el = btn; a.bubble = bubble; a.tag = tag;
   $('#actors').append(btn);
   draw(a);
@@ -1396,11 +1383,7 @@ addEventListener('popstate', () => route(false));
 document.addEventListener('click', (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey) return;
   const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href], [data-nav], [data-exit]');
-  // Geoffrey 2026-11-02: from the Hardware Lab view, a click anywhere on the Commons slides HQ back in
-  // (it doesn't open whatever room happened to be under the pointer).
-  if (S.cam.view === 'wing' && e.target.closest('#map, #actors') && !(t && (t.dataset.nav || WING_ROOMS.has(t.dataset.room)))) {
-    if (inCommons(e)) { e.preventDefault(); setCam('commons'); return; }
-  }
+  if (S.dragged) { S.dragged = false; return; } // a drag-pan, not a click
   if (!t) return;
   if (t.dataset.nav) { e.preventDefault(); setCam(t.dataset.nav); return; }
   if (t.dataset.exit) { e.preventDefault(); openExit(); return; }
@@ -1435,7 +1418,17 @@ const boot = setInterval(() => { if (S.rooms.length) { clearInterval(boot); rout
 
 // Camera controls
 $('#cam-zoom')?.addEventListener('click', toggleZoom);
-$('#cam-home')?.addEventListener('click', () => setCam('commons'));
+$('#cam-home')?.addEventListener('click', () => fitHQ(true));
+// continuous camera: scroll to zoom (about the cursor), drag to pan — one world you move through.
+(() => {
+  const bEl = $('#building'); if (!bEl) return;
+  bEl.addEventListener('wheel', (e) => { e.preventDefault(); const r = bEl.getBoundingClientRect(); zoomAbout(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
+  let panning = false, sx = 0, sy = 0, cfx = 0, cfy = 0;
+  bEl.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; panning = true; S.dragged = false; sx = e.clientX; sy = e.clientY; cfx = S.cam.fx; cfy = S.cam.fy; });
+  addEventListener('pointermove', (e) => { if (!panning) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!S.dragged && Math.hypot(dx, dy) < 5) return; S.dragged = true; bEl.classList.add('panning'); S.cam.fx = cfx - dx / S.cam.s; S.cam.fy = cfy - dy / S.cam.s; clampCam(); applyCam(false); });
+  addEventListener('pointerup', () => { panning = false; bEl.classList.remove('panning'); });
+  addEventListener('resize', () => { if (S.L) applyCam(false); });
+})();
 
 // Back-button after sign-out (council test, 2026-11-04): a page restored from the back/forward cache
 // would show a stale signed-in HQ. Reload on restore so the server's real session state decides what shows.

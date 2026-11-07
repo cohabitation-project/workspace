@@ -228,3 +228,8 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .cs-chip-dot { color: #e9c46a; }
 .cs-chip-txt { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cs-chip-stop { background: none; border: 0; color: #f4ecdf; cursor: pointer; font-size: 11px; padding: 2px 4px; }
+
+/* Continuous camera: the map is one world you scroll to zoom and drag to pan (Geoffrey 2026-11-07) */
+.building { touch-action: none; cursor: grab; }
+.building.panning { cursor: grabbing; }
+.world { will-change: transform; }
