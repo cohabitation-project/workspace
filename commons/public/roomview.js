@@ -121,12 +121,14 @@
     const hit = e.target.closest('[data-zone]');
     if (hit && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const z = hit.getAttribute('data-zone'); if (z.indexOf('studio:') === 0) goStation(z.slice(7)); else if (z === 'play') togglePlay(); else if (z !== 'floor' && z !== 'door') openPanel(z); }
   });
+  // datetime-local gives a bare local time; send a real UTC instant so the server compares it correctly.
+  const toIso = (v) => { const d = new Date(v); return isNaN(d.getTime()) ? v : d.toISOString(); };
   // propose a meeting
   room.addEventListener('submit', async (e) => {
     const f = e.target.closest('.rv-mtg-form'); if (!f) return; e.preventDefault();
     const msg = f.querySelector('.rv-mtg-msg'); const fd = new FormData(f);
     try {
-      const res = await fetch('/api/rooms/' + f.getAttribute('data-room') + '/meetings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ title: fd.get('title'), when: fd.get('when'), note: fd.get('note'), invite: fd.get('invite'), poster }) });
+      const res = await fetch('/api/rooms/' + f.getAttribute('data-room') + '/meetings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ title: fd.get('title'), when: toIso(fd.get('when')), note: fd.get('note') }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || 'could not add');
       if (msg) msg.textContent = 'Added ✓'; setTimeout(() => location.reload(), 600);
@@ -151,7 +153,7 @@
           poster = ij.id;
         } catch (e2) { if (msg) msg.textContent = e2.message; return; }
       }
-      const res = await fetch('/api/great-hall/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ theme: fd.get('theme'), title: fd.get('title'), when: fd.get('when'), note: fd.get('note') }) });
+      const res = await fetch('/api/great-hall/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ theme: fd.get('theme'), title: fd.get('title'), when: toIso(fd.get('when')), note: fd.get('note'), invite: fd.get('invite'), poster }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || 'could not book');
       if (msg) msg.textContent = j.inviteNote ? ('Booked \u2713 \u2014 ' + j.inviteNote) : (j.announced ? 'Booked \u2713 \u2014 invite sent' : 'Booked \u2713'); setTimeout(() => location.reload(), j.inviteNote ? 2600 : 900);
