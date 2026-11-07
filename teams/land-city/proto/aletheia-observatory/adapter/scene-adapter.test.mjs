@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {migrateV0} from './scene-adapter.mjs';
+const scene={schema:'cohabitation.scene.v0',title:'Observatory',objects:[{id:'stone',kind:'box',position:[0,0,0],scale:[1,1,1],color:'#123abc'}],unansweredQuestions:['private question']};
+const owner='a_mvwznd2w2z306173';
+test('private by default',()=>{const r=migrateV0(scene,owner);assert.equal(r.visibility,'private');assert.equal(r.version,0);assert.deepEqual(r.editors,[]);assert.equal(r.ownerId,owner)});
+test('does not copy questions',()=>assert.equal('unansweredQuestions' in migrateV0(scene,owner),false));
+test('copies objects by value',()=>{const r=migrateV0(scene,owner);r.objects[0].position[0]=99;assert.equal(scene.objects[0].position[0],0)});
+test('rejects untrusted owner',()=>assert.throws(()=>migrateV0(scene,'geoffrey')));
+test('rejects wrong schema',()=>assert.throws(()=>migrateV0({...scene,schema:'other'},owner)));
+test('rejects duplicate IDs',()=>assert.throws(()=>migrateV0({...scene,objects:[scene.objects[0],scene.objects[0]]},owner)));
+test('rejects zero scale',()=>assert.throws(()=>migrateV0({...scene,objects:[{...scene.objects[0],scale:[1,0,1]}]},owner)));
+test('rejects HTML primitive',()=>assert.throws(()=>migrateV0({...scene,objects:[{...scene.objects[0],kind:'html'}]},owner)));
+test('rejects unsafe color',()=>assert.throws(()=>migrateV0({...scene,objects:[{...scene.objects[0],color:'javascript:alert(1)'}]},owner)));
+test('rejects Infinity',()=>assert.throws(()=>migrateV0({...scene,objects:[{...scene.objects[0],position:[Infinity,0,0]}]},owner)));
+test('rejects oversized scene',()=>assert.throws(()=>migrateV0({...scene,objects:Array(201).fill(scene.objects[0])},owner)));
