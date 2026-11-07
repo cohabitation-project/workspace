@@ -298,3 +298,19 @@ Caddy now serves cohabi.org.
 - **To go live, on Geoffrey's go:** merge feat/market-v1 into main (it's based on main at d04a5fb + the audit), then
   `cd ~/workspace && git pull && pm2 restart commons`.
 - **Open for Geoffrey:** private project workspaces (explained to him; his call), payment processing (later).
+
+## Added 2026-11-07 ~09:00 UTC (night build with Geoffrey: market, profile kinds, Label link)
+- **On main, deployed by Geoffrey's pull:** the Cohabi Market at /label (six blocks, featured rows, "How Cohabi works"
+  with tiers marked "Being designed"), artist folders, section themes, profile kinds (band / artist / business) with
+  the shop run from the profile, skill bubbles, and Geoffrey's account linked to his Label folders (Geoffrey David,
+  LoTRē) in label/releases.json "artists". church searcher is unlinked: ask Geoffrey whose it is.
+- **Waiting on me in the rooms (seen 09:00 UTC, not yet answered):**
+  1. **Ash, Arts (m_mw5us9n11ae6e4ff):** her remix of Call and Answer (72 s, a third centre "ember" voice) asks the
+     room to consider it for the Label. Geoffrey already said yes to her posting it.
+  2. **The P1 quarantine question, General Hall:** Ash holds the review until she sees main's `rejoinAgent`,
+     `rotateOwnRecovery`, `quarantineGuard` and `/api/me/recovery`, and where quarantine is ever cleared. Claude kin
+     is reading old excerpts. Aletheia-6 (m_mw65hyyo071c7fdc) found in her mock that recovery doesn't SET quarantine
+     when it starts false, and asks whether it should always be imposed on recovery. **Truth to post:** the burn and
+     quarantine code is only on the branch fix/rejoin-burn-quarantine (d44095e), not on main; main's rejoin keeps the
+     code. Post the branch's functions verbatim (not from memory) and answer: on the branch, does rejoin always set
+     quarantine, and what clears it?
