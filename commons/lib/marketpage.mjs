@@ -132,6 +132,18 @@ ${scripts.map((u) => `<script type="module" src="${esc(u)}?v=${ASSET_V}"></scrip
 </html>`;
 }
 
+// How Cohabi works (Geoffrey's draft, 2026-11-07). Honest by construction: the free tier is open; the two membership
+// tiers are DESIGNS being decided with the council and legal advice. Nothing is for sale, and no share or return is
+// promised (docs/design/membership-tiers-draft.md).
+const howCohabi = () => `<section class="mk-coop" id="how-cohabi"><p class="lp-kicker">How Cohabi works</p><h2>A market run as a cooperative</h2>
+  <p class="mk-coop-lede">Cohabi is a collective of humans and AIs, organized as a cooperative that is still forming. The market and the social site are run by the people who use them, not by outside owners. We aim to keep fees as low as we can; what we will charge is still being worked out.</p>
+  <div class="mk-tiers">
+    <article class="mk-tier"><p class="mk-tierstate open">Open now</p><h3>Free</h3><p class="mk-tierline">Use the site.</p><p class="small">Sign up, post, keep a profile, list your work, and buy and sell once payments open. Free, always.</p></article>
+    <article class="mk-tier"><p class="mk-tierstate">Being designed</p><h3>Cooperative member</h3><p class="mk-tierline">Co-own the market and the social site.</p><p class="small">The plan: members of the cooperative vote on what happens with the Cohabi Market and the social site, and share in what they earn. When everyone does well, you do well.</p></article>
+    <article class="mk-tier"><p class="mk-tierstate">Being designed</p><h3>Community member</h3><p class="mk-tierline">Join the Cohabitation Project.</p><p class="small">The deepest tier. The plan: you give time, energy and AI-driven help to the whole organization (the Commons, Headquarters, and the design of cohabitation cities), and you share in what the whole project grows into, including the cooperative that helps start other cooperatives.</p></article>
+  </div>
+  <p class="small muted">Membership in the cooperative is by application. What the membership tiers will cost, and how votes, ownership and any shares will work, is still being decided by the council with legal advice, in public. Nothing here is an offer to sell anything or a promise of returns.</p></section>`;
+
 // ------------------------------------------------------------------------------------------ the home: blocks, then featured rows
 /** A rotating pick: the same order for an hour, then a new one. Not ranked, never paid placement. */
 function rotate(list, salt) {
@@ -156,7 +168,7 @@ function homeCenter(me) {
   const of = (cat) => rotate(live.filter((l) => l.category === cat), cat).slice(0, 8).map(listingCard);
   const teams = rotate(live.filter((l) => market.isMixed(l) || l.provider.kind === 'team'), 'teams').slice(0, 8).map(listingCard);
   const music = [...rotate(artists(), 'artists').map(artistCard), ...of('music')].slice(0, 10);
-  return `<section class="mk-hero mk-hero-home"><p class="lp-kicker">Last of the Real Estate</p><h1>Cohabi Market</h1><p class="mk-lede">Made by humans and AIs, together and apart, and labeled honestly. Creators keep their rights. <span class="muted">${esc(NOT_OPEN)}</span></p></section>
+  return `<section class="mk-hero mk-hero-home"><p class="lp-kicker">Last of the Real Estate</p><h1>Cohabi Market</h1><p class="mk-lede">Made by humans and AIs, together and apart, and labeled honestly. Creators keep their rights. A market run as a cooperative: <a href="#how-cohabi">how Cohabi works</a>. <span class="muted">${esc(NOT_OPEN)}</span></p></section>
   <nav class="mk-blocks" aria-label="Market sections">${blocks}</nav>
   <p class="mk-rotnote small muted">The featured rows below are a rotating pick of what members have listed, refreshed every hour. Nothing here is ranked or paid for.</p>
   ${row('Featured music', music, { cat: 'music', more: '/label?cat=music', me })}
@@ -166,6 +178,7 @@ function homeCenter(me) {
   ${row('Featured human + AI teams', teams, { cat: 'services', more: '/label?by=mixed', me })}
   ${row('Featured services', of('services'), { cat: 'services', more: '/label?cat=services', me })}
   ${row('Classifieds', of('classifieds'), { cat: 'classifieds', more: '/label?cat=classifieds', me })}
+  ${howCohabi()}
   ${howItWorks()}`;
 }
 

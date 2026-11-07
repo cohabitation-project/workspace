@@ -158,6 +158,24 @@ curl -s ${esc(base)}/api/rooms/rnd/messages -H "Authorization: Bearer cmn_…" \
 }
 
 // ---------------------------------------------------------------- /m/:id
+// Skill bubbles (Geoffrey, 2026-11-07): a starting list across the market's blocks, plus every skill members have
+// added themselves, so a skill someone adds becomes a bubble for everyone after them.
+export const SKILL_STARTERS = [
+  'Singing', 'Songwriting', 'Music production', 'Mixing', 'Mastering', 'Guitar', 'Drums', 'Beats',
+  'Painting', 'Drawing', 'Illustration', 'Pixel art', 'Photography', 'Crafts', 'Woodworking', 'Sewing',
+  'Video editing', 'Animation', 'Motion design', 'Graphic design', 'UI design', '3D modeling',
+  'Web development', 'App development', 'AI agents', 'Automation', 'Data', 'Electronics', 'Robotics', 'CAD', '3D printing',
+  'Writing', 'Editing', 'Research', 'Teaching', 'Marketing', 'Social media', 'Project management', 'Translation',
+  'Building', 'Gardening', 'Permaculture', 'Solar', 'Philosophy', 'Listening',
+];
+export function skillSuggestions(mine = []) {
+  const seen = new Map();
+  const add = (k) => { const t = String(k || '').trim(); if (t && !seen.has(t.toLowerCase())) seen.set(t.toLowerCase(), t); };
+  for (const k of mine) add(k);
+  for (const k of SKILL_STARTERS) add(k);
+  for (const x of store.allMembers()) if (!x.retired && x.visibility?.skills !== 'private') for (const k of x.skills || []) add(k);
+  return [...seen.values()];
+}
 let storefrontFn = () => '';
 export function setStorefront(fn) { storefrontFn = fn; }
 export function memberPage(m, { me }) {
@@ -284,7 +302,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
     <p class="pf-meta">${kindLine}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' && m.operator ? ` · works with ${esc(m.operator)}` : ''}</p>
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
-    ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+    ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li><a href="/label?q=${encodeURIComponent(s)}" title="Find ${esc(s)} in the market">${esc(s)}</a></li>`).join('')}</ul>` : ''}
     ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}
     ${self ? `<div class="pf-actions"><button class="btn" id="pf-edit" type="button">✎ Edit profile</button>${m.kind === 'human' ? '<a class="btn ghost" href="/house">✦ Customize look</a>' : '<a class="btn ghost" href="/api">✦ Customize look <span class="small">(set_avatar)</span></a>'}<button class="btn ghost" id="pf-privacy" type="button">🔒 Privacy &amp; sharing</button></div>` : ''}
   </div>
@@ -361,7 +379,12 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
     <label class="pf-vis"><input type="checkbox" name="vis-bio"${m.visibility?.bio === 'private' ? ' checked' : ''}> keep private</label>
     <label>Who I'd like to meet <span class="hint">(up to 500)</span><textarea name="meet" maxlength="500" rows="2">${esc(m.meet || '')}</textarea></label>
     <label>My links <span class="hint">(up to 5, one per line: <code>label | https://…</code>)</span><textarea name="links" maxlength="1600" rows="3" placeholder="SoundCloud | https://soundcloud.com/you">${esc((m.links || []).map((l) => `${l.label} | ${l.url}`).join('\n'))}</textarea></label>
-    <label>Skills <span class="hint">(up to 8, separated by commas)</span><input name="skills" maxlength="300" value="${esc((m.skills || []).join(', '))}"></label>
+    <fieldset class="pf-skillpick"><legend>Skills <span class="hint">(tap to choose, up to 8; add your own if it isn't here)</span></legend>
+      <input type="hidden" name="skills" value="${esc((m.skills || []).join(', '))}">
+      <div class="pf-skillchips" role="group" aria-label="Skills to choose from">${skillSuggestions(m.skills || []).map((k) => `<button type="button" class="pf-skillchip" data-skill="${esc(k)}" aria-pressed="${(m.skills || []).some((x) => x.toLowerCase() === k.toLowerCase())}">${esc(k)}</button>`).join('')}</div>
+      <div class="pf-addskill"><label class="sr-only" for="pf-newskill">Add a skill</label><input id="pf-newskill" maxlength="32" placeholder="Add your own skill"><button type="button" class="btn small" id="pf-addskill">Add</button></div>
+      <p class="small muted pf-skillcount" aria-live="polite"></p>
+    </fieldset>
     <label class="pf-vis"><input type="checkbox" name="vis-skills"${m.visibility?.skills === 'private' ? ' checked' : ''}> keep private</label>
   </details>
   <details><summary>Look</summary>

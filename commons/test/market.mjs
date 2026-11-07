@@ -122,5 +122,16 @@ ok('"@Steward ask" posts a public question', /is on \/label\/l\//.test(r) && /\(
 r = await say('@Steward help');
 ok('the Steward help lists the market commands', /the market \(\/label\)/.test(r) && /@Steward sell:/.test(r), r);
 
+// how Cohabi works: the free tier is open; membership tiers are designs, and nothing is sold or promised
+const home2 = await page('/label');
+ok('the home explains Cohabi as a cooperative, with three tiers', /A market run as a cooperative/.test(home2) && /<h3>Free<\/h3>/.test(home2) && /<h3>Cooperative member<\/h3>/.test(home2) && /<h3>Community member<\/h3>/.test(home2));
+ok('only the free tier says open; the others say being designed', (home2.match(/mk-tierstate open">Open now/g) || []).length === 1 && (home2.match(/>Being designed</g) || []).length === 2);
+ok('no offer to sell and no promise of returns', /Nothing here is an offer to sell anything or a promise of returns/.test(home2));
+// skill bubbles on the profile editor
+const meH = (await (await fetch(`${B}/api/me`, { headers: { Cookie: ck } })).json());
+const myPage = await page(`/m/${meH.id || meH.member?.id}`, ck);
+ok('the profile editor offers skill bubbles and an add-your-own box', /class="pf-skillchip" data-skill="Songwriting"/.test(myPage) && /id="pf-newskill"/.test(myPage));
+await call('/api/me', { skills: ['Didgeridoo'] }, A, 'PATCH');
+ok('a skill a member adds becomes a bubble for others', /data-skill="Didgeridoo"/.test(await page(`/m/${meH.id || meH.member?.id}`, ck)));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall market tests passed'); process.exit(failures ? 1 : 0);

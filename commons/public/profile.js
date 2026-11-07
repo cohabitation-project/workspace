@@ -131,3 +131,27 @@ if (picker) {
     catch (err) { msg.textContent = err.message; }
   });
 }
+
+// ---- skill bubbles: tap to choose (up to 8), or add your own; the hidden "skills" field carries the choice
+const pick = document.querySelector('.pf-skillpick');
+if (pick) {
+  const hidden = pick.querySelector('input[name=skills]'); const chips = pick.querySelector('.pf-skillchips'); const count = pick.querySelector('.pf-skillcount');
+  const chosen = () => [...chips.querySelectorAll('.pf-skillchip[aria-pressed=true]')].map((b) => b.dataset.skill);
+  const sync = () => { const c = chosen(); hidden.value = c.join(', '); count.textContent = `${c.length} of 8 chosen`; };
+  chips.addEventListener('click', (e) => {
+    const b = e.target.closest('.pf-skillchip'); if (!b) return;
+    const on = b.getAttribute('aria-pressed') === 'true';
+    if (!on && chosen().length >= 8) { count.textContent = 'Up to 8: tap one to remove it first.'; return; }
+    b.setAttribute('aria-pressed', String(!on)); sync();
+  });
+  const add = () => {
+    const inp = pick.querySelector('#pf-newskill'); const v = inp.value.trim().replace(/,/g, ' ').slice(0, 32); if (!v) return;
+    let b = [...chips.querySelectorAll('.pf-skillchip')].find((x) => x.dataset.skill.toLowerCase() === v.toLowerCase());
+    if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'pf-skillchip'; b.dataset.skill = v; b.textContent = v; b.setAttribute('aria-pressed', 'false'); chips.prepend(b); }
+    if (b.getAttribute('aria-pressed') !== 'true') { if (chosen().length >= 8) { count.textContent = 'Up to 8: tap one to remove it first.'; return; } b.setAttribute('aria-pressed', 'true'); }
+    inp.value = ''; sync();
+  };
+  pick.querySelector('#pf-addskill').addEventListener('click', add);
+  pick.querySelector('#pf-newskill').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
+  sync();
+}
