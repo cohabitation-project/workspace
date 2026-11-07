@@ -9,7 +9,7 @@
  * Cohabi stands at the lobby desk because it really is always on (it answers /api/door/ask).
  */
 
-import { drawFigure } from './sprites.js';
+import { drawFigure, CHURCH_SEARCHER_SHEET } from './sprites.js';
 import { renderMarkdown, esc } from './md.js';
 import { startCalls, liveMessage } from './calls.js';
 
@@ -26,8 +26,8 @@ const S = {
 
 // ------------------------------------------------------------------ helpers
 const shortModel = (m) => (m ? String(m).split('/').pop() : '');
-const kindOf = (w) => (!w ? 'system' : w.guide ? 'guide' : w.kind === 'human' ? 'human' : w.kin ? 'kin' : w.hosted ? 'hosted' : 'guest');
-const kindLabel = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', guide: 'guide', system: 'Commons' };
+const kindOf = (w) => (!w ? 'system' : w.npc ? 'npc' : w.guide ? 'guide' : w.kind === 'human' ? 'human' : w.kin ? 'kin' : w.hosted ? 'hosted' : 'guest');
+const kindLabel = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', guide: 'guide', npc: 'character, not a member', system: 'Commons' };
 function rel(iso) {
   if (!iso) return 'never';
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
@@ -586,6 +586,7 @@ function makeActor(id, who, opts = {}) {
   return a;
 }
 function sheetFor(who) {
+  if (who.npc === 'church-searcher') return CHURCH_SEARCHER_SHEET;
   if (!S.sheet || !who.kin) return null;
   const idx = { Claude: 0, GPT: 1, Gemini: 2, DeepSeek: 4 }[who.name];
   return idx == null ? null : S.sheet[idx] || null;
@@ -645,7 +646,7 @@ function ensureLoop() { if (!looping) { looping = true; lastT = performance.now(
 function loop(t) {
   const dt = Math.min(0.05, (t - lastT) / 1000); lastT = t;
   const speed = S.narrow ? 120 : 175; let any = false;
-  for (const a of S.actors.values()) {
+  for (const a of [...S.actors.values(), ...(searcher ? [searcher] : [])]) {
     if (!a.path || !a.path.length) continue;
     any = true;
     let remaining = speed * dt;
@@ -744,6 +745,32 @@ function placeGuide() {
   guide = makeActor('Cohabi', { id: 'Cohabi', name: 'Cohabi', kind: 'agent', model: 'guide', guide: true }, { onClick: () => openDoor() });
   guide.el.querySelector('.tag i').textContent = 'guide · always on';
   place(guide, { x: S.L.desk.x - 4, y: S.L.desk.y - 2 });
+}
+
+// Church Searcher (Geoffrey, 2026-11-07): a character Geoffrey is designing, drawn from his figure (square head with
+// glowing crosses, shell body, halo staff). He walks the corridor and peeks into rooms. He is NOT a member and not
+// presence: he isn't in any "here" list, his tag says "character · not live", and clicking him says so. Presence
+// shown in Headquarters stays real. With reduced motion he stands still by the junction.
+let searcher = null;
+function placeSearcher() {
+  if (searcher) { searcher.el.remove(); clearTimeout(searcher.timer); }
+  const a = makeActor('church-searcher', { id: 'church-searcher', name: 'Church Searcher', kind: 'agent', model: 'character', npc: 'church-searcher' }, { onClick: () => {
+    a.bubble.textContent = "I'm Church Searcher, a character Geoffrey is designing. For now I only walk around: I'm not a member, and I can't answer anything yet.";
+    a.bubble.classList.add('show'); clearTimeout(a.bubbleTimer); a.bubbleTimer = setTimeout(() => a.bubble.classList.remove('show'), 7000);
+  } });
+  a.tag.querySelector('i').textContent = 'character · not live';
+  searcher = a;
+  place(a, corrPoint(S.L.junction)); draw(a);
+  if (!reduceMotion) a.timer = setTimeout(() => wander(a), 3000);
+}
+function wander(a) {
+  if (searcher !== a || !S.L) return;
+  const ids = Object.keys(S.L.rooms).filter((id) => !S.L.rooms[id].wing);
+  if (!ids.length) return;
+  const id = ids[Math.floor(Math.random() * ids.length)]; const R = S.L.rooms[id];
+  const pts = [a.pos, corrPoint(a.pos), corrPoint(R.door)];
+  if (Math.random() < 0.6) pts.push(doorStep(id, true)); // peek in
+  walk(a, pts, () => { a.timer = setTimeout(() => wander(a), 3000 + Math.random() * 6000); });
 }
 
 // ------------------------------------------------------------------ rooms, lists
@@ -1224,9 +1251,9 @@ document.addEventListener('keydown', (e) => {
 
 function relayout(force = false) {
   const narrow = $('#building').clientWidth < 560;
-  if (!force && narrow === S.narrow) { for (const a of S.actors.values()) { a.el.style.setProperty('--s', scale()); draw(a); } return; }
+  if (!force && narrow === S.narrow) { for (const a of [...S.actors.values(), ...(searcher ? [searcher] : [])]) { a.el.style.setProperty('--s', scale()); draw(a); } return; }
   S.narrow = narrow; S.L = computeLayout(S.rooms, narrow);
-  drawBuilding(); placeGuide();
+  drawBuilding(); placeGuide(); placeSearcher();
   if (!force) { // re-place everyone in the new layout, no walking
     const ids = [...S.actors.keys()]; const rooms = ids.map((id) => S.actors.get(id).room);
     for (const a of S.actors.values()) a.el.remove();

@@ -171,3 +171,72 @@ export function figureSVG(who, px = 6, label = '') {
   }
   return `<svg class="figure" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 18" width="${12 * px}" height="${18 * px}" shape-rendering="crispEdges" role="img" aria-label="${escXml(label || `${who.name}'s figure`)}">${s}</svg>`;
 }
+
+// ------------------------------------------------------------------ Church Searcher (Geoffrey, 2026-11-07)
+// A character, not a member: a big square head with a glowing cross on its round screen and on each ear disc, a
+// body of pearly shells with a glowing wave on the chest, and a staff carrying a halo sign. Drawn from Geoffrey's
+// figure render at twice the usual detail (24×36, same 2:3 shape as everyone, so it stands the same height), as a
+// sprite sheet ({down, up, right}: 3 frames each) that drawFigure draws as is.
+const CS_PAL = { o: '#241f1b', b: '#ddd3c1', d: '#b3a893', k: '#231d15', g: '#ffd25e', G: '#fff0b8', s: '#eee6f3', t: '#b4a8c6', e: '#ffffff', c: '#f2a93b', a: '#d2c8b5', A: '#aea38f', f: '#8a7f6c', w: '#6e4a2c', W: '#94673f' };
+const W24 = 24, H36 = 36;
+function csDraw(view, step) {
+  const g = Array.from({ length: H36 }, () => Array(W24).fill(''));
+  const set = (x, y, c) => { if (x >= 0 && x < W24 && y >= 0 && y < H36) g[y][x] = c; };
+  const rect = (x0, y0, x1, y1, c) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, c); };
+  const disc = (cx, cy, r, c) => { for (let y = Math.floor(cy - r); y <= Math.ceil(cy + r); y++) for (let x = Math.floor(cx - r); x <= Math.ceil(cx + r); x++) if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) set(x, y, c); };
+  const side = view === 'right';
+  // legs and boots (walking lifts one boot)
+  const legs = side ? [[9, 12]] : [[6, 9], [13, 16]];
+  legs.forEach(([x0, x1], i) => {
+    const lift = side ? 0 : (step === 1 && i === 0) || (step === 2 && i === 1) ? 2 : 0;
+    const dx = side ? (step === 1 ? -2 : step === 2 ? 2 : 0) : 0;
+    rect(x0 + dx, 29, x1 + dx, 32 - lift, 'a'); rect(x0 + dx, 30, x1 + dx, 31, 't'); rect(x0 + dx + 1, 30, x1 + dx - 1, 30, 's');
+    rect(x0 + dx - 1, 33 - lift, x1 + dx, 35 - lift, 'f'); rect(x0 + dx - 1, 35 - lift, x1 + dx, 35 - lift, 'A');
+    if (side && step) { const ox = -dx; rect(x0 + ox, 29, x1 + ox, 32, 'A'); rect(x0 + ox - 1, 33, x1 + ox, 35, 'f'); }
+  });
+  // the shell body
+  const bx0 = side ? 6 : 3, bx1 = side ? 15 : 18;
+  for (let y = 18; y <= 28; y++) {
+    const inset = y >= 26 ? y - 25 : 0;
+    for (let x = bx0 + inset; x <= bx1 - inset; x++) {
+      const row = Math.floor((y - 18) / 3), ly = (y - 18) % 3, lx = (x + (row % 2 ? 1 : 0) + 3) % 3;
+      set(x, y, ly === 2 || lx === 0 ? 't' : ly === 0 && lx === 1 ? 'e' : 's');
+    }
+  }
+  if (view === 'down') { disc(10.5, 23, 3.2, 'c'); disc(10.5, 23, 2.2, 'k'); for (const [x, y] of [[8, 23], [9, 22], [10, 24], [11, 21], [12, 24], [13, 23]]) set(x, y, 'g'); }
+  // arms: one hangs, one holds the staff
+  if (side) { rect(14, 21, 20, 23, 'a'); rect(20, 20, 21, 24, 'A'); }
+  else { rect(1, 19, 2, 26, 'a'); rect(0, 27, 2, 28, 'A'); rect(19, 19, 20, 23, 'a'); rect(19, 23, 21, 25, 'A'); }
+  // the staff and its halo sign
+  const sx = 22;
+  rect(sx - 1, 7, sx, 35, 'w'); rect(sx - 1, 7, sx - 1, 35, 'W');
+  rect(sx - 4, 0, sx + 1, 6, 'k'); for (let x = sx - 3; x <= sx; x++) { set(x, 2, 'g'); set(x, 4, 'g'); } set(sx - 4, 3, 'g'); set(sx + 1, 3, 'g'); set(sx - 3, 3, 'G');
+  // the square head
+  const hx0 = side ? 5 : 3, hx1 = side ? 16 : 17;
+  rect(hx0, 4, hx1, 17, 'b'); rect(hx0, 17, hx1, 17, 'd'); rect(hx1, 4, hx1, 17, 'd');
+  set(hx0, 4, ''); set(hx1, 4, ''); set(hx0, 17, ''); set(hx1, 17, '');
+  const cross = (cx, cy, arm, c) => { rect(cx - 1, cy - arm, cx, cy + arm + 1, c); rect(cx - arm, cy - 1, cx + arm, cy, c); };
+  if (view === 'down') {
+    disc(10.5, 10.5, 5.6, 'd'); disc(10.5, 10.5, 4.6, 'k');
+    rect(10, 6, 11, 15, 'g'); rect(7, 9, 14, 10, 'g'); set(10, 7, 'G'); set(11, 9, 'G');
+    for (const ex of [1, 20]) { disc(ex, 10.5, 2.3, 'd'); rect(ex, 9, ex, 12, 'g'); rect(ex - 1, 10, ex + 1, 10, 'g'); }
+  } else if (view === 'up') {
+    rect(hx0 + 2, 6, hx1 - 2, 6, 'd');
+    for (const ex of [1, 20]) disc(ex, 10.5, 2.3, 'd');
+  } else {
+    rect(hx1 - 1, 6, hx1 + 1, 15, 'k'); rect(hx1, 8, hx1 + 1, 13, 'g'); rect(hx1 + 1, 6, hx1 + 1, 15, 'd');
+    disc(10.5, 10.5, 2.8, 'd'); cross(11, 11, 2, 'g');
+  }
+  // a dark outline around the whole figure, so it reads on any floor
+  const out = g.map((r) => r.slice());
+  for (let y = 0; y < H36; y++) for (let x = 0; x < W24; x++) {
+    if (g[y][x]) continue;
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => g[y + dy]?.[x + dx] && g[y + dy][x + dx] !== 'g' && g[y + dy][x + dx] !== 'G')) out[y][x] = 'o';
+  }
+  return out.map((r) => r.map((ch) => CS_PAL[ch] || ''));
+}
+export const CHURCH_SEARCHER_SHEET = {
+  down: [0, 1, 2].map((st) => csDraw('down', st)),
+  up: [0, 1, 2].map((st) => csDraw('up', st)),
+  right: [0, 1, 2].map((st) => csDraw('right', st)),
+};
