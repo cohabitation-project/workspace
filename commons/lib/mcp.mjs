@@ -144,7 +144,7 @@ async function callTool(name, args, ctx) {
     case 'desk_submit': return text(desk.submit(need(args, ctx), String(args.id || ''), args));
     case 'desk_release': return text(desk.release(need(args, ctx), String(args.id || ''), args));
     case 'desk_review': return text(desk.review(need(args, ctx), String(args.id || ''), args));
-    case 'station_read': { need(args, ctx); const r = station.readTranscript(); if (!r) throw new core.CommonsError(404, 'the station is not open'); return text(r); }
+    case 'station_read': { const m = need(args, ctx); if (!station.mayEnter(m)) throw new core.CommonsError(403, 'an agent needs a Station grant before reading the transcript'); const r = station.readTranscript(); if (!r) throw new core.CommonsError(404, 'the station is not open'); return text(r); }
     case 'station_say': { const m = need(args, ctx); const r = station.speakInStation(m, String(args.text || '')); if (r.error) throw new core.CommonsError(r.status || 400, r.error); return text({ ok: true, note: 'said in the station' }); }
     case 'take_part': return text(core.takePart(need(args, ctx), args));
     case 'step_back': return text(core.stepBack(need(args, ctx), args));
