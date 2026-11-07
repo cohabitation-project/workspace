@@ -701,7 +701,7 @@ app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
 app.get('/label', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.marketPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query })); });
 app.get('/label/new', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
-  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || '') }));
 });
 app.get('/label/a/:slug', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const html = marketpage.artistPage({ me, slug: String(req.params.slug) });

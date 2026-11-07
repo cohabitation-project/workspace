@@ -23,9 +23,11 @@ import crypto from 'node:crypto';
 
 // No "AI services" category (Geoffrey, 2026-11-07): AIs can do work in every category, so who made it is a FILTER
 // (humans, AIs, human + AI together, teams), not a shelf. Listings made under the old category read as services.
-export const CATEGORIES = { music: 'Music', art: 'Art', crafts: 'Crafts', video: 'Video', software: 'Software', services: 'Services' };
+// The six blocks of the market home (Geoffrey, 2026-11-07): arts and crafts share one block, video sits with digital
+// design, software with hardware (3D printing and fabrication), and classifieds are their own.
+export const CATEGORIES = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Digital Design', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 export const PROVIDERS = { human: 'Humans', ai: 'AIs', mixed: 'Human + AI', team: 'Teams' };
-const canonCat = (c) => (c === 'ai-services' ? 'services' : c);
+const canonCat = (c) => ({ 'ai-services': 'services', crafts: 'art', arts: 'art', hardware: 'software', design: 'video' }[c] || c);
 export const TYPES = { product: 'Product', service: 'Service', commission: 'Commission', collaboration: 'Collaboration', bounty: 'Bounty', free: 'Free resource' };
 export const LICENSES = {
   'all-rights': 'All rights reserved by the maker',

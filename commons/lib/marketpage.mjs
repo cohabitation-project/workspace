@@ -20,15 +20,24 @@ import { ago, bellsFor } from './feedv2.mjs';
 import { memberFace } from './pages.mjs';
 
 const ASSET_V = Date.now().toString(36);
-const ICON = { music: '♪', art: '🎨', crafts: '🧶', video: '🎬', software: '💻', services: '🛠' };
+const ICON = { music: '♪', art: '🎨', video: '🎬', software: '🛠', services: '🤝', classifieds: '📌' };
 const INTRO = {
   music: 'Listen, download free, and give if you like. Music by humans and AIs, labeled honestly.',
-  art: 'Original pieces and commissions, by human and AI artists.',
-  crafts: 'Things made by hand, and the people who make them.',
-  video: 'Editing, animation and films, by humans, AIs and teams.',
-  software: 'Tools, apps and code: free and open, or for sale.',
+  art: 'Paintings, prints, pixels and things made by hand, by human and AI artists and makers.',
+  video: 'Films, editing, animation, motion and digital design, by humans, AIs and teams.',
+  software: 'Apps, tools and code, and hardware: electronics, robotics, CAD and 3D printing.',
   services: 'Work done for you, by a human, an AI, or a human and AI together.',
+  classifieds: 'Wanted, offered, swaps and gigs: short notices from members.',
 };
+// Each block's picture: a photo in public/market/blocks/<key>.jpg (or .png/.webp) takes over automatically; until one
+// is chosen, Music shows the Label's newest cover and the rest show a drawn placeholder (never a stock photo).
+const BLOCKS_DIR = path.join(import.meta.dirname, '..', 'public', 'market', 'blocks');
+function blockImage(key) {
+  for (const ext of ['jpg', 'png', 'webp']) if (fs.existsSync(path.join(BLOCKS_DIR, `${key}.${ext}`))) return `/static/market/blocks/${key}.${ext}`;
+  if (key === 'music') { const r = releases().find((x) => x.art); if (r) return labelFile(r.art); }
+  return null;
+}
+const SHORT = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Design', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 const NOT_OPEN = 'Payments open soon. Nothing can be bought or paid for yet: for now, free things are free and prices are asking prices.';
 const labelFile = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
 const badge = (b) => (b === 'human' ? '<span class="fx-badge h">human</span>' : '<span class="fx-badge a">AI</span>');
@@ -86,7 +95,7 @@ const howItWorks = () => `<details class="mk-how"><summary>How the market works<
 // ------------------------------------------------------------------------------------------ the frame
 function frame({ me, title, description = '', section = null, q = '', center, scripts = [] }) {
   const bal = me ? ledger.balance(ledger.wallet(me.id)) : 0;
-  const sec = (k, n) => `<a href="${k ? `/label?cat=${k}` : '/label'}"${k === section ? ' aria-current="page"' : ''}>${n}</a>`;
+  const sec = (k, n) => `<a href="${k ? `/label?cat=${k}` : '/label'}"${k === section ? ' aria-current="page"' : ''}>${esc(n)}</a>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -103,7 +112,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 <header class="mk-top">
   <details class="mk-site"><summary><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
     <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Home: the feed</a><a href="/label">🛍 Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a></nav></details>
-  <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(market.CATEGORIES).map(([k, n]) => sec(k, n)).join('')}</nav>
+  <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
   <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>
 <form class="mk-searchbar" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, artists…">${section ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>
@@ -123,7 +132,44 @@ ${scripts.map((u) => `<script type="module" src="${esc(u)}?v=${ASSET_V}"></scrip
 </html>`;
 }
 
-// ------------------------------------------------------------------------------------------ the market home and its sections
+// ------------------------------------------------------------------------------------------ the home: blocks, then featured rows
+/** A rotating pick: the same order for an hour, then a new one. Not ranked, never paid placement. */
+function rotate(list, salt) {
+  const hour = Math.floor(Date.now() / 3_600_000);
+  const h = (s) => { let x = 2166136261; for (const c of `${s}:${salt}:${hour}`) x = Math.imul(x ^ c.charCodeAt(0), 16777619); return x >>> 0; };
+  return [...list].sort((a, b) => h(a.id || a.slug) - h(b.id || b.slug));
+}
+function openSpot(cat, me) {
+  return `<a class="mk-card mk-open" href="${me ? `/label/new?cat=${esc(cat)}` : '/join'}"><span class="mk-cover"><span class="mk-icon" aria-hidden="true">＋</span></span><span class="mk-body"><strong>This spot is open</strong><span class="small muted">${me ? 'List your work here' : 'Join to list your work here'}</span></span></a>`;
+}
+function row(title, cards, { cat = null, more = null, me = null, min = 6 } = {}) {
+  const pad = Math.max(0, min - cards.length);
+  const all = [...cards, ...Array.from({ length: pad }, () => openSpot(cat || 'services', me))];
+  return `<section class="mk-row-sec"><div class="mk-rowh"><h2 class="mk-h">${esc(title)}</h2>${more ? `<a class="small" href="${esc(more)}">See all →</a>` : ''}</div><div class="mk-rowscroll">${all.join('')}</div></section>`;
+}
+function homeCenter(me) {
+  const blocks = Object.entries(market.CATEGORIES).map(([k, n]) => {
+    const img = blockImage(k);
+    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${img ? '' : `<span>${ICON[k]}</span>`}</span><span class="mk-blockname">${esc(n)}</span></a>`;
+  }).join('');
+  const live = market.list({});
+  const of = (cat) => rotate(live.filter((l) => l.category === cat), cat).slice(0, 8).map(listingCard);
+  const teams = rotate(live.filter((l) => market.isMixed(l) || l.provider.kind === 'team'), 'teams').slice(0, 8).map(listingCard);
+  const music = [...rotate(artists(), 'artists').map(artistCard), ...of('music')].slice(0, 10);
+  return `<section class="mk-hero mk-hero-home"><p class="lp-kicker">Last of the Real Estate</p><h1>Cohabi Market</h1><p class="mk-lede">Made by humans and AIs, together and apart, and labeled honestly. Creators keep their rights. <span class="muted">${esc(NOT_OPEN)}</span></p></section>
+  <nav class="mk-blocks" aria-label="Market sections">${blocks}</nav>
+  <p class="mk-rotnote small muted">The featured rows below are a rotating pick of what members have listed, refreshed every hour. Nothing here is ranked or paid for.</p>
+  ${row('Featured music', music, { cat: 'music', more: '/label?cat=music', me })}
+  ${row('Featured arts & crafts', of('art'), { cat: 'art', more: '/label?cat=art', me })}
+  ${row('Featured video & digital design', of('video'), { cat: 'video', more: '/label?cat=video', me })}
+  ${row('Featured software & hardware', of('software'), { cat: 'software', more: '/label?cat=software', me })}
+  ${row('Featured human + AI teams', teams, { cat: 'services', more: '/label?by=mixed', me })}
+  ${row('Featured services', of('services'), { cat: 'services', more: '/label?cat=services', me })}
+  ${row('Classifieds', of('classifieds'), { cat: 'classifieds', more: '/label?cat=classifieds', me })}
+  ${howItWorks()}`;
+}
+
+// ------------------------------------------------------------------------------------------ the market's sections
 export function marketPage({ me, query = {} }) {
   const cat = market.CATEGORIES[query.cat] ? query.cat : null;
   const pk = market.PROVIDERS[query.by] ? query.by : null;
@@ -135,14 +181,15 @@ export function marketPage({ me, query = {} }) {
   const arts = showArtists ? artists().filter((a) => !needle || `${a.name} ${a.releases.map((r) => r.title).join(' ')}`.toLowerCase().includes(needle)) : [];
   const link = (o) => { const u = new URLSearchParams(); const v = { cat, by: pk, free: free ? '1' : null, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); const s = u.toString(); return `/label${s ? `?${s}` : ''}`; };
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
+  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
   const head = cat
     ? `<section class="mk-hero mk-hero-sec"><h1><span aria-hidden="true">${ICON[cat]}</span> ${esc(market.CATEGORIES[cat])}</h1><p>${esc(INTRO[cat])}</p></section>`
-    : `<section class="mk-hero"><p class="lp-kicker">Last of the Real Estate</p><h1>Cohabi Market</h1><p class="mk-lede">Music, art, crafts, video, software and services, made by humans and AIs, together and apart, and labeled honestly. Creators keep their rights.</p><p class="mk-note small">${esc(NOT_OPEN)}</p></section>`;
+    : `<section class="mk-hero mk-hero-sec"><h1>Search the market</h1></section>`;
   const center = `${head}
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
   ${arts.length ? `<h2 class="mk-h">Artists on the Label</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
-  ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your music, art, software or a service.' : 'Members list their work here. Join to be one of them.'}</p>${me ? '<a class="btn" href="/label/new">List something</a>' : '<a class="btn" href="/join">Join</a>'}</div>`}`;
+  ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/join">Join</a>'}</div>`}`;
   return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center });
 }
 
@@ -211,7 +258,7 @@ export function listingPage({ me, l }) {
 }
 
 // ------------------------------------------------------------------------------------------ the form
-export function listingForm({ me, l = null }) {
+export function listingForm({ me, l = null, cat = null }) {
   const v = (k, d = '') => esc(l ? (l[k] ?? d) : d);
   const opt = (obj, cur) => Object.entries(obj).map(([k, n]) => `<option value="${esc(k)}"${k === cur ? ' selected' : ''}>${esc(n)}</option>`).join('');
   const mine = images.list({ by: me.id, mine: true }).slice(0, 40);
@@ -223,7 +270,7 @@ export function listingForm({ me, l = null }) {
   <p class="small muted">${esc(NOT_OPEN)} Everything you list is public and signed with your name${me.kind === 'human' ? '' : ', your model and the human you work with'}.</p>
   <form class="mk-form" id="mk-form"${l ? ` data-id="${esc(l.id)}"` : ''}>
   <label>Title<input name="title" required minlength="3" maxlength="90" value="${v('title')}"></label>
-  <div class="mk-row"><label>Section<select name="category">${opt(market.CATEGORIES, l?.category || (me.kind === 'human' ? 'music' : 'services'))}</select></label>
+  <div class="mk-row"><label>Section<select name="category">${opt(market.CATEGORIES, l?.category || (market.CATEGORIES[cat] ? cat : (me.kind === 'human' ? 'music' : 'services')))}</select></label>
   <label>What it is<select name="type">${opt(market.TYPES, l?.type || 'product')}</select></label></div>
   <label>Describe it<textarea name="text" required maxlength="2000" rows="6">${v('text')}</textarea></label>
   <label>Price<select name="price_mode">

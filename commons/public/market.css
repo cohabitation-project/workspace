@@ -2,14 +2,15 @@
    desktop. The home wears cohabi.org's cream; each section wears its own look (data-mk). Nothing scrolls sideways. */
 
 /* ---- themes: the home (cream, like the cohabi.org front door) and one per section */
-.mk-page { --gold: #8a5a0c; --gold-ink: #fffaf0;
-  background: radial-gradient(ellipse at 10% -10%, #fff6d8 0%, transparent 50%), linear-gradient(180deg, #f6edd2, #efe2bf) fixed; }
+.mk-page, .mk-page[data-mk=home] { --bg: #f7f5f2; --panel: #fff; --panel2: #f1eee9; --line: #e2ddd5; --ink: #1c1b19; --muted: #6b665e; --gold: #8a5a0c; --gold-ink: #fffaf0; --soft: #0000000a;
+  background: #f7f5f2; }
 .mk-page[data-mk=music] { --bg: #111; --panel: #1c1c1c; --panel2: #242424; --line: #333; --ink: #f2f2f2; --muted: #a9a9a9; --gold: #ff6a1a; --gold-ink: #fff; --soft: #ffffff10;
   background: linear-gradient(180deg, #161616, #0c0c0c) fixed; }
 .mk-page[data-mk=art] { --bg: #f7f5f2; --panel: #fff; --panel2: #f1eee9; --line: #e2ddd5; --ink: #1c1b19; --muted: #6b665e; --gold: #1c1b19; --gold-ink: #fff;
   background: #f7f5f2; }
-.mk-page[data-mk=crafts] { --bg: #efe4d6; --panel: #fbf5ee; --panel2: #f3e8da; --line: #d9c4aa; --ink: #3a2a1c; --muted: #6e5843; --gold: #b5532c; --gold-ink: #fff;
-  background: radial-gradient(ellipse at 90% -10%, #f8eadb 0%, transparent 50%), #efe4d6 fixed; }
+.mk-page[data-mk=classifieds] { --bg: #f2efe6; --panel: #fbfaf5; --panel2: #eeeadf; --line: #cfc8b4; --ink: #1d1b16; --muted: #5d584b; --gold: #9b2c2c; --gold-ink: #fff; background: #f2efe6; }
+.mk-page[data-mk=classifieds] .mk-card { border-radius: 2px; }
+.mk-page[data-mk=classifieds] h1, .mk-page[data-mk=classifieds] .mk-body h3 { font-family: Georgia, 'Times New Roman', serif; }
 .mk-page[data-mk=video] { --bg: #0a0a0c; --panel: #151519; --panel2: #1d1d23; --line: #2b2b33; --ink: #f5f5f5; --muted: #9b9ba5; --gold: #e0b04a; --gold-ink: #16120a; --soft: #ffffff10;
   background: radial-gradient(ellipse at 50% -20%, #2a2a34 0%, transparent 55%), #0a0a0c fixed; }
 .mk-page[data-mk=software] { --bg: #0d1117; --panel: #161b22; --panel2: #1c232c; --line: #30363d; --ink: #e6edf3; --muted: #8b949e; --gold: #3fb950; --gold-ink: #04140a; --soft: #ffffff10;
@@ -171,3 +172,37 @@
 }
 .mk-artisthero .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
 @media (max-width: 699px) { .mk-artistimg { width: 200px; height: 200px; } .mk-artisthero h1 { font-size: 30px; } }
+
+/* ---- the market home: six blocks across, then featured rows (Geoffrey, 2026-11-07) */
+.mk-hero-home { padding: 14px 0 2px; }
+.mk-hero-home .mk-lede { margin: 0; }
+.mk-blocks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 14px 0 6px; }
+.mk-block { position: relative; display: block; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; color: #fff !important; box-shadow: 0 1px 3px #0000001f; isolation: isolate; }
+.mk-block:hover { text-decoration: none !important; transform: translateY(-2px); box-shadow: 0 8px 20px #00000026; }
+.mk-block { transition: transform .15s, box-shadow .15s; }
+.mk-blockart { position: absolute; inset: 0; display: grid; place-items: center; font-size: 54px; z-index: -1; }
+.mk-blockart.has-img { background: var(--mk-img) center / cover no-repeat; }
+.mk-blockart::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, #000000a6); }
+.mk-blockname { position: absolute; left: 12px; right: 12px; bottom: 10px; font: 700 17px/1.15 Georgia, serif; text-shadow: 0 1px 3px #0009; }
+.mk-block[data-block=music] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 30% 30%, #ff8a3d, #3a1404 75%); }
+.mk-block[data-block=art] .mk-blockart:not(.has-img) { background: conic-gradient(from 200deg at 60% 40%, #e9b44c, #d1495b, #00798c, #30638e, #e9b44c); }
+.mk-block[data-block=video] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 50% 20%, #5a5a72, #0a0a0c 70%); }
+.mk-block[data-block=software] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(0deg, #0d1117 0 22px, #10151d 22px 23px), linear-gradient(#0d1117, #0d1117); }
+.mk-block[data-block=software] .mk-blockart:not(.has-img) span { filter: drop-shadow(0 0 8px #3fb95099); }
+.mk-block[data-block=services] .mk-blockart:not(.has-img) { background: linear-gradient(135deg, #2457c5, #7fa6f0); }
+.mk-block[data-block=classifieds] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(90deg, #efe9da 0 46px, #e2dac6 46px 48px); color: #1d1b16; }
+.mk-rotnote { margin: 10px 0 0; }
+.mk-row-sec { margin-top: 6px; }
+.mk-rowh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.mk-rowscroll { display: grid; grid-auto-flow: column; grid-auto-columns: 170px; gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; scrollbar-width: thin; }
+.mk-rowscroll > * { scroll-snap-align: start; }
+.mk-open { border-style: dashed !important; background: transparent !important; }
+.mk-open .mk-cover { background: transparent; }
+.mk-open .mk-icon { color: var(--muted); font-size: 34px; }
+.mk-open .mk-body { gap: 2px; }
+@media (max-width: 1099px) { .mk-blocks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 699px) {
+  .mk-blocks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .mk-blockname { font-size: 15px; }
+  .mk-rowscroll { grid-auto-columns: 46%; }
+}
