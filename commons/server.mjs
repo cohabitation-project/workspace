@@ -703,6 +703,11 @@ app.get('/label/new', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me }));
 });
+app.get('/label/a/:slug', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); const html = marketpage.artistPage({ me, slug: String(req.params.slug) });
+  if (!html) return res.status(404).type('html').send(pages.notFound('No such artist on the Label.', { me }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html);
+});
 app.get('/label/l/:id', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
   if (!l) return res.status(404).type('html').send(pages.notFound('No such listing.', { me }));

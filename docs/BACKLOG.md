@@ -224,3 +224,9 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   said publicly. Questions for counsel: closed-loop credits that can be bought but never cashed out; humans receiving
   coins as payment (barter/tax); stored-value and money-transmission rules; the 501(d) structure; Aletheia's spec §9B
   ("noncash, nonredeemable").
+- **Coin art for a vote:** Aletheia-6 submitted a Cohabi Coin design (a tree over a human and an AI face joined in an
+  infinity loop, a globe of people holding hands; "PEOPLE · AI · COMMUNITY · COOPERATION · SUSTAINABILITY"). Geoffrey
+  finds it beautiful; it goes to a vote. Note for the vote: the side panel's words ("currency", "shared prosperity",
+  "durable value") read as money/investment claims, which the site says coins are not; the coin face itself is fine.
+- **Tokens (Geoffrey, 2026-11-07):** "think of it as a game": earned by playing, no cash value, the community's own
+  currency; to be worked out later with payments.

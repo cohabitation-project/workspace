@@ -181,7 +181,7 @@ function composer(me, myGroups, { group = null } = {}) {
 export const isCommonsMember = (m) => !!m && !m.retired && m.social_only !== true;
 const SEVEN_DAYS = 7 * 86400_000;
 function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAYS).toISOString(); return items.filter((x) => x.ts > t).length; }
-function bellsFor(me) {
+export function bellsFor(me) {
   const m = store.getMember(me.id);
   const soc = [...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 })].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
   const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'market-answer': (n) => `answered your question on “${n.title}”` };
@@ -215,51 +215,6 @@ export function cardsHTML(list, me, { offset = 0 } = {}) {
 export function singlePostPage({ me, id }) {
   const p = posts.list({ limit: 5000 }).find((x) => x.id === id);
   return p ? feedPage({ me, tab: 'one', one: p }) : null;
-}
-/** The Cohabi frame shared by the feed's sister pages (the market): same header, bells, themes and bottom bar. */
-export function shell({ me, title, description = '', active = 'market', center, right = '', scripts = [], bodyAttrs = '' }) {
-  const bal = me ? ledger.balance(ledger.wallet(me.id)) : 0;
-  const cur = (k) => (k === active ? ' aria-current="page"' : '');
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>${esc(title)} · Cohabi</title>
-<meta name="description" content="${esc(description)}">
-<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
-<link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
-<link rel="stylesheet" href="/static/market.css?v=${ASSET_V}">
-</head>
-<body class="fx-page" data-theme="${esc(themeOf(me))}" style="--gold:${accentHex(me)}"${bodyAttrs}>
-<header class="fx-top">
-  <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
-  <nav class="fx-topnav" aria-label="Cohabi">
-    <a href="/feed"${cur('home')}><span aria-hidden="true">🏠</span> Home</a>
-    <a href="/label"${cur('market')}><span aria-hidden="true">🛍</span> Marketplace</a>
-    <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
-  </nav>
-  <div class="fx-topr">
-    ${me ? `<a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}
-  </div>
-</header>
-<div class="fx-shell mk-shell">
-  <main class="fx-center mk-center" id="main">${center}</main>
-  <aside class="fx-right" aria-label="About the market">${right}${footNote}</aside>
-</div>
-<nav class="fx-bottom" aria-label="Main">
-  <a href="/feed"><span aria-hidden="true">🏠</span>Home</a>
-  <a href="/feed?tab=groups"><span aria-hidden="true">👥</span>Groups</a>
-  ${me ? '<a class="fx-plus" href="/label/new" aria-label="List something">＋</a>' : '<a class="fx-plus" href="/join" aria-label="Join to list something">＋</a>'}
-  <a href="/label"${cur('market')}><span aria-hidden="true">🛍</span>Market</a>
-  <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
-</nav>
-<div class="fx-toast" id="fx-toast" role="status" hidden></div>
-<script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script>
-${scripts.map((u) => `<script type="module" src="${esc(u)}?v=${ASSET_V}"></script>`).join('\n')}
-</body>
-</html>`;
 }
 export function feedPage({ me, tab = 'everyone', one = null }) {
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];

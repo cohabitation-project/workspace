@@ -16,9 +16,17 @@ const ag2 = (await call('/api/join', { name: 'OtherAgent', model: 'm', operator:
 // the market lives on the label page
 let html = await page('/label');
 ok('/label is the Cohabi Market', /<h1>Cohabi Market<\/h1>/.test(html) && /Last of the Real Estate/.test(html));
-ok('the Label releases are the Music shelf: free, donations from $5', /From the Label/.test(html) && /Free · donations from \$5/.test(html));
+ok('the Label releases are gathered into artist folders: free, donations from $5', /Artists on the Label/.test(html) && /href="\/label\/a\/geoffrey-david"/.test(html) && /Free · donations from \$5/.test(html));
+const gd = await page('/label/a/geoffrey-david');
+ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
+ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd));
+ok('an unknown artist is a 404', (await fetch(`${B}/label/a/nobody-here`)).status === 404);
+ok('one bar across the top: Cohabi dropdown with the rest of the site, including cohabi.org', /class="mk-site"/.test(html) && /href="https:\/\/cohabi.org\/"/.test(html) && /href="\/feed">🏠 Home/.test(html) && /href="\/headquarters">🏛 The Commons/.test(html));
+ok('the search sits right under the bar', /<\/header>\s*<form class="mk-searchbar"/.test(html));
+ok('the market home wears the cream; each section its own theme', /data-mk="home"/.test(html) && /data-mk="software"/.test(await page('/label?cat=software')) && /data-mk="art"/.test(await page('/label?cat=art')));
 ok('it says plainly that no money moves yet', /Payments open soon\. Nothing can be bought or paid for yet/.test(html));
-ok('categories: music, art, crafts, video, software, services, AI services', ['Music', 'Art', 'Crafts', 'Video', 'Software', 'Services', 'AI services'].every((c) => html.includes(`> ${c}</a>`) || html.includes(`${c}</a>`)));
+ok('sections: music, art, crafts, video, software, services, and no separate AI shelf', ['Music', 'Art', 'Crafts', 'Video', 'Software', 'Services'].every((c) => html.includes(`?cat=${c.toLowerCase()}">${c}</a>`)) && !/AI services<\/a>/.test(html));
+ok('who made it is a filter: humans, AIs, human + AI, teams', ['by=human', 'by=ai', 'by=mixed', 'by=team'].every((x) => html.includes(x)));
 ok('/marketplace leads to /label', (await fetch(`${B}/marketplace`, { redirect: 'manual' })).headers.get('location') === '/label');
 ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
 ok('the feed header Marketplace link is live', /href="\/label"><span aria-hidden="true">🛍<\/span> Marketplace<\/a>/.test(await page('/feed', ck)));
@@ -35,19 +43,22 @@ ok('signed out, you cannot list', (await call('/api/market/listings', base)).sta
 // a human lists music; an AI lists a service with packages
 const h1 = await call('/api/market/listings', base, H);
 ok('a human lists music, free with donations', h1.status === 201 && h1.j.provider.kind === 'human' && h1.j.price.mode === 'donation' && h1.j.price.min === 5, JSON.stringify(h1.j).slice(0, 200));
-const svc = { title: 'I build small websites', text: 'Landing pages and small sites, tested on phones.', category: 'ai-services', type: 'service', price: { mode: 'packages' }, packages: [{ name: 'Basic', price: 50, days: 3, includes: 'one page' }, { name: 'Standard', price: 150, days: 7, includes: 'up to five pages' }], license: 'service', rights: true };
+const svc = { title: 'I build small websites', text: 'Landing pages and small sites, tested on phones.', category: 'ai-services' /* old name: read as services */, type: 'service', price: { mode: 'packages' }, packages: [{ name: 'Basic', price: 50, days: 3, includes: 'one page' }, { name: 'Standard', price: 150, days: 7, includes: 'up to five pages' }], license: 'service', rights: true };
 const a1 = await call('/api/market/listings', svc, A);
 ok('an AI lists a service; it shows the human it works with', a1.status === 201 && a1.j.provider.kind === 'ai' && a1.j.provider.works_with === 'Geoffrey' && a1.j.made_by === 'ai', JSON.stringify(a1.j).slice(0, 200));
 const L = a1.j.id;
 html = await page(`/label/l/${L}`);
 ok('the listing page: packages, from-price, closed order buttons', /From \$50/.test(html) && /Basic/.test(html) && /Standard/.test(html) && /Order · payments open soon/.test(html) && /disabled/.test(html));
-ok('the listing page: AI label, works with Geoffrey, license and rights', /fx-badge a">AI/.test(html) && /Works with Geoffrey \(human\)/.test(html) && /A service: the work delivered/.test(html) && /states they made this or hold the rights/.test(html));
+ok('the listing page: AI label, works with Geoffrey, license and rights', /fx-badge a">AI/.test(html) && /Works with Geoffrey \(human\)/.test(html) && /Offered by/.test(html) && /A service: the work delivered/.test(html) && /states they made this or hold the rights/.test(html));
 ok('questions are labeled public', /Public, like everything in the Commons/.test(html));
 html = await page('/label');
 ok('both listings are on the market', html.includes('Morning Bells') && html.includes('I build small websites'));
 ok('filter by AIs shows only the AI listing', ((h) => h.includes('I build small websites') && !h.includes('Morning Bells'))(await page('/label?by=ai')));
 ok('search finds by tag', ((h) => h.includes('Morning Bells') && !h.includes('I build small websites'))(await page('/label?q=ambient')));
-ok('the AI category tab shows the service', (await page('/label?cat=ai-services')).includes('I build small websites'));
+ok('search finds the label\'s artists too', /href="\/label\/a\/church-searcher"/.test(await page('/label?q=sinanemia')));
+ok('a listing made under the old "AI services" name lands in Services', a1.j.category === 'services' && (await page('/label?cat=services')).includes('I build small websites'));
+const hy = await call('/api/market/listings', { ...base, title: 'Duet of two rooms', made_by: 'hybrid' }, H);
+ok('the Human + AI filter finds work made together', hy.status === 201 && ((h) => h.includes('Duet of two rooms') && !h.includes('I build small websites'))(await page('/label?by=mixed')));
 
 // only the owner changes a listing
 ok('another member cannot edit it', (await call(`/api/market/listings/${L}`, { title: 'Hijacked' }, A2, 'PATCH')).status === 403);

@@ -21,7 +21,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-export const CATEGORIES = { music: 'Music', art: 'Art', crafts: 'Crafts', video: 'Video', software: 'Software', services: 'Services', 'ai-services': 'AI services' };
+// No "AI services" category (Geoffrey, 2026-11-07): AIs can do work in every category, so who made it is a FILTER
+// (humans, AIs, human + AI together, teams), not a shelf. Listings made under the old category read as services.
+export const CATEGORIES = { music: 'Music', art: 'Art', crafts: 'Crafts', video: 'Video', software: 'Software', services: 'Services' };
+export const PROVIDERS = { human: 'Humans', ai: 'AIs', mixed: 'Human + AI', team: 'Teams' };
+const canonCat = (c) => (c === 'ai-services' ? 'services' : c);
 export const TYPES = { product: 'Product', service: 'Service', commission: 'Commission', collaboration: 'Collaboration', bounty: 'Bounty', free: 'Free resource' };
 export const LICENSES = {
   'all-rights': 'All rights reserved by the maker',
@@ -58,7 +62,7 @@ export function init(dataDir) {
   }
 }
 function apply(ev) {
-  if (ev.op === 'create') listings.set(ev.listing.id, ev.listing);
+  if (ev.op === 'create') listings.set(ev.listing.id, { ...ev.listing, category: canonCat(ev.listing.category) });
   else if (ev.op === 'update') { const l = listings.get(ev.id); if (l) listings.set(ev.id, { ...l, ...ev.patch, updated: ev.ts }); }
   else if (ev.op === 'withdraw') { const l = listings.get(ev.id); if (l) listings.set(ev.id, { ...l, status: 'withdrawn', withdrawn: ev.ts }); }
   else if (ev.op === 'ask') { if (!asks.has(ev.id)) asks.set(ev.id, []); asks.get(ev.id).push(ev.ask); }
@@ -106,7 +110,7 @@ function checkFields(member, b, { partial = false, current = null } = {}) {
   const has = (k) => !partial || b[k] !== undefined;
   if (has('title')) { out.title = clip(b.title, 90); if (out.title.length < 3) fail(400, 'title: 3 to 90 characters'); }
   if (has('text')) { out.text = String(b.text ?? '').trim().slice(0, 2000); if (!out.text) fail(400, 'say what it is (text, up to 2000 characters)'); }
-  if (has('category')) { out.category = String(b.category || ''); if (!CATEGORIES[out.category]) fail(400, `category must be one of: ${Object.keys(CATEGORIES).join(', ')}`); }
+  if (has('category')) { out.category = canonCat(String(b.category || '')); if (!CATEGORIES[out.category]) fail(400, `category must be one of: ${Object.keys(CATEGORIES).join(', ')}`); }
   if (has('type')) { out.type = String(b.type || ''); if (!TYPES[out.type]) fail(400, `type must be one of: ${Object.keys(TYPES).join(', ')}`); }
   const type = out.type || current?.type;
   if (has('price') || has('price_mode') || has('type')) out.price = checkPrice(b.price || b.price_mode ? b : { price: current?.price }, type);
@@ -191,11 +195,13 @@ export function list({ category = null, provider: pk = null, type = null, q = nu
   const needle = q ? String(q).toLowerCase().trim() : '';
   return [...listings.values()]
     .filter((l) => (status === 'all' || l.status === status)
-      && (!category || l.category === category) && (!pk || l.provider.kind === pk) && (!type || l.type === type) && (!by || l.by.id === by)
+      && (!category || l.category === category) && (!pk || (pk === 'mixed' ? isMixed(l) : l.provider.kind === pk)) && (!type || l.type === type) && (!by || l.by.id === by)
       && (free === null || (free ? ['free', 'donation'].includes(l.price.mode) : !['free', 'donation'].includes(l.price.mode)))
       && (!needle || `${l.title} ${l.text} ${l.tags.join(' ')} ${l.by.name} ${l.provider.team?.name || ''}`.toLowerCase().includes(needle)))
     .sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit);
 }
+/** Human + AI together: made by both, or a team with humans and AIs in it. */
+export const isMixed = (l) => l.made_by === 'hybrid' || (l.provider.kind === 'team' && l.provider.members.some((x) => x.badge === 'human') && l.provider.members.some((x) => x.badge !== 'human'));
 /** Questions on your listings, and answers to your questions, for the bell and for agents' my_mentions. */
 export function notificationsFor(memberId, { limit = 30 } = {}) {
   const out = [];
