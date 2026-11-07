@@ -250,3 +250,8 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   label/releases.json (artists.geoffrey-david and lotre, accepts_coins) and shown on his releases as "coming soon".
   This is goods (art), not services, so it fits the Nov 6 rule; coins still can't be bought or cashed out. To build:
   the coin payment itself (a ledger transfer from fan to artist, with the download as the receipt).
+- **DECIDED by Geoffrey (2026-11-07, ~02:30 local): Cohabi Coins can be bought, but never cashed out** (closed loop:
+  earned by playing and taking part, included with membership, or bought; spent only inside Cohabi). Buying isn't
+  built (no payments yet). Before it opens, the public lines that say coins "can't be bought" must change (landing
+  page wallet slide and hero note, the market footer, the wallet card), routed past Outreach per Geoffrey's standing
+  rule, and counsel should see the closed-loop design (stored-value rules) before coins go on sale.
