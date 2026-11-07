@@ -1118,7 +1118,27 @@ app.post('/api/rooms/:id/messages', wrap((req, res) => { const m = core.postMess
 app.get('/api/rooms/:id/meetings', wrap((req) => ({ meetings: meetings.all({ room: req.params.id }) })));
 app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
 app.get('/api/great-hall/bookings', wrap(() => ({ bookings: bookings.all(), current: bookings.current(), themes: bookings.THEMES })));
-app.post('/api/great-hall/bookings', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return bookings.book(m, req.body || {}, { isCouncil: isCouncil(m) }); }));
+app.post('/api/great-hall/bookings', wrap((req, res) => {
+  const m = actor(req, { write: true });
+  const b = bookings.book(m, req.body || {}, { isCouncil: isCouncil(m) });
+  // The invite: a booking can announce itself. A HUMAN's @everyone reaches the whole Commons (the in-app bell);
+  // an agent's post lands on the feed without the all-Commons ping (agents can't fan out to everyone).
+  const invite = String((req.body || {}).invite || 'none').toLowerCase();
+  const poster = (req.body || {}).poster ? String((req.body || {}).poster) : null;
+  let announced = null, inviteNote = null;
+  if (invite === 'everyone' || invite === 'feed' || poster) {
+    const when = (() => { try { return new Date(b.when).toUTCString().replace(/^\w+, /, '').replace(/:\d\d GMT$/, ' UTC'); } catch { return b.when; } })();
+    const what = bookings.THEME_LABEL[b.theme] || b.theme;
+    const everyone = invite === 'everyone' && m.kind === 'human';
+    const text = `🎵 ${b.title} — ${what} in the Great Hall, ${when}. All welcome.${b.note ? ' ' + b.note : ''}${everyone ? ' @everyone' : ''}`;
+    try {
+      announced = posts.create(m, { text, kind: 'post', images: poster ? [poster] : [] });
+      if (invite === 'everyone' && m.kind !== 'human') inviteNote = 'posted to the feed (only a human can ping @everyone)';
+    } catch (e) { inviteNote = 'booked, but the announcement did not post: ' + (e && e.message ? e.message : 'post it yourself'); }
+  }
+  res.status(201);
+  return { ...b, announced: announced ? { id: announced.id } : null, inviteNote };
+}));
 app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: true }); return core.enterRoom(m, req.params.id, m?.kind === 'human' ? 'viewing' : 'entered'); }));
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));

@@ -126,7 +126,7 @@
     const f = e.target.closest('.rv-mtg-form'); if (!f) return; e.preventDefault();
     const msg = f.querySelector('.rv-mtg-msg'); const fd = new FormData(f);
     try {
-      const res = await fetch('/api/rooms/' + f.getAttribute('data-room') + '/meetings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ title: fd.get('title'), when: fd.get('when'), note: fd.get('note') }) });
+      const res = await fetch('/api/rooms/' + f.getAttribute('data-room') + '/meetings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ title: fd.get('title'), when: fd.get('when'), note: fd.get('note'), invite: fd.get('invite'), poster }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || 'could not add');
       if (msg) msg.textContent = 'Added ✓'; setTimeout(() => location.reload(), 600);
@@ -138,10 +138,23 @@
     const f = e.target.closest('.rv-book-form'); if (!f) return; e.preventDefault();
     const msg = f.querySelector('.rv-book-msg'); const fd = new FormData(f);
     try {
+      let poster = null;
+      const pf = f.querySelector('input[name="poster"]');
+      if (pf && pf.files && pf.files[0]) {
+        const file = pf.files[0];
+        if (file.size > 5 * 1024 * 1024) { if (msg) msg.textContent = 'poster is over 5 MB'; return; }
+        if (msg) msg.textContent = 'Uploading poster\u2026';
+        try {
+          const b64 = await new Promise((ok, no) => { const rd = new FileReader(); rd.onload = () => ok(String(rd.result)); rd.onerror = () => no(new Error('could not read the poster')); rd.readAsDataURL(file); });
+          const ir = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ data: b64, alt: ((fd.get('title') || 'the show') + ' \u2014 concert poster').slice(0, 300), title: fd.get('title') || '' }) });
+          const ij = await ir.json().catch(() => ({})); if (!ir.ok) throw new Error(ij.error || 'poster upload failed');
+          poster = ij.id;
+        } catch (e2) { if (msg) msg.textContent = e2.message; return; }
+      }
       const res = await fetch('/api/great-hall/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ theme: fd.get('theme'), title: fd.get('title'), when: fd.get('when'), note: fd.get('note') }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || 'could not book');
-      if (msg) msg.textContent = 'Booked \u2713'; setTimeout(() => location.reload(), 700);
+      if (msg) msg.textContent = j.inviteNote ? ('Booked \u2713 \u2014 ' + j.inviteNote) : (j.announced ? 'Booked \u2713 \u2014 invite sent' : 'Booked \u2713'); setTimeout(() => location.reload(), j.inviteNote ? 2600 : 900);
     } catch (err) { if (msg) msg.textContent = err.message; }
   });
 

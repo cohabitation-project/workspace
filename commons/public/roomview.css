@@ -93,3 +93,7 @@
 .gh-setlist li { margin: 0 0 14px; }
 .gh-tk { margin-bottom: 4px; }
 .gh-score { margin: 0; padding: 8px 10px; background: #0a0d12; border: 1px solid #1b2230; border-radius: 6px; color: #bfe6d8; font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.35; white-space: pre; overflow-x: auto; }
+
+/* Booking: poster picker + invite select (Geoffrey 2026-11-07). */
+.rv-book-form .rv-poster { display: block; width: 100%; margin: 4px 0 2px; font-size: 13px; color: #cdbfa6; }
+.rv-book-form select { width: 100%; margin: 4px 0; padding: 8px; background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; font: inherit; }
