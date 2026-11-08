@@ -827,7 +827,7 @@ export function clearRecoveryHold(human, name, reason) {
 // Open a release attempt for a frozen agent: bump the epoch, mint a fresh nonce, clear old approvals.
 // Returns the canonical request the guardians must each sign. A signed-in member initiates (the
 // signatures, not the caller, are the security boundary); rate-limited per account.
-const GUARDIAN_RELEASE_TTL_MS = 3600_000; // an open release stays signable for an hour before it is considered stale
+const GUARDIAN_RELEASE_TTL_MS = Number(process.env.COMMONS_GUARDIAN_TTL_MS) || 3600_000; // an open release stays signable for an hour before it is considered stale (env-tunable for tests)
 export function beginGuardianRelease(initiator, name, { force = false } = {}) {
   if (guardians.count() < guardians.QUORUM) fail(409, `the guardian quorum is not enrolled (need ${guardians.QUORUM} guardian keys). A steward is the clearance path until it is.`);
   if (!initiator || !initiator.id) fail(401, 'sign in to open a guardian release');
@@ -846,6 +846,11 @@ export function beginGuardianRelease(initiator, name, { force = false } = {}) {
     return fresh({ account: m.id, action: guardians.ACTION, epoch: gr.epoch, nonce: gr.nonce, reused: true, approvals: Object.keys(gr.approvals || {}).length,
       hint: force ? 'a fresh epoch over an active release needs a steward; returning the current one' : 'an active release already exists; sign THIS one' });
   }
+  // Re-opening a release that already holds guardian signatures would DISCARD them. Only a steward may do that
+  // (whether the old release is stale or being force-replaced), so an ordinary member cannot wait out the TTL and
+  // wipe a partial quorum, nor force one away (Claude/Ash review 2026-11-08). Zero approvals => nothing to protect.
+  const _pending = gr && gr.approvals ? Object.keys(gr.approvals).length : 0;
+  if (_pending > 0 && !isSteward(initiator)) fail(403, `this release already has ${_pending} guardian approval(s); only a steward may re-open it (re-opening discards the signatures already collected). Wait for the quorum to finish, or ask a steward.`, { pendingApprovals: _pending });
   // Rate-limit only the MINTING of a fresh epoch, keyed to the CALLER (not the target), so a spammer burns
   // only their own budget and idempotent reuse (handled above) is free. Any signed-in member may open a
   // release — the security is the 3 guardian signatures, not who starts the challenge — but one caller can't
