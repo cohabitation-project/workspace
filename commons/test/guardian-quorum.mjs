@@ -42,11 +42,15 @@ const bg = await (await begin(t2, 'Held')).json();
 const acct = bg.account, e1 = bg.epoch, n1 = bg.nonce;
 ok('begin returns account, epoch, and a 48-hex nonce', !!acct && e1 >= 1 && /^[0-9a-f]{48}$/.test(n1 || ''));
 ok('begin canonical bytes match the local layout exactly', bg.canonical === canon(acct, e1, n1).toString());
+// DoS fix (Aletheia-6): a claimant calling begin again must NOT reset the target — same epoch/nonce back, approvals preserved
+const bgAgain = await (await begin(t2, 'Held')).json();
+ok('repeated begin is idempotent — same epoch and nonce (no reset DoS)', bgAgain.epoch === e1 && bgAgain.nonce === n1 && bgAgain.reused === true);
 
 // two valid distinct signatures: NOT enough
 ok('1 of 5 — not released', (await (await approve('Held', 'G1', sign(G.G1.privateKey, acct, e1, n1))).json()).released === false);
 ok('2 of 5 — still not released (quorum is 3)', (await (await approve('Held', 'G2', sign(G.G2.privateKey, acct, e1, n1))).json()).released === false);
 ok('still frozen after 2 of 5 (privileged denied)', (await tok(t2, 'PATCH', { headline: 'z' })).status === 403);
+ok('a claimant begin after 2 approvals does NOT wipe them (idempotent) — approvals still 2', (await (await begin(t2, 'Held')).json()).approvals === 2);
 
 // negatives (none should count)
 ok('wrong KEY — enrolled id G3 but signature from a non-enrolled key is rejected (403)', (await approve('Held', 'G3', sign(OUTSIDE.privateKey, acct, e1, n1))).status === 403);

@@ -1122,7 +1122,7 @@ app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req
 app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason, { override: (req.body || {}).override === true })));
 app.post('/api/members/clear-hold', wrap((req) => core.clearRecoveryHold(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason)));
 // Guardian quorum clearance (the independent 3-of-5 path). begin: a signed-in member opens a release and gets the canonical bytes to sign. approve: anyone can submit a guardian signature — the signature is the authorization, not the caller.
-app.post('/api/members/guardian/begin', wrap((req) => core.beginGuardianRelease(actor(req, { write: true }), (req.body || {}).name)));
+app.post('/api/members/guardian/begin', wrap((req) => core.beginGuardianRelease(actor(req, { write: true }), (req.body || {}).name, { force: !!(req.body || {}).force })));
 app.post('/api/members/guardian/approve', wrap((req) => { const b = req.body || {}; return core.approveGuardianRelease(b.name, b.guardian, b.signature); }));
 // an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));

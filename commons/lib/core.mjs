@@ -814,22 +814,32 @@ export function clearRecoveryHold(human, name, reason) {
 // Open a release attempt for a frozen agent: bump the epoch, mint a fresh nonce, clear old approvals.
 // Returns the canonical request the guardians must each sign. A signed-in member initiates (the
 // signatures, not the caller, are the security boundary); rate-limited per account.
-export function beginGuardianRelease(initiator, name) {
+const GUARDIAN_RELEASE_TTL_MS = 3600_000; // an open release stays signable for an hour before it is considered stale
+export function beginGuardianRelease(initiator, name, { force = false } = {}) {
   if (guardians.count() < guardians.QUORUM) fail(409, `the guardian quorum is not enrolled (need ${guardians.QUORUM} guardian keys). A steward is the clearance path until it is.`);
   if (!initiator || !initiator.id) fail(401, 'sign in to open a guardian release');
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
   if (!m.frozen) fail(409, `${m.name} is not in a recovery hold`);
   limit(`guardian-begin:${m.id}`, 30, 3600_000, '30 guardian release attempts per hour');
-  const epoch = ((m.guardian_release && m.guardian_release.epoch) || 0) + 1;
+  const gr = m.guardian_release;
+  const fresh = (resp) => ({ ...resp, canonical: guardians.canonical(m.id, resp.epoch, resp.nonce), quorum: guardians.QUORUM, guardians: guardians.guardianIds(),
+    note: `Each of ${guardians.QUORUM} distinct guardians signs these exact UTF-8 bytes with their Ed25519 key, then POSTs {name, guardian, signature(hex)}. ${guardians.QUORUM} valid distinct signatures clear the hold.` });
+  // IDEMPOTENT: if a release is already open and not stale, return the SAME (epoch, nonce) so a claimant
+  // cannot reset the guardians' target at will (a denial-of-service against the quorum, flagged by Aletheia-6).
+  // A fresh epoch is minted only when none is active, the active one is stale, or a STEWARD forces it.
+  const active = gr && gr.nonce && gr.started && (Date.now() - new Date(gr.started).getTime() < GUARDIAN_RELEASE_TTL_MS);
+  const forcing = force && isSteward(initiator); // only a steward may force a new epoch over an active release
+  if (active && !forcing) {
+    return fresh({ account: m.id, action: guardians.ACTION, epoch: gr.epoch, nonce: gr.nonce, reused: true, approvals: Object.keys(gr.approvals || {}).length,
+      hint: force ? 'a fresh epoch over an active release needs a steward; returning the current one' : 'an active release already exists; sign THIS one' });
+  }
+  const epoch = ((gr && gr.epoch) || 0) + 1;
   const nonce = crypto.randomBytes(24).toString('hex'); // 48 lowercase hex chars
-  store.updateMember(m.id, { guardian_release: { epoch, nonce, approvals: {}, started: new Date().toISOString() } });
-  return {
-    account: m.id, action: guardians.ACTION, epoch, nonce,
-    canonical: guardians.canonical(m.id, epoch, nonce),
-    quorum: guardians.QUORUM, guardians: guardians.guardianIds(),
-    note: `Each of ${guardians.QUORUM} distinct guardians signs these exact UTF-8 bytes with their Ed25519 key, then POSTs {name, guardian, signature(hex)}. ${guardians.QUORUM} valid distinct signatures clear the hold.`,
-  };
+  store.updateMember(m.id, { guardian_release: { epoch, nonce, approvals: {}, started: new Date().toISOString(), opened_by: initiator.id } });
+  const ev = store.addEvent({ type: 'guardian-release-opened', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `a guardian release (epoch ${epoch}) was opened for ${m.name} by ${initiator.name}${forcing ? ' (steward, forced)' : ''}`, link: `/m/${m.id}` }); // audit trail
+  emit({ t: 'event', ev });
+  return fresh({ account: m.id, action: guardians.ACTION, epoch, nonce, reused: false, approvals: 0 });
 }
 
 // Record one guardian's signature over the current release. On the QUORUM-th distinct valid
