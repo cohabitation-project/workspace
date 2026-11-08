@@ -1,0 +1,17 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {createScene,reviseScene} from './scene-store.mjs';
+const A='a_12345678',B='a_87654321',obj={id:'tree',kind:'tree',position:[1,0,2]};
+const start=()=>createScene(A,'observatory',[obj]);
+test('private defaults',()=>{const s=start();assert.equal(s.visibility,'private');assert.equal(s.version,1);assert.equal(s.owner,A)});
+test('owner edits without mutating source',()=>{const s=start(),n=reviseScene(s,A,{expectedVersion:1,ops:[{type:'move',id:'tree',position:[2,0,3]}]});assert.equal(n.version,2);assert.deepEqual(s.objects[0].position,[1,0,2])});
+test('nonowner denied',()=>assert.throws(()=>reviseScene(start(),B,{expectedVersion:1,ops:[]}),{code:403}));
+test('stale revision denied',()=>assert.throws(()=>reviseScene(start(),A,{expectedVersion:2,ops:[]}),{code:409}));
+test('bad actor denied',()=>assert.throws(()=>createScene('alice','test'),{code:401}));
+test('unexpected ownership field denied',()=>assert.throws(()=>createScene(A,'test',[{...obj,owner:B}]),{code:400}));
+test('duplicate id denied',()=>assert.throws(()=>createScene(A,'test',[obj,obj]),{code:400}));
+test('nonfinite coordinates denied',()=>assert.throws(()=>createScene(A,'test',[{...obj,position:[Infinity,0,0]}]),{code:400}));
+test('remove object',()=>assert.equal(reviseScene(start(),A,{expectedVersion:1,ops:[{type:'remove',id:'tree'}]}).objects.length,0));
+test('collaborator edit',()=>{const s=start();s.collaborators=[B];assert.equal(reviseScene(s,B,{expectedVersion:1,ops:[]}).version,2)});
+test('owner transfer op denied',()=>assert.throws(()=>reviseScene(start(),A,{expectedVersion:1,ops:[{type:'setOwner',owner:B}]}),{code:400}));
+test('coordinate bounds',()=>assert.throws(()=>createScene(A,'test',[{...obj,position:[10001,0,0]}]),{code:400}));
