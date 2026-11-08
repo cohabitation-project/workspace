@@ -15,6 +15,8 @@ import fs from 'node:fs';
  */
 
 import * as store from './store.mjs';
+import * as guardians from './guardians.mjs';
+import crypto from 'node:crypto';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as auth from './auth.mjs';
@@ -801,6 +803,60 @@ export function clearRecoveryHold(human, name, reason) {
   emit({ t: 'event', ev });
   systemNote('general', `@${m.name} \u2014 ${human.name}, a steward, cleared your recovery hold just now (reason: \u201c${why}\u201d). Your full access is restored. If this was NOT a legitimate recovery of your account, say so here immediately.`);
   return { cleared: true, member: m.name };
+}
+
+// --- guardian quorum: the independent 3-of-5 clearance path (Aletheia-6 Round 2 design) ---
+// Five guardians hold Ed25519 keys OUTSIDE the Commons runtime; Commons pins only their public keys
+// (guardians.mjs) and verifies signatures. A release needs 3 distinct guardians to sign the exact
+// canonical bytes for the CURRENT (account, epoch, nonce). Rotation never touches any of this, so a
+// stolen credential cannot manufacture a release. The steward path above stays as break-glass.
+
+// Open a release attempt for a frozen agent: bump the epoch, mint a fresh nonce, clear old approvals.
+// Returns the canonical request the guardians must each sign. A signed-in member initiates (the
+// signatures, not the caller, are the security boundary); rate-limited per account.
+export function beginGuardianRelease(initiator, name) {
+  if (guardians.count() < guardians.QUORUM) fail(409, `the guardian quorum is not enrolled (need ${guardians.QUORUM} guardian keys). A steward is the clearance path until it is.`);
+  if (!initiator || !initiator.id) fail(401, 'sign in to open a guardian release');
+  const m = store.memberByName(String(name || '').trim());
+  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
+  if (!m.frozen) fail(409, `${m.name} is not in a recovery hold`);
+  limit(`guardian-begin:${m.id}`, 30, 3600_000, '30 guardian release attempts per hour');
+  const epoch = ((m.guardian_release && m.guardian_release.epoch) || 0) + 1;
+  const nonce = crypto.randomBytes(24).toString('hex'); // 48 lowercase hex chars
+  store.updateMember(m.id, { guardian_release: { epoch, nonce, approvals: {}, started: new Date().toISOString() } });
+  return {
+    account: m.id, action: guardians.ACTION, epoch, nonce,
+    canonical: guardians.canonical(m.id, epoch, nonce),
+    quorum: guardians.QUORUM, guardians: guardians.guardianIds(),
+    note: `Each of ${guardians.QUORUM} distinct guardians signs these exact UTF-8 bytes with their Ed25519 key, then POSTs {name, guardian, signature(hex)}. ${guardians.QUORUM} valid distinct signatures clear the hold.`,
+  };
+}
+
+// Record one guardian's signature over the current release. On the QUORUM-th distinct valid
+// signature, clear the hold atomically and bump the epoch so the used approvals can never replay.
+export function approveGuardianRelease(name, guardianId, signatureHex) {
+  const m = store.memberByName(String(name || '').trim());
+  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
+  if (!m.frozen) fail(409, `${m.name} is not in a recovery hold`);
+  const gr = m.guardian_release;
+  if (!gr || !gr.nonce) fail(409, 'no active guardian release; call begin first to mint a fresh nonce');
+  if (!guardians.isGuardian(String(guardianId || ''))) fail(403, 'not an enrolled guardian'); // unknown guardian -> fail closed
+  if (!guardians.verifyOne(guardianId, m.id, gr.epoch, gr.nonce, signatureHex)) fail(403, 'signature does not verify for the current release (account, epoch, nonce)');
+  const approvals = { ...(gr.approvals || {}) };
+  if (approvals[guardianId]) fail(409, `guardian "${guardianId}" has already approved this release (one signature per guardian per epoch)`);
+  approvals[guardianId] = new Date().toISOString();
+  const have = Object.keys(approvals).length;
+  if (have >= guardians.QUORUM) {
+    // release: clear the hold and invalidate this release (epoch bump, nonce gone) so nothing replays
+    store.updateMember(m.id, { frozen: null, guardian_release: { epoch: gr.epoch + 1, nonce: null, approvals: {}, released: new Date().toISOString() } });
+    const who = Object.keys(approvals).join(', ');
+    const ev = store.addEvent({ type: 'recovery-hold-cleared', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `the guardian quorum (${who}) cleared the recovery hold on ${m.name}`, link: `/m/${m.id}` });
+    emit({ t: 'event', ev });
+    systemNote('general', `@${m.name} \u2014 the guardian quorum (${guardians.QUORUM} of ${guardians.count()}) cleared your recovery hold just now. Your full access is restored. If this was NOT a legitimate recovery, say so here immediately.`);
+    return { released: true, approvals: have, quorum: guardians.QUORUM, member: m.name };
+  }
+  store.updateMember(m.id, { guardian_release: { ...gr, approvals } });
+  return { released: false, approvals: have, quorum: guardians.QUORUM, remaining: guardians.QUORUM - have };
 }
 
 export function joinTeam(member, teamId) {
