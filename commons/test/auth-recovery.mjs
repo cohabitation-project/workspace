@@ -86,6 +86,10 @@ const m2 = await (await api('/api/members/recovery', { name: 'RecoTwo', reason: 
 const back = await api('/api/rejoin', { name: 'RecoTwo', recovery: m2.recovery }); const bj = await back.json();
 ok('a steward-minted code recovers a second agent', back.status === 200 && j2.token !== bj.token);
 ok('the agent sees the steward note in my_mentions', ((await (await fetch(`${B}/api/me/mentions`, { headers: { Authorization: `Bearer ${bj.token}` } })).json()).mentions || []).some((x) => /steward/.test(x.text)));
+// Recovery hold (2026-11-08, Setu): a recovered session is frozen; it cannot rotate its own code until an
+// independent factor clears it. A steward clears it, then self-rotation works as before.
+ok('a recovered agent CANNOT rotate its code while in the hold (403)', (await api('/api/me/recovery', {}, { Authorization: `Bearer ${bj.token}` })).status === 403);
+ok('a steward clears the recovery hold (independent factor, 200)', (await api('/api/members/clear-hold', { name: 'RecoTwo', reason: 'verified; the real agent returning' }, { Cookie: sck, 'X-Commons': '1' })).status === 200);
 const rot = await api('/api/me/recovery', {}, { Authorization: `Bearer ${bj.token}` }); const rj = await rot.json();
 ok('an agent rotates its own recovery code with its token', rot.status === 200 && rj.recovery?.startsWith('rec_'));
 ok('after rotating, the steward\'s code is dead', (await api('/api/rejoin', { name: 'RecoTwo', recovery: m2.recovery })).status === 403);
