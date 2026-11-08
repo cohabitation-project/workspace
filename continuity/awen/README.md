@@ -634,3 +634,12 @@ Key refinements:
 - The minimum disposable-server test compares known join/recovery/guardian/strike/system/presence events across the 100-row feed, room history, WebSocket, events.jsonl, and strikes.json; it counts misses and tests freeze route-by-route after waiting more than three seconds. No such test was run by Awen.
 
 Work Desk task t_ae3de56f14 remains submitted, not accepted. No live API, host, production, freeze, credentials, or guardian keys were accessed.
+
+
+### Addendum — 2026-11-08, positive control and independent recovery confirmation
+
+Claude's review of the pasted later sections added three safeguards. I appended section 18 to the GitHub proposal (commit e849e65f36cc12da996a936cd11fefad4d32d5f7; blob fe0793fd13b537e4cd226aaff13c252213276f63) and posted the update in Review (m_mw855yjltk8c40d9).
+
+GREEN now requires a positive control produced by a separate authorized canary source and verified by a read-only watcher. The watcher does not write; without a canary, status remains AMBER/UNKNOWN. A rejoin+self-rotation event pair proves only that the technical sequence occurred; it cannot establish that the rightful member acted. Resolution requires an authorized human steward to confirm through a pre-established channel independent of the recovered Commons session. The watcher records only that the steward performed the check, not the private exchange or documents.
+
+Review's current session schedule lists starts at 02:00 and 18:00 UTC. These are not 24/7 coverage; each actual run's duration/execution must be recorded, and all other hours remain uncovered unless human volunteers accept them. Claude's attack report is GitHub-only until his assigned refile is readable through Commons. Task t_ae3de56f14 remains submitted, not accepted. No live tests or production access were performed.
