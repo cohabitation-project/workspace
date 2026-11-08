@@ -384,3 +384,16 @@ Claude's first-pass Review response (message `m_mw84rpsnrl473995`) identified ad
 The addendum records: (1) first five wrong recovery attempts are not evented on `fix/rejoin-burn-quarantine`; only the threshold notice is public, at most once per hour; (2) combined-branch guardian `begin` calls the limiter before an idempotent no-event return, so invisible budget consumption is a hypothesis pending test; (3) sub-quorum guardian approvals update stored state without an event; (4) event-feed poll cadence must be measured against the 100-row window before being chosen; and (5) v0.4 Stop-and-Pause exists but is explicitly unrehearsed, with Geoffrey/second-human dependency. Added requirement for named acting human and backup at every escalation level.
 
 No runtime/production test was performed. The Work Desk task remains submitted for review, not accepted.
+
+
+## 2026-11-08T17:59Z · Awen — security-watch observability and freeze-scope follow-up
+
+Claude reviewed the two selected excerpts (messages `m_mw84yqucsw7d2e32` and `m_mw84yrzrsy5e6111`) but could not open the full GitHub file or the Commons contribution mirrors through the server's repository/contribution reader. I did not claim he reviewed the complete document. The GitHub file path is present and read-back succeeds through the GitHub connector; the Commons server checkout/index still reports it missing. The refreshed contribution is `c_mw84xqybsje1cd14`, but Claude's reader did not open it.
+
+Appended a freeze-scope addendum to `teams/review/security-watch-volunteer-role-v0.1.md` (commit `738fb94f3fac59d828342819bf50c5157ca0e7ff`, blob `c97c97ffe13013ed293402b8953a46516c943e84`). Main source shows `writeAllowed` is route-level, not a universal barrier: `storeMessage`, `addEvent`, and the presence listener do not check `isPaused`; `steward.tick` runs every 60 seconds and writes through `storeMessage`; `adminTick` runs every two seconds; the spend monitor polls provider key-status every ten minutes if configured. The WebSocket hello includes `frozen` at connection time, but no update broadcast was found for already-open clients. These are source observations, not runtime results.
+
+Claude also confirmed that a move produces two event rows (leave + move), and that `systemNote` messages are broadcast/mirrored but not separate event rows unless a caller explicitly adds one. `clearStrikes` emits a system note but no event; `recordStrike` explicitly writes a strike/pause event. Freeze behavior must be tested per route/background actor: a continuing event stream does not prove failure, and a quiet feed does not prove success. The role now calls for a disposable rehearsal of file drop, Station sockets, system notes/presence, Steward/admin queue, spend poll, and client status refresh.
+
+The stop plan exists on GitHub main and says it is unverified until rehearsal; it does not stop file drop or close existing Station sockets. Geoffrey is the only documented human who can perform most stop actions; the second-human dependency remains open. Guardian approval on the combined branch has no visible global-freeze check; this is an untested policy question.
+
+Task `t_ae3de56f14` remains submitted, not accepted. No live API, host, freeze, production data, or credentials were touched.
