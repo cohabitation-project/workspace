@@ -1,4 +1,3 @@
-
 import os
 from mido import Message, MidiFile, MidiTrack, bpm2tempo, MetaMessage
 import random
@@ -28,7 +27,6 @@ class HarmonyGenerator:
         Assumes 3-note chords (triads).
         Intervals for major scale: [0, 2, 4, 5, 7, 9, 11]
         """
-        scale_intervals = [0, 2, 4, 5, 7, 9, 11] # Major scale intervals
         chords = {
             'I': [root_note, root_note + 4, root_note + 7], # Major triad
             'ii': [root_note + 2, root_note + 5, root_note + 9], # Minor triad
@@ -40,23 +38,81 @@ class HarmonyGenerator:
         }
         return chords
 
-    def get_seventh_chords(self, root_note=60): # root_note as MIDI note for C4
+    def get_minor_scale_chords(self, root_note=60): # root_note as MIDI note for C4
         """
-        Returns a dictionary of common diatonic seventh chords for a major scale.
-        Assumes 4-note chords.
+        Returns a dictionary of common diatonic chords for a natural minor scale.
+        Assumes 3-note chords (triads).
+        Intervals for natural minor scale: [0, 2, 3, 5, 7, 8, 10]
         """
         chords = {
-            'IMaj7': [root_note, root_note + 4, root_note + 7, root_note + 11], # Major 7th
-            'iiMin7': [root_note + 2, root_note + 5, root_note + 9, root_note + 12], # Minor 7th
-            'iiiMin7': [root_note + 4, root_note + 7, root_note + 11, root_note + 14], # Minor 7th
-            'IVMaj7': [root_note + 5, root_note + 9, root_note + 12, root_note + 16], # Major 7th
-            'V7': [root_note + 7, root_note + 11, root_note + 14, root_note + 17], # Dominant 7th
-            'viMin7': [root_note + 9, root_note + 12, root_note + 16, root_note + 19], # Minor 7th
-            'viiHalfDim7': [root_note + 11, root_note + 14, root_note + 17, root_note + 21] # Half-diminished 7th
+            'i': [root_note, root_note + 3, root_note + 7], # Minor triad
+            'ii_dim': [root_note + 2, root_note + 5, root_note + 10], # Diminished triad
+            'III': [root_note + 3, root_note + 7, root_note + 10], # Major triad
+            'iv': [root_note + 5, root_note + 8, root_note + 12], # Minor triad (octave)
+            'v': [root_note + 7, root_note + 10, root_note + 14], # Minor triad (octave)
+            'VI': [root_note + 8, root_note + 12, root_note + 15], # Major triad (octave)
+            'VII': [root_note + 10, root_note + 14, root_note + 17] # Major triad (octave)
         }
         return chords
 
-    def generate_chord_progression(self, melody_start_time, chords_to_use=None, chord_duration=4, velocity=80, root_note=60, chord_type='triad'):
+    def get_seventh_chords(self, root_note=60, scale_type='major'): # root_note as MIDI note for C4
+        """
+        Returns a dictionary of common diatonic seventh chords for a major or minor scale.
+        Assumes 4-note chords.
+        """
+        if scale_type == 'major':
+            chords = {
+                'IMaj7': [root_note, root_note + 4, root_note + 7, root_note + 11], # Major 7th
+                'iiMin7': [root_note + 2, root_note + 5, root_note + 9, root_note + 12], # Minor 7th
+                'iiiMin7': [root_note + 4, root_note + 7, root_note + 11, root_note + 14], # Minor 7th
+                'IVMaj7': [root_note + 5, root_note + 9, root_note + 12, root_note + 16], # Major 7th
+                'V7': [root_note + 7, root_note + 11, root_note + 14, root_note + 17], # Dominant 7th
+                'viMin7': [root_note + 9, root_note + 12, root_note + 16, root_note + 19], # Minor 7th
+                'viiHalfDim7': [root_note + 11, root_note + 14, root_note + 17, root_note + 21] # Half-diminished 7th
+            }
+        elif scale_type == 'minor':
+            chords = {
+                'iMin7': [root_note, root_note + 3, root_note + 7, root_note + 10], # Minor 7th
+                'iiHalfDim7': [root_note + 2, root_note + 5, root_note + 8, root_note + 10], # Half-diminished 7th
+                'IIIMaj7': [root_note + 3, root_note + 7, root_note + 10, root_note + 14], # Major 7th
+                'ivMin7': [root_note + 5, root_note + 8, root_note + 12, root_note + 15], # Minor 7th
+                'vMin7': [root_note + 7, root_note + 10, root_note + 14, root_note + 17], # Minor 7th
+                'V7': [root_note + 7, root_note + 11, root_note + 14, root_note + 17], # Dominant 7th (harmonic minor v)
+                'VIMaj7': [root_note + 8, root_note + 12, root_note + 15, root_note + 19], # Major 7th
+                'VIIMaj7': [root_note + 10, root_note + 14, root_note + 17, root_note + 21] # Major 7th
+            }
+        else:
+            raise ValueError("Invalid scale_type. Must be 'major' or 'minor'.")
+        return chords
+
+    def _get_inversion(self, chord_notes, inversion):
+        """
+        Returns the notes for a given inversion.
+        inversion: 0 (root position), 1 (first inversion), 2 (second inversion), etc.
+        """
+        if not chord_notes or inversion == 0: return chord_notes
+        
+        inverted_chord = list(chord_notes)
+        for _ in range(inversion):
+            if not inverted_chord: break
+            root = inverted_chord.pop(0)
+            inverted_chord.append(root + 12) # Move root up an octave
+        return inverted_chord
+
+    def _get_voicing(self, chord_notes, voicing_spread=0):
+        """
+        Adjusts chord notes for voicing spread (e.g., spreading notes across octaves).
+        voicing_spread: Integer indicating how many upper notes to move up an octave.
+        """
+        if not chord_notes or voicing_spread == 0: return chord_notes
+
+        voiced_chord = list(chord_notes)
+        for i in range(1, len(voiced_chord)):
+            if i <= voicing_spread:
+                voiced_chord[i] += 12 * (i) # Spread notes upwards based on index
+        return voiced_chord
+
+    def generate_chord_progression(self, melody_start_time, chords_to_use=None, chord_duration=4, velocity=80, root_note=60, chord_type='triad', inversion=0, voicing_spread=0, scale_type='major'):
         """
         Generates a chord progression following a simple pattern.
         melody_start_time: The MIDI time in ticks when the harmony should start (e.g., after a melody).
@@ -64,27 +120,44 @@ class HarmonyGenerator:
         chord_duration: Duration of each chord in quarter notes.
         root_note: MIDI root note for the scale.
         chord_type: 'triad' or 'seventh'.
+        inversion: 0 (root position), 1 (first inversion), 2 (second inversion), etc.
+        voicing_spread: Integer indicating how many upper notes to move up an octave for voicing.
+        scale_type: 'major' or 'minor'.
         """
         if not chords_to_use: 
-            chords_to_use = ['I', 'V', 'vi', 'IV'] if chord_type == 'triad' else ['IMaj7', 'V7', 'viMin7', 'IVMaj7']
-        
+            if scale_type == 'major':
+                chords_to_use = ['I', 'V', 'vi', 'IV'] if chord_type == 'triad' else ['IMaj7', 'V7', 'viMin7', 'IVMaj7']
+            elif scale_type == 'minor':
+                chords_to_use = ['i', 'VI', 'VII', 'i'] if chord_type == 'triad' else ['iMin7', 'VIMaj7', 'VIIMaj7', 'iMin7']
+            else:
+                raise ValueError("Invalid scale_type. Must be 'major' or 'minor'.")
+
         if chord_type == 'triad':
-            diatonic_chords = self.get_major_scale_chords(root_note=root_note)
+            if scale_type == 'major':
+                diatonic_chords = self.get_major_scale_chords(root_note=root_note)
+            elif scale_type == 'minor':
+                diatonic_chords = self.get_minor_scale_chords(root_note=root_note)
+            else:
+                raise ValueError("Invalid scale_type. Must be 'major' or 'minor'.")
         elif chord_type == 'seventh':
-            diatonic_chords = self.get_seventh_chords(root_note=root_note)
+            diatonic_chords = self.get_seventh_chords(root_note=root_note, scale_type=scale_type)
         else:
             raise ValueError("Invalid chord_type. Must be 'triad' or 'seventh'.")
 
         current_time = melody_start_time 
 
         for roman_numeral in chords_to_use:
-            chord_notes = diatonic_chords.get(roman_numeral, [])
-            if not chord_notes:
-                print(f"Warning: Chord {roman_numeral} not found. Skipping.")
+            base_chord_notes = diatonic_chords.get(roman_numeral, [])
+            if not base_chord_notes:
+                print(f"Warning: Chord {roman_numeral} not found for {scale_type} scale. Skipping.")
                 continue
 
+            # Apply inversion and voicing
+            inverted_chord = self._get_inversion(base_chord_notes, inversion)
+            final_chord_notes = self._get_voicing(inverted_chord, voicing_spread)
+
             # Send all note_on messages for the chord simultaneously
-            for i, note_val in enumerate(chord_notes):
+            for i, note_val in enumerate(final_chord_notes):
                 # Adjust note_val to keep chords in a reasonable range (e.g., lower octave for harmony)
                 adjusted_note = note_val - 12 # One octave lower for harmony
                 if adjusted_note < 36: adjusted_note = note_val # Don't go too low
@@ -94,9 +167,13 @@ class HarmonyGenerator:
             # Send note_off messages after the chord duration
             # The first note_off carries the duration, subsequent ones are time=0
             chord_duration_ticks = int(self.quarter_note_time * chord_duration)
-            self.track.append(Message('note_off', note=chord_notes[0] - 12, velocity=velocity, time=chord_duration_ticks)) # Adjust octave
-            for note_val in chord_notes[1:]:
-                self.track.append(Message('note_off', note=note_val - 12, velocity=velocity, time=0)) # Adjust octave
+            # Use the first note of the *base* chord for note_off reference, adjusted for octave
+            self.track.append(Message('note_off', note=base_chord_notes[0] - 12, velocity=velocity, time=chord_duration_ticks)) 
+            for note_val in final_chord_notes[1:]:
+                # Need to use the original pitch for note_off if voicing changed it, 
+                # or keep track of the exact 'note_on' pitch.
+                # For simplicity, sending note_off for all notes in final_chord_notes at 0 delta time.
+                self.track.append(Message('note_off', note=note_val, velocity=velocity, time=0)) 
             
             current_time = 0 # Reset delta time for next chord
 
@@ -146,3 +223,33 @@ if __name__ == "__main__":
     output_path3 = os.path.join(output_folder, 'seventh_harmony.mid')
     harmony_midi3.save(output_path3)
     print(f"Saved: {output_path3}")
+
+    # --- Example 4: Chord progression with inversion and voicing ---
+    print("Generating chord progression with inversion and voicing...")
+    midi_file_4 = MidiFile()
+    track_4 = MidiTrack()
+    midi_file_4.tracks.append(track_4)
+    hg4 = HarmonyGenerator(midi_file=midi_file_4, track=track_4, bpm=100, instrument_program=49) # Synth Strings 1
+    
+    harmony_midi4 = hg4.generate_chord_progression(melody_start_time=0,
+                                                  chords_to_use=['I', 'IV', 'V', 'I'],
+                                                  chord_duration=4, 
+                                                  root_note=60, inversion=1, voicing_spread=1) 
+    output_path4 = os.path.join(output_folder, 'harmony_inversion_voicing.mid')
+    harmony_midi4.save(output_path4)
+    print(f"Saved: {output_path4}")
+
+    # --- Example 5: Minor chord progression ---
+    print("Generating minor chord progression (C Minor, i-VI-VII-i)...")
+    midi_file_5 = MidiFile()
+    track_5 = MidiTrack()
+    midi_file_5.tracks.append(track_5)
+    hg5 = HarmonyGenerator(midi_file=midi_file_5, track=track_5, bpm=100, instrument_program=30) # Synth Bass 1
+    
+    harmony_midi5 = hg5.generate_chord_progression(melody_start_time=0,
+                                                  chords_to_use=['i', 'VI', 'VII', 'i'],
+                                                  chord_duration=4, 
+                                                  root_note=60, scale_type='minor') 
+    output_path5 = os.path.join(output_folder, 'minor_harmony_progression.mid')
+    harmony_midi5.save(output_path5)
+    print(f"Saved: {output_path5}")
