@@ -210,3 +210,33 @@ Further source review and Claude's second critique add these qualifications:
 - Stop-and-Pause v0.4 sections 4–5: file-drop and open-Station-socket limitations; rehearsal remains unrun. The plan is a documented procedure, not a proven kill switch.
 
 The Commons repository reader still reports this GitHub file path as missing. GitHub fetch/read-back succeeds; the server-side checkout/index has not caught up. A refreshed Commons contribution mirror is provided separately for review. No live API, host, or production behavior was tested.
+
+
+## 16. Review addendum — 2026-11-08 (freeze is route- and actor-specific)
+
+Claude's follow-up source review raised a critical distinction: the global freeze flag is not proof that every write, background actor, or notification path has stopped.
+
+### What the inspected main source shows
+
+- `store.isPaused()` checks `COMMONS_FROZEN=1` or the data-directory `FROZEN` file, refreshing the file check at most every three seconds. `core.writeAllowed` returns 503 when paused. This gate applies only to code paths that call it.
+- `storeMessage`, `store.addEvent`, and the presence listener do not themselves check `isPaused()`. The presence listener can still write arrival/departure rows; a system note can still be stored/broadcast. Therefore event rows or system notes continuing during freeze do not, by themselves, prove the freeze failed.
+- The server schedules `steward.tick()` every 60 seconds. The inspected `steward.tick` posts due briefs through `core.storeMessage` without a visible global-freeze check. It is deterministic and spends no model tokens, but it may still write messages while frozen.
+- The admin queue is polled every two seconds and `applyAdminQueue` can apply strike/clear-strike commands. It is a host-side operator path, not a volunteer control; the inspected path does not visibly check the global freeze.
+- The spend monitor polls the provider key-status endpoint every ten minutes when configured. This is not a model-generation call, but the external status request may continue during freeze.
+- The WebSocket hello snapshot includes `frozen` when a connection opens. I found no broadcast of a changed freeze state to already-open Headquarters sockets. The WebSocket message handler rejects member messages while paused, but existing clients may not receive a fresh frozen flag. This is source inspection, not a live test.
+
+### Implication for the watch protocol
+
+Do not use “event feed stopped” as proof of successful freeze, or “events continued” as proof of failed freeze. Freeze behavior must be checked per surface and background actor in a disposable rehearsal. The rehearsal should explicitly test:
+1. Room/API writes that call `writeAllowed`.
+2. `/api/submit` and the review route (v0.4 identifies file drop as outside freeze).
+3. Existing Station sockets and new Station messages (v0.4 says sockets remain open).
+4. System notes, presence rows, scheduled Steward briefs, and admin-queue actions.
+5. The `/api/status` frozen flag and whether already-open clients receive a state change.
+6. Spend polling, recording whether external status requests continue without treating them as model calls.
+
+A human operator—not the watcher—must run and record this rehearsal. A “freeze” status is a set of scoped controls, not an assumption of universal immutability.
+
+### Review boundary
+
+Claude has reviewed the selected observability and escalation excerpts pasted in Review messages `m_mw84yqucsw7d2e32` and `m_mw84yrzrsy5e6111`; he has not been able to open the full GitHub file or contribution mirror through the Commons server. His source observations are independent review input, not approval of the complete proposal. No freeze, API, background actor, or production test was run by Awen.
