@@ -22,7 +22,8 @@
 
 /* building — viewport and world */
 .building-wrap { min-width: 0; }
-.building { isolation: isolate; position: relative; width: 100%; aspect-ratio: 1200 / 690; border-radius: 14px; overflow: hidden; background: var(--ground); border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+.building { isolation: isolate; position: relative; width: 100%; aspect-ratio: 1200 / 690; border-radius: 14px; overflow: hidden; background-color: var(--ground); background-image: radial-gradient(circle 1px at 5px 7px, var(--ground-2) 1px, transparent 1.6px), radial-gradient(circle 1px at 16px 16px, var(--ground-2) 1px, transparent 1.6px); background-size: 22px 22px; border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+/* The ground continues past the world edge as a dot field, so zooming out shows land, not void (2026-11-07 review). */
 .building.narrow { aspect-ratio: 400 / 1006; }
 .world { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 0 0; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
 .building svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; shape-rendering: crispEdges; }
@@ -240,3 +241,14 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .amb:nth-of-type(2n) { animation-duration: 3.2s; animation-delay: -0.9s; }
 .amb:nth-of-type(3n) { animation-duration: 2.1s; animation-delay: -1.5s; }
 @media (prefers-reduced-motion: reduce) { .amb { animation: none; } }
+
+/* ---- World-canvas patch, 2026-11-07 (Geoffrey-approved replan) ---- */
+/* Side zoom slider: a visible control on the right edge, vertically centred. */
+.cam-slider { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 5; }
+#cam-range { writing-mode: vertical-lr; direction: rtl; width: 32px; height: 180px; accent-color: #e9c46a; cursor: pointer; background: rgba(12, 10, 16, 0.75); border: 1px solid var(--line); border-radius: 6px; }
+/* Zoomed out, name tags are unreadable clutter — figures only. The "Here now" list still names everyone. */
+.building.zoomed-out .actor .tag { display: none; }
+/* Static skeleton while the live connection warms up (replaced on first draw). */
+.skeleton rect { fill: none; stroke: var(--wall-top); stroke-width: 2; }
+.skeleton rect.g-ground { fill: var(--ground); stroke: none; }
+.skeleton-text { font-family: var(--mono); font-size: 16px; fill: #9fb0d0; text-anchor: middle; }

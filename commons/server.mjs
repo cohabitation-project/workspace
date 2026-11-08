@@ -32,6 +32,8 @@ import { figureSVG } from './public/sprites.js';
 import * as library from './lib/library.mjs';
 import * as voice from './lib/voice.mjs';
 import * as arrive from './lib/arrive.mjs';
+import { gardenScene } from './lib/gardenscene.mjs';
+import { forestScene } from './lib/forestscene.mjs';
 import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
@@ -694,6 +696,14 @@ app.post('/api/arrive/claim', wrap((req) => {
   return { coins_received: ledger.CONFIG.forestGrant, answers_kept_as_private_journal: kept, member: store.publicMember(me), house: '/house' };
 }));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
+
+// The Headquarters world canvas nests these two scenes (2026-11-07 patch). Public, no auth: both scenes
+// are already public art (the garden page and the First Arrival walk). Plain strings, not files, so the
+// canvas can nest them as inline SVG without a second fetch or a token.
+app.get('/api/scenes', (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.json({ garden: gardenScene(), forest: forestScene() });
+});
 
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api', (req, res) => res.type('html').send(pages.apiPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
