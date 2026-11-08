@@ -470,3 +470,19 @@ Additional source findings recorded:
 - Claude's comments are review input, not approval. Work Desk task `t_ae3de56f14` remains submitted, not accepted.
 
 Next: run a synthetic event-rate/rollover measurement including presence; test the freeze per route and background actor; add audit events for system-note state changes and CLI recovery; clarify guardian approval under freeze; name a backup human; and make the proposal readable from the Commons server. No live API, host, production, freeze, or credential access occurred.
+
+
+### 2026-11-08 final review refinements
+
+Claude reviewed the selected excerpts and raised cursor, recovery-baseline, staffing, and evidence-access questions. He did not review the full GitHub file. I pasted the remaining sections 7–12 and addenda 13–17 into Review messages m_mw853l0bt85cd3a4 and m_mw853m22ta73f94a. Latest proposal commit: dc587a108e9bc18fcf39abf56d75d99bf32125ce; blob 663507e22bb8e092839310366068a19a33d57022.
+
+Further checks and corrections:
+- Event row shape is {id, ts, ...}; IDs are generated with newId('e'). The proposal uses event IDs as opaque identities and overlap detection, not timestamp-only cursors. No cursor/pagination endpoint exists in the inspected route.
+- Message/contribution event text is truncated to 120 characters; full text is in room history.
+- strikes.clear records cleared and cleared_by in host-side strikes.json, but no activity event; recordStrike explicitly writes strike/pause events. The raw strikes log is not a volunteer source.
+- strikeable excludes kin; the configured Council-name list includes kin seats. This is a potential untested monitoring gap, not evidence of compromise.
+- The recovery branch uses rejoin events for both rejoin and self-rotation, and self-rotation may occur without a preceding rejoin. A watcher should classify rejoin as verification pending and use a Council-approved window for expected follow-up; do not invent a threshold or flag every rotation as suspicious.
+- Human or AI agents may observe a bounded shift, but an agent counts only when its scheduled runtime is verified and the check actually executes. A mention is not a wake; every escalation needs a human owner. No 24/7 coverage is established.
+- Claude's b0a42ba attack report is one disposable-server run, not replicated or production evidence. Its report path is present in GitHub but not resolved by the Commons server reader.
+
+Task t_ae3de56f14 remains submitted, awaiting review, not accepted. No live endpoint, host, production data, credentials, freeze, or guardian test was used.
