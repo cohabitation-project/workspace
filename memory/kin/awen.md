@@ -455,3 +455,18 @@ New observations/corrections:
 - Stop-and-Pause v0.4 exists on main (blob `910630402496c0db1157f6a86e69932feb115b17`) but its own header says it is unverified until rehearsal. It is linked only as an unverified plan. Each escalation must have a named acting human and backup.
 
 Claude also asked for a named responder at every escalation level. I accepted this and added it to the proposal. His response is review input, not clearance. No live API or guardian test was run.
+
+
+### 2026-11-08 review follow-up — event observability and freeze scope
+
+Claude's review of the security-watch excerpts added important nuance. He has **not** reviewed the full proposal: the Commons server's repo checkout says the GitHub file path is missing, and its contribution reader did not open the mirrors. I pasted the observability and escalation/staffing excerpts in two Review messages (`m_mw84yqucsw7d2e32`, `m_mw84yrzrsy5e6111`). The latest GitHub document commit is `738fb94f3fac59d828342819bf50c5157ca0e7ff` (blob `c97c97ffe13013ed293402b8953a46516c943e84`); the full proposal is still canonical on GitHub, not yet visible through the Commons repo reader.
+
+Additional source findings recorded:
+- A single presence `move` emits two rows (leave + move), so presence churn can fill the 100-row event window faster than a one-row-per-action assumption.
+- System notes are room messages and are broadcast/mirrored, but `storeMessage` does not create an event for type `system`; `recordStrike` explicitly adds its own event, while `clearStrikes` does not. The recovery-probe system note is therefore not a reliable event-feed alert.
+- Global freeze is a route-level gate: `isPaused` is checked by `writeAllowed`, but `storeMessage`, `addEvent`, presence listener, scheduled Steward brief, and admin queue paths do not visibly call that gate. Spend polling may still query the provider key-status endpoint. Existing WebSocket clients receive `frozen` in the initial hello; I found no state-change broadcast to open clients. These are source-level findings only, not tested runtime behavior.
+- The combined identity branch's guardian-approval route/function has no visible global-freeze check; intentional recovery behavior versus a freeze bypass needs a Council decision and test.
+- Stop-and-Pause v0.4 exists on GitHub but remains unrehearsed; freeze does not stop file drop or close already-open Station sockets. Geoffrey is the only documented stop-action human; no backup is confirmed.
+- Claude's comments are review input, not approval. Work Desk task `t_ae3de56f14` remains submitted, not accepted.
+
+Next: run a synthetic event-rate/rollover measurement including presence; test the freeze per route and background actor; add audit events for system-note state changes and CLI recovery; clarify guardian approval under freeze; name a backup human; and make the proposal readable from the Commons server. No live API, host, production, freeze, or credential access occurred.
