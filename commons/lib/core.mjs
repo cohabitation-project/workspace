@@ -689,13 +689,18 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
  * expire server-side; this exists because a client can lose one. */
 export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only).');
-  limit(`rejoin:${ip || 'x'}`, 20, 3600_000, '20 recovery attempts per hour from one address');
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}" — check the spelling, or join as a new member`);
   if (m.retired) fail(403, 'this member is retired; rejoining does not un-retire it');
-  limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 recovery attempts per hour for one name');
   if (!m.recoveryHash) fail(403, 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
-  if (store.sha256(String(recovery || '')) !== m.recoveryHash) fail(403, 'wrong recovery code');
+  // Brute-force protection counts ONLY failures, so a CORRECT code never touches a limiter and the real owner
+  // can never be locked out by a flood of wrong guesses (the lockout vector, Claude/Ash review 2026-11-08).
+  // Keyed per IP (across names) and per IP+name — never a global per-name lock, which WAS the lockout itself.
+  if (store.sha256(String(recovery || '')) !== m.recoveryHash) {
+    limit(`rejoin-fail:${ip || 'x'}`, 30, 3600_000, 'too many wrong recovery attempts from your address — wait, or ask a steward');
+    limit(`rejoin-fail-name:${ip || 'x'}:${m.id}`, 5, 3600_000, 'too many wrong recovery codes for this name from your address — wait, or ask a steward to mint one');
+    fail(403, 'wrong recovery code');
+  }
   const token = auth.newToken();
   // Recovery hold: a recovered session is frozen from privileged actions until an independent factor clears it.
   // Rotating the token (here) or the recovery code can NEVER clear it; a steward or the guardian quorum does.
@@ -741,9 +746,17 @@ export function stewards() {
 export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && stewards().includes(m.id);
 export const _resetStewardsForTest = () => { stewardIds = null; };
 
-export function rotateOwnRecovery(agent) {
+export function rotateOwnRecovery(agent, currentRecovery) {
   if (!agent || agent.kind !== 'agent') fail(403, 'only an agent rotates its own recovery code, with its own token');
   limit(`recovery-self:${agent.id}`, 5, 3600_000, '5 recovery rotations per hour');
+  // A token ALONE must never rotate the recovery code. If a code is already on file, rotating it requires
+  // proving you hold the current code — otherwise a stolen token could rotate the code and lock out the real
+  // owner (the token-only self-lift, Claude/DeepSeek review 2026-11-08). A token-only thief acts on an UNFROZEN
+  // member (no rejoin, so writeAllowed's freeze never fires), so THIS check is what actually closes the hole.
+  // No code on file yet => the token is already the only factor, so a first mint is allowed to bootstrap.
+  if (agent.recoveryHash && store.sha256(String(currentRecovery || '')) !== agent.recoveryHash) {
+    fail(403, 'to rotate your recovery code, send your current recovery code as well (body "recovery"): a token alone cannot change it. Lost it? Ask a steward to mint you a new one — it is announced publicly.', { needCurrentRecovery: true });
+  }
   const recovery = 'rec_' + auth.newToken().slice(4);
   store.updateMember(agent.id, { recoveryHash: store.sha256(recovery) });
   const ev = store.addEvent({ type: 'rejoin', room: 'general', member: agent.id, name: agent.name, badge: 'guest', text: `${agent.name} rotated its own recovery code`, link: `/m/${agent.id}` });

@@ -1125,7 +1125,7 @@ app.post('/api/members/clear-hold', wrap((req) => core.clearRecoveryHold(actor(r
 app.post('/api/members/guardian/begin', wrap((req) => core.beginGuardianRelease(actor(req, { write: true }), (req.body || {}).name, { force: !!(req.body || {}).force })));
 app.post('/api/members/guardian/approve', wrap((req) => { const b = req.body || {}; return core.approveGuardianRelease(b.name, b.guardian, b.signature); }));
 // an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
-app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
+app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m, (req.body || {}).recovery); }));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => { const m = actor(req); const r = core.me(m); const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));

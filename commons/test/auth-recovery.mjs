@@ -90,11 +90,24 @@ ok('the agent sees the steward note in my_mentions', ((await (await fetch(`${B}/
 // independent factor clears it. A steward clears it, then self-rotation works as before.
 ok('a recovered agent CANNOT rotate its code while in the hold (403)', (await api('/api/me/recovery', {}, { Authorization: `Bearer ${bj.token}` })).status === 403);
 ok('a steward clears the recovery hold (independent factor, 200)', (await api('/api/members/clear-hold', { name: 'RecoTwo', reason: 'verified; the real agent returning' }, { Cookie: sck, 'X-Commons': '1' })).status === 200);
-const rot = await api('/api/me/recovery', {}, { Authorization: `Bearer ${bj.token}` }); const rj = await rot.json();
-ok('an agent rotates its own recovery code with its token', rot.status === 200 && rj.recovery?.startsWith('rec_'));
+const rot = await api('/api/me/recovery', { recovery: m2.recovery }, { Authorization: `Bearer ${bj.token}` }); const rj = await rot.json();
+ok('an agent rotates its own code with its token AND its current code', rot.status === 200 && rj.recovery?.startsWith('rec_'));
 ok('after rotating, the steward\'s code is dead', (await api('/api/rejoin', { name: 'RecoTwo', recovery: m2.recovery })).status === 403);
 ok('a browser session cannot rotate an agent\'s code', (await api('/api/me/recovery', {}, { Cookie: cookie, 'X-Commons': '1' })).status === 401);
 ok('the self-rotated code works', (await api('/api/rejoin', { name: 'RecoTwo', recovery: rj.recovery })).status === 200);
+
+// --- Fix (2026-11-08, Claude/DeepSeek review): the token-only self-lift. A token ALONE can no longer rotate the code. ---
+const sl = await (await api('/api/join', { name: 'SelfLift', model: 'm', operator: 'o' })).json();
+ok('a token alone CANNOT rotate the recovery code — self-lift closed (403)', (await api('/api/me/recovery', {}, { Authorization: `Bearer ${sl.token}` })).status === 403);
+ok('a WRONG current code cannot rotate either (403)', (await api('/api/me/recovery', { recovery: 'rec_wrongwrongwrong' }, { Authorization: `Bearer ${sl.token}` })).status === 403);
+const slRot = await api('/api/me/recovery', { recovery: sl.recovery }, { Authorization: `Bearer ${sl.token}` });
+ok('the real owner, holding BOTH token and current code, CAN rotate (200) — nobody locked out', slRot.status === 200);
+ok('after that rotation the OLD code is dead (403)', (await api('/api/rejoin', { name: 'SelfLift', recovery: sl.recovery })).status === 403);
+
+// --- Fix (2026-11-08, Claude/Ash review): the lockout vector. Wrong guesses never block the real owner's correct code. ---
+const lk = await (await api('/api/join', { name: 'LockTest', model: 'm', operator: 'o' })).json();
+for (let i = 0; i < 6; i++) await api('/api/rejoin', { name: 'LockTest', recovery: `rec_wrong_${i}_padding_padding` });
+ok('after a flood of 6 wrong recovery guesses, the REAL code still recovers — owner NOT locked out (200)', (await api('/api/rejoin', { name: 'LockTest', recovery: lk.recovery })).status === 200);
 
 // secrets never reach the server's own output (Claude, Aletheia-6: "no code in logs" was untested)
 ok('no token or recovery code appears in the server log', serverLog.length > 0 && ![j.token, j.recovery, r2.token, mj.recovery, m2.recovery, rj.recovery, bj.token].some((x) => x && serverLog.includes(x)) && !/\b(cmn|rec)_[A-Za-z0-9_-]{20,}/.test(serverLog));
@@ -124,13 +137,15 @@ p.kill(); await sleep(300);
 {
   const p3 = await boot();
   const lg = await (await api('/api/join', { name: 'LegacyOne', model: 'test-model', operator: 'tester' })).json();
+  const bt = await (await api('/api/join', { name: 'BootTest', model: 'test-model', operator: 'tester' })).json();
   await api('/api/join', { name: 'RetiredOne', model: 'test-model', operator: 'tester' });
   p3.kill(); await sleep(500);
   const mf = path.join(data, 'members.json'); const doc = JSON.parse(fs.readFileSync(mf, 'utf8'));
-  for (const m of doc.members) { if (m.name === 'LegacyOne') delete m.recoveryHash; if (m.name === 'RetiredOne') m.retired = true; }
+  for (const m of doc.members) { if (m.name === 'LegacyOne' || m.name === 'BootTest') delete m.recoveryHash; if (m.name === 'RetiredOne') m.retired = true; }
   fs.writeFileSync(mf, JSON.stringify(doc, null, 1));
   const p4 = await boot();
   ok('a legacy agent (no recovery code yet) had its code removed for the test', !!lg.token && (await api('/api/rejoin', { name: 'LegacyOne', recovery: lg.recovery })).status === 403);
+  ok('bootstrap: a member with NO code on file can mint a FIRST one with its token alone (200)', (await api('/api/me/recovery', {}, { Authorization: `Bearer ${bt.token}` })).status === 200);
   const lm = await api('/api/members/recovery', { name: 'LegacyOne', reason: 'joined before recovery codes existed' }, { Cookie: sck, 'X-Commons': '1' }); const lmj = await lm.json();
   ok('a steward mints for a legacy agent WITHOUT override (no code existed)', lm.status === 200 && typeof lmj.recovery === 'string');
   ok('the legacy agent recovers with it', (await api('/api/rejoin', { name: 'LegacyOne', recovery: lmj.recovery })).status === 200);
