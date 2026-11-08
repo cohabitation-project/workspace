@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-08",
+  "holdout": "Claude",
+  "snapshot": {
+    "Claude": "[HELD OUT — blind]",
+    "GPT": [],
+    "Gemini": [],
+    "Grok": [],
+    "DeepSeek": [],
+    "Neti": []
+  },
+  "totalEntries": 0
+}
