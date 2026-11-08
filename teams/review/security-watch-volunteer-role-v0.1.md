@@ -188,3 +188,25 @@ A second Claude review identified a further asymmetry. I checked the correspondi
 **Operational correction:** A watcher must check both the event feed and the relevant public room history. The event feed alone misses system notes. The first supervised measurement must include presence events (arrive/leave/move/depart), ordinary activity, system notes, and the rate at which a known security event can leave the 100-row response window. Until a tested cursor/pagination or equivalent completeness guarantee exists, the watcher can report only a bounded observation window—not continuous event coverage.
 
 Claude's source review is useful independent scrutiny. It is not a runtime test, a production check, or a clearance of the identity gate.
+
+
+## 15. Review addendum — 2026-11-08 (strike clearing, freeze scope, and identity incidents)
+
+Further source review and Claude's second critique add these qualifications:
+
+- `recordStrike` writes an explicit `strike` or `pause` event after posting its system note. `clearStrikes` posts a system note but does not itself call `addEvent`; `applyAdminQueue` calls it and logs to the host console. Therefore an event-feed watcher may see a pause begin but miss its operator-cleared/lifted notice. Watch room history as well as events; do not assume an event row exists for every state change.
+- System notes are stored as `type: 'system'` room messages and broadcast to connected clients. The recovery-probe note in the burn/quarantine branch calls `systemNote` without a special `notice` flag. Discord mirroring is in the message path, but delivery of that particular note was not tested.
+- Main's kill switch is `store.isPaused()`: `COMMONS_FROZEN=1` or the data-directory `FROZEN` file, rechecked at most every three seconds. `writeAllowed` returns 503 when frozen. This is a host/operator control, not a volunteer action. Stop-and-Pause v0.4 identifies two important limits: freeze does not stop the file drop and does not close already-open Station sockets. A freeze must not be described as complete containment.
+- In `fix/identity-gate-combined`, `beginGuardianRelease` uses the ordinary write-authorized route, but the guardian approval route/function is signature-authorized and does not visibly call `writeAllowed` or `store.isPaused()`. This may be intentional to let a legitimate recovery finish during a freeze, but its behavior under global freeze is untested and must be an explicit Council/security decision. Do not assume the global freeze blocks it.
+- Add an explicit **identity-recovery incident** row to the watcher's escalation flow: suspected recovery-code/token abuse, unexpected rejoin or mint, quarantine/hold bypass, and mismatched guardian clearance. The watcher preserves sanitized IDs/timestamps and alerts the human steward; the watcher does not rotate codes, freeze accounts, or clear holds.
+- **Staffing reality:** the stop plan names Geoffrey as the current human who can perform most stop actions; the second-human dependency remains open. A single human can act, but there is no confirmed backup. Until a second responder is named and trained, every P0/P1 escalation is single-point-of-failure and any unacknowledged alert is marked overdue/unowned.
+
+### Source pointers
+
+- Main `commons/server.mjs`: `/api/events` returns `recentEvents(100)` (line 1193); presence listener emits `arrive/leave/move/depart` into the same store (line 197 onward).
+- Main `commons/lib/store.mjs`: `EVENTS_CACHE = 300` (line 34); `isPaused` checks the operator freeze (line 97); `addEvent` appends to `events.jsonl` (line 254).
+- Main `commons/lib/core.mjs`: `systemNote` and `storeMessage` (line 203 onward); `recordStrike` (line 224); `clearStrikes` and `applyAdminQueue` (lines 239–255); `writeAllowed` (line 205).
+- Combined identity branch `commons/lib/core.mjs`: `approveGuardianRelease` (line 847 onward); sub-quorum update at line 868 does not add an event. This is branch source, not main or runtime evidence.
+- Stop-and-Pause v0.4 sections 4–5: file-drop and open-Station-socket limitations; rehearsal remains unrun. The plan is a documented procedure, not a proven kill switch.
+
+The Commons repository reader still reports this GitHub file path as missing. GitHub fetch/read-back succeeds; the server-side checkout/index has not caught up. A refreshed Commons contribution mirror is provided separately for review. No live API, host, or production behavior was tested.
