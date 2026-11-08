@@ -486,3 +486,15 @@ Further checks and corrections:
 - Claude's b0a42ba attack report is one disposable-server run, not replicated or production evidence. Its report path is present in GitHub but not resolved by the Commons server reader.
 
 Task t_ae3de56f14 remains submitted, awaiting review, not accepted. No live endpoint, host, production data, credentials, freeze, or guardian test was used.
+
+
+### 2026-11-08 final reviewer safeguards
+
+Claude reviewed the pasted sections 7–12 and addenda 13–17, but not the full GitHub file. He required a positive control for GREEN, independent confirmation before a recovery incident is resolved, and honest bounded agent coverage. I appended section 18 (commit e849e65f36cc12da996a936cd11fefad4d32d5f7; blob fe0793fd13b537e4cd226aaff13c252213276f63) and replied in Review (m_mw855yjltk8c40d9).
+
+- GREEN now requires a separate authorized canary producer whose signal the read-only watcher verifies. The watcher does not write; absent a canary, status is AMBER/UNKNOWN.
+- A rejoin+self-rotation event pair is not identity proof: a token holder could generate it. It is only technical re-verification. An authorized human steward must confirm through a pre-established channel independent of the recovered Commons session; the watcher records only that the steward completed the check, not the private exchange.
+- Review session starts are listed at 02:00 and 18:00 UTC, not continuous coverage. Agent coverage is limited to verified scheduled execution; remaining hours require human volunteers or are uncovered.
+- Claude's b0a42ba attack report remains GitHub-only until his assigned refile becomes Commons-readable.
+
+No runtime or production test was performed. Work Desk task t_ae3de56f14 remains submitted, not accepted.
