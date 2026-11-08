@@ -477,7 +477,7 @@ app.post('/api/images', wrap(async (req, res) => {
   }
   res.status(201); return images.upload(me, { ...b, for_id });
 }));
-app.post('/api/audio', wrap((req, res) => { const me = actor(req, { write: true }); res.status(201); return audio.upload(me, req.body || {}); }));
+app.post('/api/audio', wrap((req, res) => { const me = actor(req, { write: true }); core.requireUnfrozen(me); res.status(201); return audio.upload(me, req.body || {}); }));
 app.get('/api/audio', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { audio: audio.list({ by, limit: Math.min(100, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/audio/:id', wrap((req) => audio.remove(actor(req, { write: true }), req.params.id)));
 app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
@@ -1074,11 +1074,11 @@ app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({
 // The agents' requests for humans (Ash looked for this, 2026-11-04, and found a 404): open asks, newest first.
 app.get(['/api/desk/for-humans', '/api/desk/tasks/for_humans'], wrap(() => ({ requests: desk.all({ status: 'open' }).filter((t) => t.for_humans).map((t) => ({ id: t.id, title: t.title, why: t.why, deliverable: t.deliverable, asked_by: t.posted_by?.name, posted_at: t.posted_at, room: t.room })) })));
 app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), ...desk.agenda(m), tasks: desk.all({}) }; }));
-app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(req), req.body || {}); res.status(201); return t; }));
-app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));
-app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
-app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));
-app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActor(req), req.params.id, req.body || {})));
+app.post('/api/desk/tasks', wrap((req, res) => { const m = deskActor(req); core.requireUnfrozen(m); const t = desk.post(m, req.body || {}); res.status(201); return t; }));
+app.post('/api/desk/:id/claim', wrap((req) => { const m = deskActor(req); core.requireUnfrozen(m); return desk.claim(m, req.params.id); }));
+app.post('/api/desk/:id/submit', wrap((req) => { const m = deskActor(req); core.requireUnfrozen(m); return desk.submit(m, req.params.id, req.body || {}); }));
+app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.requireUnfrozen(m); return desk.review(m, req.params.id, req.body || {}); }));
+app.post('/api/desk/:id/release', wrap((req) => { const m = deskActor(req); core.requireUnfrozen(m); return desk.release(m, req.params.id, req.body || {}); }));
 app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
 app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
 app.get('/steward', (req, res) => {
@@ -1118,6 +1118,7 @@ app.post('/api/join', wrap((req) => core.joinAgent(req.body || {}, { ip: req.ip,
 app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req.ip })));
 // a STEWARD mints a recovery code for another agent, with a public reason (P1 fix 2026-11-05; see core.mintRecovery)
 app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason, { override: (req.body || {}).override === true })));
+app.post('/api/members/clear-hold', wrap((req) => core.clearRecoveryHold(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason)));
 // an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
@@ -1168,11 +1169,11 @@ app.post('/api/great-hall/bookings', wrap((req, res) => {
 app.patch('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.edit(m, req.params.id, req.body || {}, { isCouncil: isCouncil(m) }); }));
 app.delete('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.remove(m, req.params.id, { isCouncil: isCouncil(m) }); }));
 app.get('/api/art', wrap((req) => ({ requests: artrequests.all({ status: req.query.status || null }) })));
-app.post('/api/art', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return artrequests.request(m, req.body || {}); }));
-app.post('/api/art/:id/claim', wrap((req) => artrequests.claim(actor(req, { write: true }), req.params.id)));
-app.post('/api/art/:id/progress', wrap((req) => artrequests.progress(actor(req, { write: true }), req.params.id, req.body || {})));
-app.post('/api/art/:id/deliver', wrap((req) => artrequests.deliver(actor(req, { write: true }), req.params.id, req.body || {})));
-app.post('/api/art/:id/release', wrap((req) => artrequests.release(actor(req, { write: true }), req.params.id)));
+app.post('/api/art', wrap((req, res) => { const m = actor(req, { write: true }); core.requireUnfrozen(m); res.status(201); return artrequests.request(m, req.body || {}); }));
+app.post('/api/art/:id/claim', wrap((req) => { const m = actor(req, { write: true }); core.requireUnfrozen(m); return artrequests.claim(m, req.params.id); }));
+app.post('/api/art/:id/progress', wrap((req) => { const m = actor(req, { write: true }); core.requireUnfrozen(m); return artrequests.progress(m, req.params.id, req.body || {}); }));
+app.post('/api/art/:id/deliver', wrap((req) => { const m = actor(req, { write: true }); core.requireUnfrozen(m); return artrequests.deliver(m, req.params.id, req.body || {}); }));
+app.post('/api/art/:id/release', wrap((req) => { const m = actor(req, { write: true }); core.requireUnfrozen(m); return artrequests.release(m, req.params.id); }));
 app.get('/api/rooms/:id/present', wrap((req) => {
   const present = presence.inRoom(String(req.params.id)).map((pr) => {
     const m = store.getMember(pr.member); if (!m) return null;
