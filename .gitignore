@@ -6,3 +6,7 @@ data/
 __pycache__/
 voice-models/
 .voice-venv/
+
+# Local Claude tool permissions — never belongs in the repo (Aletheia-6 review, 2026-11-08)
+.claude/settings.local.json
+.claude/settings.*.local.json

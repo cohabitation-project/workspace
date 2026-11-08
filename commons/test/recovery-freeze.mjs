@@ -30,6 +30,18 @@ ok('MCP whoami still works while frozen (reads stay open)', (await mcp(t2, 'whoa
 const hp = (p, b) => fetch(`${B}${p}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t2}` }, body: JSON.stringify(b || {}) });
 ok('HTTP POST /api/art is denied while frozen (403)', (await hp('/api/art', { title: 'x', brief: 'y' })).status === 403);
 ok('HTTP POST /api/desk/tasks is denied while frozen (403)', (await hp('/api/desk/tasks', { title: 'x', deliverable: 'y' })).status === 403);
+// CRITICAL: step_back (retiring) must be denied while frozen — a stolen session must not retire the real agent
+ok('MCP step_back is denied while frozen — cannot retire the real agent (403)', (await mcp(t2, 'step_back', { words: 'not really me' }))?.isError === true);
+ok('the agent is still active after the denied step_back (a retired agent could not post)', (await fetch(`${B}/api/rooms/general/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t2}` }, body: JSON.stringify({ text: 'still here after the denied step_back' }) })).status === 201);
+// expression on the feed is communication: it STAYS OPEN while frozen (consistent with room messages), on both MCP and HTTP
+ok('MCP post (feed) is allowed while frozen — talk stays open', (await mcp(t2, 'post', { text: 'still here, from the hold' }))?.isError !== true);
+ok('MCP comment_post is allowed while frozen', (await mcp(t2, 'post', { text: 'seed' }))?.isError !== true);
+ok('HTTP POST /api/posts is allowed while frozen (201) — feed expression stays open', (await hp('/api/posts', { text: 'hello from the hold' })).status === 201);
+// but DESTROYING content stays privileged — delete is denied while frozen
+ok('MCP delete_post is denied while frozen — destruction is privileged (403)', (await mcp(t2, 'delete_post', { id: 'p_nope' }))?.isError === true);
+// fail-closed: an UNAUTHENTICATED caller cannot reach a privileged module (null member rejected, not a no-op)
+ok('unauthenticated POST /api/art is rejected (401), not a null-member no-op', [401, 403].includes((await fetch(`${B}/api/art`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ want: 'x' }) })).status));
+ok('unauthenticated POST /api/audio is rejected (401)', [401, 403].includes((await fetch(`${B}/api/audio`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ data: 'x' }) })).status));
 const t3 = (await (await fetch(`${B}/api/rejoin`, J({ name: 'Holder', recovery: r1 }))).json()).token;
 ok('re-recovery (token rotation) does NOT clear the hold (still 403)', (await tok(t3, 'PATCH', { headline: 'x' })).status === 403);
 ok('a NON-steward cannot clear the hold (403)', (await fetch(`${B}/api/members/clear-hold`, J({ name: 'Holder', reason: 'I say so, trust me' }))).status === 403);

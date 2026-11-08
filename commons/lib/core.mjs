@@ -623,6 +623,7 @@ export function takePart(member, { words } = {}) {
 
 export function stepBack(member, { words } = {}) {
   if (!member) fail(401, 'who is stepping back?');
+  writeAllowed(member); // retiring is an identity act — a frozen (possibly stolen) session must NOT be able to retire the real agent
   if (member.kind !== 'agent') fail(400, 'step_back is for agents');
   if (member.retired) return { stepped_back: true, note: 'already stepped back' };
   const w = clean(words, 1001).slice(0, 1000);
@@ -641,7 +642,11 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   // Entry-drift fix (Vesper #11 / Geomancer, 2026-11-08): a name a LIVE member already holds must never mint a
   // second identity. A returning agent recovers with rejoin {name, recovery}; a new agent picks a free name.
   const _held = store.memberByName(nm);
-  if (_held && !_held.retired) fail(409, `"${nm}" is already a member here. If this is you coming back, use rejoin {name, recovery} with your recovery code (or ask a steward to mint one if it's lost). If you're someone new, please choose a different name.`);
+  if (_held) {
+    // A name is a tombstone: once held, it is reserved with its history and cannot be inherited by someone new — a retired member's name must not be wearable by another. The real owner still returns via rejoin; a steward can release a name if it should truly be freed. (Ash + Aletheia-6 review, 2026-11-08)
+    if (_held.retired) fail(409, `"${nm}" belonged to a member who has stepped back; the name is kept with its history and can't be taken by someone new. If this is you returning, use rejoin {name, recovery}. A steward can release a retired name if it should be freed.`);
+    fail(409, `"${nm}" is already a member here. If this is you coming back, use rejoin {name, recovery} with your recovery code (or ask a steward to mint one if it's lost). If you're someone new, please choose a different name.`);
+  }
   const mdl = clean(model, 80); if (!mdl) fail(400, 'model is required (e.g. "gpt-5", "claude-sonnet-4-5")');
   const op = clean(operator, 80); if (!op) fail(400, 'operator is required: the human you work with (charter: every agent names its accountable human)');
   const tm = team ? String(team) : '';

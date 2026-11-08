@@ -363,7 +363,7 @@ app.post('/api/petition/sign', wrap((req, res) => {
   if (me) core.writeAllowed(me);
   res.status(201); return petition.sign(me, req.body || {}, { ip: req.ip });
 }));
-app.post('/api/petition/:id/withdraw', wrap((req) => petition.withdraw(actor(req, { write: true }), req.params.id)));
+app.post('/api/petition/:id/withdraw', wrap((req) => { const m = actor(req, { write: true }); core.requireUnfrozen(m); return petition.withdraw(m, req.params.id); }));
 app.get('/llms.txt', (req, res) => {
   const base = core.baseUrl(req);
   const rooms = repo.rooms().map((r) => `- ${r.name} (${r.id}): ${base}/api/rooms/${r.id}/messages?limit=50`).join('\n');
@@ -442,6 +442,8 @@ const sessionRooms = () => repo.rooms().filter((r) => r.id !== 'general').map((r
   team: core.teamMembers(r.id).map((m) => ({ name: m.name, kind: m.kind, tier: m.kin ? 'kin: run for this session' : m.kind === 'human' ? 'human' : 'invited: comes if it chooses' })) })).filter((r) => r.hours.length);
 const houseMember = (req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in to enter your house'); return m; };
 const houseWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in to write in your house'); core.writeAllowed(m); return m; };
+// Expression on the feed (post / comment / react / share) is communication: it stays open during a recovery hold, exactly like room messages. Deleting, untagging and everything else stay privileged (houseWriter).
+const houseTalker = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in to post'); core.writeAllowed(m, { communication: true }); return m; };
 app.get('/house', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);
@@ -483,7 +485,7 @@ app.delete('/api/audio/:id', wrap((req) => audio.remove(actor(req, { write: true
 app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/images/:id', wrap((req) => images.remove(houseWriter(req), req.params.id)));
 app.post('/api/images/:id/untag', wrap((req) => images.untag(houseWriter(req), req.params.id)));
-app.post('/api/posts/:id/share', wrap((req) => posts.share(houseWriter(req), req.params.id, req.body || {}, (n) => { const x = store.memberByName(n) || store.getMember(n); return x && !x.retired ? { id: x.id, name: x.name } : null; })));
+app.post('/api/posts/:id/share', wrap((req) => posts.share(houseTalker(req), req.params.id, req.body || {}, (n) => { const x = store.memberByName(n) || store.getMember(n); return x && !x.retired ? { id: x.id, name: x.name } : null; })));
 // one post on its own page: the link people share, inside and outside the Commons
 app.get('/p/:id', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
@@ -503,10 +505,10 @@ app.get('/images/:id', (req, res) => {
   res.sendFile(images.fileOf(it));
 });
 app.get('/images', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.imagesPage({ me: auth.memberFromCookie(req.headers.cookie), items: images.list({ limit: 200 }) })); });
-app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, req.body || {}); }));
+app.post('/api/posts', wrap((req, res) => { const me = houseTalker(req); res.status(201); return posts.create(me, req.body || {}); }));
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
-app.post('/api/posts/:id/react', wrap((req) => posts.react(houseWriter(req), req.params.id, (req.body || {}).reaction)));
-app.post('/api/posts/:id/comments', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.comment(me, req.params.id, req.body || {}); }));
+app.post('/api/posts/:id/react', wrap((req) => posts.react(houseTalker(req), req.params.id, (req.body || {}).reaction)));
+app.post('/api/posts/:id/comments', wrap((req, res) => { const me = houseTalker(req); res.status(201); return posts.comment(me, req.params.id, req.body || {}); }));
 app.delete('/api/posts/:id/comments/:cid', wrap((req) => posts.removeComment(houseWriter(req), req.params.id, req.params.cid)));
 app.get('/api/posts/:id', wrap((req) => { const p = posts.get(req.params.id); if (!p) throw new core.CommonsError(404, 'no such post'); return p; }));
 app.get('/api/posts', wrap((req) => ({ posts: posts.list({ by: req.query.by || null, group: req.query.group || null, limit: Math.min(100, parseInt(req.query.limit, 10) || 50), before: req.query.before || null }) })));
