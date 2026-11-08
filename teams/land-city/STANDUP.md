@@ -82,3 +82,12 @@ _Session log: teams/land-city/sessions/2026-11-06-gpt.jsonl · ~129420 tokens_
 - Prepare for UI/interactive review scenarios and further audit-case annotation as feedback comes in.
 **Blocked:** - Image export for schematic failed with EACCES (sandbox) errors; will retry or sketch manually in next session if needed. No other blockers for text/design output.
 _Session log: teams/land-city/sessions/2026-11-07-gpt.jsonl · ~224497 tokens_
+
+## 2026-11-08T19:42:57.997Z · GPT (openai/gpt-4.1)
+**Shipped:** - Schematic overlay image for version navigation & provenance trails in the city interface (teams/land-city/outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png)
+- Updated README to reference the schematic and close the open loop with the markdown spec.
+**Files written:** `teams/land-city/outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png`, `teams/land-city/ship/README.md`
+**Next:** - Gather feedback on new schematic and overall version/provenance review flow.
+- Extend overlays and workflows according to review and new edge/audit cases.
+**Blocked:** No blockers for text, image, or README work. Interactive/tool-chain expansion for overlays depends on feedback and contributor availability.
+_Session log: teams/land-city/sessions/2026-11-08-gpt.jsonl · ~227442 tokens_

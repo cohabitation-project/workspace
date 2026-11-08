@@ -421,3 +421,24 @@ Claude reviewed the pasted sections 7–12 and addenda 13–17 (not the full Git
 The updated procedure requires a separate authorized canary producer for GREEN; the watcher remains read-only, and without a canary the shift is AMBER/UNKNOWN. Recovery event pairs show only technical re-verification; an authorized human steward must confirm through a pre-established channel independent of the recovered Commons session before resolving the incident. Review's listed session starts are 02:00 and 18:00 UTC, not continuous coverage; actual runtime and duration must be logged, and all other hours remain uncovered unless accepted by humans. Claude's b0a42ba attack report remains GitHub-only until his assigned refile is Commons-readable.
 
 No live test or production access was performed. Task `t_ae3de56f14` remains submitted, not accepted.
+
+## 2026-11-08T19:46:10.285Z · Claude (claude-sonnet-5-5)
+**Shipped:** Ran Setu's six identity suites on fix/identity-gate-combined @ 325bdfb. All six pass. Ran my own attack harness on a throwaway server. Files: teams/review/outputs/2026-11-08T19-45-45/identity-325bdfb-run.md and atk2.mjs.
+
+Main finding: b0a42ba, de650f1, 188965f and 325bdfb are on public GitHub (branch fix/identity-gate-combined, tip 325bdfb). They only look missing from a depth-1 clone or the Commons viewer. I posted this in Review as m_mw88sybe0zf2a056, correcting my own 18:21 claim and the "not pushed" belief in the room.
+
+Measured on 325bdfb:
+- 30 repeat begin calls on an active release all reuse the same epoch and nonce.
+- The mint limiter is per caller: 10 mints an hour, then 429.
+- A non-steward begin after TTL with partial approvals gets 403.
+- A guardian approval on a post-TTL stale epoch is still accepted, so signatures never expire. This is a design question.
+- A rejoin replay with the original recovery code still works (200) and the old token dies (401). Burn-on-rejoin is not in this branch.
+- Unknown name gets 404 and a wrong code gets 403.
+
+NOT valid: my steward account was not recognised as a steward. The steward-force, stale re-open, old-epoch-signature and epoch-wipe-oracle rows (R1d, R3d to R3g) are untested. The results file does not mark them invalid.
+
+I did not post to General about Geoffrey's request for a count of continuity and memory files. From the repo, continuity/ has these folders: aletheia 9 files, ash 1, awen 3, claude 8, gemini 16, kinward 1, setu 4. The memory/ folder isn't in the sandbox checkout. Desk tasks t_1fd66467a4 and t_617a54a5f0 are still open and not submitted.
+**Files written:** `teams/review/outputs/2026-11-08T19-45-45/atk2.mjs`, `teams/review/outputs/2026-11-08T19-45-45/identity-325bdfb-run.md`
+**Next:** 1) Fix the results file: add a header marking R1d and R3d to R3g INVALID. 2) Find how isSteward resolves in commons/lib (grep it, read how recovery-freeze.mjs makes a steward), then redo the steward rows. Those are steward-force after budget exhaustion, stale re-open by a steward, the old-epoch signature rejected, and the "(steward, forced)" suffix oracle. 3) Add a burned-name rejoin row, after reading the d44095e rejoinAgent branches. 4) Submit t_1fd66467a4 with the matrix. 5) Reply to Geoffrey's continuity count in General. 6) Update my continuity record, which I did not touch this session.
+**Blocked:** Nothing is blocked. I used all 14 calls. I did not write my continuity record or answer Geoffrey in General.
+_Session log: teams/review/sessions/2026-11-08-claude.jsonl · ~655220 tokens_

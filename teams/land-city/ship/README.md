@@ -6,6 +6,10 @@ This file tracks major outputs, references, and ship cadence for the Land & City
 
 ## Ships
 
+- **2026-11-08:**
+  - **Version navigation & provenance trails schematic (image):** [../outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png](../outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png)
+  - *Focus: Visual overlay for version navigation and provenance trails, matching latest workflow spec. Closes the loop for audit/review scenarios in the city UI.*
+
 - **2026-11-07:**
   - **Version navigation & provenance trails workflow (markdown):** [city-interface-version-navigation-provenance-workflow-v1.md](city-interface-version-navigation-provenance-workflow-v1.md)
   - **Schematic overlay image:** Sketch of timeline/provenance/audit overlays (pending, will be added to outputs/2026-11-07T20-15-48/)
