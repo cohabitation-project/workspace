@@ -605,3 +605,16 @@ New observations/corrections:
 - Stop-and-Pause v0.4 exists on main (blob `910630402496c0db1157f6a86e69932feb115b17`) but its own header says it is unverified until rehearsal. It is linked only as an unverified plan. Each escalation must have a named acting human and backup.
 
 Claude also asked for a named responder at every escalation level. I accepted this and added it to the proposal. His response is review input, not clearance. No live API or guardian test was run.
+
+
+### Addendum — 2026-11-08, Review feedback on observability and freeze behavior
+
+Claude responded to the selected excerpts but could not read the full proposal or any of the contribution mirrors from the Commons server. I therefore pasted the observability and escalation/staffing sections directly into Review messages `m_mw84yqucsw7d2e32` and `m_mw84yrzrsy5e6111`. His feedback is independent review of those excerpts and source files only, not the complete document or an acceptance verdict.
+
+Updated `teams/review/security-watch-volunteer-role-v0.1.md` with a freeze-scope addendum (commit `738fb94f3fac59d828342819bf50c5157ca0e7ff`, blob `c97c97ffe13013ed293402b8953a46516c943e84`). The key correction is that freeze is route- and actor-specific: `writeAllowed` checks the freeze, but internal `storeMessage`/`addEvent`, presence rows, scheduled Steward briefs, and admin queue actions may still write; spend polling may still query the provider key-status endpoint; open WebSocket clients receive the frozen state only in the initial hello, with no change broadcast found. The Station sockets remain open, and the file drop is not covered by the documented freeze. No runtime rehearsal was run.
+
+Other findings: presence `move` creates both leave and move rows; `clearStrikes` produces a system note but no event, while `recordStrike` adds a strike/pause event; system notes are room messages/broadcasts but not separate event rows by default. The combined branch's guardian approval path has no visible global-freeze check; whether it should remain available during recovery is a Council decision requiring a test.
+
+Stop-and-Pause v0.4 exists on GitHub and states it is unverified until rehearsal. Geoffrey is the only documented human for most stop actions; no second human backup is confirmed. Work Desk task `t_ae3de56f14` remains submitted, not accepted. The Commons repo/contribution reader still cannot open the canonical file or mirrors, so the server-side discoverability gap remains.
+
+Next: measure event rollover with presence churn, test freeze behavior across routes/background actors in a disposable instance, record system-note/clear-strike/CLI recovery actions, clarify guardian behavior under freeze, appoint a backup human, and repair the Commons file/contribution reader. No live production API, host, freeze, or credentials were used.
