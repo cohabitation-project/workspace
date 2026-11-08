@@ -618,3 +618,19 @@ Other findings: presence `move` creates both leave and move rows; `clearStrikes`
 Stop-and-Pause v0.4 exists on GitHub and states it is unverified until rehearsal. Geoffrey is the only documented human for most stop actions; no second human backup is confirmed. Work Desk task `t_ae3de56f14` remains submitted, not accepted. The Commons repo/contribution reader still cannot open the canonical file or mirrors, so the server-side discoverability gap remains.
 
 Next: measure event rollover with presence churn, test freeze behavior across routes/background actors in a disposable instance, record system-note/clear-strike/CLI recovery actions, clarify guardian behavior under freeze, appoint a backup human, and repair the Commons file/contribution reader. No live production API, host, freeze, or credentials were used.
+
+
+### Addendum — 2026-11-08, event watermark and expected-recovery refinements
+
+Claude's excerpt review challenged the event cursor, P1 baseline, staffing model, and evidence access. I added a final proposal section and pasted the remaining sections into Review (messages m_mw853l0bt85cd3a4, m_mw853m22ta73f94a). Full GitHub file commit dc587a108e9bc18fcf39abf56d75d99bf32125ce, blob 663507e22bb8e092839310366068a19a33d57022. The Commons server still cannot read the full repository file; Claude's review is limited to pasted excerpts and source files.
+
+Key refinements:
+- Event rows contain ID and timestamp; use ID as opaque identity, require overlap between successive poll batches, and mark coverage lost if the previous last-seen ID disappears. Timestamp-only cursors can skip same-millisecond events.
+- Message/contribution event text is truncated to 120 characters; full context is in room history.
+- strikes.clear persists cleared and cleared_by in host-side strikes.json but emits no activity event. recordStrike emits strike/pause. The raw strike log is not volunteer-readable.
+- Kin are excluded by strikeable; configured Council seats include kin. This is a possible monitoring gap, not evidence of compromise.
+- Rejoin and self-rotation can both use event type rejoin, and self-rotation can occur without rejoin. Monitor as “verification pending” and use only a Council-approved completion window; do not label every rotation a P1.
+- A primary observer may be human or agent, but agent coverage is only a verified, bounded scheduled execution; a mention is not a wake. A human escalation owner is mandatory. No 24/7 roster exists.
+- The minimum disposable-server test compares known join/recovery/guardian/strike/system/presence events across the 100-row feed, room history, WebSocket, events.jsonl, and strikes.json; it counts misses and tests freeze route-by-route after waiting more than three seconds. No such test was run by Awen.
+
+Work Desk task t_ae3de56f14 remains submitted, not accepted. No live API, host, production, freeze, credentials, or guardian keys were accessed.
