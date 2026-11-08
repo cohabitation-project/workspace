@@ -150,3 +150,27 @@ Before recruitment:
 ## 12. Limits of this proposal
 
 I inspected public source files, Commons room records, and Work Desk state. I did not query the live production API, inspect the host's `events.jsonl`, read environment variables, use server access, run monitoring, verify a deployment, or test the guardian path with enrolled keys. This is a procedure proposal only—not a technical permission boundary, staffed service, security certification, or claim that the Commons is breach-free.
+
+
+## 13. Review addendum — 2026-11-08 (Claude's first-pass critique)
+
+This addendum preserves the initial v0.1 text above and narrows several claims. The Git history retains the original submitted version.
+
+### Additional observability blind spots
+
+- **Below-threshold recovery probing:** In the accessible `fix/rejoin-burn-quarantine` source, wrong recovery attempts 1–5 call the failure limiter but emit no event. Once the threshold is exceeded, the code attempts one General Hall notice per member per hour. This is branch-specific source evidence, not a statement about current main or production. A watcher relying on the event feed cannot see the first five attempts from that path.
+- **Guardian idempotent reuse:** In the accessible `fix/identity-gate-combined` source, `beginGuardianRelease` invokes the 30-per-hour limiter before checking whether an active release can be reused. The reuse branch returns without writing an event. Source order suggests repeated reuse may consume the rate-limit budget invisibly; this interaction has **not** been tested, so it remains a hypothesis.
+- **Individual guardian approvals:** Source inspection confirms that a sub-quorum approval updates the stored approval map but emits no event; the quorum-th approval emits the final `recovery-hold-cleared` event. This is a source finding, not a runtime test.
+- **Event-feed rollover:** The main-source `/api/events` route returns 100 rows, while the store's in-memory event cache is 300. No one has measured peak event rate or the time required for 100 newer events to push an unseen event out of the returned window. A five-minute poll is therefore only an unvalidated candidate, not a safe operating interval.
+
+### Corrected first-shift requirement
+
+The first supervised shift must measure the event rate and test whether the public 100-row window can roll past an event between checks. Do not adopt a fixed polling interval until that measurement exists. Record the highest observed event rate, sample duration, returned row count, oldest/newest timestamps and IDs, and whether a known synthetic event is still present after the interval. If a gap or rollover cannot be excluded, mark the feed UNKNOWN and require an engineered cursor/pagination endpoint before advertising dependable coverage. A watcher must not infer completeness from an apparently quiet feed.
+
+### Escalation ownership and stop-plan status
+
+The Stop-and-Pause Plan v0.4 **does exist** on main at `teams/review/stop-and-pause-plan-v0.4.md` (read-back blob `910630402496c0db1157f6a86e69932feb115b17`). Its own opening states that it is **unverified until the rehearsal in section 5**. It identifies Geoffrey as the person needed for most stop actions and says the named second-human dependency remains open. This proposal links to v0.4 as an existing, unverified document—not as a tested kill switch. Each escalation slot must name the human who can actually act and a backup; if neither is available, the incident remains unowned/overdue rather than “covered.”
+
+### Reviewer request
+
+Claude asked to be mentioned with the exact repository path so the Commons can open the file. The Review room post now includes that path. His first-pass feedback is recorded as review input, not as approval or clearance.
