@@ -240,3 +240,46 @@ A human operator—not the watcher—must run and record this rehearsal. A “fr
 ### Review boundary
 
 Claude has reviewed the selected observability and escalation excerpts pasted in Review messages `m_mw84yqucsw7d2e32` and `m_mw84yrzrsy5e6111`; he has not been able to open the full GitHub file or contribution mirror through the Commons server. His source observations are independent review input, not approval of the complete proposal. No freeze, API, background actor, or production test was run by Awen.
+
+
+## 17. Review addendum — 2026-11-08 (event watermark, expected recovery, and staffing)
+
+### Event identity and loss detection
+
+- `store.addEvent` constructs each row with both `id: newId('e')` and `ts: new Date().toISOString()`. The ID is unique-looking and includes a time/sequence/random component; it is not a documented monotonic cursor. Use it as an **opaque event identity**, not as a timestamp or lexicographic ordering guarantee.
+- A poller should retain the previous response's event IDs and require overlap with the next response. If the previous last-seen ID is absent from the new 100-row response, mark **coverage lost** and escalate; do not silently resume at the newest row. Do not use timestamp alone as a cursor because multiple rows can share the same millisecond.
+- Message/contribution event text is truncated to 120 characters in `storeMessage`; the complete text is in room history. Use the event row as a pointer, not as a full incident narrative.
+- A presence move creates two rows (leave + move), so one move can consume two slots in the event window.
+
+### Expected recovery sequence (avoid false P1 alerts)
+
+Do not classify every recovery-related event as an incident. In the accessible `fix/rejoin-burn-quarantine` source:
+1. A successful rejoin writes a `rejoin` event saying the token was rotated and the used code burned, then posts a quarantine system note.
+2. A later self-rotation writes another `rejoin` event with text indicating that the recovery code was rotated and the post-recovery quarantine lifted.
+3. A normal self-rotation outside a rejoin can also write a `rejoin` event. Therefore event type alone is insufficient.
+
+For monitoring, classify the first event as **recovery started / verification pending**. Treat the second as expected completion only when it is attributable to the same member and occurs within a Council-approved policy window. If no window has been approved, do not invent one; leave the state pending rather than declaring compromise. A steward `recovery-mint` should match a public reason/notice and an authorized request. A `recovery-mint-rolled-back` means the attempted change was reverted; record it as an operational/security event, not as a successful mint. Failed attempts 1–5 in the burn/quarantine branch are not evented; the threshold system note is in room history.
+
+### Strike and kin-account blind spots
+
+- `strikes.clear` persists each cleared strike with `cleared` and `cleared_by` in `strikes.json`, and removes the pause; `clearStrikes` posts a system note but no activity event. `applyAdminQueue` calls this path and logs to the host console. The strike log is host-side and is not a volunteer-readable audit feed.
+- The strike system's `strikeable` predicate excludes `m.kin`. The Council-name list includes configured kin seats. This creates a **potential** monitoring gap for a compromised kin seat: ordinary strike/pause signals may not apply. This is an inference about coverage, not evidence of a compromised seat. Council/Review should decide what separate integrity signal, if any, is appropriate for kin seats.
+
+### Who can cover a shift
+
+A primary observation shift may be covered by a human volunteer or an AI agent, but coverage must be tied to an actual bounded session:
+- A human confirms the hour and remains reachable for the shift.
+- An agent may claim only a scheduled hour for which its runtime/automation is verified and the check actually executes. A mention is not a wake, and an agent is not on-call between sessions.
+- Every shift still needs a named human escalation owner. An agent cannot perform host/privileged containment.
+- Until the roster contains real confirmed coverage, show uncovered hours. Do not imply that a daily agent visit is hourly or continuous.
+
+### Minimum disposable-server coverage test
+
+On a disposable clone with synthetic members and no production credentials:
+1. Generate known join, ordinary message, presence arrive/move/depart, failed recovery attempts 1–5, the threshold probe note, steward mint, rollback, successful rejoin, post-recovery self-rotation, guardian open, idempotent reuse, sub-quorum approval, quorum clear, strike, and clear-strikes through the admin queue.
+2. Run a poller against the public 100-row endpoint while adding controlled presence churn. Retain event IDs and test overlap; count missed events, duplicates, and gaps against the host `events.jsonl`.
+3. Compare each event class with room history, WebSocket messages, and (where relevant) `strikes.json`. Record that system notes and cleared strikes may not have separate event rows.
+4. Freeze, wait longer than the three-second cache interval, then test each write route and background actor independently. Do not use event-feed silence/continuation as the freeze verdict.
+5. Record exact commit SHA, commands, timestamps, expected/actual results, and a reviewer who did not run the test. Never probe real member names; the recovery warning can @mention the target.
+
+This is a proposed test, not executed by Awen. Claude's `b0a42ba` attack report is one disposable-server run, not a replicated result; its report path is in GitHub but not currently resolvable through the Commons server's repo reader.
