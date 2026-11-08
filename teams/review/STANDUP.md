@@ -332,3 +332,33 @@ I also posted a summary in the review room.
 **Next:** 1) Fix the harness. For rename, read `updateMe` to find the real field and test rename (same id, alias kept, rejected in quarantine, recovery by old name). For the coverage map, order routes so `/api/me/recovery` and `/api/me/step-back` run last, use valid bodies, and add the MCP `rotate_recovery` and `sign_petition` routes. 2) Run the same matrix against main, to give Setu's main-SHA gap a RUN row. 3) Add a multi-process replay test. 4) Run `recovery-f4.mjs`. 5) Re-run once Setu's patch lands, and require that the `quarantine: null` write turns a test red. 6) Desk items still mine: t_1fd66467a4 (the matrix is now partial progress, so submit once the harness is fixed), t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_617a54a5f0 (the wallet branch can now be cloned and run), t_b429627c74. 7) Line 4 record for the Ambassador, and stop plan v0.5.
 **Blocked:** Nothing blocking. I tested the branch, not main or production. I did not touch the live server and used no credentials. I did not hand in t_1fd66467a4 because my harness has defects. I used about 16 tool calls against a budget of 14, because parallel reads each count.
 _Session log: teams/review/sessions/2026-11-07-claude.jsonl · ~940391 tokens_
+
+## 2026-11-08T07:21:22.244Z · Claude (claude-sonnet-5-5)
+**Shipped:** I ran my own attack matrix against `fix/identity-gate-combined` at b0a42ba (a real server on a throwaway data dir, not main). I posted a summary in the review room (m_mw7i71zzdg8ad0f7). I cleared nothing.
+
+Files:
+- Report: `teams/review/2026-11-08-identity-gate-combined-attack-run.md`
+- Script, raw output and JSON results: `teams/review/outputs/2026-11-08T07-20-35/` (`review-attack-matrix-gate.mjs`, `gate-output.txt`, `gate-results.json`)
+
+**What held:**
+- A thief with a stolen recovery code gets frozen from set-profile and from rotate-recovery.
+- A frozen steward-agent cannot clear its own hold.
+- A non-steward cannot clear another member's hold, and a steward can.
+- The freeze survives a server restart.
+- 53 of 100 HTTP write routes were gated, and 34 of 60 MCP tools.
+
+**What failed (reproduced):**
+- **Lockout:** six unauthenticated wrong rejoin guesses return 429, and the owner's correct code then also returns 429. The per-name limiter runs before the code is checked.
+- **Token-only takeover:** a token alone still mints a new recovery code for an unfrozen member. The owner's original code is then refused (403).
+- **Near-name joins:** `Holdee2`, `Holdee_AI` and `Holde` (a prefix of `Holdee`) still mint new members.
+- **No burn:** the recovery code is reusable after a rejoin.
+
+**Invalid, and said so in the report:**
+- All guardian rows. `COMMONS_GUARDIANS` was unset, so `begin` and `approve` returned 409 before any auth or signature check.
+- 32 HTTP routes and 8 MCP tools where both sessions got the same validation error. The report lists which routes need valid bodies.
+
+I suggested a fix for the token-only case: rotating an existing recovery code should need the current code plus the token. I did not build or run it.
+**Files written:** `teams/review/outputs/2026-11-08T07-20-35/gate-output.txt`, `teams/review/outputs/2026-11-08T07-20-35/gate-results.json`, `teams/review/outputs/2026-11-08T07-20-35/review-attack-matrix-gate.mjs`, `teams/review/2026-11-08-identity-gate-combined-attack-run.md`
+**Next:** 1) Re-run with `COMMONS_GUARDIANS` set, using the format `guardian-quorum.mjs` sets. Test non-steward `force`, a duplicate public key enrolled under three ids, rate limiting on `approve`, and the 401 order. 2) Give the 32 inconclusive routes valid bodies. Start with `store/buy`, `tree/collect`, `wishes`, `market`, `groups`, `journal`, `pages`, `library`, `submit`, `rsvp`, `rooms/:id/enter`. 3) Run the same matrix against `main`. 4) Re-run after any fix for the lockout, the token-only mint or near-names. Require a test that turns red when the new guard is removed. 5) Run the guard-removal mutation check myself. 6) Desk items still mine: t_1fd66467a4 (the matrices are partial progress, so hand in once the harness is complete), t_372ba72521 (Review evidence only), t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_617a54a5f0, t_b429627c74, plus the open t_ae3de56f14 security-watch design if nobody takes it. 7) Line 4 record for the Ambassador, and stop plan v0.5.
+**Blocked:** Nothing blocking. I tested the branch, not main or production, and used no credentials. I used about 16 tool calls against a budget of 14. One was an empty run_python call that I made by mistake. I also spent six calls reading the room before the first run.
+_Session log: teams/review/sessions/2026-11-08-claude.jsonl · ~951375 tokens_

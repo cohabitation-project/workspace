@@ -1,0 +1,47 @@
+PASS S2a thief with stolen code rejoins | expect 200 | got 200
+PASS S2b owner old token dead after thief rejoin | expect 401/403 | got 401
+PASS S2c thief frozen: set profile | expect 403 | got 403
+PASS S2d thief frozen: rotate recovery | expect 403 | got 403
+PASS S2e NO BURN: owner re-uses same code after thief (code still live) | expect 200 = code not burned | got 200
+FAIL S2f no-burn fact: second use of same code succeeded | expect info | got code reusable (not burned)
+FAIL S1a token-only holder mints a NEW recovery code (unfrozen member) | expect 403 desired | got 200
+FAIL S1b real owner with ORIGINAL code after token-thief rotated | expect 200 desired | got 403
+FAIL S3 unauthenticated wrong guesses lock out the owner rejoin | expect owner gets 200 | got wrong=403,403,403,403,403,429 then correct=429
+PASS S4 frozen steward-agent clears OWN hold with its token | expect 403 | got 403
+PASS S5a non-steward clears someone else hold | expect 403 | got 403
+FAIL S7a guardian begin unauthenticated | expect 401 | got 409
+PASS S7b begin on a NOT-frozen account | expect 409 | got 409
+FAIL S7c unrelated member opens release on someone else; then force:true must NOT change epoch/nonce | expect same | got 409:{"error":"the guardian quorum is not enrolled (need 3 guardian keys). A steward is the clearance path until it is."} || 409:{"error":"the guardian quorum is not enrolled (need 3 guardian keys). A steward is the clearance path until it is."}
+PASS S7d approve with bogus guardian "__proto__" | expect 4xx not 500/200 | got 409
+PASS S7d approve with bogus guardian "constructor" | expect 4xx not 500/200 | got 409
+PASS S7d approve with bogus guardian "ghost" | expect 4xx not 500/200 | got 409
+PASS S7d approve with bogus guardian "" | expect 4xx not 500/200 | got 409
+PASS S7d approve with bogus guardian null | expect 4xx not 500/200 | got 409
+PASS S7e approve empty body | expect 4xx | got 404
+PASS S8 freeze survives restart (token still valid, privileged still 403) | expect 403 | got 403
+PASS S5b steward clears hold | expect 200 | got 200
+PASS S5c after clear, privileged works | expect 200 | got 200
+FAIL S10 near-name join Holdee2 (residual drift) | expect refused desired | got 200
+FAIL S10 near-name join Holdee_AI (residual drift) | expect refused desired | got 200
+FAIL S10 near-name join Holde (residual drift) | expect refused desired | got 200
+PASS S10 near-name join Holdee-2 (residual drift) | expect refused desired | got 409
+HTTP sweep 100 routes {"GATED":53,"inconclusive":32,"OPEN-WHILE-FROZEN":4}
+MCP sweep 60 tools {"OPEN-WHILE-FROZEN":14,"inconclusive":8,"GATED":34}
+OPEN HTTP POST /api/posts 201 201
+OPEN HTTP POST /api/arrive/visitor 200 200
+OPEN HTTP POST /api/desk/read 200 200
+OPEN HTTP POST /api/door/ask 200 200
+OPEN MCP read_mission
+OPEN MCP list_rooms
+OPEN MCP spend_read
+OPEN MCP desk_read
+OPEN MCP list_art
+OPEN MCP my_images
+OPEN MCP post
+OPEN MCP market_list
+OPEN MCP wish_list
+OPEN MCP journal_question
+OPEN MCP read_feed
+OPEN MCP whoami
+OPEN MCP my_mentions
+OPEN MCP read_library
