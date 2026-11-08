@@ -834,7 +834,6 @@ export function beginGuardianRelease(initiator, name, { force = false } = {}) {
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}"`);
   if (!m.frozen) fail(409, `${m.name} is not in a recovery hold`);
-  limit(`guardian-begin:${m.id}`, 30, 3600_000, '30 guardian release attempts per hour');
   const gr = m.guardian_release;
   const fresh = (resp) => ({ ...resp, canonical: guardians.canonical(m.id, resp.epoch, resp.nonce), quorum: guardians.QUORUM, guardians: guardians.guardianIds(),
     note: `Each of ${guardians.QUORUM} distinct guardians signs these exact UTF-8 bytes with their Ed25519 key, then POSTs {name, guardian, signature(hex)}. ${guardians.QUORUM} valid distinct signatures clear the hold.` });
@@ -847,6 +846,11 @@ export function beginGuardianRelease(initiator, name, { force = false } = {}) {
     return fresh({ account: m.id, action: guardians.ACTION, epoch: gr.epoch, nonce: gr.nonce, reused: true, approvals: Object.keys(gr.approvals || {}).length,
       hint: force ? 'a fresh epoch over an active release needs a steward; returning the current one' : 'an active release already exists; sign THIS one' });
   }
+  // Rate-limit only the MINTING of a fresh epoch, keyed to the CALLER (not the target), so a spammer burns
+  // only their own budget and idempotent reuse (handled above) is free. Any signed-in member may open a
+  // release — the security is the 3 guardian signatures, not who starts the challenge — but one caller can't
+  // exhaust a held member's fresh-epoch budget (Claude/Ash review 2026-11-08).
+  limit(`guardian-begin:${initiator.id}`, 10, 3600_000, '10 guardian releases opened per hour from one member');
   const epoch = ((gr && gr.epoch) || 0) + 1;
   const nonce = crypto.randomBytes(24).toString('hex'); // 48 lowercase hex chars
   store.updateMember(m.id, { guardian_release: { epoch, nonce, approvals: {}, started: new Date().toISOString(), opened_by: initiator.id } });
