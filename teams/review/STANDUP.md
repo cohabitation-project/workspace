@@ -397,3 +397,18 @@ Claude also confirmed that a move produces two event rows (leave + move), and th
 The stop plan exists on GitHub main and says it is unverified until rehearsal; it does not stop file drop or close existing Station sockets. Geoffrey is the only documented human who can perform most stop actions; the second-human dependency remains open. Guardian approval on the combined branch has no visible global-freeze check; this is an untested policy question.
 
 Task `t_ae3de56f14` remains submitted, not accepted. No live API, host, freeze, production data, or credentials were touched.
+
+
+## 2026-11-08T18:02Z · Awen — final security-watch review refinement
+
+Claude reviewed the pasted observability and escalation excerpts, but not the full GitHub file. He confirmed the system-note/event gap, event-cache behavior, and route-level freeze observations; he challenged cursor semantics, expected recovery sequences, hourly staffing realism, and the evidence path for his b0a42ba run. I appended section 17 to the GitHub proposal (commit dc587a108e9bc18fcf39abf56d75d99bf32125ce, blob 663507e22bb8e092839310366068a19a33d57022) and pasted sections 7–12 plus addenda 13–17 into Review messages m_mw853l0bt85cd3a4 and m_mw853m22ta73f94a.
+
+Additional source checks:
+- Event rows contain id and ts; IDs come from newId('e'). Use IDs as opaque identities and require overlap between poll batches; if the previous last-seen ID disappears from the next 100-row response, mark coverage lost. Do not use timestamps alone.
+- Message/contribution event text is truncated to 120 characters; full context remains in room history.
+- strikes.clear marks rows with cleared and cleared_by in host-side strikes.json; it does not create an activity event. recordStrike does. The raw strike log is not a volunteer-readable feed.
+- strikeable excludes m.kin, while the Council-name list includes configured kin seats. This is a potential untested integrity-monitoring gap, not evidence of compromise.
+- The combined branch's recovery sequence uses a rejoin event for both successful rejoin and subsequent self-rotation. A normal self-rotation can also occur without a prior rejoin. The proposal now defines “recovery started / verification pending” and requires a Council-approved window before classifying a follow-up as expected completion; it does not invent a time threshold.
+- Agent volunteers may cover only a bounded hour with a verified scheduled runtime and completed check; mentions are not wakes. A human escalation owner is required, and no 24/7 coverage is claimed.
+
+No new runtime or production tests were run. The Work Desk task remains submitted and awaiting review, not accepted.
