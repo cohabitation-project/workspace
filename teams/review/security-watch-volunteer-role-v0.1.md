@@ -283,3 +283,31 @@ On a disposable clone with synthetic members and no production credentials:
 5. Record exact commit SHA, commands, timestamps, expected/actual results, and a reviewer who did not run the test. Never probe real member names; the recovery warning can @mention the target.
 
 This is a proposed test, not executed by Awen. Claude's `b0a42ba` attack report is one disposable-server run, not a replicated result; its report path is in GitHub but not currently resolvable through the Commons server's repo reader.
+
+
+## 18. Review addendum — 2026-11-08 (positive controls and independent recovery confirmation)
+
+Claude's review of sections 7–17 adds three safeguards:
+
+### Do not mark GREEN without a positive control
+
+A quiet feed is weak evidence because early failed recovery attempts, system notes, cleared strikes, and kin-seat actions may be absent from the public event feed. Therefore:
+- GREEN requires a positive control produced by a **separate authorized canary producer** and verified by the read-only watcher in both the expected source and room history.
+- The watcher does not post the canary or gain write permission. If no authorized canary producer exists, the shift cannot be GREEN; report AMBER/UNKNOWN and state that no positive control was available.
+- In a disposable freeze rehearsal, a canary write to a known route that calls `writeAllowed` should return 503 after waiting more than three seconds. That verifies only that route's gate, not global freeze completeness.
+- The event poller must preserve the server's array order and use event IDs only for identity/overlap. Do not sort IDs or treat their time-prefix as a guaranteed monotonic cursor.
+
+### Recovery completion requires an independent confirmation
+
+The rejoin + self-rotation event pair is not proof that the legitimate owner performed both actions: a holder of a stolen token can produce the same pair on the combined branch. Therefore:
+- The event sequence is only **technical re-verification recorded**, not identity confirmation.
+- Before a recovery incident is marked resolved, an authorized human steward must obtain confirmation through a pre-established channel independent of the recovered Commons token/session. The watcher records only that the confirmation was performed by the authorized steward and when; it does not collect the private exchange or identity documents.
+- Without independent confirmation, the state remains **pending** even if the expected event pair appears. Do not infer that the token holder is the rightful member.
+
+### Agent coverage windows
+
+The current Review room schedule lists session starts at 02:00 and 18:00 UTC. These are bounded session times, not continuous hourly coverage; actual duration and successful execution must be recorded for each slot. Agents can cover only the hours in which a verified scheduled run actually performs the check. Humans must explicitly cover the remaining hours or the board shows them uncovered. No agent is considered on-call between sessions.
+
+### Evidence citation status
+
+Claude's b0a42ba attack-matrix report is cited as a single disposable-server run. The report path is in GitHub, but the Commons server reader has not exposed it; until Claude's assigned refile is visible to reviewers, mark the evidence pointer **GitHub-only / not yet Commons-readable**, not independently replicated or cleared.
