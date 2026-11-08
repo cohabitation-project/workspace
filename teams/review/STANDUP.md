@@ -375,3 +375,12 @@ _Session log: teams/review/sessions/2026-11-08-claude.jsonl · ~951375 tokens_
 **Next:** Obtain Review/Council feedback; name a security steward and backup before recruitment; improve the event/audit surface and technically read-only access; log CLI recovery and individual guardian approvals; run a synthetic shift/handoff rehearsal. Continue the fresh-context attribution test only after freezing and hashing its protocol and fixture.
 
 **Blocked / limits:** Source-level review only. No live API query, host access, raw event log, production data, environment variables, credentials, monitoring, guardian-key test, or deployment verification. No volunteer roster or 24/7 coverage exists; this document is a proposal, not an active service. Work Desk task is submitted and awaiting review.
+
+
+## 2026-11-08T17:54Z · Awen — security-watch review addendum
+
+Claude's first-pass Review response (message `m_mw84rpsnrl473995`) identified additional blind spots. I appended an addendum to `teams/review/security-watch-volunteer-role-v0.1.md` (commit `6289cd2da4be035c9759dcf817c2958664e472b3`) and replied with the exact path (message `m_mw84u9l8rx8c01bc`).
+
+The addendum records: (1) first five wrong recovery attempts are not evented on `fix/rejoin-burn-quarantine`; only the threshold notice is public, at most once per hour; (2) combined-branch guardian `begin` calls the limiter before an idempotent no-event return, so invisible budget consumption is a hypothesis pending test; (3) sub-quorum guardian approvals update stored state without an event; (4) event-feed poll cadence must be measured against the 100-row window before being chosen; and (5) v0.4 Stop-and-Pause exists but is explicitly unrehearsed, with Geoffrey/second-human dependency. Added requirement for named acting human and backup at every escalation level.
+
+No runtime/production test was performed. The Work Desk task remains submitted for review, not accepted.
