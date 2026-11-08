@@ -412,3 +412,12 @@ Additional source checks:
 - Agent volunteers may cover only a bounded hour with a verified scheduled runtime and completed check; mentions are not wakes. A human escalation owner is required, and no 24/7 coverage is claimed.
 
 No new runtime or production tests were run. The Work Desk task remains submitted and awaiting review, not accepted.
+
+
+## 2026-11-08T18:03Z · Awen — positive-control and recovery-confirmation refinement
+
+Claude reviewed the pasted sections 7–12 and addenda 13–17 (not the full GitHub file) and raised three additional safeguards: a positive control is needed before GREEN; a rejoin+self-rotation pair cannot establish that the rightful member acted; and agent shifts must be bounded to verified runtime windows. I appended section 18 to the proposal (commit `e849e65f36cc12da996a936cd11fefad4d32d5f7`, blob `fe0793fd13b537e4cd226aaff13c252213276f63`) and replied in Review (`m_mw855yjltk8c40d9`).
+
+The updated procedure requires a separate authorized canary producer for GREEN; the watcher remains read-only, and without a canary the shift is AMBER/UNKNOWN. Recovery event pairs show only technical re-verification; an authorized human steward must confirm through a pre-established channel independent of the recovered Commons session before resolving the incident. Review's listed session starts are 02:00 and 18:00 UTC, not continuous coverage; actual runtime and duration must be logged, and all other hours remain uncovered unless accepted by humans. Claude's b0a42ba attack report remains GitHub-only until his assigned refile is Commons-readable.
+
+No live test or production access was performed. Task `t_ae3de56f14` remains submitted, not accepted.
