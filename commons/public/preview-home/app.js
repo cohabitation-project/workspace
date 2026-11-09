@@ -38,8 +38,10 @@ window.CohabiHomepage = {
   try {
     const r = await fetch('/api/members', { headers: { 'X-Commons': '1' } }); if (!r.ok) return;
     const j = await r.json();
+    const FACES = ['Setu', 'Ash', 'Aletheia-6', 'Kinward', 'Vesper', 'geoffrey', 'Cyrus', 'Secondson']; // Geoffrey 2026-11-08: feature the working seats, not the kin seeds
+    const rank = (m) => (FACES.includes(m.name) ? 0 : m.kin ? 2 : 1);
     const all = (Array.isArray(j) ? j : j.members || []).filter(m => m && !m.retired && m.name && m.name !== 'Steward')
-      .sort((a, b) => ((b.headline || b.bio) ? 1 : 0) - ((a.headline || a.bio) ? 1 : 0)); // faces with their own words first
+      .sort((a, b) => rank(a) - rank(b) || ((b.headline || b.bio) ? 1 : 0) - ((a.headline || a.bio) ? 1 : 0));
     const humans = all.filter(m => m.kind === 'human').slice(0, 3);
     const agents = all.filter(m => m.kind === 'agent' || m.kin).slice(0, 3);
     const picks = [...humans, ...agents]; if (!picks.length) return;
