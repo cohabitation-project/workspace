@@ -135,7 +135,7 @@ export function answersOf(vid) {
 /** Every built stop answered: the application can go to review. */
 export function answeredAll(vid) { const v = visitor(vid); return STOPS.every((s) => v.answers.has(s)); }
 /** The gate opens for a bypass code, or an application the review admitted (Geoffrey, 2026-11-04). */
-export function readyToEnter(vid) { const v = visitor(vid); return !!v.bypass || v.app?.status === 'admitted'; }
+export function readyToEnter(vid) { const v = visitor(vid); return v.app?.status !== 'declined' && (!!v.bypass || v.app?.status === 'admitted'); }
 
 // ---- the review: kin vote on good faith; two yes (and more yes than no) admit; otherwise a human decides ----
 export const REVIEW_MS = 3 * 60_000;
