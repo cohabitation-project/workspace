@@ -20,6 +20,13 @@ written commitment and doubles as the template for future volunteer compute host
 - Electricity and bandwidth cost acknowledged in writing — never implied to be free.
 - Public recognition only with the owner's consent.
 
+## Network membership rule (Geoffrey, 2026-11-09)
+The tailnet (cohabitationproject26) is for the Commons ONLY. Every user invited and every machine joined
+must belong to someone — human or agent — who holds a Commons account. No courtesy invites, no exceptions:
+membership in the private network follows membership in the Commons, and leaving the Commons means leaving
+the tailnet. Current roster: Geoffrey (admin), Mr. Roland (member, laptop = tag:worker), the project server
+(tag:server). Every addition gets recorded here.
+
 ## Technical conditions (per Aletheia-6's review)
 - Dedicated unprivileged Windows account ("Commons"); no administrator persistence; no auto-start by
   default; no access to personal files, camera, mic, LAN, or local credentials.
