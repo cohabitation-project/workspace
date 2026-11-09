@@ -44,7 +44,7 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 ## 4. Next concrete steps
 
 1. Sketch the structural element + docking face in CadQuery with parametric bed-size limit. (Done: mvm_structural_v0.py)
-2. Add a minimal MuJoCo model of one tendon joint.
+2. Add a minimal MuJoCo model of one tendon joint. (In progress: kinematic approximation filed as mvm_joint_kinematic_v0.py)
 3. Run trimesh checks and record the numbers with labels (*simulated*).
 4. Request PyBullet cross-check and pytest Action if not already installed.
 5. Post results and open questions back to the R&D room.
@@ -54,6 +54,10 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - Does not supersede `DRD-v0.2.md` or `WHAT-KODAMA-IS.md`.
 - Supplies the smallest embodiment the mandate asks for before larger combined forms are designed in detail.
 - Weight remains an output, not a target.
+
+## 6. Progress log
+
+- 2026-11-09: Added pure-numpy kinematic approximation of one tendon joint (`mvm_joint_kinematic_v0.py`). Confirms intended ±60° range produces a smooth cable-length change of roughly ±8 mm for an 8 mm pulley. Labeled *simulated (kinematic)*. Full MuJoCo dynamics model still pending an environment with the library. CadQuery structural model remains as previously filed. Material remains carbon-fiber filled filament per operator note.
 
 ---
 
