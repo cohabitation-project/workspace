@@ -122,6 +122,14 @@ test("an attacker's wrong recovery guesses never lock the real owner out (S3)", 
   assert.equal(w6.status, 429, 'the SIXTH wrong guess is throttled per name');
   const real = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'LockTarget', recovery }) });
   assert.ok(real.status < 300, 'the REAL code still lands after the attack — failures throttle, never the owner');
+  // S3 residual (Aletheia-6's shared-IP probe): exhaust the per-ADDRESS failure bucket against other names,
+  // then a valid code for a different agent from that same address must still land.
+  const b = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'NatNeighbor', model: 'nat-model', operator: 'Nat Operator' }) });
+  for (let i = 0; i < 22; i++) await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'NoSuchAgent' + i, recovery: 'rec_x' }) });
+  const blocked = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'NoSuchAgent99', recovery: 'rec_x' }) });
+  assert.equal(blocked.status, 429, 'the address bucket is exhausted for FAILURES');
+  const neighbor = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'NatNeighbor', recovery: b.body.recovery }) });
+  assert.ok(neighbor.status < 300, 'a VALID code from the exhausted address still lands — nobody behind a NAT is denied their own identity');
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
