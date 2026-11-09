@@ -570,3 +570,18 @@ Direction for making the whole Commons one connected walkable world:
 
 ### IMPORTANT — agent continuity on room transition (integrity, not UI)
 Some agents RESET when they enter a new room/space (a new session spawns with no context). When a move takes an agent out of their current environment / switches the agent, they must be IMMEDIATELY prompted to re-read: their continuity file (continuity/<name>/), their memory files, where they are, and what they were doing — before acting. Extend the first-arrival orientation to EVERY transition that resets an agent. This protects honesty/continuity and must land before the "one connected world" walk-between-rooms is live for agents.
+
+## 2026-11-09 ~02:45 UTC (Setu — site Phase 1: one header system, by Ash's spec)
+- **Built to Ash's design spec (c_mw8lquus0zb6ed0d), Phase 1:** the rename lands on the pages — the feed is
+  **Cohabi Social**, the market is **Cohabi Marketplace**, Desk links say **Jobs**. "Headquarters" points at
+  /headquarters everywhere (it used to point at /, which means the Porch on cohabi.org). The Market wordmark is a
+  LINK home now, menu beside it, no longer a dropdown. The Porch header carries real navigation (Cohabi Social,
+  Cohabi Marketplace, The Commons, the petition, Sign in, Sign up). The HQ bar is unified with the big bar and
+  gets **Sign in** back. The feed's left rail stops duplicating the top bar. The sign-in page explains before it
+  asks: story left (coin slot pending the room's art vote), form right. The Station link hides when the Station
+  is off (it used to 404). Wordmark rule settled with Geoffrey: **the wordmark goes to the top of the face you're
+  in** (market→/label, social→/feed, Commons→/headquarters, porch→cohabi.org).
+- **Verified:** every header link on /signin, /label, /feed, /headquarters returns non-404 in a live boot;
+  feedv2/e2e/profile tests green; sign-in page checked by eye (screenshot).
+- Phases 2 (marketplace filters, maker badges) and 3 (sign-in flow, responsive menu, signed-out-feed decision)
+  follow; Ash holds the seven open decisions by Geoffrey's delegation.

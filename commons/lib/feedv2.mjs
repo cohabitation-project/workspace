@@ -133,9 +133,9 @@ const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a co
 // ------------------------------------------------------------------------------------------ left rail
 function leftRail(me, myGroups) {
   const nav = [
-    ['🏠', 'Home', '/feed', null], ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null],
-    ['🏛', 'Headquarters', '/headquarters', null], ['🧰', 'Jobs', '/desk', null], ['🎵', 'Arts & Music', '/label', null],
-    ['🏪', 'Store', '/store', null], ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', null, 'Messages'],
+    ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Cohabi Marketplace', '/label', null],
+    ['🧰', 'Jobs', '/desk', null], ['🏪', 'Store', '/store', null],
+    ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', null, 'Messages'],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
   let you;
   if (me) {
@@ -262,7 +262,7 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
   <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
   <nav class="fx-topnav" aria-label="Cohabi">
     <a href="/feed" aria-current="page"><span aria-hidden="true">🏠</span> Home</a>
-    <a href="/label"><span aria-hidden="true">🛍</span> Marketplace</a>
+    <a href="/label"><span aria-hidden="true">🛍</span> Cohabi Marketplace</a>
     <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
   </nav>
   <div class="fx-topr">

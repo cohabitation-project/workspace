@@ -133,8 +133,9 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 </head>
 <body class="fx-page mk-page" data-theme="parchment" data-mk="${esc(section || 'home')}">
 <header class="mk-top">
-  <details class="mk-site"><summary><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
-    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Home: the feed</a><a href="/label">🛍 Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
+  <a class="fx-brand mk-brand" href="/label"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
+  <details class="mk-site"><summary><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
+    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Cohabi Social</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
   <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
   <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>

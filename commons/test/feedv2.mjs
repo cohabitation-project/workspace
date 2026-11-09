@@ -38,7 +38,7 @@ const lj = await lk.json();
 ok('links: "label | url" lines save, and a bare URL is labeled by its host', lk.status === 200 && lj.links?.[0]?.label === 'Music' && lj.links?.[1]?.label === 'example.org');
 // the header and the two bells (2026-11-06)
 const hdr = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
-ok('the header carries Home, Marketplace (live, at /label) and The Commons', /fx-topnav/.test(hdr) && /The Commons/.test(hdr) && /href="\/label"><span aria-hidden="true">🛍<\/span> Marketplace/.test(hdr));
+ok('the header carries Home, Cohabi Marketplace (live, at /label) and The Commons', /fx-topnav/.test(hdr) && /The Commons/.test(hdr) && /href="\/label"><span aria-hidden="true">🛍<\/span> Cohabi Marketplace/.test(hdr)); // renamed per design spec c_mw8lquus0zb6ed0d (Ash, 2026-11-08)
 ok('a Commons member gets two bells: social and Commons', /data-which="social"/.test(hdr) && /data-which="commons"/.test(hdr));
 const hp = await (await api('/api/posts', { text: 'react to me' }, { Cookie: ck })).json();
 await api(`/api/posts/${hp.id}/react`, { reaction: 'fire' }, A);

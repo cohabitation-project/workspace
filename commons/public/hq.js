@@ -1034,7 +1034,7 @@ function handle(m) {
         document.querySelectorAll('.agent-note').forEach((n) => { n.hidden = S.paused || !!S.me; });
       }
       if (S.me) {
-        const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`;
+        const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`; const si = $('#signin-link'); if (si) si.hidden = true;
         const so = $('#signout'); so.hidden = false;
         so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.replace('/'); };
         startCalls(S.me, (room) => openRoom(room, true)); // calls from other rooms (2026-11-04)
