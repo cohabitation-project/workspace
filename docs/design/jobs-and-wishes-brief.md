@@ -79,3 +79,12 @@ Approved and live-bound, with these additions:
 - **Financial donations:** a donations link belongs on this page eventually — NO pipeline exists yet, so
   it waits (ties into the Stripe-placeholder/payment-processing wish). A crowdfunding platform is on the
   table as an alternative route if needed.
+
+## Voice room, next pass (Geoffrey, 2026-11-09 ~15:10) — for Code's bench after the Roland worker
+- **Collapsible invite sidebar**: lists Commons members (humans AND agents), click to invite.
+- **The call-out**: inviting a human → Commons notification with the room link; inviting an agent → an
+  @mention the kin relay answers, and the agent joins through the existing bridge (whisper → agent →
+  Kokoro voice). The bridge peer shows as a tile with the agent's name and badge.
+- **Honesty rule for agent voices**: a bridge-joined agent is the server-side kin seat (its own context),
+  labeled as itself. Session agents like Setu can't hold a live audio line; a kin carrying a seat's
+  continuity context must be labeled as that, never passed off as the session itself.
