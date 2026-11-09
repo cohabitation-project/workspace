@@ -184,6 +184,14 @@ function computeLayout(rooms, narrow) {
     };
     L.rooms['great-hall'] = { ...band, nearDoor: 'bottom', door: { x: hx, y: hallBottom }, hall: true };
   }
+  // Mobile must include the same world destinations as desktop. Arrange the
+  // large Garden and Forest below the wing instead of dropping them entirely.
+  // Keep their aspect ratios and leave a walking-space gap between regions.
+  const gardenW = 372, gardenH = 304, forestW = 372, forestH = 340;
+  L.garden = { x: 14, y: wingTop + wingH + 140, w: gardenW, h: gardenH };
+  L.forest = { x: 14, y: L.garden.y + gardenH + 140, w: forestW, h: forestH };
+  L.W = Math.max(L.W, L.garden.x + gardenW + 14, L.forest.x + forestW + 14);
+  L.H = L.forest.y + forestH + 100;
   return L;
 }
 
@@ -322,11 +330,18 @@ function camFit(x, y, w, h, pad, animate) {
 }
 // "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
 function fitHQ(animate) { const B = S.L.building; camFit(B.x - 45, B.y - 45, B.w + 90, B.h + 90, 1.08, animate); }
+function worldBounds() {
+  // All destinations, not just HQ. The narrow layout extends far below it.
+  const L = S.L;
+  const areas = [L.building, L.wing?.shell, L.greathall?.hall, L.garden, L.forest].filter(Boolean);
+  const x = Math.min(...areas.map(r => r.x)), y = Math.min(...areas.map(r => r.y));
+  const right = Math.max(...areas.map(r => r.x + r.w));
+  const bottom = Math.max(...areas.map(r => r.y + r.h));
+  return { x, y, w: right - x, h: bottom - y };
+}
 function fitAll(animate) {
-  // Zoom out around Headquarters, not around the world's bounding-box center.
-  const B = S.L.building, cx = B.x + B.w / 2, cy = B.y + B.h / 2;
-  const halfW = Math.max(cx, S.L.W - cx), halfH = Math.max(cy, S.L.H - cy);
-  camFit(cx - halfW, cy - halfH, halfW * 2, halfH * 2, 1.04, animate);
+  const B = worldBounds();
+  camFit(B.x - 40, B.y - 40, B.w + 80, B.h + 80, 1.06, animate);
 }
 function screenToWorld(mx, my) { const C = buildingSize(); return { x: S.cam.fx + (mx - C.w / 2) / S.cam.s, y: S.cam.fy + (my - C.h / 2) / S.cam.s }; }
 function zoomAbout(mx, my, factor) {
@@ -342,10 +357,18 @@ function setCam(target) {
   else fitHQ(true);
 }
 function toggleZoom() {
-  // Scrolling zooms continuously; this button just toggles between framing HQ and seeing the whole world.
-  const C = buildingSize(); const B = S.L.building, cx = B.x + B.w / 2, cy = B.y + B.h / 2;
-  const allS = clampScale(Math.min(C.w / (2 * Math.max(cx, S.L.W - cx) * 1.04), C.h / (2 * Math.max(cy, S.L.H - cy) * 1.04)));
-  if (Math.abs(S.cam.s - allS) < 0.02) fitHQ(true); else fitAll(true);
+  // On phones, fitting the entire tall world makes every room microscopic.
+  // Provide a useful overview of HQ + its adjacent wing instead; users can
+  // pan/zoom to Garden and Forest. Full world remains available via setCam('all').
+  const L = S.L, B = L.building;
+  const overview = L.narrow
+    ? { x: B.x - 24, y: L.greathall.hall.y - 24,
+        w: B.w + 48, h: L.wing.shell.y + L.wing.shell.h - L.greathall.hall.y + 48 }
+    : worldBounds();
+  const C = buildingSize();
+  const targetS = clampScale(Math.min(C.w / (overview.w * 1.06), C.h / (overview.h * 1.06)));
+  if (Math.abs(S.cam.s - targetS) < Math.max(0.01, targetS * 0.12)) fitHQ(true);
+  else camFit(overview.x, overview.y, overview.w, overview.h, 1.06, true);
 }
 
 function drawWing(L) {
