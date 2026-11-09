@@ -603,10 +603,17 @@
 
   // ── Build DOM ──────────────────────────────────────────────────────────────
   function buildUI() {
-    if (document.getElementById('voiceroom-root')) return;
+    // voiceroom.html ships an EMPTY #voiceroom-root shell, so "root exists" must not
+    // mean "UI built" (that guard blanked the whole page, 2026-11-09). Build into the
+    // existing root when present; only skip if the grid is already built.
+    if (document.getElementById('grid')) return;
 
-    const root = document.createElement('div');
-    root.id = 'voiceroom-root';
+    const root = document.getElementById('voiceroom-root') || (() => {
+      const el = document.createElement('div');
+      el.id = 'voiceroom-root';
+      document.body.appendChild(el);
+      return el;
+    })();
     root.innerHTML = `
       <div id="grid" class="grid"></div>
       <div id="chat-sidebar" class="chat-sidebar">
@@ -633,7 +640,6 @@
         </button>
       </div>
     `;
-    document.body.appendChild(root);
   }
 
   // ── Boot ────────────────────────────────────────────────────────────────────
