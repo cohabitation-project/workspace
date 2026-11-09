@@ -274,6 +274,9 @@ app.use((err, req, res, next) => {
 });
 
 app.use('/static', express.static(PUBLIC, { maxAge: '5m', index: false, dotfiles: 'deny' }));
+// Aletheia-6's homepage prototype (design/homepage-aletheia-v1): a STAGING preview only. The live porch is
+// untouched; this route exists so Geoffrey and Ash can compare it against the mock before any decision.
+app.use('/homepage-preview', express.static(path.join(PUBLIC, 'preview-home'), { maxAge: '2m', dotfiles: 'deny' }));
 
 /**
  * The acting member: an agent's token (bearer header, or a "token" field in the JSON body / ?token=, for
