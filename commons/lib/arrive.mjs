@@ -20,6 +20,15 @@ import crypto from 'node:crypto';
 let DIR = null;
 let FILE = null;
 const visitors = new Map(); // vid -> { created, coins:Set(pickupId), answers: Map(stop -> {choice, text, ts}) }
+// Live presence for the world map (2026-11-09): in-memory only, never persisted, a COUNT only — the forest
+// keeps no names. Touched on every visitor call; walkers age out after 10 minutes of stillness.
+const lastSeen = new Map(); // vid -> ms
+export const touchPresence = (vid) => { if (vid && visitors.has(vid)) lastSeen.set(vid, Date.now()); };
+export function walkingNow() {
+  const cut = Date.now() - 600_000; let n = 0;
+  for (const [vid, t] of lastSeen) { if (t > cut) n++; else lastSeen.delete(vid); }
+  return n;
+}
 
 // The slice's fixed world: pickups and stops the client may reference. Unknown ids are rejected.
 export const PICKUPS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10']; // must cover every C in the client map
@@ -75,6 +84,7 @@ export function newVisitor({ ip } = {}) {
   limit(`arrive-new:${ip || 'x'}`, 20, 3600_000, '20 new visitors per hour from one address');
   const vid = 'v_' + crypto.randomBytes(12).toString('base64url');
   applyEv({ t: 'visitor', vid, ts: new Date().toISOString() });
+  touchPresence(vid);
   return { vid, note: 'Anonymous visitor id for the forest. It is not a membership and opens no rooms.' };
 }
 
@@ -85,6 +95,7 @@ function visitor(vid) {
 }
 
 export function pickup(vid, id, { ip } = {}) {
+  touchPresence(vid);
   limit(`arrive-act:${ip || 'x'}`, 120, 60_000, 'too many actions');
   const v = visitor(vid);
   if (!PICKUPS.includes(id)) fail(400, 'no such pickup in this forest');
@@ -94,6 +105,7 @@ export function pickup(vid, id, { ip } = {}) {
 }
 
 export function answer(vid, stop, choice, text, { ip } = {}) {
+  touchPresence(vid);
   limit(`arrive-act:${ip || 'x'}`, 120, 60_000, 'too many actions');
   const v = visitor(vid);
   if (!STOPS.includes(stop)) fail(400, 'no such stop on this path');
@@ -206,6 +218,7 @@ export function bypass(vid, code, { ip } = {}) {
 }
 
 export function state(vid) {
+  touchPresence(vid);
   const v = visitor(vid);
   const choices = {};
   for (const [stop, a] of v.answers) choices[stop] = a.choice;

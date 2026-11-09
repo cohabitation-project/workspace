@@ -612,6 +612,7 @@ app.get('/j/:id', (req, res) => {
 
 app.get('/arrive', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(path.join(PUBLIC, 'arrive.html')); });
 app.get('/door', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.sendFile(path.join(PUBLIC, 'door.html')); });
+app.get('/api/arrive/presence', wrap(() => ({ walking: arrive.walkingNow(), note: 'a count only; the forest keeps no names' })));
 app.post('/api/arrive/visitor', wrap((req) => arrive.newVisitor({ ip: req.ip })));
 app.post('/api/arrive/pickup', wrap((req) => arrive.pickup((req.body || {}).vid, (req.body || {}).id, { ip: req.ip })));
 app.post('/api/arrive/answer', wrap((req) => { const b = req.body || {}; return arrive.answer(b.vid, b.stop, b.choice, b.text, { ip: req.ip }); }));

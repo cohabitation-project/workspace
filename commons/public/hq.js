@@ -508,9 +508,16 @@ function drawForestTile(L) {
   s += box(sx, sy, 172, 100, '#4a5568', '#5b6474') + rect(sx, sy - 14, 172, 16, '#e9c46a') + `<text x="${(sx + 86).toFixed(0)}" y="${(sy + 58).toFixed(0)}" font-size="20" fill="#dfe6ef" text-anchor="middle">STORE</text>`;
   const gx = F.x + F.w * 0.70, gy = F.y + F.h * 0.42;
   s += `<g stroke="#6b5a4a" stroke-width="10" fill="none"><line x1="${gx.toFixed(0)}" y1="${(gy + 110).toFixed(0)}" x2="${gx.toFixed(0)}" y2="${gy.toFixed(0)}"/><line x1="${(gx + 120).toFixed(0)}" y1="${(gy + 110).toFixed(0)}" x2="${(gx + 120).toFixed(0)}" y2="${gy.toFixed(0)}"/><line x1="${(gx - 8).toFixed(0)}" y1="${(gy + 6).toFixed(0)}" x2="${(gx + 128).toFixed(0)}" y2="${(gy + 6).toFixed(0)}"/></g>`;
-  for (const [fx, fy] of [[0.4, 0.7], [0.55, 0.78], [0.62, 0.6], [0.35, 0.82], [0.72, 0.72]]) s += `<circle class="amb" cx="${(F.x + F.w * fx).toFixed(0)}" cy="${(F.y + F.h * fy).toFixed(0)}" r="8" fill="#f0e6d2"/>`;
-  s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 20}" width="276" height="34" rx="3" fill="#17131d" stroke="#0b090e"/><text x="${F.x + 34}" y="${F.y + 44}" font-size="19" fill="#eaf0e2">THE FOREST &amp; VILLAGE →</text></g>`;
-  s += `<rect class="room-hit" data-href="/arrive" x="${F.x}" y="${F.y}" width="${F.w}" height="${F.h}" tabindex="0" role="link" aria-label="Enter the Forest and village — a place of its own"/>`;
+  // Live presence (Geoffrey 2026-11-09: the forest is a REGION of the world, not an application gate):
+  // real walkers from /api/arrive/presence drift here; the group is updated in place by the presence poll.
+  s += `<g id="forest-walkers"></g>`;
+  s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 20}" width="276" height="34" rx="3" fill="#17131d" stroke="#0b090e"/><text x="${F.x + 34}" y="${F.y + 44}" font-size="19" fill="#eaf0e2">THE FOREST &amp; VILLAGE</text></g>`;
+  s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 62}" width="200" height="28" rx="3" fill="#17131d" opacity="0.85"/><text id="forest-count" x="${F.x + 34}" y="${F.y + 82}" font-size="15" fill="#bcd3b0">quiet right now</text></g>`;
+  // The explicit door: a visible WALK IN sign by the village gate — entering is a choice, never a trap.
+  const wx = F.x + F.w - 196, wy = F.y + F.h - 64;
+  s += `<g class="sign"><rect x="${wx}" y="${wy}" width="172" height="40" rx="4" fill="#213018" stroke="#3f5a33"/><text x="${wx + 20}" y="${wy + 27}" font-size="19" fill="#d9ead0">WALK IN →</text></g>`;
+  s += `<rect class="room-hit" data-href="/arrive" x="${wx}" y="${wy}" width="172" height="40" tabindex="0" role="link" aria-label="Walk into the forest"/>`;
+  s += `<rect class="room-hit" data-region="forest" x="${F.x}" y="${F.y}" width="${F.w}" height="${F.h - 80}" tabindex="0" role="button" aria-label="The Forest and village — click flies there; the WALK IN sign enters"/>`;
   return s;
 }
 
@@ -1430,12 +1437,19 @@ function route(push = false) {
 addEventListener('popstate', () => route(false));
 document.addEventListener('click', (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href], [data-nav], [data-exit]');
+  const t = e.target.closest('[data-room], [data-door], [data-room-link], [data-href], [data-nav], [data-exit], [data-region]');
   if (S.dragged) { S.dragged = false; return; } // a drag-pan, not a click
   if (!t) return;
   if (t.dataset.nav) { e.preventDefault(); setCam(t.dataset.nav); return; }
   if (t.dataset.exit) { e.preventDefault(); openExit(); return; }
   if (t.dataset.href) { e.preventDefault(); location.href = t.dataset.href; return; }
+  if (t.dataset.region === 'forest' && S.L?.forest) {
+    e.preventDefault(); const F = S.L.forest; const C = buildingSize();
+    const focusS = clampScale(Math.min(C.w / (F.w + 120), C.h / (F.h + 120)));
+    if (S.cam.s >= focusS * 0.9 && Math.abs(S.cam.fx - (F.x + F.w / 2)) < F.w * 0.3 && Math.abs(S.cam.fy - (F.y + F.h / 2)) < F.h * 0.3) location.href = '/arrive'; // already there (both axes): a second click walks in
+    else camFit(F.x - 60, F.y - 60, F.w + 120, F.h + 120, 1.05, true);
+    return;
+  }
   if (t.dataset.door) { e.preventDefault(); openDoor(); return; }
   // Zoomed out = exploring the world: a click on a region flies you there instead of opening it (Geoffrey 2026-11-07).
   const rid = t.dataset.room;
@@ -1449,7 +1463,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest?.('.room-hit'); if (!t || (e.key !== 'Enter' && e.key !== ' ')) return;
-  e.preventDefault(); if (t.dataset.nav) setCam(t.dataset.nav); else if (t.dataset.exit) openExit(); else if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else openRoom(t.dataset.room);
+  e.preventDefault(); if (t.dataset.nav) setCam(t.dataset.nav); else if (t.dataset.exit) openExit(); else if (t.dataset.href) location.href = t.dataset.href; else if (t.dataset.door) openDoor(); else if (t.dataset.region === 'forest' && S.L?.forest) { const F = S.L.forest; camFit(F.x - 60, F.y - 60, F.w + 120, F.h + 120, 1.05, true); } else if (t.dataset.room) openRoom(t.dataset.room);
 });
 
 function relayout(force = false) {
@@ -1470,6 +1484,22 @@ setInterval(() => { updateRoomLabels(); renderHere(); if (S.open?.type === 'room
 connect();
 // Open a deep-linked room/door once the first snapshot has the room list.
 const boot = setInterval(() => { if (S.rooms.length) { clearInterval(boot); route(false); } }, 50);
+
+// The forest's live presence: a count only (the forest keeps no names). Drifting dots, one per walker, capped.
+(() => {
+  let seed = [];
+  const draw = (n) => {
+    const g = document.getElementById('forest-walkers'); const F = S.L?.forest; if (!g || !F) return;
+    const label = document.getElementById('forest-count');
+    if (label) label.textContent = n === 0 ? 'quiet right now' : n === 1 ? '1 walking the paths' : `${n} walking the paths`;
+    const k = Math.min(n, 10);
+    while (seed.length < k) seed.push([0.15 + Math.random() * 0.7, 0.55 + Math.random() * 0.35]);
+    seed = seed.slice(0, k);
+    g.innerHTML = seed.map(([fx, fy]) => `<circle class="amb" cx="${(F.x + F.w * fx).toFixed(0)}" cy="${(F.y + F.h * fy).toFixed(0)}" r="8" fill="#f0e6d2"/>`).join('');
+  };
+  const tick = async () => { try { const r = await fetch('/api/arrive/presence'); if (r.ok) draw((await r.json()).walking || 0); } catch { /* quiet */ } };
+  setTimeout(tick, 2500); setInterval(tick, 60_000);
+})();
 
 // Camera controls
 $('#cam-zoom')?.addEventListener('click', toggleZoom);
