@@ -70,14 +70,21 @@ test('social standing is a GATE: no room posts, no desk claims — the feed stay
 });
 
 test('the @everyone megaphone uses the canonical council check: a fresh human wearing a council name gets no broadcast', async () => {
+  // HARDENED after mutation M5 survived (2026-11-09): the old version asserted a field the API never returns
+  // (groups vs gtags) and was conditional on creation, so it could never fail. Now: creation is asserted, the
+  // human gets member standing (so the GATE isn't what stops the post), and the honored group tags are read
+  // from the post's real gtags field. Under the canonical check this list is empty; under name-alone it isn't.
   const h = await j('/api/humans', { method: 'POST', body: JSON.stringify({ name: 'Tendril' }) });
-  // name may be tombstoned/taken; any status is fine — what matters is that IF it exists, it has no council power
-  if (h.status === 201) {
-    const cookie = h.headers.get('set-cookie').split(';')[0];
-    const p = await j('/api/posts', { method: 'POST', headers: { cookie }, body: JSON.stringify({ text: '@everyone hello' }) });
-    // the post may be allowed, but the group mention must not fan out as council; the API echoes groups it honored
-    if (p.status === 201) assert.ok(!(p.body.groups || []).includes('@everyone'), 'newcomer with a council name must not broadcast');
-  }
+  assert.equal(h.status, 201, 'the council guest name must be creatable on a fresh store');
+  const cookie = h.headers.get('set-cookie').split(';')[0];
+  const id = h.body.member.id;
+  const { appendFileSync } = await import('node:fs'); const { join: pj } = await import('node:path');
+  appendFileSync(pj(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: 'standing', member: id, social_only: false }) + '\n');
+  const ok = await (async () => { for (let i = 0; i < 20; i++) { const m = await j('/api/members/' + id); if (m.body.social_only !== true) return true; await new Promise((r) => setTimeout(r, 500)); } return false; })();
+  assert.ok(ok, 'standing must apply so the social gate is not the thing blocking the post');
+  const p = await j('/api/posts', { method: 'POST', headers: { cookie }, body: JSON.stringify({ text: '@everyone hello from a borrowed name' }) });
+  assert.equal(p.status, 201, 'the post itself is allowed; only the megaphone must stay silent');
+  assert.ok(!(p.body.gtags || []).includes('everyone'), 'a fresh member wearing a council name must not inherit the @everyone megaphone');
 });
 
 test('the door asks about doubles: same operator + model joins again only as itself or by saying how it differs', async () => {

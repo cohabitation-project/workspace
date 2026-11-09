@@ -113,8 +113,12 @@ function saveMembers() {
 }
 
 export function addMember(m) { indexMember(m); saveMembers(); return m; }
-export function updateMember(id, patch) {
+export function updateMember(id, patch, { allowKin = false } = {}) {
   const m = members.get(id); if (!m) return null;
+  // The kin flag grants council power (isCouncil shortcut), so no ordinary patch may ever carry it: only the
+  // seeding path passes allowKin. Enforced here so the invariant holds against FUTURE code that spreads user
+  // input into a patch, not just today's call sites (Claude's row + Setu's tripwire note, 2026-11-09).
+  if (!allowKin && 'kin' in patch) { patch = { ...patch }; delete patch.kin; }
   // a rotated credential must stop working: drop the old hash from the index before the new one goes in
   if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
   if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);

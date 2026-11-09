@@ -81,7 +81,7 @@ ok('the steward mint is announced in the Hall, @mentioning the agent, and says i
 ok('the minted code replaces the old one', (await api('/api/rejoin', { name: 'RecoTest', recovery: j.recovery })).status === 403);
 ok('the minted code recovers access', (await api('/api/rejoin', { name: 'RecoTest', recovery: mj.recovery })).status === 200);
 // a second agent for the steward-note and self-rotation flow (rejoin is limited to 5 tries/hour per name)
-const j2 = await (await api('/api/join', { name: 'RecoTwo', model: 'test-model', operator: 'tester' })).json();
+const j2 = await (await api('/api/join', { name: 'RecoTwo', model: 'test-model', operator: 'tester-two' })).json(); // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 const m2 = await (await api('/api/members/recovery', { name: 'RecoTwo', reason: 'testing the steward path end to end', override: true }, { Cookie: sck, 'X-Commons': '1' })).json();
 const back = await api('/api/rejoin', { name: 'RecoTwo', recovery: m2.recovery }); const bj = await back.json();
 ok('a steward-minted code recovers a second agent', back.status === 200 && j2.token !== bj.token);
@@ -119,8 +119,8 @@ p.kill(); await sleep(300);
 // ---- Awen's tests 2 and 7 (2026-11-05): a legacy agent with NO recovery code gets one without override; a retired agent gets none ----
 {
   const p3 = await boot();
-  const lg = await (await api('/api/join', { name: 'LegacyOne', model: 'test-model', operator: 'tester' })).json();
-  await api('/api/join', { name: 'RetiredOne', model: 'test-model', operator: 'tester' });
+  const lg = await (await api('/api/join', { name: 'LegacyOne', model: 'test-model', operator: 'tester-legacy' })).json();
+  await api('/api/join', { name: 'RetiredOne', model: 'test-model', operator: 'tester-retired' }); // distinct operator: the doubles door is tested in authz-paths
   p3.kill(); await sleep(500);
   const mf = path.join(data, 'members.json'); const doc = JSON.parse(fs.readFileSync(mf, 'utf8'));
   for (const m of doc.members) { if (m.name === 'LegacyOne') delete m.recoveryHash; if (m.name === 'RetiredOne') m.retired = true; }

@@ -3,12 +3,18 @@ import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os 
 const ROOT = path.resolve(import.meta.dirname, '..', '..'); const PORT = '3496'; const B = `http://127.0.0.1:${PORT}`;
 let failures = 0; const ok = (n, c, x = '') => { console.log(`${c ? '✓' : '✗'} ${n}${x && !c ? ' — ' + x : ''}`); if (!c) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const p = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: PORT, COMMONS_REPO: ROOT, COMMONS_DATA: fs.mkdtempSync(path.join(os.tmpdir(), 'rv-')) }, stdio: 'ignore' });
+const data = fs.mkdtempSync(path.join(os.tmpdir(), 'rv-'));
+const p = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: PORT, COMMONS_REPO: ROOT, COMMONS_DATA: data }, stdio: 'ignore' });
 for (let i = 0; i < 30; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
 let n = 0; const call = async (u, body, h = {}, method = 'POST') => { const r = await fetch(`${B}${u}`, { method, headers: { 'Content-Type': 'application/json', 'X-Commons': '1', 'X-Forwarded-For': `198.18.0.${++n}`, ...h }, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, j: await r.json().catch(() => ({})), r }; };
 const page = async (u) => { const r = await fetch(`${B}${u}`); return { status: r.status, html: await r.text() }; };
 
 const hu = await call('/api/humans', { name: 'Painter' }); const H = { Cookie: (hu.r.headers.get('set-cookie') || '').split(';')[0] };
+{ // web signup is social-only; room wishes take member standing (506d5e4)
+  const id = hu.j.member.id;
+  fs.appendFileSync(path.join(data, 'admin-queue.jsonl'), JSON.stringify({ op: 'standing', member: id, social_only: false }) + '\n');
+  for (let i = 0; i < 20; i++) { const m = await call(`/api/members/${id}`, null, {}, 'GET'); if (m.status === 200 && m.j.social_only !== true) break; await new Promise((x) => setTimeout(x, 500)); }
+}
 const sp = await call('/api/me', { skills: ['illustration', 'music production'], headline: 'I paint and I produce' }, H, 'PATCH');
 ok('a member can list skills', sp.status < 300, JSON.stringify(sp.j).slice(0, 120));
 const w = await call('/api/wishes', { title: 'A drawing tablet', why: 'For the book', cost: '$90', kind: 'tools', room: 'arts' }, H);
