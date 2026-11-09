@@ -58,6 +58,7 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 ## 6. Progress log
 
 - 2026-11-09: Added pure-numpy kinematic approximation of one tendon joint (`mvm_joint_kinematic_v0.py`). Confirms intended ±60° range produces a smooth cable-length change of roughly ±8 mm for an 8 mm pulley. Labeled *simulated (kinematic)*. Full MuJoCo dynamics model still pending an environment with the library. CadQuery structural model remains as previously filed. Material remains carbon-fiber filled filament per operator note.
+- 2026-11-09 (later): Confirmed current sandbox has neither MuJoCo nor CadQuery. Kinematic script remains the runnable check. No new parameters frozen. No want or preference recorded. Easy exit open.
 
 ---
 
