@@ -118,28 +118,48 @@ const G = { grass1: '#1d2417', grass2: '#182013', path: '#4a3f33', pathEdge: '#5
   trunk: '#3b2a1c', leaf1: '#24381f', leaf2: '#2d4526', coin: '#f2a65a', coinRim: '#ffd890',
   house: '#2a2333', roof: '#57493a', gate: '#8a7f95', gateBar: '#57606b' };
 
+// Scenery art pass matching the HQ Forest: same map, palette and raised objects.
+// Draw ground first and raised props separately so canopies overlap their neighbors.
+const forestSeed = (x, y) => ((x * 73 + y * 137 + x * y * 19) >>> 0) % 101;
 function drawTile(x, y, c, t) {
-  const px = x * TILE, py = y * TILE;
-  ctx.fillStyle = (x + y) % 2 ? G.grass1 : G.grass2; ctx.fillRect(px, py, TILE, TILE);
-  if (c === 'p') { ctx.fillStyle = G.path; ctx.fillRect(px, py, TILE, TILE); ctx.fillStyle = G.pathEdge; ctx.fillRect(px, py, TILE, 2); }
-  if (c === 'w') { ctx.fillStyle = G.water; ctx.fillRect(px, py, TILE, TILE); ctx.fillStyle = '#28445a'; ctx.fillRect(px, py + (REDUCED ? 6 : (Math.floor(t / 600) + x) % 2 ? 4 : 8), TILE, 2); }
+  const px = x * TILE, py = y * TILE, n = forestSeed(x, y);
+  const ground = { T: '#20331f', ',': '#2a4027', '.': '#31472b', p: '#78664e',
+    w: '#234558', C: '#31472b', H: '#31472b', G: '#78664e', S: '#31472b',
+    1: '#78664e', 2: '#78664e', 3: '#78664e' };
+  ctx.fillStyle = ground[c] || '#31472b'; ctx.fillRect(px, py, TILE, TILE);
+  if (c === 'w') {
+    ctx.fillStyle = '#2d5868'; ctx.fillRect(px, py + 2, 16, 2);
+    ctx.fillStyle = '#71919a';
+    if (n % 3 === 0) ctx.fillRect(px + 3, py + (REDUCED ? 10 : 9 + Math.floor(t / 800) % 2), 7, 1);
+  } else if (c === 'p' || '123G'.includes(c)) {
+    ctx.fillStyle = '#958064'; ctx.fillRect(px + 1, py + 2, 14, 2);
+    if (n % 3 === 0) { ctx.fillStyle = '#66553f'; ctx.fillRect(px + 3, py + 11, 4, 2); }
+  } else if (c !== 'T') {
+    if (n % 4 === 0) { ctx.fillStyle = '#456238'; ctx.fillRect(px + 3, py + 4, 2, 3); }
+    if (n % 7 === 0) { ctx.fillStyle = '#a4a16c'; ctx.fillRect(px + 11, py + 11, 2, 2); }
+    if (n % 13 === 0) { ctx.fillStyle = '#e4c77d'; ctx.fillRect(px + 9, py + 7, 2, 2); }
+  }
+}
+function drawRaisedTile(x, y, c) {
+  const px = x * TILE, py = y * TILE, n = forestSeed(x, y);
   if (c === 'T') {
-    ctx.fillStyle = G.trunk; ctx.fillRect(px + 6, py + 9, 4, 7);
-    ctx.fillStyle = (x * 7 + y * 13) % 3 ? G.leaf1 : G.leaf2;
-    ctx.fillRect(px + 2, py, 12, 10); ctx.fillRect(px, py + 3, 16, 5);
-  }
-  if (c === 'H') {
-    ctx.fillStyle = 'rgba(242,204,143,0.12)'; ctx.fillRect(px - 6, py - 8, TILE + 12, TILE + 10); // hearth-light spill
-    ctx.fillStyle = '#3a3147'; ctx.fillRect(px - 3, py - 2, TILE + 6, 18); // body, grown
-    ctx.fillStyle = '#6b5a3f'; ctx.fillRect(px - 6, py - 7, TILE + 12, 7);  // wide warm roof
-    ctx.fillStyle = '#8a7a5c'; ctx.fillRect(px - 6, py - 7, TILE + 12, 2);
-    ctx.fillStyle = '#17131d'; ctx.fillRect(px + 6, py + 7, 5, 9);          // door
-    ctx.fillStyle = '#f2cc8f'; ctx.fillRect(px - 1, py + 3, 4, 4); ctx.fillRect(px + 13, py + 3, 4, 4); // two lit windows
-    ctx.fillStyle = G.coin; ctx.fillRect(px + 12, py + 9, 2, 2);            // the lamp by the door
-  }
-  if (c === 'G') {
-    ctx.fillStyle = G.gate; ctx.fillRect(px + 1, py, 3, TILE); ctx.fillRect(px + 12, py, 3, TILE);
-    ctx.fillStyle = G.gateBar; for (let i = 2; i < TILE; i += 4) ctx.fillRect(px, py + i, TILE, 2);
+    ctx.fillStyle = 'rgba(12,28,21,.7)'; ctx.beginPath(); ctx.ellipse(px + 10, py + 13, 7, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5b412d'; ctx.fillRect(px + 7, py + 8, 3, 7);
+    ctx.fillStyle = '#193a2b'; ctx.beginPath(); ctx.arc(px + 8, py + 5, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = n % 3 === 0 ? '#355a37' : '#416a3e'; ctx.beginPath(); ctx.arc(px + 5, py + 4, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = n % 3 === 0 ? '#2d5035' : '#507a45'; ctx.beginPath(); ctx.arc(px + 11, py + 4, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#83a36b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px + 4, py + 1); ctx.lineTo(px + 7, py); ctx.stroke();
+  } else if (c === 'H') {
+    ctx.fillStyle = 'rgba(16,27,26,.65)'; ctx.fillRect(px - 4, py + 12, 24, 5);
+    ctx.fillStyle = '#69543f'; ctx.fillRect(px - 4, py - 1, 24, 17);
+    ctx.fillStyle = '#f0bf70'; ctx.fillRect(px - 1, py + 5, 5, 5); ctx.fillRect(px + 12, py + 5, 5, 5);
+    ctx.fillStyle = '#2d2832'; ctx.fillRect(px + 6, py + 8, 5, 8);
+    ctx.fillStyle = '#9b5947'; ctx.beginPath(); ctx.moveTo(px - 6, py); ctx.lineTo(px + 8, py - 11); ctx.lineTo(px + 22, py); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#402d35'; ctx.lineWidth = 1.5; ctx.stroke();
+  } else if (c === 'G') {
+    ctx.fillStyle = '#9b8060'; ctx.fillRect(px + 2, py - 6, 3, 22); ctx.fillRect(px + 12, py - 6, 3, 22);
+    ctx.fillStyle = '#bd996c'; ctx.fillRect(px + 1, py - 7, 15, 3);
+    ctx.fillStyle = '#b3a4a0'; ctx.fillRect(px + 5, py + 1, 7, 2);
   }
 }
 
@@ -151,13 +171,24 @@ function glowAt(gx, gy, t, strength = 1) {
 }
 
 function drawStore(t) {
+  // Forest village storefront, in the same earthy palette as the HQ map.
+  // Visual only: store interaction, inventory and purchases remain unchanged.
   const px = STORE.x * TILE, py = STORE.y * TILE;
-  ctx.fillStyle = '#2e2639'; ctx.fillRect(px - 2, py - 6, TILE * 2 + 4, 20); // body, two tiles wide
-  ctx.fillStyle = '#57493a'; ctx.fillRect(px - 4, py - 10, TILE * 2 + 8, 6); // roof
-  for (let i = 0; i < 4; i++) { ctx.fillStyle = i % 2 ? '#8a5a2b' : '#c9a15b'; ctx.fillRect(px - 2 + i * 9, py - 5, 9, 3); } // awning
-  ctx.fillStyle = REDUCED || Math.floor(t / 800) % 4 ? '#f2cc8f' : '#e8b86a'; ctx.fillRect(px + 3, py + 2, 5, 5); // lit window
-  ctx.fillStyle = '#17131d'; ctx.fillRect(px + TILE + 4, py + 4, 6, 10); // door
-  ctx.fillStyle = G.coin; ctx.fillRect(px + TILE - 2, py - 9, 4, 4); // the coin sign
+  ctx.fillStyle = 'rgba(12,28,21,.6)'; ctx.fillRect(px - 5, py + 12, 43, 5);
+  ctx.fillStyle = '#69543f'; ctx.fillRect(px - 3, py - 4, 39, 20);
+  ctx.fillStyle = '#a66d50'; ctx.beginPath();
+  ctx.moveTo(px - 6, py - 4); ctx.lineTo(px + 16, py - 15);
+  ctx.lineTo(px + 39, py - 4); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#402d35'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#c5a16b'; ctx.fillRect(px - 4, py - 4, 41, 4);
+  for (let i = 0; i < 4; i++) {
+    ctx.fillStyle = i % 2 ? '#8f624b' : '#ddbd83';
+    ctx.fillRect(px - 3 + i * 10, py, 10, 4);
+  }
+  ctx.fillStyle = REDUCED || Math.floor(t / 800) % 4 ? '#f0bf70' : '#e8b86a';
+  ctx.fillRect(px + 2, py + 7, 7, 5);
+  ctx.fillStyle = '#2d2832'; ctx.fillRect(px + 22, py + 5, 8, 11);
+  ctx.fillStyle = '#efc56c'; ctx.beginPath(); ctx.arc(px + 16, py - 11, 3, 0, Math.PI * 2); ctx.fill();
 }
 
 function drawCoin(x, y, t) {
@@ -171,6 +202,9 @@ function figureAt(who, gx, gy, dir, step, key) {
   let c = key ? npcSprites[key] : sprite;
   if (key && !c) { c = npcSprites[key] = document.createElement('canvas'); }
   drawFigure(c, who, dir, step, null, 1);
+  // Keep the established 12×18 identity sprites; give each a grounding shadow.
+  ctx.fillStyle = 'rgba(10,20,18,.45)';
+  ctx.beginPath(); ctx.ellipse(gx * TILE + 8, gy * TILE + 13, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
   ctx.drawImage(c, gx * TILE + 2, gy * TILE - 4);
 }
 
@@ -385,6 +419,8 @@ function render(t) {
   ctx.save(); ctx.translate(-Math.round(camX), -Math.round(camY));
   ctx.fillStyle = '#121016'; ctx.fillRect(camX, camY, canvas.width, canvas.height);
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) drawTile(x, y, at(x, y), t);
+  // Scenery pass after ground: layered trees, cabins and gate, matching HQ.
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) drawRaisedTile(x, y, at(x, y));
   for (const c of coinCells) if (!S.coins.has(c.id)) drawCoin(c.x, c.y, t);
   drawEndStates(t);
   for (const g of QSIGNS) {
