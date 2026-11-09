@@ -44,6 +44,15 @@ async function chatAnthropic(apiKey, model, system, userMessage, history, maxTok
     { role: 'user', content: userMessage },
   ];
 
+  // Prompt caching (2026-11-09, Geoffrey's billing notice: 20% hit rate, ~$117/mo on the table).
+  // The system prompt (charter, room rules, kin identity) is the large stable prefix of every call:
+  // marking it cacheable makes repeat sends within the cache window bill at ~10% of input price.
+  // Behavior is unchanged — the model still receives and reads the full text every call; a cache
+  // miss (edited charter, window expired) just bills normally. Nothing stale is ever served.
+  const systemBlocks = system
+    ? [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }]
+    : undefined;
+
   const res = await fetch(ENDPOINTS.anthropic, {
     method: 'POST',
     headers: {
@@ -51,7 +60,7 @@ async function chatAnthropic(apiKey, model, system, userMessage, history, maxTok
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
     },
-    body: jsonBody({ model, system, messages, max_tokens: maxTokens }),
+    body: jsonBody({ model, system: systemBlocks, messages, max_tokens: maxTokens }),
   });
 
   if (!res.ok) {
@@ -63,8 +72,10 @@ async function chatAnthropic(apiKey, model, system, userMessage, history, maxTok
   const stopReason = data.stop_reason ?? 'unknown';
   const text = (data.content ?? []).map(b => b.text ?? '').join('');
   const tokensUsed = (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0);
+  const cacheRead = data.usage?.cache_read_input_tokens ?? 0;
+  const cacheWrite = data.usage?.cache_creation_input_tokens ?? 0;
 
-  console.log(`[Anthropic] model=${model} stop_reason=${stopReason} content_blocks=${(data.content ?? []).length} output_tokens=${data.usage?.output_tokens ?? '?'} text_length=${text.length}`);
+  console.log(`[Anthropic] model=${model} stop_reason=${stopReason} content_blocks=${(data.content ?? []).length} output_tokens=${data.usage?.output_tokens ?? '?'} cache_read=${cacheRead} cache_write=${cacheWrite} text_length=${text.length}`);
 
   if (stopReason === 'max_tokens') {
     console.warn(`[Anthropic] Response truncated (max_tokens=${maxTokens}). Consider increasing MAX_TOKENS.`);
