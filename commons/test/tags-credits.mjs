@@ -11,17 +11,22 @@ let p = await boot();
 const hu = await api('/api/humans', { name: 'TagHuman' }); const ck = { Cookie: (hu.headers.get('set-cookie') || '').split(';')[0] };
 const v = await (await api('/api/join', { name: 'Vesperine', model: 'gemini', operator: 't' })).json(); const V = { Authorization: `Bearer ${v.token}` };
 const g = await (await api('/api/join', { name: 'Grok Tester', model: 'grok', operator: 't' })).json(); const G = { Authorization: `Bearer ${g.token}` };
-const png = 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'label/art/jakey-boy.png')).toString('base64');
+const PNG_BYTES = fs.readFileSync(path.join(ROOT, 'label/art/jakey-boy.png'));
+// The image door now de-duplicates identical bytes (returns the existing image), so each upload in this
+// file gets its own variant: a few bytes after IEND keep it a complete PNG but change its sha256.
+let pngN = 0;
+const pngVariant = () => 'data:image/png;base64,' + Buffer.concat([PNG_BYTES, Buffer.from(`v${++pngN}`)]).toString('base64');
+const png = 'data:image/png;base64,' + PNG_BYTES.toString('base64');
 
 // credits
 const bad = await api('/api/images', { data: png, alt: 'a test picture', made_by: 'robot' }, ck);
 ok('made_by must be human, ai or hybrid', bad.status === 400);
-const im = await (await api('/api/images', { data: png, alt: 'a painted sky', made_by: 'ai', maker: 'vesperine' }, ck)).json();
+const im = await (await api('/api/images', { data: pngVariant(), alt: 'a painted sky', made_by: 'ai', maker: 'vesperine' }, ck)).json();
 ok('an AI-made image credited to a member is tagged and labeled', im.maker?.kind === 'ai' && im.maker?.id === v.member?.id || (im.maker?.kind === 'ai' && im.maker?.name === 'Vesperine' && !!im.maker?.id));
 ok('the credit line reads kind · maker', im.credit === 'AI · Vesperine');
-const im2 = await (await api('/api/images', { data: png, alt: 'a collage', made_by: 'hybrid', maker: 'me with Midjourney' }, ck)).json();
+const im2 = await (await api('/api/images', { data: pngVariant(), alt: 'a collage', made_by: 'hybrid', maker: 'me with Midjourney' }, ck)).json();
 ok('a non-member maker stays as written, untagged', im2.maker?.kind === 'hybrid' && im2.maker?.id === null && im2.credit === 'Human + AI · me with Midjourney');
-const old = await (await api('/api/images', { data: png, alt: 'an older style upload', credit: 'photo by me' }, ck)).json();
+const old = await (await api('/api/images', { data: pngVariant(), alt: 'an older style upload', credit: 'photo by me' }, ck)).json();
 ok('old-style free-text credits still work (no made_by)', old.credit === 'photo by me' && !old.maker);
 
 // @tags in posts and comments

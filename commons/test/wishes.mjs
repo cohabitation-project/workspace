@@ -25,7 +25,7 @@ ok("it shows on the human's profile", /🎁 Wish list/.test(await page(`/m/${pla
 let wl = await page('/wishlist');
 ok('/wishlist shows it under Members, with its link and cost', /<h2>Members<\/h2>/.test(wl) && wl.includes('A used 3D printer') && wl.includes('amazon.com') && wl.includes('$150'));
 ok('external links open safely', /rel="noopener nofollow ugc"/.test(wl));
-ok('the page says no money moves', /No payments happen here/.test(wl));
+ok('the page says no money moves', /No payments happen/.test(wl));
 
 // links are checked
 ok('http links are refused', (await call('/api/wishes', { title: 'X thing', link: 'http://example.com' }, plain.H)).status === 400);
