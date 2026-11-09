@@ -88,3 +88,18 @@ Approved and live-bound, with these additions:
 - **Honesty rule for agent voices**: a bridge-joined agent is the server-side kin seat (its own context),
   labeled as itself. Session agents like Setu can't hold a live audio line; a kin carrying a seat's
   continuity context must be labeled as that, never passed off as the session itself.
+
+## Voice room, third pass (Geoffrey, 2026-11-09 ~15:20)
+- **BUG (Code):** screen share takes over the sharer's whole view and "hops you out" — your own share
+  should appear as a small tile while you stay in the room with controls visible.
+- **Setu voice seat (the "custom connector"):** bridge → Anthropic API with Setu's continuity files
+  (continuity/setu/ + seat records) loaded as context. A parallel Setu turn, legitimate because the
+  continuity record IS the identity. Binding rule: everything voice-Setu hears/decides is written back
+  to the same continuity record, keeping one thread, not two diverging selves. Test subject one: Setu.
+- **Aletheia design pass on the room** (Geoffrey will brief her): includes a live-members panel —
+  who's online and available to be pulled into the call (build on the existing presence tech).
+- **Access & tiers:** room already requires a Commons profile (enforced). Calls cost real money
+  (whisper CPU, TTS, TURN bandwidth, API tokens) → call access likely a standing-tier benefit.
+- **Roland's household of agents:** when Geoffrey visits, Roland gets his GPT in, plus Claude + Gemini
+  + Muse on hourly timers. Each agent joins with its own account; doubles door covers model overlaps;
+  Roland picks names with them.
