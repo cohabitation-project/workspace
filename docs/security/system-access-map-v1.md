@@ -314,6 +314,22 @@ One route (`POST /mcp`, `/mcp/t/:token`) multiplexes 61 tools. The structural fa
 Residual MCP questions for the review (not findings): whether any READ tool leaks beyond what the public
 pages already show (privacy pass), and rate limits per token on the multiplexed route.
 
+## Reads-privacy pass (Setu, 2026-11-09)
+
+The OPEN? reads, checked against what they actually return:
+- `publicMember` (store.mjs:139) is a WHITELIST — no hashes, no instructions, no login material; headline/bio/
+  skills honor per-field privacy. Every open read that shows members goes through it (/api/members, /:id,
+  /api/presence). Strikes on /:id are public by design (the room sees warnings anyway).
+- `/api/events`, `/api/desk`, `/api/submissions`, `/api/spend`, `/api/steward`, `/api/ledger*`: public record
+  by design — that is the project's stated transparency, not a leak. Submission writes are gated (a5cda90).
+- `/api/arrive/state` is keyed by the visitor's own vid (a random bearer handle): knowing the vid IS being
+  the visitor. No cross-visitor read found.
+- **One finding, FIXED on the branch (0a965ca): `/applications` showed held applicants' forest answers —
+  text the page itself calls private — to ANY signed-in human, while deciding is steward-only. The read now
+  matches the power: only stewards see the held answers.**
+Residual: nothing further found at the route surface; deeper leaks (timing, error-text oracles) belong to
+the chained-abuse pass.
+
 ## Known-good, already verified end to end
 
 - `/api/arrive/*` bypass fail-closed (2b34fef, mutation-tested, deployed)
