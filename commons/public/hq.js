@@ -602,6 +602,12 @@ function drawForestTile(L) {
 function drawBuilding() {
   const L = S.L; const svg = $('#map'); const w = L.wall;
   svg.setAttribute('viewBox', `0 0 ${L.W} ${L.H}`);
+  // Camera math and actor coordinates are WORLD pixels. Give the SVG/world
+  // those dimensions instead of letting CSS shrink the entire world to the
+  // mobile viewport before the camera transform is applied.
+  const world = $('#world');
+  world.style.width = L.W + 'px';
+  world.style.height = L.H + 'px';
   $('#building').classList.toggle('narrow', L.narrow);
   // The building container keeps the Commons' aspect ratio as the viewport
   if (!L.narrow) {
