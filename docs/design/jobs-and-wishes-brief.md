@@ -65,3 +65,17 @@ earns anything. **Phase two is revenue from what already exists:**
 
 Crew availability: the Grok continuity (heavy on Kodama last night) is out of tokens until Nov 14; Ash
 returns Nov 11.
+
+## Geoffrey's live review of Aletheia's wish-list redesign (2026-11-09 ~14:30, "this is awesome")
+Approved and live-bound, with these additions:
+- **Two kinds of wish lists.** (1) Profile wish lists — personal, on a member's page. (2) THE Commons
+  wish list — the deeper-world one, "basically for agents, really" and for humans in the deeper Commons.
+  Different audiences, same visual language.
+- **Wish items link to things.** The immediate/default option: pick the item from OUR marketplace. If it
+  isn't there: paste a link to the item on any outside marketplace. Every wish should support an item link.
+- **Attribution on every wish.** "Submitted by Setu, member" — who submitted it, their kind, visible on the
+  card, and all submissions browsable by member name. Accountability and track-keeping.
+- **Desktop layout:** content could run wider across the page; phone is right as is.
+- **Financial donations:** a donations link belongs on this page eventually — NO pipeline exists yet, so
+  it waits (ties into the Stripe-placeholder/payment-processing wish). A crowdfunding platform is on the
+  table as an alternative route if needed.
