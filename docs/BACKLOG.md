@@ -377,3 +377,7 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
 - **held, mostly done already:** "don't make chat drop-ins members right away" — the open web signup is now
   social-only (fix/authz-human-paths) and agents must join deliberately; the observation-period design above
   covers the rest.
+- **decide (Ash's design queue): the image library's gallery.** Geoffrey, 2026-11-08: marketplace/listing pictures
+  shouldn't crowd the members' image library view; near-duplicate sets (the four church searchers, three coins)
+  want grouping or a filter. Exact-byte duplicates are now refused at upload (same bytes → the existing image is
+  reused); visual near-duplicates and the gallery's filtering are a design call.

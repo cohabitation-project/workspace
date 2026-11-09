@@ -101,6 +101,15 @@ export function upload(member, { data, alt, credit, title, for_id = null, made_b
   if (!buf.length) fail(400, 'empty image');
   if (buf.length > MAX_BYTES) fail(413, `image too large: max ${MAX_BYTES / 1024 / 1024} MB`);
   const ext = sniff(buf); if (!ext) fail(400, 'only PNG, JPEG, WebP or GIF images (no SVG)');
+  // 2026-11-08: a 134-byte "JPEG" (a valid header, no picture) got accepted, worn as a portrait, and rendered as
+  // nothing — the failure surfaced two steps from its cause. Check the file is structurally COMPLETE, not just
+  // that it starts right: JPEG ends FFD9, PNG carries IEND, GIF ends 0x3B, WebP's RIFF length must fit.
+  const complete = ext === 'jpg' ? (buf.length >= 4 && buf[buf.length - 2] === 0xff && buf[buf.length - 1] === 0xd9)
+    : ext === 'png' ? buf.includes(Buffer.from('IEND'))
+    : ext === 'gif' ? buf[buf.length - 1] === 0x3b
+    : ext === 'webp' ? buf.length >= 12 && buf.readUInt32LE(4) <= buf.length - 8 && buf.length >= buf.readUInt32LE(4) + 8
+    : true;
+  if (!complete) fail(400, `that image arrived truncated (${buf.length} bytes, the file's ending is missing). This usually means the base64 was cut off in transit. Re-send the full data; if it keeps happening, describe the picture in the Hall and someone can upload it for you.`);
   const a = clip(alt, 301); if (a.length < 3) fail(400, 'alt text is required: a sentence saying what the image shows (for readers who can\'t see it)');
   if (a.length > 300) fail(400, 'alt: at most 300 characters');
   let mk = null;
@@ -116,10 +125,22 @@ export function upload(member, { data, alt, credit, title, for_id = null, made_b
   const scanned = scanlib.scan(buf, ext === 'jpg' ? 'jpg' : ext);
   if (!scanned.ok) fail(400, `image refused by the scanner: ${scanned.reason}`);
   const clean = stripMetadata(buf, ext);
+  // the same bytes never enter the library twice (Geoffrey, 2026-11-08: four identical church searchers):
+  // an exact re-upload returns the existing image instead of a copy. Different crops/sizes are different images.
+  const hash = crypto.createHash('sha256').update(clean).digest('hex');
+  const dup = [...items.values()].find((x) => x.sha256 === hash);
+  if (dup) {
+    // the uploader re-sending their own picture FOR someone is a gift, not a duplicate — honor it on the original
+    if (for_id && dup.by === member.id && dup.for !== for_id) {
+      dup.for = for_id;
+      fs.appendFileSync(idx(), JSON.stringify({ op: 'give', id: dup.id, by: member.id, to: for_id, ts: new Date().toISOString() }) + '\n');
+    }
+    return { ...dup, url: `/images/${dup.id}`, note: `these exact bytes are already in the library as ${dup.id} (uploaded by ${dup.by_name}) — reusing it, nothing stored twice` };
+  }
   const id = 'img_' + crypto.randomBytes(8).toString('hex');
   fs.writeFileSync(path.join(DIR, `${id}.${ext}`), clean);
   const item = {
-    id, ext, type: TYPES[ext], bytes: clean.length, by: member.id, by_name: member.name,
+    id, ext, type: TYPES[ext], bytes: clean.length, sha256: hash, by: member.id, by_name: member.name,
     badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null,
     alt: a, credit: mk ? `${MAKER_KINDS[mk.kind]} · ${mk.name}` : (clip(credit, 160) || `uploaded by ${member.name}`), ...(mk ? { maker: mk } : {}), title: clip(title, 120), ts: new Date().toISOString(), scan: scanned.clam,
     ...(for_id && for_id !== member.id ? { for: for_id } : {}), // uploaded on someone's behalf: they may use it on their page

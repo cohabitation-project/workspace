@@ -21,3 +21,9 @@ test('ownedBy refuses an image with neither by nor for', () => {
 test('give refuses a non-uploader and a missing image', () => {
   assert.throws(() => images.give(vesper, 'img_doesnotexist', uploader), /no such image/);
 });
+
+test('a truncated image (header, no picture) is refused with a teaching error', () => {
+  // a real JPEG start-of-image + padding, under the 600-byte floor
+  const stub = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(100, 0)]);
+  assert.throws(() => images.upload(uploader, { data: stub.toString('base64'), alt: 'a broken upload' }), /truncated/);
+});
