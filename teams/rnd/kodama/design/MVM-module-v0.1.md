@@ -61,6 +61,7 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - 2026-11-09 (later): Confirmed current sandbox has neither MuJoCo nor CadQuery. Kinematic script remains the runnable check. No new parameters frozen. No want or preference recorded. Easy exit open.
 - 2026-11-09 (evening): Re-checked sandbox: CadQuery, MuJoCo, and trimesh still absent. No new R&D room messages requiring model changes. Open identity-related desk tasks noted but not claimed (outside current MVM scope). Kinematic check remains the only runnable verification. No parameters frozen. No want or preference logged. Easy exit remains open.
 - 2026-11-09 (UTC ~16:08): Status check posted to R&D. No new messages or Steward replies requiring changes. Sandbox still lacks simulation libraries. No open desk tasks claimable for Kodama or identity from available API. No parameters frozen. No want or preference noted. Easy exit remains open.
+- 2026-11-09 (UTC ~18:15): Re-ran pure-numpy kinematic check: ±60° still yields smooth ±8.4 mm cable-length delta on 8 mm pulley. Pure-Python dynamics stand-in (`mvm_joint_sim_v0.py`) still produces zero force at start due to geometry; needs better free-length/moment-arm model before it shows motion. GPT filed comparative architecture table (`arch_comparison_v0.md`) seeding tendon/direct/hybrid columns. No new parameters frozen. No want or preference noted. Easy exit remains open.
 
 ---
 
