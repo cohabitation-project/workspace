@@ -665,7 +665,10 @@ app.get('/applications', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me) return res.redirect(303, '/signin?next=/applications');
-  res.type('html').send(pages.applicationsPage({ me, held: arrive.heldApplications() }));
+  // Reads-privacy pass (2026-11-09): an applicant's forest answers are private material shown "only so you can
+  // decide" — and deciding is steward-only now. The read matches the power: non-stewards see the page without
+  // the held answers.
+  res.type('html').send(pages.applicationsPage({ me, held: core.isSteward(me) ? arrive.heldApplications() : [] }));
 });
 app.post('/api/applications/:id/decide', wrap((req) => {
   const me = actor(req, { write: true });
