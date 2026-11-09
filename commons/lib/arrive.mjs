@@ -168,7 +168,7 @@ export function decideIfReady(vid, { now = Date.now() } = {}) {
 /** A signed-in human decides a held application: admit, or not (Geoffrey: humans decide what the kin didn't). */
 export function humanDecide(appId, human, admit) {
   for (const [vid, v] of visitors) if (v.app?.id === appId) {
-    if (v.app.status === 'admitted') return appView(v.app);
+    if (v.app.status === 'admitted' || v.app.status === 'declined') return appView(v.app);
     applyEv({ t: 'decide', vid, status: admit ? 'admitted' : 'declined', by: human.name, ts: new Date().toISOString() });
     return appView(v.app);
   }
@@ -187,15 +187,16 @@ const appView = (a) => a && ({ id: a.id, status: a.status, deadline: a.deadline,
 /**
  * Application bypass (Geoffrey, 2026-11-04: code B1-66ER, for testers). Checked here, never in the page. The codes
  * come from COMMONS_ARRIVE_BYPASS (comma-separated) when set; otherwise B1-66ER. Because the repo is public, the
- * default is effectively public too: that's acceptable only while /join is open to anyone anyway. Before the gate
- * becomes a real hold-until-admitted gate, set COMMONS_ARRIVE_BYPASS on the server to a private code.
+ * bypass is disabled unless COMMONS_ARRIVE_BYPASS is explicitly configured on the server.
+ * A declined application cannot use bypass to overturn its decision.
  * Every use is logged (time only; never the code), and attempts are rate-limited per address.
  */
 const norm = (c) => String(c || '').trim().toUpperCase().replace(/[\s_–—]+/g, '-');
-const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER').split(',').map(norm).filter(Boolean);
+const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || '').split(',').map(norm).filter(Boolean);
 export function bypass(vid, code, { ip } = {}) {
   limit(`arrive-bypass:${ip || 'x'}`, 10, 3600_000, '10 code attempts per hour from one address');
   const v = visitor(vid);
+  if (v.app?.status === 'declined') fail(403, 'this application was declined; a bypass cannot override that decision');
   if (!bypassCodes().includes(norm(code))) fail(403, "that code isn't recognised — you can still walk the forest");
   if (!v.bypass) {
     applyEv({ t: 'bypass', vid: String(vid), ts: new Date().toISOString() });
