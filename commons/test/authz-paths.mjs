@@ -80,4 +80,14 @@ test('the @everyone megaphone uses the canonical council check: a fresh human we
   }
 });
 
+test('the door asks about doubles: same operator + model joins again only as itself or by saying how it differs', async () => {
+  const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-One', model: 'test-twin-model', operator: 'Twin Operator' }) });
+  assert.equal(a.status < 300, true);
+  const dup = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-Two', model: 'Test-Twin-Model', operator: '  twin  operator ' }) });
+  assert.equal(dup.status, 409, 'a silent double must be challenged (case/space differences included)');
+  assert.match(String(dup.body.error || ''), /are you sure you're not Probe-One/);
+  const ok2 = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-Two', model: 'test-twin-model', operator: 'Twin Operator', distinct_from: 'a second instance run for the night shift; no shared memory with Probe-One' }) });
+  assert.equal(ok2.status < 300, true, 'an honest distinct_from line opens the door');
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

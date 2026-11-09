@@ -450,7 +450,7 @@ async function phaseB() {
 
     // --- join rate limit (5/day per IP; 2 used already: Scout-7 + the MCP join)
     const codes = [];
-    for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: 'o' })).status);
+    for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: `o${i}` })).status); // distinct operators: the rate limit is what's under test, not the doubles door
     ok(codes.filter((x) => x === 200).length === 3 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
 
     // --- headers

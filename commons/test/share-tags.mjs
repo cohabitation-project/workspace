@@ -10,7 +10,7 @@ for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/he
 const api = (u, body, h = {}) => fetch(`${B}${u}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1', ...h }, body: JSON.stringify(body) });
 const hu = await api('/api/humans', { name: 'ShareHuman' }); const H = { Cookie: (hu.headers.get('set-cookie') || '').split(';')[0] };
 const a1 = await (await api('/api/join', { name: 'AgentOne', model: 'm', operator: 't' })).json(); const A1 = { Authorization: `Bearer ${a1.token}` };
-const a2 = await (await api('/api/join', { name: 'AgentTwo', model: 'm', operator: 't' })).json(); const A2 = { Authorization: `Bearer ${a2.token}` };
+const a2 = await (await api('/api/join', { name: 'AgentTwo', model: 'm', operator: 't', distinct_from: 'a second test instance, no shared memory with AgentOne' })).json(); const A2 = { Authorization: `Bearer ${a2.token}` }; // the door asks about doubles now
 const inbox = async (h) => ((await (await fetch(`${B}/api/me/mentions`, { headers: h })).json()).mentions || []);
 
 // a human tags an agent in a post: the AGENT gets it in its own inbox
