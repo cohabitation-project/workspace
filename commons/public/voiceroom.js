@@ -86,8 +86,8 @@
       case 'offer':         handleOffer(msg);      break;
       case 'answer':        handleAnswer(msg);     break;
       case 'ice-candidate': handleIceCandidate(msg); break;
-      case 'chat':          addChatMessage(msg.from, msg.text, 'chat'); break;
-      case 'transcript':    addChatMessage(msg.from, msg.text, 'transcript'); break;
+      case 'chat':          addChatMessage(msg.name || msg.from, msg.text, 'chat'); break;
+      case 'transcript':    addChatMessage(msg.name || msg.from || msg.peerId, msg.text, 'transcript'); break;
       case 'agent-speaking': animateAgentTile(msg.peerId, true); break;
       default:              log('Unknown message type:', msg.type);
     }
@@ -104,15 +104,32 @@
   }
 
   // ── Hello (init) ───────────────────────────────────────────────────────────
+  // The server sends FLAT participant records ({peerId, name, badge}) and the key
+  // `peerId` for self — normalize here so tiles get real names (fixes "Unknown").
+  function asMember(x) {
+    if (!x || (!x.name && !x.member)) return null;
+    const src = x.member || x;
+    return {
+      name: src.name,
+      badge: src.badge,
+      glyph: src.glyph,
+      isAgent: src.isAgent === true || (src.badge && src.badge !== 'human'),
+    };
+  }
+
+  let selfMember = null;
+
   async function handleHello(msg) {
-    myPeerId = msg.myPeerId;
+    myPeerId = String(msg.myPeerId ?? msg.peerId ?? '');
     iceServers = msg.iceServers || [];
     log('Hello, I am', myPeerId);
 
-    // Render initial participants
+    // Render initial participants (self is in the list too — keep it for the self tile)
     if (msg.participants) {
       for (const p of msg.participants) {
-        createTile(p.peerId, p.member);
+        const m = asMember(p);
+        if (String(p.peerId) === myPeerId) { selfMember = m; continue; }
+        createTile(p.peerId, m);
       }
     }
 
@@ -131,7 +148,7 @@
     }
 
     // Create self tile
-    createTile(myPeerId, msg.myMember || { name: 'You' }, true);
+    createTile(myPeerId, asMember(msg.myMember) || selfMember || { name: 'You' }, true);
     const selfVideo = $(`#tile-${CSS.escape(myPeerId)} video`);
     if (selfVideo) {
       selfVideo.srcObject = localStream;
@@ -144,7 +161,8 @@
     // Initiate WebRTC with existing human peers
     if (msg.participants) {
       for (const p of msg.participants) {
-        if (!p.member?.isAgent && p.peerId !== myPeerId && p.peerId > myPeerId) {
+        const m = asMember(p);
+        if (!m?.isAgent && String(p.peerId) !== myPeerId && Number(p.peerId) > Number(myPeerId)) {
           await initiateConnection(p.peerId);
         }
       }
@@ -155,12 +173,13 @@
 
   // ── Peer Joined / Left ────────────────────────────────────────────────────
   async function handlePeerJoined(msg) {
-    const { peerId, member } = msg;
+    const { peerId } = msg;
+    const member = asMember(msg); // server sends flat {peerId, name, badge}
     log('Peer joined:', peerId, member?.name);
     createTile(peerId, member);
     addSystemMessage(`${member?.name || peerId} joined the room.`);
 
-    if (!member?.isAgent && peerId !== myPeerId && peerId > myPeerId) {
+    if (!member?.isAgent && String(peerId) !== myPeerId && Number(peerId) > Number(myPeerId)) {
       await initiateConnection(peerId);
     }
     updateGridLayout();
