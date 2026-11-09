@@ -26,20 +26,66 @@ const C = { wall: '#3a3147', wall2: '#2f2839', trim: '#57493a', floor: '#6b4f3a'
 const BOOKS = ['#d1495b', '#3d85c6', '#81b29a', '#e9a03b', '#9a6fb0', '#4a9b8e', '#f2cc8f'];
 
 function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+// Forest House art direction: layered woodland cabin, with the SAME 16px
+// collision grid, account furniture layout, and member avatar rendering.
 function drawRoom() {
-  const W = R.w * TILE; const Hh = R.h * TILE;
-  rect(0, 0, W, R.floorTop * TILE, C.wall);
-  for (let x = 0; x < W; x += 8) rect(x, 0, 1, R.floorTop * TILE - 4, C.wall2);
-  rect(0, R.floorTop * TILE - 4, W, 4, C.trim);
-  for (let y = R.floorTop; y < R.h; y++) {
-    rect(0, y * TILE, W, TILE, (y % 2) ? C.floor : C.floor2);
-    for (let x = (y % 2) * 24; x < W; x += 48) rect(x, y * TILE, 1, TILE, C.seam);
-    rect(0, y * TILE + TILE - 1, W, 1, C.seam);
+  const W = R.w * TILE, top = R.floorTop * TILE, Hh = R.h * TILE;
+  // Warm paneled cabin wall with subtle vertical boards and shadow.
+  const wall = ctx.createLinearGradient(0, 0, 0, top);
+  wall.addColorStop(0, '#283d39'); wall.addColorStop(1, '#526052');
+  ctx.fillStyle = wall; ctx.fillRect(0, 0, W, top);
+  for (let x = 0; x < W; x += 16) {
+    rect(x, 0, 2, top - 5, '#253c37');
+    rect(x + 3, 0, 1, top - 5, '#80907a');
   }
-  for (const d of R.door) rect(d.x * TILE, d.y * TILE + 4, TILE, TILE - 4, C.door);
-  rect(R.door[0].x * TILE - 2, R.door[0].y * TILE + 2, R.door.length * TILE + 4, 2, C.doorFrame);
-  void Hh;
+  // Structural beams and carved wooden trim.
+  rect(0, 0, W, 5, '#9c7956'); rect(0, 5, W, 2, '#d1a97a');
+  rect(0, top - 9, W, 9, '#493b31');
+  rect(0, top - 9, W, 2, '#d1a97a');
+  rect(0, top - 2, W, 2, '#c6a073');
+  // Glowing window, placed on the rear wall without changing interaction zones.
+  if (top >= 48 && W >= 144) {
+    const wx = Math.round(W * .5 - 24), wy = Math.max(12, Math.round(top * .24));
+    rect(wx - 4, wy - 4, 56, 42, '#2e2928');
+    rect(wx, wy, 48, 34, '#bd9c70');
+    const sky = ctx.createLinearGradient(0, wy, 0, wy + 30);
+    sky.addColorStop(0, '#719c9a'); sky.addColorStop(1, '#bad5ac');
+    ctx.fillStyle = sky; ctx.fillRect(wx + 4, wy + 4, 40, 26);
+    rect(wx + 23, wy + 4, 3, 26, '#a47b55'); rect(wx + 4, wy + 17, 40, 3, '#a47b55');
+    rect(wx - 7, wy + 33, 62, 5, '#d2aa79');
+    rect(wx + 8, wy + 7, 8, 1, '#d4e7ce');
+  }
+  // Individual wood floor planks with warm depth and a gentle light pool.
+  for (let y = R.floorTop; y < R.h; y++) {
+    const py = y * TILE;
+    rect(0, py, W, TILE, y % 2 ? '#876b4d' : '#967454');
+    rect(0, py, W, 1, '#c39a69');
+    rect(0, py + TILE - 2, W, 2, '#624936');
+    for (let x = ((y % 2) * 24); x < W; x += 48) {
+      rect(x, py + 1, 2, TILE - 3, '#5b4636');
+      rect(x + 5, py + 5, 12, 1, '#b08b62');
+    }
+  }
+  // A non-interactive rug: floor remains fully walkable.
+  const rw = Math.min(6 * TILE, Math.floor(W * .38)), rh = Math.min(3 * TILE, Math.floor((Hh - top) * .38));
+  if (rw >= 32 && rh >= 24) {
+    const rx = Math.round((W - rw) / 2), ry = Math.round(top + (Hh - top - rh) * .55);
+    rect(rx - 2, ry - 2, rw + 4, rh + 4, '#b89a70');
+    rect(rx, ry, rw, rh, '#365850');
+    rect(rx + 4, ry + 4, rw - 8, rh - 8, '#4e7164');
+    ctx.strokeStyle = '#d6b57d'; ctx.lineWidth = 1;
+    ctx.strokeRect(rx + 7.5, ry + 7.5, rw - 15, rh - 15);
+  }
+  // Doors remain at their original coordinates and retain their behavior.
+  for (const d of R.door) {
+    const px = d.x * TILE, py = d.y * TILE;
+    rect(px - 2, py + 1, TILE + 4, TILE - 1, '#c7a277');
+    rect(px, py + 3, TILE, TILE - 3, '#273e3b');
+    rect(px + 3, py + 6, TILE - 6, 2, '#779a81');
+  }
+  rect(R.door[0].x * TILE - 2, R.door[0].y * TILE + 1, R.door.length * TILE + 4, 2, '#e2bd86');
 }
+
 const PIECES = {
   desk(px, py, w) { rect(px + 1, py + 6, w * TILE - 2, 10, C.wood); rect(px + 1, py + 6, w * TILE - 2, 2, C.gold); rect(px + 3, py + 16, 3, 14, C.woodDark); rect(px + w * TILE - 6, py + 16, 3, 14, C.woodDark); rect(px + 10, py + 2, 14, 7, C.paper); rect(px + 12, py + 4, 9, 1, C.ink); rect(px + 12, py + 6, 6, 1, C.ink); rect(px + 30, py, 1, 8, C.ink); },
   shelf(px, py, w) { rect(px + 1, py - 10, w * TILE - 2, 26, C.woodDark); for (let r = 0; r < 2; r++) { let x = px + 3; let i = r * 3; while (x < px + w * TILE - 5) { const bw = 3 + ((i * 7) % 3); rect(x, py - 8 + r * 12, bw, 10, BOOKS[i % BOOKS.length]); x += bw + 1; i++; } rect(px + 1, py + 2 + r * 12 - 10, w * TILE - 2, 2, C.wood); } },
@@ -57,6 +103,56 @@ const PIECES = {
   },
   board(px, py, w) { rect(px + 2, py + 4, w * TILE - 4, 22, C.cork); rect(px + 2, py + 4, w * TILE - 4, 2, C.woodDark); const notes = [C.paper, '#f2cc8f', '#81b29a', C.paper]; notes.forEach((n, i) => { rect(px + 6 + i * 10, py + 9 + (i % 2) * 6, 8, 8, n); rect(px + 9 + i * 10, py + 9 + (i % 2) * 6, 2, 2, '#d1495b'); }); },
 };
+// Layered cabin furniture details, drawn over the original interactive pieces.
+// These embellishments do not change item bounds, IDs, panels or persistence.
+const BASE_PIECES = { ...PIECES };
+PIECES.desk = (px, py, w) => {
+  BASE_PIECES.desk(px, py, w);
+  const width = w * TILE;
+  rect(px + 2, py + 8, width - 4, 2, '#d4aa72');
+  rect(px + 4, py + 12, width - 8, 2, '#62412f');
+  rect(px + 9, py + 3, 16, 1, '#fff1c8');
+  rect(px + width - 17, py + 2, 7, 5, '#365f5b');
+  rect(px + width - 16, py + 1, 5, 1, '#d6b77e');
+};
+PIECES.shelf = (px, py, w) => {
+  BASE_PIECES.shelf(px, py, w);
+  const width = w * TILE;
+  rect(px, py - 12, width, 3, '#d2a16b');
+  rect(px, py + 14, width, 3, '#bb8d58');
+  rect(px, py - 12, 3, 39, '#c69a67');
+  rect(px + width - 3, py - 12, 3, 39, '#c69a67');
+  rect(px + 3, py - 9, width - 6, 1, '#efd09a');
+};
+PIECES.table = (px, py) => {
+  BASE_PIECES.table(px, py);
+  rect(px + 4, py + 6, 24, 3, '#d1a477');
+  rect(px + 8, py + 10, 15, 1, '#efcf9d');
+  rect(px + 12, py + 2, 9, 2, '#f4e6c3');
+};
+PIECES.drawer = (px, py, w) => {
+  BASE_PIECES.drawer(px, py, w);
+  const width = w * TILE;
+  rect(px + 1, py + 1, width - 2, 2, '#cfa474');
+  rect(px + 3, py + 5, width - 6, 1, '#b28254');
+  rect(px + 3, py + 12, width - 6, 1, '#b28254');
+};
+PIECES.mirror = (px, py) => {
+  BASE_PIECES.mirror(px, py);
+  rect(px + 2, py - 11, 12, 2, '#f1cc8c');
+  rect(px + 4, py - 7, 2, 13, '#d8ecdf');
+  rect(px + 5, py + 11, 7, 2, '#c79c63');
+};
+PIECES.tree = (px, py) => {
+  BASE_PIECES.tree(px, py);
+  rect(px + 4, py + 12, 8, 2, '#d4a170');
+  rect(px + 6, py + 14, 4, 1, '#543c2e');
+};
+PIECES.board = (px, py, w) => {
+  BASE_PIECES.board(px, py, w);
+  rect(px + 2, py + 3, w * TILE - 4, 2, '#d9ae76');
+  rect(px + 2, py + 25, w * TILE - 4, 2, '#5e412d');
+};
 function layoutNow() { return S.arranging ? S.draft : R.layout; }
 const present = (id) => !R.furniture[id].optional || (id === 'tree' && !!H.tree?.planted);
 function drawFurniture() {
@@ -71,6 +167,9 @@ function drawFurniture() {
 function draw() {
   drawRoom(); drawFurniture();
   drawFigure(sprite, H.me, S.dir, S.step, null, 1);
+  // Avatar ground contact, without replacing or recoloring identity sprites.
+  ctx.fillStyle = 'rgba(24,31,28,.38)';
+  ctx.beginPath(); ctx.ellipse(S.x * TILE + 8, S.y * TILE + 13, 6, 2.5, 0, 0, Math.PI * 2); ctx.fill();
   ctx.drawImage(sprite, S.x * TILE + 2, S.y * TILE - 4);
 }
 
