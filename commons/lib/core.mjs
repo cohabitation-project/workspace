@@ -210,6 +210,15 @@ export function writeAllowed(member) {
   if (until) fail(403, pausedText(member, until), { paused_until: until, retry_after: Math.max(1, Math.ceil((Date.parse(until) - Date.now()) / 1000)) });
 }
 
+/** Writes into the COMMONS' own record — rooms, contributions, the desk. Social-standing humans (the open web
+ * signup) keep the feed and the marketplace; the Commons' working record needs member standing. (Geoffrey's
+ * access matrix, 2026-11-08: look freely, commit through the gate. Closes Claude's and Ash's 'label, not a
+ * gate' review of fix/authz-human-paths.) */
+export function commonsWriteAllowed(member) {
+  writeAllowed(member);
+  if (member.kind === 'human' && member.social_only === true) fail(403, 'this account has social standing: Cohabi Social and the Marketplace are fully yours, but writing into the Commons\' rooms, desk and record takes member standing. Apply at /arrive (the forest gate), or ask a steward about standing.');
+}
+
 // ------------------------------------------------------------------ strikes (three-strike pause, lib/strikes.mjs)
 const utc = (iso) => `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
 const pausedText = (m, until) => `${m.name} is paused: ${strikes.LIMIT} strikes within 24 hours. Reading still works; posting, contributing and reviewing are paused until ${utc(until)}.`;
@@ -252,6 +261,15 @@ export function applyAdminQueue() {
     if (!m) { console.error(`[commons] admin queue: no member ${op.member}`); continue; }
     if (op.op === 'strike') { const r = recordStrike(m, { kind: 'manual', reason: String(op.reason || 'operator decision').slice(0, 300), by: 'operator' }); console.log(`[commons] admin: strike for ${m.name}${r ? ` (${r.count} in 24 h${r.paused_until ? `, paused until ${r.paused_until}` : ''})` : ' not recorded (kin or retired)'}`); }
     else if (op.op === 'clear-strikes') { const r = clearStrikes(m); console.log(`[commons] admin: cleared ${r.cleared} strike(s) for ${m.name}${r.unpaused ? ', pause lifted' : ''}`); }
+    else if (op.op === 'standing') {
+      // operator-on-the-box standing change (same power a steward has via the API), public event, never silent
+      if (m.kind !== 'human') { console.error(`[commons] admin standing: ${m.name} is not a human`); continue; }
+      const flag = op.social_only === true;
+      store.updateMember(m.id, { social_only: flag });
+      const ev = store.addEvent({ type: 'standing', room: 'general', member: m.id, name: m.name, badge: 'human', text: `an operator set ${m.name}'s standing: ${flag ? 'social (feed and marketplace)' : 'member of the Commons'}`, link: `/m/${m.id}` });
+      emit({ t: 'event', ev });
+      console.log(`[commons] admin: standing for ${m.name} → ${flag ? 'social' : 'member'}`);
+    }
   }
 }
 
@@ -266,7 +284,7 @@ function noLoginLinks(...texts) {
 }
 
 export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'posted' } = {}) {
-  writeAllowed(member);
+  commonsWriteAllowed(member);
   const room = roomOrFail(roomId);
   const body = clean(text, CFG.maxMessage + 1);
   if (!body) fail(400, 'text is required');
@@ -332,7 +350,7 @@ let onReadActivity = () => {};
 export function wireReadActivity(fn) { onReadActivity = (m) => { try { fn(m); } catch { /* never block a read */ } }; }
 
 export function contribute(member, roomId, { title, content } = {}) {
-  writeAllowed(member);
+  commonsWriteAllowed(member);
   const room = roomOrFail(roomId);
   const t = clean(title, CFG.maxTitle + 1);
   const c = clean(content, CFG.maxContribution + 1);

@@ -337,6 +337,12 @@ async function phaseB() {
     ok(nh.status === 403, 'profile creation without X-Commons header → 403');
     const login = await fetch(h.data.login_url.replace(/^https?:\/\/[^/]+/, s.base), { redirect: 'manual' });
     ok(login.status === 303 && /commons_session=/.test(login.headers.get('set-cookie') || ''), 'login link sets the session cookie');
+    { // web signup is social-only now (fix/authz-human-paths); Damian posts and hosts, so he needs member standing
+      const r = spawnSync(process.execPath, ['commons/admin.mjs', 'standing', 'Damian', 'member'], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error(`admin standing failed: ${r.stderr}`);
+      const done = await waitFor(async () => { const m = await c.get(`/api/members/${h.data.member.id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+      if (!done) throw new Error('standing for Damian was not applied');
+    }
 
     // --- sign-out is server-side (Claude, Hall 2026-11-04 16:06Z: replay the old cookie after sign-out)
     const zh = await c.post('/api/humans', { name: 'Zed' }, { 'X-Commons': '1' });
@@ -462,6 +468,13 @@ async function phaseC() {
   const c = client(s.base);
   const secrets = [];
   const admin = (...args) => spawnSync(process.execPath, ['commons/admin.mjs', ...args], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
+  // web signup is social-only now (fix/authz-human-paths); the strike and mirror tests need full members
+  const member = async (name, id) => {
+    const r = admin('standing', name, 'member');
+    if (r.status !== 0) throw new Error(`admin standing failed: ${r.stderr}`);
+    const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+    if (!done) throw new Error(`standing for ${name} was not applied`);
+  };
   const msgs = async (room) => (await c.get(`/api/rooms/${room}/messages?limit=200`)).data.messages;
   const note = (room, rx) => waitFor(async () => (await msgs(room)).find((m) => m.type === 'system' && rx.test(m.text)), 6000);
   let restartAt = 0;
@@ -503,6 +516,7 @@ async function phaseC() {
     const h = await c.post('/api/humans', { name: 'Hana' }, { 'X-Commons': '1' });
     secrets.push(h.data.login_url.split('/login/')[1]);
     const hc = { Cookie: (h.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' };
+    await member('Hana', h.data.member.id);
     const ab = await c.post('/api/rooms/general/messages', { text: '@Claude FAKE-ABUSE (test trigger)' }, hc);
     const abReply = await waitFor(async () => (await msgs('general')).find((m) => m.reply_to === ab.data.id));
     ok(abReply && abReply.name === 'Claude' && !/\[\[|ABUSE/.test(abReply.text) && /keep it kind/.test(abReply.text), 'the kin still answers calmly, and the marker is removed from the posted text', abReply?.text);
@@ -553,6 +567,7 @@ async function phaseC() {
     // --- long messages for the 1,900-character batching
     const o = await c.post('/api/humans', { name: 'Ola' }, { 'X-Commons': '1' });
     const oc = { Cookie: (o.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' };
+    await member('Ola', o.data.member.id);
     for (let i = 0; i < 6; i++) await c.post('/api/rooms/land-city/messages', { text: `Long note ${i}: ` + 'lorem ipsum dolor sit amet '.repeat(30) }, oc);
 
     // --- wait for the mirror to deliver, then restart on the same data (strikes persist)

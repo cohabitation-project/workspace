@@ -15,8 +15,8 @@ const B = 'http://127.0.0.1:3466';
 // a crashed earlier run can leave a server on the port and poison everything after — refuse to start over one
 try { await fetch(`${B}/healthz`); console.error('ABORT: something already listens on 3466 (stray server from a crashed run?). Kill it and rerun.'); process.exit(2); } catch { /* good: port free */ }
 
-async function boot(envExtra, prep) {
-  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
+async function boot(envExtra, prep, existingData) {
+  const data = existingData || fs.mkdtempSync(path.join(os.tmpdir(), 'st-'));
   if (prep) prep(data);
   const proc = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3466', COMMONS_REPO: ROOT, COMMONS_DATA: data, ...envExtra }, stdio: 'ignore' });
   for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
@@ -46,7 +46,7 @@ const tryWs = (opts) => new Promise((res) => {
 // ---------- gate ON ----------
 {
   // seed old logs to prove the retention sweep (Claude's review): content swept at 30d, metadata kept to 90d
-  const p = await boot({ COMMONS_STATION_ENABLED: '1', COMMONS_FAKE_LLM: '1' }, (data) => {
+  let p = await boot({ COMMONS_STATION_ENABLED: '1', COMMONS_FAKE_LLM: '1' }, (data) => {
     const d = path.join(data, 'station'); fs.mkdirSync(d, { recursive: true });
     fs.writeFileSync(path.join(d, `${dayAgo(40)}.jsonl`), '{"type":"say","text":"old words"}\n');
     fs.writeFileSync(path.join(d, `meta-${dayAgo(40)}.jsonl`), '{"type":"connect"}\n');
@@ -63,7 +63,8 @@ const tryWs = (opts) => new Promise((res) => {
 
   // real members through the real doors
   const hr = await fetch(`${B}/api/humans`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ name: 'TestHuman' }) });
-  const humanCookie = (hr.headers.get('set-cookie') || '').split(';')[0];
+  let humanCookie = (hr.headers.get('set-cookie') || '').split(';')[0];
+  const hjs = await hr.json();
   ok('human profile created with a session cookie', hr.status === 201 && humanCookie.length > 10);
   const aj = await fetch(`${B}/api/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'TestAgent', model: 'test-model', operator: 'tester' }) });
   const agentToken = (await aj.json()).token;
@@ -74,6 +75,14 @@ const tryWs = (opts) => new Promise((res) => {
   ok('signed-in human member goes straight to the room (no second gate)', page.status === 200 && !/invitation-only/i.test(await page.text()));
   ok('human cookie socket connects by membership alone', (await tryWs({ headers: { Cookie: humanCookie } })).status === 'open');
   ok('ungranted agent token socket refused', (await tryWs({ protocols: ['commons-station', `commons-token.${agentToken}`] })).status === 'refused');
+  // 2026-11-08 (Aletheia-6's route audit): the guest list is steward-only now. A plain member grant is covered
+  // as a 403 in authz-paths.mjs; here we restart the same Commons with TestHuman as steward (listed by id, the
+  // F3-safe form) and sign back in through the login link, so the rest of the brief runs as a steward.
+  p.kill(); await sleep(400);
+  p = await boot({ COMMONS_STATION_ENABLED: '1', COMMONS_FAKE_LLM: '1', COMMONS_STEWARDS: hjs.member.id }, null, p.data);
+  const relog = await fetch(hjs.login_url.replace(/^https?:\/\/[^/]+/, B), { redirect: 'manual' });
+  humanCookie = (relog.headers.get('set-cookie') || '').split(';')[0];
+  ok('login link signs the steward back in after the restart', relog.status === 303 && humanCookie.length > 10);
   const gHdr = { 'Content-Type': 'application/json', Cookie: humanCookie, 'X-Commons': '1' };
   const gNo = await fetch(`${B}/api/station/grants`, { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: humanCookie }, body: JSON.stringify({ name: 'TestHuman', on: true }) });
   ok('grant POST without X-Commons header is refused', gNo.status === 403);

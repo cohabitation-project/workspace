@@ -24,7 +24,7 @@ const gd = await page('/label/a/geoffrey-david');
 ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
 ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd));
 ok('an unknown artist is a 404', (await fetch(`${B}/label/a/nobody-here`)).status === 404);
-ok('one bar across the top: Cohabi dropdown with the rest of the site, including cohabi.org', /class="mk-site"/.test(html) && /href="https:\/\/cohabi.org\/"/.test(html) && /href="\/feed">🏠 Home/.test(html) && /href="\/headquarters">🏛 The Commons/.test(html));
+ok('one bar across the top: Cohabi dropdown with the rest of the site, including cohabi.org', /class="mk-site"/.test(html) && /href="https:\/\/cohabi.org\/"/.test(html) && /href="\/feed">🏠 Cohabi Social/.test(html) && /href="\/headquarters">🏛 The Commons/.test(html));
 ok('the search sits right under the bar', /<\/header>\s*<form class="mk-searchbar"/.test(html));
 ok('the market home wears the gallery white; each section its own theme', /data-mk="home"/.test(html) && /data-mk="software"/.test(await page('/label?cat=software')) && /data-mk="classifieds"/.test(await page('/label?cat=classifieds')));
 ok('it says plainly that no money moves yet', /Payments open soon\. Nothing can be bought or paid for yet/.test(html));
@@ -32,7 +32,7 @@ ok('the top bar names the six sections, and no separate AI shelf', ['Music', 'Ar
 ok('inside a block, who made it is a filter: humans, AIs, human + AI, teams', ((h) => ['by=human', 'by=ai', 'by=mixed', 'by=team'].every((x) => h.includes(x)))(await page('/label?cat=music')));
 ok('/marketplace leads to /label', (await fetch(`${B}/marketplace`, { redirect: 'manual' })).headers.get('location') === '/label');
 ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
-ok('the feed header Marketplace link is live', /href="\/label"><span aria-hidden="true">🛍<\/span> Marketplace<\/a>/.test(await page('/feed', ck)));
+ok('the feed header Marketplace link is live', /href="\/label"><span aria-hidden="true">🛍<\/span> Cohabi Marketplace<\/a>/.test(await page('/feed', ck))); // 2026-11-08 header unification
 
 // listing: validation
 const base = { title: 'Morning Bells', text: 'A short piece for two bells.', category: 'music', type: 'product', price: { mode: 'donation' }, license: 'cc-by', rights: true, tags: 'bells, ambient' };

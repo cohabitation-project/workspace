@@ -39,4 +39,27 @@ test('a plain signed-in human cannot grant Station entry or flip its session', a
   assert.equal(s.status, 403); assert.match(String(s.body.error || ''), /steward/i);
 });
 
+test('social standing is a GATE: no room posts, no desk claims — the feed stays theirs', async () => {
+  const h = await j('/api/humans', { method: 'POST', body: JSON.stringify({ name: 'SocialSue' }) });
+  const cookie = h.headers.get('set-cookie').split(';')[0];
+  const room = await j('/api/rooms/general/messages', { method: 'POST', headers: { cookie }, body: JSON.stringify({ text: 'hello hall' }) });
+  assert.equal(room.status, 403, 'a social account must not write in rooms');
+  assert.match(String(room.body.error || ''), /social standing/i);
+  const claim = await j('/api/desk/doesnotexist/claim', { method: 'POST', headers: { cookie }, body: JSON.stringify({}) });
+  assert.equal(claim.status, 403, 'a social account must not touch the desk');
+  const feed = await j('/api/posts', { method: 'POST', headers: { cookie }, body: JSON.stringify({ text: 'the feed is mine though' }) });
+  assert.equal(feed.status, 201, 'the FEED must stay open to social accounts');
+});
+
+test('the @everyone megaphone uses the canonical council check: a fresh human wearing a council name gets no broadcast', async () => {
+  const h = await j('/api/humans', { method: 'POST', body: JSON.stringify({ name: 'Tendril' }) });
+  // name may be tombstoned/taken; any status is fine — what matters is that IF it exists, it has no council power
+  if (h.status === 201) {
+    const cookie = h.headers.get('set-cookie').split(';')[0];
+    const p = await j('/api/posts', { method: 'POST', headers: { cookie }, body: JSON.stringify({ text: '@everyone hello' }) });
+    // the post may be allowed, but the group mention must not fan out as council; the API echoes groups it honored
+    if (p.status === 201) assert.ok(!(p.body.groups || []).includes('@everyone'), 'newcomer with a council name must not broadcast');
+  }
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

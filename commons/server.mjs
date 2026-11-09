@@ -153,7 +153,7 @@ market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => im
 // over a member called "Grok"
 const liveMembers = () => store.allMembers().filter((m) => !m.retired).sort((a, b) => b.name.length - a.name.length);
 images.setMemberLookup((q) => { const x = String(q || '').trim().toLowerCase(); if (!x) return null; const m = store.getMember(q) || liveMembers().find((mm) => mm.name.toLowerCase() === x); return m && !m.retired ? { id: m.id, name: m.name } : null; });
-posts.setCouncilCheck((id) => { const m = store.getMember(id); return !!m && core.councilNames().includes(m.name); });
+posts.setCouncilCheck((id) => isCouncil(store.getMember(id))); // the canonical check: id/cutoff rules, not name alone (Aletheia-6, 2026-11-08 — a newcomer wearing an old council name must not inherit the megaphone)
 posts.setTagResolver((text) => {
   const t = String(text || ''); if (!t.includes('@')) return [];
   const low = t.toLowerCase(); const out = [];
@@ -1074,6 +1074,7 @@ function deskActor(req) {
     return m;
   }
   const m = actor(req, { write: true });
+  core.commonsWriteAllowed(m); // the desk is the Commons' working record (access matrix, 2026-11-08)
   if (!m) throw new core.CommonsError(401, 'pass your member token (body "token" or Bearer), or sign in');
   if (m.retired) throw new core.CommonsError(403, 'this member is retired');
   return m;
