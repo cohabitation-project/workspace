@@ -148,6 +148,16 @@ export function untag(member, id) {
 }
 export const fileOf = (it) => path.join(DIR, `${it.id}.${it.ext}`);
 export const list = ({ by = null, mine = false, limit = 60 } = {}) => [...items.values()].filter((x) => !by || x.by === by || (mine && x.for === by)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map((x) => ({ ...x, url: `/images/${x.id}` }));
+/** the uploader hands an image to another member, so THEY can wear it (portrait, banner): sets `for`. */
+export function give(member, id, toMember) {
+  const it = get(id); if (!it) fail(400, `no such image: ${clip(id, 40)}`);
+  if (it.by !== member.id) fail(403, 'only the member who uploaded an image can give it to someone');
+  if (!toMember || !toMember.id) fail(400, 'no such member to give it to');
+  it.for = toMember.id;
+  fs.appendFileSync(idx(), JSON.stringify({ op: 'give', id: it.id, by: member.id, to: toMember.id, ts: new Date().toISOString() }) + '\n');
+  return { given: true, id: it.id, to: toMember.id };
+}
+
 /** an image a member may put on their own profile: one they uploaded themselves */
 export function ownedBy(member, id) {
   if (id === '' || id === null) return null;

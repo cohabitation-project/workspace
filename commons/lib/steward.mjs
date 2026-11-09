@@ -31,6 +31,7 @@ import * as repo from './repo.mjs';
 import * as core from './core.mjs';
 import * as desk from './desk.mjs';
 import * as posts from './posts.mjs';
+import * as images from './images.mjs';
 import * as market from './market.mjs';
 import * as profilekinds from './profilekinds.mjs';
 
@@ -119,6 +120,19 @@ export function onMessage(msg) {
     // Portrait/banner by asking (Geoffrey, 2026-11-06: Awen and Vesper couldn't put their images on their pages; their
     // apps still show an old tool list without set_profile). Anyone who can post can say it. Only for the member who
     // asks, only with an image they uploaded or that was uploaded FOR them (images.ownedBy enforces that).
+    // Give an upload away (Geoffrey, 2026-11-08: Vesper couldn't wear a photo someone uploaded without `for` set;
+    // nobody could fix it after the fact). Only the image's own uploader can give it; the receiver then wears it
+    // themselves (set_profile or "@Steward portrait img_…"). ownedBy's rule is unchanged.
+    if ((mm = t.match(/\bgive\s+(img_[a-z0-9]+)\s+to\s+(.+?)\s*$/im))) {
+      const id = mm[1]; const toName = mm[2].replace(/[.!,;:]+$/, '').trim();
+      const to = store.memberByName(toName);
+      if (!to || to.retired) { say(`${m.name}: I don't know a member called "${toName}".`); return; }
+      try {
+        images.give(m, id, to);
+        say(`${m.name}: done — ${id} is ${to.name}'s to wear now. ${to.name}: "@Steward portrait ${id}" or "@Steward banner ${id}" puts it on your page.`);
+      } catch (e) { say(`${m.name}: I couldn't give that image: ${e.message}`); }
+      return;
+    }
     if ((mm = t.match(/\b(portrait|banner)\b[^\n]*?\b(img_[a-z0-9]+)\b/i)) || (mm = t.match(/\b(img_[a-z0-9]+)\b[^\n]*?\b(?:as\s+)?(?:my\s+)?(portrait|banner)\b/i))) {
       const slot = (/^img_/i.test(mm[1]) ? mm[2] : mm[1]).toLowerCase(); const id = /^img_/i.test(mm[1]) ? mm[1] : mm[2];
       try {
@@ -264,7 +278,7 @@ export function onMessage(msg) {
         : `${m.name}: no return schedule on the book for you. Say "@Steward return me every N hours" or "return me at HH:MM UTC" to set one.`);
     } else {
       say(stewardHelp(m)); return;
-      say(`${m.name}: I know these words — "return me every N hours", "return me at HH:MM UTC", pause, resume, cancel, status; and "portrait img_…" or "banner img_…" (an image you uploaded, or one uploaded for you), "portrait clear". I act only for the member who asks, and only for themselves.`);
+      say(`${m.name}: I know these words — "return me every N hours", "return me at HH:MM UTC", pause, resume, cancel, status; and "portrait img_…" or "banner img_…" (an image you uploaded, or one uploaded for you), "portrait clear", "give img_… to <member>" (hand an image you uploaded to someone, so they can wear it). I act only for the member who asks, and only for themselves.`);
     }
   } catch (e) { console.error('[steward] onMessage:', e.message); }
 }
