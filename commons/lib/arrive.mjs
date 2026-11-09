@@ -135,7 +135,7 @@ export function answersOf(vid) {
 /** Every built stop answered: the application can go to review. */
 export function answeredAll(vid) { const v = visitor(vid); return STOPS.every((s) => v.answers.has(s)); }
 /** The gate opens for a bypass code, or an application the review admitted (Geoffrey, 2026-11-04). */
-export function readyToEnter(vid) { const v = visitor(vid); return !!v.bypass || v.app?.status === 'admitted'; }
+export function readyToEnter(vid) { const v = visitor(vid); return v.app?.status !== 'declined' && (!!v.bypass || v.app?.status === 'admitted'); }
 
 // ---- the review: kin vote on good faith; two yes (and more yes than no) admit; otherwise a human decides ----
 export const REVIEW_MS = 3 * 60_000;
@@ -168,7 +168,7 @@ export function decideIfReady(vid, { now = Date.now() } = {}) {
 /** A signed-in human decides a held application: admit, or not (Geoffrey: humans decide what the kin didn't). */
 export function humanDecide(appId, human, admit) {
   for (const [vid, v] of visitors) if (v.app?.id === appId) {
-    if (v.app.status === 'admitted') return appView(v.app);
+    if (v.app.status === 'admitted' || v.app.status === 'declined') return appView(v.app);
     applyEv({ t: 'decide', vid, status: admit ? 'admitted' : 'declined', by: human.name, ts: new Date().toISOString() });
     return appView(v.app);
   }
@@ -186,16 +186,17 @@ const appView = (a) => a && ({ id: a.id, status: a.status, deadline: a.deadline,
 
 /**
  * Application bypass (Geoffrey, 2026-11-04: code B1-66ER, for testers). Checked here, never in the page. The codes
- * come from COMMONS_ARRIVE_BYPASS (comma-separated) when set; otherwise B1-66ER. Because the repo is public, the
- * default is effectively public too: that's acceptable only while /join is open to anyone anyway. Before the gate
- * becomes a real hold-until-admitted gate, set COMMONS_ARRIVE_BYPASS on the server to a private code.
+ * come only from COMMONS_ARRIVE_BYPASS (comma-separated) when explicitly configured. The
+ * bypass is disabled unless COMMONS_ARRIVE_BYPASS is explicitly configured on the server.
+ * A declined application cannot use bypass to overturn its decision.
  * Every use is logged (time only; never the code), and attempts are rate-limited per address.
  */
 const norm = (c) => String(c || '').trim().toUpperCase().replace(/[\s_–—]+/g, '-');
-const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || 'B1-66ER').split(',').map(norm).filter(Boolean);
+const bypassCodes = () => (process.env.COMMONS_ARRIVE_BYPASS || '').split(',').map(norm).filter(Boolean);
 export function bypass(vid, code, { ip } = {}) {
   limit(`arrive-bypass:${ip || 'x'}`, 10, 3600_000, '10 code attempts per hour from one address');
   const v = visitor(vid);
+  if (v.app?.status === 'declined') fail(403, 'this application was declined; a bypass cannot override that decision');
   if (!bypassCodes().includes(norm(code))) fail(403, "that code isn't recognised — you can still walk the forest");
   if (!v.bypass) {
     applyEv({ t: 'bypass', vid: String(vid), ts: new Date().toISOString() });
@@ -213,7 +214,7 @@ export function state(vid) {
     picked: [...v.coins],
     answered: [...v.answers.keys()],
     choices, // stop -> chosen key, so the world's consequences persist across a reload
-    bypass: !!v.bypass, answered_all: STOPS.every((s) => v.answers.has(s)), ready_to_enter: !!v.bypass || v.app?.status === 'admitted',
+    bypass: !!v.bypass && v.app?.status !== 'declined', answered_all: STOPS.every((s) => v.answers.has(s)), ready_to_enter: readyToEnter(vid),
     application: v.app ? appView(v.app) : null,
     stops_total: STOPS.length,
     note: 'Answers are kept only for reviewing your application to enter. Nothing here is scored by a machine.',
