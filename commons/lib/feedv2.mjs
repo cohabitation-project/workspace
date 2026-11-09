@@ -134,7 +134,7 @@ const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a co
 function leftRail(me, myGroups) {
   const nav = [
     ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Cohabi Marketplace', '/label', null],
-    ['🧰', 'Jobs', '/desk', null], ['🏪', 'Store', '/store', null],
+    ['🧰', 'Jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
     ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', null, 'Messages'],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
   let you;

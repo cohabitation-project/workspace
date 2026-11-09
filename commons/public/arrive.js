@@ -741,7 +741,7 @@ function showClaimForm() {
       const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
       try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
       showDialog('Your coins', `${j.coins_received} Cohabi Coins are in your wallet. ${j.answers_kept_as_private_journal ? 'Your answers are in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
-        '<div class="copyrow"><a class="btn" href="/store">visit the store</a> <a class="btn ghost" href="/house">go to your house</a></div>');
+        '<div class="copyrow"><a class="btn" href="/house">go to your house</a> <a class="btn ghost" href="/headquarters">see Headquarters</a></div>');
     } catch (e) { $('#gate-msg').textContent = e.message; $('#gate-claim').disabled = false; }
   });
 }
@@ -806,9 +806,10 @@ function updateHud(serverCoins) {
 }
 
 // ---------------------------------------------------------------- boot
-$('#age-yes').addEventListener('click', async () => {
-  $('#gatekeep').remove();
+async function beginWalk() {
   // How this works — so nobody is confused about what the walk IS (Geoffrey, playtest 4).
+  // A member walking their front yard again skips the application framing entirely.
+  if (!S.member) {
   const how = document.createElement('div'); how.className = 'overlay';
   how.innerHTML = `<div class="card"><h2>How entering the Commons works</h2>
     <p><strong>1. Walk the forest.</strong> Strangers wait along the paths, each with one question. There are no
@@ -836,8 +837,9 @@ $('#age-yes').addEventListener('click', async () => {
     } catch (e) { msg.textContent = e.message; }
   });
   await new Promise((r) => $('#how-ok').addEventListener('click', () => { how.remove(); r(); }));
+  }
   await ensureVisitor().catch(() => toast('The forest ledger is unreachable — you can walk, but coins and answers won\'t keep.'));
-  try { const r = await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }); if (r.ok) S.member = await r.json(); } catch { /* a visitor */ }
+  if (!S.member) { try { const r = await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }); if (r.ok) S.member = await r.json(); } catch { /* a visitor */ } }
   const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
   const ov = document.createElement('div'); ov.className = 'overlay';
   ov.innerHTML = `<div class="card"><h2>Choose a figure for the walk</h2>
@@ -857,7 +859,27 @@ $('#age-yes').addEventListener('click', async () => {
     hint.textContent = matchMedia('(pointer: coarse)').matches ? 'Tap where you want to walk. Tap a stranger to talk.' : 'Arrow keys or WASD to walk · Enter to talk · Esc closes';
     setTimeout(() => { hint.hidden = true; }, 6000);
   });
-});
+}
+
+$('#age-yes').addEventListener('click', () => { $('#gatekeep')?.remove(); beginWalk(); });
+
+// Session-aware gate (Geoffrey hit this live, 2026-11-08; Aletheia-6 m_mw8q1k6w2gfee06c): an admitted member
+// returning to /arrive must not meet the 18+ overlay or the application story again. Their forest file was
+// deleted on entry BY DESIGN (privacy), so there is no progress to restore — there is a different front door.
+(async () => {
+  try { const r = await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }); if (r.ok) S.member = await r.json(); } catch { /* a visitor: the normal gate stands */ }
+  if (!S.member) return;
+  const card = document.querySelector('#gatekeep .card'); if (!card) return; // they already clicked through
+  const name = String(S.member.name || '').replace(/[<>&]/g, '');
+  card.innerHTML = `<h1>The forest knows you${name ? ', ' + name : ''}.</h1>
+    <p>You're already a member of the Commons — there's nothing here to apply for, and no questions to answer
+    again. The forest stays your front yard: walk it for the quiet any time. The strangers will repeat their
+    stories; that's all they know.</p>
+    <div class="copyrow"><button class="btn" id="member-walk" type="button">walk the forest</button>
+    <a class="btn ghost" href="/headquarters">back to Headquarters</a>
+    <a class="btn ghost" href="/house">your house</a></div>`;
+  document.getElementById('member-walk').addEventListener('click', () => { $('#gatekeep')?.remove(); beginWalk(); });
+})();
 
 resize();
 (function loop(t) { render(t || 0); requestAnimationFrame(loop); })();
