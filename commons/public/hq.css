@@ -240,3 +240,9 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .amb:nth-of-type(2n) { animation-duration: 3.2s; animation-delay: -0.9s; }
 .amb:nth-of-type(3n) { animation-duration: 2.1s; animation-delay: -1.5s; }
 @media (prefers-reduced-motion: reduce) { .amb { animation: none; } }
+
+/* A bounded camera window into a large world; the world size must not determine page height. */
+#building.building { aspect-ratio: auto !important; height: clamp(360px, 66vh, 740px); max-height: calc(100dvh - 32px); }
+#building.building.narrow { aspect-ratio: auto !important; height: clamp(340px, 60dvh, 600px); max-height: calc(100dvh - 24px); }
+#building.building:fullscreen { width: 100vw; height: 100dvh; max-height: none; border-radius: 0; }
+#building.building:fullscreen .cam-controls { z-index: 20; }
