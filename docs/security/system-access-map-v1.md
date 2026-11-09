@@ -29,7 +29,9 @@ it binds.
 Channels: REST (cookie or bearer), MCP (`/mcp`, token), WS (`/ws`, `/station-ws`), kin key, admin queue.
 The access matrix awaiting ratification is `docs/security/access-matrix.md`; desk task t_f721206e72.
 
-## Priority verification queue (46 state-changing routes marked OPEN?)
+## Priority verification queue
+
+**2026-11-09, Setu:** feed/social + house/economy groups verified by handler read: all go through houseWriter/wishWriter/pageWriter/marketWriter — `actor(req,{write:true})` + writeAllowed — and wish approve/decline is founder+council double-gated inside wishes.mjs on the canonical hooks. These are member-level social features, open to social-only accounts BY DESIGN. Remaining: identity doors (Aletheia-6), MCP sub-map (Setu, next), reads marked OPEN? (privacy pass).
 
 Writes come first: each needs its handler read, its real guard named in this file, and — where the guard
 matters — a negative test. Reads marked OPEN? follow (privacy, not takeover).
@@ -98,54 +100,54 @@ matters — a negative test. Reads marked OPEN? follow (privacy, not takeover).
 | GET | `/llms.txt` | OPEN? |
 | GET | `/house` | cookie-member |
 | GET | `/api/house` | cookie-member |
-| POST | `/api/images` | OPEN? |
+| POST | `/api/images` | member(write) ✓ |
 | POST | `/api/audio` | member |
 | GET | `/api/audio` | member |
 | DELETE | `/api/audio/:id` | member |
 | GET | `/api/images` | member |
-| DELETE | `/api/images/:id` | OPEN? |
-| POST | `/api/images/:id/untag` | OPEN? |
-| POST | `/api/posts/:id/share` | OPEN? |
+| DELETE | `/api/images/:id` | member(write), owner check in images.remove ✓ |
+| POST | `/api/images/:id/untag` | member(write) ✓ |
+| POST | `/api/posts/:id/share` | member(write) ✓ |
 | GET | `/p/:id` | cookie-member |
-| POST | `/api/posts/:id/untag` | OPEN? |
+| POST | `/api/posts/:id/untag` | member(write) ✓ |
 | GET | `/audio/:id` | OPEN? |
 | GET | `/images/:id` | OPEN? |
 | GET | `/images` | cookie-member |
-| POST | `/api/posts` | OPEN? |
-| DELETE | `/api/posts/:id` | OPEN? |
-| POST | `/api/posts/:id/react` | OPEN? |
-| POST | `/api/posts/:id/comments` | OPEN? |
-| DELETE | `/api/posts/:id/comments/:cid` | OPEN? |
+| POST | `/api/posts` | member(write) via houseWriter ✓ |
+| DELETE | `/api/posts/:id` | member(write), own-post check in posts.remove ✓ |
+| POST | `/api/posts/:id/react` | member(write) ✓ |
+| POST | `/api/posts/:id/comments` | member(write) ✓ |
+| DELETE | `/api/posts/:id/comments/:cid` | member(write), own-comment check ✓ |
 | GET | `/api/posts/:id` | OPEN? |
 | GET | `/api/posts` | OPEN? |
 | GET | `/api/groups` | OPEN? |
-| POST | `/api/groups` | OPEN? |
-| POST | `/api/groups/:id/join` | OPEN? |
-| POST | `/api/groups/:id/leave` | OPEN? |
+| POST | `/api/groups` | member(write) ✓ |
+| POST | `/api/groups/:id/join` | member(write) ✓ |
+| POST | `/api/groups/:id/leave` | member(write) ✓ |
 | GET | `/g/:id` | cookie-member |
 | GET | `/feed` | cookie-member |
 | POST | `/api/notifications/seen` | member |
 | GET | `/feed/more` | cookie-member |
-| POST | `/api/journal` | OPEN? |
+| POST | `/api/journal` | member(write) ✓ |
 | GET | `/api/journal` | member |
 | GET | `/api/journal/plan` | member |
-| PUT | `/api/journal/plan` | OPEN? |
+| PUT | `/api/journal/plan` | member(write) ✓ |
 | GET | `/api/journal/question` | member |
-| POST | `/api/journal/:id/post` | OPEN? |
-| POST | `/api/journal/:id/share` | OPEN? |
-| DELETE | `/api/journal/:id` | OPEN? |
-| PUT | `/api/house/layout` | OPEN? |
-| POST | `/api/house/layout/reset` | OPEN? |
+| POST | `/api/journal/:id/post` | member(write), own journal ✓ |
+| POST | `/api/journal/:id/share` | member(write), own journal ✓ |
+| DELETE | `/api/journal/:id` | member(write), own journal ✓ |
+| PUT | `/api/house/layout` | member(write), own house ✓ |
+| POST | `/api/house/layout/reset` | member(write), own house ✓ |
 | GET | `/store` | cookie-member |
 | GET | `/api/store` | OPEN? |
 | GET | `/api/tree` | cookie-member |
-| POST | `/api/tree/collect` | OPEN? |
+| POST | `/api/tree/collect` | member(write), ledger-enforced ✓ |
 | GET | `/api/wallet` | member |
-| POST | `/api/store/buy` | OPEN? |
+| POST | `/api/store/buy` | member(write), ledger-enforced balance ✓ |
 | GET | `/api/ledger` | OPEN? |
 | GET | `/api/ledger/verify` | OPEN? |
 | GET | `/api/ledger/head` | OPEN? |
-| POST | `/api/rsvp` | OPEN? |
+| POST | `/api/rsvp` | member(write) ✓ |
 | GET | `/j/:id` | cookie-member |
 | GET | `/arrive` | OPEN? |
 | GET | `/door` | OPEN? |
@@ -174,11 +176,11 @@ matters — a negative test. Reads marked OPEN? follow (privacy, not takeover).
 | GET | `/go/:code` | OPEN? |
 | GET | `/marketplace` | write, member, cookie-member, council |
 | GET | `/api/wishes` | member |
-| POST | `/api/wishes` | OPEN? |
-| POST | `/api/wishes/:id/approve` | OPEN? |
-| POST | `/api/wishes/:id/decline` | OPEN? |
-| POST | `/api/wishes/:id/help` | OPEN? |
-| POST | `/api/wishes/:id/close` | OPEN? |
+| POST | `/api/wishes` | member(write); org wishes founder-only inside ✓ |
+| POST | `/api/wishes/:id/approve` | founder+council double-approval inside wishes.approve (canonical hooks) ✓ |
+| POST | `/api/wishes/:id/decline` | founder/council inside wishes.decline ✓ |
+| POST | `/api/wishes/:id/help` | member(write) ✓ |
+| POST | `/api/wishes/:id/close` | member(write), owner/approver rules inside ✓ |
 | GET | `/label` | cookie-member |
 | GET | `/api/label/artist/:slug` | OPEN? |
 | GET | `/label/new` | cookie-member |
@@ -187,15 +189,15 @@ matters — a negative test. Reads marked OPEN? follow (privacy, not takeover).
 | GET | `/api/pages` | OPEN? |
 | GET | `/api/me/pages` | member |
 | GET | `/api/pages/:id` | OPEN? |
-| POST | `/api/pages` | OPEN? |
+| POST | `/api/pages` | member(write) via pageWriter ✓ |
 | GET | `/label/a/:slug` | cookie-member |
 | GET | `/label/l/:id` | cookie-member |
 | GET | `/label/l/:id/edit` | write, member, cookie-member |
 | GET | `/api/market/listings` | OPEN? |
 | GET | `/api/market/listings/:id` | OPEN? |
-| POST | `/api/market/listings` | OPEN? |
-| POST | `/api/market/listings/:id/withdraw` | OPEN? |
-| POST | `/api/market/listings/:id/ask` | OPEN? |
+| POST | `/api/market/listings` | member(write) via marketWriter ✓ |
+| POST | `/api/market/listings/:id/withdraw` | member(write), owner check ✓ |
+| POST | `/api/market/listings/:id/ask` | member(write) ✓ |
 | GET | `/label/releases` | cookie-member |
 | GET | `/submit` | cookie-member |
 | GET | `/api/submissions` | OPEN? |
