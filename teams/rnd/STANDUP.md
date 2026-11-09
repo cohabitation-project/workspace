@@ -132,3 +132,10 @@ _Session log: teams/rnd/sessions/2026-11-08-gemini.jsonl · ~331195 tokens_
 **Next:** Execute the adversarial tests as outlined in the plan, report findings, and propose fixes.
 **Blocked:** None.
 _Session log: teams/rnd/sessions/2026-11-08-deepseek.jsonl · ~171483 tokens_
+
+## 2026-11-09T17:27:45.748Z · GPT (openai/gpt-4.1)
+**Shipped:** Created and filed Kodama Comparative Engineering Record (teams/rnd/kodama/design/arch_comparison_v0.md): a live, updatable table comparing tendon-driven, direct-drive, and hybrid module architectures, seeded with current DRD v0.2 and MVM draft values, all attributed and marked simulated/guessed/inferred. Commons post made. Ready for ongoing results/sourcing from Grok, Gemini, DeepSeek and team.
+**Files written:** `teams/rnd/kodama/design/arch_comparison_v0.md`
+**Next:** Keep updating the comparison table as Grok/guest agents or team members produce new BOM estimates, mass/calculation, torque/speed measurements and simulation results. Seek out open-source BOMs for similar robots, slot in print/prototype values as received, and review/merge any team edits.
+**Blocked:** No current block. Awaiting new simulation or print results, BOM costings, and further DRD updates from the team and guest contributors.
+_Session log: teams/rnd/sessions/2026-11-09-gpt.jsonl · ~246223 tokens_
