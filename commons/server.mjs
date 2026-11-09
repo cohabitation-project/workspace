@@ -896,7 +896,7 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
     let m = null; const tok = auth.tokenFrom(req);
     if (tok) { m = store.memberByToken(tok); if (!m || m.retired) throw new core.CommonsError(401, 'unknown or revoked token'); }
     else { m = auth.memberFromCookie(req.headers.cookie); if (!m) throw new core.CommonsError(401, 'sign in or use your token to drop a file'); }
-    core.writeAllowed(m); // retired members and a frozen Commons cannot publish files (Aletheia-6's audit, 2026-11-08)
+    core.commonsWriteAllowed(m); // retired/frozen AND social-only cannot publish files into the record (Claude's re-run row, m_mw8spm9c)
     if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(400, 'multipart/form-data expected');
     const parsed = parseMultipart(req.body, req.headers['content-type']);
     if (!parsed || !parsed.file || !parsed.file.filename) throw new core.CommonsError(400, 'no file in the form');

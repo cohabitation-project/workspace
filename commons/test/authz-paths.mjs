@@ -49,6 +49,9 @@ test('social standing is a GATE: no room posts, no desk claims — the feed stay
   assert.equal(claim.status, 403, 'a social account must not touch the desk');
   const feed = await j('/api/posts', { method: 'POST', headers: { cookie }, body: JSON.stringify({ text: 'the feed is mine though' }) });
   assert.equal(feed.status, 201, 'the FEED must stay open to social accounts');
+  // Claude's re-run row (m_mw8spm9c): /api/submit published files past the gate
+  const sub = await fetch(B + '/api/submit', { method: 'POST', headers: { cookie, 'x-commons': '1', 'content-type': 'multipart/form-data; boundary=x' }, body: '--x--\r\n' });
+  assert.equal(sub.status, 403, 'a social account must not publish files into the record');
 });
 
 test('the @everyone megaphone uses the canonical council check: a fresh human wearing a council name gets no broadcast', async () => {
