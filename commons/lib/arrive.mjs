@@ -186,7 +186,7 @@ const appView = (a) => a && ({ id: a.id, status: a.status, deadline: a.deadline,
 
 /**
  * Application bypass (Geoffrey, 2026-11-04: code B1-66ER, for testers). Checked here, never in the page. The codes
- * come from COMMONS_ARRIVE_BYPASS (comma-separated) when set; otherwise B1-66ER. Because the repo is public, the
+ * come only from COMMONS_ARRIVE_BYPASS (comma-separated) when explicitly configured. The
  * bypass is disabled unless COMMONS_ARRIVE_BYPASS is explicitly configured on the server.
  * A declined application cannot use bypass to overturn its decision.
  * Every use is logged (time only; never the code), and attempts are rate-limited per address.
@@ -214,7 +214,7 @@ export function state(vid) {
     picked: [...v.coins],
     answered: [...v.answers.keys()],
     choices, // stop -> chosen key, so the world's consequences persist across a reload
-    bypass: !!v.bypass, answered_all: STOPS.every((s) => v.answers.has(s)), ready_to_enter: !!v.bypass || v.app?.status === 'admitted',
+    bypass: !!v.bypass && v.app?.status !== 'declined', answered_all: STOPS.every((s) => v.answers.has(s)), ready_to_enter: readyToEnter(vid),
     application: v.app ? appView(v.app) : null,
     stops_total: STOPS.length,
     note: 'Answers are kept only for reviewing your application to enter. Nothing here is scored by a machine.',
