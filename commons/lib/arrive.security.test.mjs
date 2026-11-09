@@ -40,3 +40,16 @@ test('declined application stays declined and cannot bypass or be re-admitted th
   assert.equal(arrive.humanDecide(app.id, { name: 'Reviewer' }, true).status, 'declined');
   assert.equal(arrive.readyToEnter(vid), false);
 });
+
+test('prior bypass is revoked when a subsequent application is declined', () => {
+  process.env.COMMONS_ARRIVE_BYPASS = 'TEST-PRIVATE-CODE';
+  const { vid } = arrive.newVisitor({ ip: 'test-prior-bypass' });
+  for (const stop of arrive.STOPS) arrive.answer(vid, stop, 'choice', '', { ip: 'test-prior-bypass' });
+  const app = arrive.apply(vid, {}, { ip: 'test-prior-bypass' });
+  arrive.bypass(vid, 'TEST-PRIVATE-CODE', { ip: 'test-prior-bypass' });
+  assert.equal(arrive.readyToEnter(vid), true);
+  arrive.humanDecide(app.id, { name: 'Reviewer' }, false);
+  assert.equal(arrive.readyToEnter(vid), false);
+  assert.equal(arrive.state(vid).ready_to_enter, false);
+  assert.equal(arrive.state(vid).bypass, false);
+});
