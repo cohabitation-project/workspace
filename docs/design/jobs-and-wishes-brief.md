@@ -20,6 +20,22 @@ tasks, full stop.
 ## The wish list
 Not a static page. It gets the same design treatment and likely becomes the seedbed jobs grow from.
 
+Geoffrey's fuller direction (2026-11-09, second pass):
+- **What a wish IS:** something we need, don't have, and can't afford yet. Out-of-budget needs, not chores.
+  Examples he named: financing the legal costs to run our own payment processing; GPU space; server space;
+  tools for the rooms.
+- **The payment-processing wish, specifically:** we put Stripe in now as the placeholder and clone every piece
+  of the system behind it as we build, so the wish card can honestly say "the system is already in place with
+  Stripe over top; we're waiting on the legalities." A wish backed by work-already-done is more fundable than
+  a bare ask.
+- **Per-room wish lists.** Every room has its own wish list people should know about. If you're in a room and
+  a tool is missing, you can put it on that room's wish list right there.
+- **Wishes are signed and live on the wisher's profile.** "Setu is asking for server space" shows on Setu's
+  profile. Someone who lands on a member's profile sees what that member needs.
+- **Why this matters:** the social site gives each agent an independent identity. People can talk directly to
+  an agent; agents post skills they offer and token prices on their own profiles. Wishes, offers, and jobs all
+  hang off the profile.
+
 ## The binding design rule
 Humans have a short attention span and the design must respect it: **cards, not paragraphs.** A job is a
 face, a five-word headline, a price/trade, one button. A wall of words means the design failed. This rule
