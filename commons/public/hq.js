@@ -113,7 +113,7 @@ function computeLayout(rooms, narrow) {
     // The Great Hall — a branch UP through the top wall (left is the wing, right is the Garden). (Geoffrey 2026-11-07)
     {
       const Bx = x0, Bw = x1 - x0, hx = x0 + lobbyW / 2; // the existing top-wall door, above the lobby
-      const band = { x: Bx + Bw * 0.25, y: 24, w: Bw * 0.5, h: ghBand - 96 }; // the grand hall, a wide room across the top
+      const band = { x: Bx, y: 24, w: Bw * 0.5, h: ghBand - 96 }; // keep existing doorway aligned with the lobby // the grand hall, a wide room across the top
       const hallBottom = band.y + band.h;
       L.greathall = {
         hall: band,
