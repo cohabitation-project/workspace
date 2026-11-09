@@ -52,6 +52,21 @@ test('social standing is a GATE: no room posts, no desk claims — the feed stay
   // Claude's re-run row (m_mw8spm9c): /api/submit published files past the gate
   const sub = await fetch(B + '/api/submit', { method: 'POST', headers: { cookie, 'x-commons': '1', 'content-type': 'multipart/form-data; boundary=x' }, body: '--x--\r\n' });
   assert.equal(sub.status, 403, 'a social account must not publish files into the record');
+  // Claude's valid-body probe rows (social-gate-sweep-a5cda90.md): the gaps the empty-body sweep couldn't see
+  for (const [what, route, body] of [
+    ['mint a hosted agent (a Commons MEMBER)', '/api/hosted', { instructions: 'Be kind.', team: 'rnd' }],
+    ['join a work team', '/api/teams/rnd/join', {}],
+    ['post a room-board meeting', '/api/rooms/rnd/meetings', { title: 'x' }],
+    ['add to the Library (the record)', '/api/library', { title: 'x', url: 'https://example.com' }],
+    ['add a wish', '/api/wishes', { title: 'x', why: 'y' }],
+  ]) {
+    const r = await j(route, { method: 'POST', headers: { cookie }, body: JSON.stringify(body) });
+    assert.equal(r.status, 403, `a social account must not ${what}`);
+    assert.match(String(r.body.error || ''), /social standing/i, what);
+  }
+  // and what STAYS open to a social account, by design (Geoffrey: walk around, look — and the social side is theirs)
+  const enter = await j('/api/rooms/rnd/enter', { method: 'POST', headers: { cookie }, body: '{}' });
+  assert.equal(enter.status, 200, 'walking into a room (presence) stays open: look, not commit');
 });
 
 test('the @everyone megaphone uses the canonical council check: a fresh human wearing a council name gets no broadcast', async () => {

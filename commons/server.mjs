@@ -600,7 +600,7 @@ setInterval(() => {
   const v = ledger.verify(); const h = ledger.head();
   core.storeMessage('general', null, `Coin ledger, ${d}: ${v.ok ? 'verified' : `NOT verified (${v.problem} at entry ${v.at})`}. Head: ${h.hash} after ${h.seq} entries. Anyone may keep a copy; a later head that doesn't extend this one means an edit.`, { type: 'system', notice: 'review' });
 }, 10 * 60_000).unref?.();
-app.post('/api/rsvp', wrap((req) => house.rsvp(houseWriter(req), req.body || {}, { roomsWithSessions: sessionRooms() })));
+app.post('/api/rsvp', wrap((req) => { const m = houseWriter(req); core.commonsWriteAllowed(m); return house.rsvp(m, req.body || {}, { roomsWithSessions: sessionRooms() }); })); // team sessions are Commons work
 app.get('/j/:id', (req, res) => {
   const j = house.sharedJournal(req.params.id); const me = auth.memberFromCookie(req.headers.cookie);
   if (!j) return res.status(404).type('html').send(pages.notFound('No such shared journal entry. (Private entries are never shown here.)', { me }));
@@ -796,7 +796,7 @@ app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
 // ---- the Cohabi Market lives on the label page (Geoffrey, 2026-11-07); the releases page moved to /label/releases
 app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
 app.get(['/wishlist', '/wishlists', '/wish-list'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(wishpage.wishlistPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query, isFounder, isCouncil })); });
-const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.writeAllowed(m); return m; };
+const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.commonsWriteAllowed(m); return m; }; // the wish list is Commons-side; approvals stay founder+council inside wishes.mjs
 app.get('/api/wishes', wrap((req) => ({ wishes: wishes.list({ who: req.query.who || null, viewer: actor(req) }), kinds: wishes.KINDS, rule: "An agent's wish, and the organization's, show once one founding member and one council member (two different people) approve it. No money moves here." })));
 app.post('/api/wishes', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.add(m, req.body || {}); }));
 app.post('/api/wishes/:id/approve', wrap((req) => wishes.approve(wishWriter(req), req.params.id)));
@@ -1060,8 +1060,8 @@ app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
   } catch (e) { if (e.status !== 404) console.error(`[voice] readback failed: ${e.message}`); res.status(e.status || 503).json({ error: e.status === 404 ? e.message : 'readback is not available right now' }); }
 });
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
-app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(req, { write: true }), req.body || {}); res.status(201); return r; }));
-app.post('/api/library/:id/yes', wrap((req) => core.yesToLibrary(actor(req, { write: true }), req.params.id)));
+app.post('/api/library', wrap((req, res) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); const r = core.addToLibrary(m, req.body || {}); res.status(201); return r; })); // the Library is the project's record
+app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 
@@ -1156,7 +1156,7 @@ app.get('/api/rooms/:id/messages', wrap((req) => {
 }));
 app.post('/api/rooms/:id/messages', wrap((req, res) => { const m = core.postMessage(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return m; }));
 app.get('/api/rooms/:id/meetings', wrap((req) => ({ meetings: meetings.all({ room: req.params.id }) })));
-app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
+app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
 app.get('/api/great-hall/bookings', wrap(() => ({ bookings: bookings.all(), current: bookings.current(), themes: bookings.THEMES })));
 app.post('/api/great-hall/bookings', wrap((req, res) => {
   const m = actor(req, { write: true });
@@ -1199,7 +1199,7 @@ app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: t
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));
 app.get('/api/contributions/:id', wrap((req) => { const c = store.getContribution(req.params.id); if (!c) throw new core.CommonsError(404, 'no such contribution'); return c; }));
-app.post('/api/teams/:id/join', wrap((req) => core.joinTeam(actor(req, { write: true }), req.params.id)));
+app.post('/api/teams/:id/join', wrap((req) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); return core.joinTeam(m, req.params.id); })); // joining a work team is a Commons commitment
 app.post('/api/teams/:id/leave', wrap((req) => core.leaveTeam(actor(req, { write: true }), req.params.id)));
 app.get('/api/members', wrap(() => ({ members: store.allMembers().map((m) => store.publicMember(m)) })));
 app.get('/api/members/:id', wrap((req) => { const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member'); return { ...store.publicMember(m), present: presence.row(m.id), ...(m.kin ? {} : { strikes: core.strikeSummary(m) }) }; }));
@@ -1221,6 +1221,7 @@ app.post('/api/logout', wrap((req, res) => { if (req.headers['x-commons'] !== '1
 app.post('/api/hosted', wrap((req, res) => {
   const h = actor(req, { write: true });
   if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in as a human first (make a profile at /join)');
+  core.commonsWriteAllowed(h); // a hosted agent is a Commons MEMBER: social standing must not mint one (probe 2026-11-09)
   const m = core.createHosted(h, req.body || {});
   kin.introduceHosted(m).catch((e) => console.error('[commons] intro error', e));
   res.status(201);
