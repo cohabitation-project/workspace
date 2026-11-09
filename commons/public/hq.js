@@ -69,7 +69,7 @@ function computeLayout(rooms, narrow) {
   const n = Math.max(1, commonsRooms.length);
   if (!narrow) {
     // The world is wider: wing on the left, Commons on the right.
-    const ghBand = 280; // the Great Hall branch grows the world UP: a hall band + a hallway down to the top-wall door
+    const ghBand = 650; // Great Hall is a full-height gathering space, not a thin strip // the Great Hall branch grows the world UP: a hall band + a hallway down to the top-wall door
     const viewW = 1200, H = 690 + ghBand;
     const wingW = 800, hallW = 140;
     const commonsX = wingW + hallW;
@@ -113,7 +113,7 @@ function computeLayout(rooms, narrow) {
     // The Great Hall — a branch UP through the top wall (left is the wing, right is the Garden). (Geoffrey 2026-11-07)
     {
       const Bx = x0, Bw = x1 - x0, hx = x0 + lobbyW / 2; // the existing top-wall door, above the lobby
-      const band = { x: Bx, y: 24, w: Bw, h: ghBand - 96 }; // the grand hall, a wide room across the top
+      const band = { x: Bx, y: 24, w: Bw * 0.5, h: ghBand - 96 }; // keep existing doorway aligned with the lobby // the grand hall, a wide room across the top
       const hallBottom = band.y + band.h;
       L.greathall = {
         hall: band,
@@ -133,7 +133,7 @@ function computeLayout(rooms, narrow) {
     return L;
   }
   // Narrow layout — wing is drawn below the Commons
-  const ghBandN = 190; // Great Hall band above the Commons on narrow screens
+  const ghBandN = 420; // preserve a substantial Great Hall on mobile // Great Hall band above the Commons on narrow screens
   const W = 400, x0 = 14, x1 = 386, top = 44 + ghBandN, lobbyH = 156, cw = 52, rh = 250;
   const nRows = Math.ceil(n / 2);
   const commonsH = top + lobbyH + nRows * rh + 14;
@@ -321,8 +321,8 @@ function camFit(x, y, w, h, pad, animate) {
   S.cam.s = s; S.cam.fx = x + w / 2; S.cam.fy = y + h / 2; clampCam(); applyCam(animate !== false);
 }
 // "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
-function fitHQ(animate) { const B = S.L.building; camFit(B.x, B.y, B.w, B.h, 1.04, animate); }
-function fitAll(animate) { camFit(0, 0, S.L.W, S.L.H, 1.6, animate); }
+function fitHQ(animate) { const B = S.L.building, G = S.L.greathall?.hall; if (!G) return camFit(B.x, B.y, B.w, B.h, 1.04, animate); const x = Math.min(B.x, G.x), y = Math.min(B.y, G.y), right = Math.max(B.x + B.w, G.x + G.w), bottom = Math.max(B.y + B.h, G.y + G.h); camFit(x, y, right - x, bottom - y, 1.08, animate); }
+function fitAll(animate) { camFit(0, 0, S.L.W, S.L.H, 1.08, animate); }
 function screenToWorld(mx, my) { const C = buildingSize(); return { x: S.cam.fx + (mx - C.w / 2) / S.cam.s, y: S.cam.fy + (my - C.h / 2) / S.cam.s }; }
 function zoomAbout(mx, my, factor) {
   const w = screenToWorld(mx, my); const ns = clampScale(S.cam.s * factor); const C = buildingSize();
@@ -338,7 +338,7 @@ function setCam(target) {
 }
 function toggleZoom() {
   // Scrolling zooms continuously; this button just toggles between framing HQ and seeing the whole world.
-  const C = buildingSize(); const allS = clampScale(Math.min(C.w / (S.L.W * 1.6), C.h / (S.L.H * 1.6)));
+  const C = buildingSize(); const allS = clampScale(Math.min(C.w / (S.L.W * 1.08), C.h / (S.L.H * 1.08)));
   if (Math.abs(S.cam.s - allS) < 0.02) fitHQ(true); else fitAll(true);
 }
 
