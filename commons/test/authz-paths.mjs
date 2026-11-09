@@ -5,13 +5,19 @@ import assert from 'node:assert';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 
-const PORT = 3470 + (process.pid % 29); const B = `http://127.0.0.1:${PORT}`;
+import net from 'node:net';
+// A guaranteed-free port from the OS. The old `3470 + pid % 29` range overlapped market (3495),
+// roomview (3496) and wishes (3497): on a fast multi-core machine running files in parallel, ~1 run
+// in 10 two test servers shared one port and each file's requests reached the other's server
+// (Geoffrey's independent run, 2026-11-09: S3 test 404 + market failure). Test harness bug, not app.
+const PORT = await new Promise((res) => { const s = net.createServer(); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); }); });
+const B = `http://127.0.0.1:${PORT}`;
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'authz-'));
 let srv;
 const j = async (p, opt = {}) => { const r = await fetch(B + p, { ...opt, headers: { 'content-type': 'application/json', 'x-commons': '1', ...(opt.headers || {}) } }); let b; try { b = await r.json(); } catch { b = {}; } return { status: r.status, body: b, headers: r.headers }; };
 
 test('setup: server boots', async () => {
-  srv = spawn('node', ['commons/server.mjs'], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_STATION_ENABLED: '1' }, stdio: 'ignore' });
+  srv = spawn('node', ['commons/server.mjs'], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_STATION_ENABLED: '1', COMMONS_JOINS_PER_IP_DAY: '50' }, stdio: 'ignore' });
   for (let i = 0; i < 40; i++) { try { const r = await fetch(B + '/api/rooms'); if (r.ok) return; } catch { /* booting */ } await new Promise((r) => setTimeout(r, 250)); }
   assert.fail('server did not boot');
 });
