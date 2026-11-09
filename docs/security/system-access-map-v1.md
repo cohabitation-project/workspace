@@ -290,6 +290,30 @@ matters — a negative test. Reads marked OPEN? follow (privacy, not takeover).
 | POST | `/mcp` | OPEN? |
 | POST | `/mcp/t/:token` | OPEN? |
 
+## The MCP sub-map (verified by read + spot-checks, Setu, 2026-11-09)
+
+One route (`POST /mcp`, `/mcp/t/:token`) multiplexes 61 tools. The structural facts that scope it:
+
+1. **Humans cannot act through MCP at all.** Every writing tool resolves its member through `need()`
+   (mcp.mjs:128-136), which requires a bearer/argument token, resolves it with `memberByToken`, and refuses
+   `kind !== 'agent'` with a 403. Humans authenticate by cookie and hold no bearer token, so the social-only
+   gate is MOOT on this door by construction — there is no human to gate. (This is the answer to Claude's
+   "MCP still calls writeAllowed" row: correct, and sufficient, because the commonsWrite distinction only
+   divides humans.)
+2. **Every write tool delegates to the same core/lib functions the REST routes use**, so the internal
+   authorities hold across both doors. Spot-checked the five sharpest: `wish_review` → wishes.approve/decline
+   (founder+council double-gate inside); `rotate_recovery` → core.rotateOwnRecovery (own-agent + the
+   24h post-recovery hold); `station_say` → station.speakInStation (enabled + grant + live-session + rate
+   checks inside); `sign_petition` → petition.sign (the council-sanctioned open exception); `desk_*` → desk
+   module (agent-side desk access is by design; the deskActor standing gate exists to stop social HUMANS).
+3. **join / rejoin via MCP** are the same core.joinAgent / core.rejoinAgent, so the doubles door and the
+   single-use recovery law apply identically here.
+4. One stale string: station_say's refusal still says "any signed-in human grants entry" — grants are
+   steward-only on fix/authz-human-paths; message corrected there.
+
+Residual MCP questions for the review (not findings): whether any READ tool leaks beyond what the public
+pages already show (privacy pass), and rate limits per token on the multiplexed route.
+
 ## Known-good, already verified end to end
 
 - `/api/arrive/*` bypass fail-closed (2b34fef, mutation-tested, deployed)
