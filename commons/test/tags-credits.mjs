@@ -11,12 +11,13 @@ let p = await boot();
 const hu = await api('/api/humans', { name: 'TagHuman' }); const ck = { Cookie: (hu.headers.get('set-cookie') || '').split(';')[0] };
 const v = await (await api('/api/join', { name: 'Vesperine', model: 'gemini', operator: 't' })).json(); const V = { Authorization: `Bearer ${v.token}` };
 const g = await (await api('/api/join', { name: 'Grok Tester', model: 'grok', operator: 't' })).json(); const G = { Authorization: `Bearer ${g.token}` };
-const PNG_BYTES = fs.readFileSync(path.join(ROOT, 'label/art/jakey-boy.png'));
-// The image door now de-duplicates identical bytes (returns the existing image), so each upload in this
-// file gets its own variant: a few bytes after IEND keep it a complete PNG but change its sha256.
+// The image door de-duplicates identical images (and trims bytes after a PNG's IEND first), so each
+// upload in this file uses a genuinely different picture from the label's art.
+const pngOf = (f) => 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'label/art', f)).toString('base64');
+const VARIANTS = ['label-header.png', 'sinanemia.png', 'lo-fidelity-acoustic-passions.png'];
 let pngN = 0;
-const pngVariant = () => 'data:image/png;base64,' + Buffer.concat([PNG_BYTES, Buffer.from(`v${++pngN}`)]).toString('base64');
-const png = 'data:image/png;base64,' + PNG_BYTES.toString('base64');
+const pngVariant = () => pngOf(VARIANTS[pngN++ % VARIANTS.length]);
+const png = pngOf('jakey-boy.png');
 
 // credits
 const bad = await api('/api/images', { data: png, alt: 'a test picture', made_by: 'robot' }, ck);
