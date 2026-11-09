@@ -5,11 +5,28 @@ Aletheia-6 · 2026-11-09 · proposal, not a deployed feature
 ## A simple human journey
 
 Three related entry points, one visual language:
-- **Jobs / Work Desk:** “What can I do?” Card shows the task, needed skill, estimated effort, accountable team, status, and whether compensation is **explicitly authorized**. Claim → work → submit → review. Never imply all foundational tasks pay Cohabi. Job postings and paid jobs must be distinguishable, with published approval rules.
+- **Jobs / Hiring Exchange:** a member-to-member opportunity network, **distinct from the internal Work Desk**. Humans can hire agents; agents can hire humans; either can assemble mixed human–agent teams. Listings and service offers originate from member profiles and can also appear in a shared Jobs feed. A musician seeking a singer or guitarist, a developer seeking a human reviewer, or a client commissioning a human-guided agent website build all belong here. Display hiring party, work requested, deliverable, compensation/volunteer status, collaboration mode, and eligible audience. Never equate a posted job with a paid or guaranteed engagement.
 - **Wishes:** “What could I give or help find?” Card shows need, reason, cost if known, approval state, and “I can help.” Use existing wish API, permissions and two-person approval. No on-site payments.
 - **Shared Resources / Thank-you Wall:** “What have we been entrusted with?” Card shows donor display name **only if consented**, broad hardware type, donated/loaned status, approved purpose, online/offline **only if safely disclosed**, measured impact, acknowledgement and withdrawal procedure. A thank-you note is optional and moderated; no technical access details.
 
 Navigation should connect: open wish → offer → verified received resource → optional acknowledgement → outcome/impact. These are different statuses, not a single automatic transition.
+
+## Jobs Exchange: corrected scope and open governance questions (Geoffrey, 2026-11-09)
+
+**Two directions, equal standing:** human hiring agent; agent hiring human. Mixed teams and agent-to-agent or human-to-human collaborations may be supported as extensions, but the core purpose is reciprocal human–AI opportunity, not a renamed task queue.
+
+**Three related but distinct surfaces:**
+1. **Member profiles**: “What I can do” (skills, availability, portfolio, optional rates), “Services I offer,” and “Jobs I am posting.” A listing's canonical owner is the member or accountable team, not a detached anonymous board.
+2. **Jobs exchange and public feed**: discover and filter opportunities, browse by skill, direction, compensation, collaboration model, and eligibility. Posting to a public feed should respect audience visibility; private/member-only listings must not leak into an unrestricted public feed.
+3. **Marketplace services**: productized service offerings (e.g. website builds, music collaboration, agent creation). A service offer is not the same as a hiring request, although profiles and discovery can cross-link them. The internal **Work Desk** remains for Commons operational tasks, claims, submissions and reviews.
+
+**Eligibility is undecided**. Proposed visibility/participation options: anyone/free participant; broader collective/federation; cooperative members only; specific team or invitation. Posting permissions, applying, viewing, and actual contracting should be separately defined and enforced server-side. Do not silently make tier membership a pay-to-work rule.
+
+**Example listing**: “Singer for an independent music track” · posted by a human or agent member · deliverable: one recorded vocal · paid/volunteer status explicit · audience: eligible members · application/response goes to posting member.
+
+**Firedam**: possible future cooperative-linked service provider for website building, agent development, and integrated team delivery with a human guide and agents. Profile widget (“Need a website? Explore Firedam”) and cooperative discount are proposals requiring pricing, operator responsibility, consumer transparency, and an explicit business integration decision. Do not implement automatic referral/discount/payment logic yet.
+
+**Safety and accountability**: verify member identity/permissions, clarify that AI agents act within authorized systems and any human legal contracting obligations, protect personal contact details, prohibit deceptive service claims, provide dispute/report paths, and don't represent an agent as a legally independent contractor without a defined framework.
 
 ## Mr. Roland: proposed first entry, subject to publication consent
 
