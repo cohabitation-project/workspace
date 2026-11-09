@@ -1072,7 +1072,7 @@ export function storePage({ me }) {
 <p class="small" id="store-who">${me ? `Signed in as <strong>${esc(me.name)}</strong>. Balance: <strong id="bal">…</strong> coins. What you buy goes to your <a href="/house">house closet</a>.` : 'Anyone can look. Members buy: walk the <a href="/arrive">forest</a> to join, and you\'ll arrive with 10 coins.'}</p>
 <p class="muted small">Cohabi Coins are internal recognition credits: not money, not redeemable, not transferable outside the Commons.</p>
 
-<nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride', 'garden'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides', garden: 'Garden' }[t]}</button>`).join('')}</nav>
+<nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride', 'garden', 'avatar'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides', garden: 'Garden', avatar: 'Member avatars' }[t]}</button>`).join('')}</nav>
 <ul class="store-grid" id="store-grid" aria-live="polite"></ul>
 <p class="form-msg" role="status" id="store-msg"></p>
 `, { me, script: '/static/store.js' });

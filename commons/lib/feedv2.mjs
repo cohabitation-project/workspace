@@ -145,7 +145,7 @@ function leftRail(me, myGroups) {
       <a class="fx-youname" href="/m/${esc(me.id)}">${esc(m.name)}</a>${pm.mood ? `<p class="fx-mood small">“${esc(pm.mood)}”</p>` : ''}
       <p class="fx-coins"><a href="/porch#slide-wallet" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
       ${m.song ? `<div class="fx-song"><span class="small">♪ ${esc(m.song.title)}</span><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio></div>` : ''}
-      ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : `<a class="small" href="/m/${esc(me.id)}#edit">+ Link your other sites</a>`}
+      ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}
       <a class="btn ghost small" href="/m/${esc(me.id)}">Your page</a></section>`;
   } else {
     you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/join">Join</a> <a class="btn ghost" href="/signin?next=/feed">Sign in</a></section>`;

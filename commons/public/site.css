@@ -647,3 +647,4 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 
 /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
 .porch-full{max-width:46rem;margin:2.2rem auto;padding:0 4px}
+.store-ava{width:84px;height:84px;object-fit:cover;border-radius:12px;image-rendering:auto}

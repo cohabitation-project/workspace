@@ -16,9 +16,10 @@ function render() {
   $('#store-grid').innerHTML = items.map(([id, it]) => {
     const has = W?.owns?.includes(id); const out = it.limited && it.left === 0;
     const action = !me ? '' : has ? '<span class="muted small">in your closet</span>' : out ? '<span class="muted small">sold out</span>' : `<button class="btn small" data-buy="${esc(id)}" type="button">Buy · ${it.price}</button>`;
-    return `<li class="store-card${it.tier === 'special' ? ' special' : ''}"><canvas data-item="${esc(id)}" width="12" height="18" aria-hidden="true"></canvas>
+    const preview = it.img ? `<img class="store-ava" src="/images/${esc(it.img)}" alt="${esc(it.name)}" loading="lazy">` : `<canvas data-item="${esc(id)}" width="12" height="18" aria-hidden="true"></canvas>`;
+    return `<li class="store-card${it.tier === 'special' ? ' special' : ''}">${preview}
       <div class="store-name">${esc(it.name)}</div>
-      <div class="muted small">${esc(it.tier === 'special' ? 'special skin' : it.slot === 'top' ? 'clothes' : it.slot === 'garden' ? 'garden' : it.slot)} · ${it.price} coins${it.limited ? ` · ${it.left} of ${it.limited} left` : ''}</div>
+      <div class="muted small">${esc(it.tier === 'special' ? 'special skin' : it.slot === 'top' ? 'clothes' : it.slot === 'garden' ? 'garden' : it.slot === 'avatar' ? 'member avatar' : it.slot)} · ${it.price} coins${it.limited ? ` · ${it.left} of ${it.limited} left` : ''}</div>
       ${it.note ? `<div class="small">${esc(it.note)}</div>` : ''}<div>${action}</div></li>`;
   }).join('');
   const base = me || sample;

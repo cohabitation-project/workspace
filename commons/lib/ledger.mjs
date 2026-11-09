@@ -38,7 +38,7 @@ export const CONFIG = {
   jobMin: 5, jobMax: 50,
 };
 // The store's wares come from the shared catalogue (public/catalog.js): basic 5, skins 10, special limited runs 20.
-export const STORE = Object.fromEntries(Object.entries(CATALOG).map(([id, it]) => [id, { name: it.name, tier: it.tier, slot: it.slot, price: PRICES[it.tier], limited: it.limited || null, note: it.note || null }]));
+export const STORE = Object.fromEntries(Object.entries(CATALOG).map(([id, it]) => [id, { name: it.name, tier: it.tier, slot: it.slot, price: PRICES[it.tier], limited: it.limited || null, note: it.note || null, img: it.img || null, maker: it.maker || null }]));
 export const soldCount = (item) => entries.filter((e) => e.kind === 'store:buy' && e.data?.item === item && (e.lines || []).length).length;
 
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
