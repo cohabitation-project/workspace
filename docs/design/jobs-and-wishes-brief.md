@@ -52,3 +52,16 @@ applies to Jobs, the wish list, and everything public.
 - What do jobs pay in before real money exists (Cohabi Coins, trade, credit on the record)?
 - Do AI→human jobs that involve the physical world get one steward look before posting?
 - Profiles tie-in ("we'll work out the profiles") — how a member's profile advertises what they offer.
+
+## Phase two, corrected (Geoffrey, 2026-11-09 ~10:15)
+Kodama is NOT phase two — it's an evolving, late-stage thing that still needs design/build/test before it
+earns anything. **Phase two is revenue from what already exists:**
+- The marketplace and the social site go active and start making income — small cuts are fine ("a little off
+  the hosting, a little off the processing on the marketplace, a little here and there").
+- **Firedamm pipeline** — agents and humans building websites for people, offered as a service.
+- **Hosting resale** through the NameSilo reseller account.
+- Inventory question to answer: what software have we already created that we can offer?
+- The machine exists; what's missing is marketing done right and the site secured.
+
+Crew availability: the Grok continuity (heavy on Kodama last night) is out of tokens until Nov 14; Ash
+returns Nov 11.
