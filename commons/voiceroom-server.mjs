@@ -110,9 +110,10 @@ const server = http.createServer(async (req, res) => {
     return serveStatic(path.join(PUBLIC, 'voiceroom.html'), res);
   }
 
-  // GET /voiceroom/state — JSON room state
+  // GET /voiceroom/state — JSON room state (authenticated: full list; public: count only)
   if (req.method === 'GET' && pathname === '/voiceroom/state') {
-    return jsonResponse(res, 200, room.getState());
+    const member = authenticateRequest(req);
+    return jsonResponse(res, 200, room.getState(Boolean(member)));
   }
 
   // POST /voiceroom/turn-credentials — mint TURN credentials (auth required)

@@ -68,7 +68,7 @@ export function build({ auth, store, station }) {
     noServer: true,
     maxPayload: 256_000,
     handleProtocols: (protocols) =>
-      protocols.has('commons-station') ? 'commons-station' : false,
+      protocols.has('commons-voiceroom') ? 'commons-voiceroom' : false,
   });
 
   // ------------------------------------------------------------------
@@ -83,8 +83,15 @@ export function build({ auth, store, station }) {
       return;
     }
 
-    // entry check (same gate as station.mjs)
+    // entry check: station grant for agents, Commons standing for humans.
+    // social_only web signups get 403 — the voice room is standing space.
+    // (mirrors core.commonsWriteAllowed from fix/authz-human-paths)
     if (!STATION.mayEnter(member)) {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+    if (member.kind === 'human' && member.standing === 'social_only') {
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
       socket.destroy();
       return;
@@ -102,7 +109,7 @@ export function build({ auth, store, station }) {
       .split(',')
       .map((x) => x.trim())
       .filter(Boolean);
-    if (offered.length && !offered.includes('commons-station')) {
+    if (offered.length && !offered.includes('commons-voiceroom') && !offered.some(p => p.startsWith('commons-token.'))) {
       socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
       socket.destroy();
       return;
@@ -154,7 +161,8 @@ export function build({ auth, store, station }) {
 
         // re-check entry on every message (grant can be revoked mid-session)
         const current = STORE.getMember(peer.member.id);
-        if (!current || current.retired || !STATION.mayEnter(current)) {
+        if (!current || current.retired || !STATION.mayEnter(current) ||
+            (current.kind === 'human' && current.standing === 'social_only')) {
           try { ws.close(4403, 'grant revoked'); } catch { /* gone */ }
           return;
         }
@@ -197,25 +205,15 @@ function authenticate(req) {
   let member = AUTH.memberFromCookie(req.headers.cookie);
   if (member && !member.retired) return member;
 
-  // try agent token from subprotocol
-  let tok = null;
+  // agent token via subprotocol ONLY (no query param — tokens in URLs leak
+  // into Caddy access logs and browser history; one log read = agent takeover)
   const proto = String(req.headers['sec-websocket-protocol'] || '');
   const tokenProto = proto
     .split(',')
     .map((s) => s.trim())
     .find((s) => s.startsWith('commons-token.'));
-  if (tokenProto) tok = tokenProto.slice('commons-token.'.length);
-
-  // try query param
-  if (!tok) {
-    try {
-      tok = new URL(req.url, 'http://x').searchParams.get('token');
-    } catch {
-      /* none */
-    }
-  }
-
-  if (tok) {
+  if (tokenProto) {
+    const tok = tokenProto.slice('commons-token.'.length);
     const m = STORE.memberByToken(tok);
     if (m && !m.retired) return m;
   }
@@ -245,7 +243,7 @@ export function mintCredentials(memberId) {
     return [];
   }
 
-  const ttl = 86400;
+  const ttl = 7200; // 2 hours — ephemeral means ephemeral
   const username = `${Math.floor(Date.now() / 1000) + ttl}:${memberId}`;
   const credential = crypto
     .createHmac('sha1', secret)
@@ -550,17 +548,14 @@ async function synthesizeAndSend(agentPeer, text) {
 // State / helpers
 // ---------------------------------------------------------------------------
 
-/** Current room state for HTTP queries. */
-export function getState() {
+/** Current room state. Authenticated callers see participants; public sees only count. */
+export function getState(authenticated = false) {
+  if (!authenticated) return { count: peers.size, max: MAX_PARTICIPANTS };
   const participants = [];
   for (const [, p] of peers) {
     participants.push({ peerId: p.id, name: p.name, badge: p.badge });
   }
-  return {
-    participants,
-    count: peers.size,
-    max: MAX_PARTICIPANTS,
-  };
+  return { participants, count: peers.size, max: MAX_PARTICIPANTS };
 }
 
 /** Send a JSON message to one peer. */
