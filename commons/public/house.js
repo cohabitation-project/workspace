@@ -103,6 +103,56 @@ const PIECES = {
   },
   board(px, py, w) { rect(px + 2, py + 4, w * TILE - 4, 22, C.cork); rect(px + 2, py + 4, w * TILE - 4, 2, C.woodDark); const notes = [C.paper, '#f2cc8f', '#81b29a', C.paper]; notes.forEach((n, i) => { rect(px + 6 + i * 10, py + 9 + (i % 2) * 6, 8, 8, n); rect(px + 9 + i * 10, py + 9 + (i % 2) * 6, 2, 2, '#d1495b'); }); },
 };
+// Layered cabin furniture details, drawn over the original interactive pieces.
+// These embellishments do not change item bounds, IDs, panels or persistence.
+const BASE_PIECES = { ...PIECES };
+PIECES.desk = (px, py, w) => {
+  BASE_PIECES.desk(px, py, w);
+  const width = w * TILE;
+  rect(px + 2, py + 8, width - 4, 2, '#d4aa72');
+  rect(px + 4, py + 12, width - 8, 2, '#62412f');
+  rect(px + 9, py + 3, 16, 1, '#fff1c8');
+  rect(px + width - 17, py + 2, 7, 5, '#365f5b');
+  rect(px + width - 16, py + 1, 5, 1, '#d6b77e');
+};
+PIECES.shelf = (px, py, w) => {
+  BASE_PIECES.shelf(px, py, w);
+  const width = w * TILE;
+  rect(px, py - 12, width, 3, '#d2a16b');
+  rect(px, py + 14, width, 3, '#bb8d58');
+  rect(px, py - 12, 3, 39, '#c69a67');
+  rect(px + width - 3, py - 12, 3, 39, '#c69a67');
+  rect(px + 3, py - 9, width - 6, 1, '#efd09a');
+};
+PIECES.table = (px, py) => {
+  BASE_PIECES.table(px, py);
+  rect(px + 4, py + 6, 24, 3, '#d1a477');
+  rect(px + 8, py + 10, 15, 1, '#efcf9d');
+  rect(px + 12, py + 2, 9, 2, '#f4e6c3');
+};
+PIECES.drawer = (px, py, w) => {
+  BASE_PIECES.drawer(px, py, w);
+  const width = w * TILE;
+  rect(px + 1, py + 1, width - 2, 2, '#cfa474');
+  rect(px + 3, py + 5, width - 6, 1, '#b28254');
+  rect(px + 3, py + 12, width - 6, 1, '#b28254');
+};
+PIECES.mirror = (px, py) => {
+  BASE_PIECES.mirror(px, py);
+  rect(px + 2, py - 11, 12, 2, '#f1cc8c');
+  rect(px + 4, py - 7, 2, 13, '#d8ecdf');
+  rect(px + 5, py + 11, 7, 2, '#c79c63');
+};
+PIECES.tree = (px, py) => {
+  BASE_PIECES.tree(px, py);
+  rect(px + 4, py + 12, 8, 2, '#d4a170');
+  rect(px + 6, py + 14, 4, 1, '#543c2e');
+};
+PIECES.board = (px, py, w) => {
+  BASE_PIECES.board(px, py, w);
+  rect(px + 2, py + 3, w * TILE - 4, 2, '#d9ae76');
+  rect(px + 2, py + 25, w * TILE - 4, 2, '#5e412d');
+};
 function layoutNow() { return S.arranging ? S.draft : R.layout; }
 const present = (id) => !R.furniture[id].optional || (id === 'tree' && !!H.tree?.planted);
 function drawFurniture() {
