@@ -1,0 +1,463 @@
+/* voiceroom.css — Google Meet-inspired dark theme for voice/video room */
+
+/* ── Reset & Base ──────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+#voiceroom-root {
+  position: fixed;
+  inset: 0;
+  background: #202124;
+  color: #e8eaed;
+  font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* ── Grid ──────────────────────────────────────────────────────────────────── */
+.grid {
+  flex: 1;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  padding-bottom: 88px; /* room for controls bar */
+  align-content: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.grid.chat-open {
+  margin-right: 320px;
+}
+
+/* Adaptive grid layouts */
+.grid.grid-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.grid.grid-1.chat-open {
+  margin-right: 320px;
+}
+
+.grid.grid-2 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.grid.grid-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.grid.grid-6 {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+/* Spotlight mode */
+.grid.spotlight {
+  grid-template-columns: 1fr;
+  grid-template-rows: 3fr auto;
+}
+
+.grid.spotlight .tile {
+  width: 160px;
+  height: 120px;
+  min-height: 120px;
+}
+
+.grid.spotlight .tile.spotlit {
+  width: 100%;
+  height: 100%;
+  min-height: unset;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* ── Tile ──────────────────────────────────────────────────────────────────── */
+.tile {
+  position: relative;
+  background: #3c4043;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, width 0.3s ease, height 0.3s ease;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Voice level glow — driven by --voice-level (0–1) */
+  border-color: rgba(66, 133, 244, calc(var(--voice-level, 0)));
+  box-shadow: 0 0 calc(var(--voice-level, 0) * 16px) rgba(66, 133, 244, calc(var(--voice-level, 0) * 0.6));
+}
+
+.tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+  border-radius: 10px;
+}
+
+/* ── Tile Labels ──────────────────────────────────────────────────────────── */
+.tile-name {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: calc(100% - 16px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.tile-mute-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(234, 67, 53, 0.85);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.tile-mute-icon.hidden {
+  display: none;
+}
+
+/* ── Agent Tiles ──────────────────────────────────────────────────────────── */
+.tile.agent {
+  background: #2d2e30;
+}
+
+.agent-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.agent-avatar img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.agent-glyph {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Speaking pulse for agents */
+.tile.agent.speaking .agent-avatar img,
+.tile.agent.speaking .agent-glyph {
+  animation: agent-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes agent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(66, 133, 244, 0.4); }
+  50%      { box-shadow: 0 0 0 12px rgba(66, 133, 244, 0); }
+}
+
+/* ── Controls Bar ─────────────────────────────────────────────────────────── */
+.controls-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: #202124;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  z-index: 100;
+  border-top: 1px solid #3c4043;
+}
+
+.ctrl-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #3c4043;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease;
+  outline: none;
+}
+
+.ctrl-btn:hover {
+  background: #4a4d51;
+}
+
+.ctrl-btn:active {
+  transform: scale(0.92);
+}
+
+.ctrl-btn svg {
+  pointer-events: none;
+}
+
+/* Toggle states: mic/cam off → red bg */
+.ctrl-btn.off {
+  background: #ea4335;
+}
+
+.ctrl-btn.off:hover {
+  background: #d33426;
+}
+
+/* Active state for screen share and chat */
+.ctrl-btn.active {
+  background: #4285f4;
+}
+
+.ctrl-btn.active:hover {
+  background: #3574e0;
+}
+
+/* Leave button: always red */
+.leave-btn {
+  background: #ea4335;
+}
+
+.leave-btn:hover {
+  background: #d33426;
+}
+
+/* ── Chat Sidebar ─────────────────────────────────────────────────────────── */
+.chat-sidebar {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  width: 320px;
+  height: 100%;
+  background: #292a2d;
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
+  transition: right 0.25s ease;
+  border-left: 1px solid #3c4043;
+}
+
+.chat-sidebar.open {
+  right: 0;
+}
+
+.chat-header {
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  border-bottom: 1px solid #3c4043;
+  color: #e8eaed;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #5f6368;
+  border-radius: 3px;
+}
+
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-msg-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8ab4f8;
+}
+
+.chat-msg-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #e8eaed;
+  word-break: break-word;
+}
+
+.chat-system {
+  font-size: 12px;
+  color: #9aa0a6;
+  text-align: center;
+  font-style: italic;
+}
+
+.chat-system .chat-msg-name,
+.chat-system .chat-msg-text {
+  display: none;
+}
+
+.chat-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #5f6368;
+  color: #e8eaed;
+  padding: 1px 5px;
+  border-radius: 3px;
+  align-self: flex-start;
+  margin-bottom: 2px;
+}
+
+.chat-transcript .chat-msg-text {
+  color: #bdc1c6;
+  font-style: italic;
+}
+
+.chat-input-wrap {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #3c4043;
+}
+
+.chat-input-wrap input {
+  flex: 1;
+  background: #3c4043;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 16px;
+  color: #e8eaed;
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input-wrap input::placeholder {
+  color: #9aa0a6;
+}
+
+.chat-input-wrap input:focus {
+  background: #44474b;
+}
+
+.chat-input-wrap button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #4285f4;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.chat-input-wrap button:hover {
+  background: #3574e0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .grid.grid-2,
+  .grid.grid-4,
+  .grid.grid-6 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid.grid-2 { grid-template-rows: 1fr 1fr; }
+  .grid.grid-4 { grid-template-rows: repeat(4, 1fr); }
+  .grid.grid-6 { grid-template-rows: repeat(6, 1fr); }
+
+  .grid.chat-open {
+    margin-right: 0;
+  }
+
+  .tile {
+    min-height: 120px;
+  }
+
+  /* Chat sidebar overlays on mobile */
+  .chat-sidebar {
+    width: 100%;
+    right: -100%;
+  }
+
+  .chat-sidebar.open {
+    right: 0;
+  }
+
+  /* Spotlight on mobile */
+  .grid.spotlight .tile {
+    width: 100%;
+    height: 80px;
+    min-height: 80px;
+  }
+
+  .grid.spotlight .tile.spotlit {
+    height: 100%;
+    min-height: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls-bar {
+    gap: 8px;
+  }
+
+  .ctrl-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .agent-avatar img,
+  .agent-glyph {
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+  }
+}
