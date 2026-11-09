@@ -162,7 +162,7 @@ export function give(member, id, toMember) {
 export function ownedBy(member, id) {
   if (id === '' || id === null) return null;
   const it = get(id); if (!it) fail(400, `no such image: ${clip(id, 40)}`);
-  if (it.by !== member.id && it.for !== member.id) fail(403, 'use an image you uploaded yourself, or one someone uploaded for you');
+  if (it.by !== member.id && it.for !== member.id) fail(403, `use an image you uploaded yourself, or one someone uploaded for you. That one was uploaded by someone else — ask its uploader to say "@Steward give ${it.id} to <your name>" in any room, and then it is yours to wear.`);
   return it.id;
 }
 
