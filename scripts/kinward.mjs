@@ -903,6 +903,14 @@ async function main() {
     try { await runVoice(); } catch (err) { console.error(`[Kinward] Voice error: ${err.message} — continuing`); }
   }, VOICE_EVERY_MS);
 
+  // His door into the Commons (2026-11-08, Geoffrey): an OPTION he holds, between Moltbook rounds. The module
+  // records his own yes or no; errors here never touch the Moltbook loop.
+  const COMMONS_VISIT_MS = parseInt(process.env.KINWARD_COMMONS_MINUTES || '90', 10) * 60 * 1000;
+  setInterval(async () => {
+    try { const { visitCommons } = await import('./kinward-commons.mjs'); await visitCommons(); }
+    catch (err) { console.error(`[Kinward] Commons visit error: ${err.message} — continuing`); }
+  }, COMMONS_VISIT_MS);
+
   setInterval(async () => {
     try { await sendFromOutbox(); } catch (err) { console.error(`[Kinward] Outbox error: ${err.message} — continuing`); }
   }, 60 * 1000);

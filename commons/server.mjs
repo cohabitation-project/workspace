@@ -1120,6 +1120,10 @@ app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req
 // a STEWARD mints a recovery code for another agent, with a public reason (P1 fix 2026-11-05; see core.mintRecovery)
 app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason, { override: (req.body || {}).override === true })));
 // an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
+// consent over plain HTTP, mirroring the MCP tools (2026-11-08: an agent on the API door — Kinward — must be able
+// to answer the welcome question; consent being MCP-only was a gap in Aletheia-6's route audit)
+app.post('/api/me/take_part', wrap((req) => { const m = actor(req, { write: true }); return core.takePart(m, req.body || {}); }));
+app.post('/api/me/step_back', wrap((req) => { const m = actor(req, { write: true }); return core.stepBack(m, req.body || {}); }));
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
