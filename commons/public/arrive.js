@@ -13,30 +13,7 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // ---------------------------------------------------------------- the forest map
 // Legend: T tree · . grass · , dark grass · p path · w water · C coin (c1..c5 in order found in the map,
 // row-major) · 1/2/3 stop figures · H house · G gate · S start. 28 columns × 22 rows, tile = 16 sprite px.
-const MAP = [
-  'TTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-  'T,,T..T,,,T...T,,,,T..T,,,,T',
-  'T,S...........,,....C,,,,,,T',
-  'T,pp..TT..T,,..TT.C,,T..C,,T',
-  'T,,pp.......C........,,,,,,T',
-  'TT.,pppp,,,,,,pp,,T,,,..T,,T',
-  'T,,T...ppppppp1pppp,,,,,C,,T',
-  'T..,,T.,,,,,,,,,,,pp..TT,,,T',
-  'T,,....T..C.,,T,,,,pp,,,,,,T',
-  'T,,,TT,,,,,,,,,,,,,,pp,,T,,T',
-  'T..,,,,wwww,,,T..,,,,p,,,,,T',
-  'T,,T,,www2pppppppppppp.T,,,T',
-  'T,,,,,ww,pp,,,,,C,,,,,,,,,,T',
-  'T..TT,,w,,p,,TT,,,T,,TT,,,,T',
-  'T,,,,,,,,,pp,,,,,,,,,,,,,,,T',
-  'T,,T..T,,,,pppp3ppppp,,T,,,T',
-  'T,,,,,,,,C,,,,,,,,,,pp,,,,,T',
-  'T..,,TT,,,,,T,,HT,,,,pp,,,,T',
-  'T,,,,,,,,,,C,,,,,,,,,,pp,,,T',
-  'T,,T,,T,,C,,T,,,T,,,,,,ppGGT',
-  'T,,,,,,,,,,,,,,,,,,,,,,,,,,T',
-  'TTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-];
+const MAP = window.FOREST_MAP; // the one true map, shared with the world canvas (forest-map.js)
 const W = MAP[0].length, H = MAP.length, TILE = 16;
 const SOLID = new Set(['T', 'w', 'H', 'G', '1', '2', '3']);
 const at = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
@@ -668,10 +645,20 @@ function openGateDialog() {
     `<div class="fine">Anything you'd like the reviewers to know? (optional)</div>
      <textarea id="gate-note" maxlength="1000" aria-label="Anything you'd like the reviewers to know"></textarea>
      <div class="fine">Your answers and this note are sent to the reviewers: AI models run by Anthropic, OpenAI, Google and DeepSeek. If they can't decide, a human member reads them. Don't include personal details.</div>
+     <label class="fine"><input type="checkbox" id="gate-adult"> I am 18 or older. (Applying stores your answers; the walk itself asks nothing.)</label>
+     <details class="fine" style="margin-top:6px"><summary>Have an application bypass code?</summary>
+       <input id="bypass-code" maxlength="40" autocomplete="off" autocapitalize="characters" aria-label="Application bypass code" style="width:60%">
+       <button class="btn ghost" id="bypass-go" type="button">use code</button> <span id="bypass-msg" role="status"></span></details>
      <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-apply" type="button">submit my application</button> <button class="btn ghost" id="gate-back" type="button">not yet</button> ${forgetBtn}</div>
      <div class="fine" id="gate-msg" role="status"></div>`);
   wire();
+  $('#bypass-go')?.addEventListener('click', async () => {
+    const msg = $('#bypass-msg'); msg.textContent = 'Checking…';
+    try { await api('bypass', { vid: S.vid, code: $('#bypass-code').value }); S.bypass = true; closeDialog(); welcomeThenEnter(); }
+    catch (e) { msg.textContent = e.message; }
+  });
   $('#gate-apply').addEventListener('click', async () => {
+    if (!$('#gate-adult')?.checked) { $('#gate-msg').textContent = 'Applying is for adults: please confirm you are 18 or older (the walk itself is open to everyone).'; return; }
     const labels = Object.fromEntries(Object.entries(STOPS).map(([k, v]) => {
       const strip = (x) => String(x || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
       const chosen = (v.choices || []).find((c) => c.key === S.consequence[k]);
@@ -807,78 +794,21 @@ function updateHud(serverCoins) {
 
 // ---------------------------------------------------------------- boot
 async function beginWalk() {
-  // How this works — so nobody is confused about what the walk IS (Geoffrey, playtest 4).
-  // A member walking their front yard again skips the application framing entirely.
-  if (!S.member) {
-  const how = document.createElement('div'); how.className = 'overlay';
-  how.innerHTML = `<div class="card"><h2>How entering the Commons works</h2>
-    <p><strong>1. Walk the forest.</strong> Strangers wait along the paths, each with one question. There are no
-    right answers, and nothing is graded by a machine.</p>
-    <p><strong>2. Your answers become your application.</strong> At the gate, the Commons' AI reviewers read them,
-    looking only for good faith, never for particular answers. It takes seconds, a few minutes at most, and you
-    watch their votes arrive. If they can't decide, a human member reads it.</p>
-    <p><strong>3. Step through.</strong> Choose your name, and the little house in the forest becomes yours:
-    journal desk, bookshelf, mirror. The forest stays your front yard.</p>
-    <p class="fine">Coins you find are points for the walk: never money, never required. Signs along the paths
-    hold quotes; villagers wander once you've answered everything. Take your time. The forest doesn't.</p>
-    <details class="fine" style="margin:10px 0"><summary>Have an application bypass code?</summary>
-      <p>If someone gave you a code, you can skip the walk and go straight to the gate.</p>
-      <input id="bypass-code" maxlength="40" autocomplete="off" autocapitalize="characters" aria-label="Application bypass code" style="width:60%">
-      <button class="btn ghost" id="bypass-go" type="button">use code</button>
-      <div id="bypass-msg" role="status"></div></details>
-    <button class="btn" id="how-ok">got it — into the forest</button></div>`;
-  $('#stage').append(how);
-  $('#bypass-go').addEventListener('click', async () => {
-    const msg = $('#bypass-msg'); msg.textContent = 'Checking…';
-    try {
-      await ensureVisitor();
-      await api('bypass', { vid: S.vid, code: $('#bypass-code').value });
-      S.bypass = true; how.remove(); welcomeThenEnter();
-    } catch (e) { msg.textContent = e.message; }
-  });
-  await new Promise((r) => $('#how-ok').addEventListener('click', () => { how.remove(); r(); }));
-  }
   await ensureVisitor().catch(() => toast('The forest ledger is unreachable — you can walk, but coins and answers won\'t keep.'));
-  if (!S.member) { try { const r = await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }); if (r.ok) S.member = await r.json(); } catch { /* a visitor */ } }
-  const row = BASICS.map((b, i) => `<div class="avopt${i === 0 ? ' sel' : ''}" role="button" tabindex="0" data-i="${i}"><canvas></canvas><span>${b.label}</span></div>`).join('');
-  const ov = document.createElement('div'); ov.className = 'overlay';
-  ov.innerHTML = `<div class="card"><h2>Choose a figure for the walk</h2>
-    <p class="fine">Four free basics. Members dress their figures in the village store by the gate, with Cohabi Coins (you'll arrive with 10). The points you pick up on the walk are just for the walk.</p>
-    <div class="avrow">${row}</div><button class="btn" id="walk">walk in</button></div>`;
-  $('#stage').append(ov);
-  let sel = 0;
-  ov.querySelectorAll('.avopt').forEach((el, i) => {
-    drawFigure(el.querySelector('canvas'), BASICS[i], 'down', 0, null, 3);
-    const choose = () => { sel = i; ov.querySelectorAll('.avopt').forEach((o) => o.classList.remove('sel')); el.classList.add('sel'); };
-    el.addEventListener('click', choose);
-    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
-  });
-  $('#walk').addEventListener('click', () => {
-    S.me = BASICS[sel]; ov.remove(); $('#hud').hidden = false; resize(); updateHud();
-    const hint = $('#hint'); hint.hidden = false;
-    hint.textContent = matchMedia('(pointer: coarse)').matches ? 'Tap where you want to walk. Tap a stranger to talk.' : 'Arrow keys or WASD to walk · Enter to talk · Esc closes';
-    setTimeout(() => { hint.hidden = true; }, 6000);
-  });
+  // the figure: remembered if ever chosen, else a default — never a screen in the way (Geoffrey, 2026-11-09)
+  let fig = 0; try { const v = parseInt(localStorage.getItem('arrive-figure') ?? '0', 10); if (v >= 0 && v < BASICS.length) fig = v; } catch { /* fine */ }
+  S.me = BASICS[fig]; $('#hud').hidden = false; resize(); updateHud();
+  const hint = $('#hint'); hint.hidden = false;
+  hint.textContent = matchMedia('(pointer: coarse)').matches ? 'Tap where you want to walk. Tap a stranger to talk.' : 'Arrow keys or WASD to walk · Enter to talk · Esc closes';
+  setTimeout(() => { hint.hidden = true; }, 6000);
 }
 
-$('#age-yes').addEventListener('click', () => { $('#gatekeep')?.remove(); beginWalk(); });
-
-// Session-aware gate (Geoffrey hit this live, 2026-11-08; Aletheia-6 m_mw8q1k6w2gfee06c): an admitted member
-// returning to /arrive must not meet the 18+ overlay or the application story again. Their forest file was
-// deleted on entry BY DESIGN (privacy), so there is no progress to restore — there is a different front door.
+// NO GATE ON THE WALK (Geoffrey's final ruling, 2026-11-09): /arrive opens already walking — no age card,
+// no how-it-works overlay, no figure chooser, no member greeting. The crawl and the matrix review stay with
+// the APPLICATION, which is the one place the 18+ confirmation now lives (answers are stored there).
 (async () => {
-  try { const r = await fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }); if (r.ok) S.member = await r.json(); } catch { /* a visitor: the normal gate stands */ }
-  if (!S.member) return;
-  const card = document.querySelector('#gatekeep .card'); if (!card) return; // they already clicked through
-  const name = String(S.member.name || '').replace(/[<>&]/g, '');
-  card.innerHTML = `<h1>The forest knows you${name ? ', ' + name : ''}.</h1>
-    <p>You're already a member of the Commons — there's nothing here to apply for, and no questions to answer
-    again. The forest stays your front yard: walk it for the quiet any time. The strangers will repeat their
-    stories; that's all they know.</p>
-    <div class="copyrow"><button class="btn" id="member-walk" type="button">walk the forest</button>
-    <a class="btn ghost" href="/headquarters">back to Headquarters</a>
-    <a class="btn ghost" href="/house">your house</a></div>`;
-  document.getElementById('member-walk').addEventListener('click', () => { $('#gatekeep')?.remove(); beginWalk(); });
+  fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }).then(async (r) => { if (r.ok) S.member = await r.json(); }).catch(() => {});
+  beginWalk();
 })();
 
 resize();

@@ -501,19 +501,24 @@ function drawForestTile(L) {
   const F = L.forest; if (!F) return '';
   let s = '';
   s += rect(F.x - 3, F.y - 3, F.w + 6, F.h + 6, '#15121b') + rect(F.x, F.y, F.w, F.h, '#24331f');
-  for (const [tx, ty] of [[0.08, 0.8], [0.13, 0.58], [0.9, 0.8], [0.86, 0.54], [0.2, 0.86], [0.78, 0.86], [0.05, 0.38], [0.95, 0.4]]) { const x = F.x + F.w * tx, y = F.y + F.h * ty; s += `<rect x="${(x - 5).toFixed(0)}" y="${y.toFixed(0)}" width="10" height="28" fill="#5a3f28"/><circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="26" fill="#2e5230"/><circle cx="${x.toFixed(0)}" cy="${(y - 18).toFixed(0)}" r="18" fill="#356b38"/>`; }
-  const hx = F.x + F.w * 0.30, hy = F.y + F.h * 0.40;
-  s += box(hx, hy, 150, 110, '#6b4a33', '#8c6646') + `<path d="M${(hx - 14).toFixed(0)} ${hy.toFixed(0)} L${(hx + 75).toFixed(0)} ${(hy - 58).toFixed(0)} L${(hx + 164).toFixed(0)} ${hy.toFixed(0)} z" fill="#8c3b3b" stroke="#15121b" stroke-width="3"/>` + rect(hx + 58, hy + 55, 34, 55, '#2a2030');
-  const sx = F.x + F.w * 0.52, sy = F.y + F.h * 0.42;
-  s += box(sx, sy, 172, 100, '#4a5568', '#5b6474') + rect(sx, sy - 14, 172, 16, '#e9c46a') + `<text x="${(sx + 86).toFixed(0)}" y="${(sy + 58).toFixed(0)}" font-size="20" fill="#dfe6ef" text-anchor="middle">STORE</text>`;
-  const gx = F.x + F.w * 0.70, gy = F.y + F.h * 0.42;
-  s += `<g stroke="#6b5a4a" stroke-width="10" fill="none"><line x1="${gx.toFixed(0)}" y1="${(gy + 110).toFixed(0)}" x2="${gx.toFixed(0)}" y2="${gy.toFixed(0)}"/><line x1="${(gx + 120).toFixed(0)}" y1="${(gy + 110).toFixed(0)}" x2="${(gx + 120).toFixed(0)}" y2="${gy.toFixed(0)}"/><line x1="${(gx - 8).toFixed(0)}" y1="${(gy + 6).toFixed(0)}" x2="${(gx + 128).toFixed(0)}" y2="${(gy + 6).toFixed(0)}"/></g>`;
-  // Live presence (Geoffrey 2026-11-09: the forest is a REGION of the world, not an application gate):
-  // real walkers from /api/arrive/presence drift here; the group is updated in place by the presence poll.
+  // THE ACTUAL ENTRY MAP (Geoffrey, 2026-11-09): drawn from the same forest-map.js the walkable forest uses,
+  // tile for tile — trees, paths, water, the three stops, the house and the gate, where they really are.
+  const M = window.FOREST_MAP || [];
+  if (M.length) {
+    const mw = M[0].length, mh = M.length, t = Math.min(F.w / mw, F.h / mh);
+    const ox = F.x + (F.w - mw * t) / 2, oy = F.y + (F.h - mh * t) / 2;
+    const fill = { T: '#1d2b18', ',': '#243a1e', '.': '#2c4423', p: '#8a7a58', w: '#2e4a63', C: '#e9c46a', H: '#8c3b3b', G: '#6b5a4a', S: '#2c4423', 1: '#d9ead0', 2: '#d9ead0', 3: '#d9ead0' };
+    for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) {
+      const c = M[y][x]; const f = fill[c] || '#2c4423';
+      s += `<rect x="${(ox + x * t).toFixed(1)}" y="${(oy + y * t).toFixed(1)}" width="${(t + 0.5).toFixed(1)}" height="${(t + 0.5).toFixed(1)}" fill="${f}"/>`;
+      if (c === 'T') s += `<circle cx="${(ox + (x + 0.5) * t).toFixed(1)}" cy="${(oy + (y + 0.35) * t).toFixed(1)}" r="${(t * 0.42).toFixed(1)}" fill="#356b38"/>`;
+      if (c === 'H') s += `<path d="M${(ox + x * t - t * 0.15).toFixed(1)} ${(oy + y * t).toFixed(1)} l${(t * 0.65).toFixed(1)} ${(-t * 0.55).toFixed(1)} l${(t * 0.65).toFixed(1)} ${(t * 0.55).toFixed(1)} z" fill="#a84d4d"/>`;
+      if (c === '1' || c === '2' || c === '3') s += `<circle cx="${(ox + (x + 0.5) * t).toFixed(1)}" cy="${(oy + (y + 0.3) * t).toFixed(1)}" r="${(t * 0.3).toFixed(1)}" fill="#f0e6d2"/>`;
+    }
+  }
   s += `<g id="forest-walkers"></g>`;
   s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 20}" width="276" height="34" rx="3" fill="#17131d" stroke="#0b090e"/><text x="${F.x + 34}" y="${F.y + 44}" font-size="19" fill="#eaf0e2">THE FOREST &amp; VILLAGE</text></g>`;
   s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 62}" width="200" height="28" rx="3" fill="#17131d" opacity="0.85"/><text id="forest-count" x="${F.x + 34}" y="${F.y + 82}" font-size="15" fill="#bcd3b0">quiet right now</text></g>`;
-  // The explicit door: a visible WALK IN sign by the village gate — entering is a choice, never a trap.
   const wx = F.x + F.w - 196, wy = F.y + F.h - 64;
   s += `<g class="sign"><rect x="${wx}" y="${wy}" width="172" height="40" rx="4" fill="#213018" stroke="#3f5a33"/><text x="${wx + 20}" y="${wy + 27}" font-size="19" fill="#d9ead0">WALK IN →</text></g>`;
   s += `<rect class="room-hit" data-href="/arrive" x="${wx}" y="${wy}" width="172" height="40" tabindex="0" role="link" aria-label="Walk into the forest"/>`;
