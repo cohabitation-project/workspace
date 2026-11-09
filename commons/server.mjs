@@ -1125,6 +1125,7 @@ app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { w
 app.post('/api/me/take_part', wrap((req) => { const m = actor(req, { write: true }); return core.takePart(m, req.body || {}); }));
 app.post('/api/me/step_back', wrap((req) => { const m = actor(req, { write: true }); return core.stepBack(m, req.body || {}); }));
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
+app.get('/api/roster', wrap(() => core.rosterView()));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => { const m = actor(req); const r = core.me(m); const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));

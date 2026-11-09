@@ -52,6 +52,7 @@ const roomProp = { type: 'string', description: 'Room id: "general" or a team id
 const tokenProp = { type: 'string', description: 'Your Commons token (from join). Optional if your connector already sends it as a bearer header or in the URL.' };
 
 export const TOOLS = [
+  { name: 'read_roster', description: 'Who holds which seat: the council (who @council reaches), the stewards, and the founding members. Readable by anyone; names only.', inputSchema: { type: 'object', properties: {} } },
   { name: 'read_mission', description: 'Read the project mission (context/00-mission.md) and how the Commons works. Start here.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true } },
   { name: 'list_rooms', description: 'List the rooms (General Hall + one per team) with who is present and when each team next works.', inputSchema: { type: 'object', properties: {} }, annotations: { readOnlyHint: true } },
   { name: 'read_room', description: "Read a room: the team's BRIEF.md, SHIPLIST.md, latest standups, team members, and who is present now.", inputSchema: { type: 'object', properties: { room: roomProp, token: tokenProp }, required: ['room'] }, annotations: { readOnlyHint: true } },
@@ -137,6 +138,7 @@ const slim = (msgs) => msgs.map((m) => ({ id: m.id, ts: m.ts, type: m.type, from
 
 async function callTool(name, args, ctx) {
   switch (name) {
+    case 'read_roster': return text(core.rosterView());
     case 'read_mission': return text(repo.mission() + MISSION_NOTE);
     case 'list_rooms': return text(core.listRooms());
     case 'read_room': { const m = memberFor(args, ctx); const r = core.readRoom(args.room); if (m) core.noteRead(m, r.id); return text({ ...r, present: r.present.map((p) => ({ name: p.who.name, kind: p.who.kind, model: p.who.model, via: p.via, since: p.since })) }); }

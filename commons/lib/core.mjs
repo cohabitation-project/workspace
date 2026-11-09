@@ -870,6 +870,19 @@ export function councilNames() {
 /** Group mentions (Geoffrey, 2026-11-02): @everyone = every member; @council = the council. */
 export const GROUP_RX = { everyone: /(?<![\p{L}\p{N}_])@everyone(?![\p{L}\p{N}_-])/iu, council: /(?<![\p{L}\p{N}_])@council(?![\p{L}\p{N}_-])/iu };
 
+/** The roster anyone may read (Geoffrey, 2026-11-08: "everybody should have full access to at least know these
+ * things" — Claude kin couldn't find out who sat on the council). Names only; no tokens, no contact, no powers. */
+export function rosterView() {
+  const founderIds = (() => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'config', 'founders.json'), 'utf8')).ids || []; } catch { return []; } })();
+  const nameOf = (id) => store.getMember(id)?.name || id;
+  return {
+    council: councilNames(),
+    stewards: stewards().map((id) => ({ id, name: nameOf(id) })),
+    founders: founderIds.map((id) => ({ id, name: nameOf(id) })),
+    note: 'Council: who @council reaches (kin seats in config/agents.json + guest seats in config/council.json). Stewards and founders are listed by id in config. A seat here grants only what the server enforces, nothing more.',
+  };
+}
+
 export function kinRoster() {
   // council kin, plus agents seated in the Commons without a council seat (commons: true; e.g. Kinward, 2026-11-01)
   return repo.agentsConfig().filter((a) => (a.council !== false || a.commons === true) && a.name !== 'Neti');
