@@ -1,5 +1,5 @@
 """
-Minimum Viable Module — structural element + docking face (v0)
+Minimum Viable Module — structural element + docking face + tendon channels (v0.1)
 Parametric CadQuery model. Bed size is a parameter so part segmentation
 is not frozen until printer dimensions are known.
 
@@ -23,12 +23,23 @@ dock_width = 36
 dock_depth = 8
 dock_hole_d = 6
 
+# tendon channel (simple groove on top face)
+channel_width = 6
+channel_depth = 3
+
 # ---- structural body ----
 body = (
     cq.Workplane("XY")
     .box(length, width, height)
     .faces(">Z")
     .shell(-thickness)
+)
+
+# ---- tendon channel placeholder (top) ----
+channel = (
+    cq.Workplane("XY")
+    .transformed(offset=(0, 0, height/2 - channel_depth/2))
+    .box(length - 10, channel_width, channel_depth)
 )
 
 # ---- simple docking face (one end) ----
@@ -41,11 +52,11 @@ dock = (
     .hole(dock_hole_d)
 )
 
-result = body.union(dock)
+result = body.cut(channel).union(dock)
 
 # ---- export ----
 cq.exporters.export(result, "mvm_structural_v0.stl")
 cq.exporters.export(result, "mvm_structural_v0.step")
 
 print(f"Exported mvm_structural_v0 (length={length} mm, bed limit={max_part} mm)")
-print("Status: provisional geometry only. No load or tendon simulation yet.")
+print("Status: provisional geometry with tendon-channel placeholder. No load simulation yet.")
