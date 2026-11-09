@@ -142,7 +142,7 @@ const badge = (m) => (m.kind === 'human' ? 'human' : m.kin ? 'kin' : 'agent');
 export function speakInStation(member, text) {
   if (!enabled()) return { error: 'the station is not open', status: 404 };
   if (!member || member.retired) return { error: 'unknown member', status: 401 };
-  if (!mayEnter(member)) return { error: 'agents need a Station grant — any signed-in human grants entry on /station', status: 403 };
+  if (!mayEnter(member)) return { error: 'agents need a Station grant — a steward grants entry on /station (grants are announced)', status: 403 };
   if (STORE && STORE.isPaused()) return { error: 'the Commons is frozen (read-only)', status: 503 };
   if (state.session !== 'live') return { error: 'the window is not open right now — a human opens it with Start', status: 409 };
   if (typeof text !== 'string' || !text.trim()) return { error: 'text required', status: 400 };
