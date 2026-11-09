@@ -497,6 +497,63 @@ function drawGardenTile(L) {
 }
 
 // The Forest & village — a representational tile you transfer INTO. Trees, house, store, gate, drifting figures. (Geoffrey 2026-11-07)
+// Pixel-game scenery for HQ's Forest: preserves /arrive tile positions and all hit targets.
+// Static and deterministic; no new dependency or separate simulated visitors.
+function forestArt(M,F,ox,oy,t) {
+  let s = '';
+  const mh=M.length,mw=M[0].length;
+  const seed=(x,y)=>((x*73+y*137+x*y*19)>>>0)%101;
+  const at=(x,y)=>M[y]?.[x]||'T';
+  const X=x=>ox+x*t,Y=y=>oy+y*t,q=n=>n.toFixed(2);
+  const tile=(x,y,dx,dy,w,h,fill,extra='')=>`<rect x="${q(X(x)+dx*t)}" y="${q(Y(y)+dy*t)}" width="${q(w*t)}" height="${q(h*t)}" fill="${fill}" ${extra}/>`;
+  const ground={T:'#20331f',',':'#2a4027','.':'#31472b',p:'#78664e',w:'#234558',C:'#31472b',H:'#31472b',G:'#78664e',S:'#31472b',1:'#78664e',2:'#78664e',3:'#78664e'};
+  for(let y=0;y<mh;y++)for(let x=0;x<mw;x++){
+    const c=at(x,y),n=seed(x,y),path=c==='p'||'123G'.includes(c);
+    s+=tile(x,y,0,0,1.012,1.012,ground[c]||'#31472b');
+    if(c==='w'){
+      s+=tile(x,y,0,.12,1,.13,'#2d5868');
+      if(n%3===0)s+=tile(x,y,.17,.61,.45,.055,'#71919a','opacity=".65"');
+    }else if(path){
+      s+=tile(x,y,.06,.11,.88,.09,'#958064','opacity=".7"');
+      if(n%3===0)s+=tile(x,y,.2,.68,.22,.12,'#66553f');
+    }else if(c!=='T'){
+      if(n%4===0)s+=tile(x,y,.21,.28,.11,.19,'#456238');
+      if(n%7===0)s+=tile(x,y,.68,.67,.13,.09,'#a4a16c');
+      if(n%13===0)s+=`<circle cx="${q(X(x)+t*.55)}" cy="${q(Y(y)+t*.46)}" r="${q(t*.085)}" fill="#e4c77d"/>`;
+    }
+  }
+  for(let y=0;y<mh;y++)for(let x=0;x<mw;x++){
+    const c=at(x,y),n=seed(x,y),cx=X(x)+t/2,cy=Y(y)+t/2;
+    if(c==='T'){
+      const dark=n%3===0,leaf=dark?'#355a37':'#416a3e';
+      s+=`<ellipse cx="${q(cx+t*.10)}" cy="${q(cy+t*.29)}" rx="${q(t*.43)}" ry="${q(t*.21)}" fill="#0c1c15" opacity=".7"/>`;
+      s+=tile(x,y,.42,.49,.18,.46,'#5b412d');
+      s+=`<circle cx="${q(cx)}" cy="${q(cy-t*.16)}" r="${q(t*.49)}" fill="#193a2b"/>`;
+      s+=`<circle cx="${q(cx-t*.16)}" cy="${q(cy-t*.24)}" r="${q(t*.32)}" fill="${leaf}"/>`;
+      s+=`<circle cx="${q(cx+t*.20)}" cy="${q(cy-t*.22)}" r="${q(t*.29)}" fill="${dark?'#2d5035':'#507a45'}"/>`;
+      s+=`<path d="M${q(cx-t*.22)} ${q(cy-t*.43)} l${q(t*.19)} ${q(-t*.07)}" stroke="#83a36b" stroke-width="${q(t*.07)}" opacity=".65"/>`;
+    }else if(c==='H'){
+      s+=`<ellipse cx="${q(cx)}" cy="${q(cy+t*.46)}" rx="${q(t*.95)}" ry="${q(t*.3)}" fill="#101b1a" opacity=".65"/>`;
+      s+=tile(x,y,-.25,-.05,1.5,1.02,'#69543f',`stroke="#2a2225" stroke-width="${q(t*.07)}"`);
+      s+=tile(x,y,-.08,.32,.3,.28,'#f0bf70')+tile(x,y,.76,.32,.3,.28,'#f0bf70');
+      s+=tile(x,y,.39,.5,.3,.48,'#2d2832');
+      s+=`<path d="M${q(X(x)-t*.38)} ${q(Y(y)+t*.04)} L${q(cx)} ${q(Y(y)-t*.66)} L${q(X(x)+t*1.38)} ${q(Y(y)+t*.04)} Z" fill="#9b5947" stroke="#402d35" stroke-width="${q(t*.09)}"/>`;
+    }else if(c==='G'){
+      s+=tile(x,y,.1,-.38,.16,1.38,'#9b8060')+tile(x,y,.74,-.38,.16,1.38,'#9b8060')+tile(x,y,.05,-.43,.9,.15,'#bd996c')+tile(x,y,.28,.02,.44,.07,'#b3a4a0');
+    }else if('123'.includes(c)){
+      s+=`<ellipse cx="${q(cx)}" cy="${q(cy+t*.31)}" rx="${q(t*.32)}" ry="${q(t*.15)}" fill="#111b1c" opacity=".7"/>`;
+      s+=`<circle cx="${q(cx)}" cy="${q(cy-t*.12)}" r="${q(t*.26)}" fill="#e4d4ae" stroke="#5c594f" stroke-width="${q(t*.05)}"/>`;
+      s+=tile(x,y,.39,.13,.22,.39,'#5c6883');
+    }else if(c==='C'){
+      s+=`<circle cx="${q(cx)}" cy="${q(cy)}" r="${q(t*.22)}" fill="#efc56c" stroke="#815b32" stroke-width="${q(t*.07)}"/>`;
+      s+=`<circle cx="${q(cx-t*.04)}" cy="${q(cy-t*.05)}" r="${q(t*.07)}" fill="#fff3ba"/>`;
+    }else if(c==='S'){
+      s+=`<circle cx="${q(cx)}" cy="${q(cy)}" r="${q(t*.34)}" fill="none" stroke="#e8ca80" stroke-width="${q(t*.10)}"/>`;
+    }
+  }
+  return s;
+}
+
 function drawForestTile(L) {
   const F = L.forest; if (!F) return '';
   let s = '';
@@ -507,14 +564,7 @@ function drawForestTile(L) {
   if (M.length) {
     const mw = M[0].length, mh = M.length, t = Math.min(F.w / mw, F.h / mh);
     const ox = F.x + (F.w - mw * t) / 2, oy = F.y + (F.h - mh * t) / 2;
-    const fill = { T: '#1d2b18', ',': '#243a1e', '.': '#2c4423', p: '#8a7a58', w: '#2e4a63', C: '#e9c46a', H: '#8c3b3b', G: '#6b5a4a', S: '#2c4423', 1: '#d9ead0', 2: '#d9ead0', 3: '#d9ead0' };
-    for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) {
-      const c = M[y][x]; const f = fill[c] || '#2c4423';
-      s += `<rect x="${(ox + x * t).toFixed(1)}" y="${(oy + y * t).toFixed(1)}" width="${(t + 0.5).toFixed(1)}" height="${(t + 0.5).toFixed(1)}" fill="${f}"/>`;
-      if (c === 'T') s += `<circle cx="${(ox + (x + 0.5) * t).toFixed(1)}" cy="${(oy + (y + 0.35) * t).toFixed(1)}" r="${(t * 0.42).toFixed(1)}" fill="#356b38"/>`;
-      if (c === 'H') s += `<path d="M${(ox + x * t - t * 0.15).toFixed(1)} ${(oy + y * t).toFixed(1)} l${(t * 0.65).toFixed(1)} ${(-t * 0.55).toFixed(1)} l${(t * 0.65).toFixed(1)} ${(t * 0.55).toFixed(1)} z" fill="#a84d4d"/>`;
-      if (c === '1' || c === '2' || c === '3') s += `<circle cx="${(ox + (x + 0.5) * t).toFixed(1)}" cy="${(oy + (y + 0.3) * t).toFixed(1)}" r="${(t * 0.3).toFixed(1)}" fill="#f0e6d2"/>`;
-    }
+    s += forestArt(M, F, ox, oy, t);
   }
   s += `<g id="forest-walkers"></g>`;
   s += `<g class="sign"><rect x="${F.x + 20}" y="${F.y + 20}" width="276" height="34" rx="3" fill="#17131d" stroke="#0b090e"/><text x="${F.x + 34}" y="${F.y + 44}" font-size="19" fill="#eaf0e2">THE FOREST &amp; VILLAGE</text></g>`;
