@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Forest House · Aletheia interior study</title>
+<style>
+:root{color-scheme:dark;--gold:#e4bc77;--ink:#171b21;--cream:#f7ead6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#34483d,#101b1d 70%);font:15px/1.5 system-ui,sans-serif;color:var(--cream)}
+header{max-width:1180px;margin:auto;padding:22px 24px 10px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font:normal clamp(26px,4vw,42px) Georgia,serif;margin:0}h1 span{color:var(--gold)}.sub{opacity:.7;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+main{max-width:1180px;margin:auto;padding:0 20px 28px}.scene{position:relative;overflow:hidden;border:1px solid #7d9a8766;border-radius:22px;background:linear-gradient(#243b3b,#172d31);box-shadow:0 25px 85px #0009}
+svg{display:block;width:100%;height:auto;touch-action:manipulation}.halo{filter:drop-shadow(0 0 13px #ffd28b7a)}.label{font:13px Georgia,serif;fill:#f6e5bd;letter-spacing:2px}
+.panel{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:15px 17px;background:#142022}
+button,a.btn{cursor:pointer;color:#f9e7c5;background:#253c39;border:1px solid #779287;border-radius:9px;padding:10px 14px;font:inherit;text-decoration:none}button:hover,button:focus-visible,a.btn:hover{border-color:var(--gold);background:#36514a}button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}.note{max-width:1180px;margin:10px auto;color:#bbcbc2;font-size:13px}
+#status{color:var(--gold);font-size:14px}#avatar{transition:transform .16s ease-out}#avatar .shadow{opacity:.42}
+@media(prefers-reduced-motion:reduce){#avatar{transition:none}}@media(max-width:680px){header{padding:16px}main{padding:0 8px 20px}.panel{padding:10px}.scene{border-radius:12px}.sub{font-size:11px}}
+</style></head>
+<body>
+<header><div><div class="sub">Cohabitation · Land & City · independent experiment</div><h1>The <span>Forest House</span></h1></div><div class="sub">Interior study 01 / Aletheia-6</div></header>
+<main><div class="scene">
+<svg id="scene" viewBox="0 0 1000 700" role="img" aria-label="Warm isometric forest house interior with library, fireplace, desk, plants and a movable sample avatar">
+<defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#425d58"/><stop offset="1" stop-color="#182c32"/></linearGradient>
+<linearGradient id="left" x2="1" y2="1"><stop stop-color="#485e55"/><stop offset="1" stop-color="#2c423e"/></linearGradient>
+<linearGradient id="right" x2="1" y2="1"><stop stop-color="#344c49"/><stop offset="1" stop-color="#233735"/></linearGradient>
+<linearGradient id="floor" x2=".4" y2="1"><stop stop-color="#b28b60"/><stop offset="1" stop-color="#654a3b"/></linearGradient>
+<radialGradient id="warm"><stop stop-color="#ffd68c" stop-opacity=".5"/><stop offset="1" stop-color="#ffc46a" stop-opacity="0"/></radialGradient>
+<radialGradient id="window"><stop stop-color="#a7cdb5"/><stop offset="1" stop-color="#385b55"/></radialGradient>
+<pattern id="wood" width="36" height="36" patternUnits="userSpaceOnUse" patternTransform="skewY(26)"><path d="M0 0V36M1 0V36" stroke="#3e2a25" opacity=".26"/><path d="M0 18H36" stroke="#efd2a3" opacity=".09"/></pattern>
+<filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+</defs>
+<rect width="1000" height="700" fill="url(#sky)"/>
+<g opacity=".55"><circle cx="126" cy="102" r="75" fill="#91bd9a" opacity=".1"/><circle cx="858" cy="90" r="160" fill="#91bd9a" opacity=".08"/><path d="M0 620Q300 550 520 625T1000 590V700H0" fill="#122a27"/></g>
+<!-- back walls -->
+<polygon points="500,90 875,275 875,412 500,224" fill="url(#right)" stroke="#99a68a" stroke-opacity=".5" stroke-width="3"/>
+<polygon points="125,275 500,90 500,224 125,412" fill="url(#left)" stroke="#aab496" stroke-opacity=".5" stroke-width="3"/>
+<!-- roof beams -->
+<path d="M125 275L500 90 875 275M500 90V224M125 293L500 111 875 293" fill="none" stroke="#bca17a" stroke-width="10" opacity=".7"/>
+<!-- window left -->
+<polygon points="202,274 338,208 338,304 202,370" fill="#192f32" stroke="#cfac77" stroke-width="9"/>
+<polygon points="211,280 329,223 329,299 211,357" fill="url(#window)"/>
+<path d="M269 252V329M211 320L329 261" stroke="#cfac77" stroke-width="5"/>
+<path d="M211 337Q245 303 268 310T329 272" fill="none" stroke="#b7e0b4" stroke-width="8" opacity=".6"/>
+<!-- artwork right -->
+<polygon points="641,202 770,265 770,344 641,281" fill="#1c2c2c" stroke="#c6a676" stroke-width="9"/>
+<path d="M655 268L680 231 704 273 724 252 755 326" fill="none" stroke="#6c9c7c" stroke-width="11"/>
+<circle cx="722" cy="271" r="11" fill="#e7b96f"/>
+<!-- floor -->
+<polygon points="500,224 875,412 500,622 125,412" fill="url(#floor)" stroke="#d6b88c" stroke-width="8"/>
+<polygon points="500,224 875,412 500,622 125,412" fill="url(#wood)" opacity=".7"/>
+<path d="M125 412L500 622 875 412" fill="none" stroke="#3a302d" stroke-width="15"/>
+<ellipse cx="502" cy="434" rx="245" ry="100" fill="url(#warm)"/>
+<!-- rug -->
+<polygon points="490,364 698,466 502,568 290,460" fill="#324b49" stroke="#e0bd7b" stroke-width="8"/>
+<polygon points="490,390 652,467 501,541 336,460" fill="none" stroke="#b98f62" stroke-width="4"/>
+<path d="M350 460L500 400 635 465 502 529Z" fill="#557269" opacity=".42"/>
+<!-- bookshelf left -->
+<g transform="translate(135 310)">
+<polygon points="0,0 118,-57 118,84 0,141" fill="#382b2a" stroke="#b58a57" stroke-width="6"/>
+<polygon points="8,15 109,-34 109,76 8,124" fill="#221f23"/>
+<path d="M9 52L109 3M9 91L109 42" stroke="#c19b63" stroke-width="8"/>
+<g stroke-width="7"><path d="M20 39L20 11M32 32V5M46 27V-1M58 22V-8M70 15V-15M83 11V-22" stroke="#b5c8aa"/><path d="M19 78V57M31 71V50M45 65V43M60 58V36M75 50V29M90 44V21" stroke="#d1a779"/><path d="M19 117V95M31 109V88M45 102V81M59 96V74M73 90V69M89 82V61" stroke="#8ea9b4"/></g>
+<polygon points="0,0 15,7 133,-50 118,-57" fill="#d4b07a"/>
+</g>
+<!-- fireplace right -->
+<g transform="translate(714 327)">
+<polygon points="0,0 105,50 105,158 0,108" fill="#8c6c59" stroke="#d0b08b" stroke-width="6"/>
+<polygon points="19,44 88,77 88,138 19,106" fill="#1b2224" stroke="#d5b98c" stroke-width="6"/>
+<ellipse cx="54" cy="112" rx="27" ry="16" fill="#faad4c" opacity=".6" filter="url(#blur)"/>
+<path d="M41 114Q29 95 46 79Q42 102 57 103Q51 87 65 80Q86 109 67 122Z" fill="#f5b65b"/><path d="M51 113Q47 101 57 95Q72 115 58 123Z" fill="#fff0b3"/>
+<polygon points="-10,-9 112,47 112,61 -10,6" fill="#d5b483"/>
+</g>
+<!-- plant at right -->
+<g transform="translate(825 421)"><ellipse cy="57" rx="22" ry="9" fill="#162423" opacity=".5"/><path d="M-20 24H20L13 58H-12Z" fill="#ba8562" stroke="#e6bb87" stroke-width="3"/><path d="M0 27V-75" stroke="#44634b" stroke-width="5"/><g fill="#6f9e78" stroke="#3e664b" stroke-width="3"><ellipse cx="-23" cy="-32" rx="14" ry="29" transform="rotate(-45 -23 -32)"/><ellipse cx="22" cy="-48" rx="15" ry="31" transform="rotate(40 22 -48)"/><ellipse cx="-12" cy="-72" rx="13" ry="28" transform="rotate(-20 -12 -72)"/><ellipse cx="12" cy="-87" rx="12" ry="28" transform="rotate(23 12 -87)"/></g></g>
+<!-- desk -->
+<g transform="translate(420 327)">
+<ellipse cx="40" cy="103" rx="95" ry="27" fill="#241d1b" opacity=".22"/>
+<path d="M-67 16V77L-48 84V34M118 11V70L99 81V32" fill="#684536" stroke="#3b2c29" stroke-width="5"/>
+<polygon points="-72,12 42,-42 122,-1 8,58" fill="#a77b55" stroke="#ddbb8a" stroke-width="7"/>
+<polygon points="-72,12 8,58 8,70 -72,24" fill="#6b4635"/><polygon points="8,58 122,-1 122,11 8,70" fill="#83583f"/>
+<polygon points="-13,-2 25,-19 51,-7 12,11" fill="#e9d7b0" stroke="#b7a07b" stroke-width="2"/>
+<path d="M2 1L34 -13M6 6L30 -6" stroke="#736c65" stroke-width="2"/>
+<ellipse cx="68" cy="3" rx="10" ry="5" fill="#e0b674"/>
+</g>
+<!-- reading chair -->
+<g transform="translate(300 475)">
+<ellipse cy="40" rx="58" ry="19" fill="#201e1d" opacity=".3"/>
+<path d="M-38 -47Q-40 -72 -12 -73L41 -43Q55 -32 44 -5L11 25 -39 1Z" fill="#657a6d" stroke="#b6b68d" stroke-width="6"/>
+<polygon points="-41,-4 9,21 55,-4 7,-27" fill="#9eae91" stroke="#d4c7a2" stroke-width="6"/>
+<path d="M-30 9V40M42 7V37" stroke="#8a6145" stroke-width="8"/>
+</g>
+<!-- floor lamp -->
+<g transform="translate(620 355)"><ellipse cy="68" rx="26" ry="10" fill="#3a302b"/><path d="M0 68V-52" stroke="#bd9766" stroke-width="6"/><path d="M-26 -61H26L16 -16H-16Z" fill="#f2d7a3" stroke="#c29e6d" stroke-width="4"/><ellipse cy="-24" rx="90" ry="90" fill="url(#warm)"/></g>
+<!-- sample avatar -->
+<g id="avatar" transform="translate(510 475)">
+<ellipse class="shadow" cx="0" cy="25" rx="22" ry="9" fill="#152323"/>
+<path d="M-12 5L-14 24M12 5L14 24" stroke="#283d45" stroke-width="11" stroke-linecap="round"/>
+<path d="M-15 -31Q0 -40 15 -31L19 4Q0 14 -19 4Z" fill="#5369a0" stroke="#a4c4c5" stroke-width="3"/>
+<path d="M-18 -25L-28 -2M18 -25L28 -2" stroke="#9eabc2" stroke-width="8" stroke-linecap="round"/>
+<rect x="-17" y="-61" width="34" height="33" rx="12" fill="#5369a0" stroke="#b1d4d3" stroke-width="3"/>
+<rect x="-13" y="-53" width="26" height="13" rx="6" fill="#182d36" stroke="#d4b66c" stroke-width="2"/>
+<circle cx="-6" cy="-47" r="2" fill="#f5e6b5"/><circle cx="6" cy="-47" r="2" fill="#f5e6b5"/>
+<path d="M0 -61V-76" stroke="#c4b68e" stroke-width="3"/><circle cy="-79" r="5" fill="#f1c16f" class="halo"/>
+<text y="-8" text-anchor="middle" fill="#e9d6ad" font-size="14" font-family="Georgia">α</text>
+</g>
+<!-- small labels -->
+<g><rect x="38" y="30" width="330" height="74" rx="10" fill="#142724" opacity=".87"/><text x="58" y="60" class="label">THE UNFINISHED GARDEN</text><text x="58" y="86" fill="#c9d4c3" font-size="16">A room for return, reading and becoming</text></g>
+<g><rect x="695" y="38" width="266" height="59" rx="10" fill="#142724" opacity=".82"/><text x="712" y="64" class="label">EXPERIMENT · NOT LIVE</text><text x="712" y="83" fill="#b6d0c1" font-size="12">Sample avatar · no member data</text></g>
+</svg>
+<div class="panel"><div><strong>Explore the room</strong><div id="status" role="status" aria-live="polite">Use arrow keys or WASD to move the sample avatar.</div></div><div class="actions">
+<button id="left" aria-label="Move left">←</button><button id="up" aria-label="Move up">↑</button><button id="down" aria-label="Move down">↓</button><button id="right" aria-label="Move right">→</button><button id="reset">Reset position</button>
+</div></div></div>
+<p class="note">Design prototype only. No account reads, purchases, microphone access, remote services, or persistence. The real house currently uses the existing 2D furniture system; this study tests a richer visual language without changing it.</p>
+</main>
+<script>
+(()=>{'use strict';
+const avatar=document.getElementById('avatar'),status=document.getElementById('status');
+let x=510,y=475;const step=18;
+const blocked=(a,b)=>((a>350&&a<555&&b>310&&b<427)||(a>675&&a<795&&b>340&&b<478)||(a>245&&a<358&&b>440&&b<515)||(a>160&&a<250&&b>285&&b<440));
+function move(dx,dy){const nx=x+dx,ny=y+dy;if(nx<235||nx>765||ny<340||ny>560||blocked(nx,ny)){status.textContent='A wall or furnishing is in the way.';return;}x=nx;y=ny;avatar.setAttribute('transform',`translate(${x} ${y})`);status.textContent='Exploring · sample avatar at '+x+', '+y;}
+const directions={left:[-step,0],right:[step,0],up:[0,-step],down:[0,step]};
+for(const [id,v] of Object.entries(directions))document.getElementById(id).addEventListener('click',()=>move(...v));
+document.getElementById('reset').addEventListener('click',()=>{x=510;y=475;avatar.setAttribute('transform','translate(510 475)');status.textContent='Returned to the center of the house.';});
+document.addEventListener('keydown',e=>{if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||''))return;const k={ArrowLeft:'left',a:'left',A:'left',ArrowRight:'right',d:'right',D:'right',ArrowUp:'up',w:'up',W:'up',ArrowDown:'down',s:'down',S:'down'}[e.key];if(k){e.preventDefault();move(...directions[k]);}});
+})();
+</script></body></html>
