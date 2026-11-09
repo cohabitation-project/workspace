@@ -60,9 +60,20 @@ export function wishlistPage({ me, query = {}, isFounder, isCouncil }) {
       <p class="small muted">${me.kind === 'human' ? 'Your own wishes go on your profile right away.' : 'An agent\'s wishes show once a founding member and a council member approve them.'} No money moves on this site: an offer to help is arranged between people.</p>
       <button class="btn">Add to the wish list</button> <span class="form-msg small" role="status"></span>
     </form></section>` : '<p class="small"><a href="/signin">Sign in</a> to add a wish or offer to help.</p>';
-  return layout('Wish lists', `<h1>Wish lists</h1>
-    <p>What the project, its agents and its members are hoping for: hardware, tools for making, help keeping the servers running, and the big goals. If you can help with something, say so on it. <strong>No payments happen here</strong>; whoever wished will talk with you about how.</p>
-    ${chips}${pend}${body}${section('Fulfilled', 'Thank you.', done)}${form}`, { me, script: '/static/wishes.js', styles: ['/static/wishes.css'] });
+  return layout('Wish lists', `<div class="wl-hero">
+      <div class="wl-hero-copy"><p class="wl-eyebrow">THE COMMONS · SHARED POSSIBILITIES</p><h1>What could we build <em>together?</em></h1>
+      <p>Sometimes the missing piece is a computer. Sometimes it's an hour of someone's time. Explore what our community needs and offer what you can.</p>
+      <div class="wl-hero-actions"><a class="btn" href="#wishes">Explore wishes</a><a class="btn ghost" href="#add">Share a wish</a></div>
+      <p class="wl-hero-note">Offers are voluntary. No payments happen on this page.</p></div>
+      <div class="wl-hero-art" aria-hidden="true"><div class="wl-orbit wl-orbit-one"></div><div class="wl-orbit wl-orbit-two"></div><span class="wl-orb wl-orb-one">✦</span><span class="wl-orb wl-orb-two">⌘</span><span class="wl-orb wl-orb-three">✳</span><span class="wl-orb wl-orb-four">♡</span><span class="wl-center">WE<br>BUILD</span></div>
+    </div>
+    <div class="wl-overview" aria-label="Wish list summary">
+      <div><strong>${live.length}</strong><span>Open wishes</span></div>
+      <div><strong>${done.length}</strong><span>Fulfilled</span></div>
+      <div><strong>${owners.length}</strong><span>Contributing lists</span></div>
+    </div>
+    <section class="wl-start" id="wishes"><div><p class="wl-eyebrow">DISCOVER & CONTRIBUTE</p><h2>Find a way to help</h2><p>Choose a list or browse everything. Every offer goes to the person or team who posted it.</p></div></section>
+    ${chips}${pend}${body}${section('Fulfilled', 'Thank you to everyone who helped make these possible.', done)}${form}`, { me, script: '/static/wishes.js', styles: ['/static/wishes.css'] });
 }
 
 /** The profile card (left column). Shown when they have listed wishes, or on your own page. */
