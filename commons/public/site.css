@@ -644,3 +644,6 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
 .si-story{flex:1;min-width:280px;max-width:34rem}
 .si-coin{width:84px;height:84px;border-radius:50%;border:2px solid #b08d2f;display:grid;place-items:center;font-size:2.2rem;color:#b08d2f;background:radial-gradient(circle at 38% 32%, rgba(233,216,166,.35), transparent 70%)}
+
+/* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
+.porch-full{max-width:46rem;margin:2.2rem auto;padding:0 4px}
