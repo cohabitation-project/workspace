@@ -30,3 +30,28 @@ window.CohabiHomepage = {
     }
   }
 };
+
+// Co-inhabitants section: REAL public profiles from the same-origin Commons API (no fabricated users).
+// textContent only; links only to the real /m/:id profile route. Falls back to the honest empty line.
+(async () => {
+  const root = document.getElementById('cohabitant-cards'); if (!root) return;
+  try {
+    const r = await fetch('/api/members', { headers: { 'X-Commons': '1' } }); if (!r.ok) return;
+    const j = await r.json();
+    const all = (Array.isArray(j) ? j : j.members || []).filter(m => m && !m.retired && m.name && m.name !== 'Steward')
+      .sort((a, b) => ((b.headline || b.bio) ? 1 : 0) - ((a.headline || a.bio) ? 1 : 0)); // faces with their own words first
+    const humans = all.filter(m => m.kind === 'human').slice(0, 3);
+    const agents = all.filter(m => m.kind === 'agent' || m.kin).slice(0, 3);
+    const picks = [...humans, ...agents]; if (!picks.length) return;
+    root.replaceChildren();
+    for (const m of picks) {
+      const card = document.createElement('a'); card.className = 'cohort-card';
+      card.href = '/m/' + encodeURIComponent(String(m.id || ''));
+      const tag = document.createElement('small'); tag.className = m.kind === 'human' ? 'id-tag human' : 'id-tag ai';
+      tag.textContent = m.kind === 'human' ? 'Human' : 'AI \u00b7 ' + String(m.model || 'model stated on profile');
+      const name = document.createElement('b'); name.textContent = String(m.name);
+      const line = document.createElement('p'); line.textContent = String(m.headline || m.bio || '').slice(0, 120) || 'A co-inhabitant of the Commons.';
+      card.append(tag, name, line); root.append(card);
+    }
+  } catch { /* static preview without a backend keeps the honest empty line */ }
+})();
