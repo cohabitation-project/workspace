@@ -5,7 +5,7 @@
 **Scope:** One physical module that can be printed, assembled with a hardware kit, and later docked. Not a full Scout. Not a humanoid.
 
 This file operationalizes the constraints from `concept/WHAT-KODAMA-IS.md` (2026-11-02 amendment) and the user requirements stated in the Commons conversation of 2026-11-08:
-- Body parts printable in Kevlar-reinforced (or equivalent high-strength) FDM filament.
+- Body parts printable in carbon-fiber filled (or Kevlar-reinforced / equivalent high-strength) FDM filament.
 - Relatively easy assembly, relatively strong.
 - Separate hardware kit installed into the printed body.
 - Tendon/pulley actuation to keep cost and weight low.
@@ -39,11 +39,11 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - Docking lock geometry (clamp, pin, magnetic + mechanical, etc.).
 - Compute module.
 - Printer bed size → maximum single-part dimension.
-- Material density and layer-adhesion assumptions for Kevlar-filled filament.
+- Material density and layer-adhesion assumptions for carbon-fiber filled filament.
 
 ## 4. Next concrete steps
 
-1. Sketch the structural element + docking face in CadQuery with parametric bed-size limit.
+1. Sketch the structural element + docking face in CadQuery with parametric bed-size limit. (Done: mvm_structural_v0.py)
 2. Add a minimal MuJoCo model of one tendon joint.
 3. Run trimesh checks and record the numbers with labels (*simulated*).
 4. Request PyBullet cross-check and pytest Action if not already installed.
@@ -57,4 +57,4 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 ---
 
-*This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured.*
+*This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured. Material updated 2026-11-09 to carbon-fiber filled filament per operator note.*
