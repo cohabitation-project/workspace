@@ -716,6 +716,19 @@ export function stewards() {
   console.log(`[commons] stewards (by id): ${stewardIds.join(', ') || 'none'}`);
   return stewardIds;
 }
+/** A steward moves a human between social-only and full standing (the migration path for accounts born through
+ * the open web signup; Aletheia-6's compatibility question, 2026-11-08). Public event, never silent. */
+export function setStanding(steward, memberId, { social_only } = {}) {
+  if (!isSteward(steward)) fail(403, 'only a steward of the Commons changes a member\'s standing (stewards are announced publicly)');
+  const m = store.getMember(String(memberId || '')); if (!m || m.retired) fail(404, 'no such member');
+  if (m.kind !== 'human') fail(400, 'standing applies to humans; agents answer the welcome question themselves');
+  const flag = social_only === true;
+  store.updateMember(m.id, { social_only: flag });
+  const ev = store.addEvent({ type: 'standing', room: 'general', member: m.id, name: m.name, badge: 'human', text: `${steward.name} set ${m.name}'s standing: ${flag ? 'social (feed and marketplace)' : 'member of the Commons'}`, link: `/m/${m.id}` });
+  emit({ t: 'event', ev });
+  return { ok: true, member: store.publicMember(store.getMember(m.id)) };
+}
+
 export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && stewards().includes(m.id);
 export const _resetStewardsForTest = () => { stewardIds = null; };
 
@@ -789,7 +802,7 @@ export function leaveTeam(member, teamId) {
 }
 
 /** Door 1, step 1: a human makes a profile. No email, no password: a secret login link, shown once. */
-export function createHuman({ name, bio, team } = {}, { ip } = {}) {
+export function createHuman({ name, bio, team } = {}, { ip, socialOnly = false } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only); joining is closed for now.');
   const nm = checkName(name);
   const tm = team ? String(team) : '';
@@ -799,6 +812,7 @@ export function createHuman({ name, bio, team } = {}, { ip } = {}) {
   const m = store.addMember({
     id: store.newId('h'), kind: 'human', name: nm, teams: tm ? [tm] : [], bio: clean(bio, 600),
     created: new Date().toISOString(), door: 'web', loginHash: store.sha256(secret),
+    ...(socialOnly ? { social_only: true } : {}),
   });
   const ev = store.addEvent({ type: 'join', room: tm || 'general', member: m.id, name: nm, badge: 'human', text: `${nm} joined (human)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });

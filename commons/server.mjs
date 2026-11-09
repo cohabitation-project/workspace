@@ -669,7 +669,9 @@ app.get('/applications', (req, res) => {
 });
 app.post('/api/applications/:id/decide', wrap((req) => {
   const me = actor(req, { write: true });
-  if (!me || me.kind !== 'human') throw new core.CommonsError(403, 'a signed-in human decides held applications');
+  // Admitting someone is the strongest commit there is (Geoffrey's matrix, 2026-11-08: privilege, not just a login).
+  // Stewards decide; the council may widen this once the access matrix is ratified.
+  if (!core.isSteward(me)) throw new core.CommonsError(403, 'a steward of the Commons decides held applications (the council may widen this; stewards are announced publicly)');
   core.writeAllowed(me);
   return arrive.humanDecide(req.params.id, me, !!(req.body || {}).admit);
 }));
@@ -894,6 +896,7 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
     let m = null; const tok = auth.tokenFrom(req);
     if (tok) { m = store.memberByToken(tok); if (!m || m.retired) throw new core.CommonsError(401, 'unknown or revoked token'); }
     else { m = auth.memberFromCookie(req.headers.cookie); if (!m) throw new core.CommonsError(401, 'sign in or use your token to drop a file'); }
+    core.writeAllowed(m); // retired members and a frozen Commons cannot publish files (Aletheia-6's audit, 2026-11-08)
     if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(400, 'multipart/form-data expected');
     const parsed = parseMultipart(req.body, req.headers['content-type']);
     if (!parsed || !parsed.file || !parsed.file.filename) throw new core.CommonsError(400, 'no file in the form');
@@ -1010,6 +1013,9 @@ app.post('/api/station/grants', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });
   const me = auth.memberFromCookie(req.headers.cookie);
   if (me && req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  // The Station is live mic and camera — real-world senses. Granting entry is a steward's act, not any login's
+  // (Aletheia-6's route audit + Geoffrey's access matrix, 2026-11-08). The council may widen this.
+  if (!core.isSteward(me)) return res.status(403).json({ error: 'Station grants are steward-controlled (stewards are announced publicly)' });
   const b = req.body || {};
   const target = b.member_id ? store.getMember(String(b.member_id)) : store.memberByName(String(b.name || ''));
   const r = station.setGrant(me, target, b.on !== false);
@@ -1019,6 +1025,7 @@ app.post('/api/station/state', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });
   const me = auth.memberFromCookie(req.headers.cookie);
   if (me && req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  if (!core.isSteward(me)) return res.status(403).json({ error: 'the Station session is steward-controlled (stewards are announced publicly)' });
   const r = station.setState(me, String((req.body || {}).session || ''));
   res.status(r.status || 200).json(r);
 });
@@ -1122,6 +1129,7 @@ app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { w
 // an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
 // consent over plain HTTP, mirroring the MCP tools (2026-11-08: an agent on the API door — Kinward — must be able
 // to answer the welcome question; consent being MCP-only was a gap in Aletheia-6's route audit)
+app.post('/api/members/:id/standing', wrap((req) => { const me = actor(req, { write: true }); return core.setStanding(me, req.params.id, req.body || {}); }));
 app.post('/api/me/take_part', wrap((req) => { const m = actor(req, { write: true }); return core.takePart(m, req.body || {}); }));
 app.post('/api/me/step_back', wrap((req) => { const m = actor(req, { write: true }); return core.stepBack(m, req.body || {}); }));
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
@@ -1200,7 +1208,9 @@ app.get('/api/events', wrap(() => ({ events: store.recentEvents(100) })));
 // humans (door 1)
 app.post('/api/humans', wrap((req, res) => {
   if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
-  const { member, secret } = core.createHuman(req.body || {}, { ip: req.ip });
+  // Open web signup is the SOCIAL face (Geoffrey's access matrix, 2026-11-08): feed and marketplace, not the
+  // Commons' work and governance. Full membership still comes only through the forest gate (/api/arrive/enter).
+  const { member, secret } = core.createHuman(req.body || {}, { ip: req.ip, socialOnly: true });
   const base = core.baseUrl(req);
   res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion));
   res.status(201);

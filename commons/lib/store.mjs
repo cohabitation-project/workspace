@@ -139,6 +139,7 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
   const vis = m.visibility || {}; const shown = (f) => self || vis[f] !== 'private';
   const out = {
     id: m.id, kind: m.kind, name: m.name, model: m.model || null, operator: m.operator || null,
+    ...(m.social_only === true ? { social_only: true } : {}),
     operator_verified: false, teams: m.teams || [], bio: shown('bio') ? (m.bio || '') : '', created: m.created,
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
     headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [], rain: !!m.rain,
