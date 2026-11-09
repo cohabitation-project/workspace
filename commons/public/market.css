@@ -173,26 +173,37 @@
 .mk-artisthero .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
 @media (max-width: 699px) { .mk-artistimg { width: 200px; height: 200px; } .mk-artisthero h1 { font-size: 30px; } }
 
-/* ---- the market home: six blocks across, then featured rows (Geoffrey, 2026-11-07) */
-.mk-hero-home { padding: 14px 0 2px; }
-.mk-hero-home .mk-lede { margin: 0; }
-.mk-blocks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 14px 0 6px; }
-.mk-block { position: relative; display: block; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; color: #fff !important; box-shadow: 0 1px 3px #0000001f; isolation: isolate; }
-.mk-block:hover { text-decoration: none !important; transform: translateY(-2px); box-shadow: 0 8px 20px #00000026; }
-.mk-block { transition: transform .15s, box-shadow .15s; }
-.mk-blockart { position: absolute; inset: 0; display: grid; place-items: center; font-size: 54px; z-index: -1; }
+/* ---- Market home: six immersive department entrances, not six tiny icons.
+   Aletheia exploratory pass; content and pricing remain unchanged. */
+.mk-hero-home { padding: 22px 0 8px; }
+.mk-hero-home h1 { font-size: clamp(38px, 4.5vw, 58px); letter-spacing: -.035em; }
+.mk-hero-home .mk-lede { margin: 8px 0 4px; max-width: 830px; line-height: 1.55; }
+.mk-page[data-mk=home] .mk-main { max-width: 1320px; }
+.mk-blocks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0 18px; }
+.mk-block { position: relative; display: block; min-height: 250px; aspect-ratio: 2.45 / 1; border-radius: 20px; overflow: hidden; color: #fff !important; box-shadow: 0 8px 22px #00000016; isolation: isolate; transition: transform .2s ease, box-shadow .2s ease; }
+.mk-block:hover { text-decoration: none !important; transform: translateY(-4px); box-shadow: 0 18px 36px #0000002c; }
+.mk-block:focus-visible { outline: 3px solid #d39a3b; outline-offset: 4px; }
+.mk-blockart { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(64px, 8vw, 108px); z-index: -1; transition: transform .35s ease; }
+.mk-block:hover .mk-blockart { transform: scale(1.04); }
 .mk-blockart.has-img { background: var(--mk-img) center / cover no-repeat; }
-.mk-blockart::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, #000000a6); }
-.mk-blockname { position: absolute; left: 12px; right: 12px; bottom: 10px; font: 700 17px/1.15 Georgia, serif; text-shadow: 0 1px 3px #0009; }
-.mk-block[data-block=music] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 30% 30%, #ff8a3d, #3a1404 75%); }
-.mk-block[data-block=art] .mk-blockart:not(.has-img) { background: conic-gradient(from 200deg at 60% 40%, #e9b44c, #d1495b, #00798c, #30638e, #e9b44c); }
-.mk-block[data-block=video] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 50% 20%, #5a5a72, #0a0a0c 70%); }
-.mk-block[data-block=software] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(0deg, #0d1117 0 22px, #10151d 22px 23px), linear-gradient(#0d1117, #0d1117); }
+.mk-blockart::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #090b12b8 0%, #090b1270 48%, #090b120d 100%), linear-gradient(0deg, #0007, transparent 65%); }
+.mk-blockname { position: absolute; left: 26px; right: 22px; bottom: 60px; font: 700 clamp(25px, 2.6vw, 38px)/1.08 Georgia, serif; text-shadow: 0 2px 8px #0009; }
+.mk-block::after { position: absolute; left: 27px; right: 20px; bottom: 23px; color: #f5f1e9; font: 500 14px/1.35 system-ui, sans-serif; text-shadow: 0 1px 4px #000c; }
+.mk-block[data-block=music]::after { content: 'Discover artists, releases and independent sounds'; }
+.mk-block[data-block=art]::after { content: 'Original work, handmade pieces and creative makers'; }
+.mk-block[data-block=video]::after { content: 'Film, animation, design and visual storytelling'; }
+.mk-block[data-block=software]::after { content: 'Open-source projects, tools and independent software'; }
+.mk-block[data-block=services]::after { content: 'Find skilled people, agents and creative teams'; }
+.mk-block[data-block=classifieds]::after { content: 'Local listings, swaps, opportunities and notices'; }
+.mk-block[data-block=music] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 75% 45%, #f47939, #371409 75%); }
+.mk-block[data-block=art] .mk-blockart:not(.has-img) { background: conic-gradient(from 200deg at 65% 40%, #e9b44c, #d1495b, #00798c, #30638e, #e9b44c); }
+.mk-block[data-block=video] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 70% 35%, #5a5a72, #0a0a0c 70%); }
+.mk-block[data-block=software] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(0deg, #0d1117 0 22px, #10151d 22px 23px); }
 .mk-block[data-block=software] .mk-blockart:not(.has-img) span { filter: drop-shadow(0 0 8px #3fb95099); }
 .mk-block[data-block=services] .mk-blockart:not(.has-img) { background: linear-gradient(135deg, #2457c5, #7fa6f0); }
-.mk-block[data-block=classifieds] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(90deg, #efe9da 0 46px, #e2dac6 46px 48px); color: #1d1b16; }
+.mk-block[data-block=classifieds] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(90deg, #a99e87 0 46px, #8f8470 46px 48px); }
 .mk-rotnote { margin: 10px 0 0; }
-.mk-row-sec { margin-top: 6px; }
+.mk-row-sec { margin-top: 14px; }
 .mk-rowh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .mk-rowscroll { display: grid; grid-auto-flow: column; grid-auto-columns: 170px; gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; scrollbar-width: thin; }
 .mk-rowscroll > * { scroll-snap-align: start; }
@@ -200,12 +211,20 @@
 .mk-open .mk-cover { background: transparent; }
 .mk-open .mk-icon { color: var(--muted); font-size: 34px; }
 .mk-open .mk-body { gap: 2px; }
-@media (max-width: 1099px) { .mk-blocks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 899px) {
+  .mk-blocks { gap: 12px; }
+  .mk-block { min-height: 210px; aspect-ratio: 1.6 / 1; }
+  .mk-blockname { left: 18px; bottom: 57px; }
+  .mk-block::after { left: 19px; font-size: 12px; }
+}
 @media (max-width: 699px) {
-  .mk-blocks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .mk-blockname { font-size: 15px; }
+  .mk-blocks { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 18px; }
+  .mk-block { min-height: 185px; aspect-ratio: 1.9 / 1; border-radius: 16px; }
+  .mk-blockname { font-size: 27px; bottom: 55px; }
+  .mk-block::after { bottom: 20px; font-size: 12px; }
   .mk-rowscroll { grid-auto-columns: 46%; }
 }
+@media (prefers-reduced-motion: reduce) { .mk-block, .mk-blockart { transition: none; } }
 
 /* ---- how Cohabi works: the cooperative and its tiers (designs marked as designs) */
 .mk-coop { margin: 30px 0 10px; padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
