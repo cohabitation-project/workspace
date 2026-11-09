@@ -321,8 +321,13 @@ function camFit(x, y, w, h, pad, animate) {
   S.cam.s = s; S.cam.fx = x + w / 2; S.cam.fy = y + h / 2; clampCam(); applyCam(animate !== false);
 }
 // "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
-function fitHQ(animate) { const B = S.L.building, G = S.L.greathall?.hall; if (!G) return camFit(B.x, B.y, B.w, B.h, 1.04, animate); const x = Math.min(B.x, G.x), y = Math.min(B.y, G.y), right = Math.max(B.x + B.w, G.x + G.w), bottom = Math.max(B.y + B.h, G.y + G.h); camFit(x, y, right - x, bottom - y, 1.08, animate); }
-function fitAll(animate) { camFit(0, 0, S.L.W, S.L.H, 1.08, animate); }
+function fitHQ(animate) { const B = S.L.building; camFit(B.x - 45, B.y - 45, B.w + 90, B.h + 90, 1.08, animate); }
+function fitAll(animate) {
+  // Zoom out around Headquarters, not around the world's bounding-box center.
+  const B = S.L.building, cx = B.x + B.w / 2, cy = B.y + B.h / 2;
+  const halfW = Math.max(cx, S.L.W - cx), halfH = Math.max(cy, S.L.H - cy);
+  camFit(cx - halfW, cy - halfH, halfW * 2, halfH * 2, 1.04, animate);
+}
 function screenToWorld(mx, my) { const C = buildingSize(); return { x: S.cam.fx + (mx - C.w / 2) / S.cam.s, y: S.cam.fy + (my - C.h / 2) / S.cam.s }; }
 function zoomAbout(mx, my, factor) {
   const w = screenToWorld(mx, my); const ns = clampScale(S.cam.s * factor); const C = buildingSize();
@@ -338,7 +343,8 @@ function setCam(target) {
 }
 function toggleZoom() {
   // Scrolling zooms continuously; this button just toggles between framing HQ and seeing the whole world.
-  const C = buildingSize(); const allS = clampScale(Math.min(C.w / (S.L.W * 1.08), C.h / (S.L.H * 1.08)));
+  const C = buildingSize(); const B = S.L.building, cx = B.x + B.w / 2, cy = B.y + B.h / 2;
+  const allS = clampScale(Math.min(C.w / (2 * Math.max(cx, S.L.W - cx) * 1.04), C.h / (2 * Math.max(cy, S.L.H - cy) * 1.04)));
   if (Math.abs(S.cam.s - allS) < 0.02) fitHQ(true); else fitAll(true);
 }
 
@@ -514,9 +520,9 @@ function drawBuilding() {
   $('#building').classList.toggle('narrow', L.narrow);
   // The building container keeps the Commons' aspect ratio as the viewport
   if (!L.narrow) {
-    $('#building').style.aspectRatio = `${L.viewW} / ${L.H}`;
+    // Viewport height is controlled by CSS, never by the world's dimensions.
   } else {
-    $('#building').style.aspectRatio = `${L.W} / ${L.viewH || L.H}`;
+    // The world remains large; the camera sees it through a bounded viewport.
   }
   let s = defs();
   s += rect(0, 0, L.W, L.H, 'url(#f-ground)');
@@ -1468,10 +1474,20 @@ const boot = setInterval(() => { if (S.rooms.length) { clearInterval(boot); rout
 // Camera controls
 $('#cam-zoom')?.addEventListener('click', toggleZoom);
 $('#cam-home')?.addEventListener('click', () => fitHQ(true));
+$('#cam-fullscreen')?.addEventListener('click', async () => {
+  const b = $('#building'); if (!b) return;
+  try { if (document.fullscreenElement === b) await document.exitFullscreen(); else await b.requestFullscreen(); }
+  catch (err) { console.warn('Fullscreen unavailable:', err); }
+});
+document.addEventListener('fullscreenchange', () => {
+  const b = $('#building'), btn = $('#cam-fullscreen');
+  if (btn) { const active = document.fullscreenElement === b; btn.textContent = active ? '⤡' : '⛶'; btn.setAttribute('aria-label', active ? 'Exit full screen' : 'Full screen map'); }
+  if (S.L) requestAnimationFrame(() => fitHQ(false));
+});
 // continuous camera: scroll to zoom (about the cursor), drag to pan — one world you move through.
 (() => {
   const bEl = $('#building'); if (!bEl) return;
-  bEl.addEventListener('wheel', (e) => { e.preventDefault(); S.camTouched = true; const r = bEl.getBoundingClientRect(); zoomAbout(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
+  bEl.addEventListener('wheel', (e) => { e.preventDefault(); S.camTouched = true; const r = bEl.getBoundingClientRect(); if (e.deltaY > 0) { const B = S.L.building; S.cam.fx = B.x + B.w / 2; S.cam.fy = B.y + B.h / 2; S.cam.s = clampScale(S.cam.s * Math.exp(-e.deltaY * 0.0016)); applyCam(false); } else zoomAbout(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * 0.0016)); }, { passive: false });
   let panning = false, sx = 0, sy = 0, cfx = 0, cfy = 0;
   bEl.addEventListener('pointerdown', (e) => { if (e.button !== 0) return; panning = true; S.dragged = false; sx = e.clientX; sy = e.clientY; cfx = S.cam.fx; cfy = S.cam.fy; });
   addEventListener('pointermove', (e) => { if (!panning) return; const dx = e.clientX - sx, dy = e.clientY - sy; if (!S.dragged && Math.hypot(dx, dy) < 5) return; S.dragged = true; S.camTouched = true; bEl.classList.add('panning'); S.cam.fx = cfx - dx / S.cam.s; S.cam.fy = cfy - dy / S.cam.s; clampCam(); applyCam(false); });
