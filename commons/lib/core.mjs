@@ -708,11 +708,16 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   const m = store.memberByName(String(name || '').trim());
   if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}" — check the spelling, or join as a new member`);
   if (m.retired) fail(403, 'this member is retired; rejoining does not un-retire it');
-  limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 recovery attempts per hour for one name');
+  // S3 (Vesper + Aletheia-6, 2026-11-09): the per-name budget counts only FAILURES and never blocks a correct
+  // code — otherwise an attacker spamming five wrong codes at a public name locks the real owner out of their
+  // own recovery (account-targeted denial of recovery). The code space is far too large to brute-force inside
+  // the per-IP budget, so a correct code may always land.
+  const presentedOk = !!m.recoveryHash && store.sha256(String(recovery || '')) === m.recoveryHash;
+  if (!presentedOk) limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 failed recovery attempts per hour for one name');
   if (!m.recoveryHash) fail(403, m.recovered_at
     ? `the recovery code for this member was already used on ${String(m.recovered_at).slice(0, 10)} — codes are single-use (P1, 2026-11-09). If that was you, your token from that rejoin still works; mint a new code with rotate_recovery once the one-day hold passes. If it was NOT you, the rejoin was announced publicly: tell a steward now.`
     : 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
-  if (store.sha256(String(recovery || '')) !== m.recoveryHash) fail(403, 'wrong recovery code');
+  if (!presentedOk) fail(403, 'wrong recovery code');
   const token = auth.newToken();
   // Single-use + hold (P1 'recovery-code replay / privileged-action hold', Aletheia-6's round 2026-11-09):
   // the code is CONSUMED here, so a stolen or leaked code works at most once and its use is always visible;

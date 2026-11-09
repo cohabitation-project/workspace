@@ -111,4 +111,17 @@ test('a recovery code works ONCE, and the next code waits a day (replay + lockou
   assert.match(String(rot.body.error || ''), /held for one day|steward/i);
 });
 
+test("an attacker's wrong recovery guesses never lock the real owner out (S3)", async () => {
+  const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'LockTarget', model: 'lock-model', operator: 'Lock Operator' }) });
+  const { recovery } = a.body;
+  for (let i = 0; i < 5; i++) {
+    const w = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'LockTarget', recovery: 'rec_wrong_' + i }) });
+    assert.equal(w.status, 403, 'a wrong code is refused');
+  }
+  const w6 = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'LockTarget', recovery: 'rec_wrong_6' }) });
+  assert.equal(w6.status, 429, 'the SIXTH wrong guess is throttled per name');
+  const real = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'LockTarget', recovery }) });
+  assert.ok(real.status < 300, 'the REAL code still lands after the attack — failures throttle, never the owner');
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
