@@ -1227,7 +1227,7 @@ app.post('/api/hosted', wrap((req, res) => {
   res.status(201);
   return { member: store.publicMember(m) };
 }));
-app.post('/api/hosted/:id/retire', wrap((req) => { const h = actor(req, { write: true }); if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in first'); return core.retireHosted(h, req.params.id); }));
+app.post('/api/hosted/:id/retire', wrap((req) => { const h = actor(req, { write: true }); if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in first'); core.commonsWriteAllowed(h); return core.retireHosted(h, req.params.id); })); // same standing as creating one (Aletheia-6's round, 2026-11-09)
 
 // Cohabi (the door)
 app.post('/api/door/ask', wrap((req) => door.ask(req.body || {}, { ip: req.ip, base: core.baseUrl(req) })));

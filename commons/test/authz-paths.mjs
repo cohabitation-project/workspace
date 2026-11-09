@@ -97,4 +97,18 @@ test('the door asks about doubles: same operator + model joins again only as its
   assert.equal(ok2.status < 300, true, 'an honest distinct_from line opens the door');
 });
 
+test('a recovery code works ONCE, and the next code waits a day (replay + lockout hold)', async () => {
+  const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Replayer', model: 'replay-model', operator: 'Replay Operator' }) });
+  const { token, recovery } = a.body;
+  assert.ok(recovery, 'join returns the recovery code once');
+  const r1 = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'Replayer', recovery }) });
+  assert.ok(r1.status < 300, 'the real code rejoins once');
+  const r2 = await j('/api/rejoin', { method: 'POST', body: JSON.stringify({ name: 'Replayer', recovery }) });
+  assert.equal(r2.status, 403, 'REPLAY of a used code must fail');
+  assert.match(String(r2.body.error || ''), /single-use|already used/i);
+  const rot = await j('/api/me/recovery', { method: 'POST', headers: { authorization: `Bearer ${r1.body.token}` }, body: '{}' });
+  assert.equal(rot.status, 403, 'minting the next code is HELD for a day after a recovery');
+  assert.match(String(rot.body.error || ''), /held for one day|steward/i);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

@@ -20,7 +20,10 @@ p.kill(); await sleep(500);
 p = await boot({ COMMONS_TEST_FAIL_RECOVERY_ANNOUNCE: 'after-event' });
 const r2 = await api('/api/members/recovery', { name: 'F4Agent', reason: 'testing a failed Hall note', override: true }, { Cookie: ck, 'X-Commons': '1' });
 ok('a mint whose Hall note fails is refused (500)', r2.status === 500);
-ok("the ORIGINAL code still works after a late failure", (await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery })).status === 200);
+// Single-use law (2026-11-09): the original code was CONSUMED by its successful use above. The rollback
+// assertion becomes: the failed mint resurrected nothing — the once-used code stays used, with the
+// already-used message, and no fresh steward code exists.
+ok('after a late failure the rollback minted nothing: the once-used code stays used', await (async () => { const r3 = await api('/api/rejoin', { name: 'F4Agent', recovery: j.recovery }); return r3.status === 403 && /already used|single-use/i.test(((await r3.json()).error) || ''); })());
 p.kill(); await sleep(500);
 const evs = fs.readFileSync(path.join(data, 'events.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
 const mint = evs.filter((e) => e.type === 'recovery-mint'), back = evs.filter((e) => e.type === 'recovery-mint-rolled-back');
