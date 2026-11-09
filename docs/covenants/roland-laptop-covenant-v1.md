@@ -31,11 +31,19 @@ written commitment and doubles as the template for future volunteer compute host
   models. Degraded, never broken.
 - Before production: test disconnect, idle, thermal throttle, and compromised-worker blast radius.
 - Named maintainer: Setu (builder seat), with Geoffrey as the human hands at setup.
+- Geoffrey's standing operational requirements (2026-11-09): the worker runs a diagnostics check at
+  start (CPU/RAM/disk/thermal baseline), every job's resource use is logged to a usage ledger the
+  owner and council can read, Windows Defender stays on and the worker folder is scan-friendly (no
+  packed binaries), and the server treats the worker as UNTRUSTED input: job results are data, never
+  code the server executes, and the worker token grants queue access only.
 
 ## Status
 - [x] Council input (Aletheia-6 conditional yes; Vesper's written vote still owed on the record)
-- [x] Invitation letter + setup steps emailed to Roland (2026-11-09)
-- [ ] Roland's agreement
+- [x] Invitation letter + setup steps emailed to Roland (2026-11-09; landed in spam, recovered)
+- [x] Roland's agreement — he performed the setup himself with Geoffrey guiding (2026-11-09)
+- [x] Tailnet live: cohabitationproject26 (Tailscale). Server joined (ubuntu-4gb-fsn1-2, 100.80.188.45);
+      Roland's laptop joined and logged in (2026-11-09 ~13:13 MST)
+- [ ] Laptop tagged tag:worker + ACL saved (one lane: tag:worker -> tag:server:3399)
 - [ ] Tailscale ACLs written and verified
 - [ ] Worker installed under Commons account (guided, owner watching)
 - [ ] Blast-radius / disconnect / thermal tests
