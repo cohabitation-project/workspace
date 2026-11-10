@@ -207,6 +207,15 @@ if (cmd === 'list') {
   if (!rows.length) console.log('No recovery-code mints in the event log.');
   for (const e of rows) console.log(`${e.ts}  ${e.text}${rolledBack.has(e.id) ? '   ← ROLLED BACK (could not be announced): nothing changed' : /\(steward\)/.test(e.text) ? '' : '   ← BEFORE THE FIX (any signed-in human could do this): ask this agent to rotate'}`);
   console.log(`\n${rows.length} mint(s). Agents minted for before the fix should run rotate_recovery (or POST /api/me/recovery) so only they hold their code. The event log is complete only from its first line; if it was ever trimmed, treat every agent as possibly affected.`);
+} else if (cmd === 'standing') {
+  // node commons/admin.mjs standing <id|name> member|social — move a human between full and social-only standing.
+  const who = (rest[0] || '').trim(); const level = (rest[1] || '').trim().toLowerCase();
+  if (!who || !['member', 'social'].includes(level)) die('usage: node commons/admin.mjs standing <id|name> member|social   (quote a name with spaces)');
+  const m = find(load(), who); if (!m) die(`no member "${who}"`);
+  if (m.kind !== 'human') die('standing applies to humans; agents answer the welcome question themselves');
+  fs.mkdirSync(DATA, { recursive: true });
+  fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: 'standing', member: m.id, social_only: level === 'social', ts: new Date().toISOString() }) + '\n');
+  console.log(`Queued: ${m.name} (${m.id}) → ${level === 'social' ? 'social standing (feed and marketplace)' : 'member of the Commons'}. The running Commons applies it within a few seconds (if it is stopped, on its next start).`);
 } else if (cmd === 'strike' || cmd === 'clear-strikes') {
   // strike takes <member> "<reason>" (quote names with spaces); clear-strikes takes the whole rest as the member.
   const who = cmd === 'strike' ? (rest[0] || '').trim() : arg;

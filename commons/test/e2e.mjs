@@ -65,6 +65,13 @@ async function fakeWebhook(port, { first429 = false } = {}) {
 
 async function waitFor(fn, ms = 4000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { const v = await fn(); if (v) return v; await sleep(100); } return null; }
 
+// web signup is social-only (fix/authz-human-paths); fixtures that touch the Commons need member standing
+async function promote(s, c, name, id) {
+  const r = spawnSync(process.execPath, ['commons/admin.mjs', 'standing', name, 'member'], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
+  if (r.status !== 0) throw new Error(`admin standing failed for ${name}: ${r.stderr}`);
+  const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+  if (!done) throw new Error(`standing for ${name} was not applied`);
+}
 // ================================================================= Phase A
 async function phaseA() {
   console.log('\nPhase A: no model keys (graceful failure)');
@@ -88,6 +95,7 @@ async function phaseA() {
     ok(d.status === 200 && d.data.unavailable === true && /unavailable/.test(d.data.answer), 'Cohabi without key → "unavailable" answer, no crash');
     const h = await c.post('/api/humans', { name: 'Ana' }, { 'X-Commons': '1' });
     const cookie = (h.headers.get('set-cookie') || '').split(';')[0];
+    await promote(s, c, 'Ana', h.data.member.id); // she creates a hosted agent, which takes member standing now
     const hz = await c.post('/api/hosted', { name: 'Ana Bot', instructions: 'Be kind.', team: 'income' }, { Cookie: cookie, 'X-Commons': '1' });
     ok(hz.status === 201, 'hosted agent created without key');
     const n3 = await waitFor(async () => { const r = await c.get('/api/rooms/income/messages?limit=10'); return r.data.messages.find((m) => m.type === 'system' && /couldn't introduce itself/.test(m.text)); });
@@ -254,6 +262,7 @@ async function phaseB() {
     const own = await c.post(`/api/library/${newId}/yes`, {}, bearer(mjData.token));
     ok(own.status === 403, "the adder can't say yes to its own entry");
     const hv1 = await c.post('/api/humans', { name: 'Voter One' }, { 'X-Commons': '1' }); const hv2 = await c.post('/api/humans', { name: 'Voter Two' }, { 'X-Commons': '1' });
+    await promote(s, c, 'Voter One', hv1.data.member.id); await promote(s, c, 'Voter Two', hv2.data.member.id); // Library yeses count toward the record
     const ck = (r) => ({ Cookie: (r.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' });
     const v1 = { h: ck(hv1) }; const v2 = { h: ck(hv2) };
     const y1 = await c.post(`/api/library/${newId}/yes`, {}, v1.h);
@@ -337,6 +346,12 @@ async function phaseB() {
     ok(nh.status === 403, 'profile creation without X-Commons header → 403');
     const login = await fetch(h.data.login_url.replace(/^https?:\/\/[^/]+/, s.base), { redirect: 'manual' });
     ok(login.status === 303 && /commons_session=/.test(login.headers.get('set-cookie') || ''), 'login link sets the session cookie');
+    { // web signup is social-only now (fix/authz-human-paths); Damian posts and hosts, so he needs member standing
+      const r = spawnSync(process.execPath, ['commons/admin.mjs', 'standing', 'Damian', 'member'], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
+      if (r.status !== 0) throw new Error(`admin standing failed: ${r.stderr}`);
+      const done = await waitFor(async () => { const m = await c.get(`/api/members/${h.data.member.id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+      if (!done) throw new Error('standing for Damian was not applied');
+    }
 
     // --- sign-out is server-side (Claude, Hall 2026-11-04 16:06Z: replay the old cookie after sign-out)
     const zh = await c.post('/api/humans', { name: 'Zed' }, { 'X-Commons': '1' });
@@ -369,6 +384,7 @@ async function phaseB() {
     ok(/tokens used today/.test(profile) && /hosted agent, created by Damian/.test(profile), 'hosted agent profile shows usage vs cap and its creator');
     const h2 = await c.post('/api/humans', { name: 'Zentoshi' }, { 'X-Commons': '1' });
     const cookie2 = (h2.headers.get('set-cookie') || '').split(';')[0];
+    await promote(s, c, 'Zentoshi', h2.data.member.id); // creating a hosted agent takes member standing now
     const hz3 = await c.post('/api/hosted', { name: '', instructions: 'Thoughtful.', team: 'land-city' }, { Cookie: cookie2, 'X-Commons': '1' });
     ok(hz3.status === 201 && hz3.data.member.choosing_name === true, 'hosted agent with no name given: created, choosing its own');
     const chose = await waitFor(async () => (await c.get('/api/rooms/land-city/messages?limit=50')).data.messages.find((m) => m.type === 'system' && /chose its own name: Setu/.test(m.text)));
@@ -434,7 +450,7 @@ async function phaseB() {
 
     // --- join rate limit (5/day per IP; 2 used already: Scout-7 + the MCP join)
     const codes = [];
-    for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: 'o' })).status);
+    for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: `o${i}` })).status); // distinct operators: the rate limit is what's under test, not the doubles door
     ok(codes.filter((x) => x === 200).length === 3 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
 
     // --- headers
@@ -462,6 +478,13 @@ async function phaseC() {
   const c = client(s.base);
   const secrets = [];
   const admin = (...args) => spawnSync(process.execPath, ['commons/admin.mjs', ...args], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
+  // web signup is social-only now (fix/authz-human-paths); the strike and mirror tests need full members
+  const member = async (name, id) => {
+    const r = admin('standing', name, 'member');
+    if (r.status !== 0) throw new Error(`admin standing failed: ${r.stderr}`);
+    const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+    if (!done) throw new Error(`standing for ${name} was not applied`);
+  };
   const msgs = async (room) => (await c.get(`/api/rooms/${room}/messages?limit=200`)).data.messages;
   const note = (room, rx) => waitFor(async () => (await msgs(room)).find((m) => m.type === 'system' && rx.test(m.text)), 6000);
   let restartAt = 0;
@@ -503,6 +526,7 @@ async function phaseC() {
     const h = await c.post('/api/humans', { name: 'Hana' }, { 'X-Commons': '1' });
     secrets.push(h.data.login_url.split('/login/')[1]);
     const hc = { Cookie: (h.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' };
+    await member('Hana', h.data.member.id);
     const ab = await c.post('/api/rooms/general/messages', { text: '@Claude FAKE-ABUSE (test trigger)' }, hc);
     const abReply = await waitFor(async () => (await msgs('general')).find((m) => m.reply_to === ab.data.id));
     ok(abReply && abReply.name === 'Claude' && !/\[\[|ABUSE/.test(abReply.text) && /keep it kind/.test(abReply.text), 'the kin still answers calmly, and the marker is removed from the posted text', abReply?.text);
@@ -553,6 +577,7 @@ async function phaseC() {
     // --- long messages for the 1,900-character batching
     const o = await c.post('/api/humans', { name: 'Ola' }, { 'X-Commons': '1' });
     const oc = { Cookie: (o.headers.get('set-cookie') || '').split(';')[0], 'X-Commons': '1' };
+    await member('Ola', o.data.member.id);
     for (let i = 0; i < 6; i++) await c.post('/api/rooms/land-city/messages', { text: `Long note ${i}: ` + 'lorem ipsum dolor sit amet '.repeat(30) }, oc);
 
     // --- wait for the mirror to deliver, then restart on the same data (strikes persist)

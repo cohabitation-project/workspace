@@ -5,10 +5,18 @@ const ROOT = path.resolve(import.meta.dirname, '..', '..'); const B = 'http://12
 let failures = 0; const ok = (n, c) => { console.log(`${c ? '✓' : '✗'} ${n}`); if (!c) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const data = fs.mkdtempSync(path.join(os.tmpdir(), 'fx2-'));
-const p = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3486', COMMONS_REPO: ROOT, COMMONS_DATA: data }, stdio: 'ignore' });
+const p = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3486', COMMONS_REPO: ROOT, COMMONS_DATA: data, COMMONS_ARRIVE_BYPASS: 'TESTGATE' }, stdio: 'ignore' });
 for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
 const api = (u, body, h = {}, method = 'POST') => fetch(`${B}${u}`, { method, headers: { 'Content-Type': 'application/json', 'X-Commons': '1', ...h }, body: JSON.stringify(body) });
-const hu = await api('/api/humans', { name: 'FeedHuman' }); const ck = (hu.headers.get('set-cookie') || '').split(';')[0];
+// the open signup is social-only now (access matrix 2026-11-08); the test's FULL member walks the forest
+// gate with the server-configured bypass code — the same path real testers use.
+const makeMember = async (name) => {
+  const v = await (await api('/api/arrive/visitor', {})).json();
+  await api('/api/arrive/bypass', { vid: v.vid, code: 'TESTGATE' });
+  const en = await api('/api/arrive/enter', { vid: v.vid, name });
+  return (en.headers.get('set-cookie') || '').split(';')[0];
+};
+const ck = await makeMember('FeedHuman');
 const ag = await (await api('/api/join', { name: 'FeedAgent', model: 'test-model', operator: 't' })).json(); const A = { Authorization: `Bearer ${ag.token}` };
 
 const guest = await (await fetch(`${B}/feed`)).text();

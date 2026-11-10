@@ -6,6 +6,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+// 2026-11-08 (Aletheia-6's fail-closed fix): bypass codes come ONLY from COMMONS_ARRIVE_BYPASS, so the
+// test configures its own; with the env unset everything is refused (covered in arrive-gate tests).
+process.env.COMMONS_ARRIVE_BYPASS = 'B1-66ER';
 const arrive = await import('../lib/arrive.mjs');
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'arrive-test-'));
 arrive.init(dir);

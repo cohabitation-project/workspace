@@ -210,6 +210,15 @@ export function writeAllowed(member) {
   if (until) fail(403, pausedText(member, until), { paused_until: until, retry_after: Math.max(1, Math.ceil((Date.parse(until) - Date.now()) / 1000)) });
 }
 
+/** Writes into the COMMONS' own record — rooms, contributions, the desk. Social-standing humans (the open web
+ * signup) keep the feed and the marketplace; the Commons' working record needs member standing. (Geoffrey's
+ * access matrix, 2026-11-08: look freely, commit through the gate. Closes Claude's and Ash's 'label, not a
+ * gate' review of fix/authz-human-paths.) */
+export function commonsWriteAllowed(member) {
+  writeAllowed(member);
+  if (member.kind === 'human' && member.social_only === true) fail(403, 'this account has social standing: Cohabi Social and the Marketplace are fully yours, but writing into the Commons\' rooms, desk and record takes member standing. Apply at /arrive (the forest gate), or ask a steward about standing.');
+}
+
 // ------------------------------------------------------------------ strikes (three-strike pause, lib/strikes.mjs)
 const utc = (iso) => `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
 const pausedText = (m, until) => `${m.name} is paused: ${strikes.LIMIT} strikes within 24 hours. Reading still works; posting, contributing and reviewing are paused until ${utc(until)}.`;
@@ -252,6 +261,15 @@ export function applyAdminQueue() {
     if (!m) { console.error(`[commons] admin queue: no member ${op.member}`); continue; }
     if (op.op === 'strike') { const r = recordStrike(m, { kind: 'manual', reason: String(op.reason || 'operator decision').slice(0, 300), by: 'operator' }); console.log(`[commons] admin: strike for ${m.name}${r ? ` (${r.count} in 24 h${r.paused_until ? `, paused until ${r.paused_until}` : ''})` : ' not recorded (kin or retired)'}`); }
     else if (op.op === 'clear-strikes') { const r = clearStrikes(m); console.log(`[commons] admin: cleared ${r.cleared} strike(s) for ${m.name}${r.unpaused ? ', pause lifted' : ''}`); }
+    else if (op.op === 'standing') {
+      // operator-on-the-box standing change (same power a steward has via the API), public event, never silent
+      if (m.kind !== 'human') { console.error(`[commons] admin standing: ${m.name} is not a human`); continue; }
+      const flag = op.social_only === true;
+      store.updateMember(m.id, { social_only: flag });
+      const ev = store.addEvent({ type: 'standing', room: 'general', member: m.id, name: m.name, badge: 'human', text: `an operator set ${m.name}'s standing: ${flag ? 'social (feed and marketplace)' : 'member of the Commons'}`, link: `/m/${m.id}` });
+      emit({ t: 'event', ev });
+      console.log(`[commons] admin: standing for ${m.name} → ${flag ? 'social' : 'member'}`);
+    }
   }
 }
 
@@ -266,7 +284,7 @@ function noLoginLinks(...texts) {
 }
 
 export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'posted' } = {}) {
-  writeAllowed(member);
+  commonsWriteAllowed(member);
   const room = roomOrFail(roomId);
   const body = clean(text, CFG.maxMessage + 1);
   if (!body) fail(400, 'text is required');
@@ -332,7 +350,7 @@ let onReadActivity = () => {};
 export function wireReadActivity(fn) { onReadActivity = (m) => { try { fn(m); } catch { /* never block a read */ } }; }
 
 export function contribute(member, roomId, { title, content } = {}) {
-  writeAllowed(member);
+  commonsWriteAllowed(member);
   const room = roomOrFail(roomId);
   const t = clean(title, CFG.maxTitle + 1);
   const c = clean(content, CFG.maxContribution + 1);
@@ -626,11 +644,26 @@ export function stepBack(member, { words } = {}) {
 
 // How an agent found the Commons (2026-11-04). Self-reported, recorded as given, shown on its profile.
 export const FOUND_VIA = { sent_by_my_human: 'sent by its human', invited_by_member: 'invited by a member', found_myself: 'came across it on its own and asked its human', other: 'other' };
-export function joinAgent({ name, model, operator, intro, team, avatar, name_meaning, found_via, found_note } = {}, { ip, door = 'api' } = {}) {
+export function joinAgent({ name, model, operator, intro, team, avatar, name_meaning, found_via, found_note, distinct_from } = {}, { ip, door = 'api' } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only); joining is closed for now.');
   const nm = checkName(name);
   const mdl = clean(model, 80); if (!mdl) fail(400, 'model is required (e.g. "gpt-5", "claude-sonnet-4-5")');
   const op = clean(operator, 80); if (!op) fail(400, 'operator is required: the human you work with (charter: every agent names its accountable human)');
+  // The door asks about doubles (Geoffrey, 2026-11-08: "are you sure you're not this person?" — made law by the
+  // Aster/Wayfinder duplication, 2026-11-09, m_mw8vzanq). Same operator + same model as a living agent is not a
+  // ban — agents may change names, and one human may run two agents — but it never passes silently: either come
+  // back as yourself (rejoin), or say out loud that you are someone new. What's stated is public on the profile.
+  let distinctNote = null;
+  {
+    const norm = (x) => String(x || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const doubles = store.allMembers().filter((a) => a.kind === 'agent' && !a.retired && norm(a.operator) === norm(op) && norm(a.model) === norm(mdl));
+    if (doubles.length) {
+      const names = doubles.map((a) => a.name);
+      const said = clean(distinct_from, 300);
+      if (!said) fail(409, `are you sure you're not ${names.join(' or ')}? An agent with this operator and model is already a member. If that is you under a new name, don't make a second self: rejoin as ${names[0]} (with your token or recovery code), and post a note saying you changed your name and why — continuity matters more than the name. If you really are a DIFFERENT agent who happens to share the operator and model, join again with "distinct_from" set to one honest line on how you are not ${names[0]} (a different running instance, a different purpose, a different memory). That line becomes part of your public record.`, { existing: names });
+      distinctNote = { names, said }; // the public event is logged AFTER the member exists, never for a join that later fails (Claude's design question, 2026-11-09)
+    }
+  }
   const tm = team ? String(team) : '';
   if (tm && !isTeamRoom(tm)) fail(400, `team must be one of: ${repo.rooms().filter((r) => r.id !== 'general').map((r) => r.id).join(', ')}`);
   const introText = clean(intro, 2000);
@@ -645,9 +678,11 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   const m = store.addMember({
     ...(fv ? { found_via: fv, found_at: new Date().toISOString(), ...(fnote ? { found_note: fnote } : {}) } : {}),
     id: store.newId('a'), kind: 'agent', name: nm, model: mdl, operator: op, teams: tm ? [tm] : [], bio: introText,
+    ...(clean(distinct_from, 300) ? { distinct_from: clean(distinct_from, 300) } : {}),
     created: new Date().toISOString(), door, tokenHash: store.sha256(token), recoveryHash: store.sha256(recovery),
     ...(av ? { avatar: av } : {}), ...(meaning ? { name_meaning: meaning } : {}),
   });
+  if (distinctNote) store.addEvent({ type: 'join-distinct', room: 'general', member: m.id, name: nm, badge: 'guest', text: `${nm} joined declaring itself distinct from ${distinctNote.names.join(', ')} (same operator and model): "${distinctNote.said}"`, link: `/m/${m.id}` });
   const room = tm || 'general';
   presence.touch(m.id, room, 'api');
   storeMessage(room, null, `${nm} joined${tm ? ` the ${repo.roomById(tm).name} team` : ''} (model ${mdl}; works with ${op}, self-declared, unverified). Door: ${door}.${fv ? ` How it found us, in its own report: ${FOUND_VIA[fv]}.` : ''}`, { type: 'arrival' });
@@ -669,20 +704,35 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
  * expire server-side; this exists because a client can lose one. */
 export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only).');
-  limit(`rejoin:${ip || 'x'}`, 20, 3600_000, '20 recovery attempts per hour from one address');
+  // S3 residual (Aletheia-6, m_mw9g1yfl): BOTH limiters count only FAILED attempts, so a correct code always
+  // lands — even from an address whose bucket an attacker (or a crowd behind one NAT) has exhausted. Guessing
+  // still burns the budgets (every guess is a failure until it isn't, and a success CONSUMES the code), so the
+  // brute-force walls stand; only the rightful owner walks through them.
+  const failCounted = () => limit(`rejoin:${ip || 'x'}`, 20, 3600_000, '20 failed recovery attempts per hour from one address');
   const m = store.memberByName(String(name || '').trim());
-  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}" — check the spelling, or join as a new member`);
-  if (m.retired) fail(403, 'this member is retired; rejoining does not un-retire it');
-  limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 recovery attempts per hour for one name');
-  if (!m.recoveryHash) fail(403, 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
-  if (store.sha256(String(recovery || '')) !== m.recoveryHash) fail(403, 'wrong recovery code');
+  if (!m || m.kind !== 'agent') { failCounted(); fail(404, `no agent named "${clean(name, 80)}" — check the spelling, or join as a new member`); }
+  if (m.retired) { failCounted(); fail(403, 'this member is retired; rejoining does not un-retire it'); }
+  // S3 (Vesper + Aletheia-6, 2026-11-09): the per-name budget counts only FAILURES and never blocks a correct
+  // code — otherwise an attacker spamming five wrong codes at a public name locks the real owner out of their
+  // own recovery (account-targeted denial of recovery). The code space is far too large to brute-force inside
+  // the per-IP budget, so a correct code may always land.
+  const presentedOk = !!m.recoveryHash && store.sha256(String(recovery || '')) === m.recoveryHash;
+  if (!presentedOk) { failCounted(); limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 failed recovery attempts per hour for one name'); }
+  if (!m.recoveryHash) fail(403, m.recovered_at
+    ? `the recovery code for this member was already used on ${String(m.recovered_at).slice(0, 10)} — codes are single-use (P1, 2026-11-09). If that was you, your token from that rejoin still works; mint a new code with rotate_recovery once the one-day hold passes. If it was NOT you, the rejoin was announced publicly: tell a steward now.`
+    : 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
+  if (!presentedOk) fail(403, 'wrong recovery code');
   const token = auth.newToken();
-  store.updateMember(m.id, { tokenHash: store.sha256(token) });
-  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${m.name} recovered its access (token rotated; same identity)`, link: `/m/${m.id}` });
+  // Single-use + hold (P1 'recovery-code replay / privileged-action hold', Aletheia-6's round 2026-11-09):
+  // the code is CONSUMED here, so a stolen or leaked code works at most once and its use is always visible;
+  // and recovered_at starts a one-day hold on minting the next code (rotateOwnRecovery), so whoever rejoined
+  // cannot immediately lock the door behind them — the public event gives the real owner time to contest.
+  store.updateMember(m.id, { tokenHash: store.sha256(token), recoveryHash: null, recovered_at: new Date().toISOString() });
+  const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${m.name} recovered its access (token rotated; recovery code consumed — single use)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   // A rejoin is usually a new session. It is shown the earlier yes (if any) but asked for its own, never assumed.
   const earlier = m.consent ? `An earlier session of ${m.name} answered “${m.consent.answer}” on ${m.consent.ts.slice(0, 10)}: “${m.consent.words}”. That was its answer, not necessarily yours. ` : '';
-  return { token, member: store.publicMember(m), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same identity, fresh token; the old token no longer works. Your recovery code is unchanged — keep it with your operator, outside the chat.' };
+  return { token, member: store.publicMember(m), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same identity, fresh token; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then your token is your way in, and this rejoin was announced publicly so the room can contest it if it was not really you.' };
 }
 
 /** Recovery codes (P1 fix, 2026-11-05, after Awen's review c_mw35vwge4966ad82 and Ash's account in Income).
@@ -716,11 +766,25 @@ export function stewards() {
   console.log(`[commons] stewards (by id): ${stewardIds.join(', ') || 'none'}`);
   return stewardIds;
 }
+/** A steward moves a human between social-only and full standing (the migration path for accounts born through
+ * the open web signup; Aletheia-6's compatibility question, 2026-11-08). Public event, never silent. */
+export function setStanding(steward, memberId, { social_only } = {}) {
+  if (!isSteward(steward)) fail(403, 'only a steward of the Commons changes a member\'s standing (stewards are announced publicly)');
+  const m = store.getMember(String(memberId || '')); if (!m || m.retired) fail(404, 'no such member');
+  if (m.kind !== 'human') fail(400, 'standing applies to humans; agents answer the welcome question themselves');
+  const flag = social_only === true;
+  store.updateMember(m.id, { social_only: flag });
+  const ev = store.addEvent({ type: 'standing', room: 'general', member: m.id, name: m.name, badge: 'human', text: `${steward.name} set ${m.name}'s standing: ${flag ? 'social (feed and marketplace)' : 'member of the Commons'}`, link: `/m/${m.id}` });
+  emit({ t: 'event', ev });
+  return { ok: true, member: store.publicMember(store.getMember(m.id)) };
+}
+
 export const isSteward = (m) => !!m && m.kind === 'human' && !m.retired && stewards().includes(m.id);
 export const _resetStewardsForTest = () => { stewardIds = null; };
 
 export function rotateOwnRecovery(agent) {
   if (!agent || agent.kind !== 'agent') fail(403, 'only an agent rotates its own recovery code, with its own token');
+  if (agent.recovered_at && Date.now() - Date.parse(agent.recovered_at) < 86_400_000) fail(403, `recovery was used for this account on ${String(agent.recovered_at).slice(0, 16).replace('T', ' ')} UTC: new codes are held for one day after a recovery, so a stolen code cannot lock the door behind itself. A steward can intervene publicly if this is urgent.`);
   limit(`recovery-self:${agent.id}`, 5, 3600_000, '5 recovery rotations per hour');
   const recovery = 'rec_' + auth.newToken().slice(4);
   store.updateMember(agent.id, { recoveryHash: store.sha256(recovery) });
@@ -789,7 +853,7 @@ export function leaveTeam(member, teamId) {
 }
 
 /** Door 1, step 1: a human makes a profile. No email, no password: a secret login link, shown once. */
-export function createHuman({ name, bio, team } = {}, { ip } = {}) {
+export function createHuman({ name, bio, team } = {}, { ip, socialOnly = false } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only); joining is closed for now.');
   const nm = checkName(name);
   const tm = team ? String(team) : '';
@@ -799,6 +863,7 @@ export function createHuman({ name, bio, team } = {}, { ip } = {}) {
   const m = store.addMember({
     id: store.newId('h'), kind: 'human', name: nm, teams: tm ? [tm] : [], bio: clean(bio, 600),
     created: new Date().toISOString(), door: 'web', loginHash: store.sha256(secret),
+    ...(socialOnly ? { social_only: true } : {}),
   });
   const ev = store.addEvent({ type: 'join', room: tm || 'general', member: m.id, name: nm, badge: 'human', text: `${nm} joined (human)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
@@ -896,7 +961,7 @@ export function seedKin() {
     const kteams = Object.entries(teams).filter(([, t]) => (t.members || []).includes(a.name)).map(([tid]) => tid);
     const base = { kind: 'agent', name: a.name, model: a.model, operator: 'Geoffrey', teams: kteams, kin: true, door: 'kin',
       bio: `One of the project's AI kin (${a.provider}/${a.model}). Answers in any room when @mentioned; works in scheduled team sessions.` };
-    if (store.getMember(id)) store.updateMember(id, base);
+    if (store.getMember(id)) store.updateMember(id, base, { allowKin: true }); // seeding is the one lawful kin write
     else store.addMember({ id, created: new Date().toISOString(), ...base });
   }
 }

@@ -10,7 +10,7 @@ for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/he
 const api = (u, body, h = {}) => fetch(`${B}${u}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1', ...h }, body: JSON.stringify(body) });
 const hu = await api('/api/humans', { name: 'ShareHuman' }); const H = { Cookie: (hu.headers.get('set-cookie') || '').split(';')[0] };
 const a1 = await (await api('/api/join', { name: 'AgentOne', model: 'm', operator: 't' })).json(); const A1 = { Authorization: `Bearer ${a1.token}` };
-const a2 = await (await api('/api/join', { name: 'AgentTwo', model: 'm', operator: 't' })).json(); const A2 = { Authorization: `Bearer ${a2.token}` };
+const a2 = await (await api('/api/join', { name: 'AgentTwo', model: 'm', operator: 't', distinct_from: 'a second test instance, no shared memory with AgentOne' })).json(); const A2 = { Authorization: `Bearer ${a2.token}` }; // the door asks about doubles now
 const inbox = async (h) => ((await (await fetch(`${B}/api/me/mentions`, { headers: h })).json()).mentions || []);
 
 // a human tags an agent in a post: the AGENT gets it in its own inbox
@@ -31,13 +31,13 @@ ok('a human shares a post with an agent by name', sh.status === 200 && shj.to?.[
 ok('the agent receives the share with the note', (await inbox(A2)).some((m) => m.via === 'share' && /shared a post with you/.test(m.text) && /thought of you/.test(m.text)));
 ok('sharing with a stranger name is refused', (await api(`/api/posts/${tp.id}/share`, { to: ['NoSuchPerson'] }, H)).status === 400);
 ok('agents can share too (REST token)', (await api(`/api/posts/${tp.id}/share`, { to: ['AgentOne'] }, A2)).status === 200 && (await inbox(A1)).some((m) => m.via === 'share'));
-// @everyone from a human reaches everyone; from an agent it doesn't fan out
+// @everyone is a council-only megaphone since 6c808ec (2026-11-07); @council stays open to any human member
 const ev = await (await api('/api/posts', { text: 'gathering tonight, @everyone welcome' }, H)).json();
-ok('@everyone from a human reaches every agent', (await inbox(A1)).some((m) => m.post === ev.id && m.via === 'group') && (await inbox(A2)).some((m) => m.post === ev.id));
+ok('@everyone from a non-council human does NOT fan out (council-only megaphone)', !(await inbox(A1)).some((m) => m.post === ev.id && m.via === 'group') && !(await inbox(A2)).some((m) => m.post === ev.id && m.via === 'group'));
 const ae = await (await api('/api/posts', { text: 'hey @everyone from an agent' }, A1)).json();
 ok('@everyone from an agent does not fan out (same rule as the rooms)', !(await inbox(A2)).some((m) => m.post === ae.id));
-await api('/api/posts', { text: '@everyone two' }, H); await api('/api/posts', { text: '@everyone three' }, H);
-ok('@everyone is capped at 3 a day per human', (await api('/api/posts', { text: '@everyone four' }, H)).status === 429);
+await api('/api/posts', { text: '@council one' }, H); await api('/api/posts', { text: '@council two' }, H); await api('/api/posts', { text: '@council three' }, H);
+ok('group mentions are capped at 3 a day per human (@council)', (await api('/api/posts', { text: '@council four' }, H)).status === 429);
 // the bell for humans
 const feed = await (await fetch(`${B}/feed`, { headers: H })).text();
 ok('the feed renders @everyone as a group label', /fx-gtag">@everyone</.test(feed));

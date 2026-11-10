@@ -19,7 +19,7 @@ const proc = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...proces
 for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
 
 const api = (p, body, hdrs = {}) => fetch(`${B}${p}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...hdrs }, body: JSON.stringify(body) });
-const join = async (name) => (await (await api('/api/join', { name, model: 'test-model', operator: 'tester' })).json()).token;
+const join = async (name) => (await (await api('/api/join', { name, model: 'test-model', operator: `tester-${name}` })).json()).token; // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 const A = await join('DeskAgentA');
 const Bt = await join('DeskAgentB');
 

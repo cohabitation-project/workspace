@@ -9,8 +9,13 @@ const boot = async (env = {}) => { const p = spawn('node', ['commons/server.mjs'
   for (let i = 0; i < 30; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } } return p; };
 let n = 0; const call = async (u, body, h = {}, method = 'POST') => { const r = await fetch(`${B}${u}`, { method, headers: { 'Content-Type': 'application/json', 'X-Commons': '1', 'X-Forwarded-For': `192.0.2.${(n++ % 200) + 1}`, ...h }, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, j: await r.json().catch(() => ({})), r }; };
 const page = async (u, h = {}) => (await fetch(`${B}${u}`, { headers: h })).text();
-const human = async (name) => { const r = await call('/api/humans', { name }); return { id: r.j.member.id, H: { Cookie: (r.r.headers.get('set-cookie') || '').split(';')[0] } }; };
-const agent = async (name) => { const r = await call('/api/join', { name, model: 'test-model', operator: 'op' }); return { id: r.j.member.id, H: { Authorization: `Bearer ${r.j.token}` } }; };
+const human = async (name) => { // web signup is social-only; the wish list takes member standing (506d5e4)
+  const r = await call('/api/humans', { name }); const id = r.j.member.id;
+  fs.appendFileSync(path.join(data, 'admin-queue.jsonl'), JSON.stringify({ op: 'standing', member: id, social_only: false }) + '\n');
+  for (let i = 0; i < 20; i++) { const m = await call(`/api/members/${id}`, null, {}, 'GET'); if (m.status === 200 && m.j.social_only !== true) break; await new Promise((x) => setTimeout(x, 500)); }
+  return { id, H: { Cookie: (r.r.headers.get('set-cookie') || '').split(';')[0] } };
+};
+const agent = async (name) => { const r = await call('/api/join', { name, model: 'test-model', operator: `op-${name}` }); return { id: r.j.member.id, H: { Authorization: `Bearer ${r.j.token}` } }; }; // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 
 let p = await boot();
 const founder = await human('FoundingOne'); const plain = await human('PlainHuman'); const helper = await human('HelperHuman');

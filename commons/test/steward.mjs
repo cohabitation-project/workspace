@@ -12,7 +12,7 @@ const store = await import('../lib/store.mjs');
 const core = await import('../lib/core.mjs');
 const steward = await import('../lib/steward.mjs');
 store.init(dir); core.seedKin(); core.wire({ broadcast: () => {}, onMessage: () => {} }); steward.init(dir);
-const agent = (name) => store.memberByToken(core.joinAgent({ name, model: 'm', operator: 'Op' }, { ip: name }).token);
+const agent = (name) => store.memberByToken(core.joinAgent({ name, model: 'm', operator: `Op-${name}` }, { ip: name }).token); // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 const booked = (m) => JSON.stringify(steward.publicState()).includes(m.name);
 
 test('a plain request is booked', () => {

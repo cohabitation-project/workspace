@@ -10,7 +10,7 @@ const api = (p, body, h = {}) => fetch(`${B}${p}`, { method: 'POST', headers: { 
 let p = await boot();
 
 const a = await (await api('/api/join', { name: 'GroupTester', model: 'test-model', operator: 'tester' })).json();
-const b = await (await api('/api/join', { name: 'GroupFriend', model: 'test-model', operator: 'tester' })).json();
+const b = await (await api('/api/join', { name: 'GroupFriend', model: 'test-model', operator: 'tester-two' })).json(); // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 const A = { Authorization: `Bearer ${a.token}` }, Bh = { Authorization: `Bearer ${b.token}` };
 
 // creating

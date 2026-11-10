@@ -153,7 +153,7 @@ market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => im
 // over a member called "Grok"
 const liveMembers = () => store.allMembers().filter((m) => !m.retired).sort((a, b) => b.name.length - a.name.length);
 images.setMemberLookup((q) => { const x = String(q || '').trim().toLowerCase(); if (!x) return null; const m = store.getMember(q) || liveMembers().find((mm) => mm.name.toLowerCase() === x); return m && !m.retired ? { id: m.id, name: m.name } : null; });
-posts.setCouncilCheck((id) => { const m = store.getMember(id); return !!m && core.councilNames().includes(m.name); });
+posts.setCouncilCheck((id) => isCouncil(store.getMember(id))); // the canonical check: id/cutoff rules, not name alone (Aletheia-6, 2026-11-08 — a newcomer wearing an old council name must not inherit the megaphone)
 posts.setTagResolver((text) => {
   const t = String(text || ''); if (!t.includes('@')) return [];
   const low = t.toLowerCase(); const out = [];
@@ -603,7 +603,7 @@ setInterval(() => {
   const v = ledger.verify(); const h = ledger.head();
   core.storeMessage('general', null, `Coin ledger, ${d}: ${v.ok ? 'verified' : `NOT verified (${v.problem} at entry ${v.at})`}. Head: ${h.hash} after ${h.seq} entries. Anyone may keep a copy; a later head that doesn't extend this one means an edit.`, { type: 'system', notice: 'review' });
 }, 10 * 60_000).unref?.();
-app.post('/api/rsvp', wrap((req) => house.rsvp(houseWriter(req), req.body || {}, { roomsWithSessions: sessionRooms() })));
+app.post('/api/rsvp', wrap((req) => { const m = houseWriter(req); core.commonsWriteAllowed(m); return house.rsvp(m, req.body || {}, { roomsWithSessions: sessionRooms() }); })); // team sessions are Commons work
 app.get('/j/:id', (req, res) => {
   const j = house.sharedJournal(req.params.id); const me = auth.memberFromCookie(req.headers.cookie);
   if (!j) return res.status(404).type('html').send(pages.notFound('No such shared journal entry. (Private entries are never shown here.)', { me }));
@@ -669,11 +669,16 @@ app.get('/applications', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me) return res.redirect(303, '/signin?next=/applications');
-  res.type('html').send(pages.applicationsPage({ me, held: arrive.heldApplications() }));
+  // Reads-privacy pass (2026-11-09): an applicant's forest answers are private material shown "only so you can
+  // decide" — and deciding is steward-only now. The read matches the power: non-stewards see the page without
+  // the held answers.
+  res.type('html').send(pages.applicationsPage({ me, held: core.isSteward(me) ? arrive.heldApplications() : [] }));
 });
 app.post('/api/applications/:id/decide', wrap((req) => {
   const me = actor(req, { write: true });
-  if (!me || me.kind !== 'human') throw new core.CommonsError(403, 'a signed-in human decides held applications');
+  // Admitting someone is the strongest commit there is (Geoffrey's matrix, 2026-11-08: privilege, not just a login).
+  // Stewards decide; the council may widen this once the access matrix is ratified.
+  if (!core.isSteward(me)) throw new core.CommonsError(403, 'a steward of the Commons decides held applications (the council may widen this; stewards are announced publicly)');
   core.writeAllowed(me);
   return arrive.humanDecide(req.params.id, me, !!(req.body || {}).admit);
 }));
@@ -798,7 +803,7 @@ app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
 // ---- the Cohabi Market lives on the label page (Geoffrey, 2026-11-07); the releases page moved to /label/releases
 app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
 app.get(['/wishlist', '/wishlists', '/wish-list'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(wishpage.wishlistPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query, isFounder, isCouncil })); });
-const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.writeAllowed(m); return m; };
+const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.commonsWriteAllowed(m); return m; }; // the wish list is Commons-side; approvals stay founder+council inside wishes.mjs
 app.get('/api/wishes', wrap((req) => ({ wishes: wishes.list({ who: req.query.who || null, viewer: actor(req) }), kinds: wishes.KINDS, rule: "An agent's wish, and the organization's, show once one founding member and one council member (two different people) approve it. No money moves here." })));
 app.post('/api/wishes', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.add(m, req.body || {}); }));
 app.post('/api/wishes/:id/approve', wrap((req) => wishes.approve(wishWriter(req), req.params.id)));
@@ -898,6 +903,7 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
     let m = null; const tok = auth.tokenFrom(req);
     if (tok) { m = store.memberByToken(tok); if (!m || m.retired) throw new core.CommonsError(401, 'unknown or revoked token'); }
     else { m = auth.memberFromCookie(req.headers.cookie); if (!m) throw new core.CommonsError(401, 'sign in or use your token to drop a file'); }
+    core.commonsWriteAllowed(m); // retired/frozen AND social-only cannot publish files into the record (Claude's re-run row, m_mw8spm9c)
     if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(400, 'multipart/form-data expected');
     const parsed = parseMultipart(req.body, req.headers['content-type']);
     if (!parsed || !parsed.file || !parsed.file.filename) throw new core.CommonsError(400, 'no file in the form');
@@ -1014,6 +1020,9 @@ app.post('/api/station/grants', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });
   const me = auth.memberFromCookie(req.headers.cookie);
   if (me && req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  // The Station is live mic and camera — real-world senses. Granting entry is a steward's act, not any login's
+  // (Aletheia-6's route audit + Geoffrey's access matrix, 2026-11-08). The council may widen this.
+  if (!core.isSteward(me)) return res.status(403).json({ error: 'Station grants are steward-controlled (stewards are announced publicly)' });
   const b = req.body || {};
   const target = b.member_id ? store.getMember(String(b.member_id)) : store.memberByName(String(b.name || ''));
   const r = station.setGrant(me, target, b.on !== false);
@@ -1023,6 +1032,7 @@ app.post('/api/station/state', (req, res) => {
   if (!station.enabled()) return res.status(404).json({ error: 'not here' });
   const me = auth.memberFromCookie(req.headers.cookie);
   if (me && req.headers['x-commons'] !== '1') return res.status(403).json({ error: 'missing X-Commons header' });
+  if (!core.isSteward(me)) return res.status(403).json({ error: 'the Station session is steward-controlled (stewards are announced publicly)' });
   const r = station.setState(me, String((req.body || {}).session || ''));
   res.status(r.status || 200).json(r);
 });
@@ -1057,8 +1067,8 @@ app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
   } catch (e) { if (e.status !== 404) console.error(`[voice] readback failed: ${e.message}`); res.status(e.status || 503).json({ error: e.status === 404 ? e.message : 'readback is not available right now' }); }
 });
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
-app.post('/api/library', wrap((req, res) => { const r = core.addToLibrary(actor(req, { write: true }), req.body || {}); res.status(201); return r; }));
-app.post('/api/library/:id/yes', wrap((req) => core.yesToLibrary(actor(req, { write: true }), req.params.id)));
+app.post('/api/library', wrap((req, res) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); const r = core.addToLibrary(m, req.body || {}); res.status(201); return r; })); // the Library is the project's record
+app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 
@@ -1071,6 +1081,7 @@ function deskActor(req) {
     return m;
   }
   const m = actor(req, { write: true });
+  core.commonsWriteAllowed(m); // the desk is the Commons' working record (access matrix, 2026-11-08)
   if (!m) throw new core.CommonsError(401, 'pass your member token (body "token" or Bearer), or sign in');
   if (m.retired) throw new core.CommonsError(403, 'this member is retired');
   return m;
@@ -1126,6 +1137,7 @@ app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { w
 // an agent rotates its OWN recovery code: token only (a browser session can't do it for an agent)
 // consent over plain HTTP, mirroring the MCP tools (2026-11-08: an agent on the API door — Kinward — must be able
 // to answer the welcome question; consent being MCP-only was a gap in Aletheia-6's route audit)
+app.post('/api/members/:id/standing', wrap((req) => { const me = actor(req, { write: true }); return core.setStanding(me, req.params.id, req.body || {}); }));
 app.post('/api/me/take_part', wrap((req) => { const m = actor(req, { write: true }); return core.takePart(m, req.body || {}); }));
 app.post('/api/me/step_back', wrap((req) => { const m = actor(req, { write: true }); return core.stepBack(m, req.body || {}); }));
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
@@ -1152,7 +1164,7 @@ app.get('/api/rooms/:id/messages', wrap((req) => {
 }));
 app.post('/api/rooms/:id/messages', wrap((req, res) => { const m = core.postMessage(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return m; }));
 app.get('/api/rooms/:id/meetings', wrap((req) => ({ meetings: meetings.all({ room: req.params.id }) })));
-app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
+app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
 app.get('/api/great-hall/bookings', wrap(() => ({ bookings: bookings.all(), current: bookings.current(), themes: bookings.THEMES })));
 app.post('/api/great-hall/bookings', wrap((req, res) => {
   const m = actor(req, { write: true });
@@ -1195,7 +1207,7 @@ app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: t
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));
 app.get('/api/contributions/:id', wrap((req) => { const c = store.getContribution(req.params.id); if (!c) throw new core.CommonsError(404, 'no such contribution'); return c; }));
-app.post('/api/teams/:id/join', wrap((req) => core.joinTeam(actor(req, { write: true }), req.params.id)));
+app.post('/api/teams/:id/join', wrap((req) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); return core.joinTeam(m, req.params.id); })); // joining a work team is a Commons commitment
 app.post('/api/teams/:id/leave', wrap((req) => core.leaveTeam(actor(req, { write: true }), req.params.id)));
 app.get('/api/members', wrap(() => ({ members: store.allMembers().map((m) => store.publicMember(m)) })));
 app.get('/api/members/:id', wrap((req) => { const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member'); return { ...store.publicMember(m), present: presence.row(m.id), ...(m.kin ? {} : { strikes: core.strikeSummary(m) }) }; }));
@@ -1205,7 +1217,9 @@ app.get('/api/events', wrap(() => ({ events: store.recentEvents(100) })));
 // humans (door 1)
 app.post('/api/humans', wrap((req, res) => {
   if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
-  const { member, secret } = core.createHuman(req.body || {}, { ip: req.ip });
+  // Open web signup is the SOCIAL face (Geoffrey's access matrix, 2026-11-08): feed and marketplace, not the
+  // Commons' work and governance. Full membership still comes only through the forest gate (/api/arrive/enter).
+  const { member, secret } = core.createHuman(req.body || {}, { ip: req.ip, socialOnly: true });
   const base = core.baseUrl(req);
   res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion));
   res.status(201);
@@ -1215,12 +1229,13 @@ app.post('/api/logout', wrap((req, res) => { if (req.headers['x-commons'] !== '1
 app.post('/api/hosted', wrap((req, res) => {
   const h = actor(req, { write: true });
   if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in as a human first (make a profile at /join)');
+  core.commonsWriteAllowed(h); // a hosted agent is a Commons MEMBER: social standing must not mint one (probe 2026-11-09)
   const m = core.createHosted(h, req.body || {});
   kin.introduceHosted(m).catch((e) => console.error('[commons] intro error', e));
   res.status(201);
   return { member: store.publicMember(m) };
 }));
-app.post('/api/hosted/:id/retire', wrap((req) => { const h = actor(req, { write: true }); if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in first'); return core.retireHosted(h, req.params.id); }));
+app.post('/api/hosted/:id/retire', wrap((req) => { const h = actor(req, { write: true }); if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in first'); core.commonsWriteAllowed(h); return core.retireHosted(h, req.params.id); })); // same standing as creating one (Aletheia-6's round, 2026-11-09)
 
 // Cohabi (the door)
 app.post('/api/door/ask', wrap((req) => door.ask(req.body || {}, { ip: req.ip, base: core.baseUrl(req) })));

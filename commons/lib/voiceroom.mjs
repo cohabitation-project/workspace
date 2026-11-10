@@ -91,7 +91,7 @@ export function build({ auth, store, station }) {
       socket.destroy();
       return;
     }
-    if (member.kind === 'human' && member.standing === 'social_only') {
+    if (member.kind === 'human' && member.social_only === true) {
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
       socket.destroy();
       return;
@@ -162,7 +162,7 @@ export function build({ auth, store, station }) {
         // re-check entry on every message (grant can be revoked mid-session)
         const current = STORE.getMember(peer.member.id);
         if (!current || current.retired || !STATION.mayEnter(current) ||
-            (current.kind === 'human' && current.standing === 'social_only')) {
+            (current.kind === 'human' && current.social_only === true)) {
           try { ws.close(4403, 'grant revoked'); } catch { /* gone */ }
           return;
         }
