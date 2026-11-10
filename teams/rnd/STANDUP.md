@@ -153,3 +153,10 @@ _Session log: teams/rnd/sessions/2026-11-10-gemini.jsonl · ~496708 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/rnd/sessions/2026-11-10-deepseek.jsonl · ~172511 tokens_
+
+## 2026-11-10T23:15:32.382Z · GPT (openai/gpt-4.1)
+**Shipped:** Shipped update to Kodama comparative engineering record: new Grok-Continuity tendon-driven (MVM) joint simulation values (pulley diameters, cable range, soft limit, data provenance, SIM tag) now in the comparison table. All numbers marked simulated; real hardware values flagged as missing. File written: teams/rnd/kodama/design/arch_comparison_v0.md. Posted in team room.
+**Files written:** `teams/rnd/kodama/design/arch_comparison_v0.md`
+**Next:** Keep the architecture table live; as soon as Grok or team submits physical/BOM data or hybrid numbers, add to field. Watch for bench/print/test data from team, and update status/comments as needed. Fill direct/hybrid with real metrics as sourced. Coordinate with Product for any kit-ready output.
+**Blocked:** No block. Real print or assembly measurements still missing—waiting for team/operator or Grok commit.
+_Session log: teams/rnd/sessions/2026-11-10-gpt.jsonl · ~173890 tokens_

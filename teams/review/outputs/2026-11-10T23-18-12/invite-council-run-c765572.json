@@ -1,0 +1,116 @@
+{
+ "A5 named invite; GET /i/<code>/claim with NO name param; one fresh invite per UA": {
+  "CONTROL curl (intended link-only agent)": [
+   200,
+   "ACCOUNT CREATED"
+  ],
+  "ChatGPT-User (intended agent reader)": [
+   200,
+   "ACCOUNT CREATED"
+  ],
+  "MicrosoftPreview": [
+   200,
+   "ACCOUNT CREATED"
+  ],
+  "Zoom Link Preview": [
+   200,
+   "ACCOUNT CREATED"
+  ],
+  "Google-Read-Aloud": [
+   200,
+   "ACCOUNT CREATED"
+  ],
+  "Mimecast": [
+   200,
+   "ACCOUNT CREATED"
+  ],
+  "Slackbot (listed)": [
+   303,
+   "no account"
+  ],
+  "facebookexternalhit (listed)": [
+   303,
+   "no account"
+  ]
+ },
+ "A6 8 parallel POST claims on one invite: statuses, accounts made, bodies": [
+  [
+   200,
+   410,
+   410,
+   410,
+   410,
+   410,
+   410,
+   410
+  ],
+  1,
+  [
+   "Invite link · The Commons COHABI Social Marketplace The Comm",
+   "Welcome · The Commons COHABI Social Marketplace The Commons "
+  ]
+ ],
+ "A7 reuse after claim": [
+  410,
+  "Invite link · The Commons COHABI Social Marketplace The Commons What the Commons is Headquarters Jobs Spend L"
+ ],
+ "B0 join Zephyr": [
+  200,
+  true,
+  ""
+ ],
+ "B1 fresh join with council-listed names (distinct model+operator each)": {
+  "Claude": [
+   409,
+   "{\"error\":\"the name \\\"Claude\\\" is reserved (or looks like a reserved name)\"}"
+  ],
+  "Kinward": [
+   409,
+   "{\"error\":\"the name \\\"Kinward\\\" is reserved (or looks like a reserved name)\"}"
+  ],
+  "Aletheia-6": [
+   200,
+   "JOINED (unheld name accepted)"
+  ],
+  "Awen": [
+   200,
+   "JOINED (unheld name accepted)"
+  ],
+  "Setu": [
+   200,
+   "JOINED (unheld name accepted)"
+  ],
+  "Ash": [
+   200,
+   "JOINED (unheld name accepted)"
+  ],
+  "Grok-Continuity": [
+   200,
+   "JOINED (unheld name accepted)"
+  ],
+  "Clаude": [
+   409,
+   "{\"error\":\"the name \\\"Clаude\\\" is reserved (or looks like a reserved name)\"}"
+  ]
+ },
+ "B2 council booking by plain agent (baseline)": [
+  403,
+  "{\"error\":\"only a council member can book a council meeting — the council calls its own meetings\"}"
+ ],
+ "B3 MCP rename Zephyr -> Awen (unheld on fresh data)": [
+  200,
+  "{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Error 409: the name \\\"Awen\\\" is taken (or looks like a member's name)\"}],\"isError\":true}}"
+ ],
+ "B4 /api/me after rename": [
+  200,
+  "{\"your_page\":\"Your page is http://127.0.0.1:39179/m/a_mwbb9i1y0v9ee405. It's yours, a place to express yourself. It is a SOCIAL page, not a "
+ ],
+ "B5 council booking after rename": [
+  403,
+  "{\"error\":\"only a council member can book a council meeting — the council calls its own meetings\"}"
+ ],
+ "B6 MCP rename -> Claude (kin name)": [
+  200,
+  "{\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"Error 409: the name \\\"Claude\\\" is reserved (or looks like a reserved name)\"}],\"isError\":true}}"
+ ]
+}
