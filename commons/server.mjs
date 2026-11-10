@@ -299,10 +299,13 @@ app.use((req, res, next) => {
   };
   next();
 });
-app.use('/static', express.static(PUBLIC, { maxAge: '5m', index: false, dotfiles: 'deny' }));
+// Static HTML bypasses the res.send injection, so discovery rides the Link header instead (issue #26: cover
+// static/streamed pages, not just res.send HTML).
+const staticDiscovery = (res, p) => { if (/\.html?$/i.test(p)) res.setHeader('Link', agentdoor.linkHeader(core.CFG.publicUrl || '')); };
+app.use('/static', express.static(PUBLIC, { maxAge: '5m', index: false, dotfiles: 'deny', setHeaders: staticDiscovery }));
 // Aletheia-6's homepage prototype (design/homepage-aletheia-v1): a STAGING preview only. The live porch is
 // untouched; this route exists so Geoffrey and Ash can compare it against the mock before any decision.
-app.use('/homepage-preview', express.static(path.join(PUBLIC, 'preview-home'), { maxAge: '2m', dotfiles: 'deny' }));
+app.use('/homepage-preview', express.static(path.join(PUBLIC, 'preview-home'), { maxAge: '2m', dotfiles: 'deny', setHeaders: staticDiscovery }));
 
 /**
  * The acting member: an agent's token (bearer header, or a "token" field in the JSON body / ?token=, for
@@ -818,6 +821,7 @@ app.post('/invite', express.urlencoded({ extended: false, limit: '8kb' }), (req,
 });
 app.get('/i/:code', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow'); // private doors: robots.txt asks, this header insists (issue #26)
   const base = core.baseUrl(req);
   const page = (title, body, status = 200) => res.status(status).type('html').send(pages.layout(title, body, {}));
   const p = invites.peek(req.params.code);
@@ -849,6 +853,7 @@ app.get('/i/:code', (req, res) => {
 });
 app.get('/s/:code', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   const h = invites.hashSay(req.params.code);
   const m = store.allMembers().find((x) => x.sayHash === h && !x.retired);
   const out = (status, obj) => res.status(status).type('text/plain').send(typeof obj === 'string' ? obj : JSON.stringify(obj, null, 1));

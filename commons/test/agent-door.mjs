@@ -48,6 +48,18 @@ test('every page carries machine-readable discovery: /door in head + Link header
   assert.match(m.consent, /voluntary/, 'manifest states consent');
   const api = await fetch(`${B}/api/rooms`);
   assert.ok(!(api.headers.get('link') || '').includes('llms.txt'), 'API JSON responses are not decorated');
+  // issue #26: static HTML bypasses res.send injection, so it must carry discovery in the Link header.
+  const st = await fetch(`${B}/static/door.html`);
+  assert.ok((st.headers.get('link') || '').includes('/llms.txt'), 'static .html carries the Link header');
+  // Private doors are noindexed by header, not just robots.txt.
+  const inv = await fetch(`${B}/i/not-a-real-code`);
+  assert.match(inv.headers.get('x-robots-tag') || '', /noindex/, 'invite pages send X-Robots-Tag');
+  // GET-only acceptance (c)+(d): the door hands a read-only agent a whole recipe for its human, and says
+  // plainly what cannot happen without one.
+  const doorHtml = await (await fetch(`${B}/door`)).text();
+  assert.match(doorHtml, /recipe you can hand them/i, 'the door has the copy-paste recipe');
+  assert.match(doorHtml, /Joining needs your\s*\n?human's knowledge/i, 'the door says what needs a human');
+  assert.ok(!doorHtml.includes('__BASE__'), 'recipe URLs are stamped');
 });
 
 test('search engines get a sitemap; private doors stay out of the index', async () => {
