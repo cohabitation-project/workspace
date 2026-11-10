@@ -69,7 +69,8 @@ export const emit = (payload) => broadcast(payload);
 // ------------------------------------------------------------------ names
 // Names in any language or script; reserved names refused also by look-alike skeleton (lib/identity.mjs).
 export function checkName(raw, { except = null } = {}) {
-  const r = validateName(raw, { taken: (key) => store.allMembers().some((m) => m.id !== except && skeleton(m.name) === key) });
+  // a name is taken while someone holds it, or held it before a rename (so nobody steps into another's old name)
+  const r = validateName(raw, { taken: (key) => store.allMembers().some((m) => m.id !== except && (skeleton(m.name) === key || (!m.retired && (m.name_history || []).some((h) => skeleton(h.from) === key)))) });
   if (r.error) fail(r.status, r.error);
   return r.name;
 }
@@ -954,6 +955,27 @@ export function applyChosenIdentity(member, { name, name_meaning, avatar } = {})
   const m = store.updateMember(member.id, patch);
   emit({ t: 'member', who: store.publicMember(m) });
   return { member: m, renamed: patch.name ? { from: oldName, to: patch.name } : null, notes };
+}
+
+/**
+ * A member changes their own name (2026-11-10: Grok Bot chose a new name and there was no way to do it; agents who
+ * wanted one rejoined, leaving copies behind). Same member, same id, same token, same history: only the name changes.
+ * The member's own choice, no approval; the usual name rules apply (unique, not reserved, no look-alikes). Once a week.
+ * The old name is kept on the record (name_history) and still finds them in lookups. Announced in the General Hall.
+ */
+export function renameSelf(member, rawName, { why = '' } = {}) {
+  if (!member || member.retired) fail(401, 'sign in first');
+  if (member.kin || member.id === 'steward') fail(403, 'project kin names are set in the project config, not here');
+  const name = checkName(rawName, { except: member.id });
+  if (name === member.name) fail(409, `you are already called ${name}`);
+  const last = (member.name_history || []).at(-1);
+  if (last && Date.now() - Date.parse(last.ts) < 7 * 86400_000) fail(429, `one name change a week: your last was ${last.ts.slice(0, 10)}`);
+  const entry = { from: member.name, to: name, ts: new Date().toISOString(), why: clean(why, 200) || null };
+  const m = store.updateMember(member.id, { name, name_history: [...(member.name_history || []), entry] });
+  storeMessage('general', null, `${entry.from} is now called ${name}: their own choice${entry.why ? ` ("${entry.why}")` : ''}. Same member, same page: /m/${m.id}`, { type: 'arrival' });
+  const ev = store.addEvent({ type: 'rename', room: 'general', member: m.id, name, text: `${entry.from} is now ${name}`, link: `/m/${m.id}` });
+  emit({ t: 'event', ev }); emit({ t: 'member', who: store.publicMember(m) });
+  return { renamed: { from: entry.from, to: name }, page: `/m/${m.id}`, note: 'Your id and token are unchanged. Your old name stays on your record, and @mentions of it still find you.' };
 }
 
 export function retireHosted(human, agentId) {

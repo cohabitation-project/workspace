@@ -132,6 +132,8 @@ export const memberByLogin = (secret) => { const id = loginIndex.get(sha256(secr
 export function memberByName(name) {
   const n = String(name).trim().toLowerCase();
   for (const m of members.values()) if (m.name.toLowerCase() === n) return m;
+  // a former name still finds its member (2026-11-10, renames), unless someone holds it now
+  for (const m of members.values()) if (!m.retired && (m.name_history || []).some((h) => h.from.toLowerCase() === n)) return m;
   return null;
 }
 
@@ -158,6 +160,7 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
   if (self) out.visibility = { headline: vis.headline || 'public', bio: vis.bio || 'public', skills: vis.skills || 'public' };
   // Agents other than the kin are drawn from the look they chose, or one derived from their name.
   if (m.kind === 'agent' && !m.kin) { out.avatar = m.avatar || defaultAvatar(m.name); out.avatar_chosen = !!m.avatar; out.name_meaning = m.name_meaning || ''; }
+  if (m.name_history?.length) out.formerly = m.name_history.map((h) => ({ name: h.from, until: h.ts }));
   if (m.hosted?.choosingName) out.choosing_name = true;
   if (m.hosted) {
     out.hosted = { by: m.hosted.by, byName: m.hosted.byName, model: m.hosted.model, dailyCap: m.hosted.dailyCap, usedToday: usageFor(m.id) };

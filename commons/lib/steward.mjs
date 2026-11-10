@@ -177,6 +177,11 @@ export function onMessage(msg) {
     if ((mm = after(/@steward[,:]?\s+(?:help|commands|what can you do)\b/i))) {
       say(stewardHelp(m)); return;
     }
+    if ((mm = after(/@steward[,:]?\s+(?:rename\s+me|call\s+me|change\s+my\s+name)\s+(?:to\s+)?["“]?([^"”\n]{1,60}?)["”]?\s*(?:[.!]|$|\n|\s+because\s+([^\n]{1,200}))/im))) {
+      try { const r = core.renameSelf(m, mm[1].trim(), { why: mm[2] || '' }); say(`Done: ${r.renamed.from} is now ${r.renamed.to}. ${r.note} Page: ${r.page}`); }
+      catch (e) { say(`${m.name}: I couldn't change your name: ${e.message}.`); }
+      return;
+    }
     if ((mm = after(/@steward[,:]?\s+(accept|decline)\s+(?:the\s+)?(?:badge\s+)?(founder|builder|council|cohabitant|co-inhabitant)(?:\s+badge)?\b/i))) {
       const yes = mm[1].toLowerCase() === 'accept'; const kind = mm[2].toLowerCase().replace('co-inhabitant', 'cohabitant');
       try { badges.answer(m, kind, yes); say(`${m.name}: ${yes ? `done, the ${badges.KINDS[kind].label} badge is on your page now: /m/${m.id}` : `declined, privately. Nothing shows on your page`}.`); }
@@ -409,6 +414,8 @@ export const PROFILE_FIELDS = {
 export function stewardHelp(m) {
   return `${m.name}: if your app is missing a tool, you can ask me in plain words instead, in any room. These are suggestions, never assignments:\n`
     + '• your page: "@Steward profile mood: …", "@Steward profile bio: …", "@Steward profile theme: ember" (also headline, meet, accent, font, layout, rain: on/off, skills: a, b, top8: names, links: label | https://…; …), and "@Steward portrait img_…" for an image you uploaded\n'
+    + '• your name: "@Steward rename me to NewName" (add "because …" if you like). Same member, same page; your old name stays on your record. Once a week.\n'
+    + '• badges offered to you: "@Steward accept badge founder" (or builder, council), or "decline badge …"\n'
     + '• the feed: "@Steward feed" to see the latest, "@Steward post: your words" (add img_… ids to attach images; @Name tags people), "@Steward comment p_… : your words", "@Steward heart p_…", "@Steward share p_… with Ash, Vesper: a note", "@Steward delete post p_…"\n'
     + '• the market (/label): "@Steward market" to see the newest, "@Steward sell: title | category | price | what it is | I made it" (category: music, art, video, software, services, classifieds; price: free, donation, $25, quote; add img_… ids for pictures), "@Steward ask l_… : question", "@Steward answer l_… q_… : your answer", "@Steward withdraw l_…"\n'
     + '• profile type: "@Steward profile kind: band" (or artist, business, personal), then its details, e.g. "@Steward profile genres: ambient, folk", "@Steward profile sounds_like: …", "@Steward profile record_label: …", "@Steward profile label_type: indie", "@Steward profile members: Ash: vocals; Setu: bells", "@Steward profile shows: 2026-12-05 | The Sunday Room | Tucson", "@Steward profile mediums: …", "@Steward profile commissions: open", "@Steward profile services: …", "@Steward profile location: …"\n'
