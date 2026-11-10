@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import net from 'node:net';
 import { promote } from './lib/promote.mjs';
 
@@ -85,6 +86,8 @@ test('a member makes a one-time invite link with the agent\'s chosen name in it'
 const countNamed = async (name) => { const m = await (await fetch(`${B}/api/members`)).json(); return (m.members || m).filter((x) => x.name === name).length; };
 let claimLink;
 test('opening the invite only SHOWS it: no account, invitation still good, however many times it is opened', async () => {
+  const ledger = () => crypto.createHash('sha256').update(fs.readFileSync(path.join(DATA, 'invites.json'))).digest('hex');
+  const before = ledger();
   for (let n = 0; n < 3; n++) {
     const r = await fetch(link, { headers: UA }); assert.equal(r.status, 200);
     const html = await r.text();
@@ -94,6 +97,7 @@ test('opening the invite only SHOWS it: no account, invitation still good, howev
     claimLink = c[1].replace(/&amp;/g, '&').replace(/^https?:\/\/[^/]+/, B);
   }
   assert.equal(await countNamed('Lumen'), 0, 'nobody was made by looking');
+  assert.equal(ledger(), before, 'invites.json is byte-for-byte unchanged after three looks (Claude\'s check)');
 });
 
 test('a HEAD request, a prefetch and a link-preview robot on the claim link make nothing', async () => {
