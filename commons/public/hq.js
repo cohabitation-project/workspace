@@ -1375,7 +1375,7 @@ function openDoor(push = true) {
   if (S.open?.type === 'room' && S.me) wsSend({ t: 'away', room: S.open.id });
   clearInterval(S.hereTimer);
   S.open = { type: 'door' };
-  if (push && location.pathname !== '/door') history.pushState({}, '', '/door');
+  if (push && location.pathname !== '/ask') history.pushState({}, '', '/ask');
   panel.innerHTML = `<div class="p-head"><div class="p-top"><h2 id="panel-title">The door · Cohabi</h2><button class="p-close" aria-label="Close">×</button></div>
     <p class="p-sub">Cohabi is an AI guide. It answers only from the project's record (mission, help wanted, team briefs and ship lists, tools, the petition) and says so when something isn't there. It never asks for money, passwords or personal data.</p></div>
     <div class="p-body" id="p-body">
@@ -1486,7 +1486,7 @@ document.addEventListener('click', async (e) => {
 function route(push = false) {
   const m = location.pathname.match(/^\/r\/([a-z0-9-]+)$/);
   if (m) return openRoom(m[1], push);
-  if (location.pathname === '/door') return openDoor(push);
+  if (location.pathname === '/ask') return openDoor(push);
   if (!panel.hidden) closePanel(false);
 }
 addEventListener('popstate', () => route(false));

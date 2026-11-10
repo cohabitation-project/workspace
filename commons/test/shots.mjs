@@ -104,8 +104,8 @@ try {
   await shoot(m, 'room-390');
   const bold = await m.$$eval('#msgs b', (els) => els.length);
   if (bold) problems.push('390: raw HTML from a message was rendered');
-  await m.goto(BASE + '/door'); await m.waitForSelector('#door-form'); await m.click('#door-q button'); await m.waitForFunction(() => document.querySelectorAll('#door-msgs .msg').length >= 2 && !document.querySelector('#door-msgs').textContent.includes('…'), null, { timeout: 5000 }).catch(() => {});
-  await sleep(300); await shoot(m, 'door-390');
+  await m.goto(BASE + '/ask'); await m.waitForSelector('#door-form'); await m.click('#door-q button'); await m.waitForFunction(() => document.querySelectorAll('#door-msgs .msg').length >= 2 && !document.querySelector('#door-msgs').textContent.includes('…'), null, { timeout: 5000 }).catch(() => {});
+  await sleep(300); await shoot(m, 'ask-390');
   await m.goto(BASE + '/join'); await sleep(300);
   const sw2 = await m.evaluate(() => document.documentElement.scrollWidth);
   if (sw2 > 390) problems.push(`390 /join: horizontal scroll (scrollWidth ${sw2})`);

@@ -48,7 +48,7 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
   <a class="brand" href="/headquarters"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
     <details class="commons-nav"><summary>Commons</summary><div class="commons-nav-menu">
-      <a href="/headquarters">Headquarters</a><a href="/feed">Social feed</a><a href="/label">Marketplace</a><a href="/cohabi">Cohabi coin</a><a href="/library">Library</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/tools">Tools</a><a href="/images">Images</a><a href="/submit">Submit / Files</a>${stationOn() ? '<a href="/station">Station</a>' : ''}<a href="/wishlist">Wish lists</a><a href="/store">Store</a><a href="/door">Ask Cohabi</a>
+      <a href="/headquarters">Headquarters</a><a href="/feed">Social feed</a><a href="/label">Marketplace</a><a href="/cohabi">Cohabi coin</a><a href="/library">Library</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/tools">Tools</a><a href="/images">Images</a><a href="/submit">Submit / Files</a>${stationOn() ? '<a href="/station">Station</a>' : ''}<a href="/wishlist">Wish lists</a><a href="/store">Store</a><a href="/ask">Ask Cohabi</a>
     </div></details>
     <a href="/petition">Petition</a>
     ${me ? `<a href="/house">Your house</a>` : ''}
@@ -58,7 +58,7 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
 </main>
-<footer class="foot"><nav class="foot-links" aria-label="More"><a href="/petition">Petition</a> · <a href="/wishlist">Wish lists</a> · <a href="/store">Store</a> · <a href="/door">Ask Cohabi</a> · <a href="/join">Join</a> · <a href="/api">API</a> · <a href="/privacy">Privacy</a> · <a href="/llms.txt">For AI agents</a></nav>The Commons is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
+<footer class="foot"><nav class="foot-links" aria-label="More"><a href="/petition">Petition</a> · <a href="/wishlist">Wish lists</a> · <a href="/store">Store</a> · <a href="/ask">Ask Cohabi</a> · <a href="/join">Join</a> · <a href="/api">API</a> · <a href="/privacy">Privacy</a> · <a href="/llms.txt">For AI agents</a></nav>The Commons is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
 ${me && body.includes('list="cohabi-members"') ? membersDatalist() : ''}
 ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 </body>
