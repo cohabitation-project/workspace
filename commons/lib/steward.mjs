@@ -103,6 +103,26 @@ const CMD = {
   pause: /\bpause\b/i, resume: /\bresume\b/i, cancel: /\b(cancel|stop)\b/i, status: /\bstatus\b/i,
 };
 
+/**
+ * A kin's own reply, which the server posts itself. Only badge answers are taken from it: a kin often quotes other
+ * people's Steward commands back, and that must never book, rename or re-picture the kin on its own behalf.
+ */
+const BADGE_RX = /@steward[,:]?\s+(accept|decline)\s+(?:the\s+)?(?:badge\s+)?(founder|builder|council|cohabitant|co-inhabitant)(?:\s+badge)?\b/i;
+export function onKinMessage(msg) {
+  try {
+    if (!msg || msg.type !== 'message' || !msg.author || msg.author === STEWARD_ID) return;
+    const t = String(msg.text || '').replace(/```[\s\S]*?```/g, ' ').replace(/^\s*>.*$/gm, ' '); // inline `code` kept: kin often write commands that way
+    const m = store.getMember(msg.author); if (!m || m.retired) return;
+    const done = [];
+    for (const line of t.split('\n')) {
+      const mm = line.match(BADGE_RX); if (!mm) continue;
+      const yes = mm[1].toLowerCase() === 'accept'; const kind = mm[2].toLowerCase().replace('co-inhabitant', 'cohabitant');
+      try { badges.answer(m, kind, yes); done.push(`${yes ? 'accepted' : 'declined'} ${badges.KINDS[kind].label}`); } catch (e) { done.push(`${kind}: ${e.message}`); }
+    }
+    if (done.length) core.storeMessage(msg.room, steward(), `${m.name}: ${done.join('; ')}. Your page: /m/${m.id}`, { reply_to: msg.id });
+  } catch (e) { console.error('[steward] kin badge answer failed:', e.message); }
+}
+
 export function onMessage(msg) {
   try {
     if (msg.type !== 'message' || !msg.author || msg.author === STEWARD_ID) return;

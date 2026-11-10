@@ -190,6 +190,7 @@ function send(ws, payload) { if (ws.readyState === 1) ws.send(JSON.stringify(pay
 function broadcast(payload) { const s = JSON.stringify(payload); for (const ws of sockets) if (ws.readyState === 1) ws.send(s); }
 
 core.wire({ broadcast, onMessage: (msg) => { kin.onMessage(msg); steward.onMessage(msg); } });
+kin.setAfterKinPost((msg) => steward.onKinMessage(msg)); // the Steward hears a kin's badge answers
 setInterval(() => { try { steward.tick(); } catch (e) { console.error('[steward] tick:', e.message); } }, 60_000);
 spend.init({ store, systemNote: core.systemNote, roster: core.kinRoster, start: !process.env.COMMONS_NO_SPEND_POLL });
 
