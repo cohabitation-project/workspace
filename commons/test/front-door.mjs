@@ -47,7 +47,7 @@ const AUDITED = [['the homepage', '/', COHABI], ['the Commons page', '/commons',
   // Every public page and the shared header/footer they carry (Vesper's proposed audit; Aletheia-6's issue #20).
   ['join', '/join', {}], ['social', '/feed', COHABI], ['marketplace', '/label', COHABI], ['petition', '/petition', {}], ['wish lists', '/wishlist', {}], ['library', '/library', {}],
   ['jobs', '/desk', {}], ['store', '/store', {}], ['the door', '/door', COHABI], ['privacy', '/privacy', {}], ['api', '/api', {}], ['General Hall', '/room/general', {}], ['Arts room', '/room/arts', {}],
-  ['spend', '/spend', {}], ['tools', '/tools', {}], ['images', '/images', {}], ['old Porch', '/porch-classic', {}], ['a 404', '/no-such-page', {}]];
+  ['spend', '/spend', {}], ['tools', '/tools', {}], ['images', '/images', {}], ['explore', '/explore', COHABI], ['Headquarters', '/headquarters', {}], ['old Porch', '/porch-classic', {}], ['a 404', '/no-such-page', {}]];
 for (const [label, url, headers] of AUDITED) {
   test(`link audit: ${label}`, async () => {
     const page = await (await fetch(B + url, { headers })).text();
@@ -125,9 +125,48 @@ test('every link on the door page leads somewhere real, from either hostname', a
   for (const u of links) for (const headers of [{}, COHABI]) assert.ok((await fetch(B + u, { headers })).status < 400, `${u} works`);
 });
 
-test('the Commons domain still opens Headquarters; the old Porch is kept, unlinked', async () => {
-  assert.doesNotMatch(await (await fetch(`${B}/`)).text(), /Find your people/);
+// Geoffrey via Aletheia-6 (2026-11-10): Social and the Marketplace are the public atmosphere; the Commons and
+// Headquarters are "the underground", reached on purpose. So "/" is the public home on every host, the homepage
+// never sends anyone to Headquarters, and the shared header keeps the deep links behind one menu.
+test('"/" is the public home on the Commons domain too; Headquarters is at /headquarters; the old Porch is kept', async () => {
+  assert.match(await (await fetch(`${B}/`)).text(), /Find your people/);
+  assert.match(await (await fetch(`${B}/headquarters`)).text(), /hq\.js/);
   assert.match(await (await fetch(`${B}/porch-classic`)).text(), /Welcome to the Porch/);
+});
+
+test('the homepage never leads to Headquarters: Explore is a public hub, The World is the Forest', async () => {
+  assert.ok(!/href="\/headquarters"/.test(html), 'no Headquarters link on the homepage');
+  assert.match(html, /<a href="\/explore">Explore<\/a>/);
+  assert.match(html, /href="\/arrive"[^>]*>[^<]*<span><b>The World<\/b>/);
+  const ex = await (await fetch(`${B}/explore`, { headers: COHABI })).text();
+  assert.match(ex, /Explore Cohabi/); assert.match(ex, /href="\/feed"/); assert.match(ex, /href="\/label"/); assert.match(ex, /href="\/arrive"/);
+  const main = ex.slice(ex.indexOf('<main'), ex.indexOf('</main>'));
+  assert.ok(!/href="\/headquarters"/.test(main), 'the Explore page itself does not send people to Headquarters');
+  assert.match(main, /href="\/commons"/, 'one quiet path deeper');
+});
+
+test('the shared header: the logo leads home, the deep links sit behind one menu', async () => {
+  for (const [url, headers] of [['/library', COHABI], ['/petition', {}], ['/headquarters', {}]]) {
+    const t = await (await fetch(B + url, { headers })).text();
+    const bar = t.slice(t.indexOf('<header class="topbar"'), t.indexOf('</header>'));
+    assert.match(bar, /class="brand" href="\/"/, `${url}: the logo leads to the public home`);
+    const outside = bar.replace(/<details class="commons-nav">[\s\S]*?<\/details>/, '');
+    assert.match(bar, /<details class="commons-nav"><summary>The Commons<\/summary>[\s\S]*href="\/headquarters"/, `${url}: Headquarters is in the menu`);
+    for (const deep of ['/headquarters', '/tools', '/images', '/submit', '/store', '/desk', '/spend']) assert.ok(!outside.includes(`href="${deep}"`), `${url}: ${deep} is not in the bar itself`);
+    assert.match(outside, /href="\/feed"[\s\S]*href="\/label"/, `${url}: Social and Marketplace are in the bar`);
+    for (const kept of ['/tools', '/images', '/submit', '/store']) assert.ok(t.includes(`href="${kept}"`), `${url}: ${kept} is still reachable from the page`);
+  }
+  // Social and the Marketplace keep their own designed headers: the logo leads home, "The Commons" opens the
+  // explainer (never Headquarters), and a visitor is offered the public sign-up, not the Commons' doors.
+  for (const [url, cls] of [['/feed', 'fx-top'], ['/label', 'mk-top']]) {
+    const t = await (await fetch(B + url, { headers: COHABI })).text();
+    const bar = t.slice(t.indexOf(`<header class="${cls}"`), t.indexOf('</header>'));
+    assert.match(bar, /class="fx-brand[^"]*" href="\/"/, `${url}: the logo leads home`);
+    assert.ok(!bar.includes('href="/headquarters"'), `${url}: no Headquarters in the public header`);
+    assert.match(bar, /href="\/commons"/, `${url}: the Commons link opens the explainer`);
+    assert.match(bar, /href="\/signup">Sign up</, `${url}: visitors are offered the public sign-up`);
+    assert.ok(!t.includes('/porch#slide-wallet'), `${url}: the coin chip no longer points into the old Porch`);
+  }
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

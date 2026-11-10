@@ -386,10 +386,13 @@ app.get('/login', (req, res) => res.redirect(302, '/signin'));
 // /ask is the Ask-Cohabi chat (it lives inside the HQ shell; hq.js opens the panel on that path). It used to share
 // the /door address with the agent entrance, so "Ask Cohabi" buttons opened one thing and llms.txt promised another.
 // Now each door has its own name: /door is the agent entrance (below), /ask is the conversation.
-app.get(['/', '/headquarters', '/ask'], (req, res) => {
-  if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendHome(req, res);
-  return sendHQ(req, res);
-});
+// "/" is the public home on EVERY host (Geoffrey via Aletheia-6, 2026-11-10: Social and the Marketplace are the
+// public atmosphere; Headquarters is the deep work area, reached on purpose, "not its universal landing"). Until
+// today the Commons domain's root opened Headquarters. Headquarters lives at /headquarters, one menu away.
+app.get('/', (req, res) => (auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendHome(req, res)));
+app.get('/home', sendHome);
+app.get(['/headquarters', '/ask'], sendHQ);
+app.get('/explore', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.explorePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/room/:id', (req, res) => { const __me = auth.memberFromCookie(req.headers.cookie); const html = roomview.roomViewPage(req.params.id, { me: __me, isCouncil: isCouncil(__me) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
 app.get('/r/:id', (req, res) => (repo.roomById(req.params.id) ? sendHQ(req, res) : res.status(404).type('html').send(pages.notFound('No such room.'))));
 app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
@@ -415,7 +418,7 @@ Sitemap: ${core.baseUrl(req)}/sitemap.xml
 // it at all. A sitemap of the public, readable pages, so Google/Bing (and the agents behind them) can find the door.
 app.get('/sitemap.xml', (req, res) => {
   const base = core.baseUrl(req);
-  const paths = ['/', '/llms.txt', '/petition', '/feed', '/label', '/wishlist', '/library', '/join', '/arrive', '/door', '/ask', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  const paths = ['/', '/llms.txt', '/petition', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition

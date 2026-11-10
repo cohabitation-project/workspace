@@ -133,11 +133,11 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 </head>
 <body class="fx-page mk-page" data-theme="parchment" data-mk="${esc(section || 'home')}">
 <header class="mk-top">
-  <a class="fx-brand mk-brand" href="/label"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
+  <a class="fx-brand mk-brand" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
   <details class="mk-site"><summary><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
-    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Cohabi Social</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/headquarters">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
+    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Cohabi Social</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/commons">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
   <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
-  <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
+  <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/cohabi" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>
 <form class="mk-searchbar" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, artists…">${section ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>
 <main class="mk-main" id="main">${center}</main>
@@ -145,9 +145,9 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 <nav class="fx-bottom" aria-label="Main">
   <a href="/feed"><span aria-hidden="true">🏠</span>Home</a>
   <a href="/feed?tab=groups"><span aria-hidden="true">👥</span>Groups</a>
-  ${me ? '<a class="fx-plus" href="/label/new" aria-label="List something">＋</a>' : '<a class="fx-plus" href="/join" aria-label="Join to list something">＋</a>'}
+  ${me ? '<a class="fx-plus" href="/label/new" aria-label="List something">＋</a>' : '<a class="fx-plus" href="/signup" aria-label="Sign up to list something">＋</a>'}
   <a href="/label" aria-current="page"><span aria-hidden="true">🛍</span>Market</a>
-  <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
+  <a href="/commons"><span aria-hidden="true">🏛</span>Commons</a>
 </nav>
 <div class="fx-toast" id="fx-toast" role="status" hidden></div>
 <script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script>
@@ -226,7 +226,7 @@ export function marketPage({ me, query = {} }) {
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
   ${arts.length ? `<h2 class="mk-h">Artists on the Label</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
-  ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/join">Join</a>'}</div>`}`;
+  ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
   return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center });
 }
 

@@ -143,12 +143,12 @@ function leftRail(me, myGroups) {
     const bal = ledger.balance(ledger.wallet(me.id));
     you = `<section class="fx-you" style="--au:${accentOf(me.id)}"><a class="fx-youface" href="/m/${esc(me.id)}">${memberFace(me.id, 4)}</a>
       <a class="fx-youname" href="/m/${esc(me.id)}">${esc(m.name)}</a>${pm.mood ? `<p class="fx-mood small">“${esc(pm.mood)}”</p>` : ''}
-      <p class="fx-coins"><a href="/porch#slide-wallet" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
+      <p class="fx-coins"><a href="/cohabi" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
       ${m.song ? `<div class="fx-song"><span class="small">♪ ${esc(m.song.title)}</span><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio></div>` : ''}
       ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}
       <a class="btn ghost small" href="/m/${esc(me.id)}">Your page</a></section>`;
   } else {
-    you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/join">Join</a> <a class="btn ghost" href="/signin?next=/feed">Sign in</a></section>`;
+    you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/signup">Sign up</a> <a class="btn ghost" href="/signin?next=/feed">Sign in</a></section>`;
   }
   const mine = myGroups.length ? `<h4 class="fx-railh">Your groups</h4><ul class="fx-nav fx-mygroups">${myGroups.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span class="fx-nl">${esc(g.name)}</span></a></li>`).join('')}</ul>` : '';
   return `${you}<nav aria-label="Cohabi"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
@@ -260,14 +260,14 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
 </head>
 <body class="fx-page" data-theme="${esc(themeOf(me))}" style="--gold:${accentHex(me)}">
 <header class="fx-top">
-  <a class="fx-brand" href="/feed"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
+  <a class="fx-brand" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
   <nav class="fx-topnav" aria-label="Cohabi">
     <a href="/feed" aria-current="page"><span aria-hidden="true">🏠</span> Home</a>
     <a href="/label"><span aria-hidden="true">🛍</span> Cohabi Marketplace</a>
-    <a href="/headquarters"><span aria-hidden="true">🏛</span> The Commons</a>
+    <a href="/commons"><span aria-hidden="true">🏛</span> The Commons</a>
   </nav>
   <div class="fx-topr">
-    ${me ? `<a class="fx-chip" href="/porch#slide-wallet" title="Your Cohabi Coins">⬡ ${bal}</a>${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/join">Join</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
+    ${me ? `<a class="fx-chip" href="/cohabi" title="Your Cohabi Coins">⬡ ${bal}</a>${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
   </div>
 </header>
 <div class="fx-shell">
@@ -278,9 +278,9 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
 <nav class="fx-bottom" aria-label="Main">
   <a href="/feed"${tab !== 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">🏠</span>Home</a>
   <a href="/feed?tab=groups"${tab === 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">👥</span>Groups</a>
-  ${me ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/join" aria-label="Join to post">＋</a>'}
+  ${me ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/signup" aria-label="Sign up to post">＋</a>'}
   <a href="/label"><span aria-hidden="true">🛍</span>Market</a>
-  <a href="/headquarters"><span aria-hidden="true">🏛</span>Commons</a>
+  <a href="/commons"><span aria-hidden="true">🏛</span>Commons</a>
 </nav>
 ${me ? membersDatalist() : ''}
 <div class="fx-toast" id="fx-toast" role="status" hidden></div>
