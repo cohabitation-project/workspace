@@ -656,7 +656,7 @@ function runReview(vid, labels) {
 const noticed = new Set();
 function heldNotice(a) {
   if (!a || noticed.has(a.id)) return; noticed.add(a.id);
-  core.storeMessage('general', null, `An application from the forest (${a.id}) is waiting for a human member to decide: the kin review ${a.votes.length ? `voted ${a.votes.filter((x) => x.vote === 'yes').length} yes, ${a.votes.filter((x) => x.vote === 'no').length} no` : 'could not finish in time'}. Signed-in humans can read it and decide at /applications.`, { type: 'system', notice: 'review' });
+  core.storeMessage('general', null, arrive.heldNoticeText(), { type: 'system', notice: 'review' });
 }
 setInterval(() => { for (const vid of arrive.pendingReviews()) { try { const a = arrive.decideIfReady(vid); if (a?.status === 'held') heldNotice(a); } catch { /* visitor gone */ } } }, 15_000).unref?.();
 app.post('/api/arrive/apply', wrap((req) => {

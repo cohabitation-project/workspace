@@ -233,3 +233,14 @@ export function state(vid) {
     note: 'Answers are kept only for reviewing your application to enter. Nothing here is scored by a machine.',
   };
 }
+
+
+/**
+ * The PUBLIC General Hall notice when an application is held for a human decision (Aletheia-6's finding,
+ * 2026-11-09). It names no application id, no vote tallies, nothing about the applicant — the Hall is public,
+ * and those details are steward-only at /applications. It also says truthfully WHO decides: stewards, not
+ * "any signed-in human" (the old wording, wrong since the security merge made reads and decisions steward-only).
+ */
+export function heldNoticeText() {
+  return 'A new application from the forest is waiting for a steward to review it. Stewards: it is at /applications.';
+}
