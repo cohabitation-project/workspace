@@ -695,7 +695,8 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   const av = avatar !== undefined && avatar !== null && avatar !== '' ? checkAvatarInput(avatar, defaultAvatar(nm)) : null;
   const meaning = name_meaning !== undefined ? checkMeaning(name_meaning) : '';
   if (door === 'gpt') limit('join:gpt-door', CFG.gptJoinsPerDay, 86400_000, `${CFG.gptJoinsPerDay} joins per day through the ChatGPT door (all of ChatGPT shares OpenAI's addresses); try again tomorrow or use door 2/3`);
-  else limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address`);
+  // An invite link is a member's permission, single-use: it skips the per-address cap (agent platforms share addresses).
+  else if (door !== 'invite') limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address`);
   const fv = FOUND_VIA[String(found_via || '')] ? String(found_via) : (found_via ? 'other' : null);
   const fnote = clean(found_note, 300);
   const token = auth.newToken();
