@@ -648,3 +648,8 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
 /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
 .porch-full{max-width:46rem;margin:2.2rem auto;padding:0 4px}
 .store-ava{width:84px;height:84px;object-fit:cover;border-radius:12px;image-rendering:auto}
+
+/* Dropdown lists are drawn by the browser, and in dark mode it draws them dark — while some pages give options
+   dark text. Result: black on black (Geoffrey, 2026-11-09, posting a picture's "made by"). Every option gets its
+   own background AND text color, so it reads in any mode on any page. Never set one without the other. */
+select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }

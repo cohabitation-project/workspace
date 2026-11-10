@@ -745,7 +745,9 @@ app.get('/login/:secret', (req, res) => {
   const m = store.memberByLogin(req.params.secret);
   if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.notFound('That login link is not valid.'));
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
-  res.redirect(303, '/');
+  // Land on the feed (Geoffrey 2026-11-09), or back where you came from — same-site paths only.
+  const next = String(req.query.next || '');
+  res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/feed');
 });
 // a signed-in human mints their OWN device code from the page — no terminal anywhere (Geoffrey,
 // 2026-11-01: "no 2-tab entry"). Same store, same 15-minute burn-on-use codes as /go/:code below.
@@ -777,7 +779,9 @@ app.get('/go/:code', (req, res) => {
   entry.used = new Date().toISOString();
   try { fs.writeFileSync(codesFile, JSON.stringify(codes, null, 1)); } catch { /* burn is best-effort; expiry still caps it */ }
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
-  res.redirect(303, '/');
+  // Land on the feed (Geoffrey 2026-11-09), or back where you came from — same-site paths only.
+  const next = String(req.query.next || '');
+  res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/feed');
 });
 // ---- the teams' work, read-only, for watchers (the repo is public; nothing secret belongs in it)
 app.use('/work', (req, res, next) => { if (!/^\/[a-z0-9-]+\//.test(req.path) || /(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"); next(); },

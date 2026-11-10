@@ -74,7 +74,7 @@
 .fx-copts { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; border-top: 1px solid var(--line); padding-top: 10px; }
 .fx-opt { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 4px 12px; border-radius: 999px; background: var(--soft); border: 1px solid var(--line); color: var(--ink); font: 13px system-ui; cursor: pointer; }
 .fx-opt select { background: transparent; color: var(--ink); border: 0; font: inherit; max-width: 170px; }
-.fx-opt select option { color: #111; }
+.fx-opt select option { color: #1d1a14; background-color: #fbf8f2; } /* always pair text+bg: dark-mode dropdowns are drawn dark */
 .fx-csend { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .fx-newgroup { display: grid; gap: 8px; } .fx-newgroup h2 { font: 18px Georgia, serif; margin: 0; }
 .fx-newgroup input { background: var(--panel2); border: 1px solid var(--line); color: var(--ink); border-radius: 10px; padding: 10px; font: inherit; min-height: 44px; }
