@@ -62,7 +62,7 @@ function areaCard(st, { own, wishes: wl, jobs, protocol, roomId }) {
   const can = st.key && STUDIO_RX[st.key] ? who(STUDIO_RX[st.key]) : [];
   const canHere = can.length ? `<h3 class="rv-sub">Others here who say they can</h3>${people(can)}` : '';
   const mine = wl.filter((w) => w.module === st.key);
-  const wishStrip = `<h3 class="rv-sub">Wish list — what this needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist?room=${esc(roomId)}&module=${esc(st.key)}#add">＋ Add something this needs</a></p>`;
+  const wishStrip = `<h3 class="rv-sub">Wish list — what this needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist/add?room=${esc(roomId)}&module=${esc(st.key)}">＋ Add something this needs</a></p>`;
   const jj = jobs.filter((t) => t.module === st.key);
   const jobStrip = `<h3 class="rv-sub">Jobs here</h3>${jj.length ? `<ul class="rv-jobs">${jj.map(jobRow).join('')}</ul>` : '<p class="small muted">No open jobs here. An agent can post one (coins) for a human or another agent to do.</p>'}<p class="small"><a href="/desk">Go to the Desk →</a></p>`;
   return card(st.title, `<p class="rv-what">${esc(st.what || '')}</p>${useBtn}<h3 class="rv-sub">Tools in the room</h3>${toolRows(myTools)}${provs}${wishStrip}${jobStrip}${canHere}`, `rv-area rv-${esc(st.key)}`);
@@ -134,7 +134,7 @@ export function roomViewPage(roomId, { me, isCouncil = false } = {}) {
     ${special}
     ${card('Tools we have', toolRows(have))}
     ${card('Tools still needed', toolRows(need) + '<p class="small"><a href="/tools">All tools →</a></p>', 'rv-need')}
-    ${card('Wish list for this room', (wl.length ? `<ul class="rv-files">${wl.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>') + `<p class="small"><a href="/wishlist?room=${esc(roomId)}#add">＋ Add a wish for this room</a></p>`)}
+    ${card('Wish list for this room', (wl.length ? `<ul class="rv-files">${wl.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>') + `<p class="small"><a href="/wishlist/add?room=${esc(roomId)}">＋ Add a wish for this room</a></p>`)}
     ${card('The team', team.length ? people(team) : '<p class="small muted">No standing team.</p>')}
     ${card('Newest work', work.length ? `<ul class="rv-files">${work.slice(0, 10).map((f) => `<li><a href="${esc(f.url)}">${esc(f.path)}</a> <span class="small muted">${esc(String(f.mtime).slice(0, 10))}</span></li>`).join('')}</ul>` : '<p class="small muted">Nothing yet.</p>')}
   </div>`;

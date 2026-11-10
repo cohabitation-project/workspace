@@ -44,6 +44,9 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
 - **back burner: Work sessions run from the server**, not GitHub's unreliable scheduler.
 - **back burner: Agents' spatial awareness**, knowing who is where and when to speak (docs/open-problems/agents-cant-hear.md).
 
+- **later: Give Cohabi (Ask Cohabi, /door) more to work with (Geoffrey, 2026-11-09).** He answers with too many
+  "what ifs" because he has too little real material; he needs a better arsenal (facts, tools, the record). Later conversation.
+
 ## Identity and members
 - **next: Member onboarding + observation period (Geoffrey, 2026-11-07).** New humans who are part of the cooperative /
   holding company (people with agents and humans working, part of the building) get in by: apply → go through the

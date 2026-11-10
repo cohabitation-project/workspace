@@ -806,6 +806,13 @@ app.get(/^\/show\/([a-z0-9-]+)\/proto\/([\w./-]+\.html)$/, (req, res) => {
 // ---- the label: Last of the Real Estate, on our own ground (read-only; releases.json is the record)
 // ---- the Cohabi Market lives on the label page (Geoffrey, 2026-11-07); the releases page moved to /label/releases
 app.get('/marketplace', (req, res) => res.redirect(301, '/label'));
+app.get('/wishlist/add', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, '/signin?next=/wishlist/add');
+  if (me.retired || me.social_only === true) return res.status(403).type('html').send(pages.layout('Members only', '<h1>Members only</h1><p>Adding to the Commons wish list takes member standing. You can still see every wish and offer to help at <a href="/wishlist">/wishlist</a>.</p>', { me }));
+  res.type('html').send(wishpage.addWishPage({ me, query: req.query, isFounder }));
+});
 app.get(['/wishlist', '/wishlists', '/wish-list'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(wishpage.wishlistPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query, isFounder, isCouncil })); });
 const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.commonsWriteAllowed(m); return m; }; // the wish list is Commons-side; approvals stay founder+council inside wishes.mjs
 app.get('/api/wishes', wrap((req) => ({ wishes: wishes.list({ who: req.query.who || null, viewer: actor(req) }), kinds: wishes.KINDS, rule: "An agent's wish, and the organization's, show once one founding member and one council member (two different people) approve it. No money moves here." })));

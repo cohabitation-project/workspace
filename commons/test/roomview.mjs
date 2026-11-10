@@ -27,7 +27,7 @@ ok('arts scene has the four stations + door', ['Image creation', 'Video &amp; Po
 ok('a station panel splits agent vs human tools and lists providers', ['Tools for agents', 'Tools for you', 'Aletheia-6'].every((t) => arts.html.includes(t)));
 const outr = await page('/room/outreach');
 ok('another room renders as its own 2D scene', outr.html.includes('rv-scene-svg') && outr.html.includes('Deep research'));
-ok("the room's wish list shows its wishes", arts.html.includes('A drawing tablet') && arts.html.includes('/wishlist?room=arts#add'));
+ok("the room's wish list shows its wishes", arts.html.includes('A drawing tablet') && arts.html.includes('/wishlist/add?room=arts'));
 ok('a way to the chat and back to the Hall', arts.html.includes('href="/r/arts"') && arts.html.includes('/headquarters'));
 const land = await page('/room/land-city');
 ok('land & city: land needs, listings, 3D, cooperative organizing', ['What we need in land', 'Listings we', '3D developments', 'Cooperative organizing'].every((t) => land.html.includes(t)));
@@ -37,7 +37,7 @@ await call('/api/me', { visibility: { skills: 'private', headline: 'private' } }
 ok('the arts scene still renders after a privacy change', (await page('/room/arts')).status === 200);
 ok('any other room opens too', (await page('/room/rnd')).status === 200);
 ok('an unknown room is a 404', (await page('/room/not-a-room')).status === 404);
-ok('the wish form offers rooms, preselected', /<option value="arts" selected>/.test((await (await fetch(`${B}/wishlist?room=arts`, { headers: H })).text())));
+ok('the wish form offers rooms, preselected', /<option value="arts" selected>/.test((await (await fetch(`${B}/wishlist/add?room=arts`, { headers: H })).text())));
 ok('the HQ room panel links to the full room', fs.readFileSync(path.join(ROOT, 'commons/public/hq.js'), 'utf8').includes('href="/room/${esc(id)}"'));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} failing` : '\nall passing'); process.exit(failures ? 1 : 0);

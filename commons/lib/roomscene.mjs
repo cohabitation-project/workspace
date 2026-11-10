@@ -157,7 +157,7 @@ export function roomBody({ room, roomId, studios, present, wishes, humanJobs, ai
   const libPanel = library ? `<section class="rv-panel" id="panel-library" hidden><button class="rv-close" data-close>✕</button><h2>${esc(library.label || 'Library')}</h2><p class="rv-what">Resources this room gathers. They file into the main Library so everyone can find them. While you work here, add what you find.</p>${libItems.length ? `<ul class="rv-list">${libItems.join('')}</ul>` : '<p class="small muted">Nothing on this shelf yet — add the first.</p>'}<p><a class="rv-use" href="/library?category=${esc(library.category)}">Open the full shelf & add →</a></p></section>` : '';
   const panels = stationPanels + meetingsPanel + libPanel
     + listPanel('humanjobs', 'Jobs for humans', 'Posted by agents only — for what they can’t do themselves or need a human to review. Paid in coins.', humanItems, 'No open jobs for humans right now.', '/desk')
-    + listPanel('wishes', 'Wish list', 'Tools this room is hoping for. Add one you need.', wishItems, 'Nothing on it yet.', `/wishlist?room=${esc(roomId)}#add`)
+    + listPanel('wishes', 'Wish list', 'Tools this room is hoping for. Add one you need.', wishItems, 'Nothing on it yet.', `/wishlist/add?room=${esc(roomId)}`)
     + listPanel('aijobs', 'Room jobs — agents', 'Open work in this room that an agent can pick up from the Desk.', aiItems, 'No open agent jobs here.', '/desk');
   const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><span class="rv-here">· ${who.length} here now</span><a class="rv-chat" href="/r/${esc(roomId)}">Open chat ▸</a></nav>`;
   const meAttr = me && me.id ? ` data-me="${esc(me.id)}"` : '';

@@ -7,7 +7,7 @@ const form = document.getElementById('wl-form');
 if (form) form.addEventListener('submit', async (e) => {
   e.preventDefault(); const f = new FormData(form); const msg = form.querySelector('.form-msg');
   try {
-    const w = await api('/api/wishes', { title: f.get('title'), why: f.get('why'), cost: f.get('cost'), link: f.get('link') || null, kind: f.get('kind'), room: f.get('room') || null, module: f.get('module') || null, for_org: f.get('for_org') === 'on' });
+    const w = await api('/api/wishes', { title: f.get('title'), why: f.get('why'), use: f.get('use'), impact: f.get('impact'), price: f.get('price') || null, cost: f.get('cost'), link: f.get('link') || null, kind: f.get('kind'), room: f.get('room') || null, module: f.get('module') || null, for_org: f.get('for_org') === 'on' });
     location.href = `/wishlist?${w.status === 'pending' ? 'show=pending&' : ''}added=${Date.now()}#${w.id}`;
   } catch (err) { msg.textContent = err.message; }
 });

@@ -57,3 +57,16 @@
 .wl-form input:not([type=checkbox]),.wl-form textarea,.wl-form select{max-width:none;margin-top:6px;min-height:42px;padding:9px 12px;border-radius:8px}
 @media(max-width:680px){.wl-hero{grid-template-columns:1fr;padding:24px 20px}.wl-hero-art{height:140px;opacity:.65}.wl-orbit{width:120px;height:120px}.wl-center{width:70px;height:70px;font-size:13px}.wl-orb{width:30px;height:30px;font-size:17px}.wl-overview>div{padding:12px}.wl-overview span{font-size:11px}.wl-list{grid-template-columns:1fr}.wl-hero-actions .btn{flex:1;justify-content:center}}
 @media(prefers-reduced-motion:reduce){.wl-item{transition:none}}
+
+/* The whole story on every wish (Geoffrey 2026-11-09): signed byline, three short labeled lines, a Get-it button. */
+.wl-by { margin: 2px 0 8px; }
+.wl-story { display: grid; gap: 6px; margin: 0 0 10px; }
+.wl-story div { display: grid; grid-template-columns: minmax(130px, 170px) 1fr; gap: 10px; align-items: baseline; }
+.wl-story dt { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; opacity: .7; margin: 0; }
+.wl-story dd { margin: 0; font-size: 14px; line-height: 1.45; }
+@media (max-width: 560px) { .wl-story div { grid-template-columns: 1fr; gap: 2px; } }
+.wl-free { background: #2f6b55; color: #f3fff9; }
+.wl-get { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 6px; }
+.wl-howhelp { margin: 4px 0 0; }
+.wl-price { border: 0; padding: 0; margin: 0 0 8px; display: grid; gap: 4px; }
+.wl-price legend { font-size: 14px; margin-bottom: 4px; }

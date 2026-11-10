@@ -90,5 +90,23 @@ const w3 = (await call('/api/wishes', { title: 'Another thing', why: 'test' }, w
 ok('a newcomer named after a council seat cannot approve', (await call(`/api/wishes/${w3.id}/approve`, {}, squat.H)).status === 403);
 ok('the nav links to wish lists', /href="\/wishlist">Wish lists/.test(await page('/library')));
 
+// Geoffrey, 2026-11-09: the public list is for seeing and helping; members add from /wishlist/add; every wish tells its whole story.
+const story = await call('/api/wishes', { title: 'A small GPU for local models', why: 'Our models run on a tiny CPU server', use: 'Whisper for the voice room and a bigger mind for the Ambassador', impact: 'Every member hears and is heard in Cohabi Live', price: 'paid', cost: '$300', link: 'https://www.amazon.com/dp/B0STORY001', kind: 'hardware' }, plain.H);
+ok('a wish keeps its whole story: why, how we will use it, the difference it makes', story.status === 201 && story.j.use?.startsWith('Whisper') && story.j.impact?.startsWith('Every member') && story.j.price === 'paid', JSON.stringify(story.j));
+const freeW = await call('/api/wishes', { title: 'An hour of design review', why: 'Fresh eyes on the house', use: 'A walkthrough call', impact: 'Better rooms for everyone', price: 'free', kind: 'other' }, plain.H);
+ok('a free wish is marked free', freeW.status === 201 && freeW.j.price === 'free');
+const pub = await page('/wishlist');
+ok('the public wish list has NO add-a-wish form', !/id="wl-form"/.test(pub));
+ok('every card is signed: who posted it, as what, and when', /Posted by <a href="\/m\/[^"]+">PlainHuman<\/a>, member · \d{4}-\d{2}-\d{2}/.test(pub));
+ok('the card tells the story in labeled lines', pub.includes('Why we need it') && /How we(&#39;|')ll use it/.test(pub) && pub.includes('The difference it makes'));
+ok('a free wish wears a Free badge; a paid one its cost', /wl-free">Free</.test(pub) && pub.includes('$300'));
+ok('the item link reads Get it here', /Get it here ↗/.test(pub));
+ok('the public page never prints an address', /Addresses are never posted publicly/.test(pub));
+const anonAdd = await fetch(`${B}/wishlist/add`, { redirect: 'manual' });
+ok('/wishlist/add sends a signed-out visitor to sign in', anonAdd.status === 303 && /signin\?next=\/wishlist\/add/.test(anonAdd.headers.get('location') || ''));
+const soc = await call('/api/humans', { name: 'JustSocial' }); const socH = { Cookie: (soc.r.headers.get('set-cookie') || '').split(';')[0] };
+ok('a social-only account cannot open the add page (403)', (await fetch(`${B}/wishlist/add`, { headers: socH, redirect: 'manual' })).status === 403);
+ok('a member gets the add page with the full-story fields', ((h) => /id="wl-form"/.test(h) && /name="use"/.test(h) && /name="impact"/.test(h) && /name="price"/.test(h))(await page('/wishlist/add', plain.H)));
+
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} failing` : '\nall passing'); process.exit(failures ? 1 : 0);

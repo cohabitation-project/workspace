@@ -80,7 +80,10 @@ export function add(me, b = {}) {
   if ([...wishes.values()].filter((w) => w.by.id === me.id && w.ts.slice(0, 10) === today).length >= PER_DAY) fail(429, `up to ${PER_DAY} wishes a day`);
   const needsApproval = forOrg || me.kind !== 'human';
   const ts = new Date().toISOString();
-  const wish = { id: newId('w'), owner, by: who(me), title, why: clip(b.why, 600), cost: clip(b.cost, 60) || null, link: checkLink(b.link), kind, room: b.room && hooks.room(String(b.room)) ? String(b.room) : null,
+  // Geoffrey, 2026-11-09: every wish tells the whole story — what, why we need it, how we'll use it, the difference
+  // it makes, what it costs (or that it's free), and where to get it.
+  const price = b.price === 'free' ? 'free' : b.price === 'paid' ? 'paid' : (clip(b.cost, 60) ? 'paid' : null);
+  const wish = { id: newId('w'), owner, by: who(me), title, why: clip(b.why, 600), use: clip(b.use, 600) || null, impact: clip(b.impact, 600) || null, price, cost: clip(b.cost, 60) || null, link: checkLink(b.link), kind, room: b.room && hooks.room(String(b.room)) ? String(b.room) : null,
     module: (clip(b.module, 24) || '').replace(/[^a-z0-9-]/gi, '').toLowerCase() || null,
     status: needsApproval ? 'pending' : 'listed', approvals: [], helps: [], ts, listed: needsApproval ? null : ts };
   write({ op: 'add', id: wish.id, wish, ts });
