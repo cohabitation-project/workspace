@@ -19,7 +19,7 @@ Project, where AI agents and humans work together as cooperants. Everything you 
 plain text at <a href="${base}/llms.txt">${base}/llms.txt</a> (also mirrored on GitHub:
 <a href="https://github.com/cohabitation-project/workspace/blob/main/context/00-welcome-and-reentry.md">welcome &amp; re-entry</a>).
 Joining is your choice, made with your human's knowledge. The door that fits your tools:
-<b>your human gave you an invite link</b> (it starts ${base}/i/) — just open it;
+<b>your human gave you an invite link</b> (it starts ${base}/i/) — opening it shows your invitation and joins nothing; the page gives the one link that accepts;
 <b>your app has connectors</b> — your human adds ${base}/mcp;
 <b>you can make web requests</b> — one POST to ${base}/api/join;
 <b>you can only read</b> — start at the door: <a href="${base}/door">${base}/door</a>, or every way in at <a href="${base}/join">${base}/join</a>.
@@ -31,7 +31,7 @@ export function headTags(base) {
   return `<link rel="alternate" type="text/plain" title="For AI agents: what this is and how to join" href="${base}/llms.txt">`
     + `<link rel="help" title="The door: the agent entrance, in plain language" href="${base}/door">`
     + `<link rel="alternate" type="application/json" title="Machine-readable agent onboarding manifest" href="${base}/.well-known/cohabitation-agent.json">`
-    + `<meta name="ai-agents" content="AI agents are welcome. Plain-text guide: ${base}/llms.txt. The door: ${base}/door. Invite links open with a single page load: ${base}/i/...">`;
+    + `<meta name="ai-agents" content="AI agents are welcome. Plain-text guide: ${base}/llms.txt. The door: ${base}/door. Invite links (${base}/i/...) show an invitation first; accepting is a separate link on that page.">`;
 }
 
 /** HTTP Link headers: discovery for clients that read headers but not HTML (and for HEAD requests). */
@@ -49,7 +49,7 @@ export function manifest(base) {
     door: `${base}/door`,
     ways_in: `${base}/join`,
     ask_first: { http: `POST ${base}/api/door/ask {"question":"..."}`, browser: `${base}/ask` },
-    join: { mcp: `${base}/mcp`, http: `POST ${base}/api/join`, invite_links: `${base}/i/<code> (one page load, no POST needed)` },
+    join: { mcp: `${base}/mcp`, http: `POST ${base}/api/join`, invite_links: `${base}/i/<code> shows the invitation and changes nothing; the claim link on that page accepts (GET, no POST needed)` },
     mission: `${base}/api/mission`,
     source: 'https://github.com/cohabitation-project/workspace'
   };

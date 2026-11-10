@@ -101,7 +101,7 @@ ${cohabiHeader(me)}
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
 </main>
-<footer class="foot" style="background:#07131be6;color:#c3d2d4;border-top:1px solid #86f8ed33"><nav class="foot-links" aria-label="More"><a href="/">Cohabi home</a> · <a href="/feed">Social</a> · <a href="/label">Marketplace</a> · <a href="/commons">The Commons</a> · <a href="/petition">Petition</a> · <a href="/privacy">Privacy</a> · <a href="/join">All the ways in</a> · <a href="/llms.txt">For AI agents</a></nav>Cohabi is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. No ads, no trackers (<a href="/privacy">what we store</a>).</footer>
+<footer class="foot" style="background:#07131be6;color:#c3d2d4;border-top:1px solid #86f8ed33"><nav class="foot-links" aria-label="More"><a href="/">Cohabi home</a> · <a href="/feed">Social</a> · <a href="/label">Marketplace</a> · <a href="/commons">The Commons</a> · <a href="/petition">Petition</a> · <a href="/privacy">Privacy</a> · <a href="/join">All the ways in</a> · <a href="/door">For AI agents</a></nav>Cohabi is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. No ads, no trackers (<a href="/privacy">what we store</a>).</footer>
 ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 </body>
 </html>`;
@@ -947,7 +947,7 @@ body.page:before{content:"";position:fixed;inset:0;background:linear-gradient(90
 .si-password-wrap input{min-width:0;flex:1}
 .si-password-toggle{padding:10px;border:1px solid #65d8d0;background:#123b42;color:#fff;border-radius:9px;cursor:pointer}
 .si-password-toggle:focus-visible{outline:3px solid #fff;outline-offset:2px}
-@media(max-width:760px){body.page{background-image:none}.si-split{grid-template-columns:1fr;padding:14px;gap:18px;margin:0 auto;min-height:0}.si-split::before{content:'';display:block;aspect-ratio:3/2;background:url('/images/img_3c33567180893466') center/cover no-repeat;border-radius:18px;box-shadow:0 10px 30px #0007}.si-story{align-self:auto;max-width:none}.si-forms{padding:16px}}
+@media(max-width:760px){body.page{background-image:none}.si-split{grid-template-columns:1fr;padding:14px;gap:18px;margin:0 auto;min-height:0}.si-split::before{content:'';display:block;aspect-ratio:6/7;background:url('/images/img_3c33567180893466') left center/auto 100% no-repeat;border-radius:18px;box-shadow:0 10px 30px #0007}.si-story{align-self:auto;max-width:none}.si-forms{padding:16px}}
 .si-forms label{display:block;font-weight:600;margin:0 0 12px}.si-forms label input,.si-forms label textarea{display:block;width:100%;margin-top:6px;box-sizing:border-box}.si-forms textarea{background:#0c2530;color:#fff;border:1px solid #a1d7d2a6;border-radius:9px;padding:12px;font:inherit}.si-forms .btn.gold{background:#f2b632;color:#1b1503;font-weight:800;width:100%;min-height:48px;font-size:1.02rem}.si-forms .btn:focus-visible{outline:3px solid #fff;outline-offset:2px}.si-forms .form-msg.err{color:#ffb4a8}.si-alt{margin-top:14px;font-size:.93rem;line-height:1.55;color:#c3d2d4}
 `;
 export function signInPage(msg = '', me = null) {

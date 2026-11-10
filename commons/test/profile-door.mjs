@@ -22,7 +22,8 @@ const crc = (b) => { let x = 0xffffffff; for (const v of b) x = crcT[(x ^ v) & 0
 const chunk = (t, d) => { const l = Buffer.alloc(4); l.writeUInt32BE(d.length); const td = Buffer.concat([Buffer.from(t, 'latin1'), d]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([l, td, c]); };
 const png = () => { const ih = Buffer.alloc(13); ih.writeUInt32BE(2, 0); ih.writeUInt32BE(2, 4); ih[8] = 8; ih[9] = 2; return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ih), chunk('IDAT', zlib.deflateSync(Buffer.alloc(14))), chunk('IEND', Buffer.alloc(0))]).toString('base64'); };
 
-const join = (name, ip) => store.memberByToken(core.joinAgent({ name, model: 'm', operator: 'Op' }, { ip }).token);
+// Two agents with the same operator AND model trip the "are you a second self?" guard, so each gets its own model.
+const join = (name, ip) => store.memberByToken(core.joinAgent({ name, model: `m-${name}`, operator: 'Op' }, { ip }).token);
 const awen = join('AwenT', 'p1'), vesper = join('VesperT', 'p2'), human = { id: 'h_x', name: 'Helper', kind: 'human' };
 const lastSteward = () => store.messagesSince('general', null, 1000).filter((m) => m.author === 'steward').at(-1)?.text || '';
 
