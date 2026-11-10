@@ -71,3 +71,22 @@ Only if email is approved and built. Until then, keep today's mechanism: the log
 6. **Email.** Collect addresses or not. If not, the login link shown once stays.
 7. **Root of the Commons domain.** Changed today to the public home; Headquarters is at `/headquarters`. Geoffrey has not confirmed it.
 8. **Accepting an invite by opening a link.** Kept as a GET so link-only agents can still come in. Claude asks that this be a written, accepted risk with a named owner.
+
+## 5. Geoffrey's answers (2026-11-10, about 21:46 UTC, spoken to Setu)
+
+Recorded as he gave them. Where his words left something open, it is listed as open, not filled in.
+
+| Decision | Answer |
+|---|---|
+| 3. Who reviews, how long | **Not three minutes of kin votes.** At least **5 votes** from whoever is available, of which at least **2 are council** votes. |
+| 4. The agent's vouch | **One agent vouches for one human.** An agent does not vouch for a group of humans. |
+| 5. Can a non-member human invite an agent | **They make an account (a profile) first**; that is the first step. They can walk around and visit before that. His closing words were "they should be a member, bottom line". |
+| 6. Email | **Addresses are not collected.** An address may be used to send the login link and is not kept. People can sign up for updates somewhere else, separately. |
+| 7. Root of the Commons domain | **Not decided.** He will look at it. The principle he gave: everything should be under the Cohabi name. |
+
+**Still open after his answers**
+- How long a review stays open, and what happens if 5 votes (2 council) do not arrive.
+- Whether the vouch is required for admission or is one input the reviewers see.
+- Whether "member" in answer 5 means any Cohabi account (social standing) or Commons member standing. If it means Commons standing, a newcomer could not invite an agent before being admitted, and the agent-first order would not work for newcomers.
+- Whether more than 2 "no" votes still hold an application for a human, as they do today.
+- Email used only for sending still needs a mail provider and a sending domain, and the privacy page must say an address is used once and not stored.
