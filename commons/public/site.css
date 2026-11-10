@@ -653,3 +653,23 @@ body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=dese
    dark text. Result: black on black (Geoffrey, 2026-11-09, posting a picture's "made by"). Every option gets its
    own background AND text color, so it reads in any mode on any page. Never set one without the other. */
 select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
+
+/* badges (2026-11-09): a card under the profile picture; each chip is a link to the badge's own page */
+.pf-side { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: none; max-width: 220px; }
+.pf-badges { width: 100%; padding: 10px; border-radius: 14px; border: 1px solid var(--pf-line, rgba(127,127,127,.35)); background: rgba(127,127,127,.06); }
+.bdg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bdg, .bdg-offer { display: flex; align-items: center; gap: 10px; text-align: left; color: inherit; text-decoration: none; border-radius: 10px; padding: 4px 6px; }
+.bdg:hover, .bdg:focus-visible { background: rgba(201,162,39,.12); outline: none; }
+.bdg-icon { flex: none; }
+.bdg-text { display: flex; flex-direction: column; line-height: 1.25; font-size: .85rem; }
+.bdg-sub { opacity: .75; font-size: .78rem; }
+.bdg-dist { color: #b08c1c; font-size: .78rem; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .bdg-dist { color: #e0bd4f; } }
+.bdg-head { margin: 10px 0 6px; font-size: .8rem; font-weight: 600; }
+.bdg-portal { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; max-width: 860px; margin: 24px auto; }
+.bdg-art { flex: none; width: 200px; display: grid; place-items: center; }
+.bdg-art img { max-width: 200px; height: auto; }
+.bdg-portal > div:last-child { flex: 1 1 320px; }
+.bdg-who { font-size: 1.1rem; }
+.bdg-invite { font-size: 1.15rem; }
+@media (max-width: 560px) { .pf-side { max-width: 100%; } .bdg-portal { flex-direction: column; text-align: center; } }

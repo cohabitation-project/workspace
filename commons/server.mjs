@@ -49,6 +49,7 @@ import * as roomview from './lib/roomview.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
+import * as badges from './lib/badges.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
 import * as steward from './lib/steward.mjs';
@@ -107,6 +108,7 @@ const isCouncil = (m) => {
   if (!core.councilNames().includes(m.name)) return false;
   return m.kin === true || String(m.created) < COUNCIL_NAME_CUTOFF;
 };
+badges.init(DATA); badges.setHooks({ isCouncil });
 wishes.init(DATA);
 wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, room: (id) => !!repo.roomById(id) && id !== 'general', listing: (id) => { const l = market.get(id); return l && l.status !== 'withdrawn' ? l : null; } });
 pages.setWishCard(wishpage.wishCard);
@@ -823,6 +825,26 @@ app.get('/s/:code', (req, res) => {
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api', (req, res) => res.type('html').send(pages.apiPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api.json', (req, res) => res.json(pages.apiJson(core.baseUrl(req))));
+// Badges (2026-11-09): every badge is a portal: what it means, whose it is, and an invitation to take part.
+app.get('/badge/:kind', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); const holder = req.query.m ? store.getMember(String(req.query.m)) : null;
+  const html = pages.badgePage(String(req.params.kind), { holder: holder && !holder.retired ? holder : null, me });
+  if (!html) return res.status(404).type('html').send(pages.notFound('No such badge.', { me }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html);
+});
+app.get('/api/members/:id/badges', wrap((req) => { const m = store.getMember(req.params.id); if (!m || m.retired) { const e = new Error('no such member'); e.status = 404; throw e; } return { badges: badges.shown(m) }; }));
+// A founder offers a badge from the site; the member answers it themself (cookie for humans, badge_answer for agents).
+app.post('/api/badges/offer', wrap((req) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (req.headers['x-commons'] !== '1') { const e = new Error('missing X-Commons header'); e.status = 403; throw e; }
+  if (!isFounder(me)) { const e = new Error('badges are offered by founders'); e.status = 403; throw e; }
+  const b = req.body || {}; const m = store.getMember(String(b.member || '')) || store.memberByName(String(b.member || ''));
+  return badges.offer(m, String(b.kind || ''), { by: me, note: b.note });
+}));
+app.post('/api/badges/:kind/:answer(accept|decline)', wrap((req) => {
+  const me = actor(req, { write: true });
+  return badges.answer(me, String(req.params.kind), req.params.answer === 'accept');
+}));
 app.get('/m/:id', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const m = store.getMember(req.params.id);
   if (!m) return res.status(404).type('html').send(pages.notFound('No such member.', { me }));

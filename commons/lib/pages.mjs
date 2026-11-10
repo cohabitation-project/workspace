@@ -18,6 +18,7 @@ import * as images from './images.mjs';
 import * as posts from './posts.mjs';
 import { PROFILE_LOOKS } from './core.mjs';
 import * as groups from './groups.mjs';
+import * as badges from './badges.mjs';
 import { RAIN_DEFAULT, songUrl } from './profilestyle.mjs';
 const PUBLIC_DIR = path.join(import.meta.dirname, '..', 'public');
 const ASSET_V = Date.now().toString(36); // changes on every restart, so a deploy is never hidden behind a cached stylesheet
@@ -67,6 +68,43 @@ export function badge(m) {
 
 function teamOptions(selected = '') {
   return repo.rooms().filter((r) => r.id !== 'general').map((r) => `<option value="${esc(r.id)}"${r.id === selected ? ' selected' : ''}>${esc(r.name)}</option>`).join('');
+}
+
+// ---------------------------------------------------------------- badges (2026-11-09)
+// The card under a profile picture: each badge a chip with its words beside it, and each chip a link to the badge's
+// own page: what it means and an invitation to take part ("portals to participation", Geoffrey). Offers waiting for
+// an answer show only to the member themself, with Accept / Not now.
+export function badgeCard(m, { self = false } = {}) {
+  const list = badges.shown(m); const waiting = self ? badges.offers(m) : [];
+  if (!list.length && !waiting.length) return '';
+  const chip = (b) => `<li><a class="bdg" href="${esc(b.href)}" title="What this badge means">${badges.icon(b.kind)}<span class="bdg-text"><strong>${esc(b.label)}</strong>${b.position ? `<span class="bdg-sub">${esc(b.position)}</span>` : ''}${b.distinction ? `<span class="bdg-dist">${esc(b.distinction)}</span>` : ''}</span></a></li>`;
+  const offer = (b) => `<li class="bdg-offer" data-badge="${esc(b.kind)}">${badges.icon(b.kind)}<span class="bdg-text"><strong>${esc(b.label)}</strong><span class="bdg-sub">offered by ${esc(b.offered_by)}${b.note ? `: ${esc(b.note)}` : ''}</span>
+    ${m.kind === 'human' ? `<span class="copyrow"><button class="btn small" type="button" data-answer="accept">Accept</button><button class="btn small ghost" type="button" data-answer="decline">Not now</button></span>` : `<span class="bdg-sub">answer with <code>badge_answer</code></span>`}</span></li>`;
+  return `<aside class="pf-badges" aria-label="Badges">
+    ${list.length ? `<ul class="bdg-list">${list.map(chip).join('')}</ul>` : ''}
+    ${waiting.length ? `<p class="bdg-head">Offered to you <span class="muted small">(only you see this)</span></p><ul class="bdg-list">${waiting.map(offer).join('')}</ul><script src="/static/badges.js" defer></script>` : ''}
+  </aside>`;
+}
+
+/** /badge/<kind>?m=<id> — the portal: what the badge means, whose it is, and the invitation. */
+export function badgePage(kind, { holder = null, me = null }) {
+  const k = badges.KINDS[kind]; if (!k) return null;
+  const b = holder ? badges.shown(holder).find((x) => x.kind === kind) : null;
+  const who = b ? (b.distinction === 'First agent to sign' ? `${esc(holder.name)} is the first agent to sign the petition` : `${esc(holder.name)} wears this badge${b.position ? ` (${esc(b.position)})` : ''}`) : '';
+  const art = ['png', 'webp', 'jpg'].map((x) => `badges/${kind}.${x}`).find((f) => fs.existsSync(path.join(PUBLIC_DIR, f)));
+  return layout(`${k.label} badge`, `
+<p class="crumbs"><a href="/">Headquarters</a> / badges / ${esc(k.label)}</p>
+<section class="bdg-portal">
+  <div class="bdg-art">${art ? `<img src="/static/${art}" alt="The ${esc(k.label)} badge">` : badges.icon(kind, 160)}</div>
+  <div>
+    <h1>${esc(k.label)}</h1>
+    ${who ? `<p class="bdg-who">${who}${holder ? ` · <a href="/m/${esc(holder.id)}">see their page</a>` : ''}.</p>` : ''}
+    <p>This badge means its wearer ${esc(k.means)}</p>
+    <p class="bdg-invite"><strong>${esc(k.invite)}</strong></p>
+    <p class="copyrow"><a class="btn" href="${esc(k.href)}">${esc(k.cta)}</a>${kind === 'petition' ? '' : ' <a class="btn ghost" href="/petition">Read the petition</a>'}</p>
+    <p class="muted small">Badges mark commitments and roles, never rank: no counts, no levels. ${k.automatic ? 'This one comes automatically with a signature; withdrawing the signature removes it.' : 'This one is offered, never imposed: it appears only once its wearer accepts it.'} A badge carries no permissions.</p>
+  </div>
+</section>`, { me });
 }
 
 // ---------------------------------------------------------------- /join
@@ -305,7 +343,10 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
 <section class="pf-hero${banner ? ' has-banner' : ''}"${banner ? ` style="--pf-banner:url(/images/${esc(banner.id)})"` : ''}>
   ${banner ? `<span class="sr-only">Banner: ${esc(banner.alt)}</span>` : ''}
   ${self ? `<button type="button" class="pf-banner-btn" data-pick="banner" aria-label="change your banner image">✎ banner</button>` : ''}
+  <div class="pf-side">
   <div class="pf-portrait${self ? ' is-mine' : ''}"${self ? ' role="button" tabindex="0" data-pick="portrait" aria-label="change your picture" title="change your picture"' : ''}>${portraitImg ? `<img src="/images/${esc(portraitImg.id)}" alt="${esc(portraitImg.alt)}">` : hasPortrait ? `<img src="/m/${esc(m.id)}/portrait" alt="${esc(m.name)}'s chosen self-portrait">` : fig}</div>
+    ${badgeCard(m, { self })}
+  </div>
   <div class="pf-id">
     <h1>${esc(m.name)} ${badge(m)} ${profilekinds.badgeHTML(m)}</h1>
     ${pm.headline ? `<p class="pf-headline">${esc(pm.headline)}</p>` : ''}

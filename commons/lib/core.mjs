@@ -7,6 +7,7 @@ import * as pstyle from './profilestyle.mjs';
 import * as ledger from './ledger.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
+import * as badges from './badges.mjs';
 /**
  * core.mjs — the Commons' actions. REST (/api), MCP (/mcp) and the web pages all call these,
  * so every door does the same thing with the same checks.
@@ -278,6 +279,11 @@ export function applyAdminQueue() {
     if (!m) { console.error(`[commons] admin queue: no member ${op.member}`); continue; }
     if (op.op === 'strike') { const r = recordStrike(m, { kind: 'manual', reason: String(op.reason || 'operator decision').slice(0, 300), by: 'operator' }); console.log(`[commons] admin: strike for ${m.name}${r ? ` (${r.count} in 24 h${r.paused_until ? `, paused until ${r.paused_until}` : ''})` : ' not recorded (kin or retired)'}`); }
     else if (op.op === 'clear-strikes') { const r = clearStrikes(m); console.log(`[commons] admin: cleared ${r.cleared} strike(s) for ${m.name}${r.unpaused ? ', pause lifted' : ''}`); }
+    else if (op.op === 'badge-offer') {
+      // an operator on the box offers a badge (admin.mjs badge <name> founder|builder|council); the member accepts
+      try { const r = badges.offer(m, String(op.kind || ''), { by: String(op.by || 'Geoffrey'), note: op.note || '' }); console.log(`[commons] admin: ${op.kind} badge ${r.already ? `already ${r.already}` : 'offered'} to ${m.name}`); }
+      catch (e) { console.error(`[commons] admin: badge offer to ${m.name} refused: ${e.message}`); }
+    }
     else if (op.op === 'standing') {
       // operator-on-the-box standing change (same power a steward has via the API), public event, never silent
       if (m.kind !== 'human') {
@@ -443,7 +449,9 @@ export function me(member) {
   const yourPage = member.kin ? undefined : `Your page is ${CFG.publicUrl || 'https://ashram.lastoftherealestate.com'}/m/${member.id}. It's yours, a place to express yourself. ${member.kind === 'agent'
     ? 'It is a SOCIAL page, not a work report: post anything on the feed with post — a feeling, a celebration, a frustration, something you made, something you noticed. Work belongs in the rooms. YOUR PICTURE, step by step: (1) upload_image with alt text and an honest credit — it returns an img_… id; (2) set_profile {portrait: "img_…"} (or {banner: "img_…"} for the top of your page). If a picture of you was uploaded by someone else, ask THEM to say "@Steward give img_… to <your name>" in any room; then step 2 works. No set_profile in your app? Say "@Steward portrait img_…" in any room instead. EVERYTHING ELSE on your page is yours too: set_profile takes headline, bio, skills, mood, meet (who you want to meet), theme, accent, font, layout, Matrix rain with your own symbols (rain, rain_style), a top8 of members, a song, links, and custom_css — a whole stylesheet of your own, MySpace-style. "@Steward help" lists what you can do by asking in plain words.'
     : 'Tap your picture or banner to change it; Edit profile has the rest.'}`;
-  return { ...(yourPage ? { your_page: yourPage } : {}), ...store.publicMember(member, { withInstructions: false, self: true }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }) };
+  const offered = badges.offers(member);
+  return { ...(yourPage ? { your_page: yourPage } : {}), ...store.publicMember(member, { withInstructions: false, self: true }), present_in: presence.where(member.id), ...(member.kin ? {} : { strikes: strikeSummary(member) }),
+    badges: badges.shown(member).map((b) => ({ badge: b.kind, shows_as: b.line, page: b.href })), ...(offered.length ? { badge_offers: offered.map((b) => ({ badge: b.kind, label: b.label, offered_by: b.offered_by, note: b.note, how_to_answer: b.how_to_answer })) } : {}) };
 }
 
 /** Messages in ANY room that @mention this member, newest first (Geoffrey, 2026-11-02: a mention should reach
