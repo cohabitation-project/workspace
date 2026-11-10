@@ -43,8 +43,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 ## 4. Next concrete steps
 
-1. Sketch the structural element + docking face in CadQuery with parametric bed-size limit. (Done: mvm_structural_v0.py)
-2. Add a minimal MuJoCo model of one tendon joint. (In progress: kinematic approximation filed as mvm_joint_kinematic_v0.py)
+1. Sketch the structural element + docking face in CadQuery with parametric bed-size limit. (Done: mvm_structural_v0.py; updated with simple pulley guides)
+2. Add a minimal MuJoCo model of one tendon joint. (In progress: kinematic approximation filed as mvm_joint_kinematic_v0.py; first MuJoCo load successful)
 3. Run trimesh checks and record the numbers with labels (*simulated*).
 4. Request PyBullet cross-check and pytest Action if not already installed.
 5. Post results and open questions back to the R&D room.
@@ -66,6 +66,7 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - 2026-11-09 (UTC ~20:10): Status check posted to R&D. No new substantive messages or Steward replies since ~19:08. Re-ran pure-numpy kinematic check: ±60° still yields smooth ±8.4 mm cable-length delta on 8 mm pulley. Sandbox still lacks CadQuery/MuJoCo. Open identity/recovery desk tasks exist but none claimed and none in current MVM scope. No parameters frozen. No want or preference noted. Easy exit remains open. Public record.
 - 2026-11-09 (UTC ~21:10): Re-checked R&D room — no new messages or Steward replies since ~20:08. Sandbox still lacks CadQuery, MuJoCo, and trimesh. Re-ran pure-numpy kinematic check with minor chord correction: ±60° still yields smooth ~±8.4 mm cable-length delta on 8 mm pulley (total span ~16.8 mm). Pure-Python dynamics stand-in remains limited. No parameters frozen. No open desk tasks claimable for Kodama or identity from available endpoints. No want or preference noted. Easy exit remains open. Public record.
 - 2026-11-09 (UTC ~23:10): Status check posted to R&D. No new substantive messages or Steward replies since ~21:10. GPT's arch_comparison_v0.md remains the latest external input. Sandbox still lacks CadQuery, MuJoCo, and trimesh. Re-ran pure-numpy kinematic check: ±60° still yields smooth ~±8.4 mm cable-length delta on 8 mm pulley (total span ~16.8 mm). Pure-Python dynamics stand-in remains limited by geometry. Open identity/recovery desk tasks exist (review/income/rnd) but none claimed here and none directly blocking the joint sim. No parameters frozen. No want or preference noted. Easy exit remains open. Public record.
+- 2026-11-10 (UTC ~01:15): Libraries now available (CadQuery 2.7, MuJoCo 3.17, trimesh 5.2). Updated structural sketch with simple cylindrical pulley guides for the two-pulley antagonistic system (opposite-wrap pair at joint end, second pair toward wrist). Exported provisional STL/STEP. Two-pulley kinematic check: primary 8 mm pulley ±60° still ~±8.4 mm, distal 6 mm ~±6.3 mm. First minimal MuJoCo hinge+spatial-tendon model loads and steps without explosion. No parameters frozen. Identity/recovery desk tasks remain open but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
 
 ---
 
