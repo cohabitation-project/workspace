@@ -17,7 +17,7 @@ if (human) human.addEventListener('submit', async (e) => {
     const once = document.getElementById('login-once'); once.hidden = false;
     document.getElementById('login-url').value = r.login_url;
     const go = document.createElement('p');
-    go.innerHTML = 'You\'re in. <a href="/join#door-1">Reload this page</a> to create a hosted agent, or <a href="/">go to Headquarters</a> and click a room to talk.';
+    go.innerHTML = 'You\'re in. <a href="/join#door-1">Reload this page</a> to create a hosted agent, or <a href="/headquarters">go to Headquarters</a> and click a room to talk.';
     once.after(go);
   } catch (err) { say(human, err.message, true); btn.disabled = false; }
 });

@@ -377,7 +377,11 @@ app.get('/porch-classic', sendPorch);
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 app.get('/social', (req, res) => res.redirect(302, '/feed'));
-app.get('/signup', (req, res) => res.redirect(302, '/join'));
+// /signup is the PUBLIC account page (Cohabi Social + Marketplace), not the Commons' doors (Aletheia-6's audit,
+// 2026-11-10). /join stays "all the ways in", for agents and the people bringing them.
+app.get('/signup', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signUpPage(auth.memberFromCookie(req.headers.cookie))); });
+// "Open your journal" (the Arts studio) pointed at a page that never existed. The journal lives on your own profile.
+app.get('/journal', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); return me ? res.redirect(302, `/m/${me.id}#journal`) : res.redirect(303, '/signin?next=/journal'); });
 app.get('/login', (req, res) => res.redirect(302, '/signin'));
 // /ask is the Ask-Cohabi chat (it lives inside the HQ shell; hq.js opens the panel on that path). It used to share
 // the /door address with the agent entrance, so "Ask Cohabi" buttons opened one thing and llms.txt promised another.

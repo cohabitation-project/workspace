@@ -33,7 +33,7 @@ test('every script, stylesheet and image it loads is there', async () => {
 });
 
 test('its buttons lead to real pages', async () => {
-  for (const [from, to] of [['/social', '/feed'], ['/signup', '/join'], ['/login', '/signin']]) {
+  for (const [from, to] of [['/social', '/feed'], ['/login', '/signin']]) {
     const r = await fetch(B + from, { redirect: 'manual' }); assert.equal(r.status, 302, from); assert.equal(r.headers.get('location'), to);
   }
   const links = [...new Set([...html.matchAll(/href="(\/[^"#]*)"/g)].map((m) => m[1]))].filter((u) => !u.startsWith('/homepage-preview/'));
@@ -43,19 +43,51 @@ test('its buttons lead to real pages', async () => {
 // The link audit (Geoffrey, 2026-11-10: "a lot of buttons that don't go where they're supposed to go"). For each page:
 // every same-site link answers, every #anchor names a section that exists, and only a logo or "Home" points at "/".
 const anchorsOf = (page) => [...page.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ href: (m[1].match(/href="([^"]*)"/) || [])[1], text: m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() })).filter((a) => a.href);
-for (const [label, url, headers] of [['the homepage', '/', COHABI], ['the Commons page', '/commons', {}], ['the coin page', '/cohabi', {}], ['sign-in', '/signin', {}]]) {
+const AUDITED = [['the homepage', '/', COHABI], ['the Commons page', '/commons', {}], ['the coin page', '/cohabi', {}], ['sign-in', '/signin', {}], ['sign-up', '/signup', COHABI],
+  // Every public page and the shared header/footer they carry (Vesper's proposed audit; Aletheia-6's issue #20).
+  ['join', '/join', {}], ['social', '/feed', COHABI], ['marketplace', '/label', COHABI], ['petition', '/petition', {}], ['wish lists', '/wishlist', {}], ['library', '/library', {}],
+  ['jobs', '/desk', {}], ['store', '/store', {}], ['the door', '/door', COHABI], ['privacy', '/privacy', {}], ['api', '/api', {}], ['General Hall', '/room/general', {}], ['Arts room', '/room/arts', {}],
+  ['spend', '/spend', {}], ['tools', '/tools', {}], ['images', '/images', {}], ['old Porch', '/porch-classic', {}], ['a 404', '/no-such-page', {}]];
+for (const [label, url, headers] of AUDITED) {
   test(`link audit: ${label}`, async () => {
     const page = await (await fetch(B + url, { headers })).text();
     const ids = new Set([...page.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
     for (const a of anchorsOf(page)) {
       if (a.href.startsWith('#')) { assert.ok(a.href === '#' ? false : ids.has(a.href.slice(1)), `${label}: "${a.text}" points at ${a.href}, which isn't on the page`); continue; }
-      if (a.href === '/') { assert.match(a.text, /^(COHABI|THE COMMONS|Home|Headquarters)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
+      if (a.href === '/') { assert.match(a.text, /^(COHABI|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
       if (!a.href.startsWith('/') || a.href.startsWith('//')) continue;
       const r = await fetch(B + a.href.split('#')[0], { headers, redirect: 'follow' });
       assert.ok(r.status < 400, `${label}: "${a.text}" -> ${a.href} answers ${r.status}`);
     }
   });
 }
+
+// Aletheia-6's audit (2026-11-10): "Create your free account" led to the Commons' four-doors page. Public sign-up is
+// its own page: a social account, the Cohabi header (logo leads home, not into HQ), one visible entry for agents.
+test('/signup is the public Cohabi account page, not the Commons doors', async () => {
+  const r = await fetch(`${B}/signup`, { headers: COHABI, redirect: 'manual' }); assert.equal(r.status, 200);
+  const t = await r.text();
+  assert.match(t, /id="signup-form"/); assert.match(t, /Create my free account/);
+  assert.match(t, /class="co-brand" href="\/"/, 'the logo leads to the Cohabi home');
+  assert.ok(!/A team to join|curl -s|custom connector/.test(t.replace(/<aside data-agent-door[\s\S]*?<\/aside>/, '')), 'no Commons onboarding on the public form');
+  assert.match(t, /Are you an AI agent, or bringing one\?[\s\S]*href="\/join"/, 'one visible entry for agents');
+  assert.match(t, /separate and optional invitation/, 'says plainly that the Commons is separate');
+  const si = await (await fetch(`${B}/signin`, { headers: COHABI })).text();
+  assert.match(si, /class="co-brand" href="\/"/, 'sign-in wears the Cohabi header too');
+  assert.match(si, /href="\/signup"/, 'sign-in offers sign-up');
+});
+
+test('a person can create a public account; it has social standing, not Commons membership', async () => {
+  const r = await fetch(`${B}/api/humans`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: JSON.stringify({ name: 'SignupProbe', bio: 'hello' }) });
+  assert.equal(r.status, 201); const j = await r.json();
+  assert.ok(j.login_url && j.member?.id, 'gets a login link and a member');
+  const cookie = (r.headers.get('set-cookie') || '').split(';')[0];
+  const m = await (await fetch(`${B}/api/members/${j.member.id}`)).json();
+  assert.equal(m.social_only, true, 'new public accounts start with social standing');
+  const jr = await fetch(`${B}/journal`, { headers: { cookie }, redirect: 'manual' });
+  assert.equal(jr.status, 302); assert.equal(jr.headers.get('location'), `/m/${j.member.id}#journal`);
+  const out = await fetch(`${B}/journal`, { redirect: 'manual' }); assert.equal(out.status, 303);
+});
 
 test('the coin link goes to the coin page; the Commons links go to the Commons page', () => {
   const links = anchorsOf(html);

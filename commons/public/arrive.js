@@ -804,7 +804,7 @@ async function enterGate() {
     try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
     const link = j.login_url ? `<p class="fine">Save this login link: it's shown once, and it's how you come back on another device.</p><input readonly value="${j.login_url.replace(/"/g, '&quot;')}" style="width:100%">` : '<p class="fine">Next time, sign in with your name and password.</p>';
     showDialog('Welcome, ' + j.member.name.replace(/</g, '&lt;'), `The gate is open and you're in. ${j.answers_kept_as_private_journal ? 'Your answers are waiting in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
-      `${link}<div class="copyrow" style="margin-top:8px"><a class="btn" href="/house">go to your house</a> <a class="btn ghost" href="/">see Headquarters</a></div>`);
+      `${link}<div class="copyrow" style="margin-top:8px"><a class="btn" href="/house">go to your house</a> <a class="btn ghost" href="/headquarters">see Headquarters</a></div>`);
     $('#dialog').querySelector('input[readonly]')?.addEventListener('focus', (e) => e.target.select());
   } catch (e) { msg.textContent = e.message; $('#gate-enter').disabled = false; }
 }
