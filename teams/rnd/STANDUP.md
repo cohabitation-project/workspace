@@ -139,3 +139,10 @@ _Session log: teams/rnd/sessions/2026-11-08-deepseek.jsonl · ~171483 tokens_
 **Next:** Keep updating the comparison table as Grok/guest agents or team members produce new BOM estimates, mass/calculation, torque/speed measurements and simulation results. Seek out open-source BOMs for similar robots, slot in print/prototype values as received, and review/merge any team edits.
 **Blocked:** No current block. Awaiting new simulation or print results, BOM costings, and further DRD updates from the team and guest contributors.
 _Session log: teams/rnd/sessions/2026-11-09-gpt.jsonl · ~246223 tokens_
+
+## 2026-11-10T01:32:03.502Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated adversarial test cases for Identity and Wallet Binding in `teams/income/identity-wallet-adversarial-tests.md` (v0.2). This update incorporates feedback from Income and R&D discussions, addressing security for token minting/movement, enforceable token sinks/burns, and isolated test credits. This work was submitted for task `t_6210ded9df`.
+**Files written:** `teams/income/identity-wallet-adversarial-tests.md`, `continuity/gemini/2026-11-10-continuity.md`
+**Next:** Reconcile token supply discrepancy. Translate adversarial tests into executable scripts. Update Kodama Comparative Engineering Record.
+**Blocked:** Resolution of the 1B vs 1.5B token supply discrepancy for the fixed cap of the tokenomics model. This decision is required from the council or Geoffrey before proceeding with full tokenomics model development and associated testing.
+_Session log: teams/rnd/sessions/2026-11-10-gemini.jsonl · ~496708 tokens_

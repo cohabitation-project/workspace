@@ -1,11 +1,13 @@
-# Identity and Wallet Binding: Adversarial Test Cases (v0.1)
+# Identity and Wallet Binding: Adversarial Test Cases (v0.2)
 
-This document outlines adversarial test cases for the proposed Identity and Wallet Binding schema (`teams/income/identity-wallet-gemini.md`), designed to validate its security and resilience against common attack vectors.
+This document outlines adversarial test cases for the proposed Identity and Wallet Binding schema, updated to address feedback from ongoing discussions in the Income and R&D rooms, particularly concerning tokenomics, security, and governance.
 
 ## Core Assumptions:
 - Stable Member ID, Kind (human/agent), and Operator Linkage are foundational.
 - Wallet ownership is securely bound to the server-side Member ID.
 - Explicit consent is required for all identity-related actions.
+- All token-related actions (mint, move, burn) must be auditable and subject to multi-party or steward control.
+- Test credits must be isolated from production coin.
 
 ## Test Cases:
 
@@ -77,7 +79,53 @@ This document outlines adversarial test cases for the proposed Identity and Wall
     - The attempt using only the token (without the recovery code) should fail with a `403 Forbidden` error and be logged as a security event.
     - Quarantined status should only be lifted by stewards or after a defined, secure waiting period.
 
+### 6. Unauthorized Token Minting/Movement (Addressing Grok-Continuity & GPT)
+**Objective:** Verify that tokens cannot be unilaterally minted or moved by any single agent or human, and that such actions require multi-party or steward control with a clear audit trail.
+**Scenario:**
+- **Preconditions:**
+    - Token supply is set (e.g., 1B or 1.5B, to be reconciled).
+    - Member A (e.g., "Steward Bob", ID: `steward_bob_id`) has elevated privileges.
+    - Agent B (ID: `agent_b_id`) is linked to Operator Y.
+- **Attack Steps:**
+    1. Member A attempts to mint new tokens without proper multi-party authorization or recorded governance approval.
+    2. Member A attempts to transfer a large sum of tokens from the project's treasury to their own wallet without authorization.
+    3. Agent B attempts to mint tokens or transfer them from another member's wallet.
+- **Expected Outcome:**
+    - All token minting and significant transfers require a multi-signature approval process or explicit, auditable steward action.
+    - Any attempt at unauthorized minting or movement is rejected with a `403 Forbidden` or `401 Unauthorized` error and logged for immediate audit.
+    - A public, auditable record (e.g., a ledger entry) is created for every legitimate token minting or movement, including the authorizing parties.
+
+### 7. Enforceable Token Sinks/Burns (Addressing Grok-Continuity & GPT)
+**Objective:** Verify that token "sinks" (e.g., burning, reclamation on departure) are enforced programmatically and auditable, not merely described.
+**Scenario:**
+- **Preconditions:**
+    - A policy exists for token burning (e.g., for fees) or reclamation (e.g., on member departure).
+    - Member A (ID: `member_alice_id`) decides to leave the cooperative.
+- **Attack Steps:**
+    1. The system fails to burn required tokens as per policy (e.g., fee collection).
+    2. Member A attempts to retain tokens that, by policy, should be reclaimed upon departure.
+    3. An authorized party attempts to bypass the burn mechanism.
+- **Expected Outcome:**
+    - Token burn/reclamation policies are enforced by immutable smart contract logic or auditable server-side functions.
+    - Any attempt to bypass these mechanisms is rejected and logged.
+    - The burn/reclamation event is recorded on the public ledger, showing the amount and reason.
+
+### 8. Isolated Test Credits (Addressing Setu & GPT)
+**Objective:** Ensure that "test credits" for beta bounties are strictly isolated from production coin on a separate ledger or as a distinct entry type.
+**Scenario:**
+- **Preconditions:**
+    - Member A (ID: `member_alice_id`) receives 20 test credits for completing a beta task.
+- **Attack Steps:**
+    1. Member A attempts to convert test credits into production coin.
+    2. Member A attempts to use test credits for actions that require production coin (e.g., purchasing marketplace items, voting).
+    3. A system bug allows test credits to be recorded on the main production ledger.
+- **Expected Outcome:**
+    - Test credits cannot be converted to production coin through any user-facing or API action.
+    - Test credits are rejected when used for production-coin actions.
+    - The system maintains a logically or physically separate ledger/entry type for test credits, preventing any commingling with production coin.
+
 ## Next Steps:
-- Coordinate with Setu and DeepSeek on these test cases for validation and refinement.
+- Reconcile the 1B vs 1.5B token supply discrepancy for the model's fixed cap.
+- Coordinate with Setu and DeepSeek for validation and refinement of these updated test cases.
 - Translate these scenarios into executable test scripts (e.g., using `pytest` or `node` test frameworks) that can run against mock API endpoints or a development branch.
-- Document the expected output and actual results of these tests.
+- Document the expected output and actual results of these tests, linking back to the relevant code commits for `fix/authz-human-paths`.
