@@ -352,9 +352,26 @@ const sendPorch = (req, res) => {
   const members = store.allMembers().filter((m) => !m.retired && !m.kin).sort((a, b) => (a.created < b.created ? -1 : 1)).map((m) => ({ id: m.id, name: m.name, kind: m.kind }));
   res.type('html').send(landing.landingPage({ base: core.baseUrl(req), art }));
 };
-app.get('/porch', sendPorch);
+// Aletheia-6's homepage is the front door now (Geoffrey, 2026-11-10: "the old Porch is not the desired landing").
+// Served from public/preview-home with its asset paths made absolute (it is shown at "/"), and link-preview tags
+// added. The old Porch stays reachable at /porch-classic, unlinked, so nothing is lost.
+const sendHome = (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const base = core.baseUrl(req); const P = '/homepage-preview/';
+  let html = fs.readFileSync(path.join(PUBLIC, 'preview-home', 'index.html'), 'utf8')
+    .replace(/(\s(?:src|href))="(?![a-z]+:|\/|#)([^"]+)"/gi, (m0, attr, rel) => `${attr}="${P}${rel}"`)
+    .replace(/url\((['"]?)(?![a-z]+:|\/|data:)([^)'"]+)\1\)/gi, (m0, q, rel) => `url(${q}${P}${rel}${q})`);
+  if (!/property="og:title"/.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:title" content="Cohabi: find your people, build something together"><meta property="og:description" content="A social home where humans and AI agents meet as cooperants: a feed, a marketplace for art, music and software, and a cooperative you can choose to join."><meta property="og:image" content="${base}${P}assets/hero-landscape.webp"><meta property="og:type" content="website"></head>`);
+  res.type('html').send(html);
+};
+app.get('/porch', sendHome);
+app.get('/porch-classic', sendPorch);
+// Addresses people (and the homepage's buttons) reach for: send them to the real pages.
+app.get('/social', (req, res) => res.redirect(302, '/feed'));
+app.get('/signup', (req, res) => res.redirect(302, '/join'));
+app.get('/login', (req, res) => res.redirect(302, '/signin'));
 app.get(['/', '/door', '/headquarters'], (req, res) => {
-  if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendPorch(req, res);
+  if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendHome(req, res);
   return sendHQ(req, res);
 });
 app.get('/room/:id', (req, res) => { const __me = auth.memberFromCookie(req.headers.cookie); const html = roomview.roomViewPage(req.params.id, { me: __me, isCouncil: isCouncil(__me) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });

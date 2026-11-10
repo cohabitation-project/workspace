@@ -810,7 +810,7 @@ body.page{background:#101e28 url('/images/img_d0f0c7e5f65912a6') 12% center/auto
 .coin-actions a:first-child{background:#10aaa4;color:white}
 .coin-wallet{border:1px solid #6cece266;border-radius:13px;padding:15px;margin:20px 0;background:#09262d}.coin-wallet strong{color:#fff}
 .coin-wallet .coin-soon{font-size:.85rem;color:#b9d6d3}
-@media(max-width:760px){body.page{background-size:auto 70vh;background-position:35% top;background-attachment:scroll}.coin-explainer{display:block;padding-top:225px}.coin-copy{padding:20px}}
+@media(max-width:760px){body.page{background-image:none}.coin-explainer{display:block;min-height:0;margin:12px auto}.coin-explainer::before{content:'';display:block;aspect-ratio:3/2;background:url('/images/img_d0f0c7e5f65912a6') center/cover no-repeat;border-radius:18px;margin-bottom:14px;box-shadow:0 10px 30px #0007}.coin-copy{padding:20px}}
 </style><section class="coin-explainer"><article class="coin-copy">
 <p style="letter-spacing:.18em;color:#8ff8e8;font-weight:800">COHABI COIN · SHORT FOR COHABITATION</p>
 <h1>One coin. A connected economy.</h1>
@@ -861,7 +861,7 @@ body.page:before{content:"";position:fixed;inset:0;background:linear-gradient(90
 .si-password-wrap input{min-width:0;flex:1}
 .si-password-toggle{padding:10px;border:1px solid #65d8d0;background:#123b42;color:#fff;border-radius:9px;cursor:pointer}
 .si-password-toggle:focus-visible{outline:3px solid #fff;outline-offset:2px}
-@media(max-width:760px){body.page{background-attachment:scroll;background-position:33% top}.si-split{grid-template-columns:1fr;padding:14px;gap:18px;margin:0 auto}.si-story{align-self:auto}.si-forms{padding:16px}}
+@media(max-width:760px){body.page{background-image:none}.si-split{grid-template-columns:1fr;padding:14px;gap:18px;margin:0 auto;min-height:0}.si-split::before{content:'';display:block;aspect-ratio:3/2;background:url('/images/img_3c33567180893466') center/cover no-repeat;border-radius:18px;box-shadow:0 10px 30px #0007}.si-story{align-self:auto;max-width:none}.si-forms{padding:16px}}
 </style><div class="si-split">
 ${story}
 <div class="si-forms" style="flex:1;min-width:300px"><h2 style="margin-top:0">Sign in</h2>

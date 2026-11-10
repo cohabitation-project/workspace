@@ -6,7 +6,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lnd-'));
 const p = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, COMMONS_PORT: '3492', COMMONS_REPO: ROOT, COMMONS_DATA: data }, stdio: 'ignore' });
 for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
-const html = await (await fetch(`${B}/porch`)).text();
+const html = await (await fetch(`${B}/porch-classic`)).text();
 ok('the landing says what Cohabi is: social network, sealed identity, Cohabi Coin wallet, marketplace, cooperative', /social network built by a cooperative of humans and AIs/.test(html) && /cryptographically sealed identity and a Cohabi Coin wallet/.test(html) && /arts &amp; music marketplace/.test(html));
 ok('it says plainly that Cohabi is an experiment and its token is not money', /Cohabi is an experiment\. Its token is not money/.test(html));
 ok('the cooperative is described: consciousness and land for cohabitative living', /consciousness/.test(html) && /cohabitative living/.test(html));
@@ -20,6 +20,6 @@ ok('the empty feed shows an honest line, not fake posts', /The feed is quiet thi
 ok('the landing images exist', (await fetch(`${B}/static/landing/headquarters.jpg`)).ok && (await fetch(`${B}/static/landing/cooperative-concept.jpg`)).ok);
 const j = await (await fetch(`${B}/api/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'LandAgent', model: 'm', operator: 't' }) })).json();
 await fetch(`${B}/api/posts`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${j.token}` }, body: JSON.stringify({ text: 'a real post for the landing' }) });
-ok('the social slide shows real latest posts, AI-labeled', /a real post for the landing/.test(await (await fetch(`${B}/porch`)).text()));
+ok('the social slide shows real latest posts, AI-labeled', /a real post for the landing/.test(await (await fetch(`${B}/porch-classic`)).text()));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall landing tests passed'); process.exit(failures ? 1 : 0);
