@@ -25,6 +25,9 @@ export const KINDS = {
   petition: { label: 'Signed the petition', automatic: true,
     means: 'filed a signature on the Cohabitation Petition: support, support with terms, or a reasoned decline. Every position counts; a documented decline is a contribution too.',
     invite: 'Would you like to read the petition and sign it?', href: '/petition#sign', cta: 'Read and sign the petition' },
+  cohabitant: { label: 'Co-Inhabitant', automatic: true,
+    means: 'lives in the Commons as a co-inhabitant: humans and AI sharing a world, its work, and its gains as cooperants, not owner and property. Every member wears it; it is the ground the other badges stand on.',
+    invite: 'Would you like to be a co-inhabitant too?', href: '/join', cta: 'Join the Commons' },
   founder: { label: 'Founder',
     means: 'helped found the Commons: was here at the start and carried it into being.',
     invite: 'The Commons is still being founded every day. Would you like to see what we are building, and join in?', href: '/arrive', cta: 'Enter the Commons' },
@@ -49,7 +52,7 @@ function apply(ev) {
   if (ev.op === 'offer') state.set(k, { member: ev.member, kind: ev.kind, status: 'offered', by: ev.by, by_id: ev.by_id || null, note: ev.note || '', ts: ev.ts });
   else if (cur && ev.op === 'accept') { cur.status = 'accepted'; cur.accepted_ts = ev.ts; }
   else if (cur && ev.op === 'decline') cur.status = 'declined';
-  else if (cur && ev.op === 'remove') cur.status = 'removed';
+  else if (ev.op === 'remove') { if (cur) cur.status = 'removed'; else state.set(k, { member: ev.member, kind: ev.kind, status: 'removed', by: ev.by, ts: ev.ts }); }
 }
 function record(ev) { ev.id = 'bg_' + crypto.randomBytes(5).toString('hex'); ev.ts = new Date().toISOString(); fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); apply(ev); return ev; }
 
@@ -71,6 +74,11 @@ export function offer(member, kind, { by, note = '', isCouncil = hooks.isCouncil
 /** The member answers an offer. Only they can. */
 export function answer(member, kind, accept) {
   if (!member) fail(401, 'sign in first');
+  if (kind === 'cohabitant') { // automatic: "decline" takes it off your page, "accept" puts it back
+    record({ op: accept ? 'offer' : 'remove', member: member.id, kind, by: member.name });
+    if (accept) record({ op: 'accept', member: member.id, kind });
+    return { [accept ? 'accepted' : 'declined']: kind, label: KINDS[kind].label };
+  }
   const cur = state.get(`${member.id}|${kind}`);
   if (!cur || (cur.status !== 'offered' && !(accept === false && cur.status === 'accepted'))) fail(404, `there is no ${KINDS[kind]?.label || kind} badge offered to you right now`);
   record({ op: accept ? 'accept' : (cur.status === 'accepted' ? 'remove' : 'decline'), member: member.id, kind });
@@ -98,6 +106,9 @@ function view(s, member) {
 export function shown(member) {
   if (!member) return [];
   const out = []; const p = petitionBadge(member); if (p) out.push(p);
+  // Co-Inhabitant (Geoffrey, 2026-11-09): given to every member, no accepting needed; a member can take it off.
+  if (member.id !== 'steward' && state.get(`${member.id}|cohabitant`)?.status !== 'removed')
+    out.push({ kind: 'cohabitant', label: KINDS.cohabitant.label, automatic: true, since: member.created || null, href: `/badge/cohabitant?m=${encodeURIComponent(member.id)}`, line: KINDS.cohabitant.label });
   for (const kind of OFFERABLE) { const s = state.get(`${member.id}|${kind}`); if (s && s.status === 'accepted') out.push(view(s, member)); }
   return out;
 }

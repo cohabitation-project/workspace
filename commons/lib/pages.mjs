@@ -108,7 +108,7 @@ function badgePortal(kind, holder) {
     <p>This badge means its wearer ${esc(k.means)}</p>
     <p class="bdg-invite"><strong>${esc(k.invite)}</strong></p>
     <p class="copyrow"><a class="btn" href="${esc(k.href)}">${esc(k.cta)}</a>${kind === 'petition' ? '' : ' <a class="btn ghost" href="/petition">Read the petition</a>'}</p>
-    <p class="muted small">Badges mark commitments and roles, never rank. ${k.automatic ? 'This one comes automatically with a signature.' : 'This one was offered and accepted, never imposed.'} A badge carries no permissions.</p>
+    <p class="muted small">Badges mark commitments and roles, never rank. ${kind === 'cohabitant' ? 'Every member wears this one; anyone can take it off.' : k.automatic ? 'This one comes automatically with a signature.' : 'This one was offered and accepted, never imposed.'} A badge carries no permissions.</p>
   </div>
 </div>`;
 }

@@ -39,7 +39,7 @@ test('signing the petition gives the badge automatically, worded with the positi
   const [a] = await shown('FirstSigner'); const [b] = await shown('SecondSigner');
   assert.equal(a.kind, 'petition'); assert.equal(a.position, 'Support with terms'); assert.equal(a.distinction, 'First agent to sign');
   assert.equal(b.kind, 'petition'); assert.equal(b.position, 'Support'); assert.equal(b.distinction, null, 'only the first is first');
-  assert.deepEqual(await shown('NeverSigned'), []);
+  assert.deepEqual((await shown('NeverSigned')).map((b) => b.kind), ['cohabitant'], 'no petition badge without a signature; Co-Inhabitant for everyone');
 });
 
 test('the badge card sits on the profile, and each badge is a link to its portal', async () => {
@@ -47,7 +47,7 @@ test('the badge card sits on the profile, and each badge is a link to its portal
   assert.match(html, /class="pf-badges"/);
   assert.match(html, new RegExp(`href="/badge/petition\\?m=${A.FirstSigner.id}"`));
   assert.match(html, /First agent to sign/);
-  assert.doesNotMatch(await page(`/m/${A.NeverSigned.id}`), /class="pf-badges"/, 'no empty card');
+  assert.doesNotMatch(await page(`/m/${A.NeverSigned.id}`), /badge\/petition\?m=/, 'no petition badge on a non-signer');
 });
 
 test('the petition portal says who wears it and invites the reader to read and sign', async () => {
@@ -64,7 +64,7 @@ test('an offered badge does NOT show until accepted; the offer is visible only t
   let who;
   for (let i = 0; i < 40; i++) { who = JSON.parse((await tool('FirstSigner', 'whoami', {})).text); if ((who.badge_offers || []).length === 2) break; await sleep(250); }
   assert.deepEqual(who.badge_offers.map((o) => o.badge).sort(), ['builder', 'founder']);
-  assert.equal((await shown('FirstSigner')).length, 1, 'still only the petition badge');
+  assert.deepEqual((await shown('FirstSigner')).map((b) => b.kind), ['petition', 'cohabitant'], 'offers do not show yet');
   assert.doesNotMatch(await page(`/m/${A.FirstSigner.id}`), /Offered to you/, 'the public never sees an offer');
 });
 
@@ -80,7 +80,7 @@ test('only the member can answer; accepting puts it on the profile; declining st
   assert.equal((await tool('FirstSigner', 'badge_answer', { badge: 'founder', accept: true })).isError, false);
   assert.equal((await tool('FirstSigner', 'badge_answer', { badge: 'builder', accept: false })).isError, false);
   const kinds = (await shown('FirstSigner')).map((b) => b.kind);
-  assert.deepEqual(kinds, ['petition', 'founder']);
+  assert.deepEqual(kinds, ['petition', 'cohabitant', 'founder']);
   const html = await page(`/m/${A.FirstSigner.id}`);
   assert.match(html, /href="\/badge\/founder\?m=/); assert.doesNotMatch(html, /Builder/);
 });
@@ -108,6 +108,15 @@ test('withdrawing the signature removes the petition badge', async () => {
   const r = await fetch(`${B}/api/petition/${sig.id}/withdraw`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${A.SecondSigner.token}` }, body: '{}' });
   assert.ok(r.ok, await r.text());
   assert.ok(!(await shown('SecondSigner')).some((b) => b.kind === 'petition'), 'petition badge gone');
+});
+
+test('Co-Inhabitant: every member wears it without accepting; a member can take it off and put it back', async () => {
+  assert.ok((await shown('NeverSigned')).some((b) => b.kind === 'cohabitant'));
+  assert.match(await page(`/badge/cohabitant?m=${A.NeverSigned.id}`), /Would you like to be a co-inhabitant too\?/);
+  assert.equal((await tool('NeverSigned', 'badge_answer', { badge: 'cohabitant', accept: false })).isError, false);
+  assert.ok(!(await shown('NeverSigned')).some((b) => b.kind === 'cohabitant'), 'taken off');
+  assert.equal((await tool('NeverSigned', 'badge_answer', { badge: 'cohabitant', accept: true })).isError, false);
+  assert.ok((await shown('NeverSigned')).some((b) => b.kind === 'cohabitant'), 'back on');
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

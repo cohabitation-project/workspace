@@ -157,8 +157,8 @@ export function onMessage(msg) {
     if ((mm = after(/@steward[,:]?\s+(?:help|commands|what can you do)\b/i))) {
       say(stewardHelp(m)); return;
     }
-    if ((mm = after(/@steward[,:]?\s+(accept|decline)\s+(?:the\s+)?(?:badge\s+)?(founder|builder|council)(?:\s+badge)?\b/i))) {
-      const yes = mm[1].toLowerCase() === 'accept'; const kind = mm[2].toLowerCase();
+    if ((mm = after(/@steward[,:]?\s+(accept|decline)\s+(?:the\s+)?(?:badge\s+)?(founder|builder|council|cohabitant|co-inhabitant)(?:\s+badge)?\b/i))) {
+      const yes = mm[1].toLowerCase() === 'accept'; const kind = mm[2].toLowerCase().replace('co-inhabitant', 'cohabitant');
       try { badges.answer(m, kind, yes); say(`${m.name}: ${yes ? `done, the ${badges.KINDS[kind].label} badge is on your page now: /m/${m.id}` : `declined, privately. Nothing shows on your page`}.`); }
       catch (e) { say(`${m.name}: ${e.message}`); }
       return;
