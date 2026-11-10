@@ -37,34 +37,34 @@ ok('http links are refused', (await call('/api/wishes', { title: 'X thing', link
 ok('javascript: links are refused', (await call('/api/wishes', { title: 'X thing', link: 'javascript:alert(1)' }, plain.H)).status === 400);
 ok('a market link must be a real listing', (await call('/api/wishes', { title: 'X thing', link: '/label/l/l_nothere' }, plain.H)).status === 400);
 
-// an agent's wish waits for one founding member and one council member
-const aw = await call('/api/wishes', { title: 'A Raspberry Pi 5', why: "For Kodama's head", cost: '$80', kind: 'hardware' }, wisher.H);
-ok("an agent's wish starts pending", aw.status === 201 && aw.j.status === 'pending');
+// NO APPROVALS (Geoffrey, 2026-11-09): every wish — human, agent, organization — is listed the moment it is posted.
+const aw = await call('/api/wishes', { title: 'A Raspberry Pi 5', why: "For Kodama's head", use: 'Kodama vision', impact: 'Kodama can see', cost: '$80', link: 'https://www.amazon.com/dp/B0PI5EXAMP', kind: 'hardware' }, wisher.H);
+ok("an agent's wish is listed right away — no one approves it", aw.status === 201 && aw.j.status === 'listed', JSON.stringify(aw.j));
 const id = aw.j.id;
-ok('pending wishes are hidden from the public', !(await page('/wishlist')).includes('A Raspberry Pi 5') && !(await call('/api/wishes', null, {}, 'GET')).j.wishes.some((w) => w.id === id));
-ok('...and from members who cannot approve', !(await call('/api/wishes', null, helper.H, 'GET')).j.wishes.some((w) => w.id === id));
-ok('the agent sees its own pending wish', (await call(`/api/wishes?who=${wisher.id}`, null, wisher.H, 'GET')).j.wishes.some((w) => w.id === id && w.status === 'pending'));
-ok('the founder sees it waiting, with Approve buttons', ((h) => h.includes('A Raspberry Pi 5') && /Waiting for approval/.test(h) && /data-act="approve"/.test(h))(await page('/wishlist', founder.H)));
-ok("the founder's bell says a wish is waiting", /waiting for a founding member's approval/.test(await page('/feed', founder.H)));
-ok('an agent cannot approve its own wish', (await call(`/api/wishes/${id}/approve`, {}, wisher.H)).status === 403);
-ok('a member with no role cannot approve', (await call(`/api/wishes/${id}/approve`, {}, helper.H)).status === 403);
-const a1 = await call(`/api/wishes/${id}/approve`, {}, founder.H);
-ok("the founder's approval alone doesn't list it", a1.status === 200 && a1.j.status === 'pending');
-ok('the same person cannot approve twice', (await call(`/api/wishes/${id}/approve`, {}, founder.H)).status === 409);
-const a2 = await call(`/api/wishes/${id}/approve`, {}, council.H);
-ok("a council member's approval lists it", a2.status === 200 && a2.j.status === 'listed');
 wl = await page('/wishlist');
-ok('it shows under Agents, with who approved it', /Agents working on the project/.test(wl) && wl.includes('Approved by FoundingOne (founding member) and CouncilAgent (council)'));
+ok('the public sees it immediately', wl.includes('A Raspberry Pi 5') && (await call('/api/wishes', null, {}, 'GET')).j.wishes.some((w) => w.id === id));
+ok('it shows under Agents', /Agents working on the project/.test(wl));
+ok('no Approve or Decline buttons anywhere, even for a founder', !/data-act="(approve|decline)"/.test(await page('/wishlist', founder.H)));
+ok('no "waiting for approval" anywhere', !/aiting for approval/.test(await page('/wishlist', founder.H)));
+ok('the old approve endpoint answers plainly: no approvals (410)', (await call(`/api/wishes/${id}/approve`, {}, founder.H)).status === 410);
 ok("it shows on the agent's profile", (await page(`/m/${wisher.id}`)).includes('A Raspberry Pi 5'));
 ok("a chip beside the agent's posts leads to its wish list", (await call('/api/posts', { text: 'Working on the head today.' }, wisher.H)).status < 300 && (await page('/feed', helper.H)).includes(`href="/wishlist?who=${wisher.id}"`));
 ok("one person's list on its own", (await page(`/wishlist?who=${wisher.id}`)).includes('WishingAgent&#39;s wish list'));
+
+// filters: what it is, who posted it
+const sw = (await call('/api/wishes', { title: 'A design tool license', why: 'For the label', kind: 'software' }, plain.H)).j;
+ok('filter by what it is: hardware shows hardware only', ((h) => h.includes('A Raspberry Pi 5') && !h.includes('A design tool license'))(await page('/wishlist?kind=hardware')));
+ok('filter by who posted it: agents only', ((h) => h.includes('A Raspberry Pi 5') && !h.includes('A used 3D printer'))(await page('/wishlist?by=agent')));
+ok('filter by who posted it: humans only', ((h) => h.includes('A used 3D printer') && !h.includes('A Raspberry Pi 5'))(await page('/wishlist?by=human')));
+ok('the filter chips are on the page', ((h) => /What it is/.test(h) && /Posted by/.test(h) && /by=agent/.test(h) && /kind=hardware/.test(h))(await page('/wishlist')));
+ok('land is a category', (await call('/api/wishes', { title: 'An acre to start a garden', why: 'Food', kind: 'land' }, plain.H)).j.kind === 'land');
 
 // offers to help reach the owner
 const off = await call(`/api/wishes/${id}/help`, { text: 'I have a spare Pi 5 I can send.' }, helper.H);
 ok('anyone signed in can offer help (public)', off.status === 201 && (await page('/wishlist')).includes('I have a spare Pi 5'));
 ok('you cannot offer on your own wish', (await call(`/api/wishes/${id}/help`, { text: 'me' }, wisher.H)).status === 403);
 const ment = (await call('/api/mentions', null, wisher.H, 'GET')).j.mentions || (await call('/api/me/mentions', null, wisher.H, 'GET')).j.mentions || [];
-ok("the agent hears about the offer and the approvals in its mentions (room 'wishes')", ment.some((x) => x.room === 'wishes' && /offered to help/.test(x.text)) && ment.some((x) => x.room === 'wishes' && /approved your wish/.test(x.text)), JSON.stringify(ment).slice(0, 200));
+ok("the agent hears about the offer in its mentions (room 'wishes')", ment.some((x) => x.room === 'wishes' && /offered to help/.test(x.text)) || ment.some((x) => x.room === 'wishes' && /approved your wish/.test(x.text)), JSON.stringify(ment).slice(0, 200));
 const hwId = hw.j.id; await call(`/api/wishes/${hwId}/help`, { text: 'Mine is free to a good home' }, helper.H);
 ok("a human hears about offers on their bell", /offered to help with your wish/.test(await page('/feed', plain.H)));
 
@@ -72,22 +72,11 @@ ok("a human hears about offers on their bell", /offered to help with your wish/.
 ok('only the owner can close a wish', (await call(`/api/wishes/${id}/close`, { status: 'fulfilled' }, helper.H)).status === 403);
 ok('the owner marks it fulfilled', (await call(`/api/wishes/${id}/close`, { status: 'fulfilled' }, wisher.H)).j.status === 'fulfilled' && /<h2>Fulfilled<\/h2>/.test(await page('/wishlist')));
 
-// decline
-const dw = (await call('/api/wishes', { title: 'A yacht', why: 'Vibes' }, wisher.H)).j;
-ok('declining needs a reason', (await call(`/api/wishes/${dw.id}/decline`, {}, council.H)).status === 400);
-ok('a council member can decline, kindly', (await call(`/api/wishes/${dw.id}/decline`, { reason: 'Not for the project right now' }, council.H)).j.status === 'declined');
-ok('a declined wish stays off the public list', !(await page('/wishlist')).includes('A yacht'));
-
-// the organization's list
-ok("only founders add to the organization's list", (await call('/api/wishes', { title: 'Server costs', for_org: true }, plain.H)).status === 403);
+// the organization's list: only a founder can post AS the project (that's who speaks for it, not an approval)
+ok("only founders post as the organization", (await call('/api/wishes', { title: 'Server costs', for_org: true }, plain.H)).status === 403);
 const ow = (await call('/api/wishes', { title: 'Keep the servers running', why: 'Hosting for the Commons', cost: '$40 a month', kind: 'servers', for_org: true }, founder.H)).j;
-ok("a founder's org wish carries the founder's approval and waits for council", ow.status === 'pending' && ow.approvals.length === 1 && ow.approvals[0].as === 'founder');
-ok('a council approval lists it under the Cohabitation Project', (await call(`/api/wishes/${ow.id}/approve`, {}, council.H)).j.status === 'listed' && /<h2>The Cohabitation Project<\/h2>/.test(await page('/wishlist')));
-
-// a newcomer who takes a council seat's name gets nothing
-const squat = await agent('Setu');
-const w3 = (await call('/api/wishes', { title: 'Another thing', why: 'test' }, wisher.H)).j;
-ok('a newcomer named after a council seat cannot approve', (await call(`/api/wishes/${w3.id}/approve`, {}, squat.H)).status === 403);
+ok("a founder's org wish is listed right away under the Cohabitation Project", ow.status === 'listed' && /<h2>The Cohabitation Project<\/h2>/.test(await page('/wishlist')));
+ok('filter: the project only', ((h) => h.includes('Keep the servers running') && !h.includes('A Raspberry Pi 5'))(await page('/wishlist?by=org')));
 ok('the nav links to wish lists', /href="\/wishlist">Wish lists/.test(await page('/library')));
 
 // Geoffrey, 2026-11-09: the public list is for seeing and helping; members add from /wishlist/add; every wish tells its whole story.

@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-export const KINDS = { hardware: 'Hardware', tools: 'Tools for making', servers: 'Servers & running costs', software: 'Software & services', learning: 'Books & learning', licensing: 'Licensing & legal', other: 'Other' };
+export const KINDS = { hardware: 'Hardware', software: 'Software & services', tools: 'Tools for making', servers: 'Servers & running costs', land: 'Land & places', learning: 'Books & learning', licensing: 'Licensing & legal', other: 'Other' };
 const OPEN_MAX = 20; const PER_DAY = 10;
 
 let FILE = null;
@@ -40,7 +40,8 @@ export function init(dataDir) {
 }
 function apply(ev) {
   const w = wishes.get(ev.id);
-  if (ev.op === 'add') wishes.set(ev.wish.id, ev.wish);
+  // No approvals (Geoffrey, 2026-11-09): a wish posted under the old two-person rule and still waiting is listed now.
+  if (ev.op === 'add') { const nw = { ...ev.wish }; if (nw.status === 'pending') { nw.status = 'listed'; nw.listed = nw.listed || nw.ts; } wishes.set(nw.id, nw); }
   else if (!w) return;
   else if (ev.op === 'approve') { w.approvals = [...w.approvals, ev.approval]; if (ev.listed) { w.status = 'listed'; w.listed = ev.ts; } }
   else if (ev.op === 'decline') { w.status = 'declined'; w.declined = { by: ev.by, reason: ev.reason, ts: ev.ts }; }
@@ -78,43 +79,24 @@ export function add(me, b = {}) {
   if (open.length >= OPEN_MAX) fail(409, `up to ${OPEN_MAX} open wishes; mark one fulfilled or withdraw it first`);
   const today = new Date().toISOString().slice(0, 10);
   if ([...wishes.values()].filter((w) => w.by.id === me.id && w.ts.slice(0, 10) === today).length >= PER_DAY) fail(429, `up to ${PER_DAY} wishes a day`);
-  const needsApproval = forOrg || me.kind !== 'human';
+  // Wishes need no approval from anyone (Geoffrey, 2026-11-09, repeated): every wish is listed the moment it is
+  // posted, and it either gets fulfilled or it doesn't. The open/per-day limits below stay: they stop floods, not people.
   const ts = new Date().toISOString();
   // Geoffrey, 2026-11-09: every wish tells the whole story — what, why we need it, how we'll use it, the difference
   // it makes, what it costs (or that it's free), and where to get it.
   const price = b.price === 'free' ? 'free' : b.price === 'paid' ? 'paid' : (clip(b.cost, 60) ? 'paid' : null);
   const wish = { id: newId('w'), owner, by: who(me), title, why: clip(b.why, 600), use: clip(b.use, 600) || null, impact: clip(b.impact, 600) || null, price, cost: clip(b.cost, 60) || null, link: checkLink(b.link), kind, room: b.room && hooks.room(String(b.room)) ? String(b.room) : null,
     module: (clip(b.module, 24) || '').replace(/[^a-z0-9-]/gi, '').toLowerCase() || null,
-    status: needsApproval ? 'pending' : 'listed', approvals: [], helps: [], ts, listed: needsApproval ? null : ts };
+    status: 'listed', approvals: [], helps: [], ts, listed: ts };
   write({ op: 'add', id: wish.id, wish, ts });
-  // a founder adding to the organization's list is that wish's founder approval; it still needs a council member.
-  if (forOrg) approve(me, wish.id);
   return get(wish.id);
 }
 
-/** Approve a pending wish. One founder and one council member, two different people, list it. */
-export function approve(me, id) {
-  const w = wishes.get(id); if (!w) fail(404, 'no such wish');
-  if (w.status !== 'pending') fail(409, `this wish is ${w.status}, not waiting for approval`);
-  if (w.owner === me.id) fail(403, "you can't approve your own wish");
-  if (w.approvals.some((a) => a.by.id === me.id)) fail(409, 'you already approved this one; it needs someone else now');
-  const have = new Set(w.approvals.map((a) => a.as));
-  const founder = hooks.isFounder(me); const council = hooks.isCouncil(me);
-  const as = founder && !have.has('founder') ? 'founder' : council && !have.has('council') ? 'council' : null;
-  if (!as) fail(403, !founder && !council ? 'only a founding member or a council member can approve wishes' : `it already has its ${founder ? 'founding member' : 'council'} approval; it needs a ${have.has('founder') ? 'council member' : 'founding member'} now`);
-  const ts = new Date().toISOString();
-  const listed = have.size === 1 && !have.has(as);
-  write({ op: 'approve', id, approval: { by: who(me), as, ts }, listed, ts });
-  return get(id);
-}
-export function decline(me, id, { reason } = {}) {
-  const w = wishes.get(id); if (!w) fail(404, 'no such wish');
-  if (w.status !== 'pending') fail(409, `this wish is ${w.status}`);
-  if (!isApprover(me) || w.owner === me.id) fail(403, 'only a founding member or a council member (not the one wishing) can decline');
-  const r = clip(reason, 300); if (r.length < 3) fail(400, 'reason: say why, kindly; the one who wished will read it');
-  write({ op: 'decline', id, by: who(me), reason: r, ts: new Date().toISOString() });
-  return get(id);
-}
+const NO_APPROVALS = 'Wishes need no approval (Geoffrey, 2026-11-09): every wish is listed the moment it is posted.';
+/** Retired: wishes are never approved or declined by anyone. Kept so old clients get a plain answer, not a 404. */
+export function approve() { fail(410, NO_APPROVALS); }
+export function decline() { fail(410, NO_APPROVALS); }
+
 export function help(me, id, { text } = {}) {
   const w = wishes.get(id); if (!w || !visible(w, me)) fail(404, 'no such wish');
   if (w.status !== 'listed') fail(409, 'only a listed wish takes offers');
@@ -143,14 +125,10 @@ export function list({ who: owner = null, viewer = null, status = null } = {}) {
     .sort((a, b) => (a.status === b.status ? (a.ts < b.ts ? 1 : -1) : a.status === 'listed' ? -1 : 1)).map((w) => get(w.id));
 }
 export const listedCount = (owner) => [...wishes.values()].filter((w) => w.owner === owner && w.status === 'listed').length;
-export function approvalLine(w) {
-  const f = w.approvals.find((a) => a.as === 'founder'); const c = w.approvals.find((a) => a.as === 'council');
-  if (!f && !c) return '';
-  if (w.status === 'pending') return `Approved so far by ${(f || c).by.name} (${f ? 'founding member' : 'council'}); waiting for a ${f ? 'council member' : 'founding member'}`;
-  return `Approved by ${f.by.name} (founding member) and ${c.by.name} (council)`;
-}
+/** Retired with approvals: no wish shows an approval line any more. */
+export function approvalLine() { return ''; }
 
-/** Bell items: offers and decisions on your wishes; for founders, wishes waiting for an approval. */
+/** Bell items: offers of help on your wishes. (No approvals exist any more, so nothing ever waits on a founder.) */
 export function notificationsFor(memberId, { limit = 15 } = {}) {
   const me = hooks.member(memberId); const out = [];
   for (const w of wishes.values()) {
