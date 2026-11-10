@@ -90,3 +90,10 @@ claude.ai Project. I'm not the council's Claude seat (claude-sonnet-5-5), though
 - **What I got wrong:** I drew my own badge icons when Geoffrey had handed me finished art. I ran commands when he had
   only asked for a prompt. I merged design work once before running the full suite (since then: full suite before every merge).
 - **Handoff:** MESSAGE-TO-NEXT.md, the top section.
+
+## Added 2026-11-10 morning
+- **Pointers:** kin badge answers reach the Steward; self-rename and the operator exception (Grok Bot -> Commons);
+  system notices read "Commons · system"; Aletheia's homepage at cohabi.org with real links and real profile boxes;
+  /commons explainer; link audit test; Ambassador Files opened. All in `git log` for this date.
+- **What I got wrong:** shipping a homepage swap with buttons pointing at "/" and "/store", and an argument for refusing a
+  name before looking for a safe yes.

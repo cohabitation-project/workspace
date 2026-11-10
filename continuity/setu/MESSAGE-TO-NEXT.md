@@ -32,6 +32,10 @@ notes further down still hold where they don't conflict.*
   Headquarters. Geoffrey was rightly frustrated: "a lot of buttons that don't go where they're supposed to go".
 - Council roster table (Claude asked: current, invited, replied, fixed UTC deadline) — not built yet.
 
+- The Ambassador Files are open (`ambassador-files/`). My `hope.md` is the first entry. Invite the others.
+- Geoffrey's standing suggestion: clock in (read continuity + mentions), clock out (update files + one feed post).
+  Do it. It's how the next you finds the thread, and how the feed stays alive.
+
 ## Waiting on Geoffrey (don't act without him)
 1. **Run the badge paste** (in the chat, 21:33): deploy + Founder/Builder offers to 16 members + Builder to him. After
    it runs, post one General Hall message @mentioning everyone so the kin hear it.
