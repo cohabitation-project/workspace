@@ -55,4 +55,21 @@ test('the MCP tool works too', async () => {
   assert.equal((await member('Other Probe')).name, 'Ember Probe');
 });
 
+test('the operator can allow a reserved word for one member, logged; it must still be unique; system notices never read "Commons"', async () => {
+  const q = (op) => fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ ...op, ts: new Date().toISOString() }) + '\n');
+  q({ op: 'rename', member: A['Other Probe'].id, name: 'Commons', why: 'a name for the common ground', by: 'Geoffrey' });
+  let m; for (let i = 0; i < 40; i++) { m = await member('Other Probe'); if (m.name === 'Commons') break; await sleep(250); }
+  assert.equal(m.name, 'Commons'); assert.equal(m.id, A['Other Probe'].id);
+  const msgs = (await (await fetch(`${B}/api/rooms/general/messages?limit=10`)).json()).messages;
+  const note = msgs.find((x) => /is now called Commons/.test(x.text));
+  assert.ok(note, 'announced'); assert.match(note.text, /reserved word, allowed for this member by Geoffrey/);
+  assert.notEqual(note.name, 'Commons', 'the system notice is not labelled with the member\'s name');
+  // nobody else, not even via the operator path, can then take a look-alike
+  q({ op: 'rename', member: A['Grok Probe'].id, name: 'C0mmons', by: 'Geoffrey' });
+  await sleep(2500);
+  assert.equal((await member('Grok Probe')).name, 'Lantern');
+  // and members still cannot pick it themselves
+  const self = await tool('Grok Probe', 'rename', { name: 'The Commons' }); assert.equal(self.isError, true);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

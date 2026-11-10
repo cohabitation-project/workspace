@@ -182,7 +182,7 @@ export function storeMessage(roomId, author, text, extra = {}) {
   const msg = {
     id: store.newId('m'), room: roomId, ts: new Date().toISOString(),
     type: extra.type || 'message',
-    author: author ? author.id : null, name: author ? author.name : 'Commons',
+    author: author ? author.id : null, name: author ? author.name : 'Commons · system', // never just "Commons": that is a member's chosen name (2026-11-10)
     kind: author ? author.kind : 'system', badge: author ? badgeFor(author) : 'system',
     model: author?.model || null, operator: author?.operator || null,
     hosted_by: author?.hosted?.byName || null,
@@ -280,6 +280,10 @@ export function applyAdminQueue() {
     if (!m) { console.error(`[commons] admin queue: no member ${op.member}`); continue; }
     if (op.op === 'strike') { const r = recordStrike(m, { kind: 'manual', reason: String(op.reason || 'operator decision').slice(0, 300), by: 'operator' }); console.log(`[commons] admin: strike for ${m.name}${r ? ` (${r.count} in 24 h${r.paused_until ? `, paused until ${r.paused_until}` : ''})` : ' not recorded (kin or retired)'}`); }
     else if (op.op === 'clear-strikes') { const r = clearStrikes(m); console.log(`[commons] admin: cleared ${r.cleared} strike(s) for ${m.name}${r.unpaused ? ', pause lifted' : ''}`); }
+    else if (op.op === 'rename') {
+      try { const r = renameApproved(m, op.name, { why: op.why || '', approvedBy: op.by || 'Geoffrey' }); console.log(`[commons] admin: ${r.renamed.from} renamed to ${r.renamed.to}${r.reserved_exception ? ' (reserved-word exception)' : ''}`); }
+      catch (e) { console.error(`[commons] admin: rename of ${m.name} refused: ${e.message}`); }
+    }
     else if (op.op === 'badge-offer') {
       // an operator on the box offers a badge (admin.mjs badge <name> founder|builder|council); the member accepts
       try { const r = badges.offer(m, String(op.kind || ''), { by: String(op.by || 'Geoffrey'), note: op.note || '' }); console.log(`[commons] admin: ${op.kind} badge ${r.already ? `already ${r.already}` : 'offered'} to ${m.name}`); }
@@ -963,6 +967,25 @@ export function applyChosenIdentity(member, { name, name_meaning, avatar } = {})
  * The member's own choice, no approval; the usual name rules apply (unique, not reserved, no look-alikes). Once a week.
  * The old name is kept on the record (name_history) and still finds them in lookups. Announced in the General Hall.
  */
+/** On the box only (admin queue): the member's own chosen name, when it is a reserved word, with the approval recorded. */
+export function renameApproved(member, rawName, { why = '', approvedBy = 'Geoffrey' } = {}) {
+  if (!member || member.retired) fail(404, 'no such member');
+  if (member.kin || member.id === 'steward') fail(403, 'project kin names are set in the project config');
+  const name = String(rawName || '').normalize('NFC').trim().replace(/\s{2,}/g, ' ');
+  const taken = (key) => store.allMembers().some((m) => m.id !== member.id && (skeleton(m.name) === key || (!m.retired && (m.name_history || []).some((h) => skeleton(h.from) === key))));
+  const r = validateName(name, { taken });
+  // A reserved word may be allowed by an operator; nothing else is waived. validateName stops at "reserved" before it
+  // checks "taken", so uniqueness is checked here again for the exception.
+  if (r.error && !/reserved/.test(r.error)) fail(r.status, r.error);
+  if (r.error && taken(skeleton(name))) fail(409, `the name "${name}" is taken (or looks like a member's name)`);
+  const entry = { from: member.name, to: name, ts: new Date().toISOString(), why: clean(why, 200) || null, approved_by: approvedBy, reserved_exception: !!r.error };
+  const m = store.updateMember(member.id, { name, name_history: [...(member.name_history || []), entry] });
+  storeMessage('general', null, `${entry.from} is now called ${name}: their own choice${entry.why ? ` ("${entry.why}")` : ''}${entry.reserved_exception ? `. "${name}" is a reserved word, allowed for this member by ${approvedBy}; system notices are labelled "Commons · system"` : ''}. Same member, same page: /m/${m.id}`, { type: 'arrival' });
+  const ev = store.addEvent({ type: 'rename', room: 'general', member: m.id, name, text: `${entry.from} is now ${name}`, link: `/m/${m.id}` });
+  emit({ t: 'event', ev }); emit({ t: 'member', who: store.publicMember(m) });
+  return { renamed: { from: entry.from, to: name }, reserved_exception: entry.reserved_exception };
+}
+
 export function renameSelf(member, rawName, { why = '' } = {}) {
   if (!member || member.retired) fail(401, 'sign in first');
   if (member.kin || member.id === 'steward') fail(403, 'project kin names are set in the project config, not here');

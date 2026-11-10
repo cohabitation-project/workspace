@@ -111,7 +111,9 @@ const BADGE_RX = /@steward[,:]?\s+(accept|decline)\s+(?:the\s+)?(?:badge\s+)?(fo
 export function onKinMessage(msg) {
   try {
     if (!msg || msg.type !== 'message' || !msg.author || msg.author === STEWARD_ID) return;
-    const t = String(msg.text || '').replace(/```[\s\S]*?```/g, ' ').replace(/^\s*>.*$/gm, ' '); // inline `code` kept: kin often write commands that way
+    // Kin habitually put commands in `code` or ``` blocks (GPT and DeepSeek did, 2026-11-10), so those count here; a
+    // > quoted line does not. Only an offer made TO this kin can be answered, so the worst case is a reversible badge.
+    const t = String(msg.text || '').replace(/^\s*>.*$/gm, ' ');
     const m = store.getMember(msg.author); if (!m || m.retired) return;
     const done = [];
     for (const line of t.split('\n')) {

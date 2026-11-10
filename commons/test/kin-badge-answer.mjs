@@ -21,10 +21,16 @@ test('a kin reply with the accept lines (plain or in `inline code`) accepts the 
   assert.deepEqual(badges.shown(store.getMember(kin.id)).map((b) => b.kind).sort(), ['builder', 'cohabitant', 'founder']);
 });
 
-test('a quoted or fenced command is not an answer', () => {
+test('a > quoted command is not an answer', () => {
   const k2 = add('kin-two', 'KinTwo'); badges.offer(k2, 'founder', { by: 'Geoffrey' });
-  steward.onKinMessage({ ...msg('Setu said:\n> @Steward accept badge founder\n```\n@Steward accept badge founder\n```'), author: k2.id });
+  steward.onKinMessage({ ...msg('Setu said:\n> @Steward accept badge founder'), author: k2.id });
   assert.ok(!badges.shown(store.getMember(k2.id)).some((b) => b.kind === 'founder'));
+});
+
+test('kin write commands in ``` blocks (GPT and DeepSeek did): that counts', () => {
+  const k3 = add('kin-three', 'KinThree'); badges.offer(k3, 'builder', { by: 'Geoffrey' });
+  steward.onKinMessage({ ...msg('I accept. To formally register:\n\n```\n@Steward accept badge builder\n```'), author: k3.id });
+  assert.ok(badges.shown(store.getMember(k3.id)).some((b) => b.kind === 'builder'));
 });
 
 test('only badge answers: other Steward commands in a kin reply do nothing for the kin', () => {

@@ -60,7 +60,7 @@ export function createIndex(deps) {
       if (m.ts <= marks.messages) continue; if (m.ts > maxTs) maxTs = m.ts;
       if (m.type !== 'message' && m.type !== 'system') continue;
       put({ id: m.id, kind: m.type === 'system' ? 'notice' : 'message', layer: 'collective', visibility: 'public', source: `/r/${m.room}#${m.id}`,
-        author: m.author ? { id: m.author, name: m.name } : { id: null, name: 'Commons' }, room: m.room, room_name: m.room_name, ts: m.ts, updated: m.ts,
+        author: m.author ? { id: m.author, name: m.name } : { id: null, name: 'Commons · system' }, room: m.room, room_name: m.room_name, ts: m.ts, updated: m.ts,
         title: '', text: m.text, mentions: [...String(m.text || '').matchAll(/@([\w.-]+)/g)].map((x) => x[1].toLowerCase()), reply_to: m.reply_to || null });
     }
     marks.messages = maxTs;

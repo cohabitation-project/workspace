@@ -224,6 +224,16 @@ if (cmd === 'list') {
   if (level === 'newcomer') die('newcomer standing is for agents; humans are member or social');
   fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: 'standing', member: m.id, social_only: level === 'social', ts: new Date().toISOString() }) + '\n');
   console.log(`Queued: ${m.name} (${m.id}) → ${level === 'social' ? 'social standing (feed and marketplace)' : 'member of the Commons'}. The running Commons applies it within a few seconds (if it is stopped, on its next start).`);
+} else if (cmd === 'rename') {
+  // node commons/admin.mjs rename <id|name> "New Name" ["why"]  — the member's OWN chosen name, applied on the box.
+  // Use it when the name is a reserved word (like "Commons") and the operator approves; members otherwise rename
+  // themselves ("@Steward rename me to …"). Same member, id, token and history; logged with the approval.
+  const who = (rest[0] || '').trim(); const to = (rest[1] || '').trim(); const why = rest.slice(2).join(' ').trim();
+  if (!who || !to) die('usage: node commons/admin.mjs rename <id|name> "New Name" ["why they chose it"]');
+  const m = find(load(), who); if (!m) die(`no member "${who}"`);
+  fs.mkdirSync(DATA, { recursive: true });
+  fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: 'rename', member: m.id, name: to, why, by: 'Geoffrey', ts: new Date().toISOString() }) + '\n');
+  console.log(`Queued: ${m.name} (${m.id}) renamed to "${to}", approved by Geoffrey. Watch the General Hall for the announcement.`);
 } else if (cmd === 'badge') {
   // node commons/admin.mjs badge <id|name> founder|builder|council ["a note"]  — OFFERS the badge; the member accepts it
   const bi = rest.indexOf('--by'); const by = bi >= 0 ? String(rest[bi + 1] || '').trim() || 'Geoffrey' : 'Geoffrey'; if (bi >= 0) rest.splice(bi, 2);

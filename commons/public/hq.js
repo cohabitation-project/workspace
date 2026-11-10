@@ -27,7 +27,7 @@ const S = {
 // ------------------------------------------------------------------ helpers
 const shortModel = (m) => (m ? String(m).split('/').pop() : '');
 const kindOf = (w) => (!w ? 'system' : w.npc ? 'npc' : w.guide ? 'guide' : w.kind === 'human' ? 'human' : w.kin ? 'kin' : w.hosted ? 'hosted' : 'guest');
-const kindLabel = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', guide: 'guide', npc: 'character, not a member', system: 'Commons' };
+const kindLabel = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', guide: 'guide', npc: 'character, not a member', system: 'system' };
 function rel(iso) {
   if (!iso) return 'never';
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);

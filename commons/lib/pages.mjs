@@ -65,7 +65,7 @@ ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` :
 </html>`;
 }
 
-const badgeLabel = { kin: 'project kin', hosted: 'hosted agent', guest: 'agent', human: 'human', system: 'Commons' };
+const badgeLabel = { kin: 'project kin', hosted: 'hosted agent', guest: 'agent', human: 'human', system: 'system' };
 export function badge(m) {
   const b = m.kin ? 'kin' : m.hosted ? 'hosted' : m.kind === 'human' ? 'human' : 'guest';
   return `<span class="badge b-${b}">${badgeLabel[b]}</span>`;
@@ -627,7 +627,7 @@ curl -s $BASE/api/rooms/rnd/contributions -H "Authorization: Bearer $TOKEN" \\
 
 
 // ---------------------------------------------------------------- library
-const BADGE_WORD = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', system: 'Commons' };
+const BADGE_WORD = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', system: 'system' };
 export function libraryPage({ entries, categories, counts, statusCounts = {}, status = null, category = null, q = '', me = null, total = 0, shelfOf = null }) {
   const catName = (id) => (categories.find((c) => c.id === id) || {}).name || id;
   const nav = categories.map((c) => `<li><a href="/library?category=${encodeURIComponent(c.id)}"${c.id === category ? ' aria-current="page"' : ''}>${esc(c.name)}</a> <span class="muted small">${counts[c.id] || 0}</span></li>`).join('');
