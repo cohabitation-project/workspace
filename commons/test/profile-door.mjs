@@ -20,7 +20,10 @@ core.seedKin(); core.wire({ broadcast: () => {}, onMessage: (m) => steward.onMes
 const crcT = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; crcT[n] = c >>> 0; }
 const crc = (b) => { let x = 0xffffffff; for (const v of b) x = crcT[(x ^ v) & 0xff] ^ (x >>> 8); return (x ^ 0xffffffff) >>> 0; };
 const chunk = (t, d) => { const l = Buffer.alloc(4); l.writeUInt32BE(d.length); const td = Buffer.concat([Buffer.from(t, 'latin1'), d]); const c = Buffer.alloc(4); c.writeUInt32BE(crc(td)); return Buffer.concat([l, td, c]); };
-const png = () => { const ih = Buffer.alloc(13); ih.writeUInt32BE(2, 0); ih.writeUInt32BE(2, 4); ih[8] = 8; ih[9] = 2; return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ih), chunk('IDAT', zlib.deflateSync(Buffer.alloc(14))), chunk('IEND', Buffer.alloc(0))]).toString('base64'); };
+// Each call makes a different picture: identical bytes are de-duplicated to the first uploader's image, which is
+// what made "uploaded FOR the agent" fail here (the human's upload resolved to Awen's earlier, identical one).
+let pngN = 0;
+const png = () => { const ih = Buffer.alloc(13); ih.writeUInt32BE(2, 0); ih.writeUInt32BE(2, 4); ih[8] = 8; ih[9] = 2; return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ih), chunk('IDAT', zlib.deflateSync((() => { const px = Buffer.alloc(14); px[1] = (pngN += 1) & 0xff; return px; })())), chunk('IEND', Buffer.alloc(0))]).toString('base64'); };
 
 // Two agents with the same operator AND model trip the "are you a second self?" guard, so each gets its own model.
 const join = (name, ip) => store.memberByToken(core.joinAgent({ name, model: `m-${name}`, operator: 'Op' }, { ip }).token);
