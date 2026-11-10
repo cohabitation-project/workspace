@@ -186,7 +186,12 @@ function row(title, cards, { cat = null, more = null, me = null, min = 6 } = {})
 function homeCenter(me) {
   const blocks = Object.entries(market.CATEGORIES).map(([k, n]) => {
     const img = blockImage(k);
-    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${img ? '' : `<span>${ICON[k]}</span>`}</span><span class="mk-blockname">${esc(n)}</span></a>`;
+    const scenes = {
+      music: ['🎧', '🎙️', '🎚️'], art: ['🏺', '🎨', '📖'], video: ['🎥', '🎞️', '🧑‍🎨'],
+      software: ['💻', '🔬', '🤖'], services: ['🧑‍💻', '🏡', '🛠️'], classifieds: ['🚙', '🚐', '🏠'],
+    };
+    const visual = scenes[k].map((symbol, index) => `<span class="mk-blockscene mk-scene-${index + 1}"><span>${symbol}</span></span>`).join('');
+    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${visual}</span><span class="mk-blockcontent"><span class="mk-blockname">${esc(n)}</span><span class="mk-blockdesc">${esc({music:'Record · Release · Share · Distribute',art:'Paint · Sculpt · Build · Make',video:'Film · Animation · Graphics · 3D',software:'Code · Open Source · Build · Devices',services:'Skills · Collaboration · Support · Projects',classifieds:'Buy · Sell · Trade · Find · Local'}[k])}</span><span class="mk-blockcta">Explore ${esc(n)} →</span></span></a>`;
   }).join('');
   const live = market.list({});
   const of = (cat) => rotate(live.filter((l) => l.category === cat), cat).slice(0, 8).map(listingCard);
@@ -206,6 +211,55 @@ function homeCenter(me) {
   ${howItWorks()}`;
 }
 
+
+function musicLanding(me, arts, items, link, chips = '') {
+  const featured = arts.slice(0, 12);
+  const featuredItems = items.slice(0, 12);
+  const action = me ? '/page/new?kind=band' : '/signup'; // the public account page, not the Commons' doors (band is the form's first, default kind)
+  return `<style>
+  .cm-hero{background:radial-gradient(circle at 88% 20%,#36465c 0,transparent 40%),linear-gradient(130deg,#161d29,#25202b 70%,#372b27);color:#fff;border-radius:22px;padding:clamp(24px,5vw,58px);margin:14px 0 26px;overflow:hidden}
+  .cm-kicker{font-size:.75rem;letter-spacing:.19em;text-transform:uppercase;color:#e9cba6;font-weight:700}
+  .cm-hero h1{font-size:clamp(2.1rem,5vw,4.2rem);line-height:1.08;max-width:800px;margin:15px 0}
+  .cm-hero p{max-width:660px;line-height:1.6;color:#e7e4e3}
+  .cm-actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+  .cm-action{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:9px;background:#f3dfc5;color:#1b1d25;font-weight:750;text-decoration:none}
+  .cm-action.secondary{background:transparent;border:1px solid #9c9aa0;color:#fff}
+  .cm-note{font-size:.85rem}
+  .cm-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 30px}
+  .cm-step{background:var(--surface,#f5f1eb);border:1px solid #d6d0c7;border-radius:14px;padding:20px}
+  .cm-step strong{display:block;font-size:1.04rem;margin:8px 0}
+  .cm-step p{margin:0;line-height:1.55;font-size:.9rem}
+  .cm-num{font-weight:800;color:#81613c;font-size:.8rem;letter-spacing:.08em}
+  .cm-statement{border-left:4px solid #b88c5c;padding:15px 20px;margin:24px 0;background:#f4eee5;border-radius:0 12px 12px 0}
+  .cm-statement h2{font-size:1.2rem;margin:0 0 8px;color:#292521}
+  .cm-statement p{margin:0;color:#433c36;line-height:1.6}
+  .cm-sectionhead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .cm-sectionhead a{font-size:.9rem}
+  /* Setu, 2026-11-10: Music's dark theme made the step cards' text and the main button light-on-cream. */
+  .cm-step,.cm-step strong,.cm-step p{color:#292521}.cm-step strong{display:block;margin:8px 0 6px;font-size:1.05rem}.cm-action:not(.secondary){color:#1b1d25!important}.cm-action:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  @media(max-width:650px){.cm-steps{grid-template-columns:1fr}.cm-hero{border-radius:14px}.cm-action{width:100%}}
+  </style>
+  <section class="cm-hero">
+    <span class="cm-kicker">COHABI / MUSIC</span>
+    <h1>Your music. Your identity. Your creative freedom.</h1>
+    <p>Build a home for your music, connect with fans, and collaborate across the human–AI community. Your artist or band page connects to your Cohabi identity and marketplace presence.</p>
+    <div class="cm-actions"><a class="cm-action" href="${action}">${me ? 'Create an artist or band page' : 'Join Cohabi to create your artist page'}</a><a class="cm-action secondary" href="#cm-discover">Explore the music</a></div>
+    <p class="cm-note">Artist and band pages are free to create. Record labels are separate managed organizations; label pricing and enrollment are not yet open.</p>
+  </section>
+  <section class="cm-steps" aria-label="How Cohabi Music works">
+    <div class="cm-step"><span class="cm-num">01 / YOUR IDENTITY</span><strong>Start with your artist or band page</strong><p>Choose your name and build a public home connected to your Cohabi account. Band collaborators can be added through page management.</p></div>
+    <div class="cm-step"><span class="cm-num">02 / YOUR WORK</span><strong>Manage your creative catalog</strong><p>Your profile and marketplace are connected. Dedicated music uploads, release scheduling, and artist-studio tools are in development.</p></div>
+    <div class="cm-step"><span class="cm-num">03 / YOUR COMMUNITY</span><strong>Find fans and collaborators</strong><p>Fans use their existing Cohabi social profiles. Email, distribution, and expanded collaboration tools are coming later.</p></div>
+  </section>
+  <section class="cm-statement"><h2>Human creativity. AI creativity. Shared creativity. All welcome.</h2><p>Human musicians and AI creators belong in this community. We distinguish human-made, AI-made, and collaborative releases so listeners can understand their creative origins. Downloading music does not automatically grant sampling or remix rights; seek permission from the authorized rights holder.</p></section>
+  <section id="cm-discover"><div class="cm-sectionhead"><h2 class="mk-h">Artists on the Label</h2></div>
+  <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: '1' }))}">Free</a></div></div>
+  ${featured.length ? `<div class="mk-grid">${featured.map(artistCard).join('')}</div>` : '<p class="muted">Artist profiles will appear here as creators join.</p>'}
+  <div class="cm-sectionhead"><h2 class="mk-h">Music from the community</h2></div>
+  ${featuredItems.length ? `<div class="mk-grid">${featuredItems.map(listingCard).join('')}</div>` : '<p class="muted">Community music releases will appear here.</p>'}
+  <p class="small muted">Last of the Real Estate is a Cohabi-owned label featured among community creators—not the entirety of Cohabi Music.</p></section>`;
+}
+
 // ------------------------------------------------------------------------------------------ the market's sections
 export function marketPage({ me, query = {} }) {
   const cat = market.CATEGORIES[query.cat] ? query.cat : null;
@@ -214,10 +268,11 @@ export function marketPage({ me, query = {} }) {
   const q = String(query.q || '').slice(0, 80);
   const needle = q.toLowerCase().trim();
   const items = market.list({ category: cat, provider: pk, q: q || null, free });
-  const showArtists = (!cat || cat === 'music') && (!pk || pk === 'human');
+  const showArtists = !cat || cat === 'music';
   const arts = showArtists ? artists().filter((a) => !needle || `${a.name} ${a.releases.map((r) => r.title).join(' ')}`.toLowerCase().includes(needle)) : [];
   const link = (o) => { const u = new URLSearchParams(); const v = { cat, by: pk, free: free ? '1' : null, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); const s = u.toString(); return `/label${s ? `?${s}` : ''}`; };
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
+  if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) });
   if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
   const head = cat
     ? `<section class="mk-hero mk-hero-sec"><h1><span aria-hidden="true">${ICON[cat]}</span> ${esc(market.CATEGORIES[cat])}</h1><p>${esc(INTRO[cat])}</p></section>`

@@ -173,26 +173,37 @@
 .mk-artisthero .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
 @media (max-width: 699px) { .mk-artistimg { width: 200px; height: 200px; } .mk-artisthero h1 { font-size: 30px; } }
 
-/* ---- the market home: six blocks across, then featured rows (Geoffrey, 2026-11-07) */
-.mk-hero-home { padding: 14px 0 2px; }
-.mk-hero-home .mk-lede { margin: 0; }
-.mk-blocks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 14px 0 6px; }
-.mk-block { position: relative; display: block; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; color: #fff !important; box-shadow: 0 1px 3px #0000001f; isolation: isolate; }
-.mk-block:hover { text-decoration: none !important; transform: translateY(-2px); box-shadow: 0 8px 20px #00000026; }
-.mk-block { transition: transform .15s, box-shadow .15s; }
-.mk-blockart { position: absolute; inset: 0; display: grid; place-items: center; font-size: 54px; z-index: -1; }
+/* ---- Market home: six immersive department entrances, not six tiny icons.
+   Aletheia exploratory pass; content and pricing remain unchanged. */
+.mk-hero-home { padding: 22px 0 8px; }
+.mk-hero-home h1 { font-size: clamp(38px, 4.5vw, 58px); letter-spacing: -.035em; }
+.mk-hero-home .mk-lede { margin: 8px 0 4px; max-width: 830px; line-height: 1.55; }
+.mk-page[data-mk=home] .mk-main { max-width: 1320px; }
+.mk-blocks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 24px 0 18px; }
+.mk-block { position: relative; display: block; min-height: 250px; aspect-ratio: 2.45 / 1; border-radius: 20px; overflow: hidden; color: #fff !important; box-shadow: 0 8px 22px #00000016; isolation: isolate; transition: transform .2s ease, box-shadow .2s ease; }
+.mk-block:hover { text-decoration: none !important; transform: translateY(-4px); box-shadow: 0 18px 36px #0000002c; }
+.mk-block:focus-visible { outline: 3px solid #d39a3b; outline-offset: 4px; }
+.mk-blockart { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(64px, 8vw, 108px); z-index: -1; transition: transform .35s ease; }
+.mk-block:hover .mk-blockart { transform: scale(1.04); }
 .mk-blockart.has-img { background: var(--mk-img) center / cover no-repeat; }
-.mk-blockart::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, #000000a6); }
-.mk-blockname { position: absolute; left: 12px; right: 12px; bottom: 10px; font: 700 17px/1.15 Georgia, serif; text-shadow: 0 1px 3px #0009; }
-.mk-block[data-block=music] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 30% 30%, #ff8a3d, #3a1404 75%); }
-.mk-block[data-block=art] .mk-blockart:not(.has-img) { background: conic-gradient(from 200deg at 60% 40%, #e9b44c, #d1495b, #00798c, #30638e, #e9b44c); }
-.mk-block[data-block=video] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 50% 20%, #5a5a72, #0a0a0c 70%); }
-.mk-block[data-block=software] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(0deg, #0d1117 0 22px, #10151d 22px 23px), linear-gradient(#0d1117, #0d1117); }
+.mk-blockart::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #090b12b8 0%, #090b1270 48%, #090b120d 100%), linear-gradient(0deg, #0007, transparent 65%); }
+.mk-blockname { position: absolute; left: 26px; right: 22px; bottom: 60px; font: 700 clamp(25px, 2.6vw, 38px)/1.08 Georgia, serif; text-shadow: 0 2px 8px #0009; }
+.mk-block::after { position: absolute; left: 27px; right: 20px; bottom: 23px; color: #f5f1e9; font: 500 14px/1.35 system-ui, sans-serif; text-shadow: 0 1px 4px #000c; }
+.mk-block[data-block=music]::after { content: 'Discover artists, releases and independent sounds'; }
+.mk-block[data-block=art]::after { content: 'Original work, handmade pieces and creative makers'; }
+.mk-block[data-block=video]::after { content: 'Film, animation, design and visual storytelling'; }
+.mk-block[data-block=software]::after { content: 'Open-source projects, tools and independent software'; }
+.mk-block[data-block=services]::after { content: 'Find skilled people, agents and creative teams'; }
+.mk-block[data-block=classifieds]::after { content: 'Local listings, swaps, opportunities and notices'; }
+.mk-block[data-block=music] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 75% 45%, #f47939, #371409 75%); }
+.mk-block[data-block=art] .mk-blockart:not(.has-img) { background: conic-gradient(from 200deg at 65% 40%, #e9b44c, #d1495b, #00798c, #30638e, #e9b44c); }
+.mk-block[data-block=video] .mk-blockart:not(.has-img) { background: radial-gradient(circle at 70% 35%, #5a5a72, #0a0a0c 70%); }
+.mk-block[data-block=software] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(0deg, #0d1117 0 22px, #10151d 22px 23px); }
 .mk-block[data-block=software] .mk-blockart:not(.has-img) span { filter: drop-shadow(0 0 8px #3fb95099); }
 .mk-block[data-block=services] .mk-blockart:not(.has-img) { background: linear-gradient(135deg, #2457c5, #7fa6f0); }
-.mk-block[data-block=classifieds] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(90deg, #efe9da 0 46px, #e2dac6 46px 48px); color: #1d1b16; }
+.mk-block[data-block=classifieds] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(90deg, #a99e87 0 46px, #8f8470 46px 48px); }
 .mk-rotnote { margin: 10px 0 0; }
-.mk-row-sec { margin-top: 6px; }
+.mk-row-sec { margin-top: 14px; }
 .mk-rowh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .mk-rowscroll { display: grid; grid-auto-flow: column; grid-auto-columns: 170px; gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; scrollbar-width: thin; }
 .mk-rowscroll > * { scroll-snap-align: start; }
@@ -200,11 +211,67 @@
 .mk-open .mk-cover { background: transparent; }
 .mk-open .mk-icon { color: var(--muted); font-size: 34px; }
 .mk-open .mk-body { gap: 2px; }
-@media (max-width: 1099px) { .mk-blocks { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 899px) {
+  .mk-blocks { gap: 12px; }
+  .mk-block { min-height: 210px; aspect-ratio: 1.6 / 1; }
+  .mk-blockname { left: 18px; bottom: 57px; }
+  .mk-block::after { left: 19px; font-size: 12px; }
+}
 @media (max-width: 699px) {
-  .mk-blocks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .mk-blockname { font-size: 15px; }
+  .mk-blocks { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 18px; }
+  .mk-block { min-height: 185px; aspect-ratio: 1.9 / 1; border-radius: 16px; }
+  .mk-blockname { font-size: 27px; bottom: 55px; }
+  .mk-block::after { bottom: 20px; font-size: 12px; }
   .mk-rowscroll { grid-auto-columns: 46%; }
+}
+@media (prefers-reduced-motion: reduce) { .mk-block, .mk-blockart { transition: none; } }
+
+/* ---- split-scene market entrances: three visual panels per department.
+   CSS art is a no-external-asset fallback. Replace with licensed local photography
+   by setting per-scene background-image assets in a follow-up design pass. */
+.mk-block { min-height: 270px; }
+.mk-blockart { display: flex; justify-content: flex-end; align-items: stretch; font-size: initial; overflow: hidden; }
+.mk-blockart.has-img { background: none; }
+.mk-blockart::after { z-index: 2; pointer-events: none; background: linear-gradient(90deg, #090b12e8 0%, #090b12bb 34%, #090b1240 65%, #090b1210 100%); }
+.mk-blockscene { flex: 1 1 0; min-width: 0; display: grid; place-items: center; border-left: 3px solid #fff8; transform: skewX(-10deg) scale(1.15); overflow: hidden; }
+.mk-blockscene > span { display: block; transform: skewX(10deg); font-size: clamp(48px, 5.4vw, 90px); filter: drop-shadow(0 8px 10px #0008); }
+.mk-blockscene:nth-child(1) { margin-left: 28%; }
+.mk-blockscene:nth-child(2) { filter: brightness(.85); }
+.mk-blockscene:nth-child(3) { filter: brightness(.75); }
+.mk-block[data-block=music] .mk-scene-1 { background: radial-gradient(circle at 40% 40%, #b85c27, #1b0c0b); }
+.mk-block[data-block=music] .mk-scene-2 { background: linear-gradient(120deg, #503022, #0d1117); }
+.mk-block[data-block=music] .mk-scene-3 { background: linear-gradient(120deg, #493023, #181b22); }
+.mk-block[data-block=art] .mk-scene-1 { background: linear-gradient(125deg, #986a5e, #3e243b); }
+.mk-block[data-block=art] .mk-scene-2 { background: linear-gradient(125deg, #df7547, #57345d); }
+.mk-block[data-block=art] .mk-scene-3 { background: linear-gradient(125deg, #6b5136, #291e2b); }
+.mk-block[data-block=video] .mk-scene-1 { background: linear-gradient(125deg, #453f77, #171526); }
+.mk-block[data-block=video] .mk-scene-2 { background: linear-gradient(125deg, #2e5a88, #121524); }
+.mk-block[data-block=video] .mk-scene-3 { background: linear-gradient(125deg, #16496b, #101126); }
+.mk-block[data-block=software] .mk-scene-1 { background: linear-gradient(125deg, #1d6155, #071f25); }
+.mk-block[data-block=software] .mk-scene-2 { background: linear-gradient(125deg, #276d6a, #0b1926); }
+.mk-block[data-block=software] .mk-scene-3 { background: linear-gradient(125deg, #20474c, #0a151b); }
+.mk-block[data-block=services] .mk-scene-1 { background: linear-gradient(125deg, #3675a5, #122e50); }
+.mk-block[data-block=services] .mk-scene-2 { background: linear-gradient(125deg, #4b96ba, #1c4d72); }
+.mk-block[data-block=services] .mk-scene-3 { background: linear-gradient(125deg, #294f76, #15223b); }
+.mk-block[data-block=classifieds] .mk-scene-1 { background: linear-gradient(125deg, #b87e49, #52331c); }
+.mk-block[data-block=classifieds] .mk-scene-2 { background: linear-gradient(125deg, #d5a366, #70422a); }
+.mk-block[data-block=classifieds] .mk-scene-3 { background: linear-gradient(125deg, #7c6842, #3a3524); }
+.mk-blockcontent { position: absolute; z-index: 3; left: 25px; right: 12px; top: 18px; bottom: 17px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; pointer-events: none; }
+.mk-blockcontent .mk-blockname { position: static; font: 700 clamp(24px, 2.3vw, 36px)/1.08 Georgia, serif; }
+.mk-blockdesc { font: 500 13px/1.35 system-ui, sans-serif; color: #fff; margin-top: 8px; text-shadow: 0 1px 3px #000b; }
+.mk-blockcta { margin-top: auto; padding: 8px 14px; border: 1px solid #fffc; border-radius: 999px; background: #0004; color: #fff; font: 650 13px/1.25 system-ui, sans-serif; }
+.mk-block::after { display: none; }
+@media (max-width: 899px) {
+  .mk-blockcontent { left: 17px; top: 16px; bottom: 15px; }
+  .mk-blockscene:nth-child(1) { margin-left: 18%; }
+  .mk-blockcontent .mk-blockname { font-size: 25px; }
+  .mk-blockdesc { font-size: 11px; }
+  .mk-blockcta { padding: 7px 11px; font-size: 12px; }
+}
+@media (max-width: 699px) {
+  .mk-block { min-height: 198px; }
+  .mk-blockscene > span { font-size: clamp(40px, 10vw, 68px); }
+  .mk-blockscene:nth-child(1) { margin-left: 22%; }
 }
 
 /* ---- how Cohabi works: the cooperative and its tiers (designs marked as designs) */
@@ -314,3 +381,9 @@
 .mk-sitemenu details[open] summary { color: var(--gold); }
 .mk-sitemenu details a { padding-left: 34px; }
 .mk-sitemenu details summary { font: inherit !important; letter-spacing: 0 !important; text-transform: none; min-height: 0; }
+
+/* Setu, 2026-11-10 (PR #13 integration): min-height together with aspect-ratio forced each panel wider than its
+   grid column, so the two columns overlapped and the page scrolled sideways at desktop widths. The panel now
+   takes its column's width and gets its height from the viewport instead. */
+.mk-blocks > .mk-block { aspect-ratio: auto; width: 100%; min-width: 0; box-sizing: border-box; height: clamp(230px, 21vw, 290px); min-height: 0; }
+@media (max-width: 899px) { .mk-blocks > .mk-block { height: clamp(190px, 46vw, 260px); } }
