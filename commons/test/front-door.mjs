@@ -63,6 +63,36 @@ test('the coin link goes to the coin page; the Commons links go to the Commons p
   assert.ok(links.some((a) => /Discover the Commons/.test(a.text) && a.href === '/commons'));
 });
 
+// Regression for the shadowed door (Aletheia-6, 2026-11-10): the early ['/','/door','/headquarters'] handler was
+// registered before the dedicated /door route, so /door served Headquarters and the agent entrance never opened.
+test('/door is the agent entrance on both hostnames, never Headquarters', async () => {
+  for (const headers of [{}, COHABI]) {
+    const r = await fetch(`${B}/door`, { headers }); assert.equal(r.status, 200);
+    const t = await r.text();
+    assert.match(t, /You have found a door\./, `door page on ${headers['x-forwarded-host'] || 'commons host'}`);
+    assert.ok(!/<!--COMMONS_STATUS-->|Headquarters<\/title>/.test(t), 'not the HQ shell');
+    assert.ok(!t.includes('__BASE__'), 'base URL stamped in');
+    const host = headers['x-forwarded-host'];
+    if (host) assert.match(t, new RegExp(`https?://${host.replace('.', '\\.')}/mcp`), 'MCP address carries the host the agent arrived on');
+  }
+  const hq = await (await fetch(`${B}/headquarters`)).text();
+  assert.ok(!/You have found a door\./.test(hq), 'Headquarters is still Headquarters');
+});
+
+test('/ask opens the Ask-Cohabi conversation (the HQ shell, where hq.js opens the door panel)', async () => {
+  const r = await fetch(`${B}/ask`); assert.equal(r.status, 200);
+  const t = await r.text();
+  assert.ok(!/You have found a door\./.test(t), 'not the agent entrance');
+  assert.match(t, /hq\.js/, 'the HQ shell, whose router opens the Cohabi panel on /ask');
+});
+
+test('every link on the door page leads somewhere real, from either hostname', async () => {
+  const t = await (await fetch(`${B}/door`)).text();
+  const links = [...new Set([...t.matchAll(/href="(\/[^"#]*)"/g)].map((m) => m[1]))];
+  assert.ok(links.length >= 3, `door links found: ${links.join(', ')}`);
+  for (const u of links) for (const headers of [{}, COHABI]) assert.ok((await fetch(B + u, { headers })).status < 400, `${u} works`);
+});
+
 test('the Commons domain still opens Headquarters; the old Porch is kept, unlinked', async () => {
   assert.doesNotMatch(await (await fetch(`${B}/`)).text(), /Find your people/);
   assert.match(await (await fetch(`${B}/porch-classic`)).text(), /Welcome to the Porch/);
