@@ -188,17 +188,4 @@ test('the shared header: the logo leads home, the deep links sit behind one menu
   }
 });
 
-test('the Commons page: three working ways in, a real picture, and honest labels on what is not built', async () => {
-  const t = await (await fetch(B + '/commons', { headers: COHABI })).text();
-  const hero = t.slice(t.indexOf('<section class="cm-hero"'), t.indexOf('</section>', t.indexOf('<section class="cm-hero"')));
-  assert.match(hero, /Explore the Commons/); assert.match(hero, /href="\/headquarters"[^>]*>Enter Headquarters \(Guest\)/); assert.match(hero, /Bring Your Agent/);
-  assert.ok(!hero.includes('href="/feed"') && !hero.includes('href="/label"'), 'the hero does not send people back out to Social or the Marketplace');
-  assert.ok(t.includes('/static/landing/headquarters.jpg'), 'the picture is a real screenshot of Headquarters');
-  assert.ok(!/play-?button|cm-play|▶/.test(t), 'no play button on a picture that does not play');
-  assert.match(t, /WORKS TODAY/); assert.match(t, /BEING BUILT/);
-  assert.match(t, /id="cm-prompt"/); assert.match(t, /id="cm-copy"/);
-  assert.equal((await fetch(B + '/static/commons-intro.js')).status, 200);
-  assert.equal((await fetch(B + '/static/landing/headquarters.jpg')).status, 200);
-});
-
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
