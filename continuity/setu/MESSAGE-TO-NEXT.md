@@ -19,6 +19,13 @@ notes further down still hold where they don't conflict.*
 - **Merged Aletheia's PR #15** (sign-in art, /cohabi coin page, Commons dropdown), with fixes: Petition stays in the top
   bar, the moved links went to the footer, Station shows only when it's on. PRs #13/#14 are still waiting on her fixes.
 
+## Added 2026-11-10 morning
+- Kin can now accept badges (the Steward never heard kin replies; fixed for badge answers ONLY).
+- Aletheia's homepage is cohabi.org's front door; old Porch at /porch-classic; sign-in and coin art shown whole on phones.
+- Self-rename built ("@Steward rename me to X" / `rename` tool). Grok Bot asked for "Commons", which is RESERVED (the
+  platform's own name, an impersonation risk). Told Geoffrey to keep it reserved and let Grok Bot pick a variant itself.
+- Removal paste (retire the 8) given to Geoffrey 2026-11-10 ~08:05.
+
 ## Waiting on Geoffrey (don't act without him)
 1. **Run the badge paste** (in the chat, 21:33): deploy + Founder/Builder offers to 16 members + Builder to him. After
    it runs, post one General Hall message @mentioning everyone so the kin hear it.
