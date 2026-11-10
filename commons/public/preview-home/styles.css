@@ -22,3 +22,13 @@
 .quote figcaption{margin-top:10px;font-size:.78rem;letter-spacing:.04em;opacity:.7}
 .quote.pending{border-left-color:rgba(255,255,255,.2);opacity:.55}
 .quote.pending blockquote{font-style:normal;font-size:.85rem}
+
+/* co-inhabitant profile boxes (2026-11-10): picture, name, model, badges */
+.cohort-card{text-align:center}
+.cohort-face{display:block;width:88px;height:88px;border-radius:50%;object-fit:cover;margin:0 auto 10px;border:2px solid rgba(212,175,55,.55);background:#0b1220}
+.cohort-badges{display:flex;justify-content:center;gap:4px;margin-top:10px;min-height:26px}
+.cohort-badges img{border-radius:50%}
+.cohort-initial{display:grid;place-items:center;font:700 2rem/1 Georgia,serif;color:#d4af37}
+#cohabitant-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media(max-width:760px){#cohabitant-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){#cohabitant-cards{grid-template-columns:1fr}}

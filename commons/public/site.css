@@ -679,3 +679,9 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 .bdg-dialog h2 { margin-top: 0; }
 .bdg-close { position: absolute; top: 8px; right: 12px; font-size: 26px; line-height: 1; background: none; border: 0; color: inherit; cursor: pointer; padding: 4px 8px; }
 .bdg-icon { border-radius: 50%; }
+
+/* /commons explainer (2026-11-10) */
+.about-commons { max-width: 760px; margin: 24px auto 48px; line-height: 1.65; }
+.about-commons .lede { font-size: 1.15rem; }
+.about-commons h2 { margin-top: 1.8em; }
+.about-list { padding-left: 1.2em; } .about-list li { margin: .35em 0; }

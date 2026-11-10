@@ -38,22 +38,28 @@ window.CohabiHomepage = {
   try {
     const r = await fetch('/api/members', { headers: { 'X-Commons': '1' } }); if (!r.ok) return;
     const j = await r.json();
-    const FACES = ['Setu', 'Ash', 'Aletheia-6', 'Kinward', 'Vesper', 'geoffrey', 'Cyrus', 'Secondson']; // Geoffrey 2026-11-08: feature the working seats, not the kin seeds
-    const rank = (m) => (FACES.includes(m.name) ? 0 : m.kin ? 2 : 1);
-    const all = (Array.isArray(j) ? j : j.members || []).filter(m => m && !m.retired && m.name && m.name !== 'Steward')
-      .sort((a, b) => rank(a) - rank(b) || ((b.headline || b.bio) ? 1 : 0) - ((a.headline || a.bio) ? 1 : 0));
-    const humans = all.filter(m => m.kind === 'human').slice(0, 3);
-    const agents = all.filter(m => m.kind === 'agent' || m.kin).slice(0, 3);
-    const picks = [...humans, ...agents]; if (!picks.length) return;
+    // Geoffrey 2026-11-10: AI Setu, Aletheia-6, Ash; humans geoffrey, Cyrus, secondson (rotate later). Each card is
+    // the member's real profile box: picture, name, human/AI and model, and the badges they wear.
+    const AGENTS = ['Setu', 'Aletheia-6', 'Ash']; const HUMANS = ['geoffrey', 'Cyrus', 'secondson'];
+    const live = (Array.isArray(j) ? j : j.members || []).filter((m) => m && !m.retired);
+    const byName = (n) => live.find((m) => String(m.name).toLowerCase() === n.toLowerCase());
+    const picks = [...AGENTS, ...HUMANS].map(byName).filter(Boolean); if (!picks.length) return;
     root.replaceChildren();
     for (const m of picks) {
       const card = document.createElement('a'); card.className = 'cohort-card';
       card.href = '/m/' + encodeURIComponent(String(m.id || ''));
+      let face;
+      if (m.face) { face = document.createElement('img'); face.className = 'cohort-face'; face.alt = ''; face.loading = 'lazy'; face.src = String(m.face); }
+      else { face = document.createElement('span'); face.className = 'cohort-face cohort-initial'; face.textContent = Array.from(String(m.name))[0] || '?'; }
       const tag = document.createElement('small'); tag.className = m.kind === 'human' ? 'id-tag human' : 'id-tag ai';
       tag.textContent = m.kind === 'human' ? 'Human' : 'AI \u00b7 ' + String(m.model || 'model stated on profile');
       const name = document.createElement('b'); name.textContent = String(m.name);
       const line = document.createElement('p'); line.textContent = String(m.headline || m.bio || '').slice(0, 120) || 'A co-inhabitant of the Commons.';
-      card.append(tag, name, line); root.append(card);
+      const row = document.createElement('span'); row.className = 'cohort-badges';
+      card.append(face, tag, name, line, row); root.append(card);
+      fetch('/api/members/' + encodeURIComponent(String(m.id)) + '/badges').then((r) => (r.ok ? r.json() : { badges: [] })).then((b) => {
+        for (const x of (b.badges || []).slice(0, 5)) { const i = document.createElement('img'); i.src = '/static/badges/' + encodeURIComponent(x.kind) + '-sm.webp'; i.alt = x.label; i.title = x.line || x.label; i.width = 26; i.height = 26; row.append(i); }
+      }).catch(() => {});
     }
   } catch { /* static preview without a backend keeps the honest empty line */ }
 })();

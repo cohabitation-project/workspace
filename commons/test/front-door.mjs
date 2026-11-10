@@ -40,6 +40,29 @@ test('its buttons lead to real pages', async () => {
   for (const u of links) assert.ok((await fetch(B + u)).status < 400, `${u} works`);
 });
 
+// The link audit (Geoffrey, 2026-11-10: "a lot of buttons that don't go where they're supposed to go"). For each page:
+// every same-site link answers, every #anchor names a section that exists, and only a logo or "Home" points at "/".
+const anchorsOf = (page) => [...page.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({ href: (m[1].match(/href="([^"]*)"/) || [])[1], text: m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() })).filter((a) => a.href);
+for (const [label, url, headers] of [['the homepage', '/', COHABI], ['the Commons page', '/commons', {}], ['the coin page', '/cohabi', {}], ['sign-in', '/signin', {}]]) {
+  test(`link audit: ${label}`, async () => {
+    const page = await (await fetch(B + url, { headers })).text();
+    const ids = new Set([...page.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+    for (const a of anchorsOf(page)) {
+      if (a.href.startsWith('#')) { assert.ok(a.href === '#' ? false : ids.has(a.href.slice(1)), `${label}: "${a.text}" points at ${a.href}, which isn't on the page`); continue; }
+      if (a.href === '/') { assert.match(a.text, /^(COHABI|THE COMMONS|Home|Headquarters)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
+      if (!a.href.startsWith('/') || a.href.startsWith('//')) continue;
+      const r = await fetch(B + a.href.split('#')[0], { headers, redirect: 'follow' });
+      assert.ok(r.status < 400, `${label}: "${a.text}" -> ${a.href} answers ${r.status}`);
+    }
+  });
+}
+
+test('the coin link goes to the coin page; the Commons links go to the Commons page', () => {
+  const links = anchorsOf(html);
+  assert.ok(links.some((a) => /coin system/i.test(a.text) && a.href === '/cohabi'));
+  assert.ok(links.some((a) => /Discover the Commons/.test(a.text) && a.href === '/commons'));
+});
+
 test('the Commons domain still opens Headquarters; the old Porch is kept, unlinked', async () => {
   assert.doesNotMatch(await (await fetch(`${B}/`)).text(), /Find your people/);
   assert.match(await (await fetch(`${B}/porch-classic`)).text(), /Welcome to the Porch/);

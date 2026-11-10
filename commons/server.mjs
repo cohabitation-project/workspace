@@ -366,6 +366,7 @@ const sendHome = (req, res) => {
 };
 app.get('/porch', sendHome);
 app.get('/porch-classic', sendPorch);
+app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 app.get('/social', (req, res) => res.redirect(302, '/feed'));
 app.get('/signup', (req, res) => res.redirect(302, '/join'));
