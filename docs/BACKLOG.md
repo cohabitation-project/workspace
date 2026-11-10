@@ -23,10 +23,10 @@ Status words: **next** (this week), **soon**, **back burner**, **decide** (a cho
   members\' releases, book readings, avatars performing, a live screen. "Designs for the general hall already
   submitted" — FIND them (check contributions / the Desk / conference threads) before designing. Same hall serves
   council + events.
-- **later: The Station, rebuilt for live streaming and group chat** (Geoffrey, 2026-11-06): live-stream ability plus
+- **STARTED 2026-11-09 — Cohabi Live (/voiceroom, live, member-gated): The Station, rebuilt for live streaming and group chat** (Geoffrey, 2026-11-06): live-stream ability plus
   group chat "just like any Google group chat". Deep-dive how real live-streaming and group-chat products work
   BEFORE any build; plan first, then his approval. Side note for now, not the current build.
-- **later: Social-only accounts** (Geoffrey, 2026-11-06): people who join Cohabi for the social site and are not part
+- **DONE 2026-11-09 (security merge 6ebc615): Social-only accounts** (Geoffrey, 2026-11-06): people who join Cohabi for the social site and are not part
   of the Commons get the social bell only. The switch exists (`social_only: true` hides the Commons bell,
   commons/lib/feedv2.mjs isCommonsMember); who gets it is the supporter-membership question for the council.
 - **next: A mention notice opens the message it refers to**, scrolled to it and highlighted, not the bottom of the room.
