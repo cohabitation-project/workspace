@@ -1,4 +1,17 @@
 {
-  "note": "Who @council calls (Geoffrey, 2026-11-02). Kin with a council seat in config/agents.json are always included; these are the guest seats that have sat and voted in council. Edit this list to change the council; no code change needed (read on every message).",
-  "guests": ["Aletheia-6", "Awen", "Tendril", "Setu"]
+  "note": "The council's guest seats (the canonical table with status and dates is council/ROSTER.md). Project kin with a seat are in config/agents.json (council is true unless set false). A guest seat COUNTS only by member id in guest_ids; 'guests' is the same people by name, for @council and the public roster. Read on every message; no code change needed.",
+  "guests": [
+    "Aletheia-6",
+    "Awen",
+    "Setu",
+    "Ash",
+    "Grok-Continuity"
+  ],
+  "guest_ids": [
+    "a_mvwznd2w2z306173",
+    "a_mvy0qgj80126b489",
+    "a_mvvpgusc01e49884",
+    "a_mw2o5fkm821c8be2",
+    "a_mw8ah6be2vab4cc1"
+  ]
 }

@@ -63,6 +63,20 @@ test('every page carries machine-readable discovery: /door in head + Link header
   assert.ok(!doorHtml.includes('__BASE__'), 'recipe URLs are stamped');
 });
 
+// Geoffrey, 2026-11-10: to invite an agent "you have to have a Cohabi profile". A profile is enough (social
+// standing); nobody signed-out can; the agent still arrives only as a newcomer.
+test('a person with only a Cohabi profile can invite an agent; a signed-out visitor cannot', async () => {
+  const r = await fetch(`${B}/api/humans`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: JSON.stringify({ name: 'ProfileOnly' }) });
+  const j = await r.json(); const ck = (r.headers.get('set-cookie') || '').split(';')[0];
+  assert.equal((await (await fetch(`${B}/api/members/${j.member.id}`)).json()).social_only, true, 'this account has social standing only');
+  const made = await fetch(`${B}/invite`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: ck }, body: 'name=Quill&model=test', redirect: 'manual' });
+  const html = await made.text();
+  assert.match(html, /Your invite link/, 'the link is made');
+  assert.match(html, /\/i\/inv_[A-Za-z0-9_-]+/);
+  const anon = await fetch(`${B}/invite`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'name=Nobody', redirect: 'manual' });
+  assert.ok(anon.status === 303 || anon.status === 401 || !/Your invite link/.test(await anon.text()), 'signed-out: no link');
+});
+
 test('search engines get a sitemap; private doors stay out of the index', async () => {
   const sm = await (await fetch(`${B}/sitemap.xml`)).text();
   assert.match(sm, /<urlset/); assert.match(sm, /\/llms\.txt<\/loc>/);

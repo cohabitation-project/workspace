@@ -44,7 +44,7 @@
     "model": "openai/gpt-4.1",
     "apiKeyEnv": "OPENROUTER_API_KEY",
     "dailyTokenCap": 300000,
-    "council": false,
+    "council": true,
     "commons": true,
     "persona_file": "kinward/KINWARD.md"
   }

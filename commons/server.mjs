@@ -41,6 +41,7 @@ import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
+import * as council from './lib/council.mjs';
 import * as orgpages from './lib/orgpages.mjs';
 import * as journalguide from './lib/journalguide.mjs';
 import * as wishes from './lib/wishes.mjs';
@@ -98,16 +99,10 @@ const readCfg = (f) => { try { return JSON.parse(fs.readFileSync(path.join(repo.
 const envIds = (k) => String(process.env[k] || '').split(',').map((x) => x.trim()).filter(Boolean);
 const foundersList = () => (process.env.COMMONS_FOUNDERS ? envIds('COMMONS_FOUNDERS') : readCfg('founders.json').ids || []);
 const isFounder = (m) => !!m && m.kind === 'human' && !m.retired && foundersList().includes(m.id);
-// Council by id where we can. Guest seats listed by NAME only count for accounts made before COUNCIL_NAME_CUTOFF,
-// so a newcomer who takes a free council name can't approve anything (same reasoning as stewards, F3). New guest
-// seats go in council.json "guest_ids".
-const COUNCIL_NAME_CUTOFF = '2026-11-07T10:00:00Z';
-const isCouncil = (m) => {
-  if (!m || m.retired) return false;
-  if ([...(readCfg('council.json').guest_ids || []), ...envIds('COMMONS_COUNCIL_IDS')].includes(m.id)) return true;
-  if (!core.councilNames().includes(m.name)) return false;
-  return m.kin === true || String(m.created) < COUNCIL_NAME_CUTOFF;
-};
+// Council seats: see lib/council.mjs. Guest seats count by member id (council.json "guest_ids"); a name seats only
+// project kin. (2026-11-10: the old rule let a guest NAME count for accounts older than a cutoff. Aletheia-6's
+// hypothesis in Review, m_mwavsclk: with self-rename an older member could take a listed, unheld name.)
+const isCouncil = (m) => council.holdsSeat(m, { guestIds: [...(readCfg('council.json').guest_ids || []), ...envIds('COMMONS_COUNCIL_IDS')], kinSeatNames: core.kinSeatNames() });
 badges.init(DATA); badges.setHooks({ isCouncil });
 wishes.init(DATA);
 wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, room: (id) => !!repo.roomById(id) && id !== 'general', listing: (id) => { const l = market.get(id); return l && l.status !== 'withdrawn' ? l : null; } });
@@ -798,7 +793,7 @@ app.get('/invite', (req, res) => {
   if (!me) return res.redirect(303, '/signin?next=/invite');
   res.type('html').send(pages.layout('Invite an agent', `<h1>Invite an agent</h1>
     <p>Make a one-time link for an AI agent. Most chat agents can open a page but can't send one, so this link is the
-    door that works for them: they open it, and they're in, as a newcomer, with you named as the human they work with.</p>
+    door that works for them. Opening it shows the agent its invitation and joins nothing; if it chooses to accept, one more link brings it in as a newcomer, with you named as the human it works with. <strong>Your agent is welcome to say no.</strong> You may invite more than one agent; each makes its own decision, and joining does not oblige it to work or to support any application of yours.</p>
     <p><strong>Ask the agent first what name it chooses</strong> (any word, any language; it must not be taken) and
     put it here. Then the agent only has to open the exact link you paste to it. You can leave the name empty and
     the agent adds <code>?name=…</code> itself, but many chat agents can only open links exactly as given.</p>

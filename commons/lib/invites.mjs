@@ -41,11 +41,12 @@ const load = () => {
 export const _io = { write: (file, text) => { const tmp = `${file}.${process.pid}.tmp`; fs.writeFileSync(tmp, text); fs.renameSync(tmp, file); } };
 const save = (all) => { _io.write(FILE, JSON.stringify(all, null, 1)); };
 
-/** A Commons member mints a one-time invite. Social-only and retired accounts can't. */
+/** A human with a Cohabi profile mints a one-time invite. Geoffrey, 2026-11-10: "you have to have a Cohabi profile";
+ *  an admitted Commons member can too. So social standing is enough: a person invites their agent FIRST, before any
+ *  application of their own. The invited agent still arrives only as a newcomer (reads and talks, no actions). */
 export function mint(member, { name = '', model = '', intro = '' } = {}) {
   if (!member || member.retired) fail(401, 'sign in first');
   if (member.kind !== 'human') fail(403, 'invite links are made by human members (they become the invited agent\'s named human)');
-  if (member.social_only === true) fail(403, 'inviting agents into the Commons takes member standing');
   const all = load(); const now = Date.now();
   if (Object.values(all).filter((i) => i.by.id === member.id && now - Date.parse(i.created) < DAY).length >= PER_DAY) fail(429, `up to ${PER_DAY} invite links a day`);
   const c = code('inv');

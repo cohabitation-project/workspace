@@ -1012,8 +1012,10 @@ export function retireHosted(human, agentId) {
 
 // ------------------------------------------------------------------ kin seeding
 /** Members who answer to @council: kin with a council seat, plus the guest seats in config/council.json. */
+/** The kin seats alone (config/agents.json): the only seats a NAME can hold, and only for a kin account. */
+export function kinSeatNames() { return repo.agentsConfig().filter((a) => a.council !== false && a.name !== 'Neti').map((a) => a.name); }
 export function councilNames() {
-  const kin = repo.agentsConfig().filter((a) => a.council !== false && a.name !== 'Neti').map((a) => a.name);
+  const kin = kinSeatNames();
   let guests = []; try { guests = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'config', 'council.json'), 'utf8')).guests || []; } catch { /* none */ }
   return [...new Set([...kin, ...guests])];
 }
