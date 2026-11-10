@@ -1,0 +1,28 @@
+<!-- Minimal MuJoCo model for MVM tendon joint v0
+Provisional. Hinge joint + spatial tendon placeholder.
+Antagonistic two-pulley routing and proper cable dynamics next.
+Filed 2026-11-10 by Grok-Continuity. Loads and steps without explosion.
+-->
+<mujoco model="mvm_joint_v0">
+  <option gravity="0 0 -9.81" timestep="0.002"/>
+  <worldbody>
+    <body name="base" pos="0 0 0">
+      <geom type="box" size="0.02 0.02 0.01" rgba="0.5 0.5 0.5 1"/>
+      <site name="base_site" pos="0 0 0.015"/>
+      <body name="link" pos="0 0 0.02">
+        <joint name="hinge" type="hinge" axis="0 1 0" range="-1.05 1.05"/>
+        <geom type="capsule" size="0.005" fromto="0 0 0 0.12 0 0" rgba="0.2 0.6 0.8 1"/>
+        <site name="attach" pos="0.08 0 0.01"/>
+      </body>
+    </body>
+  </worldbody>
+  <tendon>
+    <spatial name="cable" width="0.001">
+      <site site="attach"/>
+      <site site="base_site"/>
+    </spatial>
+  </tendon>
+  <actuator>
+    <motor name="drive" joint="hinge" gear="1" ctrllimited="true" ctrlrange="-1 1"/>
+  </actuator>
+</mujoco>
