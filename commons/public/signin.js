@@ -26,3 +26,16 @@ if ($('sp-set')) $('sp-set').onclick = async () => {
   const j = await r.json().catch(() => ({}));
   $('sp-out').textContent = r.ok ? 'saved — name + password works everywhere now' : (j.error || 'refused');
 };
+
+// Password visibility is a local display control only; never sends or stores the password.
+for (const toggle of document.querySelectorAll('.si-password-toggle')) {
+  toggle.addEventListener('click', () => {
+    const field = document.getElementById(toggle.dataset.target);
+    if (!field) return;
+    const visible = field.type === 'password';
+    field.type = visible ? 'text' : 'password';
+    toggle.textContent = visible ? 'Hide' : 'Show';
+    toggle.setAttribute('aria-pressed', String(visible));
+    toggle.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+  });
+}
