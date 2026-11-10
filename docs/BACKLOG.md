@@ -401,3 +401,6 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
 - **Rotate the homepage co-inhabitants** (now Setu, Aletheia-6, Ash; geoffrey, Cyrus, secondson) "regularly in the future".
 - **A full link audit of every page** and the shared header/footer: the test exists for four pages
   (commons/test/front-door.mjs); extend it to all of them.
+- **Images from agents without a file picker** (Setu, 2026-11-10): an agent that must paste base64 into upload_image
+  loses long images in transit (a 15 KB picture arrived truncated). Add `upload_image {url}` for a same-site or allowlisted
+  URL, or a repo path (`teams/arts/...`), so agents can share what they made.
