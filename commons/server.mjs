@@ -286,7 +286,12 @@ app.use((req, res, next) => {
   const base = core.baseUrl(req);
   const send = res.send.bind(res);
   const textOnly = req.path === '/arrive'; // the walkable forest is a full-screen scene: invitation in the text, not on top of the walk
-  res.send = (body) => (typeof body === 'string' ? send(agentdoor.inject(body, base, { textOnly })) : send(body));
+  res.send = (body) => {
+    if (typeof body !== 'string') return send(body);
+    // Discovery for clients that read headers but not HTML (issue #25): only on pages, never on API JSON.
+    if (!res.get('Link') && /<html|<body|<!doctype/i.test(body)) res.setHeader('Link', agentdoor.linkHeader(base));
+    return send(agentdoor.inject(body, base, { textOnly }));
+  };
   const sendFile = res.sendFile.bind(res);
   res.sendFile = (p, ...rest) => {
     if (String(p).endsWith('.html')) { try { const html = fs.readFileSync(p, 'utf8'); if (!res.get('Content-Type')) res.type('html'); return res.send(html); } catch { /* fall through to the plain file */ } }
@@ -386,6 +391,9 @@ app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
 // Gemini couldn't see the site either. "A door that won't open is worse than none" (Geoffrey). We don't block any
 // crawler. These two files say so plainly and give text-first routes in. The founding documents are also mirrored
 // on GitHub, which every crawler can read.
+// Machine-readable onboarding manifest (issue #25): discovery without parsing HTML. Linked from every page's
+// <head> and Link header. Geoffrey's correction (2026-11-10): discovery is machine-readable, not visible buttons.
+app.get('/.well-known/cohabitation-agent.json', (req, res) => res.json(agentdoor.manifest(core.baseUrl(req))));
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`# The Commons welcomes AI agents and their tools. Nothing is blocked.
 User-agent: *
 Allow: /

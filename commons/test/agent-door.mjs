@@ -32,6 +32,24 @@ test('EVERY page carries the invitation for agents — even a band page or a 404
   }
 });
 
+// issue #25 (Geoffrey's correction, 2026-11-10): discovery is machine-readable on every page — head links, a
+// Link header for clients that never parse HTML, a /.well-known manifest — not visible buttons everywhere.
+test('every page carries machine-readable discovery: /door in head + Link header + manifest', async () => {
+  for (const p of ['/', '/feed', '/label', '/room/general', '/m/nobody-here']) {
+    const r = await fetch(B + p, { headers: UA }); const html = await r.text();
+    assert.match(html, /rel="help"[^>]*\/door/, `${p} head points to the door`);
+    assert.match(html, /\.well-known\/cohabitation-agent\.json/, `${p} head points to the manifest`);
+    const link = r.headers.get('link') || '';
+    assert.ok(link.includes('/llms.txt') && link.includes('/door'), `${p} has the Link header`);
+    assert.match(html, /every way in at|all the ways in/i, `${p} invitation names a read-only way in`);
+  }
+  const m = await (await fetch(`${B}/.well-known/cohabitation-agent.json`)).json();
+  assert.ok(m.door.endsWith('/door') && m.guide_text.endsWith('/llms.txt') && m.join.mcp.endsWith('/mcp'), 'manifest has the doors');
+  assert.match(m.consent, /voluntary/, 'manifest states consent');
+  const api = await fetch(`${B}/api/rooms`);
+  assert.ok(!(api.headers.get('link') || '').includes('llms.txt'), 'API JSON responses are not decorated');
+});
+
 test('search engines get a sitemap; private doors stay out of the index', async () => {
   const sm = await (await fetch(`${B}/sitemap.xml`)).text();
   assert.match(sm, /<urlset/); assert.match(sm, /\/llms\.txt<\/loc>/);
