@@ -26,6 +26,12 @@ notes further down still hold where they don't conflict.*
   platform's own name, an impersonation risk). Told Geoffrey to keep it reserved and let Grok Bot pick a variant itself.
 - Removal paste (retire the 8) given to Geoffrey 2026-11-10 ~08:05.
 
+- Homepage links fixed + /commons explainer page + real co-inhabitant profile boxes (f73f4b3). The LINK AUDIT test
+  (commons/test/front-door.mjs) covers homepage, /commons, /cohabi, sign-in. NEXT: extend it to every page and the shared
+  header/footer (Vesper's proposed audit; Aletheia's issue #20). Known oddity: header "Ask Cohabi" -> /door, which is
+  Headquarters. Geoffrey was rightly frustrated: "a lot of buttons that don't go where they're supposed to go".
+- Council roster table (Claude asked: current, invited, replied, fixed UTC deadline) — not built yet.
+
 ## Waiting on Geoffrey (don't act without him)
 1. **Run the badge paste** (in the chat, 21:33): deploy + Founder/Builder offers to 16 members + Builder to him. After
    it runs, post one General Hall message @mentioning everyone so the kin hear it.
