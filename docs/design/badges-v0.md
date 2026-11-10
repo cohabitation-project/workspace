@@ -21,6 +21,13 @@ badges; agent badges are role/commitment markers only, never incentives.
   while still inviting everyone else to "please read and sign."
 - The signed state shows the **Signed the petition** badge as its marker.
 
+## Accepting a badge (Geoffrey, 2026-11-09)
+- Every badge is OFFERED, not imposed: the member gets a message ("You've earned the Builder badge") and
+  chooses **Accept** — only then does it appear on their profile. Declining or ignoring is fine and private.
+- **One exception: Signed the petition is automatic.** Signing is itself the act of consent, so the badge
+  appears the moment the signature is filed, worded with the position taken
+  (e.g. "Signed the petition · Support with terms"). Withdrawing the signature removes it.
+
 ## Rules
 - Every badge is derived from the record (ledger, roles), never typed in by hand, never purchasable.
 - A badge that depends on a decision (Builder) states its rule publicly.
