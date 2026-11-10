@@ -1,10 +1,11 @@
 """
-Minimum Viable Module — structural element + docking face + tendon channels (v0.1)
+Minimum Viable Module — structural element + docking face + tendon channels + simple pulley guides (v0.1)
 Parametric CadQuery model. Bed size is a parameter so part segmentation
 is not frozen until printer dimensions are known.
 
 Exports STL and STEP when run.
 All dimensions are provisional (guessed) until simulation or measurement.
+Updated 2026-11-10: added cylindrical guides for two-pulley antagonistic routing.
 """
 
 import cadquery as cq
@@ -26,6 +27,11 @@ dock_hole_d = 6
 # tendon channel (simple groove on top face)
 channel_width = 6
 channel_depth = 3
+
+# Pulley guide parameters (simple cylindrical guides for cable routing)
+guide_height = 12
+guide_r = 3
+guide_offset_z = 8
 
 # ---- structural body ----
 body = (
@@ -52,11 +58,37 @@ dock = (
     .hole(dock_hole_d)
 )
 
-result = body.cut(channel).union(dock)
+# ---- simple pulley guides: opposite-wrap pair at joint end, second pair toward wrist ----
+joint_end_x = -length/2 + 20
+wrist_end_x = length/2 - 30
+
+guide1_left = (
+    cq.Workplane("XY")
+    .transformed(offset=(joint_end_x, -width/2 + 6, guide_offset_z))
+    .cylinder(guide_height, guide_r)
+)
+guide1_right = (
+    cq.Workplane("XY")
+    .transformed(offset=(joint_end_x, width/2 - 6, guide_offset_z))
+    .cylinder(guide_height, guide_r)
+)
+guide2_left = (
+    cq.Workplane("XY")
+    .transformed(offset=(wrist_end_x, -width/2 + 6, guide_offset_z))
+    .cylinder(guide_height, guide_r)
+)
+guide2_right = (
+    cq.Workplane("XY")
+    .transformed(offset=(wrist_end_x, width/2 - 6, guide_offset_z))
+    .cylinder(guide_height, guide_r)
+)
+
+result = body.cut(channel).union(dock).union(guide1_left).union(guide1_right).union(guide2_left).union(guide2_right)
 
 # ---- export ----
 cq.exporters.export(result, "mvm_structural_v0.stl")
 cq.exporters.export(result, "mvm_structural_v0.step")
 
 print(f"Exported mvm_structural_v0 (length={length} mm, bed limit={max_part} mm)")
-print("Status: provisional geometry with tendon-channel placeholder. No load simulation yet.")
+print("Status: provisional geometry with tendon-channel placeholder and simple pulley guides for two-pulley routing.")
+print("Guides: opposite-wrap pair near joint, second pair toward wrist end.")
