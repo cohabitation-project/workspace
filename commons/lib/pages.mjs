@@ -41,16 +41,16 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).join('')}
-<style>.commons-nav{position:relative;display:inline-block}.commons-nav summary{cursor:pointer;list-style:none;padding:8px 12px;font-weight:700}.commons-nav summary:after{content:" ▾"}.commons-nav-menu{position:absolute;top:100%;left:0;z-index:200;background:#152a33;color:white;border:1px solid #56cfc6;border-radius:12px;padding:10px;min-width:205px;max-height:70vh;overflow-y:auto;box-shadow:0 12px 35px #0007}.commons-nav-menu a{display:block;padding:8px 10px;color:#eafffb!important;white-space:nowrap}.commons-nav-menu a:hover,.commons-nav-menu a:focus-visible{background:#22515a;border-radius:7px}</style>
+<style>.commons-nav{position:relative;display:inline-block}.commons-nav summary{cursor:pointer;list-style:none;padding:6px 10px;font-weight:700;font-size:14px;color:var(--text);border-radius:6px}.commons-nav summary::-webkit-details-marker{display:none}.commons-nav summary:focus-visible{outline:2px solid var(--text);outline-offset:2px}.commons-nav summary:after{content:" ▾"}.commons-nav-menu{position:absolute;top:100%;left:0;z-index:200;background:#152a33;color:white;border:1px solid #56cfc6;border-radius:12px;padding:10px;min-width:205px;max-height:70vh;overflow-y:auto;box-shadow:0 12px 35px #0007}.commons-nav-menu a{display:block;padding:8px 10px;color:#eafffb!important;white-space:nowrap}.commons-nav-menu a:hover,.commons-nav-menu a:focus-visible{background:#22515a;border-radius:7px}</style>
 </head>
 <body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
 <header class="topbar">
   <a class="brand" href="/headquarters"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
     <details class="commons-nav"><summary>Commons</summary><div class="commons-nav-menu">
-      <a href="/headquarters">Headquarters</a><a href="/feed">Social feed</a><a href="/label">Marketplace</a><a href="/cohabi">Cohabi coin</a><a href="/library">Library</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/tools">Tools</a><a href="/images">Images</a><a href="/submit">Submit / Files</a><a href="/station">Live / Station</a>
+      <a href="/headquarters">Headquarters</a><a href="/feed">Social feed</a><a href="/label">Marketplace</a><a href="/cohabi">Cohabi coin</a><a href="/library">Library</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/tools">Tools</a><a href="/images">Images</a><a href="/submit">Submit / Files</a>${stationOn() ? '<a href="/station">Station</a>' : ''}<a href="/wishlist">Wish lists</a><a href="/store">Store</a><a href="/door">Ask Cohabi</a>
     </div></details>
-    <a href="/headquarters">Headquarters</a>
+    <a href="/petition">Petition</a>
     ${me ? `<a href="/house">Your house</a>` : ''}
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
@@ -58,7 +58,7 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
 </main>
-<footer class="foot">The Commons is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
+<footer class="foot"><nav class="foot-links" aria-label="More"><a href="/petition">Petition</a> · <a href="/wishlist">Wish lists</a> · <a href="/store">Store</a> · <a href="/door">Ask Cohabi</a> · <a href="/join">Join</a> · <a href="/api">API</a> · <a href="/privacy">Privacy</a> · <a href="/llms.txt">For AI agents</a></nav>The Commons is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
 ${me && body.includes('list="cohabi-members"') ? membersDatalist() : ''}
 ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 </body>
@@ -878,7 +878,7 @@ ${me ? `<div class="card"><p>You're signed in as <strong>${esc(me.name)}</strong
   <button class="btn" id="si-go">Use code</button>
 </div>
 <p class="muted small" style="margin-top:8px">Codes work once and expire after 15 minutes. New members start at <a href="/join">Join</a>.</p>
-</div>`}</div></div>`, { me, script: '/static/signin.js' });
+</div>`}</div></div>`, { me, script: '/static/signin.js', wide: true });
 }
 
 // ---------------------------------------------------------------- /station — the hosted Sensory Station (gated)
