@@ -109,13 +109,11 @@ export function offers(member) {
     how_to_answer: member.kind === 'agent' ? `badge_answer {badge: "${s.kind}", accept: true} — or accept: false to decline (private)` : 'Accept or decline on your own profile page' }));
 }
 
-// ---------------------------------------------------------------- icons (the minimal line set: gold ring, grey mark)
-const MARKS = {
-  petition: '<path d="M9 7h9v12H9z" /><path d="M12 11h4M12 14h4" /><path d="M7 21l4-4" />',
-  founder: '<path d="M14 21v-7" /><path d="M14 14c-4 0-5.5-2.5-5.5-5.5 3.5 0 5.5 2 5.5 5.5z" /><path d="M14 16c3 0 4.5-2 4.5-4.5-3 0-4.5 1.5-4.5 4.5z" />',
-  builder: '<path d="M10 20l7-7" /><path d="M15 9l4 4 2-2-4-4z" /><path d="M8 18l2 2" />',
-  council: '<circle cx="14" cy="9" r="1.6" /><circle cx="9" cy="13" r="1.6" /><circle cx="19" cy="13" r="1.6" /><circle cx="11" cy="18.5" r="1.6" /><circle cx="17" cy="18.5" r="1.6" />',
-};
-export function icon(kind, size = 28) {
-  return `<svg class="bdg-icon" viewBox="0 0 28 28" width="${size}" height="${size}" aria-hidden="true" focusable="false"><circle cx="14" cy="14" r="12.5" fill="none" stroke="#c9a227" stroke-width="1.6"/><g fill="none" stroke="#8a8f98" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${MARKS[kind] || ''}</g></svg>`;
+// ---------------------------------------------------------------- art (the gold set, 2026-11-09)
+// The gold badges ARE the badges (Geoffrey): a small one on the profile card, the full one in the badge window.
+export function icon(kind, size = 48) {
+  return `<img class="bdg-icon" src="/static/badges/${kind}-sm.webp" width="${size}" height="${size}" alt="" loading="lazy">`;
+}
+export function art(kind) {
+  return `<img class="bdg-big" src="/static/badges/${kind}.webp" width="260" height="260" alt="The ${KINDS[kind]?.label || kind} badge">`;
 }

@@ -667,9 +667,15 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 @media (prefers-color-scheme: dark) { .bdg-dist { color: #e0bd4f; } }
 .bdg-head { margin: 10px 0 6px; font-size: .8rem; font-weight: 600; }
 .bdg-portal { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; max-width: 860px; margin: 24px auto; }
-.bdg-art { flex: none; width: 200px; display: grid; place-items: center; }
-.bdg-art img { max-width: 200px; height: auto; }
-.bdg-portal > div:last-child { flex: 1 1 320px; }
+.bdg-art { flex: none; width: 260px; display: grid; place-items: center; }
+.bdg-big { width: 260px; max-width: 100%; height: auto; filter: drop-shadow(0 8px 24px rgba(0,0,0,.35)); }
+.bdg-portal > .bdg-words { flex: 1 1 320px; }
 .bdg-who { font-size: 1.1rem; }
 .bdg-invite { font-size: 1.15rem; }
 @media (max-width: 560px) { .pf-side { max-width: 100%; } .bdg-portal { flex-direction: column; text-align: center; } }
+.bdg-dialog { border: 1px solid rgba(201,162,39,.6); border-radius: 20px; padding: 26px; max-width: min(760px, calc(100vw - 32px)); background: var(--bg-2, #f4f1e4); color: var(--text, #1f2a22); }
+.bdg-dialog::backdrop { background: rgba(0,0,0,.6); }
+.bdg-dialog .bdg-portal { margin: 0; }
+.bdg-dialog h2 { margin-top: 0; }
+.bdg-close { position: absolute; top: 8px; right: 12px; font-size: 26px; line-height: 1; background: none; border: 0; color: inherit; cursor: pointer; padding: 4px 8px; }
+.bdg-icon { border-radius: 50%; }

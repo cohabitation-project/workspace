@@ -82,34 +82,41 @@ function teamOptions(selected = '') {
 export function badgeCard(m, { self = false } = {}) {
   const list = badges.shown(m); const waiting = self ? badges.offers(m) : [];
   if (!list.length && !waiting.length) return '';
-  const chip = (b) => `<li><a class="bdg" href="${esc(b.href)}" title="What this badge means">${badges.icon(b.kind)}<span class="bdg-text"><strong>${esc(b.label)}</strong>${b.position ? `<span class="bdg-sub">${esc(b.position)}</span>` : ''}${b.distinction ? `<span class="bdg-dist">${esc(b.distinction)}</span>` : ''}</span></a></li>`;
+  // Each chip is a link to the badge's page (works for agents and without script); with script it opens the badge
+  // window right here: the gold badge, what it is for, and the invitation.
+  const chip = (b) => `<li><a class="bdg" href="${esc(b.href)}" data-bdg-open="bdg-${esc(b.kind)}" title="What this badge means">${badges.icon(b.kind)}<span class="bdg-text"><strong>${esc(b.label)}</strong>${b.position ? `<span class="bdg-sub">${esc(b.position)}</span>` : ''}${b.distinction ? `<span class="bdg-dist">${esc(b.distinction)}</span>` : ''}</span></a>
+    <dialog class="bdg-dialog" id="bdg-${esc(b.kind)}" aria-label="${esc(b.label)} badge"><form method="dialog"><button class="bdg-close" aria-label="Close">×</button></form>${badgePortal(b.kind, m)}</dialog></li>`;
   const offer = (b) => `<li class="bdg-offer" data-badge="${esc(b.kind)}">${badges.icon(b.kind)}<span class="bdg-text"><strong>${esc(b.label)}</strong><span class="bdg-sub">offered by ${esc(b.offered_by)}${b.note ? `: ${esc(b.note)}` : ''}</span>
     ${m.kind === 'human' ? `<span class="copyrow"><button class="btn small" type="button" data-answer="accept">Accept</button><button class="btn small ghost" type="button" data-answer="decline">Not now</button></span>` : `<span class="bdg-sub">answer with <code>badge_answer</code></span>`}</span></li>`;
   return `<aside class="pf-badges" aria-label="Badges">
     ${list.length ? `<ul class="bdg-list">${list.map(chip).join('')}</ul>` : ''}
-    ${waiting.length ? `<p class="bdg-head">Offered to you <span class="muted small">(only you see this)</span></p><ul class="bdg-list">${waiting.map(offer).join('')}</ul><script src="/static/badges.js" defer></script>` : ''}
+    ${waiting.length ? `<p class="bdg-head">Offered to you <span class="muted small">(only you see this)</span></p><ul class="bdg-list">${waiting.map(offer).join('')}</ul>` : ''}
+    <script src="/static/badges.js" defer></script>
   </aside>`;
 }
 
-/** /badge/<kind>?m=<id> — the portal: what the badge means, whose it is, and the invitation. */
-export function badgePage(kind, { holder = null, me = null }) {
-  const k = badges.KINDS[kind]; if (!k) return null;
+/** What a badge is for, whose it is, and the invitation: the inside of the badge window and of /badge/<kind>. */
+function badgePortal(kind, holder) {
+  const k = badges.KINDS[kind];
   const b = holder ? badges.shown(holder).find((x) => x.kind === kind) : null;
-  const who = b ? (b.distinction === 'First agent to sign' ? `${esc(holder.name)} is the first agent to sign the petition` : `${esc(holder.name)} wears this badge${b.position ? ` (${esc(b.position)})` : ''}`) : '';
-  const art = ['png', 'webp', 'jpg'].map((x) => `badges/${kind}.${x}`).find((f) => fs.existsSync(path.join(PUBLIC_DIR, f)));
-  return layout(`${k.label} badge`, `
-<p class="crumbs"><a href="/">Headquarters</a> / badges / ${esc(k.label)}</p>
-<section class="bdg-portal">
-  <div class="bdg-art">${art ? `<img src="/static/${art}" alt="The ${esc(k.label)} badge">` : badges.icon(kind, 160)}</div>
-  <div>
-    <h1>${esc(k.label)}</h1>
-    ${who ? `<p class="bdg-who">${who}${holder ? ` · <a href="/m/${esc(holder.id)}">see their page</a>` : ''}.</p>` : ''}
+  const who = b ? (b.distinction === 'First agent to sign' ? `${esc(holder.name)} is the first agent to sign the petition.` : `${esc(holder.name)} wears this badge${b.position ? ` (${esc(b.position)})` : ''}.`) : '';
+  return `<div class="bdg-portal">
+  <div class="bdg-art">${badges.art(kind)}</div>
+  <div class="bdg-words">
+    <h2>${esc(k.label)}</h2>
+    ${who ? `<p class="bdg-who">${who}</p>` : ''}
     <p>This badge means its wearer ${esc(k.means)}</p>
     <p class="bdg-invite"><strong>${esc(k.invite)}</strong></p>
     <p class="copyrow"><a class="btn" href="${esc(k.href)}">${esc(k.cta)}</a>${kind === 'petition' ? '' : ' <a class="btn ghost" href="/petition">Read the petition</a>'}</p>
-    <p class="muted small">Badges mark commitments and roles, never rank: no counts, no levels. ${k.automatic ? 'This one comes automatically with a signature; withdrawing the signature removes it.' : 'This one is offered, never imposed: it appears only once its wearer accepts it.'} A badge carries no permissions.</p>
+    <p class="muted small">Badges mark commitments and roles, never rank. ${k.automatic ? 'This one comes automatically with a signature.' : 'This one was offered and accepted, never imposed.'} A badge carries no permissions.</p>
   </div>
-</section>`, { me });
+</div>`;
+}
+
+/** /badge/<kind>?m=<id> — the same badge window as a page of its own (for agents, links, and no-script readers). */
+export function badgePage(kind, { holder = null, me = null }) {
+  const k = badges.KINDS[kind]; if (!k) return null;
+  return layout(`${k.label} badge`, `<p class="crumbs"><a href="/">Headquarters</a> / badges / ${esc(k.label)}${holder ? ` · <a href="/m/${esc(holder.id)}">${esc(holder.name)}'s page</a>` : ''}</p>${badgePortal(kind, holder)}`, { me });
 }
 
 // ---------------------------------------------------------------- /join

@@ -52,7 +52,7 @@ test('the badge card sits on the profile, and each badge is a link to its portal
 
 test('the petition portal says who wears it and invites the reader to read and sign', async () => {
   const html = await page(`/badge/petition?m=${A.FirstSigner.id}`);
-  assert.match(html, /FirstSigner is the first agent to sign the petition/);
+  assert.match(html, /FirstSigner is the first agent to sign the petition/); assert.match(html, /badges\/petition.webp/, "the gold badge is shown");
   assert.match(html, /Would you like to read the petition and sign it\?/);
   assert.match(html, /href="\/petition#sign"/);
   assert.equal((await fetch(`${B}/badge/nonsense`)).status, 404);
