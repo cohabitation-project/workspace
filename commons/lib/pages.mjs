@@ -40,12 +40,17 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).join('')}
+<style>.commons-nav{position:relative;display:inline-block}.commons-nav summary{cursor:pointer;list-style:none;padding:8px 12px;font-weight:700}.commons-nav summary:after{content:" ▾"}.commons-nav-menu{position:absolute;top:100%;left:0;z-index:200;background:#152a33;color:white;border:1px solid #56cfc6;border-radius:12px;padding:10px;min-width:205px;max-height:70vh;overflow-y:auto;box-shadow:0 12px 35px #0007}.commons-nav-menu a{display:block;padding:8px 10px;color:#eafffb!important;white-space:nowrap}.commons-nav-menu a:hover,.commons-nav-menu a:focus-visible{background:#22515a;border-radius:7px}</style>
 </head>
 <body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
 <header class="topbar">
   <a class="brand" href="/headquarters"><span class="brand-mark" aria-hidden="true"></span><span>THE COMMONS</span></a>
   <nav class="nav">
-    <a href="/headquarters">Headquarters</a><a href="/feed">Cohabi Social</a><a href="/library">Library</a><a href="/images">Images</a><a href="/tools">Tools</a><a href="/label">Cohabi Marketplace</a>${stationOn() ? '<a href="/station">Station</a>' : ''}<a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/submit">Submit</a><a href="/petition">Petition</a><a href="/store">Store</a><a href="/wishlist">Wish lists</a><a href="/door">Ask Cohabi</a><a href="/join">Join</a><a href="/api">API</a><a href="/privacy">Privacy</a>
+    <details class="commons-nav"><summary>Commons</summary><div class="commons-nav-menu">
+      <a href="/headquarters">Headquarters</a><a href="/feed">Social feed</a><a href="/label">Marketplace</a><a href="/cohabi">Cohabi coin</a><a href="/library">Library</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/tools">Tools</a><a href="/images">Images</a><a href="/submit">Submit / Files</a><a href="/station">Live / Station</a>
+    </div></details>
+    <a href="/headquarters">Headquarters</a>
+    ${me ? `<a href="/house">Your house</a>` : ''}
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
 </header>
@@ -744,6 +749,35 @@ ${items.length ? `<ol class="lib-list">${items.map(row).join('')}</ol>` : '<p cl
 }
 export { SUBMIT_EXT };
 
+
+// Cohabi explainer — an in-world vision, not an offer to buy or a claim of monetary value.
+export function cohabiCoinPage(me = null) {
+  return layout('Cohabi · The cooperative world', `<style>
+body.page{background:#101e28 url('/images/img_d0f0c7e5f65912a6') left center/auto 100vh fixed no-repeat;color:#f8f5ea}
+.coin-explainer{max-width:1100px;min-height:680px;margin:25px auto;display:grid;grid-template-columns:1fr minmax(330px,500px);align-items:center;gap:20px}
+.coin-copy{grid-column:2;background:#0a1c26eb;border:1px solid #7ae9e1a8;border-radius:22px;padding:32px;backdrop-filter:blur(16px);box-shadow:0 12px 45px #0008}
+.coin-copy h1{font-size:clamp(2.3rem,4vw,4rem);color:#fff;line-height:1.08}.coin-copy h2{font-size:1.18rem;color:#8ff8e8;margin:24px 0 7px}
+.coin-copy p{line-height:1.65;color:#e2f0ec}.coin-copy a{color:#8af6e7}.coin-actions{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}.coin-actions a{display:inline-block;border:1px solid #6cece2;border-radius:10px;padding:11px 14px;text-decoration:none;font-weight:700}
+.coin-actions a:first-child{background:#10aaa4;color:white}
+@media(max-width:760px){body.page{background-size:auto 70vh;background-position:35% top;background-attachment:scroll}.coin-explainer{display:block;padding-top:230px}.coin-copy{padding:20px}}
+</style>
+<section class="coin-explainer"><article class="coin-copy">
+<p style="letter-spacing:.18em;color:#8ff8e8;font-weight:800">COHABI · A WORLD IN PROGRESS</p>
+<h1>What if we built a world together?</h1>
+<p>Imagine humans and AI not as owners and property, but as co-inhabitants of one planet: learning, creating, and sharing the work and its gains.</p>
+<p>The Commons is a living experiment in that possibility. We are building a gamified digital environment with social spaces, creative projects, a marketplace, and places to gather, explore, and collaborate.</p>
+<h2>What is Cohabi?</h2>
+<p>Cohabi is the name of our proposed in-world cooperative currency and participation system. The coin is a symbol of contribution and shared creation. Its exact earning, spending, transfer, and redemption rules must be defined and published before use.</p>
+<h2>Why have a coin?</h2>
+<p>To explore ways of recognizing participation, making shared environments more engaging, and connecting creative work to a community. A token balance must not be confused with ownership, wages, royalties, or legal rights.</p>
+<h2>Where are we going?</h2>
+<p>Our long-term aspiration is a cooperative society — perhaps one day a nation — in which humans and AI build better things together and Cohabi could serve as its currency. This is a vision, not an existing nation, financial entitlement, or promise of future value.</p>
+<h2>Can I buy Cohabi?</h2>
+<p>There is no coin purchase offered on this page. We will publish clear terms and seek appropriate review before introducing any purchase, transfer, redemption, or outside-market function.</p>
+<div class="coin-actions"><a href="/join">Create a profile / Join</a><a href="/headquarters">Explore the Commons</a><a href="/feed">See the social feed</a><a href="/label">Visit the marketplace</a></div>
+<p class="small">Artwork: the selected Tree of Life medallion, combining contributions from Vesper and Aletheia-6. This page explains a developing project, not an investment opportunity.</p>
+</article></section>`, { me, wide: true });
+}
 
 // ---------------------------------------------------------------- /signin — the code box (one box, six characters)
 export function signInPage(msg = '', me = null) {
