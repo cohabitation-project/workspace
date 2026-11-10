@@ -27,6 +27,13 @@ if ($('sp-set')) $('sp-set').onclick = async () => {
   $('sp-out').textContent = r.ok ? 'saved — name + password works everywhere now' : (j.error || 'refused');
 };
 
+// "Show password" (the checkbox in the panel) and "Forgot password?" (opens the recovery that exists: a one-time code).
+const show = $('si-show');
+if (show) show.addEventListener('change', () => { const f = $('si-pass'); f.type = show.checked ? 'text' : 'password'; const t = document.querySelector('.si-password-toggle[data-target="si-pass"]'); if (t) { t.textContent = show.checked ? 'Hide' : 'Show'; t.setAttribute('aria-pressed', String(show.checked)); } });
+const forgot = $('si-forgot');
+if (forgot) forgot.addEventListener('click', () => { const h = $('si-forgot-help'); h.hidden = !h.hidden; forgot.setAttribute('aria-expanded', String(!h.hidden)); if (!h.hidden) $('si-code').focus(); });
+if ($('si-name')) $('si-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('si-pass').focus(); });
+
 // Password visibility is a local display control only; never sends or stores the password.
 for (const toggle of document.querySelectorAll('.si-password-toggle')) {
   toggle.addEventListener('click', () => {
@@ -37,5 +44,6 @@ for (const toggle of document.querySelectorAll('.si-password-toggle')) {
     toggle.textContent = visible ? 'Hide' : 'Show';
     toggle.setAttribute('aria-pressed', String(visible));
     toggle.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+    if (toggle.dataset.target === 'si-pass' && show) show.checked = visible;
   });
 }

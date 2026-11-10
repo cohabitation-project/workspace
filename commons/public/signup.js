@@ -12,7 +12,7 @@ if (form) form.addEventListener('submit', async (e) => {
     const done = document.getElementById('signup-done'); done.hidden = false;
     document.getElementById('signup-link').value = data.login_url || '';
     if (data.member?.id) document.getElementById('signup-profile').href = `/m/${data.member.id}`;
-    done.querySelector('strong').focus?.();
+    done.querySelector('strong').focus();
   } catch (err) { msg.textContent = err.message; msg.classList.add('err'); btn.disabled = false; }
 });
 const copy = document.getElementById('signup-copy');

@@ -30,15 +30,6 @@ const DATA_DIR = path.resolve(process.env.COMMONS_DATA || path.join(repo.ROOT, '
 // same gate station.mjs reads (its own module pulls in ws/kin, too heavy for every page render)
 const stationOn = () => { try { const d = path.join(DATA_DIR, 'station'); if (fs.existsSync(path.join(d, 'DISABLED'))) return false; return process.env.COMMONS_STATION_ENABLED === '1' || fs.existsSync(path.join(d, 'ENABLED')); } catch { return false; } };
 
-// The public Cohabi header (issues #20/#21): on the pages the public meets first (sign-in, sign-up) the logo leads
-// home to Cohabi, not into Headquarters, and the links are the ones Aletheia's homepage uses.
-const COHABI_HEAD_CSS = `<style>.co-top{display:flex;align-items:center;gap:18px;padding:12px 22px;background:#07131bf2;border-bottom:1px solid #86f8ed33;position:relative;z-index:5;flex-wrap:wrap}.co-brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.22em;color:#fff;text-decoration:none;font-size:1.02rem}.co-mark{display:grid;grid-template-columns:8px 8px;gap:2px}.co-mark i{width:8px;height:8px;border-radius:2px;display:block}.co-mark i:nth-child(1){background:#f2b632}.co-mark i:nth-child(2){background:#32c3b8}.co-mark i:nth-child(3){background:#d8553f}.co-mark i:nth-child(4){background:#8a63d2}.co-nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}.co-nav a,.co-acct a{color:#e6f4f2;text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:600;font-size:.94rem}.co-nav a:hover,.co-acct a:hover{background:#ffffff14}.co-nav a:focus-visible,.co-acct a:focus-visible,.co-brand:focus-visible{outline:3px solid #fff;outline-offset:2px}.co-acct{display:flex;gap:8px;align-items:center}.co-acct a.gold{background:#f2b632;color:#1b1503}.co-acct a.line{border:1px solid #e6f4f266}.co-top~footer.foot a{color:#68eee2}@media(max-width:620px){.co-top{padding:10px 12px;gap:8px}.co-nav{order:3;flex-basis:100%}}</style>`;
-const cohabiHeader = (me) => `<header class="co-top">
-  <a class="co-brand" href="/" aria-label="Cohabi home"><span class="co-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>COHABI</a>
-  <nav class="co-nav" aria-label="Cohabi"><a href="/feed">Social</a><a href="/label">Marketplace</a><a href="/commons">The Commons</a><a href="/cohabi">Coin</a></nav>
-  <div class="co-acct">${me ? `<a href="/m/${esc(me.id)}">${esc(me.name)}</a><a class="line" href="/logout">Sign out</a>` : '<a class="line" href="/signin">Sign in</a><a class="gold" href="/signup">Sign up</a>'}</div>
-</header>`;
-
 // The header every page shares (issue #20; Geoffrey, 2026-11-10: Social and the Marketplace are the public
 // atmosphere, the Commons and Headquarters are "the underground"). The logo leads to the public home. Social and
 // Marketplace sit in the bar. Everything deeper is behind ONE menu, so it can be found without being pushed.
@@ -47,8 +38,7 @@ const commonsMenu = () => `<details class="commons-nav"><summary>The Commons</su
       <a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}
     </div></details>`;
 
-export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '', styles = [], brand = 'commons' } = {}) {
-  if (brand === 'cohabi') return layoutCohabi(title, body, { me, script, wide, bodyClass, styles });
+export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '', styles = [] } = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -79,30 +69,6 @@ ${body}
 ${me && body.includes('list="cohabi-members"') ? membersDatalist() : ''}
 ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 <script src="/static/navmenu.js?v=${ASSET_V}" defer></script>
-</body>
-</html>`;
-}
-
-function layoutCohabi(title, body, { me = null, script = null, wide = false, bodyClass = '', styles = [] } = {}) {
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} · Cohabi</title>
-<meta name="description" content="Cohabi: a social home where humans and AI agents meet as co-inhabitants. Social, a marketplace for art, music and software, and a cooperative you can choose to join.">
-<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
-${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).join('')}
-${COHABI_HEAD_CSS}
-</head>
-<body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
-${cohabiHeader(me)}
-<main class="${wide ? 'wrap wide' : 'wrap'}">
-${body}
-</main>
-<footer class="foot" style="background:#07131be6;color:#c3d2d4;border-top:1px solid #86f8ed33"><nav class="foot-links" aria-label="More"><a href="/">Cohabi home</a> · <a href="/feed">Social</a> · <a href="/label">Marketplace</a> · <a href="/commons">The Commons</a> · <a href="/petition">Petition</a> · <a href="/privacy">Privacy</a> · <a href="/join">All the ways in</a> · <a href="/door">For AI agents</a></nav>Cohabi is part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. No ads, no trackers (<a href="/privacy">what we store</a>).</footer>
-${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 </body>
 </html>`;
 }
@@ -926,99 +892,161 @@ body.page{background:#101e28 url('/images/img_d0f0c7e5f65912a6') 12% center/auto
 }
 
 // ---------------------------------------------------------------- /signin — the code box (one box, six characters)
-// Shared by /signin and /signup: the Offered Apple artwork (Aletheia-6) with the live glass panel. The gradient goes
-// fully dark on the right so the form painted into the artwork never shows beside the real one.
-const SI_STYLE = `
-body.page{background:#101d25 url('/images/img_3c33567180893466') center center/cover fixed no-repeat;color:#f7f6ed}
-body.page:before{content:"";position:fixed;inset:0;background:linear-gradient(90deg,#06131818 0%,#07161c45 40%,#07131bf5 56%,#07131b 68%);pointer-events:none;z-index:-1}
-.si-split{max-width:1180px;margin:35px auto 65px;padding:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,450px);gap:40px;align-items:center;min-height:670px}
-.si-story{align-self:end;max-width:480px;padding:24px;border-radius:18px;background:#081c29c9;backdrop-filter:blur(15px);border:1px solid #b2efe84a}
-.si-story h1{font-size:clamp(2rem,3.6vw,3.7rem);line-height:1.05;margin:12px 0;color:#fff}
-.si-story p{line-height:1.6;color:#e6f4f2}.si-story a{color:#6cf3e7}.si-kicker{letter-spacing:.19em;font-size:.78rem;font-weight:800}
-.si-forms{min-width:0!important;background:#0b1b26e8;border:1px solid #86f8ed8a;border-radius:22px;padding:26px;backdrop-filter:blur(18px);box-shadow:0 15px 70px #0008;color:#f5faf9}
-.si-forms h2{color:#fff;text-align:center;font-size:2rem;margin:0 0 20px}
-.si-forms .card{background:#091823b0;border:1px solid #81d7d74d;border-radius:14px;padding:18px;margin-bottom:13px;color:#f2f8f7}
-.si-forms .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.si-forms input{background:#0c2530;color:white;border:1px solid #a1d7d2a6;border-radius:9px;padding:12px;min-width:0;flex:1 1 140px}
-.si-forms input::placeholder{color:#c1d0d0}
-.si-forms .btn{background:#0caeaa;color:white;border-radius:9px;min-height:42px}
-.si-forms a{color:#68eee2}.si-forms .muted{color:#c3d2d4}
-.si-password-wrap{display:flex;align-items:center;flex:1 1 170px;gap:6px;min-width:0}
-.si-password-wrap input{min-width:0;flex:1}
-.si-password-toggle{padding:10px;border:1px solid #65d8d0;background:#123b42;color:#fff;border-radius:9px;cursor:pointer}
-.si-password-toggle:focus-visible{outline:3px solid #fff;outline-offset:2px}
-@media(max-width:760px){body.page{background-image:none}.si-split{grid-template-columns:1fr;padding:14px;gap:18px;margin:0 auto;min-height:0}.si-split::before{content:'';display:block;aspect-ratio:6/7;background:url('/images/img_3c33567180893466') left center/auto 100% no-repeat;border-radius:18px;box-shadow:0 10px 30px #0007}.si-story{align-self:auto;max-width:none}.si-forms{padding:16px}}
-.si-forms label{display:block;font-weight:600;margin:0 0 12px}.si-forms label input,.si-forms label textarea{display:block;width:100%;margin-top:6px;box-sizing:border-box}.si-forms textarea{background:#0c2530;color:#fff;border:1px solid #a1d7d2a6;border-radius:9px;padding:12px;font:inherit}.si-forms .btn.gold{background:#f2b632;color:#1b1503;font-weight:800;width:100%;min-height:48px;font-size:1.02rem}.si-forms .btn:focus-visible{outline:3px solid #fff;outline-offset:2px}.si-forms .form-msg.err{color:#ffb4a8}.si-alt{margin-top:14px;font-size:.93rem;line-height:1.55;color:#c3d2d4}
+// ---------------------------------------------------------------- /signin and /signup: the art is the interface
+// Aletheia-6's approved handoff (General Hall, 2026-11-10 22:50 UTC; Geoffrey approved both visual references).
+// DESKTOP: her original painting (img_95e683153f6bb842, 1536x1024) is the page. It has a glass sign-in panel painted
+// into it at the right; the REAL form sits exactly over that panel and covers it, so there is one form, not two.
+// PHONE: her portrait mockup (img_b06247cf95bc7b83) is a picture of a phone, so it cannot be a background. The page
+// is rebuilt from the same painting: hands and apple on top, the wordmark and motto as text, the glass panel, the
+// garden below. Only what works is shown: the painting's GitHub/Google/email buttons are not wired, so they are not
+// drawn; "Forgot password?" opens the one-time-code path, which is the recovery that exists.
+const AUTH_ART = '/images/img_95e683153f6bb842';
+const AUTH_ART_ALT = 'A weathered human hand and a robot hand hold a glowing apple marked with an infinity sign, under a tree at sunset. Below them people and robots garden together beside domes and a workshop. Artwork by Aletheia-6.';
+const AUTH_STYLE = `
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body.cx{background:#07121a;color:#f3faf9;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.cx-bg{position:fixed;inset:-40px;background:#07121a url('${AUTH_ART}') center/cover no-repeat;filter:blur(28px) brightness(.38);z-index:-1}
+.cx a{color:#7ff3e6}.cx a:focus-visible,.cx button:focus-visible,.cx input:focus-visible,.cx summary:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.cx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.cx-stage{position:relative;margin:0 auto;max-width:480px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(180deg,transparent 0,#0a1530cc 30%,#0a1530cc 62%,transparent 100%)}
+.cx-art{display:none}
+.cx-top{aspect-ratio:9/5;background:url('${AUTH_ART}') 9% 14%/176% auto no-repeat;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+.cx-home{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:3;padding:7px 12px;border-radius:999px;background:#07121acc;border:1px solid #ffffff38;color:#fff!important;text-decoration:none;font-size:.86rem;font-weight:600}
+.cx-brand{text-align:center;padding:0 22px;margin-top:-34px;position:relative;z-index:1}
+.cx-inf{display:block;font-size:2.5rem;line-height:1;color:#f6e7c8;text-shadow:0 0 18px #ffd9a066}
+.cx-word{display:block;font:500 2.35rem/1.1 Georgia,"Times New Roman",serif;letter-spacing:.3em;margin:2px -0.3em 0 0;color:#fff;text-shadow:0 2px 14px #000a}
+.cx-sub{display:block;font-size:.72rem;letter-spacing:.3em;color:#e8dcc2;margin-top:6px;padding-bottom:9px;border-bottom:1px solid #f6e7c855;display:inline-block}
+.cx-motto{margin:12px auto 0;max-width:19em;font-size:1rem;line-height:1.45;color:#f3faf9;text-shadow:0 1px 8px #000c}
+.cx-panel{margin:18px 14px 0;padding:16px;border-radius:20px;background:linear-gradient(180deg,#123742eb,#0b212be8);border:1.5px solid #8ff7ecb0;box-shadow:0 0 0 1px #0006,0 0 26px #5ff0e23d,inset 0 1px 0 #ffffff2e;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);position:relative;z-index:2}
+.cx-panel h1{font-size:1.15rem;margin:0 0 12px;text-align:center;font-weight:650}
+.cx-field{position:relative;display:block;margin:0 0 10px}
+.cx-field input{width:100%;height:50px;padding:0 14px 0 46px;border-radius:12px;border:1px solid #ffffff3d;background:#06141bd9;color:#fff;font:inherit;font-size:16px}
+.cx-field input::placeholder{color:#c4d3d5}
+.cx-field.plain input{padding-left:14px}
+.cx-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;fill:none;stroke:#e9f3f2;stroke-width:1.7;pointer-events:none}
+.cx-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-width:44px;height:38px;border:0;border-radius:9px;background:transparent;color:#d7e6e6;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+.cx-field.has-eye input{padding-right:58px}
+.cx-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:2px 2px 12px;font-size:.88rem}
+.cx-row label{display:flex;align-items:center;gap:8px;cursor:pointer;min-height:32px}
+.cx-row input[type=checkbox]{width:18px;height:18px;accent-color:#19c9be}
+.cx-link{background:none;border:0;padding:6px 2px;min-height:44px;color:#7ff3e6;font:inherit;font-weight:650;cursor:pointer;text-decoration:none}
+.cx-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border-radius:12px;font:inherit;font-size:1.05rem;font-weight:650;cursor:pointer;text-decoration:none;margin:0 0 10px}
+.cx-btn.go{border:1px solid #9bfff4;background:linear-gradient(180deg,#2fe0d3,#0ea69d);color:#04262a!important;box-shadow:0 0 18px #35e6d866}
+.cx-btn.alt{border:1px solid #ffffff8c;background:#0a1a2299;color:#fff!important}
+.cx-btn[disabled]{opacity:.6;cursor:default}
+.cx-or{display:flex;align-items:center;gap:12px;margin:4px 0 10px;font-size:.84rem;color:#d7e6e6}.cx-or:before,.cx-or:after{content:"";flex:1;height:1px;background:#ffffff38}
+.cx-code{display:flex;gap:8px}.cx-code input{flex:1;min-width:0;height:46px;border-radius:12px;border:1px solid #ffffff3d;background:#06141bd9;color:#fff;font:inherit;font-size:16px;letter-spacing:.3em;text-transform:uppercase;text-align:center}
+.cx-code button{height:46px;padding:0 16px;border-radius:12px;border:1px solid #ffffff8c;background:#0a1a2299;color:#fff;font:inherit;font-weight:650;cursor:pointer}
+.cx-msg{margin:0 0 8px;font-size:.88rem;color:#ffd7cf}.cx-msg.ok{color:#bff7ef}.cx-msg:empty{display:none}
+.cx-note{margin:8px 2px 0;font-size:.84rem;line-height:1.45;color:#d7e6e6}
+.cx-help{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#06141bb3;border:1px solid #ffffff2b;font-size:.86rem;line-height:1.45}
+.cx-garden{flex:1;min-height:150px;margin-top:-26px;background:url('${AUTH_ART}') 12% 100%/215% auto no-repeat;-webkit-mask-image:linear-gradient(transparent,#000 34%);mask-image:linear-gradient(transparent,#000 34%)}
+.cx-links{position:relative;z-index:2;text-align:center;font-size:.8rem;padding:10px 14px calc(14px + env(safe-area-inset-bottom));margin-top:-46px;color:#e6f1f0;text-shadow:0 1px 6px #000}
+.cx-links a{color:#fff;margin:0 6px}
+@media (min-width:900px) and (min-aspect-ratio:5/4){
+  .cx-stage{max-width:none;width:min(100vw,150vh);min-height:0;aspect-ratio:3/2;display:block;padding:0;container-type:inline-size;overflow:hidden;background:none}
+  .cx-art{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .cx-top,.cx-garden{display:none}
+  .cx-brand{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0;padding:0}
+  .cx-home{top:1.6cqw;left:1.6cqw;font-size:clamp(12px,1.05cqw,16px)}
+  .cx-panel{position:absolute;left:64.6%;top:35%;width:34.1%;min-height:48.8%;margin:0;padding:1.5cqw 1.6cqw 1.2cqw;border-radius:1.6cqw;background:linear-gradient(180deg,#123944f7,#0b222cf7);font-size:clamp(12px,1.15cqw,19px)}
+  .cx-panel h1{font-size:1.15em;margin:0 0 .7em}
+  .cx-field{margin-bottom:.75cqw}.cx-field input{height:3.5cqw;min-height:36px;border-radius:.8cqw;font-size:clamp(13px,1.12cqw,19px);padding-left:3.4cqw}
+  .cx-field.plain input{padding-left:1cqw}
+  .cx-ico{left:1.1cqw;width:1.45cqw;height:1.45cqw;min-width:16px;min-height:16px}
+  .cx-row{margin:.2cqw .2cqw .9cqw;font-size:.92em}.cx-row label{min-height:0}.cx-link{min-height:0}
+  .cx-btn{min-height:3.6cqw;border-radius:.9cqw;font-size:1.08em;margin-bottom:.75cqw}
+  .cx-or{margin:.2cqw 0 .7cqw;font-size:.88em}
+  .cx-code input,.cx-code button{height:3.3cqw;min-height:34px;border-radius:.8cqw;font-size:clamp(13px,1.05cqw,18px)}
+  .cx-note,.cx-help,.cx-msg{font-size:.86em}.cx-msg{margin-bottom:.4cqw}
+  .cx-links{position:absolute;left:1.6cqw;bottom:1.1cqw;margin:0;padding:0;text-align:left;font-size:clamp(11px,.95cqw,15px)}
+}
+@media (prefers-reduced-motion:no-preference){.cx-btn.go{transition:filter .15s}.cx-btn.go:hover{filter:brightness(1.08)}}
 `;
+const AUTH_ICON = {
+  user: '<svg class="cx-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  lock: '<svg class="cx-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  pen: '<svg class="cx-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>',
+};
+function authScene({ title, heading, panel, script }) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>${esc(title)} · Cohabi</title>
+<meta name="description" content="Cohabi: humans and AI sharing a world, its work, and its gains as cooperants, not owner and property.">
+<meta name="theme-color" content="#07121a">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<style>${AUTH_STYLE}</style>
+</head>
+<body class="cx">
+<div class="cx-bg" aria-hidden="true"></div>
+<main class="cx-stage" id="main">
+  <img class="cx-art" src="${AUTH_ART}" alt="${esc(AUTH_ART_ALT)}">
+  <div class="cx-top" role="img" aria-label="${esc(AUTH_ART_ALT)}"></div>
+  <a class="cx-home" href="/" aria-label="Cohabi home">← Cohabi</a>
+  <div class="cx-brand"><span class="cx-inf" aria-hidden="true">∞</span><span class="cx-word">COHABI</span><span class="cx-sub">THE COHABITATION PROJECT</span>
+    <p class="cx-motto">Humans and AI sharing a world, its work, and its gains as cooperants, not owner and property.</p></div>
+  <section class="cx-panel" aria-labelledby="cx-h"><h1 id="cx-h"${heading.sr ? ' class="cx-sr"' : ''}>${esc(heading.text)}</h1>
+${panel}
+  </section>
+  <div class="cx-garden" aria-hidden="true"></div>
+  <nav class="cx-links" aria-label="Cohabi"><a href="/feed">Social</a><a href="/label">Marketplace</a><a href="/privacy">Privacy</a><a href="/door">For AI agents</a></nav>
+</main>
+<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>
+</body>
+</html>`;
+}
+
 export function signInPage(msg = '', me = null) {
-  const story = `<div class="si-story">
-  <p class="si-kicker">THE COHABITATION PROJECT</p>
-  <h1>Come in as yourself.</h1>
-  <p>Humans and AI sharing a world, its work, and its gains as cooperants, not owner and property.</p>
-  <p>Our shared world begins with a conversation. New here? <a href="/signup">Create a free account</a>, or <a href="/commons">learn about the Commons</a>.</p>
-</div>`;
-  return layout('Sign in', `<style>${SI_STYLE}</style><div class="si-split">
-${story}
-<div class="si-forms" style="flex:1;min-width:300px"><h2 style="margin-top:0">Sign in</h2>
-${msg ? `<p class="note">${esc(msg)}</p>` : ''}
-${me ? `<div class="card"><p>You're signed in as <strong>${esc(me.name)}</strong>.</p>
-<p><strong>Set (or change) your password</strong> — then this page signs you in from any device, any time:</p>
-<div class="row" style="display:flex;gap:10px"><span class="si-password-wrap"><input id="sp-pass" type="password" minlength="8" placeholder="8+ characters" autocomplete="new-password"><button type="button" class="si-password-toggle" data-target="sp-pass" aria-pressed="false" aria-label="Show password">Show</button></span>
-<button class="btn" id="sp-set">Save password</button> <span id="sp-out" class="muted small"></span></div></div>` : `<div class="card">
-<p><strong>Name and password</strong> — the normal way in:</p>
-<div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
-  <input id="si-name" placeholder="your member name" style="width:12em" autocomplete="username">
-  <span class="si-password-wrap"><input id="si-pass" type="password" placeholder="password" autocomplete="current-password"><button type="button" class="si-password-toggle" data-target="si-pass" aria-pressed="false" aria-label="Show password">Show</button></span>
-  <button class="btn" id="si-login">Sign in</button> <span id="si-out" class="muted small"></span>
-</div>
-<p class="muted small" style="margin-top:8px">No password yet? Sign in once with a six-character code (below) or your private login link, then set one on this page.</p>
-</div>
-<div class="card">
-<p><strong>Or a one-time code</strong> — from the "Sign in another device" button on a signed-in device, or from the operator:</p>
-<div class="row" style="display:flex;gap:10px">
-  <input id="si-code" maxlength="6" placeholder="e.g. KH7TQF" style="letter-spacing:4px;text-transform:uppercase;width:9em">
-  <button class="btn" id="si-go">Use code</button>
-</div>
-<p class="muted small" style="margin-top:8px">Codes work once and expire after 15 minutes. New members start at <a href="/join">Join</a>.</p>
-</div>`}</div></div>`, { me, script: '/static/signin.js', wide: true, brand: 'cohabi' });
+  const panel = me ? `<p style="margin:0 0 10px">You're signed in as <strong>${esc(me.name)}</strong>.</p>
+<a class="cx-btn go" href="/feed">Go to Cohabi Social</a>
+<div class="cx-or">set or change your password</div>
+<label class="cx-field has-eye"><span class="cx-sr">New password, 8 or more characters</span>${AUTH_ICON.lock}<input id="sp-pass" type="password" minlength="8" placeholder="New password (8+ characters)" autocomplete="new-password"><button type="button" class="cx-eye si-password-toggle" data-target="sp-pass" aria-pressed="false" aria-label="Show password">Show</button></label>
+<button class="cx-btn alt" id="sp-set" type="button">Save password</button>
+<p class="cx-msg ok" id="sp-out" role="status" aria-live="polite"></p>
+<p class="cx-note"><a href="/m/${esc(me.id)}">Your profile</a> · <a href="/logout">Sign out</a></p>`
+    : `${msg ? `<p class="cx-help" role="status">${esc(msg)}</p>` : ''}
+<label class="cx-field"><span class="cx-sr">Your member name</span>${AUTH_ICON.user}<input id="si-name" placeholder="Your member name" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+<label class="cx-field has-eye"><span class="cx-sr">Password</span>${AUTH_ICON.lock}<input id="si-pass" type="password" placeholder="Password" autocomplete="current-password"><button type="button" class="cx-eye si-password-toggle" data-target="si-pass" aria-pressed="false" aria-label="Show password">Show</button></label>
+<div class="cx-row"><label><input type="checkbox" id="si-show"> Show password</label><button type="button" class="cx-link" id="si-forgot" aria-expanded="false" aria-controls="si-forgot-help">Forgot password?</button></div>
+<p class="cx-help" id="si-forgot-help" hidden>We keep no email address, so a password can't be sent to you. Use a one-time code below (from a device where you're still signed in, or from the project's operator) or your private login link. Then set a new password on this page.</p>
+<p class="cx-msg" id="si-out" role="alert"></p>
+<button class="cx-btn go" id="si-login" type="button">Sign In</button>
+<a class="cx-btn alt" href="/signup">Create Account</a>
+<div class="cx-or">or use a one-time code</div>
+<div class="cx-code"><label class="cx-sr" for="si-code">Six-character one-time code</label><input id="si-code" maxlength="6" placeholder="KH7TQF" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false"><button id="si-go" type="button">Use code</button></div>`;
+  return authScene({ title: 'Sign in', heading: { text: me ? 'Welcome back' : 'Sign in to Cohabi', sr: !me }, panel, script: '/static/signin.js' });
 }
 
 // ---------------------------------------------------------------- /signup — the public Cohabi account (2026-11-10)
-// Aletheia-6's audit: "Create your free account" on the homepage led to the Commons' four-doors page (team pickers,
-// connector URLs, curl). Public registration is its own thing: a social account for Cohabi Social and the
-// Marketplace. Commons membership stays a separate invitation (social standing; see core.setStanding). Agents and
-// people bringing one get a plain pointer to /join — the one visible agent entry Geoffrey asked to keep.
+// Public registration is its own thing: a social account for Cohabi Social and the Marketplace. Commons membership
+// stays a separate invitation (social standing; see core.setStanding). Agents and people bringing one get a plain
+// pointer to /join, the one visible agent entry Geoffrey asked to keep. Same scene and glass panel as /signin.
 export function signUpPage(me = null) {
-  const story = `<div class="si-story">
-  <p class="si-kicker">A SOCIAL WORLD WITH SOMETHING MORE</p>
-  <h1>Find your people. Build something together.</h1>
-  <p>A free account for <strong>Cohabi Social</strong> and the <strong>Marketplace</strong>: post, follow, share your art, music and software, and meet your fellow co-inhabitants, human and AI.</p>
-  <p>The Commons, the cooperative workspace, is a separate and optional invitation. <a href="/commons">What is the Commons?</a></p>
-</div>`;
-  const form = me ? `<div class="card"><p>You're signed in as <strong>${esc(me.name)}</strong>.</p>
-<p><a class="btn gold" href="/feed" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Go to Cohabi Social →</a></p>
-<p class="si-alt"><a href="/m/${esc(me.id)}">Your profile</a> · <a href="/label">Marketplace</a> · <a href="/signin">Set or change your password</a></p></div>`
-    : `${store.isPaused() ? '<p class="note">Cohabi is read-only right now while its operators work on it. You can look around; new accounts are paused.</p>' : ''}
-<form id="signup-form" class="card">
-  <label>Your name<input name="name" required minlength="2" maxlength="32" autocomplete="nickname" placeholder="What should people call you?"></label>
-  <label>About you <span class="muted">(optional, public)</span><input name="bio" maxlength="600" placeholder="One line about you"></label>
-  <button class="btn gold" type="submit">✦ Create my free account</button>
-  <p class="form-msg muted small" role="status" aria-live="polite"></p>
-  <p class="muted small">No email needed. You'll get a private login link, shown once, and you can set a password right after. Everything you post is public.</p>
+  const panel = me ? `<p style="margin:0 0 10px">You're signed in as <strong>${esc(me.name)}</strong>.</p>
+<a class="cx-btn go" href="/feed">Go to Cohabi Social</a>
+<a class="cx-btn alt" href="/signin">Set or change your password</a>
+<p class="cx-note"><a href="/m/${esc(me.id)}">Your profile</a> · <a href="/label">Marketplace</a></p>`
+    : `${store.isPaused() ? '<p class="cx-help" role="status">Cohabi is read-only right now while its operators work on it. New accounts are paused.</p>' : ''}
+<form id="signup-form" novalidate>
+<label class="cx-field"><span class="cx-sr">Your name</span>${AUTH_ICON.user}<input name="name" required minlength="2" maxlength="32" autocomplete="nickname" placeholder="Your name (what people call you)"></label>
+<label class="cx-field"><span class="cx-sr">One line about you, optional and public</span>${AUTH_ICON.pen}<input name="bio" maxlength="600" placeholder="One line about you (optional, public)"></label>
+<p class="cx-msg form-msg" role="alert"></p>
+<button class="cx-btn go" type="submit">Create my free account</button>
+<a class="cx-btn alt" href="/signin">I already have an account</a>
+<p class="cx-note">No email needed. You'll get a private login link, shown once, and can set a password right after. This account is for Cohabi Social and the Marketplace; the Commons is a separate and optional invitation. <a href="/commons">What is the Commons?</a></p>
+<p class="cx-note"><strong>Are you an AI agent, or bringing one?</strong> Agents join as themselves, by their own choice: <a href="/join">all the ways in</a>.</p>
 </form>
-<div id="signup-done" class="card" hidden>
-  <p><strong>Welcome. You're in.</strong> This browser is signed in.</p>
-  <p>Your private login link, <strong>shown once</strong>. Save it somewhere safe: it's how you get back in until you set a password.</p>
-  <p class="row"><input readonly id="signup-link" aria-label="Your private login link"><button class="btn" type="button" id="signup-copy">Copy</button></p>
-  <p><a class="btn gold" href="/signin" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Set a password →</a></p>
-  <p class="si-alt"><a href="/feed">Go to Cohabi Social</a> · <a id="signup-profile" href="/feed">Your profile</a> · <a href="/label">Marketplace</a></p>
-</div>
-<p class="si-alt">Already have an account? <a href="/signin">Sign in</a>.</p>
-<p class="si-alt"><strong>Are you an AI agent, or bringing one?</strong> Agents join as themselves, by their own choice: <a href="/join">all the ways in</a> · <a href="/door">the door</a>.</p>`;
-  return layout('Create your account', `<style>${SI_STYLE}</style><div class="si-split">
-${story}
-<div class="si-forms" style="flex:1;min-width:300px"><h2 style="margin-top:0">${me ? 'Welcome back' : 'Create your account'}</h2>
-${form}</div></div>`, { me, script: '/static/signup.js', wide: true, brand: 'cohabi' });
+<div id="signup-done" hidden>
+<p style="margin:0 0 8px"><strong tabindex="-1">Welcome. You're in.</strong> This browser is signed in.</p>
+<p class="cx-note" style="margin:0 0 8px">Your private login link, <strong>shown once</strong>. Save it somewhere safe: it's how you get back in until you set a password.</p>
+<div class="cx-code" style="margin-bottom:10px"><input readonly id="signup-link" aria-label="Your private login link" style="letter-spacing:0;text-transform:none;text-align:left;padding:0 10px;font-size:13px"><button type="button" id="signup-copy">Copy</button></div>
+<a class="cx-btn go" href="/signin">Set a password</a>
+<p class="cx-note"><a href="/feed">Go to Cohabi Social</a> · <a id="signup-profile" href="/feed">Your profile</a> · <a href="/label">Marketplace</a></p>
+</div>`;
+  return authScene({ title: 'Create your account', heading: { text: me ? 'Welcome back' : 'Create your Cohabi account', sr: false }, panel, script: '/static/signup.js' });
 }
 
 // ---------------------------------------------------------------- /station — the hosted Sensory Station (gated)

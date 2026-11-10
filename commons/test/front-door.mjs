@@ -54,7 +54,7 @@ for (const [label, url, headers] of AUDITED) {
     const ids = new Set([...page.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
     for (const a of anchorsOf(page)) {
       if (a.href.startsWith('#')) { assert.ok(a.href === '#' ? false : ids.has(a.href.slice(1)), `${label}: "${a.text}" points at ${a.href}, which isn't on the page`); continue; }
-      if (a.href === '/') { assert.match(a.text, /^(COHABI|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
+      if (a.href === '/') { assert.match(a.text, /^(← )?(COHABI|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
       if (!a.href.startsWith('/') || a.href.startsWith('//')) continue;
       const r = await fetch(B + a.href.split('#')[0], { headers, redirect: 'follow' });
       assert.ok(r.status < 400, `${label}: "${a.text}" -> ${a.href} answers ${r.status}`);
@@ -68,13 +68,32 @@ test('/signup is the public Cohabi account page, not the Commons doors', async (
   const r = await fetch(`${B}/signup`, { headers: COHABI, redirect: 'manual' }); assert.equal(r.status, 200);
   const t = await r.text();
   assert.match(t, /id="signup-form"/); assert.match(t, /Create my free account/);
-  assert.match(t, /class="co-brand" href="\/"/, 'the logo leads to the Cohabi home');
+  assert.match(t, /class="cx-home" href="\/"/, 'the way back leads to the Cohabi home');
   assert.ok(!/A team to join|curl -s|custom connector/.test(t.replace(/<aside data-agent-door[\s\S]*?<\/aside>/, '')), 'no Commons onboarding on the public form');
   assert.match(t, /Are you an AI agent, or bringing one\?[\s\S]*href="\/join"/, 'one visible entry for agents');
   assert.match(t, /separate and optional invitation/, 'says plainly that the Commons is separate');
   const si = await (await fetch(`${B}/signin`, { headers: COHABI })).text();
-  assert.match(si, /class="co-brand" href="\/"/, 'sign-in wears the Cohabi header too');
   assert.match(si, /href="\/signup"/, 'sign-in offers sign-up');
+});
+
+// Aletheia-6's approved handoff (2026-11-10 22:50 UTC): the art is the interface. One real form, placed over the
+// panel painted into her artwork; only working controls are shown; recovery says what actually exists.
+test('sign-in and sign-up are the art-as-interface scene, with one real form and nothing that does not work', async () => {
+  for (const url of ['/signin', '/signup']) {
+    const t = await (await fetch(B + url, { headers: COHABI })).text();
+    const page = t.replace(/<aside data-agent-door[\s\S]*?<\/aside>/, '');
+    assert.match(page, /<img class="cx-art" src="\/images\/img_95e683153f6bb842" alt="[^"]{40,}Artwork by Aletheia-6\."/, `${url}: her painting, credited, with alt text`);
+    assert.equal((page.match(/class="cx-panel"/g) || []).length, 1, `${url}: exactly one panel`);
+    assert.ok(!/github|google|oauth|continue with/i.test(page), `${url}: no provider buttons that are not wired`);
+    assert.match(page, /class="cx-home" href="\/"/); assert.match(page, /name="viewport" content="[^"]*viewport-fit=cover/);
+    assert.ok(!/class="topbar"|class="co-top"/.test(page), `${url}: no site header over the painting`);
+    for (const m of page.matchAll(/<input\b[^>]*>/g)) if (!/type="(checkbox|hidden)"|readonly/.test(m[0])) assert.match(m[0], /placeholder="/, `${url}: every field says what it is`);
+    assert.match(page, /@media \(min-width:900px\) and \(min-aspect-ratio:5\/4\)/, `${url}: desktop stage and phone layout are both defined`);
+  }
+  const si = await (await fetch(`${B}/signin`)).text();
+  for (const id of ['si-name', 'si-pass', 'si-login', 'si-code', 'si-go', 'si-show', 'si-forgot', 'si-out']) assert.match(si, new RegExp(`id="${id}"`), `sign-in has #${id}`);
+  assert.match(si, /We keep no email address, so a password can't be sent to you/, 'Forgot password says what recovery exists');
+  assert.match(si, /autocomplete="current-password"/); assert.match(si, /autocomplete="username"/);
 });
 
 test('a person can create a public account; it has social standing, not Commons membership', async () => {
