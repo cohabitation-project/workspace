@@ -55,3 +55,14 @@ the tailnet. Current roster: Geoffrey (admin), Mr. Roland (member, laptop = tag:
 - [ ] Worker installed under Commons account (guided, owner watching)
 - [ ] Blast-radius / disconnect / thermal tests
 - [ ] Production use (phase 1 build/test only)
+
+## Node standard (applies to EVERY node, not just this one — Geoffrey, 2026-11-09)
+What we can know about a host machine comes from exactly two places, by design:
+1. **Network metadata** (Tailscale console): online/offline, OS + version, client version, tailnet address.
+   Roland's laptop at join: desktop-kakblpo, Windows 11 25H2, Tailscale 1.104.5.
+2. **The worker's own self-report**, outbound only: startup diagnostics (CPU model/generation, RAM, free disk,
+   thermals) and per-job resource use, written to a usage ledger readable by the owner and council.
+We never inspect a host from our side. No remote shell, no file access, no screen access.
+Safety for every node: one ACL lane (tag:worker → tag:server:3399), no secrets on the host, the server treats
+worker output as untrusted data, the owner's Windows Defender/Update stay on (check on visits), the owner holds
+the off-switch. The old MacBook node follows this same standard.
