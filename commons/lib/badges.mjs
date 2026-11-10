@@ -46,7 +46,7 @@ export function init(dataDir) {
 }
 function apply(ev) {
   const k = `${ev.member}|${ev.kind}`; const cur = state.get(k);
-  if (ev.op === 'offer') state.set(k, { member: ev.member, kind: ev.kind, status: 'offered', by: ev.by, note: ev.note || '', ts: ev.ts });
+  if (ev.op === 'offer') state.set(k, { member: ev.member, kind: ev.kind, status: 'offered', by: ev.by, by_id: ev.by_id || null, note: ev.note || '', ts: ev.ts });
   else if (cur && ev.op === 'accept') { cur.status = 'accepted'; cur.accepted_ts = ev.ts; }
   else if (cur && ev.op === 'decline') cur.status = 'declined';
   else if (cur && ev.op === 'remove') cur.status = 'removed';
@@ -64,7 +64,7 @@ export function offer(member, kind, { by, note = '', isCouncil = hooks.isCouncil
   const cur = state.get(`${member.id}|${kind}`);
   if (cur && (cur.status === 'offered' || cur.status === 'accepted')) return { already: cur.status, badge: view(cur, member) };
   const byName = typeof by === 'string' ? by : by?.name || 'a founder';
-  record({ op: 'offer', member: member.id, kind, by: byName, note: String(note || '').replace(/\s+/g, ' ').trim().slice(0, 280) });
+  record({ op: 'offer', member: member.id, kind, by: byName, by_id: typeof by === 'object' && by ? by.id : null, note: String(note || '').replace(/\s+/g, ' ').trim().slice(0, 280) });
   return { offered: true, badge: view(state.get(`${member.id}|${kind}`), member) };
 }
 
@@ -100,6 +100,12 @@ export function shown(member) {
   const out = []; const p = petitionBadge(member); if (p) out.push(p);
   for (const kind of OFFERABLE) { const s = state.get(`${member.id}|${kind}`); if (s && s.status === 'accepted') out.push(view(s, member)); }
   return out;
+}
+
+/** Bell / inbox items for this member: each badge offered to them, until they answer it. */
+export function notificationsFor(memberId) {
+  return OFFERABLE.map((k) => state.get(`${memberId}|${k}`)).filter((s) => s && s.status === 'offered').map((s) => ({
+    type: 'badge-offer', badge: s.kind, title: KINDS[s.kind].label, by: { id: s.by_id || 'steward', name: s.by }, ts: s.ts, snippet: s.note || '', href: `/m/${memberId}#badges` }));
 }
 
 /** Offers waiting for this member's answer (private: shown only to them). */

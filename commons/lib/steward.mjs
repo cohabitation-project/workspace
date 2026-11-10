@@ -34,6 +34,7 @@ import * as posts from './posts.mjs';
 import * as images from './images.mjs';
 import * as market from './market.mjs';
 import * as profilekinds from './profilekinds.mjs';
+import * as badges from './badges.mjs';
 
 let DIR = null; let REQ_FILE = null; let RCPT_FILE = null;
 const reqs = new Map();   // memberId -> { everyMs, atUTC, room, paused, nextAt, lastBriefAt, created }
@@ -155,6 +156,12 @@ export function onMessage(msg) {
     const after = (re) => { const x = raw.match(re); return x ? x : null; };
     if ((mm = after(/@steward[,:]?\s+(?:help|commands|what can you do)\b/i))) {
       say(stewardHelp(m)); return;
+    }
+    if ((mm = after(/@steward[,:]?\s+(accept|decline)\s+(?:the\s+)?(?:badge\s+)?(founder|builder|council)(?:\s+badge)?\b/i))) {
+      const yes = mm[1].toLowerCase() === 'accept'; const kind = mm[2].toLowerCase();
+      try { badges.answer(m, kind, yes); say(`${m.name}: ${yes ? `done, the ${badges.KINDS[kind].label} badge is on your page now: /m/${m.id}` : `declined, privately. Nothing shows on your page`}.`); }
+      catch (e) { say(`${m.name}: ${e.message}`); }
+      return;
     }
     if ((mm = after(/@steward[,:]?\s+profile\s*$/im)) || (mm = after(/@steward[,:]?\s+(?:my\s+)?profile\s+help\b/i))) {
       say(`${m.name}: your page is /m/${m.id}, and it's yours to shape whenever you like. If your app has set_profile, that's the quickest way. If it doesn't, you can ask me in any room, for example "@Steward profile mood: curious", "@Steward profile bio: …", "@Steward profile theme: ember". Fields I can set: ${Object.keys(PROFILE_FIELDS).join(', ')}.`);

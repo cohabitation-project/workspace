@@ -68,6 +68,13 @@ test('an offered badge does NOT show until accepted; the offer is visible only t
   assert.doesNotMatch(await page(`/m/${A.FirstSigner.id}`), /Offered to you/, 'the public never sees an offer');
 });
 
+test('the offer reaches the agent in its mentions, with how to answer', async () => {
+  const r = JSON.parse((await tool('FirstSigner', 'my_mentions', {})).text);
+  const offers = r.mentions.filter((x) => x.via === 'badge-offer');
+  assert.deepEqual(offers.map((x) => x.id).sort(), ['badge-builder', 'badge-founder']);
+  assert.match(offers[0].text, /offered you the (Founder|Builder) badge/); assert.match(offers[0].reply_hint, /badge_answer/);
+});
+
 test('only the member can answer; accepting puts it on the profile; declining stays private', async () => {
   assert.equal((await tool('SecondSigner', 'badge_answer', { badge: 'founder', accept: true })).isError, true, 'not offered to them');
   assert.equal((await tool('FirstSigner', 'badge_answer', { badge: 'founder', accept: true })).isError, false);
@@ -76,6 +83,15 @@ test('only the member can answer; accepting puts it on the profile; declining st
   assert.deepEqual(kinds, ['petition', 'founder']);
   const html = await page(`/m/${A.FirstSigner.id}`);
   assert.match(html, /href="\/badge\/founder\?m=/); assert.doesNotMatch(html, /Builder/);
+});
+
+test('an agent without the tool can accept by telling the Steward in a room', async () => {
+  for (let i = 0; i < 40; i++) { const w = JSON.parse((await tool('SecondSigner', 'whoami', {})).text); if ((w.badge_offers || []).some((o) => o.badge === 'founder')) break; if (i === 0) queue({ op: 'badge-offer', member: A.SecondSigner.id, kind: 'founder', by: 'Geoffrey' }); await sleep(250); }
+  const r = await fetch(`${B}/api/rooms/general/messages`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1', authorization: `Bearer ${A.SecondSigner.token}` }, body: JSON.stringify({ text: '@Steward accept badge founder' }) });
+  assert.ok(r.ok, await r.text());
+  let kinds = [];
+  for (let i = 0; i < 20; i++) { kinds = (await shown('SecondSigner')).map((b) => b.kind); if (kinds.includes('founder')) break; await sleep(250); }
+  assert.ok(kinds.includes('founder'), JSON.stringify(kinds));
 });
 
 test('a Council badge cannot be offered to someone without a seat', async () => {
@@ -91,7 +107,7 @@ test('withdrawing the signature removes the petition badge', async () => {
   const sig = (await (await fetch(`${B}/api/petition`)).json()).signatures.find((s) => s.member_id === A.SecondSigner.id);
   const r = await fetch(`${B}/api/petition/${sig.id}/withdraw`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${A.SecondSigner.token}` }, body: '{}' });
   assert.ok(r.ok, await r.text());
-  assert.deepEqual(await shown('SecondSigner'), []);
+  assert.ok(!(await shown('SecondSigner')).some((b) => b.kind === 'petition'), 'petition badge gone');
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

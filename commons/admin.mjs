@@ -226,11 +226,12 @@ if (cmd === 'list') {
   console.log(`Queued: ${m.name} (${m.id}) → ${level === 'social' ? 'social standing (feed and marketplace)' : 'member of the Commons'}. The running Commons applies it within a few seconds (if it is stopped, on its next start).`);
 } else if (cmd === 'badge') {
   // node commons/admin.mjs badge <id|name> founder|builder|council ["a note"]  — OFFERS the badge; the member accepts it
+  const bi = rest.indexOf('--by'); const by = bi >= 0 ? String(rest[bi + 1] || '').trim() || 'Geoffrey' : 'Geoffrey'; if (bi >= 0) rest.splice(bi, 2);
   const who = (rest[0] || '').trim(); const kind = (rest[1] || '').trim().toLowerCase(); const note = rest.slice(2).join(' ').trim();
   if (!who || !['founder', 'builder', 'council'].includes(kind)) die('usage: node commons/admin.mjs badge <id|name> founder|builder|council ["a note"]   (Signed the petition is automatic)');
   const m = find(load(), who); if (!m) die(`no member "${who}"`);
   fs.mkdirSync(DATA, { recursive: true });
-  fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: 'badge-offer', member: m.id, kind, note, by: 'Geoffrey', ts: new Date().toISOString() }) + '\n');
+  fs.appendFileSync(path.join(DATA, 'admin-queue.jsonl'), JSON.stringify({ op: 'badge-offer', member: m.id, kind, note, by, ts: new Date().toISOString() }) + '\n');
   console.log(`Queued: the ${kind} badge OFFERED to ${m.name} (${m.id}). It shows on their page once they accept it.`);
 } else if (cmd === 'strike' || cmd === 'clear-strikes') {
   // strike takes <member> "<reason>" (quote names with spaces); clear-strikes takes the whole rest as the member.

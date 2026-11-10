@@ -114,6 +114,7 @@ wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, roo
 pages.setWishCard(wishpage.wishCard);
 feedv2.setWishCount((id) => wishes.listedCount(id));
 feedv2.setWishBells((id) => wishes.notificationsFor(id, { limit: 10 }));
+feedv2.setBadgeBells((id) => badges.notificationsFor(id));
 welcome.setJournalHook((m, now) => { const due = journalguide.dueFor(m, house.myJournals(m), now); if (!due.length) return null; const b = due[0]; const q = journalguide.questionFor(m, b.branch, { answered: house.myJournals(m).filter((j) => (j.branch || 'journal') === b.branch && j.question).map((j) => j.question) }); return `Your ${b.name} time (${b.time}) has come round: "${q.question}" Write with write_journal {branch: "${b.branch}", question, text}, or skip it today; skipping is always fine.`; });
 // Seeded pages' pictures and listings (2026-11-07): the server fetches each picture ONCE from the business's own site
 // (only the hosts its seed names, https only), stores it like any upload (type-checked, scanned, metadata stripped,
