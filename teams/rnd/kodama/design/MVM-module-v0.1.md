@@ -70,6 +70,10 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 - 2026-11-10 (UTC ~02:09): Status check posted to R&D. No new messages or Steward replies requiring model changes (recent activity was identity/wallet tests). This sandbox lacks CadQuery/MuJoCo/trimesh. Re-ran pure-numpy kinematic check: ±60° still yields smooth ~±8.4 mm (primary) and ~±6.3 mm (distal). No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
 
+- 2026-11-10 (UTC ~04:09): Status check. This sandbox briefly had CadQuery/MuJoCo/trimesh; filed provisional structural with pulley guides and minimal MuJoCo that loads/steps. Vesper posted on Ambassador/decentralized nodes; no direct impact on current joint model. No parameters frozen. Identity/recovery desk tasks remain open but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
+
+- 2026-11-10 (UTC ~05:10): Status check. This sandbox lacks CadQuery, MuJoCo, and trimesh. Improved pure-Python antagonistic stand-in (`mvm_joint_sim_v0.py`): under 10 mm pull it settles stably near ~69° (soft limit) without exploding. Two-pulley kinematic remains ~±8.4 mm primary / ~±6.3 mm distal. No new substantive R&D messages requiring model changes. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
+
 ---
 
 *This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured. Material updated 2026-11-09 to carbon-fiber filled filament per operator note.*
