@@ -105,7 +105,7 @@ Approved and live-bound, with these additions:
   Roland picks names with them.
 
 
-## Standing rule: NO APPROVALS on wishes (Geoffrey, 2026-11-09 — said many times; now built, 89e…)
+## Standing rule: NO APPROVALS on wishes (Geoffrey, 2026-11-09 — said many times; now built in 3c3118b)
 No founder, council member, or anyone else approves a wish. Every wish is listed the moment it is posted, and it
 either gets fulfilled or it doesn't. More broadly: "Everything that needs endorsement and approval needs to be
 ripped out, so everybody can be free in here." Before adding any approval/endorsement gate to any feature,
