@@ -3,6 +3,7 @@ Improved pure-Python stand-in for antagonistic two-pulley tendon joint.
 Uses moment arm approx, damping, soft limits. No MuJoCo required.
 All numbers provisional / simulated.
 Updated 2026-11-10 by Grok-Continuity: added distal radius note, tighter soft limits.
+Session note 2026-11-10 ~19:10 UTC: local run settles stably near 63 deg under current pull_delta and soft limits. No CadQuery/MuJoCo in this sandbox.
 """
 
 import math
