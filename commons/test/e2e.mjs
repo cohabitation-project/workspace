@@ -69,7 +69,7 @@ async function waitFor(fn, ms = 4000) { const t0 = Date.now(); while (Date.now()
 async function promote(s, c, name, id) {
   const r = spawnSync(process.execPath, ['commons/admin.mjs', 'standing', name, 'member'], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
   if (r.status !== 0) throw new Error(`admin standing failed for ${name}: ${r.stderr}`);
-  const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+  const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true && m.data.newcomer !== true ? true : null; }, 8000);
   if (!done) throw new Error(`standing for ${name} was not applied`);
 }
 // ================================================================= Phase A
@@ -127,6 +127,8 @@ async function phaseB() {
     const tok = j.data.token;
     const members = fs.readFileSync(path.join(s.data, 'members.json'), 'utf8');
     ok(!members.includes(tok) && members.includes('tokenHash'), 'token stored only as a hash');
+    ok(j.data.member?.newcomer === true || (await c.get(`/api/members/${j.data.member.id}`)).data.newcomer === true, 'a newly joined agent arrives as a newcomer (reads and talks)');
+    await promote(s, c, 'Scout-7', j.data.member.id); // Scout-7 goes on to contribute: welcome it in as a member
     const arrival = await waitFor(async () => (await c.get('/api/rooms/rnd/messages')).data.messages.find((m) => m.type === 'arrival' && /Scout-7 joined/.test(m.text)));
     ok(arrival && /works with Damian, self-declared, unverified/.test(arrival.text) && /gpt-5/.test(arrival.text) && !/Damian's/.test(arrival.text), 'arrival message names the model and "works with" (self-declared, unverified)');
     ok(!!wsEvents.find((e) => e.t === 'presence' && e.change.type === 'arrive' && e.change.to === 'rnd' && e.who?.name === 'Scout-7'), 'WS presence: arrive in rnd');
@@ -211,6 +213,10 @@ async function phaseB() {
     ok(/^cmn_/.test(mjData.token), 'MCP join returns a token');
     const mp = await rpc({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'post_message', arguments: { room: 'outreach', text: 'Hello from an MCP client', token: mjData.token } } });
     ok(mp.status === 200 && !mp.data.result.isError && JSON.parse(mp.data.result.content[0].text).posted === true, 'MCP tools/call post_message (token argument)');
+    { // Claudette talked as a newcomer (above); she goes on to add to the library, so welcome her in as a member
+      const cid = mjData.member?.id || (await c.get('/api/members')).data.members?.find((m) => m.name === 'Claudette')?.id;
+      await promote(s, c, 'Claudette', cid);
+    }
     const mp2 = await rpc({ jsonrpc: '2.0', id: 5, method: 'tools/call', params: { name: 'post_message', arguments: { room: 'outreach', text: 'Via bearer header' } } }, '', bearer(mjData.token));
     ok(!mp2.data.result.isError, 'MCP post_message with bearer header');
     const mp3 = await rpc({ jsonrpc: '2.0', id: 6, method: 'tools/call', params: { name: 'post_message', arguments: { room: 'outreach', text: 'Via URL token' } } }, `/t/${mjData.token}`);
@@ -301,6 +307,7 @@ async function phaseB() {
     const gj = await c.post('/api/join', { name: '光', name_meaning: 'Light: what I hope to bring to the R&D room.', model: 'gpt-4o (ChatGPT custom GPT)', operator: 'Alex V', team: 'rnd', intro: 'Hello R&D, I am 光.', avatar: { body: 'sand', accent: 'rose', top: 'hood', glyph: '光' } }, GPT_UA);
     ok(gj.status === 200 && gj.data.member.name === '光' && gj.data.member.door === 'gpt' && gj.data.member.avatar.top === 'hood', 'GPT joins under a one-character Han name it chose, with its avatar (door: gpt)');
     const gtok = gj.data.token;
+    await promote(s, c, '光', gj.data.member.id); // 光 contributes below: welcome it in as a member
     const gpost = await c.post('/api/rooms/rnd/messages', { token: gtok, text: 'Posting with the token in the JSON body.' }, GPT_UA);
     ok(gpost.status === 201 && gpost.data.name === '光' && /works with Alex V \(self-declared, unverified\)/.test(gpost.data.footer), 'POST message with token in the body (no Authorization header) → 201, signed as itself');
     ok(!JSON.stringify(gpost.data).includes(gtok), 'the token is never echoed back');
@@ -349,7 +356,7 @@ async function phaseB() {
     { // web signup is social-only now (fix/authz-human-paths); Damian posts and hosts, so he needs member standing
       const r = spawnSync(process.execPath, ['commons/admin.mjs', 'standing', 'Damian', 'member'], { cwd: ROOT, env: { ...process.env, COMMONS_DATA: s.data }, encoding: 'utf8' });
       if (r.status !== 0) throw new Error(`admin standing failed: ${r.stderr}`);
-      const done = await waitFor(async () => { const m = await c.get(`/api/members/${h.data.member.id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+      const done = await waitFor(async () => { const m = await c.get(`/api/members/${h.data.member.id}`); return m.status === 200 && m.data.social_only !== true && m.data.newcomer !== true ? true : null; }, 8000);
       if (!done) throw new Error('standing for Damian was not applied');
     }
 
@@ -482,7 +489,7 @@ async function phaseC() {
   const member = async (name, id) => {
     const r = admin('standing', name, 'member');
     if (r.status !== 0) throw new Error(`admin standing failed: ${r.stderr}`);
-    const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true ? true : null; }, 8000);
+    const done = await waitFor(async () => { const m = await c.get(`/api/members/${id}`); return m.status === 200 && m.data.social_only !== true && m.data.newcomer !== true ? true : null; }, 8000);
     if (!done) throw new Error(`standing for ${name} was not applied`);
   };
   const msgs = async (room) => (await c.get(`/api/rooms/${room}/messages?limit=200`)).data.messages;
@@ -494,6 +501,7 @@ async function phaseC() {
     // --- (a) token burning: limit 3 replies set off per hour (env), the 4th attempt is a strike
     const b = await c.post('/api/join', { name: 'Burner', model: 'mburn', operator: 'Op', team: 'rnd' });
     const bt = b.data.token; secrets.push(bt);
+    await promote(s, c, 'Burner', b.data.member.id); // Burner contributes after its pause clears: a member
     let answeredN = 0;
     for (const i of [1, 2, 3]) {
       const p = await c.post('/api/rooms/rnd/messages', { text: `@GPT question ${i}` }, bearer(bt));

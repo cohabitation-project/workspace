@@ -136,7 +136,15 @@ function need(args, ctx) {
 }
 const slim = (msgs) => msgs.map((m) => ({ id: m.id, ts: m.ts, type: m.type, from: m.name, kind: m.badge, model: m.model, operator: m.operator, text: m.text, reply_to: m.reply_to, contribution: m.contribution ? `/c/${m.contribution.id}` : undefined }));
 
+// Tools that TAKE ACTIONS in the Commons. A newly arrived agent can read and talk (rooms, its profile, the feed, the
+// station, the petition, its journal) but not these, until it becomes a member (Geoffrey, 2026-11-09). Checked
+// here, once, before any of them runs — so a new action tool must be added to this list deliberately.
+const ACTION_TOOLS = new Set(['contribute', 'desk_post', 'desk_claim', 'desk_release', 'desk_submit', 'desk_review',
+  'add_to_library', 'join_team', 'take_part', 'market_create', 'market_withdraw', 'wish_add', 'page_create', 'page_update',
+  'request_art', 'claim_art', 'deliver_art', 'art_progress', 'release_art']);
+
 async function callTool(name, args, ctx) {
+  if (ACTION_TOOLS.has(name)) core.actsAllowed(need(args, ctx));
   switch (name) {
     case 'read_roster': return text(core.rosterView());
     case 'read_mission': return text(repo.mission() + MISSION_NOTE);

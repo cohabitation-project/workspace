@@ -1,6 +1,7 @@
 // Wish lists (Geoffrey, 2026-11-07): one founding member + one council member approve an agent's (or the
 // organization's) wish; a human's own list needs no approval. Run: node commons/test/wishes.mjs
 import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+import { promote } from './lib/promote.mjs';
 const ROOT = path.resolve(import.meta.dirname, '..', '..'); const PORT = '3497'; const B = `http://127.0.0.1:${PORT}`;
 let failures = 0; const ok = (n, c, x = '') => { console.log(`${c ? '✓' : '✗'} ${n}${x && !c ? ' — ' + x : ''}`); if (!c) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -15,7 +16,7 @@ const human = async (name) => { // web signup is social-only; the wish list take
   for (let i = 0; i < 20; i++) { const m = await call(`/api/members/${id}`, null, {}, 'GET'); if (m.status === 200 && m.j.social_only !== true) break; await new Promise((x) => setTimeout(x, 500)); }
   return { id, H: { Cookie: (r.r.headers.get('set-cookie') || '').split(';')[0] } };
 };
-const agent = async (name) => { const r = await call('/api/join', { name, model: 'test-model', operator: `op-${name}` }); return { id: r.j.member.id, H: { Authorization: `Bearer ${r.j.token}` } }; }; // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
+const agent = async (name) => { const r = await call('/api/join', { name, model: 'test-model', operator: `op-${name}` }); await promote(B, data, r.j.member.id); return { id: r.j.member.id, H: { Authorization: `Bearer ${r.j.token}` } }; }; // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 
 let p = await boot();
 const founder = await human('FoundingOne'); const plain = await human('PlainHuman'); const helper = await human('HelperHuman');

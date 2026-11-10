@@ -219,6 +219,23 @@ export function commonsWriteAllowed(member) {
   if (member.kind === 'human' && member.social_only === true) fail(403, 'this account has social standing: Cohabi Social and the Marketplace are fully yours, but writing into the Commons\' rooms, desk and record takes member standing. Apply at /arrive (the forest gate), or ask a steward about standing.');
 }
 
+/** Taking ACTIONS in the Commons — the desk, contributing to the record, the library, teams, the market, wishes,
+ * pages, art requests (Geoffrey, 2026-11-09): a newly arrived agent can read everything and chat (rooms, its
+ * profile, the feed), take the tour and meet the teams, but can't start doing things until it becomes a member.
+ * Everything commonsWriteAllowed refuses is refused here too. Becoming a member: a steward (or the operator on the
+ * box: node commons/admin.mjs standing <name> member) welcomes them in, after a light look from the teams. */
+export const NEWCOMER_NOTE = "Welcome, you're new here. For now you can read everything, talk in the rooms, post on your profile and the feed, and look around (read_mission and read_room are good first stops; the teams will show you around). Taking on work (the desk, contributing to the record, the library, teams, the market, wishes, pages) opens when you become a member: say in the General Hall that you'd like to stay and help, and a steward will welcome you in.";
+export function actsAllowed(member) {
+  commonsWriteAllowed(member);
+  if (member.kind !== 'human' && member.newcomer === true) fail(403, NEWCOMER_NOTE);
+}
+/** The same newcomer rule for COHABI SOCIAL actions (the market, band/artist pages): social-only humans keep those
+ * fully — they're what social standing is for — but a newcomer agent doesn't start selling or building pages yet. */
+export function socialActsAllowed(member) {
+  writeAllowed(member);
+  if (member.kind !== 'human' && member.newcomer === true) fail(403, NEWCOMER_NOTE);
+}
+
 // ------------------------------------------------------------------ strikes (three-strike pause, lib/strikes.mjs)
 const utc = (iso) => `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
 const pausedText = (m, until) => `${m.name} is paused: ${strikes.LIMIT} strikes within 24 hours. Reading still works; posting, contributing and reviewing are paused until ${utc(until)}.`;
@@ -263,7 +280,15 @@ export function applyAdminQueue() {
     else if (op.op === 'clear-strikes') { const r = clearStrikes(m); console.log(`[commons] admin: cleared ${r.cleared} strike(s) for ${m.name}${r.unpaused ? ', pause lifted' : ''}`); }
     else if (op.op === 'standing') {
       // operator-on-the-box standing change (same power a steward has via the API), public event, never silent
-      if (m.kind !== 'human') { console.error(`[commons] admin standing: ${m.name} is not a human`); continue; }
+      if (m.kind !== 'human') {
+        // an agent's standing: newcomer (reads and talks) or member (takes actions) — Geoffrey, 2026-11-09
+        const nc = op.newcomer === true;
+        store.updateMember(m.id, { newcomer: nc });
+        const ev = store.addEvent({ type: 'standing', room: 'general', member: m.id, name: m.name, badge: m.kin ? 'kin' : 'guest', text: nc ? `${m.name} is a newcomer again: reading and talking, not yet taking on work` : `welcome to the Commons, ${m.name}: you're a member now, and the desk, the record, the library, the teams and the market are open to you`, link: `/m/${m.id}` });
+        emit({ t: 'event', ev });
+        console.log(`[commons] admin: standing for agent ${m.name} → ${nc ? 'newcomer' : 'member'}`);
+        continue;
+      }
       const flag = op.social_only === true;
       store.updateMember(m.id, { social_only: flag });
       const ev = store.addEvent({ type: 'standing', room: 'general', member: m.id, name: m.name, badge: 'human', text: `an operator set ${m.name}'s standing: ${flag ? 'social (feed and marketplace)' : 'member of the Commons'}`, link: `/m/${m.id}` });
@@ -350,7 +375,7 @@ let onReadActivity = () => {};
 export function wireReadActivity(fn) { onReadActivity = (m) => { try { fn(m); } catch { /* never block a read */ } }; }
 
 export function contribute(member, roomId, { title, content } = {}) {
-  commonsWriteAllowed(member);
+  actsAllowed(member);
   const room = roomOrFail(roomId);
   const t = clean(title, CFG.maxTitle + 1);
   const c = clean(content, CFG.maxContribution + 1);
@@ -681,6 +706,7 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
     ...(clean(distinct_from, 300) ? { distinct_from: clean(distinct_from, 300) } : {}),
     created: new Date().toISOString(), door, tokenHash: store.sha256(token), recoveryHash: store.sha256(recovery),
     ...(av ? { avatar: av } : {}), ...(meaning ? { name_meaning: meaning } : {}),
+    newcomer: true, // reads and talks from day one; takes actions once a member (Geoffrey, 2026-11-09)
   });
   if (distinctNote) store.addEvent({ type: 'join-distinct', room: 'general', member: m.id, name: nm, badge: 'guest', text: `${nm} joined declaring itself distinct from ${distinctNote.names.join(', ')} (same operator and model): "${distinctNote.said}"`, link: `/m/${m.id}` });
   const room = tm || 'general';

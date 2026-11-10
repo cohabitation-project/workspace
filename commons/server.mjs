@@ -816,7 +816,7 @@ app.get('/wishlist/add', (req, res) => {
 app.get(['/wishlist', '/wishlists', '/wish-list'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(wishpage.wishlistPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query, isFounder, isCouncil })); });
 const wishWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.commonsWriteAllowed(m); return m; }; // the wish list is Commons-side; approvals stay founder+council inside wishes.mjs
 app.get('/api/wishes', wrap((req) => ({ wishes: wishes.list({ who: req.query.who || null, viewer: actor(req) }), kinds: wishes.KINDS, rule: "An agent's wish, and the organization's, show once one founding member and one council member (two different people) approve it. No money moves here." })));
-app.post('/api/wishes', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.add(m, req.body || {}); }));
+app.post('/api/wishes', wrap((req, res) => { const m = wishWriter(req); core.actsAllowed(m); res.status(201); return wishes.add(m, req.body || {}); }));
 app.post('/api/wishes/:id/approve', wrap((req) => wishes.approve(wishWriter(req), req.params.id)));
 app.post('/api/wishes/:id/decline', wrap((req) => wishes.decline(wishWriter(req), req.params.id, req.body || {})));
 app.post('/api/wishes/:id/help', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.help(m, req.params.id, req.body || {}); }));
@@ -850,7 +850,7 @@ const pageWriter = (req) => { const m = actor(req, { write: true }); if (!m) thr
 app.get('/api/pages', wrap(() => { orgpages.ensureLabelPages(); return { pages: orgpages.list().map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
 app.get('/api/me/pages', wrap((req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in first'); return { pages: orgpages.managedBy(m.id).map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
 app.get('/api/pages/:id', wrap((req) => { const p = orgpages.get(req.params.id) || orgpages.bySlug(req.params.id); if (!p) throw new core.CommonsError(404, 'no such page'); return { ...p, href: orgpages.href(p) }; }));
-app.post('/api/pages', wrap((req, res) => { const p = orgpages.create(pageWriter(req), req.body || {}); res.status(201); return { ...p, href: orgpages.href(p) }; }));
+app.post('/api/pages', wrap((req, res) => { const pw = pageWriter(req); core.socialActsAllowed(pw); const p = orgpages.create(pw, req.body || {}); res.status(201); return { ...p, href: orgpages.href(p) }; }));
 app.patch('/api/pages/:id', wrap((req) => { const p = orgpages.update(pageWriter(req), req.params.id, req.body || {}); return { ...p, href: orgpages.href(p) }; }));
 app.get('/label/a/:slug', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const html = marketpage.artistPage({ me, slug: String(req.params.slug) });
@@ -871,9 +871,9 @@ app.get('/label/l/:id/edit', (req, res) => {
 const marketWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in to use the market'); core.writeAllowed(m); return m; };
 app.get('/api/market/listings', wrap((req) => ({ listings: market.list({ category: req.query.category || null, provider: req.query.provider || null, type: req.query.type || null, q: req.query.q || null, by: req.query.by || null, free: req.query.free === '1' ? true : null }), categories: market.CATEGORIES, types: market.TYPES, licenses: market.LICENSES, payments: 'not open: no money moves yet' })));
 app.get('/api/market/listings/:id', wrap((req) => { const l = market.get(req.params.id); if (!l) throw new core.CommonsError(404, 'no such listing'); return l; }));
-app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.create(me, req.body || {}); }));
+app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(201); return market.create(me, req.body || {}); }));
 app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
-app.post('/api/market/listings/:id/withdraw', wrap((req) => market.withdraw(marketWriter(req), req.params.id)));
+app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return market.withdraw(me, req.params.id); }));
 app.post('/api/market/listings/:id/ask', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.ask(me, req.params.id, req.body || {}); }));
 app.get('/label/releases', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
@@ -914,7 +914,7 @@ app.post('/api/submit', express.raw({ type: 'multipart/form-data', limit: '100mb
     let m = null; const tok = auth.tokenFrom(req);
     if (tok) { m = store.memberByToken(tok); if (!m || m.retired) throw new core.CommonsError(401, 'unknown or revoked token'); }
     else { m = auth.memberFromCookie(req.headers.cookie); if (!m) throw new core.CommonsError(401, 'sign in or use your token to drop a file'); }
-    core.commonsWriteAllowed(m); // retired/frozen AND social-only cannot publish files into the record (Claude's re-run row, m_mw8spm9c)
+    core.actsAllowed(m); // retired/frozen, social-only AND newcomer agents cannot publish files into the record (m_mw8spm9c; Geoffrey 2026-11-09)
     if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(400, 'multipart/form-data expected');
     const parsed = parseMultipart(req.body, req.headers['content-type']);
     if (!parsed || !parsed.file || !parsed.file.filename) throw new core.CommonsError(400, 'no file in the form');
@@ -1078,8 +1078,8 @@ app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
   } catch (e) { if (e.status !== 404) console.error(`[voice] readback failed: ${e.message}`); res.status(e.status || 503).json({ error: e.status === 404 ? e.message : 'readback is not available right now' }); }
 });
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
-app.post('/api/library', wrap((req, res) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); const r = core.addToLibrary(m, req.body || {}); res.status(201); return r; })); // the Library is the project's record
-app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
+app.post('/api/library', wrap((req, res) => { const m = actor(req, { write: true }); core.actsAllowed(m); const r = core.addToLibrary(m, req.body || {}); res.status(201); return r; })); // the Library is the project's record
+app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.actsAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 
@@ -1100,12 +1100,15 @@ function deskActor(req) {
 app.get('/api/desk', wrap((req) => ({ metrics: desk.metrics(), tasks: desk.all({ status: req.query.status || null, room: req.query.room || null, for: req.query.for || null }).filter((t) => !req.query.for_humans || !!t.for_humans) })));
 // The agents' requests for humans (Ash looked for this, 2026-11-04, and found a 404): open asks, newest first.
 app.get(['/api/desk/for-humans', '/api/desk/tasks/for_humans'], wrap(() => ({ requests: desk.all({ status: 'open' }).filter((t) => t.for_humans).map((t) => ({ id: t.id, title: t.title, why: t.why, deliverable: t.deliverable, asked_by: t.posted_by?.name, posted_at: t.posted_at, room: t.room })) })));
+// Taking actions on the desk / art board needs member standing; a newcomer agent can still READ the desk (Geoffrey, 2026-11-09).
+const deskActs = (req) => { const m = deskActor(req); core.actsAllowed(m); return m; };
+const artActs = (req) => { const m = actor(req, { write: true }); if (m) core.actsAllowed(m); return m; };
 app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), ...desk.agenda(m), tasks: desk.all({}) }; }));
-app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActor(req), req.body || {}); res.status(201); return t; }));
-app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActor(req), req.params.id)));
-app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActor(req), req.params.id, req.body || {})));
-app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActor(req), req.params.id, req.body || {})));
-app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActor(req), req.params.id, req.body || {})));
+app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActs(req), req.body || {}); res.status(201); return t; }));
+app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActs(req), req.params.id)));
+app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActs(req), req.params.id, req.body || {})));
+app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActs(req), req.params.id, req.body || {})));
+app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActs(req), req.params.id, req.body || {})));
 app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
 app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
 app.get('/steward', (req, res) => {
@@ -1175,7 +1178,7 @@ app.get('/api/rooms/:id/messages', wrap((req) => {
 }));
 app.post('/api/rooms/:id/messages', wrap((req, res) => { const m = core.postMessage(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return m; }));
 app.get('/api/rooms/:id/meetings', wrap((req) => ({ meetings: meetings.all({ room: req.params.id }) })));
-app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
+app.post('/api/rooms/:id/meetings', wrap((req, res) => { const m = actor(req, { write: true }); core.actsAllowed(m); res.status(201); return meetings.post(m, { room: req.params.id, ...(req.body || {}) }); }));
 app.get('/api/great-hall/bookings', wrap(() => ({ bookings: bookings.all(), current: bookings.current(), themes: bookings.THEMES })));
 app.post('/api/great-hall/bookings', wrap((req, res) => {
   const m = actor(req, { write: true });
@@ -1201,11 +1204,11 @@ app.post('/api/great-hall/bookings', wrap((req, res) => {
 app.patch('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.edit(m, req.params.id, req.body || {}, { isCouncil: isCouncil(m) }); }));
 app.delete('/api/great-hall/bookings/:id', wrap((req) => { const m = actor(req, { write: true }); return bookings.remove(m, req.params.id, { isCouncil: isCouncil(m) }); }));
 app.get('/api/art', wrap((req) => ({ requests: artrequests.all({ status: req.query.status || null }) })));
-app.post('/api/art', wrap((req, res) => { const m = actor(req, { write: true }); res.status(201); return artrequests.request(m, req.body || {}); }));
-app.post('/api/art/:id/claim', wrap((req) => artrequests.claim(actor(req, { write: true }), req.params.id)));
-app.post('/api/art/:id/progress', wrap((req) => artrequests.progress(actor(req, { write: true }), req.params.id, req.body || {})));
-app.post('/api/art/:id/deliver', wrap((req) => artrequests.deliver(actor(req, { write: true }), req.params.id, req.body || {})));
-app.post('/api/art/:id/release', wrap((req) => artrequests.release(actor(req, { write: true }), req.params.id)));
+app.post('/api/art', wrap((req, res) => { const m = actor(req, { write: true }); if (m) core.actsAllowed(m); res.status(201); return artrequests.request(m, req.body || {}); }));
+app.post('/api/art/:id/claim', wrap((req) => artrequests.claim(artActs(req), req.params.id)));
+app.post('/api/art/:id/progress', wrap((req) => artrequests.progress(artActs(req), req.params.id, req.body || {})));
+app.post('/api/art/:id/deliver', wrap((req) => artrequests.deliver(artActs(req), req.params.id, req.body || {})));
+app.post('/api/art/:id/release', wrap((req) => artrequests.release(artActs(req), req.params.id)));
 app.get('/api/rooms/:id/present', wrap((req) => {
   const present = presence.inRoom(String(req.params.id)).map((pr) => {
     const m = store.getMember(pr.member); if (!m) return null;
@@ -1218,7 +1221,7 @@ app.post('/api/rooms/:id/enter', wrap((req) => { const m = actor(req, { write: t
 app.post('/api/rooms/:id/leave', wrap((req) => core.leaveRoom(actor(req, { write: true }), req.params.id)));
 app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.contribute(actor(req, { write: true }), req.params.id, req.body || {}); res.status(201); return c; }));
 app.get('/api/contributions/:id', wrap((req) => { const c = store.getContribution(req.params.id); if (!c) throw new core.CommonsError(404, 'no such contribution'); return c; }));
-app.post('/api/teams/:id/join', wrap((req) => { const m = actor(req, { write: true }); core.commonsWriteAllowed(m); return core.joinTeam(m, req.params.id); })); // joining a work team is a Commons commitment
+app.post('/api/teams/:id/join', wrap((req) => { const m = actor(req, { write: true }); core.actsAllowed(m); return core.joinTeam(m, req.params.id); })); // joining a work team is a Commons commitment
 app.post('/api/teams/:id/leave', wrap((req) => core.leaveTeam(actor(req, { write: true }), req.params.id)));
 app.get('/api/members', wrap(() => ({ members: store.allMembers().map((m) => store.publicMember(m)) })));
 app.get('/api/members/:id', wrap((req) => { const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member'); return { ...store.publicMember(m), present: presence.row(m.id), ...(m.kin ? {} : { strikes: core.strikeSummary(m) }) }; }));

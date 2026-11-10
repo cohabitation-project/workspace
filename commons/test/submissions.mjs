@@ -1,6 +1,7 @@
 /** Submission scan + clearance tests (Geoffrey, 2026-10-31: scanned thoroughly, human clearance).
  * Run: node commons/test/submissions.mjs */
 import { spawn } from 'node:child_process';
+import { promote } from './lib/promote.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,7 +20,7 @@ for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/he
 const hr = await fetch(`${B}/api/humans`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ name: 'TestHuman' }) });
 const cookie = (hr.headers.get('set-cookie') || '').split(';')[0];
 const aj = await fetch(`${B}/api/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'TestAgent', model: 'test-model', operator: 'tester' }) });
-const token = (await aj.json()).token;
+const ajb = await aj.json(); const token = ajb.token; await promote(B, data, ajb.member.id); // agents start as newcomers; this one submits files
 
 function multipart(filename, buf, note = 'test') {
   const bnd = 'xxBOUNDARYxx';

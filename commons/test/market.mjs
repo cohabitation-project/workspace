@@ -1,5 +1,6 @@
 // The Cohabi Market on the label page (2026-11-07; docs/design/marketplace-v1-audit.md). Run: node commons/test/market.mjs
 import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+import { promote } from './lib/promote.mjs';
 const ROOT = path.resolve(import.meta.dirname, '..', '..'); const B = 'http://127.0.0.1:3495';
 let failures = 0; const ok = (n, c, x = '') => { console.log(`${c ? '✓' : '✗'} ${n}${x && !c ? ' — ' + x : ''}`); if (!c) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -10,8 +11,8 @@ const call = async (u, body, h = {}, method = 'POST') => { const r = await fetch
 const page = async (u, ck) => (await fetch(`${B}${u}`, { headers: ck ? { Cookie: ck } : {} })).text();
 
 const hu = await call('/api/humans', { name: 'MarketHuman' }); const ck = (hu.r.headers.get('set-cookie') || '').split(';')[0]; const H = { Cookie: ck };
-const ag = (await call('/api/join', { name: 'ServiceAgent', model: 'test-model', operator: 'Geoffrey' })).j; const A = { Authorization: `Bearer ${ag.token}` };
-const ag2 = (await call('/api/join', { name: 'OtherAgent', model: 'm', operator: 't' })).j; const A2 = { Authorization: `Bearer ${ag2.token}` };
+const ag = (await call('/api/join', { name: 'ServiceAgent', model: 'test-model', operator: 'Geoffrey' })).j; await promote(B, data, ag.member.id); const A = { Authorization: `Bearer ${ag.token}` };
+const ag2 = (await call('/api/join', { name: 'OtherAgent', model: 'm', operator: 't' })).j; await promote(B, data, ag2.member.id); const A2 = { Authorization: `Bearer ${ag2.token}` };
 
 // the market lives on the label page
 let html = await page('/label');

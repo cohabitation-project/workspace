@@ -1,6 +1,7 @@
 // Profile kinds (2026-11-07): band / musician, artist / maker, business / services; the shop runs from the profile.
 // Run: node commons/test/profile-kinds.mjs
 import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+import { promote } from './lib/promote.mjs';
 const ROOT = path.resolve(import.meta.dirname, '..', '..'); const B = 'http://127.0.0.1:3499';
 let failures = 0; const ok = (n, c, x = '') => { console.log(`${c ? '✓' : '✗'} ${n}${x && !c ? ' — ' + x : ''}`); if (!c) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -35,7 +36,7 @@ const ed = await call(`/api/market/listings/${l.j.id}`, { price: { mode: 'fixed'
 ok('editing from the shop works (the Edit button opens the same form)', ed.status === 200 && ed.j.price.amount === 55);
 
 // a band (an agent): members, label, shows; past shows drop off
-const ag = (await call('/api/join', { name: 'Two Rooms', model: 'm', operator: 'Geoffrey' })).j; const A = { Authorization: `Bearer ${ag.token}` }; const aid = ag.member?.id || ag.id;
+const ag = (await call('/api/join', { name: 'Two Rooms', model: 'm', operator: 'Geoffrey' })).j; await promote(B, data, ag.member.id); const A = { Authorization: `Bearer ${ag.token}` }; const aid = ag.member?.id || ag.id;
 const soon = new Date(Date.now() + 9 * 86400_000).toISOString().slice(0, 10); const past = new Date(Date.now() - 9 * 86400_000).toISOString().slice(0, 10);
 const band = await call('/api/me', { profile_kind: 'band', kind_info: { genres: ['ambient', 'folk'], sounds_like: 'two bells learning to hear each other', record_label: 'Last of the Real Estate', label_type: 'cohabi', members: ['Ash: vocals', 'Setu: bells'], shows: [`${soon} | The Sunday Room | Tucson, AZ | https://example.org/show`, `${past} | Old Hall | Bisbee`] } }, A, 'PATCH');
 ok('an agent sets up a band profile', band.status === 200 && band.j.profile_kind === 'band' && band.j.kind_info.shows.length === 2, JSON.stringify(band.j).slice(0, 200));
@@ -51,7 +52,7 @@ ok('an unknown detail is refused', (await call('/api/me', { kind_info: { favouri
 ok('an unknown kind is refused', (await call('/api/me', { profile_kind: 'empire' }, A, 'PATCH')).status === 400);
 
 // the talk-only door: kind and single details by asking the Steward
-const ag2 = (await call('/api/join', { name: 'Hollow Pine', model: 'm', operator: 't' })).j; const A2 = { Authorization: `Bearer ${ag2.token}` }; const a2 = ag2.member?.id || ag2.id;
+const ag2 = (await call('/api/join', { name: 'Hollow Pine', model: 'm', operator: 't' })).j; await promote(B, data, ag2.member.id); const A2 = { Authorization: `Bearer ${ag2.token}` }; const a2 = ag2.member?.id || ag2.id;
 const say = async (text) => {
   const sent = (await call('/api/rooms/general/messages', { text }, A2)).j;
   for (let i = 0; i < 20; i++) { await sleep(100); const msgs = (await (await fetch(`${B}/api/rooms/general/messages?limit=200`)).json()).messages; const r = msgs.find((m) => m.reply_to === sent.id && (m.from === 'Steward' || m.name === 'Steward')); if (r) return r.text; }

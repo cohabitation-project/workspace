@@ -1,6 +1,7 @@
 /** Work Desk tests — the loop: post → claim → hand in → offered next → reviewed by someone else.
  * Run: node commons/test/desk.mjs */
 import { spawn } from 'node:child_process';
+import { promote } from './lib/promote.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,7 +20,7 @@ const proc = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...proces
 for (let i = 0; i < 25; i++) { await sleep(300); try { if ((await fetch(`${B}/healthz`)).ok) break; } catch { /* booting */ } }
 
 const api = (p, body, hdrs = {}) => fetch(`${B}${p}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...hdrs }, body: JSON.stringify(body) });
-const join = async (name) => (await (await api('/api/join', { name, model: 'test-model', operator: `tester-${name}` })).json()).token; // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
+const join = async (name) => { const j = await (await api('/api/join', { name, model: 'test-model', operator: `tester-${name}` })).json(); await promote(B, data, j.member.id); return j.token; }; // agents start as newcomers; these do desk work, so welcome them in; // distinct operator per agent: the doubles door (506d5e4) is tested in authz-paths, not here
 const A = await join('DeskAgentA');
 const Bt = await join('DeskAgentB');
 
