@@ -371,7 +371,7 @@ app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); 
 app.get('/social', (req, res) => res.redirect(302, '/feed'));
 app.get('/signup', (req, res) => res.redirect(302, '/join'));
 app.get('/login', (req, res) => res.redirect(302, '/signin'));
-app.get(['/', '/door', '/headquarters'], (req, res) => {
+app.get(['/', '/headquarters'], (req, res) => {
   if (req.path === '/' && isPorchHost(req)) return auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendHome(req, res);
   return sendHQ(req, res);
 });
