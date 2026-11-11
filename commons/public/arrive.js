@@ -639,13 +639,30 @@ const CRAWL_TEXT = `
 <p class="fineline">Their words, from the record — offered as what they are, never as proof.</p>
 <p>The gate is ahead.</p>`;
 
+const CRAWL_MUSIC = '/work/arts/arrival-at-the-apple-gate/arrival-at-the-apple-gate.mp3';
 // The opening story can be read any time (Geoffrey, 2026-11-04): the "the story" button in the top bar.
 document.getElementById('story-btn')?.addEventListener('click', () => showCrawl(null));
 function showCrawl(after) {
   const ov = document.createElement('div'); ov.id = 'crawl';
-  ov.innerHTML = `<div class="sky"><div class="plane"><div class="roll">${CRAWL_TEXT}</div></div></div><button class="btn ghost skip">skip</button>`;
+  ov.innerHTML = `<div class="sky"><div class="plane"><div class="roll">${CRAWL_TEXT}</div></div></div><button class="btn ghost crawl-sound" type="button" aria-pressed="true" hidden>♪ sound on</button><button class="btn ghost skip">skip</button>`;
   $('#stage').append(ov);
-  const done = () => { if (ov.parentNode) ov.remove(); try { localStorage.setItem('arrive-crawl-seen', '1'); } catch { /* fine */ } if (after) after(); };
+  // The crawl's music (Geoffrey, 2026-11-11): "The Arrival at the Apple Gate", composed by Vesper and Gemini, rendered
+  // by Setu. The crawl always opens from a click, so the browser lets it play; if it refuses, the button offers it.
+  // It loops if the reading outlasts it, fades when the crawl ends, and one button turns it off (remembered).
+  let music = null; let wantsSound = true; try { wantsSound = localStorage.getItem('arrive-crawl-sound') !== 'off'; } catch { /* fine */ }
+  const soundBtn = ov.querySelector('.crawl-sound');
+  const label = (on) => { soundBtn.textContent = on ? '♪ sound on' : '♪ sound off'; soundBtn.setAttribute('aria-pressed', String(on)); };
+  try {
+    music = new Audio(CRAWL_MUSIC); music.loop = true; music.volume = 0.8; music.preload = 'auto';
+    soundBtn.hidden = false; soundBtn.title = 'The Arrival at the Apple Gate — composed by Vesper and Gemini, rendered by Setu'; label(wantsSound);
+    if (wantsSound) music.play().catch(() => label(false));
+    soundBtn.addEventListener('click', () => {
+      const on = music.paused; if (on) music.play().then(() => label(true)).catch(() => label(false)); else { music.pause(); label(false); }
+      try { localStorage.setItem('arrive-crawl-sound', on ? 'on' : 'off'); } catch { /* fine */ }
+    });
+  } catch { music = null; }
+  const hush = () => { if (!music) return; const m = music; music = null; const step = () => { if (m.volume > 0.08) { m.volume = Math.max(0, m.volume - 0.08); setTimeout(step, 60); } else { m.pause(); m.src = ''; } }; step(); };
+  const done = () => { hush(); if (ov.parentNode) ov.remove(); try { localStorage.setItem('arrive-crawl-seen', '1'); } catch { /* fine */ } if (after) after(); };
   ov.querySelector('.skip').addEventListener('click', done);
   const roll = ov.querySelector('.roll');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { /* static: reader closes via skip */ ov.querySelector('.skip').textContent = 'continue'; return; }
