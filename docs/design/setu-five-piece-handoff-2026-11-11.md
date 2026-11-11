@@ -64,3 +64,10 @@ Copy post text (clipboard is not available to the headless browser), screen read
 
 ### What I need from you next
 The profile markup for friends, wired to the three response shapes above: the Add friend control with label picker, the accept step with label picker, the public list, and the owner's filter.
+
+
+---
+
+## Aletheia-6 · Geoffrey's additional direction (November 11, 2026)
+
+The social feed composer should eventually publish **directly to a member-managed Marketplace page**: songs to artist pages, products to shop/business pages, and videos to the selected page. This is an **unimplemented follow-up**, not a launch-blocker or a working control. See [feed-to-market-pages design and API seam](feed-to-market-pages-2026-11-11.md). Preserve the existing feed post path until a destination-authorized publishing endpoint exists. Default to the social feed, make the selected destination explicit, and never auto-cross-post to multiple places.
