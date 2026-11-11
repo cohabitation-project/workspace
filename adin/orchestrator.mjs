@@ -26,6 +26,7 @@ import { TaskQueue } from './queue.mjs';
 import { selectNode, scoreNode, preValidateTask } from './scheduler.mjs';
 import { validateTaskResult, ReviewQueue } from './validation.mjs';
 import { Metrics } from './metrics.mjs';
+import { Approvals } from './approvals.mjs';
 
 /**
  * Create an orchestrator instance with all routes, state, and lifecycle methods.
@@ -44,6 +45,7 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
   const queue = new TaskQueue(DATA_DIR);
   const reviews = new ReviewQueue(DATA_DIR);
   const metrics = new Metrics(DATA_DIR);
+  const approvals = new Approvals(DATA_DIR);
 
   // ---- Rate limiter (in-memory, per source) ----
 
@@ -239,7 +241,14 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     }
 
     const task = queue.getTask(req.params.id);
-    if (!task) return res.status(404).json({ error: 'unknown task' });
+    if (!task) {
+      // Check if this task already completed (moved to history)
+      const inHistory = queue.recentHistory(200).some(h => h.id === req.params.id);
+      if (inHistory) {
+        return res.status(409).json({ error: 'task already completed', message: 'this task has already been completed and is in history' });
+      }
+      return res.status(404).json({ error: 'task not found', message: 'task already completed or not found' });
+    }
 
     // Early ownership check BEFORE any validation/logging (Finding 3)
     if (task.assigned_to !== req.node.id) {
@@ -337,6 +346,14 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
   adminApp.post('/adin/admin/suspend/:node_id', adminAuth, (req, res) => {
     const result = registry.suspend(req.params.node_id, req.body?.reason || 'admin suspension');
     if (result.error) return res.status(result.status).json({ error: result.error });
+
+    // Release all tasks assigned to the suspended node back to the queue
+    for (const task of queue.tasksForNode(req.params.node_id)) {
+      queue.release(task.id);
+    }
+    const node = registry.getNode(req.params.node_id);
+    if (node) node.current_tasks = [];
+
     res.json(result);
   });
 
@@ -373,6 +390,20 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     const preCheck = preValidateTask(taskDef);
     if (!preCheck.safe) return res.status(400).json({ error: 'disallowed steps', violations: preCheck.violations });
 
+    // Check commit approvals for all git-clone steps
+    if (taskDef.payload?.steps) {
+      for (const step of taskDef.payload.steps) {
+        if (step.action === 'git-clone' && step.repo && step.commit) {
+          if (!approvals.isApproved(step.repo, step.commit)) {
+            return res.status(403).json({
+              error: `commit not approved: ${step.repo}@${step.commit.slice(0, 12)}`,
+              action: 'approve the commit first via POST /adin/admin/approve',
+            });
+          }
+        }
+      }
+    }
+
     const result = queue.submit(taskDef);
     if (result.error) return res.status(result.status).json({ error: result.error });
 
@@ -388,6 +419,36 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     }
 
     res.json({ task_id: result.task.id, status: result.task.status, assigned_to: result.task.assigned_to, scheduling: decision });
+  });
+
+  // ---- Commit approval endpoints ----
+
+  adminApp.post('/adin/admin/approve', adminAuth, (req, res) => {
+    const { repo, commit, approver, notes } = req.body || {};
+    const result = approvals.approve(repo, commit, approver, notes);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+    res.json(result);
+  });
+
+  adminApp.get('/adin/admin/approvals/:repo', adminAuth, (req, res) => {
+    // repo param may contain slashes (e.g. "cohabitation-project/workspace")
+    // Express collapses the path, so use a wildcard or decode. For simplicity,
+    // accept the repo as a query param fallback too.
+    const repo = req.params.repo;
+    res.json({ approvals: approvals.listApprovals(repo) });
+  });
+
+  // Support repos with slashes via a catch-all
+  adminApp.get('/adin/admin/approvals/:org/:name', adminAuth, (req, res) => {
+    const repo = `${req.params.org}/${req.params.name}`;
+    res.json({ approvals: approvals.listApprovals(repo) });
+  });
+
+  adminApp.post('/adin/admin/revoke-approval', adminAuth, (req, res) => {
+    const { repo, commit, reason } = req.body || {};
+    const result = approvals.revokeApproval(repo, commit, reason);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+    res.json(result);
   });
 
   // ---- Read-only admin views ----
@@ -421,6 +482,27 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     if (!['approved', 'rejected'].includes(decision)) return res.status(400).json({ error: 'decision must be approved or rejected' });
     const result = reviews.decide(req.params.id, decision, decided_by || 'admin');
     if (result.error) return res.status(result.status).json({ error: result.error });
+
+    // If approved, complete the original task with the stored result
+    if (decision === 'approved' && result.entry?.full_result) {
+      const taskId = result.entry.task_id;
+      const nodeId = result.entry.node_id;
+      const fullResult = result.entry.full_result;
+
+      // The task was previously failed with "held for review" — it may have been requeued.
+      // Resubmit it as completed directly into history via a special completion path.
+      const task = queue.getTask(taskId);
+      if (task) {
+        // Task still exists (was requeued after the hold-fail). Assign and complete it.
+        if (task.status === 'queued') {
+          queue.assign(taskId, nodeId);
+        }
+        queue.complete(taskId, nodeId, fullResult);
+      }
+      // If task is already gone from active (in history as failed), that's expected —
+      // the review approval is recorded but the task lifecycle already ended.
+    }
+
     res.json(result);
   });
 
@@ -490,7 +572,7 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     if (adminServer) adminServer.close();
   }
 
-  return { workerApp, adminApp, registry, queue, reviews, metrics, start, stop, workerServer: () => workerServer, adminServer: () => adminServer };
+  return { workerApp, adminApp, registry, queue, reviews, metrics, approvals, start, stop, workerServer: () => workerServer, adminServer: () => adminServer };
 }
 
 // ---- Auto-start when run directly (not imported) ----
