@@ -549,3 +549,6 @@
 @media(prefers-reduced-motion:reduce){
  #voiceroom-root *,#voiceroom-root *::before,#voiceroom-root *::after{animation:none!important;transition:none!important}
 }
+
+.live-close-sidebar{display:none}
+@media(max-width:699px){.live-close-sidebar{display:block;align-self:flex-end;margin:10px 12px 0;background:#244649;border:1px solid #507877;color:#eff;border-radius:8px;min-height:44px;padding:8px 14px;cursor:pointer}}
