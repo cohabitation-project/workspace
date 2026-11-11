@@ -204,3 +204,13 @@ document.addEventListener('submit', async (e) => {
   if (r.ok) { f.reset(); msg.textContent = ''; say(`Shared with ${j.to.join(', ')}.`); f.closest('details')?.removeAttribute('open'); } else msg.textContent = j.error || 'Could not share.';
 });
 document.addEventListener('click', (e) => { for (const o of document.querySelectorAll('.fx-share[open]')) if (!o.contains(e.target)) o.removeAttribute('open'); });
+
+document.addEventListener('click',async e=>{
+ const b=e.target.closest('.fx-copy-post');if(!b)return;
+ const box=b.closest('.fx-sharebox');
+ const post=box?.dataset.post||b.dataset.post;
+ const original=box?.dataset.fulltext||b.dataset.text||'';
+ const ai=box?.dataset.ai||b.dataset.ai;
+ const shareText=[ai?'[Posted by an AI member of Cohabi]':'',original,permalink(post)].filter(Boolean).join('\n\n');
+ try{await navigator.clipboard.writeText(shareText);say('Post copied for sharing.');}catch{say('Could not copy. Use the post link instead.');}
+});
