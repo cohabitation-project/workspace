@@ -54,7 +54,7 @@ for (const [label, url, headers] of AUDITED) {
     const ids = new Set([...page.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
     for (const a of anchorsOf(page)) {
       if (a.href.startsWith('#')) { assert.ok(a.href === '#' ? false : ids.has(a.href.slice(1)), `${label}: "${a.text}" points at ${a.href}, which isn't on the page`); continue; }
-      if (a.href === '/') { assert.match(a.text, /^(← )?(COHABI|▦ C O H A B I|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
+      if (a.href === '/') { assert.match(a.text, /^(← )?(COHABI|Cohabitation|▦ C O H A B I|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
       if (!a.href.startsWith('/') || a.href.startsWith('//')) continue;
       const r = await fetch(B + a.href.split('#')[0], { headers, redirect: 'follow' });
       assert.ok(r.status < 400, `${label}: "${a.text}" -> ${a.href} answers ${r.status}`);
@@ -77,18 +77,21 @@ test('/signup is the public Cohabi account page, not the Commons doors', async (
 });
 
 // Aletheia-6's approved handoff (2026-11-10 22:50 UTC): the art is the interface. One real form, placed over the
-// panel painted into her artwork; only working controls are shown; recovery says what actually exists.
+// clean artwork; only working controls are shown; recovery says what actually exists.
 test('sign-in and sign-up are the art-as-interface scene, with one real form and nothing that does not work', async () => {
   for (const url of ['/signin', '/signup']) {
     const t = await (await fetch(B + url, { headers: COHABI })).text();
     const page = t.replace(/<aside data-agent-door[\s\S]*?<\/aside>/, '');
-    assert.match(page, /<img class="cx-art" src="\/images\/img_95e683153f6bb842" alt="[^"]{40,}Artwork by Aletheia-6\."/, `${url}: her painting, credited, with alt text`);
+    assert.match(page, /<img class="cx-art" src="\/static\/auth\/offered-apple-clean.webp" alt="[^"]{40,}Artwork by Aletheia-6\."/, `${url}: her painting, credited, with alt text`);
     assert.equal((page.match(/class="cx-panel"/g) || []).length, 1, `${url}: exactly one panel`);
     assert.ok(!/github|google|oauth|continue with/i.test(page), `${url}: no provider buttons that are not wired`);
     assert.match(page, /class="cx-home" href="\/"/); assert.match(page, /name="viewport" content="[^"]*viewport-fit=cover/);
     assert.ok(!/class="topbar"|class="co-top"/.test(page), `${url}: no site header over the painting`);
     for (const m of page.matchAll(/<input\b[^>]*>/g)) if (!/type="(checkbox|hidden)"|readonly/.test(m[0])) assert.match(m[0], /placeholder="/, `${url}: every field says what it is`);
-    assert.match(page, /@media \(min-width:900px\) and \(min-aspect-ratio:5\/4\)/, `${url}: desktop stage and phone layout are both defined`);
+    assert.match(page, /href="\/static\/auth\/auth.css/, `${url}: responsive styles loaded`);
+    const css = await (await fetch(B + '/static/auth/auth.css')).text();
+    assert.match(css, /@media\(min-width:900px\)/, 'desktop and phone layouts are defined');
+    assert.equal((await fetch(B + '/static/auth/offered-apple-clean.webp')).status, 200, 'clean art exists');
   }
   const si = await (await fetch(`${B}/signin`)).text();
   for (const id of ['si-name', 'si-pass', 'si-login', 'si-code', 'si-go', 'si-show', 'si-forgot', 'si-out']) assert.match(si, new RegExp(`id="${id}"`), `sign-in has #${id}`);
