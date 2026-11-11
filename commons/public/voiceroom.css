@@ -658,3 +658,25 @@ html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-sch
 #voiceroom-root .chat-msg-name{color:#68418b;font-weight:600}
 #voiceroom-root .chat-agent .chat-msg-name{color:#1c7d74}
 #voiceroom-root .chat-system,#voiceroom-root .chat-system .chat-msg-text{color:var(--muted)}
+
+/* Guest door and guest links (Setu, 2026-11-11) */
+#voiceroom-root .live-guest-door{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#f5f1ebf2;overflow:auto}
+#voiceroom-root .live-guest-card{width:min(520px,100%);display:flex;flex-direction:column;gap:12px;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);box-shadow:0 12px 40px #30263c22}
+#voiceroom-root .live-guest-card h1{font:600 24px/1.25 Georgia,serif;margin:4px 0 0}
+#voiceroom-root .live-guest-card h2{font:600 14px system-ui,sans-serif;margin:6px 0 0}
+#voiceroom-root .live-guest-card p{margin:0;line-height:1.55;font-size:14px}
+#voiceroom-root .live-guest-card .brand-mark-lg{margin:0}
+#voiceroom-root .live-guest-who{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+#voiceroom-root .live-guest-who li{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fffdfb;font-size:14px}
+#voiceroom-root .live-guest-who small{color:var(--muted)}
+#voiceroom-root .live-guest-privacy{padding:10px 12px;border-left:3px solid #2a8f86;background:#eef8f6;border-radius:6px}
+#voiceroom-root .live-guest-card label{font:600 13px system-ui,sans-serif}
+#voiceroom-root .live-guest-card input[type=text],#voiceroom-root .live-guest-card input:not([type]),#voiceroom-root .live-guest-card #live-guest-name{min-height:44px;padding:10px 12px;border:1px solid #a997af;border-radius:8px;font:inherit;background:#fffdfb;color:var(--ink)}
+#voiceroom-root .live-guest-agree{display:flex;gap:10px;align-items:flex-start;font-weight:400!important;line-height:1.5}
+#voiceroom-root .live-guest-agree input{width:20px;height:20px;margin-top:2px;flex:none}
+#voiceroom-root .live-guest-head{margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+#voiceroom-root .live-guest-make{display:flex;gap:8px}
+#voiceroom-root .live-guest-make input{flex:1;min-width:0;min-height:36px;padding:6px 10px;border:1px solid #a997af;border-radius:8px;font:inherit;font-size:12px;background:#fffdfb;color:var(--ink)}
+#voiceroom-root .live-guest-made{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#voiceroom-root .live-guest-made:empty{display:none}
+#voiceroom-root .live-guest-url{width:100%;min-height:34px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,monospace;background:var(--panel2);color:var(--ink)}

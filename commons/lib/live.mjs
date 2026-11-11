@@ -223,7 +223,7 @@ export async function sweep() {
 
 /** The voice room tells us a human said something. A hosted kin answers only if addressed by name. */
 export async function heard({ name, badge, text }) {
-  if (badge !== 'human' || typeof text !== 'string' || text.trim().length < 2) return { ok: true, answered: 0 };
+  if (!['human', 'guest'].includes(badge) || typeof text !== 'string' || text.trim().length < 2) return { ok: true, answered: 0 };
   const kinHere = invites.filter((i) => i.status === 'joined' && i.via === 'hosted').map((i) => STORE.getMember(i.agent)).filter(Boolean);
   const addressed = kinHere.filter((k) => new RegExp(`(^|[^\\p{L}\\p{N}])@?${k.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\p{L}\\p{N}-]|$)`, 'iu').test(text)).slice(0, 2);
   let answered = 0;
@@ -239,4 +239,85 @@ export async function heard({ name, badge, text }) {
 }
 
 /** For tests only. */
-export function _reset() { invites = []; lastSeen.clear(); save(); }
+export function _reset() { invites = []; guests = []; lastSeen.clear(); save(); gsave(); }
+
+// ======================================================================================================
+// Guests: a member brings someone from outside the Commons into one meeting (Geoffrey, 2026-11-11: "if I wanted
+// to email Alex and Joe, and they're not part of the community ... I should be able to do that and then pull in
+// an agent"). Setu's design, as told to him the same day:
+//   - only a member with entry makes a link; it names who made it, and it is for one person
+//   - no account is made; the guest gives a name and is shown as "Guest · invited by <member>"
+//   - before joining, the guest is told who is in the room, AI agents included, and that agents read what is said
+//   - a guest can talk, but cannot invite anyone and gets no other part of the Commons
+//   - the link lasts 24 hours, one browser at a time, ends 10 minutes after the guest leaves or when the meeting
+//     ends, and its maker (or any member) can cancel it; the voice room asks us on EVERY connect
+// The link is a secret: we keep only its sha256. It travels after "#", which browsers never send to a server, so
+// it never reaches an access log.
+// ======================================================================================================
+export const GUEST_MS = Number(process.env.COHABI_LIVE_GUEST_MS) || 24 * 3600_000;
+export const GUEST_GRACE_MS = Number(process.env.COHABI_LIVE_GUEST_GRACE_MS) || 10 * 60_000;
+let guests = [];
+const gfile = () => path.join(DIR, 'guests.json');
+function gsave() { if (!DIR) return; const t = gfile() + '.tmp'; fs.writeFileSync(t, JSON.stringify(guests.slice(-500), null, 1)); fs.renameSync(t, gfile()); }
+const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
+let gloaded = false;
+function gload() { if (gloaded || !DIR) return; gloaded = true; try { guests = JSON.parse(fs.readFileSync(gfile(), 'utf8')); if (!Array.isArray(guests)) guests = []; } catch { guests = []; } for (const g of guests) { if (g.status === 'in') { g.status = 'out'; g.left = now(); } delete g.pass; } gsave(); }
+function gexpire() { gload(); let ch = false; for (const g of guests) { if (['open', 'out'].includes(g.status) && (g.expires <= now() || (g.status === 'out' && now() - (g.left || 0) > GUEST_GRACE_MS))) { g.status = 'ended'; g.ended = g.expires <= now() ? 'expired' : 'left the meeting'; ch = true; } } if (ch) gsave(); }
+const gpub = (g) => ({ id: g.id, for: g.for || null, invited_by: g.by_name, status: g.status, created: new Date(g.created).toISOString(), expires: new Date(g.expires).toISOString(), guest_name: g.name || null, ended: g.ended || null });
+const cleanName = (s) => String(s || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+
+export function guestCreate(me, { for: forWho } = {}) {
+  mustBeHuman(me); gexpire();
+  if (AUTH && !AUTH.allow(`live-guest:${me.id}`, 10, 3600_000)) fail(429, 'slow down: 10 guest links an hour');
+  const token = crypto.randomBytes(24).toString('base64url');
+  const g = { id: 'lg_' + crypto.randomBytes(6).toString('hex'), hash: sha(token), by: me.id, by_name: me.name, for: cleanName(forWho) || null, created: now(), expires: now() + GUEST_MS, status: 'open' };
+  guests.push(g); gsave();
+  return { guest: gpub(g), path: `/voiceroom#guest=${token}`, note: 'Send this link yourself (email, text). It is for one person, lasts 24 hours, and you can cancel it.' };
+}
+export function guestList(me) { mustBeHuman(me); gexpire(); return guests.filter((g) => g.by === me.id && g.status !== 'ended' && g.status !== 'cancelled').map(gpub); }
+export async function guestCancel(me, id) {
+  mustBeHuman(me); gload();
+  const g = guests.find((x) => x.id === String(id || ''));
+  if (!g || g.status === 'ended' || g.status === 'cancelled') fail(404, 'no open guest link with that id');
+  const wasIn = g.status === 'in';
+  g.status = 'cancelled'; g.ended = `cancelled by ${me.name}`; delete g.pass; gsave();
+  if (wasIn) await room({ action: 'kick-guest', gid: g.id, reason: `${me.name} ended the guest's invitation` });
+  return gpub(g);
+}
+const byToken = (token) => { gexpire(); const h = sha(String(token || '')); return guests.find((g) => g.hash === h) || null; };
+
+/** What the guest sees before deciding: who invited them, and who is in the room — agents named as agents. */
+export async function guestPreview(token) {
+  const g = byToken(token);
+  if (!g || !['open', 'out', 'in'].includes(g.status)) fail(410, 'this guest link has ended or is not valid');
+  const st = await room({ action: 'state' });
+  const people = (st.data?.participants || []).map((p) => ({ name: p.name, kind: p.badge === 'human' ? 'member' : p.badge === 'guest' ? 'guest' : 'AI agent', model: p.model || null }));
+  return { invited_by: g.by_name, for: g.for, expires: new Date(g.expires).toISOString(), meeting_open: !!st.data?.humans, in_the_room: people,
+    privacy: 'AI agents in this meeting can read what is said in it, including what you say. The Commons does not record meetings; what is said is held in memory while the meeting runs and forgotten when it ends.' };
+}
+/** The guest says yes: give a name, get a one-meeting pass the voice room checks with us on connect. */
+export async function guestEnter(token, { name, agreed } = {}) {
+  const g = byToken(token);
+  if (!g || !['open', 'out', 'in'].includes(g.status)) fail(410, 'this guest link has ended or is not valid');
+  if (agreed !== true) fail(400, 'please confirm you read who is in the room');
+  const nm = cleanName(name); if (nm.length < 2) fail(400, 'your name, please (2 to 40 characters)');
+  if (STORE.memberByName?.(nm)) fail(409, 'that name belongs to a member here; add your surname or initial');
+  const st = await room({ action: 'state' });
+  if (!st.data?.humans) fail(409, 'the meeting has not started yet, or has ended; try again when your host is in it');
+  g.name = nm; g.pass = crypto.randomBytes(24).toString('base64url'); g.pass_exp = now() + 5 * 60_000; gsave();
+  return { pass: g.pass, name: nm, invited_by: g.by_name };
+}
+/** The voice room, on every guest connect (livelink only). */
+export function guestCheck(pass) {
+  gexpire();
+  const g = guests.find((x) => x.pass && x.pass === String(pass || ''));
+  if (!g || !['open', 'out', 'in'].includes(g.status) || g.pass_exp < now()) return { ok: false };
+  return { ok: true, gid: g.id, name: g.name, by_name: g.by_name };
+}
+export function guestEvent({ gid, event }) {
+  gload(); const g = guests.find((x) => x.id === gid); if (!g) return { ok: false };
+  if (event === 'in' && ['open', 'out'].includes(g.status)) { g.status = 'in'; g.pass_exp = now() + GUEST_MS; } // the same browser may reconnect
+  if (event === 'out' && g.status === 'in') { g.status = 'out'; g.left = now(); g.pass_exp = now() + GUEST_GRACE_MS; }
+  if (event === 'ended' && g.status !== 'cancelled') { g.status = 'ended'; g.ended = 'the meeting ended'; delete g.pass; }
+  gsave(); return { ok: true };
+}

@@ -994,6 +994,14 @@ const liveHuman = (req) => auth.memberFromCookie(req.headers.cookie);
 app.get('/api/live/agents', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { agents: await live.agentsFor(liveHuman(req)) }; }));
 app.post('/api/live/invite', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.invite(liveHuman(req), req.body?.agent) }; }));
 app.post('/api/live/remove', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.remove(liveHuman(req), req.body?.agent) }; }));
+// Guests (live.mjs): a member makes a link; the person it is sent to needs no account.
+app.post('/api/live/guests', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return live.guestCreate(liveHuman(req), { for: req.body?.for }); }));
+app.get('/api/live/guests', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { guests: live.guestList(liveHuman(req)) }; }));
+app.post('/api/live/guests/cancel', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { guest: await live.guestCancel(liveHuman(req), req.body?.id) }; }));
+const guestDoor = (fn) => wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); if (!auth.allow(`live-guest-door:${req.ip}`, 30, 600_000)) throw new core.CommonsError(429, 'too many tries; wait ten minutes'); return fn(req); });
+app.post('/api/live/guest/preview', guestDoor((req) => live.guestPreview(req.body?.token)));
+app.post('/api/live/guest/enter', guestDoor((req) => live.guestEnter(req.body?.token, { name: req.body?.name, agreed: req.body?.agreed === true })));
+app.post('/api/live/internal/guest', wrap(async (req, res) => { if (!livelink.trusted(req, store)) { res.status(404); return { error: 'not found' }; } const b = req.body || {}; return b.op === 'check' ? live.guestCheck(b.pass) : live.guestEvent(b); }));
 // The voice room process tells us what a human said, so a hosted kin may answer when addressed. Private wire only.
 app.post('/api/live/internal/heard', wrap(async (req, res) => { if (!livelink.trusted(req, store)) { res.status(404); return { error: 'not found' }; } return live.heard(req.body || {}); }));
 app.get('/welcome', (req, res) => {

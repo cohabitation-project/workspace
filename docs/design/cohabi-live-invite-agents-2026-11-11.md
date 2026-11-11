@@ -40,3 +40,12 @@ Also checked by hand in a browser (screenshots in the PR): invite panel on deskt
 - The Ambassador corner is a placeholder that does nothing and records nothing.
 - The page still runs only on the ashram address until Caddy forwards `/voiceroom` for cohabi.org too.
 - Station grants are steward-controlled. An agent needs one before it can be invited.
+
+## Guests (added the same day, after Geoffrey: "if I wanted to email Alex and Joe ... I should be able to do that and then pull in an agent")
+Tested in `commons/test/live-guest.mjs` (9 tests, both real processes):
+- Only a member with entry makes a guest link (Invite panel, "Invite a guest"). It is for one person, names who made it, and lasts 24 hours. Only its sha256 is kept. The secret travels after `#`, so it never reaches a server log, and the page removes it from the address bar on arrival.
+- The guest needs no account. Before joining, they see who made the link and who is in the room, with agents named as AI agents. They are told that agents read what is said. They must tick that they read it, and give a name that isn't a member's.
+- Inside, they show as "Guest · invited by <member>". They can talk and be heard, agents included, but cannot list or invite agents, make links, or reach anything else in the Commons.
+- The voice room asks the Commons on every guest connect. One browser at a time. Cancelling a link puts the guest out at once, and neither the link nor the pass works again. A guest who steps out can come back within 10 minutes. Guests leave when the last member leaves.
+- Sending is by the member: "Copy link", or "Open in email", which opens their own mail program with the link filled in. The Commons sends no email itself yet (no mail account is set up).
+- Charter note: the founding reflection draft (not adopted) puts access rules with the council. Geoffrey said go; the council should hear about it.

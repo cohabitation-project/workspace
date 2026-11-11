@@ -85,9 +85,20 @@ export function build({ auth, store, station }) {
   // ------------------------------------------------------------------
   // Upgrade handler — authenticates, enforces cap, joins the room
   // ------------------------------------------------------------------
-  function handleUpgrade(req, socket, head) {
+  async function handleUpgrade(req, socket, head) {
     // authenticate: human cookie or agent token (subprotocol / query param)
-    const member = authenticate(req);
+    let member = authenticate(req);
+    // A guest has no account: a one-meeting pass, checked with the Commons on EVERY connect, so a cancelled link
+    // stops working at once (lib/live.mjs). The pass travels in the subprotocol header, never in the URL.
+    const guestProto = String(req.headers['sec-websocket-protocol'] || '').split(',').map((x) => x.trim()).find((x) => x.startsWith('commons-guest.'));
+    if (!member && guestProto) {
+      const r = await livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'check', pass: guestProto.slice('commons-guest.'.length) });
+      if (r.status === 200 && r.data?.ok) {
+        if ([...peers.values()].some((p) => p.guest?.gid === r.data.gid)) { socket.write('HTTP/1.1 409 Conflict\r\n\r\n'); socket.destroy(); return; } // one browser per guest link
+        if (![...peers.values()].some((p) => p.badge === 'human')) { socket.write('HTTP/1.1 409 Conflict\r\n\r\n'); socket.destroy(); return; } // no member here: no meeting
+        member = { id: `guest:${r.data.gid}`, name: r.data.name, kind: 'guest', guest: { gid: r.data.gid, by_name: r.data.by_name } };
+      }
+    }
     if (!member) {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
@@ -97,7 +108,7 @@ export function build({ auth, store, station }) {
     // entry check: station grant for agents, Commons standing for humans.
     // social_only web signups get 403 — the voice room is standing space.
     // (mirrors core.commonsWriteAllowed from fix/authz-human-paths)
-    if (!STATION.mayEnter(member)) {
+    if (member.kind !== 'guest' && !STATION.mayEnter(member)) {
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
       socket.destroy();
       return;
@@ -120,7 +131,7 @@ export function build({ auth, store, station }) {
       .split(',')
       .map((x) => x.trim())
       .filter(Boolean);
-    if (offered.length && !offered.includes('commons-voiceroom') && !offered.some(p => p.startsWith('commons-token.'))) {
+    if (offered.length && !offered.includes('commons-voiceroom') && !offered.some(p => p.startsWith('commons-token.') || p.startsWith('commons-guest.'))) {
       socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
       socket.destroy();
       return;
@@ -128,8 +139,9 @@ export function build({ auth, store, station }) {
 
     wss.handleUpgrade(req, socket, head, (ws) => {
       const peerId = String(nextPeerId++);
-      const badge = member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
-      const peer = { id: peerId, member, name: member.name, badge };
+      const badge = member.kind === 'guest' ? 'guest' : member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
+      const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null };
+      if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'in' }).catch(() => {});
       peers.set(ws, peer);
 
       // tell the new peer about the room
@@ -150,6 +162,7 @@ export function build({ auth, store, station }) {
         peerId,
         name: member.name,
         badge,
+        ...(peer.guest ? { guest_of: peer.guest.by_name } : {}),
       });
 
       // -- message handling --
@@ -167,9 +180,10 @@ export function build({ auth, store, station }) {
           return;
         }
 
-        // re-check entry on every message (grant can be revoked mid-session)
-        const current = STORE.getMember(peer.member.id);
-        if (!current || current.retired || !STATION.mayEnter(current) ||
+        // re-check entry on every message (grant can be revoked mid-session); a guest is ended by the Commons
+        // through livelink (kick-guest), since a guest is not a member to look up
+        const current = peer.guest ? peer.member : STORE.getMember(peer.member.id);
+        if (peer.guest) { /* checked on connect; cancelled links are kicked */ } else if (!current || current.retired || !STATION.mayEnter(current) ||
             (current.kind === 'human' && current.social_only === true)) {
           try { ws.close(4403, 'grant revoked'); } catch { /* gone */ }
           return;
@@ -197,9 +211,15 @@ export function build({ auth, store, station }) {
           peerId,
           name: member.name,
         });
-        // the meeting ends with its last human: agents leave with it, and what was said is forgotten
+        if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'out' }).catch(() => {});
+        // the meeting ends with its last member: agents and guests leave with it, and what was said is forgotten
         if (![...peers.values()].some((p) => p.badge === 'human')) {
           for (const v of [...virtuals.values()]) removeVirtual(v.member.id, 'the meeting ended');
+          for (const [gws, gp] of [...peers]) if (gp.guest) {
+            send(gws, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: 'The meeting ended: the last member left.' });
+            livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: gp.guest.gid, event: 'ended' }).catch(() => {});
+            try { gws.close(4410, 'meeting ended'); } catch { /* gone */ }
+          }
           recent.length = 0;
         }
       });
@@ -318,7 +338,7 @@ function handleChat(senderWs, msg) {
     text,
   });
   remember({ kind: 'chat', name: sender.name, badge: sender.badge, text });
-  if (sender.badge === 'human') forwardHeard(sender, text);
+  if (sender.badge === 'human' || sender.badge === 'guest') forwardHeard(sender, text);
 }
 
 // ---------------------------------------------------------------------------
@@ -393,7 +413,7 @@ function drainWhisperQueue() {
         remember({ kind: 'speech', name: sender.name, badge: sender.badge, text: text.trim() });
 
         // hosted kin in the meeting may answer what a human said (decided in the Commons, never here)
-        if (sender.badge === 'human') forwardHeard(sender, text.trim());
+        if (sender.badge === 'human' || sender.badge === 'guest') forwardHeard(sender, text.trim());
       }
     })
     .catch(() => {
@@ -480,7 +500,7 @@ function virtualRecord(v) {
 
 function listParticipants() {
   const out = [];
-  for (const [, p] of peers) out.push({ peerId: p.id, name: p.name, badge: p.badge });
+  for (const [, p] of peers) out.push({ peerId: p.id, name: p.name, badge: p.badge, ...(p.guest ? { guest_of: p.guest.by_name } : {}) });
   for (const [, v] of virtuals) out.push(virtualRecord(v));
   return out;
 }
@@ -496,7 +516,7 @@ function removeVirtual(memberId, reason) {
 /** The livelink entry point. Called only by the voice room server, only after livelink.trusted(). */
 export async function internal(body) {
   const a = body?.action;
-  const humans = [...peers.values()].filter((p) => p.badge === 'human').length;
+  const humans = [...peers.values()].filter((p) => p.badge === 'human').length; // members; guests do not hold a meeting open
   if (a === 'state') return { status: 200, data: { participants: listParticipants(), humans, recent: [...recent] } };
   if (a === 'join') {
     const ag = body.agent || {};
@@ -526,6 +546,15 @@ export async function internal(body) {
     const text = String(body.text || '').trim().slice(0, 500); if (!text) return { status: 400, data: { error: 'text required' } };
     broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text });
     return { status: 200, data: { ok: true } };
+  }
+  if (a === 'kick-guest') {
+    for (const [ws, p] of peers) if (p.guest?.gid === body.gid) {
+      send(ws, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: 'Your guest invitation was ended by the member who made it.' });
+      try { ws.close(4403, 'guest invitation ended'); } catch { /* gone */ }
+      broadcastExcept(ws, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `${p.name} (guest) left: ${String(body.reason || 'their invitation was ended').slice(0, 200)}.` });
+      return { status: 200, data: { ok: true, kicked: true } };
+    }
+    return { status: 200, data: { ok: true, kicked: false } };
   }
   if (a === 'leave') return { status: 200, data: { ok: true, removed: removeVirtual(body.agentId, body.reason || null) } };
   return { status: 400, data: { error: 'unknown action' } };

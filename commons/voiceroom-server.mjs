@@ -157,7 +157,7 @@ const server = http.createServer(async (req, res) => {
 server.on('upgrade', (req, socket, head) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   if (url.pathname === '/voiceroom-ws') {
-    room.handleUpgrade(req, socket, head);
+    Promise.resolve(room.handleUpgrade(req, socket, head)).catch(() => { try { socket.destroy(); } catch { /* gone */ } });
   } else {
     socket.write('HTTP/1.1 404 Not Found\r\n\r\n');
     socket.destroy();
