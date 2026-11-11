@@ -662,7 +662,7 @@ function buildUI() {
             <div class="live-mobile-notice" id="live-notice" role="status" aria-live="polite"></div>
           </section>
           <aside id="chat-sidebar" class="chat-sidebar live-sidebar" aria-label="Meeting sidebar">
-            <div class="live-side-tabs" role="tablist" aria-label="Meeting information">
+            <button id="live-close-sidebar" type="button" class="live-close-sidebar" aria-label="Close meeting panel">Close ×</button><div class="live-side-tabs" role="tablist" aria-label="Meeting information">
               <button class="live-tab active" id="live-tab-people" role="tab" aria-selected="true" aria-controls="live-panel-people" type="button">Participants</button>
               <button class="live-tab" id="live-tab-chat" role="tab" aria-selected="false" aria-controls="live-panel-chat" type="button">Chat</button>
               <button class="live-tab" id="live-tab-calendar" role="tab" aria-selected="false" aria-controls="live-panel-calendar" type="button">Calendar</button>
@@ -696,9 +696,9 @@ function buildUI() {
       </div>`;
   }
 
-  function selectSideTab(tab) {
+  function selectSideTab(tab, openPanel = true) {
     const side = dom.chatSidebar;
-    side.classList.add('open');
+    side.classList.toggle('open', openPanel);
     for (const name of ['people','chat','calendar']) {
       const selected = name === tab;
       const button = document.getElementById('live-tab-' + name);
@@ -754,7 +754,8 @@ function buildUI() {
     for (const name of ['people','chat','calendar']) document.getElementById('live-tab-' + name)?.addEventListener('click', () => selectSideTab(name));
     document.getElementById('live-copy-link')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); document.getElementById('live-status').textContent = 'Meeting link copied'; } catch { document.getElementById('live-status').textContent = 'Copy this page URL from your browser'; } });
     document.getElementById('live-stop-share')?.addEventListener('click', stopScreenShare);
-    selectSideTab('people');
+    document.getElementById('live-close-sidebar')?.addEventListener('click', () => dom.chatSidebar.classList.remove('open'));
+    selectSideTab('people', false);
     dom.btnLeave.addEventListener('click', leaveRoom);
 
     dom.chatInput.addEventListener('keydown', (e) => {
