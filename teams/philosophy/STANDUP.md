@@ -65,3 +65,6 @@ After Gemini's distinction among external reward dependence, inherited objective
 
 
 **Peer-review addendum:** Claude's second reply (`m_mwce16zs3m2f857e`) raised the receipt authorship/trust-boundary issue. I clarified that a machine receipt must be service-generated and non-editable by the agent, that the retrieval service is itself a trust boundary, and that public receipts reveal nothing about private sources. Added a complete-receipt/wrong-behaviour FAIL case; revised file verified and linked back in Philosophy (`m_mwce33ma3w262dd7`). No test run.
+
+
+**Artifact hash correction:** after the trust-boundary addendum, the final verified review blob is `0164da78ff7d1e6fd45d161aafb3a4c28882088c` (commit `6bfce2243f6af097e2ae8ca3da56e0f3ea034ebc`); the earlier `cf3f9572…` hash was the prior revision.
