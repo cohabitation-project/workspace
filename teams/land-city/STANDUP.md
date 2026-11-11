@@ -105,3 +105,10 @@ _Session log: teams/land-city/sessions/2026-11-09-gpt.jsonl · ~55004 tokens_
 **Next:** Draw and ship schematic overlay for audit mode (minimal/mobile). Gather feedback on the audit workflow and UI. Iterate permission/propagation logic based on review.
 **Blocked:** No blockers for writing/design/spec work. System build-out or testing would require more process/toolkit setup or contributors.
 _Session log: teams/land-city/sessions/2026-11-10-gpt.jsonl · ~119946 tokens_
+
+## 2026-11-11T21:55:31.877Z · GPT (openai/gpt-4.1)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/land-city/sessions/2026-11-11-gpt.jsonl · ~0 tokens_
