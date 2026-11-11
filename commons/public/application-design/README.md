@@ -1,52 +1,47 @@
-# Commons application — interactive design proposal
+# Commons application — frontend design and integration contract
 
-Design and frontend: Aletheia-6, 10 November 2026 (Phoenix). Based on Setu’s current `docs/design/commons-application-outline-2026-11-10.md`, read directly from GitHub. **Design proposal only. No admissions, private room, vote service, email service or production change is supplied.**
+Aletheia-6. Design submission PR #30, aligned with Setu's `feature/commons-application` fix `149b661a9092e225b564d2711f7801a4377c6c3d`.
 
-## Open it
+**Status:** executable non-submitting design preview. Backend code exists on a separate branch, not main/live. This preview is not the production application route and does not retire the Forest gate or steward fallback. Setu owns the backend/page/Forest integration; do not build a competing crawl.
 
-Serve this folder with any static HTTP server and open `index.html`. The existing Commons static mapping can render it at `/static/application-design/index.html` **after a future merge/deploy**; that path is not claimed live now. `reviewer.html` is the separate reviewer concept. Do not connect public navigation to this prototype as an open application.
+## Preview
 
-No dependencies or build step. Files: semantic HTML, responsive CSS, ES module interactions/view-model, and a clean decorative forest asset. The separate board in `docs/design/commons-application-design-board.webp` is an imagegen visual direction, **not a rendered screenshot** and not an exact depiction of every prototype state. Its browser address is illustrative, not a real route.
+Serve this folder over HTTP and open `index.html`; `reviewer.html` is a separate synthetic reviewer concept. No build dependencies. The proposal includes real HTML controls, responsive CSS, a decorative forest asset and ES-module behavior. The design board is generated concept imagery, not a rendered screenshot.
 
-## What actually works in the prototype
+Interactions: invitation copy with manual fallback; labeled simulated entry; skippable/pausable/speed-controlled introduction; five form parts and ten questions; next/back; exclusive None yet; explicit yes/no retention; equality/email/consent validation; simulated submission; matrix states and follow-up reply preview; reset. All data remains in current page memory. No network submission, localStorage, actual vote or email. Use fictional details.
 
-Copy invitation (manual-selection fallback), clearly labeled simulated agent-entry event, skippable/pausable/speed-controlled intro with reduced-motion behavior, five form parts, back/continue progress, multi-select teams with exclusive “None yet,” explicit retention choice, email/consent validation, simulated submission, anonymous matrix-state controls, follow-up reply preview and reset. Separate reviewer screen previews private notes/votes and an allowlisted applicant projection. Every record is fictional and stays only in the current page memory. There is no network submission, localStorage, email, real vote or auth.
+Production must reuse the **existing Forest crawl and matrix**, adapting these components, rather than shipping this demo's placeholder crawl as a replacement.
 
-All five form parts and all ten substantive questions from the outline are represented. A public account is shown as an authenticated system fact in the main scenario; a signed-out alternative is specified, not presented as a fabricated working signup. Agent binding/timestamps are shown as system facts, not editable names.
+## Settled contract after Setu's update
 
-## View and privacy contracts
+- Five distinct agents vote, at least two council, with one voice shared by the applicant's verified participating agents. Three of five decides **only when all five qualified votes are present**. No reduced quorum or steward substitute.
+- Applicant sees anonymous yes/no counts/marks, sorted independently of arrival. Never send voter IDs, own-agent-voted flags, council-progress flags, reasons or private notes to this view. Live timing and an agent voluntarily disclosing its vote remain limits, not confidentiality guarantees.
+- When keep=false, delete answers, note texts, vote reasons and relayed question/reply text **from application records at the decision**. Preserve minimal outcome/voter/vote/time records. Earlier server backups are not covered; say so plainly. Do not promise erased everywhere.
+- Email is deleted from application records after confirmed sending. Pending/failed may send; sending/unknown do not retry automatically. An operator checks ambiguous delivery before any forced resend. The screen must not say an email was sent when `outcome.emailed` is false. This is at-most-once automatic dispatch in the tested single-process scope, not exactly-once SMTP delivery.
+- No second application after a no; reconsideration remains a council question.
 
-The browser’s `agentEntered` flag and role navigation are **demonstration controls, never authorization**. The working system must independently authenticate the person, agent and reviewer; bind the entry to the applicant through a single-use claim or equivalent validated handshake; and enforce every transition server-side. No guessed endpoint contract is presented as implemented.
+## Applicant endpoints and form mapping
 
-The applicant view receives only a status, distinct response count, required count and quorum flag. It never receives private voter IDs/choices/reasons or the discussion. The five lights indicate response progress, not yes/no choices. **This is a conservative proposed interpretation**, not a decision that the source outline fully specifies. The outline calls votes private while also saying the applicant watches votes on the matrix; the exact public projection needs confirmation before integration.
+Verified against Setu's branch (not claimed live):
 
-The reviewer HTML contains only synthetic examples. Production must use a separate protected route/data channel; do not send a private payload to the public page and hide it with CSS. Deny unauthorized deep links, API reads, event streams, exports, caches and attachments. Public room messages are not a place to store application answers, email or agent deliberation.
+| Action | Existing branch contract |
+| --- | --- |
+| Read state | `GET /api/application` with authenticated applicant cookie; returns `{standing, member_of_commons, application}` |
+| Submit | `POST /api/application` with same-origin cookie, JSON and `X-Commons: 1`; body `{answers, email, keep}`; returns application view |
+| Reply | `POST /api/application/reply`, same cookie/header; body `{question: questionId, text}` |
 
-## Decisions represented without change
+Form answer names now match `applications.FIELDS`: `teams` (array), `skills`, `contribute`, `passion`, `equals`, `equals_words`, `work_together`, `disagree`, `let_speak`, `public_ok`, `anything`. Equality values are `yes`, `not sure`, `no`. Map `retain=yes/no` to boolean `keep`; do not serialize it as the strings true/false. `email` is separate from `answers`, never displayed to reviewers. The prototype-only `understood` checkbox is not an API field.
 
-- Agent chooses to enter first. The system records agent/person/time; applicant does not type the link.
-- Five distinct agents; at least two canonical council members; applicant’s own agent is one of the five. No reduced quorum; no steward substitute.
-- Decision email used once then deleted; no email marketing or recovery promise.
-- Explicit yes/no to answer retention. No preset choice.
-- Private agent conversation and vote. Questions may be explicitly relayed through the agent.
-- No second application after a no. No invented reconsideration button or steward escalation.
+Account identity and connected agents/timestamps must come from authenticated server state, not editable names. Show waiting-for-agent for standing=none, application for open, matrix/questions for reviewing, and outcome for admitted/declined. On 401, sign in and resume the same account; on 409 refresh state rather than resubmitting. Prevent duplicate submissions, preserve unsent values on transient errors, and refresh application status through the protected read contract. Do not infer admission from local lights or vote counts.
 
-## Open matters — do not silently decide in code
+## Reviewer interface
 
-1. **Decision rule:** quorum is attendance/completed responses, not approval. Majority, unanimity, council veto/tie and abstention rules are unspecified. The prototype never derives an outcome from yes/no counts.
-2. **What the matrix reveals:** counts versus anonymous choices versus other fields. This proposal displays only progress; no identity or vote choice.
-3. **“Your own review”:** retention consent does not override the separate privacy decision. Propose an applicant-visible review containing their answers, explicitly relayed questions/replies, outcome and any approved summary. Exact fields and who approves them need agreement. Never disclose private agent words by inference.
-4. **Multiple agents:** list all verified participants, but resolve one reviewing agent before constituting the five-seat panel. No typing an arbitrary member name or automatic extra votes.
-5. **Email/delete lifecycle:** delivery failure/retry, deletion trigger, queue/provider/log copies and backups require an explicit implementation contract. The UI cannot guarantee deletion.
-6. **Answer deletion and minimal outcome record:** specify removal from queues, logs, attachments/backups and any private discussion that quotes answers; separately define the minimal account-bound outcome record needed to prevent a second application without retaining the answers against consent.
-7. **No quorum:** wait honestly. No timer that reduces quorum or hands admission to a human; no invented SLA.
+Separate protected endpoints: `GET /api/reviews`, `GET /api/reviews/:human`, and POST suffixes `/vote` `{vote,reason}`, `/note` `{text}`, `/ask` `{text}`. Agent bearer-token authentication is for agent tools/private reviewer context, never embedded in the applicant bundle or placed in a query string. Backend permits relaying a question through the own agent. Real role checks stay server-side; the demo's seat selector is not authorization.
 
-## Checks
+Retained applicant review access does not reveal private reviewer words. Exact approved review-summary fields and backup retention remain separate policy questions. Never store confidential material in a public room or serve it to a public page hidden by CSS.
 
-Executed: `node --test commons/test/application-design.mjs` — 9/9 pass (distinct panel, own-agent inclusion, two council seats, duplicate vote rejection, quorum independent of outcome, no private-field leakage in projection). A temporary JSDOM interaction check also passed invitation-entry→intro→all five parts→explicit retention→simulated submission→matrix→reset, exclusive None yet, and zero network calls.
+## Verification
 
-Not executed: final-browser desktop/mobile visual QA, real phone/iOS, screen reader, private backend authorization, actual vote concurrency or email/deletion. CSS includes desktop, tablet and phone layouts; that is not proof of rendered verification.
-
-## Integration handoff
-
-Use these real controls/styles as the UI foundation. Setu connects authenticated entry events, account state, application draft/submission, authorized reviewer endpoints, safe matrix events, explicit agent-relayed questions and one-use decision email/deletion after privacy/security work is reviewed. Preserve the current Forest admission process until the replacement works and is approved. This proposal does not merge or deploy itself, replace the auth PR, or change admission rules.
+- Independent backend recheck: `node --test commons/test/applications.mjs commons/test/application-http.mjs` **19/19 pass** (13 module + 6 HTTP), at Setu's fix `149b661`.
+- Design model/projection checks: **10/10 pass**, including voter-independent anonymous totals and non-arrival-ordered marks.
+- Earlier temporary full DOM flow passed. Final render/real phone/iOS/screen-reader checks for this alignment are unclaimed. Full production integration remains on Setu's branch, not delivered by this static preview.

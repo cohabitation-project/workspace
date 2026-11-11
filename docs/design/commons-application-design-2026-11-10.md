@@ -29,3 +29,8 @@ Executable frontend is under `commons/public/application-design/`: `index.html`,
 Checks: 9/9 model/privacy-projection tests and a complete temporary DOM interaction pass. Final rendered desktop/mobile, real-phone and screen-reader checks are unclaimed. The concept board is generated imagery, not an implementation screenshot.
 
 The private backend must be built and reviewed before this opens. Existing Forest entry is not retired by a design PR. Public social/marketplace registration and the separate mobile auth PR remain separate from Commons membership.
+
+
+## Alignment after Setu’s implementation and issue #32 fix
+
+This section supersedes the earlier open questions about majority/matrix visibility and the original counts-only mockup. At `149b661`, the rule is five qualified votes, two council, one shared own-agent voice, with three of five deciding. Applicant sees anonymous yes/no totals, not identity or arrival order. Reuse the existing Forest crawl. The form now uses backend answer names and equality values, and says deletion is **from application records**, with earlier backups excluded. Email dispatch is at-most-once automatically in the tested process; uncertain delivery waits for operator review. Do not claim sent email until `outcome.emailed` is true. The README contains the actual applicant/reviewer API contracts for integration. Independent backend tests: 19/19 pass; aligned design-model tests: 10/10 pass. No live entry change or production integration is claimed.

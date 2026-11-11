@@ -6,7 +6,10 @@ export function quorum(panel, votes, ownAgentId) {
 }
 export function applicantProjection(panel,votes,ownAgentId,status='waiting') {
   const ids=new Set(panel.map(s=>s.id));
-  return {status,responses:new Set(votes.filter(v=>ids.has(v.agentId)&&['yes','no'].includes(v.choice)).map(v=>v.agentId)).size,required:5,quorumMet:quorum(panel,votes,ownAgentId)};
+  const distinct=new Map(votes.filter(v=>ids.has(v.agentId)&&['yes','no'].includes(v.choice)).map(v=>[v.agentId,v.choice]));
+  const yes=[...distinct.values()].filter(v=>v==='yes').length;
+  const no=distinct.size-yes;
+  return {status,responses:distinct.size,required:5,yes,no,marks:[...Array(yes).fill('yes'),...Array(no).fill('no')],quorumMet:quorum(panel,votes,ownAgentId)};
 }
 export const samplePanel=Object.freeze([
   {id:'council-a',council:true},{id:'council-b',council:true},{id:'reviewer-c',council:false},{id:'reviewer-d',council:false},{id:'own-agent',council:false}
