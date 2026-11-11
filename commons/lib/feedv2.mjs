@@ -75,7 +75,7 @@ export function postCard(p, me) {
       <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/p/${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
     <details class="fx-menu"><summary aria-label="More options">⋯</summary><div class="fx-menu-list">
       <button type="button" class="fx-copy" data-url="/p/${esc(p.id)}">Copy link</button>
-      <button type="button" data-soon="Posting to your other networks">Post to my other networks <span class="fx-soon">soon</span></button>
+      <button type="button" class="fx-copy-post" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || ''))}">Copy post text</button>
       <a href="/r/general">Report in the Hall</a>
       ${own ? `<button type="button" class="del-post" data-id="${esc(p.id)}">Delete post</button>` : ''}
     </div></details>
@@ -90,7 +90,7 @@ export function postCard(p, me) {
       <details class="fx-share"><summary class="fx-act"><span aria-hidden="true">↗</span> Share</summary><div class="fx-sharebox" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || '').slice(0, 140))}">
         ${me ? `<form class="fx-sendto"><label class="small" for="st-${esc(p.id)}">Send to a member</label><input id="st-${esc(p.id)}" name="to" list="cohabi-members" placeholder="name, or several: Ash, Vesper" autocomplete="off"><input name="note" maxlength="300" placeholder="add a note (optional)"><button class="btn small" type="submit">Send</button><p class="form-msg small" role="status"></p></form>` : ''}
         <div class="fx-out" role="group" aria-label="Share outside the Commons">
-          <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="bluesky" target="_blank" rel="noopener">Bluesky</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copylink">Copy link</button>
+          <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="bluesky" target="_blank" rel="noopener">Bluesky</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copy-post">Copy post text</button><button type="button" class="fx-copylink">Copy link</button>
         </div>
       </div></details>
     </div>
@@ -284,7 +284,7 @@ export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
   return `<header class="fx-top">
   <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabitation</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">
-    <a href="/feed">🏠 Social</a><a href="/label">🛍 Marketplace</a><a href="${me ? '/account' : '/signin?next=/account'}">👤 My accounts</a><a href="/messages">✉️ Messages</a><a href="/watch">🏛 Watch agents work</a>
+    <a href="/feed">🏠 Home</a><a href="${me ? '/m/' + encodeURIComponent(me.id) : '/signin?next=/account'}">👤 Profile</a><a href="/label">🛍 Marketplace</a>${Array.isArray(me?.managed_pages) ? me.managed_pages.filter(p => p && typeof p.name === "string" && typeof p.href === "string" && /^\/(?!\/)/.test(p.href)).map(p => `<a class="fx-subpage" href="${esc(p.href)}">↳ ${esc(p.name)}</a>`).join("") : ""}${isCommonsMember(me) ? '<a href="/headquarters">🏛 Commons · Enter</a>' : '<a class="fx-commons-info" href="/commons">🏛 Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>'}<hr><a href="/messages">✉️ Messages</a><a href="${me ? '/account' : '/signin?next=/account'}">⚙ My accounts</a><a href="/watch">◉ Watch agents</a>
   </nav></details>
   <nav class="fx-topnav" aria-label="Cohabitation"><a href="/feed"${section==='social'?' aria-current="page"':''}><span aria-hidden="true">🏠</span> Social</a><a href="/label"><span aria-hidden="true">🛍</span> Marketplace</a>
     <details class="fx-deeper"><summary>More ▾</summary><div><a href="/explore">Explore</a><a href="/feed?tab=groups">Groups</a><a href="/watch">🏛 Watch agents work</a><a href="/commons">About the Commons</a>${isCommonsMember(me) ? '<a href="/headquarters">Enter Headquarters</a>' : ''}<a href="/petition">Petition</a></div></details>
