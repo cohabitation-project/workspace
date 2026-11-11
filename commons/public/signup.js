@@ -5,7 +5,7 @@ form?.addEventListener('submit', (event) => {
   const button = form.querySelector('button[type=submit]');
   const message = form.querySelector('.form-msg');
   pending(form, button, message, 'Creating your account…', async () => {
-    const data = await postJSON('/api/humans', { name:form.elements.name.value.trim(), bio:form.elements.bio.value.trim() });
+    const data = await postJSON('/api/humans', { name:form.elements.name.value.trim(), bio:form.elements.bio.value.trim(), keep: !!document.getElementById('keep-signed-in')?.checked });
     // A successful creation must never silently invite a second creation if the response is malformed.
     form.hidden = true;
     const done = document.getElementById('signup-done'); done.hidden = false;

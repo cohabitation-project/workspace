@@ -41,12 +41,12 @@ export const safeNext = (n) => (typeof n === 'string' && /^\/(?!\/)[\x21-\x7e]*$
 
 /** Step 1: where to send the browser, and the cookie that ties the answer to this browser. `linkTo` is the signed-in
  *  member (if any) who pressed the button: their account gets the provider added, by their own explicit act. */
-export function start(p, { base, next = '', linkTo = null }) {
+export function start(p, { base, next = '', linkTo = null, keep = false }) {
   const c = conf(p); if (!enabled(p)) fail(404, `${label(p)} sign-in is not connected`);
   const state = crypto.randomBytes(24).toString('base64url');
   const u = new URL(c.authorize); u.searchParams.set('client_id', c.id); u.searchParams.set('redirect_uri', `${base}/auth/${p}/callback`); u.searchParams.set('state', state);
   if (p === 'google') { u.searchParams.set('response_type', 'code'); u.searchParams.set('scope', c.scope); u.searchParams.set('prompt', 'select_account'); }
-  return { url: u.toString(), cookie: cookie(STATE, seal({ p, state, next: safeNext(next), link: linkTo || null, exp: Date.now() + 600_000 }), base.startsWith('https'), 600) };
+  return { url: u.toString(), cookie: cookie(STATE, seal({ p, state, next: safeNext(next), link: linkTo || null, keep: keep === true, exp: Date.now() + 600_000 }), base.startsWith('https'), 600) };
 }
 
 const used = new Map(); // state -> expiry: an answer is accepted once
@@ -77,7 +77,7 @@ export async function finish(p, { base, code, state, stateCookie }) {
     subject = String(u.id);
   }
   if (!/^[0-9A-Za-z_-]{1,64}$/.test(subject)) fail(502, 'the provider sent an account number we cannot use');
-  return { provider: p, subject, next: s.next, link: s.link };
+  return { provider: p, subject, next: s.next, link: s.link, keep: s.keep === true };
 }
 
 /** The member bound to this provider account, if any. */
@@ -90,5 +90,5 @@ export function bind(member, p, subject) {
   store.updateMember(member.id, { ext: { ...(member.ext || {}), [p]: subject } });
 }
 /** A new person: remember (in a signed cookie, 15 minutes) which provider account is waiting for a name. */
-export const pendingCookie = (p, subject, next, secure) => cookie(PENDING, seal({ p, subject, next: safeNext(next), exp: Date.now() + 900_000 }), secure, 900);
+export const pendingCookie = (p, subject, next, secure, keep = false) => cookie(PENDING, seal({ p, subject, next: safeNext(next), keep: keep === true, exp: Date.now() + 900_000 }), secure, 900);
 export const openPending = (v) => { const o = open(v); return o && known(o.p) && o.subject ? o : null; };
