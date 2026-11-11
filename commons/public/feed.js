@@ -15,7 +15,7 @@ export async function uploadImage(file, { alt, credit, title, for: forWho, made_
 // ---- compose a post, with images (each needs its own alt text and credit)
 const form = $('#compose');
 if (form) {
-  const msg = form.querySelector('.form-msg'); const pics = $('#c-pics'); let files = [];
+  const msg = form.querySelector('.form-msg'); const pics = $('#c-pics'); let files = []; let posting = false;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   $('#c-files').addEventListener('change', async (e) => {
     files = [...e.target.files].slice(0, 4);
@@ -24,9 +24,12 @@ if (form) {
     if (e.target.files.length > 4) msg.textContent = 'At most 4 images: the first 4 are kept.';
   });
   form.addEventListener('submit', async (e) => {
-    e.preventDefault(); msg.textContent = '';
+    e.preventDefault(); if (posting) return; msg.textContent = '';
     const text = $('#c-text').value.trim();
     if (!text && !files.length) { msg.textContent = 'Write something or add an image.'; return; }
+    posting = true; form.setAttribute('aria-busy', 'true');
+    const controls = [...form.querySelectorAll('button,input,textarea,select')].map((el) => [el, el.disabled]);
+    controls.forEach(([el]) => { el.disabled = true; });
     try {
       const ids = [];
       for (let i = 0; i < files.length; i++) {
@@ -44,6 +47,7 @@ if (form) {
       const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not post (${r.status})`; return; }
       location.href = `${group ? location.pathname : '/feed'}#${j.id}`; location.reload();
     } catch (err) { msg.textContent = err.message; }
+    finally { posting = false; form.removeAttribute('aria-busy'); controls.forEach(([el, disabled]) => { el.disabled = disabled; }); }
   });
 }
 

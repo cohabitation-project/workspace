@@ -3,6 +3,7 @@
 // the v2 behaviors: expanding composer + phone bottom sheet, group/release on posts, "coming soon" toasts,
 // copy-link, the new-posts pill, load-more / infinite scroll, focus-comment, and the desktop hover card.
 import './feed.js';
+import './feed-identity.js';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
 
@@ -31,7 +32,7 @@ document.addEventListener('click', async (e) => {
 document.addEventListener('click', (e) => {
   const b = e.target.closest('.fx-comment-btn'); if (!b) return;
   const t = document.getElementById(`sx-${b.dataset.post}`);
-  if (t) { t.closest('form')?.classList.remove('fx-cold'); t.focus(); t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else location.href = `/signin?next=/feed`;
+  if (t) { t.closest('form')?.classList.remove('fx-cold'); t.focus(); t.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } else location.href = `/signin?next=/feed`;
 });
 
 // ---- composer: expands when touched; group + release ride along (feed.js does the posting)

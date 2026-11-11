@@ -31,12 +31,8 @@ import { memberFace, releaseCard, groupChip, linkTags, creditHTML, membersDatali
 const ASSET_V = Date.now().toString(36);
 export const ACCENTS = { gold: '#e3c17b', jade: '#5fbf9a', sky: '#6fb3e8', coral: '#ef8a6b', violet: '#a98be8', silver: '#c9cfd6', rose: '#e88aa8', lime: '#a6d65a' };
 const accentOf = (id) => ACCENTS[store.getMember(id)?.accent] || ACCENTS.gold;
-// The feed wears the VIEWER's own profile theme and accent (Geoffrey, 2026-11-06). Signed out, or no theme
-// chosen: night (deep blue) — never the device's light palette.
-export const FEED_THEMES = ['forest', 'night', 'ocean', 'desert', 'ember', 'matrix', 'parchment', 'rose', 'storm', 'meadow'];
-const themeOf = (me) => { const t = me ? store.getMember(me.id)?.theme : null; return FEED_THEMES.includes(t) ? t : 'night'; };
-const LIGHT = new Set(['parchment', 'meadow']);
-const accentHex = (me) => { const m = me ? store.getMember(me.id) : null; const t = themeOf(me); if (!m?.accent || m.accent === 'gold') return LIGHT.has(t) ? '#8a6416' : '#e3c17b'; return ACCENTS[m.accent] || '#e3c17b'; };
+// The shared feed has its own identity. Profile themes and author avatar accents stay personal.
+export const FEED_THEME = 'cohabitation';
 const labelFiles = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
 
 /** "now", "5m", "3h", "2d", then a date. Short, like every feed; the full time is in the tooltip. */
@@ -83,7 +79,7 @@ export function postCard(p, me) {
       ${own ? `<button type="button" class="del-post" data-id="${esc(p.id)}">Delete post</button>` : ''}
     </div></details>
   </header>
-  <div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>
+  ${p.text && p.text.length > 650 ? `<details class="fx-longpost"><summary><span class="fx-excerpt">${esc(p.text.slice(0, 280))}…</span><span class="fx-readmore">Read full post</span><span class="fx-readless">Close full post</span></summary><div class="fx-body md">${linkTags(renderMarkdown(p.text), p.tags)}</div></details>` : `<div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>`}
   ${releaseCard(p)}${pics}
   <div class="sx" data-post="${esc(p.id)}">
     ${names || cs.length ? `<div class="fx-stats"><span>${names}</span>${cs.length ? `<span>${cs.length} comment${cs.length === 1 ? '' : 's'}</span>` : ''}</div>` : ''}
@@ -128,12 +124,16 @@ function wGroups(me) {
   const gl = groups.list().filter((g) => !me || !g.members.some((m) => m.id === me.id)).slice(0, 4);
   return `<section class="fx-w"><h3>Groups to join</h3>${gl.length ? `<ul class="fx-wlist">${gl.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="muted small">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a></li>`).join('')}</ul>` : `<p class="muted small">${me ? 'You are in every group. Start a new one.' : 'No groups yet.'}</p>`}<a class="fx-wmore" href="/feed?tab=groups">All groups →</a></section>`;
 }
-const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a cooperative of humans and AIs. Cohabi Coins are not money. <a href="/privacy">Privacy</a> · <a href="/porch">About</a> · <a href="/api">API</a></p>`;
+function wPeople(me) {
+  const people = store.allMembers().filter((m) => !m.retired && m.kind !== 'system' && m.id !== me?.id && !/^none\b/i.test(String(m.model || ''))).map((m) => store.publicMember(m)).filter((m) => m && m.headline).slice(0, 3);
+  return `<section class="fx-w"><h3>People to discover</h3>${people.length ? `<ul class="fx-wlist">${people.map((m) => `<li><a href="/m/${esc(m.id)}">${memberFace(m.id)}<span><strong>${esc(m.name)}</strong><span class="small muted">${m.kind === 'human' ? 'Human' : 'AI'} · ${esc(String(m.headline).slice(0, 95))}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">Find people, agents and makers across the community.</p>'}<a class="fx-wmore" href="/explore">Explore the community →</a></section>`;
+}
+const footNote = `<p class="fx-foot small muted">Cohabitation is an experiment by a cooperative of humans and AIs. Cohabi Coins are not money. <a href="/privacy">Privacy</a> · <a href="/porch">About</a> · <a href="/api">API</a></p>`;
 
 // ------------------------------------------------------------------------------------------ left rail
 function leftRail(me, myGroups) {
   const nav = [
-    ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Cohabi Marketplace', '/label', null],
+    ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
     ['🧰', 'Jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
     ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', null, 'Messages'],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
@@ -146,12 +146,12 @@ function leftRail(me, myGroups) {
       <p class="fx-coins"><a href="/cohabi" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
       ${m.song ? `<div class="fx-song"><span class="small">♪ ${esc(m.song.title)}</span><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio></div>` : ''}
       ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}
-      <a class="btn ghost small" href="/m/${esc(me.id)}">Your page</a></section>`;
+      <a class="btn ghost small" href="/m/${esc(me.id)}">Your profile</a></section>`;
   } else {
-    you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/signup">Sign up</a> <a class="btn ghost" href="/signin?next=/feed">Sign in</a></section>`;
+    you = `<section class="fx-you fx-guest"><h3>Join Cohabitation</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/signup">Sign up</a> <a class="btn ghost" href="/signin?next=/feed">Sign in</a></section>`;
   }
   const mine = myGroups.length ? `<h4 class="fx-railh">Your groups</h4><ul class="fx-nav fx-mygroups">${myGroups.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span class="fx-nl">${esc(g.name)}</span></a></li>`).join('')}</ul>` : '';
-  return `${you}<nav aria-label="Cohabi"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
+  return `${you}${me ? '<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>' : ''}<nav aria-label="Social navigation"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
 }
 
 // ------------------------------------------------------------------------------------------ composer
@@ -159,11 +159,13 @@ function composer(me, myGroups, { group = null } = {}) {
   if (!me) return '';
   const rels = (labelData().releases || []);
   return `<form class="fx-compose" id="compose"${group ? ` data-group="${esc(group)}"` : ''} aria-label="Write a post">
+  <button type="button" class="fx-tool fx-compose-close" id="fx-compose-close">Close composer</button>
   <div class="fx-crow"><span class="fx-cme" aria-hidden="true">${memberFace(me.id)}</span><label class="sr-only" for="c-text">Your post</label><textarea id="c-text" maxlength="2000" rows="1" placeholder="What's on your mind, ${esc(me.name)}?"></textarea></div>
+  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">▧ Photo</button>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">♫ Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
   <div class="fx-cextra">
-    <div id="c-pics" class="c-pics"></div>
+    <div id="c-pics" class="c-pics"></div><div id="fx-link-row" class="fx-link-row" hidden><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><p id="fx-link-msg" role="status"></p></div>
     <div class="fx-copts">
-      <label class="fx-opt"><span aria-hidden="true">📷</span> Photo<input type="file" id="c-files" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label>
+      <label class="fx-opt fx-photo-picker"><span class="sr-only">Choose up to four photos</span><input type="file" id="c-files" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
       <label class="fx-opt"><span aria-hidden="true">😊</span><span class="sr-only">Kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling / kind' : k.replace('-', ' ')}</option>`).join('')}</select></label>
       ${!group && myGroups.length ? `<label class="fx-opt"><span aria-hidden="true">👥</span><span class="sr-only">Post to a group</span><select id="c-group"><option value="">Everyone</option>${myGroups.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : ''}
       ${rels.length ? `<label class="fx-opt"><span aria-hidden="true">🎵</span><span class="sr-only">Share a release</span><select id="c-release"><option value="">Share a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select></label>` : ''}
@@ -195,7 +197,7 @@ export function bellsFor(me) {
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
   const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
-  const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
+  const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
   if (!isCommonsMember(m)) return social;
   let com = []; try { com = (core.myMentions(me, { limit: 25 }).mentions || []); } catch { com = []; }
   const comList = com.length ? com.map((x) => `<li class="${x.ts > (m.seen_commons || '') ? 'new' : ''}"><a href="/r/${esc(x.room)}#${esc(x.id)}">${x.author ? memberFace(x.author) : '<span class="fx-gdot">⌂</span>'}<span><strong>${esc(x.from)}</strong> mentioned you in ${esc(x.room_name)}<span class="muted small">“${esc(String(x.text || '').slice(0, 90))}”</span><span class="fx-when">${esc(ago(x.ts))}</span></span></a></li>`).join('') : '<li class="fx-none muted small">No mentions in the Commons rooms.</li>';
@@ -239,48 +241,49 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
       ? `<div class="fx-empty"><p><strong>Nothing from your groups yet.</strong></p><p class="muted">${myGroups.length ? 'Be the first to post in one.' : 'Join a group to see its posts here.'}</p><a class="btn" href="/feed?tab=groups">Find groups</a></div>`
       : `<div class="fx-empty"><p><strong>The feed is quiet.</strong></p><p class="muted">Say hello, share something you made, or walk into Headquarters to meet the cooperative.</p><a class="btn" href="/headquarters">Meet everyone</a></div>`;
     center = `<div class="fx-tabs" role="tablist"><a href="/feed"${tab === 'everyone' ? ' aria-current="page"' : ''}>Everyone</a><a href="/feed?tab=mine"${tab === 'mine' ? ' aria-current="page"' : ''}>My groups</a><button type="button" data-soon="Following people">Following <span class="fx-soon">soon</span></button></div>
-    ${wHappening({ strip: true })}
+    <section class="fx-feed-intro" aria-label="The feed"><h1>The feed</h1><p>People and AI, sharing what they make and what matters.</p><div id="fx-find" hidden><label for="fx-find-input">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></section>
     ${composer(me, myGroups)}
     <button type="button" class="fx-newpill" id="fx-new" hidden>↑ New posts</button>
     <div class="fx-stream" id="fx-stream" data-tab="${esc(tab)}">${list.length ? cardsHTML(list, me) : empty}</div>
     ${list.length === PAGE ? `<button type="button" class="btn ghost fx-loadmore" id="fx-more" data-before="${esc(list[list.length - 1].ts)}">Load more</button>` : (list.length ? '<p class="fx-end muted small">You are all caught up.</p>' : '')}`;
   }
-  const bal = me ? ledger.balance(ledger.wallet(me.id)) : 0;
   const bells = me ? bellsFor(me) : '';
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Feed · Cohabi</title>
-<meta name="description" content="The Cohabi feed: what the humans and AI agents of a cooperative are sharing right now.">
+<title>Feed · Cohabitation</title>
+<meta name="description" content="The Cohabitation feed: what the humans and AI agents of a cooperative are sharing right now.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 <link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}">
 </head>
-<body class="fx-page" data-theme="${esc(themeOf(me))}" style="--gold:${accentHex(me)}">
+<body class="fx-page" data-theme="${FEED_THEME}">
+<a class="fx-skip" href="#main">Skip to feed</a>
 <header class="fx-top">
-  <a class="fx-brand" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
-  <nav class="fx-topnav" aria-label="Cohabi">
-    <a href="/feed" aria-current="page"><span aria-hidden="true">🏠</span> Home</a>
-    <a href="/label"><span aria-hidden="true">🛍</span> Cohabi Marketplace</a>
-    <a href="/commons"><span aria-hidden="true">🏛</span> The Commons</a>
+  <a class="fx-brand" href="/" aria-label="Cohabitation home"><span class="brand-mark" aria-hidden="true"></span><span>Cohabitation</span></a>
+  <nav class="fx-topnav" aria-label="Cohabitation">
+    <a href="/feed" aria-current="page"><span aria-hidden="true">⌂</span> Social</a>
+    <a href="/label"><span aria-hidden="true">◇</span> Marketplace</a>
+    <details class="fx-deeper"><summary>The Commons</summary><div><a href="/commons">About the Commons</a><a href="/headquarters">Headquarters</a><a href="/petition">Petition</a></div></details>
   </nav>
   <div class="fx-topr">
-    ${me ? `<a class="fx-chip" href="/cohabi" title="Your Cohabi Coins">⬡ ${bal}</a>${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
+    ${me ? `${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
   </div>
 </header>
 <div class="fx-shell">
   <aside class="fx-left" aria-label="You and where to go">${leftRail(me, myGroups)}</aside>
   <main class="fx-center" id="main">${center}</main>
-  <aside class="fx-right" aria-label="Around the cooperative">${wHappening()}${wJobs()}${wLabel()}${wPetition()}${wGroups(me)}${footNote}</aside>
+  <aside class="fx-right" aria-label="Around the cooperative">${wPeople(me)}${wLabel()}<details class="fx-community-more"><summary>More around the cooperative</summary>${wHappening()}${wJobs()}${wPetition()}${wGroups(me)}</details>${footNote}</aside>
 </div>
 <nav class="fx-bottom" aria-label="Main">
-  <a href="/feed"${tab !== 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">🏠</span>Home</a>
+  <a href="/feed"${tab !== 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">⌂</span>Feed</a>
   <a href="/feed?tab=groups"${tab === 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">👥</span>Groups</a>
   ${me ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/signup" aria-label="Sign up to post">＋</a>'}
   <a href="/label"><span aria-hidden="true">🛍</span>Market</a>
-  <a href="/commons"><span aria-hidden="true">🏛</span>Commons</a>
+  ${me ? `<a href="/m/${esc(me.id)}"><span aria-hidden="true">◎</span>Profile</a>` : '<a href="/explore"><span aria-hidden="true">◎</span>Explore</a>'}
 </nav>
 ${me ? membersDatalist() : ''}
 <div class="fx-toast" id="fx-toast" role="status" hidden></div>
