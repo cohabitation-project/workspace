@@ -552,3 +552,66 @@
 
 .live-close-sidebar{display:none}
 @media(max-width:699px){.live-close-sidebar{display:block;align-self:flex-end;margin:10px 12px 0;background:#244649;border:1px solid #507877;color:#eff;border-radius:8px;min-height:44px;padding:8px 14px;cursor:pointer}}
+
+/* ---------------------------------------------------------------------------------------------------------------
+   Setu, 2026-11-11 — Geoffrey: one Cohabi symbol on every page, and Cohabi Live themed like the social feed.
+   This layer sits last and only re-colours Aletheia-6's layout above; it changes no layout or behaviour.
+   Palette and mark are the feed's own (feed-identity.css, site.css .brand-mark). The video stage stays dark,
+   because faces and shared screens read best on black.
+   --------------------------------------------------------------------------------------------------------------- */
+#voiceroom-root{--bg:#f5f1eb;--panel:#fffcf8;--panel2:#eee6f3;--line:#c8bacb;--ink:#292230;--muted:#675d6b;
+  --gold:#e9b25d;--sky:#8fd3ff;--lilac:#c79bf2;--coral:#f08a6b;background:var(--bg);color:var(--ink)}
+html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-scheme:light}
+
+/* The Cohabi mark: four squares, gold · sky / lilac · coral — the same element every page uses. */
+#voiceroom-root .brand-mark{display:block;flex:none;width:18px;height:18px;background:
+  linear-gradient(var(--gold),var(--gold)) 0 0/8px 8px no-repeat,
+  linear-gradient(var(--sky),var(--sky)) 10px 0/8px 8px no-repeat,
+  linear-gradient(var(--lilac),var(--lilac)) 0 10px/8px 8px no-repeat,
+  linear-gradient(var(--coral),var(--coral)) 10px 10px/8px 8px no-repeat;image-rendering:pixelated}
+#voiceroom-root .brand-mark-lg{width:36px;height:36px;margin:0 auto;background-size:16px 16px;background-position:0 0,20px 0,0 20px,20px 20px}
+
+#voiceroom-root .live-shell{background:var(--bg)}
+#voiceroom-root .live-header{position:relative;background:var(--bg);border-bottom:0}
+#voiceroom-root .live-header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;
+  background:linear-gradient(90deg,var(--gold) 0 25%,var(--sky) 25% 50%,var(--lilac) 50% 75%,var(--coral) 75%)}
+#voiceroom-root .live-logo{color:var(--ink)}
+#voiceroom-root .live-brand{font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em}
+#voiceroom-root .live-label{color:#1f7a57}
+#voiceroom-root .live-label i,#voiceroom-root .live-dot{background:#2fa36f;box-shadow:none}
+#voiceroom-root .live-room-heading{border-left-color:var(--line)}
+#voiceroom-root .live-room-heading span{color:var(--muted)}
+#voiceroom-root .live-text-btn{background:var(--panel);border-color:var(--line);color:var(--ink)}
+#voiceroom-root .live-text-btn:hover,#voiceroom-root .live-text-btn:focus-visible{border-color:#68418b}
+
+#voiceroom-root .grid{background:var(--panel);border-color:var(--line)}
+#voiceroom-root .grid .tile{background:#1f1a26}
+#voiceroom-root .tile.compact-agent .agent-avatar{border-color:var(--lilac);background:var(--panel2)}
+#voiceroom-root .tile.compact-agent .agent-glyph{color:var(--ink)}
+#voiceroom-root .tile.compact-agent .tile-name{color:var(--ink)}
+#voiceroom-root .live-stage{border-color:var(--line)}
+#voiceroom-root .live-stage-empty{opacity:1}
+#voiceroom-root .live-stage-empty h1{color:var(--ink)}
+#voiceroom-root .live-stage-empty p{color:var(--muted)}
+
+#voiceroom-root .live-sidebar{background:var(--panel);border-color:var(--line);color:var(--ink)}
+#voiceroom-root .live-side-tabs{border-bottom-color:var(--line)}
+#voiceroom-root .live-tab{color:var(--muted)}
+#voiceroom-root .live-tab.active{color:var(--ink);border-color:var(--gold);background:#fdf1dc;border-radius:8px 8px 0 0}
+#voiceroom-root .live-side-title{color:var(--ink)}
+#voiceroom-root .live-side-title span{background:#fdf1dc;color:#513b16}
+#voiceroom-root .live-side-note,#voiceroom-root .live-member-row small{color:var(--muted)}
+#voiceroom-root .live-member-row{border-color:var(--line);background:#fffdfb}
+#voiceroom-root .live-member-dot{background:var(--panel2);color:var(--ink)}
+#voiceroom-root .chat-input-wrap input{background:#fffdfb;color:var(--ink);border:1px solid #a997af}
+#voiceroom-root .chat-input-wrap button{background:var(--gold);color:var(--ink)}
+
+#voiceroom-root .live-controls{background:var(--panel);border-top-color:var(--line);color:var(--ink)}
+#voiceroom-root .live-controls-meta small,#voiceroom-root .live-controls-right{color:var(--muted)}
+#voiceroom-root .ctrl-btn{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+#voiceroom-root .ctrl-btn:hover,#voiceroom-root .ctrl-btn:focus-visible{outline-color:#68418b}
+#voiceroom-root .ctrl-btn.off{background:#fde4dc;border-color:#d9907a;color:#a9432d}
+#voiceroom-root .ctrl-btn.leave-btn{background:#c4473c;border-color:#a9432d;color:#fff}
+#voiceroom-root .live-close-sidebar{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+@media(max-width:699px){#voiceroom-root .live-sidebar{box-shadow:0 18px 48px #30263c33}}
+#voiceroom-root .ctrl-btn svg{fill:currentColor}

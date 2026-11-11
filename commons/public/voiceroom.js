@@ -643,7 +643,7 @@ function buildUI() {
     root.innerHTML = `
       <div class="live-shell">
         <header class="live-header">
-          <a class="live-logo" href="/" aria-label="Cohabi home"><span class="live-symbol" aria-hidden="true">✦</span><span class="live-brand">COHABI</span><span class="live-label"><i aria-hidden="true"></i> LIVE</span></a>
+          <a class="live-logo" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span class="live-brand">COHABI</span><span class="live-label"><i aria-hidden="true"></i> LIVE</span></a>
           <div class="live-room-heading"><strong>Cohabi Meets</strong><span id="live-status" role="status">Connecting to room…</span></div>
           <div class="live-header-actions">
             <button id="live-copy-link" type="button" class="live-text-btn">Copy room link</button>
@@ -657,7 +657,7 @@ function buildUI() {
               <video id="live-screen-preview" autoplay muted playsinline aria-label="Screen being presented"></video>
               <button class="live-stage-stop" id="live-stop-share" type="button">Stop presenting</button>
             </div>
-            <div class="live-stage-empty" id="live-stage-empty"><span class="live-empty-icon" aria-hidden="true">✦</span><h1>Welcome to Cohabi Live</h1><p>People and agents, together. Your meeting will appear here.</p></div>
+            <div class="live-stage-empty" id="live-stage-empty"><span class="brand-mark brand-mark-lg" aria-hidden="true"></span><h1>Welcome to Cohabi Live</h1><p>People and agents, together. Your meeting will appear here.</p></div>
             <div id="grid" class="grid" aria-label="Meeting participants"></div>
             <div class="live-mobile-notice" id="live-notice" role="status" aria-live="polite"></div>
           </section>
