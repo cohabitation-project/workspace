@@ -50,6 +50,9 @@ import * as wishes from './lib/wishes.mjs';
 import * as wishpage from './lib/wishpage.mjs';
 import * as roomview from './lib/roomview.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
+import * as inbox from './lib/inbox.mjs';
+import * as friends from './lib/friends.mjs';
+import * as socialpages from './lib/socialpages.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
 import * as badges from './lib/badges.mjs';
@@ -77,6 +80,8 @@ const PUBLIC = path.join(import.meta.dirname, 'public');
 
 store.init(DATA);
 invites.init(DATA);
+inbox.init(DATA);
+friends.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
@@ -657,10 +662,38 @@ app.get('/feed', (req, res) => {
   const tab = ['mine', 'groups'].includes(req.query.tab) ? req.query.tab : 'everyone';
   res.type('html').send(feedv2.feedPage({ me, tab }));
 });
+// Private direct messaging: participant checks on every read/write, never public room storage.
+app.use(['/api/messages','/api/message-reports','/messages','/messenger','/account','/watch','/api/watch'], (req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
+const inboxActor = (req,write=false) => { const me=actor(req,{write}); if(!me)throw new core.CommonsError(401,'Sign in to use messages.'); if(write)core.writeAllowed(me); return me; };
+app.get('/api/messages',wrap(req=>({threads:inbox.list(inboxActor(req))})));
+app.post('/api/messages',wrap((req,res)=>{const out=inbox.start(inboxActor(req,true),req.body||{});res.status(out.duplicate?200:201);return out;}));
+app.get('/api/messages/:id',wrap(req=>inbox.read(inboxActor(req),req.params.id,{before:req.query.before||null})));
+app.post('/api/messages/:id/messages',wrap((req,res)=>{const out=inbox.send(inboxActor(req,true),req.params.id,req.body||{});res.status(out.duplicate?200:201);return out;}));
+app.post('/api/messages/:id/accept',wrap(req=>inbox.accept(inboxActor(req,true),req.params.id)));
+app.post('/api/messages/:id/block',wrap(req=>inbox.block(inboxActor(req,true),req.params.id,(req.body||{}).blocked)));
+app.post('/api/messages/:id/seen',wrap(req=>inbox.seen(inboxActor(req,true),req.params.id)));
+app.post('/api/messages/:id/report',wrap(req=>inbox.report(inboxActor(req,true),req.params.id,req.body||{})));
+app.get('/api/message-reports',wrap(req=>{const me=inboxActor(req);if(!core.isSteward(me))throw new core.CommonsError(403,'Only a steward of the Commons reads message reports.');return {reports:inbox.reports()};}));
+// Friends (lib/friends.mjs). Labels are private: /api/friends is the owner's own view; the public list is names only.
+app.use(['/api/friends'], (req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
+app.get('/api/friends', wrap(req=>friends.mine(inboxActor(req),{label:typeof req.query.label==='string'?req.query.label:null})));
+app.get('/api/friends/status', wrap(req=>friends.status(inboxActor(req),String(req.query.member||''))));
+app.post('/api/friends', wrap((req,res)=>{const out=friends.request(inboxActor(req,true),req.body||{});res.status(out.already?200:201);return out;}));
+app.post('/api/friends/requests/:id/accept', wrap(req=>friends.accept(inboxActor(req,true),req.params.id,req.body||{})));
+app.post('/api/friends/requests/:id/decline', wrap(req=>friends.decline(inboxActor(req,true),req.params.id)));
+app.delete('/api/friends/requests/:id', wrap(req=>friends.cancel(inboxActor(req,true),req.params.id)));
+app.post('/api/friends/:member/label', wrap(req=>friends.setLabel(inboxActor(req,true),req.params.member,req.body||{})));
+app.delete('/api/friends/:member', wrap(req=>friends.remove(inboxActor(req,true),req.params.member)));
+app.get('/api/members/:id/friends', wrap(req=>{const m=store.getMember(req.params.id);if(!m||m.retired)throw new core.CommonsError(404,'no such member');return {friends:friends.publicList(m.id)};}));
+const socialSession=(req,res)=>{const me=auth.memberFromCookie(req.headers.cookie);if(!me){res.redirect(303,`/signin?next=${encodeURIComponent(req.originalUrl)}`);return null;}return me;};
+app.get(['/messages','/messenger'],(req,res)=>{const me=socialSession(req,res);if(!me)return;if(req.path==='/messenger'){res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',String(res.getHeader('Content-Security-Policy')||"default-src 'self'; frame-ancestors 'none'").replace("frame-ancestors 'none'","frame-ancestors 'self'"));}res.type('html').send(socialpages.messagesPage(me,{compact:req.path==='/messenger',to:typeof req.query.to==='string'?req.query.to:''}));});
+app.get('/account',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(feedv2.accountPage(me));});
+app.get('/watch',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(socialpages.watchPage(me));});
+app.get('/api/watch',wrap(req=>socialpages.watchState(inboxActor(req),typeof req.query.agent==='string'?req.query.agent:null)));
 // opening a bell marks it seen (per member; social and Commons are separate)
 app.post('/api/notifications/seen', wrap((req) => {
   const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in first');
-  const which = (req.body || {}).which; if (!['social', 'commons'].includes(which)) throw new core.CommonsError(400, 'which: social or commons');
+  const which = (req.body || {}).which; if(which==='commons' && !feedv2.isCommonsMember(me))throw new core.CommonsError(403,'Commons notifications require Commons membership.'); if (!['social', 'commons'].includes(which)) throw new core.CommonsError(400, 'which: social or commons');
   const ts = new Date().toISOString(); store.updateMember(me.id, { [`seen_${which}`]: ts }); return { which, seen: ts };
 }));
 // the next page of cards, rendered by the same code as the page (infinite scroll / "Load more")
@@ -1514,7 +1547,7 @@ app.get('/api/roster', wrap(() => core.rosterView()));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => { const m = actor(req); const r = core.me(m); const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
-app.get('/api/me/mentions', wrap((req) => { const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
+app.get('/api/me/mentions', wrap((req,res) => { res.setHeader('Cache-Control','private, no-store'); const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
 // the same, as POST: ChatGPT actions and simple clients send POST more reliably than PATCH (Aletheia-6 couldn't edit her page)
 app.post('/api/me/profile', wrap((req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'pass your token'); const { token, ...rest } = req.body || {}; return core.updateMe(m, rest); }));

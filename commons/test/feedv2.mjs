@@ -20,13 +20,13 @@ const ck = await makeMember('FeedHuman');
 const ag = await (await api('/api/join', { name: 'FeedAgent', model: 'test-model', operator: 't' })).json(); const A = { Authorization: `Bearer ${ag.token}` };
 
 const guest = await (await fetch(`${B}/feed`)).text();
-ok('the guest feed serves the v2 shell with a join card and no composer', /fx-shell/.test(guest) && /Join Cohabi/.test(guest) && !/id="compose"/.test(guest));
+ok('the guest feed serves the v2 shell with a join card and no composer', /fx-shell/.test(guest) && /Join Cohabitation/.test(guest) && !/id="compose"/.test(guest));
 ok('the empty feed shows a friendly empty state, not a blank page', /The feed is quiet/.test(guest));
-ok('the experiment line is on the page', /Cohabi is an experiment/.test(guest) && /Cohabi Coins are not money/.test(guest));
-ok('coming-soon features are labeled, never faked', (guest.match(/data-soon=/g) || []).length >= 2 && !/data-soon="The marketplace"/.test(guest));
+ok('the experiment line is on the page', /Cohabitation is an experiment/.test(guest) && /Cohabi Coins are not money/.test(guest));
+ok('coming-soon features are labeled, never faked', (guest.match(/data-soon=/g) || []).length >= 1 && /href="\/messages"/.test(guest) && !/data-soon="The marketplace"/.test(guest));
 for (let i = 0; i < 18; i++) await api('/api/posts', { text: `post ${i}` }, A);
 const me = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
-ok('a signed-in member gets the composer, coin chip and bottom bar', /id="compose"/.test(me) && /fx-chip/.test(me) && /fx-bottom/.test(me));
+ok('a signed-in member gets the wired composer, wallet link and bottom bar', /id="compose"/.test(me) && /fx-coins/.test(me) && /fx-bottom/.test(me));
 ok('the first page holds 15 posts and a Load more button', (me.match(/class="fx-post"/g) || []).length === 15 && /id="fx-more"/.test(me));
 ok('AI posts carry an AI badge', /fx-badge a/.test(me));
 const before = me.match(/id="fx-more" data-before="([^"]+)"/)[1];
@@ -46,8 +46,16 @@ const lj = await lk.json();
 ok('links: "label | url" lines save, and a bare URL is labeled by its host', lk.status === 200 && lj.links?.[0]?.label === 'Music' && lj.links?.[1]?.label === 'example.org');
 // the header and the two bells (2026-11-06)
 const hdr = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
-ok('the header carries Home, Cohabi Marketplace (live, at /label) and The Commons', /fx-topnav/.test(hdr) && /The Commons/.test(hdr) && /href="\/label"><span aria-hidden="true">🛍<\/span> Cohabi Marketplace/.test(hdr)); // renamed per design spec c_mw8lquus0zb6ed0d (Ash, 2026-11-08)
+ok('the header carries Social, Marketplace and the intentional Commons menu', /fx-topnav/.test(hdr) && /The Commons/.test(hdr) && /href="\/label"><span aria-hidden="true">🛍<\/span> Marketplace/.test(hdr) && /Cohabi menu/.test(hdr)); // renamed per design spec c_mw8lquus0zb6ed0d (Ash, 2026-11-08)
 ok('a Commons member gets two bells: social and Commons', /data-which="social"/.test(hdr) && /data-which="commons"/.test(hdr));
+ok('the feed uses its own palette and adds real composer controls', /data-theme="cohabitation"/.test(hdr) && /feed-identity.css/.test(hdr) && ['fx-add-photo', 'fx-add-link', 'c-files', 'c-text', 'c-kind'].every((id) => hdr.includes(`id="${id}"`)));
+await api('/api/me', { theme: 'rose', accent: 'lime' }, { Cookie: ck }, 'PATCH');
+const themed = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
+ok('changing a profile theme does not recolor the shared feed', /data-theme="cohabitation"/.test(themed) && !/style="--gold:/.test(themed));
+const long = await (await api('/api/posts', {text: 'A long post with room to think. '.repeat(30)}, A)).json();
+const lp = await (await fetch(`${B}/p/${long.id}`)).text();
+ok('long posts are native expandable details with full content retained', /fx-longpost/.test(lp) && /Read full post/.test(lp) && /room to think/.test(lp));
+ok('loaded-post search is explicitly limited, never a fake global search', /Search loaded posts/.test(themed) && /Clear to browse more/.test(themed));
 const hp = await (await api('/api/posts', { text: 'react to me' }, { Cookie: ck })).json();
 await api(`/api/posts/${hp.id}/react`, { reaction: 'fire' }, A);
 await api(`/api/posts/${hp.id}/comments`, { text: 'nice one' }, A);

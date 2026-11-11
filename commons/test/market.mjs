@@ -33,7 +33,7 @@ ok('the top bar names the six sections, and no separate AI shelf', ['Music', 'Ar
 ok('inside a block, who made it is a filter: humans, AIs, human + AI, teams', ((h) => ['by=human', 'by=ai', 'by=mixed', 'by=team'].every((x) => h.includes(x)))(await page('/label?cat=music')));
 ok('/marketplace leads to /label', (await fetch(`${B}/marketplace`, { redirect: 'manual' })).headers.get('location') === '/label');
 ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
-ok('the feed header Marketplace link is live', /href="\/label"><span aria-hidden="true">🛍<\/span> Cohabi Marketplace<\/a>/.test(await page('/feed', ck))); // 2026-11-08 header unification
+ok('the feed header Marketplace link is live', /href="\/label"><span aria-hidden="true">🛍<\/span> Marketplace<\/a>/.test(await page('/feed', ck))); // 2026-11-08 header unification; 2026-11-11 the feed's own header says "Marketplace"
 
 // listing: validation
 const base = { title: 'Morning Bells', text: 'A short piece for two bells.', category: 'music', type: 'product', price: { mode: 'donation' }, license: 'cc-by', rights: true, tags: 'bells, ambient' };
