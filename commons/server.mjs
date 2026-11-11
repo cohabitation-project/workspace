@@ -42,6 +42,7 @@ import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
+import * as oauth from './lib/oauth.mjs';
 import * as orgpages from './lib/orgpages.mjs';
 import * as journalguide from './lib/journalguide.mjs';
 import * as wishes from './lib/wishes.mjs';
@@ -938,6 +939,54 @@ app.post('/api/welcome/skip', jsonSmall, (req, res) => {
   if (!me || me.retired) return res.status(401).json({ error: 'sign_in' });
   if (!ownPage(req)) return res.status(403).json({ error: 'forbidden' });
   store.updateMember(me.id, { welcome_skipped: true }); res.json({ ok: true });
+});
+
+
+// ---- Continue with Google / GitHub (lib/oauth.mjs). We keep an account number and nothing else.
+const authPage = (res, status, html) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex'); res.status(status).type('html').send(html); };
+const secureBase = (req) => core.baseUrl(req).startsWith('https');
+app.get('/auth/:provider', (req, res, next) => {
+  const p = req.params.provider; if (!oauth.known(p)) return next();
+  if (!oauth.enabled(p)) return authPage(res, 404, pages.providerMessagePage(`${oauth.label(p)} sign-in is not connected yet`, 'You can sign in with your name and password, a one-time code, or your private login link.'));
+  if (!auth.allow(`oauth:${req.ip}`, 30, 900_000)) return authPage(res, 429, pages.providerMessagePage('Too many tries', 'Please wait fifteen minutes and try again.'));
+  const me = auth.memberFromCookie(req.headers.cookie);
+  const s = oauth.start(p, { base: core.baseUrl(req), next: req.query.next, linkTo: me && me.kind === 'human' && !me.retired ? me.id : null });
+  res.setHeader('Set-Cookie', s.cookie); res.setHeader('Cache-Control', 'no-store'); res.redirect(303, s.url);
+});
+app.get('/auth/:provider/callback', async (req, res, next) => {
+  const p = req.params.provider; if (!oauth.known(p)) return next();
+  const cookies = auth.parseCookies(req.headers.cookie); const out = [oauth.clear(oauth.STATE)];
+  try {
+    if (req.query.error) throw Object.assign(new Error(`You did not finish signing in with ${oauth.label(p)}. Nothing was changed.`), { status: 400 });
+    const r = await oauth.finish(p, { base: core.baseUrl(req), code: req.query.code, state: req.query.state, stateCookie: cookies[oauth.STATE] });
+    const after = r.next || '/welcome?auto=1';
+    // The session cookie is SameSite=Strict and this request came from the provider's site, so a plain redirect
+    // would arrive signed out. A page that moves on by itself makes the next request a same-site one.
+    const signIn = (m, msg) => { out.push(auth.sessionCookie(m.id, secureBase(req), m.sessionVersion)); res.setHeader('Set-Cookie', out); return authPage(res, 200, pages.providerMessagePage('Signed in', msg, { refresh: after })); };
+    const known = oauth.memberFor(p, r.subject);
+    if (known) return signIn(known, `Welcome back, ${known.name}.`);
+    const linker = r.link ? store.getMember(r.link) : null;
+    if (linker && linker.kind === 'human' && !linker.retired) { oauth.bind(linker, p, r.subject); return signIn(linker, `${oauth.label(p)} is now connected to ${linker.name}. You can sign in with it from now on.`); }
+    out.push(oauth.pendingCookie(p, r.subject, r.next, secureBase(req))); res.setHeader('Set-Cookie', out);
+    return authPage(res, 200, pages.providerNamePage(oauth.label(p)));
+  } catch (e) {
+    res.setHeader('Set-Cookie', out); const mine = Number.isInteger(e?.status) && e.status < 500;
+    if (!mine) console.error('[commons] provider sign-in failed', p, e?.message);
+    return authPage(res, mine ? e.status : 502, pages.providerMessagePage('That did not work', mine ? e.message : `${oauth.label(p)} did not answer. Nothing was changed. Please try again.`));
+  }
+});
+app.post('/auth/finish', express.urlencoded({ extended: false, limit: '4kb' }), (req, res) => {
+  const pend = oauth.openPending(auth.parseCookies(req.headers.cookie)[oauth.PENDING]);
+  if (!pend) return authPage(res, 400, pages.providerMessagePage('That took too long', 'Please start signing in again.'));
+  // A form on another site must not be able to finish someone's sign-up: the browser's Origin has to be ours.
+  try { if (new URL(req.get('origin') || '').host !== new URL(core.baseUrl(req)).host) throw new Error('origin'); } catch { return authPage(res, 403, pages.providerMessagePage('That did not work', 'Please start signing in again.')); }
+  try {
+    if (oauth.memberFor(pend.p, pend.subject)) throw new core.CommonsError(409, 'that account already has a profile. Please sign in.');
+    const { member } = core.createHuman({ name: req.body?.name }, { ip: req.ip, socialOnly: true });
+    oauth.bind(member, pend.p, pend.subject);
+    res.setHeader('Set-Cookie', [oauth.clear(oauth.PENDING), auth.sessionCookie(member.id, secureBase(req), member.sessionVersion)]);
+    res.setHeader('Cache-Control', 'no-store'); return res.redirect(303, pend.next || '/welcome');
+  } catch (e) { return authPage(res, Number.isInteger(e?.status) ? e.status : 500, pages.providerNamePage(oauth.label(pend.p), Number.isInteger(e?.status) && e.status < 500 ? e.message : 'Something went wrong. Nothing was created. Please try again.')); }
 });
 
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));

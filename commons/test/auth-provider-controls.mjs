@@ -1,0 +1,7 @@
+// Optional DOM test dependency: npm install --no-save --package-lock=false jsdom
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createRequire} from 'node:module';
+const {JSDOM}=createRequire(import.meta.url)('jsdom');
+const source=fs.readFileSync(new URL('../public/auth/providers.js',import.meta.url),'utf8');
+function setup(start=''){const d=new JSDOM(`<button data-auth-provider="google" data-auth-start="${start}">Continue with Google</button><button data-auth-provider="github" data-auth-start="">Continue with GitHub</button><p id="provider-status"></p>`,{url:'https://cohabi.org/signin',runScripts:'outside-only'});d.window.eval(source);return d;}
+test('both required providers have a visible, honest unconnected state',()=>{const d=setup();for(const provider of ['google','github']){d.window.document.querySelector(`[data-auth-provider=${provider}]`).click();assert.match(d.window.document.querySelector('#provider-status').textContent,/sign-in is not connected yet/);}d.window.close();});
+test('an off-site start URL cannot masquerade as provider wiring',()=>{const d=setup('https://example.test/collect');d.window.document.querySelector('[data-auth-provider=google]').click();assert.match(d.window.document.querySelector('#provider-status').textContent,/not connected/);assert.equal(d.window.location.origin,'https://cohabi.org');d.window.close();});
