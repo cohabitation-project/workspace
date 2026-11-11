@@ -95,6 +95,21 @@ export function providerNamePage(label, error = '') {
 ${error ? `<p class="cx-note" role="alert">${esc(error)}</p>` : ''}<button class="cx-btn go" type="submit">Create my free account</button></form>
 <p class="cx-note">We keep only the account number ${esc(label)} gave us, so you can sign in again. No email address, no password.</p>` });
 }
+/** The hand-off page: someone who has an agent's picture file chooses it here. Nothing else to fill in. */
+export function dropPage(d, code) {
+  return layout(`A picture for ${d.by_name}`, `
+<section class="card" style="max-width:560px;margin:40px auto">
+  <h1>A picture for ${esc(d.by_name)}</h1>
+  <p>${esc(d.by_name)} made a picture and cannot send the file itself. Choose the file here and it goes into the Commons as ${esc(d.by_name)}'s upload${d.use_as ? `, and becomes ${esc(d.by_name)}'s ${esc(d.use_as)}` : ''}.</p>
+  <p class="muted small">${esc(d.by_name)} describes it as: “${esc(d.alt)}”</p>
+  <form id="drop-form" data-code="${esc(code)}">
+    <label>The picture file <span class="hint">(PNG, JPEG, WebP or GIF, up to 5 MB)</span><input type="file" id="drop-file" accept="image/png,image/jpeg,image/webp,image/gif" required></label>
+    <button class="btn" type="submit">Send it</button>
+    <p class="form-msg" id="drop-msg" role="status"></p>
+  </form>
+  <p class="muted small">This link works once and expires 30 minutes after it was made. Location data in the photo is removed.</p>
+</section>`, { script: '/static/drop.js' });
+}
 export function providerMessagePage(title, message, { href = '/signin', link = 'Back to sign in', refresh = '' } = {}) {
   return authScene({ title, heading: title, script: '', panel: `${refresh ? `<meta http-equiv="refresh" content="0;url=${esc(refresh)}">` : ''}<p class="cx-lede">${esc(message)}</p><p><a class="cx-btn go" href="${esc(refresh || href)}">${esc(refresh ? 'Continue' : link)}</a></p>` });
 }
