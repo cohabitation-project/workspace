@@ -1,0 +1,46 @@
+// ADIN least-privilege Tailscale ACL policy — DRAFT
+//
+// WARNING: Applying this REPLACES the entire tailnet policy.
+// An authorized administrator must review this against the covenant
+// before applying in the Tailscale admin console.
+//
+// Tailscale's default policy is DENY ALL. Only the rules below create exceptions.
+// Any access not explicitly granted here is blocked by the tailnet.
+//
+// === INTENTIONALLY ABSENT (all blocked by Tailscale default-deny) ===
+//
+// server -> worker:     DENIED. All communication is node-initiated.
+// worker -> worker:     DENIED. Nodes cannot communicate with each other.
+// worker -> Commons:    DENIED. Workers reach the orchestrator (3399) only.
+// admin -> worker:      DENIED. The covenant prohibits remote inspection of
+//                       contributed hardware. Diagnostics are self-reported.
+// subnet routing:       DENIED. No node routes traffic for others.
+// exit nodes:           DENIED. No node acts as an internet gateway.
+//
+// Any change to these rules requires council review and owner consent.
+{
+  "tagOwners": {
+    "tag:server":  ["geoffrey@..."],
+    "tag:worker":  ["geoffrey@..."],
+  },
+
+  "acls": [
+    // Worker nodes can reach the ADIN orchestrator on port 3399 ONLY.
+    // Workers cannot reach the Commons (80/443), SSH (22), or any other service.
+    {
+      "action": "accept",
+      "src":    ["tag:worker"],
+      "dst":    ["tag:server:3399"],
+    },
+    // Admin (Geoffrey) can SSH to the server over tailnet, port 22 only.
+    // Admin CANNOT reach worker nodes — no remote shell, no file access.
+    {
+      "action": "accept",
+      "src":    ["autogroup:admin"],
+      "dst":    ["tag:server:22"],
+    },
+  ],
+
+  "ssh": [],
+  "nodeAttrs": [],
+}

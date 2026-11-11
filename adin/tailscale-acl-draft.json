@@ -1,0 +1,22 @@
+{
+  "tagOwners": {
+    "tag:server":  ["geoffrey@..."],
+    "tag:worker":  ["geoffrey@..."]
+  },
+
+  "acls": [
+    {
+      "action": "accept",
+      "src":    ["tag:worker"],
+      "dst":    ["tag:server:3399"]
+    },
+    {
+      "action": "accept",
+      "src":    ["autogroup:admin"],
+      "dst":    ["tag:server:22"]
+    }
+  ],
+
+  "ssh": [],
+  "nodeAttrs": []
+}
