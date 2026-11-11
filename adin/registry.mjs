@@ -317,14 +317,26 @@ export class Registry {
     return { ok: true, old_tier, new_tier: tier };
   }
 
-  /** Update a node's capabilities (e.g., after a benchmark or model change). */
-  updateCapabilities(node_id, capabilities) {
+  /** Update a node's capabilities (e.g., after a benchmark or model change).
+   *  @param {boolean} adminOverride — if true (admin call), task_types can change; otherwise locked */
+  updateCapabilities(node_id, capabilities, adminOverride = false) {
     const node = this.nodes.get(node_id);
     if (!node) return { error: 'unknown node', status: 404 };
     const check = validateCapabilities(capabilities);
     if (!check.valid) return { error: `invalid capabilities: ${check.errors.join(', ')}`, status: 400 };
+
+    // A node CANNOT change its own offered.task_types — that's a permission change
+    // requiring admin approval. Hardware stats (RAM, CPU, models, load) can update freely.
+    if (!adminOverride && node.capabilities.offered?.task_types) {
+      const oldTypes = [...node.capabilities.offered.task_types].sort().join(',');
+      const newTypes = [...(capabilities.offered?.task_types || [])].sort().join(',');
+      if (newTypes !== oldTypes) {
+        return { error: 'task_types cannot be changed by the node — request admin approval', status: 403 };
+      }
+    }
+
     node.capabilities = capabilities;
-    this._audit({ action: 'capabilities_updated', node_id });
+    this._audit({ action: 'capabilities_updated', node_id, admin: adminOverride });
     this._save();
     return { ok: true };
   }

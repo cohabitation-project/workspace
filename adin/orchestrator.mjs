@@ -14,6 +14,7 @@
  *   ADIN_DATA_DIR=/tmp/adin-test ADIN_HOST=127.0.0.1 node adin/orchestrator.mjs
  */
 
+import crypto from 'node:crypto';
 import express from 'express';
 import { Registry } from './registry.mjs';
 import { TaskQueue } from './queue.mjs';
@@ -53,7 +54,10 @@ function nodeAuth(req, res, next) {
 function adminAuth(req, res, next) {
   if (!ADMIN_TOKEN) return res.status(503).json({ error: 'admin token not configured' });
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (token !== ADMIN_TOKEN) return res.status(401).json({ error: 'invalid admin token' });
+  // Constant-time comparison to prevent timing attacks on the admin token
+  const a = Buffer.from(token);
+  const b = Buffer.from(ADMIN_TOKEN);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.status(401).json({ error: 'invalid admin token' });
   next();
 }
 
@@ -230,6 +234,12 @@ app.post('/adin/admin/reinstate/:node_id', adminAuth, (req, res) => {
 
 app.post('/adin/admin/force-rotate/:node_id', adminAuth, (req, res) => {
   const result = registry.forceRotation(req.params.node_id);
+  if (result.error) return res.status(result.status).json({ error: result.error });
+  res.json(result);
+});
+
+app.put('/adin/admin/capabilities/:node_id', adminAuth, (req, res) => {
+  const result = registry.updateCapabilities(req.params.node_id, req.body, true);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });

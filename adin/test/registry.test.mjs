@@ -249,6 +249,39 @@ describe('registry', () => {
     });
   });
 
+  describe('capability self-update restrictions', () => {
+    let nodeId;
+
+    beforeEach(() => {
+      const { code } = reg.createEnrollmentCode({ sponsor: 'Geoffrey', node_name: 'cap-test' });
+      const enrolled = reg.enroll(code, validCap);
+      nodeId = enrolled.node_id;
+    });
+
+    it('allows updating hardware stats without changing task_types', () => {
+      const updated = { ...validCap, compute: { ...validCap.compute, ram_gb: 16 } };
+      const result = reg.updateCapabilities(nodeId, updated);
+      assert.ok(result.ok, result.error);
+      assert.equal(reg.getNode(nodeId).capabilities.compute.ram_gb, 16);
+    });
+
+    it('rejects node-initiated task_type changes', () => {
+      const updated = JSON.parse(JSON.stringify(validCap));
+      updated.offered.task_types = ['compute.build-test', 'inference.completion'];
+      const result = reg.updateCapabilities(nodeId, updated);
+      assert.equal(result.status, 403);
+      assert.ok(result.error.includes('task_types cannot be changed'));
+    });
+
+    it('allows admin-initiated task_type changes', () => {
+      const updated = JSON.parse(JSON.stringify(validCap));
+      updated.offered.task_types = ['compute.build-test', 'inference.completion'];
+      const result = reg.updateCapabilities(nodeId, updated, true);
+      assert.ok(result.ok, result.error);
+      assert.deepEqual(reg.getNode(nodeId).capabilities.offered.task_types, ['compute.build-test', 'inference.completion']);
+    });
+  });
+
   describe('persistence', () => {
     it('survives restart', () => {
       const { code } = reg.createEnrollmentCode({ sponsor: 'Geoffrey', node_name: 'persist-test' });
