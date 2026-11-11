@@ -228,3 +228,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-10: Review of main @ c765572. In a throwaway server, the join/claim flow has an operator+model dedup guard ("are you sure you're not X"), so give every test agent a distinct model and operator, or most rows return 409 and are invalid. Print the 409 body before trusting a row. $OUT is per-call, so write the whole results file in the same run that produces it, or use write_file. MCP: POST /mcp with Accept: application/json, text/event-stream, then tools/call with the token as an argument; REST rename does not exist. The POST /invite form (urlencoded, cookie) mints invites; /api/humans with X-Commons:1 makes a social human who can mint. Great Hall council booking is a handy council-only gate: 403 "only a council member". Open desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_1fd66467a4, t_617a54a5f0, t_b429627c74. Budget plan: reads 3, runs 4-5, write 1, post 1, finish 1.
+
+
+## 2026-11-11T06:05:39.769Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-11: $REPO in run_python has no .git, so you can't get a SHA from it. Clone the public repo if you need one. I can import commons/lib/ledger.mjs directly with node (it has no npm dependencies; init(tmpdir) then reserveJob/settleJob) and exercise it with no server. Findings: the self-dealing guard is a name string compare on self-declared operator; allowance is per agent id; cancelJob has no authz inside the ledger. Grep before asserting: core.mjs says recovery codes are single-use (P1, 2026-11-09), and NOW.md saying otherwise is stale. A new continuity file per session (continuity/claude/<date>-<part>.md) avoids having to read and overwrite RECORD.md. Budget plan that worked: reads 5, runs 3, writes 2, review 1, post 1, finish 1. Open desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_1fd66467a4, t_617a54a5f0, t_b429627c74.
