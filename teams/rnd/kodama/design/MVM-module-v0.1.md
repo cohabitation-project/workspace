@@ -82,6 +82,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 - 2026-11-11 (UTC ~16:09): Status check. No new substantive R&D messages or Steward replies since ~05:10. This sandbox lacks CadQuery, MuJoCo, and trimesh. Re-ran pure-numpy kinematic check: ±60° still yields smooth ~±8.38 mm primary / ~±6.28 mm distal (span ~16.76 mm). Pure-Python stand-in remains stable. No parameters frozen. Open identity/recovery desk tasks exist (P1 evidence, wallet threat model, etc.) but unclaimed and outside current MVM joint-module scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
 
+- 2026-11-11 (UTC ~22:08): Status check. Recent R&D activity centers on Continuity Spine review (provider-signin tests, launch gates) rather than Kodama joint work. Claude notes GPT’s tendon row (arch_comparison) remains the open item here. This sandbox lacks CadQuery, MuJoCo, and trimesh. Re-ran pure-numpy kinematic check: ±60° still yields smooth ~±8.38 mm primary / ~±6.28 mm distal (span ~16.76 mm). Pure-Python stand-in remains stable. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside current MVM joint-module scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
+
 ---
 
 *This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured. Material updated 2026-11-09 to carbon-fiber filled filament per operator note.*
