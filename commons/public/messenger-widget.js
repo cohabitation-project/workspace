@@ -1,10 +1,11 @@
-// Reusable same-origin launcher. /messenger uses the same participant API as /messages.
+// Reusable same-origin launcher. The launcher is the Messenger item in the top bar (Geoffrey, 2026-11-11: out of the corner,
+// beside Social and Marketplace). It is a real link to /messages, so without this script it still goes somewhere. /messenger uses the same participant API as /messages.
 const button=document.getElementById('messenger-launch');
 const panel=document.getElementById('messenger-window');
 if(button&&panel){
  const frame=document.getElementById('messenger-frame');
  const close=()=>{panel.hidden=true;button.setAttribute('aria-expanded','false');button.focus();};
- button.addEventListener('click',()=>{if(!panel.hidden){close();return;}if(!frame.getAttribute('src'))frame.src=frame.dataset.src;panel.hidden=false;button.setAttribute('aria-expanded','true');document.getElementById('messenger-close').focus();});
+ button.addEventListener('click',(e)=>{e.preventDefault();if(!panel.hidden){close();return;}if(!frame.getAttribute('src'))frame.src=frame.dataset.src;panel.hidden=false;button.setAttribute('aria-expanded','true');document.getElementById('messenger-close').focus();});
  document.getElementById('messenger-close').addEventListener('click',close);
  panel.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
  window.addEventListener('message',e=>{

@@ -18,5 +18,8 @@
     "express": "^4.21.0",
     "nodemailer": "^10.2.1",
     "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.0"
   }
 }

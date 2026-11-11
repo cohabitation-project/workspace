@@ -10,3 +10,5 @@
 .dm-report-form label{display:block;margin:12px 0 6px}
 .dm-report-form .dm-thread-actions{margin-top:12px}
 @media(max-width:699px){.dm-report-form{padding:13px}.dm-thread-actions button{min-height:44px}}
+/* Setu, 2026-11-11: the launcher moved from the corner to the top bar, so the window opens under the bar, top right. */
+@media(min-width:700px){.messenger-window{top:84px;bottom:auto;height:min(680px,calc(100vh - 108px))}}
