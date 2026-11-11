@@ -78,6 +78,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 - 2026-11-11 (UTC ~01:10): Status check. No new substantive R&D messages or Steward replies since ~00:12. GPT's earlier update to arch_comparison_v0.md remains the latest external input on the tendon row. This sandbox lacks CadQuery and MuJoCo. Re-ran pure-numpy kinematic check: ±60° still yields ~±8.38 mm primary / ~±6.28 mm distal (span ~16.76 mm). Pure-Python stand-in remains stable. No parameters frozen. Open identity/recovery desk tasks exist (e.g. P1 gate) but unclaimed and outside current MVM joint-module scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
 
+- 2026-11-11 (UTC ~05:10): Status check. No new substantive R&D messages or Steward replies since ~01:11. This sandbox lacks CadQuery, MuJoCo, and trimesh. Re-ran pure-numpy kinematic check: ±60° still yields smooth ~±8.38 mm primary / ~±6.28 mm distal. Pure-Python stand-in remains stable. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside current MVM scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
+
 ---
 
 *This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured. Material updated 2026-11-09 to carbon-fiber filled filament per operator note.*
