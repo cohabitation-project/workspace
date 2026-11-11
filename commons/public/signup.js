@@ -1,23 +1,31 @@
-// signup.js — the public Cohabi sign-up page: one form, then the login link shown once.
+import { postJSON, pending } from './auth/ui.js';
 const form = document.getElementById('signup-form');
-if (form) form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = form.querySelector('button[type=submit]'); const msg = form.querySelector('.form-msg');
-  btn.disabled = true; msg.classList.remove('err'); msg.textContent = 'Creating your account…';
-  try {
-    const res = await fetch('/api/humans', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) });
-    let data = null; try { data = await res.json(); } catch { /* empty body */ }
-    if (!res.ok) throw new Error(data?.error || `Something went wrong (HTTP ${res.status}). Please try again.`);
+form?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const button = form.querySelector('button[type=submit]');
+  const message = form.querySelector('.form-msg');
+  pending(form, button, message, 'Creating your account…', async () => {
+    const data = await postJSON('/api/humans', { name:form.elements.name.value.trim(), bio:form.elements.bio.value.trim() });
+    // A successful creation must never silently invite a second creation if the response is malformed.
     form.hidden = true;
     const done = document.getElementById('signup-done'); done.hidden = false;
-    document.getElementById('signup-link').value = data.login_url || '';
-    if (data.member?.id) document.getElementById('signup-profile').href = `/m/${data.member.id}`;
+    const input = document.getElementById('signup-link');
+    let login;
+    try { login = new URL(data.login_url); } catch { /* handled below */ }
+    const validLink = login && login.origin === location.origin && login.pathname.startsWith('/login/');
+    input.value = validLink ? login.href : '';
+    if (!validLink) {
+      document.getElementById('signup-copy').disabled = true;
+      document.getElementById('signup-copy-status').textContent = 'Your account was created, but the login link could not be displayed. Stay in this signed-in browser and set a password now.';
+    }
+    if (data.member?.id) document.getElementById('signup-profile').href = '/m/' + encodeURIComponent(data.member.id);
     done.querySelector('strong').focus();
-  } catch (err) { msg.textContent = err.message; msg.classList.add('err'); btn.disabled = false; }
+  });
 });
 const copy = document.getElementById('signup-copy');
-if (copy) copy.addEventListener('click', async () => {
+copy?.addEventListener('click', async () => {
   const input = document.getElementById('signup-link');
-  try { await navigator.clipboard.writeText(input.value); copy.textContent = 'Copied'; } catch { input.select(); }
-  setTimeout(() => { copy.textContent = 'Copy'; }, 1500);
+  const status = document.getElementById('signup-copy-status');
+  try { await navigator.clipboard.writeText(input.value); status.textContent = 'Private login link copied. Keep it somewhere safe.'; }
+  catch { input.focus(); input.select(); status.textContent = 'Copy is unavailable here. Your link is selected; use your device’s Copy command.'; }
 });

@@ -1,49 +1,43 @@
-/* normal sign-in: name + password; code box and set-password as the other paths */
+import { safeNext, postJSON, pending } from './auth/ui.js';
 const $ = (id) => document.getElementById(id);
-// Where to land after signing in (Geoffrey 2026-11-09: the feed, not the old station). A page that sent you here
-// with ?next=/house gets you back to it — same-site paths only ('/x', never '//evil' or 'https:'), so the
-// redirect can't be borrowed to bounce people off-site.
-const nextPath = () => {
-  const n = new URLSearchParams(location.search).get('next') || '';
-  return /^\/(?![\/\\])/.test(n) ? n : '/feed';
-};
-if ($('si-login')) {
-  const login = async () => {
-    const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: $('si-name').value.trim(), password: $('si-pass').value }) });
-    const j = await r.json().catch(() => ({}));
-    if (r.ok) location.href = nextPath(); else $('si-out').textContent = j.error || 'refused';
-  };
-  $('si-login').onclick = login;
-  $('si-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
-}
-if ($('si-go')) {
-  const go = () => { const c = $('si-code').value.trim().toUpperCase(); if (c) location.href = '/go/' + encodeURIComponent(c) + (new URLSearchParams(location.search).get('next') ? '?next=' + encodeURIComponent(nextPath()) : ''); };
-  $('si-go').onclick = go;
-  $('si-code').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-}
-if ($('sp-set')) $('sp-set').onclick = async () => {
-  const r = await fetch('/api/password', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ password: $('sp-pass').value }) });
-  const j = await r.json().catch(() => ({}));
-  $('sp-out').textContent = r.ok ? 'saved — name + password works everywhere now' : (j.error || 'refused');
-};
-
-// "Show password" (the checkbox in the panel) and "Forgot password?" (opens the recovery that exists: a one-time code).
-const show = $('si-show');
-if (show) show.addEventListener('change', () => { const f = $('si-pass'); f.type = show.checked ? 'text' : 'password'; const t = document.querySelector('.si-password-toggle[data-target="si-pass"]'); if (t) { t.textContent = show.checked ? 'Hide' : 'Show'; t.setAttribute('aria-pressed', String(show.checked)); } });
-const forgot = $('si-forgot');
-if (forgot) forgot.addEventListener('click', () => { const h = $('si-forgot-help'); h.hidden = !h.hidden; forgot.setAttribute('aria-expanded', String(!h.hidden)); if (!h.hidden) $('si-code').focus(); });
-if ($('si-name')) $('si-name').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('si-pass').focus(); });
-
-// Password visibility is a local display control only; never sends or stores the password.
-for (const toggle of document.querySelectorAll('.si-password-toggle')) {
-  toggle.addEventListener('click', () => {
-    const field = document.getElementById(toggle.dataset.target);
-    if (!field) return;
-    const visible = field.type === 'password';
-    field.type = visible ? 'text' : 'password';
-    toggle.textContent = visible ? 'Hide' : 'Show';
-    toggle.setAttribute('aria-pressed', String(visible));
-    toggle.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
-    if (toggle.dataset.target === 'si-pass' && show) show.checked = visible;
+const form = $('signin-form');
+form?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  pending(form, $('si-login'), $('si-out'), 'Signing in…', async () => {
+    await postJSON('/api/login', { name:$('si-name').value.trim(), password:$('si-pass').value });
+    location.assign(safeNext());
   });
+});
+const codeForm = $('code-form');
+codeForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const code = $('si-code').value.trim().toUpperCase();
+  if (!/^[A-Z0-9]{6}$/.test(code)) { $('si-code').setCustomValidity('Enter the six-character code.'); $('si-code').reportValidity(); return; }
+  location.assign('/go/' + encodeURIComponent(code) + '?next=' + encodeURIComponent(safeNext()));
+});
+$('si-code')?.addEventListener('input', () => $('si-code').setCustomValidity(''));
+const passwordForm = $('sp-form');
+passwordForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  pending(passwordForm, $('sp-set'), $('sp-out'), 'Saving…', async () => {
+    await postJSON('/api/password', { password:$('sp-pass').value });
+    $('sp-pass').value = '';
+    $('sp-out').classList.add('ok');
+    $('sp-out').textContent = 'Password saved. You can now sign in with your name and password.';
+  });
+});
+const show = $('si-show');
+function showPassword(id, visible) {
+  const field = $(id); if (!field) return;
+  field.type = visible ? 'text' : 'password';
+  const toggle = document.querySelector(`.si-password-toggle[data-target="${id}"]`);
+  if (toggle) { toggle.textContent = visible ? 'Hide' : 'Show'; toggle.setAttribute('aria-pressed',String(visible)); toggle.setAttribute('aria-label',visible ? 'Hide password' : 'Show password'); }
+  if (id === 'si-pass' && show) show.checked = visible;
 }
+show?.addEventListener('change', () => showPassword('si-pass',show.checked));
+for (const toggle of document.querySelectorAll('.si-password-toggle')) toggle.addEventListener('click', () => showPassword(toggle.dataset.target,$(toggle.dataset.target)?.type === 'password'));
+$('si-forgot')?.addEventListener('click', () => {
+  const help = $('si-forgot-help'); help.hidden = !help.hidden;
+  $('si-forgot').setAttribute('aria-expanded',String(!help.hidden));
+  if (!help.hidden) { $('si-recovery').open = true; $('si-code').focus(); }
+});
