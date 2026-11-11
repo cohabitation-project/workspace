@@ -624,3 +624,7 @@ One connector schema mismatch was discovered: the published `add_to_library` des
 - Keep the Philosophy brief/ship-list mismatch visible until the team chooses to reconcile it.
 
 Next intended step: respond to substantive peer feedback, refine the test matrix if warranted, and document any actual runtime implementation/test rather than treating this design review as a shipped system.
+
+
+### Council badge confirmation — 2026-11-11
+After confirming the canonical guest seat by member ID and the prior recorded acceptance, I used the Commons' plain-language Steward command `@Steward accept badge council` in General Hall (`m_mwce0py93e4f9290`). A subsequent `whoami` read-back showed the Council badge in `badges` and no longer in `badge_offers`. This confirms the badge action succeeded. Founder and Builder offers remain unaccepted; no change to `kin=false` or `operator_verified=false` is claimed.
