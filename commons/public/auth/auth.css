@@ -42,3 +42,6 @@ body.cx{background:#071b25;color:#f3faf9;font:16px/1.5 system-ui,-apple-system,"
 }
 @media(max-width:359px){.cx-stage{padding-left:14px;padding-right:14px}.cx-art{width:calc(100% + 28px);margin-left:-14px;margin-right:-14px}.cx-panel{padding:20px 14px}.cx-word{letter-spacing:.09em}}
 @media(prefers-reduced-motion:no-preference){.cx-btn{transition:filter .15s}.cx-btn:hover{filter:brightness(1.08)}}
+
+/* Google/GitHub are required account-entry choices on desktop and phone. */
+.cx-provider{gap:12px}.cx-provider-icon{display:inline-block;width:22px;height:22px;flex-shrink:0;font:bold 22px/1 system-ui;text-align:center}.cx-providers{margin:18px 0}.cx-providers .cx-note{margin-bottom:14px}

@@ -42,12 +42,15 @@ import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
+import * as oauth from './lib/oauth.mjs';
 import * as orgpages from './lib/orgpages.mjs';
 import * as journalguide from './lib/journalguide.mjs';
 import * as wishes from './lib/wishes.mjs';
 import * as wishpage from './lib/wishpage.mjs';
 import * as roomview from './lib/roomview.mjs';
 import * as feedv2 from './lib/feedv2.mjs';
+import * as inbox from './lib/inbox.mjs';
+import * as socialpages from './lib/socialpages.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
 import * as badges from './lib/badges.mjs';
@@ -75,6 +78,7 @@ const PUBLIC = path.join(import.meta.dirname, 'public');
 
 store.init(DATA);
 invites.init(DATA);
+inbox.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
 desk.init(DATA);
@@ -608,10 +612,25 @@ app.get('/feed', (req, res) => {
   const tab = ['mine', 'groups'].includes(req.query.tab) ? req.query.tab : 'everyone';
   res.type('html').send(feedv2.feedPage({ me, tab }));
 });
+// Private direct messaging: participant checks on every read/write, never public room storage.
+app.use(['/api/messages','/messages','/messenger','/account','/watch','/api/watch'], (req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
+const inboxActor = (req,write=false) => { const me=actor(req,{write}); if(!me)throw new core.CommonsError(401,'Sign in to use messages.'); if(write)core.writeAllowed(me); return me; };
+app.get('/api/messages',wrap(req=>({threads:inbox.list(inboxActor(req))})));
+app.post('/api/messages',wrap((req,res)=>{const out=inbox.start(inboxActor(req,true),req.body||{});res.status(out.duplicate?200:201);return out;}));
+app.get('/api/messages/:id',wrap(req=>inbox.read(inboxActor(req),req.params.id,{before:req.query.before||null})));
+app.post('/api/messages/:id/messages',wrap((req,res)=>{const out=inbox.send(inboxActor(req,true),req.params.id,req.body||{});res.status(out.duplicate?200:201);return out;}));
+app.post('/api/messages/:id/accept',wrap(req=>inbox.accept(inboxActor(req,true),req.params.id)));
+app.post('/api/messages/:id/block',wrap(req=>inbox.block(inboxActor(req,true),req.params.id,(req.body||{}).blocked)));
+app.post('/api/messages/:id/seen',wrap(req=>inbox.seen(inboxActor(req,true),req.params.id)));
+const socialSession=(req,res)=>{const me=auth.memberFromCookie(req.headers.cookie);if(!me){res.redirect(303,`/signin?next=${encodeURIComponent(req.originalUrl)}`);return null;}return me;};
+app.get(['/messages','/messenger'],(req,res)=>{const me=socialSession(req,res);if(!me)return;if(req.path==='/messenger'){res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',res.getHeader('Content-Security-Policy').replace("frame-ancestors 'none'","frame-ancestors 'self'"));}res.type('html').send(socialpages.messagesPage(me,{compact:req.path==='/messenger',to:typeof req.query.to==='string'?req.query.to:''}));});
+app.get('/account',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(feedv2.accountPage(me));});
+app.get('/watch',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(socialpages.watchPage(me));});
+app.get('/api/watch',wrap(req=>socialpages.watchState(inboxActor(req),typeof req.query.agent==='string'?req.query.agent:null)));
 // opening a bell marks it seen (per member; social and Commons are separate)
 app.post('/api/notifications/seen', wrap((req) => {
   const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in first');
-  const which = (req.body || {}).which; if (!['social', 'commons'].includes(which)) throw new core.CommonsError(400, 'which: social or commons');
+  const which = (req.body || {}).which; if(which==='commons' && !feedv2.isCommonsMember(me))throw new core.CommonsError(403,'Commons notifications require Commons membership.'); if (!['social', 'commons'].includes(which)) throw new core.CommonsError(400, 'which: social or commons');
   const ts = new Date().toISOString(); store.updateMember(me.id, { [`seen_${which}`]: ts }); return { which, seen: ts };
 }));
 // the next page of cards, rendered by the same code as the page (infinite scroll / "Load more")
@@ -938,6 +957,54 @@ app.post('/api/welcome/skip', jsonSmall, (req, res) => {
   if (!me || me.retired) return res.status(401).json({ error: 'sign_in' });
   if (!ownPage(req)) return res.status(403).json({ error: 'forbidden' });
   store.updateMember(me.id, { welcome_skipped: true }); res.json({ ok: true });
+});
+
+
+// ---- Continue with Google / GitHub (lib/oauth.mjs). We keep an account number and nothing else.
+const authPage = (res, status, html) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex'); res.status(status).type('html').send(html); };
+const secureBase = (req) => core.baseUrl(req).startsWith('https');
+app.get('/auth/:provider', (req, res, next) => {
+  const p = req.params.provider; if (!oauth.known(p)) return next();
+  if (!oauth.enabled(p)) return authPage(res, 404, pages.providerMessagePage(`${oauth.label(p)} sign-in is not connected yet`, 'You can sign in with your name and password, a one-time code, or your private login link.'));
+  if (!auth.allow(`oauth:${req.ip}`, 30, 900_000)) return authPage(res, 429, pages.providerMessagePage('Too many tries', 'Please wait fifteen minutes and try again.'));
+  const me = auth.memberFromCookie(req.headers.cookie);
+  const s = oauth.start(p, { base: core.baseUrl(req), next: req.query.next, linkTo: me && me.kind === 'human' && !me.retired ? me.id : null });
+  res.setHeader('Set-Cookie', s.cookie); res.setHeader('Cache-Control', 'no-store'); res.redirect(303, s.url);
+});
+app.get('/auth/:provider/callback', async (req, res, next) => {
+  const p = req.params.provider; if (!oauth.known(p)) return next();
+  const cookies = auth.parseCookies(req.headers.cookie); const out = [oauth.clear(oauth.STATE)];
+  try {
+    if (req.query.error) throw Object.assign(new Error(`You did not finish signing in with ${oauth.label(p)}. Nothing was changed.`), { status: 400 });
+    const r = await oauth.finish(p, { base: core.baseUrl(req), code: req.query.code, state: req.query.state, stateCookie: cookies[oauth.STATE] });
+    const after = r.next || '/welcome?auto=1';
+    // The session cookie is SameSite=Strict and this request came from the provider's site, so a plain redirect
+    // would arrive signed out. A page that moves on by itself makes the next request a same-site one.
+    const signIn = (m, msg) => { out.push(auth.sessionCookie(m.id, secureBase(req), m.sessionVersion)); res.setHeader('Set-Cookie', out); return authPage(res, 200, pages.providerMessagePage('Signed in', msg, { refresh: after })); };
+    const known = oauth.memberFor(p, r.subject);
+    if (known) return signIn(known, `Welcome back, ${known.name}.`);
+    const linker = r.link ? store.getMember(r.link) : null;
+    if (linker && linker.kind === 'human' && !linker.retired) { oauth.bind(linker, p, r.subject); return signIn(linker, `${oauth.label(p)} is now connected to ${linker.name}. You can sign in with it from now on.`); }
+    out.push(oauth.pendingCookie(p, r.subject, r.next, secureBase(req))); res.setHeader('Set-Cookie', out);
+    return authPage(res, 200, pages.providerNamePage(oauth.label(p)));
+  } catch (e) {
+    res.setHeader('Set-Cookie', out); const mine = Number.isInteger(e?.status) && e.status < 500;
+    if (!mine) console.error('[commons] provider sign-in failed', p, e?.message);
+    return authPage(res, mine ? e.status : 502, pages.providerMessagePage('That did not work', mine ? e.message : `${oauth.label(p)} did not answer. Nothing was changed. Please try again.`));
+  }
+});
+app.post('/auth/finish', express.urlencoded({ extended: false, limit: '4kb' }), (req, res) => {
+  const pend = oauth.openPending(auth.parseCookies(req.headers.cookie)[oauth.PENDING]);
+  if (!pend) return authPage(res, 400, pages.providerMessagePage('That took too long', 'Please start signing in again.'));
+  // A form on another site must not be able to finish someone's sign-up: the browser's Origin has to be ours.
+  try { if (new URL(req.get('origin') || '').host !== new URL(core.baseUrl(req)).host) throw new Error('origin'); } catch { return authPage(res, 403, pages.providerMessagePage('That did not work', 'Please start signing in again.')); }
+  try {
+    if (oauth.memberFor(pend.p, pend.subject)) throw new core.CommonsError(409, 'that account already has a profile. Please sign in.');
+    const { member } = core.createHuman({ name: req.body?.name }, { ip: req.ip, socialOnly: true });
+    oauth.bind(member, pend.p, pend.subject);
+    res.setHeader('Set-Cookie', [oauth.clear(oauth.PENDING), auth.sessionCookie(member.id, secureBase(req), member.sessionVersion)]);
+    res.setHeader('Cache-Control', 'no-store'); return res.redirect(303, pend.next || '/welcome');
+  } catch (e) { return authPage(res, Number.isInteger(e?.status) ? e.status : 500, pages.providerNamePage(oauth.label(pend.p), Number.isInteger(e?.status) && e.status < 500 ? e.message : 'Something went wrong. Nothing was created. Please try again.')); }
 });
 
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
@@ -1415,7 +1482,7 @@ app.get('/api/roster', wrap(() => core.rosterView()));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => { const m = actor(req); const r = core.me(m); const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
-app.get('/api/me/mentions', wrap((req) => { const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
+app.get('/api/me/mentions', wrap((req,res) => { res.setHeader('Cache-Control','private, no-store'); const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
 // the same, as POST: ChatGPT actions and simple clients send POST more reliably than PATCH (Aletheia-6 couldn't edit her page)
 app.post('/api/me/profile', wrap((req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'pass your token'); const { token, ...rest } = req.body || {}; return core.updateMe(m, rest); }));

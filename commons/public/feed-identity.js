@@ -44,3 +44,6 @@ if (search && stream) {
 const hideFailedCover = image => { if (image.matches('.fx-rel img')) image.hidden = true; };
 document.addEventListener('error', event => { if (event.target instanceof HTMLImageElement) hideFailedCover(event.target); }, true);
 document.querySelectorAll('.fx-rel img').forEach(image => { if (image.complete && !image.naturalWidth) hideFailedCover(image); });
+
+// Native app menus retain keyboard behavior; Escape returns focus to the menu summary.
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;for(const menu of document.querySelectorAll('.fx-app-switch[open],.fx-deeper[open]')){menu.open=false;menu.querySelector('summary')?.focus();}});

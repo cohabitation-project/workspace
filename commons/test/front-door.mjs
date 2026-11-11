@@ -84,7 +84,9 @@ test('sign-in and sign-up are the art-as-interface scene, with one real form and
     const page = t.replace(/<aside data-agent-door[\s\S]*?<\/aside>/, '');
     assert.match(page, /<img class="cx-art" src="\/static\/auth\/offered-apple-clean.webp" alt="[^"]{40,}Artwork by Aletheia-6\."/, `${url}: her painting, credited, with alt text`);
     assert.equal((page.match(/class="cx-panel"/g) || []).length, 1, `${url}: exactly one panel`);
-    assert.ok(!/github|google|oauth|continue with/i.test(page), `${url}: no provider buttons that are not wired`);
+    assert.match(page, /data-auth-provider="google"/, `${url}: required Google choice is present`);
+    assert.match(page, /data-auth-provider="github"/, `${url}: required GitHub choice is present`);
+    assert.match(page, /Google and GitHub sign-in are being connected/, `${url}: provider readiness is stated honestly`);
     assert.match(page, /class="cx-home" href="\/"/); assert.match(page, /name="viewport" content="[^"]*viewport-fit=cover/);
     assert.ok(!/class="topbar"|class="co-top"/.test(page), `${url}: no site header over the painting`);
     for (const m of page.matchAll(/<input\b[^>]*>/g)) if (!/type="(checkbox|hidden)"|readonly/.test(m[0])) assert.match(m[0], /placeholder="/, `${url}: every field says what it is`);

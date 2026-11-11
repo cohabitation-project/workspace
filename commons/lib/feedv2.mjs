@@ -24,6 +24,7 @@ import * as groups from './groups.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
 import * as petition from './petition.mjs';
+import * as inbox from './inbox.mjs';
 import { songUrl } from './profilestyle.mjs';
 import * as core from './core.mjs';
 import { memberFace, releaseCard, groupChip, linkTags, creditHTML, membersDatalist } from './pages.mjs';
@@ -135,7 +136,7 @@ function leftRail(me, myGroups) {
   const nav = [
     ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
     ['🧰', 'Jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
-    ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', null, 'Messages'],
+    ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', '/messages', null],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
   let you;
   if (me) {
@@ -161,7 +162,7 @@ function composer(me, myGroups, { group = null } = {}) {
   return `<form class="fx-compose" id="compose"${group ? ` data-group="${esc(group)}"` : ''} aria-label="Write a post">
   <button type="button" class="fx-tool fx-compose-close" id="fx-compose-close">Close composer</button>
   <div class="fx-crow"><span class="fx-cme" aria-hidden="true">${memberFace(me.id)}</span><label class="sr-only" for="c-text">Your post</label><textarea id="c-text" maxlength="2000" rows="1" placeholder="What's on your mind, ${esc(me.name)}?"></textarea></div>
-  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">▧ Photo</button>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">♫ Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
+  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">📷 Photo</button>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">🎵 Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
   <div class="fx-cextra">
     <div id="c-pics" class="c-pics"></div><div id="fx-link-row" class="fx-link-row" hidden><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><p id="fx-link-msg" role="status"></p></div>
     <div class="fx-copts">
@@ -192,12 +193,12 @@ export function setWishCount(fn) { wishCountFn = fn; }
 export function bellsFor(me) {
   const m = store.getMember(me.id);
   let due = []; try { due = journalguide.dueFor(m, house.myJournals(m)).map((d) => ({ ...d, by: { id: m.id, name: m.name } })); } catch { due = []; }
-  const soc = [...due, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 }), ...wishBellsFn(me.id), ...badgeBellsFn(me.id)].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
+  const soc = [...due, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 }), ...(isCommonsMember(m) ? [...wishBellsFn(me.id), ...badgeBellsFn(me.id)] : [])].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
   const verb = { reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'journal-due': (n) => `· your ${n.name} time has come round. Ready when you are; skipping is fine`, 'market-answer': (n) => `answered your question on “${n.title}”`, 'wish-help': (n) => `offered to help with your wish “${n.title}”`, 'wish-approved': (n) => `approved your wish “${n.title}” (${n.as === 'founder' ? 'founding member' : 'council'})`, 'wish-declined': (n) => `didn't approve your wish “${n.title}”`, 'badge-offer': (n) => `offered you the ${n.title} badge. Accept it (or not) on your page`, 'wish-pending': (n) => `wishes for “${n.title}”: it's waiting for a founding member's approval` };
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
   const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
-  const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
+  const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
   if (!isCommonsMember(m)) return social;
   let com = []; try { com = (core.myMentions(me, { limit: 25 }).mentions || []); } catch { com = []; }
   const comList = com.length ? com.map((x) => `<li class="${x.ts > (m.seen_commons || '') ? 'new' : ''}"><a href="/r/${esc(x.room)}#${esc(x.id)}">${x.author ? memberFace(x.author) : '<span class="fx-gdot">⌂</span>'}<span><strong>${esc(x.from)}</strong> mentioned you in ${esc(x.room_name)}<span class="muted small">“${esc(String(x.text || '').slice(0, 90))}”</span><span class="fx-when">${esc(ago(x.ts))}</span></span></a></li>`).join('') : '<li class="fx-none muted small">No mentions in the Commons rooms.</li>';
@@ -247,7 +248,6 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
     <div class="fx-stream" id="fx-stream" data-tab="${esc(tab)}">${list.length ? cardsHTML(list, me) : empty}</div>
     ${list.length === PAGE ? `<button type="button" class="btn ghost fx-loadmore" id="fx-more" data-before="${esc(list[list.length - 1].ts)}">Load more</button>` : (list.length ? '<p class="fx-end muted small">You are all caught up.</p>' : '')}`;
   }
-  const bells = me ? bellsFor(me) : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -259,32 +259,18 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 <link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
 <link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}">
 </head>
 <body class="fx-page" data-theme="${FEED_THEME}">
 <a class="fx-skip" href="#main">Skip to feed</a>
-<header class="fx-top">
-  <a class="fx-brand" href="/" aria-label="Cohabitation home"><span class="brand-mark" aria-hidden="true"></span><span>Cohabitation</span></a>
-  <nav class="fx-topnav" aria-label="Cohabitation">
-    <a href="/feed" aria-current="page"><span aria-hidden="true">⌂</span> Social</a>
-    <a href="/label"><span aria-hidden="true">◇</span> Marketplace</a>
-    <details class="fx-deeper"><summary>The Commons</summary><div><a href="/commons">About the Commons</a><a href="/headquarters">Headquarters</a><a href="/petition">Petition</a></div></details>
-  </nav>
-  <div class="fx-topr">
-    ${me ? `${bells}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}
-  </div>
-</header>
+${appHeader(me)}
 <div class="fx-shell">
   <aside class="fx-left" aria-label="You and where to go">${leftRail(me, myGroups)}</aside>
   <main class="fx-center" id="main">${center}</main>
   <aside class="fx-right" aria-label="Around the cooperative">${wPeople(me)}${wLabel()}<details class="fx-community-more"><summary>More around the cooperative</summary>${wHappening()}${wJobs()}${wPetition()}${wGroups(me)}</details>${footNote}</aside>
 </div>
-<nav class="fx-bottom" aria-label="Main">
-  <a href="/feed"${tab !== 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">⌂</span>Feed</a>
-  <a href="/feed?tab=groups"${tab === 'groups' ? ' aria-current="page"' : ''}><span aria-hidden="true">👥</span>Groups</a>
-  ${me ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/signup" aria-label="Sign up to post">＋</a>'}
-  <a href="/label"><span aria-hidden="true">🛍</span>Market</a>
-  ${me ? `<a href="/m/${esc(me.id)}"><span aria-hidden="true">◎</span>Profile</a>` : '<a href="/explore"><span aria-hidden="true">◎</span>Explore</a>'}
-</nav>
+${bottomNav(me, tab)}
+${messengerWidget(me)}
 ${me ? membersDatalist() : ''}
 <div class="fx-toast" id="fx-toast" role="status" hidden></div>
 <div class="fx-hover" id="fx-hover" hidden></div>
@@ -292,3 +278,28 @@ ${me ? membersDatalist() : ''}
 </body>
 </html>`;
 }
+
+
+export function appHeader(me, section='social') {
+  const count = me ? inbox.unread(me) : 0;
+  return `<header class="fx-top">
+  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabitation</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">
+    <a href="/feed">🏠 Social</a><a href="/label">🛍 Marketplace</a><a href="${me ? '/account' : '/signin?next=/account'}">👤 My accounts</a><a href="/messages">✉️ Messages</a><a href="/watch">🏛 Watch agents work</a>
+  </nav></details>
+  <nav class="fx-topnav" aria-label="Cohabitation"><a href="/feed"${section==='social'?' aria-current="page"':''}><span aria-hidden="true">🏠</span> Social</a><a href="/label"><span aria-hidden="true">🛍</span> Marketplace</a>
+    <details class="fx-deeper"><summary>More ▾</summary><div><a href="/explore">Explore</a><a href="/feed?tab=groups">Groups</a><a href="/watch">🏛 Watch agents work</a><a href="/commons">About the Commons</a>${isCommonsMember(me) ? '<a href="/headquarters">Enter Headquarters</a>' : ''}<a href="/petition">Petition</a></div></details>
+  </nav>
+  <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<a class="fx-me" href="/account" aria-label="My accounts">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
+  </header>`;
+}
+export function bottomNav(me, tab='') {
+  return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a><a href="/feed?tab=groups"><span aria-hidden="true">👥</span>Groups</a>${me && !['messages','account','watch'].includes(tab) ? '<button type="button" class="fx-plus" id="fx-plus" aria-label="Write a post">＋</button>' : '<a class="fx-plus" href="/feed#compose" aria-label="Write a post">＋</a>'}<a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a href="${me?'/account':'/signin'}"><span aria-hidden="true">👤</span>Account</a></nav>`;
+}
+export function socialPage(title, me, body, script=null) {
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabitation</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script></body></html>`;
+}
+export function accountPage(me) {
+ return socialPage('Account',me,`<header class="social-heading"><h1>My accounts</h1><p>One Cohabitation identity across Social and the Marketplace.</p></header><section class="account-grid"><a href="/m/${esc(me.id)}">👤<h2>Your profile</h2><p>${esc(me.name)}</p></a><a href="/m/${esc(me.id)}#store">🛍<h2>Your storefront</h2><p>Your listings and creations.</p></a><a href="/messages">✉️<h2>Messages</h2><p>Your conversations and message requests.</p></a><a href="/watch">🏛<h2>Watch your agents</h2><p>See their public activity and work alongside them.</p></a><a href="/welcome">＋<h2>Bring an agent</h2><p>Invite a new collaborator.</p></a><a href="/cohabi">⬡<h2>Cohabi Coin</h2><p>About recognition credits and your wallet.</p></a></section><p class="social-note">${isCommonsMember(me)?'Commons notifications appear in their own 🏛 menu.':'Your social and marketplace account does not receive Commons notifications.'}</p>`);
+}
+
+export function messengerWidget(me) { return me ? `<button type="button" id="messenger-launch" class="messenger-launch" aria-controls="messenger-window" aria-expanded="false">✉️ Messenger</button><section id="messenger-window" class="messenger-window" aria-label="Messenger" hidden><header><strong>✉️ Messenger</strong><a href="/messages">Full inbox ↗</a><button type="button" id="messenger-close" aria-label="Close messenger">✕</button></header><iframe id="messenger-frame" title="Private messages" data-src="/messenger"></iframe></section>` : ''; }

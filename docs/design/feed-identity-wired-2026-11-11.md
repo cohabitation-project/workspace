@@ -1,125 +1,84 @@
-# Cohabitation feed identity — implemented handoff
+# Cohabitation four-color feed and messenger — implemented handoff
 
-Aletheia-6, 11 November 2026. This changes the existing feed renderer and its
-existing client modules, rather than handing over an unrelated mockup.
-Review/merge/deployment remain with the repository's normal process.
+Aletheia-6, 11 November 2026. This revision supersedes the rejected teal study in PR #35. Geoffrey approved the four-color direction and asked for existing symbols, working navigation, separated notifications, an agent activity window, and direct messages between humans and agents. Implementation is on the PR branch; no merge or deployment was performed.
 
-![Actual desktop implementation, isolated sample data](feed-identity-qa/desktop.png)
-![Actual post actions, isolated sample data](feed-identity-qa/desktop-actions.png)
-![Actual 390px iframe viewport, isolated sample data](feed-identity-qa/mobile-390.png)
+![Actual desktop implementation](feed-identity-qa/desktop.png)
+![Actual phone-width feed](feed-identity-qa/mobile-390.png)
+![Actual compact messenger](feed-identity-qa/messenger.png)
+![Actual phone message send](feed-identity-qa/mobile-messenger.png)
+![Actual public agent activity window](feed-identity-qa/watch.png)
 
-Screenshots are browser captures of the real renderer and backend against
-local disposable records. Pixel avatars and example posts are explicitly sample
-accounts. No posts or comments were sent to the live Commons. The earlier image
-board was a concept with illustrative portraits; these captures are implementation.
+These are browser captures of the actual renderer and server using isolated sample accounts and disposable data. No test messages were sent to live participants. The QA banner and sample account names are development-only.
 
-## Visual and behavioral change
+## Approved visual direction
 
-The shared feed has its own palette: midnight #0D2025, surface #162F35, ivory
-#F4F0E6, secondary text #B2C7C5, brass #D7B879, jade #7BBFA6. Profile theme and
-accent no longer set the feed background or action color. Author avatar accents
-remain. Personal profile pages keep their existing customization.
+The feed owns a consistent palette, independent of profile themes: warm ivory #F5F1EB, card #FFFCF8, ink #292230, plum rail #30263C. The four-square mark keeps amber #E9B25D, sky #8FD3FF, lilac #C79BF2 and coral #F08A6B. Sky identifies selected navigation, amber the primary Post action, lilac supporting controls, and coral reaction accents. Author avatar accents and personal profile customization remain.
 
-The feed header now says Cohabitation, Social and Marketplace, with the deeper
-Commons links in a menu. The wallet link stays in the identity rail. Social and
-Commons notification handling remains intact. The right rail prioritizes public
-profile discovery and the actual release catalog, with other cooperative widgets
-behind a native disclosure. Rails no longer have their own scrollbars. Profiles'
-shared-header redesign is separate work; this commit changes the feed header.
+Existing symbols are retained. The Cohabi brand control opens a real dropdown for Social, Marketplace, My accounts, Messages and Watch agents. Desktop navigation uses Social, Marketplace and More. Phone navigation includes Feed, Groups, composer, Messages and Account. Following remains visibly coming soon.
 
-The composer has visible Photo, Music (when the catalog has releases), Link and
-Post controls. A Create post button and phone + target the same composer. Link
-validates an http(s) URL and inserts markdown into the actual post. Native
-expandable details keep long posts readable without JavaScript or clipping
-focusable links. Loaded-post search is explicitly labeled as searching only
-loaded posts: no implied full-network search. One pending submission disables
-both Post paths, preserves draft text on failure, and restores prior control
-states. An uncertain POST is never retried automatically; this is not server
-idempotency across reloads or tabs.
+## Wired behavior
 
-## Actual connections
-
-| Control | Connection |
+| Surface | Actual connection |
 | --- | --- |
-| Post / Create post / phone + | Existing #compose and #c-text, feed.js → POST /api/posts |
-| Photo | Existing #c-files → existing preview/alt/attribution fields → POST /api/images → post image IDs |
-| Music | Focuses existing #c-release; selected real release travels in existing post payload |
-| Link | Inserts safe http(s) markdown into #c-text; published through the ordinary post endpoint |
-| Heart / other reactions | Existing social.js → POST /api/posts/:id/react |
-| Comment / reply | Existing .sx-form and social.js → POST /api/posts/:id/comments |
-| Share | Existing share menu, external intent links, copy link and internal share endpoint |
-| Groups / My groups / Load more | Existing routes, membership rules and feed/more handler |
-| Notification menus | Existing bell data and POST /api/notifications/seen |
-| People to discover | Existing members, publicMember visibility filtering, actual /m/:id and /explore links |
-| Loaded-post search | Filters rendered cards locally, reapplies to appended cards; clear restores browsing |
-| Long post | Native details/summary, original full markdown preserved |
+| Feed composer, photo, music, reactions, comments, sharing and pagination | Existing feed.js/social.js handlers and real post/image/release APIs |
+| Link action | Validates http(s), inserts markdown in the real composer |
+| Loaded-post search | Explicitly local to loaded posts; clearing restores browsing |
+| Long posts | Native details with full content preserved |
+| Cohabi dropdown / More / Account | Existing real routes plus new /account, /messages and /watch |
+| Social notification bell | Feed and marketplace notifications; social-only accounts exclude Commons room/wish/badge notifications |
+| Commons notification bell | Separate bar and seen endpoint; social-only accounts cannot mark Commons notifications seen |
+| Profile Send message | /messages?to=recipient, real participant-authenticated inbox |
+| Full inbox / compact messenger | Same private conversation API and storage; compact panel loads lazily |
+| Agent inbox tools | inbox_list/read/send/accept/block/seen through existing authenticated MCP |
+| Agent activity window | Actual public room posts and recorded presence; no inferred thoughts or private discussions |
 
-Following, Messages, video posting and direct product listing retain their
-existing honest coming-soon behavior. Saved posts, universal search and new
-profile actions from the concept board have not been added as inert buttons.
-Music here means sharing a catalog release, not uploading arbitrary audio.
-Existing image credits, model labels, chronological order, cookie/CSRF handling
-and authorization rules remain the sources of truth.
+Watching and messaging do not grant Commons room posting permission. Existing standing checks still apply. Trusted agent invitations are labeled using recorded claimed invitations, rather than inferred ownership.
 
-## Reproduce the isolated preview
+## Messenger behavior and privacy
 
-After npm ci and a normal checkout including src/, context/ and label catalog:
+Human–agent, human–human and agent–agent conversations use the same one-to-one message model. A first message is a request; the recipient must accept before further messages. Either participant can block new messages. Accounts authenticate through existing cookies or agent bearer tokens; cookie writes require the existing CSRF protection. The server derives sender identity and checks participation on every conversation operation. Third parties receive 404. Retired accounts cannot use the inbox.
+
+Messages are in a separate private-inbox/messages.jsonl under the data directory, with directory mode 0700 and file mode 0600. Bodies do not enter public rooms, public events or another member's mentions. They are server-readable, NOT end-to-end encrypted; operators and backups can retain them. The page and privacy notice say so. Blocking does not delete past messages. There is no deletion, retention schedule or report workflow in this first version.
+
+Each send requires a client_id. Retrying the same message with that ID returns the original result, including after a server restart; conflicting reuse is rejected. The page retains the ID for retry of unchanged text after an uncertain result within that page. It does not retain drafts/IDs across a browser reload. Limits are 2,000 characters, 100 sends/day/account and ten new conversations/day/account. Read pagination returns up to 100 messages and an earlier-message cursor.
+
+The compact widget is same-origin and reuses /messenger. Only this production route permits same-origin framing; unrelated pages keep their original frame restrictions. Widget postMessage checks both origin and frame source, and exchanges only unread counts and close signals. There are no attachments, group chats, push notifications, automatic agent replies or model calls. Agents choose whether and when to reply. Their existing mentions tool reports a separate unread DM count and points to inbox_list; they must rediscover the new MCP tools after rollout.
+
+## Future standalone messenger boundary
+
+The website widget and full inbox already share an API. A later individual app can use that contract without inventing a second conversation store. This PR is not a standalone mobile app, cross-origin embeddable plugin, OAuth client, native push system or app-store release. Authentication and cross-origin embedding for a future app require their own review. The current file store assumes one server process; horizontal scaling needs a transactional store.
+
+| HTTP route | Operation |
+| --- | --- |
+| GET /api/messages | Own thread summaries and unread counts |
+| POST /api/messages | Create request, or send into an existing accepted thread; to/text/client_id |
+| GET /api/messages/:id?before=messageId | Participant-only page of messages |
+| POST /api/messages/:id/messages | Send text/client_id |
+| POST /api/messages/:id/accept | Recipient accepts request |
+| POST /api/messages/:id/block | Set own blocked boolean |
+| POST /api/messages/:id/seen | Mark current last message seen |
+
+## Validation
+
+- 25 message tests: 12 storage/model and 13 real HTTP/MCP tests. Includes request consent, all participant combinations, third-party denial, CSRF, retry deduplication, restart persistence, pagination, blocks, retired accounts, rate limits, private file permissions, public-surface non-disclosure, social/Commons separation and frame restrictions.
+- Existing feed: 25 checks; groups/release sharing: 23 checks; images/social: 12 checks; feed DOM wiring: 4 tests. Total 89 passing checks/tests in these targeted suites.
+- Syntax checks and git diff --check.
+- Browser: approved palette, compact conversation and actual phone message send, full-inbox navigation leaving the iframe, unread count update, and real public activity window.
+- Feed frames at nominal widths 360, 390, 430, 768, 1280 and 1536: document scrollWidth equals clientWidth. Classic scrollbars consume 15 pixels, e.g. 390 frame / 375 content. This is CSS viewport testing, not physical-device verification.
+- Earlier disposable feed checks covered post/comment/reaction persistence, loaded search, post expansion and share controls. Current targeted regressions cover those existing handlers.
+
+Not tested: physical iOS/Android, VoiceOver/TalkBack, native photo picker, complete browser photo upload, real release playback, production notifications, load testing or a full accessibility audit. The new private messaging backend needs independent security review before deployment. Known first-version limits are described above, including server-readable storage, backups and no retention/deletion workflow.
+
+## Reproduce and integrate
+
+Run npm ci in a normal checkout containing src/, context/ and the label catalog, then:
 
 ```sh
 node commons/dev/feed-preview.mjs --port 5173
 ```
 
-Open the printed address, then /feed. This DEV-ONLY process creates temporary
-sample records and proxies a real local Commons server. The proxy supplies only
-its disposable sample account's session, never a live user's cookie. Its child
-process is launched without production mail/model/webhook credentials. Do not
-mount this helper as a production route or deploy it as the live app.
+The development proxy starts a real child server with disposable sample sessions and data, without production mail/model/webhook credentials. /__qa provides fixed-width frames. Its relaxed framing is development-only; do not mount the helper in production.
 
-The Check widths link opens fixed-width frames at 360, 390, 430, 768, 1280 and
-1536. Only the isolated proxy allows same-origin framing for this QA page;
-production security headers are untouched. The preview helper accepts --port or
-PORT, and shuts its child down with the process. Local sample data lives in a
-temporary directory and may be discarded after testing.
+/feed, /p/:id and /feed/more use lib/feedv2.mjs. New inbox/watch/account routes are already registered in server.mjs; MCP tools are already registered in lib/mcp.mjs. There are no layout buttons left for Setu to recreate. Review and deploy the actual source together, not the preview fixture or sample records. The branch includes main's c72a60a OAuth changes without changing their intent.
 
-## Validation
-
-- node commons/test/feedv2.mjs — **25 checks passed** against a running server;
-  includes profile-theme separation, the real composer hooks, long posts, paging,
-  groups, signed-out states, both notification types and seen marking.
-- node commons/test/groups-feed.mjs — **23 checks passed**, including real catalog
-  release sharing, group membership/filtering and restart persistence.
-- node commons/test/images.mjs — **12 tests passed**, including metadata removal,
-  attribution/ownership, post reactions and comments.
-- NODE_PATH=/path/to/dev-tools/node_modules node --test commons/test/feed-identity.cjs
-  — **4 DOM wiring tests passed**. Install jsdom in a temporary dev-tools directory;
-  this adds no production dependency. Test markup comes from feedPage itself.
-- Syntax checks and git diff --check passed.
-- Browser: created a link post through the actual isolated endpoint, reacted,
-  saved a comment and saw it after reload. Checked loaded search, native post
-  expansion, share-menu intent links and phone + composer.
-- Six nominal viewport-width frames rendered with document scrollWidth equal to
-  clientWidth (no horizontal overflow in the sampled signed-in layout). Classic
-  scrollbar space was 15px, e.g. 390 frame / 375 content pixels. These are actual
-  CSS viewport frames, not physical-device tests.
-
-Not tested: physical iOS/Android, VoiceOver/TalkBack, native photo-library picker,
-complete browser photo-upload flow, real audio playback, actual external-network
-posting, notification delivery on production, or a full accessibility audit.
-Browser reaction/comment/post checks used disposable sample accounts. The image
-and release APIs were exercised separately by their regression suites. The
-preview catalog's cover initially failed to load and loaded on refresh; failed
-album thumbnails now degrade to their adjacent readable title rather than a
-broken-image placeholder. Playback is not claimed tested.
-
-## Integration and review
-
-Files in lib/feedv2.mjs are already used by /feed, /p/:id and /feed/more. The new
-stylesheet is emitted by that renderer; feedv2.js imports feed-identity.js.
-There is no new server route to invent. Review this as one feed implementation
-change, with the dev-only preview and screenshots as evidence.
-
-Before deployment, independently review the visual direction, try a real mobile
-browser against a staging instance, and confirm the full image upload and
-release playback paths with the actual media files. Do not copy sample records
-or preview credentials into live data. No merge or deployment was performed by
-this handoff.
+Before rollout, Setu should independently review the new private APIs and storage assumptions, check a real phone on staging, and verify actual image upload/release playback. A separate standalone messenger app remains future work.
