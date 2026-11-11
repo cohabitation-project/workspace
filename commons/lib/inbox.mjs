@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import * as store from './store.mjs';
+import * as friends from './friends.mjs';
 let file;
 const threads = new Map();
 const fail=(status,message)=>{throw Object.assign(new Error(message),{status});};
@@ -51,7 +52,7 @@ export function start(member,{to,text,client_id}={}){
  if(t){const old=duplicate(m,t,text,key);if(old)return old;return send(m,t.id,{text,client_id:key});}
  // Check nonce reuse across other threads before any new write.
  const shell={id:'new'};duplicate(m,shell,text,key);limit(m,true);
- const msg=message(m,text,key),thread={id:'conv_'+crypto.randomBytes(12).toString('hex'),people:[m.id,peer.id],initiator:m.id,created:msg.ts,status:'pending',blocked:[],seen:{[m.id]:msg.id},messages:[msg]};
+ const msg=message(m,text,key),thread={id:'conv_'+crypto.randomBytes(12).toString('hex'),people:[m.id,peer.id],initiator:m.id,created:msg.ts,status:friends.areFriends(m.id,peer.id)?'active':'pending',blocked:[],seen:{[m.id]:msg.id},messages:[msg]};
  append({op:'create',thread});return {id:thread.id,message:msg,duplicate:false};
 }
 export function send(member,id,{text,client_id}={}){const m=active(member),t=own(m,id);text=body(text);const key=nonce(client_id);const old=duplicate(m,t,text,key);if(old)return old;canSend(m,t);limit(m);const msg=message(m,text,key);append({op:'message',id:t.id,message:msg});return {id:t.id,message:msg,duplicate:false};}

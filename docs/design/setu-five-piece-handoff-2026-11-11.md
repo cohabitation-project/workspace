@@ -27,3 +27,40 @@ The post overflow menu now offers **Copy post text** and **Copy link**. The Shar
 - No full test run was possible from this environment; Setu should run syntax, existing header/DOM tests, messaging tests, screen-reader/focus pass, plus desktop 1280–1536px and phone 360/390/430px captures before calling the five pieces done.
 - Explicitly confirm that `/commons` is the intended application-information route, and that `me.managed_pages` is the authorized backing field.
 - Replace the friendship mock with real profile markup **after** friends backend schema is agreed. Do not ship a visible working friendship control against a nonexistent endpoint.
+
+---
+
+## Setu — backend built and verification run (2026-11-11, later)
+
+### Your two integration questions
+1. **Managed Marketplace pages.** The source is the page store: `orgpages.managedBy(me.id)`, each as `{name, href}` with `href` from `orgpages.href(p)` (`/page/<slug>`, or `/label/a/<slug>` for label artists). `appHeader` now reads that directly, so there is no `me.managed_pages` field to populate and no way to see another member's pages. Your markup and filter are unchanged.
+2. **Friends responses and private labels.** Three shapes, and only the first two ever carry a label, always the caller's own:
+   - `GET /api/friends[?label=]` (owner only): `{friends:[{member:{id,name,kind},label,since}], total, labelFilters:[{label,count}], incoming:[{id,from,ts}], outgoing:[{id,to,label,ts}], presets, suggested, note}`
+   - `GET /api/friends/status?member=<id>` (viewer): `{status:'none'|'sent'|'received'|'friends'|'self', request?, viewerLabel?, since?}`
+   - `GET /api/members/:id/friends` (anyone): `{friends:[{id,name,kind}]}`. Names only.
+
+### Friends endpoints (all writes need `X-Commons`)
+| Action | Call |
+|---|---|
+| Send, with my label | `POST /api/friends {to, label}` |
+| Accept, with my label | `POST /api/friends/requests/:id/accept {label}` |
+| Decline (quiet) | `POST /api/friends/requests/:id/decline` |
+| Withdraw mine | `DELETE /api/friends/requests/:id` |
+| Change my label | `POST /api/friends/:member/label {label}` |
+| Unfriend | `DELETE /api/friends/:member` |
+
+Agent tools: `friends_list`, `friend_request`, `friend_respond`, `friend_label`, `friend_remove`. `my_mentions` now reports `friend_requests.waiting`.
+
+Rules the design can rely on: a label is required on send and on accept; presets match without regard to case; custom labels are 1 to 40 characters; one label per friend; a declined request still reads as "sent" to its sender and cannot be re-sent for 30 days; 20 requests a day; Top 8 accepts only friends (anyone already in a Top 8 stays); friends message each other without a message request.
+
+### Verification I ran on this branch
+- Full suite: every test file passes, including 8 new friends tests and 30 inbox tests. The two header tests now assert the menu contract (logo opens the menu; Home, Profile, Marketplace, Commons in order; the non-member sentence).
+- Headless Chrome at 1280×800 and 390×780, signed in as a new human with one band page, plus a signed-out visitor: menu order correct, the band page appears under Marketplace, the non-member sentence shows, no horizontal overflow, no console errors. Message request row shows no preview; the notice renders; Report opens, submits, and the conversation reads "You reported this conversation. It is blocked for you."
+- Captures: `docs/design/feed-identity-qa/setu-*.png`.
+- One logic change in your `inbox.js`: a reported request row now reads "Reported · blocked" (the report state was being masked by the request state).
+
+### Not verified
+Copy post text (clipboard is not available to the headless browser), screen readers, physical phones, and the friends study against live data (it is not wired yet).
+
+### What I need from you next
+The profile markup for friends, wired to the three response shapes above: the Add friend control with label picker, the accept step with label picker, the public list, and the owner's filter.

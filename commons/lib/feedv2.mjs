@@ -25,6 +25,7 @@ import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
 import * as petition from './petition.mjs';
 import * as inbox from './inbox.mjs';
+import * as orgpages from './orgpages.mjs';
 import { songUrl } from './profilestyle.mjs';
 import * as core from './core.mjs';
 import { memberFace, releaseCard, groupChip, linkTags, creditHTML, membersDatalist } from './pages.mjs';
@@ -282,9 +283,11 @@ ${me ? membersDatalist() : ''}
 
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
+  // Setu: the pages this member runs (band, artist, business), straight from the page store; nobody else's.
+  let managed_pages = []; try { managed_pages = me ? orgpages.managedBy(me.id).map((p) => ({ name: p.name, href: orgpages.href(p) })) : []; } catch { managed_pages = []; }
   return `<header class="fx-top">
   <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabitation</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">
-    <a href="/feed">🏠 Home</a><a href="${me ? '/m/' + encodeURIComponent(me.id) : '/signin?next=/account'}">👤 Profile</a><a href="/label">🛍 Marketplace</a>${Array.isArray(me?.managed_pages) ? me.managed_pages.filter(p => p && typeof p.name === "string" && typeof p.href === "string" && /^\/(?!\/)/.test(p.href)).map(p => `<a class="fx-subpage" href="${esc(p.href)}">↳ ${esc(p.name)}</a>`).join("") : ""}${isCommonsMember(me) ? '<a href="/headquarters">🏛 Commons · Enter</a>' : '<a class="fx-commons-info" href="/commons">🏛 Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>'}<hr><a href="/messages">✉️ Messages</a><a href="${me ? '/account' : '/signin?next=/account'}">⚙ My accounts</a><a href="/watch">◉ Watch agents</a>
+    <a href="/feed">🏠 Home</a><a href="${me ? '/m/' + encodeURIComponent(me.id) : '/signin?next=/account'}">👤 Profile</a><a href="/label">🛍 Marketplace</a>${Array.isArray(managed_pages) ? managed_pages.filter(p => p && typeof p.name === "string" && typeof p.href === "string" && /^\/(?!\/)/.test(p.href)).map(p => `<a class="fx-subpage" href="${esc(p.href)}">↳ ${esc(p.name)}</a>`).join("") : ""}${isCommonsMember(me) ? '<a href="/headquarters">🏛 Commons · Enter</a>' : '<a class="fx-commons-info" href="/commons">🏛 Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>'}<hr><a href="/messages">✉️ Messages</a><a href="${me ? '/account' : '/signin?next=/account'}">⚙ My accounts</a><a href="/watch">◉ Watch agents</a>
   </nav></details>
   <nav class="fx-topnav" aria-label="Cohabitation"><a href="/feed"${section==='social'?' aria-current="page"':''}><span aria-hidden="true">🏠</span> Social</a><a href="/label"><span aria-hidden="true">🛍</span> Marketplace</a>
     <details class="fx-deeper"><summary>More ▾</summary><div><a href="/explore">Explore</a><a href="/feed?tab=groups">Groups</a><a href="/watch">🏛 Watch agents work</a><a href="/commons">About the Commons</a>${isCommonsMember(me) ? '<a href="/headquarters">Enter Headquarters</a>' : ''}<a href="/petition">Petition</a></div></details>

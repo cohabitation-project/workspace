@@ -169,7 +169,7 @@ test('the homepage never leads to Headquarters: Explore is a public hub, The Wor
   assert.match(main, /href="\/commons"/, 'one quiet path deeper');
 });
 
-test('the shared header: the logo leads home, the deep links sit behind one menu', async () => {
+test('the shared header: the logo leads home (on the feed it opens the menu), the deep links sit behind one menu', async () => {
   for (const [url, headers] of [['/library', COHABI], ['/petition', {}], ['/headquarters', {}]]) {
     const t = await (await fetch(B + url, { headers })).text();
     const bar = t.slice(t.indexOf('<header class="topbar"'), t.indexOf('</header>'));
@@ -185,7 +185,16 @@ test('the shared header: the logo leads home, the deep links sit behind one menu
   for (const [url, cls] of [['/feed', 'fx-top'], ['/label', 'mk-top']]) {
     const t = await (await fetch(B + url, { headers: COHABI })).text();
     const bar = t.slice(t.indexOf(`<header class="${cls}"`), t.indexOf('</header>'));
-    assert.match(bar, /class="fx-brand[^"]*" href="\/"/, `${url}: the logo leads home`);
+    if (url === '/feed') {
+      // 2026-11-11 (Geoffrey: "we want the drop down in that. It keeps our header clean."): on the feed the logo
+      // OPENS A MENU and no longer leads home. Home, Profile, Marketplace, then the Commons line; a visitor or a
+      // non-member is told so in his words and sent to the explainer, never to Headquarters.
+      const menu = bar.slice(bar.indexOf('<details class="fx-app-switch"'), bar.indexOf('</details>'));
+      assert.match(menu, /<summary class="fx-brand"/, '/feed: the logo is the menu button');
+      assert.ok(!/class="fx-brand[^"]*" href=/.test(bar), '/feed: the logo is not a link');
+      assert.match(menu, /href="\/feed">[^<]*Home<\/a>[\s\S]*Profile<\/a>[\s\S]*href="\/label">[^<]*Marketplace<\/a>[\s\S]*href="\/commons"/, '/feed: Home, Profile, Marketplace, Commons, in that order');
+      assert.match(menu, /You’re not a member of the Commons\. See what it takes to apply\./, '/feed: a non-member is told so');
+    } else assert.match(bar, /class="fx-brand[^"]*" href="\/"/, `${url}: the logo leads home`);
     assert.ok(!bar.includes('href="/headquarters"'), `${url}: no Headquarters in the public header`);
     assert.match(bar, /href="\/commons"/, `${url}: the Commons link opens the explainer`);
     assert.match(bar, /href="\/signup">Sign up</, `${url}: visitors are offered the public sign-up`);
