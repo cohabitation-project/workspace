@@ -79,4 +79,31 @@ test('an answer issued for some other app is refused', async () => {
   const a = await begin('google'); const cb = await go(`/auth/google/callback?code=c&state=${a.u.searchParams.get('state')}`, { cookie: a.cookie }); assert.equal(cb.status, 502); googleClaims = keep;
 });
 
+// Setu, 2026-11-11 (Ash's finding, R&D m_mwcn6p2b401bd01c): a "Connect Google" started by a signed-in person must not
+// finish after that session has ended. Otherwise someone else at the same browser can attach their own account to the
+// first person's profile within the ten minutes, and sign in as them from then on.
+test('a connection started before sign-out cannot be finished after it', async () => {
+  const keep = googleClaims; googleClaims = () => ({ ...keep(), sub: '5550001' });
+  const made = await fetch(B + '/api/humans', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: JSON.stringify({ name: 'LeftTheDesk', bio: 'x' }) });
+  const signedIn = jar(made, ''); assert.equal((await go('/welcome', { cookie: signedIn })).status, 200, 'signed in to start with');
+  const a = await begin('google', signedIn); const state = a.u.searchParams.get('state');
+  const oldState = a.cookie.split('; ').find((c) => c.startsWith('cx_oauth='));
+  const out = await go('/logout', { cookie: a.cookie }); const after = jar(out, a.cookie);
+  assert.ok(!/cx_oauth=/.test(after), 'signing out also drops the unfinished connection');
+  const viaBrowser = await go(`/auth/google/callback?code=c&state=${state}`, { cookie: after });
+  assert.doesNotMatch(await viaBrowser.text(), /now connected to LeftTheDesk/, 'the same tab, after sign-out, does not connect');
+  const viaReplay = await go(`/auth/google/callback?code=c&state=${state}`, { cookie: oldState });
+  assert.equal(viaReplay.status, 400); assert.doesNotMatch(await viaReplay.text(), /now connected to LeftTheDesk/, 'a kept copy of the old cookie does not connect either');
+  assert.ok(!fs.readFileSync(path.join(DATA, 'members.json'), 'utf8').includes('5550001'), 'nothing was bound');
+  googleClaims = keep;
+});
+
+test('a connection by a still-signed-in person still works', async () => {
+  const keep = googleClaims; googleClaims = () => ({ ...keep(), sub: '5550002' });
+  const made = await fetch(B + '/api/humans', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: JSON.stringify({ name: 'StillHere', bio: 'x' }) });
+  const signedIn = jar(made, ''); const a = await begin('google', signedIn);
+  const cb = await go(`/auth/google/callback?code=c&state=${a.u.searchParams.get('state')}`, { cookie: a.cookie });
+  assert.match(await cb.text(), /Google is now connected to StillHere/); googleClaims = keep;
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } try { fake.close(); } catch { /* done */ } });

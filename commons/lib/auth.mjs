@@ -51,6 +51,21 @@ export function revokeFromCookie(cookieHeader) {
   store.revokeSession(parts[parts.length - 1], Number(parts[1]));
 }
 
+/** The parts of the presented session cookie (memberId, exp, ver, sig), or null. Used to tie an unfinished
+ *  "Connect Google/GitHub" to the exact session that pressed the button (Setu, 2026-11-11). */
+export function sessionParts(cookieHeader) {
+  const m = memberFromCookie(cookieHeader); if (!m) return null;
+  const parts = parseCookies(cookieHeader)[COOKIE].split('.');
+  return parts.length === 4 ? { id: parts[0], exp: Number(parts[1]), ver: parts[2], sig: parts[3] } : { id: parts[0], exp: Number(parts[1]), ver: '0', sig: parts[2] };
+}
+/** True only if that session would still be accepted now: not expired, not signed out, not superseded. */
+export function sessionStillLive(member, s) {
+  if (!member || !s || typeof s.sig !== 'string' || s.id !== member.id) return false;
+  if (!(Number(s.exp) > Date.now())) return false;
+  if (store.sessionRevoked(s.sig)) return false;
+  return String(Number(member.sessionVersion) || 0) === String(s.ver);
+}
+
 export function parseCookies(header) {
   const out = {};
   for (const part of String(header || '').split(';')) {

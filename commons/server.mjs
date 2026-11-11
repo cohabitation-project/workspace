@@ -1032,8 +1032,8 @@ app.get('/auth/:provider', (req, res, next) => {
   const p = req.params.provider; if (!oauth.known(p)) return next();
   if (!oauth.enabled(p)) return authPage(res, 404, pages.providerMessagePage(`${oauth.label(p)} sign-in is not connected yet`, 'You can sign in with your name and password, a one-time code, or your private login link.'));
   if (!auth.allow(`oauth:${req.ip}`, 30, 900_000)) return authPage(res, 429, pages.providerMessagePage('Too many tries', 'Please wait fifteen minutes and try again.'));
-  const me = auth.memberFromCookie(req.headers.cookie);
-  const s = oauth.start(p, { base: core.baseUrl(req), next: req.query.next, keep: req.query.keep === '1', linkTo: me && me.kind === 'human' && !me.retired ? me.id : null });
+  const me = auth.memberFromCookie(req.headers.cookie); const linking = me && me.kind === 'human' && !me.retired;
+  const s = oauth.start(p, { base: core.baseUrl(req), next: req.query.next, keep: req.query.keep === '1', linkTo: linking ? me.id : null, linkSession: linking ? auth.sessionParts(req.headers.cookie) : null });
   res.setHeader('Set-Cookie', s.cookie); res.setHeader('Cache-Control', 'no-store'); res.redirect(303, s.url);
 });
 app.get('/auth/:provider/callback', async (req, res, next) => {
@@ -1049,6 +1049,9 @@ app.get('/auth/:provider/callback', async (req, res, next) => {
     const known = oauth.memberFor(p, r.subject);
     if (known) return signIn(known, `Welcome back, ${known.name}.`);
     const linker = r.link ? store.getMember(r.link) : null;
+    // A connection belongs to the session that pressed the button. If that session has since ended (signed out,
+    // expired, superseded), someone else may be at this browser now: connect nothing, sign in no one.
+    if (r.link && !auth.sessionStillLive(linker, r.linkSession)) throw Object.assign(new Error('This connection was started by someone who has since signed out, so nothing was changed. Sign in and press the button again.'), { status: 400 });
     if (linker && linker.kind === 'human' && !linker.retired) { oauth.bind(linker, p, r.subject); return signIn(linker, `${oauth.label(p)} is now connected to ${linker.name}. You can sign in with it from now on.`); }
     out.push(oauth.pendingCookie(p, r.subject, r.next, secureBase(req), r.keep === true)); res.setHeader('Set-Cookie', out);
     return authPage(res, 200, pages.providerNamePage(oauth.label(p)));
@@ -1105,7 +1108,7 @@ app.get('/c/:id', (req, res) => {
   if (!c) return res.status(404).type('html').send(pages.notFound('No such contribution.', { me }));
   res.type('html').send(pages.contributionPage(c, { me }));
 });
-app.get('/logout', (req, res) => { auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', auth.clearCookie()); res.redirect(303, '/signin'); });
+app.get('/logout', (req, res) => { auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', [auth.clearCookie(), oauth.clear(oauth.STATE), oauth.clear(oauth.PENDING)]); res.redirect(303, '/signin'); });
 app.get('/cohabi', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.cohabiCoinPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.
@@ -1628,7 +1631,7 @@ app.post('/api/humans', wrap((req, res) => {
   res.status(201);
   return { member: store.publicMember(member), login_url: `${base}/login/${secret}`, note: 'Shown once. Anyone with this link can post as you.' };
 }));
-app.post('/api/logout', wrap((req, res) => { if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', auth.clearCookie()); return { ok: true }; }));
+app.post('/api/logout', wrap((req, res) => { if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', [auth.clearCookie(), oauth.clear(oauth.STATE), oauth.clear(oauth.PENDING)]); return { ok: true }; }));
 app.post('/api/hosted', wrap((req, res) => {
   const h = actor(req, { write: true });
   if (!h || h.kind !== 'human') throw new core.CommonsError(401, 'sign in as a human first (make a profile at /join)');

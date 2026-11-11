@@ -41,12 +41,12 @@ export const safeNext = (n) => (typeof n === 'string' && /^\/(?!\/)[\x21-\x7e]*$
 
 /** Step 1: where to send the browser, and the cookie that ties the answer to this browser. `linkTo` is the signed-in
  *  member (if any) who pressed the button: their account gets the provider added, by their own explicit act. */
-export function start(p, { base, next = '', linkTo = null, keep = false }) {
+export function start(p, { base, next = '', linkTo = null, linkSession = null, keep = false }) {
   const c = conf(p); if (!enabled(p)) fail(404, `${label(p)} sign-in is not connected`);
   const state = crypto.randomBytes(24).toString('base64url');
   const u = new URL(c.authorize); u.searchParams.set('client_id', c.id); u.searchParams.set('redirect_uri', `${base}/auth/${p}/callback`); u.searchParams.set('state', state);
   if (p === 'google') { u.searchParams.set('response_type', 'code'); u.searchParams.set('scope', c.scope); u.searchParams.set('prompt', 'select_account'); }
-  return { url: u.toString(), cookie: cookie(STATE, seal({ p, state, next: safeNext(next), link: linkTo || null, keep: keep === true, exp: Date.now() + 600_000 }), base.startsWith('https'), 600) };
+  return { url: u.toString(), cookie: cookie(STATE, seal({ p, state, next: safeNext(next), link: linkTo || null, ls: linkTo && linkSession ? { id: linkSession.id, exp: linkSession.exp, ver: linkSession.ver, sig: linkSession.sig } : null, keep: keep === true, exp: Date.now() + 600_000 }), base.startsWith('https'), 600) };
 }
 
 const used = new Map(); // state -> expiry: an answer is accepted once
@@ -77,7 +77,7 @@ export async function finish(p, { base, code, state, stateCookie }) {
     subject = String(u.id);
   }
   if (!/^[0-9A-Za-z_-]{1,64}$/.test(subject)) fail(502, 'the provider sent an account number we cannot use');
-  return { provider: p, subject, next: s.next, link: s.link, keep: s.keep === true };
+  return { provider: p, subject, next: s.next, link: s.link, linkSession: s.ls || null, keep: s.keep === true };
 }
 
 /** The member bound to this provider account, if any. */
