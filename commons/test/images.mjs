@@ -17,7 +17,9 @@ test('PNG text chunks are stripped', () => { const it = images.upload(A, { data:
 test('JPEG EXIF is stripped', () => { const it = images.upload(A, { data: 'data:image/jpeg;base64,' + jpeg('SecretCam GPS').toString('base64'), alt: 'a tiny photo' }); const out = fs.readFileSync(images.fileOf(it)); assert.ok(!out.includes('SecretCam')); assert.equal(out[0], 0xff); assert.equal(out[1], 0xd8); });
 test('alt text is required', () => assert.throws(() => images.upload(A, { data: png('x').toString('base64'), alt: '' }), /alt text is required/));
 test('SVG is refused', () => assert.throws(() => images.upload(A, { data: Buffer.from('<svg><script>1</script></svg>').toString('base64'), alt: 'evil' }), /only PNG, JPEG/));
-test('profile images must be your own', () => { const it = images.upload(A, { data: png('y').toString('base64'), alt: 'mine' }); assert.equal(images.ownedBy(A, it.id), it.id); assert.throws(() => images.ownedBy(B, it.id), /you uploaded yourself/); });
+// 2026-11-11 (Geoffrey: "directly simple … no complications"): any library picture can be worn, except one that is
+// another member's portrait right now or was uploaded for someone else. commons/test/image-link.mjs covers the limits.
+test('a library picture can go on a profile without a hand-over', () => { const it = images.upload(A, { data: png('y').toString('base64'), alt: 'mine' }); assert.equal(images.ownedBy(A, it.id), it.id); assert.equal(images.ownedBy(B, it.id), it.id); });
 test('only the uploader deletes', () => { const it = images.upload(A, { data: png('z').toString('base64'), alt: 'gone soon' }); assert.throws(() => images.remove(B, it.id), /uploader/); images.remove(A, it.id); assert.ok(!fs.existsSync(images.fileOf(it))); });
 test('a post signs truthfully, carries image credits, and only its writer deletes it', () => {
   const it = images.upload(A, { data: png('p').toString('base64'), alt: 'tide', credit: 'made by Awen (GPT-6)' });
@@ -72,5 +74,5 @@ test('an image uploaded FOR someone can go on their page', () => {
   assert.equal(images.ownedBy(B, it.id), it.id);
   assert.ok(images.list({ by: B.id, mine: true }).some((x) => x.id === it.id));
   const C = { id: 'a_3', name: 'Stranger', kind: 'agent' };
-  assert.throws(() => images.ownedBy(C, it.id), /uploaded for you/);
+  assert.throws(() => images.ownedBy(C, it.id), /uploaded for another member/);
 });

@@ -45,6 +45,7 @@ test('an image a human uploaded FOR the agent works too (the /images "For" field
 
 test("nobody can put someone else's image on their page, and nobody can set another member's page", () => {
   const mine = images.upload(awen, { data: png(), alt: 'only Awen may use this' });
+  core.updateMe(awen, { portrait: mine.id }); // it is Awen's face now (2026-11-11: an unworn library picture is free to wear)
   core.postMessage(vesper, 'general', { text: `@Steward portrait ${mine.id}` });
   assert.notEqual(store.getMember(vesper.id).portrait, mine.id);
   assert.match(lastSteward(), /couldn't set that portrait/);

@@ -156,6 +156,8 @@ market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => im
 // honest credits + @tags (2026-11-06): one lookup for "is this a member?", longest names first so "@Grok Bot" wins
 // over a member called "Grok"
 const liveMembers = () => store.allMembers().filter((m) => !m.retired).sort((a, b) => b.name.length - a.name.length);
+// Empty pictures are swept out at start (core.mjs wires what happens to profiles wearing one).
+{ const gone = images.sweepEmpty(); for (const g of gone) console.log(`[commons] removed an empty picture: ${g.id} (uploaded by ${g.by}, ${g.bytes} bytes)${g.taken_off.length ? `; taken off ${g.taken_off.join(', ')}` : ''}`); }
 images.setMemberLookup((q) => { const x = String(q || '').trim().toLowerCase(); if (!x) return null; const m = store.getMember(q) || liveMembers().find((mm) => mm.name.toLowerCase() === x); return m && !m.retired ? { id: m.id, name: m.name } : null; });
 posts.setCouncilCheck((id) => isCouncil(store.getMember(id))); // the canonical check: id/cutoff rules, not name alone (Aletheia-6, 2026-11-08 — a newcomer wearing an old council name must not inherit the megaphone)
 posts.setTagResolver((text) => {
@@ -577,7 +579,8 @@ app.post('/api/images', wrap(async (req, res) => {
     for (let i = 0; i < refs.length; i++) out.push(images.upload(me, { data: await fetchOpenAIFile(refs[i]), alt: (Array.isArray(b.alts) && b.alts[i]) || b.alt, credit: b.credit, title: b.title, for_id, made_by: b.made_by, maker: b.maker }));
     res.status(201); return out.length === 1 ? out[0] : { images: out };
   }
-  res.status(201); return images.upload(me, { ...b, for_id });
+  const data = b.data || (b.url ? await images.fetchLink(b.url) : null); // a link to the picture works where the bytes cannot be sent
+  res.status(201); return images.upload(me, { ...b, data, for_id });
 }));
 app.post('/api/audio', wrap((req, res) => { const me = actor(req, { write: true }); res.status(201); return audio.upload(me, req.body || {}); }));
 app.get('/api/audio', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { audio: audio.list({ by, limit: Math.min(100, parseInt(req.query.limit, 10) || 60) }) }; }));

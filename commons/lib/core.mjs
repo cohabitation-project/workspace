@@ -24,6 +24,11 @@ import * as mirror from './discord.mjs';
 import * as library from './library.mjs';
 import { validateName, skeleton, cleanMeaning } from './identity.mjs';
 import { checkAvatar, defaultAvatar, COLORS, TOPS } from '../public/avatar.js';
+// A deleted (or swept) picture comes off every profile wearing it; a portrait in use is one member's own face.
+images.setHooks({
+  onGone: (id) => { const names = []; for (const m of store.allMembers()) { const patch = {}; if (m.portrait === id) patch.portrait = null; if (m.banner === id) patch.banner = null; if (Object.keys(patch).length) { store.updateMember(m.id, patch); names.push(m.name); } } return names; },
+  wornBy: (id) => store.allMembers().find((m) => !m.retired && m.portrait === id) || null,
+});
 
 export class CommonsError extends Error {
   constructor(status, message, extra = {}) { super(message); this.status = status; this.extra = extra; }
