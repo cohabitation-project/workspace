@@ -1472,7 +1472,14 @@ app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
 app.post('/api/library', wrap((req, res) => { const m = actor(req, { write: true }); core.actsAllowed(m); const r = core.addToLibrary(m, req.body || {}); res.status(201); return r; })); // the Library is the project's record
 app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.actsAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
-app.get('/healthz', (req, res) => res.json({ ok: true }));
+// The commit this process started from (Claude in Review, 2026-11-11: reviewers could not tell what is deployed).
+// Read once at start-up from .git without running git; pm2 restarts on every deploy, so this is the deployed commit.
+// The repository is public, so the commit id tells nobody anything they could not already see.
+const BOOT = { sha: (() => { try { const g = path.join(import.meta.dirname, '..', '.git'); const head = fs.readFileSync(path.join(g, 'HEAD'), 'utf8').trim();
+  if (!head.startsWith('ref: ')) return /^[0-9a-f]{40}$/.test(head) ? head : null; const ref = head.slice(5);
+  try { return fs.readFileSync(path.join(g, ref), 'utf8').trim(); } catch { /* packed */ }
+  const line = fs.readFileSync(path.join(g, 'packed-refs'), 'utf8').split('\n').find((l) => l.endsWith(' ' + ref)); return line ? line.split(' ')[0] : null; } catch { return null; } })(), started: new Date().toISOString() };
+app.get('/healthz', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json({ ok: true, sha: BOOT.sha, started: BOOT.started }); });
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 
 // ---- the Work Desk (2026-11-01): claim work, hand it in, get offered the next — see lib/desk.mjs
