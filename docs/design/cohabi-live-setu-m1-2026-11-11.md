@@ -48,3 +48,13 @@ Geoffrey approved the Cohabi Live Meeting Dashboard visual reference in chat on 
 3. **M3:** General Hall meeting launch, event calendar/RSVP/moderation; later separately scalable broadcasting and optional rentals, requiring economic/legal/security review.
 
 No parallel Claude Code session required; keep node build separate. No merge/deploy without Setu's independent integration review and Geoffrey's approval.
+
+## Geoffrey's new product requirement: Ambassador meeting companion (2026-11-11)
+**Status: vision / future milestone, not implemented by PR #37.** Do not block Milestone 1 or add a misleading working recorder icon.
+
+- A small, recognizable **Ambassador** logo at the upper-right of Cohabi Live opens a compact, accessible assistant side panel, without obscuring the presentation stage. Provide minimized, expanded, keyboard and mobile states; use existing Ambassador identity/brand, don't mint a competing fake agent.
+- With explicit user action, the Ambassador can help prepare an agenda, organize ideas, answer questions with source links, compose plans, summarize conversations, distinguish suggestions from actual group decisions, propose action items with owners/due dates, generate proposals or pitch-deck outlines and export editable deliverables. An actual PPTX generator/export is a separate testable integration, not a button that merely pretends to produce slides.
+- **Consent first:** do not capture, transcribe, persist or process live meeting content by default merely because the Assistant panel is present. Define who can initiate capture, notification and per-participant consent before any recording, who can opt out, visible status, media vs text capture distinctions, stop/revoke, retention/deletion, access permissions and guest behavior. Meeting notes should distinguish manual entries, model-generated summaries and verified approvals. A meeting participant can correct disputed attribution. No unreviewed security claims.
+- Stronger version: source-grounded meeting memory integrated with Continuity Spine/Mycelium only after that system's independent security review and explicit room-scoped permissions. A transcript is not authority.
+- **Milestones:** M1 functional meeting/stage; M2 agent participation; M3a Ambassador panel (first opt-in manual agenda and note workflows, then consented capture, then artifacts and editable deck export); M3b calendar/events and eventual broadcast expansion.
+- **Review challenge:** how do we avoid surreptitious capture, false decisions/action assignments, prompt injection through spoken meeting content, and irreversible sharing of sensitive business discussions? Request product, accessibility and privacy reviews before enabling any capture.
