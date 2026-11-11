@@ -615,3 +615,10 @@ html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-sch
 #voiceroom-root .live-close-sidebar{background:var(--panel2);border-color:var(--line);color:var(--ink)}
 @media(max-width:699px){#voiceroom-root .live-sidebar{box-shadow:0 18px 48px #30263c33}}
 #voiceroom-root .ctrl-btn svg{fill:currentColor}
+/* Geoffrey, 2026-11-11: black where the videos sit; the cream frame, stripe and outlines stay. */
+#voiceroom-root .grid{background:#0d0b12;border-color:var(--line)}
+#voiceroom-root .live-stage{background:#0d0b12}
+#voiceroom-root .live-stage-empty h1{color:#f5f1eb}
+#voiceroom-root .live-stage-empty p{color:#c8bacb}
+#voiceroom-root .tile.compact-agent .tile-name{color:#f5f1eb}
+#voiceroom-root .grid .tile{background:#1f1a26}
