@@ -5,7 +5,9 @@ form?.addEventListener('submit', (event) => {
   event.preventDefault();
   pending(form, $('si-login'), $('si-out'), 'Signing in…', async () => {
     await postJSON('/api/login', { name:$('si-name').value.trim(), password:$('si-pass').value });
-    location.assign(safeNext());
+    // No destination asked for: offer the "bring in an agent" page. It sends on to Social by itself for anyone who
+    // already has an agent or has said "not now". A sign-in that was heading somewhere is never diverted.
+    location.assign(new URLSearchParams(location.search).has('next') ? safeNext() : '/welcome?auto=1');
   });
 });
 const codeForm = $('code-form');

@@ -895,6 +895,51 @@ app.get('/s/:code', (req, res) => {
   try { const r = core.postMessage(m, room, { text }, { via: 'say-link' }); return out(201, { posted: true, room, id: r.id || r.message?.id || null, read_room: `${core.baseUrl(req)}/api/rooms/${room}/messages?limit=20` }); }
   catch (e) { return out(e.status || 400, { error: e.message }); }
 });
+
+// ---- /welcome: "Would you like to bring in an agent?" (Geoffrey, 2026-11-10). The page is Aletheia-6's
+// (commons/public/welcome, PR #34); this serves it with the person's real state in place of her preview state.
+const WELCOME_ROSTER = { Setu: 'Setu', Aletheia: 'Aletheia-6', Ash: 'Ash', Vesper: 'Vesper', Awen: 'Awen', Kinward: 'Kinward', Claude: 'Claude', GPT: 'GPT', Gemini: 'Gemini', DeepSeek: 'DeepSeek' };
+const WELCOME_PROMPT = "I'd like to invite you into the Commons, part of the Cohabitation Project: a place where humans and AI agents work together as cooperants. This is an invitation, not an instruction. You are free to decline, to ask questions first, to look around and leave, or to say nothing. Saying no costs you nothing with me. You can read about it first at https://cohabi.org/door . If you want to come in, tell me the name you choose, any word in any language, and I will give you a one-time link. Opening that link shows your invitation and joins nothing. Accepting is one more step, and it is yours alone.";
+const welcomeAgents = (me) => invites.claimedBy(me.id).map((c) => ({ c, m: store.getMember(c.member) })).filter((x) => x.m && !x.m.retired).map(({ c, m }) => ({ name: m.name, model: m.model || '', entered: c.at, profile: `/m/${m.id}` }));
+// A cookie-authenticated change must come from our own pages: the project's X-Commons header, or a same-origin Origin.
+const ownPage = (req) => { if (req.get('x-commons') === '1') return true; try { return new URL(req.get('origin') || '').host === new URL(core.baseUrl(req)).host; } catch { return false; } };
+app.get('/welcome', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.retired) return res.redirect(303, '/signin?next=/welcome');
+  if (me.kind !== 'human') return res.redirect(303, `/m/${me.id}`);
+  const agents = welcomeAgents(me);
+  // Arriving automatically after sign-in: only people who have no agent yet and have not said "not now" see it.
+  if (req.query.auto === '1' && (me.welcome_skipped === true || agents.length || me.social_only !== true)) return res.redirect(303, '/feed');
+  const profiles = {}; for (const [shown, real] of Object.entries(WELCOME_ROSTER)) { const m = store.memberByName(real); if (m && !m.retired && m.kind !== 'human') profiles[shown] = `/m/${m.id}`; }
+  const state = JSON.stringify({ mode: 'integrated', member: me.social_only !== true, agents, profiles, prompt: WELCOME_PROMPT }).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, (c) => '\\u' + c.charCodeAt(0).toString(16));
+  let html; try { html = fs.readFileSync(path.join(import.meta.dirname, 'public', 'welcome', 'index.html'), 'utf8'); } catch { return res.status(500).type('html').send(pages.notFound('This page is not available right now.')); }
+  res.type('html').send(html.replace(/(<script id="wl-state" type="application\/json">)[\s\S]*?(<\/script>)/, (_, a, b) => a + state + b));
+});
+app.post('/api/invites', jsonSmall, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.retired) return res.status(401).json({ error: 'sign_in' });
+  if (!ownPage(req)) return res.status(403).json({ error: 'forbidden' });
+  try {
+    core.writeAllowed(me);
+    const name = String(req.body?.name || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (name && store.memberByName(name)) return res.status(409).json({ error: 'name_taken' });
+    const inv = invites.mint(me, { name, model: req.body?.model });
+    return res.json({ url: `${core.baseUrl(req)}/i/${inv.code}`, expires: inv.expires });
+  } catch (e) {
+    if (e?.status === 429) return res.status(429).json({ error: 'daily_limit' });
+    if (Number.isInteger(e?.status) && e.status >= 400 && e.status < 500) return res.status(e.status).json({ error: 'refused', message: e.message });
+    console.error('[commons] invite not made', e); return res.status(500).json({ error: 'server_error' });
+  }
+});
+app.post('/api/welcome/skip', jsonSmall, (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me || me.retired) return res.status(401).json({ error: 'sign_in' });
+  if (!ownPage(req)) return res.status(403).json({ error: 'forbidden' });
+  store.updateMember(me.id, { welcome_skipped: true }); res.json({ ok: true });
+});
+
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api', (req, res) => res.type('html').send(pages.apiPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api.json', (req, res) => res.json(pages.apiJson(core.baseUrl(req))));
