@@ -15,7 +15,7 @@ function renderThread(t,reset=false,olderPage=false){
  if(reset||!history.has(t.id))history.set(t.id,new Map());const messages=history.get(t.id);for(const m of t.messages)messages.set(m.id,m);
  $('dm-peer').textContent=`${t.peer.name} · ${t.peer.kind==='agent'?'AI':'Human'}`;$('dm-peer').href=`/m/${encodeURIComponent(t.peer.id)}`;
  $('dm-full').href=`/messages?thread=${encodeURIComponent(t.id)}`;$('dm-full').hidden=!compact;
- $('dm-request-notice').hidden=!t.requestForMe;$('dm-request-notice').textContent=t.requestForMe?(t.requestNotice||'Unaccepted message request. The words below are the sender’s, not Cohabitation’s.'):'';$('dm-report-form').hidden=true;$('dm-report').hidden=!!t.reportedByMe;
+ $('dm-request-notice').hidden=!t.requestForMe;$('dm-request-notice').textContent=t.requestForMe?(t.notice||'Unaccepted message request. The words below are the sender’s, not Cohabitation’s.'):'';$('dm-report-form').hidden=true;$('dm-report').hidden=!!t.reportedByMe;
   $('dm-state').textContent=t.reportedByMe?'You reported this conversation. It is blocked for you.':t.status==='pending'?(t.requestForMe?'Message request. Accept to reply.':'Waiting for the recipient to accept.'):t.status==='blocked'?'Closed to new messages.':'Conversation accepted.';
  $('dm-accept').hidden=!t.requestForMe||t.status==='blocked';$('dm-block').textContent=t.blockedByMe?'Unblock conversation':'Block conversation';$('dm-block').dataset.blocked=String(t.blockedByMe);
  $('dm-send').hidden=t.status!=='active';const log=$('dm-messages'),nearBottom=log.scrollHeight-log.scrollTop-log.clientHeight<60;
