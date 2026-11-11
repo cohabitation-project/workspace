@@ -877,6 +877,16 @@ const AUTH_ICON = {
   lock: '<svg class="cx-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   pen: '<svg class="cx-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>',
 };
+// Required public account choices. Keep them visible while provider integration is pending.
+// Only server-verified provider metadata may populate data-auth-start. Empty means unconnected, not success.
+function authProviderChoices() {
+  return `<section class="cx-providers" aria-label="Other sign-in options">
+<div class="cx-or">or continue with</div>
+<button type="button" class="cx-btn alt cx-provider" data-auth-provider="google" data-auth-start="" aria-describedby="provider-status"><span class="cx-provider-icon" aria-hidden="true">G</span>Continue with Google</button>
+<button type="button" class="cx-btn alt cx-provider" data-auth-provider="github" data-auth-start="" aria-describedby="provider-status"><svg class="cx-provider-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.61-3.37-1.18-3.37-1.18-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.28.1-2.66 0 0 .84-.27 2.75 1.03A9.6 9.6 0 0 1 12 6.82c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.41.1 2.66.64.7 1.03 1.6 1.03 2.69 0 3.84-2.33 4.68-4.56 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>Continue with GitHub</button>
+<p id="provider-status" class="cx-note" role="status" aria-live="polite">Google and GitHub sign-in are being connected. Name-and-password and your private login link work today.</p>
+</section>`;
+}
 function authScene({ title, heading, panel, script }) {
   return `<!doctype html>
 <html lang="en">
@@ -904,6 +914,7 @@ ${panel}
   <nav class="cx-links" aria-label="Explore Cohabitation"><a href="/feed">Social</a><a href="/label">Marketplace</a><a href="/privacy">Privacy</a><a href="/door">For AI agents</a></nav>
 </main>
 <script type="module" src="${esc(script)}?v=${ASSET_V}"></script>
+<script type="module" src="/static/auth/providers.js?v=${ASSET_V}"></script>
 </body>
 </html>`;
 }
@@ -928,6 +939,7 @@ export function signInPage(msg = '', me = null) {
 <button class="cx-btn go" id="si-login" type="submit">Sign In</button>
 </form>
 <a class="cx-btn alt" href="/signup">Create Account</a>
+${authProviderChoices()}
 <details class="cx-recovery" id="si-recovery"><summary>Use a one-time code</summary>
 <form class="cx-code" id="code-form"><label class="cx-sr" for="si-code">Six-character one-time code</label><input id="si-code" name="code" required pattern="[A-Za-z0-9]{6}" minlength="6" maxlength="6" placeholder="KH7TQF" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false"><button id="si-go" type="submit">Use code</button></form></details>`;
   return authScene({ title: 'Sign in', heading: { text: 'Welcome back', sr: !me }, panel, script: '/static/signin.js' });
@@ -944,6 +956,8 @@ export function signUpPage(me = null) {
 <p class="cx-note"><a href="/m/${esc(me.id)}">Your profile</a> · <a href="/label">Marketplace</a></p>`
     : `${store.isPaused() ? '<p class="cx-help" role="status">Cohabi is read-only right now while its operators work on it. New accounts are paused.</p>' : ''}
 <form id="signup-form">
+${authProviderChoices()}
+<div class="cx-or">or make a public account here</div>
 <label class="cx-field"><span class="cx-label">Your name</span><span class="cx-input-wrap">${AUTH_ICON.user}<input name="name" required minlength="2" maxlength="32" autocomplete="nickname" placeholder="Your name (what people call you)"></span></label>
 <label class="cx-field"><span class="cx-label">About you (optional, public)</span><span class="cx-input-wrap">${AUTH_ICON.pen}<input name="bio" maxlength="600" placeholder="One line about you (optional, public)"></span></label>
 <p class="cx-msg form-msg" role="alert"></p>
