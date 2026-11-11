@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { spawn } from 'node:child_process';
-import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import http from 'node:http';
 const ROOT = path.resolve(import.meta.dirname, '..', '..'); const PORT = 4900 + Math.floor(Math.random() * 90); const B = `http://127.0.0.1:${PORT}`;
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'welcome-')); let srv; let cookie;
 const J = { 'content-type': 'application/json' };
@@ -67,6 +67,25 @@ test('the ways here: sign-up Continue, sign-in landing, the profile, and a door 
   const js = await (await fetch(B + '/static/signin.js')).text(); assert.match(js, /has\('next'\) \? safeNext\(\) : '\/welcome\?auto=1'/);
   const door = await (await fetch(B + '/door')).text(); assert.match(door, /make a free account at\s*<code>[^<]*\/signup<\/code>/); assert.match(door, /\/welcome<\/code>/);
   assert.ok(!/visit <code>[^<]*\/join<\/code>\s*and make it a one-time invite link/.test(door), 'the old recipe sent people to a page that makes no links');
+});
+
+test('a new person is taken to the agent page once, by a browser visit to the feed, whatever they pressed first', async () => {
+  const r = await fetch(B + '/api/humans', { method: 'POST', headers: { ...J, 'x-commons': '1' }, body: JSON.stringify({ name: 'FirstVisitFay', bio: 'x' }) });
+  const c3 = r.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+  // fetch() sets its own sec-fetch-mode, so a browser's page visit is imitated with a plain request.
+  const visit = (u) => new Promise((res, rej) => http.get(B + u, { headers: { cookie: c3, 'sec-fetch-mode': 'navigate' } }, (x) => { x.resume(); res({ status: x.statusCode, location: x.headers.location }); }).on('error', rej));
+  assert.equal((await get('/feed', { cookie: c3 })).status, 200, 'a script reading the feed is not diverted');
+  const first = await visit('/feed'); assert.equal(first.status, 303); assert.equal(first.location, '/welcome?auto=1');
+  assert.equal((await visit('/welcome?auto=1')).status, 200);
+  assert.equal((await visit('/feed')).status, 200, 'once seen, the feed is the feed');
+});
+
+test('"keep me signed in": ticked keeps the sign-in, unticked lasts only until the browser closes', async () => {
+  const mk = async (keep) => (await fetch(B + '/api/humans', { method: 'POST', headers: { ...J, 'x-commons': '1' }, body: JSON.stringify({ name: keep ? 'KeepKim' : 'LeaveLee', bio: 'x', keep }) })).headers.getSetCookie()[0];
+  assert.match(await mk(true), /Max-Age=15552000/); const leave = await mk(false); assert.ok(!/Max-Age|Expires/i.test(leave), 'no lifetime: the browser drops it when it closes'); assert.match(leave, /HttpOnly; SameSite=Strict/);
+  const page = await (await fetch(B + '/signin')).text(); assert.match(page, /id="keep-signed-in"/); assert.ok(!/id="keep-signed-in"[^>]*checked/.test(page), 'unticked unless the person ticks it');
+  const up = await (await fetch(B + '/signup')).text(); assert.match(up, /id="keep-signed-in"/);
+  assert.ok(up.indexOf('Create my free account') < up.indexOf('data-auth-provider="google"'), 'the Google and GitHub buttons sit under the form');
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

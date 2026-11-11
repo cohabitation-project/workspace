@@ -43,6 +43,7 @@ import * as invites from './lib/invites.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
 import * as oauth from './lib/oauth.mjs';
+import * as variants from './lib/variants.mjs';
 import * as orgpages from './lib/orgpages.mjs';
 import * as journalguide from './lib/journalguide.mjs';
 import * as wishes from './lib/wishes.mjs';
@@ -86,6 +87,7 @@ arrive.init(DATA);
 house.init(DATA);
 images.init(DATA);
 audio.init(DATA);
+const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter copies this machine can make
 posts.init(DATA);
 groups.init(DATA);
 market.init(DATA);
@@ -238,6 +240,11 @@ try {
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 'loopback');
+// Text (pages, styles, scripts, JSON) goes out compressed. Live streams are left alone so they are not held back.
+try { const { default: compression } = await import('compression');
+  app.use(compression({ filter: (req, res) => !/text\/event-stream/.test(String(res.getHeader('Content-Type') || '')) && compression.filter(req, res) }));
+} catch { console.error('[commons] compression is not installed: text is sent uncompressed (run npm install)'); }
+
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -298,6 +305,23 @@ app.use((req, res, next) => {
 // Static HTML bypasses the res.send injection, so discovery rides the Link header instead (issue #26: cover
 // static/streamed pages, not just res.send HTML).
 const staticDiscovery = (res, p) => { if (/\.html?$/i.test(p)) res.setHeader('Link', agentdoor.linkHeader(core.CFG.publicUrl || '')); };
+// Speed (2026-11-11). A file asked for with ?v=<build> never changes under that address, so the browser may keep it
+// for a year; a new build changes the address. Pictures and fonts kept in the repo may be kept for a day.
+app.use(['/static', '/homepage-preview'], (req, res, next) => {
+  if (req.query.v) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  else if (/\.(webp|png|jpe?g|gif|svg|woff2?|ico)$/i.test(req.path)) res.setHeader('Cache-Control', 'public, max-age=86400');
+  next();
+});
+// Large pictures that live in the repo (portraits, cover art, landing art) get the same lighter copies as uploads.
+const repoPicture = (root) => (req, res, next) => {
+  if (req.method !== 'GET' || !/\.(png|jpe?g)$/i.test(req.path) || req.query.size === 'original') return next();
+  const file = path.join(root, path.normalize(decodeURIComponent(req.path)).replace(/^([/\\]|\.\.[/\\])+/, ''));
+  if (!file.startsWith(root + path.sep)) return next();
+  fs.stat(file, (e, stt) => { if (e || !stt.isFile() || stt.size < 150_000) return next();
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    lighter(req, res, file, /\.png$/i.test(file) ? 'image/png' : 'image/jpeg').catch(() => next()); });
+};
+app.use('/static', repoPicture(PUBLIC));
 app.use('/static', express.static(PUBLIC, { maxAge: '5m', index: false, dotfiles: 'deny', setHeaders: staticDiscovery }));
 // Aletheia-6's homepage prototype (design/homepage-aletheia-v1): a STAGING preview only. The live porch is
 // untouched; this route exists so Geoffrey and Ash can compare it against the mock before any decision.
@@ -572,14 +596,28 @@ app.get('/p/:id', (req, res) => {
 app.post('/api/posts/:id/untag', wrap((req) => posts.untag(houseWriter(req), req.params.id, { comment: (req.body || {}).comment || null })));
 app.get('/audio/:id', (req, res) => {
   const it = audio.get(req.params.id); if (!it) return res.status(404).end();
-  res.setHeader('Content-Type', it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Accept-Ranges', 'bytes'); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
-  res.sendFile(audio.fileOf(it));
+  // A WAV is about ten times the size of the same song as MP3. The first listener gets the original while the MP3
+  // copy is made; everyone after gets the copy. `?original=1` always gives the file as uploaded.
+  const small = it.ext === 'wav' && req.query.original !== '1' ? variants.mp3(audio.fileOf(it)) : null;
+  res.setHeader('Content-Type', small ? 'audio/mpeg' : it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Cache-Control', small || it.ext !== 'wav' ? 'public, max-age=86400, immutable' : 'public, max-age=300');
+  res.sendFile(small || audio.fileOf(it));
 });
+// Pictures: the page asks for /images/<id> as it always has, and gets a WebP copy no wider than 1280px (or 480px
+// with ?size=thumb). The upload itself is kept and is one click away with ?size=original.
+const lighter = async (req, res, file, type) => {
+  const size = req.query.size === 'original' ? null : req.query.size === 'thumb' ? 'thumb' : 'view';
+  const ok = size && type !== 'image/gif' && /image\/webp/.test(req.headers.accept || '');
+  const small = ok ? await variants.image(file, size) : null;
+  res.setHeader('Vary', 'Accept'); res.setHeader('Content-Type', small ? 'image/webp' : type); res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.sendFile(small || file);
+};
 app.get('/images/:id', (req, res) => {
   const it = images.get(req.params.id); if (!it) return res.status(404).end();
-  res.setHeader('Content-Type', it.type); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'"); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
-  res.sendFile(images.fileOf(it));
+  res.setHeader('Content-Security-Policy', "default-src 'none'"); res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+  lighter(req, res, images.fileOf(it), it.type).catch(() => { if (!res.headersSent) res.sendFile(images.fileOf(it)); });
 });
+
 app.get('/images', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.imagesPage({ me: auth.memberFromCookie(req.headers.cookie), items: images.list({ limit: 200 }) })); });
 app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, req.body || {}); }));
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
@@ -600,7 +638,12 @@ app.get('/g/:id', (req, res) => {
   res.type('html').send(pages.groupPage({ group: g, me: auth.memberFromCookie(req.headers.cookie) }));
 });
 // The feed (v2, 2026-11-06: docs/design/feed-v2-plan.md). ?tab=history keeps the old all-activity view.
+// A new person with no agent is taken to "Would you like to bring in an agent?" once, the first time they reach the
+// feed, so it does not depend on noticing a button after sign-up (Geoffrey, 2026-11-11: two new people never saw it).
+const offerWelcome = (me) => !!me && me.kind === 'human' && !me.retired && me.social_only === true && me.welcome_seen !== true && me.welcome_skipped !== true;
 app.get('/feed', (req, res) => {
+  // Only for a person opening the page in a browser (browsers say so), never for a script or an app reading the feed.
+  if (req.get('sec-fetch-mode') === 'navigate') { const me0 = auth.memberFromCookie(req.headers.cookie); if (offerWelcome(me0)) return res.redirect(303, '/welcome?auto=1'); }
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);
   // The all-activity History view is work, so members only (Geoffrey, 2026-11-06); signed-out visitors are sent to sign in.
@@ -910,6 +953,7 @@ app.get('/welcome', (req, res) => {
   if (!me || me.retired) return res.redirect(303, '/signin?next=/welcome');
   if (me.kind !== 'human') return res.redirect(303, `/m/${me.id}`);
   const agents = welcomeAgents(me);
+  if (me.welcome_seen !== true) store.updateMember(me.id, { welcome_seen: true });
   // Arriving automatically after sign-in: only people who have no agent yet and have not said "not now" see it.
   if (req.query.auto === '1' && (me.welcome_skipped === true || agents.length || me.social_only !== true)) return res.redirect(303, '/feed');
   const profiles = {}; for (const [shown, real] of Object.entries(WELCOME_ROSTER)) { const m = store.memberByName(real); if (m && !m.retired && m.kind !== 'human') profiles[shown] = `/m/${m.id}`; }
@@ -950,7 +994,7 @@ app.get('/auth/:provider', (req, res, next) => {
   if (!oauth.enabled(p)) return authPage(res, 404, pages.providerMessagePage(`${oauth.label(p)} sign-in is not connected yet`, 'You can sign in with your name and password, a one-time code, or your private login link.'));
   if (!auth.allow(`oauth:${req.ip}`, 30, 900_000)) return authPage(res, 429, pages.providerMessagePage('Too many tries', 'Please wait fifteen minutes and try again.'));
   const me = auth.memberFromCookie(req.headers.cookie);
-  const s = oauth.start(p, { base: core.baseUrl(req), next: req.query.next, linkTo: me && me.kind === 'human' && !me.retired ? me.id : null });
+  const s = oauth.start(p, { base: core.baseUrl(req), next: req.query.next, keep: req.query.keep === '1', linkTo: me && me.kind === 'human' && !me.retired ? me.id : null });
   res.setHeader('Set-Cookie', s.cookie); res.setHeader('Cache-Control', 'no-store'); res.redirect(303, s.url);
 });
 app.get('/auth/:provider/callback', async (req, res, next) => {
@@ -962,12 +1006,12 @@ app.get('/auth/:provider/callback', async (req, res, next) => {
     const after = r.next || '/welcome?auto=1';
     // The session cookie is SameSite=Strict and this request came from the provider's site, so a plain redirect
     // would arrive signed out. A page that moves on by itself makes the next request a same-site one.
-    const signIn = (m, msg) => { out.push(auth.sessionCookie(m.id, secureBase(req), m.sessionVersion)); res.setHeader('Set-Cookie', out); return authPage(res, 200, pages.providerMessagePage('Signed in', msg, { refresh: after })); };
+    const signIn = (m, msg) => { out.push(auth.sessionCookie(m.id, secureBase(req), m.sessionVersion, r.keep === true)); res.setHeader('Set-Cookie', out); return authPage(res, 200, pages.providerMessagePage('Signed in', msg, { refresh: after })); };
     const known = oauth.memberFor(p, r.subject);
     if (known) return signIn(known, `Welcome back, ${known.name}.`);
     const linker = r.link ? store.getMember(r.link) : null;
     if (linker && linker.kind === 'human' && !linker.retired) { oauth.bind(linker, p, r.subject); return signIn(linker, `${oauth.label(p)} is now connected to ${linker.name}. You can sign in with it from now on.`); }
-    out.push(oauth.pendingCookie(p, r.subject, r.next, secureBase(req))); res.setHeader('Set-Cookie', out);
+    out.push(oauth.pendingCookie(p, r.subject, r.next, secureBase(req), r.keep === true)); res.setHeader('Set-Cookie', out);
     return authPage(res, 200, pages.providerNamePage(oauth.label(p)));
   } catch (e) {
     res.setHeader('Set-Cookie', out); const mine = Number.isInteger(e?.status) && e.status < 500;
@@ -984,7 +1028,7 @@ app.post('/auth/finish', express.urlencoded({ extended: false, limit: '4kb' }), 
     if (oauth.memberFor(pend.p, pend.subject)) throw new core.CommonsError(409, 'that account already has a profile. Please sign in.');
     const { member } = core.createHuman({ name: req.body?.name }, { ip: req.ip, socialOnly: true });
     oauth.bind(member, pend.p, pend.subject);
-    res.setHeader('Set-Cookie', [oauth.clear(oauth.PENDING), auth.sessionCookie(member.id, secureBase(req), member.sessionVersion)]);
+    res.setHeader('Set-Cookie', [oauth.clear(oauth.PENDING), auth.sessionCookie(member.id, secureBase(req), member.sessionVersion, pend.keep === true)]);
     res.setHeader('Cache-Control', 'no-store'); return res.redirect(303, pend.next || '/welcome');
   } catch (e) { return authPage(res, Number.isInteger(e?.status) ? e.status : 500, pages.providerNamePage(oauth.label(pend.p), Number.isInteger(e?.status) && e.status < 500 ? e.message : 'Something went wrong. Nothing was created. Please try again.')); }
 });
@@ -1033,7 +1077,7 @@ app.post('/api/login', (req, res) => {
   if (!m || m.kind !== 'human' || m.retired || !m.passHash || !auth.passwordOk(password, m.passHash)) {
     return res.status(403).json({ error: m && m.kind === 'human' && !m.passHash ? 'this profile has no password yet — sign in once with a code or login link, then set one' : 'name or password wrong' });
   }
-  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
+  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion, (req.body || {}).keep === true));
   res.json({ ok: true, name: m.name });
 });
 // set or change your own password (signed in, CSRF-guarded); 8+ characters
@@ -1083,7 +1127,7 @@ app.get('/go/:code', (req, res) => {
   if (!m || m.kind !== 'human' || m.retired) return res.status(404).type('html').send(pages.signInPage('That code is not valid.'));
   entry.used = new Date().toISOString();
   try { fs.writeFileSync(codesFile, JSON.stringify(codes, null, 1)); } catch { /* burn is best-effort; expiry still caps it */ }
-  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
+  res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion, req.query.keep === '1'));
   // Land on the feed (Geoffrey 2026-11-09), or back where you came from — same-site paths only.
   const next = String(req.query.next || '');
   res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/feed');
@@ -1186,6 +1230,7 @@ app.get('/label/releases', (req, res) => {
   res.type('html').send(pages.labelPage({ data, me: auth.memberFromCookie(req.headers.cookie) }));
 });
 app.use('/label/files', (req, res, next) => { if (/(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); next(); },
+  repoPicture(path.join(repo.ROOT, 'label')),
   express.static(path.join(repo.ROOT, 'label'), { index: false, dotfiles: 'deny', maxAge: '5m' }));
 // ---- the file drop: members leave files for the teams (public; a team moves accepted files into the repo)
 const SUB_DIR = path.join(store.dataDir(), 'submissions');
@@ -1540,7 +1585,7 @@ app.post('/api/humans', wrap((req, res) => {
   // Commons' work and governance. Full membership still comes only through the forest gate (/api/arrive/enter).
   const { member, secret } = core.createHuman(req.body || {}, { ip: req.ip, socialOnly: true });
   const base = core.baseUrl(req);
-  res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion));
+  res.setHeader('Set-Cookie', auth.sessionCookie(member.id, base.startsWith('https'), member.sessionVersion, (req.body || {}).keep === true));
   res.status(201);
   return { member: store.publicMember(member), login_url: `${base}/login/${secret}`, note: 'Shown once. Anyone with this link can post as you.' };
 }));

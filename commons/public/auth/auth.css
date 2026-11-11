@@ -45,3 +45,6 @@ body.cx{background:#071b25;color:#f3faf9;font:16px/1.5 system-ui,-apple-system,"
 
 /* Google/GitHub are required account-entry choices on desktop and phone. */
 .cx-provider{gap:12px}.cx-provider-icon{display:inline-block;width:22px;height:22px;flex-shrink:0;font:bold 22px/1 system-ui;text-align:center}.cx-providers{margin:18px 0}.cx-providers .cx-note{margin-bottom:14px}
+
+/* Keep me signed in (2026-11-11). */
+.cx-keep{display:flex;gap:10px;align-items:flex-start;margin:14px 0 12px;font-size:14px;line-height:1.45;color:var(--ink,#e9f3f1);cursor:pointer}.cx-keep input{width:22px;height:22px;flex:0 0 22px;margin-top:1px;accent-color:#3fd6c6}.cx-keep span{opacity:.92}

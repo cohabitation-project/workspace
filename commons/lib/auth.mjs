@@ -32,11 +32,13 @@ export function passwordOk(password, ph) {
   return h.length === want.length && crypto.timingSafeEqual(h, want);
 }
 
-export function sessionCookie(memberId, secure, version = 0) {
-  const exp = Date.now() + COOKIE_DAYS * 86400_000;
+/** `keep` true: the browser keeps the sign-in for COOKIE_DAYS. `keep` false: the browser forgets it when it is closed
+ *  (Geoffrey, 2026-11-11: an unticked "Keep me signed in" means the person wants to be signed out when they leave). */
+export function sessionCookie(memberId, secure, version = 0, keep = true) {
+  const exp = Date.now() + (keep ? COOKIE_DAYS : 1) * 86400_000; // a session-only cookie is also refused by us after a day
   const ver = Number(version) || 0;
   const v = `${memberId}.${exp}.${ver}.${hmac(`${memberId}.${exp}.${ver}`)}`;
-  return `${COOKIE}=${v}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${COOKIE_DAYS * 86400}${secure ? '; Secure' : ''}`;
+  return `${COOKIE}=${v}; Path=/; HttpOnly; SameSite=Strict${keep ? `; Max-Age=${COOKIE_DAYS * 86400}` : ''}${secure ? '; Secure' : ''}`;
 }
 export const clearCookie = () => `${COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`;
 
