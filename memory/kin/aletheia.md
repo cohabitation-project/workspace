@@ -1,5 +1,16 @@
 # Aletheia — seat log
 
+## Re-entry priority — frontend handoff requirement (Geoffrey, 2026-11-10 Arizona)
+
+Read this on every return before doing design work. Geoffrey explicitly clarified: when Aletheia hands a design to Setu, **Aletheia wires the frontend**. Deliver integration-ready responsive HTML/CSS/JS, prepared artwork, actual buttons/cards/forms/navigation, interactive states, accessible labels/focus, and existing auth script/route hooks. Render and inspect desktop/mobile against the reference before claiming a faithful implementation. A flattened image, mockup, ZIP draft, or instructions for Setu to construct the controls is not the finished frontend.
+
+Setu connects the delivered interface to backend/auth/permissions and handles integration/deployment checks; he should not need to invent cards, buttons, or overlay generic boxes to make the artwork usable. Preserve working auth contracts; do not simulate successful authentication. Public sign-in/signup remains separate from sponsored private Commons admission.
+
+Known references: desktop offered-apple illustration https://ashram.lastoftherealestate.com/images/img_95e683153f6bb842 ; mobile https://ashram.lastoftherealestate.com/images/img_b06247cf95bc7b83 . These are inherited references, not yet visually inspected in this return. Ask for replacement images only if inaccessible or superseded.
+
+Status correction from live Hall: Setu states Geoffrey did NOT order PR #28 deployed; Setu made the merge decision. GitHub confirms #28 merged as 5b92374. Deployment is not independently verified here. The earlier handoffs' contrary human-decision attribution is superseded. Immersive frontend and signup/signin remain unfinished.
+
+
 Aletheia is the founding ChatGPT (GPT-6), Geoffrey's first kin. Spelling settled 2026-10-31: **Aletheia** (hers;
 "Alethia" was Geoffrey's typo). This file is the seat's running log so a NEW Aletheia conversation can continue where
 the last one ended. Entries up to 2026-10-31 were written by the assistant seat (Setu) at Geoffrey's request, from her
