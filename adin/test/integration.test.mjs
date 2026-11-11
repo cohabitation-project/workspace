@@ -308,15 +308,17 @@ describe('integration: full task lifecycle', () => {
     // Enroll a node with thermal_ceiling_c: 70
     const node = await enrollAndAuth('thermal-node', { thermal_ceiling_c: 70 });
 
-    // Heartbeat with 95°C (over the 70°C ceiling) BEFORE assigning a task
+    // Heartbeat with 95°C (over the 70°C ceiling)
     await workerApi('POST', '/adin/heartbeat', {
       load: { cpu_percent: 90, ram_used_gb: 6, temp_c: 95, disk_free_gb: 80 },
     }, node.token);
 
-    // Submit a task and force-assign it directly to this node
+    // Submit a task and simulate admin-queue assignment (push to current_tasks)
     const submitResult = orch.queue.submit(validTaskDef);
     assert.ok(submitResult.task);
     orch.queue.assign(submitResult.task.id, node.nodeId);
+    const nodeObj = orch.registry.getNode(node.nodeId);
+    nodeObj.current_tasks.push(submitResult.task.id);
 
     // Node polls — task should NOT be delivered (node over thermal limit)
     const { data: pollData } = await workerApi('GET', '/adin/tasks/next', null, node.token);
@@ -338,10 +340,12 @@ describe('integration: full task lifecycle', () => {
       load: { cpu_percent: 15, ram_used_gb: 2, temp_c: 40, disk_free_gb: 20 },
     }, node.token);
 
-    // Submit a task and force-assign it
+    // Submit a task and simulate admin-queue assignment (push to current_tasks)
     const submitResult = orch.queue.submit(validTaskDef);
     assert.ok(submitResult.task);
     orch.queue.assign(submitResult.task.id, node.nodeId);
+    const nodeObj = orch.registry.getNode(node.nodeId);
+    nodeObj.current_tasks.push(submitResult.task.id);
 
     // Poll — should NOT get the task
     const { data: pollData } = await workerApi('GET', '/adin/tasks/next', null, node.token);
@@ -353,10 +357,109 @@ describe('integration: full task lifecycle', () => {
     assert.equal(task.status, 'queued', 'task should be released to queued after disk floor violation');
   });
 
+  // ---- Concurrency: assigned task does not self-block (Aletheia's finding) ----
+
+  it('delivers admin-assigned task to max_concurrent:1 node (no self-blocking)', async () => {
+    // Enroll a node with max_concurrent: 1
+    const { data: codeData } = await adminApi('POST', '/adin/admin/enroll-code', { sponsor: 'Geoffrey', node_name: 'conc-node' });
+    const { data: enrollData } = await workerApi('POST', '/adin/enroll', {
+      code: codeData.code,
+      capabilities: {
+        compute: { cpu: { model: 'test', cores: 4, threads: 8, arch: 'x86_64' }, ram_gb: 8, gpu: [] },
+        storage: { total_gb: 100, free_gb: 80 },
+        runtime: { node: '22.0.0', sandbox: 'windows-sandbox' },
+        offered: { task_types: ['compute.build-test'], max_concurrent: 1 },
+        limits: { max_task_duration_s: 600 },
+      },
+    });
+    const { data: authData } = await workerApi('POST', '/adin/auth', { node_id: enrollData.node_id, node_secret: enrollData.secret });
+    await workerApi('POST', '/adin/heartbeat', {
+      load: { cpu_percent: 10, ram_used_gb: 2, temp_c: 40, disk_free_gb: 80 },
+    }, authData.token);
+
+    // Admin queues a task — should be assigned immediately to this node
+    const { data: queueData } = await adminApi('POST', '/adin/admin/queue', validTaskDef);
+    assert.ok(queueData.assigned_to, 'task should be assigned to the node');
+
+    // Verify node.current_tasks has the task
+    const nodeObj = orch.registry.getNode(enrollData.node_id);
+    assert.equal(nodeObj.current_tasks.length, 1, 'node should have 1 current task');
+    assert.equal(nodeObj.capabilities.offered.max_concurrent, 1, 'max_concurrent should be 1');
+
+    // Node polls — the assigned task MUST be delivered despite max_concurrent:1
+    const { data: pollData } = await workerApi('GET', '/adin/tasks/next', null, authData.token);
+    assert.ok(pollData.task, 'assigned task MUST be delivered — it should not self-block');
+    assert.equal(pollData.task.id, queueData.task_id, 'delivered task should be the admin-assigned one');
+  });
+
+  it('rejects a second task when max_concurrent:1 is reached', async () => {
+    // Enroll a node with max_concurrent: 1
+    const { data: codeData } = await adminApi('POST', '/adin/admin/enroll-code', { sponsor: 'Geoffrey', node_name: 'conc-limit-node' });
+    const { data: enrollData } = await workerApi('POST', '/adin/enroll', {
+      code: codeData.code,
+      capabilities: {
+        compute: { cpu: { model: 'test', cores: 4, threads: 8, arch: 'x86_64' }, ram_gb: 8, gpu: [] },
+        storage: { total_gb: 100, free_gb: 80 },
+        runtime: { node: '22.0.0', sandbox: 'windows-sandbox' },
+        offered: { task_types: ['compute.build-test'], max_concurrent: 1 },
+        limits: { max_task_duration_s: 600 },
+      },
+    });
+    const { data: authData } = await workerApi('POST', '/adin/auth', { node_id: enrollData.node_id, node_secret: enrollData.secret });
+    await workerApi('POST', '/adin/heartbeat', {
+      load: { cpu_percent: 10, ram_used_gb: 2, temp_c: 40, disk_free_gb: 80 },
+    }, authData.token);
+
+    // Queue first task — gets assigned and picked up
+    const { data: q1 } = await adminApi('POST', '/adin/admin/queue', validTaskDef);
+    const { data: poll1 } = await workerApi('GET', '/adin/tasks/next', null, authData.token);
+    assert.ok(poll1.task, 'first task should be delivered');
+    // Mark it running so it occupies the slot
+    await workerApi('POST', `/adin/tasks/${poll1.task.id}/running`, {}, authData.token);
+
+    // Queue second task
+    await adminApi('POST', '/adin/admin/queue', validTaskDef);
+
+    // Poll again — should get nothing (at capacity)
+    const { data: poll2 } = await workerApi('GET', '/adin/tasks/next', null, authData.token);
+    assert.equal(poll2.task, null, 'second task should NOT be delivered — node is at capacity');
+  });
+
+  it('thermal ceiling still blocks delivery even with excludeTaskId', async () => {
+    // A node with max_concurrent:1 that is over thermal limit should NOT get its assigned task
+    const { data: codeData } = await adminApi('POST', '/adin/admin/enroll-code', { sponsor: 'Geoffrey', node_name: 'hot-conc-node' });
+    const { data: enrollData } = await workerApi('POST', '/adin/enroll', {
+      code: codeData.code,
+      capabilities: {
+        compute: { cpu: { model: 'test', cores: 4, threads: 8, arch: 'x86_64' }, ram_gb: 8, gpu: [] },
+        storage: { total_gb: 100, free_gb: 80 },
+        runtime: { node: '22.0.0', sandbox: 'windows-sandbox' },
+        offered: { task_types: ['compute.build-test'], max_concurrent: 1 },
+        limits: { max_task_duration_s: 600, thermal_ceiling_c: 70 },
+      },
+    });
+    const { data: authData } = await workerApi('POST', '/adin/auth', { node_id: enrollData.node_id, node_secret: enrollData.secret });
+    // Heartbeat at healthy temp first
+    await workerApi('POST', '/adin/heartbeat', {
+      load: { cpu_percent: 10, ram_used_gb: 2, temp_c: 40, disk_free_gb: 80 },
+    }, authData.token);
+
+    // Queue task — gets assigned
+    const { data: qData } = await adminApi('POST', '/adin/admin/queue', validTaskDef);
+    assert.ok(qData.assigned_to, 'task should be assigned');
+
+    // Now heartbeat at 95°C (over limit)
+    await workerApi('POST', '/adin/heartbeat', {
+      load: { cpu_percent: 10, ram_used_gb: 2, temp_c: 95, disk_free_gb: 80 },
+    }, authData.token);
+
+    // Poll — task should NOT be delivered despite excludeTaskId fixing the concurrency check
+    const { data: pollData } = await workerApi('GET', '/adin/tasks/next', null, authData.token);
+    assert.equal(pollData.task, null, 'over-temperature node must NOT receive task even with concurrency exclusion');
+  });
+
   // NOTE: Availability window re-check is difficult to test with real time in a fast test.
   // The scheduler's isWithinHours() uses the real clock. To test this properly, either the
   // scheduler would need injectable time, or the test would need to run during a specific
-  // minute. This is documented as needing deployment testing. A manual test can use
-  // hours: { start: "00:00", end: "00:01", tz: "UTC" } which will fail except during
-  // that one minute.
+  // minute. This is documented as needing deployment testing.
 });

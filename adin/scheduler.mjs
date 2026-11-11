@@ -14,8 +14,15 @@ import { validateSteps } from './protocol.mjs';
 /**
  * Score a node for a task. Higher score = better fit.
  * Returns { eligible, score, reasons } or { eligible: false, disqualified, reason }.
+ *
+ * @param {object} node — the node record
+ * @param {object} task — the task to evaluate
+ * @param {object} [opts] — options
+ * @param {string} [opts.excludeTaskId] — when re-checking an already-assigned task,
+ *   pass its ID so it doesn't count against its own concurrency slot. All other
+ *   eligibility checks (thermal, disk, hours, status) still apply.
  */
-export function scoreNode(node, task) {
+export function scoreNode(node, task, opts = {}) {
   const reasons = [];
 
   // ---- Hard filters (any failure = ineligible) ----
@@ -44,9 +51,13 @@ export function scoreNode(node, task) {
     if (!hasSandbox) return { eligible: false, disqualified: true, reason: 'sandbox required but node has none' };
   }
 
-  // Concurrency limit
+  // Concurrency limit — when re-checking an already-assigned task, exclude it
+  // from the count so it doesn't block its own delivery.
   const maxConcurrent = node.capabilities.offered.max_concurrent || 1;
-  const currentTasks = node.current_tasks?.length || 0;
+  let currentTasks = node.current_tasks?.length || 0;
+  if (opts.excludeTaskId && node.current_tasks?.includes(opts.excludeTaskId)) {
+    currentTasks--;
+  }
   if (currentTasks >= maxConcurrent) {
     return { eligible: false, disqualified: true, reason: `at capacity (${currentTasks}/${maxConcurrent} tasks)` };
   }

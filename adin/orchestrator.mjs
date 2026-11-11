@@ -154,9 +154,12 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     if (assigned.length > 0) {
       assigned.sort((a, b) => a.priority - b.priority || a.created_at.localeCompare(b.created_at));
 
-      // B2: Re-check eligibility for each assigned task before delivering
+      // B2: Re-check eligibility for each assigned task before delivering.
+      // Pass excludeTaskId so the task doesn't count against its own concurrency slot
+      // (it was already assigned and occupies the slot — blocking its own delivery
+      // would make admin-preassigned tasks undeliverable at max_concurrent:1).
       for (const task of assigned) {
-        const score = scoreNode(req.node, task);
+        const score = scoreNode(req.node, task, { excludeTaskId: task.id });
         if (!score.eligible) {
           // Node is no longer eligible — release the task back to queued
           queue.release(task.id);

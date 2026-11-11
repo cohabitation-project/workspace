@@ -86,6 +86,27 @@ describe('scheduler', () => {
       assert.ok(result.reason.includes('capacity'));
     });
 
+    it('excludes the assigned task from concurrency count when excludeTaskId is set', () => {
+      const node = makeNode({ current_tasks: ['t_already_assigned'] }); // 1 task, max 1
+      node.capabilities.offered.max_concurrent = 1;
+      // Without excludeTaskId: at capacity
+      const r1 = scoreNode(node, makeTask());
+      assert.ok(!r1.eligible, 'should be at capacity without exclusion');
+      // With excludeTaskId: the assigned task doesn't count against itself
+      const r2 = scoreNode(node, makeTask(), { excludeTaskId: 't_already_assigned' });
+      assert.ok(r2.eligible, 'should be eligible when own task is excluded');
+    });
+
+    it('still rejects when over thermal limit even with excludeTaskId', () => {
+      const node = makeNode({ current_tasks: ['t_my_task'] });
+      node.capabilities.offered.max_concurrent = 1;
+      node.capabilities.limits.thermal_ceiling_c = 70;
+      node.health.load.temp_c = 95;
+      const result = scoreNode(node, makeTask(), { excludeTaskId: 't_my_task' });
+      assert.ok(!result.eligible, 'thermal limit must still apply');
+      assert.ok(result.reason.includes('thermal'));
+    });
+
     it('rejects when RAM is insufficient', () => {
       const node = makeNode();
       node.capabilities.offered.ram_gb = 12;
