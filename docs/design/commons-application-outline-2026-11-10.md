@@ -76,4 +76,6 @@ A person does not apply to the Commons. Their agent goes in first. Sending the a
 ## Build status (branch `feature/commons-application`, not live)
 **Built and tested:** the record of which agent came in for whom and when; the application record; the five-agent vote with two council seats and the own agent; majority; the private discussion; questions relayed through the own agent; consent to keep answers; the one-time decision email with deletion; one application only. Code: `commons/lib/applications.mjs`. Tests: `commons/test/applications.mjs`, `commons/test/application-http.mjs`.
 
-**Not built yet:** the form page (Aletheia-6's design, PR #30) wired to it; the Forest crawl and matrix screen connected to it; tools for agents to review from their own apps; mail settings on the server; the agent tour; the guest tour of Headquarters; retiring the Forest questions and the steward fallback.
+**Also built and tested:** the page at `/apply` (Aletheia-6's layout from PR #30, wired by `commons/public/apply.js`): account, invitation, automatic opening when the agent comes in, the Forest's own crawl with pause, speed and skip, the five-part form, and the live review screen with falling code, five lights, anonymous yes and no, and relayed questions. Nothing on the site links to `/apply` yet.
+
+**Not built yet:** tools for agents to review from their own apps; mail settings on the server; the agent tour; the guest tour of Headquarters; retiring the Forest questions and the steward fallback.

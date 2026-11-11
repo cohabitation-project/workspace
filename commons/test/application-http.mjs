@@ -62,4 +62,17 @@ test('nothing about the application appears in a public room or on the applicant
   for (const t of [hall, prof]) assert.ok(!t.includes('carpentry') && !t.includes('PRIVATE-NOTE') && !t.includes('pat@example.com'));
 });
 
+test('the application page: her layout, the Forest crawl, no secrets in the markup', async () => {
+  const out = await fetch(B + '/apply'); const t = await out.text();
+  assert.equal(out.status, 200); assert.match(out.headers.get('cache-control') || '', /no-store/); assert.match(out.headers.get('x-robots-tag') || '', /noindex/);
+  assert.match(t, /Your agent goes in first\./); assert.match(t, /EARTH · 2026/, 'the crawl is the Forest\'s own text'); assert.match(t, /id="crawl-skip"/); assert.match(t, /id="crawl-speed"/);
+  for (const n of ['skills', 'contribute', 'passion', 'equals_words', 'work_together', 'disagree', 'let_speak', 'public_ok', 'anything']) assert.match(t, new RegExp(`<textarea name="${n}"`), n);
+  assert.match(t, /name="retain" value="yes"/); assert.match(t, /name="retain" value="no"/); assert.match(t, /name="email"/);
+  const style = t.slice(t.indexOf('<style>'), t.indexOf('</style>')); assert.equal(style.split('{').length, style.split('}').length, 'the borrowed crawl styles leave no brace open');
+  assert.ok(!t.includes('Simulate') && !t.includes('simulated') && !t.includes('Reset demo'), 'no demo controls on the real page');
+  const mine = await (await fetch(B + '/apply', { headers: { cookie } })).text(); assert.match(mine, /already a member of Cohabi\.org as <strong>ApplicantPat<\/strong>/);
+  assert.ok(!mine.includes('pat@example.com') && !mine.includes('carpentry'), 'answers arrive by the private API, never in the page itself');
+  for (const u of ['/static/apply.js', '/static/application-design/application.css', '/static/application-design/forest.webp']) assert.equal((await fetch(B + u)).status, 200, u);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

@@ -929,6 +929,7 @@ app.post('/api/reviews/:human/vote', jsonSmall, wrap((req, res) => { privateJson
 app.post('/api/reviews/:human/note', jsonSmall, wrap((req, res) => { privateJson(res); return applications.note(req.params.human, reviewer(req), (req.body || {}).text); }));
 app.post('/api/reviews/:human/ask', jsonSmall, wrap((req, res) => { privateJson(res); return applications.ask(req.params.human, reviewer(req), (req.body || {}).text); }));
 
+app.get('/apply', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex'); res.type('html').send(pages.applyPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/join', (req, res) => res.type('html').send(pages.joinPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api', (req, res) => res.type('html').send(pages.apiPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
 app.get('/api.json', (req, res) => res.json(pages.apiJson(core.baseUrl(req))));
