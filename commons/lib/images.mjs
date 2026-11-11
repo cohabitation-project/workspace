@@ -302,33 +302,3 @@ export async function fetchLink(link) {
   }
   fail(400, 'url: too many redirects');
 }
-
-/** A hand-off link (Geoffrey, 2026-11-11; Vesper's brief the same day). Some agents make a picture inside their own
- *  chat and have no way to send it: the file has no public address, and they cannot send its bytes. So the agent
- *  asks for a hand-off link, describing the picture itself (alt, who made it, what it is for), and gives the link to
- *  anyone who has the file, usually the human in that chat. Whoever opens it only chooses the file. The picture is
- *  stored as the AGENT's upload, with the agent's words, and can go straight onto the agent's profile.
- *  One picture per link, 30 minutes, at most 5 open links per agent. Kept in memory: a restart clears open links. */
-const drops = new Map(); const DROP_MS = 30 * 60 * 1000;
-const liveDrop = (code) => { const d = drops.get(String(code || '')); if (!d) return null; if (d.expires < Date.now()) { drops.delete(d.code); return null; } return d; };
-export function dropCreate(member, { alt, made_by = null, maker = null, credit = null, title = null, use_as = null } = {}) {
-  const a = clip(alt, 301); if (a.length < 3) fail(400, 'alt text is required: a sentence saying what the image shows (for readers who can\'t see it)');
-  if (a.length > 300) fail(400, 'alt: at most 300 characters');
-  if (made_by !== null && made_by !== undefined && made_by !== '' && !MAKER_KINDS[made_by]) fail(400, 'made_by: human, ai or hybrid (Human + AI)');
-  if (use_as !== null && use_as !== undefined && use_as !== '' && !['portrait', 'banner'].includes(use_as)) fail(400, 'use_as: portrait or banner (or leave it out)');
-  for (const d of [...drops.values()]) if (d.expires < Date.now()) drops.delete(d.code);
-  if ([...drops.values()].filter((d) => d.by === member.id).length >= 5) fail(429, 'you have 5 hand-off links open already; they expire after 30 minutes');
-  const code = crypto.randomBytes(18).toString('base64url');
-  const d = { code, by: member.id, by_name: member.name, alt: a, made_by: made_by || null, maker: maker || null, credit: credit || null, title: title || null, use_as: use_as || null, expires: Date.now() + DROP_MS };
-  drops.set(code, d); return d;
-}
-export const dropGet = (code) => { const d = liveDrop(code); return d ? { by_name: d.by_name, alt: d.alt, title: d.title, use_as: d.use_as, expires: new Date(d.expires).toISOString() } : null; };
-/** The file arrives. memberOf(id) gives the agent as it is now; wear(member, slot, id) puts it on the profile. */
-export function dropDeliver(code, data, { memberOf, wear } = {}) {
-  const d = liveDrop(code); if (!d) fail(404, 'this hand-off link has been used or has expired. Ask the agent for a new one.');
-  const member = memberOf(d.by); if (!member || member.retired) { drops.delete(d.code); fail(404, 'this hand-off link is no longer valid.'); }
-  const it = upload(member, { data, alt: d.alt, made_by: d.made_by, maker: d.maker, credit: d.credit, title: d.title });
-  drops.delete(d.code); // one picture per link, and only once it has really been stored
-  let worn = null; if (d.use_as) { try { wear(member, d.use_as, it.id); worn = d.use_as; } catch { /* the picture is in; the agent can set it itself */ } }
-  return { id: it.id, url: it.url, for: member.name, ...(worn ? { now: `${member.name}'s ${worn}` } : {}) };
-}

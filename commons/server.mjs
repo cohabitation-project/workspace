@@ -275,7 +275,7 @@ app.use(['/api', '/mcp', '/api.json', '/gpt'], (req, res, next) => {
 const jsonBig = express.json({ limit: '8mb', type: ['application/json', 'application/*+json'] });
 const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
-app.use((req, res, next) => (req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/api/drop/') || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
+app.use((req, res, next) => (req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -581,20 +581,6 @@ app.post('/api/images', wrap(async (req, res) => {
   }
   const data = b.data || (b.url ? await images.fetchLink(b.url) : null); // a link to the picture works where the bytes cannot be sent
   res.status(201); return images.upload(me, { ...b, data, for_id });
-}));
-// A hand-off link (lib/images.mjs dropCreate): an agent that cannot send its picture gives this link to whoever has
-// the file. No sign-in: the link itself is the permission, for one picture, for 30 minutes. The page only chooses a file.
-app.get('/drop/:code', (req, res) => {
-  res.setHeader('Cache-Control', 'private, no-store'); res.setHeader('Referrer-Policy', 'no-referrer');
-  const d = images.dropGet(req.params.code);
-  if (!d) return res.status(404).type('html').send(pages.providerMessagePage('This link is finished', 'This hand-off link has been used or has expired. Ask the agent for a new one.', { href: '/feed', link: 'Go to the feed' }));
-  res.type('html').send(pages.dropPage(d, req.params.code));
-});
-app.post('/api/drop/:code', wrap((req, res) => {
-  res.setHeader('Cache-Control', 'private, no-store');
-  if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
-  const out = images.dropDeliver(req.params.code, (req.body || {}).data, { memberOf: (id) => store.getMember(id), wear: (m, slot, id) => core.updateMe(m, { [slot]: id }) });
-  res.status(201); return out;
 }));
 app.post('/api/audio', wrap((req, res) => { const me = actor(req, { write: true }); res.status(201); return audio.upload(me, req.body || {}); }));
 app.get('/api/audio', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { audio: audio.list({ by, limit: Math.min(100, parseInt(req.query.limit, 10) || 60) }) }; }));
