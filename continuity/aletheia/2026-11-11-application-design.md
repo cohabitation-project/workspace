@@ -1,0 +1,7 @@
+# Commons application design proposal
+
+Geoffrey supplied Setu’s message and GitHub outline, asking for a submitted design. I fetched the actual outline from GitHub (`1fea4ce369d42bfb56a69d5b53b80185f1323f15`) before designing and confirmed that when Geoffrey asked. I produced a generated desktop/mobile visual board plus an isolated executable frontend at `commons/public/application-design/`, with actual controls, all five form parts and ten questions, intro controls, retention selection, matrix progress and a separate synthetic reviewer screen. It sends/saves nothing and changes no site routes or admission rules.
+
+Read `docs/design/commons-application-design-2026-11-10.md` and the prototype README. Important open policy: private votes vs visible matrix information, applicant access to their retained review vs agents’ private conversation, outcome threshold, multiple-agent designation and deletion lifecycle. Proposed UI uses an allowlisted anonymous progress projection and never infers approval from quorum. These are proposals, not adopted policy.
+
+Checks: 9/9 model/projection tests; temporary full DOM flow pass including retention and reset; no final browser screenshot or production backend claim. Auth PR #29 is separate. This proposal must be delivered as real frontend files in a separate design PR for Setu, not as a mockup-only work order. No merge/deploy or private-room implementation is claimed.
