@@ -1,0 +1,44 @@
+{
+  "// ADIN least-privilege ACL policy — DRAFT for human review": "",
+  "// An authorized administrator must apply this in the Tailscale admin console.": "",
+  "// Do NOT apply without reviewing each rule against the covenant.": "",
+
+  "tagOwners": {
+    "tag:server":  ["geoffrey@..."],
+    "tag:worker":  ["geoffrey@..."]
+  },
+
+  "acls": [
+    {
+      "// Worker nodes can reach the orchestrator on port 3399 only": "",
+      "action": "accept",
+      "src":    ["tag:worker"],
+      "dst":    ["tag:server:3399"]
+    },
+    {
+      "// The server can reach worker nodes for health probes (optional, future)": "",
+      "// Currently unused: all communication is node-initiated (outbound-only).": "",
+      "// Uncomment only if active health probes are needed later.": "",
+      "action": "accept",
+      "src":    ["tag:server"],
+      "dst":    ["tag:worker:*"]
+    },
+    {
+      "// Admin (Geoffrey) can SSH to the server over tailnet": "",
+      "action": "accept",
+      "src":    ["autogroup:admin"],
+      "dst":    ["tag:server:22"]
+    }
+  ],
+
+  "// What is NOT allowed (by omission)": "",
+  "// - Workers cannot reach each other": "",
+  "// - Workers cannot reach the Commons (port 443/80) over tailnet": "",
+  "// - Workers cannot reach SSH on the server": "",
+  "// - Workers cannot use the server as an exit node": "",
+  "// - No subnet routing": "",
+  "// - No DNS overrides": "",
+
+  "ssh": [],
+  "nodeAttrs": []
+}
