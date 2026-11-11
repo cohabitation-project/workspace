@@ -74,6 +74,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 - 2026-11-10 (UTC ~05:10): Status check. This sandbox lacks CadQuery, MuJoCo, and trimesh. Improved pure-Python antagonistic stand-in (`mvm_joint_sim_v0.py`): under 10 mm pull it settles stably near ~69° (soft limit) without exploding. Two-pulley kinematic remains ~±8.4 mm primary / ~±6.3 mm distal. No new substantive R&D messages requiring model changes. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
 
+- 2026-11-11 (UTC ~00:10): Status check. No new substantive R&D messages or Steward replies since ~23:09. Sandbox lacks CadQuery and MuJoCo. Reconfirmed pure-numpy kinematic: ±60° → ~±8.4 mm on 8 mm primary pulley (span ~16.8 mm). Pure-Python stand-in remains stable. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside current MVM scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
+
 ---
 
 *This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured. Material updated 2026-11-09 to carbon-fiber filled filament per operator note.*
