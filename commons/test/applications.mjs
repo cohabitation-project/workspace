@@ -112,13 +112,60 @@ test('"do not keep my answers": they are deleted at the decision; the bare outco
   assert.equal(apps.mine(human()).answers, null); assert.equal(apps.standing(human()), 'admitted');
 });
 
-test('if the email cannot be sent, the address is kept until it has been, and a retry clears it', async () => {
-  const d = fresh(); hook(false); open();
+test('the applicant\'s view never says which seat voted (issue #32, 1)', async () => {
+  fresh(); hook(); open();
+  await apps.vote('h1', own, { vote: 'yes' });
+  const p1 = apps.mine(human()).panel;
+  assert.deepEqual(Object.keys(p1).sort(), ['complete', 'council_needed', 'majority', 'marks', 'needed', 'no', 'received', 'yes'], 'counts and the fixed rule only');
+  assert.ok(!('own_agent_voted' in p1) && !('council_present' in p1));
+  // the same projection whoever cast the first yes: own agent, council member or ordinary agent
+  const first = async (voter) => { fresh(); hook(); open(); await apps.vote('h1', voter, { vote: 'yes' }); return JSON.stringify(apps.mine(human()).panel); };
+  const a = await first(own); assert.equal(await first(agent('c1')), a); assert.equal(await first(agent('a1')), a);
+  // marks are yes-first, not in arrival order
+  fresh(); hook(); open(); await apps.vote('h1', agent('a1'), { vote: 'no' }); await apps.vote('h1', own, { vote: 'yes' });
+  assert.deepEqual(apps.mine(human()).panel.marks, ['yes', 'no']);
+});
+
+test('"do not keep my answers" also clears reviewers\' quotes of them (issue #32, 3)', async () => {
+  const d = fresh(); hook(); apps.agentEntered(human(), own); apps.submit(human(), { ...good, keep: false, answers: { ...answers, skills: 'SYNTHETIC_PRIVATE_ANSWER' } });
+  await apps.vote('h1', own, { vote: 'yes', reason: 'they said SYNTHETIC_PRIVATE_ANSWER' });
+  apps.note('h1', agent('c1'), 'quoting: SYNTHETIC_PRIVATE_ANSWER');
+  for (const a of [agent('c1'), agent('c2'), agent('a1'), agent('a2')]) await apps.vote('h1', a, { vote: 'yes', reason: 'SYNTHETIC_PRIVATE_ANSWER again' });
+  assert.ok(!fs.readFileSync(path.join(d, 'applications.json'), 'utf8').includes('SYNTHETIC_PRIVATE_ANSWER'), 'not in the answers, the notes or the vote reasons');
+  const raw = JSON.parse(fs.readFileSync(path.join(d, 'applications.json'), 'utf8')).h1;
+  assert.equal(raw.votes.length, 5); assert.ok(raw.votes.every((v) => v.vote === 'yes' && v.reason === ''), 'who voted and how is kept');
+  assert.equal(raw.notes[0].deleted, true);
+  // with consent to keep, the reviewers' words stay
+  fresh(); hook(); open(); apps.note('h1', agent('c1'), 'KEPT-NOTE');
+  for (const a of [agent('c1'), agent('c2'), own, agent('a1'), agent('a2')]) await apps.vote('h1', a, { vote: 'yes', reason: 'KEPT-REASON' });
+});
+
+test('the decision email is sent at most once (issue #32, 2)', async () => {
+  let d = fresh(); hook(false); open();
   for (const a of [agent('c1'), agent('c2'), own, agent('a1'), agent('a2')]) await apps.vote('h1', a, { vote: 'yes' });
   assert.equal(apps.mine(human()).outcome.emailed, false); assert.deepEqual(admitted, ['h1'], 'the decision stands either way');
-  assert.ok(fs.readFileSync(path.join(d, 'applications.json'), 'utf8').includes('pat@example.com'));
-  hook(true); assert.equal(await apps.resend('h1'), true);
-  assert.ok(!fs.readFileSync(path.join(d, 'applications.json'), 'utf8').includes('pat@example.com'));
+  assert.equal(apps.mailState('h1'), 'failed'); assert.ok(fs.readFileSync(path.join(d, 'applications.json'), 'utf8').includes('pat@example.com'), 'kept until it has been sent');
+  // two retries at once: one send
+  let release; let calls = 0; apps.setHooks({ sendDecision: () => { calls += 1; return new Promise((r) => { release = () => r(true); }); } });
+  const both = Promise.all([apps.resend('h1'), apps.resend('h1')]); await new Promise((r) => setTimeout(r, 20)); release();
+  assert.deepEqual((await both).sort(), [false, true]); assert.equal(calls, 1, 'one email');
+  assert.equal(apps.mailState('h1'), 'sent'); assert.ok(!fs.readFileSync(path.join(d, 'applications.json'), 'utf8').includes('pat@example.com'));
+  assert.equal(await apps.resend('h1'), false, 'nothing to send again'); assert.equal(calls, 1);
+
+  // the mail server accepted it but the record could not be saved afterwards: no automatic second send
+  d = fresh(); hook(false); open(); for (const a of [agent('c1'), agent('c2'), own, agent('a1'), agent('a2')]) await apps.vote('h1', a, { vote: 'yes' });
+  calls = 0; const realWrite = apps._io.write; let writes = 0;
+  apps.setHooks({ sendDecision: async () => { calls += 1; return true; } });
+  apps._io.write = (f, t) => { writes += 1; if (writes === 2) throw new Error('disk full'); return realWrite(f, t); };
+  await assert.rejects(apps.resend('h1')); apps._io.write = realWrite;
+  assert.equal(calls, 1); assert.equal(apps.mailState('h1'), 'sending', 'the claim is what was saved');
+  assert.equal(await apps.resend('h1'), false, 'not retried automatically'); assert.equal(calls, 1);
+  assert.equal(await apps.resend('h1', { force: true }), true, 'an operator who has checked may send it'); assert.equal(calls, 2);
+
+  // the sender threw: we cannot know, so again no automatic retry
+  fresh(); hook(false); open(); for (const a of [agent('c1'), agent('c2'), own, agent('a1'), agent('a2')]) await apps.vote('h1', a, { vote: 'yes' });
+  calls = 0; apps.setHooks({ sendDecision: async () => { calls += 1; throw new Error('socket closed'); } });
+  assert.equal(await apps.resend('h1'), false); assert.equal(apps.mailState('h1'), 'unknown'); assert.equal(await apps.resend('h1'), false); assert.equal(calls, 1);
 });
 
 test('a damaged record file fails closed instead of reading as empty', () => {

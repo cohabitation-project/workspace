@@ -112,24 +112,53 @@ export async function vote(humanId, agent, { vote: v, reason = '' } = {}) {
   return reviewerView(humanId, agent);
 }
 
-/** The panel is complete and the majority is clear. Record the outcome, change standing, send the one email, then
- *  delete the address (and the answers, if the person said not to keep them). */
+/** The panel is complete and the majority is clear. Record the outcome, change standing, delete what the person
+ *  asked us not to keep, then send the one email. */
 async function decide(humanId, decision) {
-  let all = load(); let app = all[humanId]; if (app.outcome) return view(app);
-  app.outcome = { decision, at: now(), emailed: false }; app.status = decision; save(all);
+  const all = load(); const app = all[humanId]; if (app.outcome) return view(app);
+  app.outcome = { decision, at: now(), emailed: false, mail: { state: 'pending', attempts: 0 } }; app.status = decision;
+  if (app.keep === false) {
+    // "Do not keep my answers" covers every copy on this record: the answers, the relayed questions and replies, and
+    // the reviewers' own words, which may quote them (notes and vote reasons). Who voted, and yes or no, remains.
+    // NOT covered, and the form must not claim otherwise: server backups taken before this moment.
+    app.answers = null; app.questions = app.questions.map((q) => ({ id: q.id, at: q.at, answered: q.answered || null }));
+    app.notes = app.notes.map((n) => ({ by: n.by, name: n.name, at: n.at, deleted: true }));
+    app.votes = app.votes.map((v) => ({ ...v, reason: '' }));
+  }
+  save(all);
   if (decision === 'admitted') hooks.admit(humanId);
-  let sent = false; try { sent = !!(await hooks.sendDecision({ to: app.email, name: app.human.name, decision })); } catch { sent = false; }
-  all = load(); app = all[humanId]; app.outcome.emailed = sent;
-  if (sent) app.email = null; // used once, then gone. If sending failed the address is kept until it has been sent.
-  if (app.keep === false) { app.answers = null; app.questions = app.questions.map((q) => ({ at: q.at, answered: q.answered || null })); }
-  save(all); return view(app);
+  await deliver(humanId);
+  return view(load()[humanId]);
 }
-/** Try the decision email again (for an operator job, when the first send failed). */
-export async function resend(humanId) {
-  const all = load(); const app = all[humanId]; if (!app?.outcome || app.outcome.emailed || !app.email) return false;
-  let sent = false; try { sent = !!(await hooks.sendDecision({ to: app.email, name: app.human.name, decision: app.outcome.decision })); } catch { sent = false; }
-  if (sent) { app.outcome.emailed = true; app.email = null; save(all); } return sent;
+
+// Send-once. The email is claimed on disk BEFORE it is handed to the mail server, and a claim is never taken twice:
+//   pending / failed  -> may be sent (failed = the sender said plainly it did not send)
+//   sending           -> a send is under way, or the server stopped during one. NOT retried automatically, because
+//                        the message may already have gone out. An operator checks and uses resend(id, { force }).
+//   unknown           -> the sender threw, so we cannot tell whether it went. Same: operator only.
+//   sent              -> done; the address has been deleted.
+// So the worst automatic outcome is one email or none, never two.
+const inflight = new Set();
+async function deliver(humanId, { force = false } = {}) {
+  if (inflight.has(humanId)) return false;
+  inflight.add(humanId);
+  try {
+    let all = load(); let app = all[humanId]; const mail = app?.outcome?.mail;
+    if (!mail || !app.email || mail.state === 'sent') return false;
+    if (!(mail.state === 'pending' || mail.state === 'failed' || (force && (mail.state === 'sending' || mail.state === 'unknown')))) return false;
+    Object.assign(mail, { state: 'sending', attempts: mail.attempts + 1, at: now() }); save(all); // if this throws, nothing is sent
+    let result = 'unknown';
+    try { result = (await hooks.sendDecision({ to: app.email, name: app.human.name, decision: app.outcome.decision })) ? 'sent' : 'failed'; } catch { result = 'unknown'; }
+    all = load(); app = all[humanId]; app.outcome.mail.state = result;
+    if (result === 'sent') { app.outcome.emailed = true; app.email = null; } // used once, then gone
+    save(all); // if THIS fails the record still says "sending", which is never retried automatically
+    return result === 'sent';
+  } finally { inflight.delete(humanId); }
 }
+/** Try the decision email again. Safe to call from a timer: it only sends when the last attempt plainly failed.
+ *  `force` is for an operator who has checked that an interrupted send did not go out. */
+export const resend = (humanId, opts) => deliver(humanId, opts);
+export const mailState = (humanId) => load()[humanId]?.outcome?.mail?.state || null;
 
 /** Private discussion among the reviewing agents. Never shown to the applicant. */
 export function note(humanId, agent, text) {
@@ -159,7 +188,10 @@ function view(app) {
   const t = tally(app);
   return { id: app.id, status: app.status, opened: app.opened, submitted: app.submitted,
     agents: app.agents.map((a) => ({ name: a.name, model: a.model, entered: a.entered })),
-    panel: { needed: PANEL, council_needed: COUNCIL_MIN, majority: MAJORITY, received: t.received, yes: t.yes, no: t.no, marks: app.votes.map((v) => v.vote), council_present: t.council, own_agent_voted: t.own, complete: t.quorum },
+    // Counts only. Nothing here says WHICH seat has voted (not "your own agent has voted", not how many council
+    // members are present, not the order votes arrived in): any of those can single out one voter. The marks are
+    // listed yes-first, not in arrival order. (Aletheia-6's review, issue #32.)
+    panel: { needed: PANEL, council_needed: COUNCIL_MIN, majority: MAJORITY, received: t.received, yes: t.yes, no: t.no, marks: [...Array(t.yes).fill('yes'), ...Array(t.no).fill('no')], complete: t.quorum },
     questions: app.questions.map((q) => ({ id: q.id, text: q.text || null, at: q.at, reply: q.reply || null })),
     answers_kept: app.keep, answers: app.keep === false && app.outcome ? null : app.answers,
     outcome: app.outcome ? { decision: app.outcome.decision, at: app.outcome.at, emailed: app.outcome.emailed } : null };
