@@ -9,7 +9,7 @@
  * It reads the registry and queue, makes a match, and returns a recommendation.
  */
 
-import { validateCommands } from './protocol.mjs';
+import { validateSteps } from './protocol.mjs';
 
 /**
  * Score a node for a task. Higher score = better fit.
@@ -35,6 +35,10 @@ export function scoreNode(node, task) {
   }
 
   // Sandbox requirement
+  // NOTE: runtime.sandbox is SELF-REPORTED by the node. The orchestrator checks that the
+  // node *claims* to have a sandbox, but cannot verify this from the server side. Real
+  // sandbox verification requires deployment-time testing per the covenant. This is a
+  // policy gate, not proof.
   if (task.requirements?.sandbox === 'required') {
     const hasSandbox = node.capabilities.runtime?.sandbox || node.capabilities.runtime?.container;
     if (!hasSandbox) return { eligible: false, disqualified: true, reason: 'sandbox required but node has none' };
@@ -176,17 +180,17 @@ export function selectNode(nodes, task) {
 }
 
 /**
- * Pre-validate a compute task's commands before assignment.
- * Returns { safe, violations } — the scheduler refuses tasks with disallowed commands.
+ * Pre-validate a compute task's structured steps before assignment.
+ * Returns { safe, violations } — the scheduler refuses tasks with invalid steps.
  */
 export function preValidateTask(task) {
   if (!task.type?.startsWith('compute.')) return { safe: true, violations: [] };
-  if (!task.payload?.commands) return { safe: false, violations: ['no commands in payload'] };
+  if (!task.payload?.steps) return { safe: false, violations: ['no steps in payload'] };
 
-  const check = validateCommands(task.payload.commands);
+  const check = validateSteps(task.payload.steps);
   return {
-    safe: check.all_allowed,
-    violations: check.checks.filter((c) => !c.allowed).map((c) => c.reason),
+    safe: check.valid,
+    violations: check.errors,
   };
 }
 

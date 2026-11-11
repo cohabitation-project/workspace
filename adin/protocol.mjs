@@ -25,6 +25,126 @@ export const TASK_STATUSES = ['queued', 'assigned', 'running', 'completed', 'fai
 export const NODE_STATUSES = ['enrolled', 'active', 'suspended', 'revoked'];
 export const TRUST_TIERS = [0, 1, 2]; // 0=probationary, 1=verified, 2=trusted
 
+// ---- Structured step validation for compute tasks ----
+
+/**
+ * Allowed step actions. No shell strings, no command chaining, no flag injection.
+ * Each action maps to a fixed executable behavior on the node worker.
+ */
+export const ALLOWED_ACTIONS = ['git-clone', 'npm-ci', 'node-test', 'playwright-test'];
+
+/**
+ * Allowed GitHub organizations for git-clone. Repos are specified as bare
+ * "org/repo" names, never URLs. The node worker constructs the clone URL
+ * from this verified name.
+ */
+export const ALLOWED_ORGS = ['cohabitation-project'];
+
+/** 40-character lowercase hex SHA pattern. */
+const COMMIT_SHA_RE = /^[a-f0-9]{40}$/;
+
+/** Safe relative file path: alphanumeric, dots, hyphens, underscores, slashes. No "..", no absolute. */
+const SAFE_PATH_RE = /^[a-zA-Z0-9._/-]+$/;
+
+/**
+ * Validate a single structured step for a compute task.
+ * Returns { valid, errors }.
+ */
+export function validateStep(step) {
+  const errors = [];
+  if (!step || typeof step !== 'object') return { valid: false, errors: ['step must be an object'] };
+
+  if (!ALLOWED_ACTIONS.includes(step.action)) {
+    errors.push(`unknown action: ${step.action}`);
+    return { valid: false, errors }; // no point checking further
+  }
+
+  switch (step.action) {
+    case 'git-clone': {
+      if (typeof step.repo !== 'string') {
+        errors.push('git-clone requires a string repo field');
+        break;
+      }
+      // Must be bare org/repo — no URLs, no protocol, no paths
+      const parts = step.repo.split('/');
+      if (parts.length !== 2 || !parts[0] || !parts[1]) {
+        errors.push(`repo must be "org/repo" format, got: ${step.repo}`);
+        break;
+      }
+      if (!ALLOWED_ORGS.includes(parts[0])) {
+        errors.push(`org "${parts[0]}" not in allowed list: ${ALLOWED_ORGS.join(', ')}`);
+      }
+      // repo name: alphanumeric, hyphens, underscores, dots
+      if (!/^[a-zA-Z0-9._-]+$/.test(parts[1])) {
+        errors.push(`invalid repo name: ${parts[1]}`);
+      }
+      if (typeof step.commit !== 'string' || !COMMIT_SHA_RE.test(step.commit)) {
+        errors.push('git-clone requires a 40-char hex commit SHA');
+      }
+      break;
+    }
+    case 'npm-ci':
+      // No fields needed — always runs with --ignore-scripts
+      break;
+    case 'node-test': {
+      if (!Array.isArray(step.files) || step.files.length === 0) {
+        errors.push('node-test requires a non-empty files array');
+        break;
+      }
+      for (const f of step.files) {
+        if (typeof f !== 'string' || !SAFE_PATH_RE.test(f)) {
+          errors.push(`invalid file path: ${f}`);
+        }
+        if (typeof f === 'string' && f.includes('..')) {
+          errors.push(`path traversal not allowed: ${f}`);
+        }
+        if (typeof f === 'string' && f.startsWith('/')) {
+          errors.push(`absolute paths not allowed: ${f}`);
+        }
+      }
+      break;
+    }
+    case 'playwright-test': {
+      if (!Array.isArray(step.files) || step.files.length === 0) {
+        errors.push('playwright-test requires a non-empty files array');
+        break;
+      }
+      for (const f of step.files) {
+        if (typeof f !== 'string' || !SAFE_PATH_RE.test(f)) {
+          errors.push(`invalid file path: ${f}`);
+        }
+        if (typeof f === 'string' && f.includes('..')) {
+          errors.push(`path traversal not allowed: ${f}`);
+        }
+        if (typeof f === 'string' && f.startsWith('/')) {
+          errors.push(`absolute paths not allowed: ${f}`);
+        }
+      }
+      break;
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Validate the full steps array for a compute task payload.
+ * Returns { valid, errors }.
+ */
+export function validateSteps(steps) {
+  const errors = [];
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return { valid: false, errors: ['steps must be a non-empty array'] };
+  }
+  for (let i = 0; i < steps.length; i++) {
+    const check = validateStep(steps[i]);
+    if (!check.valid) {
+      for (const e of check.errors) errors.push(`step[${i}]: ${e}`);
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 // ---- Capability schema validation ----
 
 /** Validate a node's capability report. Returns { valid, errors }. */
@@ -101,10 +221,19 @@ export function validateTask(task) {
     if (typeof task.constraints.timeout_s !== 'number' || task.constraints.timeout_s <= 0) errors.push('constraints.timeout_s must be > 0');
   }
 
-  // Compute tasks must have an explicit command allowlist
+  // Compute tasks must have structured steps (not free-form commands)
   if (task.type?.startsWith('compute.') && task.payload) {
-    if (!Array.isArray(task.payload.commands) || task.payload.commands.length === 0) {
-      errors.push('compute tasks require a non-empty payload.commands array');
+    if (!Array.isArray(task.payload.steps) || task.payload.steps.length === 0) {
+      errors.push('compute tasks require a non-empty payload.steps array');
+    } else {
+      const stepCheck = validateSteps(task.payload.steps);
+      if (!stepCheck.valid) {
+        for (const e of stepCheck.errors) errors.push(e);
+      }
+    }
+    // sandbox must be declared at the top level of the payload
+    if (task.payload.sandbox !== 'required') {
+      errors.push('compute tasks require payload.sandbox = "required"');
     }
   }
 
@@ -136,37 +265,4 @@ export function validateResult(result) {
   }
 
   return { valid: errors.length === 0, errors };
-}
-
-// ---- Command allowlist for compute tasks ----
-
-const ALLOWED_COMMAND_PATTERNS = [
-  /^git clone https:\/\/github\.com\/cohabitation-project\/\S+\s/,
-  /^npm ci --ignore-scripts$/,
-  /^node --test\s+\S/,
-  /^npx playwright test\s+\S/,
-];
-
-/** Check whether a command is on the allowlist. Returns { allowed, reason }. */
-export function commandAllowed(cmd) {
-  if (typeof cmd !== 'string') return { allowed: false, reason: 'command must be a string' };
-  const trimmed = cmd.trim();
-  if (!trimmed) return { allowed: false, reason: 'empty command' };
-  for (const pattern of ALLOWED_COMMAND_PATTERNS) {
-    if (pattern.test(trimmed)) return { allowed: true, reason: null };
-  }
-  return { allowed: false, reason: `command does not match any allowed pattern: ${trimmed.slice(0, 80)}` };
-}
-
-/** Validate all commands in a compute task payload. */
-export function validateCommands(commands) {
-  const results = [];
-  for (const cmd of commands) {
-    const check = commandAllowed(cmd);
-    results.push({ command: cmd, ...check });
-  }
-  return {
-    all_allowed: results.every((r) => r.allowed),
-    checks: results,
-  };
 }

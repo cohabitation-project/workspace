@@ -230,6 +230,13 @@ export class TaskQueue {
 
   getTask(task_id) { return this.tasks.get(task_id) || null; }
 
+  /** Tasks already assigned to a specific node (status=assigned). */
+  assignedTo(node_id) {
+    return [...this.tasks.values()].filter(
+      (t) => t.status === 'assigned' && t.assigned_to === node_id
+    );
+  }
+
   /** Queue depth by type. */
   queueDepth() {
     const depth = {};

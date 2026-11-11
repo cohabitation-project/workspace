@@ -9,7 +9,14 @@ const validTask = {
   type: 'compute.build-test',
   priority: 5,
   requirements: { cpu_cores_min: 2 },
-  payload: { repo: 'https://github.com/cohabitation-project/workspace.git', commands: ['npm ci --ignore-scripts'] },
+  payload: {
+    sandbox: 'required',
+    steps: [
+      { action: 'git-clone', repo: 'cohabitation-project/workspace', commit: 'a'.repeat(40) },
+      { action: 'npm-ci' },
+      { action: 'node-test', files: ['commons/test/unit.mjs'] },
+    ],
+  },
   constraints: { timeout_s: 600 },
 };
 
@@ -143,6 +150,33 @@ describe('queue', () => {
       const result = q.cancel(task.id);
       assert.ok(result.ok);
       assert.equal(q.activeTasks().length, 0);
+    });
+  });
+
+  describe('assignedTo', () => {
+    it('returns tasks assigned to a specific node', () => {
+      const { task: t1 } = q.submit(validTask);
+      const { task: t2 } = q.submit(validTask);
+      q.assign(t1.id, 'n_node_a');
+      q.assign(t2.id, 'n_node_b');
+      const assigned = q.assignedTo('n_node_a');
+      assert.equal(assigned.length, 1);
+      assert.equal(assigned[0].id, t1.id);
+      assert.equal(assigned[0].status, 'assigned');
+    });
+
+    it('returns empty array when no tasks assigned', () => {
+      q.submit(validTask);
+      const assigned = q.assignedTo('n_nobody');
+      assert.equal(assigned.length, 0);
+    });
+
+    it('does not return running tasks', () => {
+      const { task } = q.submit(validTask);
+      q.assign(task.id, 'n_test1');
+      q.markRunning(task.id, 'n_test1');
+      const assigned = q.assignedTo('n_test1');
+      assert.equal(assigned.length, 0, 'assignedTo should only return status=assigned');
     });
   });
 

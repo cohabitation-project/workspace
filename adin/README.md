@@ -16,15 +16,17 @@ task types without changing the orchestrator or scheduler.
 ## Architecture
 
 ```
-                 ┌─────────────────────┐
-                 │  Orchestrator       │  tailnet only (100.x.x.x:3399)
-                 │  ├ registry.mjs     │  node enrollment, auth, heartbeat
-                 │  ├ queue.mjs        │  task lifecycle
-                 │  ├ scheduler.mjs    │  capability matching
-                 │  ├ validation.mjs   │  untrusted result pipeline
-                 │  └ metrics.mjs      │  usage ledger
-                 └──────────┬──────────┘
-                            │ tailscale
+                 ┌─────────────────────────────────┐
+                 │  Orchestrator                    │
+                 │  ├ workerApp (100.x.x.x:3399)   │  tailnet: enroll, auth, tasks
+                 │  ├ adminApp  (127.0.0.1:3398)    │  localhost: admin CLI only
+                 │  ├ registry.mjs                  │  node enrollment, auth, heartbeat
+                 │  ├ queue.mjs                     │  task lifecycle
+                 │  ├ scheduler.mjs                 │  capability matching
+                 │  ├ validation.mjs                │  untrusted result pipeline
+                 │  └ metrics.mjs                   │  usage ledger
+                 └──────────┬──────────────────────┘
+                            │ tailscale (:3399 only)
               ┌─────────────┼─────────────┐
               │             │             │
          ┌────┴────┐  ┌────┴────┐  ┌─────┴────┐
@@ -37,12 +39,17 @@ task types without changing the orchestrator or scheduler.
 
 - **Three-credential auth:** one-time enrollment code → rotatable node secret
   (90-day lifetime) → short-lived session token (1 hour).
-- **Command allowlist:** compute tasks may only execute pre-approved commands.
-  `npm ci --ignore-scripts` — no lifecycle scripts. `node --test <file>` — not
-  `npm test`.
+- **Structured steps (no shell commands):** compute tasks use a fixed enum of
+  actions (`git-clone`, `npm-ci`, `node-test`, `playwright-test`) with validated
+  parameters. No shell strings, no command chaining, no flag injection. Repos
+  are bare `org/repo` names from an allowlist; commits are 40-char hex SHAs;
+  file paths are validated against a strict pattern.
 - **Sandbox required:** untrusted repository code runs in Windows Sandbox, a
   container, or equivalent. Process-only isolation is reported but not accepted
-  for arbitrary code execution.
+  for arbitrary code execution. **NOTE:** `runtime.sandbox` is self-reported by
+  the node. The orchestrator checks that the node *claims* it has a sandbox
+  (policy gate), but cannot verify this from the server side. Real sandbox
+  verification requires deployment-time testing per the covenant.
 - **Untrusted output:** all node results pass through validation (structural
   checks, identity-leak stripping, role-reversal detection, consistency checks).
   Tier 0 nodes get cross-checked. Flagged results go to human review.
@@ -57,11 +64,11 @@ task types without changing the orchestrator or scheduler.
 # Start orchestrator on localhost
 ADIN_DATA_DIR=/tmp/adin-test ADIN_ADMIN_TOKEN=dev-token node adin/orchestrator.mjs
 
-# Admin: create enrollment code
+# Admin: create enrollment code (admin CLI talks to localhost:3398)
 ADIN_ADMIN_TOKEN=dev-token node adin/admin.mjs enroll-code Geoffrey test-node
 
-# Admin: queue a build-test
-ADIN_ADMIN_TOKEN=dev-token node adin/admin.mjs queue-test main
+# Admin: queue a build-test (needs a full 40-char commit SHA)
+ADIN_ADMIN_TOKEN=dev-token node adin/admin.mjs queue-test abc123def456...
 
 # Admin: check status
 ADIN_ADMIN_TOKEN=dev-token node adin/admin.mjs status
@@ -77,7 +84,11 @@ node --test adin/test/*.test.mjs
 
 | File | Purpose |
 |------|---------|
-| `protocol.mjs` | Schema definitions, validators, command allowlist |
+- **Port separation:** worker API (enrollment, auth, heartbeat, tasks) runs on
+  `HOST:PORT` (tailnet). Admin API runs on `127.0.0.1:ADMIN_PORT` (localhost
+  only). Workers cannot reach admin endpoints.
+
+| `protocol.mjs` | Schema definitions, validators, structured step validation |
 | `credentials.mjs` | Token generation, hashing, rotation, verification |
 | `registry.mjs` | Node enrollment, auth, heartbeat, revocation |
 | `queue.mjs` | Task submission, assignment, completion, retry |
@@ -101,6 +112,6 @@ node --test adin/test/*.test.mjs
 - [x] Usage ledger (per-node, council-readable)
 - [x] Admin CLI
 - [x] Tailscale ACL draft
-- [x] 119 automated tests (all passing)
+- [x] Automated tests (all passing)
 - [ ] Node worker application (Phase 1 next step, after sandbox confirmation)
 - [ ] Production deployment (requires separate authorization)

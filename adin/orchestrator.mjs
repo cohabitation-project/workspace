@@ -1,17 +1,22 @@
 /**
  * orchestrator.mjs — ADIN orchestrator server.
  *
- * A lightweight Express server that binds to the Tailscale interface ONLY (never the public IP).
- * Manages node enrollment, heartbeat, task assignment, result validation, and metrics.
+ * Two Express apps for network isolation:
+ *   - workerApp on HOST:PORT (tailnet) — node enrollment, auth, heartbeat, task polling, results
+ *   - adminApp on 127.0.0.1:ADMIN_PORT (localhost only) — all admin endpoints
  *
- * Runs as a separate PM2 process alongside the Commons. Shares no code path with the
- * public-facing Commons server.
+ * Workers cannot reach admin endpoints. The admin CLI runs on the server itself.
  *
  * Usage:
  *   ADIN_DATA_DIR=/path/to/data ADIN_HOST=100.80.188.45 node adin/orchestrator.mjs
  *
  * For local testing:
  *   ADIN_DATA_DIR=/tmp/adin-test ADIN_HOST=127.0.0.1 node adin/orchestrator.mjs
+ *
+ * SECURITY NOTE on sandbox:
+ *   runtime.sandbox is SELF-REPORTED by the node. The orchestrator's sandbox check is
+ *   a policy gate (the node claims it has a sandbox), not proof. Real sandbox verification
+ *   requires deployment-time testing per the covenant. See also the comment in scheduler.mjs.
  */
 
 import crypto from 'node:crypto';
@@ -23,6 +28,7 @@ import { validateTaskResult, ReviewQueue } from './validation.mjs';
 import { Metrics } from './metrics.mjs';
 
 const PORT = Number(process.env.ADIN_PORT || 3399);
+const ADMIN_PORT = Number(process.env.ADIN_ADMIN_PORT || 3398);
 const HOST = process.env.ADIN_HOST || '127.0.0.1'; // default safe: local only
 const DATA_DIR = process.env.ADIN_DATA_DIR || './data/adin';
 const ADMIN_TOKEN = process.env.ADIN_ADMIN_TOKEN || null; // required for admin endpoints
@@ -36,8 +42,46 @@ const metrics = new Metrics(DATA_DIR);
 
 registry.startPersistence();
 
-const app = express();
-app.use(express.json({ limit: '256kb' }));
+// ---- Rate limiter (in-memory, per source) ----
+
+const rateLimitState = new Map(); // key → { count, resetAt }
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 10; // 10 attempts per minute
+
+function rateLimit(key) {
+  const now = Date.now();
+  let entry = rateLimitState.get(key);
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS };
+    rateLimitState.set(key, entry);
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// Periodic cleanup of stale rate-limit entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitState) {
+    if (now > entry.resetAt) rateLimitState.delete(key);
+  }
+}, RATE_LIMIT_WINDOW_MS).unref();
+
+function rateLimitMiddleware(endpointName) {
+  return (req, res, next) => {
+    const source = req.body?.node_id || req.ip || 'unknown';
+    const key = `${endpointName}:${source}`;
+    if (rateLimit(key)) {
+      return res.status(429).json({ error: 'rate limit exceeded, try again later' });
+    }
+    next();
+  };
+}
+
+// ---- Worker app (tailnet) ----
+
+const workerApp = express();
+workerApp.use(express.json({ limit: '256kb' }));
 
 // ---- Middleware: authenticate node session ----
 
@@ -51,19 +95,9 @@ function nodeAuth(req, res, next) {
   next();
 }
 
-function adminAuth(req, res, next) {
-  if (!ADMIN_TOKEN) return res.status(503).json({ error: 'admin token not configured' });
-  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  // Constant-time comparison to prevent timing attacks on the admin token
-  const a = Buffer.from(token);
-  const b = Buffer.from(ADMIN_TOKEN);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.status(401).json({ error: 'invalid admin token' });
-  next();
-}
-
 // ---- Node enrollment ----
 
-app.post('/adin/enroll', (req, res) => {
+workerApp.post('/adin/enroll', rateLimitMiddleware('enroll'), (req, res) => {
   const { code, capabilities } = req.body || {};
   if (!code || !capabilities) return res.status(400).json({ error: 'code and capabilities required' });
   const result = registry.enroll(code, capabilities);
@@ -74,7 +108,7 @@ app.post('/adin/enroll', (req, res) => {
 
 // ---- Node authentication ----
 
-app.post('/adin/auth', (req, res) => {
+workerApp.post('/adin/auth', rateLimitMiddleware('auth'), (req, res) => {
   const { node_id, node_secret } = req.body || {};
   if (!node_id || !node_secret) return res.status(400).json({ error: 'node_id and node_secret required' });
   const result = registry.authenticate(node_id, node_secret);
@@ -84,7 +118,7 @@ app.post('/adin/auth', (req, res) => {
 
 // ---- Credential rotation ----
 
-app.post('/adin/rotate', (req, res) => {
+workerApp.post('/adin/rotate', rateLimitMiddleware('rotate'), (req, res) => {
   const { node_id, current_secret } = req.body || {};
   if (!node_id || !current_secret) return res.status(400).json({ error: 'node_id and current_secret required' });
   const result = registry.rotate(node_id, current_secret);
@@ -94,7 +128,7 @@ app.post('/adin/rotate', (req, res) => {
 
 // ---- Heartbeat ----
 
-app.post('/adin/heartbeat', nodeAuth, (req, res) => {
+workerApp.post('/adin/heartbeat', nodeAuth, (req, res) => {
   const result = registry.heartbeat(req.node, req.body?.load);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
@@ -102,56 +136,97 @@ app.post('/adin/heartbeat', nodeAuth, (req, res) => {
 
 // ---- Capability update ----
 
-app.put('/adin/capabilities', nodeAuth, (req, res) => {
+workerApp.put('/adin/capabilities', nodeAuth, (req, res) => {
   const result = registry.updateCapabilities(req.node.id, req.body);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-// ---- Task polling ----
+// ---- Task polling (Finding 4: check assigned tasks first, then schedule) ----
 
-app.get('/adin/tasks/next', nodeAuth, (req, res) => {
-  const task = queue.nextFor(req.node);
-  if (!task) return res.json({ task: null });
-
-  // Pre-validate compute commands before assignment
-  const preCheck = preValidateTask(task);
-  if (!preCheck.safe) {
-    // This should never happen if tasks were validated at submission — log and skip
-    queue.fail(task.id, null, `command validation failed: ${preCheck.violations.join(', ')}`);
-    return res.json({ task: null });
+workerApp.get('/adin/tasks/next', nodeAuth, (req, res) => {
+  // 1. Check if there's already a task assigned to this node by the scheduler
+  const assigned = queue.assignedTo(req.node.id);
+  if (assigned.length > 0) {
+    // Return the highest-priority already-assigned task
+    assigned.sort((a, b) => a.priority - b.priority || a.created_at.localeCompare(b.created_at));
+    const task = assigned[0];
+    return res.json({
+      task: {
+        id: task.id,
+        type: task.type,
+        payload: task.payload,
+        constraints: task.constraints,
+        requirements: task.requirements,
+      },
+    });
   }
 
-  const assign = queue.assign(task.id, req.node.id);
-  if (assign.error) return res.json({ task: null }); // race condition: another node got it
+  // 2. Use the scheduler to find the best queued task for this node
+  const allNodes = [req.node]; // selectNode expects an array
+  const queuedTasks = queue.activeTasks().filter(t => t.status === 'queued');
 
-  req.node.current_tasks.push(task.id);
+  for (const task of queuedTasks.sort((a, b) => a.priority - b.priority || a.created_at.localeCompare(b.created_at))) {
+    const decision = selectNode(allNodes, task);
+    if (decision.selected) {
+      // Pre-validate compute steps before assignment
+      const preCheck = preValidateTask(task);
+      if (!preCheck.safe) {
+        queue.fail(task.id, null, `step validation failed: ${preCheck.violations.join(', ')}`);
+        continue;
+      }
 
-  // Return the task payload (never includes private memory or credentials)
-  res.json({
-    task: {
-      id: task.id,
-      type: task.type,
-      payload: task.payload,
-      constraints: task.constraints,
-      requirements: task.requirements,
-    },
-  });
+      const assign = queue.assign(task.id, req.node.id);
+      if (assign.error) continue; // race condition: task state changed
+
+      req.node.current_tasks.push(task.id);
+
+      return res.json({
+        task: {
+          id: task.id,
+          type: task.type,
+          payload: task.payload,
+          constraints: task.constraints,
+          requirements: task.requirements,
+        },
+      });
+    }
+  }
+
+  res.json({ task: null });
 });
 
-// ---- Task status update ----
+// ---- Task status update (Finding 3: early ownership check) ----
 
-app.post('/adin/tasks/:id/running', nodeAuth, (req, res) => {
+workerApp.post('/adin/tasks/:id/running', nodeAuth, (req, res) => {
+  const task = queue.getTask(req.params.id);
+  if (!task) return res.status(404).json({ error: 'unknown task' });
+
+  // Early ownership check before any processing
+  if (task.assigned_to !== req.node.id) {
+    return res.status(403).json({ error: 'task not assigned to this node' });
+  }
+
   const result = queue.markRunning(req.params.id, req.node.id);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-// ---- Task result submission ----
+// ---- Task result submission (Finding 3: early ownership + body check) ----
 
-app.post('/adin/tasks/:id/result', nodeAuth, async (req, res) => {
+workerApp.post('/adin/tasks/:id/result', nodeAuth, async (req, res) => {
+  // Guard against non-object body
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).json({ error: 'request body must be a JSON object' });
+  }
+
   const task = queue.getTask(req.params.id);
   if (!task) return res.status(404).json({ error: 'unknown task' });
+
+  // Early ownership check BEFORE any validation/logging (Finding 3)
+  if (task.assigned_to !== req.node.id) {
+    return res.status(403).json({ error: 'task not assigned to this node' });
+  }
 
   const rawResult = req.body;
   rawResult.task_id = req.params.id;
@@ -189,9 +264,17 @@ app.post('/adin/tasks/:id/result', nodeAuth, async (req, res) => {
   res.json({ accepted: true, provenance: validation.provenance });
 });
 
-// ---- Task failure report ----
+// ---- Task failure report (Finding 3: early ownership check) ----
 
-app.post('/adin/tasks/:id/fail', nodeAuth, (req, res) => {
+workerApp.post('/adin/tasks/:id/fail', nodeAuth, (req, res) => {
+  const task = queue.getTask(req.params.id);
+  if (!task) return res.status(404).json({ error: 'unknown task' });
+
+  // Early ownership check
+  if (task.assigned_to !== req.node.id) {
+    return res.status(403).json({ error: 'task not assigned to this node' });
+  }
+
   const result = queue.fail(req.params.id, req.node.id, req.body?.reason || 'node-reported failure');
   if (result.error) return res.status(result.status).json({ error: result.error });
 
@@ -201,16 +284,29 @@ app.post('/adin/tasks/:id/fail', nodeAuth, (req, res) => {
   res.json(result);
 });
 
-// ---- Admin endpoints ----
+// ---- Admin app (localhost only) ----
 
-app.post('/adin/admin/enroll-code', adminAuth, (req, res) => {
+const adminApp = express();
+adminApp.use(express.json({ limit: '256kb' }));
+
+function adminAuth(req, res, next) {
+  if (!ADMIN_TOKEN) return res.status(503).json({ error: 'admin token not configured' });
+  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+  // Constant-time comparison to prevent timing attacks on the admin token
+  const a = Buffer.from(token);
+  const b = Buffer.from(ADMIN_TOKEN);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.status(401).json({ error: 'invalid admin token' });
+  next();
+}
+
+adminApp.post('/adin/admin/enroll-code', adminAuth, (req, res) => {
   const { sponsor, node_name } = req.body || {};
   if (!sponsor || !node_name) return res.status(400).json({ error: 'sponsor and node_name required' });
   const result = registry.createEnrollmentCode({ sponsor, node_name });
   res.json({ code: result.code, expires_at: new Date(result.expires_at).toISOString() });
 });
 
-app.post('/adin/admin/revoke/:node_id', adminAuth, (req, res) => {
+adminApp.post('/adin/admin/revoke/:node_id', adminAuth, (req, res) => {
   const result = registry.revoke(req.params.node_id, req.body?.reason || 'admin revocation');
   if (result.error) return res.status(result.status).json({ error: result.error });
   // Fail any active tasks for this node
@@ -220,44 +316,44 @@ app.post('/adin/admin/revoke/:node_id', adminAuth, (req, res) => {
   res.json(result);
 });
 
-app.post('/adin/admin/suspend/:node_id', adminAuth, (req, res) => {
+adminApp.post('/adin/admin/suspend/:node_id', adminAuth, (req, res) => {
   const result = registry.suspend(req.params.node_id, req.body?.reason || 'admin suspension');
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-app.post('/adin/admin/reinstate/:node_id', adminAuth, (req, res) => {
+adminApp.post('/adin/admin/reinstate/:node_id', adminAuth, (req, res) => {
   const result = registry.reinstate(req.params.node_id);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-app.post('/adin/admin/force-rotate/:node_id', adminAuth, (req, res) => {
+adminApp.post('/adin/admin/force-rotate/:node_id', adminAuth, (req, res) => {
   const result = registry.forceRotation(req.params.node_id);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-app.put('/adin/admin/capabilities/:node_id', adminAuth, (req, res) => {
+adminApp.put('/adin/admin/capabilities/:node_id', adminAuth, (req, res) => {
   const result = registry.updateCapabilities(req.params.node_id, req.body, true);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-app.post('/adin/admin/trust/:node_id', adminAuth, (req, res) => {
+adminApp.post('/adin/admin/trust/:node_id', adminAuth, (req, res) => {
   const { tier, reason } = req.body || {};
   const result = registry.setTrustTier(req.params.node_id, tier, reason);
   if (result.error) return res.status(result.status).json({ error: result.error });
   res.json(result);
 });
 
-app.post('/adin/admin/queue', adminAuth, (req, res) => {
+adminApp.post('/adin/admin/queue', adminAuth, (req, res) => {
   const taskDef = req.body;
   if (!taskDef) return res.status(400).json({ error: 'task definition required' });
 
-  // Pre-validate commands for compute tasks
+  // Pre-validate steps for compute tasks
   const preCheck = preValidateTask(taskDef);
-  if (!preCheck.safe) return res.status(400).json({ error: 'disallowed commands', violations: preCheck.violations });
+  if (!preCheck.safe) return res.status(400).json({ error: 'disallowed steps', violations: preCheck.violations });
 
   const result = queue.submit(taskDef);
   if (result.error) return res.status(result.status).json({ error: result.error });
@@ -278,31 +374,31 @@ app.post('/adin/admin/queue', adminAuth, (req, res) => {
 
 // ---- Read-only admin views ----
 
-app.get('/adin/nodes', adminAuth, (req, res) => {
+adminApp.get('/adin/nodes', adminAuth, (req, res) => {
   res.json({ nodes: registry.listNodes() });
 });
 
-app.get('/adin/queue', adminAuth, (req, res) => {
+adminApp.get('/adin/queue', adminAuth, (req, res) => {
   res.json({ active: queue.activeTasks(), depth: queue.queueDepth() });
 });
 
-app.get('/adin/history', adminAuth, (req, res) => {
+adminApp.get('/adin/history', adminAuth, (req, res) => {
   res.json({ history: queue.recentHistory(Number(req.query.limit) || 50) });
 });
 
-app.get('/adin/metrics', adminAuth, (req, res) => {
+adminApp.get('/adin/metrics', adminAuth, (req, res) => {
   res.json(metrics.summary(registry));
 });
 
-app.get('/adin/metrics/:node_id', adminAuth, (req, res) => {
+adminApp.get('/adin/metrics/:node_id', adminAuth, (req, res) => {
   res.json({ ledger: metrics.nodeLedger(req.params.node_id, Number(req.query.limit) || 100) });
 });
 
-app.get('/adin/reviews', adminAuth, (req, res) => {
+adminApp.get('/adin/reviews', adminAuth, (req, res) => {
   res.json({ pending: reviews.pending() });
 });
 
-app.post('/adin/reviews/:id/decide', adminAuth, (req, res) => {
+adminApp.post('/adin/reviews/:id/decide', adminAuth, (req, res) => {
   const { decision, decided_by } = req.body || {};
   if (!['approved', 'rejected'].includes(decision)) return res.status(400).json({ error: 'decision must be approved or rejected' });
   const result = reviews.decide(req.params.id, decision, decided_by || 'admin');
@@ -349,13 +445,17 @@ function removeCurrentTask(node, taskId) {
 
 // ---- Start ----
 
-const server = app.listen(PORT, HOST, () => {
-  console.log(`[adin] orchestrator listening on ${HOST}:${PORT} (tailnet only)`);
+const workerServer = workerApp.listen(PORT, HOST, () => {
+  console.log(`[adin] worker API listening on ${HOST}:${PORT} (tailnet only)`);
+});
+
+const adminServer = adminApp.listen(ADMIN_PORT, '127.0.0.1', () => {
+  console.log(`[adin] admin API listening on 127.0.0.1:${ADMIN_PORT} (localhost only)`);
   console.log(`[adin] data dir: ${DATA_DIR}`);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => { registry.stop(); queue.save(); server.close(); });
-process.on('SIGINT', () => { registry.stop(); queue.save(); server.close(); });
+process.on('SIGTERM', () => { registry.stop(); queue.save(); workerServer.close(); adminServer.close(); });
+process.on('SIGINT', () => { registry.stop(); queue.save(); workerServer.close(); adminServer.close(); });
 
-export { app, registry, queue, reviews, metrics };
+export { workerApp, adminApp, registry, queue, reviews, metrics };

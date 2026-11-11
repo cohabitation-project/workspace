@@ -1,11 +1,4 @@
 {
-  "// ADIN least-privilege ACL policy — DRAFT for human review": "",
-  "// An authorized administrator must apply this in the Tailscale admin console.": "",
-  "// Do NOT apply without reviewing each rule against the covenant.": "",
-  "//": "",
-  "// Tailscale's default policy is DENY ALL. Only the rules below create exceptions.": "",
-  "// Any access not explicitly granted here is blocked by the tailnet.": "",
-
   "tagOwners": {
     "tag:server":  ["geoffrey@..."],
     "tag:worker":  ["geoffrey@..."]
@@ -13,47 +6,16 @@
 
   "acls": [
     {
-      "// Worker nodes can reach the ADIN orchestrator on port 3399 ONLY.": "",
-      "// This is the single permitted network path for contributed hardware.": "",
-      "// Workers cannot reach the Commons (80/443), SSH (22), or any other service.": "",
       "action": "accept",
       "src":    ["tag:worker"],
       "dst":    ["tag:server:3399"]
     },
     {
-      "// Admin (Geoffrey) can SSH to the server over tailnet, port 22 only.": "",
-      "// Admin CANNOT reach worker nodes — no remote shell, no file access,": "",
-      "// no inspection of contributed hardware (covenant requirement).": "",
       "action": "accept",
       "src":    ["autogroup:admin"],
       "dst":    ["tag:server:22"]
     }
   ],
-
-  "// --- INTENTIONALLY ABSENT (all blocked by Tailscale default-deny) ---": "",
-  "//": "",
-  "// server → worker:     DENIED. All communication is node-initiated.": "",
-  "//                      If active health probes are needed in the future,": "",
-  "//                      a new rule must be added with a specific port and": "",
-  "//                      separate authorization from the council.": "",
-  "//": "",
-  "// worker → worker:     DENIED. Nodes cannot communicate with each other.": "",
-  "//                      Cooperative inference (Phase 5+) would require a": "",
-  "//                      new tag:inference-peer and specific port rules,": "",
-  "//                      with separate consent per node owner.": "",
-  "//": "",
-  "// worker → Commons:    DENIED. Workers reach the orchestrator (3399) only,": "",
-  "//                      not the public-facing Commons (80/443/3200).": "",
-  "//": "",
-  "// admin → worker:      DENIED. The covenant prohibits remote inspection of": "",
-  "//                      contributed hardware. Diagnostics are self-reported": "",
-  "//                      by the node worker through the orchestrator.": "",
-  "//": "",
-  "// subnet routing:      DENIED. No node routes traffic for others.": "",
-  "// exit nodes:          DENIED. No node acts as an internet gateway.": "",
-  "// DNS overrides:       None.": "",
-  "//": "",
-  "// Any change to these rules requires council review and owner consent.": "",
 
   "ssh": [],
   "nodeAttrs": []

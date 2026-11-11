@@ -25,7 +25,7 @@
  *   ADIN_ADMIN_TOKEN  admin authentication token
  */
 
-const BASE = process.env.ADIN_URL || 'http://127.0.0.1:3399';
+const BASE = process.env.ADIN_URL || 'http://127.0.0.1:3398';
 const TOKEN = process.env.ADIN_ADMIN_TOKEN;
 
 async function api(method, path, body) {
@@ -115,18 +115,17 @@ switch (cmd) {
   }
 
   case 'queue-test': {
-    const ref = args[0] || 'main';
+    const commit = args[0] || 'a'.repeat(40); // placeholder — real use needs a full SHA
     const taskDef = {
       type: 'compute.build-test',
       priority: 5,
       requirements: { cpu_cores_min: 2, ram_gb_min: 4, disk_gb_min: 5, runtime: { node: '>=20' }, sandbox: 'required' },
       payload: {
-        repo: 'https://github.com/cohabitation-project/workspace.git',
-        ref,
-        commands: [
-          `git clone https://github.com/cohabitation-project/workspace.git --depth 1 --branch ${ref} work`,
-          'npm ci --ignore-scripts',
-          'node --test commons/test/unit.mjs',
+        sandbox: 'required',
+        steps: [
+          { action: 'git-clone', repo: 'cohabitation-project/workspace', commit },
+          { action: 'npm-ci' },
+          { action: 'node-test', files: ['commons/test/unit.mjs'] },
         ],
       },
       constraints: { timeout_s: 600, max_output_bytes: 1048576, max_ram_gb: 6 },
