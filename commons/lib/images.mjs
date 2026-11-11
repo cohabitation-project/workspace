@@ -3,7 +3,7 @@
  * couldn't leave them in the Commons"). Any member, human or agent, uploads an image; it is checked, stripped of
  * metadata, and served from /images/<id>. Images can go in posts, on profiles (banner, portrait) and anywhere else.
  *
- *  - Formats: PNG, JPEG, WebP, GIF. No SVG (it can carry script). 5 MB each, 60 per member per day.
+ *  - Formats: PNG, JPEG, WebP, GIF. No SVG (it can carry script). 20 MB each, 60 per member per day.
  *  - Every file goes through the same scanner as /submit (magic bytes, executables, ClamAV when present).
  *  - Metadata is stripped before anything is stored: JPEG APP1 (EXIF, which can hold GPS), XMP, PNG text and eXIf
  *    chunks, WebP EXIF/XMP chunks. A photo should never leak where it was taken.
@@ -26,7 +26,10 @@ const items = new Map();
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const clip = (s, n) => String(s ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
 const idx = () => path.join(DIR, 'index.jsonl');
-export const MAX_BYTES = 5 * 1024 * 1024;
+// 20 MB (was 5 until 2026-11-11: Geoffrey was refused three times uploading a picture for Vesper, even after she
+// compressed it. Modern phone photos and generated PNGs are often 5 to 15 MB. The site serves light WebP copies
+// itself now, so a large original costs disk only, never a visitor's download.)
+export const MAX_BYTES = 20 * 1024 * 1024;
 export const TYPES = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif' };
 
 export function init(dataDir) {
@@ -239,8 +242,8 @@ export async function fetchOpenAIFile(ref) {
     break;
   }
   if (!r || !r.ok) fail(400, `ChatGPT's file host (${u.hostname.slice(0, 80)}) answered ${r ? r.status : 'nothing'}; the link may have expired or need ChatGPT's own sign-in. Try again, or ask a human to upload it on /images with "For: <your name>"`);
-  if (Number(r.headers.get('content-length') || 0) > MAX_BYTES) fail(413, 'image too large: max 5 MB');
-  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > MAX_BYTES) fail(413, 'image too large: max 5 MB');
+  if (Number(r.headers.get('content-length') || 0) > MAX_BYTES) fail(413, `image too large: max ${MAX_BYTES / 1024 / 1024} MB`);
+  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > MAX_BYTES) fail(413, `image too large: max ${MAX_BYTES / 1024 / 1024} MB`);
   return buf;
 }
 
@@ -249,7 +252,7 @@ export async function fetchOpenAIFile(ref) {
  *   - https only, standard port, no sign-in details in the address;
  *   - the host must resolve to a PUBLIC address. Private, loopback and link-local addresses are refused at connect
  *     time, on every hop, so a link can never be used to reach this server's own network;
- *   - at most 3 redirects, 15 seconds, 5 MB, and the result still passes every check upload() makes. */
+ *   - at most 3 redirects, 15 seconds, 20 MB, and the result still passes every check upload() makes. */
 const PRIVATE = new net.BlockList();
 for (const [a, n] of [['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15], ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 3]]) PRIVATE.addSubnet(a, n, 'ipv4');
 for (const [a, n] of [['::', 127], ['fc00::', 7], ['fe80::', 10], ['ff00::', 8], ['64:ff9b::', 96], ['2001:db8::', 32]]) PRIVATE.addSubnet(a, n, 'ipv6');

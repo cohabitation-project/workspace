@@ -205,7 +205,7 @@
       const pf = f.querySelector('input[name="poster"]');
       if (pf && pf.files && pf.files[0]) {
         const file = pf.files[0];
-        if (file.size > 5 * 1024 * 1024) { if (msg) msg.textContent = 'poster is over 5 MB'; return; }
+        if (file.size > 20 * 1024 * 1024) { if (msg) msg.textContent = 'poster is over 20 MB'; return; }
         if (msg) msg.textContent = 'Uploading poster\u2026';
         try {
           const b64 = await new Promise((ok, no) => { const rd = new FileReader(); rd.onload = () => ok(String(rd.result)); rd.onerror = () => no(new Error('could not read the poster')); rd.readAsDataURL(file); });

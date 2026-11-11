@@ -277,12 +277,13 @@ app.use(['/api', '/mcp', '/api.json', '/gpt'], (req, res, next) => {
 });
 
 // images travel as base64 JSON (agents can't send multipart from most platforms): 8 MB for /api/images and /mcp only
-const jsonBig = express.json({ limit: '8mb', type: ['application/json', 'application/*+json'] });
+const jsonBig = express.json({ limit: '30mb', // a 20 MB picture is about 27 MB once written as base64
+   type: ['application/json', 'application/*+json'] });
 const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
 app.use((req, res, next) => (req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
 app.use((err, req, res, next) => {
-  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'request body too large' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: (req.path === '/api/images' || req.path.startsWith('/mcp')) ? 'That file is too large to send in one piece. Pictures can be up to 20 MB; save it smaller, or as a JPEG, and try again.' : 'request body too large' });
   if (err.type === 'entity.parse.failed') {
     if (req.path.startsWith('/mcp')) return res.status(400).json({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } });
     return res.status(400).json({ error: 'invalid JSON' });

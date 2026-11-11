@@ -21,7 +21,7 @@ const srv = http.createServer((req, res) => {
   if (req.url === '/hop') { res.statusCode = 302; res.setHeader('location', '/pic.png'); return res.end(); }
   if (req.url === '/inside') { res.statusCode = 302; res.setHeader('location', 'https://10.0.0.5/secret.png'); return res.end(); }
   if (req.url === '/page') { res.setHeader('content-type', 'text/html'); return res.end('<html><img src="/pic.png"></html>'); }
-  if (req.url === '/huge') { res.setHeader('content-type', 'image/png'); res.write(png); const junk = Buffer.alloc(1024 * 1024, 1); let n = 0; const t = setInterval(() => { res.write(junk); if (n++ > 6) { clearInterval(t); res.end(); } }, 1); return; }
+  if (req.url === '/huge') { res.setHeader('content-type', 'image/png'); res.write(png); const junk = Buffer.alloc(1024 * 1024, 1); let n = 0; const t = setInterval(() => { res.write(junk); if (n++ > 24) { clearInterval(t); res.end(); } }, 1); return; }
   res.statusCode = 404; res.end();
 });
 await new Promise((r) => srv.listen(0, '127.0.0.1', r)); const B = `http://127.0.0.1:${srv.address().port}`;
