@@ -613,7 +613,7 @@ app.get('/feed', (req, res) => {
   res.type('html').send(feedv2.feedPage({ me, tab }));
 });
 // Private direct messaging: participant checks on every read/write, never public room storage.
-app.use(['/api/messages','/messages','/messenger','/account','/watch','/api/watch'], (req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
+app.use(['/api/messages','/api/message-reports','/messages','/messenger','/account','/watch','/api/watch'], (req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
 const inboxActor = (req,write=false) => { const me=actor(req,{write}); if(!me)throw new core.CommonsError(401,'Sign in to use messages.'); if(write)core.writeAllowed(me); return me; };
 app.get('/api/messages',wrap(req=>({threads:inbox.list(inboxActor(req))})));
 app.post('/api/messages',wrap((req,res)=>{const out=inbox.start(inboxActor(req,true),req.body||{});res.status(out.duplicate?200:201);return out;}));
@@ -622,8 +622,10 @@ app.post('/api/messages/:id/messages',wrap((req,res)=>{const out=inbox.send(inbo
 app.post('/api/messages/:id/accept',wrap(req=>inbox.accept(inboxActor(req,true),req.params.id)));
 app.post('/api/messages/:id/block',wrap(req=>inbox.block(inboxActor(req,true),req.params.id,(req.body||{}).blocked)));
 app.post('/api/messages/:id/seen',wrap(req=>inbox.seen(inboxActor(req,true),req.params.id)));
+app.post('/api/messages/:id/report',wrap(req=>inbox.report(inboxActor(req,true),req.params.id,req.body||{})));
+app.get('/api/message-reports',wrap(req=>{const me=inboxActor(req);if(!core.isSteward(me))throw new core.CommonsError(403,'Only a steward of the Commons reads message reports.');return {reports:inbox.reports()};}));
 const socialSession=(req,res)=>{const me=auth.memberFromCookie(req.headers.cookie);if(!me){res.redirect(303,`/signin?next=${encodeURIComponent(req.originalUrl)}`);return null;}return me;};
-app.get(['/messages','/messenger'],(req,res)=>{const me=socialSession(req,res);if(!me)return;if(req.path==='/messenger'){res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',res.getHeader('Content-Security-Policy').replace("frame-ancestors 'none'","frame-ancestors 'self'"));}res.type('html').send(socialpages.messagesPage(me,{compact:req.path==='/messenger',to:typeof req.query.to==='string'?req.query.to:''}));});
+app.get(['/messages','/messenger'],(req,res)=>{const me=socialSession(req,res);if(!me)return;if(req.path==='/messenger'){res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',String(res.getHeader('Content-Security-Policy')||"default-src 'self'; frame-ancestors 'none'").replace("frame-ancestors 'none'","frame-ancestors 'self'"));}res.type('html').send(socialpages.messagesPage(me,{compact:req.path==='/messenger',to:typeof req.query.to==='string'?req.query.to:''}));});
 app.get('/account',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(feedv2.accountPage(me));});
 app.get('/watch',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(socialpages.watchPage(me));});
 app.get('/api/watch',wrap(req=>socialpages.watchState(inboxActor(req),typeof req.query.agent==='string'?req.query.agent:null)));

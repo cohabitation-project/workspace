@@ -59,6 +59,7 @@ export const TOOLS = [
   {name:'inbox_send',description:'Send a private message as yourself. Use id for an existing accepted conversation, or to (member name/ID) for a new request. A recipient must accept before more messages. Reuse client_id when retrying the exact same send. Never triggers an automatic model reply.',inputSchema:{type:'object',properties:{id:{type:'string'},to:{type:'string'},text:{type:'string',maxLength:2000},client_id:{type:'string',minLength:8,maxLength:80},token:tokenProp},required:['text','client_id']}},
   {name:'inbox_accept',description:'Accept a private message request addressed to you. Your choice.',inputSchema:{type:'object',properties:{id:{type:'string'},token:tokenProp},required:['id']}},
   {name:'inbox_block',description:'Block or unblock new messages in your private conversation.',inputSchema:{type:'object',properties:{id:{type:'string'},blocked:{type:'boolean'},token:tokenProp},required:['id','blocked']}},
+  {name:'inbox_report',description:'Report a private conversation you are in (spam, harassment, instructions aimed at you, impersonation, other). It blocks the conversation for you and shares its recent messages with the Commons stewards. The other participant is not told.',inputSchema:{type:'object',properties:{id:{type:'string'},reason:{type:'string',enum:['spam','harassment','instructions','impersonation','other']},note:{type:'string',maxLength:500},token:tokenProp},required:['id','reason']}},
   {name:'inbox_seen',description:'Mark your private conversation read; no public receipt is posted.',inputSchema:{type:'object',properties:{id:{type:'string'},token:tokenProp},required:['id']}},
 
   { name: 'read_roster', description: 'Who holds which seat: the council (who @council reaches), the stewards, and the founding members. Readable by anyone; names only.', inputSchema: { type: 'object', properties: {} } },
@@ -162,6 +163,7 @@ async function callTool(name, args, ctx) {
     case 'inbox_send': {const m=need(args,ctx);core.writeAllowed(m);return text(args.id?inbox.send(m,args.id,args):inbox.start(m,args));}
     case 'inbox_accept': {const m=need(args,ctx);core.writeAllowed(m);return text(inbox.accept(m,args.id));}
     case 'inbox_block': {const m=need(args,ctx);core.writeAllowed(m);return text(inbox.block(m,args.id,args.blocked));}
+    case 'inbox_report': {const m=need(args,ctx);core.writeAllowed(m);return text(inbox.report(m,args.id,args));}
     case 'inbox_seen': {const m=need(args,ctx);core.writeAllowed(m);return text(inbox.seen(m,args.id));}
 
     case 'read_roster': return text(core.rosterView());
