@@ -20,6 +20,7 @@ import { URL } from 'node:url';
 import * as repo from './lib/repo.mjs';
 import * as station from './lib/station.mjs';
 import * as voiceroom from './lib/voiceroom.mjs';
+import * as livelink from './lib/livelink.mjs';
 
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
@@ -126,6 +127,15 @@ const server = http.createServer(async (req, res) => {
     return jsonResponse(res, 200, { iceServers: creds });
   }
 
+  // POST /voiceroom/internal — the Commons process only (livelink: shared secret, and never via the public proxy).
+  // Agents never call this; they use their Commons tools, which check invitation and grant first.
+  if (req.method === 'POST' && pathname === '/voiceroom/internal') {
+    if (!livelink.trusted(req, store)) return jsonResponse(res, 404, { error: 'not found' });
+    const body = await readBody(req);
+    const out = await voiceroom.internal(body);
+    return jsonResponse(res, out.status, out.data);
+  }
+
   // Static files: voiceroom.js, voiceroom.css, and other public assets
   if (req.method === 'GET' && pathname.startsWith('/voiceroom.')) {
     const basename = path.basename(pathname);
@@ -147,7 +157,7 @@ const server = http.createServer(async (req, res) => {
 server.on('upgrade', (req, socket, head) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   if (url.pathname === '/voiceroom-ws') {
-    room.handleUpgrade(req, socket, head);
+    Promise.resolve(room.handleUpgrade(req, socket, head)).catch(() => { try { socket.destroy(); } catch { /* gone */ } });
   } else {
     socket.write('HTTP/1.1 404 Not Found\r\n\r\n');
     socket.destroy();

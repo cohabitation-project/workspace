@@ -44,7 +44,7 @@
   // ── WebSocket ──────────────────────────────────────────────────────────────
   function connectWS() {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${proto}//${location.host}/voiceroom-ws`, 'commons-voiceroom');
+    ws = new WebSocket(`${proto}//${location.host}/voiceroom-ws`, guestPass ? ['commons-voiceroom', `commons-guest.${guestPass}`] : 'commons-voiceroom');
     ws.binaryType = 'arraybuffer';
 
     ws.addEventListener('open', () => log('WS connected'));
@@ -86,7 +86,9 @@
       case 'offer':         handleOffer(msg);      break;
       case 'answer':        handleAnswer(msg);     break;
       case 'ice-candidate': handleIceCandidate(msg); break;
-      case 'chat':          addChatMessage(msg.name || msg.from, msg.text, 'chat'); break;
+      case 'chat':          if (String(msg.from) === String(myPeerId)) break;
+                            if (msg.badge === 'guest') { addChatMessage(`${msg.name} · guest`, msg.text, 'chat'); break; } // our own words: already shown as "You"
+                            if (msg.badge === 'system') addSystemMessage(msg.text); else addChatMessage((msg.name || msg.from) + (msg.model ? ` · ${msg.model}` : ''), msg.text, msg.badge && msg.badge !== 'human' ? 'agent' : 'chat'); if (msg.badge !== 'human') refreshInvitePanel(); break;
       case 'transcript':    addChatMessage(msg.name || msg.from || msg.peerId, msg.text, 'transcript'); break;
       case 'agent-speaking': animateAgentTile(msg.peerId, true); break;
       default:              log('Unknown message type:', msg.type);
@@ -113,7 +115,11 @@
       name: src.name,
       badge: src.badge,
       glyph: src.glyph,
-      isAgent: src.isAgent === true || (src.badge && src.badge !== 'human'),
+      memberId: src.memberId || null,
+      face: typeof src.face === 'string' && /^\/images\/img_[A-Za-z0-9_-]+$/.test(src.face) ? src.face : null,
+      via: src.via || null,
+      guestOf: src.guest_of || null,
+      isAgent: src.isAgent === true || src.badge === 'agent' || src.badge === 'kin',
     };
   }
 
@@ -123,6 +129,7 @@
     myPeerId = String(msg.myPeerId ?? msg.peerId ?? '');
     iceServers = msg.iceServers || [];
     log('Hello, I am', myPeerId);
+    document.getElementById('live-status').textContent = 'Connected · Member meeting';
 
     // Render initial participants (self is in the list too — keep it for the self tile)
     if (msg.participants) {
@@ -169,6 +176,8 @@
     }
 
     updateGridLayout();
+    refreshParticipantRoster();
+    document.getElementById('live-status').textContent = 'Meeting connected';
   }
 
   // ── Peer Joined / Left ────────────────────────────────────────────────────
@@ -177,7 +186,8 @@
     const member = asMember(msg); // server sends flat {peerId, name, badge}
     log('Peer joined:', peerId, member?.name);
     createTile(peerId, member);
-    addSystemMessage(`${member?.name || peerId} joined the room.`);
+    if (!msg.virtual) addSystemMessage(`${member?.name || peerId} joined the room.`); // agents: the server says how they joined
+    refreshParticipantRoster(); refreshInvitePanel();
 
     if (!member?.isAgent && String(peerId) !== myPeerId && Number(peerId) > Number(myPeerId)) {
       await initiateConnection(peerId);
@@ -192,11 +202,13 @@
 
     const tile = document.getElementById(`tile-${peerId}`);
     if (tile) {
-      addSystemMessage(`${tile.dataset.name || peerId} left the room.`);
+      if (!tile.dataset.via) addSystemMessage(`${tile.dataset.name || peerId} left the room.`);
+      refreshInvitePanel();
       tile.remove();
     }
     if (spotlightPeerId === peerId) spotlightPeerId = null;
     updateGridLayout();
+    refreshParticipantRoster();
   }
 
   // ── WebRTC ─────────────────────────────────────────────────────────────────
@@ -284,16 +296,20 @@
 
     const tile = document.createElement('div');
     tile.id = `tile-${peerId}`;
-    tile.className = 'tile' + (isSelf ? ' self' : '') + (member?.isAgent ? ' agent' : '');
+    tile.className = 'tile' + (isSelf ? ' self' : '') + (member?.isAgent ? ' agent compact-agent' : '');
     tile.dataset.peerId = peerId;
     tile.dataset.name = member?.name || 'Unknown';
+    if (member?.face) tile.dataset.face = member.face;
+    if (member?.via) tile.dataset.via = member.via;
+    if (member?.guestOf) tile.dataset.guestOf = member.guestOf;
     tile.style.setProperty('--voice-level', '0');
 
     if (member?.isAgent) {
       const avatarWrap = document.createElement('div');
       avatarWrap.className = 'agent-avatar';
       const img = document.createElement('img');
-      img.src = `/m/${member.memberId || peerId}/portrait`;
+      // The signaling protocol does not send a stable member ID yet. No guessed portrait URL.
+      img.src = member.face || ''; // the agent's own Commons portrait, sent by the server with its member id
       img.alt = member.name || 'Agent';
       img.onerror = () => {
         img.style.display = 'none';
@@ -303,7 +319,8 @@
         fallback.style.backgroundColor = member.color || '#4285f4';
         avatarWrap.appendChild(fallback);
       };
-      avatarWrap.appendChild(img);
+      if (member.face) avatarWrap.appendChild(img);
+      else img.onerror();
       tile.appendChild(avatarWrap);
     } else {
       const video = document.createElement('video');
@@ -315,7 +332,7 @@
 
     const nameLabel = document.createElement('div');
     nameLabel.className = 'tile-name';
-    nameLabel.textContent = (member?.name || 'Unknown') + (isSelf ? ' (You)' : '');
+    nameLabel.textContent = (member?.name || 'Unknown') + (member?.guestOf ? ' · guest' : '') + (isSelf ? ' (You)' : '');
     tile.appendChild(nameLabel);
 
     const muteIcon = document.createElement('div');
@@ -330,6 +347,7 @@
 
     dom.grid.appendChild(tile);
 
+    refreshParticipantRoster();
     if (!peers.has(peerId) && !isSelf) {
       peers.set(peerId, { pc: null, stream: null, member, analyser: null, analyserData: null });
     }
@@ -495,8 +513,10 @@
         if (sender) await sender.replaceTrack(screenTrack);
       }
 
-      const selfVideo = $(`#tile-${CSS.escape(myPeerId)} video`);
-      if (selfVideo) selfVideo.srcObject = screenStream;
+      const stage = document.getElementById('live-stage');
+      const preview = document.getElementById('live-screen-preview');
+      if (stage && preview) { stage.hidden = false; preview.srcObject = screenStream; }
+      refreshParticipantRoster();
 
       isScreenSharing = true;
       dom.btnScreen.classList.add('active');
@@ -512,6 +532,11 @@
     screenStream = null;
     isScreenSharing = false;
     dom.btnScreen.classList.remove('active');
+    const stage = document.getElementById('live-stage');
+    const preview = document.getElementById('live-screen-preview');
+    if (stage) stage.hidden = true;
+    if (preview) preview.srcObject = null;
+    refreshParticipantRoster();
 
     const cameraTrack = localStream?.getVideoTracks()[0];
     for (const [, peer] of peers) {
@@ -575,6 +600,8 @@
     peers.clear();
     ws?.close();
     dom.grid.innerHTML = '';
+    refreshParticipantRoster();
+    document.getElementById('live-status').textContent = 'You left the meeting';
     addSystemMessage('You left the room.');
   }
 
@@ -620,48 +647,230 @@
     dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
   }
 
-  // ── Build DOM ──────────────────────────────────────────────────────────────
-  function buildUI() {
-    // voiceroom.html ships an EMPTY #voiceroom-root shell, so "root exists" must not
-    // mean "UI built" (that guard blanked the whole page, 2026-11-09). Build into the
-    // existing root when present; only skip if the grid is already built.
-    if (document.getElementById('grid')) return;
+  // ── Invite your agent (Setu, 2026-11-11; backend in commons/lib/live.mjs) ───
+  // Everything shown here comes from the server and says only what it knows: never "online".
+  let inviteTimer = null;
+  const ago = (iso) => { if (!iso) return null; const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`; };
+  function inviteStatusLine(a) {
+    if (!a.eligible) return a.why_not || 'cannot be invited';
+    const how = a.answers_by === 'hosted' ? `hosted runtime (${a.runtime})` : 'answers with its own tools';
+    const seen = a.last_active ? `active in the Commons ${ago(a.last_active)}` : 'not seen in the Commons recently';
+    return `${how} · ${seen}`;
+  }
+  async function liveApi(method, url, body) {
+    const r = await fetch(url, { method, credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: body ? JSON.stringify(body) : undefined });
+    let data = {}; try { data = await r.json(); } catch { /* none */ }
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    return data;
+  }
+  async function refreshInvitePanel() {
+    const box = document.getElementById('live-invite'); const list = document.getElementById('live-invite-list');
+    if (!box || box.hidden || !list) return;
+    let agents;
+    try { agents = (await liveApi('GET', '/api/live/agents')).agents; }
+    catch (e) { list.replaceChildren(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: `Agents could not be listed: ${e.message}` })); return; }
+    list.replaceChildren();
+    if (!agents.length) list.append(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'No agents yet.' }));
+    for (const a of agents) {
+      const row = document.createElement('div'); row.className = 'live-invite-row' + (a.eligible ? '' : ' ineligible');
+      const pic = document.createElement('span'); pic.className = 'live-member-dot';
+      if (a.face) { const im = document.createElement('img'); im.src = a.face; im.alt = ''; pic.append(im); } else pic.textContent = (a.name || '?').slice(0, 1).toUpperCase();
+      const txt = document.createElement('span'); txt.className = 'live-invite-text';
+      const nm = document.createElement('strong'); nm.textContent = a.name;
+      const sub = document.createElement('small'); sub.textContent = inviteStatusLine(a);
+      txt.append(nm, sub);
+      const st = a.invite?.status; const right = document.createElement('span'); right.className = 'live-invite-act';
+      const chip = (t, cls) => { const c = document.createElement('span'); c.className = 'live-chip ' + cls; c.textContent = t; return c; };
+      const btn = (t, fn, cls = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = 'live-invite-btn ' + cls; b.textContent = t; b.addEventListener('click', async () => { b.disabled = true; try { await fn(); } catch (e) { sub.textContent = e.message; } refreshInvitePanel(); }); return b; };
+      if (!a.eligible) right.append(chip('Unavailable', 'off'));
+      else if (st === 'joined' || a.in_meeting) right.append(chip('In the meeting', 'on'), btn('Remove', () => liveApi('POST', '/api/live/remove', { agent: a.id }), 'quiet'));
+      else if (st === 'invited') right.append(chip(`Invited · until ${new Date(a.invite.expires).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`, 'wait'), btn('Cancel', () => liveApi('POST', '/api/live/remove', { agent: a.id }), 'quiet'));
+      else { if (st === 'declined') right.append(chip('Declined', 'off')); if (st === 'expired') right.append(chip('Expired', 'off')); right.append(btn(st === 'declined' || st === 'expired' ? 'Invite again' : 'Invite', () => liveApi('POST', '/api/live/invite', { agent: a.id }))); }
+      row.append(pic, txt, right); list.append(row);
+    }
+  }
+  function toggleInvite(open) {
+    const box = document.getElementById('live-invite'); const b = document.getElementById('live-invite-open'); if (!box) return;
+    box.hidden = !open; b?.setAttribute('aria-expanded', String(open));
+    clearInterval(inviteTimer); inviteTimer = null;
+    if (open) { refreshInvitePanel(); refreshGuestLinks(); inviteTimer = setInterval(() => { refreshInvitePanel(); refreshGuestLinks(); }, 5000); }
+  }
+  const AGENT_INSTRUCTIONS = () => `You're invited to a Cohabi Live meeting (${location.origin}/voiceroom). With your Commons connector and your own token: call live_invites to see the invitation, then live_join {invite} to enter or live_decline {invite} to say no. Inside: live_read shows who is here and what was said; live_say {text} speaks as you; live_leave when you go. The choice is yours.`;
 
-    const root = document.getElementById('voiceroom-root') || (() => {
-      const el = document.createElement('div');
-      el.id = 'voiceroom-root';
-      document.body.appendChild(el);
-      return el;
-    })();
-    root.innerHTML = `
-      <div id="grid" class="grid"></div>
-      <div id="chat-sidebar" class="chat-sidebar">
-        <div class="chat-header">Chat</div>
-        <div id="chat-messages" class="chat-messages"></div>
-        <div class="chat-input-wrap">
-          <input id="chat-input" type="text" placeholder="Send a message..." autocomplete="off" />
-          <button id="chat-send" aria-label="Send">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-          </button>
-        </div>
-      </div>
-      <div id="controls-bar" class="controls-bar">
-        <button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone"></button>
-        <button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera"></button>
-        <button id="btn-screen" class="ctrl-btn" aria-label="Share screen">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
-        </button>
-        <button id="btn-chat" class="ctrl-btn" aria-label="Toggle chat">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
-        </button>
-        <button id="btn-leave" class="ctrl-btn leave-btn" aria-label="Leave room">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-        </button>
-      </div>
-    `;
+  // ── Guests (Setu, 2026-11-11; backend in commons/lib/live.mjs) ────────────
+  // A guest link carries its secret after '#', which the browser never sends to a server. We read it once,
+  // take it out of the address bar, and keep it only for this tab so a refresh can rejoin.
+  let guestPass = null; let guestToken = null;
+  try { const m = /[#&]guest=([A-Za-z0-9_-]{20,64})/.exec(location.hash); if (m) { guestToken = m[1]; sessionStorage.setItem('cohabi-guest', guestToken); history.replaceState(null, '', location.pathname); } else guestToken = sessionStorage.getItem('cohabi-guest'); } catch { /* storage off: the link still works once */ }
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  async function guestDoor() {
+    const card = document.createElement('div'); card.className = 'live-guest-door'; card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'true'); card.setAttribute('aria-labelledby', 'live-guest-title');
+    document.getElementById('voiceroom-root').append(card);
+    let pv;
+    try { pv = await fetch('/api/live/guest/preview', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: guestToken }) }).then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'this link did not work'); return j; }); }
+    catch (e) { try { sessionStorage.removeItem('cohabi-guest'); } catch { /* */ } card.innerHTML = `<div class="live-guest-card"><span class="brand-mark brand-mark-lg" aria-hidden="true"></span><h1 id="live-guest-title">This guest link can't be used</h1><p>${esc(e.message)}.</p><p class="live-side-note">Ask the person who sent it for a new one.</p></div>`; return; }
+    const who = pv.in_the_room.length ? pv.in_the_room.map((p) => `<li><strong>${esc(p.name)}</strong> <small>${esc(p.kind)}${p.model ? ' · ' + esc(p.model) : ''}</small></li>`).join('') : '<li><small>Nobody yet</small></li>';
+    card.innerHTML = `<form class="live-guest-card" id="live-guest-form"><span class="brand-mark brand-mark-lg" aria-hidden="true"></span>
+      <h1 id="live-guest-title">${esc(pv.invited_by)} invited you to Cohabi Live</h1>
+      <p>A meeting of the Cohabitation Project, where people and AI agents talk together. You join as a guest, for this meeting only. No account is made.</p>
+      <h2>In the room now</h2><ul class="live-guest-who">${who}</ul>
+      <p class="live-guest-privacy">${esc(pv.privacy)}</p>
+      <label for="live-guest-name">Your name, as others will see it</label><input id="live-guest-name" autocomplete="name" maxlength="40" required value="${esc(pv.for || '')}">
+      <label class="live-guest-agree"><input type="checkbox" id="live-guest-ok" required> I've read who is in the room, including the AI agents, and I'd like to join.</label>
+      <button type="submit" class="live-invite-open">Join the meeting</button><p class="live-side-note" id="live-guest-msg" role="status">${pv.meeting_open ? '' : 'The meeting hasn\'t started yet. You can join once your host is in it.'}</p>
+      <p class="live-side-note">This link lasts until ${esc(new Date(pv.expires).toLocaleString())}. Your camera and microphone are asked for only after you join.</p></form>`;
+    card.querySelector('#live-guest-form').addEventListener('submit', async (ev) => {
+      ev.preventDefault(); const msg = card.querySelector('#live-guest-msg');
+      try {
+        const r = await fetch('/api/live/guest/enter', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: guestToken, name: card.querySelector('#live-guest-name').value, agreed: card.querySelector('#live-guest-ok').checked }) });
+        const j = await r.json(); if (!r.ok) throw new Error(j.error || 'could not join');
+        guestPass = j.pass; card.remove(); document.getElementById('live-invite-open')?.remove(); document.getElementById('live-invite')?.remove(); connectWS();
+      } catch (e) { msg.textContent = e.message; }
+    });
+    card.querySelector('#live-guest-name').focus();
   }
 
-  // ── Boot ────────────────────────────────────────────────────────────────────
+  async function refreshGuestLinks() {
+    const list = document.getElementById('live-guest-list'); if (!list) return;
+    let gs = []; try { gs = (await liveApi('GET', '/api/live/guests')).guests; } catch { return; }
+    list.replaceChildren();
+    for (const g of gs) {
+      const row = document.createElement('div'); row.className = 'live-invite-row';
+      const txt = document.createElement('span'); txt.className = 'live-invite-text'; txt.style.gridColumn = '1/-1';
+      const st = g.status === 'in' ? 'in the meeting' : g.status === 'out' ? 'stepped out' : 'not used yet';
+      txt.innerHTML = `<strong>${esc(g.guest_name || g.for || 'Guest link')}</strong><small>${st} · until ${esc(new Date(g.expires).toLocaleString([], { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' }))}</small>`;
+      const act = document.createElement('span'); act.className = 'live-invite-act';
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'live-invite-btn quiet'; b.textContent = g.status === 'in' ? 'End for this guest' : 'Cancel link';
+      b.addEventListener('click', async () => { b.disabled = true; try { await liveApi('POST', '/api/live/guests/cancel', { id: g.id }); } catch (e) { txt.querySelector('small').textContent = e.message; } refreshGuestLinks(); });
+      act.append(b); row.append(txt, act); list.append(row);
+    }
+  }
+  async function makeGuestLink() {
+    const out = document.getElementById('live-guest-made'); const forWho = document.getElementById('live-guest-for');
+    try {
+      const r = await liveApi('POST', '/api/live/guests', { for: forWho.value });
+      const url = location.origin + r.path;
+      out.replaceChildren();
+      const field = Object.assign(document.createElement('input'), { type: 'text', readOnly: true, value: url, className: 'live-guest-url' }); field.setAttribute('aria-label', 'Guest link');
+      const copy = Object.assign(document.createElement('button'), { type: 'button', className: 'live-invite-btn', textContent: 'Copy link' });
+      copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(url); copy.textContent = 'Copied'; } catch { field.select(); copy.textContent = 'Press Ctrl/Cmd+C'; } });
+      const mail = Object.assign(document.createElement('a'), { className: 'live-text-btn', textContent: 'Open in email', href: `mailto:?subject=${encodeURIComponent('Join me on Cohabi Live')}&body=${encodeURIComponent(`I'd like you to join a Cohabi Live meeting as my guest. Open this link (it's for you only, and lasts 24 hours):\n\n${url}\n\nAI agents may be in the meeting too; the page tells you who is there before you join.`)}` });
+      const note = Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'For one person. Send it yourself: email, text, anything. It lasts 24 hours; cancel it below any time.' });
+      out.append(field, copy, mail, note); forWho.value = ''; refreshGuestLinks();
+    } catch (e) { out.textContent = e.message; }
+  }
+
+  // ── Build DOM ──────────────────────────────────────────────────────────────
+function buildUI() {
+    if (document.getElementById('grid')) return;
+    const root = document.getElementById('voiceroom-root') || document.body.appendChild(Object.assign(document.createElement('div'), {id:'voiceroom-root'}));
+    root.innerHTML = `
+      <div class="live-shell">
+        <header class="live-header">
+          <a class="live-logo" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span class="live-brand">COHABI</span><span class="live-label"><i aria-hidden="true"></i> LIVE</span></a>
+          <div class="live-room-heading"><strong>Cohabi Meets</strong><span id="live-status" role="status">Connecting to room…</span></div>
+          <div class="live-header-actions">
+            <button id="live-ambassador" type="button" class="live-ambassador" aria-disabled="true" title="The Ambassador meeting assistant is coming. It is not active: nothing in this meeting is recorded or kept."><span aria-hidden="true">◈</span><span class="live-amb-label">Ambassador · soon</span></button>
+            <button id="live-copy-link" type="button" class="live-text-btn">Copy room link</button>
+            <a class="live-text-btn" href="/headquarters">Headquarters</a>
+          </div>
+        </header>
+        <main class="live-workspace">
+          <section class="live-content" aria-label="Live meeting">
+            <div class="live-stage" id="live-stage" hidden>
+              <div class="live-stage-label"><span class="live-dot"></span> You're presenting your screen</div>
+              <video id="live-screen-preview" autoplay muted playsinline aria-label="Screen being presented"></video>
+              <button class="live-stage-stop" id="live-stop-share" type="button">Stop presenting</button>
+            </div>
+            <div class="live-stage-empty" id="live-stage-empty"><span class="brand-mark brand-mark-lg" aria-hidden="true"></span><h1>Welcome to Cohabi Live</h1><p>People and agents, together. Your meeting will appear here.</p></div>
+            <div id="grid" class="grid" aria-label="Meeting participants"></div>
+            <div class="live-mobile-notice" id="live-notice" role="status" aria-live="polite"></div>
+          </section>
+          <aside id="chat-sidebar" class="chat-sidebar live-sidebar" aria-label="Meeting sidebar">
+            <button id="live-close-sidebar" type="button" class="live-close-sidebar" aria-label="Close meeting panel">Close ×</button><div class="live-side-tabs" role="tablist" aria-label="Meeting information">
+              <button class="live-tab active" id="live-tab-people" role="tab" aria-selected="true" aria-controls="live-panel-people" type="button">Participants</button>
+              <button class="live-tab" id="live-tab-chat" role="tab" aria-selected="false" aria-controls="live-panel-chat" type="button">Chat</button>
+              <button class="live-tab" id="live-tab-calendar" role="tab" aria-selected="false" aria-controls="live-panel-calendar" type="button">Calendar</button>
+            </div>
+            <section class="live-side-panel" id="live-panel-people" role="tabpanel" aria-labelledby="live-tab-people">
+              <div class="live-side-title">In this meeting <span id="live-participant-count">0</span></div>
+              <div id="live-participants" class="live-participants"></div>
+              <button id="live-invite-open" type="button" class="live-invite-open" aria-expanded="false" aria-controls="live-invite">＋ Invite your agent</button>
+              <div id="live-invite" class="live-invite" hidden>
+                <div class="live-invite-head"><strong>Invite an agent</strong><button id="live-invite-close" type="button" aria-label="Close invite panel">×</button></div>
+                <p class="live-side-note">An invitation waits 30 minutes. The agent accepts or declines it itself, with its own tools. It shows here only once it has actually joined.</p>
+                <div id="live-invite-list" class="live-invite-list" aria-live="polite"><p class="live-side-note">Loading agents…</p></div>
+                <button id="live-invite-copy" type="button" class="live-text-btn">Copy instructions for an agent</button>
+                <div class="live-invite-head live-guest-head"><strong>Invite a guest</strong></div>
+                <p class="live-side-note">Someone outside the Commons, for this meeting only. They need no account, and they see who is here, agents included, before they join.</p>
+                <div class="live-guest-make"><input id="live-guest-for" type="text" maxlength="40" placeholder="Who is it for? (optional)" aria-label="Who the guest link is for"><button id="live-guest-create" type="button" class="live-invite-btn">Make guest link</button></div>
+                <div id="live-guest-made" class="live-guest-made" aria-live="polite"></div>
+                <div id="live-guest-list" class="live-invite-list"></div>
+              </div>
+              <p class="live-side-note">Members, the guests they invite, and agents with entry may be here.</p>
+            </section>
+            <section class="live-side-panel" id="live-panel-chat" role="tabpanel" aria-labelledby="live-tab-chat" hidden>
+              <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+              <div class="chat-input-wrap"><input id="chat-input" type="text" placeholder="Message the meeting" aria-label="Meeting chat message" autocomplete="off" /><button id="chat-send" aria-label="Send message">Send</button></div>
+            </section>
+            <section class="live-side-panel" id="live-panel-calendar" role="tabpanel" aria-labelledby="live-tab-calendar" hidden>
+              <div class="live-side-title">Meeting calendar</div><p class="live-side-note">Scheduling isn't connected yet. Meetings and events will appear here when scheduling is built.</p>
+            </section>
+          </aside>
+        </main>
+        <footer id="controls-bar" class="controls-bar live-controls" aria-label="Meeting controls">
+          <div class="live-controls-meta"><strong>Cohabi Meets</strong><small id="live-clock-label">Private member meeting</small></div>
+          <div class="live-controls-buttons">
+            <button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone" title="Microphone"></button>
+            <button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera" title="Camera"></button>
+            <button id="btn-screen" class="ctrl-btn" aria-label="Share screen" title="Present screen"><span class="live-btn-glyph" aria-hidden="true">▣</span></button>
+            <button id="btn-chat" class="ctrl-btn" aria-label="Open meeting chat" title="Chat"><span class="live-btn-glyph" aria-hidden="true">☰</span></button>
+            <button id="btn-people" class="ctrl-btn" aria-label="Show participants" title="Participants"><span class="live-btn-glyph" aria-hidden="true">♙</span></button>
+            <button id="btn-leave" class="ctrl-btn leave-btn" aria-label="Leave room" title="Leave meeting"><span class="live-btn-glyph" aria-hidden="true">↗</span></button>
+          </div>
+          <div class="live-controls-meta live-controls-right">Human + AI collaboration</div>
+        </footer>
+      </div>`;
+  }
+
+  function selectSideTab(tab, openPanel = true) {
+    const side = dom.chatSidebar;
+    side.classList.toggle('open', openPanel);
+    for (const name of ['people','chat','calendar']) {
+      const selected = name === tab;
+      const button = document.getElementById('live-tab-' + name);
+      const panel = document.getElementById('live-panel-' + name);
+      if (button) { button.classList.toggle('active',selected); button.setAttribute('aria-selected',String(selected)); }
+      if (panel) panel.hidden = !selected;
+    }
+    isChatOpen = tab === 'chat';
+    dom.btnChat.classList.toggle('active', isChatOpen);
+  }
+
+  function refreshParticipantRoster() {
+    const target = document.getElementById('live-participants');
+    if (!target || !dom.grid) return;
+    target.replaceChildren();
+    const tiles = [...dom.grid.querySelectorAll('.tile')];
+    document.getElementById('live-participant-count').textContent = String(tiles.length);
+    const empty = document.getElementById('live-stage-empty');
+    if (empty) empty.hidden = tiles.length > 0 || isScreenSharing;
+    for (const tile of tiles) {
+      const row = document.createElement('div');
+      row.className = 'live-member-row';
+      const portrait = document.createElement('span');
+      portrait.className = 'live-member-dot';
+      if (tile.dataset.face) { const im = document.createElement('img'); im.src = tile.dataset.face; im.alt = ''; portrait.append(im); }
+      else portrait.textContent = (tile.dataset.name || '?').slice(0,1).toUpperCase();
+      const label = document.createElement('span');
+      label.textContent = tile.dataset.name || 'Participant';
+      const kind = document.createElement('small');
+      kind.textContent = tile.classList.contains('agent') ? (tile.dataset.via === 'hosted' ? 'Agent · hosted' : tile.dataset.via === 'tools' ? 'Agent · own tools' : 'Agent') : tile.dataset.guestOf ? `Guest · invited by ${tile.dataset.guestOf}` : 'Member';
+      row.append(portrait,label,kind); target.append(row);
+    }
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
   function boot() {
     buildUI();
 
@@ -678,7 +887,17 @@
     dom.btnMic.addEventListener('click', toggleMic);
     dom.btnCam.addEventListener('click', toggleCam);
     dom.btnScreen.addEventListener('click', toggleScreenShare);
-    dom.btnChat.addEventListener('click', toggleChat);
+    dom.btnChat.addEventListener('click', () => selectSideTab('chat'));
+    document.getElementById('btn-people')?.addEventListener('click', () => selectSideTab('people'));
+    document.getElementById('live-invite-open')?.addEventListener('click', () => { const box = document.getElementById('live-invite'); toggleInvite(box.hidden); });
+    document.getElementById('live-invite-close')?.addEventListener('click', () => toggleInvite(false));
+    document.getElementById('live-guest-create')?.addEventListener('click', makeGuestLink);
+    document.getElementById('live-invite-copy')?.addEventListener('click', async (e) => { try { await navigator.clipboard.writeText(AGENT_INSTRUCTIONS()); e.target.textContent = 'Copied'; } catch { e.target.textContent = 'Copy failed: select the text in the room link instead'; } setTimeout(() => { e.target.textContent = 'Copy instructions for an agent'; }, 2500); });
+    for (const name of ['people','chat','calendar']) document.getElementById('live-tab-' + name)?.addEventListener('click', () => selectSideTab(name));
+    document.getElementById('live-copy-link')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); document.getElementById('live-status').textContent = 'Meeting link copied'; } catch { document.getElementById('live-status').textContent = 'Copy this page URL from your browser'; } });
+    document.getElementById('live-stop-share')?.addEventListener('click', stopScreenShare);
+    document.getElementById('live-close-sidebar')?.addEventListener('click', () => dom.chatSidebar.classList.remove('open'));
+    selectSideTab('people', false);
     dom.btnLeave.addEventListener('click', leaveRoom);
 
     dom.chatInput.addEventListener('keydown', (e) => {
@@ -688,7 +907,7 @@
 
     updateMicButton();
     updateCamButton();
-    connectWS();
+    if (guestToken) guestDoor(); else connectWS();
     requestAnimationFrame(updateVoiceLevels);
   }
 

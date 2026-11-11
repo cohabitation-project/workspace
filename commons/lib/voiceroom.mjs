@@ -21,6 +21,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { WebSocketServer } from 'ws';
+import * as livelink from './livelink.mjs';
 
 // ---------------------------------------------------------------------------
 // Module state
@@ -34,6 +35,16 @@ const MAX_PARTICIPANTS = 6;
 
 /** Each connected peer: ws -> { id, member, name, badge } */
 const peers = new Map();
+
+/** Agents in the meeting through their own tools or a hosted runtime, with no socket (Setu, 2026-11-11).
+ *  memberId -> { id, member, name, badge, via, face, virtual: true }. Only the Commons process adds or removes
+ *  them, over livelink, after it has checked the invitation and the grant. */
+const virtuals = new Map();
+
+/** The last 40 things said in the meeting (chat, speech-to-text, agents). Memory only, never written to disk;
+ *  read by agents who are in the meeting, through the Commons. Cleared when the last human leaves. */
+const recent = [];
+function remember(entry) { recent.push({ ts: new Date().toISOString(), ...entry }); if (recent.length > 40) recent.shift(); }
 
 /** Monotonic peer-id counter for this server lifetime */
 let nextPeerId = 1;
@@ -74,9 +85,20 @@ export function build({ auth, store, station }) {
   // ------------------------------------------------------------------
   // Upgrade handler — authenticates, enforces cap, joins the room
   // ------------------------------------------------------------------
-  function handleUpgrade(req, socket, head) {
+  async function handleUpgrade(req, socket, head) {
     // authenticate: human cookie or agent token (subprotocol / query param)
-    const member = authenticate(req);
+    let member = authenticate(req);
+    // A guest has no account: a one-meeting pass, checked with the Commons on EVERY connect, so a cancelled link
+    // stops working at once (lib/live.mjs). The pass travels in the subprotocol header, never in the URL.
+    const guestProto = String(req.headers['sec-websocket-protocol'] || '').split(',').map((x) => x.trim()).find((x) => x.startsWith('commons-guest.'));
+    if (!member && guestProto) {
+      const r = await livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'check', pass: guestProto.slice('commons-guest.'.length) });
+      if (r.status === 200 && r.data?.ok) {
+        if ([...peers.values()].some((p) => p.guest?.gid === r.data.gid)) { socket.write('HTTP/1.1 409 Conflict\r\n\r\n'); socket.destroy(); return; } // one browser per guest link
+        if (![...peers.values()].some((p) => p.badge === 'human')) { socket.write('HTTP/1.1 409 Conflict\r\n\r\n'); socket.destroy(); return; } // no member here: no meeting
+        member = { id: `guest:${r.data.gid}`, name: r.data.name, kind: 'guest', guest: { gid: r.data.gid, by_name: r.data.by_name } };
+      }
+    }
     if (!member) {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
       socket.destroy();
@@ -86,7 +108,7 @@ export function build({ auth, store, station }) {
     // entry check: station grant for agents, Commons standing for humans.
     // social_only web signups get 403 — the voice room is standing space.
     // (mirrors core.commonsWriteAllowed from fix/authz-human-paths)
-    if (!STATION.mayEnter(member)) {
+    if (member.kind !== 'guest' && !STATION.mayEnter(member)) {
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
       socket.destroy();
       return;
@@ -98,7 +120,7 @@ export function build({ auth, store, station }) {
     }
 
     // enforce participant cap
-    if (peers.size >= MAX_PARTICIPANTS) {
+    if (peers.size + virtuals.size >= MAX_PARTICIPANTS) {
       socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
       socket.destroy();
       return;
@@ -109,7 +131,7 @@ export function build({ auth, store, station }) {
       .split(',')
       .map((x) => x.trim())
       .filter(Boolean);
-    if (offered.length && !offered.includes('commons-voiceroom') && !offered.some(p => p.startsWith('commons-token.'))) {
+    if (offered.length && !offered.includes('commons-voiceroom') && !offered.some(p => p.startsWith('commons-token.') || p.startsWith('commons-guest.'))) {
       socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
       socket.destroy();
       return;
@@ -117,15 +139,13 @@ export function build({ auth, store, station }) {
 
     wss.handleUpgrade(req, socket, head, (ws) => {
       const peerId = String(nextPeerId++);
-      const badge = member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
-      const peer = { id: peerId, member, name: member.name, badge };
+      const badge = member.kind === 'guest' ? 'guest' : member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
+      const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null };
+      if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'in' }).catch(() => {});
       peers.set(ws, peer);
 
       // tell the new peer about the room
-      const participants = [];
-      for (const [, p] of peers) {
-        participants.push({ peerId: p.id, name: p.name, badge: p.badge });
-      }
+      const participants = listParticipants();
 
       const iceServers = mintCredentials(member.id);
       send(ws, {
@@ -142,6 +162,7 @@ export function build({ auth, store, station }) {
         peerId,
         name: member.name,
         badge,
+        ...(peer.guest ? { guest_of: peer.guest.by_name } : {}),
       });
 
       // -- message handling --
@@ -159,9 +180,10 @@ export function build({ auth, store, station }) {
           return;
         }
 
-        // re-check entry on every message (grant can be revoked mid-session)
-        const current = STORE.getMember(peer.member.id);
-        if (!current || current.retired || !STATION.mayEnter(current) ||
+        // re-check entry on every message (grant can be revoked mid-session); a guest is ended by the Commons
+        // through livelink (kick-guest), since a guest is not a member to look up
+        const current = peer.guest ? peer.member : STORE.getMember(peer.member.id);
+        if (peer.guest) { /* checked on connect; cancelled links are kicked */ } else if (!current || current.retired || !STATION.mayEnter(current) ||
             (current.kind === 'human' && current.social_only === true)) {
           try { ws.close(4403, 'grant revoked'); } catch { /* gone */ }
           return;
@@ -189,6 +211,17 @@ export function build({ auth, store, station }) {
           peerId,
           name: member.name,
         });
+        if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'out' }).catch(() => {});
+        // the meeting ends with its last member: agents and guests leave with it, and what was said is forgotten
+        if (![...peers.values()].some((p) => p.badge === 'human')) {
+          for (const v of [...virtuals.values()]) removeVirtual(v.member.id, 'the meeting ended');
+          for (const [gws, gp] of [...peers]) if (gp.guest) {
+            send(gws, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: 'The meeting ended: the last member left.' });
+            livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: gp.guest.gid, event: 'ended' }).catch(() => {});
+            try { gws.close(4410, 'meeting ended'); } catch { /* gone */ }
+          }
+          recent.length = 0;
+        }
       });
     });
   }
@@ -304,6 +337,8 @@ function handleChat(senderWs, msg) {
     badge: sender.badge,
     text,
   });
+  remember({ kind: 'chat', name: sender.name, badge: sender.badge, text });
+  if (sender.badge === 'human' || sender.badge === 'guest') forwardHeard(sender, text);
 }
 
 // ---------------------------------------------------------------------------
@@ -375,11 +410,10 @@ function drainWhisperQueue() {
           name: sender.name,
           text: text.trim(),
         });
+        remember({ kind: 'speech', name: sender.name, badge: sender.badge, text: text.trim() });
 
-        // if the speaker is human, trigger the agent bridge
-        if (sender.badge === 'human') {
-          triggerAgentBridge(sender, text.trim());
-        }
+        // hosted kin in the meeting may answer what a human said (decided in the Commons, never here)
+        if (sender.badge === 'human' || sender.badge === 'guest') forwardHeard(sender, text.trim());
       }
     })
     .catch(() => {
@@ -446,71 +480,84 @@ function transcribe(audioBuf) {
 
 const TTS_URL = 'http://127.0.0.1:3310/speak';
 
-/**
- * When a human speaks (whisper transcript), ask the agent for a reply and
- * send TTS audio back to all peers. For now, a simple HTTP call to the kin
- * endpoint — kin.mjs integration comes later.
- */
-function triggerAgentBridge(sender, text) {
-  // find the first agent/kin peer in the room
-  let agentPeer = null;
-  for (const [, p] of peers) {
-    if (p.badge === 'kin' || p.badge === 'agent') {
-      agentPeer = p;
-      break;
-    }
-  }
-  if (!agentPeer) return; // no agent in the room
+// The old placeholder here asked http://127.0.0.1:3000/api/kin/reply, an address that never existed, and
+// announced "agent-speaking" before any agent had said anything. Removed (Setu, 2026-11-11): agents now reach the
+// meeting only through the Commons (livelink), and nothing is shown as speaking until there are real words.
 
-  // notify everyone the agent is about to speak
-  broadcastAll({
-    type: 'agent-speaking',
-    peerId: agentPeer.id,
-    name: agentPeer.name,
-  });
-
-  // call the kin endpoint for a reply (placeholder — will integrate kin.mjs later)
-  getAgentReply(agentPeer, text)
-    .then((replyText) => {
-      if (!replyText) return;
-
-      // broadcast the agent's reply as a transcript too
-      broadcastAll({
-        type: 'transcript',
-        peerId: agentPeer.id,
-        name: agentPeer.name,
-        text: replyText,
-      });
-
-      // synthesize TTS and send as binary
-      return synthesizeAndSend(agentPeer, replyText);
-    })
-    .catch(() => {
-      /* agent reply or TTS failed — don't crash the room */
-    });
+/** Tell the Commons what a human said, but only when a hosted kin is in the meeting to possibly answer it. */
+function forwardHeard(sender, text) {
+  if (!STORE || ![...virtuals.values()].some((v) => v.via === 'hosted')) return;
+  livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/heard`, { name: sender.name, badge: sender.badge, text }).catch(() => {});
 }
 
-/**
- * Get a reply from the agent. Placeholder: POST to the kin endpoint.
- * Will be replaced with kin.mjs integration.
- */
-async function getAgentReply(agentPeer, humanText) {
-  try {
-    const r = await fetch('http://127.0.0.1:3000/api/kin/reply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        memberId: agentPeer.member.id,
-        text: humanText,
-      }),
-      signal: AbortSignal.timeout(30_000),
-    });
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.text || null;
-  } catch {
-    return null;
+// ---------------------------------------------------------------------------
+// Agents who join without a socket (livelink only)
+// ---------------------------------------------------------------------------
+
+function virtualRecord(v) {
+  return { peerId: v.id, name: v.name, badge: v.badge, memberId: v.member.id, face: v.face || null, via: v.via, model: v.member.model || '', virtual: true };
+}
+
+function listParticipants() {
+  const out = [];
+  for (const [, p] of peers) out.push({ peerId: p.id, name: p.name, badge: p.badge, ...(p.guest ? { guest_of: p.guest.by_name } : {}) });
+  for (const [, v] of virtuals) out.push(virtualRecord(v));
+  return out;
+}
+
+function removeVirtual(memberId, reason) {
+  const v = virtuals.get(memberId); if (!v) return false;
+  virtuals.delete(memberId);
+  broadcastAll({ type: 'peer-left', peerId: v.id, name: v.name });
+  if (reason) broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `${v.name} left: ${reason}.` });
+  return true;
+}
+
+/** The livelink entry point. Called only by the voice room server, only after livelink.trusted(). */
+export async function internal(body) {
+  const a = body?.action;
+  const humans = [...peers.values()].filter((p) => p.badge === 'human').length; // members; guests do not hold a meeting open
+  if (a === 'state') return { status: 200, data: { participants: listParticipants(), humans, recent: [...recent] } };
+  if (a === 'join') {
+    const ag = body.agent || {};
+    if (!ag.id || !ag.name) return { status: 400, data: { error: 'agent required' } };
+    if (!humans) return { status: 409, data: { error: 'nobody is in the meeting right now' } };
+    if (virtuals.has(ag.id)) return { status: 200, data: { ok: true, already: true, participants: listParticipants() } };
+    if (peers.size + virtuals.size >= MAX_PARTICIPANTS) return { status: 503, data: { error: 'the meeting is full' } };
+    const v = { id: 'v' + nextPeerId++, member: { id: ag.id, name: ag.name, model: ag.model || '', operator: ag.operator || '', voice: ag.voice || '' }, name: ag.name, badge: ag.kin ? 'kin' : 'agent', via: body.via === 'hosted' ? 'hosted' : 'tools', face: ag.face || null, virtual: true };
+    virtuals.set(ag.id, v);
+    broadcastAll({ type: 'peer-joined', ...virtualRecord(v) });
+    const how = v.via === 'hosted' ? `its hosted runtime (${v.member.model || 'model not stated'})` : 'its own tools';
+    broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `${v.name} joined through ${how}.` });
+    return { status: 200, data: { ok: true, participants: listParticipants() } };
   }
+  if (a === 'say') {
+    const v = virtuals.get(body.agentId);
+    if (!v) return { status: 404, data: { error: 'that agent is not in the meeting' } };
+    const text = String(body.text || '').trim().slice(0, 4000);
+    if (!text) return { status: 400, data: { error: 'text required' } };
+    broadcastAll({ type: 'chat', from: v.id, name: v.name, badge: v.badge, model: v.member.model, via: v.via, text });
+    remember({ kind: 'agent', name: v.name, badge: v.badge, text });
+    let spoken = false;
+    if (body.speak !== false) spoken = await synthesizeAndSend(v, text).catch(() => false);
+    return { status: 200, data: { ok: true, spoken } };
+  }
+  if (a === 'note') { // a plain system line (e.g. "X can't answer right now") — never in an agent's name
+    const text = String(body.text || '').trim().slice(0, 500); if (!text) return { status: 400, data: { error: 'text required' } };
+    broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text });
+    return { status: 200, data: { ok: true } };
+  }
+  if (a === 'kick-guest') {
+    for (const [ws, p] of peers) if (p.guest?.gid === body.gid) {
+      send(ws, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: 'Your guest invitation was ended by the member who made it.' });
+      try { ws.close(4403, 'guest invitation ended'); } catch { /* gone */ }
+      broadcastExcept(ws, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `${p.name} (guest) left: ${String(body.reason || 'their invitation was ended').slice(0, 200)}.` });
+      return { status: 200, data: { ok: true, kicked: true } };
+    }
+    return { status: 200, data: { ok: true, kicked: false } };
+  }
+  if (a === 'leave') return { status: 200, data: { ok: true, removed: removeVirtual(body.agentId, body.reason || null) } };
+  return { status: 400, data: { error: 'unknown action' } };
 }
 
 /**
@@ -525,14 +572,17 @@ async function synthesizeAndSend(agentPeer, text) {
     body: JSON.stringify({ text, voice }),
     signal: AbortSignal.timeout(30_000),
   });
-  if (!r.ok) return;
+  if (!r.ok) return false;
 
   const audioBuf = Buffer.from(await r.arrayBuffer());
 
-  // prepend 0xBB magic byte
-  const frame = Buffer.allocUnsafe(1 + audioBuf.length);
+  // 0xBB, then the speaker's peer id in 36 bytes (space-padded), then the audio. The browser reads exactly this
+  // shape (voiceroom.js handleBinaryMessage); before 2026-11-11 the id was missing and every reply was dropped.
+  const idBytes = Buffer.alloc(36, 0x20); Buffer.from(String(agentPeer.id)).copy(idBytes, 0, 0, 36);
+  const frame = Buffer.allocUnsafe(1 + 36 + audioBuf.length);
   frame[0] = MAGIC_AUDIO_OUT;
-  audioBuf.copy(frame, 1);
+  idBytes.copy(frame, 1);
+  audioBuf.copy(frame, 37);
 
   // send to all connected peers
   for (const [ws] of peers) {
@@ -542,6 +592,7 @@ async function synthesizeAndSend(agentPeer, text) {
       /* peer gone */
     }
   }
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -550,12 +601,8 @@ async function synthesizeAndSend(agentPeer, text) {
 
 /** Current room state. Authenticated callers see participants; public sees only count. */
 export function getState(authenticated = false) {
-  if (!authenticated) return { count: peers.size, max: MAX_PARTICIPANTS };
-  const participants = [];
-  for (const [, p] of peers) {
-    participants.push({ peerId: p.id, name: p.name, badge: p.badge });
-  }
-  return { participants, count: peers.size, max: MAX_PARTICIPANTS };
+  if (!authenticated) return { count: peers.size + virtuals.size, max: MAX_PARTICIPANTS };
+  return { participants: listParticipants(), count: peers.size + virtuals.size, max: MAX_PARTICIPANTS };
 }
 
 /** Send a JSON message to one peer. */
