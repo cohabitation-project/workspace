@@ -54,7 +54,7 @@ for (const [label, url, headers] of AUDITED) {
     const ids = new Set([...page.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
     for (const a of anchorsOf(page)) {
       if (a.href.startsWith('#')) { assert.ok(a.href === '#' ? false : ids.has(a.href.slice(1)), `${label}: "${a.text}" points at ${a.href}, which isn't on the page`); continue; }
-      if (a.href === '/') { assert.match(a.text, /^(← )?(COHABI|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
+      if (a.href === '/') { assert.match(a.text, /^(← )?(COHABI|▦ C O H A B I|THE COMMONS|Home|Cohabi home)$/i, `${label}: "${a.text}" goes to the top page`); continue; }
       if (!a.href.startsWith('/') || a.href.startsWith('//')) continue;
       const r = await fetch(B + a.href.split('#')[0], { headers, redirect: 'follow' });
       assert.ok(r.status < 400, `${label}: "${a.text}" -> ${a.href} answers ${r.status}`);
@@ -188,17 +188,16 @@ test('the shared header: the logo leads home, the deep links sit behind one menu
   }
 });
 
-test('the Commons page: three working ways in, a real picture, and honest labels on what is not built', async () => {
+test('the Commons page: Aletheia-6 layout, a real picture, working ways in, honest labels', async () => {
   const t = await (await fetch(B + '/commons', { headers: COHABI })).text();
-  const hero = t.slice(t.indexOf('<section class="cm-hero"'), t.indexOf('</section>', t.indexOf('<section class="cm-hero"')));
-  assert.match(hero, /Explore the Commons/); assert.match(hero, /href="\/headquarters"[^>]*>Enter Headquarters \(Guest\)/); assert.match(hero, /Bring Your Agent/);
+  const hero = t.slice(t.indexOf('<section class="hero"'), t.indexOf('</section>', t.indexOf('<section class="hero"')));
+  assert.match(hero, /Explore the Commons/); assert.match(hero, /href="\/headquarters">Walk Through Headquarters \(Guest\)/); assert.match(hero, /href="#join">Begin the Journey/);
   assert.ok(!hero.includes('href="/feed"') && !hero.includes('href="/label"'), 'the hero does not send people back out to Social or the Marketplace');
-  assert.ok(t.includes('/static/landing/headquarters.jpg'), 'the picture is a real screenshot of Headquarters');
-  assert.ok(!/play-?button|cm-play|▶/.test(t), 'no play button on a picture that does not play');
-  assert.match(t, /WORKS TODAY/); assert.match(t, /BEING BUILT/);
-  assert.match(t, /id="cm-prompt"/); assert.match(t, /id="cm-copy"/);
-  assert.equal((await fetch(B + '/static/commons-intro.js')).status, 200);
-  assert.equal((await fetch(B + '/static/landing/headquarters.jpg')).status, 200);
+  assert.ok(t.includes('/static/landing/headquarters.jpg') && !t.includes('headquarters.webp'), 'the picture is the real screenshot of Headquarters (Geoffrey, 2026-11-10)');
+  assert.ok(!/play-?button|▶/.test(t), 'no play button on a picture that does not play');
+  assert.match(t, /WORKS TODAY/); assert.match(t, /BEING BUILT/); assert.match(t, /id="cm-prompt"/); assert.match(t, /id="cm-copy"/);
+  assert.ok(!t.includes('href="/join"'), 'nothing here sends a person to the old account page');
+  for (const u of ['/static/commons-v2/commons.css', '/static/commons-v2/commons.js', '/static/commons-v2/assets/hero.webp', '/static/commons-v2/assets/guest.webp', '/static/commons-v2/assets/apple.webp', '/static/commons-intro.js', '/static/landing/headquarters.jpg']) assert.equal((await fetch(B + u)).status, 200, u);
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
