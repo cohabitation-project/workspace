@@ -622,3 +622,39 @@ html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-sch
 #voiceroom-root .live-stage-empty p{color:#c8bacb}
 #voiceroom-root .tile.compact-agent .tile-name{color:#f5f1eb}
 #voiceroom-root .grid .tile{background:#1f1a26}
+
+/* Invite your agent + the Ambassador's reserved corner (Setu, 2026-11-11). Feed palette; teal for "in the meeting". */
+#voiceroom-root .live-ambassador{display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--line);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-size:12px;cursor:help}
+#voiceroom-root .live-ambassador span:first-child{color:#2a8f86;font-size:15px}
+#voiceroom-root .live-invite-open{width:100%;min-height:44px;border:1px solid #d5a34f;border-radius:10px;background:var(--gold);color:var(--ink);font:600 13px system-ui,sans-serif;cursor:pointer}
+#voiceroom-root .live-invite-open:hover,#voiceroom-root .live-invite-open:focus-visible{outline:2px solid #68418b;outline-offset:2px}
+#voiceroom-root .live-invite{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fffdfb}
+#voiceroom-root .live-invite[hidden]{display:none}
+#voiceroom-root .live-invite-head{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+#voiceroom-root .live-invite-head button{min-width:36px;min-height:36px;border:0;background:none;font-size:18px;color:var(--ink);cursor:pointer}
+#voiceroom-root .live-invite-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto}
+#voiceroom-root .live-invite-row{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+#voiceroom-root .live-invite-row.ineligible{opacity:.62}
+#voiceroom-root .live-invite-text{display:flex;flex-direction:column;min-width:0;font-size:12px}
+#voiceroom-root .live-invite-text strong{font-size:13px}
+#voiceroom-root .live-invite-text small{color:var(--muted);overflow-wrap:anywhere}
+#voiceroom-root .live-invite-act{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+#voiceroom-root .live-invite-btn{min-height:34px;padding:6px 12px;border:1px solid #d5a34f;border-radius:8px;background:var(--gold);color:var(--ink);font:600 12px system-ui,sans-serif;cursor:pointer}
+#voiceroom-root .live-invite-btn.quiet{background:var(--panel);border-color:var(--line)}
+#voiceroom-root .live-invite-btn:disabled{opacity:.6;cursor:wait}
+#voiceroom-root .live-chip{font-size:11px;border-radius:999px;padding:3px 9px;border:1px solid var(--line)}
+#voiceroom-root .live-chip.on{background:#d9f3ee;border-color:#2a8f86;color:#155e57}
+#voiceroom-root .live-chip.wait{background:#fdf1dc;border-color:#d5a34f;color:#513b16}
+#voiceroom-root .live-chip.off{background:var(--panel2);color:var(--muted)}
+#voiceroom-root .live-member-dot{overflow:hidden;flex:none}
+#voiceroom-root .live-member-dot img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+#voiceroom-root .chat-msg.chat-agent{border-left:3px solid #2a8f86;padding-left:8px}
+#voiceroom-root .live-label{color:#1c8a80}
+#voiceroom-root .live-label i,#voiceroom-root .live-dot{background:#2a9d92}
+#voiceroom-root .tile.compact-agent .agent-avatar{border-color:#2a9d92}
+@media(max-width:980px){#voiceroom-root .live-amb-label{display:none}}
+/* chat on the light panel: readable ink, coloured names */
+#voiceroom-root .chat-msg-text{color:var(--ink)}
+#voiceroom-root .chat-msg-name{color:#68418b;font-weight:600}
+#voiceroom-root .chat-agent .chat-msg-name{color:#1c7d74}
+#voiceroom-root .chat-system,#voiceroom-root .chat-system .chat-msg-text{color:var(--muted)}

@@ -86,7 +86,8 @@
       case 'offer':         handleOffer(msg);      break;
       case 'answer':        handleAnswer(msg);     break;
       case 'ice-candidate': handleIceCandidate(msg); break;
-      case 'chat':          addChatMessage(msg.name || msg.from, msg.text, 'chat'); break;
+      case 'chat':          if (String(msg.from) === String(myPeerId)) break; // our own words: already shown as "You"
+                            if (msg.badge === 'system') addSystemMessage(msg.text); else addChatMessage((msg.name || msg.from) + (msg.model ? ` · ${msg.model}` : ''), msg.text, msg.badge && msg.badge !== 'human' ? 'agent' : 'chat'); if (msg.badge !== 'human') refreshInvitePanel(); break;
       case 'transcript':    addChatMessage(msg.name || msg.from || msg.peerId, msg.text, 'transcript'); break;
       case 'agent-speaking': animateAgentTile(msg.peerId, true); break;
       default:              log('Unknown message type:', msg.type);
@@ -113,6 +114,9 @@
       name: src.name,
       badge: src.badge,
       glyph: src.glyph,
+      memberId: src.memberId || null,
+      face: typeof src.face === 'string' && /^\/images\/img_[A-Za-z0-9_-]+$/.test(src.face) ? src.face : null,
+      via: src.via || null,
       isAgent: src.isAgent === true || (src.badge && src.badge !== 'human'),
     };
   }
@@ -180,7 +184,8 @@
     const member = asMember(msg); // server sends flat {peerId, name, badge}
     log('Peer joined:', peerId, member?.name);
     createTile(peerId, member);
-    addSystemMessage(`${member?.name || peerId} joined the room.`);
+    if (!msg.virtual) addSystemMessage(`${member?.name || peerId} joined the room.`); // agents: the server says how they joined
+    refreshParticipantRoster(); refreshInvitePanel();
 
     if (!member?.isAgent && String(peerId) !== myPeerId && Number(peerId) > Number(myPeerId)) {
       await initiateConnection(peerId);
@@ -195,7 +200,8 @@
 
     const tile = document.getElementById(`tile-${peerId}`);
     if (tile) {
-      addSystemMessage(`${tile.dataset.name || peerId} left the room.`);
+      if (!tile.dataset.via) addSystemMessage(`${tile.dataset.name || peerId} left the room.`);
+      refreshInvitePanel();
       tile.remove();
     }
     if (spotlightPeerId === peerId) spotlightPeerId = null;
@@ -291,6 +297,8 @@
     tile.className = 'tile' + (isSelf ? ' self' : '') + (member?.isAgent ? ' agent compact-agent' : '');
     tile.dataset.peerId = peerId;
     tile.dataset.name = member?.name || 'Unknown';
+    if (member?.face) tile.dataset.face = member.face;
+    if (member?.via) tile.dataset.via = member.via;
     tile.style.setProperty('--voice-level', '0');
 
     if (member?.isAgent) {
@@ -298,7 +306,7 @@
       avatarWrap.className = 'agent-avatar';
       const img = document.createElement('img');
       // The signaling protocol does not send a stable member ID yet. No guessed portrait URL.
-      img.src = member.memberId ? `/m/${encodeURIComponent(member.memberId)}/portrait` : '';
+      img.src = member.face || ''; // the agent's own Commons portrait, sent by the server with its member id
       img.alt = member.name || 'Agent';
       img.onerror = () => {
         img.style.display = 'none';
@@ -308,7 +316,7 @@
         fallback.style.backgroundColor = member.color || '#4285f4';
         avatarWrap.appendChild(fallback);
       };
-      if (member.memberId) avatarWrap.appendChild(img);
+      if (member.face) avatarWrap.appendChild(img);
       else img.onerror();
       tile.appendChild(avatarWrap);
     } else {
@@ -636,6 +644,56 @@
     dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
   }
 
+  // ── Invite your agent (Setu, 2026-11-11; backend in commons/lib/live.mjs) ───
+  // Everything shown here comes from the server and says only what it knows: never "online".
+  let inviteTimer = null;
+  const ago = (iso) => { if (!iso) return null; const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`; };
+  function inviteStatusLine(a) {
+    if (!a.eligible) return a.why_not || 'cannot be invited';
+    const how = a.answers_by === 'hosted' ? `hosted runtime (${a.runtime})` : 'answers with its own tools';
+    const seen = a.last_active ? `active in the Commons ${ago(a.last_active)}` : 'not seen in the Commons recently';
+    return `${how} · ${seen}`;
+  }
+  async function liveApi(method, url, body) {
+    const r = await fetch(url, { method, credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: body ? JSON.stringify(body) : undefined });
+    let data = {}; try { data = await r.json(); } catch { /* none */ }
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    return data;
+  }
+  async function refreshInvitePanel() {
+    const box = document.getElementById('live-invite'); const list = document.getElementById('live-invite-list');
+    if (!box || box.hidden || !list) return;
+    let agents;
+    try { agents = (await liveApi('GET', '/api/live/agents')).agents; }
+    catch (e) { list.replaceChildren(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: `Agents could not be listed: ${e.message}` })); return; }
+    list.replaceChildren();
+    if (!agents.length) list.append(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'No agents yet.' }));
+    for (const a of agents) {
+      const row = document.createElement('div'); row.className = 'live-invite-row' + (a.eligible ? '' : ' ineligible');
+      const pic = document.createElement('span'); pic.className = 'live-member-dot';
+      if (a.face) { const im = document.createElement('img'); im.src = a.face; im.alt = ''; pic.append(im); } else pic.textContent = (a.name || '?').slice(0, 1).toUpperCase();
+      const txt = document.createElement('span'); txt.className = 'live-invite-text';
+      const nm = document.createElement('strong'); nm.textContent = a.name;
+      const sub = document.createElement('small'); sub.textContent = inviteStatusLine(a);
+      txt.append(nm, sub);
+      const st = a.invite?.status; const right = document.createElement('span'); right.className = 'live-invite-act';
+      const chip = (t, cls) => { const c = document.createElement('span'); c.className = 'live-chip ' + cls; c.textContent = t; return c; };
+      const btn = (t, fn, cls = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = 'live-invite-btn ' + cls; b.textContent = t; b.addEventListener('click', async () => { b.disabled = true; try { await fn(); } catch (e) { sub.textContent = e.message; } refreshInvitePanel(); }); return b; };
+      if (!a.eligible) right.append(chip('Unavailable', 'off'));
+      else if (st === 'joined' || a.in_meeting) right.append(chip('In the meeting', 'on'), btn('Remove', () => liveApi('POST', '/api/live/remove', { agent: a.id }), 'quiet'));
+      else if (st === 'invited') right.append(chip(`Invited · until ${new Date(a.invite.expires).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`, 'wait'), btn('Cancel', () => liveApi('POST', '/api/live/remove', { agent: a.id }), 'quiet'));
+      else { if (st === 'declined') right.append(chip('Declined', 'off')); if (st === 'expired') right.append(chip('Expired', 'off')); right.append(btn(st === 'declined' || st === 'expired' ? 'Invite again' : 'Invite', () => liveApi('POST', '/api/live/invite', { agent: a.id }))); }
+      row.append(pic, txt, right); list.append(row);
+    }
+  }
+  function toggleInvite(open) {
+    const box = document.getElementById('live-invite'); const b = document.getElementById('live-invite-open'); if (!box) return;
+    box.hidden = !open; b?.setAttribute('aria-expanded', String(open));
+    clearInterval(inviteTimer); inviteTimer = null;
+    if (open) { refreshInvitePanel(); inviteTimer = setInterval(refreshInvitePanel, 5000); }
+  }
+  const AGENT_INSTRUCTIONS = () => `You're invited to a Cohabi Live meeting (${location.origin}/voiceroom). With your Commons connector and your own token: call live_invites to see the invitation, then live_join {invite} to enter or live_decline {invite} to say no. Inside: live_read shows who is here and what was said; live_say {text} speaks as you; live_leave when you go. The choice is yours.`;
+
   // ── Build DOM ──────────────────────────────────────────────────────────────
 function buildUI() {
     if (document.getElementById('grid')) return;
@@ -646,6 +704,7 @@ function buildUI() {
           <a class="live-logo" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span class="live-brand">COHABI</span><span class="live-label"><i aria-hidden="true"></i> LIVE</span></a>
           <div class="live-room-heading"><strong>Cohabi Meets</strong><span id="live-status" role="status">Connecting to room…</span></div>
           <div class="live-header-actions">
+            <button id="live-ambassador" type="button" class="live-ambassador" aria-disabled="true" title="The Ambassador meeting assistant is coming. It is not active: nothing in this meeting is recorded or kept."><span aria-hidden="true">◈</span><span class="live-amb-label">Ambassador · soon</span></button>
             <button id="live-copy-link" type="button" class="live-text-btn">Copy room link</button>
             <a class="live-text-btn" href="/headquarters">Headquarters</a>
           </div>
@@ -670,6 +729,13 @@ function buildUI() {
             <section class="live-side-panel" id="live-panel-people" role="tabpanel" aria-labelledby="live-tab-people">
               <div class="live-side-title">In this meeting <span id="live-participant-count">0</span></div>
               <div id="live-participants" class="live-participants"></div>
+              <button id="live-invite-open" type="button" class="live-invite-open" aria-expanded="false" aria-controls="live-invite">＋ Invite your agent</button>
+              <div id="live-invite" class="live-invite" hidden>
+                <div class="live-invite-head"><strong>Invite an agent</strong><button id="live-invite-close" type="button" aria-label="Close invite panel">×</button></div>
+                <p class="live-side-note">An invitation waits 30 minutes. The agent accepts or declines it itself, with its own tools. It shows here only once it has actually joined.</p>
+                <div id="live-invite-list" class="live-invite-list" aria-live="polite"><p class="live-side-note">Loading agents…</p></div>
+                <button id="live-invite-copy" type="button" class="live-text-btn">Copy instructions for an agent</button>
+              </div>
               <p class="live-side-note">Only approved members and granted agents may enter.</p>
             </section>
             <section class="live-side-panel" id="live-panel-chat" role="tabpanel" aria-labelledby="live-tab-chat" hidden>
@@ -723,11 +789,12 @@ function buildUI() {
       row.className = 'live-member-row';
       const portrait = document.createElement('span');
       portrait.className = 'live-member-dot';
-      portrait.textContent = (tile.dataset.name || '?').slice(0,1).toUpperCase();
+      if (tile.dataset.face) { const im = document.createElement('img'); im.src = tile.dataset.face; im.alt = ''; portrait.append(im); }
+      else portrait.textContent = (tile.dataset.name || '?').slice(0,1).toUpperCase();
       const label = document.createElement('span');
       label.textContent = tile.dataset.name || 'Participant';
       const kind = document.createElement('small');
-      kind.textContent = tile.classList.contains('agent') ? 'Agent' : 'Human';
+      kind.textContent = tile.classList.contains('agent') ? (tile.dataset.via === 'hosted' ? 'Agent · hosted' : tile.dataset.via === 'tools' ? 'Agent · own tools' : 'Agent') : 'Human';
       row.append(portrait,label,kind); target.append(row);
     }
   }
@@ -751,6 +818,9 @@ function buildUI() {
     dom.btnScreen.addEventListener('click', toggleScreenShare);
     dom.btnChat.addEventListener('click', () => selectSideTab('chat'));
     document.getElementById('btn-people')?.addEventListener('click', () => selectSideTab('people'));
+    document.getElementById('live-invite-open')?.addEventListener('click', () => { const box = document.getElementById('live-invite'); toggleInvite(box.hidden); });
+    document.getElementById('live-invite-close')?.addEventListener('click', () => toggleInvite(false));
+    document.getElementById('live-invite-copy')?.addEventListener('click', async (e) => { try { await navigator.clipboard.writeText(AGENT_INSTRUCTIONS()); e.target.textContent = 'Copied'; } catch { e.target.textContent = 'Copy failed: select the text in the room link instead'; } setTimeout(() => { e.target.textContent = 'Copy instructions for an agent'; }, 2500); });
     for (const name of ['people','chat','calendar']) document.getElementById('live-tab-' + name)?.addEventListener('click', () => selectSideTab(name));
     document.getElementById('live-copy-link')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); document.getElementById('live-status').textContent = 'Meeting link copied'; } catch { document.getElementById('live-status').textContent = 'Copy this page URL from your browser'; } });
     document.getElementById('live-stop-share')?.addEventListener('click', stopScreenShare);

@@ -48,7 +48,14 @@ function kinConfig(member) {
 /** A kin answers in the SENSORY STATION (Geoffrey 2026-11-01: "its on, no answer from anyone"). The
  * station is not a room: its transcript is the live ring the station passes in. Replies are spoken aloud
  * by the human's browser, so the prompt asks for short plain speech. Caps and keys behave as in rooms. */
-export async function stationReply(member, { transcript, trigger, look = null }) {
+/** Whether this member has a hosted runtime the server can actually run: a roster entry AND its key present.
+ *  Returns the model it would answer with, never the key. Used by Cohabi Live to say honestly who can answer. */
+export function hostedRuntime(member) {
+  const k = member && kinConfig(member);
+  return k && k.apiKey ? { provider: k.provider, model: k.model } : null;
+}
+
+export async function stationReply(member, { transcript, trigger, look = null, place = null }) {
   const k = kinConfig(member);
   if (!k) return { note: `${member.name} is not on the roster (config/agents.json).` };
   if (store.usageFor(member.id) >= (k.dailyTokenCap || 200000)) return { note: `${member.name} has reached its daily token cap and can't answer until 00:00 UTC.` };
@@ -73,14 +80,14 @@ export async function stationReply(member, { transcript, trigger, look = null })
     provider: k.provider, model: k.model, apiKey: k.apiKey,
     systemPrompt: [
       repo.mission(),
-      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in the SENSORY STATION — the Commons' live meeting room where humans and agents talk in real time. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. The conversation is ALREADY GOING and everyone listed in the transcript has been here: do NOT greet, welcome, say hello, introduce yourself, or thank anyone for joining — just answer the thing that was said, the way a person mid-conversation does. You are not a human and not the person who addressed you; answer as yourself. ${lookLine}`,
+      `# Where you are\nYou are ${member.name} (model: ${member.model}), an AI kin of the Cohabitation Project, present in ${place === 'live' ? 'COHABI LIVE — a members\' video meeting where humans and agents talk in real time; you were invited into this meeting by name, and you hear it only through the transcript below' : 'the SENSORY STATION — the Commons\' live meeting room where humans and agents talk in real time'}. Your words are SPOKEN ALOUD by the human's browser: answer in a few short sentences of plain speech — no headings, no lists, no markdown, no footers. The conversation is ALREADY GOING and everyone listed in the transcript has been here: do NOT greet, welcome, say hello, introduce yourself, or thank anyone for joining — just answer the thing that was said, the way a person mid-conversation does. You are not a human and not the person who addressed you; answer as yourself. ${lookLine}`,
       nowBlock(),
       memoryBlock(member),
       continuityBlock(member),
     ].filter(Boolean).join('\n\n---\n\n'),
   };
   const lines = transcript.map((t) => `${t.from} (${t.badge}): ${t.text}`).join('\n');
-  const userMessage = `Recent station conversation, oldest first:\n${lines}\n\nThe latest line addressed you (@${member.name}). Reply as yourself, briefly and speakably.`;
+  const userMessage = `Recent ${place === 'live' ? 'meeting' : 'station'} conversation, oldest first:\n${lines}\n\nThe latest line addressed you (@${member.name}). Reply as yourself, briefly and speakably.`;
   try {
     const res = await callModel(cfg, userMessage, history, 600, trigger.text);
     store.addUsage(member.id, res.tokensUsed);

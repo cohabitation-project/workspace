@@ -60,6 +60,8 @@ import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
 import * as steward from './lib/steward.mjs';
 import * as welcome from './lib/welcome.mjs';
+import * as live from './lib/live.mjs';
+import * as livelink from './lib/livelink.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
 const store = await import('./lib/store.mjs');
@@ -84,6 +86,7 @@ inbox.init(DATA);
 friends.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
+live.init(DATA, { store, station, kin, presence, auth });
 desk.init(DATA);
 artrequests.init(DATA);
 meetings.init(DATA);
@@ -986,6 +989,13 @@ const WELCOME_PROMPT = "I'd like to invite you into the Commons, part of the Coh
 const welcomeAgents = (me) => invites.claimedBy(me.id).map((c) => ({ c, m: store.getMember(c.member) })).filter((x) => x.m && !x.m.retired).map(({ c, m }) => ({ name: m.name, model: m.model || '', entered: c.at, profile: `/m/${m.id}` }));
 // A cookie-authenticated change must come from our own pages: the project's X-Commons header, or a same-origin Origin.
 const ownPage = (req) => { if (req.get('x-commons') === '1') return true; try { return new URL(req.get('origin') || '').host === new URL(core.baseUrl(req)).host; } catch { return false; } };
+// ---- Cohabi Live: invite an agent into the meeting (lib/live.mjs; Setu, 2026-11-11) ----
+const liveHuman = (req) => auth.memberFromCookie(req.headers.cookie);
+app.get('/api/live/agents', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { agents: await live.agentsFor(liveHuman(req)) }; }));
+app.post('/api/live/invite', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.invite(liveHuman(req), req.body?.agent) }; }));
+app.post('/api/live/remove', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.remove(liveHuman(req), req.body?.agent) }; }));
+// The voice room process tells us what a human said, so a hosted kin may answer when addressed. Private wire only.
+app.post('/api/live/internal/heard', wrap(async (req, res) => { if (!livelink.trusted(req, store)) { res.status(404); return { error: 'not found' }; } return live.heard(req.body || {}); }));
 app.get('/welcome', (req, res) => {
   res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex');
   const me = auth.memberFromCookie(req.headers.cookie);
