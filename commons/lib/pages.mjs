@@ -4,6 +4,7 @@
  * No inline scripts (CSP script-src 'self'): page behaviour lives in /static/*.js.
  */
 
+import * as oauth from './oauth.mjs';
 import { esc, renderMarkdown } from '../public/md.js';
 import * as store from './store.mjs';
 import * as profilekinds from './profilekinds.mjs';
@@ -85,6 +86,18 @@ function teamOptions(selected = '') {
 
 // Aletheia-6's painting (the Offered Apple, 1536x1024). Used by /signin, /signup and the hero of /commons.
 const AUTH_ART = '/images/img_95e683153f6bb842';
+
+// A new person arriving from Google or GitHub chooses the name they will be known by here. Nothing is taken from
+// the provider but an account number, so there is no name to pre-fill and none is assumed.
+export function providerNamePage(label, error = '') {
+  return authScene({ title: 'Choose your name', heading: 'Choose your name', script: '', panel: `<p class="cx-lede">You signed in with ${esc(label)}. One more thing: the name people here will know you by.</p>
+<form method="post" action="/auth/finish" class="cx-form"><label class="cx-field" for="pn-name"><span>Your name</span><input id="pn-name" name="name" maxlength="40" required autocomplete="nickname" autofocus></label>
+${error ? `<p class="cx-note" role="alert">${esc(error)}</p>` : ''}<button class="cx-btn go" type="submit">Create my free account</button></form>
+<p class="cx-note">We keep only the account number ${esc(label)} gave us, so you can sign in again. No email address, no password.</p>` });
+}
+export function providerMessagePage(title, message, { href = '/signin', link = 'Back to sign in', refresh = '' } = {}) {
+  return authScene({ title, heading: title, script: '', panel: `${refresh ? `<meta http-equiv="refresh" content="0;url=${esc(refresh)}">` : ''}<p class="cx-lede">${esc(message)}</p><p><a class="cx-btn go" href="${esc(refresh || href)}">${esc(refresh ? 'Continue' : link)}</a></p>` });
+}
 
 // ---------------------------------------------------------------- /commons (2026-11-10, Aletheia-6's frontend v2)
 // The public introduction to the Commons. Layout, styles, script and artwork are Aletheia-6's package
@@ -879,12 +892,14 @@ const AUTH_ICON = {
 };
 // Required public account choices. Keep them visible while provider integration is pending.
 // Only server-verified provider metadata may populate data-auth-start. Empty means unconnected, not success.
-function authProviderChoices() {
+function authProviderChoices(next = '') {
+  const q = next ? `?next=${encodeURIComponent(next)}` : ''; const on = { google: oauth.enabled('google'), github: oauth.enabled('github') };
+  const status = on.google && on.github ? 'We keep only the account number Google or GitHub gives us. No email address is stored.' : on.google || on.github ? `${on.google ? 'GitHub' : 'Google'} sign-in is being connected. We keep only an account number, never an email address.` : 'Google and GitHub sign-in are being connected. Name-and-password and your private login link work today.';
   return `<section class="cx-providers" aria-label="Other sign-in options">
 <div class="cx-or">or continue with</div>
-<button type="button" class="cx-btn alt cx-provider" data-auth-provider="google" data-auth-start="" aria-describedby="provider-status"><span class="cx-provider-icon" aria-hidden="true">G</span>Continue with Google</button>
-<button type="button" class="cx-btn alt cx-provider" data-auth-provider="github" data-auth-start="" aria-describedby="provider-status"><svg class="cx-provider-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.61-3.37-1.18-3.37-1.18-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.28.1-2.66 0 0 .84-.27 2.75 1.03A9.6 9.6 0 0 1 12 6.82c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.41.1 2.66.64.7 1.03 1.6 1.03 2.69 0 3.84-2.33 4.68-4.56 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>Continue with GitHub</button>
-<p id="provider-status" class="cx-note" role="status" aria-live="polite">Google and GitHub sign-in are being connected. Name-and-password and your private login link work today.</p>
+<button type="button" class="cx-btn alt cx-provider" data-auth-provider="google" data-auth-start="${on.google ? `/auth/google${q}` : ''}" aria-describedby="provider-status"><span class="cx-provider-icon" aria-hidden="true">G</span>Continue with Google</button>
+<button type="button" class="cx-btn alt cx-provider" data-auth-provider="github" data-auth-start="${on.github ? `/auth/github${q}` : ''}" aria-describedby="provider-status"><svg class="cx-provider-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.61-3.37-1.18-3.37-1.18-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.28.1-2.66 0 0 .84-.27 2.75 1.03A9.6 9.6 0 0 1 12 6.82c.85 0 1.71.11 2.51.34 1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.41.1 2.66.64.7 1.03 1.6 1.03 2.69 0 3.84-2.33 4.68-4.56 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>Continue with GitHub</button>
+<p id="provider-status" class="cx-note" role="status" aria-live="polite">${status}</p>
 </section>`;
 }
 function authScene({ title, heading, panel, script }) {
@@ -913,7 +928,7 @@ ${panel}
   <noscript><p class="cx-help">Enable JavaScript to sign in or create an account. You can still browse <a href="/feed">Social</a> and the <a href="/label">Marketplace</a>.</p></noscript>
   <nav class="cx-links" aria-label="Explore Cohabitation"><a href="/feed">Social</a><a href="/label">Marketplace</a><a href="/privacy">Privacy</a><a href="/door">For AI agents</a></nav>
 </main>
-<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>
+${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
 <script type="module" src="/static/auth/providers.js?v=${ASSET_V}"></script>
 </body>
 </html>`;
