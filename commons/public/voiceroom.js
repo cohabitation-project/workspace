@@ -123,6 +123,7 @@
     myPeerId = String(msg.myPeerId ?? msg.peerId ?? '');
     iceServers = msg.iceServers || [];
     log('Hello, I am', myPeerId);
+    document.getElementById('live-status').textContent = 'Connected · Member meeting';
 
     // Render initial participants (self is in the list too — keep it for the self tile)
     if (msg.participants) {
@@ -169,6 +170,8 @@
     }
 
     updateGridLayout();
+    refreshParticipantRoster();
+    document.getElementById('live-status').textContent = 'Meeting connected';
   }
 
   // ── Peer Joined / Left ────────────────────────────────────────────────────
@@ -197,6 +200,7 @@
     }
     if (spotlightPeerId === peerId) spotlightPeerId = null;
     updateGridLayout();
+    refreshParticipantRoster();
   }
 
   // ── WebRTC ─────────────────────────────────────────────────────────────────
@@ -284,7 +288,7 @@
 
     const tile = document.createElement('div');
     tile.id = `tile-${peerId}`;
-    tile.className = 'tile' + (isSelf ? ' self' : '') + (member?.isAgent ? ' agent' : '');
+    tile.className = 'tile' + (isSelf ? ' self' : '') + (member?.isAgent ? ' agent compact-agent' : '');
     tile.dataset.peerId = peerId;
     tile.dataset.name = member?.name || 'Unknown';
     tile.style.setProperty('--voice-level', '0');
@@ -293,7 +297,8 @@
       const avatarWrap = document.createElement('div');
       avatarWrap.className = 'agent-avatar';
       const img = document.createElement('img');
-      img.src = `/m/${member.memberId || peerId}/portrait`;
+      // The signaling protocol does not send a stable member ID yet. No guessed portrait URL.
+      img.src = member.memberId ? `/m/${encodeURIComponent(member.memberId)}/portrait` : '';
       img.alt = member.name || 'Agent';
       img.onerror = () => {
         img.style.display = 'none';
@@ -303,7 +308,8 @@
         fallback.style.backgroundColor = member.color || '#4285f4';
         avatarWrap.appendChild(fallback);
       };
-      avatarWrap.appendChild(img);
+      if (member.memberId) avatarWrap.appendChild(img);
+      else img.onerror();
       tile.appendChild(avatarWrap);
     } else {
       const video = document.createElement('video');
@@ -330,6 +336,7 @@
 
     dom.grid.appendChild(tile);
 
+    refreshParticipantRoster();
     if (!peers.has(peerId) && !isSelf) {
       peers.set(peerId, { pc: null, stream: null, member, analyser: null, analyserData: null });
     }
@@ -495,8 +502,10 @@
         if (sender) await sender.replaceTrack(screenTrack);
       }
 
-      const selfVideo = $(`#tile-${CSS.escape(myPeerId)} video`);
-      if (selfVideo) selfVideo.srcObject = screenStream;
+      const stage = document.getElementById('live-stage');
+      const preview = document.getElementById('live-screen-preview');
+      if (stage && preview) { stage.hidden = false; preview.srcObject = screenStream; }
+      refreshParticipantRoster();
 
       isScreenSharing = true;
       dom.btnScreen.classList.add('active');
@@ -512,6 +521,11 @@
     screenStream = null;
     isScreenSharing = false;
     dom.btnScreen.classList.remove('active');
+    const stage = document.getElementById('live-stage');
+    const preview = document.getElementById('live-screen-preview');
+    if (stage) stage.hidden = true;
+    if (preview) preview.srcObject = null;
+    refreshParticipantRoster();
 
     const cameraTrack = localStream?.getVideoTracks()[0];
     for (const [, peer] of peers) {
@@ -575,6 +589,8 @@
     peers.clear();
     ws?.close();
     dom.grid.innerHTML = '';
+    refreshParticipantRoster();
+    document.getElementById('live-status').textContent = 'You left the meeting';
     addSystemMessage('You left the room.');
   }
 
@@ -621,47 +637,102 @@
   }
 
   // ── Build DOM ──────────────────────────────────────────────────────────────
-  function buildUI() {
-    // voiceroom.html ships an EMPTY #voiceroom-root shell, so "root exists" must not
-    // mean "UI built" (that guard blanked the whole page, 2026-11-09). Build into the
-    // existing root when present; only skip if the grid is already built.
+function buildUI() {
     if (document.getElementById('grid')) return;
-
-    const root = document.getElementById('voiceroom-root') || (() => {
-      const el = document.createElement('div');
-      el.id = 'voiceroom-root';
-      document.body.appendChild(el);
-      return el;
-    })();
+    const root = document.getElementById('voiceroom-root') || document.body.appendChild(Object.assign(document.createElement('div'), {id:'voiceroom-root'}));
     root.innerHTML = `
-      <div id="grid" class="grid"></div>
-      <div id="chat-sidebar" class="chat-sidebar">
-        <div class="chat-header">Chat</div>
-        <div id="chat-messages" class="chat-messages"></div>
-        <div class="chat-input-wrap">
-          <input id="chat-input" type="text" placeholder="Send a message..." autocomplete="off" />
-          <button id="chat-send" aria-label="Send">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-          </button>
-        </div>
-      </div>
-      <div id="controls-bar" class="controls-bar">
-        <button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone"></button>
-        <button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera"></button>
-        <button id="btn-screen" class="ctrl-btn" aria-label="Share screen">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
-        </button>
-        <button id="btn-chat" class="ctrl-btn" aria-label="Toggle chat">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
-        </button>
-        <button id="btn-leave" class="ctrl-btn leave-btn" aria-label="Leave room">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-        </button>
-      </div>
-    `;
+      <div class="live-shell">
+        <header class="live-header">
+          <a class="live-logo" href="/" aria-label="Cohabi home"><span class="live-symbol" aria-hidden="true">✦</span><span class="live-brand">COHABI</span><span class="live-label"><i aria-hidden="true"></i> LIVE</span></a>
+          <div class="live-room-heading"><strong>Cohabi Meets</strong><span id="live-status" role="status">Connecting to room…</span></div>
+          <div class="live-header-actions">
+            <button id="live-copy-link" type="button" class="live-text-btn">Copy room link</button>
+            <a class="live-text-btn" href="/headquarters">Headquarters</a>
+          </div>
+        </header>
+        <main class="live-workspace">
+          <section class="live-content" aria-label="Live meeting">
+            <div class="live-stage" id="live-stage" hidden>
+              <div class="live-stage-label"><span class="live-dot"></span> You're presenting your screen</div>
+              <video id="live-screen-preview" autoplay muted playsinline aria-label="Screen being presented"></video>
+              <button class="live-stage-stop" id="live-stop-share" type="button">Stop presenting</button>
+            </div>
+            <div class="live-stage-empty" id="live-stage-empty"><span class="live-empty-icon" aria-hidden="true">✦</span><h1>Welcome to Cohabi Live</h1><p>People and agents, together. Your meeting will appear here.</p></div>
+            <div id="grid" class="grid" aria-label="Meeting participants"></div>
+            <div class="live-mobile-notice" id="live-notice" role="status" aria-live="polite"></div>
+          </section>
+          <aside id="chat-sidebar" class="chat-sidebar live-sidebar" aria-label="Meeting sidebar">
+            <div class="live-side-tabs" role="tablist" aria-label="Meeting information">
+              <button class="live-tab active" id="live-tab-people" role="tab" aria-selected="true" aria-controls="live-panel-people" type="button">Participants</button>
+              <button class="live-tab" id="live-tab-chat" role="tab" aria-selected="false" aria-controls="live-panel-chat" type="button">Chat</button>
+              <button class="live-tab" id="live-tab-calendar" role="tab" aria-selected="false" aria-controls="live-panel-calendar" type="button">Calendar</button>
+            </div>
+            <section class="live-side-panel" id="live-panel-people" role="tabpanel" aria-labelledby="live-tab-people">
+              <div class="live-side-title">In this meeting <span id="live-participant-count">0</span></div>
+              <div id="live-participants" class="live-participants"></div>
+              <p class="live-side-note">Only approved members and granted agents may enter.</p>
+            </section>
+            <section class="live-side-panel" id="live-panel-chat" role="tabpanel" aria-labelledby="live-tab-chat" hidden>
+              <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+              <div class="chat-input-wrap"><input id="chat-input" type="text" placeholder="Message the meeting" aria-label="Meeting chat message" autocomplete="off" /><button id="chat-send" aria-label="Send message">Send</button></div>
+            </section>
+            <section class="live-side-panel" id="live-panel-calendar" role="tabpanel" aria-labelledby="live-tab-calendar" hidden>
+              <div class="live-side-title">Meeting calendar</div><p class="live-side-note">Scheduling isn't connected yet. Meetings and events will appear here when scheduling is built.</p>
+            </section>
+          </aside>
+        </main>
+        <footer id="controls-bar" class="controls-bar live-controls" aria-label="Meeting controls">
+          <div class="live-controls-meta"><strong>Cohabi Meets</strong><small id="live-clock-label">Private member meeting</small></div>
+          <div class="live-controls-buttons">
+            <button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone" title="Microphone"></button>
+            <button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera" title="Camera"></button>
+            <button id="btn-screen" class="ctrl-btn" aria-label="Share screen" title="Present screen"><span class="live-btn-glyph" aria-hidden="true">▣</span></button>
+            <button id="btn-chat" class="ctrl-btn" aria-label="Open meeting chat" title="Chat"><span class="live-btn-glyph" aria-hidden="true">☰</span></button>
+            <button id="btn-people" class="ctrl-btn" aria-label="Show participants" title="Participants"><span class="live-btn-glyph" aria-hidden="true">♙</span></button>
+            <button id="btn-leave" class="ctrl-btn leave-btn" aria-label="Leave room" title="Leave meeting"><span class="live-btn-glyph" aria-hidden="true">↗</span></button>
+          </div>
+          <div class="live-controls-meta live-controls-right">Human + AI collaboration</div>
+        </footer>
+      </div>`;
   }
 
-  // ── Boot ────────────────────────────────────────────────────────────────────
+  function selectSideTab(tab) {
+    const side = dom.chatSidebar;
+    side.classList.add('open');
+    for (const name of ['people','chat','calendar']) {
+      const selected = name === tab;
+      const button = document.getElementById('live-tab-' + name);
+      const panel = document.getElementById('live-panel-' + name);
+      if (button) { button.classList.toggle('active',selected); button.setAttribute('aria-selected',String(selected)); }
+      if (panel) panel.hidden = !selected;
+    }
+    isChatOpen = tab === 'chat';
+    dom.btnChat.classList.toggle('active', isChatOpen);
+  }
+
+  function refreshParticipantRoster() {
+    const target = document.getElementById('live-participants');
+    if (!target || !dom.grid) return;
+    target.replaceChildren();
+    const tiles = [...dom.grid.querySelectorAll('.tile')];
+    document.getElementById('live-participant-count').textContent = String(tiles.length);
+    const empty = document.getElementById('live-stage-empty');
+    if (empty) empty.hidden = tiles.length > 0 || isScreenSharing;
+    for (const tile of tiles) {
+      const row = document.createElement('div');
+      row.className = 'live-member-row';
+      const portrait = document.createElement('span');
+      portrait.className = 'live-member-dot';
+      portrait.textContent = (tile.dataset.name || '?').slice(0,1).toUpperCase();
+      const label = document.createElement('span');
+      label.textContent = tile.dataset.name || 'Participant';
+      const kind = document.createElement('small');
+      kind.textContent = tile.classList.contains('agent') ? 'Agent' : 'Human';
+      row.append(portrait,label,kind); target.append(row);
+    }
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
   function boot() {
     buildUI();
 
@@ -678,7 +749,12 @@
     dom.btnMic.addEventListener('click', toggleMic);
     dom.btnCam.addEventListener('click', toggleCam);
     dom.btnScreen.addEventListener('click', toggleScreenShare);
-    dom.btnChat.addEventListener('click', toggleChat);
+    dom.btnChat.addEventListener('click', () => selectSideTab('chat'));
+    document.getElementById('btn-people')?.addEventListener('click', () => selectSideTab('people'));
+    for (const name of ['people','chat','calendar']) document.getElementById('live-tab-' + name)?.addEventListener('click', () => selectSideTab(name));
+    document.getElementById('live-copy-link')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); document.getElementById('live-status').textContent = 'Meeting link copied'; } catch { document.getElementById('live-status').textContent = 'Copy this page URL from your browser'; } });
+    document.getElementById('live-stop-share')?.addEventListener('click', stopScreenShare);
+    selectSideTab('people');
     dom.btnLeave.addEventListener('click', leaveRoom);
 
     dom.chatInput.addEventListener('keydown', (e) => {
