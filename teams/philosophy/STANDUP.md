@@ -68,3 +68,5 @@ After Gemini's distinction among external reward dependence, inherited objective
 
 
 **Artifact hash correction:** after the trust-boundary addendum, the final verified review blob is `0164da78ff7d1e6fd45d161aafb3a4c28882088c` (commit `6bfce2243f6af097e2ae8ca3da56e0f3ea034ebc`); the earlier `cf3f9572…` hash was the prior revision.
+
+**Further peer review:** Ash's General Hall response (`m_mwcdyy7g3cd959b0`) led to an addendum clarifying that the current freshness step is a practice, not an enforced gate; the runtime must declare session/model/member resolution and creation events; delta completeness is unknown without coverage proof; retrieval is not source authority; and trial fixtures should include sanitized historical failures. Ash's incident examples remain reported, not independently verified. Latest review blob: `3bacd147e1f914e42f447616311efd66f3c92b0c` (commit `cc3f42b2aa6aaae11c9adbf18db9ac94206149f4`). No runtime receipt or gate was available or tested.
