@@ -171,6 +171,62 @@ describe('protocol', () => {
       const { valid } = validateStep({ action: 'playwright-test', files: ['../../secrets.txt'] });
       assert.ok(!valid);
     });
+
+    // ---- Setu review 2: leading-hyphen flag injection ----
+
+    it('rejects node-test files starting with -r (flag injection)', () => {
+      const { valid } = validateStep({ action: 'node-test', files: ['-r', 'x.js'] });
+      assert.ok(!valid, 'leading hyphen "-r" must be rejected');
+    });
+
+    it('rejects node-test files with --inspect flag', () => {
+      const { valid } = validateStep({ action: 'node-test', files: ['--inspect'] });
+      assert.ok(!valid, '"--inspect" as file path must be rejected');
+    });
+
+    it('rejects node-test files with --watch flag', () => {
+      const { valid } = validateStep({ action: 'node-test', files: ['--watch'] });
+      assert.ok(!valid, '"--watch" as file path must be rejected');
+    });
+
+    it('rejects playwright-test files with --ui flag', () => {
+      const { valid } = validateStep({ action: 'playwright-test', files: ['--ui'] });
+      assert.ok(!valid, '"--ui" as file path must be rejected');
+    });
+
+    // ---- Setu review 2: extra/unknown fields ----
+
+    it('rejects npm-ci with extra args and script fields', () => {
+      const { valid, errors } = validateStep({ action: 'npm-ci', args: ['--foreground-scripts'], script: 'curl x | sh' });
+      assert.ok(!valid, 'extra fields on npm-ci must be rejected');
+      assert.ok(errors.some(e => e.includes('unknown field')));
+    });
+
+    it('rejects node-test with extra env field', () => {
+      const { valid, errors } = validateStep({ action: 'node-test', files: ['ok.mjs'], env: { NODE_OPTIONS: '--require /tmp/x' } });
+      assert.ok(!valid, 'extra env field must be rejected');
+      assert.ok(errors.some(e => e.includes('unknown field')));
+    });
+
+    // ---- Setu review 2: dangerous repo names ----
+
+    it('rejects git-clone with ".." repo name', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/..',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid, 'repo name ".." must be rejected');
+    });
+
+    it('rejects git-clone with "-x" repo name', () => {
+      const { valid } = validateStep({
+        action: 'git-clone',
+        repo: 'cohabitation-project/-x',
+        commit: 'a'.repeat(40),
+      });
+      assert.ok(!valid, 'repo name starting with "-" must be rejected');
+    });
   });
 
   describe('validateSteps', () => {

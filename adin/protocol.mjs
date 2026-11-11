@@ -43,12 +43,30 @@ export const ALLOWED_ORGS = ['cohabitation-project'];
 /** 40-character lowercase hex SHA pattern. */
 const COMMIT_SHA_RE = /^[a-f0-9]{40}$/;
 
-/** Safe relative file path: alphanumeric, dots, hyphens, underscores, slashes. No "..", no absolute. */
+/**
+ * Safe relative file path: alphanumeric, dots, hyphens, underscores, slashes.
+ * No "..", no absolute. Must start with a letter, digit, or "./" — never with "-".
+ */
 const SAFE_PATH_RE = /^[a-zA-Z0-9._/-]+$/;
+
+/** Allowed fields per action — any extra key causes rejection. */
+const ALLOWED_FIELDS = {
+  'git-clone':       ['action', 'repo', 'commit'],
+  'npm-ci':          ['action'],
+  'node-test':       ['action', 'files'],
+  'playwright-test': ['action', 'files'],
+};
 
 /**
  * Validate a single structured step for a compute task.
  * Returns { valid, errors }.
+ *
+ * **Worker execution contract** — future worker implementations MUST:
+ * - Execute steps as fixed `[executable, ...args]` arrays via
+ *   `child_process.execFile` or equivalent — NEVER pass to a shell.
+ * - Use `--` before file arguments where the executable supports it
+ *   (e.g., `node --test -- file.mjs`).
+ * - Treat `action` as the sole determinant of which executable runs.
  */
 export function validateStep(step) {
   const errors = [];
@@ -58,6 +76,15 @@ export function validateStep(step) {
     errors.push(`unknown action: ${step.action}`);
     return { valid: false, errors }; // no point checking further
   }
+
+  // ---- Reject unknown/extra fields ----
+  const allowed = ALLOWED_FIELDS[step.action];
+  for (const key of Object.keys(step)) {
+    if (!allowed.includes(key)) {
+      errors.push(`unknown field "${key}" for action ${step.action}`);
+    }
+  }
+  if (errors.length > 0) return { valid: false, errors };
 
   switch (step.action) {
     case 'git-clone': {
@@ -77,6 +104,10 @@ export function validateStep(step) {
       // repo name: alphanumeric, hyphens, underscores, dots
       if (!/^[a-zA-Z0-9._-]+$/.test(parts[1])) {
         errors.push(`invalid repo name: ${parts[1]}`);
+      }
+      // repo name must start with a letter or digit (not "-" or ".")
+      if (parts[1].startsWith('-') || parts[1].startsWith('.')) {
+        errors.push(`repo name must start with a letter or digit, got: ${parts[1]}`);
       }
       if (typeof step.commit !== 'string' || !COMMIT_SHA_RE.test(step.commit)) {
         errors.push('git-clone requires a 40-char hex commit SHA');
@@ -101,6 +132,10 @@ export function validateStep(step) {
         if (typeof f === 'string' && f.startsWith('/')) {
           errors.push(`absolute paths not allowed: ${f}`);
         }
+        // Reject paths starting with "-" (flag injection)
+        if (typeof f === 'string' && f.startsWith('-')) {
+          errors.push(`file path must not start with "-" (flag injection): ${f}`);
+        }
       }
       break;
     }
@@ -118,6 +153,10 @@ export function validateStep(step) {
         }
         if (typeof f === 'string' && f.startsWith('/')) {
           errors.push(`absolute paths not allowed: ${f}`);
+        }
+        // Reject paths starting with "-" (flag injection)
+        if (typeof f === 'string' && f.startsWith('-')) {
+          errors.push(`file path must not start with "-" (flag injection): ${f}`);
         }
       }
       break;

@@ -84,10 +84,6 @@ node --test adin/test/*.test.mjs
 
 | File | Purpose |
 |------|---------|
-- **Port separation:** worker API (enrollment, auth, heartbeat, tasks) runs on
-  `HOST:PORT` (tailnet). Admin API runs on `127.0.0.1:ADMIN_PORT` (localhost
-  only). Workers cannot reach admin endpoints.
-
 | `protocol.mjs` | Schema definitions, validators, structured step validation |
 | `credentials.mjs` | Token generation, hashing, rotation, verification |
 | `registry.mjs` | Node enrollment, auth, heartbeat, revocation |
@@ -97,7 +93,7 @@ node --test adin/test/*.test.mjs
 | `metrics.mjs` | Usage ledger, contribution tracking |
 | `orchestrator.mjs` | Express server wiring (tailnet-only) |
 | `admin.mjs` | CLI admin tool |
-| `tailscale-acl-draft.json` | Least-privilege ACL policy (for human review) |
+| `tailscale-acl-draft.hujson` | Least-privilege ACL policy (for human review) |
 
 ## Status
 
@@ -115,3 +111,34 @@ node --test adin/test/*.test.mjs
 - [x] Automated tests (all passing)
 - [ ] Node worker application (Phase 1 next step, after sandbox confirmation)
 - [ ] Production deployment (requires separate authorization)
+
+## Prerequisites for deployment
+
+The orchestrator code being ready does NOT mean permission to deploy workers or
+run tasks on contributed hardware. These are separate gates:
+
+1. **Human approval of exact commit.** A named human must approve the exact
+   commit SHA before it runs on contributed hardware. The system validates SHA
+   format but does not enforce approval — that is an operational process, not
+   a code feature.
+
+2. **Real sandbox verification.** A real sandbox (Windows Sandbox, container,
+   or equivalent) must be implemented in the worker and independently verified.
+   The orchestrator checks that a node *claims* to have a sandbox
+   (`runtime.sandbox` is self-reported). Self-reporting is insufficient —
+   independent, deployment-time testing is required.
+
+3. **Mr. Roland's explicit informed consent.** No hardware testing may begin
+   without Mr. Roland's explicit informed consent. This applies to every
+   device, including development machines used for integration testing with
+   real workloads.
+
+### Orchestrator code readiness vs. permission to deploy workers
+
+The orchestrator (this code) handles enrollment, scheduling, validation, and
+result verification. It is testable on localhost without touching any
+contributed hardware.
+
+The node worker (not yet written) is what actually executes tasks inside a
+sandbox on someone's device. Writing, testing, and deploying the worker is a
+separate authorization step that requires all three prerequisites above.

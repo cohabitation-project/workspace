@@ -119,6 +119,19 @@ export class TaskQueue {
     return { ok: true, task };
   }
 
+  /** Release an assigned task back to queued status (e.g., node became ineligible). */
+  release(task_id) {
+    const task = this.tasks.get(task_id);
+    if (!task) return { error: 'unknown task', status: 404 };
+    if (task.status !== 'assigned') return { error: `task is ${task.status}, not assigned`, status: 409 };
+
+    task.status = 'queued';
+    task.assigned_to = null;
+    task.assigned_at = null;
+    this.save();
+    return { ok: true, task };
+  }
+
   /** Node reports that it has started executing the task. */
   markRunning(task_id, node_id) {
     const task = this.tasks.get(task_id);

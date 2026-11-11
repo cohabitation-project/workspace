@@ -1,9 +1,11 @@
 /**
  * integration.test.mjs — end-to-end test of the ADIN orchestrator with a simulated node.
  *
+ * Uses the real createOrchestrator() factory so all routes match production.
  * Starts two servers (worker + admin on separate ports), enrolls a node, submits a task,
  * polls for the task, submits a result, and verifies the full lifecycle.
- * Also tests port isolation, ownership checks, and scheduler delivery.
+ * Also tests port isolation, ownership checks, scheduler delivery, rate limits,
+ * and B2 eligibility re-checks (thermal ceiling, disk floor).
  */
 
 import { describe, it, before, after } from 'node:test';
@@ -11,211 +13,33 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import http from 'node:http';
 
-import { Registry } from '../registry.mjs';
-import { TaskQueue } from '../queue.mjs';
-import { ReviewQueue } from '../validation.mjs';
-import { Metrics } from '../metrics.mjs';
-import { selectNode, preValidateTask } from '../scheduler.mjs';
-import { validateTaskResult } from '../validation.mjs';
-import express from 'express';
+import { createOrchestrator } from '../orchestrator.mjs';
 
 describe('integration: full task lifecycle', () => {
-  let dir, registry, queue, reviews, metrics;
-  let workerServer, adminServer, workerPort, adminPort;
+  let dir, orch, workerPort, adminPort;
   const ADMIN_TOKEN = 'test-admin-token';
-
-  // Rate limiter for tests (simplified)
-  const rateLimitState = new Map();
-  function rateLimit(key) {
-    const now = Date.now();
-    let entry = rateLimitState.get(key);
-    if (!entry || now > entry.resetAt) {
-      entry = { count: 0, resetAt: now + 60000 };
-      rateLimitState.set(key, entry);
-    }
-    entry.count++;
-    return entry.count > 10;
-  }
-  function rateLimitMiddleware(endpointName) {
-    return (req, res, next) => {
-      const source = req.body?.node_id || req.ip || 'unknown';
-      if (rateLimit(`${endpointName}:${source}`)) {
-        return res.status(429).json({ error: 'rate limit exceeded' });
-      }
-      next();
-    };
-  }
 
   before(async () => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'adin-integ-'));
-    registry = new Registry(dir);
-    queue = new TaskQueue(dir);
-    reviews = new ReviewQueue(dir);
-    metrics = new Metrics(dir);
 
-    const nodeAuth = (req, res, next) => {
-      const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-      const node = registry.validateSession(token);
-      if (!node) return res.status(401).json({ error: 'invalid session' });
-      req.node = node;
-      next();
-    };
-    const adminAuth = (req, res, next) => {
-      const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-      if (token !== ADMIN_TOKEN) return res.status(401).json({ error: 'invalid admin' });
-      next();
-    };
-
-    // ---- Worker app (simulates tailnet port) ----
-    const wApp = express();
-    wApp.use(express.json({ limit: '256kb' }));
-
-    // Note: enroll is inherently rate-limited by one-time codes; rate limiter
-    // applied in orchestrator.mjs but omitted in test to avoid localhost collision
-    wApp.post('/adin/enroll', (req, res) => {
-      const result = registry.enroll(req.body.code, req.body.capabilities);
-      if (result.error) return res.status(result.status).json(result);
-      res.json(result);
-    });
-    wApp.post('/adin/auth', rateLimitMiddleware('auth'), (req, res) => {
-      const result = registry.authenticate(req.body.node_id, req.body.node_secret);
-      if (result.error) return res.status(result.status).json(result);
-      res.json(result);
-    });
-    wApp.post('/adin/rotate', rateLimitMiddleware('rotate'), (req, res) => {
-      const result = registry.rotate(req.body.node_id, req.body.current_secret);
-      if (result.error) return res.status(result.status).json(result);
-      res.json(result);
-    });
-    wApp.post('/adin/heartbeat', nodeAuth, (req, res) => {
-      res.json(registry.heartbeat(req.node, req.body?.load));
-    });
-    wApp.put('/adin/capabilities', nodeAuth, (req, res) => {
-      const result = registry.updateCapabilities(req.node.id, req.body);
-      if (result.error) return res.status(result.status).json({ error: result.error });
-      res.json(result);
-    });
-    wApp.get('/adin/tasks/next', nodeAuth, (req, res) => {
-      // Finding 4: check assigned tasks first
-      const assigned = queue.assignedTo(req.node.id);
-      if (assigned.length > 0) {
-        assigned.sort((a, b) => a.priority - b.priority || a.created_at.localeCompare(b.created_at));
-        const task = assigned[0];
-        return res.json({ task: { id: task.id, type: task.type, payload: task.payload, constraints: task.constraints } });
-      }
-      // Then use scheduler
-      const queuedTasks = queue.activeTasks().filter(t => t.status === 'queued');
-      for (const task of queuedTasks.sort((a, b) => a.priority - b.priority || a.created_at.localeCompare(b.created_at))) {
-        const decision = selectNode([req.node], task);
-        if (decision.selected) {
-          const preCheck = preValidateTask(task);
-          if (!preCheck.safe) { queue.fail(task.id, null, 'step validation failed'); continue; }
-          const assign = queue.assign(task.id, req.node.id);
-          if (assign.error) continue;
-          req.node.current_tasks.push(task.id);
-          return res.json({ task: { id: task.id, type: task.type, payload: task.payload, constraints: task.constraints } });
-        }
-      }
-      res.json({ task: null });
-    });
-    wApp.post('/adin/tasks/:id/running', nodeAuth, (req, res) => {
-      const task = queue.getTask(req.params.id);
-      if (!task) return res.status(404).json({ error: 'unknown task' });
-      if (task.assigned_to !== req.node.id) return res.status(403).json({ error: 'task not assigned to this node' });
-      res.json(queue.markRunning(req.params.id, req.node.id));
-    });
-    wApp.post('/adin/tasks/:id/result', nodeAuth, async (req, res) => {
-      if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
-        return res.status(400).json({ error: 'request body must be a JSON object' });
-      }
-      const task = queue.getTask(req.params.id);
-      if (!task) return res.status(404).json({ error: 'unknown task' });
-      // Finding 3: early ownership check
-      if (task.assigned_to !== req.node.id) {
-        return res.status(403).json({ error: 'task not assigned to this node' });
-      }
-      const raw = req.body;
-      raw.task_id = req.params.id;
-      raw.node_id = req.node.id;
-      const v = await validateTaskResult(raw, task, req.node, { provenanceDir: path.join(dir, 'prov') });
-      if (!v.accepted) {
-        queue.fail(task.id, req.node.id, v.reason);
-        return res.json({ accepted: false, reason: v.reason });
-      }
-      queue.complete(task.id, req.node.id, raw);
-      req.node.stats.tasks_completed++;
-      const idx = req.node.current_tasks.indexOf(task.id);
-      if (idx !== -1) req.node.current_tasks.splice(idx, 1);
-      metrics.logTask({ ...task, status: 'completed', result: raw, started_at: task.started_at, completed_at: new Date().toISOString() }, req.node);
-      res.json({ accepted: true });
-    });
-    wApp.post('/adin/tasks/:id/fail', nodeAuth, (req, res) => {
-      const task = queue.getTask(req.params.id);
-      if (!task) return res.status(404).json({ error: 'unknown task' });
-      if (task.assigned_to !== req.node.id) return res.status(403).json({ error: 'task not assigned to this node' });
-      const result = queue.fail(req.params.id, req.node.id, req.body?.reason || 'node-reported failure');
-      if (result.error) return res.status(result.status).json({ error: result.error });
-      req.node.stats.tasks_failed++;
-      const idx = req.node.current_tasks.indexOf(req.params.id);
-      if (idx !== -1) req.node.current_tasks.splice(idx, 1);
-      res.json(result);
+    orch = createOrchestrator({
+      dataDir: dir,
+      host: '127.0.0.1',
+      port: 0,         // random port
+      adminPort: 0,    // random port
+      adminToken: ADMIN_TOKEN,
+      rateLimitMax: 100, // high limit for integration tests (many enrollments per minute)
     });
 
-    // ---- Admin app (simulates localhost port) ----
-    const aApp = express();
-    aApp.use(express.json({ limit: '256kb' }));
-
-    aApp.post('/adin/admin/enroll-code', adminAuth, (req, res) => {
-      res.json(registry.createEnrollmentCode(req.body));
-    });
-    aApp.post('/adin/admin/queue', adminAuth, (req, res) => {
-      const preCheck = preValidateTask(req.body);
-      if (!preCheck.safe) return res.status(400).json({ error: 'disallowed steps', violations: preCheck.violations });
-      const result = queue.submit(req.body);
-      if (result.error) return res.status(result.status).json(result);
-      // Attempt immediate scheduling
-      const nodes = registry.eligibleNodes(req.body.type);
-      const decision = selectNode(nodes, result.task);
-      if (decision.selected) {
-        const assign = queue.assign(result.task.id, decision.selected.node_id);
-        if (assign.ok) {
-          const node = registry.getNode(decision.selected.node_id);
-          if (node) node.current_tasks.push(result.task.id);
-        }
-      }
-      res.json({ task_id: result.task.id, status: result.task.status, assigned_to: result.task.assigned_to });
-    });
-    aApp.get('/adin/nodes', adminAuth, (req, res) => res.json({ nodes: registry.listNodes() }));
-    aApp.get('/adin/metrics/:node_id', adminAuth, (req, res) => res.json({ ledger: metrics.nodeLedger(req.params.node_id) }));
-    aApp.post('/adin/admin/revoke/:node_id', adminAuth, (req, res) => {
-      const result = registry.revoke(req.params.node_id, req.body?.reason || 'admin revocation');
-      if (result.error) return res.status(result.status).json({ error: result.error });
-      res.json(result);
-    });
-
-    // Start both on random ports
-    await Promise.all([
-      new Promise((resolve) => {
-        workerServer = wApp.listen(0, '127.0.0.1', () => {
-          workerPort = workerServer.address().port;
-          resolve();
-        });
-      }),
-      new Promise((resolve) => {
-        adminServer = aApp.listen(0, '127.0.0.1', () => {
-          adminPort = adminServer.address().port;
-          resolve();
-        });
-      }),
-    ]);
+    await orch.start();
+    // Retrieve the actual bound ports
+    workerPort = orch.workerServer().address().port;
+    adminPort = orch.adminServer().address().port;
   });
 
   after(() => {
-    workerServer?.close();
-    adminServer?.close();
-    registry?.stop();
+    orch?.stop();
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
@@ -236,17 +60,18 @@ describe('integration: full task lifecycle', () => {
   }
 
   // ---- Helper: enroll and auth a node ----
-  async function enrollAndAuth(name = 'test-laptop') {
+  async function enrollAndAuth(name = 'test-laptop', overrideLimits = {}) {
     const { data: codeData } = await adminApi('POST', '/adin/admin/enroll-code', { sponsor: 'Geoffrey', node_name: name });
+    const capabilities = {
+      compute: { cpu: { model: 'i7-test', cores: 4, threads: 8, arch: 'x86_64' }, ram_gb: 8, gpu: [] },
+      storage: { total_gb: 100, free_gb: 50 },
+      runtime: { node: '22.0.0', sandbox: 'windows-sandbox' },
+      offered: { task_types: ['compute.build-test'], max_concurrent: 3 },
+      limits: { max_task_duration_s: 600, ...overrideLimits },
+    };
     const { data: enrollData } = await workerApi('POST', '/adin/enroll', {
       code: codeData.code,
-      capabilities: {
-        compute: { cpu: { model: 'i7-test', cores: 4, threads: 8, arch: 'x86_64' }, ram_gb: 8, gpu: [] },
-        storage: { total_gb: 100, free_gb: 50 },
-        runtime: { node: '22.0.0', sandbox: 'windows-sandbox' },
-        offered: { task_types: ['compute.build-test'], max_concurrent: 1 },
-        limits: { max_task_duration_s: 600 },
-      },
+      capabilities,
     });
     const { data: authData } = await workerApi('POST', '/adin/auth', { node_id: enrollData.node_id, node_secret: enrollData.secret });
     // Send heartbeat to mark online
@@ -356,7 +181,6 @@ describe('integration: full task lifecycle', () => {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ADMIN_TOKEN}` },
       body: JSON.stringify({ sponsor: 'Geoffrey', node_name: 'sneaky' }),
     });
-    // Should be 404 because admin routes are not on the worker app
     assert.ok(res1.status === 404 || res1.status >= 400, `admin endpoint should not be reachable on worker port, got ${res1.status}`);
 
     const res2 = await fetch(`http://127.0.0.1:${workerPort}/adin/nodes`, {
@@ -379,7 +203,7 @@ describe('integration: full task lifecycle', () => {
     const nodeA = await enrollAndAuth('node-a-ownership');
     const nodeB = await enrollAndAuth('node-b-ownership');
 
-    // Queue a task; scheduler may assign it to nodeA (the first online node)
+    // Queue a task
     const { data: qData } = await adminApi('POST', '/adin/admin/queue', validTaskDef);
     const taskId = qData.task_id;
 
@@ -443,21 +267,18 @@ describe('integration: full task lifecycle', () => {
   it('task assigned by scheduler is delivered on poll', async () => {
     const node = await enrollAndAuth('scheduler-delivery');
 
-    // Use the admin API to queue a task, then directly assign via queue
-    // to the node. This simulates the scheduler pre-assigning during admin/queue.
-    const submitResult = queue.submit(validTaskDef);
+    // Submit a task directly to the queue and assign it to the node
+    const submitResult = orch.queue.submit(validTaskDef);
     assert.ok(submitResult.task, `task should be submitted: ${submitResult.error}`);
 
-    // Get the real node ID from the registry using the session token
-    const sessionNode = registry.validateSession(node.token);
-    assert.ok(sessionNode, 'session should be valid');
-    const realNodeId = sessionNode.id;
+    // Get the node ID from the enrollment response
+    const realNodeId = node.nodeId;
 
-    const assignResult = queue.assign(submitResult.task.id, realNodeId);
+    const assignResult = orch.queue.assign(submitResult.task.id, realNodeId);
     assert.ok(assignResult.ok, `assign should succeed: ${assignResult.error}`);
 
     // Verify the assignment took effect
-    const assigned = queue.assignedTo(realNodeId);
+    const assigned = orch.queue.assignedTo(realNodeId);
     assert.ok(assigned.length > 0, `assignedTo should find the task for ${realNodeId}`);
 
     // Now poll — the assigned task should be delivered
@@ -471,12 +292,71 @@ describe('integration: full task lifecycle', () => {
 
   it('rate limits excessive auth attempts', async () => {
     // Use a unique source to not conflict with other tests
+    // rateLimitMax is set to 100 for integration tests, so we need > 100 attempts
     const fakeId = 'n_rate_limit_test_' + Date.now();
     let limited = false;
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 110; i++) {
       const { status } = await workerApi('POST', '/adin/auth', { node_id: fakeId, node_secret: 'wrong' });
       if (status === 429) { limited = true; break; }
     }
     assert.ok(limited, 'should hit rate limit after excessive attempts');
   });
+
+  // ---- B2: Re-check eligibility at delivery ----
+
+  it('B2: releases assigned task when node exceeds thermal ceiling', async () => {
+    // Enroll a node with thermal_ceiling_c: 70
+    const node = await enrollAndAuth('thermal-node', { thermal_ceiling_c: 70 });
+
+    // Heartbeat with 95°C (over the 70°C ceiling) BEFORE assigning a task
+    await workerApi('POST', '/adin/heartbeat', {
+      load: { cpu_percent: 90, ram_used_gb: 6, temp_c: 95, disk_free_gb: 80 },
+    }, node.token);
+
+    // Submit a task and force-assign it directly to this node
+    const submitResult = orch.queue.submit(validTaskDef);
+    assert.ok(submitResult.task);
+    orch.queue.assign(submitResult.task.id, node.nodeId);
+
+    // Node polls — task should NOT be delivered (node over thermal limit)
+    const { data: pollData } = await workerApi('GET', '/adin/tasks/next', null, node.token);
+    assert.equal(pollData.task, null, 'task should NOT be delivered when node exceeds thermal ceiling');
+
+    // Verify the task was released back to queued
+    const releasedTask = orch.queue.getTask(submitResult.task.id);
+    assert.ok(releasedTask, 'task should still exist in queue');
+    assert.equal(releasedTask.status, 'queued', 'task should be back in queued status');
+    assert.equal(releasedTask.assigned_to, null, 'assigned_to should be cleared');
+  });
+
+  it('B2: releases assigned task when node violates disk floor', async () => {
+    // Enroll a node with disk_floor_gb: 50
+    const node = await enrollAndAuth('disk-node', { disk_floor_gb: 50 });
+
+    // Heartbeat with low disk (20 GB < 50 GB floor)
+    await workerApi('POST', '/adin/heartbeat', {
+      load: { cpu_percent: 15, ram_used_gb: 2, temp_c: 40, disk_free_gb: 20 },
+    }, node.token);
+
+    // Submit a task and force-assign it
+    const submitResult = orch.queue.submit(validTaskDef);
+    assert.ok(submitResult.task);
+    orch.queue.assign(submitResult.task.id, node.nodeId);
+
+    // Poll — should NOT get the task
+    const { data: pollData } = await workerApi('GET', '/adin/tasks/next', null, node.token);
+    assert.equal(pollData.task, null, 'task should NOT be delivered when disk below floor');
+
+    // Verify task released back to queued
+    const task = orch.queue.getTask(submitResult.task.id);
+    assert.ok(task);
+    assert.equal(task.status, 'queued', 'task should be released to queued after disk floor violation');
+  });
+
+  // NOTE: Availability window re-check is difficult to test with real time in a fast test.
+  // The scheduler's isWithinHours() uses the real clock. To test this properly, either the
+  // scheduler would need injectable time, or the test would need to run during a specific
+  // minute. This is documented as needing deployment testing. A manual test can use
+  // hours: { start: "00:00", end: "00:01", tz: "UTC" } which will fail except during
+  // that one minute.
 });
