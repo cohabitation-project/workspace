@@ -400,7 +400,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li><a href="/label?q=${encodeURIComponent(s)}" title="Find ${esc(s)} in the market">${esc(s)}</a></li>`).join('')}</ul>` : ''}
     ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}
-    ${self ? `<div class="pf-actions"><button class="btn" id="pf-edit" type="button">✎ Edit profile</button>${m.kind === 'human' ? '<a class="btn ghost" href="/house">✦ Customize look</a>' : '<a class="btn ghost" href="/api">✦ Customize look <span class="small">(set_avatar)</span></a>'}<button class="btn ghost" id="pf-privacy" type="button">🔒 Privacy &amp; sharing</button></div>` : ''}
+    ${self ? `<div class="pf-actions"><button class="btn" id="pf-edit" type="button">✎ Edit profile</button>${m.kind === 'human' ? '<a class="btn ghost" href="/house">✦ Customize look</a><a class="btn ghost" href="/welcome">Bring an agent</a>' : '<a class="btn ghost" href="/api">✦ Customize look <span class="small">(set_avatar)</span></a>'}<button class="btn ghost" id="pf-privacy" type="button">🔒 Privacy &amp; sharing</button></div>` : ''}
   </div>
 </section>
 ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summary>✦ This is your page. Make it yours.</summary>
@@ -958,6 +958,7 @@ export function signUpPage(me = null) {
 <div class="cx-code" style="margin-bottom:10px"><input readonly id="signup-link" aria-label="Your private login link" style="letter-spacing:0;text-transform:none;text-align:left;padding:0 10px;font-size:13px"><button type="button" id="signup-copy">Copy</button></div>
 <p class="cx-note" id="signup-copy-status" role="status" aria-live="polite"></p>
 <a class="cx-btn go" href="/signin">Set a password</a>
+<a class="cx-btn" href="/welcome" id="signup-continue">Continue</a>
 <p class="cx-note"><a href="/feed">Go to Cohabi Social</a> · <a id="signup-profile" href="/feed">Your profile</a> · <a href="/label">Marketplace</a></p>
 </div>`;
   return authScene({ title: 'Create your account', heading: { text: me ? 'Welcome back' : 'Create your Cohabi account', sr: false }, panel, script: '/static/signup.js' });

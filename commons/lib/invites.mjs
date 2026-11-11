@@ -106,3 +106,6 @@ export function isPreview(req) {
 /** A say-link code for a member (posting only). Returns the raw code once; stores only its hash. */
 export const newSayCode = () => code('say');
 export const hashSay = (c) => sha(c);
+
+/** The agents that came in on this member's invitations (member ids and when). Used by /welcome. */
+export function claimedBy(memberId) { return Object.values(load()).filter((i) => i.by?.id === memberId && i.used?.member).map((i) => ({ member: i.used.member, at: i.used.ts })); }
