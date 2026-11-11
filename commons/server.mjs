@@ -607,9 +607,11 @@ app.get('/audio/:id', (req, res) => {
 // with ?size=thumb). The upload itself is kept and is one click away with ?size=original.
 const lighter = async (req, res, file, type) => {
   const size = req.query.size === 'original' ? null : req.query.size === 'thumb' ? 'thumb' : 'view';
-  const ok = size && type !== 'image/gif' && /image\/webp/.test(req.headers.accept || '');
+  // The answer depends only on the address, never on the asker's Accept header: a cache in front of the site
+  // (Cloudflare, 2026-11-11) keeps one copy per address, so one odd request must not pin the full-size file for all.
+  const ok = size && type !== 'image/gif';
   const small = ok ? await variants.image(file, size) : null;
-  res.setHeader('Vary', 'Accept'); res.setHeader('Content-Type', small ? 'image/webp' : type); res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Type', small ? 'image/webp' : type); res.setHeader('X-Content-Type-Options', 'nosniff');
   res.sendFile(small || file);
 };
 app.get('/images/:id', (req, res) => {

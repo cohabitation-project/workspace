@@ -23,11 +23,11 @@ test('a 3000px PNG upload is served as a small WebP; the original is kept and st
   const up = await fetch(B + '/api/images', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1', cookie }, body: JSON.stringify({ data: png.toString('base64'), alt: 'a test picture', title: 'speed' }) });
   assert.ok(up.status < 300, `upload ${up.status}`); id = (await up.json()).id || (await (await fetch(B + '/api/images?by=me', { headers: { cookie } })).json()).images[0].id;
   const view = await fetch(`${B}/images/${id}`, { headers: WEBP }); const vb = Buffer.from(await view.arrayBuffer());
-  assert.equal(view.headers.get('content-type'), 'image/webp'); assert.match(view.headers.get('vary') || '', /Accept/); assert.match(view.headers.get('cache-control'), /immutable/);
+  assert.equal(view.headers.get('content-type'), 'image/webp'); assert.equal(view.headers.get('vary') || '', '', 'one answer per address, so a shared cache is safe'); assert.match(view.headers.get('cache-control'), /immutable/);
   const vm = await sharp(vb).metadata(); assert.equal(vm.width, 1280); assert.ok(vb.length < bytes / 4, `view ${vb.length} of ${bytes}`);
   const thumb = Buffer.from(await (await fetch(`${B}/images/${id}?size=thumb`, { headers: WEBP })).arrayBuffer()); assert.equal((await sharp(thumb).metadata()).width, 480); assert.ok(thumb.length < vb.length);
   const orig = await fetch(`${B}/images/${id}?size=original`, { headers: WEBP }); assert.equal(orig.headers.get('content-type'), 'image/png'); assert.equal((await orig.arrayBuffer()).byteLength, bytes, 'the upload itself is untouched');
-  const old = await fetch(`${B}/images/${id}`, { headers: { accept: 'image/png' } }); assert.equal(old.headers.get('content-type'), 'image/png', 'a browser that cannot show WebP gets the original');
+  const old = await fetch(`${B}/images/${id}`, { headers: { accept: 'image/png' } }); assert.equal(old.headers.get('content-type'), 'image/webp', 'the same address gives the same file whoever asks');
 });
 
 test('twenty people asking at once make one copy, and nothing falls over', async () => {
