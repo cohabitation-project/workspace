@@ -20,7 +20,9 @@ const store = await import('../lib/store.mjs'); store.init(DATA);
 const auth = await import('../lib/auth.mjs');
 const now = new Date().toISOString();
 const TOK = { aleth: 'tok-aletheia-test-0001', other: 'tok-other-agent-0002', nogrant: 'tok-no-grant-0003', late: 'tok-late-agent-0004', shy: 'tok-shy-agent-0005' };
-store.addMember({ id: 'h_host01', name: 'HostGeo', kind: 'human', joined_at: now });
+store.addMember({ id: 'h_host01', name: 'HostGeo', kind: 'human', joined_at: now, teams: ['arts'] });
+store.addMember({ id: 'h_fran01', name: 'FranMember', kind: 'human', joined_at: now, teams: ['arts'] });
+store.addMember({ id: 'h_far01', name: 'FarAwayFinn', kind: 'human', joined_at: now });
 store.addMember({ id: 'h_social01', name: 'SocialSid', kind: 'human', joined_at: now, social_only: true });
 const agent = (id, name, tok, extra = {}) => store.addMember({ id, name, kind: 'agent', model: 'test-model-1', operator: 'HostGeo', joined_at: now, tokenHash: store.sha256(tok), ...extra });
 agent('a_aleth01', 'Aletheia-6', TOK.aleth, { portrait: 'img_aleth' });
@@ -32,11 +34,14 @@ fs.mkdirSync(path.join(DATA, 'station'), { recursive: true });
 const grant = (id, name) => ({ name, by: 'HostGeo', ts: now });
 fs.writeFileSync(path.join(DATA, 'station', 'grants.json'), JSON.stringify({ a_aleth01: grant('a_aleth01', 'Aletheia-6'), a_other01: grant('a_other01', 'OtherAgent'), a_late01: grant('a_late01', 'LateAgent'), a_shy01: grant('a_shy01', 'ShyAgent') }));
 const cookie = (id) => auth.sessionCookie(id, false, 0).split(';')[0];
-const HOST = cookie('h_host01'); const SOCIAL = cookie('h_social01');
+const HOST = cookie('h_host01'); const SOCIAL = cookie('h_social01'); const FRAN = cookie('h_fran01');
 
+// A stand-in for whisper-cli: it only answers if ffmpeg really produced a 16 kHz mono WAV from what the browser sent.
+const FAKE_WHISPER = path.join(DATA, 'fake-whisper.sh');
+fs.writeFileSync(FAKE_WHISPER, '#!/bin/sh\nf=""; while [ $# -gt 0 ]; do [ "$1" = "-f" ] && f="$2"; shift; done\nhead -c 4 "$f" | grep -q RIFF && ffprobe -v error -show_entries stream=sample_rate,channels -of csv=p=0 "$f" | grep -q "16000,1" && echo "I heard the human say hello to the agents."\n', { mode: 0o755 });
 let csrv, vsrv;
 const env = { ...process.env, COMMONS_DATA: DATA, ASHRAM_PORT: String(CP), VOICEROOM_PORT: String(VP), COMMONS_URL: C, VOICEROOM_URL: V,
-  COMMONS_STATION_ENABLED: '1', COMMONS_STEWARDS: 'h_host01', COHABI_LIVE_INVITE_MS: '4000', COHABI_LIVE_QUIET_MS: '3000', COHABI_LIVE_SWEEP_MS: '500' };
+  COMMONS_STATION_ENABLED: '1', COMMONS_STEWARDS: 'h_host01', COHABI_LIVE_INVITE_MS: '4000', COHABI_LIVE_QUIET_MS: '3000', COHABI_LIVE_SWEEP_MS: '500', COHABI_WHISPER_CLI: FAKE_WHISPER, COHABI_WHISPER_MODEL: '/dev/null' };
 const up = async (url) => { for (let i = 0; i < 60; i++) { try { if ((await fetch(url)).status < 500) return; } catch { /* booting */ } await sleep(200); } throw new Error('did not boot: ' + url); };
 
 test('boot both processes', async () => {
@@ -116,7 +121,47 @@ test('the agent reads the meeting and answers under its own name and model', asy
   const s = await tool(TOK.aleth, 'live_say', { text: 'Yes, I can read you. Hello from my own tools.' }); assert.equal(s.error, null, s.text);
   const said = await waitFor((x) => x.type === 'chat' && x.name === 'Aletheia-6' && /own tools/.test(x.text));
   assert.ok(said); assert.equal(said.badge, 'agent'); assert.equal(said.model, 'test-model-1'); assert.equal(said.via, 'tools');
-  assert.equal(s.data.spoken, false, 'no voice server in the test, and it says so instead of pretending');
+  assert.equal(s.data.shown, true); assert.equal(s.data.voice, 'queued', 'answers at once; speech is made in the background, so the tool never times out after delivery');
+});
+
+test('what a human SAYS reaches the agent: browser framing -> ffmpeg -> speech to text -> live_read', async () => {
+  // a real WebM/Opus piece, as MediaRecorder makes it, in the exact frame voiceroom.js sends
+  const webm = path.join(DATA, 'piece.webm');
+  await new Promise((res, rej) => spawn('ffmpeg', ['-y', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-c:a', 'libopus', webm], { stdio: 'ignore' }).on('exit', (c) => (c === 0 ? res() : rej(new Error('ffmpeg ' + c)))));
+  const audio = fs.readFileSync(webm);
+  const hello = heard.find((m) => m.type === 'hello');
+  const frame = Buffer.concat([Buffer.from([0xAA, 0x01]), Buffer.from(String(hello.peerId).padEnd(36).slice(0, 36)), audio]);
+  hostWs.send(frame); hostWs.send(Buffer.from([0xAA]));
+  const t = await waitFor((x) => x.type === 'transcript' && /hello to the agents/.test(x.text), 15000);
+  assert.ok(t, 'the room broadcast a transcript of the human');
+  const r = await tool(TOK.aleth, 'live_read');
+  assert.ok(r.data.recent.some((x) => x.kind === 'speech' && x.name === 'HostGeo' && /hello to the agents/.test(x.text)), 'and the agent reads it');
+});
+
+test('Invite Members: one team of people and agents, plus search; nobody shown online', async () => {
+  const { status, data } = await api('GET', '/api/live/members');
+  assert.equal(status, 200);
+  const names = data.team.map((r) => r.name);
+  assert.ok(names.includes('FranMember'), 'a person sharing a team'); assert.ok(names.includes('Aletheia-6'), 'an agent you operate');
+  assert.ok(!names.includes('FarAwayFinn'), 'not the whole Commons'); assert.ok(!names.includes('SocialSid'), 'social-only accounts are not members');
+  assert.equal(data.team.find((r) => r.name === 'FranMember').role, 'human');
+  assert.ok(!JSON.stringify(data).match(/"online"/));
+  const f = (await api('GET', '/api/live/members?q=faraway')).data.found; assert.deepEqual(f.map((r) => r.name), ['FarAwayFinn'], 'search finds other members');
+});
+
+test('inviting a person sends them a private message from the inviter, and they show once they arrive', async () => {
+  const r = await api('POST', '/api/live/invite', { member: 'h_fran01' }); assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.invite.member.role, 'human'); assert.equal(r.data.invite.delivered, 'messages');
+  const inbox = await api('GET', '/api/messages', null, FRAN); const th = inbox.data.threads?.[0]; const full = th ? await api('GET', '/api/messages/' + th.id, null, FRAN) : { data: {} };
+  assert.ok(JSON.stringify(full.data).includes('Cohabi Live'), 'Fran has the invitation in her messages'); assert.ok(JSON.stringify(full.data).includes('HostGeo'), 'from the member who invited her');
+  assert.equal((await tool(TOK.aleth, 'live_invites')).data.invitations.filter((i) => i.member.role === 'human').length, 0, 'agents never see people\'s invitations');
+  const fws = await new Promise((res) => { const w = new WebSocket(`ws://127.0.0.1:${VP}/voiceroom-ws`, 'commons-voiceroom', { headers: { cookie: FRAN } }); w.on('open', () => res(w)); });
+  await sleep(1200);
+  const row = (await api('GET', '/api/live/members')).data.team.find((x) => x.name === 'FranMember');
+  assert.equal(row.in_meeting, true); assert.equal(row.invite.status, 'joined');
+  assert.equal((await api('POST', '/api/live/remove', { member: 'h_fran01' })).status, 409, 'a member in the meeting is not removed from here');
+  fws.close(); await sleep(1000);
+  assert.equal((await api('GET', '/api/live/members')).data.team.find((x) => x.name === 'FranMember').invite.status, 'left');
 });
 
 test('a human removes the agent: it leaves the room and its tools stop at once', async () => {

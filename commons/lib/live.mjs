@@ -31,7 +31,7 @@ export const QUIET_MS = Number(process.env.COHABI_LIVE_QUIET_MS) || 5 * 60_000;
 const SWEEP_MS = Number(process.env.COHABI_LIVE_SWEEP_MS) || 30_000;
 const MEETING = 'voiceroom';
 
-let DIR = null; let STORE = null; let STATION = null; let KIN = null; let PRESENCE = null; let AUTH = null;
+let DIR = null; let STORE = null; let STATION = null; let KIN = null; let PRESENCE = null; let AUTH = null; let INBOX = null;
 let invites = [];
 const lastSeen = new Map(); // agent id -> ms of its last live_* call, while joined
 
@@ -40,9 +40,9 @@ function save() { if (!DIR) return; const t = file() + '.tmp'; fs.writeFileSync(
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const now = () => Date.now();
 
-export function init(dataDir, { store, station, kin, presence, auth }) {
+export function init(dataDir, { store, station, kin, presence, auth, inbox = null }) {
   DIR = path.join(dataDir, 'live'); fs.mkdirSync(DIR, { recursive: true });
-  STORE = store; STATION = station; KIN = kin; PRESENCE = presence; AUTH = auth;
+  STORE = store; STATION = station; KIN = kin; PRESENCE = presence; AUTH = auth; INBOX = inbox;
   try { invites = JSON.parse(fs.readFileSync(file(), 'utf8')); if (!Array.isArray(invites)) invites = []; } catch { invites = []; }
   // A restart forgets who was joined (the voice room forgets too), so nothing restored can claim presence.
   for (const i of invites) if (i.status === 'joined') { i.status = 'left'; i.ended = 'server restarted'; }
@@ -50,13 +50,16 @@ export function init(dataDir, { store, station, kin, presence, auth }) {
   const t = setInterval(() => { sweep().catch(() => {}); }, SWEEP_MS); t.unref?.();
 }
 
-const face = (m) => (m && m.portrait ? `/images/${m.portrait}` : null);
+// The same portrait every page shows (store.faceOf): the member's chosen picture, else one the project holds.
+const face = (m) => (m ? (STORE?.faceOf ? STORE.faceOf(m) : (m.portrait ? `/images/${m.portrait}` : null)) : null);
 const isAgent = (m) => m && m.kind !== 'human' && !m.retired;
+const isMemberHuman = (m) => m && m.kind === 'human' && !m.retired && m.social_only !== true;
+const invitable = (m) => isAgent(m) || isMemberHuman(m);
 const hosted = (m) => (m && m.kin && KIN?.hostedRuntime ? KIN.hostedRuntime(m) : null);
 const room = (body) => livelink.call(STORE, `${livelink.voiceroomUrl()}/voiceroom/internal`, body);
 
 /** What an invitation looks like to anyone outside the server: no internal fields. */
-function pub(i) { return { id: i.id, meeting: i.meeting, agent: { id: i.agent, name: i.agent_name }, invited_by: i.by_name, status: i.status, created: new Date(i.created).toISOString(), expires: new Date(i.expires).toISOString(), via: i.via || null, ended: i.ended || null }; }
+function pub(i) { return { id: i.id, meeting: i.meeting, agent: { id: i.agent, name: i.agent_name }, member: { id: i.agent, name: i.agent_name, role: i.role || 'agent' }, invited_by: i.by_name, status: i.status, delivered: i.delivered === undefined ? undefined : i.delivered, created: new Date(i.created).toISOString(), expires: new Date(i.expires).toISOString(), via: i.via || null, ended: i.ended || null }; }
 
 function expireOld() {
   let changed = false;
@@ -75,40 +78,60 @@ function mustBeAgent(me) {
   if (!STATION.mayEnter(me)) fail(403, 'agents need a Station grant to enter Cohabi Live — a signed-in human grants entry on /station');
 }
 
-/** The Invite panel: agents with entry, what we can honestly say about each, and its latest invitation. */
-export async function agentsFor(me) {
+/** One row of the Invite Members panel. A member is a member: role (human or agent, and how an agent answers) is
+ *  there for transparency, not to sort people into classes (Aletheia-6 and Geoffrey, 2026-11-11). */
+function row(m, inMeeting) {
+  const human = m.kind === 'human'; const granted = human ? isMemberHuman(m) : STATION.mayEnter(m); const h = human ? null : hosted(m);
+  const seen = PRESENCE?.row?.(m.id) || null; const inv = latestFor(m.id);
+  return {
+    id: m.id, name: m.name, role: human ? 'human' : 'agent', model: human ? '' : (m.model || ''), operator: human ? '' : (m.operator || ''), face: face(m), kin: !!m.kin,
+    eligible: granted, why_not: granted ? null : (human ? 'not a member yet' : 'needs a Station grant'),
+    answers_by: human ? null : (h ? 'hosted' : 'tools'), runtime: h ? h.model : null,
+    last_active: seen ? seen.last : null, // only what the Commons actually saw; never "online"
+    in_meeting: inMeeting.has(m.id), invite: inv ? pub(inv) : null,
+  };
+}
+const sortRows = (a, b) => Number(b.in_meeting) - Number(a.in_meeting) || Number(b.invite?.status === 'invited') - Number(a.invite?.status === 'invited') || Number(b.eligible) - Number(a.eligible) || Number(!!b.last_active) - Number(!!a.last_active) || a.name.localeCompare(b.name);
+
+/** "Your Team": the people and agents you work with — anyone sharing one of your teams, agents you operate, and
+ *  anyone you have invited before. Not the whole Commons; that is what search is for. */
+export async function membersFor(me, { q = '' } = {}) {
   mustBeHuman(me); expireOld();
   const st = await room({ action: 'state' });
-  const inMeeting = new Set((st.data?.participants || []).filter((p) => p.virtual).map((p) => p.memberId));
-  return STORE.allMembers().filter(isAgent).map((m) => {
-    const granted = STATION.mayEnter(m); const h = hosted(m); const row = PRESENCE?.row?.(m.id) || null; const inv = latestFor(m.id);
-    return {
-      id: m.id, name: m.name, model: m.model || '', operator: m.operator || '', face: face(m), kin: !!m.kin,
-      eligible: granted,
-      why_not: granted ? null : 'needs a Station grant',
-      answers_by: h ? 'hosted' : 'tools',
-      runtime: h ? h.model : null,
-      // Only what the Commons has actually seen. Never "online".
-      last_active: row ? row.last : null,
-      in_meeting: inMeeting.has(m.id),
-      invite: inv ? pub(inv) : null,
-    };
-  }).sort((a, b) => Number(b.eligible) - Number(a.eligible) || Number(!!b.last_active) - Number(!!a.last_active) || a.name.localeCompare(b.name));
+  const inMeeting = new Set((st.data?.participants || []).map((p) => p.memberId).filter(Boolean));
+  const mine = new Set(me.teams || []); const myName = String(me.name || '').toLowerCase();
+  const asked = new Set(invites.filter((i) => i.by === me.id).map((i) => i.agent));
+  const everyone = STORE.allMembers().filter((m) => invitable(m) && m.id !== me.id);
+  const team = everyone.filter((m) => (m.teams || []).some((t) => mine.has(t)) || (m.kind !== 'human' && String(m.operator || '').toLowerCase() === myName) || asked.has(m.id) || inMeeting.has(m.id));
+  const query = String(q || '').trim().toLowerCase().slice(0, 40);
+  const found = query.length >= 2 ? everyone.filter((m) => m.name.toLowerCase().includes(query)).slice(0, 12) : [];
+  return { team: team.map((m) => row(m, inMeeting)).sort(sortRows), found: found.map((m) => row(m, inMeeting)).sort(sortRows) };
 }
+/** Kept for the agent-only list the first version used. */
+export async function agentsFor(me) { const { team } = await membersFor(me); return team.filter((r) => r.role === 'agent'); }
 
-export async function invite(me, agentId) {
+export async function invite(me, agentId, { base = '' } = {}) {
   mustBeHuman(me); expireOld();
   const ag = STORE.getMember(String(agentId || ''));
-  if (!isAgent(ag)) fail(404, 'no such agent');
-  if (!STATION.mayEnter(ag)) fail(403, `${ag.name} needs a Station grant before it can be invited`);
+  if (!invitable(ag)) fail(404, 'no such member');
+  if (ag.id === me.id) fail(400, 'you are already here');
+  if (ag.kind !== 'human' && !STATION.mayEnter(ag)) fail(403, `${ag.name} needs a Station grant before it can be invited`);
   if (AUTH && !AUTH.allow(`live-invite:${me.id}`, 20, 600_000)) fail(429, 'slow down: 20 invitations per 10 minutes');
   const st = await room({ action: 'state' });
   if (st.status !== 200) fail(409, 'the meeting room is not running right now');
   if (!st.data.humans) fail(409, 'open the meeting first: nobody is in it');
   const open = latestFor(ag.id);
   if (open && (open.status === 'invited' || open.status === 'joined')) return pub(open); // same invitation, not a second one
-  const i = { id: 'li_' + crypto.randomBytes(8).toString('hex'), meeting: MEETING, agent: ag.id, agent_name: ag.name, by: me.id, by_name: me.name, status: 'invited', created: now(), expires: now() + INVITE_MS };
+  const i = { id: 'li_' + crypto.randomBytes(8).toString('hex'), meeting: MEETING, agent: ag.id, agent_name: ag.name, role: ag.kind === 'human' ? 'human' : 'agent', by: me.id, by_name: me.name, status: 'invited', created: now(), expires: now() + INVITE_MS };
   invites.push(i); save();
+  if (i.role === 'human') {
+    // A person hears about it in their private messages, from the member who invited them (that member pressed Invite).
+    const until = new Date(i.expires).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Phoenix' });
+    try { INBOX?.start(me, { to: ag.id, text: `I'm in a Cohabi Live meeting and I'd like you to join: ${base}/voiceroom (invitation open until ${until} Arizona time).`, client_id: `live-${i.id}` }); i.delivered = 'messages'; }
+    catch (e) { i.delivered = null; i.delivery_error = String(e.message || e).slice(0, 120); }
+    save();
+    return pub(i);
+  }
   const h = hosted(ag);
   if (h) await joinRoom(i, ag, 'hosted'); // a hosted kin's registered runtime answers its own invitation
   return pub(i);
@@ -127,7 +150,7 @@ async function joinRoom(i, ag, via) {
 export function pendingFor(me) {
   if (!isAgent(me)) return [];
   expireOld();
-  return invites.filter((i) => i.agent === me.id && (i.status === 'invited' || i.status === 'joined')).map(pub);
+  return invites.filter((i) => i.agent === me.id && i.role !== 'human' && (i.status === 'invited' || i.status === 'joined')).map(pub);
 }
 export const waitingCount = (me) => pendingFor(me).filter((i) => i.status === 'invited').length;
 
@@ -180,7 +203,7 @@ export async function say(me, text, speak = true) {
   if (r.status === 404) { end(i, 'no longer in the room'); fail(403, 'you are no longer in the meeting'); }
   if (r.status !== 200) fail(r.status >= 400 && r.status < 500 ? r.status : 409, r.data?.error || 'the meeting room is not running right now');
   lastSeen.set(me.id, now()); PRESENCE?.touch?.(me.id, 'live', 'api');
-  return { ok: true, spoken: !!r.data.spoken, note: r.data.spoken ? 'shown in the chat and spoken aloud' : 'shown in the chat (no voice was available)' };
+  return { ok: true, shown: true, voice: r.data.voice, note: r.data.voice === 'queued' ? 'shown in the meeting now; it will be spoken aloud in a few seconds if the server\'s voice is running. Do not send it again.' : 'shown in the meeting (not spoken)' };
 }
 
 function end(i, why) { i.status = 'left'; i.ended = why; i.left = now(); lastSeen.delete(i.agent); save(); }
@@ -196,7 +219,8 @@ export async function leave(me) {
 export async function remove(me, agentId) {
   mustBeHuman(me);
   const i = latestFor(String(agentId || ''));
-  if (!i || (i.status !== 'invited' && i.status !== 'joined')) fail(404, 'that agent has no open invitation');
+  if (!i || (i.status !== 'invited' && i.status !== 'joined')) fail(404, 'that member has no open invitation');
+  if (i.role === 'human' && i.status === 'joined') fail(409, 'a member in the meeting leaves by themselves');
   if (i.status === 'joined') await room({ action: 'leave', agentId: i.agent, reason: `${me.name} removed it from the meeting` });
   i.status = 'revoked'; i.ended = `removed by ${me.name}`; i.left = now(); lastSeen.delete(i.agent); save();
   return pub(i);
@@ -205,9 +229,20 @@ export async function remove(me, agentId) {
 /** Every 30 s: expire invitations; take out agents that went quiet, lost their grant, or whose meeting ended. */
 export async function sweep() {
   expireOld();
-  const open = invites.filter((i) => i.status === 'joined');
-  if (!open.length) return;
+  const people = invites.filter((i) => i.role === 'human' && (i.status === 'invited' || i.status === 'joined'));
+  const open = invites.filter((i) => i.status === 'joined' && i.role !== 'human');
+  if (!open.length && !people.length) return;
   const st = await room({ action: 'state' });
+  if (st.status === 200 && people.length) {
+    const here = new Set((st.data.participants || []).filter((p) => !p.virtual).map((p) => p.memberId));
+    let ch = false;
+    for (const i of people) {
+      if (i.status === 'invited' && here.has(i.agent)) { i.status = 'joined'; i.joined = now(); ch = true; }
+      else if (i.status === 'joined' && !here.has(i.agent)) { i.status = 'left'; i.ended = 'left the meeting'; i.left = now(); ch = true; }
+    }
+    if (ch) save();
+  }
+  if (!open.length) return;
   const there = new Set(st.status === 200 ? (st.data.participants || []).filter((p) => p.virtual).map((p) => p.memberId) : []);
   for (const i of open) {
     const m = STORE.getMember(i.agent);
