@@ -61,11 +61,18 @@
   }
 
   function simulatedAmbassadorStatus() {
-    return { running: true, model: 'Qwen2.5-0.5B', lastReply: '2 min ago', memoryUsage: 480, installed: true };
+    return { running: false, model: 'none', lastReply: 'N/A', memoryUsage: 0, installed: false };
   }
 
   function simulatedStorageBreakdown() {
-    return { apps: 34000, photos: 18000, videos: 22000, system: 13000, available: 41000 };
+    // No per-category data in simulation either — be honest
+    return {
+      used: 87000,
+      available: 41000,
+      total: 128000,
+      detailed: false,
+      note: 'Per-category breakdown requires storage access permission'
+    };
   }
 
   var _ambassadorResponses = [
@@ -79,15 +86,6 @@
     "That's a great question. Let me think about it... I'd recommend checking Settings for more details.",
   ];
   var _responseIndex = 0;
-
-  function simulatedCleanupSuggestions() {
-    return [
-      { id: 'cache', label: 'Clear app caches', size: 1200, description: '1.2 GB of cached data from 12 apps' },
-      { id: 'downloads', label: 'Old downloads', size: 800, description: '800 MB of files older than 30 days' },
-      { id: 'duplicates', label: 'Duplicate photos', size: 450, description: '23 duplicate photos found' },
-      { id: 'largefiles', label: 'Large unused files', size: 2100, description: '5 files over 200 MB not opened in 60 days' },
-    ];
-  }
 
   // ── Unified API ────────────────────────────────────────────────
 
@@ -160,14 +158,14 @@
     },
 
     async getCleanupSuggestions() {
-      // Cleanup is simulated until storage permission is granted
-      return simulatedCleanupSuggestions();
+      // Cleanup is not available without storage permission
+      return [];
     },
 
     async performCleanup(ids) {
-      // Simulated cleanup
-      console.log('Cleanup:', ids);
-      return { success: true, freedMB: ids.length * 500 };
+      // Simulated cleanup — never report as successful
+      console.log('Cleanup requested (simulated):', ids);
+      return { success: false, freedMB: 0, simulated: true };
     }
   };
 

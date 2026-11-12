@@ -120,6 +120,18 @@
 
         </RadioGroup>
 
+        <!-- Summary of what the selected level means -->
+        <TextView
+            android:id="@+id/text_level_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="16dp"
+            android:background="#1e1e24"
+            android:textColor="#bbbbbb"
+            android:textSize="13sp"
+            android:lineSpacingMultiplier="1.4" />
+
         <!-- Continue button -->
         <Button
             android:id="@+id/btn_continue"

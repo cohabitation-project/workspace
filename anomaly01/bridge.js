@@ -71,10 +71,10 @@ window.Anomaly = {
 
   async getAmbassadorStatus() {
     return {
-      running: true,
-      model: 'Qwen2.5-0.5B',
-      lastReply: '2 min ago',
-      memoryUsage: 480
+      running: false,
+      model: 'none',
+      lastReply: 'N/A',
+      memoryUsage: 0
     };
   },
 
@@ -84,12 +84,13 @@ window.Anomaly = {
   },
 
   async getStorageBreakdown() {
+    // No per-category data — be honest about what's simulated
     return {
-      apps: 34000,
-      photos: 18000,
-      videos: 22000,
-      system: 13000,
-      available: 41000
+      used: 87000,
+      available: 41000,
+      total: 128000,
+      detailed: false,
+      note: 'Per-category breakdown requires storage access permission'
     };
   },
 
@@ -115,16 +116,18 @@ window.Anomaly = {
   },
 
   async getCleanupSuggestions() {
-    return [
-      { id: 'cache', label: 'Clear app caches', size: 1200, description: '1.2 GB of cached data from 12 apps' },
-      { id: 'downloads', label: 'Old downloads', size: 800, description: '800 MB of files older than 30 days' },
-      { id: 'duplicates', label: 'Duplicate photos', size: 450, description: '23 duplicate photos found' },
-      { id: 'largefiles', label: 'Large unused files', size: 2100, description: '5 files over 200 MB not opened in 60 days' },
-    ];
+    // No cleanup available in simulation
+    return [];
   },
 
   async performCleanup(ids) {
-    console.log('Cleanup:', ids);
-    return { success: true, freedMB: ids.length * 500 };
+    // Simulated — never report as successful
+    console.log('Cleanup requested (simulated):', ids);
+    return { success: false, freedMB: 0, simulated: true };
+  },
+
+  exitApp() {
+    // No-op in browser simulation
+    console.log('exitApp() called — no-op in browser');
   }
 };

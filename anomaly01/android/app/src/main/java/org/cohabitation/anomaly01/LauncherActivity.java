@@ -2,26 +2,38 @@ package org.cohabitation.anomaly01;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import androidx.webkit.WebViewAssetLoader;
+
 /**
- * Main launcher activity. Displays the Anomaly01 web UI inside a full-screen
- * WebView and exposes device APIs to JavaScript through {@link AnomalyBridge}.
+ * Main launcher activity. Displays the Anomaly01 web UI inside a WebView
+ * and exposes device APIs to JavaScript through {@link AnomalyBridge}.
+ *
+ * Security notes:
+ * - Assets are served via WebViewAssetLoader over a virtual https:// URL,
+ *   preventing file:// protocol access to arbitrary device files.
+ * - Navigation is restricted to our own asset URLs and about:blank.
+ * - The system status bar and navigation buttons remain visible (companion mode).
  */
 public class LauncherActivity extends Activity {
 
+    private static final String ASSET_HOST = "appassets.androidplatform.net";
+    private static final String ASSET_PATH_PREFIX = "/assets/";
+
     private WebView webView;
+    private WebViewAssetLoader assetLoader;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -29,18 +41,25 @@ public class LauncherActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launcher);
 
-        // Immersive full-screen
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        hideSystemUI();
+        // Build the asset loader — serves assets/ via virtual https:// URL
+        assetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler(ASSET_PATH_PREFIX,
+                        new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
 
         webView = findViewById(R.id.webview_launcher);
         configureWebView();
 
-        // Inject the native JS bridge
+        // Inject the native JS bridge.
+        //
+        // SECURITY: @JavascriptInterface methods must validate all inputs since
+        // they are callable from any JS running in the WebView. Navigation is
+        // restricted to our own assets (see shouldOverrideUrlLoading), but
+        // defense in depth matters — never trust JS input blindly.
         webView.addJavascriptInterface(new AnomalyBridge(this), "Anomaly");
 
-        // Load the launcher UI from assets
-        webView.loadUrl("file:///android_asset/index.html");
+        // Load the launcher UI from assets via the safe virtual URL
+        webView.loadUrl("https://" + ASSET_HOST + ASSET_PATH_PREFIX + "index.html");
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -48,13 +67,39 @@ public class LauncherActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(true);
-        settings.setAllowFileAccessFromFileURLs(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
+        // No file:// access — assets are served via WebViewAssetLoader
+        // setAllowFileAccess, setAllowFileAccessFromFileURLs,
+        // setAllowUniversalAccessFromFileURLs are intentionally NOT enabled.
+
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view,
+                                                               WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view,
+                                                     WebResourceRequest request) {
+                Uri url = request.getUrl();
+                String urlStr = url.toString();
+
+                // Allow our own asset URLs
+                if (urlStr.startsWith("https://" + ASSET_HOST + ASSET_PATH_PREFIX)) {
+                    return false; // let the WebView handle it
+                }
+
+                // Allow about:blank
+                if ("about:blank".equals(urlStr)) {
+                    return false;
+                }
+
+                // Block all other navigation
+                return true;
+            }
+
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request,
                                         WebResourceError error) {
@@ -81,23 +126,6 @@ public class LauncherActivity extends Activity {
         webView.setBackgroundColor(0xFF0A0A0A);
     }
 
-    private void hideSystemUI() {
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) hideSystemUI();
-    }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Back button navigates within WebView history instead of exiting
@@ -105,6 +133,7 @@ public class LauncherActivity extends Activity {
             webView.goBack();
             return true;
         }
+        // If no WebView history, let default behavior happen (finish activity)
         return super.onKeyDown(keyCode, event);
     }
 

@@ -1,5 +1,6 @@
 package org.cohabitation.anomaly01;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,12 @@ import java.util.List;
  * Each public method annotated with {@link JavascriptInterface} is callable
  * from the web UI.
  *
+ * SECURITY: @JavascriptInterface methods must validate all inputs since they
+ * are callable from any JS running in the WebView. The bridge is only
+ * accessible from our own bundled assets because LauncherActivity blocks
+ * navigation to external URLs, but defense in depth matters — never trust
+ * JS input blindly.
+ *
  * IMPORTANT: Methods called from JS run on a background WebView thread,
  * not the UI thread. Any UI work must be posted to the main thread.
  */
@@ -25,6 +32,7 @@ public class AnomalyBridge {
     private static final String PREFS_NAME = "anomaly01_prefs";
 
     private final Context context;
+    private final Activity activity;
     private final DeviceMonitor deviceMonitor;
     private final AppListProvider appListProvider;
 
@@ -34,8 +42,9 @@ public class AnomalyBridge {
         return true;
     }
 
-    public AnomalyBridge(Context context) {
-        this.context = context.getApplicationContext();
+    public AnomalyBridge(Activity activity) {
+        this.activity = activity;
+        this.context = activity.getApplicationContext();
         this.deviceMonitor = new DeviceMonitor(this.context);
         this.appListProvider = new AppListProvider(this.context);
     }
@@ -167,6 +176,17 @@ public class AnomalyBridge {
     public String loadPreferences() {
         SharedPreferences sp = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return sp.getString("user_prefs", "{}");
+    }
+
+    // ── App Lifecycle ───────────────────────────────────────────────
+
+    /**
+     * Exits the Anomaly01 launcher, returning the user to their
+     * previous home screen or app.
+     */
+    @JavascriptInterface
+    public void exitApp() {
+        activity.runOnUiThread(() -> activity.finish());
     }
 
     // ── Helpers ─────────────────────────────────────────────────────

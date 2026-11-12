@@ -120,6 +120,9 @@
     $$('#resource-panel input').forEach(function (input) {
       input.addEventListener('change', saveResourcePrefs);
     });
+
+    // Show honest status for ADIN and inference toggles
+    initToggleNotices();
   }
 
   function bindSlider(sliderId, labelId, fmt) {
@@ -145,22 +148,52 @@
     showToast('Preferences saved');
   }
 
+  function initToggleNotices() {
+    var adinToggle = $('#toggle-adin');
+    var inferenceToggle = $('#toggle-inference');
+    var adinNotice = $('#adin-toggle-notice');
+    var inferenceNotice = $('#inference-toggle-notice');
+
+    if (adinToggle && adinNotice) {
+      adinToggle.addEventListener('change', function () {
+        if (adinToggle.checked) {
+          adinNotice.textContent = 'ADIN is not yet available. This preference will be applied when ADIN connectivity is enabled.';
+          adinNotice.classList.remove('hidden');
+        } else {
+          adinNotice.classList.add('hidden');
+        }
+      });
+    }
+
+    if (inferenceToggle && inferenceNotice) {
+      inferenceToggle.addEventListener('change', function () {
+        if (inferenceToggle.checked) {
+          inferenceNotice.textContent = 'Inference tasks are not yet available on this device.';
+          inferenceNotice.classList.remove('hidden');
+        } else {
+          inferenceNotice.classList.add('hidden');
+        }
+      });
+      // Show notice on load if already checked
+      if (inferenceToggle.checked) {
+        inferenceNotice.textContent = 'Inference tasks are not yet available on this device.';
+        inferenceNotice.classList.remove('hidden');
+      }
+    }
+  }
+
   // ── ADIN Status ────────────────────────────────────────────────────
 
   function updateAdinPanel() {
     if (!adinStatus) return;
     var dot = $('#adin-dot');
     var lbl = $('#adin-connection');
-    if (adinStatus.connected) {
-      dot.className = 'dot connected';
-      lbl.textContent = 'Connected';
-    } else {
-      dot.className = 'dot disconnected';
-      lbl.textContent = 'Disconnected';
-    }
-    $('#adin-node-id').textContent = adinStatus.nodeId || '\u2014';
-    $('#adin-tasks').textContent = adinStatus.tasksCompleted;
-    $('#adin-current').textContent = adinStatus.currentTask || 'None';
+    // ADIN has no backend — always show as not available
+    dot.className = 'dot disconnected';
+    lbl.textContent = 'Not available (UI only)';
+    $('#adin-node-id').textContent = '\u2014';
+    $('#adin-tasks').textContent = '0';
+    $('#adin-current').textContent = 'None';
   }
 
   // ── Ambassador Chat ────────────────────────────────────────────────
@@ -168,14 +201,10 @@
   function updateAmbassadorMeta() {
     if (!ambassadorStatus) return;
     var dot = $('#amb-dot');
-    if (ambassadorStatus.running) {
-      dot.className = 'dot connected';
-      $('#amb-status-text').textContent = 'Running \u00B7 ' + ambassadorStatus.model;
-    } else {
-      dot.className = 'dot disconnected';
-      $('#amb-status-text').textContent = 'Offline';
-    }
-    $('#amb-last-reply').textContent = 'Last reply: ' + (ambassadorStatus.lastReply || 'N/A');
+    // Ambassador chat uses canned responses — label honestly
+    dot.className = 'dot disconnected';
+    $('#amb-status-text').textContent = 'Canned responses (not connected to LLM)';
+    $('#amb-last-reply').textContent = '';
   }
 
   function renderChat() {
@@ -207,12 +236,8 @@
 
       chatHistory.pop();
       var resp = await API.sendToAmbassador(text);
-      chatHistory.push({ role: 'assistant', text: resp.reply });
+      chatHistory.push({ role: 'assistant', text: '[Canned response] ' + resp.reply });
       renderChat();
-      if (ambassadorStatus) {
-        ambassadorStatus.lastReply = 'just now';
-        updateAmbassadorMeta();
-      }
     }
 
     btn.addEventListener('click', send);
@@ -225,39 +250,89 @@
 
   function updateStoragePanel() {
     if (!storageBreakdown) return;
-    var total = Object.values(storageBreakdown).reduce(function (a, b) { return a + b; }, 0);
-    var categories = [
-      { key: 'apps',      label: 'Apps',      color: '#50fa7b' },
-      { key: 'photos',    label: 'Photos',    color: '#8be9fd' },
-      { key: 'videos',    label: 'Videos',    color: '#ffb86c' },
-      { key: 'system',    label: 'System',    color: '#ff79c6' },
-      { key: 'available', label: 'Available', color: '#44475a' },
-    ];
 
     var bar = $('#storage-bar');
     var legend = $('#storage-legend');
     bar.innerHTML = '';
     legend.innerHTML = '';
 
-    categories.forEach(function (cat) {
-      var val = storageBreakdown[cat.key] || 0;
-      var p = (val / total) * 100;
+    if (storageBreakdown.detailed === false) {
+      // No per-category data — show only Used and Available segments
+      var total = (storageBreakdown.used || 0) + (storageBreakdown.available || 0);
+      if (total <= 0) return;
 
-      var seg = document.createElement('div');
-      seg.className = 'storage-segment';
-      seg.style.width = p + '%';
-      seg.style.background = cat.color;
-      bar.appendChild(seg);
+      var categories = [
+        { key: 'used',      label: 'Used',      color: '#ff79c6' },
+        { key: 'available', label: 'Available', color: '#44475a' },
+      ];
 
-      var li = document.createElement('div');
-      li.className = 'storage-legend-item';
-      li.innerHTML = '<span class="legend-dot" style="background:' + cat.color + '"></span>' +
-                     cat.label + ' <span class="legend-size">' + formatMB(val) + '</span>';
-      legend.appendChild(li);
-    });
+      categories.forEach(function (cat) {
+        var val = storageBreakdown[cat.key] || 0;
+        var p = (val / total) * 100;
+
+        var seg = document.createElement('div');
+        seg.className = 'storage-segment';
+        seg.style.width = p + '%';
+        seg.style.background = cat.color;
+        bar.appendChild(seg);
+
+        var li = document.createElement('div');
+        li.className = 'storage-legend-item';
+        li.innerHTML = '<span class="legend-dot" style="background:' + cat.color + '"></span>' +
+                       cat.label + ' <span class="legend-size">' + formatMB(val) + '</span>';
+        legend.appendChild(li);
+      });
+
+      // Show note about missing categories
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:0.75rem;color:#888;margin-top:8px;';
+      note.textContent = storageBreakdown.note || 'Per-category breakdown requires storage access permission.';
+      legend.appendChild(note);
+    } else {
+      // Detailed mode — show actual per-category data if we ever get it
+      var total = Object.values(storageBreakdown).reduce(function (a, b) {
+        return (typeof b === 'number') ? a + b : a;
+      }, 0);
+      var categories = [
+        { key: 'apps',      label: 'Apps',      color: '#50fa7b' },
+        { key: 'photos',    label: 'Photos',    color: '#8be9fd' },
+        { key: 'videos',    label: 'Videos',    color: '#ffb86c' },
+        { key: 'system',    label: 'System',    color: '#ff79c6' },
+        { key: 'available', label: 'Available', color: '#44475a' },
+      ];
+
+      categories.forEach(function (cat) {
+        var val = storageBreakdown[cat.key] || 0;
+        var p = (val / total) * 100;
+
+        var seg = document.createElement('div');
+        seg.className = 'storage-segment';
+        seg.style.width = p + '%';
+        seg.style.background = cat.color;
+        bar.appendChild(seg);
+
+        var li = document.createElement('div');
+        li.className = 'storage-legend-item';
+        li.innerHTML = '<span class="legend-dot" style="background:' + cat.color + '"></span>' +
+                       cat.label + ' <span class="legend-size">' + formatMB(val) + '</span>';
+        legend.appendChild(li);
+      });
+    }
   }
 
   async function handleCleanup() {
+    // Check if we have actual cleanup capability
+    if (storageBreakdown && storageBreakdown.detailed === false) {
+      var panel = $('#cleanup-suggestions');
+      panel.innerHTML = '';
+      panel.classList.remove('hidden');
+      var msg = document.createElement('div');
+      msg.style.cssText = 'padding:16px 0;color:#888;font-size:0.85rem;';
+      msg.textContent = 'Storage cleanup requires additional permissions. Enable in Settings.';
+      panel.appendChild(msg);
+      return;
+    }
+
     var suggestions = await API.getCleanupSuggestions();
     var panel = $('#cleanup-suggestions');
     panel.innerHTML = '';
@@ -282,12 +357,42 @@
       var checked = Array.from(panel.querySelectorAll('input:checked')).map(function (i) { return i.value; });
       if (checked.length === 0) { showToast('Nothing selected'); return; }
       var result = await API.performCleanup(checked);
-      showToast('Freed ' + formatMB(result.freedMB));
+      if (result.simulated) {
+        showToast('Cleanup not available \u2014 enable storage access in Settings');
+      } else {
+        showToast('Freed ' + formatMB(result.freedMB));
+      }
       panel.classList.add('hidden');
       storageBreakdown = await API.getStorageBreakdown();
       updateStoragePanel();
     });
     panel.appendChild(confirmBtn);
+  }
+
+  // ── Settings Panel ─────────────────────────────────────────────────
+
+  function initSettings() {
+    var settingsBtn = $('#btn-settings');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', function () {
+        // Navigate to settings section
+        $$('.nav-tab').forEach(function (t) { t.classList.remove('active'); });
+        $$('.section').forEach(function (s) { s.classList.remove('active'); });
+        var settingsSection = $('#sec-settings');
+        if (settingsSection) settingsSection.classList.add('active');
+      });
+    }
+
+    var exitBtn = $('#btn-exit-app');
+    if (exitBtn) {
+      exitBtn.addEventListener('click', function () {
+        if (typeof window.Anomaly !== 'undefined' && typeof window.Anomaly.exitApp === 'function') {
+          window.Anomaly.exitApp();
+        } else {
+          showToast('Exit is only available on Android');
+        }
+      });
+    }
   }
 
   // ── Section Navigation ─────────────────────────────────────────────
@@ -336,6 +441,7 @@
     initNav();
     initResourceSliders();
     initChat();
+    initSettings();
     $('#btn-cleanup').addEventListener('click', handleCleanup);
 
     refreshTimer = setInterval(window.refreshAll, 5000);

@@ -2,16 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Required to enumerate installed apps on Android 11+ -->
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
-
-    <!-- Internet for future network features -->
+    <!-- Internet for future network features (normal permission, no user prompt) -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Optional: storage management (requested at runtime) -->
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+    <!--
+        Declare which packages we need to query on Android 11+.
+        This replaces QUERY_ALL_PACKAGES with a targeted declaration:
+        we only need to find apps with launcher intents.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"

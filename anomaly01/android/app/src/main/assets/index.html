@@ -451,9 +451,10 @@ input[type="time"] {
 </div>
 
 <!-- Header -->
-<div class="header">
+<div class="header" style="position:relative;">
   <h1>ANOMALY01</h1>
   <div class="subtitle">Cohabitation Launcher</div>
+  <button id="btn-settings" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-dim);font-size:1.3rem;cursor:pointer;padding:8px;" aria-label="Settings">&#9881;</button>
 </div>
 
 <!-- Navigation -->
@@ -464,6 +465,7 @@ input[type="time"] {
   <button class="nav-tab" data-section="sec-adin">ADIN</button>
   <button class="nav-tab" data-section="sec-ambassador">Ambassador</button>
   <button class="nav-tab" data-section="sec-storage">Storage</button>
+  <button class="nav-tab" data-section="sec-settings">Settings</button>
 </nav>
 
 <!-- Sections -->
@@ -536,6 +538,7 @@ input[type="time"] {
           <span class="slider"></span>
         </label>
       </div>
+      <div id="adin-toggle-notice" class="hidden" style="font-size:0.75rem;color:#888;padding:4px 0 8px;"></div>
       <div class="toggle-row">
         <span>Allow inference tasks</span>
         <label class="toggle">
@@ -543,6 +546,7 @@ input[type="time"] {
           <span class="slider"></span>
         </label>
       </div>
+      <div id="inference-toggle-notice" class="hidden" style="font-size:0.75rem;color:#888;padding:4px 0 8px;"></div>
     </div>
   </div>
 
@@ -594,6 +598,22 @@ input[type="time"] {
       <button class="btn btn-accent" id="btn-cleanup">Scan for Cleanup</button>
       <div id="cleanup-suggestions" class="hidden" style="margin-top: 16px;"></div>
     </div>
+  </div>
+
+  <!-- Settings -->
+  <div id="sec-settings" class="section">
+    <div class="card">
+      <div class="card-title">Settings</div>
+      <div class="status-row">
+        <span class="label">Integration level</span>
+        <span>Saved in preferences</span>
+      </div>
+      <div class="status-row">
+        <span class="label">Version</span>
+        <span>0.1.0-prototype</span>
+      </div>
+    </div>
+    <button class="btn btn-accent" id="btn-exit-app" style="background:#ff5555;">Exit Anomaly01</button>
   </div>
 
 </div>

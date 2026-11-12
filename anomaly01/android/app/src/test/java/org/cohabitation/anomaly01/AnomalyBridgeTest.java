@@ -65,15 +65,16 @@ public class AnomalyBridgeTest {
 
     @Test
     public void storageBreakdownJsonStructure() throws Exception {
-        String sample = "{\"apps\":34000,\"photos\":18000,\"videos\":22000,"
-                + "\"system\":13000,\"available\":41000}";
+        // New format: used/available/total with detailed flag
+        String sample = "{\"used\":87000,\"available\":41000,\"total\":128000,"
+                + "\"detailed\":false,\"note\":\"Per-category breakdown requires storage access permission\"}";
 
         JSONObject storage = new JSONObject(sample);
-        assertTrue(storage.getLong("apps") >= 0);
-        assertTrue(storage.getLong("photos") >= 0);
-        assertTrue(storage.getLong("videos") >= 0);
-        assertTrue(storage.getLong("system") >= 0);
+        assertTrue(storage.getLong("used") >= 0);
         assertTrue(storage.getLong("available") >= 0);
+        assertTrue(storage.getLong("total") > 0);
+        assertFalse(storage.getBoolean("detailed"));
+        assertNotNull(storage.getString("note"));
     }
 
     @Test

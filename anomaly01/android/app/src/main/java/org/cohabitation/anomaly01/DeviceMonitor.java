@@ -73,8 +73,12 @@ public class DeviceMonitor {
     }
 
     /**
-     * Returns a breakdown of storage usage by category.
-     * Without MANAGE_EXTERNAL_STORAGE, we estimate based on total/free.
+     * Returns storage usage as used/available/total — only what we can
+     * actually measure without special permissions.
+     *
+     * Per-category breakdown (apps, photos, videos) is NOT provided because
+     * we don't have MANAGE_EXTERNAL_STORAGE. Fabricating percentages would
+     * be dishonest.
      */
     public JSONObject getStorageBreakdown() throws JSONException {
         StatFs stat = new StatFs(Environment.getDataDirectory().getPath());
@@ -82,19 +86,12 @@ public class DeviceMonitor {
         long freeMB = stat.getAvailableBytes() / (1024 * 1024);
         long usedMB = totalMB - freeMB;
 
-        // Without StorageStatsManager, we provide rough estimates
-        // These proportions are typical for consumer phones
-        long appsMB = (long) (usedMB * 0.40);
-        long photosMB = (long) (usedMB * 0.20);
-        long videosMB = (long) (usedMB * 0.25);
-        long systemMB = usedMB - appsMB - photosMB - videosMB;
-
         JSONObject obj = new JSONObject();
-        obj.put("apps", appsMB);
-        obj.put("photos", photosMB);
-        obj.put("videos", videosMB);
-        obj.put("system", systemMB);
+        obj.put("used", usedMB);
         obj.put("available", freeMB);
+        obj.put("total", totalMB);
+        obj.put("detailed", false);
+        obj.put("note", "Per-category breakdown requires storage access permission");
         return obj;
     }
 
