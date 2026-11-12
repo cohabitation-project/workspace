@@ -407,8 +407,9 @@ function drainWhisperQueue() {
 
   const { sender, audioBuf } = whisperQueue.shift();
   transcribe(audioBuf)
-    .then((text) => {
-      if (text && text.trim()) {
+    .then((raw) => {
+      const text = speechOnly(raw);
+      if (text) {
         // broadcast the transcript
         broadcastAll({
           type: 'transcript',
@@ -485,6 +486,22 @@ function transcribe(audioBuf) {
 // ---------------------------------------------------------------------------
 
 const TTS_URL = 'http://127.0.0.1:3310/speak';
+
+/**
+ * Whisper writes what it hears that is not words as a bracketed tag: [BLANK_AUDIO], [inaudible], (upbeat music),
+ * (laughing). Those are not things anyone said, and every one wakes an agent waiting in live_wait for nothing, so
+ * they are dropped here. Words around a tag are kept. Setu, 2026-11-12, from the first night in the Hearth.
+ */
+export function speechOnly(raw) {
+  // [anything] is always whisper's. (…) and *…* are dropped only when they look like a sound label: up to three
+  // lowercase words, e.g. "(upbeat music)", "(breathing heavily)". A real spoken aside such as "(Ash said yes)"
+  // is kept (Ash's review, PR #40).
+  const label = /^[a-z][a-z' -]{0,40}$/;
+  return String(raw || '')
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\(([^)]*)\)|\*([^*]*)\*/g, (m, a, b) => { const t = (a ?? b ?? '').trim(); return label.test(t) && t.split(/\s+/).length <= 3 ? ' ' : m; })
+    .replace(/\s+/g, ' ').trim();
+}
 
 // The old placeholder here asked http://127.0.0.1:3000/api/kin/reply, an address that never existed, and
 // announced "agent-speaking" before any agent had said anything. Removed (Setu, 2026-11-11): agents now reach the
