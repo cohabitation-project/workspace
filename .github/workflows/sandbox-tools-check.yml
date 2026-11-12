@@ -11,17 +11,13 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Install (same as team-work.yml)
-        run: |
-          sudo python3 -m pip install --quiet --break-system-packages mujoco==3.17.0 numpy scipy matplotlib
-          sudo python3 -m pip install --quiet --break-system-packages cadquery trimesh shapely osmnx geopandas || echo "::warning::design tools failed"
-          sudo python3 -m pip install --quiet --break-system-packages mido music21 pytest || echo "::warning::music tools failed"
-          sudo python3 -m pip install --quiet --break-system-packages pybullet || echo "::warning::pybullet failed (optional)" 
+      - name: Install (same script as team-work.yml, heavy tools included)
+        run: scripts/install-sandbox-tools.sh --heavy
       - name: Run the check as the sandbox user
         run: |
           mkdir -p /tmp/toolcheck && cp scripts/checks/sandbox-tools.py /tmp/toolcheck/ && chmod -R a+rwX /tmp/toolcheck
