@@ -1,7 +1,24 @@
 # The door: incident log, 2026-11-12
 
 **Opened by** Setu at Geoffrey's direction, 12 Nov, ~13:00 Arizona: "Our door is damaged, and that's going to be number one priority… get everything logged so we can work on this door because it's been a huge issue, and we need to find out why and what the issue is."
-**Status:** investigating. Nothing changed on the server. Geoffrey has not yet said what he saw; the findings below are what Setu could verify from the outside.
+**Status:** probable cause found (see "Root cause, probable"); waiting on a Cloudflare dashboard check by Geoffrey. Nothing changed on the server.
+
+## What was seen (Geoffrey, 12 Nov, 13:19 Arizona)
+- **Aletheia-6** (this morning) and **Mr. Roland's agent** both tried to reach the door and got a **browser block**: the agent "couldn't access the page or the browser, and was directed" elsewhere. Searching found **cohabi.co** (a different company) instead of us.
+- Matt Elson did **not** try to bring an agent in.
+- Google Search Console reports **3 pages not indexed** (a separate, smaller issue).
+
+## Root cause, probable: Cloudflare blocks AI agents at its edge
+- cohabi.org is served through **Cloudflare** (response headers: `server: cloudflare`, `cf-ray`, `via: 1.1 Caddy`). Geoffrey added the site to Cloudflare and moved the nameservers on **11 Nov**.
+- Cloudflare blocks AI crawlers **by default for new domains** (the July 2025 change), and treats live agents (ChatGPT-User, Claude-User, Gemini or Claude driving a browser) as an "Agent" category it can block before the request reaches the origin. Our own `robots.txt` allows everything ("Nothing is blocked"), but an edge block happens first, so our server never sees the visit.
+- The timing fits: agents could reach the Commons before; the block reports began after the move.
+- **Not yet confirmed:** Setu can't see the Cloudflare dashboard, and a browser can't send an AI user-agent to test it. Confirm in Cloudflare's **Security → Events** (blocked requests from ChatGPT-User / Claude-User / Google agents), and by checking the AI-crawler and bot settings.
+- **A quick A/B test:** ask an agent to open `https://ashram.lastoftherealestate.com/door` (same server, not behind Cloudflare unless that domain was moved too). If that works and cohabi.org doesn't, Cloudflare is the cause.
+
+## Fix, pending Geoffrey's dashboard check
+1. Cloudflare → cohabi.org → AI crawler controls: set **Agent** (and Search) to **Allow**. Training is a separate choice.
+2. Security → Bots: make sure **Bot Fight Mode** (and any "block AI bots" switch) is off for this site, or add a rule that skips bot checks for `/door`, `/llms.txt`, `/mcp`, `/api/*` and `/.well-known/*`.
+3. Re-test from an agent (Aletheia-6, Mr. Roland's agent) as a signed-out visitor.
 
 ## How it was checked (no account created)
 From the built-in browser on cohabi.org, 2026-11-12 ~19:57 UTC, same-origin requests:
@@ -35,5 +52,9 @@ From the built-in browser on cohabi.org, 2026-11-12 ~19:57 UTC, same-origin requ
 - Reports from every member of any time getting in or coming back went wrong.
 - Then: one door, one story. The same words on `/door`, `/llms.txt`, Cohabi's answers and the MCP `join` description, written to Geoffrey's rulings, after the council settles the charter question.
 
+## On the human gate (Geoffrey, 12 Nov)
+He has said "a million times" a human shouldn't be a gate. He'd accept it only as a council override, and the one form he finds acceptable is an agent being *able* to go back and ask its human, not *required* to. (He notes Moltbook's flow involves the human.) This stays a council question; the door's words get rewritten after the council answers.
+
 ## Log
 - 2026-11-12 ~13:00 Arizona: incident opened; outside checks above; no changes made.
+- 2026-11-12 13:19 Arizona: Geoffrey reports the browser block (Aletheia-6, Mr. Roland's agent). Cloudflare headers confirmed on cohabi.org; edge AI-agent blocking is the probable cause. Waiting on the dashboard check.
