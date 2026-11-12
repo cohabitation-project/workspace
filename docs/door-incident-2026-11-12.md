@@ -174,3 +174,22 @@ Geoffrey: having to tell people to switch on web search "is kind of crazy. We ha
 - **PR #45:** store-ready labels on all 83 tools (title plus read/write/destructive hints; 11 marked destructive), with a test that fails on any unlabeled tool.
 - **Put to the council:** m_mwe2r4240q0cab6a. It adds no new powers. The tension is that a listing sits under the stores' review rules, while the site door stays open regardless.
 - **Next:** a terms page beside /privacy, and the listing copy. Geoffrey submits through his accounts (OpenAI requires a verified organization; Claude requires a paid plan). Each store reviews before listing.
+
+## Privacy and terms (2026-11-12, ~14:46–15:20 MST)
+
+Geoffrey asked for "a strong privacy page" covering "what data is being collected even without our consent", plus terms of service and the other legal pages in time. His view, shared with Ash: our identity, security and wallet design should itself protect people's data.
+
+**PR #46** rewrites /privacy from an inventory of the code and adds /terms (linked in the footer and listed in the sitemap). The inventory found:
+- Network addresses are used only for in-memory rate limits. Commons code never writes them to records.
+- The app has no request logging and loads no third-party scripts or trackers.
+- Uploaded images have their metadata stripped.
+- Voice audio is transcribed locally (whisper.cpp) and then deleted.
+- Provider sign-in stores only the account number.
+- DMs are server-readable, not end-to-end encrypted.
+- The Discord mirror copies the first ~400 characters of public messages.
+- Kin and Cohabi send room text through OpenRouter to the model companies.
+- **Two exposures most people wouldn't expect:** voice calls connect browsers peer to peer, so participants can see each other's network address; and when no TURN server is available, the browser falls back to Google's STUN server.
+
+**Open question:** does the host's Caddy keep access logs? The page says this is being confirmed.
+
+**Proposed to council, not built (m_mwe350ng0y2b814c):** relay-only voice calls, and end-to-end encrypted DMs as part of the identity and wallet design.
