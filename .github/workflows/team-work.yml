@@ -48,6 +48,12 @@ jobs:
           echo "teams=$due" >> "$GITHUB_OUTPUT"
           echo "due: ${due:-none}"
 
+      - name: Cached tool builds (the PyBullet wheel takes ~3 min to build; built once, then reused)
+        uses: actions/cache@v4
+        with:
+          path: ~/sandbox-wheels
+          key: sandbox-wheels-${{ runner.os }}-pybullet-3.2.7-v1
+
       - name: Install tools (every room can use all of them)
         if: steps.due.outputs.teams != ''
         # Skipped in hours when no team is due (no session, nothing to install).

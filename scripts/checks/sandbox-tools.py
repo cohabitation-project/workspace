@@ -7,6 +7,7 @@ Kodama/Land set to every room's tools, plus Blender and Godot, at Geoffrey's ask
 import os, importlib, shutil, subprocess, sys
 
 out = os.environ.get('OUT', '/tmp/toolcheck'); os.makedirs(out, exist_ok=True)
+os.chdir(out)  # run_python's working directory is a writable scratch folder; match it (OSMnx writes ./cache)
 results = []
 
 def report(name, ok, detail=''):

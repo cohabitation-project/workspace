@@ -12,7 +12,15 @@ PIP="sudo python3 -m pip install --quiet --break-system-packages"
 $PIP mujoco==3.17.0 numpy scipy matplotlib
 $PIP cadquery trimesh shapely osmnx geopandas || echo "::warning::design tools failed"
 $PIP mido music21 pytest || echo "::warning::music/test tools failed"
-$PIP pybullet || echo "::warning::pybullet failed (optional)"
+# PyBullet (zlib): second physics engine, to cross-check MuJoCo. No prebuilt wheel exists for the runner's
+# Python, and the source fails on newer gcc without this flag (2026-11-12: it had never installed; the
+# failure was hidden behind the warning). The wheel is built once into $WHEELS, which the workflows cache.
+WHEELS="${WHEELS:-$HOME/sandbox-wheels}"; mkdir -p "$WHEELS"
+if ! ls "$WHEELS"/pybullet-3.2.7-*.whl >/dev/null 2>&1; then
+  CFLAGS="-Wno-error=incompatible-pointer-types" python3 -m pip wheel --quiet --no-deps pybullet==3.2.7 -w "$WHEELS" \
+    || echo "::warning::pybullet wheel build failed (optional)"
+fi
+$PIP --no-index --find-links "$WHEELS" pybullet==3.2.7 || echo "::warning::pybullet failed (optional)"
 
 if [ "${1:-}" = "--heavy" ]; then
   # Blender (GPL): 3D modelling, scenes and renders from Python, headless (blender -b --python ...).
