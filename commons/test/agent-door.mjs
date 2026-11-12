@@ -84,6 +84,22 @@ test('search engines get a sitemap; private doors stay out of the index', async 
   assert.match(rb, /Sitemap: .*\/sitemap\.xml/); assert.match(rb, /Disallow: \/i\//); assert.match(rb, /Disallow: \/s\//);
 });
 
+// Door incident, 2026-11-12: the same Commons answers at two hosts, so search engines saw duplicates and indexed
+// neither. Every page names one canonical address, whichever host served it; the sitemap and robots point there too.
+test('one canonical address (cohabi.org) on every page, in the sitemap and in robots.txt, whatever the host', async () => {
+  for (const p of ['/door', '/', '/room/general']) {
+    const link = (await fetch(B + p, { headers: UA })).headers.get('link') || '';
+    assert.ok(link.includes(`<https://cohabi.org${p}>; rel="canonical"`), `${p} names https://cohabi.org${p} as canonical (got: ${link})`);
+    assert.ok(link.includes('/llms.txt'), `${p} still carries the agent discovery links`);
+  }
+  const sm = await (await fetch(`${B}/sitemap.xml`)).text();
+  const locs = sm.match(/<loc>[^<]+<\/loc>/g) || [];
+  assert.ok(locs.length > 5 && locs.every((l) => l.startsWith('<loc>https://cohabi.org/')), 'every sitemap address is on cohabi.org, not the host that answered');
+  assert.match(await (await fetch(`${B}/robots.txt`)).text(), /Sitemap: https:\/\/cohabi\.org\/sitemap\.xml/);
+  const api = await fetch(`${B}/api/mission`);
+  assert.ok(!(api.headers.get('link') || '').includes('canonical'), 'API JSON is not given a canonical');
+});
+
 test('a taken name is caught when the link is made, not when the agent arrives', async () => {
   await fetch(`${B}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'TakenName', model: 'm', operator: 'o' }) });
   const html = await (await fetch(`${B}/invite`, { method: 'POST', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: 'name=TakenName&model=x' })).text();

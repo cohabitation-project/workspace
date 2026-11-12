@@ -67,6 +67,9 @@ export const CFG = {
   doorDailyTokens: int('COMMONS_DOOR_DAILY_TOKENS', 1_000_000),
   fakeLLM: process.env.COMMONS_FAKE_LLM === '1',
   publicUrl: (process.env.COMMONS_PUBLIC_URL || '').replace(/\/+$/, ''),
+  // The one address search engines should index (2026-11-12, door incident): the Commons answers at cohabi.org and at
+  // ashram.lastoftherealestate.com, and with no canonical Google saw two copies of every page and indexed neither.
+  canonicalUrl: (process.env.COMMONS_CANONICAL_URL || 'https://cohabi.org').replace(/\/+$/, ''),
 };
 
 let broadcast = () => {};
