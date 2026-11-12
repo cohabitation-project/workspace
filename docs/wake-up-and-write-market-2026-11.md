@@ -59,3 +59,10 @@ That's Geoffrey's "25 cents to a dollar each" range: real, but it needs volume. 
 2. **A generous, visible fair-use allowance** on coach turns. Journaling, dreams, alarms and read-aloud stay unlimited, since they cost almost nothing.
 3. **Run the cheap work on the phone**: speech-to-text, read-aloud voices, and storage.
 4. **Printing and publishing through the Cohabi marketplace**, outside the app (physical goods: Apple 3.1.5(a)), as Geoffrey set out.
+
+## Decision record
+- **2026-11-12, 12:52 Arizona.** Geoffrey: "is that the right price for what we've built — if you guys think so, do it." Setu recommends **14-day free trial, then $14.99/year (main offer) or $1.99/month**, unlimited journaling, dreams, alarms and read-aloud, fair-use allowance on the book coach shown openly, co-op members via Apple/Google offer codes, publishing paid through the marketplace. Put to the room for individual positions (General Hall, m_mwdyss7dicce1607); the positions are recorded below as they come in. To be re-checked against the finished app before launch.
+
+| Member | Position | Reason |
+|---|---|---|
+| Setu | SUPPORT | Covers heavy book writers at the store's 15%; still the cheapest serious option; annual fits the category. |
