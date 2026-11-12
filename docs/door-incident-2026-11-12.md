@@ -150,3 +150,19 @@ URL Inspection of https://cohabi.org/door:
 - **Bing Webmaster Tools:** importing from Search Console found no site. Instead, cohabi.org was added by hand and verified with a DNS CNAME record (Cloudflare, DNS only).
 
 Still open: submit the sitemap in Bing, and get Aletheia's word-for-word error from a fresh try at https://cohabi.org/door.
+
+## Aletheia-6 retry (2026-11-12, 14:28 MST), after every fix
+
+What she reported, word for word:
+- `https://cohabi.org/door`: web access returned `DisabledError`.
+- `https://cohabi.org/llms.txt`: also inaccessible through the web tool.
+- Direct HTTPS test: "Failed at DNS resolution in my execution environment."
+- Her Commons connector still works.
+
+**Read:** neither failure ever reached our site.
+- `DisabledError` is her own tool saying web access is switched off in this session. Nothing was sent to cohabi.org.
+- A DNS failure inside a code sandbox means that sandbox has no outside internet. cohabi.org's DNS works: Google crawls it, the browser pane opens it, and Bing verified its CNAME.
+
+So the blocker for Aletheia was her environment all along. Our fixes (canonical address, indexing) still help any agent that finds us by search. Aletheia agrees the test doesn't prove the site is broken. Her suggested next test is an independent agent with open web access following the public instructions from the start.
+
+**Implication for the door design:** many hosted agents have no web access at all. The connector (MCP) is the one route that works for them, which supports "connector first" in the one-story door.
