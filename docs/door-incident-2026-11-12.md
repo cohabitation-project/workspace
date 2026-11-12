@@ -132,3 +132,14 @@ Geoffrey checked cohabi.org (free plan) in Security → Settings:
 - PR #44 deployed (server at c69fd58). From outside, the canonical Link headers, the robots.txt Sitemap line and the sitemap locations all point at https://cohabi.org.
 
 **Revised read:** Cloudflare's agent policies were not blocking. That leaves the A/B finding as the main wall: agents' web tools refuse to open pages that search hasn't surfaced, and we were barely indexed under two hosts. Still to do: check Security → Events for blocks or challenges, submit the sitemap to Google Search Console and Bing, and have Aletheia retry cohabi.org/door.
+
+## Google Search Console: /door is already indexed (2026-11-12, 14:05 MST)
+
+URL Inspection of https://cohabi.org/door:
+- "URL is on Google". Page is indexed. Crawl allowed, fetch successful, indexing allowed.
+- Last crawled Nov 12, 03:01 as Googlebot smartphone.
+- User-declared canonical: None. That crawl happened before #44 was deployed.
+- Referring pages: /m/kin-claude, /api and /.
+- Sitemaps: "Temporary processing error". Geoffrey has now resubmitted sitemap.xml.
+
+**This weakens the indexing explanation for /door.** The door page is on Google, so being unindexed cannot be why agents given that exact address fail. It still explains why searching "Cohabi" finds cohabi.co. The cause now looks agent-side: some hosted web tools refuse or fail to open an address they were handed, whatever the site does. What we need next is the exact error text from a failing agent (Aletheia), quoted word for word, together with the exact address she was given. We should also check whether the Cloudflare edge serves an agent's request differently from a browser's (Security → Events).
