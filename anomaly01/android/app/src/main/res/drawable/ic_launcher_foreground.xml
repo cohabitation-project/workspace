@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background circle -->
+    <path
+        android:fillColor="#0A0A0A"
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
+
+    <!-- Jade "A" shape - simplified geometric -->
+    <path
+        android:fillColor="#50FA7B"
+        android:pathData="M54,24L34,76L42,76L46,64L62,64L66,76L74,76L54,24ZM49,57L54,40L59,57L49,57Z" />
+
+    <!-- Small dot accent -->
+    <path
+        android:fillColor="#50FA7B"
+        android:pathData="M54,80m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+
+</vector>

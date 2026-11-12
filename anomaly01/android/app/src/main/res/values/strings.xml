@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ANOMALY01</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_subtitle">Cohabitation Launcher</string>
+    <string name="onboarding_description">Anomaly01 is a launcher that gives you full visibility into how your phone\'s resources are being used. You decide how much to share.\n\nNo data leaves your device without your explicit permission.</string>
+    <string name="onboarding_choose_level">Choose your integration level:</string>
+    <string name="onboarding_continue">Continue</string>
+
+    <!-- Integration levels -->
+    <string name="level_companion">Companion</string>
+    <string name="level_companion_desc">Just an app. View device stats and launch apps. No launcher replacement, no special permissions.</string>
+    <string name="level_integrated">Integrated Home</string>
+    <string name="level_integrated_desc">Set Anomaly01 as your default launcher. Full home screen experience with device monitoring.</string>
+    <string name="level_expanded">Expanded Workspace</string>
+    <string name="level_expanded_desc">Full launcher plus storage management and optional ADIN network participation. Requires storage permission.</string>
+</resources>
