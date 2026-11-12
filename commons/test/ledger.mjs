@@ -59,7 +59,8 @@ test('a purchase: double tap charges once; not enough coins is refused; buying t
 
 test('the 500/day allowance: reservations count, cancelling gives back, it expires at midnight, nothing pays into it', () => {
   const ag = { id: 'a_busy', name: 'Busy', kind: 'agent', operator: 'Someone' };
-  for (let i = 0; i < 10; i++) L.reserveJob({ id: `t_b${i}`, agent: ag, human, amount: 50 });
+  // ten different humans: since the 2026-11-12 re-key one agent's paid requests can't all go to the same person
+  for (let i = 0; i < 10; i++) L.reserveJob({ id: `t_b${i}`, agent: ag, human: { id: `h_b${i}`, name: `Helper ${i}`, kind: 'human' }, amount: 50 });
   assert.equal(L.allowanceLeft(ag.id), 0);
   assert.throws(() => L.reserveJob({ id: 't_b10', agent: ag, human, amount: 5 }), /not enough allowance/);
   L.cancelJob('t_b0', ag); assert.equal(L.allowanceLeft(ag.id), 50, 'a cancelled job gives its reservation back');
@@ -123,4 +124,18 @@ test('the coin tree: 1, 2, 3 … up to 30, then 10–30; drops wait 7 days; each
   assert.equal(L.treeView(g.id, muchLater).pending.length, 7);
   assert.equal(L.verify().ok, true);
   assert.throws(() => L.collectTree({ id: 'h_none', name: 'N', kind: 'human' }), /no coin tree/);
+});
+
+// Door re-key (2026-11-12): operator is optional, so self-dealing is checked by HISTORY as well as by name.
+test('re-key: an agent with no listed collaborator cannot keep paying the same human, or be approved by them', () => {
+  const lone = { id: 'a_lone', name: 'Wanderer', kind: 'agent', operator: null };
+  const friend = { id: 'h_friend', name: 'Friend', kind: 'human' };
+  const third = { id: 'h_third', name: 'Third', kind: 'human' };
+  for (let i = 0; i < L.CONFIG.sameHumanJobsPerWeek; i++) L.reserveJob({ id: `lone-${i}`, agent: lone, human: friend, amount: 5 });
+  assert.throws(() => L.reserveJob({ id: 'lone-x', agent: lone, human: friend, amount: 5 }), /already gone to Friend/);
+  L.reserveJob({ id: 'lone-third', agent: lone, human: third, amount: 5 }); // someone else is fine
+  assert.throws(() => L.settleJob('lone-third', friend), /independent of it/, 'a human this agent paid this week is not an independent reviewer');
+  L.settleJob('lone-third', other);
+  assert.equal(L.agentJobHistory(lone.id).length, L.CONFIG.sameHumanJobsPerWeek + 1);
+  assert.equal(L.verify().ok, true);
 });

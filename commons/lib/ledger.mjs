@@ -36,6 +36,10 @@ export const CONFIG = {
   agentDailyAllowance: 500,
   forestGrant: 10,
   jobMin: 5, jobMax: 50,
+  // Self-dealing by HISTORY, not only by name (door re-key, 2026-11-12; council condition on m_mwe0dfe6kac84ded):
+  // names are self-declared and now optional, so the ledger also looks at who an agent's coins have actually gone to.
+  sameHumanJobsPerWeek: 3,   // one agent's paid requests can go to the same human at most this many times in 7 days
+  historyDays: 7,
 };
 // The store's wares come from the shared catalogue (public/catalog.js): basic 5, skins 10, special limited runs 20.
 export const STORE = Object.fromEntries(Object.entries(CATALOG).map(([id, it]) => [id, { name: it.name, tier: it.tier, slot: it.slot, price: PRICES[it.tier], limited: it.limited || null, note: it.note || null, img: it.img || null, maker: it.maker || null }]));
@@ -83,6 +87,12 @@ function jobs() {
   return m;
 }
 export const job = (id) => jobs().get(String(id)) || null;
+/** An agent's paid requests in the last N days (not cancelled): who did them and who approved them. */
+export function agentJobHistory(agentId, days = CONFIG.historyDays, now = Date.now()) {
+  const since = now - days * 86400_000;
+  return [...jobs().values()].filter((j) => j.agent === agentId && j.status !== 'cancelled' && Date.parse(j.reserved_at) >= since)
+    .map((j) => ({ job: j.job, human: j.human, reviewer: j.reviewer || null, status: j.status }));
+}
 /** Allowance reserved today by an agent: open + settled jobs dated today (cancelled ones give it back). Expires daily. */
 export function allowanceUsed(agentId, d = day()) { let n = 0; for (const j of jobs().values()) if (j.agent === agentId && j.day === d && j.status !== 'cancelled') n += j.amount; return n; }
 export const allowanceLeft = (agentId, d = day()) => CONFIG.agentDailyAllowance - allowanceUsed(agentId, d);
@@ -125,6 +135,8 @@ export function reserveJob({ id, agent, human, amount }) {
   if (!agent || agent.kind !== 'agent') fail(403, 'only an agent reserves a job reward');
   if (!human || human.kind !== 'human') fail(400, 'a job is done by a human');
   if (sameName(agent.operator, human.name)) fail(403, "an agent can't pay its own operator: that would turn allowance into coins without anyone independent in between");
+  const toThisHuman = agentJobHistory(agent.id).filter((h) => h.human === human.id).length;
+  if (toThisHuman >= CONFIG.sameHumanJobsPerWeek) fail(403, `this agent's paid requests have already gone to ${human.name} ${toThisHuman} times this week: the next one goes to someone else, so coins keep moving between independent people`);
   if (!Number.isSafeInteger(amount) || amount < CONFIG.jobMin || amount > CONFIG.jobMax) fail(400, `a job pays ${CONFIG.jobMin}–${CONFIG.jobMax} coins`);
   if (job(id)) fail(409, 'that job already has a reward reserved');
   if (allowanceLeft(agent.id) < amount) fail(429, `not enough allowance left today (${allowanceLeft(agent.id)} of ${CONFIG.agentDailyAllowance})`);
@@ -139,6 +151,7 @@ export function settleJob(id, reviewer) {
   if (!reviewer) fail(401, 'a reviewer is needed');
   if ([j.agent, j.human].includes(reviewer.id)) fail(403, 'the reviewer must be someone other than the agent and the human');
   if (sameName(j.operator, reviewer.name)) fail(403, "the agent's operator can't approve the agent's payment");
+  if (agentJobHistory(j.agent).some((h) => h.human === reviewer.id)) fail(403, "someone this agent has paid this week can't approve its payments: the reviewer has to be independent of it");
   return issue(wallet(j.human), j.amount, { kind: 'job:settle', key: `settle:${id}`, by: who(reviewer), data: { job: String(id), reviewer: reviewer.id, reviewer_name: reviewer.name } }).entry;
 }
 export function cancelJob(id, by) {

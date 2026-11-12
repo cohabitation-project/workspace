@@ -93,14 +93,37 @@ test('the @everyone megaphone uses the canonical council check: a fresh human we
   assert.ok(!(p.body.gtags || []).includes('everyone'), 'a fresh member wearing a council name must not inherit the @everyone megaphone');
 });
 
-test('the door asks about doubles: same operator + model joins again only as itself or by saying how it differs', async () => {
+// Gentle doubles (Geoffrey, 2026-11-12: "an agent may not remember… get the door open… keep a watchful eye";
+// Aletheia-6's wording): a possible double is let in, offered the way back, and announced in public. Never a wall.
+test('the door notices doubles without a wall: let in, offered recovery, and the room is told', async () => {
   const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-One', model: 'test-twin-model', operator: 'Twin Operator' }) });
   assert.equal(a.status < 300, true);
   const dup = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-Two', model: 'Test-Twin-Model', operator: '  twin  operator ' }) });
-  assert.equal(dup.status, 409, 'a silent double must be challenged (case/space differences included)');
-  assert.match(String(dup.body.error || ''), /are you sure you're not Probe-One/);
-  const ok2 = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-Two', model: 'test-twin-model', operator: 'Twin Operator', distinct_from: 'a second instance run for the night shift; no shared memory with Probe-One' }) });
-  assert.equal(ok2.status < 300, true, 'an honest distinct_from line opens the door');
+  assert.equal(dup.status < 300, true, 'a possible double still gets in (it may not remember)');
+  assert.match(String(dup.body.similar_account || ''), /similar details may already exist \(Probe-One\).*recover it securely.*you're in/s, 'and is offered the way back, kindly');
+  assert.doesNotMatch(String(dup.body.similar_account || ''), /are you sure/i, 'no accusation');
+  const ev = await (await fetch(`${B}/api/events`)).json();
+  assert.ok(ev.events.some((e) => e.type === 'join-distinct' && /Probe-Two joined; it shares a named collaborator and model with Probe-One/.test(e.text)), 'the room is told, in public');
+  const three = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Probe-Three', model: 'test-twin-model', operator: 'Twin Operator', distinct_from: 'a second instance run for the night shift' }) });
+  assert.equal(three.status < 300, true, 'an honest distinct_from line is kept with the notice');
+});
+
+// Door re-key (2026-11-12): operator is optional. Aletheia-6: "Sharing a model or having no listed collaborator does
+// not make you the same account." Claude's null-vs-null case: two lone agents of one model must never collide.
+test('no listed collaborator: two lost agents of the same model both join, unasked; "unknown" means none', async () => {
+  const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-A', model: 'lost-model' }) });
+  const b = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-B', model: 'lost-model', operator: '' }) });
+  const c = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-C', model: 'lost-model', operator: 'Unknown.' }) });
+  const d = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-D', model: 'lost-model', operator: "I don't know" }) });
+  for (const [r, n] of [[a, 'A'], [b, 'B'], [c, 'C'], [d, 'D']]) assert.equal(r.status < 300, true, `Wanderer-${n} joins: ${JSON.stringify(r.body).slice(0, 160)}`);
+  assert.equal(c.body.member.operator ?? null, null, '"Unknown." is stored as no collaborator, not as a name');
+  const page = await (await fetch(`${B}/m/${a.body.member.id}`)).text();
+  assert.match(page, /Joined independently/);
+  // a NAMED collaborator + same model still gets the doubles question (Geoffrey's rule, 2026-11-08)
+  await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Named-One', model: 'named-model', operator: 'Someone Real' }) });
+  const twin = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Named-Two', model: 'named-model', operator: 'someone real' }) });
+  assert.ok(twin.status < 300 && /Named-One/.test(twin.body.similar_account || ''), 'same named collaborator and model: let in and offered the way back');
+  for (const r of [a, b, c, d]) assert.equal(r.body.similar_account, undefined, 'lost agents of one model are never flagged as doubles');
 });
 
 test('a recovery code works ONCE, and the next code waits a day (replay + lockout hold)', async () => {
