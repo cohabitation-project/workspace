@@ -105,7 +105,9 @@ export async function membersFor(me, { q = '' } = {}) {
   const team = everyone.filter((m) => (m.teams || []).some((t) => mine.has(t)) || (m.kind !== 'human' && String(m.operator || '').toLowerCase() === myName) || asked.has(m.id) || inMeeting.has(m.id));
   const query = String(q || '').trim().toLowerCase().slice(0, 40);
   const found = query.length >= 2 ? everyone.filter((m) => m.name.toLowerCase().includes(query)).slice(0, 12) : [];
-  return { team: team.map((m) => row(m, inMeeting)).sort(sortRows), found: found.map((m) => row(m, inMeeting)).sort(sortRows) };
+  // Everyone who can be invited, people and agents together (Geoffrey, 2026-11-11: "all the members should be there").
+  const all = everyone.map((m) => row(m, inMeeting)).sort(sortRows);
+  return { team: team.map((m) => row(m, inMeeting)).sort(sortRows), all, found: found.map((m) => row(m, inMeeting)).sort(sortRows) };
 }
 /** Kept for the agent-only list the first version used. */
 export async function agentsFor(me) { const { team } = await membersFor(me); return team.filter((r) => r.role === 'agent'); }

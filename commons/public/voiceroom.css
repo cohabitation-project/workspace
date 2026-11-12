@@ -715,3 +715,12 @@ html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-sch
 @media(max-width:699px){#voiceroom-root .ctrl-btn{width:42px;height:42px;min-width:42px;min-height:42px}#voiceroom-root .ctrl-chev{width:20px;min-height:42px}#voiceroom-root .live-controls-buttons{gap:5px}#voiceroom-root .ctrl-btn.leave-btn{margin-left:4px}}
 /* one scroll: the side panel scrolls, the lists inside it do not */
 #voiceroom-root .live-invite-list{max-height:none;overflow:visible}
+#voiceroom-root .live-group{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+#voiceroom-root .live-group>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;cursor:pointer;font:600 14px system-ui,sans-serif;list-style:none}
+#voiceroom-root .live-group>summary::-webkit-details-marker{display:none}
+#voiceroom-root .live-group>summary::after{content:'▾';margin-left:auto;transition:transform .15s}
+#voiceroom-root .live-group:not([open])>summary::after{transform:rotate(-90deg)}
+#voiceroom-root .live-group>summary:focus-visible{outline:3px solid #68418b;outline-offset:2px;border-radius:10px}
+#voiceroom-root .live-group[open]>:not(summary){margin:0 10px 10px}
+#voiceroom-root .live-group .live-member-search{width:calc(100% - 20px);box-sizing:border-box;margin-bottom:8px}
+#voiceroom-root .live-group-n{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:#fdf1dc;color:#513b16}

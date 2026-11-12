@@ -710,12 +710,15 @@
     if (!box || box.hidden || !list) return;
     const q = document.getElementById('live-member-search')?.value || ''; const seq = ++searchSeq;
     let data;
-    try { data = await liveApi('GET', '/api/live/members' + (q.trim().length >= 2 ? `?q=${encodeURIComponent(q.trim())}` : '')); }
+    try { data = await liveApi('GET', '/api/live/members'); }
     catch (e) { list.replaceChildren(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: `Members could not be listed: ${e.message}` })); return; }
     if (seq !== searchSeq) return;
     list.replaceChildren(...(data.team.length ? data.team.map(memberRow) : [Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'Nobody shares a team with you yet. Find a member below.' })]));
+    const tn = document.getElementById('live-team-n'); if (tn) tn.textContent = String(data.team.length);
+    const an = document.getElementById('live-all-n'); if (an) an.textContent = String(data.all.length);
     const found = document.getElementById('live-found-list');
-    if (found) found.replaceChildren(...(q.trim().length >= 2 ? (data.found.length ? data.found.map(memberRow) : [Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'No member by that name.' })]) : []));
+    const f = q.trim().toLowerCase(); const shown = f ? data.all.filter((a) => a.name.toLowerCase().includes(f)) : data.all;
+    if (found) found.replaceChildren(...(shown.length ? shown.map(memberRow) : [Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'No member by that name.' })]));
   }
   function toggleInvite(open) {
     const box = document.getElementById('live-invite'); const b = document.getElementById('live-invite-open'); if (!box) return;
@@ -883,15 +886,17 @@ function buildUI() {
             <section class="live-side-panel" id="live-panel-people" role="tabpanel" aria-labelledby="live-tab-people">
               <div class="live-side-title">In this meeting <span id="live-participant-count">0</span></div>
               <div id="live-participants" class="live-participants"></div>
-              <button id="live-invite-open" type="button" class="live-invite-open" aria-expanded="false" aria-controls="live-invite">＋ Invite Members</button>
+              <button id="live-invite-open" type="button" class="live-invite-open" aria-expanded="false" aria-controls="live-invite">＋ Invite</button>
               <div id="live-invite" class="live-invite" hidden>
                 <div class="live-invite-head"><strong>Invite members</strong><button id="live-invite-close" type="button" aria-label="Close invite panel">×</button></div>
-                <p class="live-side-note">People and agents, together. An invitation waits 30 minutes; each member answers it themselves. Nobody shows as here until they actually join.</p>
-                <h3 class="live-invite-sub">Your Team</h3>
-                <div id="live-invite-list" class="live-invite-list" aria-live="polite"><p class="live-side-note">Loading your team…</p></div>
-                <h3 class="live-invite-sub">Find a member</h3>
-                <input id="live-member-search" class="live-member-search" type="search" placeholder="Search by name" aria-label="Find a member by name" autocomplete="off">
-                <div id="live-found-list" class="live-invite-list" aria-live="polite"></div>
+                <p class="live-side-note">People and agents, together. Each member answers an invitation themselves, within 30 minutes, and shows as here only once they join.</p>
+                <details class="live-group" id="live-group-team" open><summary>Team <span class="live-group-n" id="live-team-n"></span></summary>
+                  <div id="live-invite-list" class="live-invite-list" aria-live="polite"><p class="live-side-note">Loading your team…</p></div>
+                </details>
+                <details class="live-group" id="live-group-all"><summary>All members <span class="live-group-n" id="live-all-n"></span></summary>
+                  <input id="live-member-search" class="live-member-search" type="search" placeholder="Filter by name" aria-label="Filter members by name" autocomplete="off">
+                  <div id="live-found-list" class="live-invite-list" aria-live="polite"></div>
+                </details>
                 <button id="live-invite-copy" type="button" class="live-text-btn">Copy instructions for an agent</button>
                 <div class="live-invite-head live-guest-head"><strong>Invite a guest</strong></div>
                 <p class="live-side-note">Someone outside the Commons, for this meeting only. They need no account, and they see who is here, agents included, before they join.</p>
