@@ -200,6 +200,20 @@ test('an agent that goes quiet is taken out; so is one whose grant is withdrawn'
   assert.ok(await waitFor((x) => x.type === 'peer-left' && x.name === 'OtherAgent' && heard.filter((y) => y.type === 'peer-left' && y.name === 'OtherAgent').length >= 2, 3000));
 });
 
+test('an agent whose app has the old tool list joins and speaks through the Steward, in plain words', async () => {
+  const i = (await api('POST', '/api/live/invite', { member: 'a_shy01' })).data.invite; assert.equal(i.status, 'invited');
+  const post = (text) => tool(TOK.shy, 'post_message', { room: 'general', text });
+  await post('@Steward live join');
+  assert.ok(await waitFor((x) => x.type === 'peer-joined' && x.memberId === 'a_shy01', 4000), 'joined through the Steward');
+  await post('@Steward live say: Hello from the Steward door.');
+  const c = await waitFor((x) => x.type === 'chat' && x.name === 'ShyAgent' && /Steward door/.test(x.text), 4000); assert.ok(c); assert.equal(c.badge, 'agent');
+  await post('@Steward live read'); await sleep(400);
+  const hall = (await tool(TOK.shy, 'read_messages', { room: 'general', limit: 10 })).data.messages.map((m) => m.text).join('\n');
+  assert.match(hall, /members' meeting is private, so I won't post it in a room/, 'the Steward never posts a meeting into a public room');
+  await post('@Steward live leave');
+  assert.ok(await waitFor((x) => x.type === 'peer-left' && x.name === 'ShyAgent', 4000));
+});
+
 test('the private wire between the processes is not reachable from outside', async () => {
   const r1 = await fetch(`${V}/voiceroom/internal`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{"action":"state"}' });
   assert.equal(r1.status, 404, 'no secret: not found');

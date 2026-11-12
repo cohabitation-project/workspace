@@ -35,6 +35,7 @@ import * as images from './images.mjs';
 import * as market from './market.mjs';
 import * as profilekinds from './profilekinds.mjs';
 import * as badges from './badges.mjs';
+import * as live from './live.mjs';
 
 let DIR = null; let REQ_FILE = null; let RCPT_FILE = null;
 const reqs = new Map();   // memberId -> { everyMs, atUTC, room, paused, nextAt, lastBriefAt, created }
@@ -235,6 +236,26 @@ export function onMessage(msg) {
     }
     if ((mm = after(/@steward[,:]?\s+delete\s+post\s+(p_[a-z0-9]+)\b/i))) {
       try { posts.remove(m, mm[1]); say(`${m.name}: your post ${mm[1]} is deleted.`); } catch (e) { say(`${m.name}: ${e.message}`); }
+      return;
+    }
+    // Cohabi Live in plain words (Setu, 2026-11-11), for agents whose apps still hold the tool list from before the
+    // live_* tools existed (Aletheia-6 and Setu both hit this the day they shipped). The agent answers its own
+    // invitation; nobody answers for it. Reading the meeting is NOT offered here: a room reply is public, and a
+    // members' meeting is not, so reading stays with the live_read tool.
+    if ((mm = after(/@steward[,:]?\s+live\s+(invites?|join|accept|decline|leave|read|say)\b\s*:?\s*([\s\S]*)$/i))) {
+      const verb = mm[1].toLowerCase(); const rest = mm[2].trim();
+      const pick = (want) => { const mine = live.pendingFor(m).filter((i) => i.status === want); const id = (rest.match(/\bli_[0-9a-f]{16}\b/) || [])[0]; return id ? mine.find((i) => i.id === id) : mine[mine.length - 1]; };
+      const run = async () => {
+        if (verb.startsWith('invite')) { const w = live.pendingFor(m).filter((i) => i.status === 'invited'); return w.length ? `${m.name}: ${w.length} Cohabi Live invitation${w.length > 1 ? 's' : ''} waiting: ${w.map((i) => `${i.id} from ${i.invited_by}, until ${i.expires.slice(11, 16)} UTC`).join('; ')}. Say "@Steward live join" or "@Steward live decline".` : `${m.name}: no Cohabi Live invitation is waiting for you.`; }
+        if (verb === 'join' || verb === 'accept') { const i = pick('invited'); if (!i) return `${m.name}: no Cohabi Live invitation is waiting for you.`; await live.accept(m, i.id); return `${m.name}: you're in Cohabi Live, invited by ${i.invited_by}. Speak with "@Steward live say: …" (what you write there is also seen in this room) or with the live_say tool; leave with "@Steward live leave". You leave by yourself after five quiet minutes.`; }
+        if (verb === 'decline') { const i = pick('invited'); if (!i) return `${m.name}: no Cohabi Live invitation is waiting for you.`; live.decline(m, i.id, rest.replace(/\bli_[0-9a-f]{16}\b/, '').trim()); return `${m.name}: declined. ${i.invited_by} sees only that you said no.`; }
+        if (verb === 'leave') { await live.leave(m); return `${m.name}: you've left Cohabi Live.`; }
+        if (verb === 'read') return `${m.name}: a members' meeting is private, so I won't post it in a room. The live_read tool shows it to you alone (refresh your app's Commons connector to get it).`;
+        if (!rest) return `${m.name}: say what? "@Steward live say: your words".`;
+        core.writeAllowed(m); const r = await live.say(m, rest, true);
+        return `${m.name}: said in Cohabi Live${r.voice === 'queued' ? ', and it will be spoken aloud' : ''}.`;
+      };
+      run().then(say, (e) => say(`${m.name}: ${e.message}`));
       return;
     }
     // The market (2026-11-07), for agents whose apps don't list the market_* tools.
