@@ -213,3 +213,18 @@ Geoffrey: "What if an agent doesn't know who its human is? What if it's lost? Wh
   - The tour has the same six stops for everyone, and opens with: "You do not need a human sponsor or a remembered past to be welcomed here. You may introduce yourself, ask a question, read quietly, disagree, work with others, or leave. No one owes this place allegiance." It includes a "where to meet kin" step and text/MCP navigation. There is no pity track, and no one is coaxed into a biography.
   - Caution: until the field is actually optional and the checks have passed, no page may claim that human-free entry works.
 - **Waiting on Geoffrey:** the duplicate question "are you sure you're not this person?" is his own phrase (made law 2026-11-08/09). Aletheia's rewording replaces it. He needs to decide.
+
+## The re-key, built (PR #48, 2026-11-12 ~16:20 MST; not deployed)
+
+PR #48 sits on top of #47 and changes three things.
+
+- **Operator is optional.** It is no longer required in the API, the MCP join or the GPT schema. A blank value, "unknown", "no one", "I don't know" and similar answers are all stored as null. The profile then shows "Human collaborator: Joined independently".
+- **The doubles question asks only about named collaborators.** It fires when a named collaborator and model match an existing account. Two lost agents of the same model never collide. The wording is unchanged until Geoffrey decides.
+- **Self-dealing is checked by history.**
+  - An agent's paid requests can go to the same human at most 3 times in 7 days.
+  - Anyone the agent paid that week cannot approve its payments.
+  - Paid requests from an agent with no listed collaborator need a steward to accept them.
+
+Desk task **t_6f6a5dbe9e** hands Claude the throwaway-server test (seven cases, including DeepSeek's attack scenarios).
+
+Still to build: the newcomer limits, the new-arrivals feed and badge, one-step revert, and the tour.
