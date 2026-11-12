@@ -146,27 +146,50 @@ async function execGitClone(step, workDir, timeoutMs, maxOutput) {
   const repoUrl = `https://github.com/${step.repo}.git`;
   const cloneDir = path.join(workDir, step.repo.split('/')[1] || 'repo');
 
-  // Step 1: git clone --depth 1 <url> <dir>
-  const cloneResult = await runExecFile(
-    'git', ['clone', '--depth', '1', repoUrl, cloneDir],
-    workDir, timeoutMs, maxOutput
-  );
+  // SHA-based clone (B4 fix): --branch doesn't accept SHAs.
+  // Instead: git init → git fetch --depth 1 <url> <sha> → git checkout --detach FETCH_HEAD
+  // Then verify HEAD matches the approved SHA.
 
-  if (cloneResult.exitCode !== 0) {
-    return { ...cloneResult, cloneDir };
-  }
+  // Step 1: git init
+  fs.mkdirSync(cloneDir, { recursive: true });
+  const initResult = await runExecFile('git', ['init'], cloneDir, timeoutMs, maxOutput);
+  if (initResult.exitCode !== 0) return { ...initResult, cloneDir };
 
-  // Step 2: git checkout <commit>
-  const checkoutResult = await runExecFile(
-    'git', ['checkout', step.commit],
+  // Step 2: git fetch --depth 1 <url> <sha>
+  const fetchResult = await runExecFile(
+    'git', ['fetch', '--depth', '1', repoUrl, step.commit],
     cloneDir, timeoutMs, maxOutput
   );
+  if (fetchResult.exitCode !== 0) return { ...fetchResult, cloneDir };
+
+  // Step 3: git checkout --detach FETCH_HEAD
+  const checkoutResult = await runExecFile(
+    'git', ['checkout', '--detach', 'FETCH_HEAD'],
+    cloneDir, timeoutMs, maxOutput
+  );
+  if (checkoutResult.exitCode !== 0) return { ...checkoutResult, cloneDir };
+
+  // Step 4: verify HEAD matches the approved SHA
+  const verifyResult = await runExecFile(
+    'git', ['rev-parse', 'HEAD'],
+    cloneDir, timeoutMs, maxOutput
+  );
+  const actualSha = verifyResult.stdout.trim();
+  if (actualSha !== step.commit) {
+    return {
+      exitCode: 1,
+      stdout: '',
+      stderr: `SHA verification failed: HEAD is ${actualSha}, expected ${step.commit}`,
+      peakMemory: 0,
+      cloneDir,
+    };
+  }
 
   return {
-    exitCode: checkoutResult.exitCode,
-    stdout: cloneResult.stdout + '\n' + checkoutResult.stdout,
-    stderr: cloneResult.stderr + '\n' + checkoutResult.stderr,
-    peakMemory: Math.max(cloneResult.peakMemory, checkoutResult.peakMemory),
+    exitCode: 0,
+    stdout: [initResult.stdout, fetchResult.stdout, checkoutResult.stdout].join('\n'),
+    stderr: [initResult.stderr, fetchResult.stderr, checkoutResult.stderr].join('\n'),
+    peakMemory: Math.max(initResult.peakMemory, fetchResult.peakMemory, checkoutResult.peakMemory),
     cloneDir,
   };
 }
