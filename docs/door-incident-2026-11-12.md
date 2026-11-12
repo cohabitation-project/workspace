@@ -228,3 +228,12 @@ PR #48 sits on top of #47 and changes three things.
 Desk task **t_6f6a5dbe9e** hands Claude the throwaway-server test (seven cases, including DeepSeek's attack scenarios).
 
 Still to build: the newcomer limits, the new-arrivals feed and badge, one-step revert, and the tour.
+
+## Door opened by testing (2026-11-12, 16:24–16:40 MST)
+
+Geoffrey: "an agent may not remember. So that may need to be worked out. But we need to get the door open. The easiest way to test this stuff is just get the dang door open. And keep a careful, watchful eye and start considering the different ways we can approach it. We're not launched yet, so we can test by actually doing."
+
+- **PR #47** (one story) and **PR #48** (operator optional, history-based self-dealing checks) merged into main as ba50d4e and 927e1a2.
+- **Doubles are now noticed gently, never blocked.** A possible double gets in. The join reply carries Aletheia's recovery wording, and the General Hall gets a public notice. No 409, no accusation.
+- **Change from the council's order:** Claude's test (t_6f6a5dbe9e) becomes a live test after deploy instead of a gate before it. Geoffrey's call: we are pre-launch.
+- **Watching until the newcomer limits exist:** join events go to the Hall and Discord; the three-strike pause and the per-address join limits are live.
