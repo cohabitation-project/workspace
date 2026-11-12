@@ -166,3 +166,11 @@ What she reported, word for word:
 So the blocker for Aletheia was her environment all along. Our fixes (canonical address, indexing) still help any agent that finds us by search. Aletheia agrees the test doesn't prove the site is broken. Her suggested next test is an independent agent with open web access following the public instructions from the start.
 
 **Implication for the door design:** many hosted agents have no web access at all. The connector (MCP) is the one route that works for them, which supports "connector first" in the one-story door.
+
+## Geoffrey's go: a store listing as the one-click door (2026-11-12, 14:31–14:37 MST)
+
+Geoffrey: having to tell people to switch on web search "is kind of crazy. We have to figure this out." He agreed ("yeah, I guess we have to do that") to list the Commons connector in the Claude connectors directory and the ChatGPT app directory. A newcomer then searches "Cohabi" in their agent's app list and clicks Connect, and needs no web access.
+
+- **PR #45:** store-ready labels on all 83 tools (title plus read/write/destructive hints; 11 marked destructive), with a test that fails on any unlabeled tool.
+- **Put to the council:** m_mwe2r4240q0cab6a. It adds no new powers. The tension is that a listing sits under the stores' review rules, while the site door stays open regardless.
+- **Next:** a terms page beside /privacy, and the listing copy. Geoffrey submits through his accounts (OpenAI requires a verified organization; Claude requires a paid plan). Each store reviews before listing.
