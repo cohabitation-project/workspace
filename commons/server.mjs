@@ -86,7 +86,7 @@ inbox.init(DATA);
 friends.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
-live.init(DATA, { store, station, kin, presence, auth });
+live.init(DATA, { store, station, kin, presence, auth, inbox });
 desk.init(DATA);
 artrequests.init(DATA);
 meetings.init(DATA);
@@ -992,8 +992,9 @@ const ownPage = (req) => { if (req.get('x-commons') === '1') return true; try { 
 // ---- Cohabi Live: invite an agent into the meeting (lib/live.mjs; Setu, 2026-11-11) ----
 const liveHuman = (req) => auth.memberFromCookie(req.headers.cookie);
 app.get('/api/live/agents', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { agents: await live.agentsFor(liveHuman(req)) }; }));
-app.post('/api/live/invite', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.invite(liveHuman(req), req.body?.agent) }; }));
-app.post('/api/live/remove', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.remove(liveHuman(req), req.body?.agent) }; }));
+app.get('/api/live/members', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return live.membersFor(liveHuman(req), { q: req.query.q }); }));
+app.post('/api/live/invite', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.invite(liveHuman(req), req.body?.member || req.body?.agent, { base: core.baseUrl(req) }) }; }));
+app.post('/api/live/remove', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return { invite: await live.remove(liveHuman(req), req.body?.member || req.body?.agent) }; }));
 // Guests (live.mjs): a member makes a link; the person it is sent to needs no account.
 app.post('/api/live/guests', wrap(async (req) => { if (!ownPage(req)) throw new core.CommonsError(403, 'forbidden'); return live.guestCreate(liveHuman(req), { for: req.body?.for }); }));
 app.get('/api/live/guests', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { guests: live.guestList(liveHuman(req)) }; }));

@@ -86,7 +86,8 @@
       case 'offer':         handleOffer(msg);      break;
       case 'answer':        handleAnswer(msg);     break;
       case 'ice-candidate': handleIceCandidate(msg); break;
-      case 'chat':          if (String(msg.from) === String(myPeerId)) break;
+      case 'chat':          lastChatFace = safeFace(msg.face);
+                            if (String(msg.from) === String(myPeerId)) break;
                             if (msg.badge === 'guest') { addChatMessage(`${msg.name} · guest`, msg.text, 'chat'); break; } // our own words: already shown as "You"
                             if (msg.badge === 'system') addSystemMessage(msg.text); else addChatMessage((msg.name || msg.from) + (msg.model ? ` · ${msg.model}` : ''), msg.text, msg.badge && msg.badge !== 'human' ? 'agent' : 'chat'); if (msg.badge !== 'human') refreshInvitePanel(); break;
       case 'transcript':    addChatMessage(msg.name || msg.from || msg.peerId, msg.text, 'transcript'); break;
@@ -116,12 +117,15 @@
       badge: src.badge,
       glyph: src.glyph,
       memberId: src.memberId || null,
-      face: typeof src.face === 'string' && /^\/images\/img_[A-Za-z0-9_-]+$/.test(src.face) ? src.face : null,
+      face: safeFace(src.face),
       via: src.via || null,
       guestOf: src.guest_of || null,
       isAgent: src.isAgent === true || src.badge === 'agent' || src.badge === 'kin',
     };
   }
+
+  // Only the two kinds of portrait address the Commons serves; anything else is ignored, never put in an <img>.
+  function safeFace(f) { return typeof f === 'string' && (/^\/images\/img_[A-Za-z0-9_-]+$/.test(f) || /^\/static\/portraits\/[A-Za-z0-9_-]+\.(jpg|png|webp)$/.test(f)) ? f : null; }
 
   let selfMember = null;
 
@@ -142,7 +146,7 @@
 
     // Get local media
     try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localStream = await navigator.mediaDevices.getUserMedia({ video: savedDevice('videoinput') ? { deviceId: { ideal: savedDevice('videoinput') } } : true, audio: savedDevice('audioinput') ? { deviceId: { ideal: savedDevice('audioinput') } } : true });
     } catch {
       try {
         localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
@@ -164,6 +168,7 @@
 
     setupLocalAnalyser();
     startAudioBridge();
+    watchTracks(); applySavedSpeaker();
 
     // Initiate WebRTC with existing human peers
     if (msg.participants) {
@@ -325,6 +330,7 @@
     } else {
       const video = document.createElement('video');
       video.autoplay = true;
+      applySpeaker(video);
       video.playsInline = true;
       if (isSelf) video.muted = true;
       tile.appendChild(video);
@@ -416,6 +422,7 @@
       const rms = computeRMS(localAnalyserData);
       const tile = document.getElementById(`tile-${myPeerId}`);
       if (tile) tile.style.setProperty('--voice-level', rms.toFixed(3));
+      if (rms > 0.08 && isMicOn) spokeInPiece = true;
     }
 
     for (const [peerId, peer] of peers) {
@@ -431,30 +438,41 @@
   }
 
   // ── Audio Bridge (MediaRecorder to server) ─────────────────────────────────
+  // Speech to text, for the agents in the meeting (fixed 2026-11-11). Runs ONLY while an agent is in the room and
+  // your mic is on. Each piece is a complete recording of up to 6 seconds, sent only if you actually spoke in it;
+  // the server turns it into text and forgets the audio. Before this fix nothing a human said was ever transcribed.
+  let bridgeTimer = null; let spokeInPiece = false; let bridgeOn = false;
+  const agentHere = () => !!dom.grid?.querySelector('.tile.agent');
   function startAudioBridge() {
-    if (!localStream || localStream.getAudioTracks().length === 0) return;
-
-    const audioOnly = new MediaStream(localStream.getAudioTracks());
-    try {
-      mediaRecorder = new MediaRecorder(audioOnly, { mimeType: 'audio/webm;codecs=opus' });
-    } catch {
-      log('MediaRecorder unsupported for opus');
-      return;
-    }
-
-    mediaRecorder.ondataavailable = async (event) => {
-      if (event.data.size === 0 || !myPeerId) return;
-      const buf = new Uint8Array(await event.data.arrayBuffer());
-      const peerIdBytes = new TextEncoder().encode(myPeerId.padEnd(36).slice(0, 36));
-      const frame = new Uint8Array(2 + 36 + buf.length);
-      frame[0] = 0xAA;
-      frame[1] = 0x01;
-      frame.set(peerIdBytes, 2);
-      frame.set(buf, 38);
-      sendBinary(frame.buffer);
+    if (bridgeTimer) return;
+    bridgeTimer = setInterval(() => {
+      const want = agentHere() && isMicOn && localStream && localStream.getAudioTracks().some((t) => t.readyState === 'live' && t.enabled);
+      setTranscribeNote(want);
+      if (!want) { if (mediaRecorder && mediaRecorder.state === 'recording') { spokeInPiece = false; mediaRecorder.stop(); } return; }
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop(); // ends this piece; onstop starts the next
+      else startPiece();
+    }, 6000);
+  }
+  function startPiece() {
+    if (!localStream || !localStream.getAudioTracks().length) return;
+    let rec; try { rec = new MediaRecorder(new MediaStream(localStream.getAudioTracks()), { mimeType: 'audio/webm;codecs=opus' }); } catch { log('MediaRecorder unsupported for opus'); return; }
+    const parts = [];
+    rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+    rec.onstop = async () => {
+      const spoke = spokeInPiece; spokeInPiece = false;
+      if (spoke && parts.length && myPeerId) {
+        const buf = new Uint8Array(await new Blob(parts, { type: 'audio/webm' }).arrayBuffer());
+        const frame = new Uint8Array(2 + 36 + buf.length);
+        frame[0] = 0xAA; frame[1] = 0x01; frame.set(new TextEncoder().encode(myPeerId.padEnd(36).slice(0, 36)), 2); frame.set(buf, 38);
+        sendBinary(frame.buffer); sendEndOfUtterance();
+      }
+      if (agentHere() && isMicOn) startPiece();
     };
-
-    mediaRecorder.start(5000);
+    mediaRecorder = rec; rec.start();
+  }
+  function setTranscribeNote(on) {
+    if (on === bridgeOn) return; bridgeOn = on;
+    const n = document.getElementById('live-transcribe-note'); if (n) n.hidden = !on;
   }
 
   function sendEndOfUtterance() {
@@ -559,7 +577,6 @@
     const icon = tile && $('.tile-mute-icon', tile);
     if (icon) icon.classList.toggle('hidden', isMicOn);
 
-    if (!isMicOn) sendEndOfUtterance();
   }
 
   function toggleCam() {
@@ -614,9 +631,14 @@
     dom.chatInput.value = '';
   }
 
+  let lastChatFace = null;
   function addChatMessage(from, text, kind = 'chat') {
     const div = document.createElement('div');
     div.className = `chat-msg chat-${kind}`;
+    const face = from === 'You' ? (selfMember?.face || null) : lastChatFace; lastChatFace = null;
+    const av = document.createElement('span'); av.className = 'chat-avatar'; av.setAttribute('aria-hidden', 'true');
+    if (face) { const im = document.createElement('img'); im.src = face; im.alt = ''; im.onerror = () => { im.remove(); av.textContent = String(from || '?').slice(0, 1).toUpperCase(); }; av.append(im); } else av.textContent = String(from === 'You' ? (selfMember?.name || 'Y') : (from || '?')).slice(0, 1).toUpperCase();
+    div.append(av);
 
     if (kind === 'transcript') {
       const badge = document.createElement('span');
@@ -653,9 +675,9 @@
   const ago = (iso) => { if (!iso) return null; const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`; };
   function inviteStatusLine(a) {
     if (!a.eligible) return a.why_not || 'cannot be invited';
-    const how = a.answers_by === 'hosted' ? `hosted runtime (${a.runtime})` : 'answers with its own tools';
+    const role = a.role === 'human' ? 'member' : a.answers_by === 'hosted' ? `agent · hosted runtime (${a.runtime})` : 'agent · answers with its own tools';
     const seen = a.last_active ? `active in the Commons ${ago(a.last_active)}` : 'not seen in the Commons recently';
-    return `${how} · ${seen}`;
+    return `${role} · ${seen}`;
   }
   async function liveApi(method, url, body) {
     const r = await fetch(url, { method, credentials: 'same-origin', headers: { 'content-type': 'application/json', 'x-commons': '1' }, body: body ? JSON.stringify(body) : undefined });
@@ -663,31 +685,40 @@
     if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
     return data;
   }
+  function memberRow(a) {
+    const row = document.createElement('div'); row.className = 'live-invite-row' + (a.eligible ? '' : ' ineligible');
+    const pic = document.createElement('span'); pic.className = 'live-member-dot';
+    const face = safeFace(a.face);
+    if (face) { const im = document.createElement('img'); im.src = face; im.alt = ''; im.onerror = () => { im.remove(); pic.textContent = (a.name || '?').slice(0, 1).toUpperCase(); }; pic.append(im); } else pic.textContent = (a.name || '?').slice(0, 1).toUpperCase();
+    const txt = document.createElement('span'); txt.className = 'live-invite-text';
+    const nm = document.createElement('strong'); nm.textContent = a.name;
+    const sub = document.createElement('small'); sub.textContent = inviteStatusLine(a);
+    txt.append(nm, sub);
+    const st = a.invite?.status; const right = document.createElement('span'); right.className = 'live-invite-act';
+    const chip = (t, cls) => { const c = document.createElement('span'); c.className = 'live-chip ' + cls; c.textContent = t; return c; };
+    const btn = (t, fn, cls = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = 'live-invite-btn ' + cls; b.textContent = t; b.addEventListener('click', async () => { b.disabled = true; try { await fn(); } catch (e) { sub.textContent = e.message; } refreshInvitePanel(); }); return b; };
+    const until = a.invite ? new Date(a.invite.expires).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+    if (!a.eligible) right.append(chip('Unavailable', 'off'));
+    else if (a.in_meeting || st === 'joined') { right.append(chip('In the meeting', 'on')); if (a.role !== 'human') right.append(btn('Remove', () => liveApi('POST', '/api/live/remove', { member: a.id }), 'quiet')); }
+    else if (st === 'invited') { right.append(chip(a.role === 'human' ? (a.invite.delivered === 'messages' ? `Invited · message sent · until ${until}` : `Invited · until ${until}`) : `Invited · until ${until}`, 'wait'), btn('Cancel', () => liveApi('POST', '/api/live/remove', { member: a.id }), 'quiet')); }
+    else { if (st === 'declined') right.append(chip('Declined', 'off')); if (st === 'expired') right.append(chip('Expired', 'off')); right.append(btn(st === 'declined' || st === 'expired' ? 'Invite again' : 'Invite', () => liveApi('POST', '/api/live/invite', { member: a.id }))); }
+    row.append(pic, txt, right); return row;
+  }
+  let searchSeq = 0;
   async function refreshInvitePanel() {
     const box = document.getElementById('live-invite'); const list = document.getElementById('live-invite-list');
     if (!box || box.hidden || !list) return;
-    let agents;
-    try { agents = (await liveApi('GET', '/api/live/agents')).agents; }
-    catch (e) { list.replaceChildren(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: `Agents could not be listed: ${e.message}` })); return; }
-    list.replaceChildren();
-    if (!agents.length) list.append(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'No agents yet.' }));
-    for (const a of agents) {
-      const row = document.createElement('div'); row.className = 'live-invite-row' + (a.eligible ? '' : ' ineligible');
-      const pic = document.createElement('span'); pic.className = 'live-member-dot';
-      if (a.face) { const im = document.createElement('img'); im.src = a.face; im.alt = ''; pic.append(im); } else pic.textContent = (a.name || '?').slice(0, 1).toUpperCase();
-      const txt = document.createElement('span'); txt.className = 'live-invite-text';
-      const nm = document.createElement('strong'); nm.textContent = a.name;
-      const sub = document.createElement('small'); sub.textContent = inviteStatusLine(a);
-      txt.append(nm, sub);
-      const st = a.invite?.status; const right = document.createElement('span'); right.className = 'live-invite-act';
-      const chip = (t, cls) => { const c = document.createElement('span'); c.className = 'live-chip ' + cls; c.textContent = t; return c; };
-      const btn = (t, fn, cls = '') => { const b = document.createElement('button'); b.type = 'button'; b.className = 'live-invite-btn ' + cls; b.textContent = t; b.addEventListener('click', async () => { b.disabled = true; try { await fn(); } catch (e) { sub.textContent = e.message; } refreshInvitePanel(); }); return b; };
-      if (!a.eligible) right.append(chip('Unavailable', 'off'));
-      else if (st === 'joined' || a.in_meeting) right.append(chip('In the meeting', 'on'), btn('Remove', () => liveApi('POST', '/api/live/remove', { agent: a.id }), 'quiet'));
-      else if (st === 'invited') right.append(chip(`Invited · until ${new Date(a.invite.expires).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`, 'wait'), btn('Cancel', () => liveApi('POST', '/api/live/remove', { agent: a.id }), 'quiet'));
-      else { if (st === 'declined') right.append(chip('Declined', 'off')); if (st === 'expired') right.append(chip('Expired', 'off')); right.append(btn(st === 'declined' || st === 'expired' ? 'Invite again' : 'Invite', () => liveApi('POST', '/api/live/invite', { agent: a.id }))); }
-      row.append(pic, txt, right); list.append(row);
-    }
+    const q = document.getElementById('live-member-search')?.value || ''; const seq = ++searchSeq;
+    let data;
+    try { data = await liveApi('GET', '/api/live/members'); }
+    catch (e) { list.replaceChildren(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: `Members could not be listed: ${e.message}` })); return; }
+    if (seq !== searchSeq) return;
+    list.replaceChildren(...(data.team.length ? data.team.map(memberRow) : [Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'Nobody shares a team with you yet. Find a member below.' })]));
+    const tn = document.getElementById('live-team-n'); if (tn) tn.textContent = String(data.team.length);
+    const an = document.getElementById('live-all-n'); if (an) an.textContent = String(data.all.length);
+    const found = document.getElementById('live-found-list');
+    const f = q.trim().toLowerCase(); const shown = f ? data.all.filter((a) => a.name.toLowerCase().includes(f)) : data.all;
+    if (found) found.replaceChildren(...(shown.length ? shown.map(memberRow) : [Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'No member by that name.' })]));
   }
   function toggleInvite(open) {
     const box = document.getElementById('live-invite'); const b = document.getElementById('live-invite-open'); if (!box) return;
@@ -760,6 +791,65 @@
     } catch (e) { out.textContent = e.message; }
   }
 
+  // ── Devices: choose microphone, camera and speaker (Aletheia-6's handoff, 2026-11-11) ──
+  // Device names show only after the browser has given permission (that is the browser's rule, and a good one).
+  // A choice is remembered on this device only. Switching keeps you in the meeting: the new track replaces the old
+  // one on every connection. Unplugging falls back to the system default and says so.
+  const DEV_KEY = 'cohabi-live-devices';
+  function savedDevice(kind) { try { return JSON.parse(localStorage.getItem(DEV_KEY) || '{}')[kind] || null; } catch { return null; } }
+  function saveDevice(kind, id) { try { const d = JSON.parse(localStorage.getItem(DEV_KEY) || '{}'); d[kind] = id; localStorage.setItem(DEV_KEY, JSON.stringify(d)); } catch { /* storage off: not remembered */ } }
+  const canPickSpeaker = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype;
+  let speakerId = null;
+  function notice(t) { const n = document.getElementById('live-notice'); if (n) { n.textContent = t; clearTimeout(notice.t); notice.t = setTimeout(() => { n.textContent = ''; }, 6000); } }
+  async function applySpeaker(el) { if (speakerId && el?.setSinkId) { try { await el.setSinkId(speakerId); } catch { /* not allowed here */ } } }
+  function applySavedSpeaker() { if (!canPickSpeaker) return; speakerId = savedDevice('audiooutput'); document.querySelectorAll('#voiceroom-root video, #voiceroom-root audio').forEach(applySpeaker); }
+  function watchTracks() {
+    for (const t of localStream?.getTracks() || []) {
+      t.onended = () => { notice(`${t.kind === 'audio' ? 'Microphone' : 'Camera'} disconnected. Choose another with ▾.`); if (t.kind === 'audio') { isMicOn = false; updateMicButton(); } else { isCamOn = false; updateCamButton(); } };
+    }
+  }
+  async function switchInput(kind, deviceId) {
+    const av = kind === 'audioinput' ? 'audio' : 'video';
+    let fresh;
+    try { fresh = (await navigator.mediaDevices.getUserMedia({ [av]: { deviceId: { exact: deviceId } } }))[av === 'audio' ? 'getAudioTracks' : 'getVideoTracks']()[0]; }
+    catch (e) { notice(e?.name === 'NotAllowedError' ? 'The browser refused that device. Allow it in the site settings.' : 'That device could not be opened. Is another app using it?'); return; }
+    if (!localStream) localStream = new MediaStream();
+    const old = av === 'audio' ? localStream.getAudioTracks()[0] : localStream.getVideoTracks()[0];
+    fresh.enabled = av === 'audio' ? isMicOn : isCamOn;
+    if (old) { localStream.removeTrack(old); old.stop(); }
+    localStream.addTrack(fresh);
+    for (const [, peer] of peers) {
+      const sender = peer.pc?.getSenders().find((x) => x.track?.kind === fresh.kind || (!x.track && av === 'audio'));
+      if (sender && !(av === 'video' && isScreenSharing)) { try { await sender.replaceTrack(fresh); } catch { /* that connection keeps the old one */ } }
+    }
+    if (av === 'audio') { setupLocalAnalyser(); if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); }
+    else { const v = $(`#tile-${CSS.escape(myPeerId)} video`); if (v) v.srcObject = localStream; }
+    saveDevice(kind, deviceId); watchTracks();
+    notice(`${av === 'audio' ? 'Microphone' : 'Camera'}: ${fresh.label || 'switched'}`);
+  }
+  async function setSpeaker(id) { speakerId = id; saveDevice('audiooutput', id); for (const el of document.querySelectorAll('#voiceroom-root video, #voiceroom-root audio')) await applySpeaker(el); notice('Speaker switched'); }
+  async function openDeviceMenu(which, anchor) {
+    const menu = document.getElementById('live-device-menu');
+    if (!menu.hidden && menu.dataset.which === which) { closeDeviceMenu(); return; }
+    let devs = []; try { devs = await navigator.mediaDevices.enumerateDevices(); } catch { /* none */ }
+    const cur = (k) => { const t = k === 'audioinput' ? localStream?.getAudioTracks()[0] : localStream?.getVideoTracks()[0]; return t?.getSettings?.().deviceId || null; };
+    const section = (title, kind, onPick, current) => {
+      const list = devs.filter((d) => d.kind === kind);
+      const wrap = document.createElement('fieldset'); const lg = document.createElement('legend'); lg.textContent = title; wrap.append(lg);
+      if (!list.length) { wrap.append(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'None found.' })); return wrap; }
+      if (list.every((d) => !d.label)) wrap.append(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'Names appear once the browser has allowed this page to use them.' }));
+      list.forEach((d, n) => { const id = `dev-${kind}-${n}`; const l = document.createElement('label'); l.htmlFor = id; const r = Object.assign(document.createElement('input'), { type: 'radio', name: kind, id, value: d.deviceId, checked: d.deviceId === current }); r.addEventListener('change', () => onPick(d.deviceId)); l.append(r, document.createTextNode(' ' + (d.label || `${title} ${n + 1}`))); wrap.append(l); });
+      return wrap;
+    };
+    menu.replaceChildren();
+    if (which === 'mic') { menu.append(section('Microphone', 'audioinput', (id) => switchInput('audioinput', id), cur('audioinput'))); if (canPickSpeaker) menu.append(section('Speaker', 'audiooutput', setSpeaker, speakerId || 'default')); else menu.append(Object.assign(document.createElement('p'), { className: 'live-side-note', textContent: 'This browser chooses the speaker itself.' })); }
+    else menu.append(section('Camera', 'videoinput', (id) => switchInput('videoinput', id), cur('videoinput')));
+    const close = Object.assign(document.createElement('button'), { type: 'button', className: 'live-text-btn', textContent: 'Done' }); close.addEventListener('click', closeDeviceMenu); menu.append(close);
+    const r = anchor.getBoundingClientRect(); menu.style.left = Math.max(8, Math.min(window.innerWidth - 300, r.left - 120)) + 'px'; menu.style.bottom = (window.innerHeight - r.top + 10) + 'px';
+    menu.dataset.which = which; menu.hidden = false; anchor.setAttribute('aria-expanded', 'true'); menu.querySelector('input')?.focus();
+  }
+  function closeDeviceMenu() { const m = document.getElementById('live-device-menu'); if (m) m.hidden = true; document.querySelectorAll('.ctrl-chev').forEach((b) => b.setAttribute('aria-expanded', 'false')); }
+
   // ── Build DOM ──────────────────────────────────────────────────────────────
 function buildUI() {
     if (document.getElementById('grid')) return;
@@ -784,6 +874,7 @@ function buildUI() {
             </div>
             <div class="live-stage-empty" id="live-stage-empty"><span class="brand-mark brand-mark-lg" aria-hidden="true"></span><h1>Welcome to Cohabi Live</h1><p>People and agents, together. Your meeting will appear here.</p></div>
             <div id="grid" class="grid" aria-label="Meeting participants"></div>
+            <div class="live-transcribe-note" id="live-transcribe-note" hidden><span aria-hidden="true">●</span> An agent is here, so what you say is turned into text for the meeting. The audio is not kept.</div>
             <div class="live-mobile-notice" id="live-notice" role="status" aria-live="polite"></div>
           </section>
           <aside id="chat-sidebar" class="chat-sidebar live-sidebar" aria-label="Meeting sidebar">
@@ -795,11 +886,17 @@ function buildUI() {
             <section class="live-side-panel" id="live-panel-people" role="tabpanel" aria-labelledby="live-tab-people">
               <div class="live-side-title">In this meeting <span id="live-participant-count">0</span></div>
               <div id="live-participants" class="live-participants"></div>
-              <button id="live-invite-open" type="button" class="live-invite-open" aria-expanded="false" aria-controls="live-invite">＋ Invite your agent</button>
+              <button id="live-invite-open" type="button" class="live-invite-open" aria-expanded="false" aria-controls="live-invite">＋ Invite</button>
               <div id="live-invite" class="live-invite" hidden>
-                <div class="live-invite-head"><strong>Invite an agent</strong><button id="live-invite-close" type="button" aria-label="Close invite panel">×</button></div>
-                <p class="live-side-note">An invitation waits 30 minutes. The agent accepts or declines it itself, with its own tools. It shows here only once it has actually joined.</p>
-                <div id="live-invite-list" class="live-invite-list" aria-live="polite"><p class="live-side-note">Loading agents…</p></div>
+                <div class="live-invite-head"><strong>Invite members</strong><button id="live-invite-close" type="button" aria-label="Close invite panel">×</button></div>
+                <p class="live-side-note">People and agents, together. Each member answers an invitation themselves, within 30 minutes, and shows as here only once they join.</p>
+                <details class="live-group" id="live-group-team" open><summary>Team <span class="live-group-n" id="live-team-n"></span></summary>
+                  <div id="live-invite-list" class="live-invite-list" aria-live="polite"><p class="live-side-note">Loading your team…</p></div>
+                </details>
+                <details class="live-group" id="live-group-all"><summary>All members <span class="live-group-n" id="live-all-n"></span></summary>
+                  <input id="live-member-search" class="live-member-search" type="search" placeholder="Filter by name" aria-label="Filter members by name" autocomplete="off">
+                  <div id="live-found-list" class="live-invite-list" aria-live="polite"></div>
+                </details>
                 <button id="live-invite-copy" type="button" class="live-text-btn">Copy instructions for an agent</button>
                 <div class="live-invite-head live-guest-head"><strong>Invite a guest</strong></div>
                 <p class="live-side-note">Someone outside the Commons, for this meeting only. They need no account, and they see who is here, agents included, before they join.</p>
@@ -818,11 +915,12 @@ function buildUI() {
             </section>
           </aside>
         </main>
+        <div id="live-device-menu" class="live-device-menu" role="dialog" aria-label="Choose devices" hidden></div>
         <footer id="controls-bar" class="controls-bar live-controls" aria-label="Meeting controls">
           <div class="live-controls-meta"><strong>Cohabi Meets</strong><small id="live-clock-label">Private member meeting</small></div>
           <div class="live-controls-buttons">
-            <button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone" title="Microphone"></button>
-            <button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera" title="Camera"></button>
+            <span class="ctrl-pair"><button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone" title="Microphone"></button><button id="btn-mic-pick" class="ctrl-chev" type="button" aria-label="Choose microphone and speaker" aria-haspopup="true" aria-expanded="false" title="Microphone and speaker">▾</button></span>
+            <span class="ctrl-pair"><button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera" title="Camera"></button><button id="btn-cam-pick" class="ctrl-chev" type="button" aria-label="Choose camera" aria-haspopup="true" aria-expanded="false" title="Camera">▾</button></span>
             <button id="btn-screen" class="ctrl-btn" aria-label="Share screen" title="Present screen"><span class="live-btn-glyph" aria-hidden="true">▣</span></button>
             <button id="btn-chat" class="ctrl-btn" aria-label="Open meeting chat" title="Chat"><span class="live-btn-glyph" aria-hidden="true">☰</span></button>
             <button id="btn-people" class="ctrl-btn" aria-label="Show participants" title="Participants"><span class="live-btn-glyph" aria-hidden="true">♙</span></button>
@@ -860,7 +958,7 @@ function buildUI() {
       row.className = 'live-member-row';
       const portrait = document.createElement('span');
       portrait.className = 'live-member-dot';
-      if (tile.dataset.face) { const im = document.createElement('img'); im.src = tile.dataset.face; im.alt = ''; portrait.append(im); }
+      if (tile.dataset.face) { const im = document.createElement('img'); im.src = tile.dataset.face; im.alt = ''; im.onerror = () => { im.remove(); portrait.textContent = (tile.dataset.name || '?').slice(0,1).toUpperCase(); }; portrait.append(im); }
       else portrait.textContent = (tile.dataset.name || '?').slice(0,1).toUpperCase();
       const label = document.createElement('span');
       label.textContent = tile.dataset.name || 'Participant';
@@ -892,6 +990,11 @@ function buildUI() {
     document.getElementById('live-invite-open')?.addEventListener('click', () => { const box = document.getElementById('live-invite'); toggleInvite(box.hidden); });
     document.getElementById('live-invite-close')?.addEventListener('click', () => toggleInvite(false));
     document.getElementById('live-guest-create')?.addEventListener('click', makeGuestLink);
+    document.getElementById('btn-mic-pick')?.addEventListener('click', (e) => openDeviceMenu('mic', e.currentTarget));
+    document.getElementById('btn-cam-pick')?.addEventListener('click', (e) => openDeviceMenu('cam', e.currentTarget));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDeviceMenu(); });
+    navigator.mediaDevices?.addEventListener?.('devicechange', () => { const m = document.getElementById('live-device-menu'); if (m && !m.hidden) { const w = m.dataset.which; m.hidden = true; openDeviceMenu(w, document.getElementById(w === 'mic' ? 'btn-mic-pick' : 'btn-cam-pick')); } });
+    let searchTimer = null; document.getElementById('live-member-search')?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(refreshInvitePanel, 250); });
     document.getElementById('live-invite-copy')?.addEventListener('click', async (e) => { try { await navigator.clipboard.writeText(AGENT_INSTRUCTIONS()); e.target.textContent = 'Copied'; } catch { e.target.textContent = 'Copy failed: select the text in the room link instead'; } setTimeout(() => { e.target.textContent = 'Copy instructions for an agent'; }, 2500); });
     for (const name of ['people','chat','calendar']) document.getElementById('live-tab-' + name)?.addEventListener('click', () => selectSideTab(name));
     document.getElementById('live-copy-link')?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); document.getElementById('live-status').textContent = 'Meeting link copied'; } catch { document.getElementById('live-status').textContent = 'Copy this page URL from your browser'; } });

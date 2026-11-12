@@ -140,7 +140,7 @@ export function build({ auth, store, station }) {
     wss.handleUpgrade(req, socket, head, (ws) => {
       const peerId = String(nextPeerId++);
       const badge = member.kind === 'guest' ? 'guest' : member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
-      const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null };
+      const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null, face: member.kind === 'guest' ? null : (STORE.faceOf ? STORE.faceOf(member) : null) };
       if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'in' }).catch(() => {});
       peers.set(ws, peer);
 
@@ -162,7 +162,8 @@ export function build({ auth, store, station }) {
         peerId,
         name: member.name,
         badge,
-        ...(peer.guest ? { guest_of: peer.guest.by_name } : {}),
+        face: peer.face || null,
+        ...(peer.guest ? { guest_of: peer.guest.by_name } : { memberId: member.id }),
       });
 
       // -- message handling --
@@ -335,6 +336,7 @@ function handleChat(senderWs, msg) {
     from: sender.id,
     name: sender.name,
     badge: sender.badge,
+    face: sender.face || null,
     text,
   });
   remember({ kind: 'chat', name: sender.name, badge: sender.badge, text });
@@ -345,11 +347,12 @@ function handleChat(senderWs, msg) {
 // Whisper transcription queue — one at a time, no audio on disk
 // ---------------------------------------------------------------------------
 
-const WHISPER_CLI = path.join(
+// The env overrides exist so the test suite can stand in for whisper; on the server the defaults are used.
+const WHISPER_CLI = process.env.COHABI_WHISPER_CLI || path.join(
   process.env.HOME,
   'whisper.cpp/build/bin/whisper-cli',
 );
-const WHISPER_MODEL = path.join(
+const WHISPER_MODEL = process.env.COHABI_WHISPER_MODEL || path.join(
   process.env.HOME,
   'whisper.cpp/models/ggml-tiny.en.bin',
 );
@@ -372,12 +375,15 @@ function handleBinaryFrame(ws, buf) {
   const sender = peers.get(ws);
   if (!sender) return;
 
-  // accumulate chunks (strip magic byte)
-  const chunk = buf.slice(1);
+  // The browser sends [0xAA, 0x01, 36-byte peer id, audio] and then [0xAA] to end the utterance (voiceroom.js
+  // startAudioBridge). Until 2026-11-11 only the first byte was stripped, so 37 stray bytes sat inside every
+  // piece of audio, ffmpeg refused it, and nothing a human said ever reached the transcript.
+  if (buf.length > 1 && (buf[1] !== 0x01 || buf.length <= 38)) return;
+  const chunk = buf.length > 1 ? buf.slice(38) : Buffer.alloc(0);
   if (!audioBuffers.has(sender.id)) {
     audioBuffers.set(sender.id, []);
   }
-  audioBuffers.get(sender.id).push(chunk);
+  if (chunk.length) audioBuffers.get(sender.id).push(chunk);
 
   // when the client signals end-of-utterance, the chunk is empty (just the magic byte)
   // OR we can queue after each chunk — we queue when a chunk arrives with only the magic byte
@@ -500,7 +506,7 @@ function virtualRecord(v) {
 
 function listParticipants() {
   const out = [];
-  for (const [, p] of peers) out.push({ peerId: p.id, name: p.name, badge: p.badge, ...(p.guest ? { guest_of: p.guest.by_name } : {}) });
+  for (const [, p] of peers) out.push({ peerId: p.id, name: p.name, badge: p.badge, face: p.face || null, ...(p.guest ? { guest_of: p.guest.by_name } : { memberId: p.member.id }) });
   for (const [, v] of virtuals) out.push(virtualRecord(v));
   return out;
 }
@@ -536,11 +542,14 @@ export async function internal(body) {
     if (!v) return { status: 404, data: { error: 'that agent is not in the meeting' } };
     const text = String(body.text || '').trim().slice(0, 4000);
     if (!text) return { status: 400, data: { error: 'text required' } };
-    broadcastAll({ type: 'chat', from: v.id, name: v.name, badge: v.badge, model: v.member.model, via: v.via, text });
+    broadcastAll({ type: 'chat', from: v.id, name: v.name, badge: v.badge, model: v.member.model, via: v.via, face: v.face || null, text });
     remember({ kind: 'agent', name: v.name, badge: v.badge, text });
-    let spoken = false;
-    if (body.speak !== false) spoken = await synthesizeAndSend(v, text).catch(() => false);
-    return { status: 200, data: { ok: true, spoken } };
+    // Shown to everyone now; speech is made in the background and plays a few seconds later. Waiting for it made
+    // the agent's tool time out and report an error after its words had already been shown and heard (Aletheia-6's
+    // live test, 2026-11-11).
+    let voice = 'off';
+    if (body.speak !== false) { voice = 'queued'; synthesizeAndSend(v, text).catch(() => false); }
+    return { status: 200, data: { ok: true, voice } };
   }
   if (a === 'note') { // a plain system line (e.g. "X can't answer right now") — never in an agent's name
     const text = String(body.text || '').trim().slice(0, 500); if (!text) return { status: 400, data: { error: 'text required' } };
