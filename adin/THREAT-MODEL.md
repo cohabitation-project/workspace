@@ -63,10 +63,21 @@ Two execution phases:
 - **Risk level:** Medium. `--ignore-scripts` blocks install scripts, but the package code itself runs when imported during tests.
 - **Mitigation (future):** Dependency allow-lists. Pre-audited lockfiles. Network restriction during install (allow only registry.npmjs.org).
 
-### Data exfiltration during dependency phase
+### Data exfiltration during dependency phase (HIGHEST RISK PHASE)
 - **Threat:** Malicious code in a git repo or npm package sends data to an external server during the clone/install phase when network is enabled.
-- **Risk level:** Medium. The `--ignore-scripts` flag for npm prevents install-time scripts, but git hooks or other mechanisms could still reach out.
-- **Mitigation (future):** Restrict network to github.com and registry.npmjs.org only (Phase 5). DNS-based filtering. Egress proxy with allowlist.
+- **Risk level:** **HIGH**. The dependency phase is the highest-risk phase because:
+  1. Network is enabled (default bridge) — containers can reach arbitrary hosts
+  2. `--ignore-scripts` blocks npm install scripts, but git hooks or post-checkout scripts could still reach out
+  3. A compromised package's code runs when imported during tests (execution phase is sandboxed, but the code is already present)
+- **Phase 4 mitigations:**
+  - `--dns 8.8.8.8` during dependency phase prevents DNS poisoning from the host
+  - `restrictedDeps: true` in sandbox-executor limits the dependency container to only `git-clone` and `npm-ci` actions, rejecting any other step type
+  - SHA-pinned git fetch (init→fetch→checkout→verify) prevents substitution of un-approved commits
+- **Phase 5 mitigations (planned):**
+  - iptables-based egress filtering to restrict to github.com and registry.npmjs.org only
+  - DNS-based filtering with an allowlist
+  - Egress proxy with domain allowlist
+- **Future optimization:** Pre-fetch dependencies on the server side and copy them into the sandbox, eliminating the need for network access in the dependency phase entirely
 
 ### Docker daemon privilege escalation
 - **Threat:** Task code exploits Docker socket or daemon to gain host root access.
@@ -103,5 +114,10 @@ The sandbox is ONE layer of defense, not the sole boundary:
 | Container sandbox | Filesystem, network, resource isolation | Phase 4 (this) |
 | Orchestrator policy | Trust tiers, sandbox-required flag, review queue | Phase 1 (merged) |
 | Network policy | Restricted egress during dependency phase | Phase 5 (planned) |
-| Image pinning | Digest-pinned base images | Phase 5 (planned) |
-| Rootless runtime | Reduced daemon privilege | Deployment prerequisite |
+| Image pinning | Digest-pinned base images, verified on each run | Phase 4 (this) |
+| Rootless runtime | Required for contributed mode; refuses rootful | Phase 4 (this) |
+| Owner resource ceilings | Owner limits override task requests; reject if exceeded | Phase 4 (this) |
+| SHA-pinned git fetch | init→fetch→checkout→verify prevents commit substitution | Phase 4 (this) |
+| Abort propagation | AbortSignal stops containers mid-execution | Phase 4 (this) |
+| Dependency phase restriction | Only git-clone and npm-ci allowed in dep container | Phase 4 (this) |
+| Network policy | Restricted egress during dependency phase | Phase 5 (planned) |

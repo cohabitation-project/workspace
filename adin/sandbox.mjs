@@ -16,6 +16,8 @@
 
 import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 import crypto from 'node:crypto';
 
 const execFile = promisify(execFileCb);
@@ -113,6 +115,80 @@ export async function ensureImage(runtime) {
   return SANDBOX_IMAGE_TAG;
 }
 
+// ---- Image digest pinning (Issue 6) ----
+
+const DIGEST_FILENAME = 'sandbox-image-digest.json';
+
+/**
+ * Get the image digest (ID) for the current sandbox image.
+ * @param {string} runtime - 'docker' or 'podman'
+ * @returns {Promise<string>} The image digest (sha256:...)
+ */
+export async function getImageDigest(runtime) {
+  const { stdout } = await execFile(runtime, [
+    'image', 'inspect', '--format', '{{.Id}}', SANDBOX_IMAGE_TAG,
+  ], { timeout: 15_000 });
+  return stdout.trim();
+}
+
+/**
+ * Store the expected image digest to a file.
+ * @param {string} dataDir - Directory to store the digest file
+ * @param {string} digest - The image digest to store
+ */
+export function storeImageDigest(dataDir, digest) {
+  mkdirSync(dataDir, { recursive: true });
+  const filePath = join(dataDir, DIGEST_FILENAME);
+  writeFileSync(filePath, JSON.stringify({ digest, stored_at: new Date().toISOString() }));
+}
+
+/**
+ * Load the expected image digest from file.
+ * @param {string} dataDir - Directory where the digest file is stored
+ * @returns {string|null} The stored digest, or null if not found
+ */
+export function loadImageDigest(dataDir) {
+  const filePath = join(dataDir, DIGEST_FILENAME);
+  if (!existsSync(filePath)) return null;
+  try {
+    const data = JSON.parse(readFileSync(filePath, 'utf8'));
+    return data.digest || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Verify the sandbox image digest matches the expected digest.
+ * If no expected digest is stored yet, store the current one.
+ * If the digest doesn't match, refuse to run (image was replaced).
+ *
+ * @param {string} runtime - 'docker' or 'podman'
+ * @param {string} dataDir - Directory for digest storage
+ * @returns {Promise<{ verified: boolean, digest: string, error?: string }>}
+ */
+export async function verifyImage(runtime, dataDir) {
+  const currentDigest = await getImageDigest(runtime);
+  const storedDigest = loadImageDigest(dataDir);
+
+  if (!storedDigest) {
+    // First run — store the digest
+    storeImageDigest(dataDir, currentDigest);
+    return { verified: true, digest: currentDigest };
+  }
+
+  if (currentDigest !== storedDigest) {
+    return {
+      verified: false,
+      digest: currentDigest,
+      error: `Image digest mismatch: expected ${storedDigest}, got ${currentDigest}. ` +
+        'The sandbox image may have been tampered with. Remove the digest file to re-pin.',
+    };
+  }
+
+  return { verified: true, digest: currentDigest };
+}
+
 // ---- Sandbox creation ----
 
 /**
@@ -127,6 +203,7 @@ export async function ensureImage(runtime) {
  * @param {number} [opts.limits.cpus] - CPU limit (e.g., 1.0, 2.0)
  * @param {number} [opts.limits.pidsLimit] - Max PIDs (default: 256)
  * @param {string} [opts.networkPhase] - 'dependency' (network on) or 'execution' (network off)
+ * @param {AbortSignal} [opts.abortSignal] - Signal to abort sandbox operations (Issue 4)
  * @returns {{ execStep, cleanup, id, containerId }}
  */
 export function createSandbox(opts) {
@@ -136,6 +213,7 @@ export function createSandbox(opts) {
     workDir,
     limits = {},
     networkPhase = 'execution',
+    abortSignal,
   } = opts;
 
   if (!runtime) throw new Error('runtime is required');
@@ -145,6 +223,25 @@ export function createSandbox(opts) {
   let containerId = null;
   let started = false;
   let cleaned = false;
+
+  // Issue 4: Check abort signal helper
+  function checkAbort() {
+    if (abortSignal?.aborted) {
+      throw new Error('sandbox operation aborted');
+    }
+  }
+
+  // Issue 4: Set up abort listener
+  if (abortSignal) {
+    const onAbort = () => {
+      cleanup().catch(() => {});
+    };
+    if (abortSignal.aborted) {
+      // Already aborted
+    } else {
+      abortSignal.addEventListener('abort', onAbort, { once: true });
+    }
+  }
 
   // ---- Build container create args ----
 
@@ -178,8 +275,13 @@ export function createSandbox(opts) {
     if (networkPhase === 'execution') {
       args.push('--network', 'none');
     }
-    // For 'dependency' phase, use default (bridge) network.
-    // Phase 5 should add a restricted network that only allows github.com + npm registry.
+    // For 'dependency' phase, use default (bridge) network with explicit DNS.
+    // Issue 7: Add --dns to prevent DNS poisoning from the host during dep phase.
+    // Phase 5 should add iptables-based egress filtering to restrict to
+    // github.com and registry.npmjs.org only.
+    if (networkPhase === 'dependency') {
+      args.push('--dns', '8.8.8.8');
+    }
 
     // Security: no privileged mode, drop all capabilities, add only what's needed
     args.push('--security-opt', 'no-new-privileges');
@@ -198,11 +300,14 @@ export function createSandbox(opts) {
 
   async function init() {
     if (started) return;
+    checkAbort(); // Issue 4
 
     const createArgs = buildCreateArgs();
     const { stdout } = await execFile(runtime, createArgs, { timeout: 30_000 });
     containerId = stdout.trim();
     if (!containerId) throw new Error('container creation returned empty ID');
+
+    checkAbort(); // Issue 4: check after container create, before start
 
     // Start the container
     await execFile(runtime, ['start', containerId], { timeout: 30_000 });
@@ -224,6 +329,7 @@ export function createSandbox(opts) {
   async function execStep(step, cwd, timeoutMs, maxOutput = 1_048_576) {
     if (!started) await init();
     if (cleaned) throw new Error('sandbox has been cleaned up');
+    checkAbort(); // Issue 4: check before each step
 
     // Translate step to executable + args
     const { executable, args: stepArgs } = translateStep(step);
@@ -248,6 +354,7 @@ export function createSandbox(opts) {
         env: { ...process.env }, // execFile needs env for the docker CLI itself
       });
 
+      checkAbort(); // Issue 4: check after each step
       return {
         exitCode: 0,
         stdout: out,
@@ -278,8 +385,9 @@ export function createSandbox(opts) {
     const name = containerId || id;
 
     try {
-      // Stop the container (graceful, 5 second timeout)
-      await execFile(runtime, ['stop', '-t', '5', name], { timeout: 15_000 });
+      // Issue 4: Fast kill (2 second grace) when aborting mid-execution
+      const stopTimeout = abortSignal?.aborted ? '2' : '5';
+      await execFile(runtime, ['stop', '-t', stopTimeout, name], { timeout: 15_000 });
     } catch {
       // Container may already be stopped
     }
@@ -307,16 +415,25 @@ export function createSandbox(opts) {
 /**
  * Translate a protocol step to a container-executable command.
  * Returns { executable, args }.
+ *
+ * NOTE: git-clone is NOT handled here. It requires a multi-step sequence
+ * (init, fetch, checkout, verify) for SHA pinning security (Issue 2).
+ * The sandbox-executor handles git-clone directly.
+ *
+ * The special '_raw' action passes executable+args directly and is only
+ * callable from sandbox-executor internals, not from external callers.
  */
 export function translateStep(step) {
   switch (step.action) {
-    case 'git-clone': {
-      const url = `https://github.com/${step.repo}.git`;
-      // Clone, then checkout the specific commit
-      // We use git directly — no shell
+    case '_raw': {
+      // Internal action for sandbox-executor multi-step sequences.
+      // Passes executable+args directly. Only sandbox-executor should use this.
+      if (!step._internal) {
+        throw new Error('_raw action is internal-only; set _internal:true from sandbox-executor');
+      }
       return {
-        executable: 'git',
-        args: ['clone', '--', url, step.repo.split('/')[1]],
+        executable: step.executable,
+        args: step.args || [],
       };
     }
     case 'git-checkout': {
