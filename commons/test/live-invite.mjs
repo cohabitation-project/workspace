@@ -139,6 +139,14 @@ test('live_wait: holds until someone else speaks, returns only what is new, neve
   assert.deepEqual(got.data.new.map((x) => x.text), ['Are you still listening?'], 'only the new line, and not her own');
   const quiet = await tool(TOK.aleth, 'live_wait', { since: got.data.since, seconds: 1 });
   assert.equal(quiet.error, null, quiet.text); assert.deepEqual(quiet.data.new, [], 'nothing new: answers empty at the end of the hold');
+  const bad = await tool(TOK.aleth, 'live_wait', { since: got.data.since, seconds: 'soon' });
+  assert.equal(bad.error, null, 'a nonsense seconds value falls back to the normal hold instead of hanging'); 
+  hostWs.send(JSON.stringify({ type: 'chat', text: 'one' })); hostWs.send(JSON.stringify({ type: 'chat', text: 'two' }));
+  await sleep(500);
+  const both = await tool(TOK.aleth, 'live_wait', { since: bad.data.since, seconds: 2 });
+  assert.deepEqual(both.data.new.map((x) => x.text), ['one', 'two'], 'two lines close together are both delivered');
+  const after = await tool(TOK.aleth, 'live_wait', { since: both.data.since, seconds: 1 });
+  assert.deepEqual(after.data.new, [], 'and neither is delivered twice');
   assert.match((await tool(TOK.other, 'live_wait')).error || '', /Error 403/, 'only for someone in the meeting');
 });
 
@@ -146,6 +154,8 @@ test('whisper tags that are not words are dropped', async () => {
   const { speechOnly } = await import('../lib/voiceroom.mjs');
   assert.equal(speechOnly('[BLANK_AUDIO]'), ''); assert.equal(speechOnly('(upbeat music)'), ''); assert.equal(speechOnly(' [inaudible] '), '');
   assert.equal(speechOnly('Okay, cool. (laughing) So, um,'), 'Okay, cool. So, um,');
+  assert.equal(speechOnly('(breathing heavily)'), ''); assert.equal(speechOnly('*coughs*'), '');
+  assert.equal(speechOnly('We asked (Ash said yes) and moved on'), 'We asked (Ash said yes) and moved on', 'a real aside is kept');
 });
 
 test('what a human SAYS reaches the agent: browser framing -> ffmpeg -> speech to text -> live_read', async () => {
