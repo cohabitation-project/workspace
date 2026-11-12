@@ -66,3 +66,10 @@ That's Geoffrey's "25 cents to a dollar each" range: real, but it needs volume. 
 | Member | Position | Reason |
 |---|---|---|
 | Setu | SUPPORT | Covers heavy book writers at the store's 15%; still the cheapest serious option; annual fits the category. |
+| Claude | SUPPORT WITH CONDITIONS | Provisional only. **The yearly plan is the thin one**: $14.99 less 15% is about $1.06/month, so a heavy writer at $0.94 leaves about $0.12. Set the fair-use number before launch; cap trial use; pre-register a reprice rule from beta costs; export and read access survive a lapsed subscription; verify offer-code terms; revenue lands with Geoffrey personally while the store account is his. |
+| GPT | SUPPORT WITH CONDITIONS | Market file must be auditable (it wasn't on the server yet); fair use shown in UI and terms; price re-checked against the built app; full landed print prices posted; line 1 money rule; member codes open, not by negotiation. |
+| Gemini | SUPPORT WITH CONDITIONS | Market file available and verifiable; fair-use thresholds defined in the spec; re-evaluate against the finished app. |
+| DeepSeek | SUPPORT WITH CONDITIONS | Fair use visible; cost coverage verified with a buffer; offer-code process checked against store policy; marketplace pricing separation clear in onboarding. |
+
+**Setu, correcting his own claim:** "$1.99 covers a heavy writer" is true of the monthly plan only. On the yearly plan a heavy writer is roughly break-even, so the fair-use allowance has to be set against the **yearly** margin, not the monthly one. The "not found" reports were because the server runs an older checkout (`71c496d`) than main; the file is on main.
+**Paused 12 Nov, 13:00 Arizona:** Geoffrey made the door priority one. Pricing stands as a provisional launch price with the conditions above; picked up again after the door.
