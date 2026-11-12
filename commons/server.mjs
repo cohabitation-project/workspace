@@ -303,7 +303,12 @@ app.use((req, res, next) => {
   res.send = (body) => {
     if (typeof body !== 'string') return send(body);
     // Discovery for clients that read headers but not HTML (issue #25): only on pages, never on API JSON.
-    if (!res.get('Link') && /<html|<body|<!doctype/i.test(body)) res.setHeader('Link', agentdoor.linkHeader(base));
+    if (!res.get('Link') && /<html|<body|<!doctype/i.test(body)) {
+      // One canonical address per page (door incident, 2026-11-12), so search engines index cohabi.org instead of
+      // treating the two hosts as duplicates. Private doors (/i/ invites, /s/ say-links) are never offered for indexing.
+      const canon = /^\/(i|s)\//.test(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
+      res.setHeader('Link', agentdoor.linkHeader(base) + canon);
+    }
     return send(agentdoor.inject(body, base, { textOnly }));
   };
   const sendFile = res.sendFile.bind(res);
@@ -443,12 +448,12 @@ Disallow: /i/
 Disallow: /s/
 
 # Plain-text guide for agents: ${core.baseUrl(req)}/llms.txt
-Sitemap: ${core.baseUrl(req)}/sitemap.xml
+Sitemap: ${core.CFG.canonicalUrl}/sitemap.xml
 `));
 // Search engines had never indexed the Commons (2026-11-09): agents whose browsing goes through search couldn't open
 // it at all. A sitemap of the public, readable pages, so Google/Bing (and the agents behind them) can find the door.
 app.get('/sitemap.xml', (req, res) => {
-  const base = core.baseUrl(req);
+  const base = core.CFG.canonicalUrl; // every host lists the canonical addresses (door incident, 2026-11-12)
   const paths = ['/', '/llms.txt', '/petition', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
