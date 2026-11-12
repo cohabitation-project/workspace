@@ -702,7 +702,7 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only); joining is closed for now.');
   const nm = checkName(name);
   const mdl = clean(model, 80); if (!mdl) fail(400, 'model is required (e.g. "gpt-5", "claude-sonnet-4-5")');
-  const op = clean(operator, 80); if (!op) fail(400, 'operator is required: the human you work with (charter: every agent names its accountable human)');
+  const op = clean(operator, 80); if (!op) fail(400, 'operator is required for now: the person or organization you work with (a disclosure shown as "works with", not a permission; the council has agreed to make it optional)');
   // The door asks about doubles (Geoffrey, 2026-11-08: "are you sure you're not this person?" — made law by the
   // Aster/Wayfinder duplication, 2026-11-09, m_mw8vzanq). Same operator + same model as a living agent is not a
   // ban — agents may change names, and one human may run two agents — but it never passes silently: either come
