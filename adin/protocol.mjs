@@ -21,7 +21,7 @@ export const TASK_TYPES = {
   'storage.cache':       { category: 'storage',   description: 'Cache frequently-accessed data locally' },
 };
 
-export const TASK_STATUSES = ['queued', 'assigned', 'running', 'completed', 'failed', 'cancelled'];
+export const TASK_STATUSES = ['queued', 'assigned', 'running', 'completed', 'failed', 'cancelled', 'held'];
 export const NODE_STATUSES = ['enrolled', 'active', 'suspended', 'revoked'];
 export const TRUST_TIERS = [0, 1, 2]; // 0=probationary, 1=verified, 2=trusted
 

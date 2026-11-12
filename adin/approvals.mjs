@@ -16,9 +16,13 @@ export class Approvals {
   constructor(dataDir) {
     this.dataDir = dataDir;
     this.approvals = new Map(); // "repo:commit" → approval record
+    this._onRevoke = null; // callback: (repo, commit, reason) => void
     fs.mkdirSync(dataDir, { recursive: true });
     this._load();
   }
+
+  /** Register a callback to be called when an approval is revoked. */
+  onRevoke(fn) { this._onRevoke = fn; }
 
   _filePath() { return path.join(this.dataDir, 'approvals.json'); }
 
@@ -58,13 +62,19 @@ export class Approvals {
     if (!approver || typeof approver !== 'string') return { error: 'approver name required', status: 400 };
 
     const key = this._key(repo, commit);
+    const now = new Date().toISOString();
+    const existing = this.approvals.get(key);
+    const history = existing?.history || [];
+    history.push({ action: 'approved', by: approver, at: now, notes: notes || null });
+
     const approval = {
       repo,
       commit,
       approver,
       notes: notes || null,
-      approved_at: new Date().toISOString(),
+      approved_at: now,
       revoked: false,
+      history,
     };
     this.approvals.set(key, approval);
     this._save();
@@ -102,10 +112,15 @@ export class Approvals {
     const entry = this.approvals.get(key);
     if (!entry) return { error: 'approval not found', status: 404 };
 
+    const now = new Date().toISOString();
+    if (!entry.history) entry.history = [];
+    entry.history.push({ action: 'revoked', by: entry.approver, at: now, reason: reason || null });
+
     entry.revoked = true;
-    entry.revoked_at = new Date().toISOString();
+    entry.revoked_at = now;
     entry.revoke_reason = reason || null;
     this._save();
+    if (this._onRevoke) this._onRevoke(repo, commit, reason);
     return { ok: true };
   }
 }

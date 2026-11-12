@@ -17,7 +17,7 @@ invoked. No string interpolation. No command chaining.
 
 | Step action       | Executable array                                                                 |
 |-------------------|----------------------------------------------------------------------------------|
-| `git-clone`       | `['git', 'clone', '--depth', '1', url, '--branch', commit, dir]`               |
+| `git-clone`       | `git init <dir>` then `git -C <dir> fetch --depth 1 <url> <sha>` then `git -C <dir> checkout --detach FETCH_HEAD` then verify: `git -C <dir> rev-parse HEAD` === approved SHA |
 | `npm-ci`          | `['npm', 'ci', '--ignore-scripts']` (cwd = work dir)                           |
 | `node-test`       | `['node', '--test', '--', ...files]` (cwd = work dir)                           |
 | `playwright-test` | `['npx', 'playwright', 'test', '--', ...files]` (cwd = work dir)               |
@@ -26,8 +26,12 @@ invoked. No string interpolation. No command chaining.
 
 - The `url` is constructed by the worker from the validated `repo` field:
   `https://github.com/${repo}.git`. The repo name is never passed to a shell.
-- The `commit` field is a full 40-character SHA. Using `--branch` with a SHA
-  checks out the exact commit (with `--depth 1` this fetches only that commit).
+- The `commit` field is a full 40-character SHA. The previous spec used
+  `git clone --depth 1 --branch <SHA>` but `--branch` only accepts branch/tag
+  names, not raw SHAs. The corrected sequence uses `git init` + `git fetch
+  --depth 1` + `git checkout --detach FETCH_HEAD`, which works with any commit.
+- After checkout, the worker MUST verify that `git rev-parse HEAD` matches the
+  approved SHA exactly. If it does not match, the step fails immediately.
 - `--` separates options from positional arguments wherever the executable
   supports it, preventing file names from being interpreted as flags.
 
@@ -130,6 +134,9 @@ approval system with the approver's name, timestamp, and optional notes.
   references an unapproved commit.
 - Approvals can be revoked if a commit is later found to be problematic.
 - The worker does not execute any code that has not been approved.
+- **Note:** The `approver` field is self-reported by whoever holds the admin
+  token. It is not cryptographically verified — it relies on the admin token
+  holder truthfully identifying themselves.
 
 ### 4.2 Sandbox verification
 
@@ -150,7 +157,11 @@ testing occurs on his machines. This means:
 - He understands what code will run and why.
 - He understands the resource limits that will be enforced.
 - He has approved the sandbox configuration on his hardware.
-- He can revoke consent at any time by suspending his node.
+- He can revoke consent at any time by placing a `STOP.txt` file in the worker
+  directory (pauses after the current step) or pressing Ctrl+C / closing the
+  terminal (immediate stop). The worker reports "owner withdrew" to the
+  orchestrator, which then suspends the node. The owner does not need the admin
+  token to stop their own machine.
 
 These three prerequisites form a chain: no code runs without an approved
 commit, no commit runs without a verified sandbox, and no sandbox runs
