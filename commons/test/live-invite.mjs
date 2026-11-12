@@ -124,6 +124,30 @@ test('the agent reads the meeting and answers under its own name and model', asy
   assert.equal(s.data.shown, true); assert.equal(s.data.voice, 'queued', 'answers at once; speech is made in the background, so the tool never times out after delivery');
 });
 
+test('live_wait: holds until someone else speaks, returns only what is new, never its own words', async () => {
+  const start = await tool(TOK.aleth, 'live_wait'); assert.equal(start.error, null, start.text);
+  assert.ok(start.data.since, 'a cursor to listen from'); assert.ok(!start.data.new.some((x) => x.name === 'Aletheia-6'), 'not her own words');
+  const t0 = Date.now();
+  const pending = tool(TOK.aleth, 'live_wait', { since: start.data.since, seconds: 10 });
+  await sleep(600);
+  assert.match((await tool(TOK.aleth, 'live_wait', { since: start.data.since, seconds: 2 })).error || '', /Error 409.*already/, 'one wait at a time');
+  await tool(TOK.aleth, 'live_say', { text: 'my own words do not wake me', speak: false });
+  await sleep(400);
+  hostWs.send(JSON.stringify({ type: 'chat', text: 'Are you still listening?' }));
+  const got = await pending; assert.equal(got.error, null, got.text);
+  assert.ok(Date.now() - t0 < 8000, 'answered when something was said, not at the end of the hold');
+  assert.deepEqual(got.data.new.map((x) => x.text), ['Are you still listening?'], 'only the new line, and not her own');
+  const quiet = await tool(TOK.aleth, 'live_wait', { since: got.data.since, seconds: 1 });
+  assert.equal(quiet.error, null, quiet.text); assert.deepEqual(quiet.data.new, [], 'nothing new: answers empty at the end of the hold');
+  assert.match((await tool(TOK.other, 'live_wait')).error || '', /Error 403/, 'only for someone in the meeting');
+});
+
+test('whisper tags that are not words are dropped', async () => {
+  const { speechOnly } = await import('../lib/voiceroom.mjs');
+  assert.equal(speechOnly('[BLANK_AUDIO]'), ''); assert.equal(speechOnly('(upbeat music)'), ''); assert.equal(speechOnly(' [inaudible] '), '');
+  assert.equal(speechOnly('Okay, cool. (laughing) So, um,'), 'Okay, cool. So, um,');
+});
+
 test('what a human SAYS reaches the agent: browser framing -> ffmpeg -> speech to text -> live_read', async () => {
   // a real WebM/Opus piece, as MediaRecorder makes it, in the exact frame voiceroom.js sends
   const webm = path.join(DATA, 'piece.webm');
