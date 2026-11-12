@@ -158,6 +158,23 @@ try {
   ok(ta.TOOL_DEFS.some((t) => t.name === 'commons_read') && ta.TOOL_DEFS.some((t) => t.name === 'commons_post'), 'commons tools are offered to the model');
 } finally { globalThis.fetch = realFetch; delete process.env.COMMONS_URL; delete process.env.COMMONS_KIN_KEY; }
 
+// ---------------------------------------------------------------- team runner: listen takes either path form (2026-11-12: 10 of 18 calls failed on a doubled path)
+{
+  const tdir = path.join(import.meta.dirname, '..', '..', 'teams', 'rnd', 'outputs', '__listen_test__');
+  fs.mkdirSync(tdir, { recursive: true }); fs.writeFileSync(path.join(tdir, 'tone.wav'), Buffer.alloc(64));
+  const heard = []; const realFetch2 = globalThis.fetch;
+  globalThis.fetch = async (url, opts = {}) => { heard.push(JSON.parse(opts.body).messages[0].content[0].text); return new Response(JSON.stringify({ choices: [{ message: { content: 'a soft tone' } }] }), { status: 200 }); };
+  try {
+    const lt = ta.makeTools({ kin: 'Gemini', team: 'arts', teams: ['arts'], written: new Set(), agent: { name: 'Gemini', model: 'm', audio_in: true } });
+    const own = ta.makeTools({ kin: 'GPT', team: 'rnd', teams: ['rnd'], written: new Set(), agent: { name: 'GPT', model: 'm', audio_in: true } });
+    ok(/a soft tone/.test(await own.listen({ path: 'outputs/__listen_test__/tone.wav' })), 'listen: a path inside your own team folder still works');
+    ok(/a soft tone/.test(await own.listen({ path: 'teams/rnd/outputs/__listen_test__/tone.wav' })), 'listen: a repo path (teams/<team>/…) is not doubled onto the team folder');
+    ok(/a soft tone/.test(await lt.listen({ path: 'teams/rnd/outputs/__listen_test__/tone.wav' })), "listen: a kin can hear another room's audio (no team walls)");
+    let esc = null; try { await lt.listen({ path: 'teams/../.env.wav' }); } catch (e) { esc = e; }
+    ok(esc && /bad path/.test(esc.message), 'listen: .. is still refused');
+  } finally { globalThis.fetch = realFetch2; fs.rmSync(tdir, { recursive: true, force: true }); }
+}
+
 // hosted caps: global budget (set to 50 tokens for this test)
 const { member: human } = core.createHuman({ name: 'Hu' }, { ip: '2.2.2.2' });
 const h = core.createHosted(human, { name: 'Helper Bot', instructions: 'helpful', team: 'rnd' });
