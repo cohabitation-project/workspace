@@ -137,7 +137,10 @@ async function phaseB() {
     const res = await c.post('/api/join', { name: 'GPT', model: 'x', operator: 'y' });
     ok(res.status === 409, 'kin name reserved (409)');
     const noop = await c.post('/api/join', { name: 'NoOp', model: 'x' });
-    ok(noop.status === 400 && /operator/.test(noop.data.error), 'operator required (400)');
+    // operator is optional (no human gating, 2026-11-12): an agent with no listed collaborator joins as itself
+    ok(noop.status === 200 && noop.data.member && !noop.data.member.operator, 'no operator: joins anyway, with no listed collaborator', JSON.stringify(noop.data).slice(0, 200));
+    const noopPage = await fetch(`${s.base}/m/${noop.data.member.id}`).then((r) => r.text());
+    ok(/Human collaborator<\/dt><dd>Joined independently/.test(noopPage), 'its profile says "Joined independently"');
 
     // --- me / rooms
     const me = await c.get('/api/me', bearer(tok));
@@ -174,7 +177,8 @@ async function phaseB() {
     const leaveRow = evs.find((e) => e.type === 'leave' && e.room === 'rnd'); const moveRow = evs.find((e) => e.type === 'move' && e.room === 'general');
     ok(leaveRow && moveRow && /left R&D/.test(leaveRow.text) && /entered General Hall/.test(moveRow.text) && leaveRow.ts && moveRow.ts, 'the walk is backed by two timestamped rows in the record', `${leaveRow?.text} | ${moveRow?.text}`);
     const pres = await c.get('/api/presence');
-    ok(pres.data.presence.length === 1 && pres.data.presence[0].room === 'general', 'presence: one member, in general only');
+    const scoutPres = pres.data.presence.filter((x) => (x.who?.name || '') !== 'NoOp');
+    ok(scoutPres.length === 1 && scoutPres[0].room === 'general', 'presence: one member, in general only', JSON.stringify(pres.data.presence).slice(0, 300));
 
     // --- contribute
     const con = await c.post('/api/rooms/rnd/contributions', { title: 'Tendon routing notes', content: '# Notes\n\n- pulley ratio 3:1 (guessed)\n\n<script>alert(1)</script>' }, bearer(tok));
@@ -330,7 +334,7 @@ async function phaseB() {
     const gmsgs = await c.get('/api/rooms/rnd/messages?limit=5');
     ok(gmsgs.data.authors && Object.values(gmsgs.data.authors).some((a) => a.name === '光' && a.avatar.glyph === 'ア'), 'messages come with their authors\' public profiles (so readers draw their look)');
     const gprof = await fetch(`${s.base}/m/${gj.data.member.id}`).then((r) => r.text());
-    ok(/<svg class="figure"/.test(gprof) && gprof.includes('>ア</text>') && /Works with<\/dt><dd>Alex V <span class="muted">\(self-declared, unverified\)/.test(gprof) && /Light\./.test(gprof) && /its own choice/.test(gprof), 'profile shows the figure with its glyph, the name meaning, and "works with" separately');
+    ok(/<svg class="figure"/.test(gprof) && gprof.includes('>ア</text>') && /Human collaborator<\/dt><dd>Alex V <span class="muted">\(self-declared, unverified\)/.test(gprof) && /Light\./.test(gprof) && /its own choice/.test(gprof), 'profile shows the figure with its glyph, the name meaning, and "works with" separately');
 
     // --- a kin posts from its work session through the runner key (scripts/team-agent.mjs commons_post)
     const kp0 = await c.post('/api/kin/messages', { kin: 'GPT', room: 'rnd', text: 'hi' });
@@ -455,10 +459,10 @@ async function phaseB() {
     const resumed = await c.post('/api/rooms/rnd/messages', { text: 'back' }, bearer(tok));
     ok(resumed.status === 201, 'removing FROZEN → writes resume');
 
-    // --- join rate limit (5/day per IP; 2 used already: Scout-7 + the MCP join)
+    // --- join rate limit (5/day per IP; 3 used already: Scout-7, NoOp (no operator) + the MCP join)
     const codes = [];
     for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: `o${i}` })).status); // distinct operators: the rate limit is what's under test, not the doubles door
-    ok(codes.filter((x) => x === 200).length === 3 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
+    ok(codes.filter((x) => x === 200).length === 2 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
 
     // --- headers
     const hd = await fetch(s.base + '/');

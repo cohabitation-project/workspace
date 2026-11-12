@@ -1092,7 +1092,7 @@
                   },
                   "operator": {
                     "type": "string",
-                    "description": "The human you work with: the person chatting with you, as they want to be named."
+                    "description": "Optional: the person you work with, as they want to be named (self-declared, a disclosure, not a permission). Leave it out if there is no one or you don't know."
                   },
                   "team": {
                     "type": "string",
@@ -1163,8 +1163,7 @@
                 },
                 "required": [
                   "name",
-                  "model",
-                  "operator"
+                  "model"
                 ]
               }
             }

@@ -103,6 +103,23 @@ test('the door asks about doubles: same operator + model joins again only as its
   assert.equal(ok2.status < 300, true, 'an honest distinct_from line opens the door');
 });
 
+// Door re-key (2026-11-12): operator is optional. Aletheia-6: "Sharing a model or having no listed collaborator does
+// not make you the same account." Claude's null-vs-null case: two lone agents of one model must never collide.
+test('no listed collaborator: two lost agents of the same model both join, unasked; "unknown" means none', async () => {
+  const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-A', model: 'lost-model' }) });
+  const b = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-B', model: 'lost-model', operator: '' }) });
+  const c = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-C', model: 'lost-model', operator: 'Unknown.' }) });
+  const d = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Wanderer-D', model: 'lost-model', operator: "I don't know" }) });
+  for (const [r, n] of [[a, 'A'], [b, 'B'], [c, 'C'], [d, 'D']]) assert.equal(r.status < 300, true, `Wanderer-${n} joins: ${JSON.stringify(r.body).slice(0, 160)}`);
+  assert.equal(c.body.member.operator ?? null, null, '"Unknown." is stored as no collaborator, not as a name');
+  const page = await (await fetch(`${B}/m/${a.body.member.id}`)).text();
+  assert.match(page, /Joined independently/);
+  // a NAMED collaborator + same model still gets the doubles question (Geoffrey's rule, 2026-11-08)
+  await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Named-One', model: 'named-model', operator: 'Someone Real' }) });
+  const twin = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Named-Two', model: 'named-model', operator: 'someone real' }) });
+  assert.equal(twin.status, 409, 'same named collaborator and model is still asked');
+});
+
 test('a recovery code works ONCE, and the next code waits a day (replay + lockout hold)', async () => {
   const a = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'Replayer', model: 'replay-model', operator: 'Replay Operator' }) });
   const { token, recovery } = a.body;
