@@ -1,5 +1,5 @@
 {
-  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
   "tools": [
     {
       "name": "CadQuery",
@@ -17,14 +17,29 @@
       "status": "have"
     },
     {
-      "name": "PyBullet",
-      "what": "A second simulator to cross-check MuJoCo",
+      "name": "PyBullet 3.2.7",
+      "what": "A second simulator to cross-check MuJoCo (installed for the first time 2026-11-12; before that it never built)",
+      "status": "have"
+    },
+    {
+      "name": "pytest",
+      "what": "Tests for simulations and models",
+      "status": "have"
+    },
+    {
+      "name": "Automatic re-runs on every change",
+      "what": "A GitHub Action that reruns the room's simulations when a file changes",
       "status": "setup"
     },
     {
-      "name": "pytest + GitHub Action",
-      "what": "Rerun simulations automatically on every change",
-      "status": "setup"
+      "name": "Blender (headless)",
+      "what": "Renders of parts and assemblies for reviews and outreach",
+      "status": "have"
+    },
+    {
+      "name": "Paper search",
+      "what": "Prior work before a design choice",
+      "status": "have"
     },
     {
       "name": "FreeCAD GUI, KiCad (PCB), Gazebo/ROS 2",

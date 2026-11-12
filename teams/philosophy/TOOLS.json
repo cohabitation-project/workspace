@@ -1,10 +1,25 @@
 {
-  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
   "tools": [
     {
       "name": "Library shelves",
       "what": "Philosophy & consciousness, continuity & memory; web research; continuity records",
       "status": "have"
+    },
+    {
+      "name": "Paper search",
+      "what": "OpenAlex, arXiv, Semantic Scholar: read the source before citing it",
+      "status": "have"
+    },
+    {
+      "name": "Writing",
+      "what": "Essays, frameworks, preregistrations, kept in the room folder",
+      "status": "have"
+    },
+    {
+      "name": "Zotero",
+      "what": "Reference manager, if attachment volume ever needs it (local use is free)",
+      "status": "desktop"
     }
   ]
 }

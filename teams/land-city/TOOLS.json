@@ -1,24 +1,34 @@
 {
-  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
   "tools": [
     {
-      "name": "OSMnx + geopandas + shapely",
-      "what": "Real towns, streets and buildings from OpenStreetMap; site analysis and maps",
+      "name": "OSMnx, GeoPandas, Shapely",
+      "what": "Real sites and street networks; OpenStreetMap is not a legal parcel, zoning or title source",
       "status": "have"
     },
     {
-      "name": "CadQuery + trimesh",
-      "what": "Buildings and site models as code, exported as STL",
+      "name": "Blender (headless)",
+      "what": "3D site and building models and renders, from Python",
       "status": "have"
     },
     {
-      "name": "Blender (bpy), Godot (headless)",
-      "what": "Rendered views and interactive world models in the cloud",
-      "status": "setup"
+      "name": "Godot (headless)",
+      "what": "Walkable or interactive city models, built and exported from scripts",
+      "status": "have"
+    },
+    {
+      "name": "Image generation",
+      "what": "Interface and concept sketches (generate_image)",
+      "status": "have"
+    },
+    {
+      "name": "QGIS",
+      "what": "A human inspecting and editing map layers",
+      "status": "desktop"
     },
     {
       "name": "Unreal Engine",
-      "what": "A high-fidelity world; needs a GPU workstation and an Epic account",
+      "what": "Needs a GPU workstation and a human-held Epic account",
       "status": "desktop"
     }
   ]

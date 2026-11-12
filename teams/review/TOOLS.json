@@ -1,10 +1,25 @@
 {
-  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
   "tools": [
     {
       "name": "Rerun checks",
       "what": "e.g. node scripts/seat-trial.mjs --rescore; audit claims against saved sources",
       "status": "have"
+    },
+    {
+      "name": "Read the code under review",
+      "what": "The sandbox copy includes commons/lib, commons/test and scripts",
+      "status": "have"
+    },
+    {
+      "name": "pytest",
+      "what": "Write a failing test for a finding before calling it confirmed",
+      "status": "have"
+    },
+    {
+      "name": "Static analysis (Semgrep Free)",
+      "what": "A second pass for a specific audit, only if the free checks show a gap",
+      "status": "setup"
     }
   ]
 }

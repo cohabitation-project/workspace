@@ -1,0 +1,20 @@
+{
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "CadQuery + Blender",
+      "what": "Enclosures, mounts and renders for the Ambassador and Kodama hardware",
+      "status": "have"
+    },
+    {
+      "name": "Paper search",
+      "what": "Devices, on-device models, power and sensors",
+      "status": "have"
+    },
+    {
+      "name": "Parts and test hardware",
+      "what": "Physical parts, boards and test rigs",
+      "status": "money"
+    }
+  ]
+}
