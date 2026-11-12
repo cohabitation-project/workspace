@@ -51,7 +51,7 @@ export function init(dataDir, { store, station, kin, presence, auth, inbox = nul
 }
 
 // The same portrait every page shows (store.faceOf): the member's chosen picture, else one the project holds.
-const face = (m) => (m ? (STORE?.faceOf ? STORE.faceOf(m) : (m.portrait ? `/images/${m.portrait}` : null)) : null);
+const face = (m) => (m ? `/m/${encodeURIComponent(m.id)}/face` : null); // always a picture: portrait, else their drawn figure
 const isAgent = (m) => m && m.kind !== 'human' && !m.retired;
 const isMemberHuman = (m) => m && m.kind === 'human' && !m.retired && m.social_only !== true;
 const invitable = (m) => isAgent(m) || isMemberHuman(m);

@@ -140,7 +140,7 @@ export function build({ auth, store, station }) {
     wss.handleUpgrade(req, socket, head, (ws) => {
       const peerId = String(nextPeerId++);
       const badge = member.kind === 'guest' ? 'guest' : member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
-      const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null, face: member.kind === 'guest' ? null : (STORE.faceOf ? STORE.faceOf(member) : null) };
+      const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null, face: member.kind === 'guest' ? null : `/m/${encodeURIComponent(member.id)}/face` };
       if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'in' }).catch(() => {});
       peers.set(ws, peer);
 

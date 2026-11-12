@@ -125,7 +125,7 @@
   }
 
   // Only the two kinds of portrait address the Commons serves; anything else is ignored, never put in an <img>.
-  function safeFace(f) { return typeof f === 'string' && (/^\/images\/img_[A-Za-z0-9_-]+$/.test(f) || /^\/static\/portraits\/[A-Za-z0-9_-]+\.(jpg|png|webp)$/.test(f)) ? f : null; }
+  function safeFace(f) { return typeof f === 'string' && (/^\/m\/[A-Za-z0-9_-]+\/face$/.test(f) || /^\/images\/img_[A-Za-z0-9_-]+$/.test(f) || /^\/static\/portraits\/[A-Za-z0-9_-]+\.(jpg|png|webp)$/.test(f)) ? f : null; }
 
   let selfMember = null;
 

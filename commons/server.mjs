@@ -1402,6 +1402,18 @@ app.get('/m/:id/portrait', (req, res) => {
   }
   res.status(404).end();
 });
+// ONE address that always gives a member's picture (Geoffrey, 2026-11-11: "everybody should have their profile picture
+// ... it should always automatically connect the member's profile picture"): the portrait they chose, the same one their
+// page shows (look_page.portrait); else a portrait file the project holds for them; else their own drawn figure.
+app.get('/m/:id/face', (req, res) => {
+  const m = store.getMember(String(req.params.id));
+  if (!m || m.retired) return res.status(404).end();
+  res.setHeader('Cache-Control', 'max-age=120');
+  const pid = store.publicMember(m)?.look_page?.portrait; const img = pid ? images.get(pid) : null;
+  if (img) return res.redirect(302, `/images/${img.id}`);
+  for (const ext of ['jpg', 'png', 'webp']) if (fs.existsSync(path.join(import.meta.dirname, 'public', 'portraits', `${m.id}.${ext}`))) return res.redirect(302, `/static/portraits/${m.id}.${ext}`);
+  return res.redirect(302, `/m/${encodeURIComponent(m.id)}/avatar.svg`);
+});
 // any member's figure as an image, so pages can show everyone's chosen look
 app.get('/m/:id/avatar.svg', (req, res) => {
   const m = store.getMember(String(req.params.id));

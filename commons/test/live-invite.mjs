@@ -77,7 +77,7 @@ test('the agent list tells only what is known: no "online", eligibility, how it 
   const { status, data } = await api('GET', '/api/live/agents');
   assert.equal(status, 200);
   const a = data.agents.find((x) => x.id === 'a_aleth01'); const n = data.agents.find((x) => x.id === 'a_nogrant1');
-  assert.equal(a.eligible, true); assert.equal(a.answers_by, 'tools'); assert.equal(a.face, '/images/img_aleth'); assert.equal(a.in_meeting, false);
+  assert.equal(a.eligible, true); assert.equal(a.answers_by, 'tools'); assert.equal(a.face, '/m/a_aleth01/face'); assert.equal(a.in_meeting, false);
   assert.equal(n.eligible, false); assert.equal(n.why_not, 'needs a Station grant');
   assert.ok(!JSON.stringify(data).match(/"online"/), 'nothing is labelled online');
   assert.ok(!JSON.stringify(data).includes('tokenHash'), 'no token material leaves the server');
@@ -104,7 +104,7 @@ test('the agent finds it with its own tools; nobody else can take it', async () 
 test('accepting joins without any video stream; the room shows the agent only after it joined', async () => {
   const j = await tool(TOK.aleth, 'live_join', { invite: inv.id }); assert.equal(j.error, null, j.text); assert.equal(j.data.invite.status, 'joined');
   const pj = await waitFor((x) => x.type === 'peer-joined' && x.memberId === 'a_aleth01');
-  assert.ok(pj, 'the browser hears the agent arrive'); assert.equal(pj.virtual, true); assert.equal(pj.via, 'tools'); assert.equal(pj.face, '/images/img_aleth'); assert.equal(pj.name, 'Aletheia-6');
+  assert.ok(pj, 'the browser hears the agent arrive'); assert.equal(pj.virtual, true); assert.equal(pj.via, 'tools'); assert.equal(pj.face, '/m/a_aleth01/face'); assert.equal(pj.name, 'Aletheia-6');
   assert.ok(await waitFor((x) => x.type === 'chat' && x.badge === 'system' && /Aletheia-6 joined through its own tools/.test(x.text)));
   const again = await tool(TOK.aleth, 'live_join', { invite: inv.id }); assert.equal(again.data.already, true, 'duplicate delivery is harmless');
   await sleep(200); assert.equal(heard.filter((x) => x.type === 'peer-joined' && x.memberId === 'a_aleth01').length, 1, 'joined once, shown once');
@@ -136,6 +136,18 @@ test('what a human SAYS reaches the agent: browser framing -> ffmpeg -> speech t
   assert.ok(t, 'the room broadcast a transcript of the human');
   const r = await tool(TOK.aleth, 'live_read');
   assert.ok(r.data.recent.some((x) => x.kind === 'speech' && x.name === 'HostGeo' && /hello to the agents/.test(x.text)), 'and the agent reads it');
+});
+
+test('every member always has a picture: their chosen portrait, else their own drawn figure', async () => {
+  const go = (id) => fetch(`${C}/m/${id}/face`, { redirect: 'manual' });
+  const before = await go('a_aleth01'); assert.equal(before.status, 302); assert.match(before.headers.get('location'), /\/m\/a_aleth01\/avatar\.svg$/, 'no portrait yet: the drawn figure');
+  const svg = await fetch(C + before.headers.get('location')); assert.match(svg.headers.get('content-type'), /image\/svg\+xml/);
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+  const up = await tool(TOK.aleth, 'upload_image', { data: png, alt: 'a dot', credit: 'test' }); assert.equal(up.error, null, up.text);
+  assert.equal((await tool(TOK.aleth, 'set_profile', { portrait: up.data.id })).error, null);
+  const after = await go('a_aleth01'); assert.equal(after.headers.get('location'), `/images/${up.data.id}`, 'the portrait her page shows');
+  assert.equal((await go('h_host01')).status, 302, 'people too');
+  assert.equal((await go('nobody_here')).status, 404);
 });
 
 test('Invite Members: one team of people and agents, plus search; nobody shown online', async () => {
