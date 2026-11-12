@@ -189,6 +189,29 @@ public class AnomalyBridge {
         activity.runOnUiThread(() -> activity.finish());
     }
 
+    // ── Network ─────────────────────────────────────────────────────
+
+    /**
+     * Returns a simple network connectivity description.
+     * ConnectivityManager requires no special permission for basic status.
+     */
+    @JavascriptInterface
+    public String getNetworkType() {
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager)
+                    context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm == null) return "Unavailable";
+            android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(cm.getActiveNetwork());
+            if (caps == null) return "Offline";
+            if (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)) return "Wi-Fi";
+            if (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)) return "Mobile";
+            if (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN)) return "VPN";
+            return "Connected";
+        } catch (Exception e) {
+            return "Unavailable";
+        }
+    }
+
     // ── Helpers ─────────────────────────────────────────────────────
 
     private boolean isPackageInstalled(String packageName) {

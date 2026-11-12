@@ -149,6 +149,14 @@
       return simulatedStorageBreakdown();
     },
 
+    async getNetworkType() {
+      if (isAndroid) {
+        try { return window.Anomaly.getNetworkType(); }
+        catch (e) { return 'Unavailable'; }
+      }
+      return 'Unavailable'; // browser simulation cannot detect network
+    },
+
     async sendToAmbassador(message) {
       // Ambassador chat is simulated in all environments for now
       console.log('Ambassador received:', message);

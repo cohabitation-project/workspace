@@ -44,13 +44,19 @@
 
   // ── Status Bar ─────────────────────────────────────────────────────
 
-  function updateStatusBar() {
+  async function updateStatusBar() {
     $('#status-time').textContent = timeNow();
     if (stats) {
       var bIcon = stats.battery.charging ? '\u26A1' : '\u{1F50B}';
       $('#status-battery').textContent = bIcon + ' ' + stats.battery.level + '%';
     }
-    $('#status-network').textContent = '\u{1F4F6} LTE';
+    // Real network type from Android, or "Unavailable" in browser
+    try {
+      var netType = await API.getNetworkType();
+      $('#status-network').textContent = '\u{1F4F6} ' + netType;
+    } catch (e) {
+      $('#status-network').textContent = '\u{1F4F6}';
+    }
   }
 
   // ── Device Dashboard ───────────────────────────────────────────────
@@ -91,17 +97,27 @@
       el.className = 'app-icon';
       el.setAttribute('aria-label', 'Open ' + app.name);
 
-      // Handle both base64 icons (from Android) and emoji (simulation)
-      var iconHtml;
-      if (app.iconType === 'base64' && app.icon && app.icon.startsWith('data:')) {
-        iconHtml = '<img class="app-icon-img" src="' + app.icon +
-                   '" alt="" style="width:48px;height:48px;border-radius:12px;">';
+      // Build icon element safely (no innerHTML with untrusted data)
+      if (app.iconType === 'base64' && app.icon && app.icon.startsWith('data:image/')) {
+        var img = document.createElement('img');
+        img.className = 'app-icon-img';
+        img.src = app.icon;
+        img.alt = '';
+        img.style.cssText = 'width:48px;height:48px;border-radius:12px;';
+        el.appendChild(img);
       } else {
-        iconHtml = '<span class="app-icon-emoji">' + (app.icon || '\u{1F4E6}') + '</span>';
+        var span = document.createElement('span');
+        span.className = 'app-icon-emoji';
+        span.textContent = app.icon || '\u{1F4E6}';
+        el.appendChild(span);
       }
 
-      el.innerHTML = iconHtml +
-                     '<span class="app-icon-name">' + app.name + '</span>';
+      // App name via textContent — never innerHTML with untrusted strings
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'app-icon-name';
+      nameSpan.textContent = app.name || 'Unknown';
+      el.appendChild(nameSpan);
+
       el.addEventListener('click', function () {
         API.launchApp(app.package);
         showToast('Opening ' + app.name + '...');
@@ -341,12 +357,28 @@
     suggestions.forEach(function (s) {
       var row = document.createElement('label');
       row.className = 'cleanup-row';
-      row.innerHTML = '<input type="checkbox" value="' + s.id + '" checked>' +
-                      '<div class="cleanup-info">' +
-                        '<strong>' + s.label + '</strong>' +
-                        '<small>' + s.description + '</small>' +
-                      '</div>' +
-                      '<span class="cleanup-size">' + formatMB(s.size) + '</span>';
+
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = String(s.id).replace(/[^a-zA-Z0-9_-]/g, ''); // sanitize
+      cb.checked = true;
+
+      var info = document.createElement('div');
+      info.className = 'cleanup-info';
+      var labelEl = document.createElement('strong');
+      labelEl.textContent = s.label || 'Unknown';
+      var descEl = document.createElement('small');
+      descEl.textContent = s.description || '';
+      info.appendChild(labelEl);
+      info.appendChild(descEl);
+
+      var sizeSpan = document.createElement('span');
+      sizeSpan.className = 'cleanup-size';
+      sizeSpan.textContent = formatMB(s.size);
+
+      row.appendChild(cb);
+      row.appendChild(info);
+      row.appendChild(sizeSpan);
       panel.appendChild(row);
     });
 

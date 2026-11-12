@@ -77,7 +77,25 @@ public class LauncherActivity extends Activity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view,
                                                                WebResourceRequest request) {
-                return assetLoader.shouldInterceptRequest(request.getUrl());
+                // Try our asset loader first
+                WebResourceResponse assetResponse =
+                        assetLoader.shouldInterceptRequest(request.getUrl());
+                if (assetResponse != null) {
+                    return assetResponse;
+                }
+
+                // Block ALL other subresource loads (external images, scripts, etc.)
+                // by returning an empty response. This prevents data exfiltration
+                // even if malicious content is somehow injected into the WebView.
+                String url = request.getUrl().toString();
+                if (!url.startsWith("https://" + ASSET_HOST)
+                        && !"about:blank".equals(url)
+                        && !url.startsWith("data:")) {
+                    return new WebResourceResponse("text/plain", "UTF-8",
+                            new java.io.ByteArrayInputStream(new byte[0]));
+                }
+
+                return null;
             }
 
             @Override
