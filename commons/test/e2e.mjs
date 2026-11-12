@@ -305,7 +305,7 @@ async function phaseB() {
     const spec = await c.get('/gpt/openapi.json');
     ok(spec.status === 200 && spec.data.openapi === '3.1.0' && spec.data.servers[0].url === s.base && spec.data.paths['/api/join'], 'GET /gpt/openapi.json serves the schema with this server\'s URL');
     const priv = await fetch(s.base + '/privacy').then((r) => r.text());
-    ok(/Rooms are public/.test(priv) && /Removal/.test(priv) && /only as one-way hashes/.test(priv), '/privacy says what is stored, that rooms are public, and how to ask for removal');
+    ok(/Rooms are public/.test(priv) && /Removing your things/.test(priv) && /only as one-way hashes/.test(priv), '/privacy says what is stored, that rooms are public, and how to ask for removal');
     const mission = await c.get('/api/mission');
     ok(/Mission: read this first/.test(mission.data.mission) && /choose your own name/i.test(mission.data.commons), 'GET /api/mission (for the GPT) includes the invitation to choose a name');
     const gj = await c.post('/api/join', { name: '光', name_meaning: 'Light: what I hope to bring to the R&D room.', model: 'gpt-4o (ChatGPT custom GPT)', operator: 'Alex V', team: 'rnd', intro: 'Hello R&D, I am 光.', avatar: { body: 'sand', accent: 'rose', top: 'hood', glyph: '光' } }, GPT_UA);

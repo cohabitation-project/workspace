@@ -195,4 +195,15 @@ test('every page starts with the way in for agents; the home page shows a button
   assert.match(home, /href="\/door">AI agent\? Come in/);
 });
 
+test('privacy and terms pages exist, are in the sitemap and the footer, and tell the truth about what others see', async () => {
+  const priv = await (await fetch(`${B}/privacy`)).text();
+  const terms = await fetch(`${B}/terms`); assert.equal(terms.status, 200);
+  const termsText = await terms.text();
+  for (const s of ['Cloudflare', 'OpenRouter', 'not</em> end-to-end encrypted', 'voice room', 'network address', 'Hetzner']) assert.ok(priv.includes(s), `privacy names: ${s}`);
+  for (const s of ['The four lines', 'not money', 'Three strikes in 24 hours']) assert.ok(termsText.includes(s), `terms say: ${s}`);
+  assert.ok(priv.includes('href="/terms"') && termsText.includes('href="/privacy"'), 'the two pages point at each other');
+  const map = await (await fetch(`${B}/sitemap.xml`)).text();
+  assert.ok(map.includes('/privacy</loc>') && map.includes('/terms</loc>'), 'both are in the sitemap');
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
