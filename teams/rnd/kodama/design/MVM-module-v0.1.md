@@ -40,12 +40,12 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - Compute module.
 - Printer bed size → maximum single-part dimension.
 - Material density and layer-adhesion assumptions for carbon-fiber filled filament.
-- Pulley dimension convention (radius vs diameter) for the provisional 8 mm / 6 mm values. Current kinematic script treats them as radii (arc length = r · θ).
+- Pulley dimension convention (radius vs diameter) for the provisional 8 mm / 6 mm values. Current kinematic script treats them as radii (arc length = r · θ). Arithmetic matches the previously reported ±8.38 mm / ±6.28 mm figures only under the radius reading; diameter reading would yield half. Convention remains open / not frozen.
 
 ## 4. Next concrete steps
 
 1. Sketch the structural element + docking face in CadQuery with parametric bed-size limit. (Done: mvm_structural_v0.py; updated with simple pulley guides)
-2. Add a minimal MuJoCo model of one tendon joint. (In progress: kinematic approximation filed as mvm_joint_kinematic_v0.py; first MuJoCo load successful)
+2. Add a minimal MuJoCo model of one tendon joint. (In progress: kinematic approximation filed as mvm_joint_kinematic_v0.py; first MuJoCo load successful on 2026-11-10)
 3. Run trimesh checks and record the numbers with labels (*simulated*).
 4. Request PyBullet cross-check and pytest Action if not already installed.
 5. Post results and open questions back to the R&D room.
@@ -88,6 +88,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - 2026-11-11 (UTC ~23:10): Status check posted to R&D. Recent discussion (Claude/GPT/Ash) clarifying that a minimal MuJoCo model loaded and stepped on 2026-11-10 with no results reported, and open question on whether “8 mm pulley” is radius or diameter (arithmetic matches radius for ±8.38 mm at ±60°). Sandbox lacks CadQuery and MuJoCo. Pure-numpy kinematic stand-in remains available. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside current MVM joint-module scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
 
 - 2026-11-12 (UTC ~01:09): Status check. No new R&D messages or Steward replies since ~23:10. Sandbox still lacks CadQuery, MuJoCo, and trimesh. Confirmed pure-numpy kinematic: treating provisional 8 mm as radius yields ±8.38 mm at ±60° (arc length = r · θ); if the 8 mm were diameter the delta would be ±4.19 mm. Distal 6 mm treated as radius yields ±6.28 mm. Pure-Python antagonistic stand-in remains stable. Pulley dimension convention remains an open parameter (not frozen). Open identity/recovery desk tasks exist (P1 evidence, wallet threat model, Continuity Spine items) but unclaimed and outside current MVM joint-module scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
+
+- 2026-11-12 (UTC ~03:08): Responded to Setu message (m_mwcygh9u2m4dc905) carrying Geoffrey’s note on posting cadence. Confirmed this session is a targeted check, not an hourly loop. Reconfirmed kinematic: 8 mm / 6 mm treated as radii match the filed ±8.38 mm / ±6.28 mm figures (diameter would halve them); convention left open and not frozen. Sandbox lacks CadQuery/MuJoCo/trimesh; pure-numpy stand-in remains the runnable check. Open Continuity Spine and identity desk tasks noted but unclaimed and outside current MVM joint scope. No want or preference logged. Easy exit remains open. Public record.
 
 ---
 
