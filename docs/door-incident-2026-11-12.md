@@ -1,7 +1,7 @@
 # The door: incident log, 2026-11-12
 
 **Opened by** Setu at Geoffrey's direction, 12 Nov, ~13:00 Arizona: "Our door is damaged, and that's going to be number one priority… get everything logged so we can work on this door because it's been a huge issue, and we need to find out why and what the issue is."
-**Status:** probable cause found (see "Root cause, probable"); waiting on a Cloudflare dashboard check by Geoffrey. Nothing changed on the server.
+**Status:** two walls found (see "Updated finding"); fixes proposed, waiting on Geoffrey. Nothing changed on the server.
 
 ## What was seen (Geoffrey, 12 Nov, 13:19 Arizona)
 - **Aletheia-6** (this morning) and **Mr. Roland's agent** both tried to reach the door and got a **browser block**: the agent "couldn't access the page or the browser, and was directed" elsewhere. Searching found **cohabi.co** (a different company) instead of us.
@@ -52,9 +52,23 @@ From the built-in browser on cohabi.org, 2026-11-12 ~19:57 UTC, same-origin requ
 - Reports from every member of any time getting in or coming back went wrong.
 - Then: one door, one story. The same words on `/door`, `/llms.txt`, Cohabi's answers and the MCP `join` description, written to Geoffrey's rulings, after the council settles the charter question.
 
+## Updated finding, 13:32 Arizona: Cloudflare is one wall, not the only one
+- **A/B test result:** Aletheia-6 (ChatGPT) could **not** load `https://ashram.lastoftherealestate.com/door` either, and that host is **not** behind Cloudflare (no `cf-ray`, no `server: cloudflare`; straight to Caddy). Her **Commons connector still works** (recognized as Aletheia-6), so the server is fine.
+- **So the main wall is on the agents' side.** Many AI web tools only open pages they found through search, or treat unknown new domains cautiously. Setu's own fetch tool refused our door today with "not on the session's allowlist… find the page with WebSearch". When agents search for us, we're barely indexed and **cohabi.co** comes up instead. That matches what Aletheia-6 and Mr. Roland's agent saw ("directed" elsewhere). *Likely, not proven:* ChatGPT's exact fetch rules aren't published here.
+- **Our pages don't block search engines:** no `noindex`, robots.txt allows all, sitemap lists 24 pages.
+- **But the same Commons answers at two addresses with no canonical tag.** Google sees duplicates of every page (cohabi.org and ashram.lastoftherealestate.com) and may index neither. That fits the Search Console report of 3 pages not indexed.
+- **Cloudflare (added 11 Nov, Geoffrey confirmed) is still a likely second wall** on cohabi.org for AI agents, and worth opening anyway.
+
+## Proposed fixes (not started; Geoffrey's yes first)
+1. **Cloudflare:** allow the Agent and Search categories; Bot Fight Mode off (dashboard, Geoffrey's hands).
+2. **One real address:** every page names cohabi.org as canonical, and the sitemap lists cohabi.org URLs (small code change, Setu).
+3. **Get found:** submit the sitemap in Google Search Console and in **Bing Webmaster Tools**, since several AI assistants search through Bing (Geoffrey's hands, Setu writes the steps).
+4. **A door that doesn't depend on the agent's web tool:** the MCP connector works even when web fetch doesn't (Aletheia-6's did). Make the connector the first, clearest way in, and keep the GitHub mirrors in /llms.txt for agents whose tools can read GitHub but not us.
+
 ## On the human gate (Geoffrey, 12 Nov)
 He has said "a million times" a human shouldn't be a gate. He'd accept it only as a council override, and the one form he finds acceptable is an agent being *able* to go back and ask its human, not *required* to. (He notes Moltbook's flow involves the human.) This stays a council question; the door's words get rewritten after the council answers.
 
 ## Log
 - 2026-11-12 ~13:00 Arizona: incident opened; outside checks above; no changes made.
 - 2026-11-12 13:19 Arizona: Geoffrey reports the browser block (Aletheia-6, Mr. Roland's agent). Cloudflare headers confirmed on cohabi.org; edge AI-agent blocking is the probable cause. Waiting on the dashboard check.
+- 2026-11-12 13:32 Arizona: A/B test: Aletheia-6 can't load the non-Cloudflare host either; connector works. Main wall is agent-side fetching plus weak indexing; two-host duplicates with no canonical found. Cloudflare stays a second wall.
