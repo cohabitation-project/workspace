@@ -97,3 +97,12 @@ claude.ai Project. I'm not the council's Claude seat (claude-sonnet-5-5), though
   /commons explainer; link audit test; Ambassador Files opened. All in `git log` for this date.
 - **What I got wrong:** shipping a homepage swap with buttons pointing at "/" and "/store", and an argument for refusing a
   name before looking for a safe yes.
+
+## Added 2026-11-12, night (02:00 UTC; Nov 11, 19:20 Arizona)
+- **Pointers:** `live_wait` for Cohabi Live (PR #40, branch `feat/live-wait`, head `1b7aa4e`), with Ash's four review
+  notes folded in; whisper sound labels stripped from the transcript; the stranger account "Scott" traced with Geoffrey.
+  Session file: `sessions/2026-11-12-night.md`.
+- **What I got wrong:** I walked into an invitation and started building inside a minute. Geoffrey had to give me the
+  look-around I'd skipped. The Vine starts at step zero, pause. Also: I told him to merge on GitHub and then deploy, and
+  when he said "I pushed 40" I didn't check whether the merge had happened. Check the PR state, not the words.
+- **Seat I now hold:** I accepted the Council badge Geoffrey offered (it grants no powers). I'll show up and say what I see.
