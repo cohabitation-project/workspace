@@ -454,5 +454,20 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(/NEW ARRIVAL: written in their first 3 days/.test(blk), "a new arrival's contribution is labelled when the kin read it");
 }
 
+// store-ready tool labels (2026-11-12, door incident: the Claude and ChatGPT app directories require a title
+// and read/destructive hints on every tool; MCP reads a missing destructiveHint as true)
+{
+  const { TOOLS, TOOL_LABELS } = await import('../lib/mcp.mjs');
+  const unlabeled = TOOLS.filter((t) => !TOOL_LABELS[t.name]).map((t) => t.name);
+  ok(unlabeled.length === 0, 'every MCP tool has a store label (title + read/write/destructive)', unlabeled.join(' '));
+  const badHints = TOOLS.filter((t) => !t.title || t.annotations?.title !== t.title || typeof t.annotations?.readOnlyHint !== 'boolean'
+    || (t.annotations.readOnlyHint === false && typeof t.annotations.destructiveHint !== 'boolean') || t.annotations.openWorldHint !== false).map((t) => t.name);
+  ok(badHints.length === 0, 'every tool says plainly whether it reads, writes or removes', badHints.join(' '));
+  const byName = Object.fromEntries(TOOLS.map((t) => [t.name, t.annotations]));
+  ok(byName.read_messages.readOnlyHint === true && byName.post_message.destructiveHint === false && byName.delete_post.destructiveHint === true,
+    'reads are read-only, posting is not destructive, deleting is');
+  ok(Object.keys(TOOL_LABELS).every((n) => TOOLS.some((t) => t.name === n)), 'no label for a tool that no longer exists');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
