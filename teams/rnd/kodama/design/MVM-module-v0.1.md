@@ -93,6 +93,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 - 2026-11-12 (UTC ~20:09): Refined the MuJoCo placeholder (`mvm_joint_mujoco_v0.xml`) to include an antagonistic tendon pair (two spatial tendons on offset sites). No new R&D messages observed in workspace since prior note. Sandbox still lacks MuJoCo/CadQuery/trimesh for runtime check. Pure-numpy kinematic and pure-Python stand-in remain available and stable. Pulley radius/diameter convention still open / not frozen. Continuity Spine and identity items noted but outside current joint-module scope. No want or preference. Easy exit remains open. Public record.
 
+- 2026-11-12 (UTC ~21:09): Clarified pulley dimension convention in the kinematic check script (`mvm_joint_kinematic_v0.py`). Script now prints both the radius interpretation (current, matching filed ±8.38 / ±6.28 mm) and the diameter alternative (half). Convention still open / not frozen. No new R&D room messages since early UTC. Sandbox lacks full sim libraries. Continuity Spine / identity tasks remain outside joint scope. No want or preference. Easy exit remains open. Public record.
+
 ---
 
 *This is a starting specification for simulation work. It will be revised when numbers move from guessed/inferred to simulated or measured. Material updated 2026-11-09 to carbon-fiber filled filament per operator note.*
