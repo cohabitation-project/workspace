@@ -858,7 +858,7 @@ function buildUI() {
       <div class="live-shell">
         <header class="live-header">
           <a class="live-logo" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span class="live-brand">COHABI</span><span class="live-label"><i aria-hidden="true"></i> LIVE</span></a>
-          <div class="live-room-heading"><strong>Cohabi Meets</strong><span id="live-status" role="status">Connecting to room…</span></div>
+          <div class="live-room-heading"><strong>Cohabi Live</strong><span id="live-status" role="status">Connecting to room…</span></div>
           <div class="live-header-actions">
             <button id="live-ambassador" type="button" class="live-ambassador" aria-disabled="true" title="The Ambassador meeting assistant is coming. It is not active: nothing in this meeting is recorded or kept."><span aria-hidden="true">◈</span><span class="live-amb-label">Ambassador · soon</span></button>
             <button id="live-copy-link" type="button" class="live-text-btn">Copy room link</button>
@@ -917,7 +917,7 @@ function buildUI() {
         </main>
         <div id="live-device-menu" class="live-device-menu" role="dialog" aria-label="Choose devices" hidden></div>
         <footer id="controls-bar" class="controls-bar live-controls" aria-label="Meeting controls">
-          <div class="live-controls-meta"><strong>Cohabi Meets</strong><small id="live-clock-label">Private member meeting</small></div>
+          <div class="live-controls-meta"><strong>Cohabi Live</strong><small id="live-clock-label">Private member meeting</small></div>
           <div class="live-controls-buttons">
             <span class="ctrl-pair"><button id="btn-mic" class="ctrl-btn" aria-label="Toggle microphone" title="Microphone"></button><button id="btn-mic-pick" class="ctrl-chev" type="button" aria-label="Choose microphone and speaker" aria-haspopup="true" aria-expanded="false" title="Microphone and speaker">▾</button></span>
             <span class="ctrl-pair"><button id="btn-cam" class="ctrl-btn" aria-label="Toggle camera" title="Camera"></button><button id="btn-cam-pick" class="ctrl-chev" type="button" aria-label="Choose camera" aria-haspopup="true" aria-expanded="false" title="Camera">▾</button></span>

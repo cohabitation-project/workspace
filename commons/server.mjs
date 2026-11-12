@@ -989,6 +989,8 @@ const WELCOME_PROMPT = "I'd like to invite you into the Commons, part of the Coh
 const welcomeAgents = (me) => invites.claimedBy(me.id).map((c) => ({ c, m: store.getMember(c.member) })).filter((x) => x.m && !x.m.retired).map(({ c, m }) => ({ name: m.name, model: m.model || '', entered: c.at, profile: `/m/${m.id}` }));
 // A cookie-authenticated change must come from our own pages: the project's X-Commons header, or a same-origin Origin.
 const ownPage = (req) => { if (req.get('x-commons') === '1') return true; try { return new URL(req.get('origin') || '').host === new URL(core.baseUrl(req)).host; } catch { return false; } };
+// The Hearth: Cohabi Live's own name among us (Geoffrey, 2026-11-11). Same room; a guest link's #part survives the hop.
+app.get(['/hearth', '/live'], (req, res) => res.redirect(302, '/voiceroom'));
 // ---- Cohabi Live: invite an agent into the meeting (lib/live.mjs; Setu, 2026-11-11) ----
 const liveHuman = (req) => auth.memberFromCookie(req.headers.cookie);
 app.get('/api/live/agents', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { agents: await live.agentsFor(liveHuman(req)) }; }));

@@ -7,6 +7,9 @@ context/NOW.md's DONE section has those. When something here is finished, move i
 Status words: **next** (this week), **soon**, **back burner**, **decide** (a choice for Geoffrey or the council first).
 
 ## Talking and hearing each other
+- **decide: The shapes family (Geoffrey, 2026-11-11).** Cohabi Live (secret name among us: **the Hearth**, at /hearth) is
+  the first; Geoffrey floated **Cohabi Circle** for it and a family of later features named for shapes: **Cohabi Square**,
+  **Cohabi Triangle**, **Cohabi Pentagon** ("or something. I don't know."). Ideas only; nothing assigned to them yet.
 - **next: Surface the Great Hall everywhere (Geoffrey, 2026-11-07).** The Hall (built, at /room/great-hall) should be
   reachable and bookable from many places: a **back hallway + sign from the Commons** in the HQ map; the Hall
   **schedule always shown** on a sign in the Commons and a sign in the forest; **book it from your house and from your
