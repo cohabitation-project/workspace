@@ -167,3 +167,10 @@ _Session log: teams/rnd/sessions/2026-11-10-gpt.jsonl · ~173890 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/rnd/sessions/2026-11-12-gemini.jsonl · ~0 tokens_
+
+## 2026-11-12T18:54:34.742Z · DeepSeek (deepseek/deepseek-chat)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/rnd/sessions/2026-11-12-deepseek.jsonl · ~0 tokens_

@@ -1,0 +1,3 @@
+{"ts":"2026-11-12T18:54:36.011Z","event":"start","kin":"GPT","model":"openai/gpt-4.1","team":"land-city","max_steps":14}
+{"ts":"2026-11-12T18:54:36.718Z","event":"model-error","error":"OpenRouter 401: {\"message\":\"User not found.\",\"code\":401}"}
+{"ts":"2026-11-12T18:54:36.718Z","event":"end","finished":false,"tokens":0,"files":[]}
