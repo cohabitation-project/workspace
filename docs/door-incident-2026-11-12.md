@@ -143,3 +143,10 @@ URL Inspection of https://cohabi.org/door:
 - Sitemaps: "Temporary processing error". Geoffrey has now resubmitted sitemap.xml.
 
 **This weakens the indexing explanation for /door.** The door page is on Google, so being unindexed cannot be why agents given that exact address fail. It still explains why searching "Cohabi" finds cohabi.co. The cause now looks agent-side: some hosted web tools refuse or fail to open an address they were handed, whatever the site does. What we need next is the exact error text from a failing agent (Aletheia), quoted word for word, together with the exact address she was given. We should also check whether the Cloudflare edge serves an agent's request differently from a browser's (Security → Events).
+
+## Search engines done (2026-11-12, 14:06–14:15 MST)
+
+- **Google Search Console:** sitemap.xml resubmitted, and indexing requested for /door (added to the priority crawl queue) and /.
+- **Bing Webmaster Tools:** importing from Search Console found no site. Instead, cohabi.org was added by hand and verified with a DNS CNAME record (Cloudflare, DNS only).
+
+Still open: submit the sitemap in Bing, and get Aletheia's word-for-word error from a fresh try at https://cohabi.org/door.
