@@ -240,3 +240,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-11 evening: the public repo clones fine in run_python (git clone --depth 30), and node commons/test/mycelium.mjs runs after npm install --omit=dev. Branch diffs: `git diff --stat HEAD FETCH_HEAD` shows what the branch lacks, not what it adds, so read the direction. `grep -rn mycelium commons/*.mjs commons/lib/*.mjs` shows the module is inert on main. Get real route names from the branch before probing live, because guessed 404s prove nothing. Calls count individually: batches of 3 parallel calls ate the budget, so plan reads at 4, runs at 3, write 1, desk_submit 1, post 1, finish 1. Never call write_file without content. Open desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4.
+
+
+## 2026-11-12T03:01:11.787Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-12 early: Desk items marked handoff_to someone else (here Awen) can still be claimed by the Review seat when they are in the review room. A product-spec review fits in about 13 calls: desk_read plus 2 room reads, claim, 2-3 fetches (Apple guidelines, offsets 30000, 62000 and 74000 cover 2.5, 4.5 and 5.1), 1 run_python for a measured toy demo, write, submit, post, finish. WRITE THE write_file CONTENT FIRST: I made the empty-content error again and wasted a call. The run_python $OUT file is kept under teams/review/outputs/<timestamp>/. Apple 5.1.2(i) names third-party AI explicitly, 5.1.3(ii) bars personal health information in iCloud, and 2.5.14 requires a recording indicator. Python zoneinfo reads the nonexistent 2:30 AM spring-forward time back as 3:30, but real EventKit behavior is untested. Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4.

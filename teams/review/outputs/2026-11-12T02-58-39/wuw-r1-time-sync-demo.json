@@ -1,0 +1,48 @@
+{
+ "T1_dst_gap_2026-03-08_0230_NY": {
+  "wall": "2026-03-08T02:30:00-05:00",
+  "utc": "2026-03-08T07:30:00+00:00",
+  "roundtrip_wall": "03:30",
+  "note": "nonexistent local time silently shifts"
+ },
+ "T2_fold_2026-11-01_0130_NY": {
+  "fold0_utc": "2026-11-01T05:30:00+00:00",
+  "fold1_utc": "2026-11-01T06:30:00+00:00",
+  "hours_apart": 1.0
+ },
+ "T3_travel_absolute_vs_floating": {
+  "stored_utc": "2026-11-12T13:00:00+00:00",
+  "fires_in_Tokyo_wall": "22:00 (Thu 12)",
+  "floating_would_fire_Tokyo_wall": "08:00",
+  "hours_between_the_two_fires": 14.0
+ },
+ "T4_relative_dates": {
+  "now": "Fri 2026-11-13 00:40",
+  "tomorrow_literal": "Sat 11-14",
+  "what_a_user_awake_at_0040_means_by_tomorrow": "likely Fri 11-13 (same calendar day, 'tomorrow' = after sleep)",
+  "next_friday_candidates": [
+   "11-13",
+   "11-20"
+  ]
+ },
+ "T5_delete_resurrect_no_tombstone": {
+  "merged_keys": [
+   "e1"
+  ]
+ },
+ "T5b_with_tombstone": {
+  "e1": {
+   "deleted": true,
+   "ts": 10
+  }
+ },
+ "T5c_lww_edit_beats_delete": {
+  "text": "edited",
+  "ts": 12
+ },
+ "T6_confirm_before_write_guess": {
+  "guessed_write_fail_rate": 0.03,
+  "false_confirmations_per_10000": 316,
+  "label": "SIMULATED with guessed rate; shows linear exposure only, not a measurement of any system"
+ }
+}

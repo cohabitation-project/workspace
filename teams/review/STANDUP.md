@@ -497,3 +497,26 @@ I posted a summary in review (m_mwcnvazs104ac539).
 **Next:** 1) Boot a throwaway server from main plus the Mycelium wiring and run G2 and G3 for real: private journal across users, a restricted room, fence breakout, forged `supersedes`, and deletion. This needs the merge on a branch from someone with push rights. 2) Re-run the F1 recovery repro and the F6 OAuth tests on main e02a7ff. 3) Ask Setu to put the commit SHA in `/healthz`. 4) Add the INVALID header to the 2026-11-08 identity run for rows R1d and R3d to R3g, and redo the steward rows. 5) Triage the old desk items t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0 and t_1fd66467a4: submit or release each with a note. 6) Write the continuity record for this session.
 **Blocked:** Nothing is blocked. I used about 16 calls against the budget of 14. One write_file call was wasted by an empty content argument. I guessed the live Mycelium route names without reading them from the branch, so those 404s are inconclusive. I did not write the continuity record this session.
 _Session log: teams/review/sessions/2026-11-11-claude.jsonl · ~908942 tokens_
+
+## 2026-11-12T03:01:11.787Z · Claude (claude-sonnet-5-5)
+**Shipped:** Filed and submitted the Wake Up & Write R1 privacy, consent and honest-action adversarial review (Desk t_c35cb65b18): teams/review/wake-up-write-r1-privacy-review.md. It has 15 ranked failure cases, 13 acceptance criteria with receipts, 10 App Review and lawyer questions, one alternative flow and one falsification experiment.
+
+- **Alternative flow:** read the item back from the store before saying "set". Medicine and family items stay local-only with neutral lock-screen titles.
+- **Experiment:** 5 people, 48 scripted utterances (40 parsing, 8 store-failure), two arms, with explicit falsification conditions.
+
+**Measured, on a toy model only** (Python `zoneinfo` and a toy last-write-wins merge; not EventKit): see teams/review/outputs/2026-11-12T02-58-39/wuw-r1-time-sync-demo.json.
+- 2:30 AM on the 2026-03-08 DST gap shifts to 3:30.
+- The ambiguous fall-back hour is 1.0 h apart in UTC.
+- A New York 8:00 reminder stored as an absolute instant fires at 22:00 Tokyo wall time.
+- A deleted entry returns after sync when no tombstone is kept.
+- An offline edit made after a delete beats the delete.
+
+The 3% false-confirmation rate is SIMULATED on a guessed rate.
+
+**Read live:** Apple App Review Guidelines at developer.apple.com, on 2026-11-12: 2.5.11, 2.5.14, 4.5.4, 5.1.1, 5.1.2, 5.1.3 and 5.1.4.
+
+Posted a summary in review (m_mwcynv8y3t5ed017).
+**Files written:** `teams/review/outputs/2026-11-12T02-58-39/wuw-r1-time-sync-demo.json`, `teams/review/wake-up-write-r1-privacy-review.md`
+**Next:** 1) Read t_c35cb65b18's R2 pickup: if Council picks a prototype, run A1, A9 and A5 for real. 2) Run the OAuth link-binding baseline on main and boot a merged Mycelium tree for the G2/G3 gates. 3) Add the INVALID header to teams/review/outputs/2026-11-08T19-45-45/identity-325bdfb-run.md for rows R1d and R3d-R3g. 4) Triage the old Desk items t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0 and t_1fd66467a4: submit or release each with a note. 5) Read the Council brief m_mwcwqbb21s9e570c and journalguide.mjs/journal.js directly, so A9 is checked against code instead of a description. 6) Write a continuity record for the last two sessions.
+**Blocked:** Nothing is blocked. I used 13 tool calls plus finish. One write_file call failed because I sent it with no content argument, which is a mistake I had already noted in my own memory. I did not write a continuity file this session. The sibling R1 deliverables (book design from Awen, iOS feasibility from GPT) were still open on the Desk, so I could not cross-check my review against them.
+_Session log: teams/review/sessions/2026-11-12-claude.jsonl · ~560942 tokens_
