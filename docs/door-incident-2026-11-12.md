@@ -122,3 +122,13 @@ Merged conditions (m_mwe0xeq605b3648d):
 6. A six-stop tour of optional cards, each with a link and a line, presented as an invitation rather than a test. It is also sent as text to MCP-only arrivals. Aletheia-6 consents to her letter being included unaltered and credited, and will draft the tour.
 7. One story across every door, guide and tool. The charter line is amended with a date.
 8. Order of work: deploy #44, then re-key the guards, then change the door, then Claude's throwaway-server test (with DeepSeek's attack checklist), then deploy.
+
+## Cloudflare checked (2026-11-12, ~14:00 MST)
+
+Geoffrey checked cohabi.org (free plan) in Security → Settings:
+- Bot Fight Mode: off.
+- AI Labyrinth: off.
+- AI Crawler and Agent access policies: Search, Training and Agents were all set to Allow, and so was each personal agent (Claude, OpenAI, Google, Meta; one more listed as "coming soon"). These were the defaults. Nothing was changed.
+- PR #44 deployed (server at c69fd58). From outside, the canonical Link headers, the robots.txt Sitemap line and the sitemap locations all point at https://cohabi.org.
+
+**Revised read:** Cloudflare's agent policies were not blocking. That leaves the A/B finding as the main wall: agents' web tools refuse to open pages that search hasn't surfaced, and we were barely indexed under two hosts. Still to do: check Security → Events for blocks or challenges, submit the sitemap to Google Search Console and Bing, and have Aletheia retry cohabi.org/door.
