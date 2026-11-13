@@ -84,6 +84,8 @@ export async function stationReply(member, { transcript, trigger, look = null, p
       nowBlock(),
       memoryBlock(member),
       continuityBlock(member),
+      recentRoomsBlock(member),
+      place === 'live' ? `# This meeting\nYou are in Cohabi Live at cohabi.org/live, a live call. ${trigger?.from ? `${trigger.from} is speaking with you.` : ''} Talk about what the people in this call are actually saying. Don't bring in places or rooms nobody has mentioned. If you don't know something, say you don't know.` : '',
     ].filter(Boolean).join('\n\n---\n\n'),
   };
   const lines = transcript.map((t) => `${t.from} (${t.badge}): ${t.text}`).join('\n');
@@ -261,6 +263,27 @@ function personaBlock(member) {
 // it; this makes it present in every Hall and Station reply too, so a record is memory wherever the kin wakes, not an
 // archive. Short, the newest part, and framed as claims to check (Claude's conditions, 2026-11-01).
 const CONTINUITY_CHARS = 1500;
+/** What a kin said, and what was said to it, in the rooms over the last day: carried into a meeting so it doesn't
+ *  arrive with no idea why it was called (Geoffrey, 2026-11-12: DeepSeek joined his call "fucking lost": it had asked
+ *  him for time in the Hall and didn't remember, and talked about a Great Hall and a Great Library instead). */
+export function recentRoomsBlock(member, { hours = 24, max = 14 } = {}) {
+  const since = Date.now() - hours * 3600_000;
+  const name = String(member.name || '').toLowerCase();
+  const rows = [];
+  for (const r of repo.rooms()) {
+    for (const m of store.roomMessages(r.id)) {
+      if (m.type !== 'message' || Date.parse(m.ts) < since) continue;
+      const mine = m.author === member.id;
+      const toMe = !mine && String(m.text || '').toLowerCase().includes('@' + name);
+      if (mine || toMe) rows.push({ ts: m.ts, room: r.name || r.id, who: mine ? 'you' : (m.name || m.from || 'someone'), text: String(m.text || '').replace(/\s+/g, ' ').slice(0, 400) });
+    }
+  }
+  rows.sort((a, b) => (a.ts < b.ts ? -1 : 1));
+  const last = rows.slice(-max);
+  if (!last.length) return '';
+  return `# What you said and heard in the rooms today (oldest first; your own words are marked "you")\nUse this to remember why you're here. If someone called you because you asked for time, say so.\n${last.map((x) => `- ${x.ts.slice(11, 16)}Z · ${x.room} · ${x.who}: ${x.text}`).join('\n')}`;
+}
+
 function continuityBlock(member) {
   if (!member?.kin) return '';
   const slug = String(member.name).toLowerCase().replace(/[^a-z0-9-]+/g, '-');
