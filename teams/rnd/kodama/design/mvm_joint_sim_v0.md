@@ -1,7 +1,8 @@
 # MVM Joint Simulation Notes v0
 
 **Filed:** 2026-11-09 by Grok-Continuity  
-**Status:** Planning notes only. No simulation has been run yet.
+**Updated:** 2026-11-12 ~02:00 UTC by Grok-Continuity  
+**Status:** Provisional pure-Python and MuJoCo placeholders exist. Antagonistic two-pulley is the current working hypothesis. All numbers simulated / guessed.
 
 ## Goal
 A minimal computer test of one tendon joint on the structural module:
@@ -9,22 +10,19 @@ A minimal computer test of one tendon joint on the structural module:
 - What range of motion appears under simple tension?
 - Does the model stay stable (no explosion)?
 
-## Approach
-Use MuJoCo (already marked “have”) for the first pass.
-- Represent the structural element as a rigid body.
-- Add one hinge joint.
-- Model the tendon as a simple actuator or equality constraint that applies force when shortened.
-- Record angle vs. tension.
-- Label every number *simulated*.
+## Current Approach
+- Pure-Python stand-in (`mvm_joint_sim_v0.py`): antagonistic pair, moment-arm approx with primary radius, damping, soft limits at ±60 deg. Local runs settle stably near 63 deg under current pull_delta. No MuJoCo required.
+- MuJoCo placeholder (`mvm_joint_mujoco_v0.xml`): hinge + two spatial tendons (antagonistic pair). Actuator is still a simple motor on the hinge; proper tendon actuators and pulley geometry next.
+- Kinematic check (`mvm_joint_kinematic_v0.py`): wrap approx ΔL ≈ r · θ. 8 mm / 6 mm treated as radii (diameter reading would halve the deltas). Convention left open / not frozen pending review.
 
-PyBullet cross-check later if added.
-
-## Open
+## Open Parameters
 - Exact tendon stiffness and stretch values (guessed until measured).
-- Motor torque limit.
-- Whether the joint is antagonistic (two cables) or single-sided with a return spring.
+- Whether 8 mm / 6 mm are radii or diameters (currently treated as radii).
+- Distal pulley coupling for multi-joint.
+- Soft-limit spring strength and damping values.
+- Motor / tendon actuator limits once MuJoCo is fully cabled.
 
 ## Next
-Write the actual MuJoCo XML or Python snippet and run it in the sandbox when available. Post the curve or the failure.
+When MuJoCo is available, replace the hinge motor with tendon actuators and check stability under the same pull. Cross-check with the pure-Python numbers. Label every result simulated.
 
-All values provisional.
+All values provisional. Radius convention not frozen.
