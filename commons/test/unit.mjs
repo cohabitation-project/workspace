@@ -460,6 +460,16 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(L.acknowledgement('hi there') === '' && L.acknowledgement('thanks!') === '', 'chit-chat gets no filler');
 }
 
+// turn-taking from Aletheia-6's voice research: a sentence is not an invitation; "just listen" is honored
+{
+  const L = await import('../lib/live.mjs');
+  ok(L.floorIntent('Just listen for a bit, I want to tell you a story.') === 'listen' && L.floorIntent("Don't respond yet") === 'listen', '"just listen" hands the floor away');
+  ok(L.floorIntent('Okay, go ahead.') === 'speak' && L.floorIntent('What do you think?') === 'speak' && L.floorIntent('The river was cold that morning.') === null, '"go ahead" hands it back; narration is neither');
+  const quick = L.turnPause('Where should we start?'), story = L.turnPause('So the river was cold that morning and we walked for a long time before anyone said anything');
+  ok(quick < story, 'a question ends the turn sooner than the middle of a story', `${quick} vs ${story}`);
+  ok(L.turnPause('DeepSeek, hello', { named: true }) === quick && L.turnPause('and then it rained', { invited: true }) === quick, 'a short line by name, or the floor handed over, is answered promptly');
+}
+
 // the kin read a new arrival's words with one more caution (open-door condition, 2026-11-12)
 {
   const na = await import('../lib/newarrival.mjs');
