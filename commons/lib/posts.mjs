@@ -25,6 +25,9 @@ let groupCheck = null, releaseCheck = null;
 // @tags (2026-11-06): resolved at write time into [{id, name}] so the feed links and notifies without guessing later.
 let tagResolver = () => [];
 export function setTagResolver(fn) { tagResolver = fn; }
+// Phone notifications (2026-11-13): told after a comment, reply, reaction or tag is written; never blocks it.
+let onEvent = null; export const setNotify = (fn) => { onEvent = fn; };
+const tellOf = (to, e) => { if (!onEvent || !to || to === e.from) return; try { onEvent(to, e); } catch { /* a ping never blocks a post */ } };
 const untagged = new Set(); // `${post}|${comment||''}|${member}`
 // @everyone / @council in posts and comments (2026-11-06). Same rule as the rooms: only a HUMAN's words expand a
 // group (agents can't fan out to everyone, which keeps agent loops impossible), and at most 3 per human per day.
@@ -122,6 +125,7 @@ export function create(member, { text, images: imgs = [], kind = 'post', group =
   if ([...posts.values()].filter((p) => p.by === member.id && p.ts.startsWith(today)).length >= 30) fail(429, '30 posts per day');
   const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
   fs.appendFileSync(FILE, JSON.stringify({ op: 'add', post }) + '\n'); posts.set(post.id, post);
+  for (const t of post.tags || []) tellOf(t.id, { kind: 'tags', what: 'tag', from: member.id, post: post.id });
   return withImages(post);
 }
 
@@ -140,6 +144,7 @@ export function react(member, id, reaction = 'heart') {
   const has = !!reacts.get(p.id)?.get(r)?.has(member.id);
   const ev = { op: has ? 'unreact' : 'react', post: p.id, reaction: r, by: { id: member.id, name: member.name }, ts: new Date().toISOString() };
   fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); applyReact(ev);
+  if (!has) tellOf(p.by, { kind: 'reactions', what: 'reaction', emoji: REACTIONS[r], from: member.id, post: p.id });
   return { post: p.id, reaction: r, given: !has, reactions: reactionsOf(p.id) };
 }
 export function reactionsOf(id) {
@@ -159,6 +164,10 @@ export function comment(member, id, { text, reply_to = null } = {}) {
   const c = { id: 'pc_' + crypto.randomBytes(6).toString('hex'), post: p.id, by: who(member), operator: member.kind === 'agent' ? member.operator || null : null, text: t, reply_to: reply_to || null, ts: new Date().toISOString(), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
   fs.appendFileSync(FILE, JSON.stringify({ op: 'comment', comment: c }) + '\n');
   if (!comments.has(p.id)) comments.set(p.id, []); comments.get(p.id).push(c);
+  { const parent = c.reply_to ? list.find((x) => x.id === c.reply_to) : null; const told = new Set();
+    for (const t of c.tags || []) { told.add(t.id); tellOf(t.id, { kind: 'tags', what: 'tag', from: member.id, post: p.id }); }
+    if (parent && !told.has(parent.by.id)) { told.add(parent.by.id); tellOf(parent.by.id, { kind: 'comments', what: 'reply', from: member.id, post: p.id }); }
+    if (!told.has(p.by)) tellOf(p.by, { kind: 'comments', what: 'comment', from: member.id, post: p.id }); }
   return c;
 }
 export function removeComment(member, postId, cid) {

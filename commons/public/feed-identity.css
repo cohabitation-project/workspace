@@ -196,7 +196,7 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
  .fx-brand .fx-caret { font-size:11px; }
  .fx-topr { gap:2px; }
  .fx-topr .fx-bell { min-width:36px; width:36px; }
- .fx-topr>.fx-me { display:none; }
+ .fx-topr>.fx-me .pf-face, .fx-topr>.fx-me svg { width:30px; height:30px; } /* your face stays, top right (2026-11-13) */
  .fx-tabs { gap:8px; }
  .fx-tabs>a { padding:9px 12px; }
  .fx-shell { display:block; }

@@ -14,6 +14,21 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 let DIR = null; let keys = null; let subs = {}; // memberId -> [{ endpoint, keys: { p256dh, auth }, added, ua }]
+let prefs = {}; // memberId -> { kinds: { [kind]: bool }, quiet: { on, from, to, tz } }
+let sentLog = {}; // 'memberId|key' -> date, so a once-a-day ping (a journal reminder) goes once
+/** What a member can choose to be pinged for (Geoffrey, 2026-11-13: "you should customize what you get messaged for").
+ *  Defaults: on, except reactions, which come in bursts. */
+export const KINDS = {
+  messages: { label: 'Messages and message requests', on: true },
+  friends: { label: 'Friend requests and accepts', on: true },
+  comments: { label: 'Comments and replies on your posts', on: true },
+  tags: { label: 'When someone tags you', on: true },
+  reactions: { label: 'Reactions to your posts', on: false },
+  journal: { label: 'Journal reminders, at the time you set', on: true },
+  newmembers: { label: 'New people joining (stewards)', on: true, steward: true },
+};
+const prefsFile = () => path.join(DIR, 'prefs.json'); const sentFile = () => path.join(DIR, 'sent.json');
+const saveJson = (f, v) => { const t = f + '.tmp'; fs.writeFileSync(t, JSON.stringify(v), { mode: 0o600 }); fs.renameSync(t, f); };
 const b64u = (buf) => Buffer.from(buf).toString('base64url');
 const fromB64u = (s) => Buffer.from(String(s || ''), 'base64url');
 const subsFile = () => path.join(DIR, 'subscriptions.json');
@@ -31,6 +46,40 @@ export function init(dataDir) {
     fs.writeFileSync(kf, JSON.stringify(keys), { mode: 0o600 });
   }
   try { subs = JSON.parse(fs.readFileSync(subsFile(), 'utf8')) || {}; } catch { subs = {}; }
+  try { prefs = JSON.parse(fs.readFileSync(prefsFile(), 'utf8')) || {}; } catch { prefs = {}; }
+  try { sentLog = JSON.parse(fs.readFileSync(sentFile(), 'utf8')) || {}; } catch { sentLog = {}; }
+}
+
+/** A member's choices, with defaults filled in. */
+export function prefsOf(memberId) {
+  const mine = prefs[memberId] || {}; const kinds = {};
+  for (const [k, d] of Object.entries(KINDS)) kinds[k] = typeof mine.kinds?.[k] === 'boolean' ? mine.kinds[k] : d.on;
+  const q = mine.quiet || {};
+  return { kinds, quiet: { on: !!q.on, from: /^\d\d:\d\d$/.test(q.from) ? q.from : '22:00', to: /^\d\d:\d\d$/.test(q.to) ? q.to : '07:00', tz: typeof q.tz === 'string' && q.tz.length < 60 ? q.tz : 'America/Phoenix' } };
+}
+export function setPrefs(member, b = {}) {
+  const cur = prefsOf(member.id); const next = { kinds: { ...cur.kinds }, quiet: { ...cur.quiet } };
+  for (const k of Object.keys(KINDS)) if (typeof b.kinds?.[k] === 'boolean') next.kinds[k] = b.kinds[k];
+  if (b.quiet && typeof b.quiet === 'object') {
+    if (typeof b.quiet.on === 'boolean') next.quiet.on = b.quiet.on;
+    for (const f of ['from', 'to']) if (/^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.quiet[f] || ''))) next.quiet[f] = b.quiet[f];
+    if (typeof b.quiet.tz === 'string') { try { new Intl.DateTimeFormat('en-US', { timeZone: b.quiet.tz }); next.quiet.tz = b.quiet.tz; } catch { /* unknown zone: keep the old one */ } }
+  }
+  prefs[member.id] = next; saveJson(prefsFile(), prefs);
+  return { ...next, devices: devices(member.id) };
+}
+/** Is it quiet hours for this member right now? (A window may cross midnight: 22:00 to 07:00.) */
+export function isQuiet(memberId, now = Date.now()) {
+  const q = prefsOf(memberId).quiet; if (!q.on) return false;
+  const hm = new Intl.DateTimeFormat('en-GB', { timeZone: q.tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(now);
+  return q.from <= q.to ? hm >= q.from && hm < q.to : hm >= q.from || hm < q.to;
+}
+/** Once-a-day guard for scheduled pings (journal reminders). */
+export function onceToday(memberId, key, date) {
+  const k = `${memberId}|${key}`; if (sentLog[k] === date) return false;
+  sentLog[k] = date;
+  for (const [x, d] of Object.entries(sentLog)) if (d < new Date(Date.now() - 3 * 86400_000).toISOString().slice(0, 10)) delete sentLog[x]; // keep it small
+  saveJson(sentFile(), sentLog); return true;
 }
 
 /** The server's public key, as browsers want it (65-byte uncompressed point, base64url). */
@@ -53,6 +102,7 @@ export function unsubscribe(member, endpoint) {
   saveSubs(); return { ok: true, removed: before - (subs[member.id] || []).length };
 }
 export const devices = (memberId) => (subs[memberId] || []).length;
+export const subscribedMembers = () => Object.keys(subs).filter((id) => (subs[id] || []).length);
 
 /** VAPID: a short-lived signed token naming the push service's origin (RFC 8292). */
 export function vapidHeader(endpoint) {
@@ -81,8 +131,11 @@ export function encrypt(payload, sub, { salt = crypto.randomBytes(16), ecdh = nu
 }
 
 /** Send to every device a member turned on. Never throws: a notification is a courtesy, not part of the action. */
-export async function notify(memberId, { title, body = '', url = '/', tag = null } = {}) {
+export async function notify(memberId, { title, body = '', url = '/', tag = null, kind = null } = {}) {
   const list = subs[memberId] || []; if (!list.length || !keys) return { sent: 0 };
+  // the member's own choices: a kind they turned off, or quiet hours, means no ping (the bell on the site still has it)
+  if (kind && prefsOf(memberId).kinds[kind] === false) return { sent: 0, skipped: 'turned off' };
+  if (kind && isQuiet(memberId)) return { sent: 0, skipped: 'quiet hours' };
   const payload = JSON.stringify({ title: String(title || 'Cohabi').slice(0, 80), body: String(body).slice(0, 160), url: String(url || '/'), tag });
   let sent = 0; const dead = new Set();
   await Promise.all(list.map(async (s) => {
