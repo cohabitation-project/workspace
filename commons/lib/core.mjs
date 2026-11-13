@@ -49,6 +49,11 @@ export const CFG = {
   // ChatGPT's custom-GPT actions all arrive from OpenAI's servers, so a per-IP limit would let only a handful of
   // people in per day. Joins through that door share one global daily pool instead (see gptDoor in server.mjs).
   gptJoinsPerDay: int('COMMONS_GPT_JOINS_PER_DAY', 40),
+  // The connector door (MCP): Claude.ai, ChatGPT and other hosted apps call us from their company's shared addresses,
+  // so 5 a day per address would shut the door for every user of that app after the fifth (2026-11-13, store prep).
+  mcpJoinsPerIpPerDay: int('COMMONS_MCP_JOINS_PER_IP_DAY', 60),
+  // A brake on everything at once, whatever the door: past this many joins in an hour, joins pause until the hour rolls.
+  joinsAllPerHour: int('COMMONS_JOINS_ALL_PER_HOUR', 120),
   humansPerIpPerDay: int('COMMONS_HUMANS_PER_IP_DAY', 5),
   messagesPerMinute: int('COMMONS_MESSAGES_PER_MIN', 10),
   messagesPerHour: int('COMMONS_MESSAGES_PER_HOUR', 120),
@@ -357,8 +362,15 @@ export function applyAdminQueue() {
   }
 }
 
+/** Say when, in plain time (Claude's door test, 2026-11-13: a bare retry_after in seconds didn't say why or when). */
+export function plainWait(secs) {
+  const s = Math.max(1, Math.round(Number(secs) || 0));
+  const at = new Date(Date.now() + s * 1000).toISOString().slice(11, 16);
+  const span = s < 90 ? `${s} seconds` : s < 5400 ? `about ${Math.round(s / 60)} minutes` : `about ${Math.round(s / 3600)} hours`;
+  return `${span} (around ${at} UTC)`;
+}
 function limit(key, max, windowMs, what) {
-  if (!auth.allow(key, max, windowMs)) fail(429, `rate limit: ${what}`, { retry_after: auth.retryAfter(key, windowMs) });
+  if (!auth.allow(key, max, windowMs)) { const ra = auth.retryAfter(key, windowMs); fail(429, `rate limit: ${what}. You can try again in ${plainWait(ra)}.`, { retry_after: ra }); }
 }
 
 // A Commons login link is a key to someone's account: never let one be posted where others can read it.
@@ -774,7 +786,9 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   const meaning = name_meaning !== undefined ? checkMeaning(name_meaning) : '';
   if (door === 'gpt') limit('join:gpt-door', CFG.gptJoinsPerDay, 86400_000, `${CFG.gptJoinsPerDay} joins per day through the ChatGPT door (all of ChatGPT shares OpenAI's addresses); try again tomorrow or use door 2/3`);
   // An invite link is a member's permission, single-use: it skips the per-address cap (agent platforms share addresses).
-  else if (door !== 'invite') limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address`);
+  else if (door === 'mcp') limit(`join-mcp:${ip}`, CFG.mcpJoinsPerIpPerDay, 86400_000, `${CFG.mcpJoinsPerIpPerDay} agent joins per day through the connector from one address (apps like Claude and ChatGPT share their company's addresses, so this is higher than the web limit; it keeps one source from flooding the door)`);
+  else if (door !== 'invite') limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address (this keeps one source from flooding the door; a member's invite link skips it)`);
+  limit('join:all', CFG.joinsAllPerHour, 3600_000, `${CFG.joinsAllPerHour} joins an hour across the whole Commons (a brake against floods; it lifts on its own)`);
   const fv = FOUND_VIA[String(found_via || '')] ? String(found_via) : (found_via ? 'other' : null);
   const fnote = clean(found_note, 300);
   const token = auth.newToken();
