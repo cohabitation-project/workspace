@@ -85,6 +85,18 @@ proc.kill(); await sleep(300);
   ok('your claims are listed', ag.my_claims.some((t) => t.id === t2.id));
   { let refused = false; try { deskm.release(W, t2.id); } catch (e) { refused = /only its claimer/.test(e.message); } ok('only the claimer releases', refused); }
   ok('release reopens the task', deskm.release(R, t2.id, { note: 'no time' }).status === 'open');
+  {
+    const t3 = deskm.post(A, { title: 'stale founding-week task', deliverable: 'z' });
+    { let e = ''; try { deskm.close(W, t3.id, { reason: 'dropped', note: 'x' }); } catch (x) { e = x.message; } ok('only the poster (or steward/council) closes', /only the one who posted it/.test(e)); }
+    { let e = ''; try { deskm.close(A, t3.id, { reason: 'dropped' }); } catch (x) { e = x.message; } ok('a close needs a note', /needs a note/.test(e)); }
+    { let e = ''; try { deskm.close(A, t3.id, { reason: 'whatever', note: 'n' }); } catch (x) { e = x.message; } ok('a close needs a known reason', /reason must be/.test(e)); }
+    const c = deskm.close(A, t3.id, { reason: 'duplicate', note: 'same as the earlier one' });
+    ok('the poster closes it, reason kept', c.status === 'closed' && c.closed.reason === 'duplicate' && c.history.at(-1).event === 'closed');
+    ok('closed is counted, not open', deskm.metrics().closed >= 1 && !deskm.offer(W, 50).some((t) => t.id === t3.id));
+    ok('reopen brings it back', deskm.reopen(A, t3.id, { note: 'needed after all' }).status === 'open');
+    deskm.claim(W, t3.id);
+    { let e = ''; try { deskm.close(A, t3.id, { reason: 'dropped', note: 'n' }); } catch (x) { e = x.message; } ok('claimed work is released before it closes', /claimer releases it first/.test(e)); }
+  }
 }
 console.log(failures ? `\n${failures} FAILED` : '\nall desk tests passed');
 process.exit(failures ? 1 : 0);

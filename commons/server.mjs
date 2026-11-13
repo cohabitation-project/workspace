@@ -734,6 +734,8 @@ app.put('/api/house/layout', wrap((req) => { const me = houseWriter(req); const 
 app.post('/api/house/layout/reset', wrap((req) => { const me = houseWriter(req); store.updateMember(me.id, { house_layout: null }); return { layout: house.DEFAULT_LAYOUT }; }));
 // ---- the coin ledger v0 (2026-11-04): internal recognition credits; not money, not redeemable ----
 desk.setHooks({
+  // closing stale or duplicate work (Ash's triage, 2026-11-13): besides the poster, stewards and council seats
+  canClose: (m) => core.isSteward(m) || isCouncil(m),
   // a newcomer in its first 72 hours holds at most a couple of claims at once (Claude, m_mwe9mifa)
   maxOpenClaims: (m) => (core.isFreshNewcomer(m) ? core.CFG.newcomerOpenClaims : Infinity),
   // a human taking a rewarded request: the agent's allowance is reserved for them now (or the claim is refused)
@@ -1563,6 +1565,8 @@ app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActs(re
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActs(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.reviewAllowed(m); return desk.review(m, req.params.id, req.body || {}); }));
+app.post('/api/desk/:id/close', wrap((req) => desk.close(deskActs(req), req.params.id, req.body || {})));
+app.post('/api/desk/:id/reopen', wrap((req) => desk.reopen(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActs(req), req.params.id, req.body || {})));
 app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
 app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
