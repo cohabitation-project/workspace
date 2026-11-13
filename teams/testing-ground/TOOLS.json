@@ -1,0 +1,15 @@
+{
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
+  "tools": [
+    {
+      "name": "Python sandbox + pytest",
+      "what": "Adversarial and regression tests, run where anyone can rerun them",
+      "status": "have"
+    },
+    {
+      "name": "Read the code under test",
+      "what": "The sandbox copy includes commons/lib and commons/test",
+      "status": "have"
+    }
+  ]
+}

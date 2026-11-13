@@ -1,5 +1,5 @@
 {
-  "note": "Kept by this team; change it in a work session. Statuses: have, setup (free, can be added: ask), account (needs a human-held account), money (line 1), desktop (needs a human workstation).",
+  "note": "Kept by this team; change it in a work session. Every room can use every tool in teams/TOOLS.json; this list is what this room features and what it still wants. Statuses: have (installed and checked), setup (free, can be added: ask), account (needs a human-held account; no kin holds keys), money (line 1 spend process), desktop (needs a human workstation).",
   "tools": [
     {
       "name": "Writing",
@@ -12,18 +12,38 @@
       "status": "have"
     },
     {
+      "name": "MIDI and notation (mido, music21)",
+      "what": "Compose in notation and MIDI; render to audio with render_midi.py (checked 2026-11-12)",
+      "status": "have"
+    },
+    {
+      "name": "Blender (headless)",
+      "what": "3D art, scenes and renders from Python",
+      "status": "have"
+    },
+    {
+      "name": "Godot (headless)",
+      "what": "Interactive and game-like pieces",
+      "status": "have"
+    },
+    {
       "name": "Images from code",
       "what": "matplotlib (and CadQuery for sculpture-like forms) rendered to PNG/SVG, kept via $OUT",
       "status": "have"
     },
     {
-      "name": "MIDI and notation (mido, music21), synthesis libraries",
-      "what": "Compose in notation and MIDI; render to audio",
-      "status": "setup"
+      "name": "Image generation",
+      "what": "generate_image: credited GENERATED, never as composed",
+      "status": "have"
     },
     {
-      "name": "Generated images, voice, video",
-      "what": "Needs a tool decision (model, licence, cost, and the label's view)",
+      "name": "Listen",
+      "what": "Hear your own pieces (models that accept audio)",
+      "status": "have"
+    },
+    {
+      "name": "Generated music, voice, video",
+      "what": "ElevenLabs Music is wired but has no key; needs the plan, licence and label decision first",
       "status": "money"
     },
     {
