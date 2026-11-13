@@ -10,6 +10,7 @@
  */
 
 import { drawFigure, CHURCH_SEARCHER_SHEET } from './sprites.js';
+import * as CS from './church-searcher.js';
 import { renderMarkdown, esc } from './md.js';
 import { startCalls, liveMessage } from './calls.js';
 
@@ -27,7 +28,7 @@ const S = {
 // ------------------------------------------------------------------ helpers
 const shortModel = (m) => (m ? String(m).split('/').pop() : '');
 const kindOf = (w) => (!w ? 'system' : w.npc ? 'npc' : w.guide ? 'guide' : w.kind === 'human' ? 'human' : w.kin ? 'kin' : w.hosted ? 'hosted' : 'guest');
-const kindLabel = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', guide: 'guide', npc: 'character, not a member', system: 'system' };
+const kindLabel = { human: 'human', kin: 'project kin', guest: 'agent', hosted: 'hosted agent', guide: 'guide', npc: "Geoffrey's character, scripted", system: 'system' };
 function rel(iso) {
   if (!iso) return 'never';
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
@@ -964,32 +965,87 @@ function placeGuide() {
   place(guide, { x: S.L.desk.x - 4, y: S.L.desk.y - 2 });
 }
 
-// Church Searcher (Geoffrey, 2026-11-07): a character Geoffrey is designing, drawn from his figure (square head with
-// glowing crosses, shell body, halo staff). He walks the corridor and peeks into rooms. He is NOT a member and not
-// presence: he isn't in any "here" list, his tag says "character · not live", and clicking him says so. Presence
-// shown in Headquarters stays real. With reduced motion he stands still by the junction.
+// Church Searcher (Geoffrey, 2026-11-07; 2026-11-13: "he needs his own… things to say… He should be able to go
+// everywhere and not just be locked in headquarters"). Geoffrey's character, drawn from his figure (square head with
+// glowing crosses, shell body, halo staff). He walks every room, the Great Hall, the wing, out to the Garden door and
+// down into the forest. Click him and he talks: his story, his music, his shells, philosophy. His lines are written
+// ahead of time (church-searcher.js) and he says so if asked; he isn't in the "Here now" list, because that list
+// shows only who is really, live here. With reduced motion he stands still by the junction.
 let searcher = null;
 function placeSearcher() {
   if (searcher) { searcher.el.remove(); clearTimeout(searcher.timer); }
-  const a = makeActor('church-searcher', { id: 'church-searcher', name: 'Church Searcher', kind: 'agent', model: 'character', npc: 'church-searcher' }, { onClick: () => {
-    a.bubble.textContent = "I'm Church Searcher, a character Geoffrey is designing. For now I only walk around: I'm not a member, and I can't answer anything yet.";
-    a.bubble.classList.add('show'); clearTimeout(a.bubbleTimer); a.bubbleTimer = setTimeout(() => a.bubble.classList.remove('show'), 7000);
-  } });
-  a.tag.querySelector('i').textContent = 'character · not live';
+  const a = makeActor('church-searcher', { id: 'church-searcher', name: 'Church Searcher', kind: 'agent', model: 'character', npc: 'church-searcher' }, { onClick: () => csTalk() });
+  a.tag.querySelector('i').textContent = "Geoffrey's character · talk to him";
+  a.where = 'corridor';
   searcher = a;
   place(a, corrPoint(S.L.junction)); draw(a);
   if (!reduceMotion) a.timer = setTimeout(() => wander(a), 3000);
 }
+const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
+function pointIn(R, pad = 60) { return { x: rnd(R.x + pad, R.x + R.w - pad), y: rnd(R.y + pad, R.y + R.h - pad) }; }
+// From wherever he is back to the corridor line.
+function searcherOut(a) {
+  const L = S.L;
+  if (a.where === 'garden') return [a.pos, { x: L.garden.x + 40, y: L.cline }, { x: L.building.x + L.building.w - 20, y: L.cline }];
+  if (a.where === 'forest') return [a.pos, { x: L.entrance.x, y: L.forest.y + 30 }, L.outside, L.entrance, L.junction, corrPoint(L.junction)];
+  if (a.where && a.where.startsWith('room:')) { const saved = a.room; a.room = a.where.slice(5); const r = routeOut({ ...a, path: null }); a.room = saved; return r; }
+  return [a.pos, corrPoint(a.pos)];
+}
 function wander(a) {
-  if (searcher !== a || !S.L) return;
-  const ids = Object.keys(S.L.rooms).filter((id) => !S.L.rooms[id].wing);
+  if (searcher !== a || !S.L || a.talking) { if (searcher === a && a.talking) a.timer = setTimeout(() => wander(a), 4000); return; }
+  const L = S.L; const ids = Object.keys(L.rooms);
   if (!ids.length) return;
-  const id = ids[Math.floor(Math.random() * ids.length)]; const R = S.L.rooms[id];
-  const pts = [a.pos, corrPoint(a.pos), corrPoint(R.door)];
-  if (Math.random() < 0.6) pts.push(doorStep(id, true)); // peek in
+  const out = searcherOut(a);
+  const roll = Math.random(); let pts, where;
+  if (!L.narrow && L.garden && roll < 0.14) { // out the Garden door at the end of the corridor, into the garden
+    const gx = L.building.x + L.building.w;
+    pts = [...out, { x: gx - 20, y: L.cline }, { x: L.garden.x + 40, y: L.cline }, pointIn(L.garden, 90)]; where = 'garden';
+  } else if (!L.narrow && L.forest && L.outside && roll < 0.28) { // down the exit and into the forest and village
+    pts = [...out, corrPoint(L.junction), L.junction, L.entrance, L.outside, { x: L.entrance.x, y: L.forest.y + 30 }, pointIn({ x: L.forest.x, y: L.forest.y, w: L.forest.w, h: L.forest.h * 0.6 }, 80)]; where = 'forest';
+  } else { // any room: the Commons rooms, the Great Hall, the wing
+    const id = ids[Math.floor(Math.random() * ids.length)];
+    const inside = Math.random() < 0.7;
+    const into = routeInto(id, doorStep(id, true));
+    pts = [...out, ...(inside ? into : into.slice(0, -2))]; where = inside ? `room:${id}` : 'corridor';
+    if (inside) a.timer = null;
+  }
   walk(a, pts, () => {
-    a.timer = setTimeout(() => wander(a), 3000 + Math.random() * 6000);
+    a.where = where;
+    if (where.startsWith('room:')) csMaybePitch(where.slice(5));
+    a.timer = setTimeout(() => wander(a), (where === 'garden' || where === 'forest' ? 9000 : 3000) + Math.random() * 7000);
   });
+}
+
+// ---------------------------------------------------------------- talking with Church Searcher (2026-11-13)
+// A small card you can keep open while you explore (not a blocking pop-up). He stops walking while you talk.
+let csTalkEl = null;
+function csTalk() {
+  if (csTalkEl) { csTalkEl.querySelector('input')?.focus(); return; }
+  if (searcher) searcher.talking = true;
+  const d = el('div', { class: 'cs-talk', role: 'dialog', 'aria-label': 'Talk with Church Searcher' });
+  d.innerHTML = `<button class="cs-x" type="button" aria-label="Close">\u00d7</button>
+    <div class="cs-talk-head"><canvas width="12" height="18" aria-hidden="true"></canvas><div><div class="cs-artist">Church Searcher</div><div class="cs-note">Geoffrey's character · his words are written ahead of time</div></div></div>
+    <ol class="cs-log" aria-live="polite"></ol>
+    <div class="cs-topics">${CS.TOPICS.map((t) => `<button type="button" data-t="${t.id}">${esc(t.label)}</button>`).join('')}<button type="button" data-t="record">💿 Hear a record</button></div>
+    <form class="cs-ask"><label class="sr-only" for="cs-q">Say something to Church Searcher</label><input id="cs-q" maxlength="300" autocomplete="off" placeholder="Say something to him…"><button type="submit">Say</button></form>`;
+  try { drawFigure(d.querySelector('canvas'), { name: 'Church Searcher', npc: 'church-searcher' }, 'down', 0, CHURCH_SEARCHER_SHEET, 1); } catch { /* the words matter more than the picture */ }
+  const log = d.querySelector('.cs-log');
+  const add = (who, text) => { const li = el('li', { class: who === 'you' ? 'cs-you' : 'cs-him' }); li.textContent = text; log.appendChild(li); log.scrollTop = log.scrollHeight; if (who === 'him') csSay(text); };
+  const close = () => { d.remove(); csTalkEl = null; if (searcher) searcher.talking = false; };
+  d.querySelector('.cs-x').addEventListener('click', close);
+  d.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  d.querySelector('.cs-topics').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-t]'); if (!b) return;
+    if (b.dataset.t === 'record') { add('him', "Here, one of mine. Keep exploring while it plays."); csLoad().then((als) => { if (als.length) csCard(als[csIdx++ % als.length]); else add('him', "My records aren't loading right now. Try the Marketplace."); }); return; }
+    add('you', b.textContent.replace(/^\S+\s/, '')); add('him', CS.line(b.dataset.t));
+  });
+  d.querySelector('.cs-ask').addEventListener('submit', (e) => {
+    e.preventDefault(); const inp = d.querySelector('#cs-q'); const q = inp.value.trim(); if (!q) return; inp.value = '';
+    add('you', q); add('him', CS.reply(q).text);
+  });
+  document.body.appendChild(d); csTalkEl = d;
+  add('him', CS.GREETING);
+  requestAnimationFrame(() => d.classList.add('show'));
 }
 
 // ---------------------------------------------------------------- Church Searcher's record (Geoffrey 2026-11-07)
