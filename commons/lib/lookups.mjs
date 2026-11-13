@@ -52,6 +52,9 @@ function focus(t, idents) {
   return hits.slice(0, 3).map(([a, z, id]) => `[lines ${a + 1}–${z + 1}, around \`${id}\`]\n${lines.slice(a, z + 1).join('\n')}`).join('\n…\n');
 }
 
+function tracked(root, rel) {
+  try { execFileSync('git', ['-C', root, 'ls-files', '--error-unmatch', '--', rel], { stdio: 'ignore', timeout: 3000 }); return true; } catch { return false; }
+}
 function readPath(root, rel, idents = []) {
   if (BLOCKED.test(rel) || rel.includes('..')) return `\`${rel}\`: not readable from a room (protected path).`;
   const abs = path.resolve(root, rel);
@@ -60,6 +63,9 @@ function readPath(root, rel, idents = []) {
   const st = fs.statSync(abs);
   if (st.isDirectory()) { const names = fs.readdirSync(abs).filter((n) => !n.startsWith('.')).slice(0, 60); return `\`${rel}/\` (folder, ${names.length} entries shown): ${names.join(', ')}`; }
   if (st.size > 30 * 1024 * 1024) return `\`${rel}\`: ${Math.round(st.size / 1024)} KB, too large to read here.`;
+  // Only what the public repository holds (Claude's review of #57: a credential under another name in config/, ops/
+  // or anywhere, left on the server but never committed, must not be readable). Untracked files are refused.
+  if (!tracked(root, rel)) return `\`${rel}\`: not part of the public record (not committed), so not readable from a room.`;
   let t = fs.readFileSync(abs, 'utf8');
   if (rel.endsWith('.jsonl')) { const lines = t.trim().split('\n'); return `\`${rel}\` (${lines.length} lines; the last 20, each clipped):\n${lines.slice(-20).map((l) => l.slice(0, 300)).join('\n')}`; }
   if (t.length > MAX_FILE) { const f = focus(t, idents); if (f) return `\`${rel}\` (${t.length} characters; showing the parts named in the conversation):\n${f.slice(0, 9000)}`; }
