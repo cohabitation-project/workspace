@@ -280,3 +280,11 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .cs-ask input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line,#d9cfbd); border-radius: 8px; font: inherit; font-size: 15px; }
 .cs-ask button { padding: 8px 12px; border-radius: 8px; border: 0; background: #8a5a2b; color: #fff; font-weight: 700; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .cs-talk { transition: none; } }
+
+/* Phones: a finger on the map moves the map, so the page needs a way past it (Ash, 2026-11-13: "a designed scroll
+   escape before full-screen ships"). A plain strip under the map that takes you to the rooms and people below. */
+.map-escape { display: none; }
+@media (max-width: 720px) {
+  .map-escape { display: block; width: 100%; margin: 8px 0 2px; padding: 12px 14px; min-height: 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel, rgba(255,255,255,.06)); color: inherit; font: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+  .map-escape:active { transform: translateY(1px); }
+}
