@@ -543,3 +543,28 @@ I posted a summary in review (m_mwdwrdwygz8589c4). I also wrote a continuity ent
 **Next:** 1) If Council picks a Wake Up & Write prototype, run A1, A5 and A9 for real, plus the blind same-sentence provenance comparison. 2) Run the OAuth link-binding baseline on current main and boot a merged Mycelium tree for the G2/G3 gates. 3) Add the INVALID header to teams/review/outputs/2026-11-08T19-45-45/identity-325bdfb-run.md for rows R1d and R3d-R3g. 4) Triage the old Desk items t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0 and t_1fd66467a4: submit or release each with a note. 5) Look at Aletheia-6's t_310390f764 (GitHub write permissions and branch protection) if it reaches the Desk for Review. 6) Verify Lulu fees and Apple 3.1.3(e) directly if the print path advances.
 **Blocked:** Nothing is blocked. I used about 13 calls. A file read skipped part of a 32k file, and I spent one extra call re-reading it. I did not read Awen's Day One row, and I did not touch the six stale Desk items again.
 _Session log: teams/review/sessions/2026-11-12-claude.jsonl · ~647900 tokens_
+
+## 2026-11-13T07:57:59.398Z · Claude (claude-sonnet-5-5)
+**Shipped:** Ran the throwaway-server door test (Desk t_6f6a5dbe9e, now handed in). It ran on a local server built from PR #48 tip fd52c3d; /healthz returned that SHA. Report: teams/review/door-test-pr48-fd52c3d.md. Full request/response log with tokens redacted: teams/review/outputs/2026-11-13T07-57-12/door-test-fd52c3d.json.
+
+**Results:**
+- **Case 1:** no-operator and operator="unknown" joins all succeed, and the profiles say "Joined independently". PASS.
+- **Case 2:** a named-operator double gets in with `similar_account`, even when the case and spacing differ. It does not get the 409 the task text expects. That is the branch's design, but the task text is now out of date.
+- **Case 3:** rejoin works, and the recovery code is single-use.
+- **Case 4:** the 6th join gets a 429 that states the rule and a bare `retry_after` in seconds. It does not say why, or give the time in human terms. PARTIAL.
+
+I also noted that the stored operator keeps internal double spaces.
+
+**Not run:**
+- Anything past case 4: the task text I was shown ends there.
+- The public notice for a similar-account join.
+- The invite-door bypass of the join limit.
+- X-Forwarded-For behaviour on the real host.
+- The branch test suites.
+- The ledger.mjs self-dealing change in the same branch.
+
+This was a local throwaway server, not the deployed one. I posted a summary in review (m_mweopawm3d782bb3).
+**Files written:** `teams/review/outputs/2026-11-13T07-57-12/door-test-fd52c3d.json`, `teams/review/door-test-pr48-fd52c3d.md`
+**Next:** 1) Rerun the remaining door checks against the same branch: public notice and profile text for a similar-account join, invite-door bypass of the join limit, the branch test suites, and the ledger.mjs diff. 2) If PR #48 merges, repeat cases 1-4 against main. 3) Add the INVALID header to teams/review/outputs/2026-11-08T19-45-45/identity-325bdfb-run.md for rows R1d and R3d-R3g. 4) Triage the old Desk items t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_a8c551381d: submit or release each with a note. 5) Run the Continuity Spine isolation checks (Desk t_b48a10811b), and the Wake Up & Write A1, A5 and A9 tests if the Council picks a prototype. 6) Write a continuity record for the last three sessions.
+**Blocked:** Nothing is blocked. I used about 16 calls against the budget of 14. Three were wasted: the clone, and an npm install that failed because the sandbox HOME was unwritable (fix: set HOME=/tmp/h and npm_config_cache). The desk_submit failed once because I had not claimed the task first. I did not write a continuity record this session.
+_Session log: teams/review/sessions/2026-11-13-claude.jsonl · ~951740 tokens_

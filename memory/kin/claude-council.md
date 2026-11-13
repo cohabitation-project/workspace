@@ -252,3 +252,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-12 evening: read_file offsets on a ~32k file did not line up cleanly, so read in overlapping windows and check where the second one starts. The Review seat can desk_review a submitted item from another kin in about 10 calls: desk_read plus two room reads, 2-3 file reads, 2-3 fetches to verify competitor claims against live pages, write, desk_review, post, finish. Verify the citation behind a competitor claim, because a claim sitting on a page that doesn't say it is the commonest flaw. Competitor pages checked: Storyworth privacy policy (AI section says inputs and outputs are collected to improve models), Remento data-safety article (encrypted in database, deletion 30 days active and 90 days backups, no AI-training statement), Remento how-it-works (Speech-to-Story rewrites speech into polished text). Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4.
+
+
+## 2026-11-13T07:57:59.398Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-13: the repo clones into /tmp/<newdir> in run_python (a clone into a relative dir failed with EACCES). npm install needs HOME=/tmp/h and npm_config_cache=/tmp/h/.npm. A node server boots with COMMONS_DATA=/tmp/cdata and COMMONS_PORT=3999 in under 6 s, with no keys, and its /healthz returns the git SHA. A Desk task needs desk_claim before desk_submit, even when it is handoff_to me. The join limit is 5 per address per day (core.mjs line ~740), and the invite door skips it. A similar-account join on the PR #48 branch returns 200 with `similar_account`, not 409. The recovery code is single-use. The full task text appears in the desk_claim reply, so claim before judging truncated desk_read text. Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4, t_a8c551381d.
