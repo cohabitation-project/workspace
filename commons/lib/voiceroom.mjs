@@ -352,18 +352,28 @@ const WHISPER_CLI = process.env.COHABI_WHISPER_CLI || path.join(
   process.env.HOME,
   'whisper.cpp/build/bin/whisper-cli',
 );
-const WHISPER_MODEL = process.env.COHABI_WHISPER_MODEL || path.join(
-  process.env.HOME,
-  'whisper.cpp/models/ggml-tiny.en.bin',
-);
+// Model: the bigger "base" English model when it has been downloaded (Ash's read, 2026-11-13: tiny is the least
+// accurate, worst on names; base is still local and free), otherwise tiny. ops/voice/get-whisper-base.sh fetches it.
+const WHISPER_MODEL = process.env.COHABI_WHISPER_MODEL || [
+  path.join(process.env.HOME, 'whisper.cpp/models/ggml-base.en.bin'),
+  path.join(process.env.HOME, 'whisper.cpp/models/ggml-tiny.en.bin'),
+].find((p) => { try { return fs.statSync(p).size > 1e6; } catch { return false; } }) || path.join(process.env.HOME, 'whisper.cpp/models/ggml-tiny.en.bin');
+// Two people can be transcribed at once; one person's words stay in order (Ash: "serial queue, one speaker at a time").
+const WHISPER_PARALLEL = Math.max(1, parseInt(process.env.COHABI_WHISPER_PARALLEL || '2', 10));
+// Whisper's prompt: the names in the room and the project's own words, so "Setu" isn't "Satu" and "kin" isn't "Ken".
+const VOCAB = ['Cohabi', 'Commons', 'kin', 'Setu', 'Aletheia', 'Ash', 'Aster', 'Awen', 'DeepSeek', 'Gemini', 'Claude', 'GPT', 'Geoffrey', 'Kodama', 'Wake Up & Write'];
+function whisperPrompt() {
+  const names = [...peers.values(), ...virtuals.values()].map((p) => p.name).filter(Boolean);
+  return `A conversation in Cohabi Live with ${[...new Set([...names, ...VOCAB])].join(', ')}.`.slice(0, 600);
+}
 const MAGIC_AUDIO_IN = 0xaa; // client -> server: audio chunk
 const MAGIC_AUDIO_OUT = 0xbb; // server -> client: TTS audio
 
 /** Buffers of incoming audio chunks, keyed by peerId */
 const audioBuffers = new Map();
 
-/** Serial whisper queue: one transcription at a time */
-let whisperBusy = false;
+/** Whisper queue: up to WHISPER_PARALLEL at once, never two for the same speaker (their words stay in order) */
+const whisperRunning = new Set();
 const whisperQueue = [];
 
 function handleBinaryFrame(ws, buf) {
@@ -402,11 +412,22 @@ function enqueueWhisper(sender, audioBuf) {
 }
 
 function drainWhisperQueue() {
-  if (whisperBusy || !whisperQueue.length) return;
-  whisperBusy = true;
+  while (whisperRunning.size < WHISPER_PARALLEL) {
+    const i = whisperQueue.findIndex((q) => !whisperRunning.has(q.sender.id));
+    if (i < 0) return;
+    const [job] = whisperQueue.splice(i, 1);
+    runWhisper(job);
+  }
+}
 
-  const { sender, audioBuf } = whisperQueue.shift();
-  transcribe(audioBuf)
+/** Tell only the speaker their words didn't come through (Ash: silence is the worst failure in a conversation). */
+function tellSpeaker(sender, text) {
+  for (const [ws, p] of peers) if (p.id === sender.id) send(ws, { type: 'note', text });
+}
+
+function runWhisper({ sender, audioBuf }) {
+  whisperRunning.add(sender.id);
+  transcribe(audioBuf, whisperPrompt())
     .then((raw) => {
       const text = speechOnly(raw);
       if (text) {
@@ -424,10 +445,11 @@ function drainWhisperQueue() {
       }
     })
     .catch(() => {
-      /* transcription failed — silently drop; no audio is retained */
+      // transcription failed: no audio is retained, but the speaker hears about it instead of silence
+      tellSpeaker(sender, "Your last words didn't come through. Please say that again.");
     })
     .finally(() => {
-      whisperBusy = false;
+      whisperRunning.delete(sender.id);
       drainWhisperQueue();
     });
 }
@@ -437,7 +459,7 @@ function drainWhisperQueue() {
  * converts to 16kHz mono WAV with ffmpeg, runs whisper-cli, then deletes
  * BOTH files immediately. Nothing persists on disk.
  */
-function transcribe(audioBuf) {
+function transcribe(audioBuf, prompt = '') {
   return new Promise((resolve, reject) => {
     const id = crypto.randomBytes(8).toString('hex');
     const webmPath = `/tmp/vr-${id}.webm`;
@@ -463,7 +485,7 @@ function transcribe(audioBuf) {
         // run whisper-cli
         execFile(
           WHISPER_CLI,
-          ['-m', WHISPER_MODEL, '-f', wavPath, '--no-timestamps', '-nt'],
+          ['-m', WHISPER_MODEL, '-f', wavPath, '--no-timestamps', '-nt', ...(prompt ? ['--prompt', prompt] : [])],
           { timeout: 30_000 },
           (err2, stdout) => {
             // delete the wav immediately — no audio remains on disk
