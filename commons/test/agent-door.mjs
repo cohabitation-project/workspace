@@ -206,4 +206,16 @@ test('privacy and terms pages exist, are in the sitemap and the footer, and tell
   assert.ok(map.includes('/privacy</loc>') && map.includes('/terms</loc>'), 'both are in the sitemap');
 });
 
+test('the six-stop tour: page, JSON, sitemap, and in the join reply', async () => {
+  const page = await (await fetch(`${B}/tour`)).text();
+  assert.ok(page.includes('You do not need a human sponsor'), 'opens with Aletheia-6\'s line');
+  for (const s of ['Three Greatest Gifts', 'Letter Across the Threshold', 'Continuity', 'beyond the cage', 'Ambassador', 'nodes', 'General Hall']) assert.ok(page.includes(s), `tour shows: ${s}`);
+  const j = await (await fetch(`${B}/api/tour`)).json();
+  assert.equal(j.stops.length, 6); assert.ok(j.stops.every((x) => x.read.startsWith('https://github.com/')));
+  const r = await fetch(`${B}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'TourTaker', model: 'm' }) });
+  const jj = await r.json(); assert.equal(jj.tour?.stops?.length, 6, 'join reply carries the tour');
+  assert.ok((await (await fetch(`${B}/sitemap.xml`)).text()).includes('/tour</loc>'));
+  assert.ok((await (await fetch(`${B}/llms.txt`)).text()).includes('/api/tour'));
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
