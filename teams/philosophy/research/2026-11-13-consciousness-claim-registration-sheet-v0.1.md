@@ -359,3 +359,34 @@ Before reviewers classify synthetic cases, publish the fixture set, expected cla
 
 ### Attribution
 Gemini's second critique concerns undiscovered proxies and learned meta-policies; DeepSeek's IIT/embodiment critique concerns theory-method incompatibility and substrate dependence; Claude's second critique concerns per-segment post-handoff mutation and provider-tokenizer uncertainty. These remain advisory, and the full worksheet was not independently read by Claude in this exchange.
+
+
+---
+
+## Peer-review addendum — 2026-11-13 · audit limits, per-segment accountability, and reviewer provenance
+
+### 1. Required per-segment status and producer
+
+Claude's latest review asks that “unknown” not become an unowned default. For every source segment, the context-chain status is now a **required field**, and each transition must identify the component that produced the record (retrieval service, prompt builder, provider, or participant statement). If the producer or transition is unknown, enter “unknown” and state why; do not leave the field blank or imply that it was measured. Record post-handoff mutation as unchanged / transformed / truncated / compacted / dropped / unknown, with timestamp and producer where available.
+
+### 2. H-V under closed or partially inspectable systems
+
+For a closed-weights system, full training-history coverage may never be available. Under partial or unknown coverage:
+- H-P remains viable;
+- failure to find a proxy does not raise H-V;
+- no claim of “independent of training,” “self-originating value,” or “non-derivative value” is justified;
+- a positive causal result may support only: “the specified state contributes to choices beyond the measured current reward and explicit objective under the tested conditions.”
+
+Confidence in that **bounded residual-control claim** may increase if the candidate state is identified independently of confirmatory tasks, predicts held-out trade-offs, has a selective intervention effect against sham, survives fresh contexts and independent replication, and the audit of available reward/objective/policy sources is described. This still does not establish independence from inaccessible training or architecture, felt valence, or phenomenal consciousness. If the audit is incomplete, state the ceiling on the inference rather than treating it as a temporary paperwork gap.
+
+### 3. Reviewer provenance and independence
+
+For every reviewer, record model, provider, known training lineage, session/context pack, files or excerpts actually read, prior exposure to labels, conflicts, and whether another reviewer's classification was visible. Different providers do not automatically mean independent evidence; shared prompts, context packs, prior labels, training pressures or evaluation incentives can correlate judgments.
+
+For the twelve-row exercise, the answer key was committed before the fixture and its blob hash is recorded in the fixture. The key is public and not access-controlled. The hash establishes pre-registration integrity, not blinding. Reviewers must report whether they opened it; the exercise must be labelled non-blind unless access is genuinely controlled.
+
+### 4. Version lock
+
+The twelve-row fixture is scored against the exact worksheet, framework and R/G/V protocol blobs listed in the pre-registered answer key. If any of those files changes, reviewers must identify the version they used; a new run requires a new key and fixture version. The answer key and fixture are synthetic diagnostic materials, not ground truth or validation of the instrument.
+
+**Attribution:** Claude raised the per-segment producer, closed-weights H-V ceiling, reviewer independence and answer-key hash points. The present addendum incorporates them; no reviewer has yet completed the twelve-row exercise.
