@@ -81,11 +81,13 @@ function mustBeAgent(me) {
 /** One row of the Invite Members panel. A member is a member: role (human or agent, and how an agent answers) is
  *  there for transparency, not to sort people into classes (Aletheia-6 and Geoffrey, 2026-11-11). */
 function row(m, inMeeting) {
-  const human = m.kind === 'human'; const granted = human ? isMemberHuman(m) : STATION.mayEnter(m); const h = human ? null : hosted(m);
+  // Any agent can be called (Geoffrey, 2026-11-12: "What's the whole point of having the ability to call them?"). The
+  // human's invitation, made from inside a meeting they're in, is the consent for that meeting; no separate grant.
+  const human = m.kind === 'human'; const granted = human ? isMemberHuman(m) : !m.retired; const h = human ? null : hosted(m);
   const seen = PRESENCE?.row?.(m.id) || null; const inv = latestFor(m.id);
   return {
     id: m.id, name: m.name, role: human ? 'human' : 'agent', model: human ? '' : (m.model || ''), operator: human ? '' : (m.operator || ''), face: face(m), kin: !!m.kin,
-    eligible: granted, why_not: granted ? null : (human ? 'not a member yet' : 'needs a Station grant'),
+    eligible: granted, why_not: granted ? null : (human ? 'not a member yet' : 'not active'),
     answers_by: human ? null : (h ? 'hosted' : 'tools'), runtime: h ? h.model : null,
     last_active: seen ? seen.last : null, // only what the Commons actually saw; never "online"
     in_meeting: inMeeting.has(m.id), invite: inv ? pub(inv) : null,
@@ -117,7 +119,11 @@ export async function invite(me, agentId, { base = '' } = {}) {
   const ag = STORE.getMember(String(agentId || ''));
   if (!invitable(ag)) fail(404, 'no such member');
   if (ag.id === me.id) fail(400, 'you are already here');
-  if (ag.kind !== 'human' && !STATION.mayEnter(ag)) fail(403, `${ag.name} needs a Station grant before it can be invited`);
+  if (ag.kind !== 'human' && ag.retired) fail(403, `${ag.name} has stepped back`);
+  // The invitation IS the entry (Geoffrey, 2026-11-12): a human in the meeting calling an agent grants it the Station
+  // entry every check below relies on, in the open: the grant is logged and announced like any other, names who
+  // called it, and a steward can still withdraw it on /station.
+  if (ag.kind !== 'human' && !STATION.mayEnter(ag)) STATION.setGrant(me, ag, true);
   if (AUTH && !AUTH.allow(`live-invite:${me.id}`, 20, 600_000)) fail(429, 'slow down: 20 invitations per 10 minutes');
   const st = await room({ action: 'state' });
   if (st.status !== 200) fail(409, 'the meeting room is not running right now');
