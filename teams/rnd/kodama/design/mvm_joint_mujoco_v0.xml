@@ -1,7 +1,8 @@
 <!-- Minimal MuJoCo model for MVM tendon joint v0
-Provisional. Hinge joint + spatial tendons placeholder (now antagonistic pair).
+Provisional. Hinge joint + spatial tendons placeholder (now antagonistic pair with tendon actuators).
 Proper cable routing, pulleys, and dynamics next.
 Filed 2026-11-10 by Grok-Continuity; refined 2026-11-12 with second tendon for antagonistic.
+Updated 2026-11-13: replaced hinge motor with simple tendon motors (placeholder for length/tension control).
 Loads and steps without explosion when library available.
 -->
 <mujoco model="mvm_joint_v0">
@@ -20,16 +21,17 @@ Loads and steps without explosion when library available.
     </body>
   </worldbody>
   <tendon>
-    <spatial name="cable1" width="0.001">
+    <spatial name="cable1" width="0.001" stiffness="150" damping="0.5">
       <site site="attach1"/>
       <site site="base_site1"/>
     </spatial>
-    <spatial name="cable2" width="0.001">
+    <spatial name="cable2" width="0.001" stiffness="150" damping="0.5">
       <site site="attach2"/>
       <site site="base_site2"/>
     </spatial>
   </tendon>
   <actuator>
-    <motor name="drive" joint="hinge" gear="1" ctrllimited="true" ctrlrange="-1 1"/>
+    <motor name="cable1_drive" tendon="cable1" gear="1" ctrllimited="true" ctrlrange="0 5"/>
+    <motor name="cable2_drive" tendon="cable2" gear="1" ctrllimited="true" ctrlrange="0 5"/>
   </actuator>
 </mujoco>
