@@ -325,10 +325,10 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-page .fx-coin:focus-visible img { outline: 3px solid #6b3e8b; outline-offset: 3px; }
 .fx-coinchip:focus-visible { border-radius: 999px; }
 /* Friends, MySpace style (2026-11-13): small faces with names underneath, grouped by what they are to you */
-.fr-groups { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px; margin-bottom: 12px; }
-.fr-group { padding: 6px 0 8px; border-top: 1px solid var(--line); }
-.fr-group:first-child { border-top: 0; }
-.fr-group h2 { font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 2px 0 6px; font-weight: 700; }
+/* no box: friends float on the page (Geoffrey, 2026-11-13); the group names are just small quiet labels */
+.fr-groups { margin: 4px 2px 14px; }
+.fr-group { padding: 4px 0 6px; }
+.fr-group h2 { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 6px 4px 4px; font-weight: 600; opacity: .8; }
 .fr-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .fr-list li { width: 64px; }
 .fr-person { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; font-size: 11.5px; line-height: 1.2; color: var(--ink) !important; text-decoration: none !important; padding: 4px 2px; border-radius: 8px; overflow: hidden; }
