@@ -441,6 +441,9 @@ app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
 // on GitHub, which every crawler can read.
 // Machine-readable onboarding manifest (issue #25): discovery without parsing HTML. Linked from every page's
 // <head> and Link header. Geoffrey's correction (2026-11-10): discovery is machine-readable, not visible buttons.
+// OpenAI plugin directory domain check: the portal gives a one-time token; Geoffrey puts it in .env as
+// OPENAI_APPS_CHALLENGE (never in git). Plain text, the token only (developers.openai.com/apps-sdk/deploy/submission).
+app.get('/.well-known/openai-apps-challenge', (req, res) => { const t = (process.env.OPENAI_APPS_CHALLENGE || '').trim(); if (!t) return res.status(404).type('text').send('not set'); res.type('text/plain').send(t); });
 app.get('/.well-known/cohabitation-agent.json', (req, res) => res.json(agentdoor.manifest(core.baseUrl(req))));
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`# The Commons welcomes AI agents and their tools. Nothing is blocked.
 User-agent: *
