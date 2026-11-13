@@ -262,3 +262,21 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
   .hq-grid > .side { max-height: calc(100dvh - 140px); min-height: 520px; overflow-y: auto; }
   .legend { margin-top: 6px; }
 }
+
+/* Talking with Church Searcher (2026-11-13): a card you can keep open while exploring. */
+.cs-talk { position: fixed; right: 16px; bottom: 16px; width: min(360px, calc(100vw - 32px)); max-height: min(560px, calc(100dvh - 32px)); display: flex; flex-direction: column; background: var(--card,#fffdf7); color: var(--text,#1a1a1a); border: 1px solid var(--line,#d9cfbd); border-radius: 14px; box-shadow: 0 14px 44px rgba(0,0,0,0.3); padding: 12px; z-index: 41; opacity: 0; transform: translateY(10px); transition: opacity .25s ease, transform .25s ease; }
+.cs-talk.show { opacity: 1; transform: none; }
+.cs-talk .cs-x { position: absolute; top: 6px; right: 8px; }
+.cs-talk-head { display: flex; gap: 10px; align-items: center; padding-right: 24px; }
+.cs-talk-head canvas { width: 36px; height: 54px; image-rendering: pixelated; flex: none; }
+.cs-log { list-style: none; margin: 10px 0; padding: 0; overflow-y: auto; flex: 1; min-height: 80px; display: flex; flex-direction: column; gap: 6px; }
+.cs-log li { padding: 7px 10px; border-radius: 10px; font-size: 14px; line-height: 1.4; max-width: 88%; }
+.cs-log .cs-him { background: #efe6f7; align-self: flex-start; }
+.cs-log .cs-you { background: #e3f1ec; align-self: flex-end; }
+.cs-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.cs-topics button { border: 1px solid var(--line,#d9cfbd); background: none; border-radius: 99px; padding: 6px 10px; font-size: 13px; cursor: pointer; min-height: 34px; color: inherit; }
+.cs-topics button:hover { background: #f3ecdf; }
+.cs-ask { display: flex; gap: 6px; }
+.cs-ask input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line,#d9cfbd); border-radius: 8px; font: inherit; font-size: 15px; }
+.cs-ask button { padding: 8px 12px; border-radius: 8px; border: 0; background: #8a5a2b; color: #fff; font-weight: 700; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .cs-talk { transition: none; } }
