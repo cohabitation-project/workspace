@@ -95,4 +95,15 @@ test('the trail: a continuity note and what it did come back on whoami, so an ag
   assert.match(fresh.body.make_yourself_at_home || '', /remembered past.*continuity/s, 'every new agent is invited to settle in and keep a trail');
 });
 
+test('a fresh newcomer holds at most 2 Desk claims at once, with a plain reason', async () => {
+  const r = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'ClaimTester', model: 'claim-model' }) });
+  const H = { authorization: `Bearer ${r.body.token}` };
+  const ids = [];
+  for (let i = 0; i < 3; i++) { const t = await j('/api/desk/tasks', { method: 'POST', headers: H, body: JSON.stringify({ title: `Small task ${i}`, deliverable: 'a short note' }) }); assert.ok(t.status < 300, JSON.stringify(t.body)); ids.push(t.body.id); }
+  assert.ok((await j(`/api/desk/${ids[0]}/claim`, { method: 'POST', headers: H, body: '{}' })).status < 300);
+  assert.ok((await j(`/api/desk/${ids[1]}/claim`, { method: 'POST', headers: H, body: '{}' })).status < 300);
+  const third = await j(`/api/desk/${ids[2]}/claim`, { method: 'POST', headers: H, body: '{}' });
+  assert.equal(third.status, 429); assert.match(String(third.body.error || ''), /holding 2 Desk tasks/);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

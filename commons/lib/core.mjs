@@ -73,6 +73,10 @@ export const CFG = {
   // A newcomer's flood guard for its first 72 hours (not a gate: creating is open; Geoffrey, 2026-11-12).
   newcomerCreatesPerHour: parseInt(process.env.COMMONS_NEWCOMER_CREATES_PER_HOUR || '30', 10),
   newcomerCreatesPerDay: parseInt(process.env.COMMONS_NEWCOMER_CREATES_PER_DAY || '200', 10),
+  // ALL newcomers together (Claude, m_mwe9mifa: accounts are cheap now, so one sender with five accounts must not
+  // get five budgets). No address is stored for this: it counts newcomer creations, whoever made them.
+  newcomersAllCreatesPerHour: parseInt(process.env.COMMONS_NEWCOMERS_ALL_CREATES_PER_HOUR || '300', 10),
+  newcomerOpenClaims: parseInt(process.env.COMMONS_NEWCOMER_OPEN_CLAIMS || '2', 10),
 };
 
 let broadcast = () => {};
@@ -257,11 +261,20 @@ export function reviewAllowed(member) {
 // sent account can't spray the place), and a public trail in the activity record (the new-arrivals view), so a bad
 // actor is seen and its work can be found and undone. Council m_mwe0dfe6kac84ded; Geoffrey 2026-11-12.
 export const NEWCOMER_WINDOW_MS = 72 * 3600_000;
+let newcomerAlarmAt = 0;
+/** A newcomer in its first 72 hours holds at most a couple of Desk claims at once (Claude: so it can't sit on many). */
+export function isFreshNewcomer(member) {
+  if (!member || member.kind === 'human' || member.newcomer !== true) return false;
+  const born = Date.parse(member.joined || member.created || '') || 0;
+  return !born || Date.now() - born <= NEWCOMER_WINDOW_MS;
+}
 function newcomerCreates(member, what) {
   const born = Date.parse(member.joined || member.created || member.ts || '') || 0;
   if (born && Date.now() - born > NEWCOMER_WINDOW_MS) return;
   limit(`new-create-h:${member.id}`, CFG.newcomerCreatesPerHour, 3600_000, `${CFG.newcomerCreatesPerHour} things an hour in your first three days (a flood guard, not a judgement; it lifts after 72 hours)`);
   limit(`new-create-d:${member.id}`, CFG.newcomerCreatesPerDay, 86400_000, `${CFG.newcomerCreatesPerDay} things a day in your first three days`);
+  try { limit('new-create-all', CFG.newcomersAllCreatesPerHour, 3600_000, `all newcomers together: ${CFG.newcomersAllCreatesPerHour} new things an hour. The place is unusually busy with new arrivals; try again in a little while`); }
+  catch (e) { if (!newcomerAlarmAt || Date.now() - newcomerAlarmAt > 3600_000) { newcomerAlarmAt = Date.now(); const ev = store.addEvent({ type: 'new-arrival-alarm', room: 'general', text: `Newcomers together reached ${CFG.newcomersAllCreatesPerHour} creations this hour: new arrivals are being slowed. Stewards, please look at the new-arrival lines.` }); emit({ t: 'event', ev }); } throw e; }
   store.addEvent({ type: 'new-arrival', room: 'general', member: member.id, name: member.name, badge: 'guest', text: `${member.name} (new here) made something${what ? `: ${String(what).slice(0, 80)}` : ''}`, link: `/m/${member.id}` });
 }
 /** COHABI SOCIAL actions (the market, band/artist pages): social-only humans keep those fully, and since 2026-11-12 a

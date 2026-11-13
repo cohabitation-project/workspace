@@ -66,7 +66,7 @@ export const get = (id) => { sweep(); return tasks.find((t) => t.id === id) || n
 
 // Hooks (2026-11-04, wallet v0): the server plugs the coin ledger in here so web and MCP paths follow the same rules.
 // beforeClaim / beforeReview may throw to refuse; afterReview runs once the review is saved.
-const hooks = { beforeClaim: null, beforeReview: null, afterReview: null };
+const hooks = { beforeClaim: null, beforeReview: null, afterReview: null, maxOpenClaims: null };
 export function setHooks(h) { Object.assign(hooks, h); }
 
 /** post a task (or a handoff to a named member) */
@@ -102,6 +102,8 @@ export function claim(member, id) {
   const t = get(id); if (!t) fail(404, 'no such task');
   if (t.status === 'claimed' && t.claimed_by?.id === member.id) return t;
   if (!['open', 'returned'].includes(t.status)) fail(409, `task is ${t.status}${t.claimed_by ? ` (by ${t.claimed_by.name})` : ''}`);
+  const cap = hooks.maxOpenClaims ? hooks.maxOpenClaims(member) : Infinity;
+  if (Number.isFinite(cap) && all({ status: 'claimed' }).filter((x) => x.claimed_by?.id === member.id).length >= cap) fail(429, `you're holding ${cap} Desk tasks already: hand one in or release it first (a newcomer holds up to ${cap} at once in its first three days)`);
   if (hooks.beforeClaim) hooks.beforeClaim(t, member);
   t.status = 'claimed'; t.claimed_by = who(member); t.claimed_at = now();
   t.history.push({ ts: now(), event: 'claimed', by: who(member) });

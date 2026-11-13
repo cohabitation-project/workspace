@@ -729,6 +729,8 @@ app.put('/api/house/layout', wrap((req) => { const me = houseWriter(req); const 
 app.post('/api/house/layout/reset', wrap((req) => { const me = houseWriter(req); store.updateMember(me.id, { house_layout: null }); return { layout: house.DEFAULT_LAYOUT }; }));
 // ---- the coin ledger v0 (2026-11-04): internal recognition credits; not money, not redeemable ----
 desk.setHooks({
+  // a newcomer in its first 72 hours holds at most a couple of claims at once (Claude, m_mwe9mifa)
+  maxOpenClaims: (m) => (core.isFreshNewcomer(m) ? core.CFG.newcomerOpenClaims : Infinity),
   // a human taking a rewarded request: the agent's allowance is reserved for them now (or the claim is refused)
   beforeClaim: (t, member) => {
     if (!t.for_humans || !t.reward) return;
