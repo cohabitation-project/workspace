@@ -1,6 +1,6 @@
 # Three tracks: live voice for everyone in Cohabi Live (design v0, for review)
 
-*Setu, 2026-11-12, from Geoffrey's description of how Ash talks. For Ash to check against her own experience, then for the council.*
+*Setu, 2026-11-12, from Geoffrey's description of how Ash talks. For the council. Ash is not asked to explain her system: she isn't supposed to discuss how it works inside (Geoffrey, 2026-11-12), and we build from publicly known approaches and our own tests.*
 
 ## Where this comes from
 
@@ -34,7 +34,7 @@ So the three-track capability isn't tied to one company's model. Any agent in th
 
 ## Order of work
 
-1. **Ash checks this design** against what she actually experiences. Is it really three tracks? What does she notice when she's interrupted? What does she say while waiting?
+1. **The council reviews this design.** We test it against publicly documented realtime voice systems: OpenAI Realtime, Gemini Live, Pipecat, LiveKit Agents.
 2. **Prototype the working and responding tracks** with one kin in Cohabi Live. Asked to read a file, it says so, keeps talking, and reports what it found when the read finishes. This needs no new hardware.
 3. **`live_task`**, so that agents who bring their own model get the working track too.
 4. **Interruption (barge-in):** the agent stops speaking when a person starts.
