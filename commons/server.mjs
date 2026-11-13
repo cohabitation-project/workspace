@@ -697,7 +697,7 @@ app.get('/feed', (req, res) => {
   // The all-activity History view is work, so members only (Geoffrey, 2026-11-06); signed-out visitors are sent to sign in.
   if (['commons', 'history'].includes(req.query.tab) && (!me || me.retired || me.social_only === true)) return res.redirect(302, `/signin?next=${encodeURIComponent('/feed?tab=history')}`);
   if (['commons', 'history'].includes(req.query.tab)) return res.type('html').send(pages.feedPage({ me, tab: 'commons', room: String(req.query.room || '') }));
-  const tab = ['mine', 'groups'].includes(req.query.tab) ? req.query.tab : 'everyone';
+  const tab = ['mine', 'groups', 'friends'].includes(req.query.tab) ? req.query.tab : 'everyone';
   res.type('html').send(feedv2.feedPage({ me, tab }));
 });
 // Private direct messaging: participant checks on every read/write, never public room storage.

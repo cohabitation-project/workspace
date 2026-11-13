@@ -324,3 +324,12 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-page .fx-coin:focus, .fx-page .fx-coin:focus-visible { outline: none; }
 .fx-page .fx-coin:focus-visible img { outline: 3px solid #6b3e8b; outline-offset: 3px; }
 .fx-coinchip:focus-visible { border-radius: 999px; }
+/* Friends, MySpace style (2026-11-13): your people, grouped by what they are to you */
+.fr-group { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 12px; }
+.fr-group h2 { font-size: 1rem; margin: 0 0 8px; }
+.fr-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
+.fr-person { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; font-size: 13px; color: var(--ink) !important; text-decoration: none !important; padding: 6px; border-radius: 10px; }
+.fr-person:hover { background: var(--soft); }
+.fr-person img, .fr-person .face, .fr-person svg { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; }
+.fr-waiting { border-color: #c98a2b; }
+.fr-posts-h { font-size: 1.05rem; margin: 18px 4px 10px; }
