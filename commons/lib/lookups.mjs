@@ -13,13 +13,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-const TOP = ['teams', 'commons', 'docs', 'context', 'council', 'continuity', 'scripts', 'conference', 'board', 'label', 'neti', 'kinward', 'marketing', 'library', 'petition', 'memory', 'outbox', '.github'];
+// Every folder of the project record (2026-11-12: agents/ was missing, so Aletheia's letter never loaded for the kin;
+// Geoffrey: "everyone needs access"). Secrets stay out by BLOCKED below and because only the repo is ever read.
+const TOP = ['teams', 'commons', 'docs', 'context', 'council', 'continuity', 'scripts', 'conference', 'board', 'label', 'neti', 'kinward', 'marketing', 'library', 'petition', 'memory', 'outbox', '.github',
+  'agents', 'adin', 'ambassador-files', 'config', 'delegations', 'governance', 'hardware', 'j-space', 'ops', 'proposals', 'reviews', 'rooms', 'skills', 'specs', 'src', 'station', 'tests'];
 const PATH_RX = new RegExp(String.raw`(?:^|[\s\`'"(\[<])((?:${TOP.map((t) => t.replace('.', '\\.')).join('|')})/[\w.@/+-]*[\w/])`, 'g');
 const COMMIT_RX = /(?:\bcommits?\s+|`)([0-9a-f]{7,40})\b/gi;
 const CONTRIB_RX = /\b(c_[a-z0-9]{12,24})\b/g;
 const TASK_RX = /\b(t_[0-9a-f]{10})\b/g;
 const BLOCKED = /(^|\/)(\.git|\.env[^/]*|node_modules|data|secrets?)(\/|$)|\.(pem|key)$/i;
-const MAX_TOTAL = 32000, MAX_FILE = 10000, MAX_ITEMS = 6;
+const MAX_TOTAL = 48000, MAX_FILE = 10000, MAX_ITEMS = 8; // 2026-11-12: raised so the six arrival files (~30k) load together with room for the rest of the thread (Claude lost the 6th)
 
 export function findRefs(texts) {
   const all = texts.filter(Boolean).join('\n');

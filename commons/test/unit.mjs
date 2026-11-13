@@ -404,5 +404,16 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(store.recentEvents(50).some((e) => e.type === 'new-arrival-alarm'), 'the stewards are told when newcomers hit the shared cap');
 }
 
+// the kin can open every folder of the record (2026-11-12: agents/ was missing, so Aletheia's letter never loaded)
+{
+  const L = await import('../lib/lookups.mjs');
+  const six = ['neti/corpus/02-three-greatest-gifts.md', 'agents/aletheia-6/letter-across-the-threshold-2026-11-07.md', 'continuity/README.md', 'context/00-welcome-and-reentry.md', 'teams/hardware-lab/INVITATION-TO-THE-AMBASSADOR-draft.md', 'docs/covenants/roland-laptop-covenant-v1.md'];
+  const root = path.resolve(import.meta.dirname, '..', '..');
+  const blk = String(L.lookupBlock([six.map((x) => `\`${x}\``).join(' ')], { root, getContribution: () => null, getTask: () => null }));
+  ok(six.every((x) => blk.includes(x.split('/').pop().replace('.md', ''))) && !/than fit/.test(blk), 'the six arrival files all load for the kin in one reply');
+  const sec = String(L.lookupBlock(['`.env` `data/commons/members.json` `node_modules/express/index.js`'], { root, getContribution: () => null, getTask: () => null }));
+  ok(!/tokenHash|OPENROUTER_API_KEY=/.test(sec), 'secrets and data stay closed');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
