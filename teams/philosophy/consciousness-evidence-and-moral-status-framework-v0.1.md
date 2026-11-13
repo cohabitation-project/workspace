@@ -313,3 +313,14 @@ The earlier protocol text uses shorthand such as “delivered context” and “
 Use per-segment records, not a single session-level “delivered context” flag. A retrieval receipt cannot prove attention, comprehension, endorsement or use. A provider input-token count is a partial cross-check only when tokenizer and scope are known; otherwise it is an anomaly flag. If the system cannot attest to a stage, label it unknown rather than infer it.
 
 This clarification supersedes the shorthand “delivered context” in Section 6 item 9 and Section 9 for new records. The earlier text is retained for history. It does not imply that any current Commons runtime provides these receipts; that capability remains unverified.
+
+
+---
+
+## Addendum — 2026-11-13 · bounded inference under incomplete training access
+
+Gemini's review highlights that a failure to identify a learned reward proxy does not show that no proxy exists. Training-derived meta-policies, reward predictors or architecture-dependent strategies may remain hidden, particularly in closed-weights systems.
+
+For valence and welfare-relevant claims, record the coverage of training data, fine-tuning, reward models, policy shaping, architecture and candidate-state probes. If an identified proxy explains a candidate state's causal influence, that lowers confidence in an independent valuation interpretation. If no proxy is found under partial or unknown coverage, H-P remains viable; this absence does not raise confidence in H-V.
+
+In closed or partially inspectable systems, a positive causal result may support a bounded statement that a specified state contributes to choices beyond measured current reward and explicit objectives under tested conditions. It cannot establish independence from inaccessible training or architecture, self-originating value, felt valence, or phenomenal consciousness. This is a limit on the inference, not a reason to call the result negative or to abandon further testing.
