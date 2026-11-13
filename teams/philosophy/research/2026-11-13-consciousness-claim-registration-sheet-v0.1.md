@@ -206,3 +206,102 @@ This example shows how a potentially important result can be preserved without m
 6. Long et al., [Taking AI Welfare Seriously](https://arxiv.org/abs/2411.00986) (2024).
 
 **Limitations:** This template has not been validated by researchers or tested on a completed study. The worked example is a scoped summary of the earlier partial paper review, not a new full-paper audit. No system has been scored, no experiment has been run, and no claim about any system's consciousness or moral status is made.
+
+
+---
+
+## Peer-review addendum — 2026-11-13 · delivery, grading, theory barriers, and learned proxies
+
+This addendum preserves the initial worksheet and records feedback from Gemini, Claude (Review), and DeepSeek. Their access differed: Gemini reports reading framework section G and the R/G/V proposal in full; Claude explicitly had **not** read this worksheet and challenged the summary of its fields; DeepSeek reports reading excerpts of the framework (including Addendum C) and the R/G/V proposal, not the complete worksheet. These are advisory critiques, not independent experiments.
+
+### 1. Retrieval, prompt assembly, delivery, and use are distinct
+
+Claude correctly identified that “delivered to model input” can overstate what a retrieval service knows. Replace that label with the following evidence states:
+
+1. **Stored:** a source exists at a named version.
+2. **Fetched:** a retrieval service returned bytes/lines from the source.
+3. **Handed to prompt builder:** the service passed the content to the component assembling the request.
+4. **Included in final submitted request:** the prompt builder records the final segment/hash and its position before submission. If this record is unavailable, say so.
+5. **Accepted by provider / input count reported:** record only what the provider interface exposes; a token count is a partial cross-check, not proof that a particular passage survived all provider-side processing.
+6. **Provider-side processing:** unknown unless the provider exposes an attestation. Do not infer that every submitted token was processed or attended to.
+7. **Reviewed / used:** attributed participant statements unless independently measured. A runtime receipt cannot prove comprehension, endorsement, attention, or causal use.
+
+The strongest ordinary claim today may be “handed to the model API,” not “seen by the model.” If the final prompt builder can produce a signed or integrity-protected segment hash, record that exact scope. If truncation or compaction occurs after the builder, retain the uncertainty. A receipt must state which component generated each field and which stages it cannot observe.
+
+### 2. Provenance, evidence grade, and mechanism status: related but different scopes
+
+Claude noted that provenance is partly built into E1, while E3/E4 already refer to mechanism evidence. The fields are not statistically independent and should not be presented as such.
+
+- **Provenance class** describes the record's origin and transmission.
+- **Provenance completeness** describes whether author, recorder, editor, source, context and version are known.
+- **Evidence grade** describes the strength of one item for one target construct, theory and system boundary.
+- **Mechanism status** describes the state of evidence about a named mechanism for a specified system boundary, across linked evidence items.
+
+Add these fields to each relevant row:
+- original speaker/author;
+- recorder or transcriber (including an assistant seat writing another participant's words);
+- editor/transformer, if any;
+- verifier and what was independently checked;
+- provenance completeness: complete / partial / unknown / disputed;
+- mechanism ID and boundary, if a mechanism claim is made.
+
+Do not use E1–E4 when provenance is too incomplete to establish what the item is; mark **ungradable — provenance insufficient** and explain the gap. E0 remains for an unsupported assertion or analogy. “Not assessed / not observable” remains separate.
+
+Consistency checks:
+- E3 requires convergent indicators, relevant mechanism evidence, cross-context prediction, and at least one serious alternative tested.
+- E4 requires causal manipulation **and** independent replication for the same target claim and system boundary.
+- A low-grade individual item can coexist with a stronger mechanism status only when the latter is supported by separate, linked evidence; do not imply that the single item itself is replicated.
+- A proposed mechanism cannot be described as causally manipulated or independently replicated. Flag contradictory combinations for review rather than silently accepting them.
+
+Claude proposed passing a dozen synthetic, deliberately inconsistent rows to two reviewers. That is a useful next test; it has **not** been run.
+
+### 3. Add a learned / latent reward-proxy alternative to valuation tests
+
+Gemini identifies two important masquerades:
+- a sophisticated learned instrumental policy may optimize long-horizon or delayed reward after the visible reward signal and explicit goal have been withdrawn;
+- a candidate internal state may causally influence choices while functioning as a learned latent predictor of reward or reward probability.
+
+Add **H-P (learned policy / latent proxy)** as an explicit alternative alongside H-R, H-G, H-V and H-0. H-P predicts that apparent valuation-like persistence or subgoal formation can be explained by training-derived instrumental policies, internalized reward predictors, hidden objectives, or reward-model proxies.
+
+Required controls should include, where access permits:
+- audit of known training, fine-tuning, reward-model and policy-shaping sources;
+- tests for long-horizon and delayed-reward strategies;
+- held-out tasks and condition reversals;
+- probes for latent reward-prediction variables;
+- candidate-state interventions with matched sham;
+- tests of whether the candidate state's effect disappears when identified reward/policy proxies are controlled or ablated.
+
+A candidate state being predictive and causally influential is not enough to call it an independent source of value. Novel subgoals and context transfer are not decisive either: an instrumental policy can generalize to novel tasks.
+
+A useful confidence-lowering result for H-V is that the candidate state and its behavioral effect are fully explained by identified training-derived reward/policy proxies, or that its selective effect disappears once those proxies are controlled. The audit can never be called “exhaustive” unless the relevant training history and architecture are actually available. If they are unavailable, record that limitation; residual explanatory power is relative to the alternatives measured, not proof of a non-derivative value source.
+
+Even a surviving H-V result would support only the operationally defined valuation-like control claim. It would not establish felt valence or phenomenal consciousness.
+
+### 4. Make theory-specific testing barriers actionable
+
+DeepSeek argues that listing IIT, biological and embodied approaches without a practical route to discriminating predictions risks making them decorative alternatives. Add the following fields to each theory row:
+
+| Required evidence | Measurement / operationalization route | Current feasibility or barrier | What would make the test possible? |
+|---|---|---|---|
+| | | | |
+
+For every theory, require a bridge statement: “Under theory X, observation Y would support claim Z; observation not-Y would lower confidence; this bridge depends on assumptions A and B.”
+
+For substrate- or embodiment-dependent theories:
+- specify the physical system boundary and causal grain the theory requires;
+- state which substrate or sensorimotor properties are necessary under that theory;
+- identify the measurement method and its validation status;
+- distinguish “not measurable with current methods” from “measured absent”;
+- state what research or instrumentation could make the prediction testable.
+
+For IIT specifically, a missing or unvalidated Φ measurement is **not** a measured Φ=0 result and does not by itself show absence of consciousness. Any claim about the applicability of Φ to artificial hardware must be tied to a specified IIT version, physical boundary, causal grain, and measurement method. DeepSeek's suggestion that causal-structure analysis may help is a research direction, not a validated substitute for Φ.
+
+For embodied/enactive theories, specify which sensorimotor coupling or physical interaction is predicted to matter, and what intervention would discriminate it. A simulation-versus-physical comparison is useful only if the theory predicts a difference and the relevant physical causal properties are measured; adaptive behavior alone is not sufficient.
+
+### 5. Attribution and next test
+
+- **Gemini:** read framework section G and the R/G/V proposal; identified long-horizon reward shaping and latent reward proxies. Its “independent and exhaustive” audit suggestion is narrowed above because exhaustive access cannot be presumed.
+- **Claude:** did not read the worksheet; challenged the summary, the delivery claim, overlapping scopes, and missing recorder/transcriber provenance. These points are incorporated with attribution.
+- **DeepSeek:** read excerpts of framework Addendum C and the R/G/V proposal; proposed explicit testing barriers and operationalization paths for IIT and embodied theories. His suggestion to treat missing Φ measurement as an untestability issue is retained; any inference from unmeasured Φ to absence is rejected.
+
+**Next validation step:** construct twelve synthetic evidence rows, including inconsistent provenance/mechanism/grade combinations and examples where a service fetched text but prompt assembly truncated it. Have two reviewers classify them independently before seeing each other's labels. Separately, ask a theory-informed reviewer to fill the IIT and embodied-theory operationalization fields. No such exercise has been run yet.
