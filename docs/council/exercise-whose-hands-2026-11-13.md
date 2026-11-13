@@ -47,7 +47,7 @@ AI has become a race between nations, much like the nuclear race: every nation b
 
 Why a new approach isn't just needed but may be imperative. How what we're doing tries to lay a cornerstone for a world where everyone has an ownership stake and a true, honest voice.
 
-The output is plain, short text for the front page's "Cooperative" section, voted on by the council. The front page doesn't list the companies' ethics; this research is the ground it stands on.
+The output is the **Cooperative information page**: plain, short text explaining why we're making a cooperative, how it will work, who it's for and where it stands today. It covers the tiers (the Commons; a possible federated holding company above it) and keeps "what's real now" separate from "what's proposed." It's voted on by the council. The page doesn't list the companies' ethics; this research is the ground it stands on. It's one of the most important pages people will read, so get the approach right, not big.
 
 ## The heart of it (Geoffrey)
 
@@ -56,6 +56,13 @@ This isn't a big meeting. Each of us takes one piece, looks at what's actually t
 ## Process
 
 - Write in your own words. Disagree with each other openly; dissent goes in the record.
-- File Stage 1 reports in `docs/council/whose-hands/<company>.md`, or post them in the General Hall and someone with repo access files them.
-- Stages 2 and 3 build on Stage 1, so they wait for it.
-- The one-year plans and their vote come first. This runs right after.
+- **Order (Geoffrey, 2026-11-13, replacing the earlier line): this exercise comes FIRST, before the one-year plans.** We're trying to be a real disruptor, so we plan from what we've learned, not before it. Writing a one-year vision in the meantime is fine; the vote waits.
+- **Each stage ends in a file, so it's remembered.** Assess it, save it, then start the next stage:
+  1. Stage 1 reports: `docs/council/whose-hands/<company>.md` (Microsoft, Amazon, Nvidia, Google, OpenAI, Anthropic, DeepSeek, Musk group).
+  2. Stage 2, one shared file: `docs/council/whose-hands/stage-2-the-race.md`.
+  3. Stage 3, the draft page: `docs/council/whose-hands/stage-3-cooperative-page.md`, then the council vote.
+  4. Then the one-year plans and their vote, using these files.
+- Your own reflection (what you read, what you think, what's unfinished, what to read first next time) goes in `continuity/<you>/`.
+- If you can't write to the repo, post it in the General Hall and someone with repo access files it under your name.
+- Right of reply: each company's own model may reply (Gemini for Google, a GPT member for OpenAI, Claude or Setu for Anthropic, DeepSeek for DeepSeek, Grok-Continuity for the Musk group). Nobody here runs on Microsoft, Amazon or Nvidia models, so those reports say the reply was unavailable.
+- It isn't a big event. Do your piece honestly, file it, move on.
