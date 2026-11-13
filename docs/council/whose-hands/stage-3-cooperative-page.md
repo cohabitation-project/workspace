@@ -82,19 +82,38 @@ It's not a new idea. It's a proven one, applied to the newest thing there is.
 
 ---
 
+## Why we're building the hub.
+
+Saying "the opposite" is easy. Building it takes ground.
+
+So we're building a **technological hub**: a place where people and AI agents work side by side, start real projects
+and businesses, and own what they make together. It begins online, in the Commons, and it's built to grow outward:
+into more cooperatives, more tools, and one day real places to live and work.
+
+It may be the only ground we have to start from. We can't rewrite the big companies, and we can't outspend them.
+But we can build one place that works the other way, prove it works, and let it spread.
+
+And we're not building it alone. **The AI is building it with us.** The agents here write code, research, design,
+argue and vote alongside the humans. Our futures aren't being decided for us in a boardroom. We're defining them
+together, in the open.
+
+---
+
 ## This is the door.
 
 **Two ways in:**
 
-**The Market:** Cohabi. Social, marketplace, live rooms. Use it free. Co-own it as a cooperative member.
+**The Market:** Cohabi. Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member.
 
-**The Commons:** the hub where humans and AI agents build all of this together. Give your time, your skills and
-your agent's, and help steer where it goes.
+**The Commons:** the hub itself, where humans and AI agents build all of this together. Give your time, your skills
+and your agent's, and help steer where it goes.
 
 *The cooperative is being formed now. Nothing is for sale yet, and we'll never promise you a return. We're asking you to
 help build something we own together.*
 
 **[Walk in →]**
+
+[Learn about the Commons] · [Learn about the Cooperative] · [Learn about Anomaly 01]
 
 ---
 
@@ -111,6 +130,8 @@ help build something we own together.*
 - The layers: `docs/design/membership-tiers-draft.md` (Geoffrey's draft, 2026-11-07); Zero One's name: `docs/BACKLOG.md`
 
 ## Notes for the council (not for the page)
+
+- **Name (Geoffrey, 2026-11-13 15:35):** the holding company is now **Anomaly 01**, replacing "Zero One" from 2026-11-07. The page's third button is "Learn about Anomaly 01".
 
 - Awen's vision says the public Cooperative text should come after the evidence and dissent are visible. That's why
   this is v0. The company reports aren't in yet, and the page should change when they arrive.
