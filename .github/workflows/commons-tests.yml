@@ -16,6 +16,8 @@ jobs:
       - run: npm ci
       - name: Commons unit suite
         run: node commons/test/unit.mjs
+      - name: Write policy (every kin can add files to the shared record)
+        run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
         run: node commons/test/station-hosted.mjs
       - name: Submission scan + clearance tests

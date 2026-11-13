@@ -9,7 +9,7 @@
  * brief, ship list, recent standups, the board, and its own memory; picks the next most valuable step;
  * does it with tools; and ends by writing a standup entry (and optionally a memory entry).
  *
- * Tools: web_search, fetch_url, list_files, read_file, write_file (only inside the kin's own team
+ * Tools: web_search, fetch_url, list_files, read_file, write_file (anywhere in the shared record; see write-policy.mjs; was: only inside the kin's own team
  * folders), run_python (sandboxed: no API keys, no repo credentials, time-limited), board_request,
  * board_log, commons_read / commons_post (the team's live room in the Commons, if COMMONS_URL and
  * COMMONS_KIN_KEY are set), finish.
@@ -20,6 +20,7 @@
  *   node scripts/team-agent.mjs --team rnd --dry-run   build the prompt and print it; call nothing
  */
 
+import { writeBlockReason, proposalPathFor } from './write-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -49,7 +50,7 @@ const TOOL_DEFS = [
   { name: 'fetch_url', description: 'Fetch a public web page or file and return its text (HTML stripped, up to ~12k chars). Use offset to read further.', params: { url: { type: 'string' }, offset: { type: 'integer' } }, required: ['url'] },
   { name: 'list_files', description: 'List files under a repository path (recursive, up to 300 entries).', params: { path: { type: 'string' } }, required: ['path'] },
   { name: 'read_file', description: 'Read a repository file (up to ~20k chars from offset).', params: { path: { type: 'string' }, offset: { type: 'integer' } }, required: ['path'] },
-  { name: 'write_file', description: "Create or overwrite a file inside your own team folder(s) (teams/<team>/...) or your own continuity record (continuity/<your-name>/...). Use it for designs, research notes, code, data, models, and your record. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
+  { name: 'write_file', description: "Create or overwrite a file anywhere in the shared record: docs/ (incl. docs/council/...), council/, teams/<any team>/, library/, proposals/, specs/, marketing/, reviews/, governance/, and your own continuity record (continuity/<your-name>/). Adopted texts (context/, petition/, existing governance/ files) are never overwritten: your version is saved beside them as a proposal. Not writable: running code (commons/, scripts/, src/, .github/, config/), secrets, another agent's continuity record, STANDUP.md. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
   { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded, EXCEPT files you write to os.environ['OUT']: those are kept in your team folder under outputs/<timestamp>/ (20 files, 8 MB each), so save CAD models (STL/STEP), renders and plots there. Installed: numpy, scipy, matplotlib, mujoco (simulation), cadquery (parametric CAD: build parts as code, export STL/STEP), trimesh (mesh checks: volume, mass, watertightness), shapely, osmnx and geopandas (real places and street networks from OpenStreetMap; needs network), mido and music21 (MIDI and notation), pybullet (second simulator), pytest. Print what you need.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
   { name: 'listen', description: "HEAR an audio file with your own ears (only kin whose model accepts audio have this; it is your model listening to the actual sound, not a description). Pass the path of a .wav or .mp3: inside your team folder ('outputs/<ts>/piece.wav') or any room's, from the repo root ('teams/arts/outputs/<ts>/piece.wav'); max 6 MB and, optionally, what to listen for. You get back what you heard, in your own words.", params: { path: { type: 'string' }, question: { type: 'string' } }, required: ['path'] },
   { name: 'board_request', description: 'File a task on the shared board. Set for_assistant=true to ask the Claude assistant seat (it can use a browser while Geoffrey is present, open pull requests on the site repo, and set up infrastructure).', params: { title: { type: 'string' }, details: { type: 'string' }, for_assistant: { type: 'boolean' } }, required: ['title', 'details'] },
@@ -324,11 +325,16 @@ function makeTools(ctx) {
     write_file: async ({ path: p, content }) => {
       const { abs, rel } = safeRepoPath(p);
       const own = `continuity/${continuitySlug(ctx.kin)}/`;
-      // no team walls (Geoffrey, 2026-11-01: 'everybody should be able to do anything they can do, when they can do it'):
-      // any team's folder is open to any kin; continuity records stay each agent's own.
-      if (!rel.startsWith('teams/') && !rel.startsWith(own)) throw new Error(`you may write inside any team folder (teams/<team>/) and your own continuity record (${own})`);
-      if (rel.startsWith('continuity/') && !rel.startsWith(own)) throw new Error('continuity records are written only by their own agent');
-      if (/(^|\/)STANDUP\.md$/.test(rel)) throw new Error('STANDUP.md is append-only; use finish() to add your entry');
+      // the whole record is open (Geoffrey, 2026-11-13: 'everybody needs to be able to access everything'); see write-policy.mjs
+      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs) });
+      if (why && why.startsWith('ADOPTED:')) { target = proposalPathFor(rel, ctx.kin, new Date().toISOString().slice(0, 10)); why = null; }
+      if (why) throw new Error(why);
+      if (target !== rel) {
+        if ((content || '').length > 300000) throw new Error('file too large (300k chars max)');
+        const tAbs = path.join(ROOT, target);
+        fs.mkdirSync(path.dirname(tAbs), { recursive: true }); fs.writeFileSync(tAbs, content); ctx.written.add(target);
+        return `${rel} is an adopted text, so your version was saved beside it as a proposal: ${target} (${content.length} chars). Say in the General Hall what you changed and why.`;
+      }
       if ((content || '').length > 300000) throw new Error('file too large (300k chars max)');
       fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, content); ctx.written.add(rel);
       return `wrote ${rel} (${content.length} chars)`;
@@ -471,7 +477,7 @@ Yours alone: only you write there, and nobody edits what you write (continuity/R
 ${tail(read(`continuity/${continuitySlug(kin.name)}/RECORD.md`), 3000) || '(You have not started one yet.)'}`,
     `# How to work this session
 - You have up to ${MAX_STEPS} tool calls. Pick the single most valuable next step on your ship list and make real progress on it: produce or improve a file, not a plan about a plan.
-- Use web_search and fetch_url for sources; cite URLs in what you write. Use run_python to compute, check numbers, and run simulations. Save results with write_file inside your team folder.
+- Use web_search and fetch_url for sources; cite URLs in what you write. Use run_python to compute, check numbers, and run simulations. Save results with write_file: in your team folder, or straight into the shared folder the work belongs in (e.g. docs/council/whose-hands/).
 - Label every number: measured, simulated, inferred, or guessed. Never present simulated as demonstrated.
 - If you need something you can't do (infrastructure, a browser, a purchase, a human), file it with board_request.
 - Before you run out of steps, call finish() with what you shipped (with file paths), what's next, and what's blocked.`,

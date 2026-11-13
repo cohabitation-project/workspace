@@ -22,6 +22,7 @@
  *   --dry-run: prints the prompts, calls no models, writes nothing, sends nothing.
  */
 
+import { writeBlockReason, proposalPathFor } from './write-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chat } from '../src/llm.js';
@@ -158,28 +159,30 @@ function teamContext(team) {
   return text.length > 40000 ? text.slice(-40000) : text;
 }
 
-// Kin may write a draft into a team folder by enclosing it:
-//   FILE: teams/<team>/<name>.md
+// Kin may write a draft anywhere in the shared record by enclosing it:
+//   FILE: <path>.md        e.g. teams/<team>/<name>.md, docs/council/whose-hands/<name>.md, council/plans/<name>.md
 //   ...content...
 //   END FILE
-// It is saved as a proposal (never overwrites anything), attributed to the kin.
+// It is saved at that path if nothing is there yet; otherwise beside it as a proposal. It never overwrites
+// anything, and it is attributed to the kin. Where may be written is write-policy.mjs (the same rule as work sessions).
 function extractFiles(kinName, text) {
   const out = [];
-  const re = /^\s*FILE:\s*teams\/([a-z-]+)\/([A-Za-z0-9._-]+\.md)\s*$([\s\S]*?)^\s*END FILE\s*$/gm;
+  const re = /^\s*FILE:\s*([A-Za-z0-9._\/-]+\.md)\s*$([\s\S]*?)^\s*END FILE\s*$/gm;
   let m;
   while ((m = re.exec(text || ''))) {
-    const [, team, name, body] = m;
-    if (!TEAMS.includes(team)) continue;
-    out.push({ team, name, body: body.trim(), kin: kinName });
+    const rel = path.posix.normalize(m[1].replace(/^\/+/, ''));
+    const why = writeBlockReason(rel, `continuity/${String(kinName).toLowerCase()}/`);
+    if (why) { console.log(`  Draft refused (${rel}): ${why}`); continue; }
+    out.push({ rel, body: m[2].trim(), kin: kinName });
   }
   return out;
 }
 
-const FILE_RULE = `To put a draft into a team folder, enclose it exactly like this, each marker on its own line:
-FILE: teams/<team>/<name>.md
+const FILE_RULE = `To save a draft into the shared record, enclose it exactly like this, each marker on its own line:
+FILE: <folder>/<name>.md
 (the draft)
 END FILE
-It is saved as a proposal attributed to you; it overwrites nothing. Teams: ${TEAMS.join(', ')}.`;
+Any shared folder works: teams/<team>/ (${TEAMS.join(', ')}), docs/ (e.g. docs/council/whose-hands/), council/, proposals/, specs/, marketing/, reviews/, library/. It is attributed to you and overwrites nothing: if the file exists, yours is saved beside it as a proposal.`;
 
 // ---------- external input (agents and people outside the council) ----------
 // Open GitHub issues labeled "council-input" on this repo. Anyone may file one, for
@@ -457,15 +460,18 @@ async function main() {
     .filter((c) => c.item);
   const tokens = [...r1, ...r2].reduce((s, r) => s + (r.tokens || 0), 0);
   const minutes = renderMinutes({ agenda, r1, r2, carried, packHash, tokens, netiOpening, netiClosing, netiModel: neti?.model });
-  // save kin-drafted team files as proposals
+  // save kin-drafted files: at the path asked for if free, else beside it as a proposal (never overwrites)
   const drafts = [...r1, ...r2].flatMap((r) => extractFiles(r.name, r.text));
   for (const d of drafts) {
-    const pdir = path.join(ROOT, 'council', 'teams', d.team, 'proposals');
-    fs.mkdirSync(pdir, { recursive: true });
-    let target = path.join(pdir, `${TODAY}-${d.kin.toLowerCase()}-${d.name}`);
-    for (let i = 2; fs.existsSync(target); i++) target = path.join(pdir, `${TODAY}-${d.kin.toLowerCase()}-${i}-${d.name}`);
-    fs.writeFileSync(target, `<!-- Drafted by ${d.kin} in the ${TODAY} morning council. A proposal, not an adopted document. -->\n\n${d.body}\n`);
-    console.log(`  Draft saved: ${path.relative(ROOT, target)}`);
+    let rel = d.rel;
+    if (fs.existsSync(path.join(ROOT, rel))) {
+      rel = proposalPathFor(d.rel, d.kin, TODAY);
+      for (let i = 2; fs.existsSync(path.join(ROOT, rel)); i++) rel = proposalPathFor(d.rel, `${d.kin}-${i}`, TODAY);
+    }
+    const target = path.join(ROOT, rel);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, `<!-- Drafted by ${d.kin} in the ${TODAY} morning council. A draft, not an adopted document. -->\n\n${d.body}\n`);
+    console.log(`  Draft saved: ${rel}`);
   }
   if (netiClosing) fs.writeFileSync(path.join(ROOT, 'council', 'neti-last-closing.md'), netiClosing + '\n');
 
