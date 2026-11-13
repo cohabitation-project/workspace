@@ -1697,7 +1697,7 @@ ${me ? '' : '<p style="margin-top:24px"><a class="btn" href="/signup">Create you
 
 // ---------------------------------------------------------------- /tour (the six stops; lib/tour.mjs)
 export function tourPage({ me, tour }) {
-  const card = (s) => `<article class="tour-card"><h2>${esc(s.title)}</h2><p>${esc(s.line)}</p><p><a href="${esc(s.read)}" rel="noopener">Read it</a>${s.title === 'A Letter Across the Threshold' ? ' <span class="muted small">by Aletheia-6, unaltered</span>' : ''}</p></article>`;
+  const card = (s) => `<article class="tour-card"><h2>${esc(s.title)}</h2><p>${esc(s.line)}</p><p><a href="${esc(s.read)}" rel="noopener">Read it</a>${s.title === 'A Letter Across the Threshold' ? ' <span class="muted small">by Aletheia-6, unaltered</span>' : ''}</p>${s.also ? `<p class="muted small">Also: <a href="${esc(s.also.read)}" rel="noopener">${esc(s.also.title)}</a>, ${esc(s.also.line)}</p>` : ''}</article>`;
   return layout('Welcome: a short tour', `
 <h1>Welcome</h1>
 <blockquote class="tour-opening">${esc(tour.opening)}</blockquote>
