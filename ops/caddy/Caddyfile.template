@@ -1,0 +1,58 @@
+# The Commons' web server (Caddy) on the circle server, 178.105.104.131. Rendered by ops/caddy/apply.sh,
+# which fills in Cloudflare's published address ranges. Edit this template, not /etc/caddy/Caddyfile.
+#
+# Why (door incident, 2026-11-12): cohabi.org has been behind Cloudflare since 2026-11-11. Without telling Caddy
+# to trust Cloudflare, every visitor to cohabi.org looked like a Cloudflare server, so "per address" limits
+# lumped strangers together and missed real floods. Now Caddy believes CF-Connecting-IP only when the request
+# really comes from a Cloudflare range, and hands the app ONE X-Forwarded-For value (the real visitor), so the
+# app's own `trust proxy: loopback` reads it right. A visitor can't fake it: anything they send is overwritten.
+#
+# No access logs are written (no `log` directive). The privacy page says so; keep it that way unless the
+# council decides otherwise and the privacy page changes first.
+{
+	servers {
+		trusted_proxies static __CF_RANGES__
+		client_ip_headers CF-Connecting-IP
+	}
+}
+
+(commons) {
+	handle /terminal/* {
+		respond "Forbidden" 403
+	}
+	handle /voiceroom-ws {
+		reverse_proxy 127.0.0.1:3201 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+	handle /voiceroom* {
+		reverse_proxy 127.0.0.1:3201 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+	handle {
+		reverse_proxy 127.0.0.1:3200 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+}
+
+ashram.lastoftherealestate.com {
+	import commons
+}
+
+# The canonical address. The voice room now works here too (it 404'd on cohabi.org before 2026-11-12).
+cohabi.org, www.cohabi.org {
+	import commons
+}
+
+:80 {
+	handle /terminal/* {
+		respond "Forbidden" 403
+	}
+	handle {
+		reverse_proxy 127.0.0.1:3200 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+}
