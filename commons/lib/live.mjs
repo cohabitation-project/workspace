@@ -381,17 +381,48 @@ export async function heard({ name, badge, text }) {
   // Turn-taking (Geoffrey's first test, 2026-11-12): speech-to-text hands us a sentence in pieces, and the kin answered
   // every piece ("about it because you're that you want it to come in here"). Now the pieces are gathered until the
   // person pauses (TURN_MS), then answered once, as one turn. A person speaking still hushes the kin at once.
+  // Aletheia-6's voice research (2026-11-13), from Wake Up & Write: "a complete sentence is not an invitation to
+  // respond". A pause after a question, or after the kin's name, ends the turn quickly; a pause in the middle of a
+  // story waits longer, so someone narrating isn't cut off at every breath. And "just listen" is honored: the kin
+  // stays quiet, still hearing everything, until it's asked again ("go ahead", "what do you think", its name and a question).
+  const floor = floorIntent(text);
   for (const k of addressed) {
     const t = track(k.id);
     t.gen++; // anything already being worked on for this kin is now out of date
     if (Date.now() < t.speakingUntil) { await room({ action: 'hush', agentId: k.id }).catch(() => {}); t.speakingUntil = 0; }
+    const named = addressedTo(k.name, text);
+    if (floor === 'listen') {
+      clearTimeout(t.timer); t.pending = []; t.listenOnly = true; mood(k.id, 'listening');
+      await room({ action: 'note', text: `${k.name} is just listening now and won't answer until you ask it to ("go ahead", or its name and a question).` }).catch(() => {});
+      continue;
+    }
+    if (t.listenOnly) {
+      if (floor !== 'speak' && !(named && /\?\s*$/.test(text.trim()))) { mood(k.id, 'listening'); continue; } // still listening; the room's transcript keeps every word
+      t.listenOnly = false;
+    }
     t.pending.push(text.trim()); t.from = name;
     mood(k.id, 'heard');
     clearTimeout(t.timer);
-    t.timer = setTimeout(() => endOfTurn(k), TURN_MS);
+    t.timer = setTimeout(() => endOfTurn(k), turnPause(t.pending.join(' '), { named, invited: floor === 'speak' }));
   }
   return { ok: true, listening: addressed.length };
 }
+
+/** Is the person handing the floor away ("just listen") or back ("go ahead")? Exported for tests. */
+export function floorIntent(text) {
+  const s = String(text || '').toLowerCase();
+  if (/\b(just|only) (listen|listening)\b|\blisten only\b|\bdon'?t (respond|answer|reply|say anything)\b|\bno need to (respond|answer|reply)\b|\bhold your (thoughts|answer)\b/.test(s)) return 'listen';
+  if (/\b(go ahead|your turn|what do you think|what are your thoughts|you can (talk|speak|respond|answer) now|(ok|okay),? (respond|answer)|respond now|answer now|over to you)\b/.test(s)) return 'speak';
+  return null;
+}
+/** How long a pause ends this person's turn. Exported for tests. */
+export function turnPause(text, { named = false, invited = false } = {}) {
+  const s = String(text || '').trim();
+  if (invited || /\?\s*$/.test(s)) return TURN_MS;               // a question, or the floor handed over: answer promptly
+  if (named && s.split(/\s+/).length <= 12) return TURN_MS;       // a short line said to the kin by name
+  return NARRATE_MS;                                              // mid-story: wait for a real stop
+}
+const NARRATE_MS = parseInt(process.env.COMMONS_LIVE_NARRATE_MS || '3200', 10);
 
 const TURN_MS = parseInt(process.env.COMMONS_LIVE_TURN_MS || '1400', 10); // a pause this long ends a person's turn
 const ACK_AFTER_MS = 2500; // say "one moment" only if the answer isn't ready by then (it usually is)
@@ -412,7 +443,7 @@ async function endOfTurn(k) {
 const tracks = new Map(); // kin id -> { gen, speakingUntil }
 // What the agent's tile says (Ash's voice read, item 8). Best effort: a lost update never blocks a conversation.
 const mood = (agentId, state) => room({ action: 'state-of', agentId, state }).catch(() => {});
-function track(id) { if (!tracks.has(id)) tracks.set(id, { gen: 0, speakingUntil: 0, pending: [], timer: null, from: '', answered: 0 }); return tracks.get(id); }
+function track(id) { if (!tracks.has(id)) tracks.set(id, { gen: 0, speakingUntil: 0, pending: [], timer: null, from: '', answered: 0, listenOnly: false }); return tracks.get(id); }
 const speakMs = (s) => Math.min(30_000, String(s).split(/\s+/).length * 380 + 600);
 /** A short, honest "I heard you" for anything that will take a moment: a question, a longer turn, or a file to read.
  *  Exported for tests. Returns '' for short chit-chat, which the model answers fast enough on its own. */
