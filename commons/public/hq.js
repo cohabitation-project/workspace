@@ -329,7 +329,7 @@ function camFit(x, y, w, h, pad, animate) {
   S.cam.s = s; S.cam.fx = x + w / 2; S.cam.fy = y + h / 2; clampCam(); applyCam(animate !== false);
 }
 // "HQ" = the whole built cluster, centered. "All" pulls back further so the open field shows around it.
-function fitHQ(animate) { const B = S.L.building; camFit(B.x - 45, B.y - 45, B.w + 90, B.h + 90, 1.08, animate); }
+function fitHQ(animate) { const B = S.L.building; const big = buildingSize().w >= 900; const m = big ? 18 : 45; camFit(B.x - m, B.y - m, B.w + 2 * m, B.h + 2 * m, big ? 1.02 : 1.08, animate); } // a big screen: the building fills the window (Geoffrey, 2026-11-13)
 function worldBounds() {
   // All destinations, not just HQ. The narrow layout extends far below it.
   const L = S.L;

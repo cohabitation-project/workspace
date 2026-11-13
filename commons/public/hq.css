@@ -246,3 +246,19 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 #building.building.narrow { aspect-ratio: auto !important; height: clamp(340px, 60dvh, 600px); max-height: calc(100dvh - 24px); }
 #building.building:fullscreen { width: 100vw; height: 100dvh; max-height: none; border-radius: 0; }
 #building.building:fullscreen .cam-controls { z-index: 20; }
+
+/* Desktop: the map is the page (Geoffrey, 2026-11-13: "it should take up the whole screen on a computer"). The heading
+   folds into one short line, the page goes full width, and the map takes the rest of the window's height. */
+@media (min-width: 1101px) {
+  .hq { max-width: none; padding: 6px 18px 24px; }
+  .hq-head { flex-wrap: nowrap; align-items: center; gap: 14px; }
+  .hq-head > div:first-child { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+  .hq-head h1 { font-size: 1.35rem; margin: 0; white-space: nowrap; }
+  .hq-head .lede { margin: 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hq-actions { padding-bottom: 0; flex-wrap: nowrap; }
+  .hq-actions .btn { padding: 7px 14px; font-size: 0.9rem; }
+  .hq-grid { grid-template-columns: minmax(0, 1fr) 290px; gap: 14px; margin-top: 8px; }
+  #building.building { height: calc(100dvh - 140px); min-height: 520px; max-height: none; }
+  .hq-grid > .side { max-height: calc(100dvh - 140px); min-height: 520px; overflow-y: auto; }
+  .legend { margin-top: 6px; }
+}
