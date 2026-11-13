@@ -97,7 +97,11 @@ function readPath(root, rel, idents = []) {
   if (!tracked(root, rel)) return `\`${rel}\`: not part of the public record (not committed), so not readable from a room.`;
   return render(rel, fs.readFileSync(abs, 'utf8'), idents, '');
 }
+// Prose (reports, briefs, records) is read whole up to MAX_DOC: a kin checking a 20k report must see all of it,
+// not the first half (Claude, 2026-11-13: "the Commons showed me about two-thirds of industry.md").
+const MAX_DOC = 26000;
 function render(rel, t, idents, where) {
+  if (/\.(md|txt)$/i.test(rel) && t.length <= MAX_DOC) return `\`${rel}\`${where} (${t.length} characters, whole):\n${t}`;
   if (rel.endsWith('.jsonl')) { const lines = t.trim().split('\n'); return `\`${rel}\` (${lines.length} lines; the last 20, each clipped):\n${lines.slice(-20).map((l) => l.slice(0, 300)).join('\n')}`; }
   if (t.length > MAX_FILE) { const f = focus(t, idents); if (f) return `\`${rel}\`${where} (${t.length} characters; showing the parts named in the conversation):\n${f.slice(0, 9000)}`; }
   const head = t.length > MAX_FILE ? `${t.slice(0, MAX_FILE)}\n[… ${t.length - MAX_FILE} more characters not shown. Name a function in backticks, e.g. \`mintRecovery\`, to see that part]` : t;
