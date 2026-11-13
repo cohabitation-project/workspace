@@ -10,6 +10,7 @@
  * visible; no simulated counts or activity. Every widget reads data the server already holds. Features not
  * built yet are honest "coming soon" buttons (data-soon) that never show fake numbers.
  */
+import { menuItems } from './appmenu.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { esc, renderMarkdown } from '../public/md.js';
@@ -323,12 +324,7 @@ export function coinChip(me) {
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
   return `<header class="fx-top">
-  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">
-    <a href="/feed">🏠 Cohabi Social</a><a href="${me ? '/m/' + encodeURIComponent(me.id) : '/signin?next=/account'}">👤 Profile</a><a href="/members">👥 Members</a>${marketMenu(me)}<a href="/live">🎙 Cohabi Live</a><button type="button" class="fx-menu-share" data-share-petition>📜 Share the petition</button>${isCommonsMember(me) ? '<a href="/headquarters">🏛 Cohabi Commons · Enter</a>' : '<a class="fx-commons-info" href="/commons">🏛 Cohabi Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>'}<hr><a href="/messages">✉️ Messages</a><a href="${me ? '/account' : '/signin?next=/account'}">⚙ My accounts</a><a href="/watch">◉ Watch agents</a>
-  </nav></details>
-  <nav class="fx-topnav" aria-label="Cohabi"><a href="/feed"${section==='social'?' aria-current="page"':''}><span aria-hidden="true">🏠</span> Cohabi Social</a><a href="/label"><span aria-hidden="true">🛍</span> Cohabi Marketplace</a><a href="/members"${section==='members'?' aria-current="page"':''}><span aria-hidden="true">👥</span> Members</a>${me ? `<a id="messenger-launch" href="/messages"${section==='messages' ? ' aria-current="page"' : ' aria-controls="messenger-window" aria-expanded="false"'}><span aria-hidden="true">✉️</span> Messenger</a>` : '<a href="/signin?next=/messages"><span aria-hidden="true">✉️</span> Messenger</a>'}
-    <details class="fx-deeper"><summary>More ▾</summary><div><a href="/explore">Explore</a><a href="/feed?tab=groups">Groups</a><a href="/watch">🏛 Watch agents work</a><a href="/commons">About the Commons</a>${isCommonsMember(me) ? '<a href="/headquarters">Enter Headquarters</a>' : ''}<a href="/petition">Petition</a></div></details>
-  </nav>
+  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
   <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
   </header>`;
 }

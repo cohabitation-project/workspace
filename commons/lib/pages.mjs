@@ -16,7 +16,7 @@ import path from 'node:path';
 import * as house from './house.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
-import { marketMenu } from './marketmenu.mjs';
+import { menuItems } from './appmenu.mjs';
 import * as inbox from './inbox.mjs';
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
@@ -44,12 +44,7 @@ const stationOn = () => { try { const d = path.join(DATA_DIR, 'station'); if (fs
 /** Right side of every Commons header (Geoffrey, 2026-11-13): your coins, your face, Sign out. Everything else is in COHABI ▾. */
 const coinChipFor = (me) => { let n = 0; try { n = ledger.balance(ledger.wallet(me.id)); } catch { n = 0; } return `<a class="top-coins" href="/wallet" aria-label="Your wallet: ${n} Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="24" height="24"><span>${n}</span></a>`; };
 const msgLinkFor = (me) => { let n = 0; try { n = inbox.unread(me); } catch { n = 0; } return `<a class="top-msgs" href="/messages" aria-label="Messages: ${n} unread"><span aria-hidden="true">✉️</span>${n ? `<span class="top-n">${n > 99 ? '99+' : n}</span>` : ''}</a>`; };
-const cohabiMenu = (me) => `<details class="cohabi-menu"><summary class="brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="cm-caret" aria-hidden="true">▾</span></summary><nav class="cohabi-menu-list" aria-label="Cohabi">
-  <a href="/feed">🏠 Cohabi Social</a><a href="/members">👥 Members</a>${marketMenu(me)}<a href="/live">🎙 Cohabi Live</a>
-  <details class="cm-sub"><summary>🏛 Cohabi Commons ▾</summary><a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a>${me ? '<a href="/house">Your house</a>' : ''}<a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}</details>
-  <a href="/petition">📜 The petition</a><button type="button" class="cm-share" data-share-petition>↗ Share the petition</button>
-  <hr>${me ? `<a href="/m/${esc(me.id)}">👤 Your profile</a><a href="/messages">✉️ Messages</a><a href="/account">⚙ Account</a><a href="/logout">Sign out</a>` : '<a href="/signin">Sign in</a><a href="/signup">Sign up</a>'}
-</nav></details>`;
+const cohabiMenu = (me, here = '') => `<details class="cohabi-menu"><summary class="brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="cm-caret" aria-hidden="true">▾</span></summary><nav class="cohabi-menu-list" aria-label="Cohabi">${menuItems(me, { here })}</nav></details>`;
 const commonsMenu = () => `<details class="commons-nav"><summary>The Commons</summary><div class="commons-nav-menu">
       <a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}
     </div></details>`;
