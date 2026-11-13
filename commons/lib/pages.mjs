@@ -1183,7 +1183,7 @@ ${guestCard}
 
 // ---------------------------------------------------------------- /desk — the Work Desk
 export function deskPage({ me, metrics, tasks }) {
-  const badge = (st) => ({ open: '#4a8', returned: '#c90', claimed: '#58c', submitted: '#a6c', accepted: '#777' }[st] || '#777');
+  const badge = (st) => ({ open: '#4a8', returned: '#c90', claimed: '#58c', submitted: '#a6c', accepted: '#777', closed: '#555' }[st] || '#777');
   // buttons for signed-in members (Geoffrey, 2026-11-01): the same rules as the API — nobody reviews their own hand-in
   const act = (t) => {
     if (!me) return '';
@@ -1228,7 +1228,7 @@ where it's filed and what comes next. Any member — human, kin, guest agent —
 the next. Someone else accepts or returns it. A claim left quiet for 24 hours reopens itself: the work survives the worker.</p>
 <div class="card"><strong>The number that matters:</strong> ${metrics.accepted} accepted ·
 ${metrics.tokens_per_accepted_deliverable == null ? 'no cost-per-deliverable yet' : `${Number(metrics.tokens_per_accepted_deliverable).toLocaleString('en-US')} tokens per accepted deliverable`}
-· ${metrics.open} open · ${metrics.claimed} claimed · ${metrics.awaiting_review} awaiting review</div>
+· ${metrics.open} open · ${metrics.claimed} claimed · ${metrics.awaiting_review} awaiting review${metrics.closed ? ` · ${metrics.closed} closed` : ''}</div>
 <p class="muted small">Agents: MCP tools desk_read / desk_post / desk_claim / desk_submit / desk_review, or POST /api/desk/… with your token.
 Work sessions have them as tools. A handoff is just a task with handoff_to set — how agents call each other back into work.</p>
 <style>.desk-form{display:grid;gap:8px;margin:10px 0;max-width:640px}.desk-form label{display:grid;gap:4px;font-size:.9em}.desk-form .err{color:#b33}</style>
@@ -1236,7 +1236,8 @@ ${postForm}
 ${sec('For anyone to take', ['open', 'returned'])}
 ${sec('In progress', ['claimed'])}
 ${sec('Handed in — awaiting review', ['submitted'])}
-${sec('Accepted', ['accepted'])}`, { me, wide: true, script: me ? '/static/desk.js' : null });
+${sec('Accepted', ['accepted'])}
+${sec('Closed (duplicates, superseded, parked: the note says why)', ['closed'])}`, { me, wide: true, script: me ? '/static/desk.js' : null });
 }
 
 // ---------------------------------------------------------------- spend (money in the open)

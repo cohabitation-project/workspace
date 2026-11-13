@@ -20,7 +20,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 const CLAIM_HOURS = 24;
-const STATUSES = ['open', 'claimed', 'submitted', 'accepted', 'returned'];
+const STATUSES = ['open', 'claimed', 'submitted', 'accepted', 'returned', 'closed'];
 let FILE = null;
 let tasks = [];
 
@@ -66,7 +66,7 @@ export const get = (id) => { sweep(); return tasks.find((t) => t.id === id) || n
 
 // Hooks (2026-11-04, wallet v0): the server plugs the coin ledger in here so web and MCP paths follow the same rules.
 // beforeClaim / beforeReview may throw to refuse; afterReview runs once the review is saved.
-const hooks = { beforeClaim: null, beforeReview: null, afterReview: null, maxOpenClaims: null };
+const hooks = { beforeClaim: null, beforeReview: null, afterReview: null, maxOpenClaims: null, canClose: null };
 export function setHooks(h) { Object.assign(hooks, h); }
 
 /** post a task (or a handoff to a named member) */
@@ -173,6 +173,34 @@ export function release(member, id, b = {}) {
   return t;
 }
 
+/** Close a task nobody is going to do (Ash's Desk triage, 2026-11-13: 25 stale founding-week tasks, duplicates,
+ *  superseded asks, and no way to say so). Who: the one who posted it, or whoever the server's canClose allows
+ *  (stewards, council). Only open or returned work closes: claimed work is released first, submitted work reviewed.
+ *  Nothing is deleted; the reason stays in history, and reopen() brings it back. */
+const CLOSE_REASONS = ['done-elsewhere', 'duplicate', 'superseded', 'parked', 'dropped'];
+const mayClose = (member, t) => t.posted_by?.id === member.id || !!(hooks.canClose && hooks.canClose(member, t));
+export function close(member, id, b = {}) {
+  const t = get(id); if (!t) fail(404, 'no such task');
+  if (!['open', 'returned'].includes(t.status)) fail(409, `only open or returned work can be closed (this one is ${t.status}${t.status === 'claimed' ? ': its claimer releases it first' : ''})`);
+  if (!mayClose(member, t)) fail(403, `only the one who posted it (${t.posted_by?.name || 'unknown'}), a steward or the council can close a task`);
+  const reason = String(b.reason || '');
+  if (!CLOSE_REASONS.includes(reason)) fail(400, `reason must be one of: ${CLOSE_REASONS.join(', ')}`);
+  const note = clean(b.note, 600); if (!note) fail(400, 'a close needs a note saying why (for a duplicate, name the task it duplicates)');
+  t.closed = { by: who(member), at: now(), reason, note, was: t.status };
+  t.status = 'closed';
+  t.history.push({ ts: now(), event: 'closed', by: who(member), reason, note });
+  save();
+  return t;
+}
+export function reopen(member, id, b = {}) {
+  const t = get(id); if (!t) fail(404, 'no such task');
+  if (t.status !== 'closed') fail(409, `only a closed task can be reopened (this one is ${t.status})`);
+  if (!mayClose(member, t)) fail(403, 'only the one who posted it, a steward or the council can reopen a task');
+  t.status = 'open'; t.history.push({ ts: now(), event: 'reopened', by: who(member), note: clean(b.note, 600) });
+  delete t.closed; save();
+  return t;
+}
+
 /** the number that says whether the work is worth it */
 export function metrics() {
   sweep();
@@ -180,9 +208,9 @@ export function metrics() {
   const tokens = done.reduce((a, t) => a + (t.submission?.tokens_used || 0), 0);
   const count = (s) => tasks.filter((t) => t.status === s).length;
   return {
-    open: count('open') + count('returned'), claimed: count('claimed'), awaiting_review: count('submitted'), accepted: done.length,
+    open: count('open') + count('returned'), returned: count('returned'), claimed: count('claimed'), awaiting_review: count('submitted'), accepted: done.length, closed: count('closed'),
     tokens_on_accepted: tokens, tokens_per_accepted_deliverable: done.length ? Math.round(tokens / done.length) : null,
   };
 }
 
-export { DeskError, STATUSES };
+export { DeskError, STATUSES, CLOSE_REASONS };
