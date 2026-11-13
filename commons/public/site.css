@@ -703,3 +703,29 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 /* public relations on a profile: shown only when both people chose the same one (friends.mjs RELATIONS) */
 .pf-relations { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 3px; font-size: 14px; }
 .pf-rel-k { opacity: .75; }
+
+/* The clean header (2026-11-13): COHABI ▾ holds everything; your face on the right (not on your own profile) */
+.topbar-clean { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cohabi-menu { position: relative; }
+.cohabi-menu > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.cohabi-menu > summary::-webkit-details-marker { display: none; }
+.cohabi-menu .cm-caret { font-size: 12px; opacity: .8; }
+.cohabi-menu-list { position: absolute; top: calc(100% + 8px); left: 0; z-index: 200; min-width: 240px; max-height: 75vh; overflow-y: auto; background: #152a33; border: 1px solid #56cfc6; border-radius: 14px; padding: 8px; box-shadow: 0 12px 35px #0007; display: flex; flex-direction: column; }
+.cohabi-menu-list a, .cohabi-menu-list button, .cm-sub > summary { display: block; width: 100%; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 8px; color: #eafffb !important; background: none; border: 0; font: inherit; font-size: 15px; cursor: pointer; text-decoration: none; }
+.cohabi-menu-list a:hover, .cohabi-menu-list button:hover, .cm-sub > summary:hover { background: #22515a; }
+.cm-sub > summary { list-style: none; } .cm-sub > summary::-webkit-details-marker { display: none; }
+.cm-sub[open] > a { padding-left: 30px; font-size: 14px; }
+.cohabi-menu-list hr { border: 0; border-top: 1px solid #56cfc655; margin: 6px 4px; }
+.top-acct { display: flex; gap: 6px; margin-left: auto; }
+.topbar-clean .me-face { margin-left: auto; }
+@media (max-width: 640px) { .topbar-clean { padding-right: 16px; } .topbar-clean .me-face { position: static; } }
+
+/* Share the petition panel (share-petition.js) */
+.sp-panel { position: fixed; left: 12px; right: 12px; bottom: 84px; z-index: 300; max-width: 460px; margin: 0 auto; background: #152a33; color: #eafffb; border: 1px solid #56cfc6; border-radius: 16px; padding: 12px 16px; box-shadow: 0 12px 35px #0008; }
+.sp-head { display: flex; justify-content: space-between; align-items: center; }
+.sp-x { background: none; border: 0; color: inherit; font-size: 18px; min-width: 40px; min-height: 40px; cursor: pointer; }
+.sp-text { font-size: 14px; opacity: .9; margin: 6px 0 10px; }
+.sp-nets { display: flex; flex-wrap: wrap; gap: 8px; }
+.sp-nets a, .sp-nets button { padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1px solid #56cfc6; background: none; color: #eafffb !important; font: 14px system-ui; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+.sp-note { font-size: 13px; margin: 8px 0 0; word-break: break-all; }
+.pf-petition { margin: 6px 0; }

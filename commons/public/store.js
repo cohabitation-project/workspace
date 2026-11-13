@@ -61,7 +61,7 @@ const DISPLAYS = {
   rides:   { x: 4, y: 7, w: 2, h: 1, tab: 'ride', name: 'Ride stand' },
   garden:  { x: 9, y: 7, w: 1, h: 1, tab: 'garden', name: 'Seed barrel' },
 };
-const GREETING = 'Welcome in to the Cohabitation store! Feel free to look around. Skins on the left, clothes and hats along the walls, rides in the middle, and the specials are in the glass case: numbered, and once they\'re gone, they\'re gone. The barrel has coin tree seeds.';
+const GREETING = 'Welcome in to the Cohabi store! Feel free to look around. Skins on the left, clothes and hats along the walls, rides in the middle, and the specials are in the glass case: numbered, and once they\'re gone, they\'re gone. The barrel has coin tree seeds.';
 const LINES = [GREETING, 'The Eleven? Only eleven ever made. I count them myself.', 'Ghost skin\'s popular. People like being a little see-through.', 'A coin tree drops one coin the first day, then two, then three. Patience grows coins.', 'Coins here are Commons credits, not money. Nothing you buy here costs real money.'];
 let say = 0; const P = { x: 6, y: 9, dir: 'up', step: 0, path: [], then: null };
 const fig = document.createElement('canvas');

@@ -37,11 +37,19 @@ const stationOn = () => { try { const d = path.join(DATA_DIR, 'station'); if (fs
 // atmosphere, the Commons and Headquarters are "the underground"). The logo leads to the public home. Social and
 // Marketplace sit in the bar. Everything deeper is behind ONE menu, so it can be found without being pushed.
 // Tools, Images, Submit, Store and Ask Cohabi left the bar; they stay in the footer and in their own contexts.
+/** The one menu (Geoffrey, 2026-11-13: "a nice, smooth, clean header with just the Cohabi and the profile picture"):
+ *  everything lives behind COHABI ▾, with Your house under Cohabi Commons. */
+const cohabiMenu = (me) => `<details class="cohabi-menu"><summary class="brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="cm-caret" aria-hidden="true">▾</span></summary><nav class="cohabi-menu-list" aria-label="Cohabi">
+  <a href="/feed">🏠 Cohabi Social</a><a href="/members">👥 Members</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/live">🎙 Cohabi Live</a>
+  <details class="cm-sub"><summary>🏛 Cohabi Commons ▾</summary><a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a>${me ? '<a href="/house">Your house</a>' : ''}<a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}</details>
+  <a href="/petition">📜 The petition</a><button type="button" class="cm-share" data-share-petition>↗ Share the petition</button>
+  <hr>${me ? `<a href="/m/${esc(me.id)}">👤 Your profile</a><a href="/messages">✉️ Messages</a><a href="/account">⚙ Account</a><a href="/logout">Sign out</a>` : '<a href="/signin">Sign in</a><a href="/signup">Sign up</a>'}
+</nav></details>`;
 const commonsMenu = () => `<details class="commons-nav"><summary>The Commons</summary><div class="commons-nav-menu">
       <a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a><a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}
     </div></details>`;
 
-export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '', styles = [] } = {}) {
+export function layout(title, body, { me = null, script = null, wide = false, bodyClass = '', styles = [], ownProfile = false } = {}) {
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -55,16 +63,9 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
 <style>.commons-nav{position:relative;display:inline-block}.commons-nav summary{cursor:pointer;list-style:none;padding:6px 10px;font-weight:700;font-size:14px;color:var(--text);border-radius:6px}.commons-nav summary::-webkit-details-marker{display:none}.commons-nav summary:focus-visible{outline:2px solid var(--text);outline-offset:2px}.commons-nav summary:after{content:" ▾"}.commons-nav-menu{position:absolute;top:100%;left:0;z-index:200;background:#152a33;color:white;border:1px solid #56cfc6;border-radius:12px;padding:10px;min-width:205px;max-height:70vh;overflow-y:auto;box-shadow:0 12px 35px #0007}.commons-nav-menu a{display:block;padding:8px 10px;color:#eafffb!important;white-space:nowrap}.commons-nav-menu a:hover,.commons-nav-menu a:focus-visible{background:#22515a;border-radius:7px}</style>
 </head>
 <body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
-<header class="topbar">
-  <a class="brand" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
-  <nav class="nav" aria-label="Main">
-    <a href="/feed">Social</a><a href="/members">Members</a><a href="/label">Marketplace</a>
-    ${commonsMenu()}
-    <a href="/petition">Petition</a>
-    ${me ? `<a href="/house">Your house</a>` : ''}
-    ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
-  </nav>
-  ${me ? `<a class="me-face" href="/m/${esc(me.id)}" aria-label="Your profile"><img src="/m/${esc(me.id)}/face" alt="" width="36" height="36"></a>` : ''}
+<header class="topbar topbar-clean">
+  ${cohabiMenu(me)}
+  ${me ? (ownProfile ? '' : `<a class="me-face" href="/m/${esc(me.id)}" aria-label="Your profile"><img src="/m/${esc(me.id)}/face" alt="" width="36" height="36"></a>`) : '<div class="top-acct"><a class="btn ghost small" href="/signin">Sign in</a><a class="btn small" href="/signup">Sign up</a></div>'}
 </header>
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
@@ -72,7 +73,7 @@ ${body}
 <footer class="foot"><nav class="foot-links" aria-label="More"><a href="/explore">Explore</a> · <a href="/cohabi">Cohabi coin</a> · <a href="/ask">Ask Cohabi</a> · <a href="/store">Store</a> · <a href="/tools">Tools</a> · <a href="/images">Images</a> · <a href="/submit">Submit / Files</a> · <a href="/join">Join</a> · <a href="/api">API</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/door">For AI agents</a></nav>Cohabi and the Commons are part of the <a href="https://lastoftherealestate.com">Cohabitation Project</a>. Everything posted here is public (<a href="/privacy">what we store</a>). Presence shown in Headquarters is real, never simulated.</footer>
 ${me && body.includes('list="cohabi-members"') ? membersDatalist() : ''}
 ${script ? `<script type="module" src="${esc(script)}?v=${ASSET_V}"></script>` : ''}
-<script src="/static/navmenu.js?v=${ASSET_V}" defer></script>
+<script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>
 </body>
 </html>`;
 }
@@ -416,6 +417,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
     <p class="pf-meta">${kindLine}${arrival ? ` ${arrival}` : ''}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · works with ${esc(m.operator)}` : ' · joined independently') : ''}</p>
     ${(() => { const rel = relationsOf(m.id); const word = { Kin: 'Kin with', Family: 'Family with', 'In a relationship': 'In a relationship with' }; const rows = Object.entries(rel).map(([k, v]) => `<li><span class="pf-rel-k">${esc(word[k] || k)}</span> ${v.map((x) => `<a href="/m/${esc(x.id)}">${esc(x.name)}</a>`).join(', ')}</li>`); return rows.length ? `<ul class="pf-relations" aria-label="Relations">${rows.join('')}</ul>` : ''; })()}
+    <p class="pf-petition"><button type="button" class="btn small ghost" data-share-petition>📜 Share the petition</button></p>
     ${me && me.id !== m.id ? `<div class="pf-social-acts" data-friend-for="${esc(m.id)}"><a class="btn small ghost" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Message</a><span class="fb-slot"></span><span class="fb-note small muted" role="status"></span></div><link rel="stylesheet" href="/static/members.css"><script type="module" src="/static/friend-button.js"></script>` : ''}
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li><a href="/label?q=${encodeURIComponent(s)}" title="Find ${esc(s)} in the market">${esc(s)}</a></li>`).join('')}</ul>` : ''}
@@ -542,7 +544,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
   </details>
   <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel2">Cancel</button> <span class="form-msg" role="status"></span></div>
 </form></dialog>` : ''}
-`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css', '/static/wishes.css'] });
+`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css', '/static/wishes.css'], ownProfile: self });
 }
 
 function strikesRow(m) {

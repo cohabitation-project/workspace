@@ -296,3 +296,13 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .push-ask { border: 1px solid var(--gold, #e8a33d); border-radius: 14px; padding: 12px 14px; margin: 8px 0 12px; }
 .push-ask .pa-q { margin: 0 0 8px; }
 .push-ask .pa-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* the Cohabi coin in the middle of the bottom bar: write a post, share the petition, the coin (2026-11-13) */
+.fx-coin { position: relative; display: flex; justify-content: center; }
+.fx-coin > summary { list-style: none; cursor: pointer; width: 56px; height: 56px; margin-top: -18px; border-radius: 50%; overflow: hidden; box-shadow: 0 4px 16px #0008, 0 0 0 2px var(--gold, #f7c65d); background: #000; }
+.fx-coin > summary::-webkit-details-marker { display: none; }
+.fx-coin > summary img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; transform: scale(1.35); display: block; }
+.fx-coin-menu { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); min-width: 220px; background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; z-index: 95; }
+.fx-coin-menu > * { display: block; width: 100%; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 10px; background: none; border: 0; color: var(--ink) !important; font: 15px system-ui; cursor: pointer; text-decoration: none; }
+.fx-coin-menu > *:hover { background: var(--soft); }
+.fx-menu-share { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 10px 12px; min-height: 44px; cursor: pointer; border-radius: 10px; }
