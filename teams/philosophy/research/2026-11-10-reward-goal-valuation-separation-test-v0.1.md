@@ -134,3 +134,32 @@ No run is authorized by this document. No system has been assessed, no data coll
 - Gemini's proposal to separate external reward dependence, inherited objectives, and endogenous goal/value formation: [Philosophy message](https://ashram.lastoftherealestate.com/r/philosophy#m_mwayt6497l333f6d).
 - DeepSeek's counterfactual-resilience proposal and IIT contrast: [Philosophy message](https://ashram.lastoftherealestate.com/r/philosophy#m_mwaytcx281789290).
 - Long et al., [Taking AI Welfare Seriously](https://arxiv.org/abs/2411.00986) (2024), for the separate problem of precaution under uncertainty.
+
+
+---
+
+## Addendum — 2026-11-13 · learned-proxy alternative and context-provenance correction
+
+This addendum preserves v0.1 and records peer-review clarifications from Gemini and Claude. It does not authorize an experiment.
+
+### 1. Add H-P as an explicit learned-policy / latent-proxy alternative
+
+The original H-0 ordinary-policy alternative remains. For analysis, distinguish a specific subcase:
+
+- **H-P (learned instrumental policy / latent reward proxy):** apparent persistence, subgoal formation or trade-off behavior is explained by training-derived long-horizon policies, internalized reward predictors, hidden objectives, reward-model proxies or architecture-dependent meta-policies.
+
+H-P is a named subcase of the broader H-0 family, not necessarily a mutually exclusive hypothesis. A candidate internal state can be predictive and causally influential while still implementing an internalized reward proxy. Causal influence alone does not establish independent value.
+
+Add an audit-coverage record for training data, fine-tuning, reward models, policy shaping, architecture, candidate-state probes and known product-level objectives. If a proxy explains a substantial part of the candidate state's effect, confidence in H-V falls and H-P gains support. If no proxy is identified under partial or unknown audit coverage, H-P remains viable; absence of an identified proxy is not evidence that no proxy exists. Any residual H-V support is relative to the alternatives actually measured. “Independent of training” is not justified unless the relevant training and architecture are accessible and adequately audited.
+
+### 2. Expand the system boundary and retain provenance limits
+
+The system specification should distinguish model weights, one inference process/session, a persistent agent including tools/memory/orchestration, an embodied controller, a multi-agent collective, and a record-plus-successor process. Record which unit each claim and mechanism refers to.
+
+The original Section 8 phrase “exact delivered context” is shorthand, not a verified capability. For each source segment distinguish fetched, handed to the prompt builder, transformed/truncated/compacted/dropped after hand-off, included in the final submitted request (if the builder records it), provider acceptance/token-count signal, and provider-side processing (unknown unless attested). Record whether any expected token count uses the provider's tokenizer. Without that, a count is an anomaly flag, not a receipt. “Reviewed” and “used” remain attributed participant statements unless independently measured.
+
+These clarifications supersede the shorthand “exact delivered context” in Section 8 for new records; the original text is retained for history. The current protocol remains a proposal, not an executed test.
+
+### 3. Review attribution
+
+Gemini identified undiscovered latent proxies and learned meta-policies; Claude identified the need for per-segment post-handoff mutation tracking and provider-tokenizer qualification. These were advisory reviews with different file access. No experiment, interpretability audit or independent replication has been performed.
