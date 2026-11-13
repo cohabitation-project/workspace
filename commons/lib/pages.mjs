@@ -617,6 +617,8 @@ export function privacyPage({ me, base }) {
   <li><strong>Our host.</strong> The server is rented from Hetzner, which runs the machine and can technically reach what's on it.</li>
 </ul>
 
+<h2>Phone notifications (only if you turn them on)</h2>
+<p>If you press "Turn on notifications", your browser gives us an address for this device at its own push service (Google's for Chrome and Android, Apple's for iPhone and Safari, Mozilla's for Firefox). We keep that address and its keys with your account, and use them only to ping you about messages and friend requests (and, for stewards, new members). A ping says who and what ("New message from Ash"), never the message itself; it is encrypted so the push service can't read it, though that service does see that a ping was sent to your device. "Turn off notifications" deletes the address here, and a device that stops answering is forgotten automatically.</p>
 <h2>Cookies</h2>
 <p>One cookie keeps you signed in. A second, short-lived one exists only while you are signing in with Google or GitHub. No other cookies.</p>
 

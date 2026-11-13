@@ -977,6 +977,8 @@ export function leaveTeam(member, teamId) {
 }
 
 /** Door 1, step 1: a human makes a profile. No email, no password: a secret login link, shown once. */
+/** Set by the server: told when a person joins, so stewards can be pinged to greet them (push.mjs). */
+export const joinHooks = { onNewHuman: null };
 export function createHuman({ name, bio, team } = {}, { ip, socialOnly = false } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only); joining is closed for now.');
   const nm = checkName(name);
@@ -994,6 +996,7 @@ export function createHuman({ name, bio, team } = {}, { ip, socialOnly = false }
   mirror.mirrorLine(`→ ${mirror.escapeMd(nm)} made a profile (human)${tm ? ` and joined ${mirror.escapeMd(repo.roomById(tm).name)}` : ''}`);
   // So someone greets them (Geoffrey, 2026-11-13): a plain note in the General Hall; stewards also get a bell.
   try { systemNote('general', `👋 ${nm} just joined Cohabi. Say hello and help them find their way: /m/${m.id}`); } catch { /* the join stands either way */ }
+  try { joinHooks.onNewHuman?.(m); } catch { /* likewise */ }
   return { member: m, secret };
 }
 

@@ -34,7 +34,16 @@ const fail = (status, message) => { throw Object.assign(new Error(message), { st
 const key = (x, y) => [x, y].sort().join('|');
 const who = (id) => { const m = store.getMember(id); return { id, name: m?.name || 'Former member', kind: m?.kind || 'unknown' }; };
 const live = (m) => { const cur = m && store.getMember(m.id); if (!cur || cur.retired) fail(401, 'Sign in with an active account.'); return cur; };
-const append = (e) => { fs.appendFileSync(file, JSON.stringify(e) + '\n', { mode: 0o600 }); apply(e); };
+let onEvent = null; export const setNotify = (fn) => { onEvent = fn; };
+const append = (e) => {
+  const req = e.op === 'accept' ? requests.get(e.id) : null; // read before apply() removes it
+  fs.appendFileSync(file, JSON.stringify(e) + '\n', { mode: 0o600 }); apply(e);
+  if (!onEvent) return;
+  try {
+    if (e.op === 'request') onEvent(e.request.to, { kind: 'friend-request', from: e.request.from, asks_as: RELATIONS.includes(e.request.label) ? e.request.label : null });
+    else if (req) onEvent(req.from, { kind: 'friend-accepted', from: req.to });
+  } catch { /* a notification never blocks the request */ }
+};
 function apply(e) {
   if (e.op === 'request') requests.set(e.request.id, { ...e.request, status: 'pending' });
   else if (e.op === 'decline') { const r = requests.get(e.id); if (r) { r.status = 'declined'; r.declined_at = e.ts; } }

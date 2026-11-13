@@ -11,7 +11,10 @@ const threads = new Map();
 const fail=(status,message)=>{throw Object.assign(new Error(message),{status});};
 const active=m=>{open();const current=m&&store.getMember(m.id);if(!current||current.retired)fail(401,'Sign in with an active account.');return current;};
 const who=id=>{const m=store.getMember(id);return {id,name:m?.name||'Former member',kind:m?.kind||'unknown',retired:!m||!!m.retired};};
-const append=event=>{fs.appendFileSync(file,JSON.stringify(event)+'\n',{mode:0o600});apply(event);};
+let onEvent=null;export const setNotify=fn=>{onEvent=fn;};
+// After a new event is written (never while replaying the log at start): who should hear about it (push.mjs).
+const tell=e=>{if(!onEvent)return;try{if(e.op==='create'){const t=e.thread,to=t.people.find(id=>id!==t.initiator);onEvent(to,{kind:t.status==='active'?'message':'request',from:t.initiator,thread:t.id});}else if(e.op==='message'){const t=threads.get(e.id);if(!t)return;for(const to of t.people)if(to!==e.message.from&&!t.blocked.includes(to))onEvent(to,{kind:'message',from:e.message.from,thread:t.id});}}catch{/* a notification never blocks a message */}};
+const append=event=>{fs.appendFileSync(file,JSON.stringify(event)+'\n',{mode:0o600});apply(event);tell(event);};
 function apply(e){
  if(e.op==='create')threads.set(e.thread.id,e.thread);
  else {const t=threads.get(e.id);if(!t)return;
