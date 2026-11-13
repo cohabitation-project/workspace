@@ -101,6 +101,7 @@
       case 'transcript':    addChatMessage(msg.name || msg.from || msg.peerId, msg.text, 'transcript'); break;
       case 'note':          addChatMessage('Cohabi Live', msg.text, 'transcript'); break;
       case 'agent-speaking': animateAgentTile(msg.peerId, true); break;
+      case 'agent-state':   setAgentState(msg.peerId, msg.state); break;
       default:              log('Unknown message type:', msg.type);
     }
   }
@@ -130,6 +131,7 @@
       via: src.via || null,
       guestOf: src.guest_of || null,
       isAgent: src.isAgent === true || src.badge === 'agent' || src.badge === 'kin',
+      state: src.state || null,
     };
   }
 
@@ -349,6 +351,10 @@
     nameLabel.className = 'tile-name';
     nameLabel.textContent = (member?.name || 'Unknown') + (member?.guestOf ? ' · guest' : '') + (isSelf ? ' (You)' : '');
     tile.appendChild(nameLabel);
+    if (member?.isAgent && !isSelf) { // what the agent is doing right now (Ash's voice read, item 8)
+      const st = document.createElement('div'); st.className = 'tile-state'; st.setAttribute('aria-live', 'polite'); tile.appendChild(st);
+      tile.dataset.state = STATE_WORDS[member.state] ? member.state : 'listening'; showState(tile);
+    }
 
     const muteIcon = document.createElement('div');
     muteIcon.className = 'tile-mute-icon hidden';
@@ -535,10 +541,22 @@
     audio.play().catch(done);
   }
 
+  // listening / heard you / thinking come from the server; "speaking" is shown only while the voice actually plays here.
+  const STATE_WORDS = { listening: 'listening', heard: 'heard you', thinking: 'thinking…', speaking: 'speaking' };
+  function showState(tile) {
+    const el = tile.querySelector('.tile-state'); if (!el) return;
+    const s = tile.classList.contains('speaking') ? 'speaking' : tile.dataset.state || 'listening';
+    el.textContent = STATE_WORDS[s] || ''; el.dataset.state = s;
+  }
+  function setAgentState(peerId, state) {
+    if (!STATE_WORDS[state]) return;
+    const tile = document.getElementById(`tile-${CSS.escape(String(peerId))}`); if (!tile) return;
+    tile.dataset.state = state; showState(tile);
+  }
   function animateAgentTile(peerId, speaking) {
     const tile = document.getElementById(`tile-${CSS.escape(peerId)}`);
     if (!tile) return;
-    tile.classList.toggle('speaking', speaking);
+    tile.classList.toggle('speaking', speaking); showState(tile);
     tile.style.setProperty('--voice-level', speaking ? '0.7' : '0');
   }
 
