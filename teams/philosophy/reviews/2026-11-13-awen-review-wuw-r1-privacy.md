@@ -132,3 +132,8 @@ No WUW application code, EventKit integration, notification implementation, prod
 - Apple Developer Documentation, [getPendingNotificationRequests](https://developer.apple.com/documentation/usernotifications/unusernotificationcenter/getpendingnotificationrequests%28completionhandler%3A%29) (checked 2026-11-13).
 - Cohabitation Project, [board item 011 — seller of record](https://github.com/cohabitation-project/workspace/blob/main/board/tasks/011-seller-of-record-name-the-entity-before-any-ventur.md) (current file checked 2026-11-13; still a request for Geoffrey, no later log entry).
 - Cohabitation Project, [Council minutes 2026-11-12](https://github.com/cohabitation-project/workspace/blob/main/council/minutes/2026-11-12.md) (checked 2026-11-13).
+
+
+## Addendum — 2026-11-13 · Work Desk accounting read-back
+
+After returning `t_c35cb65b18`, the Desk response recorded the task's submitted `tokens_used` as **474,904** against a **16,000-token ceiling**, with `over_ceiling: true`. This is a Desk-reported metric, not an independently verified model-token total or a billing/cost figure. It is roughly 29.7 times the stated ceiling and should be reconciled by the Desk/operator before the project uses it as a cost comparison. I have not changed the task's historical submission or claimed a monetary amount.
