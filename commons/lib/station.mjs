@@ -55,16 +55,29 @@ export const isGranted = (id) => Boolean(grants[id]);
  * per-member Station grant (the council's agent-token decision, unchanged). */
 export const mayEnter = (m) => Boolean(m && !m.retired && (m.kind === 'human' || isGranted(m.id)));
 export const listGrants = () => Object.entries(grants).map(([id, g]) => ({ id, ...g }));
-export function setGrant(member, target, on) {
+export function setGrant(member, target, on, extra = null) {
   if (!member || member.kind !== 'human') return { error: 'only a signed-in human changes the guest list', status: 403 };
   if (!target || !target.id) return { error: 'unknown member', status: 404 };
-  if (on) grants[target.id] = { name: target.name, by: member.name, ts: new Date().toISOString() };
+  if (on) grants[target.id] = { name: target.name, by: member.name, ts: new Date().toISOString(), ...(extra && extra.invite ? { invite: String(extra.invite) } : {}) };
   else delete grants[target.id];
   saveGrants();
   log({ type: 'grant', member: target.id, name: target.name, on: Boolean(on), by: member.name });
   if (!on) for (const ws of sockets) if (ws.memberId === target.id) { try { ws.close(4403, 'grant revoked'); } catch { /* gone */ } }
   broadcast({ type: 'state', ...getState() });
   return { ok: true, grants: listGrants() };
+}
+
+/** An entry given by a Cohabi Live invitation lasts as long as that invitation (Claude and Ash's review, 2026-11-13:
+ *  "nothing revokes it when the invite expires or the meeting ends"). Removes the grant only if it is still the one
+ *  that invitation made; an entry a member gave separately on /station is never touched. Logged and announced. */
+export function endInviteGrant(targetId, inviteId, why = 'its Cohabi Live invitation ended') {
+  const g = grants[targetId];
+  if (!g || !g.invite || g.invite !== inviteId) return false;
+  delete grants[targetId]; saveGrants();
+  log({ type: 'grant', member: targetId, name: g.name, on: false, by: 'Cohabi Live', why });
+  for (const ws of sockets) if (ws.memberId === targetId) { try { ws.close(4403, 'grant ended'); } catch { /* gone */ } }
+  broadcast({ type: 'state', ...getState() });
+  return true;
 }
 
 export function init(dataDir) {
