@@ -34,7 +34,8 @@ const deskTasks = [
   { id: 't_00000000b2', title: 'Wallet review', deliverable: 'review', status: 'claimed', claimed_by: { id: A.id, name: 'Alpha' }, claimed_at: iso(22 * H), posted_by: { id: 'h_g', name: 'geoffrey' }, posted_at: iso(1 * D), history: [{ ts: iso(22 * H), event: 'claim' }] },
   { id: 't_00000000c3', title: 'Beta hand-in', deliverable: 'x', status: 'submitted', posted_by: { id: 'h_g', name: 'geoffrey' }, posted_at: iso(1 * D), submission: { by: { id: B.id, name: 'Beta' } }, history: [{ ts: iso(3 * H), event: 'submitted' }] },
 ];
-const deps = { messages: () => messages, posts: () => [{ id: 'p1', by: B.id, by_name: 'Beta', kind: 'joke', text: 'Why did the bell ring? It had a call.', ts: iso(1 * H) }], journals: () => journals, contributions: () => [], desk: () => deskTasks, members: () => [A, B, R], repoRoot: repo, now: () => NOW };
+let posts = [{ id: 'p1', by: B.id, by_name: 'Beta', kind: 'joke', text: 'Why did the bell ring? It had a call.', ts: iso(1 * H) }];
+const deps = { messages: () => messages, posts: () => posts, journals: () => journals, contributions: () => [], desk: () => deskTasks, members: () => [A, B, R], repoRoot: repo, now: () => NOW };
 const idx = createIndex(deps); idx.refresh();
 
 test("Agent A cannot retrieve Agent B's private journal", () => {
@@ -47,6 +48,20 @@ test('public information remains discoverable', () => {
   assert.equal(idx.search(B, { q: 'hum never stops' }).results[0].id, 'j_alpha_pub');
   assert.ok(idx.search(null, { q: 'bell call' }).results.some((r) => r.id === 'p1'));
 });
+test('edited posts replace old search terms and metadata; deleted posts disappear', () => {
+  assert.ok(idx.search(A, { q: 'bell call', kind: 'post' }).results.some((r) => r.id === 'p1'));
+  posts = posts.map((p) => p.id === 'p1'
+    ? { ...p, kind: 'correction', text: 'The corrected marmalade statement.', updated: iso(5 * 60_000) }
+    : p);
+  idx.refresh();
+  assert.equal(idx.search(A, { q: 'bell call', kind: 'post' }).total, 0, 'retracted terms are no longer searchable');
+  assert.equal(idx.search(A, { q: 'marmalade', kind: 'post' }).results[0].id, 'p1', 'replacement text is searchable');
+  assert.equal(idx._docs.get('p1').title, 'correction', 'kind is refreshed');
+  posts = posts.filter((p) => p.id !== 'p1');
+  idx.refresh();
+  assert.equal(idx.search(A, { q: 'marmalade', kind: 'post' }).total, 0, 'deleted post disappears');
+});
+
 test('stale decisions are distinguished from current ones', () => {
   const old = idx.search(A, { q: 'stewards by name', kind: 'decision' }).results[0];
   assert.equal(old.freshness.state, 'superseded'); assert.match(old.freshness.by, /DECISION-2026-11-05-ids/);

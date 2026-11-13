@@ -69,7 +69,18 @@ export function createIndex(deps) {
       for (const [id, d] of [...docs]) if ((d.kind === 'message' || d.kind === 'notice') && (!live.has(id) || live.get(id).text !== d.text)) { drop(id); const m = live.get(id); if (m) put({ ...d, text: m.text, updated: m.edited || m.ts }); } }
     // posts: append-only with deletions — re-check the set each time (small)
     const livePosts = new Set();
-    for (const p of deps.posts()) { livePosts.add(p.id); if (!docs.has(p.id)) put({ id: p.id, kind: 'post', layer: 'collective', visibility: 'public', source: `/feed#${p.id}`, author: { id: p.by, name: p.by_name }, ts: p.ts, updated: p.ts, title: p.kind, text: p.text }); }
+    for (const p of deps.posts()) {
+      livePosts.add(p.id);
+      const current = docs.get(p.id);
+      // A corrected public post must replace its indexed tokens, not retain the old text.
+      // Re-index changed metadata too: edits can change the displayed author or kind.
+      if (current && current.kind === 'post' && current.text === p.text &&
+          current.title === p.kind && current.author?.id === p.by &&
+          current.author?.name === p.by_name && current.ts === p.ts) continue;
+      put({ id: p.id, kind: 'post', layer: 'collective', visibility: 'public', source: `/feed#${p.id}`,
+        author: { id: p.by, name: p.by_name }, ts: p.ts, updated: p.updated || p.edited || p.ts,
+        title: p.kind, text: p.text });
+    }
     for (const [id, d] of docs) if (d.kind === 'post' && !livePosts.has(id)) drop(id);
     // journals: privacy can change (share/unshare) and entries can be deleted — key on (updated, shared)
     const liveJ = new Set();
