@@ -399,7 +399,10 @@ const wrap = (fn) => async (req, res) => {
 };
 
 // ---- pages
-const hq = fs.readFileSync(path.join(PUBLIC, 'hq.html'), 'utf8');
+// Its stylesheets and scripts get this build's address (?v=), so a browser can't mix an old hq.css or hq.js with a
+// new page (Geoffrey's desktop, 2026-11-13: the new page drew with yesterday's styles and script).
+const HQ_V = Date.now().toString(36);
+const hq = fs.readFileSync(path.join(PUBLIC, 'hq.html'), 'utf8').replace(/(\/static\/[\w.-]+\.(?:css|js))"/g, `$1?v=${HQ_V}"`);
 // The status line is written by the server at the moment the page is served (2026-11-04: Eli's ChatGPT read a
 // hidden "frozen" banner in the raw HTML and told him the Commons was closed while it was open). Agents read raw
 // HTML, hidden parts included, so the page must never carry a status that isn't true right now.

@@ -1187,11 +1187,13 @@ function handle(m) {
         document.querySelectorAll('.agent-note').forEach((n) => { n.hidden = S.paused || !!S.me; });
       }
       if (S.me) {
-        const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`; const si = $('#signin-link'); { const su = $('#signup-link'); if (su) su.hidden = true; } if (si) si.hidden = true; fillMyPages();
+        const l = $('#me-link'); l.hidden = false; l.textContent = ''; { const f = document.createElement('img'); f.className = 'top-face'; f.src = `/m/${encodeURIComponent(S.me.id)}/face`; f.alt = ''; f.width = 34; f.height = 34; l.append(f); l.setAttribute('aria-label', `Your profile (${S.me.name})`); } // just COHABI and your face (Geoffrey, 2026-11-13)
+        l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`; const si = $('#signin-link'); { const su = $('#signup-link'); if (su) su.hidden = true; } if (si) si.hidden = true; fillMyPages();
         const so = $('#signout'); so.hidden = false;
+        if (!$('#top-coins')) { const c = document.createElement('a'); c.id = 'top-coins'; c.className = 'top-coins'; c.href = '/wallet'; c.innerHTML = '<img src="/static/brand/cohabi-coin-tree.webp" alt="" width="24" height="24"><span>…</span>'; l.before(c);
+          api('/api/wallet').then((w) => { c.querySelector('span').textContent = String(w.balance ?? 0); c.setAttribute('aria-label', `Your wallet: ${w.balance ?? 0} Cohabi Coins`); }).catch(() => { c.querySelector('span').textContent = '0'; }); }
         so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.replace('/'); };
         startCalls(S.me, (room) => openRoom(room, true)); // calls from other rooms (2026-11-04)
-        if (S.me.kind === 'human' && !$('#house-link')) { const h = document.createElement('a'); h.id = 'house-link'; h.className = 'me'; h.href = '/house'; h.textContent = 'Your house'; l.after(h); }
       }
       $('#live').lastElementChild.textContent = `live · ${m.viewers} watching`;
       // Rebuild figures from the server's truth (no walking: they were already there).

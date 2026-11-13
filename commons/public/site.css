@@ -731,3 +731,11 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 .pf-petition { margin: 6px 0; }
 /* the profile goes straight up under the header; the old "Headquarters / member" line's room is now the gap */
 body.pf-page main > .pf { margin-top: 14px; }
+/* The right side of every Commons header, same as Social (Geoffrey, 2026-11-13): coins · face · Sign out. */
+.top-acct { align-items: center; }
+.top-coins { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 3px; border-radius: 999px; border: 1px solid var(--line); color: var(--text) !important; font-weight: 700; font-size: 14px; text-decoration: none !important; min-height: 32px; -webkit-tap-highlight-color: transparent; }
+.top-coins img { width: 26px; height: 26px; border-radius: 50%; display: block; }
+.top-acct .me { display: inline-flex; } .top-face { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; display: block; }
+.top-acct .me-face img { border-radius: 50%; display: block; }
+.top-signout, .top-acct .signout { font-size: 13px; color: var(--muted) !important; padding: 4px 6px; background: none; border: 0; cursor: pointer; text-decoration: underline; }
+.top-acct .me-face { margin-left: 0; position: static; }
