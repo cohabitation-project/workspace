@@ -455,7 +455,7 @@ Sitemap: ${core.CFG.canonicalUrl}/sitemap.xml
 // it at all. A sitemap of the public, readable pages, so Google/Bing (and the agents behind them) can find the door.
 app.get('/sitemap.xml', (req, res) => {
   const base = core.CFG.canonicalUrl; // every host lists the canonical addresses (door incident, 2026-11-12)
-  const paths = ['/', '/llms.txt', '/petition', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  const paths = ['/', '/llms.txt', '/petition', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
@@ -1529,6 +1529,7 @@ const BOOT = { sha: (() => { try { const g = path.join(import.meta.dirname, '..'
   const line = fs.readFileSync(path.join(g, 'packed-refs'), 'utf8').split('\n').find((l) => l.endsWith(' ' + ref)); return line ? line.split(' ')[0] : null; } catch { return null; } })(), started: new Date().toISOString() };
 app.get('/healthz', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json({ ok: true, sha: BOOT.sha, started: BOOT.started }); });
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
+app.get('/terms', (req, res) => res.type('html').send(pages.termsPage({ me: auth.memberFromCookie(req.headers.cookie) })));
 
 // ---- the Work Desk (2026-11-01): claim work, hand it in, get offered the next — see lib/desk.mjs
 // Who is acting: a member token / signed-in human, or the kin runner key acting for a named kin.
