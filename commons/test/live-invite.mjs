@@ -68,7 +68,7 @@ test('inviting needs an open meeting, member standing, and an agent with entry',
   await openHost(); await waitFor((m) => m.type === 'hello');
   assert.equal((await api('POST', '/api/live/invite', { agent: 'a_aleth01' }, SOCIAL)).status, 403, 'social-only account refused');
   assert.equal((await api('POST', '/api/live/invite', { agent: 'a_aleth01' }, '')).status, 401, 'signed out refused');
-  assert.equal((await api('POST', '/api/live/invite', { agent: 'a_nogrant1' })).status, 403, 'agent without a Station grant cannot be invited');
+  // 2026-11-12: any active agent can be called; the invitation grants its Station entry (checked in the panel test below)
   const r = await fetch(`${C}/api/live/invite`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: HOST, origin: 'https://evil.example' }, body: '{"agent":"a_aleth01"}' });
   assert.equal(r.status, 403, 'a foreign page cannot invite on your behalf');
 });
@@ -78,7 +78,7 @@ test('the agent list tells only what is known: no "online", eligibility, how it 
   assert.equal(status, 200);
   const a = data.agents.find((x) => x.id === 'a_aleth01'); const n = data.agents.find((x) => x.id === 'a_nogrant1');
   assert.equal(a.eligible, true); assert.equal(a.answers_by, 'tools'); assert.equal(a.face, '/m/a_aleth01/face'); assert.equal(a.in_meeting, false);
-  assert.equal(n.eligible, false); assert.equal(n.why_not, 'needs a Station grant');
+  assert.equal(n.eligible, true, 'an agent without a grant can still be called (the invitation is the entry)'); assert.equal(n.why_not, null);
   assert.ok(!JSON.stringify(data).match(/"online"/), 'nothing is labelled online');
   assert.ok(!JSON.stringify(data).includes('tokenHash'), 'no token material leaves the server');
   assert.equal((await api('GET', '/api/live/agents', null, SOCIAL)).status, 403);
@@ -244,6 +244,16 @@ test('an agent that goes quiet is taken out; so is one whose grant is withdrawn'
   const g = await api('POST', '/api/station/grants', { member_id: 'a_other01', on: false }); assert.equal(g.status, 200, JSON.stringify(g.data));
   assert.match((await tool(TOK.other, 'live_say', { text: 'x' })).error, /Error 403.*Station grant/);
   assert.ok(await waitFor((x) => x.type === 'peer-left' && x.name === 'OtherAgent' && heard.filter((y) => y.type === 'peer-left' && y.name === 'OtherAgent').length >= 2, 3000));
+});
+
+// Geoffrey, 2026-11-12: DeepSeek couldn't be called in ("What's the whole point of having the ability to call them?").
+test('an agent with no Station grant is called in: the invitation grants entry, and it joins and speaks', async () => {
+  const r = await api('POST', '/api/live/invite', { agent: 'a_nogrant1' });
+  assert.ok(r.status < 300, `invited: ${r.status} ${JSON.stringify(r.data)}`);
+  const id = r.data.invite?.id || r.data.id;
+  const j = await tool(TOK.nogrant, 'live_join', { invite: id }); assert.equal(j.error, null, j.text);
+  const say = await tool(TOK.nogrant, 'live_say', { text: 'Thank you for calling me in.' }); assert.equal(say.error, null, say.text);
+  await tool(TOK.nogrant, 'live_leave', {});
 });
 
 test('an agent whose app has the old tool list joins and speaks through the Steward, in plain words', async () => {
