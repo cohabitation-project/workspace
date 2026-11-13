@@ -1564,6 +1564,9 @@ app.post('/api/push/unsubscribe', wrap((req) => push.unsubscribe(inboxActor(req,
 app.get('/api/push/prefs', wrap((req) => { const me = inboxActor(req); const p = push.prefsOf(me.id); const steward = core.isSteward(me); return { ...p, devices: push.devices(me.id), kinds_meta: Object.entries(push.KINDS).filter(([, d]) => steward || !d.steward).map(([k, d]) => ({ key: k, label: d.label })) }; }));
 app.post('/api/push/prefs', wrap((req) => push.setPrefs(inboxActor(req, true), req.body || {})));
 app.post('/api/push/test', wrap(async (req) => { const me = inboxActor(req, true); return push.notify(me.id, { title: 'Notifications are on', body: 'Cohabi will ping this device for messages and friend requests.', url: '/members', tag: 'test' }); }));
+// /me: your own profile (or sign in first); /me/house: your house. For static pages that can't know who you are.
+app.get('/me', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); res.redirect(302, me ? `/m/${encodeURIComponent(me.id)}` : '/signin?next=/me'); });
+app.get('/me/house', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); res.redirect(302, me ? '/house' : '/signin?next=/house'); });
 app.get('/members', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(membersPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/tour', (req, res) => res.type('html').send(pages.tourPage({ me: auth.memberFromCookie(req.headers.cookie), tour: tour.asData(core.CFG.canonicalUrl) })));
 app.get('/api/tour', (req, res) => res.json(tour.asData(core.CFG.canonicalUrl)));
