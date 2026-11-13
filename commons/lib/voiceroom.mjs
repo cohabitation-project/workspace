@@ -568,6 +568,12 @@ export async function internal(body) {
     if (body.speak !== false) { voice = 'queued'; synthesizeAndSend(v, text).catch(() => false); }
     return { status: 200, data: { ok: true, voice } };
   }
+  if (a === 'hush') { // a person spoke over this agent: stop its voice everywhere (three tracks: responding yields)
+    const v = virtuals.get(body.agentId);
+    if (!v) return { status: 404, data: { error: 'that agent is not in the meeting' } };
+    broadcastAll({ type: 'hush', peerId: v.id });
+    return { status: 200, data: { ok: true } };
+  }
   if (a === 'note') { // a plain system line (e.g. "X can't answer right now") — never in an agent's name
     const text = String(body.text || '').trim().slice(0, 500); if (!text) return { status: 400, data: { error: 'text required' } };
     broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text });

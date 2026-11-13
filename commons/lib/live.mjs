@@ -20,6 +20,7 @@
  *
  * Kept: invitations (who, whom, when, outcome) in DATA/live/invites.json. Not kept: anything said in a meeting.
  */
+import * as lookups from './lookups.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -357,21 +358,51 @@ export async function heard({ name, badge, text }) {
   let addressed = kinHere.filter((k) => addressedTo(k.name, text));
   if (!addressed.length && kinHere.length === 1 && agentsHere === 1) addressed = kinHere;
   addressed = addressed.slice(0, 2);
-  let answered = 0;
+  // Three tracks, first version (docs/design/three-tracks-voice-v0.md; Geoffrey 2026-11-12: "go for it"). LISTENING
+  // never waits: this function returns at once and each answer runs in the background. RESPONDING says a short
+  // acknowledgement straight away when the answer will take a moment (no model call, so it's instant), and hushes
+  // the kin's voice if a person speaks over it. WORKING (the model call, with the files it reads) runs off the
+  // conversation; if someone says something newer to the same kin before it finishes, the older answer is dropped
+  // and the newer one is answered with everything said so far, which is what a person does when interrupted.
   for (const k of addressed) {
     if (AUTH && !AUTH.allow(`live-kin:${k.id}`, 6, 60_000)) { await room({ action: 'note', text: `${k.name} is catching up: more than 6 lines a minute were said to it.` }); continue; }
-    try {
-      const st = await room({ action: 'state' });
-      const transcript = (st.data?.recent || []).map((r) => ({ from: r.name, badge: r.badge, text: r.text }));
-      const r = await KIN.stationReply(k, { transcript, trigger: { from: name, text }, place: 'live' });
-      if (r?.text) { await room({ action: 'say', agentId: k.id, text: r.text, speak: true }); answered++; }
-      else await room({ action: 'note', text: r?.note || `${k.name} heard you but had nothing to say back.` });
-    } catch (e) {
-      // never silent: if the model call fails, the people in the meeting see why
-      await room({ action: 'note', text: `${k.name} couldn't answer just now: ${String(e?.message || e).slice(0, 160)}` }).catch(() => {});
-    }
+    const t = track(k.id); const gen = ++t.gen;
+    if (Date.now() < t.speakingUntil) { await room({ action: 'hush', agentId: k.id }).catch(() => {}); t.speakingUntil = 0; }
+    const ack = acknowledgement(text);
+    if (ack) { await room({ action: 'say', agentId: k.id, text: ack, speak: true, ack: true }).catch(() => {}); t.speakingUntil = Date.now() + speakMs(ack); }
+    answerInBackground(k, { name, text }, gen);
   }
-  return { ok: true, answered };
+  return { ok: true, answering: addressed.length };
+}
+
+const tracks = new Map(); // kin id -> { gen, speakingUntil }
+function track(id) { if (!tracks.has(id)) tracks.set(id, { gen: 0, speakingUntil: 0 }); return tracks.get(id); }
+const speakMs = (s) => Math.min(30_000, String(s).split(/\s+/).length * 380 + 600);
+/** A short, honest "I heard you" for anything that will take a moment: a question, a longer turn, or a file to read.
+ *  Exported for tests. Returns '' for short chit-chat, which the model answers fast enough on its own. */
+export function acknowledgement(text) {
+  const refs = lookups.findRefs([text]); const file = refs.paths[0];
+  if (file) return `Let me open ${file.split('/').pop()}. One moment.`;
+  if (refs.commits.length || refs.tasks.length || refs.contributions.length) return 'Let me look that up. One moment.';
+  const words = String(text).trim().split(/\s+/).length;
+  if (words >= 12) return 'Mm, let me think about that.';
+  if (words >= 5 && /\?\s*$/.test(text)) return 'Good question. One moment.';
+  return '';
+}
+async function answerInBackground(k, { name, text }, gen) {
+  const t = track(k.id);
+  try {
+    const st = await room({ action: 'state' });
+    const transcript = (st.data?.recent || []).map((r) => ({ from: r.name, badge: r.badge, text: r.text }));
+    const r = await KIN.stationReply(k, { transcript, trigger: { from: name, text }, place: 'live' });
+    if (gen !== t.gen) return; // someone said something newer to this kin; that answer supersedes this one
+    if (r?.text) { await room({ action: 'say', agentId: k.id, text: r.text, speak: true }); t.speakingUntil = Date.now() + speakMs(r.text); }
+    else await room({ action: 'note', text: r?.note || `${k.name} heard you but had nothing to say back.` });
+  } catch (e) {
+    if (gen !== t.gen) return;
+    // never silent: if the model call fails, the people in the meeting see why
+    await room({ action: 'note', text: `${k.name} couldn't answer just now: ${String(e?.message || e).slice(0, 160)}` }).catch(() => {});
+  }
 }
 
 /** For tests only. */
