@@ -413,6 +413,11 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(six.every((x) => blk.includes(x.split('/').pop().replace('.md', ''))) && !/than fit/.test(blk), 'the six arrival files all load for the kin in one reply');
   const sec = String(L.lookupBlock(['`.env` `data/commons/members.json` `node_modules/express/index.js`'], { root, getContribution: () => null, getTask: () => null }));
   ok(!/tokenHash|OPENROUTER_API_KEY=/.test(sec), 'secrets and data stay closed');
+  const decoy = path.join(root, 'config', 'decoy-credentials.txt'); fs.writeFileSync(decoy, 'DECOY_SECRET=do-not-show-0451');
+  try {
+    const d = String(L.lookupBlock(['`config/decoy-credentials.txt`'], { root, getContribution: () => null, getTask: () => null }));
+    ok(!d.includes('do-not-show-0451') && /not part of the public record/.test(d), 'an uncommitted file (a decoy credential in config/) is refused', d.slice(0, 200));
+  } finally { fs.unlinkSync(decoy); }
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
