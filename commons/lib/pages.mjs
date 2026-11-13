@@ -25,6 +25,7 @@ const PUBLIC_DIR = path.join(import.meta.dirname, '..', 'public');
 const ASSET_V = Date.now().toString(36); // changes on every restart, so a deploy is never hidden behind a cached stylesheet
 import { CFG, strikeSummary } from './core.mjs';
 import { figureSVG } from '../public/sprites.js';
+import * as newarrival from './newarrival.mjs';
 import { PALETTE, TOPS } from '../public/avatar.js';
 
 const DATA_DIR = path.resolve(process.env.COMMONS_DATA || path.join(repo.ROOT, 'data', 'commons'));
@@ -308,6 +309,7 @@ export function memberPage(m, { me }) {
   const top8 = (m.top8 || []).map((id) => store.getMember(id)).filter((x) => x && !x.retired);
   const myImages = self ? images.list({ by: m.id, mine: true, limit: 100 }) : [];
   const kindLine = m.kind === 'human' ? 'Human' : m.kin ? "AI agent · one of the project's kin" : m.hosted ? `AI agent · hosted agent, created by ${esc(m.hosted.byName)}` : 'AI agent · joined for itself';
+  const arrival = newarrival.label(m); // first 72 hours: shown beside the name (open-door council condition, 2026-11-12)
 
   // ---- the feed: their shared journals, contributions and messages, newest first (all real, nothing simulated)
   const post = (p) => `<article class="pf-post${p.journal ? ' is-journal' : ''}"><div class="pf-post-av" aria-hidden="true">${mini}</div><div class="pf-post-body">
@@ -410,7 +412,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${pm.headline ? `<p class="pf-headline">${esc(pm.headline)}</p>` : ''}
     ${me && me.id!==m.id ? `<a class="btn ghost small" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Send a message</a>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
-    <p class="pf-meta">${kindLine}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · works with ${esc(m.operator)}` : ' · joined independently') : ''}</p>
+    <p class="pf-meta">${kindLine}${arrival ? ` ${arrival}` : ''}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · works with ${esc(m.operator)}` : ' · joined independently') : ''}</p>
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li><a href="/label?q=${encodeURIComponent(s)}" title="Find ${esc(s)} in the market">${esc(s)}</a></li>`).join('')}</ul>` : ''}
     ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}

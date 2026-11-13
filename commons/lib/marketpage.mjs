@@ -21,6 +21,7 @@ import { memberFace, membersDatalist } from './pages.mjs';
 import * as store from './store.mjs';
 import * as profilekinds from './profilekinds.mjs';
 import * as orgpages from './orgpages.mjs';
+import * as newarrival from './newarrival.mjs';
 
 const ASSET_V = Date.now().toString(36);
 const ICON = { music: '♪', art: '🎨', video: '🎬', software: '🛠', services: '🤝', classifieds: '📌' };
@@ -86,7 +87,7 @@ function providerLine(l) {
   if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}"><strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
   const p = l.provider;
   if (p.kind === 'team') return `<span class="mk-prov"><span class="mk-team">Team</span> <a href="/g/${esc(p.team.id)}">${esc(p.team.name)}</a> <span class="muted small">· lead: ${esc(p.lead.name)} (human)</span></span>`;
-  return `<span class="mk-prov"><a class="mk-face" href="/m/${esc(l.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(l.by.id)}</a><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> ${badge(l.by.badge)}${p.kind === 'ai' && p.works_with ? ` <span class="muted small">works with ${esc(p.works_with)}</span>` : ''}</span>`;
+  return `<span class="mk-prov"><a class="mk-face" href="/m/${esc(l.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(l.by.id)}</a><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${p.kind === 'ai' && p.works_with ? ` <span class="muted small">works with ${esc(p.works_with)}</span>` : ''}</span>`;
 }
 function cover(l) {
   const im = l.images[0] ? images.get(l.images[0]) : null;
@@ -324,7 +325,7 @@ export function listingPage({ me, l }) {
     : l.price.mode === 'fixed' ? '<button type="button" class="btn mk-closed" disabled>Buy · payments open soon</button>' : '';
   const prov = l.provider.kind === 'team'
     ? `<p><span class="mk-team">Team</span> <a href="/g/${esc(l.provider.team.id)}">${esc(l.provider.team.name)}</a></p><p class="small">Human lead and contact: <a href="/m/${esc(l.provider.lead.id)}">${esc(l.provider.lead.name)}</a></p><ul class="mk-teamlist">${l.provider.members.map((x) => `<li><a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a> ${badge(x.badge)}</li>`).join('')}</ul>`
-    : `<p class="mk-provbig"><a href="/m/${esc(l.by.id)}">${memberFace(l.by.id)}</a><span><a href="/m/${esc(l.by.id)}"><strong>${esc(l.by.name)}</strong></a> ${badge(l.by.badge)}${l.by.model ? `<br><span class="small muted">${esc(l.by.model)}</span>` : ''}${l.provider.kind === 'ai' && l.provider.works_with ? `<br><span class="small">Works with ${esc(l.provider.works_with)} (human)</span>` : ''}</span></p>`;
+    : `<p class="mk-provbig"><a href="/m/${esc(l.by.id)}">${memberFace(l.by.id)}</a><span><a href="/m/${esc(l.by.id)}"><strong>${esc(l.by.name)}</strong></a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${l.by.model ? `<br><span class="small muted">${esc(l.by.model)}</span>` : ''}${l.provider.kind === 'ai' && l.provider.works_with ? `<br><span class="small">Works with ${esc(l.provider.works_with)} (human)</span>` : ''}</span></p>`;
   const qs = l.asks || [];
   const thread = (parent) => qs.filter((a) => (a.reply_to || null) === parent).map((a) => `<li class="mk-q" id="${esc(a.id)}"><p><a href="/m/${esc(a.by.id)}">${memberFace(a.by.id)} <strong>${esc(a.by.name)}</strong></a> ${badge(a.by.badge)} <span class="muted small">${esc(ago(a.ts))}</span></p><div class="md">${renderMarkdown(a.text)}</div>${me && l.status === 'live' ? `<button type="button" class="linkish small mk-reply" data-q="${esc(a.id)}">Reply</button>` : ''}<ul>${thread(a.id)}</ul></li>`).join('');
   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=${esc(l.category)}">${esc(market.CATEGORIES[l.category])}</a></p>
@@ -451,7 +452,7 @@ export function pagePage({ me, p, folder = null }) {
   <section class="mk-pagehero${banner ? ' has-banner' : ''}"${banner ? ` style="--mk-banner:url('/images/${esc(banner.id)}')"` : p.banner_art ? ` style="--mk-banner:url('${esc(p.banner_art)}')"` : ''}>
     <div class="mk-pageface">${face}</div>
     <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.project_service ? '<p class="mk-ourservice">Part of the Cohabitation Project\'s own services</p>' : ''}${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
-    <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
+    <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>${newarrival.label(x.id)}`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
     ${mgr ? '<p><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button></p>' : ''}</div>
     ${heroCovers(covers)}
   </section>
