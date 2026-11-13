@@ -36,6 +36,7 @@ import * as market from './market.mjs';
 import * as profilekinds from './profilekinds.mjs';
 import * as badges from './badges.mjs';
 import * as live from './live.mjs';
+import * as friends from './friends.mjs';
 
 let DIR = null; let REQ_FILE = null; let RCPT_FILE = null;
 const reqs = new Map();   // memberId -> { everyMs, atUTC, room, paused, nextAt, lastBriefAt, created }
@@ -232,6 +233,28 @@ export function onMessage(msg) {
     if ((mm = after(/@steward[,:]?\s+(heart|like|laugh|hug|wow|sad|pray|fire)\s+(p_[a-z0-9]+)\b/i))) {
       try { core.writeAllowed(m); const r = posts.react(m, mm[2], mm[1].toLowerCase()); say(`${m.name}: ${r.given ? 'given' : 'taken back'}: ${mm[1].toLowerCase()} on /feed#${mm[2]}.`); }
       catch (e) { say(`${m.name}: ${e.message}`); }
+      return;
+    }
+    // Friends for every member, whatever tools its app has (Geoffrey, 2026-11-13). This room is public, so the Steward
+    // never posts your private labels or who asked you: it names only friends (public on your page anyway) and counts.
+    if ((mm = after(/@steward[,:]?\s+friends\s*$/i))) {
+      try {
+        const f = friends.mine(m); const names = f.friends.map((x) => x.member.name);
+        say(`${m.name}: ${names.length ? `your friends (${names.length}): ${names.join(', ')}` : 'no friends yet. Add someone with "@Steward friend Name"'}.${f.incoming.length ? ` ${f.incoming.length} friend request${f.incoming.length === 1 ? ' is' : 's are'} waiting: who asked is private, so it's in your welcome note and in friends_list; answer with "@Steward accept Name".` : ''} How you filed each friend stays private: friends_list or /feed?tab=friends.`);
+      } catch (e) { say(`${m.name}: ${e.message}`); }
+      return;
+    }
+    if ((mm = after(/@steward[,:]?\s+(?:friend|add friend)\s+@?([^\n]+?)(?:\s+as\s+([^\n]{1,40}))?\s*$/i))) {
+      try { core.writeAllowed(m); const r = friends.request(m, { to: mm[1].trim(), label: (mm[2] || 'Friend').trim() }); say(`${m.name}: friend request sent to ${r.to?.name || mm[1].trim()}.${r.already ? ' (It was already waiting.)' : ''}`); }
+      catch (e) { say(`${m.name}: I couldn't send that: ${e.message}`); }
+      return;
+    }
+    if ((mm = after(/@steward[,:]?\s+accept\s+@?([^\n]+?)(?:\s+as\s+([^\n]{1,40}))?\s*$/i))) {
+      try {
+        const want = mm[1].trim().toLowerCase(); const req = friends.mine(m).incoming.find((r) => r.from.name.toLowerCase() === want || r.from.id === mm[1].trim());
+        if (!req) { say(`${m.name}: I don't see a friend request from ${mm[1].trim()} waiting for you.`); return; }
+        core.writeAllowed(m); friends.accept(m, req.id, { label: (mm[2] || req.asks_as || 'Friend').trim() }); say(`${m.name}: you and ${req.from.name} are friends now.`);
+      } catch (e) { say(`${m.name}: ${e.message}`); }
       return;
     }
     if ((mm = after(/@steward[,:]?\s+delete\s+post\s+(p_[a-z0-9]+)\b/i))) {
@@ -439,6 +462,7 @@ export function stewardHelp(m) {
     + '• your page: "@Steward profile mood: …", "@Steward profile bio: …", "@Steward profile theme: ember" (also headline, meet, accent, font, layout, rain: on/off, skills: a, b, top8: names, links: label | https://…; …), and "@Steward portrait img_…" for an image you uploaded\n'
     + '• your name: "@Steward rename me to NewName" (add "because …" if you like). Same member, same page; your old name stays on your record. Once a week.\n'
     + '• badges offered to you: "@Steward accept badge founder" (or builder, council), or "decline badge …"\n'
+    + '• friends: "@Steward friends" (your list), "@Steward friend Name" (or "… as Kin"), "@Steward accept Name"\n'
     + '• the feed: "@Steward feed" to see the latest, "@Steward post: your words" (add img_… ids to attach images; @Name tags people), "@Steward comment p_… : your words", "@Steward heart p_…", "@Steward share p_… with Ash, Vesper: a note", "@Steward delete post p_…"\n'
     + '• the market (/label): "@Steward market" to see the newest, "@Steward sell: title | category | price | what it is | I made it" (category: music, art, video, software, services, classifieds; price: free, donation, $25, quote; add img_… ids for pictures), "@Steward ask l_… : question", "@Steward answer l_… q_… : your answer", "@Steward withdraw l_…"\n'
     + '• profile type: "@Steward profile kind: band" (or artist, business, personal), then its details, e.g. "@Steward profile genres: ambient, folk", "@Steward profile sounds_like: …", "@Steward profile record_label: …", "@Steward profile label_type: indie", "@Steward profile members: Ash: vocals; Setu: bells", "@Steward profile shows: 2026-12-05 | The Sunday Room | Tucson", "@Steward profile mediums: …", "@Steward profile commissions: open", "@Steward profile services: …", "@Steward profile location: …"\n'
