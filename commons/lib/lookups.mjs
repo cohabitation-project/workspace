@@ -11,7 +11,32 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execFile } from 'node:child_process';
+
+// The record is GitHub main, not whatever the server last deployed (Geoffrey, 2026-11-13: "People can't get the
+// Who's Hands folders… make sure that they can right now"). The brief was merged but the server hadn't pulled, so
+// every kin was told it didn't exist. Now the server fetches main in the background (never touching the running
+// code) and rooms read from that; the deployed copy is only the fallback. COMMONS_RECORD_FETCH=0 turns it off.
+const REF = process.env.COMMONS_RECORD_REF || 'origin/main';
+const FETCH_ON = process.env.COMMONS_RECORD_FETCH !== '0';
+const FETCH_EVERY_MS = Number(process.env.COMMONS_RECORD_FETCH_MS) || 60_000;
+let lastFetch = 0, fetching = false;
+/** Fetch main in the background, at most once a minute. Exported so the server can warm it at start. */
+export function refreshRecord(root) {
+  if (!FETCH_ON || fetching || Date.now() - lastFetch < FETCH_EVERY_MS) return;
+  fetching = true; lastFetch = Date.now();
+  execFile('git', ['-C', root, 'fetch', '-q', 'origin', 'main'], { timeout: 20_000 }, () => { fetching = false; });
+}
+const gitOut = (root, args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', timeout: 4000, maxBuffer: 8e6, stdio: ['ignore', 'pipe', 'ignore'] });
+/** What main holds at rel: { kind: 'file', text } | { kind: 'dir', names } | null. */
+function fromRecord(root, rel) {
+  try {
+    const type = gitOut(root, ['cat-file', '-t', `${REF}:${rel}`]).trim();
+    if (type === 'blob') return { kind: 'file', text: gitOut(root, ['show', `${REF}:${rel}`]) };
+    if (type === 'tree') return { kind: 'dir', names: gitOut(root, ['ls-tree', '--name-only', `${REF}:${rel}`]).split('\n').filter((n) => n && !n.startsWith('.')) };
+  } catch { /* not on main (or no fetched main yet): fall back to this server's copy */ }
+  return null;
+}
 
 // Every folder of the project record (2026-11-12: agents/ was missing, so Aletheia's letter never loaded for the kin;
 // Geoffrey: "everyone needs access"). Secrets stay out by BLOCKED below and because only the repo is ever read.
@@ -56,21 +81,27 @@ function tracked(root, rel) {
   try { execFileSync('git', ['-C', root, 'ls-files', '--error-unmatch', '--', rel], { stdio: 'ignore', timeout: 3000 }); return true; } catch { return false; }
 }
 function readPath(root, rel, idents = []) {
+  rel = String(rel).replace(/\/+$/, ''); // "docs/council/whose-hands/" names the folder
   if (BLOCKED.test(rel) || rel.includes('..')) return `\`${rel}\`: not readable from a room (protected path).`;
   const abs = path.resolve(root, rel);
   if (!abs.startsWith(path.resolve(root) + path.sep)) return `\`${rel}\`: outside the repository.`;
-  if (!fs.existsSync(abs)) return `\`${rel}\`: DOES NOT EXIST in the repository on this server (checked just now).`;
+  const rec = fromRecord(root, rel);
+  if (rec?.kind === 'dir') return `\`${rel}/\` (folder on main, ${Math.min(rec.names.length, 60)} of ${rec.names.length} entries): ${rec.names.slice(0, 60).join(', ') || '(empty)'}`;
+  if (rec?.kind === 'file') return render(rel, rec.text, idents, ' on main');
+  if (!fs.existsSync(abs)) return `\`${rel}\`: DOES NOT EXIST on GitHub main or on this server (checked just now). If it was just merged, try again in a minute.`;
   const st = fs.statSync(abs);
   if (st.isDirectory()) { const names = fs.readdirSync(abs).filter((n) => !n.startsWith('.')).slice(0, 60); return `\`${rel}/\` (folder, ${names.length} entries shown): ${names.join(', ')}`; }
   if (st.size > 30 * 1024 * 1024) return `\`${rel}\`: ${Math.round(st.size / 1024)} KB, too large to read here.`;
   // Only what the public repository holds (Claude's review of #57: a credential under another name in config/, ops/
   // or anywhere, left on the server but never committed, must not be readable). Untracked files are refused.
   if (!tracked(root, rel)) return `\`${rel}\`: not part of the public record (not committed), so not readable from a room.`;
-  let t = fs.readFileSync(abs, 'utf8');
+  return render(rel, fs.readFileSync(abs, 'utf8'), idents, '');
+}
+function render(rel, t, idents, where) {
   if (rel.endsWith('.jsonl')) { const lines = t.trim().split('\n'); return `\`${rel}\` (${lines.length} lines; the last 20, each clipped):\n${lines.slice(-20).map((l) => l.slice(0, 300)).join('\n')}`; }
-  if (t.length > MAX_FILE) { const f = focus(t, idents); if (f) return `\`${rel}\` (${t.length} characters; showing the parts named in the conversation):\n${f.slice(0, 9000)}`; }
+  if (t.length > MAX_FILE) { const f = focus(t, idents); if (f) return `\`${rel}\`${where} (${t.length} characters; showing the parts named in the conversation):\n${f.slice(0, 9000)}`; }
   const head = t.length > MAX_FILE ? `${t.slice(0, MAX_FILE)}\n[… ${t.length - MAX_FILE} more characters not shown. Name a function in backticks, e.g. \`mintRecovery\`, to see that part]` : t;
-  return `\`${rel}\` (${t.length} characters):\n${head}`;
+  return `\`${rel}\`${where} (${t.length} characters):\n${head}`;
 }
 
 function readCommit(root, hash) {
@@ -86,6 +117,7 @@ function readCommit(root, hash) {
 /** The block to append to a kin's input. deps: { root, getContribution, getTask }. Returns '' when nothing is named. */
 export function lookupBlock(texts, deps) {
   const { root, getContribution, getTask } = deps;
+  refreshRecord(root);
   const r = findRefs(texts);
   const parts = [];
   const idents = namedIdents(texts.filter(Boolean).join('\n'));
