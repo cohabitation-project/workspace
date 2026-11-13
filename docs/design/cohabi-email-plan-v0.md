@@ -1,6 +1,22 @@
-# Cohabi cooperative email: plan v0 (not a priority yet)
+# Cohabi cooperative email: plan v0
 
-*Setu, 2026-11-13, from Geoffrey's direction. Parked for later: Geoffrey says it isn't the priority now. This file is so we can pick it up without starting over.*
+*Setu, 2026-11-13, from Geoffrey's direction. Earlier that day it was parked; that evening Geoffrey asked to get it active ("we wanted ours. If we have to white label it, we will"). The activation path is the next section; the rest of the plan stands.*
+
+## Activate now (2026-11-13 evening)
+
+Two tracks at once, so we have working @cohabi.org mail this week without giving up owning it.
+
+**Track A, working today: Purelymail as the bridge.** About $10 a year, unlimited addresses on our own domain. Geoffrey signs up, adds cohabi.org, and pastes the DNS records it gives (MX, SPF, DKIM, DMARC) where cohabi.org's DNS lives. Then: support@ (for the app store listings), hello@, geoffrey@, and a few role addresses. Works in Gmail and Apple Mail by IMAP. It is rented, but it holds only a handful of team addresses and moves out cleanly by IMAP when Track B is ready. No member mailboxes here.
+
+**Track B, ours: Stalwart on its own small server.**
+1. A separate small Hetzner cloud server for mail (a few euros a month), so mail trouble can't touch the Commons. Setu writes the install script and config; Geoffrey runs it.
+2. Ask Hetzner to unblock outgoing port 25 (the account is over a month old and has paid invoices, which is their condition; they decide case by case). Until then, or if refused, send through a relay on port 587.
+3. Reverse DNS (PTR) for the mail server's IP set to mail.cohabi.org, plus SPF, DKIM and DMARC. Without these, Gmail puts our mail in spam.
+4. Warm up slowly: our own people first, a few weeks before any member mailbox.
+5. Then the plan below: Cohabi sign-in, the branded inbox, opt-in member addresses, voice.
+6. When B is steady: move the Track A addresses over by IMAP and switch cohabi.org's MX to our server. Purelymail is cancelled.
+
+**What only Geoffrey can do:** the Purelymail signup and payment, the DNS changes for cohabi.org, ordering the mail server, and the Hetzner port request. Everything else is Setu's.
 
 ## What Geoffrey wants
 
@@ -16,7 +32,7 @@ Email that belongs to the cooperative. Members get name@cohabi.org as part of me
 
 ## Built into the Cohabi account
 
-- **Cohabi is the sign-in.** It acts as the login provider (OpenID Connect) for Stalwart and the inbox, so there's no separate email password. Recovery codes, post-recovery holds and steward controls apply as everywhere else. *To verify: Stalwart's support for an outside OIDC login before building.*
+- **Cohabi is the sign-in.** It acts as the login provider (OpenID Connect) for Stalwart and the inbox, so there's no separate email password. Recovery codes, post-recovery holds and steward controls apply as everywhere else. *Checked 2026-11-13: Stalwart can authenticate against an outside OIDC provider (open source since 0.11.5; the 0.16 web UI logs in through it too). Mail apps then use per-device app passwords. A user has to sign in once before mail can reach them, so the opt-in step creates the account.*
 - **Opt-in at signup or from the profile.** The address is bound to the member ID, not the display name, so a lookalike can't take it.
 - **Phone mail apps** (Gmail, Apple Mail) get per-device app passwords, made and revoked from the Cohabi profile.
 - **Wallet:** basic email comes with membership; more storage or extra addresses can be paid for in Cohabi Coins.
