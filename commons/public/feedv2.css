@@ -276,3 +276,8 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-subpages > summary { list-style: none; cursor: pointer; padding: 10px 12px; border-radius: 10px; }
 .fx-subpages > summary::-webkit-details-marker { display: none; }
 .fx-subpages > summary:hover { background: var(--soft); }
+
+/* phone notifications box (2026-11-13) */
+.push-box { border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin: 14px 0; }
+.push-box h2 { font-size: 1.05em; margin: 0 0 6px; }
+.push-inline { border: 0; padding: 0; margin: 6px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

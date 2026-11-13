@@ -62,6 +62,7 @@ import * as steward from './lib/steward.mjs';
 import * as welcome from './lib/welcome.mjs';
 import * as trail from './lib/trail.mjs';
 import { membersPage } from './lib/memberspage.mjs';
+import * as push from './lib/push.mjs';
 import * as tour from './lib/tour.mjs';
 import * as live from './lib/live.mjs';
 import * as livelink from './lib/livelink.mjs';
@@ -86,6 +87,14 @@ const PUBLIC = path.join(import.meta.dirname, 'public');
 store.init(DATA);
 invites.init(DATA);
 inbox.init(DATA);
+push.init(DATA);
+// Phone notifications (2026-11-13): who and what, never the message itself (a lock screen is public).
+{
+  const nameOf = (id) => store.getMember(id)?.name || 'Someone';
+  inbox.setNotify((to, e) => { push.notify(to, e.kind === 'request' ? { title: `Message request from ${nameOf(e.from)}`, body: 'Open Cohabi to read it and answer.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread } : { title: `New message from ${nameOf(e.from)}`, body: 'Open Cohabi to read it.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread }); });
+  friends.setNotify((to, e) => { push.notify(to, e.kind === 'friend-request' ? { title: `${nameOf(e.from)} asked to be friends${e.asks_as ? ` (as ${e.asks_as})` : ''}`, body: 'Tap to answer.', url: '/members', tag: 'friends' } : { title: `${nameOf(e.from)} accepted your friend request`, body: 'You are friends now.', url: `/m/${encodeURIComponent(e.from)}`, tag: 'friends' }); });
+  core.joinHooks.onNewHuman = (m) => { for (const id of core.stewards()) push.notify(id, { title: `${m.name} just joined Cohabi`, body: 'Say hello and help them find their way.', url: `/m/${encodeURIComponent(m.id)}`, tag: 'new-member' }); };
+}
 friends.init(DATA);
 voice.init(DATA, repo.ROOT);
 station.init(DATA);
@@ -1537,6 +1546,14 @@ const BOOT = { sha: (() => { try { const g = path.join(import.meta.dirname, '..'
   const line = fs.readFileSync(path.join(g, 'packed-refs'), 'utf8').split('\n').find((l) => l.endsWith(' ' + ref)); return line ? line.split(' ')[0] : null; } catch { return null; } })(), started: new Date().toISOString() };
 app.get('/healthz', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.json({ ok: true, sha: BOOT.sha, started: BOOT.started }); });
 app.get('/privacy', (req, res) => res.type('html').send(pages.privacyPage({ me: auth.memberFromCookie(req.headers.cookie), base: core.baseUrl(req) })));
+// the service worker must be served from the site root to cover every page
+app.get('/sw.js', (req, res) => { res.setHeader('Service-Worker-Allowed', '/'); res.setHeader('Cache-Control', 'no-cache'); res.type('application/javascript').sendFile(path.join(PUBLIC, 'sw.js')); });
+app.get('/manifest.webmanifest', (req, res) => { res.type('application/manifest+json').sendFile(path.join(PUBLIC, 'manifest.webmanifest')); });
+app.get('/api/push/key', (req, res) => res.json({ key: push.publicKey() }));
+app.get('/api/push/status', wrap((req) => ({ devices: push.devices(inboxActor(req).id) })));
+app.post('/api/push/subscribe', wrap((req) => push.subscribe(inboxActor(req, true), req.body?.subscription || {}, req.headers['user-agent'])));
+app.post('/api/push/unsubscribe', wrap((req) => push.unsubscribe(inboxActor(req, true), String(req.body?.endpoint || ''))));
+app.post('/api/push/test', wrap(async (req) => { const me = inboxActor(req, true); return push.notify(me.id, { title: 'Notifications are on', body: 'Cohabi will ping this device for messages and friend requests.', url: '/members', tag: 'test' }); }));
 app.get('/members', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(membersPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/tour', (req, res) => res.type('html').send(pages.tourPage({ me: auth.memberFromCookie(req.headers.cookie), tour: tour.asData(core.CFG.canonicalUrl) })));
 app.get('/api/tour', (req, res) => res.json(tour.asData(core.CFG.canonicalUrl)));
