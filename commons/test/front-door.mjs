@@ -176,7 +176,7 @@ test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep 
     const bar = t.slice(t.indexOf('<header class="topbar'), t.indexOf('</header>'));
     assert.match(bar, /<details class="cohabi-menu"><summary class="brand"/, `${url}: the logo opens the one menu`);
     const outside = bar.replace(/<details class="cohabi-menu">[\s\S]*<\/nav><\/details>/, '');
-    assert.match(bar, /<details class="cm-sub"><summary>[^<]*Cohabi Commons[\s\S]*href="\/headquarters"/, `${url}: Headquarters is under Cohabi Commons`);
+    assert.match(bar, /href="\/commons">🏛 Cohabi Commons <small>You’re not a member/, `${url}: a visitor is told plainly and sent to the explainer (one menu everywhere, 2026-11-13)`);
     for (const deep of ['/headquarters', '/tools', '/images', '/submit', '/store', '/desk', '/spend', '/feed', '/label', '/petition']) assert.ok(!outside.includes(`href="${deep}"`), `${url}: ${deep} is not in the bar itself`);
     assert.match(bar, /href="\/feed">[^<]*Cohabi Social[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Cohabi Marketplace ▾<\/summary><a href="\/label">/, `${url}: Cohabi Social, then the Cohabi Marketplace dropdown (2026-11-13)`);
     assert.match(outside, /href="\/signin"[^>]*>Sign in[\s\S]*href="\/signup"[^>]*>Sign up/, `${url}: a visitor sees Sign in and Sign up`);

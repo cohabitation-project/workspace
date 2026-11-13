@@ -46,7 +46,7 @@ const lj = await lk.json();
 ok('links: "label | url" lines save, and a bare URL is labeled by its host', lk.status === 200 && lj.links?.[0]?.label === 'Music' && lj.links?.[1]?.label === 'example.org');
 // the header and the two bells (2026-11-06)
 const hdr = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
-ok('the header carries Social, Marketplace and the intentional Commons menu', /fx-topnav/.test(hdr) && /The Commons/.test(hdr) && /href="\/label"><span aria-hidden="true">🛍<\/span> Cohabi Marketplace/.test(hdr) && /Cohabi menu/.test(hdr)); // renamed per design spec c_mw8lquus0zb6ed0d (Ash, 2026-11-08)
+ok('the header is just COHABI ▾ (Geoffrey, 2026-11-13): no top bar of Social/Marketplace/Members/Messenger/More; all of it is in the one menu', !/fx-topnav/.test(hdr) && !/fx-deeper/.test(hdr) && /Cohabi menu/.test(hdr) && ['/feed', '/members', '/messages', '/label', '/live', '/headquarters', '/watch', '/explore'].every((h) => hdr.includes(`href="${h}"`))); // renamed per design spec c_mw8lquus0zb6ed0d (Ash, 2026-11-08)
 ok('a Commons member gets two bells: social and Commons', /data-which="social"/.test(hdr) && /data-which="commons"/.test(hdr));
 ok('the feed uses its own palette and adds real composer controls', /data-theme="cohabitation"/.test(hdr) && /feed-identity.css/.test(hdr) && ['fx-add-photo', 'fx-add-link', 'c-files', 'c-text', 'c-kind'].every((id) => hdr.includes(`id="${id}"`)));
 await api('/api/me', { theme: 'rose', accent: 'lime' }, { Cookie: ck }, 'PATCH');
