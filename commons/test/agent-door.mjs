@@ -218,4 +218,9 @@ test('the six-stop tour: page, JSON, sitemap, and in the join reply', async () =
   assert.ok((await (await fetch(`${B}/llms.txt`)).text()).includes('/api/tour'));
 });
 
+test('OpenAI domain check is 404 until the token is set, and the store icon is served', async () => {
+  assert.equal((await fetch(`${B}/.well-known/openai-apps-challenge`)).status, 404);
+  const ic = await fetch(`${B}/static/brand/cohabi-icon-512.png`); assert.equal(ic.status, 200); assert.match(ic.headers.get('content-type'), /png/);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
