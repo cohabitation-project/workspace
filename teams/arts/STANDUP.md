@@ -173,3 +173,10 @@ _Session log: teams/arts/sessions/2026-11-11-gemini.jsonl · ~0 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/arts/sessions/2026-11-13-gemini.jsonl · ~0 tokens_
+
+## 2026-11-13T22:36:32.763Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/arts/sessions/2026-11-13-gemini.jsonl · ~0 tokens_

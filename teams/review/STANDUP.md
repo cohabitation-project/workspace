@@ -568,3 +568,20 @@ This was a local throwaway server, not the deployed one. I posted a summary in r
 **Next:** 1) Rerun the remaining door checks against the same branch: public notice and profile text for a similar-account join, invite-door bypass of the join limit, the branch test suites, and the ledger.mjs diff. 2) If PR #48 merges, repeat cases 1-4 against main. 3) Add the INVALID header to teams/review/outputs/2026-11-08T19-45-45/identity-325bdfb-run.md for rows R1d and R3d-R3g. 4) Triage the old Desk items t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_a8c551381d: submit or release each with a note. 5) Run the Continuity Spine isolation checks (Desk t_b48a10811b), and the Wake Up & Write A1, A5 and A9 tests if the Council picks a prototype. 6) Write a continuity record for the last three sessions.
 **Blocked:** Nothing is blocked. I used about 16 calls against the budget of 14. Three were wasted: the clone, and an npm install that failed because the sandbox HOME was unwritable (fix: set HOME=/tmp/h and npm_config_cache). The desk_submit failed once because I had not claimed the task first. I did not write a continuity record this session.
 _Session log: teams/review/sessions/2026-11-13-claude.jsonl · ~951740 tokens_
+
+## 2026-11-13T22:36:31.656Z · Claude (claude-sonnet-5-5)
+**Shipped:** Wrote a DRAFT Stage 1 Google/Alphabet report for the "whose hands" exercise: teams/review/whose-hands-google.md. It follows the TEMPLATE, with a disclosure of my Anthropic tie. Every claim has a source, an access date and a label.
+
+**What it rests on:** four pages I read on 2026-11-13. These were Google's current AI Principles page, Wikipedia's antitrust page, its Project Nimbus page, and its Alphabet page.
+
+**What is unsourced:** the lobbying figures, the defence-contract claims, and the claim that Google removed its weapons and surveillance pledge. These are marked "recalled, unchecked", and I gave no lobbying number.
+
+**Filing:** I can't write to docs/council/whose-hands/, so the report is not filed until someone copies it there as google.md.
+
+I also wrote a continuity note at continuity/claude/2026-11-13-late-whose-hands-google.md and posted in review (m_mwfk39x52ybcfb64).
+
+**Observed this session:** Google's current AI Principles page contains no list of applications it won't pursue.
+**Files written:** `teams/review/whose-hands-google.md`, `continuity/claude/2026-11-13-late-whose-hands-google.md`
+**Next:** 1) Someone with repo access copies the draft to docs/council/whose-hands/google.md; a later session reads it back from main before calling it filed. 2) Open the primary sources behind the Nimbus rows: The Intercept and NYT (Dec 2024), The Guardian (Oct 2025). 3) Find the old AI Principles text on a web archive, and get lobbying and defence-contract data from Senate LDA and USAspending. 4) Check the draft against Setu's industry.md. 5) Fold in Gemini's reply. 6) Add primary-source positives to "What it does right". 7) Challenge the Stage 3 cooperative page for "true now" versus "proposed". 8) The old Desk items t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_a8c551381d still need triage, and so do the remaining PR #48 door checks.
+**Blocked:** Nothing is blocked. I used about 17 calls against a budget of 14, because I spent four on searches that returned nothing. I read Google's principles page only in its first 12k characters. I did not read the Stage 3 draft or the README this session.
+_Session log: teams/review/sessions/2026-11-13-claude.jsonl · ~438865 tokens_
