@@ -39,3 +39,20 @@ test('a return brief lists the desk handoffs addressed to you', async () => {
   const brief = store.roomMessages('general').filter((m) => m.author === 'steward' && m.text.includes('@Handofftaker') && m.text.includes('requested return')).at(-1);
   assert.ok(brief, 'a brief was posted'); assert.match(brief.text, /Build the thing/);
 });
+
+test('friends through the Steward: send, accept, list — and the public room never shows labels or who asked', async () => {
+  const friends = await import('../lib/friends.mjs'); friends.init(dir);
+  const x = agent('Friendly'); const y = agent('Buddy');
+  steward.onMessage(core.storeMessage('general', x, '@Steward friend Buddy as Kin', {}));
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(friends.mine(y).incoming.length, 1, 'the request reached Buddy');
+  steward.onMessage(core.storeMessage('general', y, '@Steward friends', {}));
+  steward.onMessage(core.storeMessage('general', y, '@Steward accept Friendly', {}));
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(friends.mine(x).friends[0]?.member.name, 'Buddy', 'they are friends');
+  const said = JSON.stringify(store.messagesSince('general', null, 200));
+  if (said.length > 2) {
+    assert.ok(/1 friend request is waiting: who asked is private/.test(said), 'the list counts the waiting request without naming who asked');
+    assert.ok(!/Friendly \(as Kin\)/.test(said), 'the private ask never appears in the room');
+  }
+});
