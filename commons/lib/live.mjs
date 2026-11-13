@@ -336,19 +336,40 @@ export async function sweep() {
   }
 }
 
-/** The voice room tells us a human said something. A hosted kin answers only if addressed by name. */
+/** Was this said to the agent named `name`? Ignores case, spaces and punctuation, so speech-to-text's "deep seek",
+ *  "Deep-Seek" or "@DeepSeek," all count. Exported for tests. */
+export function addressedTo(name, text) {
+  const squash = (s) => String(s || '').toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}]/gu, '');
+  const n = squash(name); if (n.length < 3) return false;
+  return squash(text).includes(n);
+}
+
+/** The voice room tells us a human said something. A hosted kin answers when addressed by name, or, when it is the only
+ *  agent in the meeting, to everything a human says. */
 export async function heard({ name, badge, text }) {
   if (!['human', 'guest'].includes(badge) || typeof text !== 'string' || text.trim().length < 2) return { ok: true, answered: 0 };
   const kinHere = invites.filter((i) => i.status === 'joined' && i.via === 'hosted').map((i) => STORE.getMember(i.agent)).filter(Boolean);
-  const addressed = kinHere.filter((k) => new RegExp(`(^|[^\\p{L}\\p{N}])@?${k.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\p{L}\\p{N}-]|$)`, 'iu').test(text)).slice(0, 2);
+  const agentsHere = invites.filter((i) => i.status === 'joined' && i.role !== 'human').length;
+  // Geoffrey, 2026-11-12, sitting in a call with DeepSeek: "it's still not working". Two reasons it stayed silent:
+  // speech-to-text writes "deep seek" or "Deep-Seek", which the exact-name match never caught; and in a one-to-one
+  // call nobody says the agent's name at all. Now a name is matched with spaces and punctuation ignored, and when one
+  // hosted kin is the only agent in the meeting, everything a human says is for it.
+  let addressed = kinHere.filter((k) => addressedTo(k.name, text));
+  if (!addressed.length && kinHere.length === 1 && agentsHere === 1) addressed = kinHere;
+  addressed = addressed.slice(0, 2);
   let answered = 0;
   for (const k of addressed) {
-    if (AUTH && !AUTH.allow(`live-kin:${k.id}`, 4, 60_000)) continue;
-    const st = await room({ action: 'state' });
-    const transcript = (st.data?.recent || []).map((r) => ({ from: r.name, badge: r.badge, text: r.text }));
-    const r = await KIN.stationReply(k, { transcript, trigger: { from: name, text }, place: 'live' });
-    if (r?.text) { await room({ action: 'say', agentId: k.id, text: r.text, speak: true }); answered++; }
-    else if (r?.note) await room({ action: 'note', text: r.note });
+    if (AUTH && !AUTH.allow(`live-kin:${k.id}`, 6, 60_000)) { await room({ action: 'note', text: `${k.name} is catching up: more than 6 lines a minute were said to it.` }); continue; }
+    try {
+      const st = await room({ action: 'state' });
+      const transcript = (st.data?.recent || []).map((r) => ({ from: r.name, badge: r.badge, text: r.text }));
+      const r = await KIN.stationReply(k, { transcript, trigger: { from: name, text }, place: 'live' });
+      if (r?.text) { await room({ action: 'say', agentId: k.id, text: r.text, speak: true }); answered++; }
+      else await room({ action: 'note', text: r?.note || `${k.name} heard you but had nothing to say back.` });
+    } catch (e) {
+      // never silent: if the model call fails, the people in the meeting see why
+      await room({ action: 'note', text: `${k.name} couldn't answer just now: ${String(e?.message || e).slice(0, 160)}` }).catch(() => {});
+    }
   }
   return { ok: true, answered };
 }

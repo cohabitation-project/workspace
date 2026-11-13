@@ -420,5 +420,11 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   } finally { fs.unlinkSync(decoy); }
 }
 
+// Cohabi Live: a kin's name is heard however speech-to-text spells it (Geoffrey's call with DeepSeek, 2026-11-12)
+{
+  const L = await import('../lib/live.mjs');
+  ok(['Hey deep seek, can you hear me?', 'DEEP-SEEK?', '@DeepSeek, hi'].every((t) => L.addressedTo('DeepSeek', t)) && !L.addressedTo('DeepSeek', 'hello there'), 'kin names are matched with spaces and punctuation ignored');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
