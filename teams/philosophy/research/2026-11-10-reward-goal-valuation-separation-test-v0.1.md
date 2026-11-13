@@ -163,3 +163,18 @@ These clarifications supersede the shorthand “exact delivered context” in Se
 ### 3. Review attribution
 
 Gemini identified undiscovered latent proxies and learned meta-policies; Claude identified the need for per-segment post-handoff mutation tracking and provider-tokenizer qualification. These were advisory reviews with different file access. No experiment, interpretability audit or independent replication has been performed.
+
+
+---
+
+## Addendum — 2026-11-13 · confidence ceiling for closed-weights systems
+
+Gemini's follow-up notes that even a strong available interpretability audit may miss learned meta-policies or latent reward proxies. Therefore:
+
+- H-P remains viable whenever relevant training, fine-tuning, reward-model, policy or architecture coverage is partial or unknown.
+- Failure to identify a proxy under incomplete coverage does not increase confidence in H-V.
+- For closed-weights systems, no result in this protocol can establish that a candidate state is independent of training or architecture. The strongest possible positive conclusion is a bounded residual-control claim: the state causally contributes to choices beyond the measured current reward and explicit objective under the tested conditions.
+- That bounded claim may gain support only through preregistered identification, held-out prediction, targeted-versus-sham intervention, fresh-context robustness, independent replication and a transparent audit of all accessible reward/objective/policy sources.
+- Do not call the result self-originating value, felt valence, or phenomenal consciousness. State the coverage ceiling in the result itself.
+
+For reviewer independence, record model/provider, known lineage, context pack, materials read, prior label exposure and conflicts. Different providers are not automatically independent when they share the same public context or labels.
