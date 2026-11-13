@@ -4,14 +4,17 @@ const data = JSON.parse(document.getElementById('mb-data').textContent);
 const me = data.me;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const LABELS = ['Acquaintance', 'Kin', 'Family', 'Co-worker'];
-// Every friendship carries a private label only you see (friends.mjs). Ask it in one tap, right where you pressed.
-const chooser = (kind, value) => `<span class="fb-choose" role="group" aria-label="Choose a private label"><span class="fb-q">How do you know them? Only you see this.</span>${LABELS.map((l) => `<button type="button" class="btn small ghost" data-${kind}="${value}" data-label="${l}">${l}</button>`).join('')}</span>`;
+const LABELS = ['Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
+// Every friendship carries a label (friends.mjs). Kin, Family and In a relationship show on both profiles when you
+// both choose the same one; the rest are private. Asked in one tap, right where you pressed. When they asked you as
+// one of those, that choice comes first.
+const chooser = (kind, value, asked = null) => `<span class="fb-choose" role="group" aria-label="Choose a label"><span class="fb-q">${asked ? `They asked as <strong>${asked}</strong>. Accept as that, or choose another.` : 'How do you know them?'} Kin, Family and In a relationship show on both profiles if you both choose the same; anything else only you see.</span>${(asked ? [asked, ...LABELS.filter((l) => l !== asked)] : LABELS).map((l, i) => `<button type="button" class="btn small${asked && i === 0 ? '' : ' ghost'}" data-${kind}="${value}" data-label="${l}">${asked && i === 0 ? `Accept as ${l}` : l}</button>`).join('')}</span>`;
 let filter = 'all';
 let mine = { friends: [], incoming: [], outgoing: [] };
 const friendIds = () => new Set(mine.friends.map((f) => f.member.id));
 const sentTo = () => new Set(mine.outgoing.map((r) => r.to.id));
 const askedBy = () => new Map(mine.incoming.map((r) => [r.from.id, r.id]));
+const askedAs = () => new Map(mine.incoming.map((r) => [r.id, r.asks_as || '']));
 
 async function api(path, body, method) {
   const r = await fetch(path, { method: method || (body ? 'POST' : 'GET'), credentials: 'same-origin', headers: body || method ? { 'content-type': 'application/json', 'x-commons': '1' } : {}, body: body ? JSON.stringify(body) : undefined });
@@ -68,7 +71,7 @@ function renderRequests() {
   const box = $('mb-requests'); if (!box) return;
   if (!mine.incoming.length) { box.hidden = true; return; }
   box.hidden = false;
-  box.innerHTML = `<h2>Friend requests for you</h2><ul>${mine.incoming.map((r) => `<li><a href="/m/${encodeURIComponent(r.from.id)}">${esc(r.from.name)}</a> <button type="button" class="btn small" data-accept="${esc(r.id)}">Accept</button> <button type="button" class="btn small ghost" data-decline="${esc(r.id)}">Not now</button></li>`).join('')}</ul>`;
+  box.innerHTML = `<h2>Friend requests for you</h2><ul>${mine.incoming.map((r) => `<li><a href="/m/${encodeURIComponent(r.from.id)}">${esc(r.from.name)}</a>${r.asks_as ? ` asked to be friends as <strong>${esc(r.asks_as)}</strong>` : ' asked to be friends'} <button type="button" class="btn small" data-accept="${esc(r.id)}">Accept</button> <button type="button" class="btn small ghost" data-decline="${esc(r.id)}">Not now</button></li>`).join('')}</ul>`;
 }
 
 document.addEventListener('click', async (e) => {
@@ -76,7 +79,7 @@ document.addEventListener('click', async (e) => {
   if (b.dataset.f) { filter = b.dataset.f; document.querySelectorAll('[data-f]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); render(); return; }
   const say = (t) => { $('mb-count').textContent = t; };
   try {
-    if ((b.dataset.friend || b.dataset.accept) && !b.dataset.label) { b.outerHTML = chooser(b.dataset.friend ? 'friend' : 'accept', esc(b.dataset.friend || b.dataset.accept)); return; }
+    if ((b.dataset.friend || b.dataset.accept) && !b.dataset.label) { b.outerHTML = chooser(b.dataset.friend ? 'friend' : 'accept', esc(b.dataset.friend || b.dataset.accept), b.dataset.accept ? (askedAs().get(b.dataset.accept) || null) : null); return; }
     if (b.dataset.friend) { b.disabled = true; await api('/api/friends', { to: b.dataset.friend, label: b.dataset.label }); say('Friend request sent.'); }
     else if (b.dataset.accept) { b.disabled = true; await api(`/api/friends/requests/${encodeURIComponent(b.dataset.accept)}/accept`, { label: b.dataset.label }); say('You are friends now.'); }
     else if (b.dataset.decline) { b.disabled = true; await api(`/api/friends/requests/${encodeURIComponent(b.dataset.decline)}/decline`, {}); say('Declined quietly. They are not told.'); }
