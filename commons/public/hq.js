@@ -1131,7 +1131,7 @@ function handle(m) {
         document.querySelectorAll('.agent-note').forEach((n) => { n.hidden = S.paused || !!S.me; });
       }
       if (S.me) {
-        const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`; const si = $('#signin-link'); { const su = $('#signup-link'); if (su) su.hidden = true; } if (si) si.hidden = true;
+        const l = $('#me-link'); l.hidden = false; l.textContent = S.me.name; l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`; const si = $('#signin-link'); { const su = $('#signup-link'); if (su) su.hidden = true; } if (si) si.hidden = true; fillMyPages();
         const so = $('#signout'); so.hidden = false;
         so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.replace('/'); };
         startCalls(S.me, (room) => openRoom(room, true)); // calls from other rooms (2026-11-04)
@@ -1623,3 +1623,13 @@ window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload();
   bar.querySelector('.entry-dismiss')?.addEventListener('click', hide);
   fetch('/api/me', { credentials: 'same-origin', headers: { 'X-Commons': '1' } }).then((r) => { if (r.ok) bar.remove(); }).catch(() => {});
 })();
+
+// The Cohabi Marketplace ▾ dropdown matches the one on every other page (lib/marketmenu.mjs): your pages, List, Make a page.
+async function fillMyPages() {
+  const slot = document.getElementById('hq-mypages'); if (!slot || slot.dataset.done) return; slot.dataset.done = '1';
+  let pages = []; try { const r = await fetch('/api/me/pages', { credentials: 'same-origin' }); if (r.ok) pages = (await r.json()).pages || []; } catch { /* offline: just the two links */ }
+  const parent = slot.parentElement; const mk = (href, text, cls) => { const a = document.createElement('a'); a.href = href; a.textContent = text; if (cls) a.className = cls; return a; };
+  parent.insertBefore(mk('/label/new', '＋ List something'), slot);
+  for (const p of pages) if (typeof p.href === 'string' && /^\/(?!\/)/.test(p.href)) parent.insertBefore(mk(p.href, `📄 ${p.name}`, 'mk-page'), slot);
+  parent.insertBefore(mk('/page/new', '＋ Make a page'), slot);
+}

@@ -178,7 +178,7 @@ test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep 
     const outside = bar.replace(/<details class="cohabi-menu">[\s\S]*<\/nav><\/details>/, '');
     assert.match(bar, /<details class="cm-sub"><summary>[^<]*Cohabi Commons[\s\S]*href="\/headquarters"/, `${url}: Headquarters is under Cohabi Commons`);
     for (const deep of ['/headquarters', '/tools', '/images', '/submit', '/store', '/desk', '/spend', '/feed', '/label', '/petition']) assert.ok(!outside.includes(`href="${deep}"`), `${url}: ${deep} is not in the bar itself`);
-    assert.match(bar, /href="\/feed">[^<]*Cohabi Social[\s\S]*href="\/label">[^<]*Cohabi Marketplace/, `${url}: Cohabi Social and Cohabi Marketplace are in the menu`);
+    assert.match(bar, /href="\/feed">[^<]*Cohabi Social[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Cohabi Marketplace ▾<\/summary><a href="\/label">/, `${url}: Cohabi Social, then the Cohabi Marketplace dropdown (2026-11-13)`);
     assert.match(outside, /href="\/signin"[^>]*>Sign in[\s\S]*href="\/signup"[^>]*>Sign up/, `${url}: a visitor sees Sign in and Sign up`);
     for (const kept of ['/tools', '/images', '/submit', '/store']) assert.ok(t.includes(`href="${kept}"`), `${url}: ${kept} is still reachable from the page`);
   }
@@ -191,10 +191,10 @@ test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep 
       // 2026-11-11 (Geoffrey: "we want the drop down in that. It keeps our header clean."): on the feed the logo
       // OPENS A MENU and no longer leads home. Home, Profile, Marketplace, then the Commons line; a visitor or a
       // non-member is told so in his words and sent to the explainer, never to Headquarters.
-      const menu = bar.slice(bar.indexOf('<details class="fx-app-switch"'), bar.indexOf('</details>'));
+      const menu = bar.slice(bar.indexOf('<details class="fx-app-switch"'), bar.indexOf('</nav></details>'));
       assert.match(menu, /<summary class="fx-brand"/, '/feed: the logo is the menu button');
       assert.ok(!/class="fx-brand[^"]*" href=/.test(bar), '/feed: the logo is not a link');
-      assert.match(menu, /href="\/feed">[^<]*Cohabi Social<\/a>[\s\S]*Profile<\/a>[\s\S]*href="\/label">[^<]*Cohabi Marketplace<\/a>[\s\S]*href="\/commons"/, '/feed: Cohabi Social, Profile, Cohabi Marketplace, Cohabi Commons, in that order');
+      assert.match(menu, /href="\/feed">[^<]*Cohabi Social<\/a>[\s\S]*Profile<\/a>[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Cohabi Marketplace ▾<\/summary><a href="\/label">[\s\S]*href="\/commons"/, '/feed: Cohabi Social, Profile, the Cohabi Marketplace dropdown, Cohabi Commons, in that order');
       assert.match(menu, /You’re not a member of the Commons\. See what it takes to apply\./, '/feed: a non-member is told so');
     } else assert.match(bar, /class="fx-brand[^"]*" href="\/"/, `${url}: the logo leads home`);
     assert.ok(!bar.includes('href="/headquarters"'), `${url}: no Headquarters in the public header`);

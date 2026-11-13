@@ -729,3 +729,5 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 .sp-nets a, .sp-nets button { padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1px solid #56cfc6; background: none; color: #eafffb !important; font: 14px system-ui; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
 .sp-note { font-size: 13px; margin: 8px 0 0; word-break: break-all; }
 .pf-petition { margin: 6px 0; }
+/* the profile goes straight up under the header; the old "Headquarters / member" line's room is now the gap */
+body.pf-page main > .pf { margin-top: 14px; }

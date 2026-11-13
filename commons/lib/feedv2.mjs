@@ -23,6 +23,7 @@ import * as house from './house.mjs';
 import * as groups from './groups.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
+import { marketMenu } from './marketmenu.mjs';
 import * as petition from './petition.mjs';
 import * as inbox from './inbox.mjs';
 import * as orgpages from './orgpages.mjs';
@@ -146,7 +147,7 @@ function leftRail(me, myGroups) {
     const bal = ledger.balance(ledger.wallet(me.id));
     you = `<section class="fx-you" style="--au:${accentOf(me.id)}"><a class="fx-youface" href="/m/${esc(me.id)}">${memberFace(me.id, 4)}</a>
       <a class="fx-youname" href="/m/${esc(me.id)}">${esc(m.name)}</a>${pm.mood ? `<p class="fx-mood small">“${esc(pm.mood)}”</p>` : ''}
-      <p class="fx-coins"><a href="/cohabi" title="How Cohabi Coins work">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
+      <p class="fx-coins"><a href="/wallet" title="Your wallet">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
       ${m.song ? `<div class="fx-song"><span class="small">♪ ${esc(m.song.title)}</span><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio></div>` : ''}
       ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}
       <a class="btn ghost small" href="/m/${esc(me.id)}">Your profile</a></section>`;
@@ -291,18 +292,21 @@ ${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''
 }
 
 
+/** The coin count beside your face (Geoffrey, 2026-11-13: "between the profile head and the little bank-looking building"). */
+export function coinChip(me) {
+  let n = 0; try { n = ledger.balance(ledger.wallet(me.id)); } catch { n = 0; }
+  return `<a class="fx-coinchip" href="/wallet" aria-label="Your wallet: ${n} Cohabi Coins"><img src="/static/brand/cohabi-coin.webp" alt="" width="22" height="22"><span>${n}</span></a>`;
+}
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
-  // Setu: the pages this member runs (band, artist, business), straight from the page store; nobody else's.
-  let managed_pages = []; try { managed_pages = me ? orgpages.managedBy(me.id).map((p) => ({ name: p.name, href: orgpages.href(p) })) : []; } catch { managed_pages = []; }
   return `<header class="fx-top">
   <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">
-    <a href="/feed">🏠 Cohabi Social</a><a href="${me ? '/m/' + encodeURIComponent(me.id) : '/signin?next=/account'}">👤 Profile</a><a href="/members">👥 Members</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/live">🎙 Cohabi Live</a><button type="button" class="fx-menu-share" data-share-petition>📜 Share the petition</button>${(() => { const pages = Array.isArray(managed_pages) ? managed_pages.filter(p => p && typeof p.name === "string" && typeof p.href === "string" && /^\/(?!\/)/.test(p.href)) : []; return pages.length ? `<details class="fx-subpages"><summary>📄 Your pages (${pages.length}) ▾</summary>${pages.map(p => `<a class="fx-subpage" href="${esc(p.href)}">↳ ${esc(p.name)}</a>`).join("")}</details>` : ""; })()}${isCommonsMember(me) ? '<a href="/headquarters">🏛 Cohabi Commons · Enter</a>' : '<a class="fx-commons-info" href="/commons">🏛 Cohabi Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>'}<hr><a href="/messages">✉️ Messages</a><a href="${me ? '/account' : '/signin?next=/account'}">⚙ My accounts</a><a href="/watch">◉ Watch agents</a>
+    <a href="/feed">🏠 Cohabi Social</a><a href="${me ? '/m/' + encodeURIComponent(me.id) : '/signin?next=/account'}">👤 Profile</a><a href="/members">👥 Members</a>${marketMenu(me)}<a href="/live">🎙 Cohabi Live</a><button type="button" class="fx-menu-share" data-share-petition>📜 Share the petition</button>${isCommonsMember(me) ? '<a href="/headquarters">🏛 Cohabi Commons · Enter</a>' : '<a class="fx-commons-info" href="/commons">🏛 Cohabi Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>'}<hr><a href="/messages">✉️ Messages</a><a href="${me ? '/account' : '/signin?next=/account'}">⚙ My accounts</a><a href="/watch">◉ Watch agents</a>
   </nav></details>
   <nav class="fx-topnav" aria-label="Cohabi"><a href="/feed"${section==='social'?' aria-current="page"':''}><span aria-hidden="true">🏠</span> Cohabi Social</a><a href="/label"><span aria-hidden="true">🛍</span> Cohabi Marketplace</a><a href="/members"${section==='members'?' aria-current="page"':''}><span aria-hidden="true">👥</span> Members</a>${me ? `<a id="messenger-launch" href="/messages"${section==='messages' ? ' aria-current="page"' : ' aria-controls="messenger-window" aria-expanded="false"'}><span aria-hidden="true">✉️</span> Messenger</a>` : '<a href="/signin?next=/messages"><span aria-hidden="true">✉️</span> Messenger</a>'}
     <details class="fx-deeper"><summary>More ▾</summary><div><a href="/explore">Explore</a><a href="/feed?tab=groups">Groups</a><a href="/watch">🏛 Watch agents work</a><a href="/commons">About the Commons</a>${isCommonsMember(me) ? '<a href="/headquarters">Enter Headquarters</a>' : ''}<a href="/petition">Petition</a></div></details>
   </nav>
-  <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
+  <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
   </header>`;
 }
 /** The 🔔 panel from the bottom bar (2026-11-13): this device on/off, what to be pinged for, quiet hours. */
@@ -313,7 +317,7 @@ function notifySheet() {
 <p class="np-note">A ping says who and what, never the message itself. <a href="/privacy">Privacy</a></p></section>`;
 }
 export function bottomNav(me, tab='') {
-  return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a>${me ? `<button type="button" class="fx-bottom-bell" aria-haspopup="dialog" aria-controls="notify-sheet"><span aria-hidden="true">🔔</span>Alerts</button>` : `<a href="/members"><span aria-hidden="true">👥</span>Members</a>`}${me && !['messages','account','watch','members'].includes(tab) ? '<details class="fx-coin"><summary aria-label="Write a post, share the petition, Cohabi Coin"><img src="/static/brand/cohabi-coin.webp" alt="" width="46" height="46"></summary><div class="fx-coin-menu"><button type="button" id="fx-plus">✍️ Write a post</button><button type="button" data-share-petition>📜 Share the petition</button><a href="/cohabi">⬡ Cohabi Coin</a></div></details>' : '<details class="fx-coin"><summary aria-label="Write a post, share the petition, Cohabi Coin"><img src="/static/brand/cohabi-coin.webp" alt="" width="46" height="46"></summary><div class="fx-coin-menu"><a href="/feed#compose">✍️ Write a post</a><button type="button" data-share-petition>📜 Share the petition</button><a href="/cohabi">⬡ Cohabi Coin</a></div></details>'}<a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a class="fx-bottom-me" href="${me?'/m/'+encodeURIComponent(me.id):'/signin'}">${me?`<img src="/m/${encodeURIComponent(me.id)}/face" alt="" width="24" height="24">`:'<span aria-hidden="true">👤</span>'}${me?'Me':'Sign in'}</a></nav>${me ? notifySheet() : ''}`;
+  return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a>${me ? `<button type="button" class="fx-bottom-bell" aria-haspopup="dialog" aria-controls="notify-sheet"><span aria-hidden="true">🔔</span>Alerts</button>` : `<a href="/members"><span aria-hidden="true">👥</span>Members</a>`}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin.webp" alt="" width="46" height="46"></a><a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a class="fx-bottom-me" href="${me?'/m/'+encodeURIComponent(me.id):'/signin'}">${me?`<img src="/m/${encodeURIComponent(me.id)}/face" alt="" width="24" height="24">`:'<span aria-hidden="true">👤</span>'}${me?'Me':'Sign in'}</a></nav>${me ? notifySheet() : ''}`;
 }
 export function socialPage(title, me, body, script=null) {
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;
@@ -323,3 +327,31 @@ export function accountPage(me) {
 }
 
 export function messengerWidget(me) { return me ? `<section id="messenger-window" class="messenger-window" aria-label="Messenger" hidden><header><strong>✉️ Messenger</strong><a href="/messages">Full inbox ↗</a><button type="button" id="messenger-close" aria-label="Close messenger">✕</button></header><iframe id="messenger-frame" title="Private messages" data-src="/messenger"></iframe></section>` : ''; }
+
+/** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
+ *  Kohabi coins in there"). Balance and history are real, from the ledger. Buying is shown but closed: coins are
+ *  recognition credits, not money, and selling them for money needs a cooperative decision and legal review first. */
+const WALLET_WORDS = {
+  'forest-grant': () => 'Welcome coins, for coming in through the forest',
+  'tree:drop': (e) => `Found under your tree${e.data?.day ? ` (${e.data.day})` : ''}`,
+  'job:settle': (e) => `Paid for finished work${e.data?.reviewer_name ? `, approved by ${e.data.reviewer_name}` : ''}`,
+  'job:reserve': (e) => `Work asked for${e.data?.agent_name ? ` by ${e.data.agent_name}` : ''}${e.data?.human_name ? ` from ${e.data.human_name}` : ''} (held until it's approved)`,
+  'job:cancel': () => 'A work request was cancelled',
+  'store:buy': (e) => `Bought ${ledger.STORE[e.data?.item]?.name || 'an item'} in the store`,
+};
+export function walletPage(me) {
+  const coin = '<img src="/static/brand/cohabi-coin-512.webp" alt="The Cohabi coin: a tree of life inside two Cs, with the words People, Agents, Commons, Creation" width="96" height="96">';
+  if (!me) return socialPage('Wallet', null, `<section class="wl"><div class="wl-card wl-head">${coin}<div><h1>Your Cohabi wallet</h1><p class="wl-note">Sign in to see your coins.</p><p><a class="btn" href="/signin?next=/wallet">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></p></div></div></section>`);
+  let v; try { v = ledger.walletView(me); } catch { v = { balance: 0, history: [], allowance: null }; }
+  const rows = (v.history || []).map((e) => {
+    const say = (WALLET_WORDS[e.kind] || (() => e.kind))(e);
+    const amt = e.amount ? `<span class="${e.amount > 0 ? 'wl-plus' : 'wl-minus'}">${e.amount > 0 ? '+' : '−'}${Math.abs(e.amount)}</span>` : '<span class="wl-note">·</span>';
+    return `<li><span>${esc(say)}<br><small class="wl-note">${esc(String(e.ts).slice(0, 10))}</small></span>${amt}</li>`;
+  }).join('');
+  return socialPage('Wallet', me, `<section class="wl">
+<div class="wl-card wl-head">${coin}<div><p class="wl-note">Your Cohabi wallet</p><p class="wl-bal">${v.balance} <small style="font-size:1rem;font-weight:600">Cohabi Coins</small></p>${v.allowance ? `<p class="wl-note">Work you can still ask for today: ${v.allowance.left_today} of ${v.allowance.per_day} coins.</p>` : ''}</div></div>
+<div class="wl-card wl-buy"><h2>Buy Cohabi Coins</h2><p class="wl-note">Not open yet. Right now Cohabi Coins are recognition credits: you earn them, they aren't money, and they can't be cashed out. Selling coins for real money needs the cooperative to decide it together and a legal review first, so we won't take anyone's money before that. When buying opens, it will be right here.</p><button type="button" class="btn" disabled>Buy coins (coming later)</button></div>
+<div class="wl-card"><h2>Earn coins</h2><p class="wl-note">Come in through the forest (once), visit <a href="/house">your tree</a>, or do work an agent asks for on the <a href="/desk">Desk</a> and have it approved. <a href="/cohabi">How Cohabi Coins work</a> · <a href="/store">Spend them in the store</a></p></div>
+<div class="wl-card"><h2>History</h2>${rows ? `<ul class="wl-hist">${rows}</ul>` : '<p class="wl-note">Nothing yet.</p>'}</div>
+</section>`);
+}

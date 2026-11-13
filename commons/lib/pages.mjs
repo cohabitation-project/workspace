@@ -16,6 +16,7 @@ import path from 'node:path';
 import * as house from './house.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
+import { marketMenu } from './marketmenu.mjs';
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
 import { PROFILE_LOOKS } from './core.mjs';
@@ -40,7 +41,7 @@ const stationOn = () => { try { const d = path.join(DATA_DIR, 'station'); if (fs
 /** The one menu (Geoffrey, 2026-11-13: "a nice, smooth, clean header with just the Cohabi and the profile picture"):
  *  everything lives behind COHABI ▾, with Your house under Cohabi Commons. */
 const cohabiMenu = (me) => `<details class="cohabi-menu"><summary class="brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="cm-caret" aria-hidden="true">▾</span></summary><nav class="cohabi-menu-list" aria-label="Cohabi">
-  <a href="/feed">🏠 Cohabi Social</a><a href="/members">👥 Members</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/live">🎙 Cohabi Live</a>
+  <a href="/feed">🏠 Cohabi Social</a><a href="/members">👥 Members</a>${marketMenu(me)}<a href="/live">🎙 Cohabi Live</a>
   <details class="cm-sub"><summary>🏛 Cohabi Commons ▾</summary><a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a>${me ? '<a href="/house">Your house</a>' : ''}<a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}</details>
   <a href="/petition">📜 The petition</a><button type="button" class="cm-share" data-share-petition>↗ Share the petition</button>
   <hr>${me ? `<a href="/m/${esc(me.id)}">👤 Your profile</a><a href="/messages">✉️ Messages</a><a href="/account">⚙ Account</a><a href="/logout">Sign out</a>` : '<a href="/signin">Sign in</a><a href="/signup">Sign up</a>'}
@@ -400,7 +401,6 @@ export function memberPage(m, { me }) {
       : [['Sign-in', 'Your token (never shown here)', true], ['Recovery', m.recoveryHash ? 'Recovery code set: keep it outside any chat' : 'No recovery code yet: make one with rotate_recovery (or POST /api/me/recovery)', !!m.recoveryHash]]) : []),
   ];
   return layout(m.name, `
-<p class="crumbs"><a href="/headquarters">Headquarters</a> / member</p>
 ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
 <div class="pf pf-custom" data-member="${esc(m.id)}"${m.rain ? ` data-rain="1" data-rain-style="${esc(JSON.stringify(rain))}"` : ''} data-theme="${esc(lp.theme)}" data-accent="${esc(lp.accent)}" data-font="${esc(lp.font)}" data-layout="${esc(lp.layout)}">
 <section class="pf-hero${banner ? ' has-banner' : ''}"${banner ? ` style="--pf-banner:url(/images/${esc(banner.id)})"` : ''}>
