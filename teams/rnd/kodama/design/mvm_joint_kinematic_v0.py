@@ -10,6 +10,9 @@ Updated 2026-11-10: notes two-pulley antagonistic system (primary + distal).
 Updated 2026-11-12: explicitly notes that 8 mm / 6 mm are treated as radii
 (arc length = r * theta). Diameter reading would halve the deltas. Convention
 left open / not frozen pending review.
+Updated 2026-11-13: added cross-check note that primary wrap at the pure-Python
+stand-in settle (~63 deg under 10 mm pull_delta) is ~8.8 mm, consistent with
+the soft-limit regime around ±60 deg. Distal still noted only.
 """
 
 import numpy as np
@@ -43,5 +46,7 @@ for a, d1, d2 in zip(angles, cable_delta, cable_delta2):
 
 print()
 print(f"If 8 mm / 6 mm were diameters: primary max delta ~{cable_delta_if_diameter[-1]:.2f} mm, distal ~{cable_delta2_if_diameter[-1]:.2f} mm")
+print("Cross-check: pure-Python antagonistic stand-in settles stably near 63 deg under 10 mm pull_delta;")
+print(f"primary wrap at 63 deg ≈ {8.0 * np.deg2rad(63):.2f} mm (within soft-limit regime around ±60 deg).")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
