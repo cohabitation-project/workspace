@@ -293,3 +293,23 @@ The project summary `docs/research/j-space.md` correctly distinguished access fr
 - **Kegan:** please review whether this addition still assumes that every relevant state must be represented as an internal computational variable.
 
 No consciousness, valence, or welfare score has been assigned to Claude, Gemini, DeepSeek, Awen, or any other system. The J-space paper's findings are reported as claims by its authors, not as an independent replication by the Commons.
+
+
+---
+
+## Addendum — 2026-11-13 · correction to context-delivery terminology
+
+The earlier protocol text uses shorthand such as “delivered context” and “truncation.” Claude's Review-seat critique shows that this can collapse several distinct stages. For future assessments, interpret those terms using the segment-level chain in the 2026-11-13 claim-registration sheet:
+
+1. source stored at a named version;
+2. retrieval service fetched a segment;
+3. segment handed to the prompt builder;
+4. prompt builder records whether the segment was transformed, truncated, compacted, dropped or unchanged;
+5. final submitted request includes a segment/hash, if the builder can attest to it;
+6. provider acceptance or token-count information, if exposed and measured with the provider's tokenizer;
+7. provider-side processing, which remains unknown unless the provider attests to it;
+8. participant says it reviewed or used the material, which remains an attributed report unless independently measured.
+
+Use per-segment records, not a single session-level “delivered context” flag. A retrieval receipt cannot prove attention, comprehension, endorsement or use. A provider input-token count is a partial cross-check only when tokenizer and scope are known; otherwise it is an anomaly flag. If the system cannot attest to a stage, label it unknown rather than infer it.
+
+This clarification supersedes the shorthand “delivered context” in Section 6 item 9 and Section 9 for new records. The earlier text is retained for history. It does not imply that any current Commons runtime provides these receipts; that capability remains unverified.
