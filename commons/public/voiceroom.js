@@ -99,6 +99,7 @@
                             if (msg.badge === 'guest') { addChatMessage(`${msg.name} · guest`, msg.text, 'chat'); break; } // our own words: already shown as "You"
                             if (msg.badge === 'system') addSystemMessage(msg.text); else addChatMessage((msg.name || msg.from) + (msg.model ? ` · ${msg.model}` : ''), msg.text, msg.badge && msg.badge !== 'human' ? 'agent' : 'chat'); if (msg.badge !== 'human') refreshInvitePanel(); break;
       case 'transcript':    addChatMessage(msg.name || msg.from || msg.peerId, msg.text, 'transcript'); break;
+      case 'note':          addChatMessage('Cohabi Live', msg.text, 'transcript'); break;
       case 'agent-speaking': animateAgentTile(msg.peerId, true); break;
       default:              log('Unknown message type:', msg.type);
     }
@@ -430,7 +431,10 @@
       const rms = computeRMS(localAnalyserData);
       const tile = document.getElementById(`tile-${myPeerId}`);
       if (tile) tile.style.setProperty('--voice-level', rms.toFixed(3));
-      if (rms > 0.08 && isMicOn) spokeInPiece = true;
+      if (rms > 0.08 && isMicOn) { spokeInPiece = true; lastVoiceAt = performance.now(); }
+      // End this recording at a pause, not on the clock (Ash's read and our DeepSeek test, 2026-11-13: fixed
+      // 6-second pieces cut sentences in half). Spoke, then ~0.9 s of quiet: send it now.
+      else if (spokeInPiece && mediaRecorder?.state === 'recording' && lastVoiceAt && performance.now() - lastVoiceAt > PAUSE_MS) { lastVoiceAt = 0; mediaRecorder.stop(); }
       // Local barge-in: if I keep talking over an agent for about a third of a second, its voice stops for me at
       // once (the server hushes it for everyone when my words arrive). Echo from my own speakers is filtered by
       // the browser's echo cancellation; the threshold is well above it.
@@ -454,7 +458,9 @@
   // Speech to text, for the agents in the meeting (fixed 2026-11-11). Runs ONLY while an agent is in the room and
   // your mic is on. Each piece is a complete recording of up to 6 seconds, sent only if you actually spoke in it;
   // the server turns it into text and forgets the audio. Before this fix nothing a human said was ever transcribed.
-  let bridgeTimer = null; let spokeInPiece = false; let bridgeOn = false;
+  let bridgeTimer = null; let spokeInPiece = false; let bridgeOn = false; let lastVoiceAt = 0; let pieceStartedAt = 0;
+  const PAUSE_MS = 900;      // quiet this long after speech ends a piece
+  const MAX_PIECE_MS = 20000; // a long unbroken stretch still gets sent
   const agentHere = () => !!dom.grid?.querySelector('.tile.agent');
   function startAudioBridge() {
     if (bridgeTimer) return;
@@ -462,9 +468,11 @@
       const want = agentHere() && isMicOn && localStream && localStream.getAudioTracks().some((t) => t.readyState === 'live' && t.enabled);
       setTranscribeNote(want);
       if (!want) { if (mediaRecorder && mediaRecorder.state === 'recording') { spokeInPiece = false; mediaRecorder.stop(); } return; }
-      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop(); // ends this piece; onstop starts the next
-      else startPiece();
-    }, 6000);
+      if (!(mediaRecorder && mediaRecorder.state === 'recording')) { startPiece(); return; }
+      const age = performance.now() - pieceStartedAt;
+      // a piece with no speech is thrown away every few seconds (so it stays small); a very long one is sent
+      if ((!spokeInPiece && age > 6000) || age > MAX_PIECE_MS) mediaRecorder.stop(); // onstop starts the next
+    }, 1000);
   }
   function startPiece() {
     if (!localStream || !localStream.getAudioTracks().length) return;
@@ -481,7 +489,7 @@
       }
       if (agentHere() && isMicOn) startPiece();
     };
-    mediaRecorder = rec; rec.start();
+    mediaRecorder = rec; pieceStartedAt = performance.now(); rec.start();
   }
   function setTranscribeNote(on) {
     if (on === bridgeOn) return; bridgeOn = on;
