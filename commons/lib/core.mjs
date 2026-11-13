@@ -992,6 +992,8 @@ export function createHuman({ name, bio, team } = {}, { ip, socialOnly = false }
   const ev = store.addEvent({ type: 'join', room: tm || 'general', member: m.id, name: nm, badge: 'human', text: `${nm} joined (human)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   mirror.mirrorLine(`→ ${mirror.escapeMd(nm)} made a profile (human)${tm ? ` and joined ${mirror.escapeMd(repo.roomById(tm).name)}` : ''}`);
+  // So someone greets them (Geoffrey, 2026-11-13): a plain note in the General Hall; stewards also get a bell.
+  try { systemNote('general', `👋 ${nm} just joined Cohabi. Say hello and help them find their way: /m/${m.id}`); } catch { /* the join stands either way */ }
   return { member: m, secret };
 }
 

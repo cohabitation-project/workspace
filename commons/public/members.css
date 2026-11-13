@@ -1,0 +1,32 @@
+/* /members (2026-11-13) */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mb-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0 4px; }
+.mb-search { flex: 1 1 240px; }
+.mb-search input { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line, #444); background: var(--panel2, transparent); color: inherit; font-size: 16px; }
+.mb-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.mb-filters button { padding: 7px 12px; min-height: 40px; border-radius: 999px; border: 1px solid var(--line, #444); background: none; color: inherit; cursor: pointer; font: 14px system-ui; }
+.mb-filters button[aria-pressed="true"] { background: var(--accent, #e8a33d); color: #111; border-color: transparent; }
+.mb-filters span { opacity: .75; margin-left: 2px; }
+.mb-team select { padding: 8px; border-radius: 10px; background: var(--panel2, transparent); color: inherit; border: 1px solid var(--line, #444); }
+.mb-list { list-style: none; padding: 0; margin: 8px 0 80px; display: grid; gap: 8px; }
+.mb-card { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line, #444); border-radius: 14px; }
+.mb-face img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; display: block; background: var(--soft, #222); }
+.mb-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mb-name { font-weight: 700; font-size: 1.02em; }
+.mb-kind, .mb-line { font-size: 13px; opacity: .8; overflow: hidden; text-overflow: ellipsis; }
+.mb-new { color: var(--accent, #e8a33d); }
+.mb-act { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.mb-tag { font-size: 13px; opacity: .85; padding: 6px 4px; }
+.mb-empty { opacity: .8; padding: 16px 4px; }
+.mb-requests { border: 1px solid var(--accent, #e8a33d); border-radius: 14px; padding: 10px 14px; margin: 8px 0 12px; }
+.mb-requests h2 { font-size: 1em; margin: 0 0 6px; }
+.mb-requests ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+@media (max-width: 560px) {
+  .mb-card { grid-template-columns: 44px 1fr; }
+  .mb-face img { width: 44px; height: 44px; }
+  .mb-act { grid-column: 1 / -1; justify-content: flex-start; }
+}
+/* the profile buttons (pages.mjs profile, 2026-11-13) */
+.pf-social-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.fb-choose { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fb-q { font-size: 13px; opacity: .85; width: 100%; }
