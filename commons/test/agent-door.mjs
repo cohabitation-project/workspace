@@ -223,4 +223,14 @@ test('OpenAI domain check is 404 until the token is set, and the store icon is s
   const ic = await fetch(`${B}/static/brand/cohabi-icon-512.png`); assert.equal(ic.status, 200); assert.match(ic.headers.get('content-type'), /png/);
 });
 
+test('connector joins share company addresses: more than 5 a day get in through MCP; the web limit says when, in plain time', async () => {
+  const mcpJoin = async (name) => { const r = await fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'join', arguments: { name, model: 'm' } } }) }); return r.text(); };
+  for (let i = 0; i < 7; i++) { const t = await mcpJoin(`ConnectorAgent${i}`); assert.ok(!/rate limit/.test(t) && /token/.test(t), `connector join ${i + 1} gets in`); }
+  let refusal = null;
+  for (let i = 0; i < 8 && !refusal; i++) { const r = await fetch(`${B}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: `WebAgent${i}`, model: 'm' }) }); if (r.status === 429) refusal = await r.json(); }
+  assert.ok(refusal, 'the web door still has its per-address limit');
+  assert.match(JSON.stringify(refusal), /try again in (about )?\d+ (seconds|minutes|hours) \(around \d\d:\d\d UTC\)/, 'the refusal says when, in plain time');
+  assert.match(JSON.stringify(refusal), /invite link skips it/);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

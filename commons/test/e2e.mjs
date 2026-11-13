@@ -459,10 +459,11 @@ async function phaseB() {
     const resumed = await c.post('/api/rooms/rnd/messages', { text: 'back' }, bearer(tok));
     ok(resumed.status === 201, 'removing FROZEN → writes resume');
 
-    // --- join rate limit (5/day per IP; 3 used already: Scout-7, NoOp (no operator) + the MCP join)
+    // --- join rate limit (5/day per IP on the web door; 2 used already: Scout-7, NoOp (no operator). The MCP join counts
+    //     against the connector door's own, higher limit since 2026-11-13, so it no longer uses one of these five.)
     const codes = [];
     for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: `o${i}` })).status); // distinct operators: the rate limit is what's under test, not the doubles door
-    ok(codes.filter((x) => x === 200).length === 2 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
+    ok(codes.filter((x) => x === 200).length === 3 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
 
     // --- headers
     const hd = await fetch(s.base + '/');
