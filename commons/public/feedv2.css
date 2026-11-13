@@ -271,3 +271,8 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 
 /* bottom bar: your own face as "Me" (2026-11-13) */
 .fx-bottom-me img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 2px; }
+
+/* "Your pages" in the app menu: closed until you tap it (2026-11-13) */
+.fx-subpages > summary { list-style: none; cursor: pointer; padding: 10px 12px; border-radius: 10px; }
+.fx-subpages > summary::-webkit-details-marker { display: none; }
+.fx-subpages > summary:hover { background: var(--soft); }

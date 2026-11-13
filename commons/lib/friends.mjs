@@ -18,7 +18,13 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import * as store from './store.mjs';
 
-export const PRESETS = ['Acquaintance', 'Kin', 'Family', 'Co-worker'];
+export const PRESETS = ['Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
+/** Relations, not private labels (Geoffrey, 2026-11-13: "it should be linked in public that Jeff is kin with these
+ *  people... family with these people... in a relationship"). Shown on BOTH profiles only when both people chose the
+ *  same one, so nobody can claim a relation alone. Every other label stays private, as before. A request made with one
+ *  of these shows the recipient what they were asked as, so they can answer it. */
+export const RELATIONS = ['Kin', 'Family', 'In a relationship'];
+const relationOf = (f) => (f && f.labels[f.a] && f.labels[f.a] === f.labels[f.b] && RELATIONS.includes(f.labels[f.a]) ? f.labels[f.a] : null);
 export const SUGGESTED = ['Bandmate', 'Co-founder', 'Boss'];
 const REASK_MS = 30 * 24 * 3600 * 1000; const DAILY = 20;
 let file = null;
@@ -101,23 +107,30 @@ export function mine(member, { label = null } = {}) {
   if (label) { const want = String(label).toLowerCase(); list = list.filter((f) => f.label.toLowerCase() === want); }
   return {
     friends: list, total, labelFilters,
-    incoming: [...requests.values()].filter((r) => r.to === m.id && r.status === 'pending').map((r) => ({ id: r.id, from: who(r.from), ts: r.ts })).sort((a, b) => (a.ts < b.ts ? 1 : -1)),
+    incoming: [...requests.values()].filter((r) => r.to === m.id && r.status === 'pending').map((r) => ({ id: r.id, from: who(r.from), ts: r.ts, asks_as: RELATIONS.includes(r.label) ? r.label : null })).sort((a, b) => (a.ts < b.ts ? 1 : -1)),
     outgoing: [...requests.values()].filter((r) => r.from === m.id).map((r) => ({ id: r.id, to: who(r.to), label: r.label, ts: r.ts })).sort((a, b) => (a.ts < b.ts ? 1 : -1)), // a declined request still reads as sent
-    presets: PRESETS, suggested: SUGGESTED, note: 'Labels are yours alone: no one sees how you organize them.',
+    presets: PRESETS, relations: RELATIONS, suggested: SUGGESTED, note: 'Labels are yours alone, except Kin, Family and In a relationship: those show on both profiles when you both choose the same one.',
   };
 }
 /** What ANYONE may see of a member's friends: names only. Never a label, never a request. */
 export function publicList(memberId) {
   const id = String(memberId || '');
-  return friendIds(id).map((x) => ({ m: store.getMember(x) })).filter((x) => x.m && !x.m.retired).map((x) => ({ id: x.m.id, name: x.m.name, kind: x.m.kind })).sort((a, b) => a.name.localeCompare(b.name));
+  return [...friends.values()].filter((f) => f.a === id || f.b === id).map((f) => ({ f, m: store.getMember(f.a === id ? f.b : f.a) }))
+    .filter((x) => x.m && !x.m.retired).map((x) => ({ id: x.m.id, name: x.m.name, kind: x.m.kind, ...(relationOf(x.f) ? { relation: relationOf(x.f) } : {}) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+/** A member's public relations, grouped: { Kin: [...], Family: [...], 'In a relationship': [...] } (agreed ones only). */
+export function relationsOf(memberId) {
+  const out = {}; for (const x of publicList(memberId)) if (x.relation) (out[x.relation] ||= []).push({ id: x.id, name: x.name, kind: x.kind });
+  return out;
 }
 /** How the VIEWER stands with one member: none | sent | received | friends | self. Only the viewer's own label. */
 export function status(viewer, memberId) {
   if (!viewer) return { status: 'none' }; const id = String(memberId || '');
   if (viewer.id === id) return { status: 'self' };
-  const f = friends.get(key(viewer.id, id)); if (f) return { status: 'friends', viewerLabel: f.labels[viewer.id], since: f.since };
+  const f = friends.get(key(viewer.id, id)); if (f) return { status: 'friends', viewerLabel: f.labels[viewer.id], since: f.since, ...(relationOf(f) ? { relation: relationOf(f) } : {}) };
   const out = [...requests.values()].find((r) => r.from === viewer.id && r.to === id); if (out) return { status: 'sent', request: out.id, viewerLabel: out.label };
-  const inc = [...requests.values()].find((r) => r.from === id && r.to === viewer.id && r.status === 'pending'); if (inc) return { status: 'received', request: inc.id };
+  const inc = [...requests.values()].find((r) => r.from === id && r.to === viewer.id && r.status === 'pending'); if (inc) return { status: 'received', request: inc.id, ...(RELATIONS.includes(inc.label) ? { asks_as: inc.label } : {}) };
   return { status: 'none' };
 }
 export const pendingFor = (memberId) => [...requests.values()].filter((r) => r.to === memberId && r.status === 'pending').length;

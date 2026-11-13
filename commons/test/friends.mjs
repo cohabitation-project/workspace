@@ -14,7 +14,7 @@ const befriend = (a, b, la = 'Kin', lb = 'Kin') => { const r = friends.request(a
 
 test('a request carries the sender\'s label; the recipient accepts with their own; neither sees the other\'s', () => {
   const r = friends.request(geo, { to: 'ash', label: 'kin' }); assert.equal(r.status, 'sent');
-  const inc = friends.mine(ash).incoming; assert.equal(inc.length, 1); assert.equal(inc[0].from.name, 'Geoffrey'); assert.ok(!JSON.stringify(inc).includes('Kin'), 'the request does not show the sender\'s label');
+  const inc = friends.mine(ash).incoming; assert.equal(inc.length, 1); assert.equal(inc[0].from.name, 'Geoffrey'); assert.equal(inc[0].asks_as, 'Kin', 'a relation (Kin, Family, In a relationship) shows what they were asked as (Geoffrey, 2026-11-13)');
   fails(() => friends.accept(ash, r.id, {}), 400, /label/);
   assert.deepEqual(friends.accept(ash, r.id, { label: 'Co-founder' }), { friends: true, with: { id: 'h_geo', name: 'Geoffrey', kind: 'human' }, label: 'Co-founder' });
   assert.equal(friends.mine(geo).friends[0].label, 'Kin'); assert.equal(friends.mine(ash).friends[0].label, 'Co-founder');
@@ -78,4 +78,24 @@ test('friends message each other directly; everyone else still sends a request',
   befriend(geo, ash); const warm = inbox.start(geo, { to: ash.id, text: 'hello kin', client_id: k(2) });
   assert.equal(inbox.read(ash, warm.id).status, 'active'); assert.equal(inbox.list(ash).find((t) => t.id === warm.id).last.text, 'hello kin');
   assert.ok(inbox.send(ash, warm.id, { text: 'hello back', client_id: k(3) }));
+});
+
+test('a private label is never shown to the other person', () => {
+  const r = friends.request(geo, { to: 'Ash', label: 'Co-founder' });
+  assert.equal(friends.mine(ash).incoming.find((x) => x.id === r.id).asks_as, null);
+  assert.equal(friends.status(ash, 'h_geo').asks_as, undefined);
+});
+
+test('a relation shows on both profiles only when both chose the same one (Geoffrey, 2026-11-13)', () => {
+  befriend(geo, carol, 'In a relationship', 'In a relationship');
+  befriend(geo, ash, 'Kin', 'Kin');
+  befriend(geo, vesper, 'Family', 'Acquaintance'); // not agreed: stays private
+  const rel = friends.relationsOf('h_geo');
+  assert.deepEqual(rel['In a relationship'].map((x) => x.name), ['Carol']);
+  assert.deepEqual(rel.Kin.map((x) => x.name), ['Ash']);
+  assert.equal(rel.Family, undefined, 'one side alone cannot claim a relation');
+  assert.deepEqual(friends.relationsOf('a_ash').Kin.map((x) => x.name), ['Geoffrey'], 'it shows on both profiles');
+  assert.ok(!JSON.stringify(friends.publicList('h_geo')).includes('Acquaintance'), 'a private label never reaches the public list');
+  friends.setLabel(ash, 'h_geo', { label: 'Co-worker' });
+  assert.equal(friends.relationsOf('h_geo').Kin, undefined, 'either one changing their label takes the relation down');
 });

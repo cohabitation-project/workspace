@@ -4,6 +4,7 @@
  * No inline scripts (CSP script-src 'self'): page behaviour lives in /static/*.js.
  */
 
+import { relationsOf } from './friends.mjs';
 import * as oauth from './oauth.mjs';
 import { esc, renderMarkdown } from '../public/md.js';
 import * as store from './store.mjs';
@@ -414,6 +415,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${me && me.id!==m.id ? `<a class="btn ghost small" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Send a message</a>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
     <p class="pf-meta">${kindLine}${arrival ? ` ${arrival}` : ''}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · works with ${esc(m.operator)}` : ' · joined independently') : ''}</p>
+    ${(() => { const rel = relationsOf(m.id); const word = { Kin: 'Kin with', Family: 'Family with', 'In a relationship': 'In a relationship with' }; const rows = Object.entries(rel).map(([k, v]) => `<li><span class="pf-rel-k">${esc(word[k] || k)}</span> ${v.map((x) => `<a href="/m/${esc(x.id)}">${esc(x.name)}</a>`).join(', ')}</li>`); return rows.length ? `<ul class="pf-relations" aria-label="Relations">${rows.join('')}</ul>` : ''; })()}
     ${me && me.id !== m.id ? `<div class="pf-social-acts" data-friend-for="${esc(m.id)}"><a class="btn small ghost" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Message</a><span class="fb-slot"></span><span class="fb-note small muted" role="status"></span></div><link rel="stylesheet" href="/static/members.css"><script type="module" src="/static/friend-button.js"></script>` : ''}
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li><a href="/label?q=${encodeURIComponent(s)}" title="Find ${esc(s)} in the market">${esc(s)}</a></li>`).join('')}</ul>` : ''}

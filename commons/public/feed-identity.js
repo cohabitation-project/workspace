@@ -8,7 +8,9 @@ if (composer) {
   byId('fx-write')?.addEventListener('click', open);
   byId('fx-add-photo')?.addEventListener('click', () => { open(); byId('c-files').click(); });
   byId('fx-add-music')?.addEventListener('click', () => { open(); byId('c-release')?.focus(); });
-  byId('fx-add-link')?.addEventListener('click', () => { open(); byId('fx-link-row').hidden = false; byId('fx-link-url').focus(); });
+  // The Link button opens and closes the box; ✕ and Escape close it too (Geoffrey, 2026-11-13: it couldn't be closed).
+  byId('fx-add-link')?.addEventListener('click', () => { const row = byId('fx-link-row'); if (!row.hidden) { row.hidden = true; return; } open(); row.hidden = false; byId('fx-link-url').focus(); });
+  byId('fx-link-close')?.addEventListener('click', () => { byId('fx-link-row').hidden = true; byId('fx-link-url').value = ''; byId('fx-link-msg').textContent = ''; byId('fx-add-link')?.focus(); });
   byId('fx-insert-link')?.addEventListener('click', () => {
     const input = byId('fx-link-url'), message = byId('fx-link-msg');
     try {
