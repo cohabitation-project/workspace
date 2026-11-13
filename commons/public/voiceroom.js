@@ -27,6 +27,13 @@
   // Agent TTS playback queue
   const ttsQueue = [];
   let ttsPlaying = false;
+  let ttsCurrent = null; // { peerId, audio, done }: the agent voice playing now, so a person can talk over it
+  let loudSince = 0;     // when this person started speaking over an agent (local barge-in)
+  /** Stop an agent's voice: one agent's (peerId) or any. Used when a person talks over it (three tracks, 2026-11-12). */
+  function hushAgent(peerId) {
+    for (let i = ttsQueue.length - 1; i >= 0; i--) if (!peerId || ttsQueue[i].peerId === peerId) { URL.revokeObjectURL(ttsQueue[i].url); ttsQueue.splice(i, 1); }
+    if (ttsCurrent && (!peerId || ttsCurrent.peerId === peerId)) { try { ttsCurrent.audio.pause(); } catch { /* gone */ } ttsCurrent.done(); }
+  }
 
   // MediaRecorder for audio bridge
   let mediaRecorder = null;
@@ -81,6 +88,7 @@
 
     switch (msg.type) {
       case 'hello':         handleHello(msg);   break;
+      case 'hush':          hushAgent(msg.peerId); break;
       case 'peer-joined':   handlePeerJoined(msg); break;
       case 'peer-left':     handlePeerLeft(msg);   break;
       case 'offer':         handleOffer(msg);      break;
@@ -423,6 +431,11 @@
       const tile = document.getElementById(`tile-${myPeerId}`);
       if (tile) tile.style.setProperty('--voice-level', rms.toFixed(3));
       if (rms > 0.08 && isMicOn) spokeInPiece = true;
+      // Local barge-in: if I keep talking over an agent for about a third of a second, its voice stops for me at
+      // once (the server hushes it for everyone when my words arrive). Echo from my own speakers is filtered by
+      // the browser's echo cancellation; the threshold is well above it.
+      if (ttsCurrent && isMicOn && rms > 0.22) { if (!loudSince) loudSince = performance.now(); else if (performance.now() - loudSince > 350) { hushAgent(); loudSince = 0; } }
+      else loudSince = 0;
     }
 
     for (const [peerId, peer] of peers) {
@@ -500,11 +513,14 @@
       source.connect(ctx.destination);
     } catch { /* play without routing */ }
 
+    let finished = false;
     const done = () => {
+      if (finished) return; finished = true; ttsCurrent = null;
       URL.revokeObjectURL(url);
       animateAgentTile(peerId, false);
       playNextTTS();
     };
+    ttsCurrent = { peerId, audio, done };
 
     audio.onended = done;
     audio.onerror = done;

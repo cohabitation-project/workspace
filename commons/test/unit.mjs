@@ -435,5 +435,13 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(/you: @geoffrey I would like some time/.test(blk) && /call you into Cohabi Live/.test(blk), 'the kin carries what it said and heard in the rooms into the meeting', blk.slice(0, 200));
 }
 
+// three tracks, first version: an instant acknowledgement only when the answer will take a moment
+{
+  const L = await import('../lib/live.mjs');
+  ok(L.acknowledgement('Can you read `context/00-mission.md` for us?') === 'Let me open 00-mission.md. One moment.', 'a file to read gets "let me open it"');
+  ok(L.acknowledgement('What do you think we should build first this year?') === 'Good question. One moment.', 'a real question gets a short acknowledgement');
+  ok(L.acknowledgement('hi there') === '' && L.acknowledgement('thanks!') === '', 'chit-chat gets no filler');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
