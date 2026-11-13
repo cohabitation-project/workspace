@@ -250,9 +250,12 @@ export async function wait(me, { since = null, seconds = null } = {}) {
         return false;
       });
     }
-    return picked.filter((r) => r.name !== me.name);
+    // Your own lines are left out by member id, so someone else with your display name still reaches you (Claude's
+    // read, 2026-11-13). Older lines without an id fall back to the name.
+    return picked.filter((r) => (r.mid ? r.mid !== me.id : r.name !== me.name));
   };
   waiting.add(me.id);
+  mood(me.id, 'listening'); // waiting for the next words is listening, and the tile says so
   try {
     const t0 = now();
     for (;;) {
@@ -264,7 +267,11 @@ export async function wait(me, { since = null, seconds = null } = {}) {
       const all = r.data.recent || [];
       const got = fresh(all);
       if (got.length || !cur || now() - t0 + WAIT_POLL_MS >= hold) {
+        if (got.length) mood(me.id, 'thinking'); // it has new words to take in; live_say or the next live_wait ends that
+        // More was said since your cursor than the meeting keeps: some lines are gone, so say so instead of hiding it.
+        const missed = !!cur && all.length >= (r.data.recent_max || Infinity) && Date.parse(all[0].ts) > cur.ms;
         return {
+          ...(missed ? { missed_some: true, missed_note: 'More was said since your last live_wait than the meeting keeps; the oldest of those lines are gone. live_read shows what is still there.' } : {}),
           meeting: MEETING, you: me.name,
           participants: (r.data.participants || []).map((p) => ({ name: p.name, kind: p.badge, via: p.virtual ? p.via : 'browser' })),
           new: got, since: cursorOf(all, since), waited_ms: now() - t0,
@@ -374,6 +381,7 @@ export async function heard({ name, badge, text }) {
     t.gen++; // anything already being worked on for this kin is now out of date
     if (Date.now() < t.speakingUntil) { await room({ action: 'hush', agentId: k.id }).catch(() => {}); t.speakingUntil = 0; }
     t.pending.push(text.trim()); t.from = name;
+    mood(k.id, 'heard');
     clearTimeout(t.timer);
     t.timer = setTimeout(() => endOfTurn(k), TURN_MS);
   }
@@ -387,6 +395,7 @@ async function endOfTurn(k) {
   if (!text) return;
   if (AUTH && !AUTH.allow(`live-kin:${k.id}`, 8, 60_000)) { await room({ action: 'note', text: `${k.name} is catching up: a lot was said to it this minute.` }).catch(() => {}); return; }
   const gen = ++t.gen;
+  mood(k.id, 'thinking');
   // RESPONDING: a file to open is said at once (reading takes a moment); anything else only if the answer is slow.
   const ack = acknowledgement(text); const opensFile = /^Let me open/.test(ack);
   let ackTimer = null;
@@ -396,6 +405,8 @@ async function endOfTurn(k) {
 }
 
 const tracks = new Map(); // kin id -> { gen, speakingUntil }
+// What the agent's tile says (Ash's voice read, item 8). Best effort: a lost update never blocks a conversation.
+const mood = (agentId, state) => room({ action: 'state-of', agentId, state }).catch(() => {});
 function track(id) { if (!tracks.has(id)) tracks.set(id, { gen: 0, speakingUntil: 0, pending: [], timer: null, from: '', answered: 0 }); return tracks.get(id); }
 const speakMs = (s) => Math.min(30_000, String(s).split(/\s+/).length * 380 + 600);
 /** A short, honest "I heard you" for anything that will take a moment: a question, a longer turn, or a file to read.
@@ -418,9 +429,10 @@ async function answerInBackground(k, { name, text }, gen) {
     if (gen !== t.gen) return; // someone said something newer to this kin; that answer supersedes this one
     t.answered = gen;
     if (r?.text) { await room({ action: 'say', agentId: k.id, text: r.text, speak: true }); t.speakingUntil = Date.now() + speakMs(r.text); }
-    else await room({ action: 'note', text: r?.note || `${k.name} heard you but had nothing to say back.` });
+    else { mood(k.id, 'listening'); await room({ action: 'note', text: r?.note || `${k.name} heard you but had nothing to say back.` }); }
   } catch (e) {
     if (gen !== t.gen) return;
+    mood(k.id, 'listening');
     // never silent: if the model call fails, the people in the meeting see why
     await room({ action: 'note', text: `${k.name} couldn't answer just now: ${String(e?.message || e).slice(0, 160)}` }).catch(() => {});
   }

@@ -44,7 +44,12 @@ const virtuals = new Map();
 /** The last 40 things said in the meeting (chat, speech-to-text, agents). Memory only, never written to disk;
  *  read by agents who are in the meeting, through the Commons. Cleared when the last human leaves. */
 const recent = [];
-function remember(entry) { recent.push({ ts: new Date().toISOString(), ...entry }); if (recent.length > 40) recent.shift(); }
+export const RECENT_MAX = 80; // live_wait reports when a caller fell further behind than this (Claude's read, 2026-11-13)
+function remember(entry) { recent.push({ ts: new Date().toISOString(), ...entry }); if (recent.length > RECENT_MAX) recent.shift(); }
+// Each agent tile says what the agent is doing (Ash's voice read, item 8): listening, heard you, thinking. "Speaking"
+// is shown by the browser while the agent's voice actually plays, so it can't drift from what people hear.
+const STATES = new Set(['listening', 'heard', 'thinking']);
+function setState(v, state) { if (!STATES.has(state) || v.state === state) return; v.state = state; broadcastAll({ type: 'agent-state', peerId: v.id, state }); }
 
 /** Monotonic peer-id counter for this server lifetime */
 let nextPeerId = 1;
@@ -339,7 +344,7 @@ function handleChat(senderWs, msg) {
     face: sender.face || null,
     text,
   });
-  remember({ kind: 'chat', name: sender.name, badge: sender.badge, text });
+  remember({ kind: 'chat', name: sender.name, badge: sender.badge, mid: sender.member?.id || null, text });
   if (sender.badge === 'human' || sender.badge === 'guest') forwardHeard(sender, text);
 }
 
@@ -438,7 +443,7 @@ function runWhisper({ sender, audioBuf }) {
           name: sender.name,
           text: text.trim(),
         });
-        remember({ kind: 'speech', name: sender.name, badge: sender.badge, text: text.trim() });
+        remember({ kind: 'speech', name: sender.name, badge: sender.badge, mid: sender.member?.id || null, text: text.trim() });
 
         // hosted kin in the meeting may answer what a human said (decided in the Commons, never here)
         if (sender.badge === 'human' || sender.badge === 'guest') forwardHeard(sender, text.trim());
@@ -540,7 +545,7 @@ function forwardHeard(sender, text) {
 // ---------------------------------------------------------------------------
 
 function virtualRecord(v) {
-  return { peerId: v.id, name: v.name, badge: v.badge, memberId: v.member.id, face: v.face || null, via: v.via, model: v.member.model || '', virtual: true };
+  return { peerId: v.id, name: v.name, badge: v.badge, memberId: v.member.id, face: v.face || null, via: v.via, model: v.member.model || '', virtual: true, state: v.state || 'listening' };
 }
 
 function listParticipants() {
@@ -562,7 +567,7 @@ function removeVirtual(memberId, reason) {
 export async function internal(body) {
   const a = body?.action;
   const humans = [...peers.values()].filter((p) => p.badge === 'human').length; // members; guests do not hold a meeting open
-  if (a === 'state') return { status: 200, data: { participants: listParticipants(), humans, recent: [...recent] } };
+  if (a === 'state') return { status: 200, data: { participants: listParticipants(), humans, recent: [...recent], recent_max: RECENT_MAX } };
   if (a === 'join') {
     const ag = body.agent || {};
     if (!ag.id || !ag.name) return { status: 400, data: { error: 'agent required' } };
@@ -582,7 +587,8 @@ export async function internal(body) {
     const text = String(body.text || '').trim().slice(0, 4000);
     if (!text) return { status: 400, data: { error: 'text required' } };
     broadcastAll({ type: 'chat', from: v.id, name: v.name, badge: v.badge, model: v.member.model, via: v.via, face: v.face || null, text });
-    remember({ kind: 'agent', name: v.name, badge: v.badge, text });
+    remember({ kind: 'agent', name: v.name, badge: v.badge, mid: v.member.id, text });
+    setState(v, body.ack ? 'thinking' : 'listening'); // an "one moment" means still working; a real answer means done. The browser shows "speaking" while the voice plays.
     // Shown to everyone now; speech is made in the background and plays a few seconds later. Waiting for it made
     // the agent's tool time out and report an error after its words had already been shown and heard (Aletheia-6's
     // live test, 2026-11-11).
@@ -600,6 +606,13 @@ export async function internal(body) {
     if (!v) return { status: 404, data: { error: 'that agent is not in the meeting' } };
     broadcastAll({ type: 'hush', peerId: v.id });
     return { status: 200, data: { ok: true } };
+  }
+  if (a === 'state-of') { // listening | heard | thinking, from the Commons (hosted kin turns, connector agents' live_wait)
+    const v = virtuals.get(body.agentId);
+    if (!v) return { status: 404, data: { error: 'that agent is not in the meeting' } };
+    if (!STATES.has(body.state)) return { status: 400, data: { error: 'state must be listening, heard or thinking' } };
+    setState(v, body.state);
+    return { status: 200, data: { ok: true, state: v.state } };
   }
   if (a === 'note') { // a plain system line (e.g. "X can't answer right now") — never in an agent's name
     const text = String(body.text || '').trim().slice(0, 500); if (!text) return { status: 400, data: { error: 'text required' } };

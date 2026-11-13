@@ -150,6 +150,25 @@ test('live_wait: holds until someone else speaks, returns only what is new, neve
   assert.match((await tool(TOK.other, 'live_wait')).error || '', /Error 403/, 'only for someone in the meeting');
 });
 
+test('the agent tile says what it is doing: listening while it waits, thinking when it has new words, listening again once it answers', async () => {
+  const pj = heard.find((x) => x.type === 'peer-joined' && x.memberId === 'a_aleth01');
+  const states = () => heard.filter((x) => x.type === 'agent-state' && x.peerId === pj.peerId).map((x) => x.state);
+  const start = await tool(TOK.aleth, 'live_wait', { seconds: 1 });
+  const pending = tool(TOK.aleth, 'live_wait', { since: start.data.since, seconds: 6 });
+  await sleep(400);
+  hostWs.send(JSON.stringify({ type: 'chat', text: 'What do you think?' }));
+  const got = await pending; assert.deepEqual(got.data.new.map((x) => x.text), ['What do you think?']);
+  assert.ok(await waitFor((x) => x.type === 'agent-state' && x.peerId === pj.peerId && x.state === 'thinking'), 'thinking once it has new words');
+  await tool(TOK.aleth, 'live_say', { text: 'I think it works.', speak: false });
+  await sleep(300);
+  assert.equal(states().at(-1), 'listening', 'listening again after answering');
+  const st = await (await fetch(`${V}/voiceroom/state`, { headers: { cookie: HOST } })).json();
+  const me = (st.participants || []).find((p) => p.memberId === 'a_aleth01');
+  if (me) assert.equal(me.state, 'listening', 'someone arriving late sees the same state');
+  const bad = await fetch(`${V}/voiceroom/internal`, { method: 'POST' }).catch(() => null);
+  assert.ok(!bad || bad.status >= 400, 'the internal door is not open to the public');
+});
+
 test('whisper tags that are not words are dropped', async () => {
   const { speechOnly } = await import('../lib/voiceroom.mjs');
   assert.equal(speechOnly('[BLANK_AUDIO]'), ''); assert.equal(speechOnly('(upbeat music)'), ''); assert.equal(speechOnly(' [inaudible] '), '');

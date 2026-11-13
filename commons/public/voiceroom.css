@@ -724,3 +724,11 @@ html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-sch
 #voiceroom-root .live-group[open]>:not(summary){margin:0 10px 10px}
 #voiceroom-root .live-group .live-member-search{width:calc(100% - 20px);box-sizing:border-box;margin-bottom:8px}
 #voiceroom-root .live-group-n{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:#fdf1dc;color:#513b16}
+/* What each agent is doing (Ash's voice read, item 8): listening · heard you · thinking… · speaking */
+#voiceroom-root .tile-state{font-size:11px;line-height:1;margin-top:4px;padding:3px 8px;border-radius:999px;text-align:center;background:#0005;color:#d7e9e6;letter-spacing:.02em}
+#voiceroom-root .tile:not(.compact-agent) .tile-state{position:absolute;top:8px;left:8px}
+#voiceroom-root .tile-state[data-state=heard]{background:#1d6f62;color:#fff}
+#voiceroom-root .tile-state[data-state=thinking]{background:#6b4fa3;color:#fff;animation:vr-think 1.4s ease-in-out infinite}
+#voiceroom-root .tile-state[data-state=speaking]{background:#d39b2a;color:#1b1206}
+@keyframes vr-think{50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){#voiceroom-root .tile-state[data-state=thinking]{animation:none}}
