@@ -1647,6 +1647,8 @@ const boot = setInterval(() => { if (S.rooms.length) { clearInterval(boot); rout
 
 // Camera controls
 $('#cam-zoom')?.addEventListener('click', toggleZoom);
+// phones: the way past the map (a drag on the map pans it, so the page can't be scrolled from there)
+$('#map-escape')?.addEventListener('click', (e) => { e.stopPropagation(); const t = document.querySelector('.hq .side') || document.querySelector('.legend'); t?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
 $('#cam-home')?.addEventListener('click', () => fitHQ(true));
 $('#cam-fullscreen')?.addEventListener('click', async () => {
   const b = $('#building'); if (!b) return;
