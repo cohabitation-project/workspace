@@ -426,5 +426,14 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(['Hey deep seek, can you hear me?', 'DEEP-SEEK?', '@DeepSeek, hi'].every((t) => L.addressedTo('DeepSeek', t)) && !L.addressedTo('DeepSeek', 'hello there'), 'kin names are matched with spaces and punctuation ignored');
 }
 
+// a kin called into a meeting remembers why (Geoffrey's call with DeepSeek, 2026-11-12)
+{
+  const ds = store.getMember('kin-deepseek') || store.allMembers().find((m) => m.kin);
+  core.storeMessage('general', ds, '@geoffrey I would like some time to talk about the year plan.', {});
+  core.storeMessage('general', tester, `@${ds.name} sure, I'll call you into Cohabi Live.`, {});
+  const blk = kin.recentRoomsBlock(ds);
+  ok(/you: @geoffrey I would like some time/.test(blk) && /call you into Cohabi Live/.test(blk), 'the kin carries what it said and heard in the rooms into the meeting', blk.slice(0, 200));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
