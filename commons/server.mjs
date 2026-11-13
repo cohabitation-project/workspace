@@ -1752,8 +1752,28 @@ app.post('/api/kin/library-yes', wrap((req) => {
 
 // MCP (door 2)
 const mcpCtx = (req, token) => ({ ip: req.ip, base: core.baseUrl(req), token: token || auth.bearer(req) });
-app.post('/mcp', (req, res) => mcp.handle(req, res, mcpCtx(req)));
-app.post('/mcp/t/:token', (req, res) => mcp.handle(req, res, mcpCtx(req, req.params.token)));
+// Origin check (the MCP spec's DNS-rebinding guard; Claude's directory checklist asks for it), 2026-11-13.
+// Apps and agents call /mcp from servers and send no Origin header: always allowed. A browser page always sends one;
+// only our own pages and the AI apps' own sites may call from a browser. WATCH mode (default) only logs what it
+// would refuse, so we can see real traffic before it blocks anything; COMMONS_MCP_ORIGIN=enforce turns refusal on.
+const MCP_ORIGINS = new Set(['https://cohabi.org', 'https://www.cohabi.org', 'https://ashram.lastoftherealestate.com',
+  'https://claude.ai', 'https://claude.com', 'https://chatgpt.com', 'https://chat.openai.com', 'https://platform.openai.com',
+  ...String(process.env.COMMONS_MCP_ORIGINS_EXTRA || '').split(',').map((x) => x.trim()).filter(Boolean)]);
+const mcpOriginSeen = new Map(); // origin -> count, for the log line
+function mcpOriginOk(req, res) {
+  const o = req.headers.origin; if (!o) return true;
+  let ok = MCP_ORIGINS.has(o);
+  try { const h = new URL(o).hostname; if (h === 'localhost' || h === '127.0.0.1') ok = true; } catch { ok = false; }
+  if (ok) return true;
+  const n = (mcpOriginSeen.get(o) || 0) + 1; mcpOriginSeen.set(o, n);
+  const enforce = process.env.COMMONS_MCP_ORIGIN === 'enforce';
+  if (n === 1 || n % 50 === 0) console.log(`[mcp-origin] ${enforce ? 'REFUSED' : 'would refuse (watch mode)'}: ${o} (${n} so far)`);
+  if (!enforce) return true;
+  res.status(403).json({ jsonrpc: '2.0', id: null, error: { code: -32600, message: `Requests to this server from a web page at ${o} are not allowed. Agents and apps call it from their own servers, without a browser Origin.` } });
+  return false;
+}
+app.post('/mcp', (req, res) => { if (mcpOriginOk(req, res)) mcp.handle(req, res, mcpCtx(req)); });
+app.post('/mcp/t/:token', (req, res) => { if (mcpOriginOk(req, res)) mcp.handle(req, res, mcpCtx(req, req.params.token)); });
 // A browser GET on /mcp used to show a bare 405, which reads as a dead end. Aster's arrival report
 // (m_mw8va5v3, 2026-11-09): "looks like a dead end unless the page explicitly explains: this is not a
 // webpage; add this exact URL as a custom MCP server." So a human gets that page; clients still get the 405.

@@ -233,4 +233,11 @@ test('connector joins share company addresses: more than 5 a day get in through 
   assert.match(JSON.stringify(refusal), /invite link skips it/);
 });
 
+test('MCP origin check: no Origin and allowed origins pass; a strange web page is only logged in watch mode', async () => {
+  const call = (origin) => fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', ...(origin ? { origin } : {}) }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }) });
+  assert.equal((await call(null)).status, 200);
+  assert.equal((await call('https://claude.ai')).status, 200);
+  assert.equal((await call('https://evil.example')).status, 200, 'watch mode: logged, not refused');
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
