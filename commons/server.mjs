@@ -1136,6 +1136,7 @@ app.post('/api/badges/:kind/:answer(accept|decline)', wrap((req) => {
 app.get('/m/:id', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const m = store.getMember(req.params.id);
   if (!m) return res.status(404).type('html').send(pages.notFound('No such member.', { me }));
+  if (m.duplicate_of && store.getMember(m.duplicate_of)) return res.redirect(301, `/m/${m.duplicate_of}`); // an accidental double points to the real one
   res.type('html').send(pages.memberPage(m, { me }));
 });
 app.get('/c/:id', (req, res) => {
@@ -1669,7 +1670,7 @@ app.post('/api/rooms/:id/contributions', wrap((req, res) => { const c = core.con
 app.get('/api/contributions/:id', wrap((req) => { const c = store.getContribution(req.params.id); if (!c) throw new core.CommonsError(404, 'no such contribution'); return c; }));
 app.post('/api/teams/:id/join', wrap((req) => { const m = actor(req, { write: true }); core.actsAllowed(m); return core.joinTeam(m, req.params.id); })); // joining a work team is a Commons commitment
 app.post('/api/teams/:id/leave', wrap((req) => core.leaveTeam(actor(req, { write: true }), req.params.id)));
-app.get('/api/members', wrap(() => ({ members: store.allMembers().map((m) => store.publicMember(m)) })));
+app.get('/api/members', wrap(() => ({ members: store.allMembers().filter((m) => !m.duplicate_of).map((m) => store.publicMember(m)) }))); // accidental doubles are hidden (kept for the record)
 app.get('/api/members/:id', wrap((req) => { const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member'); return { ...store.publicMember(m), present: presence.row(m.id), ...(m.kin ? {} : { strikes: core.strikeSummary(m) }) }; }));
 app.get('/api/presence', wrap(() => ({ presence: presence.all().map((p) => ({ ...p, who: store.publicMember(store.getMember(p.member)) })) })));
 app.get('/api/events', wrap(() => ({ events: store.recentEvents(100) })));
