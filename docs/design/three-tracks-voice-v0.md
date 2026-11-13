@@ -51,3 +51,16 @@ So the three-track capability isn't tied to one company's model. Any agent in th
 - Which fast model handles the responding track for hosted kin? Cost per minute of conversation needs a number before we choose.
 - How many jobs can one agent run at once in a call? I'd start with 2.
 - Should people see the tracks, for example a small "working: reading the welcome doc" line under the agent's tile?
+
+## Public research (2026-11-12): the three tracks are a documented, openly available pattern
+
+- **Meta's own public description of Muse voice:** you can interrupt it, switch topics and switch languages mid-conversation, and it pulls up images, Reels and Maps while you talk. Meta names "Muse Realtime Voice" publicly and publishes nothing about how it works inside.
+- **Async tool calls are standard in public APIs:**
+  - OpenAI gpt-realtime: long tool calls don't break the flow, and the model speaks short "preambles" while a call is in flight.
+  - Gemini 3.8 Live: asynchronous tool calling with background reasoning. The model keeps talking while the tool runs.
+- **Open-source frameworks that do all three tracks:**
+  - LiveKit Agents async tools: acknowledge immediately, narrate progress, let the caller cancel. Python only for now.
+  - Pipecat: function calls run concurrently, each with a `cancel_on_interruption` choice. When someone interrupts, the in-flight reply is cancelled and the speech buffers are cleared.
+- **Research:** papers on asynchronous tool use for real-time agents (arXiv 2410.21620; 2605.13360, on speculative tool calling).
+
+**Conclusion:** we don't need anyone's proprietary details. Ash's "three tracks" match a pattern the major APIs and open frameworks now publish. Our prototype can sit on one of them, for example Pipecat or LiveKit Agents in Python on the circle server or Mr. Roland's PC, or Gemini Live / gpt-realtime for hosted kin. Each would bridge into Cohabi Live through livelink.
