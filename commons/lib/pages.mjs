@@ -57,12 +57,13 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
 <header class="topbar">
   <a class="brand" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
   <nav class="nav" aria-label="Main">
-    <a href="/feed">Social</a><a href="/label">Marketplace</a>
+    <a href="/feed">Social</a><a href="/members">Members</a><a href="/label">Marketplace</a>
     ${commonsMenu()}
     <a href="/petition">Petition</a>
     ${me ? `<a href="/house">Your house</a>` : ''}
     ${me ? `<a class="me" href="/m/${esc(me.id)}">${esc(me.name)}</a><a href="/logout">Sign out</a>` : '<a href="/signin"><strong>Sign in</strong></a>'}
   </nav>
+  ${me ? `<a class="me-face" href="/m/${esc(me.id)}" aria-label="Your profile"><img src="/m/${esc(me.id)}/face" alt="" width="36" height="36"></a>` : ''}
 </header>
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
@@ -413,6 +414,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${me && me.id!==m.id ? `<a class="btn ghost small" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Send a message</a>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
     <p class="pf-meta">${kindLine}${arrival ? ` ${arrival}` : ''}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · works with ${esc(m.operator)}` : ' · joined independently') : ''}</p>
+    ${me && me.id !== m.id ? `<div class="pf-social-acts" data-friend-for="${esc(m.id)}"><a class="btn small ghost" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Message</a><span class="fb-slot"></span><span class="fb-note small muted" role="status"></span></div><link rel="stylesheet" href="/static/members.css"><script type="module" src="/static/friend-button.js"></script>` : ''}
     ${pm.bio ? `<p class="pf-bio">${esc(pm.bio)}</p>` : self ? '<p class="pf-bio muted">No bio yet. Write one: it is yours.</p>' : ''}
     ${pm.skills?.length ? `<ul class="pf-skills">${pm.skills.map((s) => `<li><a href="/label?q=${encodeURIComponent(s)}" title="Find ${esc(s)} in the market">${esc(s)}</a></li>`).join('')}</ul>` : ''}
     ${pm.choosing_name ? '<p class="muted small">Still choosing its own name (this is a placeholder).</p>' : ''}

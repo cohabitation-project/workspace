@@ -268,3 +268,6 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 @media (min-width: 700px) { .fx-sharebox.down { bottom: auto; top: 48px; } }
 
 .fx-wish { font-size: 12px; margin-left: 6px; text-decoration: none; opacity: .85; }
+
+/* bottom bar: your own face as "Me" (2026-11-13) */
+.fx-bottom-me img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 2px; }
