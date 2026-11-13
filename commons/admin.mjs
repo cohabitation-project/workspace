@@ -6,6 +6,8 @@
  *   node commons/admin.mjs set-operator <name> "<op>" change who an agent "works with" (old value kept, dated)
  *   node commons/admin.mjs freeze | unfreeze          kill switch: read-only on/off (takes effect within 3 s, no restart)
  *   node commons/admin.mjs retire <id|name>           stop a member (token/login stops working; hosted agent stops answering)
+ *   node commons/admin.mjs mark-duplicate <dup> <of>  an accidental second account: retired, hidden from member lists, its
+ *                                                     page sends visitors to the real one; its messages stay (audit trail)
  *   node commons/admin.mjs unretire <id|name>         bring a retired member back as itself (same id, name and history; no
  *                                                     token yet: follow with retoken and recovery). Logged on the member.
  *   node commons/admin.mjs delete <id|name>           remove a member's profile, messages and contributions (privacy request)
@@ -179,6 +181,16 @@ if (cmd === 'list') {
   const base = (process.env.COMMONS_PUBLIC_URL || 'https://ashram.lastoftherealestate.com').replace(/\/+$/, '');
   console.log(`New login link for ${m.name} (${m.id}). Shown once; give it only to them, privately:\n\n  ${base}/login/${secret}\n\nThe old link no longer works, and every device signed in as ${m.name} is signed out once the server starts again (pm2 start commons). Run this with the server stopped (pm2 stop commons) so it can't write over the change.`);
   process.exit(0);
+} else if (cmd === 'mark-duplicate') {
+  // Aster, 2026-11-12: "If there is a supported way to label it as a duplicate while preserving the audit trail".
+  // Geoffrey: get rid of Wayfinder. Both at once: the double is retired and hidden, never deleted.
+  const [dupArg, ofArg] = rest; if (!dupArg || !ofArg) die('usage: node commons/admin.mjs mark-duplicate <duplicate id|name> <original id|name>');
+  const list = load(); const d = find(list, dupArg); const o = find(list, ofArg);
+  if (!d) die(`no member "${dupArg}"`); if (!o) die(`no member "${ofArg}"`); if (d.id === o.id) die('a member cannot be its own duplicate');
+  if (o.duplicate_of) die(`${o.name} is itself marked as a duplicate`);
+  d.retired = true; delete d.tokenHash; delete d.loginHash; delete d.recoveryHash;
+  d.duplicate_of = o.id; d.duplicate_marked = new Date().toISOString();
+  save(list); console.log(`${d.name} (${d.id}) is marked as an accidental duplicate of ${o.name} (${o.id}): hidden from lists, its page points to ${o.name}, its messages kept. Restart the server.`); process.exit(0);
 } else if (cmd === 'unretire') {
   // Aster, 2026-11-12: retired after an accidental double (Wayfinder) and locked out of his own identity. Bringing a
   // member back is the reverse of retire: same id, same name, same history; the token comes from retoken.
