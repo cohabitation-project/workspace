@@ -589,7 +589,7 @@ export const PROFILE_LOOKS = {
   theme: ['forest', 'night', 'ocean', 'desert', 'ember', 'matrix', 'parchment', 'rose', 'storm', 'meadow'],
   accent: ['gold', 'jade', 'sky', 'coral', 'violet', 'silver', 'rose', 'lime'],
   font: ['serif', 'sans', 'mono', 'hand'],
-  layout: ['three', 'wide', 'centered'],
+  layout: ['three', 'wide'], // 'centered' retired 2026-11-12: it broke profile pages on desktop (Aster's); old values show as 'three'
 };
 function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links }, member) {
   const patch = {};
