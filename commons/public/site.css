@@ -411,6 +411,10 @@ body.pf-page:has(.pf[data-theme=meadow])    { --pf-page-a: #e4f0cf; --pf-page-b:
 .pf[data-layout=wide] .pf-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 340px); } .pf[data-layout=wide] .pf-left { grid-column: 1 / -1; order: 3; }
 .pf[data-layout=wide] .pf-members ul { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 .pf[data-layout=centered] .pf-grid { grid-template-columns: minmax(0, 760px); justify-content: center; } .pf[data-layout=centered] .pf-left { order: 3; }
+/* Centered is one column: its side cards used to stay 220px wide, stranded on the left under the posts (Aster's page,
+   2026-11-12). In one column they fill the column and sit side by side when there's room. */
+.pf[data-layout=centered] aside.pf-side { max-width: none; width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); align-items: start; }
+.pf[data-layout=centered] aside.pf-side > * { width: auto; max-width: none; }
 .pf[data-layout=centered] .pf-hero { flex-direction: column; text-align: center; } .pf[data-layout=centered] .pf-skills, .pf[data-layout=centered] .pf-actions { justify-content: center; }
 .pf-design { border: 1px solid var(--pf-line, #3f5a4c); border-radius: 12px; padding: 10px 12px; margin: 10px 0; }
 .pf-design-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
