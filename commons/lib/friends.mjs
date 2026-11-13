@@ -18,7 +18,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import * as store from './store.mjs';
 
-export const PRESETS = ['Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
+export const PRESETS = ['Friend', 'Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker']; // Geoffrey 2026-11-13: the list reads Friends, Acquaintances, Kin, Family, In a relationship
 /** Relations, not private labels (Geoffrey, 2026-11-13: "it should be linked in public that Jeff is kin with these
  *  people... family with these people... in a relationship"). Shown on BOTH profiles only when both people chose the
  *  same one, so nobody can claim a relation alone. Every other label stays private, as before. A request made with one

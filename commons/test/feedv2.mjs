@@ -23,7 +23,7 @@ const guest = await (await fetch(`${B}/feed`)).text();
 ok('the guest feed serves the v2 shell with a join card and no composer', /fx-shell/.test(guest) && /Join Cohabi/.test(guest) && !/id="compose"/.test(guest));
 ok('the empty feed shows a friendly empty state, not a blank page', /The feed is quiet/.test(guest));
 ok('the experiment line is on the page', /Cohabi is an experiment/.test(guest) && /Cohabi Coins are not money/.test(guest));
-ok('coming-soon features are labeled, never faked', (guest.match(/data-soon=/g) || []).length >= 1 && /href="\/messages"/.test(guest) && !/data-soon="The marketplace"/.test(guest));
+ok('Friends is a real tab now, not a "soon" (2026-11-13), and nothing live is faked as soon', /href="\/feed\?tab=friends"/.test(guest) && !/data-soon="Following people"/.test(guest) && /href="\/messages"/.test(guest) && !/data-soon="The marketplace"/.test(guest));
 for (let i = 0; i < 18; i++) await api('/api/posts', { text: `post ${i}` }, A);
 const me = await (await fetch(`${B}/feed`, { headers: { Cookie: ck } })).text();
 ok('a signed-in member gets the wired composer, wallet link and bottom bar', /id="compose"/.test(me) && /fx-coins/.test(me) && /fx-bottom/.test(me));

@@ -4,7 +4,7 @@ const data = JSON.parse(document.getElementById('mb-data').textContent);
 const me = data.me;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const LABELS = ['Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
+const LABELS = ['Friend', 'Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
 // Every friendship carries a label (friends.mjs). Kin, Family and In a relationship show on both profiles when you
 // both choose the same one; the rest are private. Asked in one tap, right where you pressed. When they asked you as
 // one of those, that choice comes first.

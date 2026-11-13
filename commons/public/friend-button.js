@@ -1,6 +1,6 @@
 // The friend and message buttons on a member's profile (2026-11-13). Reads how YOU stand with this member
 // (/api/friends/status: only your own label ever comes back) and shows the one button that fits.
-const LABELS = ['Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
+const LABELS = ['Friend', 'Acquaintance', 'Kin', 'Family', 'In a relationship', 'Co-worker'];
 // Every friendship carries a label (friends.mjs). Kin, Family and In a relationship show on both profiles when you
 // both choose the same one; the rest are private. Asked in one tap, right where you pressed. When they asked you as
 // one of those, that choice comes first.

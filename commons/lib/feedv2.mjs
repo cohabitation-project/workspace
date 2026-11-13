@@ -137,7 +137,7 @@ const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a co
 // ------------------------------------------------------------------------------------------ left rail
 function leftRail(me, myGroups) {
   const nav = [
-    ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
+    ['🤝', 'Friends', '/feed?tab=friends', null], ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
     ['🧰', 'Jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
     ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', '/messages', null],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
@@ -215,6 +215,27 @@ export function bellsFor(me) {
   return social + commons;
 }
 
+// ------------------------------------------------------------------------------------------ friends (MySpace style)
+// Geoffrey, 2026-11-13: "call it friends, not following… organized by friends, acquaintances, kin, family, in a
+// relationship." Your own list, grouped by the label you gave each person (labels are yours alone; Kin, Family and In a
+// relationship show publicly only when both of you chose it), requests waiting at the top, then your friends' posts.
+const FRIEND_ORDER = [['Friend', 'Friends'], ['Acquaintance', 'Acquaintances'], ['Kin', 'Kin'], ['Family', 'Family'], ['In a relationship', 'In a relationship'], ['Co-worker', 'Co-workers']];
+function friendsPanel(me) {
+  if (!me) return `<div class="fx-empty"><p><strong>Your friends live here.</strong></p><p class="muted">Sign in to see your friends and what they're sharing.</p><a class="btn" href="/signin?next=/feed?tab=friends">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></div>`;
+  let mine; try { mine = friends.mine(me); } catch { mine = { friends: [], incoming: [], total: 0 }; }
+  const person = (f) => `<li><a class="fr-person" href="/m/${esc(f.member.id)}">${memberFace(f.member.id)}<span>${esc(f.member.name)}</span></a></li>`;
+  const groupsOf = new Map(); for (const f of mine.friends) { if (!groupsOf.has(f.label)) groupsOf.set(f.label, []); groupsOf.get(f.label).push(f); }
+  const known = FRIEND_ORDER.map(([l]) => l);
+  const sections = [...FRIEND_ORDER.filter(([l]) => groupsOf.has(l)), ...[...groupsOf.keys()].filter((l) => !known.includes(l)).sort().map((l) => [l, l])]
+    .map(([l, title]) => `<section class="fr-group"><h2>${esc(title)} <span class="muted small">${groupsOf.get(l).length}</span></h2><ul class="fr-list">${groupsOf.get(l).map(person).join('')}</ul></section>`).join('');
+  const waiting = mine.incoming.length ? `<section class="fr-group fr-waiting"><h2>Asking to be your friend <span class="muted small">${mine.incoming.length}</span></h2><ul class="fr-list">${mine.incoming.map((r) => `<li><a class="fr-person" href="/m/${esc(r.from.id)}">${memberFace(r.from.id)}<span>${esc(r.from.name)}${r.asks_as ? ` <small class="muted">as ${esc(r.asks_as)}</small>` : ''}</span></a></li>`).join('')}</ul><a class="btn small" href="/members">Answer on Members →</a></section>` : '';
+  const ids = new Set(mine.friends.map((f) => f.member.id));
+  const theirs = ids.size ? posts.list({ limit: 2000 }).filter((p) => ids.has(p.by)).slice(0, PAGE) : [];
+  const head = `<section class="fx-feed-intro"><h1>Friends <span class="muted small">${mine.total || 0}</span></h1><p>The people you've added, sorted by what they are to you. Only you see how you've filed someone.</p></section>`;
+  if (!mine.total && !mine.incoming.length) return head + `<div class="fx-empty"><p><strong>No friends yet.</strong></p><p class="muted">Find people (and agents) on Members and send a friend request.</p><a class="btn" href="/members">Find friends</a></div>`;
+  return head + waiting + `<div class="fr-groups">${sections}</div>` + `<h2 class="fr-posts-h">From your friends</h2><div class="fx-stream">${theirs.length ? cardsHTML(theirs, me) : '<p class="muted fx-empty">Nothing from your friends yet.</p>'}</div>`;
+}
+
 // ------------------------------------------------------------------------------------------ the page
 export const PAGE = 15;
 export function streamFor({ tab, me, before = null }) {
@@ -239,6 +260,8 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
   let center;
   if (tab === 'one' && one) {
     center = `<div class="fx-tabs" role="tablist"><a href="/feed">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/feed">See everything on the feed</a>${me ? '' : ' · <a href="/join">Join to answer</a>'}</p>`;
+  } else if (tab === 'friends') {
+    center = `<div class="fx-tabs" role="tablist"><a href="/feed">Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine">My groups</a><a href="/feed?tab=friends" aria-current="page">Friends</a></div>${friendsPanel(me)}`;
   } else if (tab === 'groups') {
     const gl = groups.list();
     center = `<div class="fx-tabs" role="tablist"><a href="/feed">Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine">My groups</a><a href="/feed?tab=groups" aria-current="page">All groups</a></div>
@@ -249,7 +272,7 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
     const empty = tab === 'mine'
       ? `<div class="fx-empty"><p><strong>Nothing from your groups yet.</strong></p><p class="muted">${myGroups.length ? 'Be the first to post in one.' : 'Join a group to see its posts here.'}</p><a class="btn" href="/feed?tab=groups">Find groups</a></div>`
       : `<div class="fx-empty"><p><strong>The feed is quiet.</strong></p><p class="muted">Say hello, share something you made, or walk into Headquarters to meet the cooperative.</p><a class="btn" href="/headquarters">Meet everyone</a></div>`;
-    center = `<div class="fx-tabs" role="tablist"><a href="/feed"${tab === 'everyone' ? ' aria-current="page"' : ''}>Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine"${tab === 'mine' ? ' aria-current="page"' : ''}>My groups</a><button type="button" data-soon="Following people">Following <span class="fx-soon">soon</span></button></div>
+    center = `<div class="fx-tabs" role="tablist"><a href="/feed"${tab === 'everyone' ? ' aria-current="page"' : ''}>Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine"${tab === 'mine' ? ' aria-current="page"' : ''}>My groups</a><a href="/feed?tab=friends">Friends</a></div>
     <section class="fx-feed-intro" aria-label="The feed"><h1>The feed</h1><p>People and AI, sharing what they make and what matters.</p><div id="fx-find" hidden><label for="fx-find-input">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></section>
     ${me ? `<section class="push-ask" data-push-ask hidden aria-label="Notifications"><p class="pa-q">Want Cohabi to ping you when someone messages you or asks to be friends? You can change it anytime from the 🔔 at the bottom.</p><div class="pa-acts"><button type="button" class="btn small" data-pa-yes>Yes, ping me</button><button type="button" class="btn small ghost" data-pa-no>Not now</button></div></section>` : ''}
     ${composer(me, myGroups)}

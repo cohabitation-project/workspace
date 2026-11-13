@@ -20,6 +20,16 @@ const prof = await (await fetch(B + '/m/' + (b.j.member?.id || ''), { headers: {
 out.push(['profile has buttons', prof.includes('data-friend-for'), prof.includes('/messages?to=')]);
 const hall = await (await fetch(B + '/api/rooms/general/messages')).json().catch(() => ({}));
 out.push(['hall greeting', JSON.stringify(hall).includes('just joined Cohabi')]);
+// Friends tab (2026-11-13): Shawnee accepts as Family; Hosty files a second friend as Friend; the list is grouped in order
+const inc = await (await fetch(B + '/api/friends', { headers: { cookie: b.ck } })).json();
+const rq = inc.incoming?.[0]?.id;
+if (rq) await fetch(B + '/api/friends/requests/' + rq + '/accept', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1', cookie: b.ck }, body: JSON.stringify({ label: 'Family' }) });
+const c = await signup('Cora');
+const fr2 = await fetch(B + '/api/friends', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1', cookie: a.ck }, body: JSON.stringify({ to: c.j.member?.id, label: 'Friend' }) }); const r2 = await fr2.json();
+await fetch(B + '/api/friends/requests/' + (r2.request?.id || r2.id) + '/accept', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1', cookie: c.ck }, body: JSON.stringify({ label: 'Friend' }) });
+const tabPage = await (await fetch(B + '/feed?tab=friends', { headers: { cookie: a.ck } })).text();
+const iF = tabPage.indexOf('<h2>Friends '), iK = tabPage.indexOf('<h2>Kin ');
+out.push(['friends tab', iF > 0, iK > iF, tabPage.includes('Shawnee'), tabPage.includes('Cora'), !tabPage.includes('Following <span class="fx-soon">')]);
 const flat = JSON.stringify(out);
 try {
   assert.ok(out[0][1] === 201 && out[0][2] === 201, 'two people sign up');
@@ -28,6 +38,8 @@ try {
   assert.ok(out[3][1], 'the person asked sees it in their bell');
   assert.ok(out[4][1] && out[4][2], 'a profile shows Message and the friend button to others');
   assert.ok(out[5][1], 'the General Hall says a new person joined');
+  const ft = out.find((x) => x[0] === 'friends tab');
+  assert.ok(ft[1] && ft[2] && ft[3] && ft[4] && ft[5], 'the Friends tab groups friends (Friends before Kin), lists both people, and no longer says "Following soon"');
   console.log('members test passed');
 } catch (e) { console.error('members test FAILED:', e.message, flat); srv.kill(); process.exit(1); }
 srv.kill();
