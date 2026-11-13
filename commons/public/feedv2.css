@@ -298,11 +298,23 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .push-ask .pa-acts { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* the Cohabi coin in the middle of the bottom bar: write a post, share the petition, the coin (2026-11-13) */
-.fx-coin { position: relative; display: flex; justify-content: center; }
-.fx-coin > summary { list-style: none; cursor: pointer; width: 56px; height: 56px; margin-top: -18px; border-radius: 50%; overflow: hidden; box-shadow: 0 4px 16px #0008, 0 0 0 2px var(--gold, #f7c65d); background: #000; }
-.fx-coin > summary::-webkit-details-marker { display: none; }
-.fx-coin > summary img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; transform: scale(1.35); display: block; }
-.fx-coin-menu { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); min-width: 220px; background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; z-index: 95; }
-.fx-coin-menu > * { display: block; width: 100%; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 10px; background: none; border: 0; color: var(--ink) !important; font: 15px system-ui; cursor: pointer; text-decoration: none; }
-.fx-coin-menu > *:hover { background: var(--soft); }
+.fx-coin { position: relative; display: flex; justify-content: center; align-items: flex-start; text-decoration: none !important; }
+.fx-coin img { width: 58px; height: 58px; margin-top: -20px; border-radius: 50%; box-shadow: 0 4px 16px #0008, 0 0 0 2px var(--gold, #f7c65d); background: #000; display: block; }
+.fx-coin[aria-current="page"] img { box-shadow: 0 4px 16px #0008, 0 0 0 3px #8ff8e8; }
+/* the coin count beside your face, top right */
+.fx-coinchip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 3px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink) !important; font-weight: 700; font-size: 14px; text-decoration: none !important; min-height: 32px; }
+.fx-coinchip img { width: 26px; height: 26px; border-radius: 50%; display: block; }
+.fx-coinchip:hover { background: var(--soft); }
+/* the wallet page */
+.wl { max-width: 640px; margin: 0 auto; display: grid; gap: 16px; }
+.wl-card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.wl-head { display: flex; gap: 16px; align-items: center; }
+.wl-head img { width: 96px; height: 96px; border-radius: 50%; box-shadow: 0 4px 16px #0006; flex: none; }
+.wl-bal { font-size: 2.4rem; font-weight: 800; line-height: 1; margin: 0; }
+.wl-hist { list-style: none; margin: 0; padding: 0; }
+.wl-hist li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+.wl-hist li:first-child { border-top: 0; }
+.wl-plus { color: #1f8a5a; font-weight: 700; } .wl-minus { color: #b4533c; font-weight: 700; }
+.wl-buy button[disabled] { opacity: .6; cursor: not-allowed; }
+.wl-note { color: var(--muted); font-size: 14px; line-height: 1.5; }
 .fx-menu-share { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 10px 12px; min-height: 44px; cursor: pointer; border-radius: 10px; }

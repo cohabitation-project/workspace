@@ -16,7 +16,7 @@ import * as market from './market.mjs';
 import * as images from './images.mjs';
 import * as groups from './groups.mjs';
 import * as ledger from './ledger.mjs';
-import { ago, bellsFor } from './feedv2.mjs';
+import { ago, bellsFor, coinChip } from './feedv2.mjs';
 import { memberFace, membersDatalist } from './pages.mjs';
 import * as store from './store.mjs';
 import * as profilekinds from './profilekinds.mjs';
@@ -138,7 +138,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
   <details class="mk-site"><summary><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
     <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Cohabi Social</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/commons">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
   <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
-  <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a><a class="fx-chip" href="/cohabi" title="Your Cohabi Coins">⬡ ${bal}</a>${bellsFor(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
+  <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a>${bellsFor(me)}${coinChip(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>
 <form class="mk-searchbar" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, artists…">${section ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>
 <main class="mk-main" id="main">${center}</main>

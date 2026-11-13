@@ -45,6 +45,7 @@ import * as council from './lib/council.mjs';
 import * as oauth from './lib/oauth.mjs';
 import * as variants from './lib/variants.mjs';
 import * as orgpages from './lib/orgpages.mjs';
+import * as marketmenu from './lib/marketmenu.mjs';
 import * as journalguide from './lib/journalguide.mjs';
 import * as wishes from './lib/wishes.mjs';
 import * as wishpage from './lib/wishpage.mjs';
@@ -1171,6 +1172,7 @@ app.get('/c/:id', (req, res) => {
 });
 app.get('/logout', (req, res) => { auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', [auth.clearCookie(), oauth.clear(oauth.STATE), oauth.clear(oauth.PENDING)]); res.redirect(303, '/signin'); });
 app.get('/cohabi', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.cohabiCoinPage(auth.memberFromCookie(req.headers.cookie))); });
+app.get('/wallet', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.walletPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.
 app.post('/api/login', (req, res) => {
@@ -1299,6 +1301,7 @@ app.get('/page/:slug', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.pagePage({ me, p: pg }));
 });
 const pageWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.writeAllowed(m); return m; };
+app.get('/api/me/pages', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in to see your pages'); return { pages: marketmenu.pagesOf(me) }; }));
 app.get('/api/pages', wrap(() => { orgpages.ensureLabelPages(); return { pages: orgpages.list().map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
 app.get('/api/me/pages', wrap((req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in first'); return { pages: orgpages.managedBy(m.id).map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
 app.get('/api/pages/:id', wrap((req) => { const p = orgpages.get(req.params.id) || orgpages.bySlug(req.params.id); if (!p) throw new core.CommonsError(404, 'no such page'); return { ...p, href: orgpages.href(p) }; }));

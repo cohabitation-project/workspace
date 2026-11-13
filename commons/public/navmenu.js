@@ -1,7 +1,7 @@
 // navmenu.js — every dropdown on the site closes the way people expect (Geoffrey, 2026-11-13: "it should close by
 // clicking anywhere on the screen if you're not using it"): Escape closes it and returns focus; a tap or click
 // anywhere outside it closes it; opening one closes the others. Used by the Commons pages and the social pages.
-const MENUS = 'details.cohabi-menu, details.cm-sub, details.fx-coin, details.commons-nav, details.fx-app-switch, details.fx-deeper, details.fx-bellbox, details.fx-menu, details.fx-subpages, details.fx-share';
+const MENUS = 'details.cohabi-menu, details.cm-sub, details.commons-nav, details.fx-app-switch, details.fx-deeper, details.fx-bellbox, details.fx-menu, details.fx-subpages, details.fx-share';
 const openMenus = () => [...document.querySelectorAll(MENUS)].filter((d) => d.open);
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;

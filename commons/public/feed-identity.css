@@ -216,3 +216,7 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
    Below 1400px nothing changes. Wider screens get wider columns and a wider feed, in the same three-column order. */
 @media(min-width:1400px) { .fx-shell { max-width:1680px; grid-template-columns:260px minmax(0,820px) 340px; gap:32px; } }
 @media(min-width:1700px) { .fx-shell { max-width:1880px; grid-template-columns:280px minmax(0,940px) 380px; gap:40px; } }
+/* the Cohabi Marketplace ▾ dropdown inside the app menu (same HTML as on profile pages: lib/marketmenu.mjs) */
+.fx-app-menu .mk-sub > summary { display:flex; align-items:center; min-height:44px; padding:10px 12px; border-radius:6px; color:var(--ink) !important; font-size:14px; background:none; }
+.fx-app-menu .mk-sub > summary:hover { background:#e9ddf4; }
+.fx-app-menu .mk-sub[open] > a { padding-left:28px; font-size:13px; background:#f5f1eb; margin-top:2px; }
