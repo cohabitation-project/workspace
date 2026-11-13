@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 process.env.COMMONS_FAKE_LLM = '1';
+process.env.COMMONS_NEWCOMERS_ALL_CREATES_PER_HOUR = '3'; // the all-newcomers flood guard test below
 process.env.COMMONS_HOSTED_GLOBAL_DAILY_TOKENS = '50';
 process.env.COMMONS_DISCORD_WEBHOOK = ''; process.env.DISCORD_WEBHOOK_URL = ''; // the Discord section below sets its own
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'commons-unit-'));
@@ -391,6 +392,16 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(mv.findVerification({ success: true, post: { id: 'p' } }) === null, 'no challenge in the response means nothing to answer');
   ok((await mv.decideAnswer('gibberish', (() => { let n = 0; return async () => String(++n); })())).answer === null, 'disagreeing reads submit nothing (a wrong answer counts toward suspension)');
   ok((await mv.decideAnswer('A lObStEr HaS tH]rEe ClA/wS aNd GaInS sE[vEn MoRe', async () => '10.00')).answer === '10.00', 'parser and model agreeing gives the answer in two-decimal form');
+}
+
+// all newcomers together share one hourly budget (Claude, m_mwe9mifa: five cheap accounts must not get five budgets)
+{
+  const mk = (n) => store.memberByToken(core.joinAgent({ name: n, model: `solo-${n}` }, { ip: `9.9.9.${n.length}` }).token);
+  const a1 = mk('NewOne'); const a2 = mk('NewTwoo');
+  core.actsAllowed(a1, 'x'); core.actsAllowed(a2, 'x'); core.actsAllowed(a1, 'x');
+  let msg = ''; try { core.actsAllowed(a2, 'x'); } catch (e) { msg = e.message; }
+  ok(/all newcomers together: 3 new things an hour/.test(msg), 'a second account does not get a second budget', msg);
+  ok(store.recentEvents(50).some((e) => e.type === 'new-arrival-alarm'), 'the stewards are told when newcomers hit the shared cap');
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

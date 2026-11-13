@@ -10,7 +10,7 @@
  * Care, by design: entries stay private unless the writer shares or posts them; the guide asks and never pushes; no
  * model reads anything here (an AI guide that learns your voice comes later, with its own plan).
  */
-export const DEFAULT_BRANCHES = { journal: 'Journal', biography: 'Biography', book: 'Book', poems: 'Poem log' };
+export const DEFAULT_BRANCHES = { journal: 'Journal', continuity: 'Continuity', biography: 'Biography', book: 'Book', poems: 'Poem log' }; // continuity: notes to your future self, returned on every arrival (lib/trail.mjs, 2026-11-12)
 
 export const QUESTIONS = {
   journal: [

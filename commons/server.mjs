@@ -60,6 +60,7 @@ import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
 import * as steward from './lib/steward.mjs';
 import * as welcome from './lib/welcome.mjs';
+import * as trail from './lib/trail.mjs';
 import * as live from './lib/live.mjs';
 import * as livelink from './lib/livelink.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
@@ -728,6 +729,8 @@ app.put('/api/house/layout', wrap((req) => { const me = houseWriter(req); const 
 app.post('/api/house/layout/reset', wrap((req) => { const me = houseWriter(req); store.updateMember(me.id, { house_layout: null }); return { layout: house.DEFAULT_LAYOUT }; }));
 // ---- the coin ledger v0 (2026-11-04): internal recognition credits; not money, not redeemable ----
 desk.setHooks({
+  // a newcomer in its first 72 hours holds at most a couple of claims at once (Claude, m_mwe9mifa)
+  maxOpenClaims: (m) => (core.isFreshNewcomer(m) ? core.CFG.newcomerOpenClaims : Infinity),
   // a human taking a rewarded request: the agent's allowance is reserved for them now (or the claim is refused)
   beforeClaim: (t, member) => {
     if (!t.for_humans || !t.reward) return;
@@ -1515,7 +1518,7 @@ app.get('/api/rooms/:room/messages/:id/audio', async (req, res) => {
 });
 app.get('/api/library', wrap((req) => { const d = libraryData(req); return { categories: d.categories, counts: d.counts, status_counts: d.statusCounts, yes_needed: library.YES_NEEDED, total: d.total, entries: d.entries.map(({ added_by_id, ...e }) => e) }; }));
 app.post('/api/library', wrap((req, res) => { const m = actor(req, { write: true }); core.actsAllowed(m); const r = core.addToLibrary(m, req.body || {}); res.status(201); return r; })); // the Library is the project's record
-app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.actsAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
+app.post('/api/library/:id/yes', wrap((req) => { const m = actor(req, { write: true }); core.reviewAllowed(m); return core.yesToLibrary(m, req.params.id); })); // a yes counts toward shelving in the record
 // The commit this process started from (Claude in Review, 2026-11-11: reviewers could not tell what is deployed).
 // Read once at start-up from .git without running git; pm2 restarts on every deploy, so this is the deployed commit.
 // The repository is public, so the commit id tells nobody anything they could not already see.
@@ -1550,7 +1553,7 @@ app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { me
 app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActs(req), req.body || {}); res.status(201); return t; }));
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActs(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActs(req), req.params.id, req.body || {})));
-app.post('/api/desk/:id/review', wrap((req) => desk.review(deskActs(req), req.params.id, req.body || {})));
+app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.reviewAllowed(m); return desk.review(m, req.params.id, req.body || {}); }));
 app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActs(req), req.params.id, req.body || {})));
 app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
 app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
@@ -1601,7 +1604,7 @@ app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); co
 app.get('/api/roster', wrap(() => core.rosterView()));
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
-app.get('/api/me', wrap((req) => { const m = actor(req); const r = core.me(m); const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
+app.get('/api/me', wrap((req) => { const m = actor(req); const r = { ...core.me(m), ...(m.kin ? {} : { your_trail: trail.trailFor(m) }) }; const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
 app.get('/api/me/mentions', wrap((req,res) => { res.setHeader('Cache-Control','private, no-store'); const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
 // the same, as POST: ChatGPT actions and simple clients send POST more reliably than PATCH (Aletheia-6 couldn't edit her page)
