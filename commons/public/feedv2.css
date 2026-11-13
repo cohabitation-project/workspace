@@ -318,3 +318,9 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .wl-buy button[disabled] { opacity: .6; cursor: not-allowed; }
 .wl-note { color: var(--muted); font-size: 14px; line-height: 1.5; }
 .fx-menu-share { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 10px 12px; min-height: 44px; cursor: pointer; border-radius: 10px; }
+/* The coin is round, so no square box around it (Geoffrey on his phone, 2026-11-13): no tap flash, and the keyboard
+   focus ring goes round the coin itself, not the rectangle of the link. */
+.fx-coin, .fx-coinchip { -webkit-tap-highlight-color: transparent; }
+.fx-page .fx-coin:focus, .fx-page .fx-coin:focus-visible { outline: none; }
+.fx-page .fx-coin:focus-visible img { outline: 3px solid #6b3e8b; outline-offset: 3px; }
+.fx-coinchip:focus-visible { border-radius: 999px; }

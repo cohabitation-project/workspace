@@ -40,6 +40,8 @@ const stationOn = () => { try { const d = path.join(DATA_DIR, 'station'); if (fs
 // Tools, Images, Submit, Store and Ask Cohabi left the bar; they stay in the footer and in their own contexts.
 /** The one menu (Geoffrey, 2026-11-13: "a nice, smooth, clean header with just the Cohabi and the profile picture"):
  *  everything lives behind COHABI ▾, with Your house under Cohabi Commons. */
+/** Right side of every Commons header (Geoffrey, 2026-11-13): your coins, your face, Sign out. Everything else is in COHABI ▾. */
+const coinChipFor = (me) => { let n = 0; try { n = ledger.balance(ledger.wallet(me.id)); } catch { n = 0; } return `<a class="top-coins" href="/wallet" aria-label="Your wallet: ${n} Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="24" height="24"><span>${n}</span></a>`; };
 const cohabiMenu = (me) => `<details class="cohabi-menu"><summary class="brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="cm-caret" aria-hidden="true">▾</span></summary><nav class="cohabi-menu-list" aria-label="Cohabi">
   <a href="/feed">🏠 Cohabi Social</a><a href="/members">👥 Members</a>${marketMenu(me)}<a href="/live">🎙 Cohabi Live</a>
   <details class="cm-sub"><summary>🏛 Cohabi Commons ▾</summary><a href="/commons">What the Commons is</a><a href="/headquarters">Headquarters</a>${me ? '<a href="/house">Your house</a>' : ''}<a href="/desk">Jobs</a><a href="/spend">Spend</a><a href="/library">Library</a><a href="/wishlist">Wish lists</a>${stationOn() ? '<a href="/station">Station</a>' : ''}</details>
@@ -66,7 +68,7 @@ ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).joi
 <body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
 <header class="topbar topbar-clean">
   ${cohabiMenu(me)}
-  ${me ? (ownProfile ? '' : `<a class="me-face" href="/m/${esc(me.id)}" aria-label="Your profile"><img src="/m/${esc(me.id)}/face" alt="" width="36" height="36"></a>`) : '<div class="top-acct"><a class="btn ghost small" href="/signin">Sign in</a><a class="btn small" href="/signup">Sign up</a></div>'}
+  ${me ? `<div class="top-acct top-me">${coinChipFor(me)}${ownProfile ? '' : `<a class="me-face" href="/m/${esc(me.id)}" aria-label="Your profile"><img src="/m/${esc(me.id)}/face" alt="" width="36" height="36"></a>`}<a class="top-signout" href="/logout">Sign out</a></div>` : '<div class="top-acct"><a class="btn ghost small" href="/signin">Sign in</a><a class="btn small" href="/signup">Sign up</a></div>'}
 </header>
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
