@@ -21,6 +21,7 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 
 import * as repo from './lib/repo.mjs';
+import * as lookups from './lib/lookups.mjs';
 import * as station from './lib/station.mjs';
 import * as scanlib from './lib/scan.mjs';
 import * as desk from './lib/desk.mjs';
@@ -1908,6 +1909,7 @@ wss.on('connection', (ws, req) => {
 setInterval(() => { for (const ws of sockets) { try { ws.ping(); } catch { /* closed */ } } }, 30_000).unref();
 
 server.listen(PORT, HOST, () => {
+  lookups.refreshRecord(repo.ROOT); // rooms read the latest main, not only what this server last deployed
   console.log(`[commons] listening on http://${HOST}:${PORT} (ws /ws, mcp /mcp)`);
   console.log(`[commons] data: ${DATA}`);
   console.log(`[commons] repo: ${repo.ROOT}`);
