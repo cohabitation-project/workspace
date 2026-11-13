@@ -43,6 +43,25 @@ try {
   assert.ok(msgs.some((m) => m.title === 'Message request from Geoffro'), JSON.stringify(msgs));
   assert.ok(msgs.some((m) => /Geoffro asked to be friends \(as Family\)/.test(m.title)), JSON.stringify(msgs));
   assert.ok(!JSON.stringify(msgs).includes('welcome'), 'the message itself never goes into a notification');
+  // a comment on the cousin's post pings them (comments are on by default)
+  const pr = await post(b.ck, '/api/posts', { text: 'my first post' }); const pid = (await pr.json()).id || (await (await fetch(B + '/api/posts')).json()).posts?.[0]?.id;
+  const before = got.length; await post(a.ck, `/api/posts/${pid}/comments`, { text: 'welcome cousin' });
+  for (let i = 0; i < 30 && got.length === before; i++) await sleep(100);
+  assert.ok(got.slice(before).map((g) => decrypt(g.body)).some((m) => m.title === 'Geoffro commented on your post'), 'a comment pings the post author');
+  // reactions are off by default
+  const n0 = got.length; await post(a.ck, `/api/posts/${pid}/react`, { reaction: 'heart' }); await sleep(500);
+  assert.equal(got.length, n0, 'reactions do not ping unless turned on');
+  // turning messages off stops message pings
+  const pf = await (await fetch(B + '/api/push/prefs', { headers: { cookie: b.ck } })).json();
+  assert.ok(pf.kinds.messages && !pf.kinds.reactions && pf.kinds_meta.every((k) => k.key !== 'newmembers'), 'defaults; the stewards-only choice is not offered to others');
+  assert.equal((await post(b.ck, '/api/push/prefs', { kinds: { messages: false } })).status, 200);
+  const n1 = got.length; await post(a.ck, '/api/messages', { to: 'Cousin', text: 'muted?', client_id: 'push-test-0003' }); await sleep(500);
+  assert.equal(got.length, n1, 'a kind turned off sends nothing');
+  // quiet hours all day: nothing pings, even what is on
+  await post(b.ck, '/api/push/prefs', { kinds: { messages: true }, quiet: { on: true, from: '00:00', to: '23:59', tz: 'UTC' } });
+  const n2 = got.length; await post(a.ck, '/api/messages', { to: 'Cousin', text: 'quiet?', client_id: 'push-test-0004' }); await sleep(500);
+  assert.equal(got.length, n2, 'quiet hours hold every ping');
+  await post(b.ck, '/api/push/prefs', { quiet: { on: false } });
   assert.equal((await post(b.ck, '/api/push/unsubscribe', { endpoint: SVC })).status, 200);
   const n = got.length; await post(a.ck, '/api/messages', { to: 'Cousin', text: 'again', client_id: 'push-test-0002' }); await sleep(500);
   assert.equal(got.length, n, 'after turning it off, nothing more is sent');

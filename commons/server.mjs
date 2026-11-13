@@ -91,9 +91,17 @@ push.init(DATA);
 // Phone notifications (2026-11-13): who and what, never the message itself (a lock screen is public).
 {
   const nameOf = (id) => store.getMember(id)?.name || 'Someone';
-  inbox.setNotify((to, e) => { push.notify(to, e.kind === 'request' ? { title: `Message request from ${nameOf(e.from)}`, body: 'Open Cohabi to read it and answer.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread } : { title: `New message from ${nameOf(e.from)}`, body: 'Open Cohabi to read it.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread }); });
-  friends.setNotify((to, e) => { push.notify(to, e.kind === 'friend-request' ? { title: `${nameOf(e.from)} asked to be friends${e.asks_as ? ` (as ${e.asks_as})` : ''}`, body: 'Tap to answer.', url: '/members', tag: 'friends' } : { title: `${nameOf(e.from)} accepted your friend request`, body: 'You are friends now.', url: `/m/${encodeURIComponent(e.from)}`, tag: 'friends' }); });
-  core.joinHooks.onNewHuman = (m) => { for (const id of core.stewards()) push.notify(id, { title: `${m.name} just joined Cohabi`, body: 'Say hello and help them find their way.', url: `/m/${encodeURIComponent(m.id)}`, tag: 'new-member' }); };
+  inbox.setNotify((to, e) => { push.notify(to, e.kind === 'request' ? { kind: 'messages', title: `Message request from ${nameOf(e.from)}`, body: 'Open Cohabi to read it and answer.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread } : { kind: 'messages', title: `New message from ${nameOf(e.from)}`, body: 'Open Cohabi to read it.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread }); });
+  friends.setNotify((to, e) => { push.notify(to, e.kind === 'friend-request' ? { kind: 'friends', title: `${nameOf(e.from)} asked to be friends${e.asks_as ? ` (as ${e.asks_as})` : ''}`, body: 'Tap to answer.', url: '/members', tag: 'friends' } : { kind: 'friends', title: `${nameOf(e.from)} accepted your friend request`, body: 'You are friends now.', url: `/m/${encodeURIComponent(e.from)}`, tag: 'friends' }); });
+  const said = { comment: 'commented on your post', reply: 'replied to your comment', tag: 'tagged you in a post', reaction: 'reacted to your post' };
+  posts.setNotify((to, e) => { push.notify(to, { kind: e.kind, title: `${nameOf(e.from)} ${e.what === 'reaction' ? `reacted ${e.emoji} to your post` : said[e.what]}`, body: 'Tap to see it.', url: `/feed#${encodeURIComponent(e.post)}`, tag: `post-${e.post}` }); });
+  // Journal reminders at the time you set (they used to appear only when you opened the site): every 2 minutes,
+  // anyone with notifications on and a journal time due today gets one ping per branch per day.
+  const journalTick = () => { for (const id of push.subscribedMembers()) { const m = store.getMember(id); if (!m || m.retired) continue;
+    let due = []; try { due = journalguide.dueFor(m, house.myJournals(m)); } catch { due = []; }
+    for (const d of due) if (push.onceToday(id, `journal:${d.branch}`, d.date)) push.notify(id, { kind: 'journal', title: `Your ${d.name} time has come round`, body: 'Ready when you are. Skipping is fine.', url: d.href, tag: `journal-${d.branch}` }); } };
+  const jt = setInterval(journalTick, 120_000); jt.unref?.();
+  core.joinHooks.onNewHuman = (m) => { for (const id of core.stewards()) push.notify(id, { kind: 'newmembers', title: `${m.name} just joined Cohabi`, body: 'Say hello and help them find their way.', url: `/m/${encodeURIComponent(m.id)}`, tag: 'new-member' }); };
 }
 friends.init(DATA);
 voice.init(DATA, repo.ROOT);
@@ -1553,6 +1561,8 @@ app.get('/api/push/key', (req, res) => res.json({ key: push.publicKey() }));
 app.get('/api/push/status', wrap((req) => ({ devices: push.devices(inboxActor(req).id) })));
 app.post('/api/push/subscribe', wrap((req) => push.subscribe(inboxActor(req, true), req.body?.subscription || {}, req.headers['user-agent'])));
 app.post('/api/push/unsubscribe', wrap((req) => push.unsubscribe(inboxActor(req, true), String(req.body?.endpoint || ''))));
+app.get('/api/push/prefs', wrap((req) => { const me = inboxActor(req); const p = push.prefsOf(me.id); const steward = core.isSteward(me); return { ...p, devices: push.devices(me.id), kinds_meta: Object.entries(push.KINDS).filter(([, d]) => steward || !d.steward).map(([k, d]) => ({ key: k, label: d.label })) }; }));
+app.post('/api/push/prefs', wrap((req) => push.setPrefs(inboxActor(req, true), req.body || {})));
 app.post('/api/push/test', wrap(async (req) => { const me = inboxActor(req, true); return push.notify(me.id, { title: 'Notifications are on', body: 'Cohabi will ping this device for messages and friend requests.', url: '/members', tag: 'test' }); }));
 app.get('/members', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(membersPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/tour', (req, res) => res.type('html').send(pages.tourPage({ me: auth.memberFromCookie(req.headers.cookie), tour: tour.asData(core.CFG.canonicalUrl) })));
