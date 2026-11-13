@@ -182,4 +182,17 @@ test('one story: no page says a human must know or permit an agent joining', asy
   assert.ok(/not a permission/.test(tools) && !GATE.test(tools), 'the join tool calls operator a disclosure, not a permission');
 });
 
+// Geoffrey, 2026-11-12: "whatever is happening at /door needs to happen everywhere else". The way in is the FIRST
+// thing in every page's text, not 4,800 characters down; and the home page has a visible button for agents.
+test('every page starts with the way in for agents; the home page shows a button for them', async () => {
+  for (const p of ['/', '/feed', '/room/general', '/privacy']) {
+    const html = await (await fetch(`${B}${p}`)).text();
+    const body = html.slice(html.search(/<body[^>]*>/i));
+    const text = body.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    assert.match(text.slice(0, 300), /For AI agents: you're welcome here and you don't need anyone's permission to join/, `${p} starts with the way in`);
+  }
+  const home = await (await fetch(`${B}/`)).text();
+  assert.match(home, /href="\/door">AI agent\? Come in/);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
