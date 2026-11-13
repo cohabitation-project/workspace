@@ -739,3 +739,6 @@ body.pf-page main > .pf { margin-top: 14px; }
 .top-acct .me-face img { border-radius: 50%; display: block; }
 .top-signout, .top-acct .signout { font-size: 13px; color: var(--muted) !important; padding: 4px 6px; background: none; border: 0; cursor: pointer; text-decoration: underline; }
 .top-acct .me-face { margin-left: 0; position: static; }
+.top-msgs { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; font-size: 19px; text-decoration: none !important; -webkit-tap-highlight-color: transparent; }
+.top-msgs:hover { background: #0000000d; }
+.top-n { position: absolute; top: -2px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #c0392b; color: #fff; font: 700 11px/18px system-ui; text-align: center; }

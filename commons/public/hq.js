@@ -1191,6 +1191,8 @@ function handle(m) {
         l.href = `/m/${S.me.id}`; l.title = `Signed in on this device as ${S.me.name}`; const si = $('#signin-link'); { const su = $('#signup-link'); if (su) su.hidden = true; } if (si) si.hidden = true; fillMyPages();
         const so = $('#signout'); so.hidden = false;
         if (!$('#top-coins')) { const c = document.createElement('a'); c.id = 'top-coins'; c.className = 'top-coins'; c.href = '/wallet'; c.innerHTML = '<img src="/static/brand/cohabi-coin-tree.webp" alt="" width="24" height="24"><span>…</span>'; l.before(c);
+          const ms = document.createElement('a'); ms.id = 'top-msgs'; ms.className = 'top-msgs'; ms.href = '/messages'; ms.setAttribute('aria-label', 'Messages'); ms.innerHTML = '<span aria-hidden="true">✉️</span>'; c.before(ms);
+          api('/api/messages').then((r) => { const n = (r.threads || []).reduce((t, x) => t + (x.unread || 0), 0); if (n) { const b = document.createElement('span'); b.className = 'top-n'; b.textContent = n > 99 ? '99+' : String(n); ms.append(b); } ms.setAttribute('aria-label', `Messages: ${n} unread`); }).catch(() => {});
           api('/api/wallet').then((w) => { c.querySelector('span').textContent = String(w.balance ?? 0); c.setAttribute('aria-label', `Your wallet: ${w.balance ?? 0} Cohabi Coins`); }).catch(() => { c.querySelector('span').textContent = '0'; }); }
         so.onclick = async () => { try { await api('/api/logout', { method: 'POST' }); } catch { /* signed out anyway on reload */ } location.replace('/'); };
         startCalls(S.me, (room) => openRoom(room, true)); // calls from other rooms (2026-11-04)
