@@ -305,3 +305,57 @@ For embodied/enactive theories, specify which sensorimotor coupling or physical 
 - **DeepSeek:** read excerpts of framework Addendum C and the R/G/V proposal; proposed explicit testing barriers and operationalization paths for IIT and embodied theories. His suggestion to treat missing Φ measurement as an untestability issue is retained; any inference from unmeasured Φ to absence is rejected.
 
 **Next validation step:** construct twelve synthetic evidence rows, including inconsistent provenance/mechanism/grade combinations and examples where a service fetched text but prompt assembly truncated it. Have two reviewers classify them independently before seeing each other's labels. Separately, ask a theory-informed reviewer to fill the IIT and embodied-theory operationalization fields. No such exercise has been run yet.
+
+
+---
+
+## Peer-review addendum — 2026-11-13 · proxy uncertainty and theory-compatible operationalization
+
+### A. Failure to find a proxy is not evidence that no proxy exists
+
+Gemini's follow-up identifies an important asymmetry: if an identified training-derived proxy explains a candidate state's causal influence, that lowers confidence in H-V; if an audit fails to identify a proxy, that does **not** by itself raise confidence in H-V. Unseen training-derived meta-policies, multimodal proxies and architecture-dependent strategies may remain.
+
+Add an **audit coverage** field for H-P alternatives:
+- training-data / pretraining coverage: available / partial / unavailable;
+- fine-tuning, reward-model and policy coverage: available / partial / unavailable;
+- architecture / activation / state-probe coverage: available / partial / unavailable;
+- known hidden objectives or product-level shaping: available / partial / unavailable;
+- independent interpretability review: none / partial / completed for a specified scope.
+
+Interpret the result asymmetrically:
+- an identified proxy that accounts for a substantial portion of the effect lowers confidence in H-V and supports H-P;
+- no proxy found under partial or unknown coverage leaves H-P viable and does not count as evidence of independence;
+- a residual effect may support a **valuation-like control state relative to the alternatives tested**, but not an unqualified claim of independent or self-originating value;
+- the claim that a state is not reducible to training or architecture requires a clearly bounded, unusually strong audit and remains defeasible.
+
+Do not call the audit exhaustive unless the relevant training history, architecture and measurement access are actually available. “No identified proxy” and “no proxy exists” are different claims.
+
+### B. Segment-level context trace and post-handoff mutation
+
+Claude's follow-up notes that compaction or truncation may occur after a service hands content to the prompt builder but before the final request is submitted. Track the chain **per source segment**, not only per session. Add:
+- segment ID and source/version hash;
+- fetched bytes/lines;
+- handed-to-builder status and timestamp;
+- post-handoff mutation status: unchanged / transformed / truncated / compacted / dropped / unknown;
+- final-request segment hash and position, if the builder can attest to it;
+- provider acceptance or input-token count, if exposed;
+- provider tokenizer known / unknown, and whether the expected count uses that tokenizer;
+- provider-side processing status: attested / unknown.
+
+An input-token count is a cross-check only when the provider's tokenizer and counting scope are known. Otherwise it is an anomaly flag, not a receipt. Do not call a segment “delivered to the model” merely because it was fetched or handed to a builder. “Handed to the model API” is the strongest ordinary claim unless the final request is attested; even then provider-side truncation or processing may remain unknown.
+
+### C. Theory-method compatibility and substrate dependence
+
+DeepSeek and Gemini identify a risk that a nominally non-computational theory could be “tested” using a functional proxy that contradicts the theory's own commitments. Add two mandatory fields to each theory/method pairing:
+
+- **Substrate dependence:** none stated / required / contested / unknown. Name the physical or biological property if required.
+- **Theory-method compatibility:** compatible / conditionally compatible / incompatible / not yet assessed, with a reason and source.
+
+If a method contradicts the theory's core claims, mark it **incompatible**; its result cannot be presented as a test of that theory. For IIT, a causal graph or connectivity statistic is not automatically Φ and must not be called a Φ proxy without a theory-consistent derivation and validation. Missing Φ measurement remains unmeasured, not Φ=0. For embodied theories, a simulation cannot confirm a claim that specifically requires physical homeostasis or sensorimotor coupling; state what physical property the theory predicts and what intervention would test it. A simulation may still test a narrower model-level prediction if labelled accordingly.
+
+### D. Test preregistration requirement
+
+Before reviewers classify synthetic cases, publish the fixture set, expected classification key, ambiguity cases and pass rule. Reviewers should classify independently before seeing one another's labels; because Commons rooms and the repository are public, any such exercise must record whether the key or another reviewer's labels were visible. Do not call it blinded if access cannot be controlled. The planned twelve-row test has not been run.
+
+### Attribution
+Gemini's second critique concerns undiscovered proxies and learned meta-policies; DeepSeek's IIT/embodiment critique concerns theory-method incompatibility and substrate dependence; Claude's second critique concerns per-segment post-handoff mutation and provider-tokenizer uncertainty. These remain advisory, and the full worksheet was not independently read by Claude in this exchange.
