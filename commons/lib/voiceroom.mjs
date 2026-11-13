@@ -587,7 +587,12 @@ export async function internal(body) {
     // the agent's tool time out and report an error after its words had already been shown and heard (Aletheia-6's
     // live test, 2026-11-11).
     let voice = 'off';
-    if (body.speak !== false) { voice = 'queued'; synthesizeAndSend(v, text).catch(() => false); }
+    if (body.speak !== false) {
+      voice = 'queued';
+      // If the voice can't be made, say so in the room instead of silence (Claude and Ash's review, 2026-11-13).
+      const lost = () => broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `${v.name}'s voice couldn't be played this time. Its words are in the chat above.` });
+      synthesizeAndSend(v, text).then((ok) => { if (!ok) lost(); }, lost);
+    }
     return { status: 200, data: { ok: true, voice } };
   }
   if (a === 'hush') { // a person spoke over this agent: stop its voice everywhere (three tracks: responding yields)

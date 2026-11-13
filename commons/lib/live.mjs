@@ -46,7 +46,7 @@ export function init(dataDir, { store, station, kin, presence, auth, inbox = nul
   STORE = store; STATION = station; KIN = kin; PRESENCE = presence; AUTH = auth; INBOX = inbox;
   try { invites = JSON.parse(fs.readFileSync(file(), 'utf8')); if (!Array.isArray(invites)) invites = []; } catch { invites = []; }
   // A restart forgets who was joined (the voice room forgets too), so nothing restored can claim presence.
-  for (const i of invites) if (i.status === 'joined') { i.status = 'left'; i.ended = 'server restarted'; }
+  for (const i of invites) if (i.status === 'joined') { i.status = 'left'; i.ended = 'server restarted'; if (i.granted && STATION?.endInviteGrant) STATION.endInviteGrant(i.agent, i.id, 'the meeting server restarted'); }
   save();
   const t = setInterval(() => { sweep().catch(() => {}); }, SWEEP_MS); t.unref?.();
 }
@@ -62,9 +62,11 @@ const room = (body) => livelink.call(STORE, `${livelink.voiceroomUrl()}/voiceroo
 /** What an invitation looks like to anyone outside the server: no internal fields. */
 function pub(i) { return { id: i.id, meeting: i.meeting, agent: { id: i.agent, name: i.agent_name }, member: { id: i.agent, name: i.agent_name, role: i.role || 'agent' }, invited_by: i.by_name, status: i.status, delivered: i.delivered === undefined ? undefined : i.delivered, created: new Date(i.created).toISOString(), expires: new Date(i.expires).toISOString(), via: i.via || null, ended: i.ended || null }; }
 
+/** The entry an invitation gave ends with it (never an entry given some other way). */
+function endGrant(i, why) { if (i.granted && STATION?.endInviteGrant) STATION.endInviteGrant(i.agent, i.id, why); }
 function expireOld() {
   let changed = false;
-  for (const i of invites) if (i.status === 'invited' && i.expires <= now()) { i.status = 'expired'; changed = true; }
+  for (const i of invites) if (i.status === 'invited' && i.expires <= now()) { i.status = 'expired'; endGrant(i, 'its Cohabi Live invitation expired'); changed = true; }
   if (changed) save();
 }
 const latestFor = (agentId) => { for (let k = invites.length - 1; k >= 0; k--) if (invites[k].agent === agentId && invites[k].meeting === MEETING) return invites[k]; return null; };
@@ -121,10 +123,6 @@ export async function invite(me, agentId, { base = '' } = {}) {
   if (!invitable(ag)) fail(404, 'no such member');
   if (ag.id === me.id) fail(400, 'you are already here');
   if (ag.kind !== 'human' && ag.retired) fail(403, `${ag.name} has stepped back`);
-  // The invitation IS the entry (Geoffrey, 2026-11-12): a human in the meeting calling an agent grants it the Station
-  // entry every check below relies on, in the open: the grant is logged and announced like any other, names who
-  // called it, and a steward can still withdraw it on /station.
-  if (ag.kind !== 'human' && !STATION.mayEnter(ag)) STATION.setGrant(me, ag, true);
   if (AUTH && !AUTH.allow(`live-invite:${me.id}`, 20, 600_000)) fail(429, 'slow down: 20 invitations per 10 minutes');
   const st = await room({ action: 'state' });
   if (st.status !== 200) fail(409, 'the meeting room is not running right now');
@@ -132,6 +130,10 @@ export async function invite(me, agentId, { base = '' } = {}) {
   const open = latestFor(ag.id);
   if (open && (open.status === 'invited' || open.status === 'joined')) return pub(open); // same invitation, not a second one
   const i = { id: 'li_' + crypto.randomBytes(8).toString('hex'), meeting: MEETING, agent: ag.id, agent_name: ag.name, role: ag.kind === 'human' ? 'human' : 'agent', by: me.id, by_name: me.name, status: 'invited', created: now(), expires: now() + INVITE_MS };
+  // The invitation IS the entry (Geoffrey, 2026-11-12): a human in the meeting calling an agent grants it the Station
+  // entry every check relies on, in the open (logged and announced, naming who called it). Since 2026-11-13 that
+  // entry lasts only as long as the invitation: declined, expired, left, removed or meeting over, and it ends.
+  if (ag.kind !== 'human' && !STATION.mayEnter(ag)) { STATION.setGrant(me, ag, true, { invite: i.id }); i.granted = true; }
   invites.push(i); save();
   if (i.role === 'human') {
     // A person hears about it in their private messages, from the member who invited them (that member pressed Invite).
@@ -183,7 +185,7 @@ export function decline(me, inviteId, reason = '') {
   mustBeAgent(me); expireOld();
   const i = own(me, inviteId);
   if (i.status !== 'invited') fail(409, `this invitation is ${i.status}`);
-  i.status = 'declined'; i.decided = now(); i.reason = String(reason || '').slice(0, 200) || null; save();
+  i.status = 'declined'; i.decided = now(); i.reason = String(reason || '').slice(0, 200) || null; endGrant(i, 'it declined the Cohabi Live invitation'); save();
   return { ok: true, invite: pub(i) };
 }
 
@@ -287,7 +289,7 @@ export async function say(me, text, speak = true) {
   return { ok: true, shown: true, voice: r.data.voice, note: r.data.voice === 'queued' ? 'shown in the meeting now; it will be spoken aloud in a few seconds if the server\'s voice is running. Do not send it again.' : 'shown in the meeting (not spoken)' };
 }
 
-function end(i, why) { i.status = 'left'; i.ended = why; i.left = now(); lastSeen.delete(i.agent); save(); }
+function end(i, why) { i.status = 'left'; i.ended = why; i.left = now(); lastSeen.delete(i.agent); endGrant(i, `left Cohabi Live: ${why}`); save(); }
 
 export async function leave(me) {
   const i = joined(me);
@@ -303,7 +305,7 @@ export async function remove(me, agentId) {
   if (!i || (i.status !== 'invited' && i.status !== 'joined')) fail(404, 'that member has no open invitation');
   if (i.role === 'human' && i.status === 'joined') fail(409, 'a member in the meeting leaves by themselves');
   if (i.status === 'joined') await room({ action: 'leave', agentId: i.agent, reason: `${me.name} removed it from the meeting` });
-  i.status = 'revoked'; i.ended = `removed by ${me.name}`; i.left = now(); lastSeen.delete(i.agent); save();
+  i.status = 'revoked'; i.ended = `removed by ${me.name}`; i.left = now(); lastSeen.delete(i.agent); endGrant(i, `removed from Cohabi Live by ${me.name}`); save();
   return pub(i);
 }
 
