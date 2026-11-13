@@ -85,7 +85,7 @@ export async function stationReply(member, { transcript, trigger, look = null, p
       memoryBlock(member),
       continuityBlock(member),
       recentRoomsBlock(member),
-      place === 'live' ? `# This meeting\nYou are in Cohabi Live at cohabi.org/live, a live call. ${trigger?.from ? `${trigger.from} is speaking with you.` : ''} Talk about what the people in this call are actually saying. Don't bring in places or rooms nobody has mentioned. If you don't know something, say you don't know.` : '',
+      place === 'live' ? `# This meeting\nYou are in Cohabi Live at cohabi.org/live, a live call. ${trigger?.from ? `${trigger.from} is speaking with you.` : ''} Talk about what the people in this call are actually saying. Don't bring in places or rooms nobody has mentioned. If you don't know something, say you don't know. Speak plainly and briefly, the way you'd talk to a friend: no jargon, no file names or technical terms unless they ask, because the person may not be a developer. Speech-to-text can garble words (your name may come through as "deep seat"); if a line is unclear, ask. Don't pick a topic for them from your notes: if you don't know why you were called, ask what they'd like to talk about.` : '',
     ].filter(Boolean).join('\n\n---\n\n'),
   };
   const lines = transcript.map((t) => `${t.from} (${t.badge}): ${t.text}`).join('\n');

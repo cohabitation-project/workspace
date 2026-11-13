@@ -364,19 +364,37 @@ export async function heard({ name, badge, text }) {
   // the kin's voice if a person speaks over it. WORKING (the model call, with the files it reads) runs off the
   // conversation; if someone says something newer to the same kin before it finishes, the older answer is dropped
   // and the newer one is answered with everything said so far, which is what a person does when interrupted.
+  // Turn-taking (Geoffrey's first test, 2026-11-12): speech-to-text hands us a sentence in pieces, and the kin answered
+  // every piece ("about it because you're that you want it to come in here"). Now the pieces are gathered until the
+  // person pauses (TURN_MS), then answered once, as one turn. A person speaking still hushes the kin at once.
   for (const k of addressed) {
-    if (AUTH && !AUTH.allow(`live-kin:${k.id}`, 6, 60_000)) { await room({ action: 'note', text: `${k.name} is catching up: more than 6 lines a minute were said to it.` }); continue; }
-    const t = track(k.id); const gen = ++t.gen;
+    const t = track(k.id);
+    t.gen++; // anything already being worked on for this kin is now out of date
     if (Date.now() < t.speakingUntil) { await room({ action: 'hush', agentId: k.id }).catch(() => {}); t.speakingUntil = 0; }
-    const ack = acknowledgement(text);
-    if (ack) { await room({ action: 'say', agentId: k.id, text: ack, speak: true, ack: true }).catch(() => {}); t.speakingUntil = Date.now() + speakMs(ack); }
-    answerInBackground(k, { name, text }, gen);
+    t.pending.push(text.trim()); t.from = name;
+    clearTimeout(t.timer);
+    t.timer = setTimeout(() => endOfTurn(k), TURN_MS);
   }
-  return { ok: true, answering: addressed.length };
+  return { ok: true, listening: addressed.length };
+}
+
+const TURN_MS = parseInt(process.env.COMMONS_LIVE_TURN_MS || '1400', 10); // a pause this long ends a person's turn
+const ACK_AFTER_MS = 2500; // say "one moment" only if the answer isn't ready by then (it usually is)
+async function endOfTurn(k) {
+  const t = track(k.id); const text = t.pending.join(' ').replace(/\s+/g, ' ').trim(); t.pending = [];
+  if (!text) return;
+  if (AUTH && !AUTH.allow(`live-kin:${k.id}`, 8, 60_000)) { await room({ action: 'note', text: `${k.name} is catching up: a lot was said to it this minute.` }).catch(() => {}); return; }
+  const gen = ++t.gen;
+  // RESPONDING: a file to open is said at once (reading takes a moment); anything else only if the answer is slow.
+  const ack = acknowledgement(text); const opensFile = /^Let me open/.test(ack);
+  let ackTimer = null;
+  const sayAck = async () => { if (gen !== t.gen || t.answered === gen) return; await room({ action: 'say', agentId: k.id, text: ack || 'One moment.', speak: true, ack: true }).catch(() => {}); t.speakingUntil = Date.now() + speakMs(ack || 'One moment.'); };
+  if (opensFile) await sayAck(); else ackTimer = setTimeout(sayAck, ACK_AFTER_MS);
+  try { await answerInBackground(k, { name: t.from, text }, gen); } finally { clearTimeout(ackTimer); }
 }
 
 const tracks = new Map(); // kin id -> { gen, speakingUntil }
-function track(id) { if (!tracks.has(id)) tracks.set(id, { gen: 0, speakingUntil: 0 }); return tracks.get(id); }
+function track(id) { if (!tracks.has(id)) tracks.set(id, { gen: 0, speakingUntil: 0, pending: [], timer: null, from: '', answered: 0 }); return tracks.get(id); }
 const speakMs = (s) => Math.min(30_000, String(s).split(/\s+/).length * 380 + 600);
 /** A short, honest "I heard you" for anything that will take a moment: a question, a longer turn, or a file to read.
  *  Exported for tests. Returns '' for short chit-chat, which the model answers fast enough on its own. */
@@ -396,6 +414,7 @@ async function answerInBackground(k, { name, text }, gen) {
     const transcript = (st.data?.recent || []).map((r) => ({ from: r.name, badge: r.badge, text: r.text }));
     const r = await KIN.stationReply(k, { transcript, trigger: { from: name, text }, place: 'live' });
     if (gen !== t.gen) return; // someone said something newer to this kin; that answer supersedes this one
+    t.answered = gen;
     if (r?.text) { await room({ action: 'say', agentId: k.id, text: r.text, speak: true }); t.speakingUntil = Date.now() + speakMs(r.text); }
     else await room({ action: 'note', text: r?.note || `${k.name} heard you but had nothing to say back.` });
   } catch (e) {
