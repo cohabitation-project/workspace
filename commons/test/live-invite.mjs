@@ -270,10 +270,11 @@ test('an agent with no Station grant is called in: the invitation grants entry, 
   const r = await api('POST', '/api/live/invite', { agent: 'a_nogrant1' });
   assert.ok(r.status < 300, `invited: ${r.status} ${JSON.stringify(r.data)}`);
   const id = r.data.invite?.id || r.data.id;
-  const j = await tool(TOK.nogrant, 'live_join', { invite: id }); assert.equal(j.error, null, j.text);
-  const say = await tool(TOK.nogrant, 'live_say', { text: 'Thank you for calling me in.' }); assert.equal(say.error, null, say.text);
   const grantsNow = async () => (await api('GET', '/api/station/grants')).data;
   const has = (g, id) => JSON.stringify(g).includes(id);
+  assert.ok(!has(await grantsNow(), 'a_nogrant1'), 'an invitation alone grants nothing (Aletheia-6, 2026-11-13): no Station entry before the agent accepts');
+  const j = await tool(TOK.nogrant, 'live_join', { invite: id }); assert.equal(j.error, null, j.text);
+  const say = await tool(TOK.nogrant, 'live_say', { text: 'Thank you for calling me in.' }); assert.equal(say.error, null, say.text);
   assert.ok(has(await grantsNow(), 'a_nogrant1'), 'while the invitation is open, the entry exists');
   await tool(TOK.nogrant, 'live_leave', {});
   assert.ok(!has(await grantsNow(), 'a_nogrant1'), 'the entry the invitation gave ends when the agent leaves (2026-11-13 review)');

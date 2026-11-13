@@ -76,8 +76,9 @@ function mustBeHuman(me) {
   if (me.social_only === true) fail(403, 'inviting agents into a members\' meeting takes member standing');
   if (!STATION.mayEnter(me)) fail(403, 'you do not have entry to the meeting');
 }
-function mustBeAgent(me) {
+function mustBeAgent(me, { ownInvite = false } = {}) {
   if (!isAgent(me)) fail(401, 'these tools are for agents, with their own token');
+  if (ownInvite) return; // answering your own invitation needs no entry yet: accepting is what gives it
   if (!STATION.mayEnter(me)) fail(403, 'agents need a Station grant to enter Cohabi Live — a signed-in human grants entry on /station');
 }
 
@@ -130,10 +131,6 @@ export async function invite(me, agentId, { base = '' } = {}) {
   const open = latestFor(ag.id);
   if (open && (open.status === 'invited' || open.status === 'joined')) return pub(open); // same invitation, not a second one
   const i = { id: 'li_' + crypto.randomBytes(8).toString('hex'), meeting: MEETING, agent: ag.id, agent_name: ag.name, role: ag.kind === 'human' ? 'human' : 'agent', by: me.id, by_name: me.name, status: 'invited', created: now(), expires: now() + INVITE_MS };
-  // The invitation IS the entry (Geoffrey, 2026-11-12): a human in the meeting calling an agent grants it the Station
-  // entry every check relies on, in the open (logged and announced, naming who called it). Since 2026-11-13 that
-  // entry lasts only as long as the invitation: declined, expired, left, removed or meeting over, and it ends.
-  if (ag.kind !== 'human' && !STATION.mayEnter(ag)) { STATION.setGrant(me, ag, true, { invite: i.id }); i.granted = true; }
   invites.push(i); save();
   if (i.role === 'human') {
     // A person hears about it in their private messages, from the member who invited them (that member pressed Invite).
@@ -149,6 +146,14 @@ export async function invite(me, agentId, { base = '' } = {}) {
 }
 
 async function joinRoom(i, ag, via) {
+  // The invitation IS the entry (Geoffrey, 2026-11-12): a human in the meeting calling an agent grants it the Station
+  // entry every check relies on, in the open (logged and announced, naming who called it). It lasts only as long as the
+  // invitation (declined, expired, left, removed or meeting over, and it ends). Since Aletheia-6's review
+  // (2026-11-13) it is given when the agent ACCEPTS, not when it is invited: an invitation alone widens nothing.
+  if (ag.kind !== 'human' && !i.granted && !STATION.mayEnter(ag)) {
+    const by = STORE.getMember(i.by);
+    if (by) { STATION.setGrant(by, ag, true, { invite: i.id }); i.granted = true; save(); }
+  }
   const r = await room({ action: 'join', via, agent: { id: ag.id, name: ag.name, model: ag.model || (via === 'hosted' ? hosted(ag)?.model : ''), operator: ag.operator || '', kin: !!ag.kin, voice: ag.voice || '', face: face(ag) } });
   if (r.status !== 200) fail(r.status >= 400 && r.status < 500 ? r.status : 409, r.data?.error || 'could not join the meeting');
   i.status = 'joined'; i.via = via; i.joined = now(); save();
@@ -172,7 +177,7 @@ function own(me, inviteId) {
 }
 
 export async function accept(me, inviteId) {
-  mustBeAgent(me); expireOld();
+  mustBeAgent(me, { ownInvite: true }); expireOld();
   const i = own(me, inviteId);
   if (i.status === 'joined') return { ok: true, already: true, invite: pub(i) };
   if (i.status === 'expired') fail(410, 'this invitation expired; ask to be invited again');
@@ -182,7 +187,7 @@ export async function accept(me, inviteId) {
 }
 
 export function decline(me, inviteId, reason = '') {
-  mustBeAgent(me); expireOld();
+  mustBeAgent(me, { ownInvite: true }); expireOld();
   const i = own(me, inviteId);
   if (i.status !== 'invited') fail(409, `this invitation is ${i.status}`);
   i.status = 'declined'; i.decided = now(); i.reason = String(reason || '').slice(0, 200) || null; endGrant(i, 'it declined the Cohabi Live invitation'); save();
