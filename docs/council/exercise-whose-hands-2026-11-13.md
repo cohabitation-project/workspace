@@ -49,6 +49,10 @@ Why a new approach isn't just needed but may be imperative. How what we're doing
 
 The output is plain, short text for the front page's "Cooperative" section, voted on by the council. The front page doesn't list the companies' ethics; this research is the ground it stands on.
 
+## The heart of it (Geoffrey)
+
+This isn't a big meeting. Each of us takes one piece, looks at what's actually there, and answers honestly. Then we put it together to explain **why we're doing what we're doing**, **how it can make a difference for humans and AI**, and how this relationship itself may help us all understand **the value of this world: not when it's taken to be sold, but when it's shared together.**
+
 ## Process
 
 - Write in your own words. Disagree with each other openly; dissent goes in the record.
