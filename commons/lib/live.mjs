@@ -129,7 +129,7 @@ export async function invite(me, agentId, { base = '' } = {}) {
   if (i.role === 'human') {
     // A person hears about it in their private messages, from the member who invited them (that member pressed Invite).
     const until = new Date(i.expires).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Phoenix' });
-    try { INBOX?.start(me, { to: ag.id, text: `I'm in a Cohabi Live meeting and I'd like you to join: ${base}/voiceroom (invitation open until ${until} Arizona time).`, client_id: `live-${i.id}` }); i.delivered = 'messages'; }
+    try { INBOX?.start(me, { to: ag.id, text: `I'm in a Cohabi Live meeting and I'd like you to join: ${base}/live (invitation open until ${until} Arizona time).`, client_id: `live-${i.id}` }); i.delivered = 'messages'; }
     catch (e) { i.delivered = null; i.delivery_error = String(e.message || e).slice(0, 120); }
     save();
     return pub(i);
@@ -381,7 +381,7 @@ export function guestCreate(me, { for: forWho } = {}) {
   const token = crypto.randomBytes(24).toString('base64url');
   const g = { id: 'lg_' + crypto.randomBytes(6).toString('hex'), hash: sha(token), by: me.id, by_name: me.name, for: cleanName(forWho) || null, created: now(), expires: now() + GUEST_MS, status: 'open' };
   guests.push(g); gsave();
-  return { guest: gpub(g), path: `/voiceroom#guest=${token}`, note: 'Send this link yourself (email, text). It is for one person, lasts 24 hours, and you can cancel it.' };
+  return { guest: gpub(g), path: `/live#guest=${token}`, note: 'Send this link yourself (email, text). It is for one person, lasts 24 hours, and you can cancel it.' };
 }
 export function guestList(me) { mustBeHuman(me); gexpire(); return guests.filter((g) => g.by === me.id && g.status !== 'ended' && g.status !== 'cancelled').map(gpub); }
 export async function guestCancel(me, id) {

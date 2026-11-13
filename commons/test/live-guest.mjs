@@ -70,7 +70,7 @@ test('only a member makes a guest link; the link keeps its secret after #', asyn
   assert.equal((await api('POST', '/api/live/guests', { for: 'Alex' }, SOCIAL)).status, 403, 'social-only refused');
   assert.equal((await api('POST', '/api/live/guests', { for: 'Alex' }, '')).status, 401, 'signed out refused');
   const r = await api('POST', '/api/live/guests', { for: 'Alex' }); assert.equal(r.status, 200, JSON.stringify(r.data));
-  link = r.data; token = tokenOf(link.path); assert.match(link.path, /^\/voiceroom#guest=[A-Za-z0-9_-]{30,}$/);
+  link = r.data; token = tokenOf(link.path); assert.match(link.path, /^\/live#guest=[A-Za-z0-9_-]{30,}$/);
   assert.ok(!fs.readFileSync(path.join(DATA, 'live', 'guests.json'), 'utf8').includes(token), 'only a hash of the secret is kept');
   assert.equal((await api('GET', '/api/live/guests')).data.guests[0].for, 'Alex');
 });

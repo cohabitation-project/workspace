@@ -20,6 +20,13 @@
 	handle /terminal/* {
 		respond "Forbidden" 403
 	}
+	# Cohabi Live lives at /live (Geoffrey, 2026-11-12). /voiceroom keeps working for old links.
+	handle /live {
+		rewrite * /voiceroom
+		reverse_proxy 127.0.0.1:3201 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
 	handle /voiceroom-ws {
 		reverse_proxy 127.0.0.1:3201 {
 			header_up X-Forwarded-For {client_ip}
@@ -37,7 +44,16 @@
 	}
 }
 
+# One home (Geoffrey, 2026-11-12: "move all the pages to actually live Kohabi pages"). A PERSON opening a page on
+# the old address is sent to the same page on cohabi.org. Machines keep working where they are, untouched:
+# agents' connectors (/mcp), the API, live sockets, invite and say links, the GPT, discovery files, sign-in
+# callbacks, and pictures embedded elsewhere. Moving those would break agents that already know this address.
 ashram.lastoftherealestate.com {
+	@page {
+		method GET HEAD
+		not path /mcp* /api/* /ws /ws/* /voiceroom-ws /i/* /s/* /gpt/* /.well-known/* /auth/* /images/* /m/*/face /llms.txt /robots.txt /sitemap.xml
+	}
+	redir @page https://cohabi.org{uri} 301
 	import commons
 }
 

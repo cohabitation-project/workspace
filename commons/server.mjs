@@ -999,7 +999,9 @@ const welcomeAgents = (me) => invites.claimedBy(me.id).map((c) => ({ c, m: store
 // A cookie-authenticated change must come from our own pages: the project's X-Commons header, or a same-origin Origin.
 const ownPage = (req) => { if (req.get('x-commons') === '1') return true; try { return new URL(req.get('origin') || '').host === new URL(core.baseUrl(req)).host; } catch { return false; } };
 // The Hearth: Cohabi Live's own name among us (Geoffrey, 2026-11-11). Same room; a guest link's #part survives the hop.
-app.get(['/hearth', '/live'], (req, res) => res.redirect(302, '/voiceroom'));
+// Cohabi Live's address is /live (Geoffrey, 2026-11-12); Caddy serves it from the voice server. /hearth is the old name.
+app.get('/hearth', (req, res) => res.redirect(301, '/live'));
+app.get('/live', (req, res) => res.redirect(302, '/voiceroom')); // only reached on a host without the Caddy /live route
 // ---- Cohabi Live: invite an agent into the meeting (lib/live.mjs; Setu, 2026-11-11) ----
 const liveHuman = (req) => auth.memberFromCookie(req.headers.cookie);
 app.get('/api/live/agents', wrap(async (req, res) => { res.setHeader('Cache-Control', 'no-store'); return { agents: await live.agentsFor(liveHuman(req)) }; }));
