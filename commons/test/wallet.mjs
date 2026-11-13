@@ -29,7 +29,7 @@ try {
   const mine = await fetch(B + '/api/me/pages', { headers: { cookie: a.ck } });
   assert.equal(mine.status, 200); assert.deepEqual((await mine.json()).pages, []);
   assert.equal((await fetch(B + '/api/me/pages')).status, 401, 'your pages need sign-in');
-  const coin = await fetch(B + '/static/brand/cohabi-coin.webp'); assert.equal(coin.status, 200, 'the coin image is served');
+  const coin = await fetch(B + '/static/brand/cohabi-coin-tree.webp'); assert.equal(coin.status, 200, 'the coin image is served');
   console.log('wallet test passed');
 } catch (e) { console.error('wallet test FAILED:', e.message); srv.kill(); process.exit(1); }
 srv.kill();

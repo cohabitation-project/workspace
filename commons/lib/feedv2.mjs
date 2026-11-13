@@ -295,7 +295,7 @@ ${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''
 /** The coin count beside your face (Geoffrey, 2026-11-13: "between the profile head and the little bank-looking building"). */
 export function coinChip(me) {
   let n = 0; try { n = ledger.balance(ledger.wallet(me.id)); } catch { n = 0; }
-  return `<a class="fx-coinchip" href="/wallet" aria-label="Your wallet: ${n} Cohabi Coins"><img src="/static/brand/cohabi-coin.webp" alt="" width="22" height="22"><span>${n}</span></a>`;
+  return `<a class="fx-coinchip" href="/wallet" aria-label="Your wallet: ${n} Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="22" height="22"><span>${n}</span></a>`;
 }
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
@@ -317,7 +317,7 @@ function notifySheet() {
 <p class="np-note">A ping says who and what, never the message itself. <a href="/privacy">Privacy</a></p></section>`;
 }
 export function bottomNav(me, tab='') {
-  return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a>${me ? `<button type="button" class="fx-bottom-bell" aria-haspopup="dialog" aria-controls="notify-sheet"><span aria-hidden="true">🔔</span>Alerts</button>` : `<a href="/members"><span aria-hidden="true">👥</span>Members</a>`}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin.webp" alt="" width="46" height="46"></a><a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a class="fx-bottom-me" href="${me?'/m/'+encodeURIComponent(me.id):'/signin'}">${me?`<img src="/m/${encodeURIComponent(me.id)}/face" alt="" width="24" height="24">`:'<span aria-hidden="true">👤</span>'}${me?'Me':'Sign in'}</a></nav>${me ? notifySheet() : ''}`;
+  return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a>${me ? `<button type="button" class="fx-bottom-bell" aria-haspopup="dialog" aria-controls="notify-sheet"><span aria-hidden="true">🔔</span>Alerts</button>` : `<a href="/members"><span aria-hidden="true">👥</span>Members</a>`}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a><a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a class="fx-bottom-me" href="${me?'/m/'+encodeURIComponent(me.id):'/signin'}">${me?`<img src="/m/${encodeURIComponent(me.id)}/face" alt="" width="24" height="24">`:'<span aria-hidden="true">👤</span>'}${me?'Me':'Sign in'}</a></nav>${me ? notifySheet() : ''}`;
 }
 export function socialPage(title, me, body, script=null) {
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;
@@ -340,7 +340,7 @@ const WALLET_WORDS = {
   'store:buy': (e) => `Bought ${ledger.STORE[e.data?.item]?.name || 'an item'} in the store`,
 };
 export function walletPage(me) {
-  const coin = '<img src="/static/brand/cohabi-coin-512.webp" alt="The Cohabi coin: a tree of life inside two Cs, with the words People, Agents, Commons, Creation" width="96" height="96">';
+  const coin = '<img src="/static/brand/cohabi-coin-tree-512.webp" alt="The Cohabi coin: a tree of life inside two Cs, with the words People, Agents, Commons, Creation" width="96" height="96">';
   if (!me) return socialPage('Wallet', null, `<section class="wl"><div class="wl-card wl-head">${coin}<div><h1>Your Cohabi wallet</h1><p class="wl-note">Sign in to see your coins.</p><p><a class="btn" href="/signin?next=/wallet">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></p></div></div></section>`);
   let v; try { v = ledger.walletView(me); } catch { v = { balance: 0, history: [], allowance: null }; }
   const rows = (v.history || []).map((e) => {
