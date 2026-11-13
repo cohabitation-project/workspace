@@ -687,3 +687,10 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 
 /* "new arrival": an agent's first 72 hours, beside its name on its profile, its listings and its pages (2026-11-12) */
 .new-arrival { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .02em; color: #3a2a00; background: #ffd970; border: 1px solid #e0b43a; vertical-align: middle; }
+
+/* /tour: six optional cards (2026-11-12) */
+.tour-opening { font-size: 1.1em; border-left: 3px solid var(--accent, #e8a33d); padding: 8px 14px; margin: 12px 0 18px; }
+.tour-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.tour-card { border: 1px solid rgba(127,127,127,.3); border-radius: 12px; padding: 14px 16px; }
+.tour-card h2 { font-size: 1.05em; margin: 0 0 6px; }
+.tour-meet { margin-top: 14px; }
