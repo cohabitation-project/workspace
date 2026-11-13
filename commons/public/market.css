@@ -387,3 +387,23 @@
    takes its column's width and gets its height from the viewport instead. */
 .mk-blocks > .mk-block { aspect-ratio: auto; width: 100%; min-width: 0; box-sizing: border-box; height: clamp(230px, 21vw, 290px); min-height: 0; }
 @media (max-width: 899px) { .mk-blocks > .mk-block { height: clamp(190px, 46vw, 260px); } }
+
+/* The one COHABI menu (2026-11-13): same items and look as the feed's; copied here so the Market page doesn't load the feed's whole theme. */
+.mk-top { --ink: #2a2230; }
+.mk-top .fx-app-switch { position:relative; flex-shrink:0; }
+.mk-top .fx-app-switch>summary { cursor:pointer; list-style:none; padding:6px 0; }
+.mk-top .fx-app-switch>summary::-webkit-details-marker { display:none; }
+.mk-top .fx-app-menu { position:absolute; top:calc(100% + 12px); left:0; width:240px; max-width:calc(100vw - 32px); display:grid; gap:3px; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--panel); box-shadow:0 8px 20px #30263c22; z-index:80; }
+.mk-top .fx-app-menu a { display:flex; align-items:center; padding:10px 12px; min-height:44px; border-radius:6px; color:var(--ink); font-size:14px; }
+.mk-top .fx-app-menu a:hover { background:#e9ddf4; text-decoration:none; }
+.mk-top .fx-app-menu{width:310px;max-width:calc(100vw - 24px);max-height:min(75vh,650px);overflow-y:auto}
+.mk-top .fx-app-menu .fx-subpage{padding-left:32px;font-size:13px;background:#f5f1eb}
+.mk-top .fx-app-menu .fx-commons-info{display:block;line-height:1.5}
+.mk-top .fx-app-menu .fx-commons-info small{display:block;font-size:12px;color:#675d6b;margin-top:4px;white-space:normal}
+.mk-top .fx-app-menu hr{width:100%;border:0;border-top:1px solid #c8bacb;margin:5px 0}
+@media(max-width:699px){.mk-top .fx-app-menu{left:0;right:auto;width:min(310px,calc(100vw - 24px))}}
+.mk-top .fx-app-menu .cm-sub > summary { display:flex; align-items:center; min-height:44px; padding:10px 12px; border-radius:6px; color:var(--ink) !important; font-size:14px; background:none; }
+.mk-top .fx-app-menu .cm-sub > summary:hover { background:#e9ddf4; }
+.mk-top .fx-app-menu .cm-sub[open] > a { padding-left:28px; font-size:13px; background:#f5f1eb; margin-top:2px; }
+.mk-top .fx-app-menu { background: #fffaf2; z-index: 60; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
+.mk-top .fx-app-menu button { display:flex; align-items:center; padding:10px 12px; min-height:44px; border-radius:6px; color:var(--ink); font:inherit; font-size:14px; background:none; border:0; cursor:pointer; text-align:left; }

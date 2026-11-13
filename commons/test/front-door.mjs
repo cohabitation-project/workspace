@@ -196,7 +196,7 @@ test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep 
       assert.ok(!/class="fx-brand[^"]*" href=/.test(bar), '/feed: the logo is not a link');
       assert.match(menu, /href="\/feed">[^<]*Cohabi Social<\/a>[\s\S]*Profile<\/a>[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Cohabi Marketplace ▾<\/summary><a href="\/label">[\s\S]*href="\/commons"/, '/feed: Cohabi Social, Profile, the Cohabi Marketplace dropdown, Cohabi Commons, in that order');
       assert.match(menu, /You’re not a member of the Commons\. See what it takes to apply\./, '/feed: a non-member is told so');
-    } else assert.match(bar, /class="fx-brand[^"]*" href="\/"/, `${url}: the logo leads home`);
+    } else assert.match(bar, /<summary class="fx-brand[^"]*" aria-label="Cohabi menu"/, `${url}: the logo opens the same one menu (2026-11-13)`);
     assert.ok(!bar.includes('href="/headquarters"'), `${url}: no Headquarters in the public header`);
     assert.match(bar, /href="\/commons"/, `${url}: the Commons link opens the explainer`);
     assert.match(bar, /href="\/signup">Sign up</, `${url}: visitors are offered the public sign-up`);

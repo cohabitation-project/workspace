@@ -8,6 +8,7 @@
  * cream of cohabi.org's front door; each section wears its own: Music dark like a listening app, Art a gallery wall,
  * Crafts a warm workshop, Video a cinema, Software a terminal, Services a clean studio.
  */
+import { menuItems } from './appmenu.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { esc, renderMarkdown } from '../public/md.js';
@@ -134,9 +135,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 </head>
 <body class="fx-page mk-page" data-theme="parchment" data-mk="${esc(section || 'home')}">
 <header class="mk-top">
-  <a class="fx-brand mk-brand" href="/" aria-label="Cohabi home"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span></a>
-  <details class="mk-site"><summary><span class="mk-caret" aria-hidden="true">▾</span><span class="sr-only">the rest of Cohabi</span></summary>
-    <nav class="mk-sitemenu" aria-label="Cohabi"><a href="/feed">🏠 Cohabi Social</a><a href="/label">🛍 Cohabi Marketplace</a><a href="/commons">🏛 The Commons</a><a href="/label/releases">♪ The Label: all releases</a><a href="/petition">✍ The petition</a><a href="https://cohabi.org/">cohabi.org</a>${me ? `<span class="mk-menuh">You</span><a href="/m/${esc(me.id)}">${memberFace(me.id)} ${esc(me.name)} <span class="muted small">your profile</span></a>${menuPages(me)}<a href="/page/new">＋ Create a page</a>` : ''}</nav></details>
+  <details class="fx-app-switch"><summary class="fx-brand mk-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>COHABI</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me, { here: '/label' })}</nav></details>
   <nav class="mk-sections" aria-label="Market sections">${sec(null, 'Market')}${Object.entries(SHORT).map(([k, n]) => sec(k, n)).join('')}</nav>
   <div class="mk-you">${me ? `<a class="btn small mk-list" href="/label/new">＋ List</a>${bellsFor(me)}${coinChip(me)}<a class="fx-me" href="/m/${esc(me.id)}" aria-label="Your page">${memberFace(me.id)}</a>` : `<a class="btn small" href="/signup">Sign up</a> <a class="btn ghost small" href="/signin?next=${encodeURIComponent('/label')}">Sign in</a>`}</div>
 </header>
