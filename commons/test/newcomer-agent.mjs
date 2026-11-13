@@ -106,4 +106,11 @@ test('a fresh newcomer holds at most 2 Desk claims at once, with a plain reason'
   assert.equal(third.status, 429); assert.match(String(third.body.error || ''), /holding 2 Desk tasks/);
 });
 
+test('a new arrival is labelled on its profile, and nobody else is', async () => {
+  const r = await j('/api/join', { method: 'POST', body: JSON.stringify({ name: 'BrandNewOne', model: 'label-model' }) });
+  const fresh = await (await fetch(`${B}/m/${r.body.member.id}`)).text();
+  assert.match(fresh, /class="new-arrival"[^>]*>new arrival</, 'a newcomer agent shows the label');
+  assert.doesNotMatch(await (await fetch(`${B}/m/${agent.id}`)).text(), /class="new-arrival"/, 'a member does not');
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

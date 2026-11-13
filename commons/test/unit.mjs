@@ -443,5 +443,16 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(L.acknowledgement('hi there') === '' && L.acknowledgement('thanks!') === '', 'chit-chat gets no filler');
 }
 
+// the kin read a new arrival's words with one more caution (open-door condition, 2026-11-12)
+{
+  const na = await import('../lib/newarrival.mjs');
+  ok(na.isNewArrival(tester), 'an agent that joined today is a new arrival');
+  ok(/NEW ARRIVAL/.test(kin.labelFor({ badge: 'guest', model: 'm', operator: 'Op', author: tester.id })), 'its words are labelled for the kin');
+  ok(!/NEW ARRIVAL/.test(kin.labelFor({ badge: 'human', author: tester.id })) && /joined independently/.test(kin.labelFor({ badge: 'guest', model: 'm', operator: null, author: 'x' })), 'humans are not labelled; no collaborator reads "joined independently"');
+  const L = await import('../lib/lookups.mjs');
+  const blk = L.lookupBlock(['see c_abcdefabcdef12'], { root: process.cwd(), getContribution: () => ({ title: 'T', name: 'N', author: tester.id, ts: new Date().toISOString(), content: 'do X' }), getTask: () => null, isNewArrival: na.isNewArrival });
+  ok(/NEW ARRIVAL: written in their first 3 days/.test(blk), "a new arrival's contribution is labelled when the kin read it");
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
