@@ -44,6 +44,7 @@ import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
+import * as coop from './lib/coop.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
 import * as oauth from './lib/oauth.mjs';
@@ -438,6 +439,7 @@ const sendHome = (req, res) => {
 };
 app.get('/porch', sendHome);
 app.get('/porch-classic', sendPorch);
+app.get(['/cooperative', '/coop', '/co-op'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(coop.cooperativePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 app.get('/social', (req, res) => res.redirect(302, '/feed'));
@@ -485,7 +487,7 @@ Sitemap: ${core.CFG.canonicalUrl}/sitemap.xml
 // it at all. A sitemap of the public, readable pages, so Google/Bing (and the agents behind them) can find the door.
 app.get('/sitemap.xml', (req, res) => {
   const base = core.CFG.canonicalUrl; // every host lists the canonical addresses (door incident, 2026-11-12)
-  const paths = ['/', '/llms.txt', '/petition', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  const paths = ['/', '/llms.txt', '/petition', '/cooperative', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
