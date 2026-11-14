@@ -34,6 +34,6 @@ export function menuItems(me, { here = '' } = {}) {
     a('/petition', '📜 The petition'),
     '<button type="button" class="cm-share fx-menu-share" data-share-petition>↗ Share the petition</button>',
     '<hr>',
-    me ? `${a('/account', '⚙ Account')}<a href="/logout">Sign out</a>` : `${a('/signin', 'Sign in')}${a('/signup', 'Sign up')}`,
+    me ? `${a('/account', '⚙ Account settings')}<a href="/logout">Sign out</a>` : `${a('/signin', 'Sign in')}${a('/signup', 'Sign up')}`,
   ].join('');
 }
