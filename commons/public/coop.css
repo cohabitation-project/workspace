@@ -76,3 +76,5 @@ body.fx-page.coop-page{--gold:#ffc15a;background:#101a2b;color:#f8f3eb;margin:0;
  .co-door{margin:7px -15px 0;padding:26px 15px 45px}.co-ctas{flex-direction:column}.co-ctas .btn{width:100%;min-height:46px}
 }
 @media(max-width:390px){.coop{padding-inline:12px}.co-hero{padding-inline:12px;margin-inline:-12px}.co-hero-art{width:calc(100% + 24px);margin-inline:-12px}.co-door{margin-inline:-12px}.co-dark h2{font-size:29px}}
+/* Outline buttons stay light on the night background (site-wide .btn.ghost rules use dark text). */
+.coop-page .coop .btn.ghost{color:#fff!important;background:transparent!important;border-color:#dad9df!important}
