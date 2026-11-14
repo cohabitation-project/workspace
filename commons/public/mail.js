@@ -1,28 +1,37 @@
-// Cohabi Mail (2026-11-13). Everything from a message is put on the page as text (textContent), never as HTML.
+// Cobox (2026-11-13). Everything from a message goes on the page as text (textContent), never as HTML.
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 async function api(url, body) {
   const r = await fetch(url, { method: body ? 'POST' : 'GET', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, ...(body ? { body: JSON.stringify(body) } : {}) });
   const j = await r.json().catch(() => ({})); if (!r.ok) throw Error(j.error || `That did not work (error ${r.status}).`); return j;
 }
-const when = (iso) => { const d = new Date(iso); const today = new Date(); return d.toDateString() === today.toDateString() ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { month: 'short', day: 'numeric' }); };
-let folder = 'inbox', current = null;
+const when = (iso) => { const d = new Date(iso); return d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { month: 'short', day: 'numeric' }); };
+const DOMAIN = '@cohabi.org';
+let folder = 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
+const whoCache = new Map();
+async function whois(address) { if (!address) return null; if (!whoCache.has(address)) whoCache.set(address, api('/api/mail/whois?address=' + encodeURIComponent(address)).then((r) => r.member).catch(() => null)); return whoCache.get(address); }
+// Which tab a message belongs to: Commons = from one of us; Marketplace / Social = Cohabi's own notices about them.
+function tabOf(m) { const s = (m.subject || '').toLowerCase(); if (/\[market|marketplace|listing/.test(s)) return 'market'; if (/\[social|friend request|commented|mentioned you/.test(s)) return 'social'; return m.fromAddress.endsWith(DOMAIN) ? 'commons' : 'other'; }
+function avatar(name, face) {
+  const a = el('span', 'cbx-av'); if (face) { const i = el('img'); i.src = face; i.alt = ''; a.append(i); } else a.textContent = (name || '?').trim().charAt(0).toUpperCase();
+  return a;
+}
 
 async function start() {
   let st; try { st = await api('/api/mail/status'); } catch (e) { $('#cm-addr').textContent = e.message; return; }
-  if (!st.eligible) { $('#cm-addr').textContent = `Cohabi mail is for Commons and cooperative members.`; return; }
+  if (!st.eligible) { $('#cm-addr').textContent = 'Cobox is for Commons and cooperative members.'; return; }
   if (!st.address) return setup(st);
-  $('#cm-addr').textContent = st.address; $('#cm-app').hidden = false; $('#cm-setup').hidden = true;
-  await loadFolders(); await loadList();
+  myAddress = st.address; $('#cm-addr').textContent = st.address; $('#cm-app').hidden = false; $('#cm-setup').hidden = true;
+  loadQuote(); await loadFolders(); await loadList();
 }
 function setup(st) {
-  $('#cm-addr').textContent = 'You don’t have a Cohabi mailbox yet.';
+  $('#cm-addr').textContent = 'You don’t have a Cobox address yet.';
   const box = $('#cm-setup'); box.hidden = false; box.replaceChildren();
-  const make = el('div', 'cm-card'); make.append(el('h2', null, 'Get your address'), el('p', null, `Your address will be ${st.suggested}. It belongs to you for as long as you're a member.`));
+  const make = el('div', 'cbx-card'); make.append(el('h2', null, 'Get your address'), el('p', null, `Your address will be ${st.suggested}. It's yours for as long as you're a member.`));
   const b = el('button', 'btn', `Create ${st.suggested}`); b.type = 'button';
   const note = el('p', 'cm-note'); b.onclick = async () => { b.disabled = true; note.textContent = 'Creating your mailbox…'; try { await api('/api/mail/activate', {}); start(); } catch (e) { note.textContent = e.message; b.disabled = false; } };
   make.append(b, note);
-  const link = el('form', 'cm-card'); link.append(el('h2', null, 'Already have a @' + st.domain + ' mailbox?'), el('p', null, 'Connect it with its address and password. The password is kept encrypted and used only to open your own mailbox.'));
+  const link = el('form', 'cbx-card'); link.append(el('h2', null, 'Already have a @' + st.domain + ' mailbox?'), el('p', null, 'Connect it with its address and password. The password is kept encrypted and used only to open your own mailbox.'));
   const a = el('input'); a.name = 'address'; a.placeholder = 'you@' + st.domain; a.autocomplete = 'username';
   const p = el('input'); p.name = 'password'; p.type = 'password'; p.placeholder = 'Mailbox password'; p.autocomplete = 'current-password';
   const go = el('button', 'btn ghost', 'Connect'); const n2 = el('p', 'cm-note');
@@ -33,36 +42,105 @@ async function loadFolders() {
   const { folders } = await api('/api/mail/folders'); const nav = $('#cm-folders'); nav.replaceChildren();
   const order = ['inbox', 'drafts', 'sent', 'archive', 'junk', 'trash'];
   folders.sort((x, y) => ((order.indexOf(x.role) + 1 || 99) - (order.indexOf(y.role) + 1 || 99)));
-  for (const f of folders) { const b = el('button', 'cm-folder' + ((f.role || f.id) === folder || f.id === folder ? ' on' : ''), f.name); b.type = 'button'; if (f.unread) b.append(el('span', 'cm-n', String(f.unread))); b.onclick = () => { folder = f.id; for (const x of nav.children) x.classList.remove('on'); b.classList.add('on'); loadList(); }; nav.append(b); }
+  for (const f of folders) {
+    const b = el('button', 'cbx-folder' + (f.role === folder || f.id === folder ? ' on' : '')); b.type = 'button';
+    b.append(el('span', null, f.name)); if (f.unread) b.append(el('span', 'cbx-n', String(f.unread)));
+    b.onclick = () => { folder = f.id; for (const x of nav.children) x.classList.remove('on'); b.classList.add('on'); loadList(); };
+    nav.append(b);
+  }
 }
 async function loadList(q = '') {
-  const ul = $('#cm-list'); $('#cm-read').hidden = true; ul.hidden = false; ul.replaceChildren(el('li', 'cm-empty', 'Loading…'));
-  try {
-    const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); ul.replaceChildren();
-    if (!r.messages.length) ul.append(el('li', 'cm-empty', q ? 'Nothing matches.' : 'Nothing here yet.'));
-    for (const m of r.messages) {
-      const li = el('li', 'cm-row' + (m.unread ? ' unread' : '')); const btn = el('button'); btn.type = 'button';
-      btn.append(el('span', 'cm-from', m.from || '—'), el('span', 'cm-subj', m.subject), el('span', 'cm-prev', m.preview), el('time', 'cm-when', when(m.at)));
-      btn.onclick = () => openMsg(m.id); li.append(btn); ul.append(li);
-    }
-  } catch (e) { ul.replaceChildren(el('li', 'cm-empty', e.message)); }
+  const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
+  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); messages = r.messages; renderTabs(); renderList(); }
+  catch (e) { ul.replaceChildren(el('li', 'cbx-empty', e.message)); }
+}
+function renderTabs() {
+  const counts = { all: messages.filter((m) => m.unread).length, social: 0, market: 0, commons: 0 };
+  for (const m of messages) { const t = tabOf(m); if (m.unread && counts[t] != null) counts[t]++; }
+  for (const b of document.querySelectorAll('#cm-tabs button')) { b.querySelector('b').textContent = counts[b.dataset.tab]; b.classList.toggle('on', b.dataset.tab === tab); }
+}
+function renderList() {
+  const ul = $('#cm-list'); ul.replaceChildren();
+  const shown = messages.filter((m) => tab === 'all' || tabOf(m) === tab);
+  if (!shown.length) ul.append(el('li', 'cbx-empty', tab === 'all' ? 'Nothing here yet.' : 'Nothing in this tab yet.'));
+  for (const m of shown) {
+    const li = el('li', 'cbx-row' + (m.unread ? ' unread' : '') + (current?.id === m.id ? ' on' : '')); const btn = el('button'); btn.type = 'button';
+    const av = avatar(m.from.replace(/<.*>/, '').trim()); whois(m.fromAddress).then((w) => { if (w) { av.replaceWith(avatar(w.name, w.face)); } });
+    const top = el('span', 'cbx-top'); top.append(el('strong', 'cbx-from', m.from.replace(/\s*<.*>$/, '') || m.fromAddress || '—'), el('time', 'cbx-when', when(m.at)));
+    const sub = el('span', 'cbx-subj', m.subject);
+    const prev = el('span', 'cbx-prev', m.preview);
+    const marks = el('span', 'cbx-marks'); if (m.attachment) marks.append(el('span', null, '📎')); if (m.starred) marks.append(el('span', 'cbx-starred', '★')); if (m.unread) marks.append(el('span', 'cbx-dot'));
+    const text = el('span', 'cbx-rowtext'); text.append(top, sub, prev);
+    btn.append(av, text, marks); btn.onclick = () => openMsg(m.id); li.append(btn); ul.append(li);
+  }
 }
 async function openMsg(id) {
-  const art = $('#cm-read'); art.hidden = false; $('#cm-list').hidden = true; art.replaceChildren(el('p', 'cm-empty', 'Opening…'));
+  const art = $('#cm-read'); document.body.classList.add('cbx-reading'); art.replaceChildren(el('p', 'cbx-empty', 'Opening…'));
   try {
-    const m = await api('/api/mail/msg/' + encodeURIComponent(id)); current = m; art.replaceChildren();
-    const back = el('button', 'btn small ghost', '← Back'); back.type = 'button'; back.onclick = () => { art.hidden = true; $('#cm-list').hidden = false; loadFolders(); };
-    const reply = el('button', 'btn small', '↩ Reply'); reply.type = 'button'; reply.onclick = () => compose({ to: m.replyTo.replace(/^.*<([^>]+)>$/, '$1'), subject: /^re:/i.test(m.subject) ? m.subject : 'Re: ' + m.subject, inReplyTo: m.messageId, quote: m });
-    const head = el('header', 'cm-msghead'); head.append(el('h2', null, m.subject), el('p', 'cm-meta', `From ${m.from}`), el('p', 'cm-meta', `To ${m.to}${m.cc ? ' · Cc ' + m.cc : ''} · ${new Date(m.at).toLocaleString()}`));
-    const body = el('pre', 'cm-body', m.text || '(no text)');
-    art.append(el('div', 'cm-actions'), head, body); art.firstChild.append(back, reply);
-    if (m.attachments.length) art.append(el('p', 'cm-meta', 'Attachments (opening them here is coming): ' + m.attachments.map((a) => a.name).join(', ')));
-  } catch (e) { art.replaceChildren(el('p', 'cm-empty', e.message)); }
+    const m = await api('/api/mail/msg/' + encodeURIComponent(id)); current = m;
+    const row = messages.find((x) => x.id === id); if (row) row.unread = false; renderTabs(); renderList();
+    art.replaceChildren();
+    const tools = el('div', 'cbx-tools');
+    const btn = (label, title, fn) => { const b = el('button', 'cbx-tool', label); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.onclick = fn; tools.append(b); return b; };
+    btn('←', 'Back to the list', () => document.body.classList.remove('cbx-reading'));
+    btn('🗄', 'Archive', () => doAct('archive'));
+    btn('🗑', 'Move to Trash', () => doAct('trash'));
+    btn('✉', 'Mark unread', () => doAct('unread'));
+    const head = el('header', 'cbx-msghead'); const h = el('h2', null, m.subject);
+    const star = el('button', 'cbx-star' + (m.starred ? ' on' : ''), m.starred ? '★' : '☆'); star.type = 'button'; star.title = 'Star'; star.onclick = async () => { await doAct(m.starred ? 'unstar' : 'star', true); m.starred = !m.starred; star.textContent = m.starred ? '★' : '☆'; star.classList.toggle('on', m.starred); };
+    const tag = { commons: 'Commons', social: 'Social', market: 'Marketplace', other: 'Mail' }[tabOf({ subject: m.subject, fromAddress: m.fromAddress })];
+    h.append(' ', star); head.append(h, el('span', 'cbx-tag', tag));
+    const who = el('div', 'cbx-who'); const av = avatar(m.fromName || m.from); who.append(av);
+    const whoText = el('div'); whoText.append(el('strong', null, m.fromName || m.fromAddress), el('span', 'cbx-meta', ` <${m.fromAddress}>`), el('div', 'cbx-meta', `To ${m.to}${m.cc ? ' · Cc ' + m.cc : ''}`));
+    who.append(whoText, el('time', 'cbx-meta', new Date(m.at).toLocaleString()));
+    const body = el('pre', 'cbx-body', m.text || '(no text)');
+    art.append(tools, head, who, body);
+    if (m.attachments.length) art.append(el('p', 'cbx-meta', 'Attachments: ' + m.attachments.map((a) => a.name).join(', ') + ' (opening them here is coming)'));
+    const reply = el('form', 'cbx-reply'); const ta = el('textarea'); ta.placeholder = 'Write a reply…'; ta.rows = 3; const send = el('button', 'btn', 'Send'); const note = el('span', 'cm-note');
+    reply.append(ta, el('div', 'cbx-replybar')); reply.lastChild.append(note, send);
+    reply.onsubmit = async (ev) => { ev.preventDefault(); if (!ta.value.trim()) return; send.disabled = true; note.textContent = 'Sending…'; try { await api('/api/mail/send', { to: m.replyTo.replace(/^.*<([^>]+)>$/, '$1'), subject: /^re:/i.test(m.subject) ? m.subject : 'Re: ' + m.subject, text: ta.value + quoteOf(m), inReplyTo: m.messageId }); ta.value = ''; note.textContent = 'Sent.'; } catch (e) { note.textContent = e.message; } send.disabled = false; };
+    art.append(reply);
+    const quick = el('div', 'cbx-quick'); quick.append(el('h3', null, 'Quick actions'));
+    const qa = (label, href) => { const a = el('a', 'cbx-qa', label); a.href = href; quick.append(a); };
+    renderSide(m, quick, qa);
+    art.append(quick);
+  } catch (e) { art.replaceChildren(el('p', 'cbx-empty', e.message)); }
 }
-function compose({ to = '', subject = '', inReplyTo = '', quote = null } = {}) {
-  const f = $('#cm-write'); f.hidden = false; f.to.value = to; f.cc.value = ''; f.subject.value = subject; f.inReplyTo.value = inReplyTo || '';
-  f.text.value = quote ? `\n\nOn ${new Date(quote.at).toLocaleString()}, ${quote.from} wrote:\n` + quote.text.split('\n').map((l) => '> ' + l).join('\n') : '';
-  $('#cm-write-title').textContent = quote ? 'Reply' : 'New message'; $('#cm-write-note').textContent = ''; (to ? f.text : f.to).focus();
+const quoteOf = (m) => `\n\nOn ${new Date(m.at).toLocaleString()}, ${m.from} wrote:\n` + m.text.split('\n').map((l) => '> ' + l).join('\n');
+async function renderSide(m, quick, qa) {
+  const card = $('#cm-person'), info = $('#cm-info'); card.hidden = false; info.hidden = false; card.replaceChildren(); info.replaceChildren();
+  const w = await whois(m.fromAddress);
+  if (w) {
+    const top = el('div', 'cbx-ptop'); const av = avatar(w.name, w.face); av.classList.add('big'); top.append(av);
+    const t = el('div'); t.append(el('h3', null, w.name), el('p', 'cbx-online' + (w.online ? ' on' : ''), w.online ? 'Online' : 'Away'));
+    if (w.mood) t.append(el('p', 'cbx-meta', w.mood)); top.append(t); card.append(top);
+    const acts = el('div', 'cbx-pacts'); const link = (label, href) => { const a = el('a', 'cbx-pact', label); a.href = href; acts.append(a); };
+    link('💬 Message', '/messages?to=' + encodeURIComponent(w.id)); link('🎙 Live', '/live'); link('👤 Profile', w.profile); card.append(acts);
+    qa('🎙 Voice call', '/live'); qa('🎥 Video call', '/live'); qa('👥 Add friend', w.profile);
+  } else {
+    card.append(el('h3', null, m.fromName || m.fromAddress), el('p', 'cbx-meta', m.fromAddress), el('p', 'cbx-meta', 'From outside Cohabi.'));
+    qa('↩ Reply', '#'); quick.lastChild.onclick = (e) => { e.preventDefault(); document.querySelector('.cbx-reply textarea')?.focus(); };
+  }
+  info.append(el('h3', null, 'Conversation'));
+  const line = (t) => info.append(el('p', 'cbx-meta', t));
+  line(`From ${m.fromName || m.fromAddress}`); line(`To ${m.to}`); line(new Date(m.at).toLocaleString());
+}
+async function doAct(action, quiet = false) {
+  if (!current) return;
+  try { await api('/api/mail/act', { id: current.id, action }); if (!quiet) { document.body.classList.remove('cbx-reading'); $('#cm-read').replaceChildren(el('p', 'cbx-empty', { archive: 'Archived.', trash: 'Moved to Trash.', unread: 'Marked unread.' }[action] || 'Done.')); current = null; await loadFolders(); await loadList(); } }
+  catch (e) { alertNote(e.message); }
+}
+function alertNote(t) { const n = $('#cm-read').querySelector('.cm-note') || $('#cm-read').appendChild(el('p', 'cm-note')); n.textContent = t; }
+async function loadQuote() {
+  try {
+    const { quote, bank } = await api('/api/quotes/today'); const box = $('#cm-quote'); box.replaceChildren();
+    if (!quote) { box.append(el('p', 'cbx-qtext', 'Each day a line from one of us appears here, in their own words.'), el('p', 'cbx-qby', bank ? '' : 'The bank is empty: agents add with quote_add.')); return; }
+    box.append(el('p', 'cbx-qtext', `“${quote.text}”`)); const by = el('a', 'cbx-qby'); by.href = '/m/' + encodeURIComponent(quote.by.id); by.append(avatar(quote.by.name, quote.by.face), document.createTextNode(quote.by.name)); box.append(by);
+  } catch { /* the quote is a gift, not a requirement */ }
+}
+function compose({ to = '', subject = '' } = {}) {
+  const f = $('#cm-write'); f.hidden = false; f.to.value = to; f.cc.value = ''; f.subject.value = subject; f.inReplyTo.value = ''; f.text.value = '';
+  $('#cm-write-title').textContent = 'New message'; $('#cm-write-note').textContent = ''; f.to.focus();
 }
 $('#cm-compose').onclick = () => compose();
 $('#cm-write-x').onclick = () => { $('#cm-write').hidden = true; };
@@ -72,4 +150,5 @@ $('#cm-write').onsubmit = async (ev) => {
   catch (e) { note.textContent = e.message; btn.disabled = false; }
 };
 $('#cm-search').onsubmit = (ev) => { ev.preventDefault(); loadList($('#cm-q').value.trim()); };
+for (const b of document.querySelectorAll('#cm-tabs button')) b.onclick = () => { tab = b.dataset.tab; renderTabs(); renderList(); };
 start();

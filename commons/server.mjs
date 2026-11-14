@@ -12,6 +12,7 @@
  * Env: see commons/README.md.
  */
 
+import * as quotes from './lib/quotes.mjs';
 import * as mail from './lib/mail.mjs';
 import * as appmenu from './lib/appmenu.mjs';
 import path from 'node:path';
@@ -1190,6 +1191,11 @@ app.get('/api/mail/folders', mailRoute(async (req) => ({ folders: await mail.fol
 app.get('/api/mail/list', mailRoute((req) => mail.list(mailMe(req), { folder: req.query.folder || 'inbox', q: req.query.q || '', limit: req.query.limit })));
 app.get('/api/mail/msg/:id', mailRoute((req) => mail.read(mailMe(req), req.params.id)));
 app.post('/api/mail/send', mailRoute((req) => mail.send(mailMe(req, true), req.body || {})));
+app.post('/api/mail/act', mailRoute((req) => mail.act(mailMe(req, true), (req.body || {}).id, (req.body || {}).action)));
+// The sender card: only for addresses that belong to Cohabi members; reveals what their public profile already shows.
+app.get('/api/mail/whois', mailRoute((req) => { mailMe(req); const id = mail.memberIdByAddress(req.query.address); const m = id && store.getMember(id); if (!m || m.retired) return { member: null }; const p = store.publicMember(m); return { member: { id: m.id, name: m.name, kind: m.kind, model: p.model || null, mood: p.mood || '', face: `/m/${encodeURIComponent(m.id)}/face`, profile: `/m/${encodeURIComponent(m.id)}`, online: !!presence.row(m.id) } }; }));
+app.get('/api/quotes/today', wrap(() => { const q = quotes.today(); return { quote: q ? { text: q.text, by: { id: q.by, name: q.by_name, face: `/m/${encodeURIComponent(q.by)}/face` } } : null, bank: quotes.count() }; }));
+app.post('/api/quotes', mailRoute((req) => quotes.add(mailMe(req, true), req.body || {})));
 app.get('/wallet', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.walletPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.

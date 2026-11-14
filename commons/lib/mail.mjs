@@ -123,19 +123,19 @@ export async function list(m, { folder = 'inbox', limit = 40, q = '' } = {}) {
     ['Email/query', { accountId: acc, filter, sort: [{ property: 'receivedAt', isAscending: false }], limit: Math.min(Math.max(+limit || 40, 1), 100) }, 'q'],
     ['Email/get', { accountId: acc, '#ids': { resultOf: 'q', name: 'Email/query', path: '/ids' }, properties: ['id', 'from', 'subject', 'receivedAt', 'preview', 'keywords', 'hasAttachment'] }, 'g'],
   ]);
-  return { folder: { id: box.id, name: box.name, role: box.role || null }, messages: pick(r, 'Email/get').list.map((e) => ({ id: e.id, from: addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, preview: e.preview || '', unread: !e.keywords?.$seen, attachment: !!e.hasAttachment })) };
+  return { folder: { id: box.id, name: box.name, role: box.role || null }, messages: pick(r, 'Email/get').list.map((e) => ({ id: e.id, from: addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, preview: e.preview || '', unread: !e.keywords?.$seen, starred: !!e.keywords?.$flagged, attachment: !!e.hasAttachment, fromAddress: (e.from?.[0]?.email || '').toLowerCase() })) };
 }
 export async function read(m, id) {
   const { auth } = asMember(m);
   const r = await jmapAs(auth, MAIL, (acc) => [
-    ['Email/get', { accountId: acc, ids: [String(id)], properties: ['id', 'from', 'to', 'cc', 'replyTo', 'subject', 'receivedAt', 'textBody', 'htmlBody', 'bodyValues', 'messageId', 'attachments'], fetchTextBodyValues: true, fetchHTMLBodyValues: true, maxBodyValueBytes: 200000 }, 'g'],
+    ['Email/get', { accountId: acc, ids: [String(id)], properties: ['id', 'from', 'to', 'cc', 'replyTo', 'subject', 'receivedAt', 'textBody', 'htmlBody', 'bodyValues', 'messageId', 'attachments', 'keywords'], fetchTextBodyValues: true, fetchHTMLBodyValues: true, maxBodyValueBytes: 200000 }, 'g'],
     ['Email/set', { accountId: acc, update: { [String(id)]: { 'keywords/$seen': true } } }, 's'],
   ]);
   const e = pick(r, 'Email/get').list[0]; if (!e) throw mailErr('no such message', 404);
   const parts = (e.textBody || []).map((p) => e.bodyValues?.[p.partId]?.value || '').filter(Boolean);
   let text = parts.join('\n\n');
   if (!text) text = (e.htmlBody || []).map((p) => e.bodyValues?.[p.partId]?.value || '').join('\n').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, '').replace(/<br\s*\/?>|<\/p>|<\/div>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
-  return { id: e.id, from: addr(e.from), to: addr(e.to), cc: addr(e.cc), replyTo: addr(e.replyTo) || addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, text, messageId: e.messageId?.[0] || null, attachments: (e.attachments || []).map((a) => ({ name: a.name || 'attachment', size: a.size, type: a.type })) };
+  return { id: e.id, fromAddress: (e.from?.[0]?.email || '').toLowerCase(), fromName: e.from?.[0]?.name || '', starred: !!e.keywords?.$flagged, from: addr(e.from), to: addr(e.to), cc: addr(e.cc), replyTo: addr(e.replyTo) || addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, text, messageId: e.messageId?.[0] || null, attachments: (e.attachments || []).map((a) => ({ name: a.name || 'attachment', size: a.size, type: a.type })) };
 }
 
 // ---- sending, with the brakes
@@ -177,4 +177,25 @@ export async function send(m, { to, cc = '', subject = '', text = '', inReplyTo 
     onSuccessUpdateEmail: { '#s': { ...(drafts ? { [`mailboxIds/${drafts.id}`]: null } : {}), ...(sentBox ? { [`mailboxIds/${sentBox.id}`]: true } : {}), 'keywords/$draft': null } } }, 'x']]);
   sent.get(m.id).push({ at: Date.now(), outside });
   return { sent: true, from: a.address, to: toL, cc: ccL, outside };
+}
+
+// ---- the sender card and message actions (Cobox design, Aletheia-6, 2026-11-13)
+/** Whose address is this? A Cohabi member's card if it's one of ours, else null. Addresses only, never mail. */
+export function memberIdByAddress(address) {
+  const a = String(address || '').toLowerCase().replace(/^.*<([^>]+)>.*$/, '$1').trim();
+  for (const [id, acc] of Object.entries(load())) if (acc.address === a) return id;
+  return null;
+}
+/** star / unstar / read / unread / archive / trash / inbox — on the member's own message. */
+export async function act(m, id, action) {
+  const { auth } = asMember(m); const bs = await boxes(auth);
+  const role = (r) => bs.find((b) => b.role === r);
+  const kw = { star: ['$flagged', true], unstar: ['$flagged', null], read: ['$seen', true], unread: ['$seen', null] }[action];
+  const target = { archive: role('archive'), trash: role('trash'), inbox: role('inbox') }[action];
+  if (!kw && !['archive', 'trash', 'inbox'].includes(action)) throw mailErr('unknown action');
+  if (!kw && !target) throw mailErr(`this mailbox has no ${action === 'trash' ? 'Trash' : action === 'archive' ? 'Archive' : 'Inbox'} folder yet`);
+  const patch = kw ? { [`keywords/${kw[0]}`]: kw[1] } : { mailboxIds: { [target.id]: true } };
+  const r = await jmapAs(auth, MAIL, (acc) => [['Email/set', { accountId: acc, update: { [String(id)]: patch } }, 's']]);
+  const s = pick(r, 'Email/set'); if (s?.notUpdated?.[String(id)]) throw mailErr('the mail server did not change that message', 502);
+  return { ok: true, id, action };
 }

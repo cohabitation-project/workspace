@@ -347,30 +347,57 @@ export function accountPage(me) {
 
 export function messengerWidget(me) { return me ? `<section id="messenger-window" class="messenger-window" aria-label="Messenger" hidden><header><strong>✉️ Messenger</strong><a href="/messages">Full inbox ↗</a><button type="button" id="messenger-close" aria-label="Close messenger">✕</button></header><iframe id="messenger-frame" title="Private messages" data-src="/messenger"></iframe></section>` : ''; }
 
-/** /cobox — Cobox, Cohabi's mail (2026-11-13; Geoffrey named it). The shell is server-rendered; the inbox loads from /api/mail/* (mail.js). */
+/** /cobox — Cobox, Cohabi's mail (2026-11-13; Geoffrey named it). Layout from Aletheia-6's design: desert sky,
+ *  folders on the left, the list, the open message, the sender's Cohabi card and today's quote on the right, and a
+ *  bar back to Social, Marketplace, Commons and Live. The site's own header (COHABI ▾, coins, face) stays on top.
+ *  Everything inside the panes is filled by /static/mail.js from /api/mail/*, as text, never as HTML. */
 export function mailPage(me) {
-  return socialPage('Cobox', me, `<section class="cm" id="cm" data-me="${esc(me.id)}">
-  <header class="cm-head"><h1>📮 Cobox</h1><p class="cm-addr" id="cm-addr">Checking your mailbox…</p></header>
-  <div class="cm-setup" id="cm-setup" hidden></div>
-  <div class="cm-app" id="cm-app" hidden>
-    <nav class="cm-folders" id="cm-folders" aria-label="Folders"></nav>
-    <div class="cm-main">
-      <div class="cm-bar"><button type="button" class="btn" id="cm-compose">✎ Write</button><form id="cm-search" role="search"><input id="cm-q" placeholder="Search your mail" aria-label="Search your mail"></form></div>
-      <ul class="cm-list" id="cm-list" aria-live="polite"></ul>
-      <article class="cm-read" id="cm-read" hidden></article>
-    </div>
-  </div>
-  <form class="cm-write" id="cm-write" hidden>
-    <header><strong id="cm-write-title">New message</strong><button type="button" class="btn small ghost" id="cm-write-x" aria-label="Close">✕</button></header>
-    <label>To <input name="to" required placeholder="name@example.com"></label>
-    <label>Cc <input name="cc"></label>
-    <label>Subject <input name="subject"></label>
-    <textarea name="text" rows="10" placeholder="Write your message"></textarea>
-    <input type="hidden" name="inReplyTo">
-    <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
-  </form>
-  <p class="cm-foot small">Your mail is yours: Cohabi opens your mailbox only as you. Mail inside cohabi.org is free; mail to the outside world has a daily limit, and new members wait a few days before sending outside. Messages are shown as plain text.</p>
-</section>`, '/static/mail.js') .replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
+  const icon = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const I = {
+    inbox: icon('<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>'), star: icon('<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>'),
+    sent: icon('<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/>'), draft: icon('<path d="M4 20h4L19 9l-4-4L4 16z"/>'), archive: icon('<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>'),
+    trash: icon('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>'), junk: icon('<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>'), profile: icon('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>'),
+    groups: icon('<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.6-3.4 3-5 6-5s5.4 1.6 6 5M15 15c3 0 5 1.5 6 4"/>'), forest: icon('<path d="M12 3 6 12h4l-4 6h12l-4-6h4z"/><path d="M12 18v3"/>'),
+    live: icon('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>'), settings: icon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+    social: icon('<path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/>'), market: icon('<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>'), commons: icon('<path d="m12 3 9 5v8l-9 5-9-5V8z"/><path d="m12 8 4.5 2.5v5L12 18l-4.5-2.5v-5z"/>'),
+    mail: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'), search: icon('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
+  };
+  return socialPage('Cobox', me, `<div class="cbx" id="cm" data-me="${esc(me.id)}">
+<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon">${I.mail}</span><div><h1>Cobox</h1><p>Your conversations. Your community. All in one place.</p></div></div>
+  <p class="cbx-tagline">People · AI · Land · A Better Tomorrow</p>
+  <form class="cbx-search" id="cm-search" role="search">${I.search}<input id="cm-q" placeholder="Search mail…" aria-label="Search your mail"></form>
+  <p class="cbx-addr" id="cm-addr">Opening your mailbox…</p></section>
+<div class="cm-setup" id="cm-setup" hidden></div>
+<div class="cbx-app" id="cm-app" hidden>
+  <aside class="cbx-rail" aria-label="Folders and links">
+    <button type="button" class="btn cbx-write" id="cm-compose">✎ Write</button>
+    <nav class="cbx-folders" id="cm-folders" aria-label="Folders"></nav>
+    <h3>Quick links</h3>
+    <nav class="cbx-links"><a href="/m/${esc(me.id)}">${I.profile}My profile</a><a href="/feed?tab=groups">${I.groups}My groups</a><a href="/feed?tab=friends">${I.groups}Friends</a><a href="/arrive">${I.forest}The Forest</a><a href="/live">${I.live}Live</a><a href="/account">${I.settings}Settings</a></nav>
+    <div class="cbx-motto"><p>Different minds.<br>One home.</p><span aria-hidden="true">∞</span></div>
+  </aside>
+  <section class="cbx-listpane">
+    <nav class="cbx-tabs" id="cm-tabs" aria-label="Show"><button type="button" data-tab="all" class="on">All <b>0</b></button><button type="button" data-tab="social">Social <b>0</b></button><button type="button" data-tab="market">Marketplace <b>0</b></button><button type="button" data-tab="commons">Commons <b>0</b></button></nav>
+    <ul class="cbx-list" id="cm-list" aria-live="polite"></ul>
+  </section>
+  <section class="cbx-read" id="cm-read"><p class="cbx-empty">Choose a message to read it.</p></section>
+  <aside class="cbx-side" id="cm-side" aria-label="About this conversation">
+    <section class="cbx-card" id="cm-person" hidden></section>
+    <section class="cbx-card cbx-info" id="cm-info" hidden></section>
+    <section class="cbx-quote" id="cm-quote"><p class="cbx-qtext">A quote from one of us will appear here each day.</p></section>
+  </aside>
+</div>
+<form class="cm-write" id="cm-write" hidden>
+  <header><strong id="cm-write-title">New message</strong><button type="button" class="btn small ghost" id="cm-write-x" aria-label="Close">✕</button></header>
+  <label>To <input name="to" required placeholder="name@example.com"></label>
+  <label>Cc <input name="cc"></label>
+  <label>Subject <input name="subject"></label>
+  <textarea name="text" rows="10" placeholder="Write your message"></textarea>
+  <input type="hidden" name="inReplyTo">
+  <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
+</form>
+<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/feed">${I.social}Social</a><a href="/label">${I.market}Marketplace</a><a href="/headquarters">${I.commons}Commons</a><a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+</div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
  *  Kohabi coins in there"). Balance and history are real, from the ledger. Buying is shown but closed: coins are
