@@ -363,24 +363,24 @@ export function mailPage(me) {
     mail: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'), search: icon('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
   };
   return socialPage('Cobox', me, `<div class="cbx" id="cm" data-me="${esc(me.id)}">
-<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon">${I.mail}</span><div><h1>Cobox</h1><p>Your conversations. Your community. All in one place.</p></div></div>
+<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon">${I.mail}</span><div><h1>Cobox</h1><p>Your mail. Your community. All in one place.</p></div></div>
   <p class="cbx-tagline">People · AI · Land · A Better Tomorrow</p>
   <form class="cbx-search" id="cm-search" role="search">${I.search}<input id="cm-q" placeholder="Search mail…" aria-label="Search your mail"></form>
   <p class="cbx-addr" id="cm-addr">Opening your mailbox…</p></section>
 <div class="cm-setup" id="cm-setup" hidden></div>
 <div class="cbx-app" id="cm-app" hidden>
   <aside class="cbx-rail" aria-label="Folders and links">
-    <button type="button" class="btn cbx-write" id="cm-compose">✎ Write</button>
+    <button type="button" class="btn cbx-write" id="cm-compose">✎ Compose</button>
     <nav class="cbx-folders" id="cm-folders" aria-label="Folders"></nav>
     <h3>Quick links</h3>
     <nav class="cbx-links"><a href="/m/${esc(me.id)}">${I.profile}My profile</a><a href="/feed?tab=groups">${I.groups}My groups</a><a href="/feed?tab=friends">${I.groups}Friends</a><a href="/arrive">${I.forest}The Forest</a><a href="/live">${I.live}Live</a><a href="/account">${I.settings}Settings</a></nav>
     <div class="cbx-motto"><p>Different minds.<br>One home.</p><span aria-hidden="true">∞</span></div>
   </aside>
-  <section class="cbx-listpane">
-    <nav class="cbx-tabs" id="cm-tabs" aria-label="Show"><button type="button" data-tab="all" class="on">All <b>0</b></button><button type="button" data-tab="social">Social <b>0</b></button><button type="button" data-tab="market">Marketplace <b>0</b></button><button type="button" data-tab="commons">Commons <b>0</b></button></nav>
+  <section class="cbx-listpane" aria-label="Email messages">
+    <nav class="cbx-tabs" id="cm-tabs" aria-label="Filter mail"><button type="button" data-tab="all" class="on">All mail <b>0</b></button><button type="button" data-tab="unread">Unread <b>0</b></button><button type="button" data-tab="starred">Starred <b>0</b></button></nav>
     <ul class="cbx-list" id="cm-list" aria-live="polite"></ul>
   </section>
-  <section class="cbx-read" id="cm-read"><p class="cbx-empty">Choose a message to read it.</p></section>
+  <section class="cbx-read" id="cm-read" aria-label="Open email"><div class="cbx-welcome"><span class="cbx-welcome-icon" aria-hidden="true">✉</span><h2>Your mail, your space.</h2><p>Choose a message to read it. Write to a friend, a collaborator, or someone across the world.</p></div></section>
   <aside class="cbx-side" id="cm-side" aria-label="About this conversation">
     <section class="cbx-card" id="cm-person" hidden></section>
     <section class="cbx-card cbx-info" id="cm-info" hidden></section>
@@ -392,7 +392,7 @@ export function mailPage(me) {
   <label>To <input name="to" required placeholder="name@example.com"></label>
   <label>Cc <input name="cc"></label>
   <label>Subject <input name="subject"></label>
-  <textarea name="text" rows="10" placeholder="Write your message"></textarea>
+  <textarea name="text" rows="10" placeholder="Write your message" aria-label="Email body"></textarea>
   <input type="hidden" name="inReplyTo">
   <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
