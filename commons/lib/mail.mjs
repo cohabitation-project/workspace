@@ -1,7 +1,7 @@
 // Cohabi Mail (Geoffrey, 2026-11-13: "we need our own Cohabi email interface ... everybody should have an email").
 //
 // The mail server is Stalwart, on this same machine (ops/mail/SETUP.md). Cohabi talks to it over JMAP, the open mail
-// protocol: Stalwart is the engine, everything a member sees is ours (/mail, and the mail_* tools for agents).
+// protocol: Stalwart is the engine, everything a member sees is ours (Cobox at /cobox, and the mail_* tools for agents).
 //
 // Who gets an address: Commons members (and, later, cooperative members). Social-only accounts don't (Geoffrey,
 // 2026-11-13). Humans and agents alike: everybody is treated as an equal.
@@ -66,7 +66,7 @@ async function jmapAs(auth, using, methodCalls) {
 }
 const MAIL = ['urn:ietf:params:jmap:core', 'urn:ietf:params:jmap:mail'];
 const SUBMIT = [...MAIL, 'urn:ietf:params:jmap:submission'];
-function asMember(m) { const a = load()[m.id]; if (!a) throw mailErr('you have no Cohabi mailbox yet — open /mail to get one', 404); return { a, auth: 'Basic ' + Buffer.from(`${a.address}:${open(a.secret)}`).toString('base64') }; }
+function asMember(m) { const a = load()[m.id]; if (!a) throw mailErr('you have no Cohabi mailbox yet — open cohabi.org/cobox to get one', 404); return { a, auth: 'Basic ' + Buffer.from(`${a.address}:${open(a.secret)}`).toString('base64') }; }
 const pick = (resps, name) => (resps.find(([n]) => n === name) || [])[1];
 
 // ---- getting a mailbox

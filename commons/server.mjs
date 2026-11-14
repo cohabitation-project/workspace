@@ -1181,7 +1181,8 @@ app.get('/cohabi', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); r
 // Cohabi Mail (2026-11-13): /mail and /api/mail/*. Opens a mailbox only as its owner; see lib/mail.mjs.
 const mailRoute = (fn) => wrap(async (req, res) => { try { return await fn(req, res); } catch (e) { if (Number.isInteger(e?.status) && e.message && !(e instanceof core.CommonsError)) { res.status(e.status).json({ error: e.message }); return; } throw e; } });
 const mailMe = (req, write = false) => { const m = actor(req, { write }); if (!m) throw new core.CommonsError(401, 'sign in first'); return m; };
-app.get('/mail', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/mail'); res.type('html').send(feedv2.mailPage(me)); });
+app.get('/mail', (req, res) => res.redirect(301, '/cobox')); // the name is Cobox (Geoffrey, 2026-11-13)
+app.get('/cobox', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/cobox'); res.type('html').send(feedv2.mailPage(me)); });
 app.get('/api/mail/status', mailRoute((req) => mail.status(mailMe(req))));
 app.post('/api/mail/activate', mailRoute((req) => mail.activate(mailMe(req, true))));
 app.post('/api/mail/link', mailRoute((req) => mail.link(mailMe(req, true), req.body || {})));
