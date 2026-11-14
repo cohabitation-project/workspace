@@ -7,7 +7,12 @@
 the Stalwart mail data (Stalwart pauses for a few seconds while it's copied) and the Caddyfile. Install once with
 `sudo bash ~/workspace/ops/backup/install.sh`.
 
-**Off the server:** Geoffrey's Mac pulls the snapshots twice a day onto the SSD with `rsync` over SSH (a crontab line,
+**Locking:** `ops/backup/lock-setup.sh` (once) makes an age key pair. The server keeps only the public half, so it can
+lock copies but never open them. Every run also writes a locked copy to `/var/backups/commons/offsite/*.age`. The
+private key goes on Geoffrey's backup drive and in the vault, and is deleted from the server. Lose it and the locked
+copies can't be opened, so keep two copies of it.
+
+**Off the server:** Geoffrey's Mac pulls the LOCKED copies (`offsite/*.age`) twice a day onto his 1 TB drive with `rsync` over SSH (a crontab line,
 set up once). The Mac has to be awake at those times; if it misses one, the next run catches up.
 
 **Restore (outline):** stop pm2 and Stalwart, untar the snapshot at `/`, restore Stalwart's data from the inner

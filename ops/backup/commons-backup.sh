@@ -40,3 +40,14 @@ tar -czf "$FILE" -T "$LIST" 2>/dev/null
 chmod 640 "$FILE"; chown root:geoffrey "$FILE"
 ls -1t "$OUT"/commons-*.tar.gz | tail -n +$((KEEP+1)) | xargs -r rm -f
 echo "$(date -u +%FT%TZ) $FILE $(du -h "$FILE" | cut -f1)" >> "$OUT/backup.log"
+
+# Off-server copies are LOCKED (age encryption) to Geoffrey's public key. The key that opens them is not on this
+# server: it lives on his backup drive and in the vault. So the drive, the RollinHost server or anyone who copies the
+# files gets a box nobody can open without that key.
+REC=/etc/commons-backup.recipient
+if [ -s "$REC" ] && command -v age >/dev/null; then
+  mkdir -p "$OUT/offsite"; chmod 750 "$OUT/offsite"; chown root:geoffrey "$OUT/offsite"
+  age -R "$REC" -o "$OUT/offsite/$(basename "$FILE").age" "$FILE"
+  chmod 640 "$OUT/offsite/"*.age; chown root:geoffrey "$OUT/offsite/"*.age
+  ls -1t "$OUT"/offsite/*.age | tail -n +$((KEEP+1)) | xargs -r rm -f
+fi
