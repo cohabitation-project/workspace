@@ -98,3 +98,119 @@
 .cbx-body { background: none !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; color: var(--cx-ink); }
 .cbx-who time { white-space: nowrap; }
 @media (max-width: 900px) { .cbx-who { grid-template-columns: 40px 1fr; } .cbx-who time { grid-column: 2; } .cbx-hero { padding: 14px; } }
+
+
+/* Aletheia-6 Cobox visual pass — approved sunset / ink / cream reference.
+   The global Cohabi header is still provided by socialPage(); do not fake a second identity.
+   Background art intentionally falls back to gradients until a credited local WebP is supplied. */
+.cbx {
+  --cx-ink:#182744;
+  --cx-muted:#68718a;
+  --cx-line:rgba(53,65,105,.16);
+  --cx-night:#101e3c;
+  --cx-gold:#f0b75e;
+  --cx-panel:rgba(255,253,248,.975);
+  background-color:#172344;
+  background-image:
+    linear-gradient(125deg,rgba(13,28,57,.90) 0%,rgba(24,32,69,.67) 42%,rgba(158,83,99,.30) 85%),
+    url('/static/brand/cobox-desert.webp'),
+    linear-gradient(145deg,#111d3b,#523654 60%,#d98660);
+  background-size:cover,cover,cover;
+  background-position:center,center,center;
+  overflow-x:clip;
+}
+.cbx-hero {
+  min-height:105px;
+  padding:20px clamp(16px,2vw,34px);
+  grid-template-columns: minmax(260px,1fr) minmax(180px,330px) minmax(200px,420px);
+  background:linear-gradient(90deg,rgba(10,23,50,.79),rgba(23,32,65,.35));
+  border-bottom:1px solid rgba(250,236,220,.23);
+}
+.cbx-title h1 {font-family:Georgia,'Times New Roman',serif;font-size:clamp(1.8rem,2.3vw,2.5rem);letter-spacing:-.025em}
+.cbx-title p {font-size:.93rem}
+.cbx-icon {border:1px solid rgba(242,183,94,.5);background:#111f42;border-radius:14px}
+.cbx-search {background:rgba(25,32,64,.78);border-color:rgba(241,186,103,.65);min-height:43px}
+.cbx-addr {margin-top:-5px;font-size:.84rem;color:#e8deeb}
+.cbx-app {
+  grid-template-columns:minmax(205px,14.2%) minmax(320px,32%) minmax(370px,1fr) minmax(255px,19%);
+  gap:0;
+  padding:0 clamp(12px,1vw,20px) 8px;
+  align-items:stretch;
+  min-height:min(730px,calc(100dvh - 210px));
+}
+.cbx-rail,.cbx-listpane,.cbx-read,.cbx-side {
+  min-width:0;
+}
+.cbx-rail {position:relative;top:auto;border-radius:14px 0 0 14px;background:linear-gradient(180deg,#152343,#14203c 76%,#283252);border-color:rgba(240,219,255,.12);box-shadow:none;padding:18px 12px}
+.cbx-listpane {border-radius:0;background:#fffcf7;border-right:0;box-shadow:none;padding:15px 12px}
+.cbx-read {border-radius:0;background:#fffdf9;border-left:0;border-right:0;box-shadow:none;padding:20px clamp(16px,1.6vw,28px)}
+.cbx-side {display:flex;flex-direction:column;position:relative;top:auto;border-radius:0 14px 14px 0;background:#f7f3ee;padding:15px 12px;gap:12px;border:1px solid var(--cx-line)}
+.cbx-card {background:#fffdf9;border:1px solid #d9d8e2;box-shadow:0 2px 6px rgba(25,31,60,.035);border-radius:13px;padding:16px}
+.cbx-rail h3 {color:#c7cedf}
+.cbx-write {display:block;width:100%;justify-self:stretch;padding:13px 16px;border-radius:999px;background:linear-gradient(135deg,#ffe9b7,#efb55e);color:#16223d;font-weight:750;box-shadow:0 4px 13px rgba(7,12,28,.24)}
+.cbx-folder,.cbx-links a {padding:11px 12px;min-height:42px}
+.cbx-folder.on {background:rgba(111,129,200,.38);box-shadow:inset 3px 0 0 #f5b457}
+.cbx-motto {margin-top:25px;min-height:155px;display:grid;align-content:end;background:linear-gradient(0deg,rgba(8,21,46,.4),transparent),url('/static/brand/cobox-desert.webp') center/cover,linear-gradient(135deg,#364875,#9b6482);border:1px solid rgba(255,255,255,.13)}
+.cbx-tabs {gap:6px;flex-wrap:wrap;padding:4px 0 12px}
+.cbx-tabs button {font-weight:600;border-radius:11px;padding:9px 12px;background:#f6f4f2}
+.cbx-tabs button.on {background:#e6f1ff;border-color:#c6dfff;color:#225496}
+.cbx-tabs button.on b {background:#2866af}
+.cbx-list {max-height:calc(100dvh - 264px);scrollbar-width:thin;scrollbar-color:#c6c8d3 transparent}
+.cbx-row button {grid-template-columns:46px minmax(0,1fr) auto;padding:12px 8px;border-radius:8px;border-bottom:1px solid #ebeaf1;min-height:79px}
+.cbx-row button:hover {background:#f6f7fa}
+.cbx-row.on button {background:#eaf2ff;box-shadow:inset 3px 0 0 #3273d7}
+.cbx-av {width:43px;height:43px;background:#dce5f5;color:#32436d}
+.cbx-when {font-size:11px}
+.cbx-msghead h2 {font-size:clamp(1.3rem,2vw,2rem);color:#172747}
+.cbx-msghead {border-top:1px solid #efedf2;padding-top:8px}
+.cbx-tag {background:#f0e9ff;color:#6d4b9b}
+.cbx-body {min-height:125px;line-height:1.8;overflow-wrap:anywhere;max-width:78ch}
+.cbx-reply {background:#fcfbf8;border-color:#d9dae4}
+.cbx-reply textarea {min-height:95px}
+.cbx-qa {background:#fdfbf8;border-color:#e0e1e8;min-height:66px}
+.cbx-pacts {margin-top:5px}
+.cbx-pact {border-radius:999px;padding:9px 10px;background:#eaf1fa}
+.cbx-quote {margin-top:auto;min-height:178px}
+.cbx-welcome {display:grid;place-items:center;align-content:center;min-height:350px;text-align:center;padding:20px;color:#65718b}
+.cbx-welcome h2 {font:600 1.65rem Georgia,serif;color:#1a2c4d;margin:16px 0 4px}
+.cbx-welcome p {max-width:33ch;line-height:1.6}
+.cbx-welcome-icon {width:62px;height:62px;border-radius:16px;display:grid;place-items:center;background:#eaf0fb;color:#324f82;font-size:28px}
+.cbx-bar {background:rgba(14,26,53,.97);border-top:1px solid rgba(237,207,160,.27);min-height:55px;padding:10px 26px}
+.cbx-bar a {padding:5px 13px;border-right:1px solid rgba(255,255,255,.12)}
+.cbx-rail a:focus-visible,.cbx button:focus-visible,.cbx input:focus-visible,.cbx textarea:focus-visible,.cbx-bar a:focus-visible {
+  outline:3px solid #f2b34e;outline-offset:2px
+}
+@media(max-width:1350px){
+  .cbx-app {grid-template-columns:190px minmax(280px,35%) minmax(320px,1fr)}
+  .cbx-side {grid-column:1 / -1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-radius:0 0 14px 14px}
+  .cbx-rail{border-radius:14px 0 0 0}.cbx-read{border-radius:0 14px 0 0;border-right:1px solid var(--cx-line)}
+  .cbx-quote{margin-top:0}.cbx-list{max-height:560px}
+}
+@media(max-width:900px){
+  .cbx-hero {grid-template-columns:1fr 1fr;gap:12px}
+  .cbx-tagline{grid-column:2;grid-row:1;text-align:right}
+  .cbx-search{grid-column:1 / -1}
+  .cbx-app{display:flex;flex-direction:column;min-height:auto;padding:0 12px 78px;gap:0}
+  .cbx-rail{border-radius:14px 14px 0 0;padding:12px;position:static}
+  .cbx-listpane{border-radius:0 0 14px 14px;padding:12px;border-right:1px solid var(--cx-line)}
+  .cbx-list{max-height:none}
+  .cbx-side{grid-template-columns:repeat(2,minmax(0,1fr));border-radius:14px;margin-top:12px}
+  .cbx-read{border-radius:14px;min-height:75dvh;border:1px solid var(--cx-line)}
+  body.cbx-reading .cbx-side{display:none}
+}
+@media(max-width:640px){
+  .cbx-hero {grid-template-columns:1fr;padding:14px}
+  .cbx-tagline{grid-column:auto;grid-row:auto;text-align:left;font-size:.82rem}
+  .cbx-search{grid-column:auto}
+  .cbx-app{padding:0 8px 70px}
+  .cbx-side{grid-template-columns:1fr}
+  .cbx-rail{padding:10px}
+  .cbx-tabs{flex-wrap:nowrap;overflow-x:auto}
+  .cbx-listpane{padding:7px}
+  .cbx-row button{min-height:76px}
+  .cbx-read{padding:14px}
+  .cbx-who{grid-template-columns:40px minmax(0,1fr)}
+  .cbx-tool{min-width:40px;min-height:40px}
+  .cbx-pact,.cbx-qa{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.cbx *, .cbx *::before,.cbx *::after{scroll-behavior:auto!important;transition:none!important}}
