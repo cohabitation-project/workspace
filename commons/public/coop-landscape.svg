@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 530" role="img" aria-labelledby="title desc">
+<title id="title">A cooperative landscape at sunrise</title><desc id="desc">A rising amber sun, layered lavender mountains, a hillside tree and three companions looking into the distance.</desc>
+<defs>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff1da"/><stop offset=".53" stop-color="#efceae"/><stop offset="1" stop-color="#efc8ae"/></linearGradient>
+ <linearGradient id="far" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#bcb6ca"/><stop offset="1" stop-color="#d4b1b5"/></linearGradient>
+ <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#475867"/><stop offset="1" stop-color="#23343c"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#ffd58a"/><stop offset="1" stop-color="#f0a94d"/></radialGradient>
+</defs>
+<rect width="1060" height="530" fill="url(#sky)"/>
+<circle cx="677" cy="237" r="90" fill="url(#sun)" opacity=".84"/>
+<path d="M0 333 97 296 182 324 275 262 369 316 460 268 526 292 652 241 757 302 839 273 965 332 1060 278V530H0Z" fill="#b7acc0" opacity=".67"/>
+<path d="M0 366 131 307 224 349 307 300 427 350 520 304 648 359 741 317 832 353 955 314 1060 365V530H0Z" fill="url(#far)" opacity=".9"/>
+<path d="M0 420 127 377 249 401 357 346 469 389 571 352 674 391 780 354 875 380 1000 347 1060 367V530H0Z" fill="#aa9ba5" opacity=".72"/>
+<path d="M0 457 130 433 247 446 370 411 480 432 611 402 721 433 802 407 943 425 1060 393V530H0Z" fill="#877b83" opacity=".75"/>
+<path d="M605 530 683 452 756 401 825 389 898 359 1060 340V530Z" fill="url(#hill)"/>
+<path d="M728 530 769 478 814 439 858 414 910 395 1002 376 1060 386V530Z" fill="#3c4a47"/>
+<!-- tree -->
+<path d="M937 412Q951 332 943 266Q934 223 886 197M948 286Q977 216 1047 187M937 292Q905 250 853 246" stroke="#352b2a" stroke-width="17" fill="none" stroke-linecap="round"/>
+<path d="M891 202Q897 154 939 145Q963 111 1000 134Q1028 105 1059 139L1064 236Q1026 264 994 241Q960 251 930 228Q894 239 867 224Z" fill="#9e6b32"/>
+<path d="M854 244Q834 224 844 200Q839 169 871 161Q899 165 914 185Q919 213 898 232Z" fill="#a77a35"/>
+<g fill="#c68a3a" opacity=".9"><ellipse cx="942" cy="159" rx="37" ry="25"/><ellipse cx="993" cy="152" rx="55" ry="26"/><ellipse cx="1034" cy="190" rx="45" ry="34"/><ellipse cx="868" cy="197" rx="29" ry="21"/></g>
+<g fill="#25313b">
+<circle cx="805" cy="388" r="9"/><path d="M799 397Q807 394 815 401L828 443 803 447 787 423Z"/>
+<circle cx="842" cy="385" r="8"/><path d="M835 395Q845 391 851 400L861 436 838 443 825 418Z"/>
+<circle cx="872" cy="381" r="8"/><path d="M864 392Q873 390 879 397L893 429 871 440 857 415Z"/>
+</g>
+<path d="M774 449 844 442 898 438" stroke="#25313b" stroke-width="11" stroke-linecap="round"/>
+<g fill="#dfac68" opacity=".72"><circle cx="725" cy="459" r="2.5"/><circle cx="750" cy="472" r="2"/><circle cx="898" cy="481" r="2.4"/><circle cx="968" cy="450" r="2.5"/></g>
+</svg>
