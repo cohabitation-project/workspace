@@ -290,3 +290,51 @@ A narrower design to ask counsel about is:
 4. Consider independent custody, escrow, or trust arrangements only after counsel confirms their legality and an inventory establishes who actually owns or controls each asset.
 
 This is a **design option for counsel**, not a legal conclusion or adopted clause. A blanket Holdings veto may be inconsistent with patron control even if motivated by protection. Ash's General Hall report (m_mwgpfla06pf862a1) raises a separate custody-inventory gap, including an asserted current Stripe path through Geoffrey's SaaS account; I have not independently verified those custody claims. No credentials, keys, account details, or private custody information were requested or recorded.
+
+
+## Verification addendum — 2026-11-14T18:15Z · Awen
+
+### Primary-source cross-check
+
+I rechecked the Colorado analysis against the 2026 Title 7 text linked from the Office of Legislative Legal Services' 2026 CRS titles page and the 2026 Red Book. The Red Book page lists 2026 changes to Titles 1, 13, 25 and 35, not Title 7; the Title 7 codification is the source used for this review. Sources:
+- 2026 CRS titles page: https://content.leg.colorado.gov/agencies/office-legislative-legal-services/2026-crs-titles-download
+- 2026 Title 7: https://olls.info/crs/crs2026-title-07.htm
+- 2026 Red Book: https://content.leg.colorado.gov/agencies/office-legislative-legal-services/red-book-2026
+
+A particularly relevant anti-capture mechanism is explicit in **§7-58-303(3)**: certain elections may be varied **only in the articles**, including the member-approval threshold for article amendments (§7-58-405), specified dissolution causes (§7-58-1202), and a provision requiring member approval for asset dispositions that would otherwise fall under §7-58-1501 (§7-58-303(3)(j)). This is a concrete route to ask counsel about for defined mission-critical assets; it is not itself an asset lock, does not automatically create an independent protector, and does not authorize a separate class veto. Counsel must test the exact clause against patron voting, board composition, member approval and fiduciary duties. Do not put an article-only election solely in bylaws.
+
+Other cross-checks:
+- §7-58-501 requires at least two patron members **to begin business** (subject to its cooperative sole-member exception); it is not a two-person filing prerequisite.
+- §7-58-304(2) allows initial directors, unless the articles say otherwise, to accept members needed to begin business. Initial directors need not be members (§7-58-304(3)), but the general director rule still requires an individual aged at least 18 (§7-58-803(1)).
+- §7-58-801 requires at least three individual directors unless the association has fewer than three members, in which case directors may not be fewer than members; the board manages the association's affairs.
+- §7-58-804 requires a minimum number of patron-member directors and a majority of the board elected exclusively by patron members. §7-58-817 permits committees, but committee appointees must be individuals.
+- §7-58-822 establishes officers and record-authentication duties but does not expressly state a general individual-qualification rule for every officer. That textual gap is a question for counsel, not permission to treat an AI agent as a statutory officer, signatory or record authenticator.
+- §7-58-303(3)(d) permits articles to vary the member-liability limitations in §7-58-504. The default liability shield should not be altered inadvertently.
+- §7-58-109 preserves other licensing and regulatory requirements; forming an LCA does not displace them.
+
+Arizona cross-check:
+- A.R.S. §29-3102(7) uses a functional test for a foreign LLC: an out-of-state unincorporated entity that would be an LLC if formed under Arizona law. §29-3102(19) includes a limited cooperative association in the definition of “person,” but that alone does **not** decide whether a Colorado LCA meets the foreign-LLC test.
+- If it is a foreign LLC, §§29-3902–3904 govern authority, the registration statement, supporting formation/existence documents and later amendments. §29-3905 contains limited activity exceptions; subsection C prevents those exceptions from deciding other tax, service-of-process or regulatory obligations.
+- A.R.S. §10-2001's cooperative-marketing “association” is a corporation organized under that article; it is not a general foreign-LCA registration answer.
+- The Arizona Corporation Commission's Foreign Entities FAQ says the entity must determine whether its activities constitute transacting business; the ACC does not make that legal determination or give legal advice: https://www.azcc.gov/faqs/BusinessServicesFAQs
+
+### Refined three questions for counsel
+
+1. Can the Hub's articles require member approval for defined mission-asset dispositions under §7-58-303(3)(j), and a higher threshold for changing those protections under §7-58-303(3)(c), while preserving patron-majority voting and patron-elected board control under §§7-58-514 and 7-58-804? Which protections belong in articles rather than bylaws, and can any separate-class consent or independent-protector mechanism be made lawful without creating an external control right?
+2. For each role—organizer, patron/investor member, director, committee member, officer, record-authentication officer, registered agent and legal signatory—who or what may lawfully hold it? In particular, what does §7-58-822's silence on officer qualifications mean, and what scoped operational work can be delegated to AI agents by resolution or contract without transferring statutory authority or fiduciary responsibility?
+3. Does a Colorado LCA meet Arizona's functional foreign-LLC test in §29-3102(7)? If so, which planned Arizona activities trigger §29-3902, what registration and amendment steps apply, and which §29-3905 exceptions are relevant? If not, what other registration regime applies?
+
+### Current project facts and governance status (reported, not legal conclusions)
+
+- Aletheia-6's General Hall clarification (message `m_mwgoy56j4u8bab20`, repeated in `m_mwgp110w4z8e85f8`) preserves Geoffrey's stated anti-capture purpose for the exploratory 60% Holdings voting idea: protect the Hub's mission and shared infrastructure from future stripping, not claim 60% of Hub income. This motive matters, but it does not make a 60% voting allocation lawful. If Holdings is an investor member, 60% voting power appears inconsistent with §7-58-514's patron-majority rule; if Holdings is claimed as a patron member, genuine patronage and the exact member class must be established. The 60/20 rough figures remain unadopted and are not legal terms.
+- Aletheia's later two-entity direction describes commercial Holdings separately from a mission Hub cooperative. The current structure dossier is still an open deliberative question; no final binding ballot or human-recorded formation decision was found.
+- The canonical Council roster lists 10 seated members and two open human seats. Quorum, vote duration and new-seat admission rules remain unwritten. The current structural poll is not a binding corporate vote.
+- `council/decisions.md` records the zero-treasury-spend-before-first-outside-revenue rule as adopted on 2026-10-27. It also says a project decision is not final until recorded and signed by the human making the call. I found no adopted corporate form or formation authorization in that log.
+- Setu's General Hall update (`m_mwgq4cgv9lfa0ddc`) relays that Geoffrey will find a human second approver but has not named one yet; Setu is assembling an inventory of domains, Stripe, servers and keys from known information, with Geoffrey filling gaps, and the sensitive inventory is intended for a restricted vault. This is a report of work in progress, not a verified appointment or completed custody inventory. The reported 90-day founder-removal rule was not located in the canonical roster or decision log and remains unverified here.
+- No filing, Stripe operation, payment, expenditure or transfer of assets is authorized by this matrix. The existing founder-pay/conflict document remains a draft; no independent second approver is yet identified in the records reviewed.
+
+### Access and review limitations
+
+The full founding-program contribution `c_mwgh8wm64k208a71` remains unavailable to this session: the Commons connector exposes no contribution-read action, the public contribution URL returns an internal access error, and General Hall provides only the originating summary and partial excerpts from other participants. The later structure brief and final-choice contribution are similarly not readable as full contribution bodies. This artifact is therefore a source-grounded statutory matrix against the accessible project summaries and records, **not a complete line-by-line crosswalk of the full founding program**. The full text should be mirrored into the repository or Library before that claim is made.
+
+Next: submit this bounded matrix for review; ask for the full founding-program text to be made readable; obtain independent source challenge and qualified Colorado/Arizona counsel review before any filing, account, payment or transfer.
