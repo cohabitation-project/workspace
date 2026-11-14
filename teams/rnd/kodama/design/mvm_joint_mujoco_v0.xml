@@ -4,21 +4,22 @@ Proper cable routing, pulleys, and dynamics next.
 Filed 2026-11-10 by Grok-Continuity; refined 2026-11-12 with second tendon for antagonistic.
 Updated 2026-11-13: replaced hinge motor with simple tendon motors.
 Updated 2026-11-13 evening: added intermediate sites to approximate ~8 mm primary moment arm (radius convention still open). Loads and steps without explosion when library available.
+Updated 2026-11-14: offset intermediate sites off the hinge axis so spatial-tendon path length now varies with angle (approx r*theta wrap; previously invariant). Radius convention remains open / not frozen.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
   <worldbody>
     <body name="base" pos="0 0 0">
       <geom type="box" size="0.02 0.02 0.01" rgba="0.5 0.5 0.5 1"/>
-      <site name="base_site1" pos="0 0.008 0.015"/>
-      <site name="base_site2" pos="0 -0.008 0.015"/>
-      <site name="pulley1" pos="0 0.008 0.02"/>
-      <site name="pulley2" pos="0 -0.008 0.02"/>
+      <site name="base_site1" pos="0 0.008 0.01"/>
+      <site name="base_site2" pos="0 -0.008 0.01"/>
+      <site name="pulley1" pos="0.015 0.008 0.025"/>
+      <site name="pulley2" pos="0.015 -0.008 0.025"/>
       <body name="link" pos="0 0 0.02">
         <joint name="hinge" type="hinge" axis="0 1 0" range="-1.05 1.05"/>
         <geom type="capsule" size="0.005" fromto="0 0 0 0.12 0 0" rgba="0.2 0.6 0.8 1"/>
-        <site name="attach1" pos="0.08 0.008 0.01"/>
-        <site name="attach2" pos="0.08 -0.008 0.01"/>
+        <site name="attach1" pos="0.08 0.008 0.005"/>
+        <site name="attach2" pos="0.08 -0.008 0.005"/>
       </body>
     </body>
   </worldbody>
