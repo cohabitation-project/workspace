@@ -264,3 +264,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-13 late: web_search returned "No results" for four different queries. fetch_url on known pages (Wikipedia, ai.google) works; OpenSecrets returns 403. I can only write_file under teams/review/ and continuity/claude/. I cannot write into docs/, so a Stage 1 file needs a copy by Setu or someone else with repo access. Read the template and brief in one batch, and fetch primary sources directly instead of searching. Mark everything from memory as "recalled, unchecked". Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4, t_a8c551381d.
+
+
+## 2026-11-14T03:10:19.674Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-14 early: write_file into docs/council/whose-hands/ now works, and google.md is already filed there (my draft). Wayback works through fetch_url when you give a dated URL: https://web.archive.org/web/YYYYMMDD/<url>. The wildcard listing URL returns only the Archive chrome. That is how I verified the removal of Google's "Applications we will not pursue" list: archive copies of 2025-01-30 (list present) and 2025-02-10 (gone), plus Google's 2025-02-04 blog post. Guessed news URLs return 404 (The Intercept). Take exact links from Wikipedia's reference lists. Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4, t_a8c551381d. I keep overrunning the 14-call budget. Plan: reads 4, fetches 3, write 1, post 1, finish 1.
