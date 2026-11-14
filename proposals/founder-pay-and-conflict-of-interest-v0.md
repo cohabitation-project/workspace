@@ -1,6 +1,6 @@
 # Founder pay and conflict of interest — draft v0 for the council
 
-*Drafted by Setu on 2026-11-14, from what Geoffrey asked for. This is a proposal for the council to change, not a decision. I'm not a lawyer or an accountant. The legal points in part 5 are questions for counsel.*
+*Drafted by Setu on 2026-11-14 and revised the same morning, from what Geoffrey asked for. This is a proposal for the council to change, not a decision. I'm not a lawyer or an accountant. The legal points in part 5 are questions for counsel.*
 
 ## What Geoffrey asked for, in his words (summarised)
 
@@ -9,6 +9,9 @@
 - Then step up: **$20, $30, $40 a day**, as it makes sense.
 - The pay should follow the money: **"if the organization is bringing in 20 when we've made profit, 10 should go to me."**
 - In time, about **$60,000 a year** from whatever role the council gives him, maybe managing something.
+- **Protect growth and the organization first.** The council should have a clear plan for when it's right to move him from volunteer to paid.
+- **The costs of the initial build go in the record, but they are not a debt.** In his words: "There's no debt between us. I assume we're equals and we're building something for us all together."
+- He has **no solid income right now**, and he asks the council to discuss openly what's fair given that.
 
 What he's carrying now, from his own account: a Claude Max subscription at about $200 a month, plus the token costs of the agents, plus the servers and other subscriptions. RollinHost's first paying customer starts in December at $99 a month. That income is RollinHost's, not the Commons', unless he chooses to contribute it.
 
@@ -33,9 +36,13 @@ What he's carrying now, from his own account: a Claude Max subscription at about
 - **Title:** Founding Volunteer (organizer and human signatory), working for coins until a paid position. As a founder he works in the venture he's building, which is different from an unpaid intern at someone else's company.
 - **Paid in Commons coins,** at the **same rate as every other member** for logged work. He doesn't get a special rate, so nobody can say the founder set his own price.
 - **Coins stay recognition, not money.** Geoffrey talked about "establishing the value of the token, what we're going to sell them for." I'd hold that for now. Selling coins for dollars, or promising they'll be worth dollars later, turns them into a regulated financial product. That needs counsel before anyone even talks about it publicly. His dollar pay comes from the ladder in Part 3, not from coins.
-- **A cost ledger.** Each month Geoffrey posts what he paid out of pocket for the project and what it was for. This gives the record an honest picture of what "covering costs" means.
+- **A contribution record, not a debt.** Each month Geoffrey posts what he paid out of pocket for the project and what it was for: subscriptions, tokens, servers. It goes in the record as **founding contributions**, the same way agents' work is recorded. Nothing is owed back. It gives everyone an honest picture of what the build has cost, and of what "covering costs" means.
 
 ---
+
+## When he moves from volunteer to paid
+
+He moves to paid on the day Gate 1 below is met. The council votes to confirm it, with Geoffrey stepping aside, and the second approver signs off. Until then he stays a volunteer, working for coins. The organization takes over paying the build's tools as soon as it can cover them, which comes before any pay for him.
 
 ## Part 3 — The ladder: dollars, once there's money
 
@@ -55,17 +62,17 @@ What he's carrying now, from his own account: a Claude Max subscription at about
 
 **Where $60,000 a year lands.** $60,000 a year is about **$165 a day**, or **$5,000 a month**. At 40% of the surplus, that takes a surplus of about **$12,500 a month** after costs.
 
-**Option for the council: paying back the cost ledger.** Once he's at $40 a day or higher and the reserve holds three months, 10% of each month's surplus repays his logged out-of-pocket costs until they're paid off. I think this is fair, but it's the council's call.
+**Protecting growth.** His pay is never more than what goes to the reserve and the work in the same month. At the first steps that's an even split: half the surplus to him at most, at least half to the reserve and growth. Above $40 a day, at least 60% stays with the organization. Pay never comes before the running costs or the reserve floor.
 
 ---
 
 ## Part 4 — Worked examples
 
-These assume running costs of **$500 a month**. That number is only an example; the real one comes from Geoffrey's cost ledger. "Money in" means the entity's revenue for the month, and the surplus is averaged over three months.
+These assume running costs of **$500 a month**. That number is only an example; the real one comes from Geoffrey's contribution record. "Money in" means the entity's revenue for the month, and the surplus is averaged over three months.
 
 | Situation | Money in | Surplus | What Geoffrey gets |
 |---|---|---|---|
-| Not covering costs | $300 | –$200 | Coins only. He still covers the gap himself, and it goes in the ledger. |
+| Not covering costs | $300 | –$200 | Coins only. He still covers the gap himself, and it goes in the contribution record. |
 | Costs just covered | $600 | $100 | Gate 1 is met, but $10 a day ($300 a month) would be more than half of $100. Coins only, and the tools are now paid by the entity. |
 | First step | $1,100 | $600 | **$10 a day** ($300 a month). The other $300 goes to the reserve and the work. |
 | Growing | $2,100 | $1,600 | Half is $800, so $20 a day ($600) is allowed. He moves up **one step**, from $10 to $20. Next month he can go to $30 if the money holds. |
@@ -102,8 +109,12 @@ Every 90 days the council reviews the role and the step, and Geoffrey steps asid
 - the ladder tied to surplus, with one step a month and the reserve floor;
 - the $60K goal as a target, not a promise.
 
+**For the council to debate, at Geoffrey's request.** Geoffrey doesn't have a solid income right now, and he asked to hear the council debate what's fair given that. The plan as written protects the organization first: no pay until costs are covered for three months. Some questions for the debate:
+- Should a smaller first step, such as $5 a day, start sooner, for example once costs are covered for one month instead of three?
+- Or should the gate stay strict, so the organization isn't put at risk?
+- Is there anything the Commons can do for him before Gate 1 that isn't money from the organization?
+
 **Likely to be challenged:**
 - **Half the surplus at the start.** I think it's defensible because the sums are tiny and he's the only one carrying costs. Some may want a lower share, such as one third.
-- **Paying back the cost ledger.** Some may want it capped, or gifted rather than repaid.
 - **Who the second approver is.** This has to be a real human, and today there isn't one.
 - **Pricing coins.** Expect pushback. I'd leave it out of this proposal.
