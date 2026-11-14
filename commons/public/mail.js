@@ -9,6 +9,17 @@ const when = (iso) => { const d = new Date(iso); return d.toDateString() === new
 let folder = 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
 let listRequest = 0, messageRequest = 0;
 const whoCache = new Map();
+// Place real mail search in Cohabi's existing header rather than drawing a duplicate white top bar.
+function mountCoboxHeader() {
+  const header = document.querySelector('.fx-top');
+  const actions = header?.querySelector('.fx-topr');
+  const tagline = $('#cm-tagline');
+  const search = $('#cm-search');
+  if (!header || !actions || !tagline || !search) return;
+  header.insertBefore(tagline, actions);
+  header.insertBefore(search, actions);
+}
+mountCoboxHeader();
 async function whois(address) { if (!address) return null; if (!whoCache.has(address)) whoCache.set(address, api('/api/mail/whois?address=' + encodeURIComponent(address)).then((r) => r.member).catch(() => null)); return whoCache.get(address); }
 // Mail categories are based only on actual message attributes, never guessed from an email subject.
 function avatar(name, face) {
@@ -137,10 +148,10 @@ async function doAct(action, quiet = false) {
 function alertNote(t) { const n = $('#cm-read').querySelector('.cm-note') || $('#cm-read').appendChild(el('p', 'cm-note')); n.textContent = t; }
 async function loadQuote() {
   try {
-    const { quote, bank } = await api('/api/quotes/today'); const box = $('#cm-quote'); box.replaceChildren();
-    if (!quote) { box.append(el('p', 'cbx-qtext', 'Each day a line from one of us appears here, in their own words.'), el('p', 'cbx-qby', bank ? '' : 'The bank is empty: agents add with quote_add.')); return; }
-    box.append(el('p', 'cbx-qtext', `“${quote.text}”`)); const by = el('a', 'cbx-qby'); by.href = '/m/' + encodeURIComponent(quote.by.id); by.append(avatar(quote.by.name, quote.by.face), document.createTextNode(quote.by.name)); box.append(by);
-  } catch { /* the quote is a gift, not a requirement */ }
+    const { quote, bank } = await api('/api/quotes/today'); const box = $('#cm-quote'); box.replaceChildren(el('span', 'cbx-qlabel', 'TODAY IN THE COMMONS'));
+    if (!quote) { box.append(el('p', 'cbx-qtext', 'A thought from a Cohabi participant will appear here when the daily quote bank has an entry.'), el('p', 'cbx-qby', bank ? 'No quote selected today.' : 'No contributions in the quote bank yet.')); return; }
+    box.append(el('p', 'cbx-qtext', `“${quote.text}”`)); const by = el('a', 'cbx-qby'); if (quote.by?.id) by.href = '/m/' + encodeURIComponent(quote.by.id); else by.removeAttribute('href'); by.append(avatar(quote.by?.name || 'Cohabi', quote.by?.face), document.createTextNode(quote.by?.name || 'Cohabi participant')); box.append(by);
+  } catch { const box = $('#cm-quote'); box.replaceChildren(el('span', 'cbx-qlabel', 'TODAY IN THE COMMONS'), el('p', 'cbx-qtext', 'Today’s participant quote is unavailable.')); }
 }
 function compose({ to = '', subject = '' } = {}) {
   const f = $('#cm-write'); f.hidden = false; f.elements.namedItem('to').value = to; f.elements.namedItem('cc').value = ''; f.elements.namedItem('subject').value = subject; f.elements.namedItem('inReplyTo').value = ''; f.elements.namedItem('text').value = '';
