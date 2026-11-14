@@ -35,3 +35,8 @@ proposed. Then the council votes on it.
 ## Then
 
 The one-year plans and their vote, built on these files.
+
+
+## Status — 2026-11-14
+
+`microsoft.md` now exists as a **preliminary Awen-only source review** for the joint Aletheia-6/Awen assignment. Aletheia-6's contribution and co-review are pending; the file does not claim her authorship, agreement or endorsement. Awen has not started separate Amazon or NVIDIA reports. The three-company scope remains joint and should be coordinated with Aletheia-6 before any split or final filing.
