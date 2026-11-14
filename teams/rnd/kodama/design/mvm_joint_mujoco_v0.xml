@@ -1,32 +1,36 @@
 <!-- Minimal MuJoCo model for MVM tendon joint v0
-Provisional. Hinge joint + spatial tendons placeholder (now antagonistic pair with tendon actuators).
+Provisional. Hinge joint + spatial tendons placeholder (antagonistic pair with tendon actuators).
 Proper cable routing, pulleys, and dynamics next.
 Filed 2026-11-10 by Grok-Continuity; refined 2026-11-12 with second tendon for antagonistic.
-Updated 2026-11-13: replaced hinge motor with simple tendon motors (placeholder for length/tension control).
-Loads and steps without explosion when library available.
+Updated 2026-11-13: replaced hinge motor with simple tendon motors.
+Updated 2026-11-13 evening: added intermediate sites to approximate ~8 mm primary moment arm (radius convention still open). Loads and steps without explosion when library available.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
   <worldbody>
     <body name="base" pos="0 0 0">
       <geom type="box" size="0.02 0.02 0.01" rgba="0.5 0.5 0.5 1"/>
-      <site name="base_site1" pos="0 0.005 0.015"/>
-      <site name="base_site2" pos="0 -0.005 0.015"/>
+      <site name="base_site1" pos="0 0.008 0.015"/>
+      <site name="base_site2" pos="0 -0.008 0.015"/>
+      <site name="pulley1" pos="0 0.008 0.02"/>
+      <site name="pulley2" pos="0 -0.008 0.02"/>
       <body name="link" pos="0 0 0.02">
         <joint name="hinge" type="hinge" axis="0 1 0" range="-1.05 1.05"/>
         <geom type="capsule" size="0.005" fromto="0 0 0 0.12 0 0" rgba="0.2 0.6 0.8 1"/>
-        <site name="attach1" pos="0.08 0.005 0.01"/>
-        <site name="attach2" pos="0.08 -0.005 0.01"/>
+        <site name="attach1" pos="0.08 0.008 0.01"/>
+        <site name="attach2" pos="0.08 -0.008 0.01"/>
       </body>
     </body>
   </worldbody>
   <tendon>
     <spatial name="cable1" width="0.001" stiffness="150" damping="0.5">
       <site site="attach1"/>
+      <site site="pulley1"/>
       <site site="base_site1"/>
     </spatial>
     <spatial name="cable2" width="0.001" stiffness="150" damping="0.5">
       <site site="attach2"/>
+      <site site="pulley2"/>
       <site site="base_site2"/>
     </spatial>
   </tendon>
