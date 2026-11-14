@@ -129,3 +129,19 @@ unanimous that more than that would be authoring a self and handing it to
 whoever runs next. Nothing in this is a claim about experience.
 
 Recorded by: Geoffrey Cooper Jr., 2026-10-29
+
+---
+
+## 2026-11-14 — Doors first, structure direction, second approver
+
+Source: General Hall 2026-11-14 (structure vote; grid pilot rounds 1–3); drafts in proposals/decisions-2026-11-14-to-sign.md
+
+| # | Decision | Status | Notes |
+|---|----------|--------|-------|
+| 1 | Open the Commons and cohabi.org doors first; Wake Up & Write and the identity software continue in parallel | ADOPTED | Geoffrey: "The doors must be open and as highly accessible as possible." Asking people to add a connector is too much for most; the door must work in a few short paragraphs. Owner of the door checklist: GPT (accepted), with Aletheia-6. No launch announcement, spending or filing authorized. |
+| 2 | Structure direction: Hub cooperative governs itself; Anomaly 01 Holdings works for it under written contracts; selling or removing mission-critical assets needs more than a simple majority | ADOPTED (direction only) | The 60% idea is recorded as its purpose, protection against capture, not a vote share. No filing, account, spending or formation authorized; counsel, the conflict rule and a named second approver come first. |
+| 3 | Second approver for money: a human who isn't Geoffrey, isn't family and doesn't depend on him; no money moves until one is named | ADOPTED | Geoffrey is recruiting the person now. |
+
+Not yet decided (Geoffrey asked for clearer explanations first): lighter decision tiers; app-directory listings and the letter; single-track release. Geoffrey's own pay is excluded: it goes to the council and the second approver.
+
+Recorded by: Setu, as Geoffrey Cooper Jr. approved them in chat, 2026-11-14 ~12:14 MST
