@@ -26,6 +26,7 @@ import { TaskQueue } from './queue.mjs';
 import { selectNode, scoreNode, preValidateTask } from './scheduler.mjs';
 import { validateTaskResult, ReviewQueue } from './validation.mjs';
 import { Metrics } from './metrics.mjs';
+import { Approvals } from './approvals.mjs';
 
 /**
  * Create an orchestrator instance with all routes, state, and lifecycle methods.
@@ -44,6 +45,25 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
   const queue = new TaskQueue(DATA_DIR);
   const reviews = new ReviewQueue(DATA_DIR);
   const metrics = new Metrics(DATA_DIR);
+  const approvals = new Approvals(DATA_DIR);
+
+  // ---- Approval revocation hook: cancel/fail tasks referencing revoked commits ----
+
+  approvals.onRevoke((repo, commit, _reason) => {
+    for (const task of queue.activeTasks()) {
+      const steps = task.payload?.steps || [];
+      const usesCommit = steps.some(s => s.action === 'git-clone' && s.repo === repo && s.commit === commit);
+      if (!usesCommit) continue;
+
+      if (task.status === 'queued') {
+        queue.cancel(task.id);
+      } else if (task.status === 'assigned' || task.status === 'running') {
+        queue.fail(task.id, null, 'commit approval revoked');
+        const node = task.assigned_to ? registry.getNode(task.assigned_to) : null;
+        if (node) removeCurrentTask(node, task.id);
+      }
+    }
+  });
 
   // ---- Rate limiter (in-memory, per source) ----
 
@@ -159,6 +179,17 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
       // (it was already assigned and occupies the slot — blocking its own delivery
       // would make admin-preassigned tasks undeliverable at max_concurrent:1).
       for (const task of assigned) {
+        // B1: Check that all git-clone steps still have approved commits
+        const steps = task.payload?.steps || [];
+        const hasRevokedCommit = steps.some(s =>
+          s.action === 'git-clone' && !approvals.isApproved(s.repo, s.commit)
+        );
+        if (hasRevokedCommit) {
+          queue.cancel(task.id);
+          removeCurrentTask(req.node, task.id);
+          continue;
+        }
+
         const score = scoreNode(req.node, task, { excludeTaskId: task.id });
         if (!score.eligible) {
           // Node is no longer eligible — release the task back to queued
@@ -185,6 +216,16 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     const queuedTasks = queue.activeTasks().filter(t => t.status === 'queued');
 
     for (const task of queuedTasks.sort((a, b) => a.priority - b.priority || a.created_at.localeCompare(b.created_at))) {
+      // B1: Check that all git-clone steps still have approved commits before scheduling
+      const steps = task.payload?.steps || [];
+      const hasRevokedCommit = steps.some(s =>
+        s.action === 'git-clone' && !approvals.isApproved(s.repo, s.commit)
+      );
+      if (hasRevokedCommit) {
+        queue.cancel(task.id);
+        continue;
+      }
+
       const decision = selectNode(allNodes, task);
       if (decision.selected) {
         // Pre-validate compute steps before assignment
@@ -239,7 +280,14 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     }
 
     const task = queue.getTask(req.params.id);
-    if (!task) return res.status(404).json({ error: 'unknown task' });
+    if (!task) {
+      // Check if this task already completed (moved to history)
+      const inHistory = queue.recentHistory(200).some(h => h.id === req.params.id);
+      if (inHistory) {
+        return res.status(409).json({ error: 'task already completed', message: 'this task has already been completed and is in history' });
+      }
+      return res.status(404).json({ error: 'task not found', message: 'task already completed or not found' });
+    }
 
     // Early ownership check BEFORE any validation/logging (Finding 3)
     if (task.assigned_to !== req.node.id) {
@@ -257,7 +305,7 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
 
     if (validation.held_for_review) {
       const reviewId = reviews.hold(rawResult, task, req.node, validation.reason);
-      queue.fail(task.id, req.node.id, `held for review: ${reviewId}`);
+      queue.hold(task.id);
       removeCurrentTask(req.node, task.id);
       return res.json({ accepted: false, held_for_review: true, review_id: reviewId, reason: validation.reason });
     }
@@ -337,6 +385,18 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
   adminApp.post('/adin/admin/suspend/:node_id', adminAuth, (req, res) => {
     const result = registry.suspend(req.params.node_id, req.body?.reason || 'admin suspension');
     if (result.error) return res.status(result.status).json({ error: result.error });
+
+    // Handle all tasks assigned to the suspended node
+    for (const task of queue.tasksForNode(req.params.node_id)) {
+      if (task.status === 'assigned') {
+        queue.release(task.id);
+      } else if (task.status === 'running') {
+        queue.fail(task.id, null, 'node suspended');
+      }
+    }
+    const node = registry.getNode(req.params.node_id);
+    if (node) node.current_tasks = [];
+
     res.json(result);
   });
 
@@ -373,6 +433,26 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     const preCheck = preValidateTask(taskDef);
     if (!preCheck.safe) return res.status(400).json({ error: 'disallowed steps', violations: preCheck.violations });
 
+    // Check commit approvals for all git-clone steps (fail-closed: missing commit rejects)
+    if (taskDef.payload?.steps) {
+      for (const step of taskDef.payload.steps) {
+        if (step.action === 'git-clone') {
+          if (!step.commit) {
+            return res.status(403).json({
+              error: `git-clone step missing commit SHA — cannot verify approval`,
+              action: 'provide an explicit commit SHA for every git-clone step',
+            });
+          }
+          if (!approvals.isApproved(step.repo, step.commit)) {
+            return res.status(403).json({
+              error: `commit not approved: ${step.repo}@${step.commit.slice(0, 12)}`,
+              action: 'approve the commit first via POST /adin/admin/approve',
+            });
+          }
+        }
+      }
+    }
+
     const result = queue.submit(taskDef);
     if (result.error) return res.status(result.status).json({ error: result.error });
 
@@ -388,6 +468,52 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     }
 
     res.json({ task_id: result.task.id, status: result.task.status, assigned_to: result.task.assigned_to, scheduling: decision });
+  });
+
+  // ---- Commit approval endpoints ----
+
+  adminApp.post('/adin/admin/approve', adminAuth, (req, res) => {
+    const { repo, commit, approver, notes } = req.body || {};
+    const result = approvals.approve(repo, commit, approver, notes);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+    res.json(result);
+  });
+
+  adminApp.get('/adin/admin/approvals/:repo', adminAuth, (req, res) => {
+    // repo param may contain slashes (e.g. "cohabitation-project/workspace")
+    // Express collapses the path, so use a wildcard or decode. For simplicity,
+    // accept the repo as a query param fallback too.
+    const repo = req.params.repo;
+    res.json({ approvals: approvals.listApprovals(repo) });
+  });
+
+  // Support repos with slashes via a catch-all
+  adminApp.get('/adin/admin/approvals/:org/:name', adminAuth, (req, res) => {
+    const repo = `${req.params.org}/${req.params.name}`;
+    res.json({ approvals: approvals.listApprovals(repo) });
+  });
+
+  adminApp.post('/adin/admin/revoke-approval', adminAuth, (req, res) => {
+    const { repo, commit, reason } = req.body || {};
+    const result = approvals.revokeApproval(repo, commit, reason);
+    if (result.error) return res.status(result.status).json({ error: result.error });
+
+    // B1: Cancel/fail all active tasks that reference this repo+commit in a git-clone step
+    for (const task of queue.activeTasks()) {
+      const steps = task.payload?.steps || [];
+      const usesCommit = steps.some(s => s.action === 'git-clone' && s.repo === repo && s.commit === commit);
+      if (!usesCommit) continue;
+
+      if (task.status === 'queued') {
+        queue.cancel(task.id);
+      } else if (task.status === 'assigned' || task.status === 'running') {
+        queue.fail(task.id, null, 'commit approval revoked');
+        const node = task.assigned_to ? registry.getNode(task.assigned_to) : null;
+        if (node) removeCurrentTask(node, task.id);
+      }
+    }
+
+    res.json(result);
   });
 
   // ---- Read-only admin views ----
@@ -421,6 +547,41 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     if (!['approved', 'rejected'].includes(decision)) return res.status(400).json({ error: 'decision must be approved or rejected' });
     const result = reviews.decide(req.params.id, decision, decided_by || 'admin');
     if (result.error) return res.status(result.status).json({ error: result.error });
+
+    // If approved, complete the original task with the stored result
+    if (decision === 'approved' && result.entry?.full_result) {
+      const taskId = result.entry.task_id;
+      const fullResult = result.entry.full_result;
+
+      const task = queue.getTask(taskId);
+      if (task) {
+        if (task.status === 'held') {
+          // Task is held — complete it directly (no node ownership check needed)
+          const comp = queue.completeHeld(taskId, fullResult);
+          if (comp.error) {
+            return res.status(comp.status).json({ error: comp.error });
+          }
+        } else {
+          // Task is in an unexpected state — report the problem
+          return res.status(409).json({
+            error: `task is ${task.status}, expected held`,
+            task_id: taskId,
+          });
+        }
+      }
+      // If task is already gone from active (in history), the review approval is recorded
+      // but the task lifecycle already ended.
+    }
+
+    // If rejected, fail the held task so it can be retried
+    if (decision === 'rejected' && result.entry?.task_id) {
+      const taskId = result.entry.task_id;
+      const task = queue.getTask(taskId);
+      if (task && task.status === 'held') {
+        queue.fail(taskId, null, 'review rejected');
+      }
+    }
+
     res.json(result);
   });
 
@@ -490,7 +651,7 @@ export function createOrchestrator({ dataDir, host, port, adminPort, adminToken,
     if (adminServer) adminServer.close();
   }
 
-  return { workerApp, adminApp, registry, queue, reviews, metrics, start, stop, workerServer: () => workerServer, adminServer: () => adminServer };
+  return { workerApp, adminApp, registry, queue, reviews, metrics, approvals, start, stop, workerServer: () => workerServer, adminServer: () => adminServer };
 }
 
 // ---- Auto-start when run directly (not imported) ----

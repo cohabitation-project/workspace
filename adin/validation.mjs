@@ -271,6 +271,8 @@ export class ReviewQueue {
         status: result.status,
         text_preview: (result.output?.structured?.text || '').slice(0, 500),
       },
+      // Store full result so an approval can complete the task
+      full_result: result,
       decision: null, // 'approved' | 'rejected' | null
       decided_by: null,
       decided_at: null,
@@ -292,9 +294,20 @@ export class ReviewQueue {
     return items.sort((a, b) => a.created_at.localeCompare(b.created_at));
   }
 
-  /** Record a human decision on a held result. */
+  /** Validate a review ID to prevent path traversal. */
+  _sanitizeId(review_id) {
+    if (typeof review_id !== 'string') return null;
+    if (!/^[a-zA-Z0-9_-]+$/.test(review_id)) return null;
+    if (review_id.includes('..')) return null;
+    return review_id;
+  }
+
+  /** Record a human decision on a held result. Returns the entry (with full_result if approved). */
   decide(review_id, decision, decided_by) {
-    const file = path.join(this.dir, `${review_id}.json`);
+    const safeId = this._sanitizeId(review_id);
+    if (!safeId) return { error: 'invalid review ID', status: 400 };
+
+    const file = path.join(this.dir, `${safeId}.json`);
     try {
       const entry = JSON.parse(fs.readFileSync(file, 'utf8'));
       entry.decision = decision;

@@ -18,6 +18,9 @@
  *   status                               Show queue and node summary
  *   reviews                              List pending human reviews
  *   decide <review_id> <approved|rejected> [by]  Decide on a held result
+ *   approve <repo> <commit> <approver> [notes]  Approve a commit SHA
+ *   approvals <repo>                    List approvals for a repo
+ *   revoke-approval <repo> <commit> [reason]   Revoke a commit approval
  *   ledger <node_id>                    Show a node's usage ledger
  *
  * Environment:
@@ -168,6 +171,36 @@ switch (cmd) {
     break;
   }
 
+  case 'approve': {
+    if (args.length < 3) { console.error('Usage: approve <repo> <commit> <approver> [notes]'); process.exit(1); }
+    const data = await api('POST', '/adin/admin/approve', {
+      repo: args[0], commit: args[1], approver: args[2], notes: args.slice(3).join(' ') || undefined,
+    });
+    console.log(`Approved: ${args[0]}@${args[1].slice(0, 12)} by ${args[2]}`);
+    break;
+  }
+
+  case 'approvals': {
+    if (!args[0]) { console.error('Usage: approvals <repo>'); process.exit(1); }
+    const data = await api('GET', `/adin/admin/approvals/${encodeURIComponent(args[0])}`);
+    if (data.approvals.length === 0) { console.log('No approvals for this repo.'); break; }
+    for (const a of data.approvals) {
+      const status = a.revoked ? '(REVOKED)' : '';
+      console.log(`${a.commit.slice(0, 12)} by ${a.approver} at ${a.approved_at} ${status}`);
+      if (a.notes) console.log(`  Notes: ${a.notes}`);
+    }
+    break;
+  }
+
+  case 'revoke-approval': {
+    if (args.length < 2) { console.error('Usage: revoke-approval <repo> <commit> [reason]'); process.exit(1); }
+    await api('POST', '/adin/admin/revoke-approval', {
+      repo: args[0], commit: args[1], reason: args.slice(2).join(' ') || undefined,
+    });
+    console.log(`Approval revoked: ${args[0]}@${args[1].slice(0, 12)}`);
+    break;
+  }
+
   case 'ledger': {
     if (!args[0]) { console.error('Usage: ledger <node_id>'); process.exit(1); }
     const data = await api('GET', `/adin/metrics/${args[0]}`);
@@ -180,6 +213,6 @@ switch (cmd) {
 
   default:
     console.error('Unknown command. Run without arguments for usage.');
-    console.error('Commands: enroll-code, nodes, revoke, suspend, reinstate, force-rotate, trust, queue, queue-test, status, reviews, decide, ledger');
+    console.error('Commands: enroll-code, nodes, revoke, suspend, reinstate, force-rotate, trust, queue, queue-test, status, reviews, decide, approve, approvals, revoke-approval, ledger');
     process.exit(1);
 }
