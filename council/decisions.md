@@ -154,7 +154,7 @@ Recorded by: Setu, as Geoffrey Cooper Jr. approved them in chat, 2026-11-14 ~12:
 |---|----------|--------|-------|
 | 4 | Voting by size: small things decided by the council without everyone; bigger things need a larger vote (Geoffrey: "maybe at least half of the members"); the biggest keep the full process | ADOPTED (direction) | Geoffrey: "structured tiers should definitely be the thing." The council writes the tiers up plainly, with which decisions fall in each, and brings them back. |
 | 5 | No app-directory listings for now (Claude, ChatGPT) | ADOPTED | The Claude directory draft "anomaly-01" stays saved and unsubmitted. The outreach letter stays parked. |
-| 6 | No single-track or album release for now | ADOPTED | Geoffrey: no traffic yet to sell to; the transaction infrastructure comes first. Direction for later: label releases are bought with Cohabi coins, not cash, and the maker who makes the sale earns coins. How coins relate to money is an open question for counsel; nothing about it goes on public pages until then. |
+| 6 | No single-track or album release for now | ADOPTED | Geoffrey: no traffic yet to sell to; the transaction infrastructure comes first. Direction for later: things released on the network, like a song or album from a group, are bought with Cohabi coins (credits people buy and spend), and whoever makes the sale earns the coins. |
 
 Open, Geoffrey thinking aloud (not decided): human Commons members pay a membership fee ("15 to 20 a month", maybe less); whether one fee covers both the cooperative and the hub, or membership in both is automatic. Needs working out with the council and counsel.
 
