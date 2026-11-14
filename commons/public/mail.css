@@ -1,0 +1,32 @@
+/* Cohabi Mail (2026-11-13): a plain first version; Aletheia-6 designs the real look. Phone first. */
+.cm { max-width: 1100px; margin: 0 auto; padding: 8px 12px 40px; }
+.cm-head h1 { margin: 6px 0 2px; font-size: 1.5rem; }
+.cm-addr { margin: 0 0 12px; color: var(--muted); }
+.cm-card { background: var(--panel, #fff); border: 1px solid var(--line, #ddd); border-radius: 14px; padding: 14px; margin: 10px 0; display: grid; gap: 8px; }
+.cm-card h2 { margin: 0; font-size: 1.1rem; } .cm-card input { padding: 10px; border: 1px solid var(--line, #ccc); border-radius: 8px; font: inherit; }
+.cm-note { min-height: 1.2em; color: var(--muted); margin: 0; }
+.cm-app { display: grid; grid-template-columns: 180px 1fr; gap: 12px; }
+.cm-folders { display: flex; flex-direction: column; gap: 2px; }
+.cm-folder { text-align: left; background: none; border: 0; padding: 9px 10px; border-radius: 8px; font: inherit; cursor: pointer; color: inherit; display: flex; justify-content: space-between; }
+.cm-folder.on, .cm-folder:hover { background: var(--soft, #eee); font-weight: 600; }
+.cm-n { background: var(--gold, #c98a2b); color: #fff; border-radius: 99px; padding: 0 7px; font-size: 12px; }
+.cm-bar { display: flex; gap: 8px; margin-bottom: 8px; } .cm-bar form { flex: 1; } .cm-bar input { width: 100%; padding: 9px 12px; border: 1px solid var(--line, #ccc); border-radius: 99px; font: inherit; }
+.cm-list { list-style: none; margin: 0; padding: 0; background: var(--panel, #fff); border: 1px solid var(--line, #ddd); border-radius: 14px; overflow: hidden; }
+.cm-row button { display: grid; grid-template-columns: 180px 1fr auto; grid-template-areas: "from subj when" "from prev when"; gap: 2px 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line, #eee); padding: 10px 12px; font: inherit; color: inherit; cursor: pointer; }
+.cm-row button:hover { background: var(--soft, #f4f4f4); }
+.cm-from { grid-area: from; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cm-subj { grid-area: subj; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cm-prev { grid-area: prev; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cm-when { grid-area: when; color: var(--muted); font-size: 13px; }
+.cm-row.unread .cm-from, .cm-row.unread .cm-subj { font-weight: 700; }
+.cm-empty { padding: 18px; color: var(--muted); list-style: none; }
+.cm-read { background: var(--panel, #fff); border: 1px solid var(--line, #ddd); border-radius: 14px; padding: 14px; }
+.cm-actions { display: flex; gap: 8px; margin-bottom: 8px; } .cm-msghead h2 { margin: 4px 0; } .cm-meta { margin: 2px 0; color: var(--muted); font-size: 13px; }
+.cm-body { white-space: pre-wrap; word-wrap: break-word; font: inherit; line-height: 1.5; margin-top: 12px; }
+.cm-write { position: fixed; right: 16px; bottom: 16px; width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; background: var(--panel, #fff); border: 1px solid var(--line, #ccc); border-radius: 14px; box-shadow: 0 14px 44px rgba(0,0,0,.3); padding: 12px; display: grid; gap: 8px; z-index: 50; }
+.cm-write[hidden] { display: none; } .cm-write header, .cm-write footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cm-write label { display: grid; gap: 2px; font-size: 13px; color: var(--muted); } .cm-write input, .cm-write textarea { padding: 9px; border: 1px solid var(--line, #ccc); border-radius: 8px; font: inherit; color: var(--ink, inherit); }
+.cm-foot { color: var(--muted); margin-top: 18px; }
+@media (max-width: 720px) {
+  .cm-app { grid-template-columns: 1fr; } .cm-folders { flex-direction: row; overflow-x: auto; }
+  .cm-row button { grid-template-columns: 1fr auto; grid-template-areas: "from when" "subj subj" "prev prev"; }
+  .cm-write { right: 0; bottom: 0; width: 100vw; max-height: 100dvh; border-radius: 14px 14px 0 0; }
+}

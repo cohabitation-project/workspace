@@ -347,6 +347,31 @@ export function accountPage(me) {
 
 export function messengerWidget(me) { return me ? `<section id="messenger-window" class="messenger-window" aria-label="Messenger" hidden><header><strong>✉️ Messenger</strong><a href="/messages">Full inbox ↗</a><button type="button" id="messenger-close" aria-label="Close messenger">✕</button></header><iframe id="messenger-frame" title="Private messages" data-src="/messenger"></iframe></section>` : ''; }
 
+/** /mail — Cohabi Mail (2026-11-13). The shell is server-rendered; the inbox loads from /api/mail/* (mail.js). */
+export function mailPage(me) {
+  return socialPage('Mail', me, `<section class="cm" id="cm" data-me="${esc(me.id)}">
+  <header class="cm-head"><h1>✉ Cohabi Mail</h1><p class="cm-addr" id="cm-addr">Checking your mailbox…</p></header>
+  <div class="cm-setup" id="cm-setup" hidden></div>
+  <div class="cm-app" id="cm-app" hidden>
+    <nav class="cm-folders" id="cm-folders" aria-label="Folders"></nav>
+    <div class="cm-main">
+      <div class="cm-bar"><button type="button" class="btn" id="cm-compose">✎ Write</button><form id="cm-search" role="search"><input id="cm-q" placeholder="Search your mail" aria-label="Search your mail"></form></div>
+      <ul class="cm-list" id="cm-list" aria-live="polite"></ul>
+      <article class="cm-read" id="cm-read" hidden></article>
+    </div>
+  </div>
+  <form class="cm-write" id="cm-write" hidden>
+    <header><strong id="cm-write-title">New message</strong><button type="button" class="btn small ghost" id="cm-write-x" aria-label="Close">✕</button></header>
+    <label>To <input name="to" required placeholder="name@example.com"></label>
+    <label>Cc <input name="cc"></label>
+    <label>Subject <input name="subject"></label>
+    <textarea name="text" rows="10" placeholder="Write your message"></textarea>
+    <input type="hidden" name="inReplyTo">
+    <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
+  </form>
+  <p class="cm-foot small">Your mail is yours: Cohabi opens your mailbox only as you. Mail inside cohabi.org is free; mail to the outside world has a daily limit, and new members wait a few days before sending outside. Messages are shown as plain text.</p>
+</section>`, '/static/mail.js') .replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
+}
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
  *  Kohabi coins in there"). Balance and history are real, from the ledger. Buying is shown but closed: coins are
  *  recognition credits, not money, and selling them for money needs a cooperative decision and legal review first. */
