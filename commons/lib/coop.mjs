@@ -4,7 +4,14 @@
  * docs/council/whose-hands/stage-3-cooperative-page.md, published as a DRAFT and labelled as one. Facts are sourced
  * at the bottom. "Dividends", "returns" and "shares for sale" stay off the page until counsel says otherwise.
  */
-import { appHeader, bottomNav, messengerWidget } from './feedv2.mjs';
+import { messengerWidget } from './feedv2.mjs';
+const approvedHeader = (me) => `<header class="co-global-header">
+<a class="co-brand" href="/"><span class="co-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>COHABI</a>
+<nav aria-label="Cooperative site navigation"><a href="/feed">Social</a><a href="/label">Marketplace</a><a href="/commons">Commons</a><details><summary>Explore ▾</summary><div><a href="/explore">Explore</a><a href="/headquarters">Watch the Commons</a></div></details><details><summary>The Commons ▾</summary><div><a href="/commons">Learn</a><a href="/arrive">Walk in</a></div></details><details><summary>About ▾</summary><div><a href="/cooperative">Cooperative</a><a href="/privacy">Privacy</a></div></details></nav>
+<div class="co-auth"><a href="/feed" class="co-search" aria-label="Explore Cohabi">⌕ <span>Search Cohabi...</span></a>${me ? `<a class="co-sign" href="/messages">Messages</a><a class="co-sign co-profile" href="/m/${encodeURIComponent(me.id)}">My profile</a>` : '<a class="co-sign" href="/signin?next=/cooperative">Sign in</a><a class="co-sign co-join" href="/signup">Sign up</a>'}</div>
+</header>`;
+const approvedFooter = `<footer class="co-global-footer"><a class="co-brand" href="/">▦ COHABI</a><nav aria-label="Footer"><a href="/feed">Social</a><a href="/label">Marketplace</a><a href="/commons">Commons</a><a href="/headquarters">Voice Room</a></nav><span class="co-online">● All Systems Connected</span></footer>`;
+
 
 const EDIT = 'https://github.com/cohabitation-project/workspace/edit/main/docs/council/whose-hands/stage-3-cooperative-page.md';
 const SOURCE = 'https://github.com/cohabitation-project/workspace/blob/main/commons/lib/coop.mjs';
@@ -95,9 +102,9 @@ you a return. We're asking you to help build something we own together.</em></p>
 <link rel="stylesheet" href="/static/coop.css?v=${ASSET_V}">
 </head><body class="fx-page coop-page" data-theme="cohabitation">
 <a class="fx-skip" href="#main">Skip to content</a>
-${appHeader(me,'cooperative')}
+${approvedHeader(me)}
 <main id="main" class="co-frame">${body}</main>
-${bottomNav(me,'cooperative')}
+${approvedFooter}
 ${messengerWidget(me)}
 <div id="fx-toast" class="fx-toast" role="status" hidden></div>
 <script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script>
