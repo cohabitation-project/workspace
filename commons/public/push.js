@@ -58,7 +58,7 @@ async function paint() {
     if (btn) { btn.hidden = false; btn.textContent = sub ? '🔕 Turn off on this device' : '🔔 Turn on on this device'; btn.dataset.on = sub ? '1' : ''; }
     if (note) note.textContent = sub ? 'On: this device gets pinged. Choose what for below, or turn it off anytime from the 🔔 at the bottom.' : 'Off on this device. Turn it on to get a ping for messages, friend requests and more.';
   }
-  for (const b of document.querySelectorAll('.fx-bottom-bell')) b.classList.toggle('is-on', !!sub);
+  for (const b of document.querySelectorAll('.fx-bottom-bell, [data-open-notify]')) b.classList.toggle('is-on', !!sub);
   const prefs = $('#notify-prefs'); if (prefs) prefs.hidden = !sub;
 }
 for (const box of boxes) {
@@ -74,7 +74,7 @@ for (const box of boxes) {
 // ---- the bottom-bar 🔔 opens the panel
 const sheet = $('#notify-sheet');
 document.addEventListener('click', (e) => {
-  if (e.target.closest('.fx-bottom-bell')) { if (sheet) { sheet.hidden = !sheet.hidden; if (!sheet.hidden) { paint(); loadPrefs(); $('button', sheet)?.focus(); } } return; }
+  if (e.target.closest('.fx-bottom-bell, [data-open-notify]')) { if (sheet) { sheet.hidden = !sheet.hidden; if (!sheet.hidden) { paint(); loadPrefs(); $('button', sheet)?.focus(); } } return; }
   if (e.target.closest('[data-notify-close]') && sheet) { sheet.hidden = true; return; }
   if (sheet && !sheet.hidden && !sheet.contains(e.target)) sheet.hidden = true;
 });
