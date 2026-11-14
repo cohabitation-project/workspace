@@ -504,7 +504,7 @@ async function session(teamName, kinName) {
   const log = (e) => fs.appendFileSync(logPath, JSON.stringify({ ts: now(), ...e }) + '\n');
   const messages = { openai: [{ role: 'user', content: kickoff }], anthropic: [{ role: 'user', content: kickoff }] };
   const tools = makeTools(ctx);
-  let finished = null; let tokens = 0;
+  let finished = null; let tokens = 0; let modelError = null;
   log({ event: 'start', kin: kinName, model: agent.model, team: teamName, max_steps: MAX_STEPS });
   const teamLabel = (TEAMS()[teamName] || {}).name || teamName;
   await announce(`🔨 **${kinName}** started a work session in **${teamLabel}** · ${agent.model} · AI agent`);
@@ -515,7 +515,7 @@ async function session(teamName, kinName) {
       const nudge = 'You are out of tool steps. Call finish() now with your standup.';
       if (agent.provider === 'anthropic') messages.anthropic.push({ role: 'user', content: nudge }); else messages.openai.push({ role: 'user', content: nudge });
     }
-    let res; try { res = await callModel(agent, system, messages); } catch (e) { log({ event: 'model-error', error: e.message }); break; }
+    let res; try { res = await callModel(agent, system, messages); } catch (e) { modelError = e.message; log({ event: 'model-error', error: e.message }); break; }
     tokens += (res.usage?.total_tokens || (res.usage?.input_tokens || 0) + (res.usage?.output_tokens || 0));
     ctx.tokensSoFar = tokens; // the desk records real cost per hand-in
     if (res.text) log({ event: 'say', text: res.text.slice(0, 4000) });
@@ -530,7 +530,11 @@ async function session(teamName, kinName) {
     pushResults(agent, messages, results);
   }
 
-  const f = finished || { shipped: '(session ended without finish())', next: '', blocked: '' };
+  // A model/key failure used to end the session silently, so the teams sat dead for days on a stale OpenRouter key
+  // (2026-11-11 to 11-14) with nobody told. Now it says so plainly, in the standup and the team room.
+  const f = finished || (modelError
+    ? { shipped: 'nothing: the model could not be reached', next: 'retry next hour once fixed', blocked: `MODEL ERROR: ${modelError.slice(0, 300)}. A human needs to check the API key (GitHub secret) for this provider.` }
+    : { shipped: '(session ended without finish())', next: '', blocked: '' });
   const files = [...ctx.written].map((p) => `\`${p}\``).join(', ') || 'none';
   fs.appendFileSync(path.join(ROOT, 'teams', teamName, 'STANDUP.md'),
     `\n## ${now()} · ${kinName} (${agent.model})\n**Shipped:** ${f.shipped}\n**Files written:** ${files}\n**Next:** ${f.next}\n**Blocked:** ${f.blocked}\n_Session log: teams/${teamName}/sessions/${path.basename(logPath)} · ~${tokens} tokens_\n`);
