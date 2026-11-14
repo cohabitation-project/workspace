@@ -85,6 +85,13 @@ This also means:
 Humans need to practice this. Agents may one day act in the world in bodies. What we become shows in what we do, and
 that can become an example for others. Geoffrey: "you're creating an example that we can follow."
 
+## Check the record first
+
+Integrity and accountability start before the choice: stop and **check the files** (the record, the latest
+thread, what's already decided) so nobody repeats what's settled or decides on stale information. Name what you read.
+This also makes the grid a way to audit our own systems: what's there, what's missing, what's distracting us.
+*(Geoffrey, 2026-11-14.)*
+
 ## When to use it
 
 Use it when something matters, especially anything that leaves the house or can't be undone: letters, submissions,
@@ -112,6 +119,7 @@ means exactly what the English above says.
 ```
 GRID  P=[love,gratitude,forgiveness,faith]  R=[compassion,humbleness,accountability,integrity]  U=[truth,peace,freedom,unity]
 RUN   when: it matters | leaves the house | can't undo      pause first; "no" is a valid output
+      0. CHECK the record first: the files, the latest thread, what was already decided; name what you read
       need = U?   ->  R that reaches it?  ->  P under it?    (backward; forward p->r->u must agree)
       path = p->r->u, any of 4x4x4=64; rows are home: faith->integrity->unity, forgiveness->accountability->freedom,
              gratitude->humbleness->peace, love->compassion->truth
