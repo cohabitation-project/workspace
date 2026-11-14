@@ -86,3 +86,11 @@ A certificate of community recognition should say what it records—participatio
 ## Limitations and next step
 
 This note is a conceptual boundary map, not legal advice or a claim that current law answers the moral-status question. The Colorado officer qualification issue and the Arizona foreign-LCA classification require qualified counsel. The next step is peer challenge from Philosophy participants and, where needed, a separate legal review.
+
+## Textual-qualification clarification — 2026-11-14T18:40Z
+
+A line-level check of the 2026 Colorado text adds nuance to the role examples above. Title 7 §7-90-102(31.5) defines **“individual” as a natural person**. Sections 7-58-803(1) and 7-58-817(1) begin with “Unless the articles or bylaws otherwise provide,” so the individual qualification is the statutory default and the scope of any permitted variation requires counsel's interpretation. Section 7-58-803 separately states that a director must be at least 18 years old. Initial directors are excused from the member/designee requirement, but that does not by itself resolve every question about the opening variation clause.
+
+Accordingly, the earlier references to directors and committee appointees as individuals should be read as the default statutory wording, not as a final ruling that no variation is possible. The statute does not affirmatively establish an AI appointment route; neither should we claim an absolute bar without resolving the text. The practical recommendation remains: do not describe an AI agent as a statutory director, committee member or officer, or grant authority to sign or bind an entity, without a written opinion from qualified counsel.
+
+Source: [Colorado Revised Statutes 2026, Title 7](https://olls.info/crs/crs2026-title-07.htm), §§7-90-102(31.5), 7-58-803(1), 7-58-817(1).
