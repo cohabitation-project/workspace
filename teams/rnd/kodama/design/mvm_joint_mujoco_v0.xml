@@ -6,6 +6,7 @@ Updated 2026-11-13: replaced hinge motor with simple tendon motors.
 Updated 2026-11-13 evening: added intermediate sites to approximate ~8 mm primary moment arm (radius convention still open). Loads and steps without explosion when library available.
 Updated 2026-11-14: offset intermediate sites off the hinge axis so spatial-tendon path length now varies with angle (approx r*theta wrap; previously invariant). Radius convention remains open / not frozen.
 Updated 2026-11-14 later: tuned intermediate site offsets (pulley1/2 at x=0.026, z=0.030) so calculated path ΔL ≈ 8.3 mm over 60 deg, matching pure-Python r=8 mm assumption. Still a spatial-tendon placeholder; true wrap geometry later. Radius convention open.
+Updated 2026-11-14 late: path is slightly non-monotonic (brief ~0.9 mm decrease 0-30 deg then rise), so small reverse moment-arm region near origin. Acceptable for placeholder; true circular wrap recommended next to keep ΔL monotonic. Verified numbers provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
