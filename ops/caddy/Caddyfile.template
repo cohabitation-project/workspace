@@ -62,6 +62,13 @@ cohabi.org, www.cohabi.org {
 	import commons
 }
 
+# Cohabi mail (Stalwart, on this same server; 2026-11-13). Caddy only carries the mail server's web side: the
+# admin pages, webmail and JMAP. SMTP and IMAP go to Stalwart directly on their own ports, not through Caddy.
+# mail.cohabi.org must be "DNS only" (grey cloud) in Cloudflare.
+mail.cohabi.org {
+	reverse_proxy 127.0.0.1:8080
+}
+
 :80 {
 	handle /terminal/* {
 		respond "Forbidden" 403
