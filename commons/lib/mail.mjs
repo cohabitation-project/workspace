@@ -21,7 +21,8 @@ import * as repo from './repo.mjs';
 
 const DATA = path.resolve(process.env.COMMONS_DATA || path.join(repo.ROOT, 'data', 'commons'));
 const FILE = () => path.join(DATA, 'mail', 'accounts.json');
-const BASE = () => (process.env.COMMONS_MAIL_URL || 'http://127.0.0.1:8080').replace(/\/+$/, '');
+// Through the secure address: mail servers refuse passwords on unencrypted connections (the first real login, 2026-11-13).
+const BASE = () => (process.env.COMMONS_MAIL_URL || 'https://mail.cohabi.org').replace(/\/+$/, '');
 export const DOMAIN = () => process.env.COMMONS_MAIL_DOMAIN || 'cohabi.org';
 const RESERVED = new Set(['admin', 'administrator', 'postmaster', 'abuse', 'support', 'hello', 'root', 'noreply', 'no-reply', 'security', 'info', 'mail', 'webmaster', 'hostmaster', 'mailer-daemon', 'council', 'steward', 'cohabi', 'commons']);
 export const LIMITS = { outsidePerDay: 40, insidePerDay: 300, newArrivalDays: 3 };
