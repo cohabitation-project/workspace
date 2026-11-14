@@ -397,3 +397,10 @@
 /* The top-left shared dropdown shows the genuine multicolor Cohabi symbol only; the title beneath reads Cohabi CoBox. */
 .cbx-route .cbx-toplogo{width:38px;height:38px;object-fit:contain;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.22))}
 .cbx-route .fx-app-switch summary.fx-brand{gap:5px;padding:4px 6px}
+
+/* The Cohabi dropdown is a cream panel even on the dark Cobox header: its group headings (Marketplace,
+   Commons, Explore) and links keep the menu's dark ink. The header rule above whitened every summary,
+   which made those headings nearly invisible (Geoffrey, 2026-11-13). */
+.cbx-route .fx-top .fx-app-menu summary,
+.cbx-route .fx-top .fx-app-menu a,
+.cbx-route .fx-top .fx-app-menu button { color: var(--ink, #1f1a2b) !important; }
