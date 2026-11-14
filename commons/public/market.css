@@ -407,3 +407,22 @@
 .mk-top .fx-app-menu .cm-sub[open] > a { padding-left:28px; font-size:13px; background:#f5f1eb; margin-top:2px; }
 .mk-top .fx-app-menu { background: #fffaf2; z-index: 60; box-shadow: 0 12px 30px rgba(0,0,0,.18); }
 .mk-top .fx-app-menu button { display:flex; align-items:center; padding:10px 12px; min-height:44px; border-radius:6px; color:var(--ink); font:inherit; font-size:14px; background:none; border:0; cursor:pointer; text-align:left; }
+
+
+/* Creator-first pilot art/video/software; scoped to category pages. Draft awaiting visual approval. */
+.mk-subjects{margin:16px 0 25px;padding:18px 21px;background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:16px}
+.mk-subjects>strong{display:block;margin-bottom:12px;font:600 15px/1.3 system-ui,sans-serif}
+.mk-subjects>div{display:flex;flex-wrap:wrap;gap:8px}.mk-subjects a{border:1px solid var(--line);padding:8px 13px;border-radius:30px;font:500 13px system-ui,sans-serif;text-decoration:none;color:var(--text);min-height:38px;display:inline-flex;align-items:center}.mk-subjects a:hover{border-color:var(--accent);color:var(--accent)}
+.mk-subjects p{margin:12px 0 0}
+.mk-makers{margin:18px 0 35px}.mk-makersheading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:15px}.mk-makersheading .mk-h{margin:4px 0}.mk-makerlabel{text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:800;color:var(--accent);margin:0}
+.mk-makergrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.mk-makercard{min-width:0;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 7px 24px #00000011}
+.mk-makerhero{display:block;height:190px;overflow:hidden;background:color-mix(in srgb,var(--panel) 70%,#a88364)}.mk-makerhero img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}.mk-makerhero:hover img{transform:scale(1.035)}
+.mk-makerblank{width:100%;height:100%;display:grid;place-items:center;font-size:75px;color:var(--muted)}.mk-makerinfo{padding:16px}
+.mk-makertype{margin:0 0 5px;color:var(--muted);font-size:11px;letter-spacing:.04em}
+.mk-makerinfo h3{font:600 clamp(20px,2vw,27px)/1.18 Georgia,serif;margin:0 0 7px}.mk-makerinfo h3 a{color:var(--text);text-decoration:none}.mk-makerinfo h3 a:hover{color:var(--accent)}
+.mk-makertags{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;min-height:23px;margin:0 0 12px}.mk-makertags span{border:1px solid var(--line);border-radius:9px;padding:3px 8px}
+.mk-makerthumbs{display:flex;gap:7px;min-height:60px;margin-bottom:12px}.mk-makerthumbs a{width:58px;height:58px;display:block;border-radius:9px;overflow:hidden;border:1px solid var(--line)}.mk-makerthumbs img{width:100%;height:100%;display:block;object-fit:cover}
+.mk-makerlinks{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0}.mk-makerlinks>a:last-child{font-size:12px}.mk-makerlinks .btn{min-height:42px}
+@media(max-width:900px){.mk-makergrid{grid-template-columns:repeat(2,minmax(0,1fr))}.mk-makerhero{height:175px}}
+@media(max-width:620px){.mk-subjects{padding:12px}.mk-subjects a{min-height:44px}.mk-makergrid{grid-template-columns:1fr}.mk-makerhero{height:220px}.mk-makersheading{align-items:start}.mk-makerinfo h3{font-size:25px}}
