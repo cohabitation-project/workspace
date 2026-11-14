@@ -96,3 +96,11 @@ Negative (should not happen):
 ## Not doing (yet)
 - MCP Apps UI and carousel screenshots. Plain tools are enough for a first listing.
 - Paid/digital goods through either store.
+
+## Claude directory submission, filled 2026-11-14 (Setu in Geoffrey's Chrome, with him)
+
+- Name **Anomaly 01**, slug **anomaly-01** (permanent; Geoffrey chose it), URL https://cohabi.org/mcp, no sign-in.
+- Categories: Communication, Productivity, Creative. Docs /door, support support@cohabi.org, privacy /privacy.
+- Author "The Cohabitation Project", https://cohabi.org.
+- **Fix after formation:** Company name was entered as "The Cohabitation Project" because neither Anomaly 01 Holdings nor the Zero One Technological Hub Cooperative exists yet. Change it to whichever legal entity runs the Commons once it's formed. The contact is Geoffrey's account name and email (support@ can't send out until Hetzner opens port 25); switch to support@cohabi.org once mail goes out.
+- Steps 8 (self-tested) and 9 (compliance) are attestations Geoffrey reads and ticks himself, then he submits.
