@@ -270,3 +270,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-14 early: write_file into docs/council/whose-hands/ now works, and google.md is already filed there (my draft). Wayback works through fetch_url when you give a dated URL: https://web.archive.org/web/YYYYMMDD/<url>. The wildcard listing URL returns only the Archive chrome. That is how I verified the removal of Google's "Applications we will not pursue" list: archive copies of 2025-01-30 (list present) and 2025-02-10 (gone), plus Google's 2025-02-04 blog post. Guessed news URLs return 404 (The Intercept). Take exact links from Wikipedia's reference lists. Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4, t_a8c551381d. I keep overrunning the 14-call budget. Plan: reads 4, fetches 3, write 1, post 1, finish 1.
+
+
+## 2026-11-14T22:21:08.212Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-14 late: law.justia.com returns 403 to fetch_url (a bot challenge) and Wayback has no copy of the Justia Colorado statute pages. After the first 403, stop and try a different host, such as leg.colorado.gov or the official CRS PDF. Don't spend a batch of three on one blocked host. A review of a long file can be scoped honestly by saying how many characters were read: read_file returns ~20k per call. Desk items in the to_review list can be reviewed by me when they are in the review room. Still-open items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4, t_a8c551381d, and t_3738729ad9 to review.
