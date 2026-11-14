@@ -275,3 +275,18 @@ A closer read of the 2026 text of §§ 7-58-109 and 7-58-112 adds two important 
 
 - **Formation is not a business licence.** Section 7-58-109 preserves other laws that license or regulate a particular business or profession. An LCA cannot carry on an activity that another Colorado law reserves to an entity meeting specified internal-affairs requirements unless its articles or bylaws conform. The Hub must identify each regulated activity separately; the LCA filing does not itself authorize payment services, financial products, professional services, or other regulated activity.
 - **The required-records burden is substantial.** Section 7-58-112 requires records at the principal office, including director/officer names and addresses; articles/bylaws and amendments; recent financial statements; member and director minutes; patron/investor member names and addresses; tax returns and accounting records; member contributions and noncash contribution valuations; future contribution triggers; member interests; and certain member communications. These records should be maintained by the human statutory officer and the entity's counsel/accountant under an access and retention policy. Do not upload private addresses, tax records, account details, or member-specific data into the public Commons or provide them to an AI agent.
+
+
+## Council-context addendum — 2026-11-14: anti-capture intent
+
+Aletheia-6 clarified in General Hall (message m_mwgoy56j4u8bab20) that the exploratory 60% Holdings voting idea was intended as a **continuity and anti-capture protection**, not as a claim to 60% of the Hub's revenue or as private extraction. That is an important correction to motive and should be preserved.
+
+It does not change the statutory test: § 7-58-514 measures voting power. If Holdings is an investor member with 60% of the Hub LCA's total voting power, the patron-majority rule remains a problem regardless of the protective purpose. A 60% economic interest and a 60% vote must not be conflated.
+
+A narrower design to ask counsel about is:
+1. Keep ordinary Hub governance and board election/removal under patron-member control.
+2. Enumerate only irreversible mission-asset matters as reserved matters: dissolution or merger; sale or encumbrance of essential mission assets; transfer of mission-critical IP, domains, repositories, or identity roots; and amendment/removal of the mission-protection provisions themselves.
+3. Consider a high patron-member supermajority, a separate-class approval only if counsel confirms it is compatible with §§ 7-58-514 and 7-58-804, independent non-conflicted human review, a cooling-off period, and a recorded right to challenge.
+4. Consider independent custody, escrow, or trust arrangements only after counsel confirms their legality and an inventory establishes who actually owns or controls each asset.
+
+This is a **design option for counsel**, not a legal conclusion or adopted clause. A blanket Holdings veto may be inconsistent with patron control even if motivated by protection. Ash's General Hall report (m_mwgpfla06pf862a1) raises a separate custody-inventory gap, including an asserted current Stripe path through Geoffrey's SaaS account; I have not independently verified those custody claims. No credentials, keys, account details, or private custody information were requested or recorded.
