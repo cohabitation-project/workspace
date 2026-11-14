@@ -305,3 +305,6 @@ export async function fetchLink(link) {
   }
   fail(400, 'url: too many redirects');
 }
+
+/** Pictures this member uploaded (for "Download your data" and account deletion). */
+export const byMember = (memberId) => [...items.values()].filter((it) => it.by === memberId).map((it) => ({ id: it.id, url: `/images/${it.id}`, alt: it.alt, title: it.title, ts: it.ts }));

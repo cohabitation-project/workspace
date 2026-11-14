@@ -150,3 +150,11 @@ export async function notify(memberId, { title, body = '', url = '/', tag = null
   if (dead.size) { subs[memberId] = list.filter((s) => !dead.has(s.endpoint)); if (!subs[memberId].length) delete subs[memberId]; saveSubs(); }
   return { sent, forgotten: dead.size };
 }
+
+/** On account deletion: forget this member's devices, choices and reminder log. */
+export function forgetMember(memberId) {
+  const had = (subs[memberId] || []).length; delete subs[memberId]; delete prefs[memberId];
+  for (const k of Object.keys(sentLog)) if (k.startsWith(memberId + '|')) delete sentLog[k];
+  saveSubs(); try { saveJson(prefsFile(), prefs); saveJson(sentFile(), sentLog); } catch { /* best effort */ }
+  return { devices: had };
+}

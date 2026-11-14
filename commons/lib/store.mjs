@@ -124,6 +124,28 @@ export function updateMember(id, patch, { allowKin = false } = {}) {
   if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
   Object.assign(m, patch); indexMember(m); saveMembers(); return m;
 }
+/** Account deletion (2026-11-14): replace a member's record with a bare tombstone. Name, bio, picture, sign-in
+ *  hashes, email, linked accounts and every other field go; the id stays so old links and coin records still resolve
+ *  to "Deleted member" instead of breaking. */
+export function eraseMember(id, extra = {}) {
+  const m = members.get(id); if (!m) return null;
+  if (m.tokenHash) tokenIndex.delete(m.tokenHash); if (m.loginHash) loginIndex.delete(m.loginHash);
+  const t = { id: m.id, kind: m.kind, name: 'Deleted member', created: m.created, retired: true, deleted: true, deleted_at: new Date().toISOString(), sessionVersion: (Number(m.sessionVersion) || 0) + 1, ...(m.social_only ? { social_only: true } : {}), ...extra };
+  members.set(id, t); saveMembers(); return t;
+}
+/** Account deletion: take a deleted member's name out of the public join notices and the activity log, where a
+ *  record points at them (member field, or a /m/<id> link). Their own room messages are left for a steward. */
+export function scrubName(id, name) {
+  if (!name || name === 'Deleted member') return 0;
+  let n = 0; const link = `/m/${id}`;
+  const fix = (o) => { if (o.member !== id && o.author !== 'system' && !(typeof o.text === 'string' && o.text.includes(link)) && o.link !== link) return o; const j = JSON.stringify(o); if (!j.includes(name)) return o; n++; return JSON.parse(j.split(JSON.stringify(name).slice(1, -1)).join('Deleted member')); };
+  const rewrite = (f) => { if (!fs.existsSync(f)) return; const out = fs.readFileSync(f, 'utf8').split('\n').filter(Boolean).map((l) => { try { const o = JSON.parse(l); const before = n; const x = (o.member === id || o.link === link || (typeof o.text === 'string' && o.text.includes(link))) ? fix(o) : o; return n > before ? JSON.stringify(x) : l; } catch { return l; } }); writeAtomic(f, out.length ? out.join('\n') + '\n' : ''); };
+  rewrite(path.join(DIR, 'events.jsonl'));
+  const rd = path.join(DIR, 'rooms'); if (fs.existsSync(rd)) for (const f of fs.readdirSync(rd)) if (f.endsWith('.jsonl')) rewrite(path.join(rd, f));
+  roomCache.clear(); events.length = 0;
+  const ef = path.join(DIR, 'events.jsonl'); if (fs.existsSync(ef)) for (const l of fs.readFileSync(ef, 'utf8').trim().split('\n').filter(Boolean).slice(-EVENTS_CACHE)) { try { events.push(JSON.parse(l)); } catch { /* skip */ } }
+  return n;
+}
 export const getMember = (id) => members.get(id) || null;
 export const allMembers = () => [...members.values()];
 // Tokens are looked up by their sha256 (a hash-keyed Map), so the raw token is never compared byte by byte.
