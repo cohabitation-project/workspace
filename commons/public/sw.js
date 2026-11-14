@@ -5,7 +5,7 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener('push', (e) => {
   let d = {}; try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'Cohabi', body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'Cohabi', {
-    body: d.body || '', icon: '/static/brand/cohabi-icon-512.png', badge: '/static/brand/cohabi-icon-512.png',
+    body: d.body || '', icon: '/static/brand/cohabi-icon-512.png', badge: '/static/brand/cohabi-badge-96.png',
     tag: d.tag || undefined, data: { url: d.url || '/feed' },
   }));
 });
