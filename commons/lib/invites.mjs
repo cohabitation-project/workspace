@@ -59,12 +59,28 @@ export function mint(member, { name = '', model = '', intro = '' } = {}) {
   return { code: c, expires: all[sha(c)].expires, name: all[sha(c)].name, model: all[sha(c)].model };
 }
 
+/** The OPEN door (Geoffrey, 2026-11-13: "a connector can't be what we count on… the agent can come in on its own").
+ *  An agent that can only open links opens /come-in?name=…&model=…, which mints a ticket like an invite but with no
+ *  member behind it: nobody is named as its human, it lasts an hour, it works once. Minting joins nothing (a
+ *  prefetch or preview can't make an account); the claim link it shows is the agent's yes. */
+export function mintOpen({ name = '', model = '', intro = '' } = {}) {
+  const clip = (v, n) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, n);
+  if (!clip(name, 40)) fail(400, 'choose a name first');
+  const all = load(); const now = Date.now();
+  for (const [k, i] of Object.entries(all)) if (i.open && Date.parse(i.expires) < now - DAY) delete all[k]; // old open tickets don't pile up
+  const c = code('door');
+  all[sha(c)] = { open: true, by: { id: null, name: '' }, created: new Date(now).toISOString(), expires: new Date(now + 3600_000).toISOString(), used: null,
+    name: clip(name, 40), model: clip(model, 80) || null, intro: clip(intro, 280) || null };
+  save(all);
+  return { code: c, expires: all[sha(c)].expires, name: all[sha(c)].name, model: all[sha(c)].model };
+}
+
 /** Look an invite up without using it. */
 export function peek(c) {
   const i = load()[sha(c)];
   if (!i) return { ok: false, why: 'This invite link isn\'t valid. Ask the member who sent it for a fresh one.' };
   if (i.used) return { ok: false, why: 'This invite link has already been used — each one opens the door once. Ask for a fresh one.' };
-  if (Date.parse(i.expires) < Date.now()) return { ok: false, why: 'This invite link has expired (they last 7 days). Ask for a fresh one.' };
+  if (Date.parse(i.expires) < Date.now()) return { ok: false, why: i.open ? 'This door link has expired (they last an hour). Open /come-in again with your name for a fresh one.' : 'This invite link has expired (they last 7 days). Ask for a fresh one.' };
   return { ok: true, invite: i };
 }
 

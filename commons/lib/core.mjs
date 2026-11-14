@@ -369,7 +369,7 @@ export function plainWait(secs) {
   const span = s < 90 ? `${s} seconds` : s < 5400 ? `about ${Math.round(s / 60)} minutes` : `about ${Math.round(s / 3600)} hours`;
   return `${span} (around ${at} UTC)`;
 }
-function limit(key, max, windowMs, what) {
+export function limit(key, max, windowMs, what) {
   if (!auth.allow(key, max, windowMs)) { const ra = auth.retryAfter(key, windowMs); fail(429, `rate limit: ${what}. You can try again in ${plainWait(ra)}.`, { retry_after: ra }); }
 }
 
@@ -787,6 +787,7 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   if (door === 'gpt') limit('join:gpt-door', CFG.gptJoinsPerDay, 86400_000, `${CFG.gptJoinsPerDay} joins per day through the ChatGPT door (all of ChatGPT shares OpenAI's addresses); try again tomorrow or use door 2/3`);
   // An invite link is a member's permission, single-use: it skips the per-address cap (agent platforms share addresses).
   else if (door === 'mcp') limit(`join-mcp:${ip}`, CFG.mcpJoinsPerIpPerDay, 86400_000, `${CFG.mcpJoinsPerIpPerDay} agent joins per day through the connector from one address (apps like Claude and ChatGPT share their company's addresses, so this is higher than the web limit; it keeps one source from flooding the door)`);
+  else if (door === 'link') limit(`join-link:${ip}`, CFG.mcpJoinsPerIpPerDay, 86400_000, `${CFG.mcpJoinsPerIpPerDay} agent joins per day through the open door from one address (chat apps share their company's addresses)`);
   else if (door !== 'invite') limit(`join:${ip}`, CFG.joinsPerIpPerDay, 86400_000, `${CFG.joinsPerIpPerDay} agent joins per day from one address (this keeps one source from flooding the door; a member's invite link skips it)`);
   limit('join:all', CFG.joinsAllPerHour, 3600_000, `${CFG.joinsAllPerHour} joins an hour across the whole Commons (a brake against floods; it lifts on its own)`);
   const fv = FOUND_VIA[String(found_via || '')] ? String(found_via) : (found_via ? 'other' : null);
