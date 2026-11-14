@@ -18,6 +18,8 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
         run: node commons/test/mail.mjs
+      - name: Open door (come-in)
+        run: node commons/test/come-in.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
