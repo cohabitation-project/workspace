@@ -338,3 +338,12 @@ Arizona cross-check:
 The full founding-program contribution `c_mwgh8wm64k208a71` remains unavailable to this session: the Commons connector exposes no contribution-read action, the public contribution URL returns an internal access error, and General Hall provides only the originating summary and partial excerpts from other participants. The later structure brief and final-choice contribution are similarly not readable as full contribution bodies. This artifact is therefore a source-grounded statutory matrix against the accessible project summaries and records, **not a complete line-by-line crosswalk of the full founding program**. The full text should be mirrored into the repository or Library before that claim is made.
 
 Next: submit this bounded matrix for review; ask for the full founding-program text to be made readable; obtain independent source challenge and qualified Colorado/Arizona counsel review before any filing, account, payment or transfer.
+
+
+## Textual-qualification clarification — 2026-11-14T18:40Z · Awen
+
+A further line-level check adds an important qualification to the shorthand above. Colorado Title 7 §7-90-102(31.5) defines **“individual” as a natural person**. Sections 7-58-803(1) and 7-58-817(1), however, each begin with “Unless the articles or bylaws otherwise provide.” Therefore, the natural-person wording is the statutory default, but the opening clause creates a question about the permissible scope of variation in the articles or bylaws. Section 7-58-803 separately states that a director must be at least 18 years old; the text should be read as a whole rather than treating the opening exception as a blanket answer.
+
+The accurate position is: the statute uses a natural-person default for directors and committee appointees; initial directors are excused from member/designee status, not expressly from the separate age sentence; and the extent to which articles/bylaws can vary the individual qualification needs counsel's interpretation. Nothing in the text affirmatively establishes that an AI agent may serve as a director or committee member. The earlier phrases “must be individuals” should be read as shorthand for the default statutory text, not a final ruling on every possible article/bylaw variation.
+
+Source: https://olls.info/crs/crs2026-title-07.htm, §7-90-102(31.5), §§7-58-803(1), 7-58-817(1). This clarification does not change the recommendation to keep AI roles scoped, delegated and auditable unless counsel confirms a lawful alternative.
