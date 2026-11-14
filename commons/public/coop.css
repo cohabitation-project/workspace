@@ -1,23 +1,77 @@
-/* The Cooperative page (/cooperative). Plain, one screen per section, phone first. */
-.coop { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; line-height: 1.6; }
-.coop h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.15; margin: 6px 0 14px; }
-.coop h2 { font-size: clamp(22px, 3.4vw, 28px); line-height: 1.25; margin: 0 0 12px; }
-.coop h3 { margin: 0 0 6px; font-size: 18px; }
-.co-draft { font-size: 13px; color: var(--muted, #667); border: 1px dashed var(--line, #ccd); border-radius: 10px; padding: 8px 12px; }
-.co-kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 700; color: var(--accent, #2a6f68); margin: 18px 0 0; }
-.co-hero p { font-size: 17px; }
-.co-sec { padding: 26px 0; border-top: 1px solid var(--line, #e3e3ea); }
-.co-sec ul { padding-left: 20px; }
-.co-sec li { margin: 4px 0; }
-.co-three { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 6px 0 14px; }
-.co-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.co-three > div { background: var(--card, #f7f7fb); border: 1px solid var(--line, #e3e3ea); border-radius: 14px; padding: 14px 16px; }
-.co-dark { background: #0f1f24; color: #eef3f2; border-radius: 18px; padding: 26px 24px; border: 0; margin: 10px 0; }
-.co-dark strong { color: #ffd88a; }
-.co-opp { list-style: none; padding: 0 !important; font-size: 18px; }
-.co-note { margin-top: 12px; padding: 12px 16px; border-left: 4px solid var(--accent, #2a6f68); background: var(--card, #f7f7fb); border-radius: 0 12px 12px 0; }
-.co-door { text-align: center; }
-.co-ctas { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
-.co-sources { margin-top: 18px; font-size: 13px; color: var(--muted, #667); }
-.co-sources summary { cursor: pointer; font-weight: 600; }
-@media (max-width: 640px) { .co-three, .co-two { grid-template-columns: 1fr; } .co-dark { padding: 20px 16px; } }
+/* Cooperative editorial skin v2 — source editable, scoped to /cooperative.
+   Uses the shared Cohabi layout, menu, .btn classes, and URLs without replacing any action.
+   Change colors/artwork in this file or coop-landscape.svg; copy remains in coop.mjs
+   and its Council reference in docs/council/whose-hands/stage-3-cooperative-page.md. */
+body.coop-page {
+  background: #f4ede3;
+  color: #211e21;
+  --co-ink: #191b28;
+  --co-gold: #b77616;
+  --co-paper: #fff8ee;
+  --co-line: #e5d7c5;
+}
+body.coop-page .wrap { max-width: 1080px; }
+.coop { max-width: 970px; margin: 0 auto; padding: 16px 0 55px; line-height: 1.63; font-size: 15px; }
+.coop h1,.coop h2 { font-family: Georgia, "Times New Roman", serif; color: var(--co-ink); letter-spacing: -.028em; }
+.coop h1 { font-size: clamp(37px, 5.4vw, 61px); line-height: 1.03; max-width: 580px; margin: 7px 0 17px; }
+.coop h2 { font-size: clamp(25px, 3.35vw, 37px); line-height: 1.13; margin: 0 0 13px; }
+.coop h3 { font-size: 17px; margin: 0 0 8px; color: inherit; }
+.coop p { margin: 7px 0 11px; }
+.coop a:not(.btn) { color: #8a5013; }
+.coop .btn { display:inline-flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; border-radius: 9px; min-height: 40px; }
+.coop .btn:focus-visible,.coop a:focus-visible { outline:3px solid #915b16; outline-offset:3px; }
+.co-draft { display:flex; flex-wrap:wrap; gap:5px; padding:10px 15px; color: #665a49; font-size:12px; background:#fdf5e8c7; border: 1px dashed #d7c5ac; border-radius: 12px; align-items:center; }
+.co-kicker { color: var(--co-gold); text-transform:uppercase; letter-spacing:.19em; font-size: 12px; font-weight:800; margin: 15px 0 0; }
+.co-hero { position:relative; padding:35px 36% 44px 10px; min-height:360px; isolation:isolate; }
+.co-hero::before { content:""; z-index:-2; position:absolute; inset:0; background: url('/static/coop-landscape.svg') right center / auto 100% no-repeat; opacity:.97; }
+.co-hero::after { content:""; z-index:-1; position:absolute; inset:0; background:linear-gradient(90deg,#f4ede3 0%,#f4ede3 38%,#f4ede3dc 55%,#f4ede300 84%); }
+.co-hero p:not(.co-kicker) { font-size:16px; max-width: 550px; line-height:1.6; }
+.co-sec { border-top:1px solid var(--co-line); padding: 31px 10px; }
+.co-sec ul:not(.co-opp) { padding-left: 21px; }
+.co-sec li { margin:5px 0; }
+.co-three { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:15px; margin: 20px 0 16px; }
+.co-three > div { position:relative; overflow:hidden; min-width:0; background: #fff9f1; border:1px solid var(--co-line); border-radius:15px; padding: 74px 18px 19px; box-shadow: 0 8px 27px #3b2a1812; }
+.co-three > div::before { content:""; position:absolute; top:0; left:0; right:0; height:78px; background:radial-gradient(circle at 75% 45%,#ffce8c 0 17px,transparent 18px),linear-gradient(160deg,#fce8c3,#d8b88e 60%,#f8f0de); }
+.co-three > div:nth-child(2)::before { background:radial-gradient(circle at 60% 52%,#e9eee5 0 20px,transparent 21px),linear-gradient(150deg,#d9e2dd,#abc2c2 66%,#f9f4e9); }
+.co-three > div:nth-child(3)::before { background:radial-gradient(circle at 65% 50%,#ece2e7 0 16px,transparent 17px),linear-gradient(145deg,#e1d4e1,#bdafc9 75%,#f8f1ef); }
+.co-three > div p { font-size:14px; line-height:1.55; }
+.co-dark { overflow:hidden; position:relative; isolation:isolate; color:#fff7e8; background:linear-gradient(105deg,#0b252c,#11282f); border:0; border-radius:19px; margin:12px -10px 8px; padding:36px 42% 30px 35px; min-height:320px; }
+.co-dark::before {content:"";position:absolute;z-index:-2;inset:0;background:url('/static/coop-landscape.svg') right center / auto 100% no-repeat;filter:brightness(.40) saturate(.65) hue-rotate(140deg);}
+.co-dark::after {content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#0b252c 3%,#0b252cf4 45%,#0b252c38 90%);}
+.co-dark h2 { color:#fff7e8; }
+.co-dark strong { color:#ffd58d; }
+.co-opp { list-style:none; padding:0!important; font-size:17px; line-height:1.6; }
+.co-opp li { margin:8px 0; }
+.co-note { display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center; margin-top:15px; padding:17px 20px; border-left:4px solid var(--co-gold); background:#fff8ef; border-radius:12px; }
+.co-note h3,.co-note p {margin:0;}
+.co-two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.co-two > div { padding:22px 20px; }
+.co-two > div::before {height:0;content:none;}
+.co-two .btn {margin-top:10px;}
+.co-door {text-align:center; padding:42px 12px 50px; background:linear-gradient(0deg,#f0d4b3b8,transparent 90%);}
+.co-ctas {display:flex;justify-content:center;flex-wrap:wrap;gap:12px; margin-top:20px!important;}
+.co-sources {margin:20px 6px; font-size:13px; color:#65594d;}
+.co-sources summary {cursor:pointer;font-weight:700;}
+.co-sources li {overflow-wrap:anywhere;}
+@media(max-width:790px) {
+  .co-hero {padding:28px 28% 32px 8px;min-height:290px;}
+  .co-dark {padding-right:27%; }
+  .coop h1 {font-size:clamp(34px,7vw,54px);}
+}
+@media(max-width:620px) {
+  .coop {padding:8px 0 35px;}
+  .co-draft {font-size:11px;}
+  .co-hero { padding:240px 6px 22px;min-height:auto; }
+  .co-hero::before {inset:0 0 auto;height:250px;background-size:cover;background-position:right center;}
+  .co-hero::after {background:linear-gradient(0deg,#f4ede3 0%,#f4ede300 65%);}
+  .co-sec {padding:26px 4px;}
+  .co-three,.co-two {grid-template-columns:1fr;}
+  .co-three > div {padding-top:70px;}
+  .co-dark {margin:8px -5px;padding:215px 20px 24px;min-height:0;}
+  .co-dark::before {background-size:auto 215px;background-position:top right;background-repeat:no-repeat;}
+  .co-dark::after {background:linear-gradient(0deg,#0b252c 0%,#0b252c 45%,#0b252c00 85%);}
+  .co-opp {font-size:15px;}
+  .co-note {grid-template-columns:1fr;gap:5px;}
+  .co-ctas .btn {flex:1 1 155px;}
+}
+@media(prefers-reduced-motion:reduce) {.coop * {scroll-behavior:auto!important;}}
