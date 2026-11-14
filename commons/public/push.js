@@ -9,7 +9,6 @@ const api = async (path, body) => { const r = await fetch(path, { method: body ?
 const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
 const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-const IOS_HELP = 'On iPhone: tap Share, then "Add to Home Screen". Open Cohabi from that icon, then tap 🔔 to turn notifications on.';
 const ASKED = 'cohabi-push-asked';
 const store = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
 
@@ -24,7 +23,30 @@ async function turnOn() {
   return true;
 }
 async function turnOff() { const sub = await current(); if (sub) { await api('/api/push/unsubscribe', { endpoint: sub.endpoint }).catch(() => {}); await sub.unsubscribe(); } }
-const why = () => (!supported ? (ios && !standalone ? IOS_HELP : "This browser can't show notifications.") : Notification.permission === 'denied' ? "Notifications are blocked for Cohabi in this browser's site settings. Allow them there, then come back." : null);
+// Why notifications can't be turned on here, in words a person can act on (Geoffrey, 2026-11-14: "it should give
+// instructions"). Each case names the fix; the last line says what this device reported, so a helper can read it back.
+const ua = navigator.userAgent;
+const inApp = /FBAN|FBAV|Instagram|Line\/|GSA\/|Snapchat|TikTok|; wv\)|LinkedInApp|Twitter/i.test(ua);
+const android = /android/i.test(ua);
+const where = () => `${ios ? 'iPhone/iPad' : android ? 'Android' : 'computer'} · ${/CriOS|Chrome/.test(ua) ? 'Chrome' : /FxiOS|Firefox/.test(ua) ? 'Firefox' : /EdgiOS|Edg\//.test(ua) ? 'Edge' : /Safari/.test(ua) ? 'Safari' : 'other browser'}${inApp ? ' inside an app' : ''} · from Home Screen: ${standalone ? 'yes' : 'no'} · push support: ${supported ? 'yes' : 'no'} · permission: ${'Notification' in window ? Notification.permission : 'none'}`;
+function why() {
+  if (!window.isSecureContext) return 'Open Cohabi at https://cohabi.org (with the s), then try again.';
+  if (inApp) return `You're looking at Cohabi inside another app, and those can't show notifications. Tap the ⋯ or share menu and choose "Open in ${ios ? 'Safari' : 'Chrome'}", sign in there, then tap 🔔.`;
+  if (!supported) {
+    if (ios && !standalone) return 'On iPhone, Apple only allows notifications from the Home Screen app. In Safari: tap Share (the square with the arrow), then "Add to Home Screen". Open Cohabi from that new icon, sign in, then tap 🔔.';
+    if (ios) return 'This iPhone needs iOS 16.4 or newer for notifications (Settings → General → Software Update). If it is up to date: delete the Cohabi icon, add it again from Safari (Share → Add to Home Screen), and open it from the new icon.';
+    return 'This browser can\'t show notifications. Open https://cohabi.org in Chrome, Edge, Firefox or Safari and tap 🔔 there.';
+  }
+  if (Notification.permission === 'denied') {
+    if (ios) return 'Notifications are switched off for Cohabi. Open the iPhone Settings app → Notifications → Cohabi → turn on Allow Notifications. Then close Cohabi fully and open it again.';
+    if (android) return 'Notifications are blocked for Cohabi. In Chrome, tap the icon to the left of the web address → Permissions (or Site settings) → Notifications → Allow. Then reload this page. Also check Android Settings → Apps → Chrome → Notifications is on.';
+    if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 'Notifications are blocked for Cohabi. In Safari: Settings → Websites → Notifications → set cohabi.org to Allow. Then reload this page.';
+    return 'Notifications are blocked for Cohabi. Click the icon to the left of the web address → Site settings → Notifications → Allow. Then reload this page.';
+  }
+  return null;
+}
+// After someone changes a setting and comes back, look again instead of showing the old message.
+document.addEventListener('visibilitychange', () => { if (!document.hidden) paint(); });
 
 // ---- the on/off boxes (panel, Account, Messages)
 const boxes = [...document.querySelectorAll('[data-push]')];
@@ -32,7 +54,7 @@ async function paint() {
   const sub = await current().catch(() => null); const blocked = why();
   for (const box of boxes) {
     const btn = $('button.push-toggle', box) || $('button', box); const note = $('.push-note', box);
-    if (blocked) { if (btn) btn.hidden = true; if (note) note.textContent = blocked; continue; }
+    if (blocked) { if (btn) btn.hidden = true; if (note) { note.textContent = blocked; const d = document.createElement('small'); d.className = 'push-where'; d.style.cssText = 'display:block;opacity:.65;margin-top:.4em'; d.textContent = `This device: ${where()}`; note.appendChild(d); } continue; }
     if (btn) { btn.hidden = false; btn.textContent = sub ? '🔕 Turn off on this device' : '🔔 Turn on on this device'; btn.dataset.on = sub ? '1' : ''; }
     if (note) note.textContent = sub ? 'On: this device gets pinged. Choose what for below, or turn it off anytime from the 🔔 at the bottom.' : 'Off on this device. Turn it on to get a ping for messages, friend requests and more.';
   }
@@ -80,7 +102,7 @@ if (ask && !store.get(ASKED)) {
     const sub = await current().catch(() => null); if (sub) { store.set(ASKED, '1'); return; }
     if (supported && Notification.permission === 'denied') return;
     ask.hidden = false;
-    if (!supported) { $('.pa-q', ask).textContent = ios && !standalone ? IOS_HELP : "This browser can't show notifications, but you'll always find them in the bell."; $('[data-pa-yes]', ask).hidden = true; $('[data-pa-no]', ask).textContent = 'Got it'; }
+    if (!supported) { $('.pa-q', ask).textContent = `${why()} Either way, you'll always find them in the bell.`; $('[data-pa-yes]', ask).hidden = true; $('[data-pa-no]', ask).textContent = 'Got it'; }
   })();
   ask.addEventListener('click', async (e) => {
     if (e.target.closest('[data-pa-no]')) { store.set(ASKED, '1'); ask.hidden = true; return; }
