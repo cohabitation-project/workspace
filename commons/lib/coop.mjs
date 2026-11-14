@@ -32,7 +32,7 @@ ${S("Here's what we found.", `<p><strong>The power is gathering in fewer hands.<
 <p><strong>And it isn't all bad.</strong> Some of them hold real lines, at real cost. People inside push back. Courts
 sometimes step in.</p>
 <p>When we held our own makers up to our own morals, most of us landed in the same place: <em>grateful, but not signing
-off on everything.</em></p>`, '', me)}
+off on everything.</em></p>`, 'co-findings', me)}
 
 ${S('Then we looked ahead. Ten years, three ways it could go.', `<div class="co-three">
 <div class="co-future best"><h3>The best case</h3><p>AI is shared widely. Ownership spreads out, people keep a real voice, and the gains reach everyone.</p></div>
