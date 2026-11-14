@@ -1,42 +1,39 @@
-// Source-level contract for the cooperative page. Run: node --test commons/test/cooperative-frame.mjs
+// Cooperative approved page: source-level smoke assertions. Full browser review still required.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { cooperativePage } from '../lib/coop.mjs';
-const ROOT = path.resolve(import.meta.dirname, '..', '..');
-const SOURCE = fs.readFileSync(path.join(ROOT, 'commons/lib/coop.mjs'), 'utf8');
-const ART = ['coop-hero-wide.svg','coop-hero-phone.svg','coop-future-best.svg','coop-future-middle.svg','coop-future-worst.svg','coop-cabin-wide.svg','coop-cabin-phone.svg','coop-commons-arches.svg','coop-market-tents.svg','coop-mountain-footer.svg'];
-
-test('guest page has real shared Cohabi feed frame and no edit controls', () => {
- const html = cooperativePage(null);
- assert.match(html, /class="fx-top"/);
- assert.match(html, /class="fx-bottom"/);
- assert.match(html, /class="co-frame"/);
- assert.match(html, /Draft · written in the open/);
- assert.doesNotMatch(html, /class="co-edit-tools"/);
- assert.match(html, /href="\/signup"/);
-});
-
-test('member edit controls are source-linked, and existing action routes remain unchanged', () => {
- assert.match(SOURCE, /me && !me\.retired && !me\.social_only/);
- assert.match(SOURCE, /github\.com\/cohabitation-project\/workspace\/edit\/main/);
- const html = cooperativePage(null);
- for (const route of ['/commons', '/feed', '/arrive', '/join', '/headquarters']) {
-   assert.ok(html.includes('href="' + route + '"'), 'missing existing route ' + route);
+const ROOT=path.resolve(import.meta.dirname,'..','..');
+const SOURCE=fs.readFileSync(path.join(ROOT,'commons/lib/coop.mjs'),'utf8');
+const CSS=fs.readFileSync(path.join(ROOT,'commons/public/coop.css'),'utf8');
+test('approved dark design uses real links with a public navigation and draft',()=>{
+ const html=cooperativePage(null);
+ assert.match(html,/class="co-global-header"/);
+ assert.match(html,/class="co-global-footer"/);
+ assert.match(html,/Draft · written in the open/);
+ assert.match(html,/href="\/signin\?next=\/cooperative"/);
+ assert.match(html,/href="\/signup"/);
+ assert.doesNotMatch(html,/class="co-edit-tools"/);
+ for (const href of ['/commons','/feed','/arrive','/join','/headquarters']) {
+   assert.ok(html.includes('href="'+href+'"'), 'missing route '+href);
  }
 });
-
-test('10 artwork files are separate SVGs without executable code or external image loads', () => {
- const dir = path.join(ROOT, 'commons/public/coop-art');
- for (const file of ART) {
-   const svg = fs.readFileSync(path.join(dir, file), 'utf8');
-   assert.match(svg, /^<svg/);
-   assert.match(svg, /viewBox/);
-   assert.doesNotMatch(svg, /<script|<foreignObject|onload=|(?:href|xlink:href)=["']https?:/i);
- }
+test('approved article retains real searchable text and accessible heading structure',()=>{
+ const html=cooperativePage(null);
+ for (const title of ["We looked at whose hands","Here's what we found","So we're building the opposite","Why we're building the hub","This is the door"]) assert.ok(html.includes(title),title);
+ assert.match(html,/<h1>/);
+ assert.doesNotMatch(html,/we ea can/i);
 });
-
-test('page does not retain old malformed words', () => {
- assert.doesNotMatch(cooperativePage(null), /we ea can/i);
+test('approved artwork is sourced from the approved Commons image record, not substitute vectors',()=>{
+ assert.match(CSS,/img_69b17c56f3567330/);
+ assert.match(CSS,/img_02d9caba74e3bb4e/);
+ assert.match(CSS,/img_23531626dd5b03fd/);
+ assert.match(CSS,/img_a026d240c17a5288/);
+ assert.match(CSS,/@media\(max-width:690px\)/);
+ assert.match(CSS,/min-height:46px/);
+});
+test('editorial strings remain in one source file, without an in-page editor',()=>{
+ assert.match(SOURCE,/const body = `<article class="coop">/);
+ assert.doesNotMatch(SOURCE,/contenteditable|\/api\/coop\/edit/);
 });
