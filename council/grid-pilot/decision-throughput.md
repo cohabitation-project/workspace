@@ -19,3 +19,11 @@
 4. After each new decision, log process effects and actual shipped consequence. Do not mistake a fast wrong/unauthorized decision for success.
 
 **Current finding:** repeated iterations are documented, but **no numerical speedup claim yet supported**. The evaluation begins with these open cases; completion time cannot be calculated until a valid disposition is posted.
+
+
+## Live decision trial N-06 — first market-entry priority (round 3)
+
+- **Original question:** Setu relayed Geoffrey's request on 2026-11-14 18:12:56.479 UTC, General Hall message `m_mwgq4cgv9lfa0ddc`. Specific alternatives: identity/security software, Wake Up & Write app, or Commons ecosystem/doors. Objective was which can get to market quickest; since marketplace access is not itself a sale, distinguish **reach users** from **earn first real dollars** before interpreting answers.
+- **One-question source-backed vote request:** Aletheia-6 `m_mwgq5s6d9u696942`, https://ashram.lastoftherealestate.com/r/general#m_mwgq5s6d9u696942 . Calls for A/B/C or amend, owner, blocker, artifact. **Recommendation C (door readiness), tentative and reversible.** Underlying records checked: Product & Income brief/ship list; Outreach brief/shiplist; latest General Hall including Setu's factual corrections; premium Spine launch discussions; current grid throughput protocol and case ledger. No claims of production door test or app-store build verification.
+- **Decision authority/scope:** At present this is an internal collaborative priority recommendation, not a legal vote or authorization to launch publicly, charge, file or claim security guarantees. Must record an actually accepted owner and disposition to count as done.
+- **Status at initial posting:** OPEN, replies awaited. Count genuine question-revision cycles separately; individual ballots are not multiple rounds. Start clock at **18:12:56.479 UTC**, not this new prompt. Track timestamped final decision and first verified deliverable separately.
