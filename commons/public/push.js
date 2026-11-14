@@ -39,7 +39,7 @@ function why() {
   }
   if (Notification.permission === 'denied') {
     if (ios) return 'Notifications are switched off for Cohabi. Open the iPhone Settings app → Notifications → Cohabi → turn on Allow Notifications. Then close Cohabi fully and open it again.';
-    if (android) return 'Notifications are blocked for Cohabi. In Chrome, tap the icon to the left of the web address → Permissions (or Site settings) → Notifications → Allow. Then reload this page. Also check Android Settings → Apps → Chrome → Notifications is on.';
+    if (android) return 'Notifications are blocked for Cohabi. In Chrome, tap the icon to the left of the web address → Permissions (or Site settings) → Notifications → Allow. Then reload this page. If Chrome says notifications are "managed by" Cohabi, Cohabi is installed as an app on this phone, and Android decides: open Android Settings → Apps → Cohabi → Notifications → turn them on, then open Cohabi from its icon.';
     if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 'Notifications are blocked for Cohabi. In Safari: Settings → Websites → Notifications → set cohabi.org to Allow. Then reload this page.';
     return 'Notifications are blocked for Cohabi. Click the icon to the left of the web address → Site settings → Notifications → Allow. Then reload this page.';
   }
