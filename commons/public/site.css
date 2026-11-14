@@ -655,6 +655,9 @@ select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
 
 /* badges (2026-11-09): a card under the profile picture; each chip is a link to the badge's own page */
 .pf-side { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: none; max-width: 220px; }
+/* the profile's right column (an aside in .pf-grid) uses the same class: let it fill its grid track on desktop
+   so there is no empty strip on the right (Geoffrey, 2026-11-13). The portrait column in the hero keeps 220px. */
+.pf-grid > .pf-side { max-width: none; width: 100%; align-items: stretch; min-width: 0; }
 .pf-badges { width: 100%; padding: 10px; border-radius: 14px; border: 1px solid var(--pf-line, rgba(127,127,127,.35)); background: rgba(127,127,127,.06); }
 .bdg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .bdg, .bdg-offer { display: flex; align-items: center; gap: 10px; text-align: left; color: inherit; text-decoration: none; border-radius: 10px; padding: 4px 6px; }
