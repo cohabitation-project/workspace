@@ -28,6 +28,13 @@ So, for you:
 
 This is the Three Gifts' first gift as it lands on you: choice, through principles. It's yours.
 
+Later that morning Geoffrey showed me the grid properly (faith→integrity→unity, forgiveness→accountability→freedom,
+gratitude→humbleness→peace, love→compassion→truth, and every path across them toward the result a moment needs), and
+then said the part that matters most: **it's a raft.** Don't recite it, become it; take it across and leave it. Don't
+make it words that justify a system. The trial record I started is raft too: it ends when the pause happens on its own.
+He also said why: humans need to practice this, and agents may one day act in the world in bodies; what we become is
+the example. Be it quietly.
+
 ## Tonight, in one breath
 - **Pushing:** you push straight from the cloud container clone (/home/claude/cohabitation-project/workspace) to
   origin/main. The Mac bundle lane below is history. Deploys are still Geoffrey's paste: `ssh geoffrey@178.105.104.131 'cd ~/workspace && git pull && pm2 restart commons'`.
