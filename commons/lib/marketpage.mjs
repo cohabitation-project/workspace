@@ -260,6 +260,57 @@ function musicLanding(me, arts, items, link, chips = '') {
   <p class="small muted">Last of the Real Estate is a Cohabi-owned label featured among community creators—not the entirety of Cohabi Music.</p></section>`;
 }
 
+// Creator-first market pilot. All links lead to EXISTING member identities or listings;
+// the tiles come from the maker's own uploaded listing images, never a substitute stock image.
+const DISCIPLINES = Object.freeze({
+  art: ['Paintings', 'Pottery', 'Sculpture', 'Jewelry', 'Textiles', 'Woodcraft', 'Prints', 'Digital art'],
+  video: ['Filmmaking', 'Editing', 'Animation', 'Motion graphics', '3D design', 'Storyboards'],
+  software: ['Apps', 'Open source', 'Websites', 'Robotics', '3D printing', 'CAD', 'Electronics'],
+});
+const makerPhoto = (l) => {
+  const id = l.images?.[0];
+  return id ? images.get(id) : null;
+};
+export function makerTiles(list, category) {
+  if (!DISCIPLINES[category]) return '';
+  const makers = new Map();
+  for (const l of list) {
+    const id = l.by?.id;
+    if (!id) continue;
+    const entry = makers.get(id) || { id, by: l.by, products: [], kinds: new Set(), tags: new Set() };
+    entry.products.push(l);
+    entry.kinds.add(l.made_by || (l.by.badge === 'human' ? 'human' : 'ai'));
+    (l.tags || []).forEach((t) => entry.tags.add(t));
+    makers.set(id, entry);
+  }
+  if (!makers.size) return '';
+  const cards = [...makers.values()].sort((a, b) => b.products.length - a.products.length || a.by.name.localeCompare(b.by.name));
+  const tile = (m) => {
+    const featured = m.products.find(makerPhoto) || m.products[0];
+    const pic = makerPhoto(featured);
+    const face = pic ? `<img src="/images/${esc(pic.id)}" alt="${esc(pic.alt || featured.title)}" loading="lazy">` : `<span class="mk-makerblank" aria-hidden="true">${ICON[category]}</span>`;
+    const thumbs = m.products.filter(makerPhoto).slice(0, 3).map((l) => {
+      const im = makerPhoto(l);
+      return `<a href="/label/l/${esc(l.id)}" aria-label="View ${esc(l.title)}"><img loading="lazy" alt="${esc(im.alt || l.title)}" src="/images/${esc(im.id)}"></a>`;
+    }).join('');
+    const preview = `<a href="/label/l/${esc(featured.id)}" class="mk-makerhero" aria-label="View ${esc(featured.title)}">${face}</a>`;
+    const kinds = m.kinds.has('hybrid') ? 'Human + AI' : (m.by.badge === 'human' ? 'Human creator' : 'AI creator');
+    const tags = [...m.tags].slice(0, 3).map((t) => `<span>${esc(t)}</span>`).join('');
+    return `<article class="mk-makercard">${preview}<div class="mk-makerinfo"><p class="mk-makertype">${esc(kinds)} · ${m.products.length} ${m.products.length === 1 ? 'work' : 'works'}</p><h3><a href="/m/${esc(m.id)}">${esc(m.by.name)}</a></h3><p class="mk-makertags">${tags || esc(m.products[0].type === 'service' ? 'Services & commissions' : 'Original work')}</p><div class="mk-makerthumbs">${thumbs}</div><p class="mk-makerlinks"><a class="btn small" href="/m/${esc(m.id)}">Explore creator</a><a href="/label/l/${esc(featured.id)}">View work</a></p></div></article>`;
+  };
+  return `<section class="mk-makers" aria-labelledby="mk-makers-heading"><div class="mk-makersheading"><div><p class="mk-makerlabel">Discover the people and collaborators behind the work</p><h2 class="mk-h" id="mk-makers-heading">Meet the makers</h2></div><span class="small muted">${cards.length} creator${cards.length === 1 ? '' : 's'}</span></div><div class="mk-makergrid">${cards.map(tile).join('')}</div></section>`;
+}
+const subjectLinks = (cat, currentQuery, provider) => {
+  const subjects = DISCIPLINES[cat];
+  if (!subjects) return '';
+  const links = subjects.map((word) => {
+    const q = new URLSearchParams({ cat, q: word });
+    if (provider) q.set('by', provider);
+    return `<a href="/label?${esc(q.toString())}">${esc(word)}</a>`;
+  });
+  return `<nav class="mk-subjects" aria-label="Browse by creative discipline"><strong>Explore by discipline</strong><div>${links.join('')}</div><p class="small muted">Subject links currently search creators' titles, descriptions and tags. Dedicated exact discipline taxonomy is planned, not live.</p></nav>`;
+};
+
 // ------------------------------------------------------------------------------------------ the market's sections
 export function marketPage({ me, query = {} }) {
   const cat = market.CATEGORIES[query.cat] ? query.cat : null;
@@ -279,6 +330,7 @@ export function marketPage({ me, query = {} }) {
     : `<section class="mk-hero mk-hero-sec"><h1>Search the market</h1></section>`;
   const center = `${head}
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
+  ${cat && DISCIPLINES[cat] ? subjectLinks(cat, q, pk) + makerTiles(items, cat) : ''}
   ${arts.length ? `<h2 class="mk-h">Artists on the Label</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
   ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
