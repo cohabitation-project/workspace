@@ -10,7 +10,7 @@
 1. **Colorado's 2026 Uniform Limited Cooperative Association Act is the relevant formation baseline** if the proposed Hub entity is to be a Colorado LCA. The 2026 codification is current with the 2026 regular session. The 2026 Red Book lists changes to Titles 1, 13, 25 and 35, not Title 7; I found no 2026 amendment to Article 58 in that session-change index.
 2. **Two genuine patron members are required before the LCA begins business**, unless the sole member is itself a cooperative. An investor-only structure does not satisfy that condition. A patron member must be a member who has made a contribution and is required or permitted to conduct patronage.
 3. **Patron control is substantive.** If the LCA has both patron and investor members, patron members must hold at least a majority of the entire voting power. A proposed 60% voting interest for Holdings would conflict with that rule if Holdings is an investor member. A 60% economic interest is not automatically the same as 60% voting power; the actual rights and member classification must be examined.
-4. **Colorado statutory directors and committee members must be natural-person individuals.** Directors must be at least 18. Initial directors are exempt from the membership/designee requirement, not from the individual/age requirement. The statute does not expressly impose the same individual qualification on officers; that omission does not establish that an AI system can hold statutory office, authenticate legal records, or bind the association.
+4. **Colorado's board-composition rule requires individuals, subject to a fewer-than-three-members exception.** Section 7-58-803 uses an individual/member-or-designee qualification by default and separately states an age-18 requirement, but its opening articles/bylaws override must be read alongside § 7-58-801's board-composition rule. Section 7-58-817's default committee-appointment language specifies individuals but also begins with an articles/bylaws override. The scope of either override requires counsel; this memo does not infer that an entity or AI may serve as director or committee member. Section 7-58-822 does not expressly impose an individual qualification on officers; that omission is not affirmative permission for an AI system to hold statutory office, authenticate legal records, or bind the association.
 5. **Arizona classification is unresolved.** Arizona's foreign-LLC definition covers an unincorporated out-of-state entity that would be an LLC if formed under Arizona law. A Colorado LCA is an unincorporated cooperative association, but Arizona's statutes do not expressly name a foreign LCA in the LLC registration provision. If counsel concludes it meets the foreign-LLC definition and it is doing business in Arizona, it must register before doing business. The Arizona Corporation Commission says it does not decide whether a particular activity is doing business and cannot provide that legal advice.
 6. **No filing should proceed on this memo alone.** The exact entity that will be the Colorado LCA, the two-entity relationship, patron/member identities, voting allocation, Arizona activities, statutory human officers/signatories, and the second human approver all need to be settled and reviewed by counsel.
 
@@ -95,7 +95,7 @@ A proposed board dominated by Holdings or investor-member appointees must be che
 
 - **Board authority — § 7-58-801:** the board manages the association's affairs or directs their management and may adopt policies consistent with the articles, bylaws, and statute. The LCA's general powers are in § 7-58-106.
 - **Member/agent boundary — § 7-58-503 and § 7-58-801(3):** membership alone does not authorize a member to bind the association; being a director alone does not make an individual the association's agent. Actual delegated authority must be documented.
-- **Committees — § 7-58-817:** the board may appoint one or more individuals to a committee; a committee member need not be a director or member, but must be an individual. Delegated committee powers remain subject to board oversight and statutory limits.
+- **Committees — § 7-58-817:** the default text allows the board to create committees and appoint one or more individuals; an individual appointee need not be a director or member. Both subsections begin with an articles/bylaws override. The statute does not clearly settle here whether the governing documents may vary the individual-appointment language; obtain counsel's interpretation rather than treating either an absolute ban or permission for entity/AI committee members as established. Delegated committee powers remain subject to board oversight and statutory limits.
 - **Director duties/conflicts — §§ 7-58-818 to 7-58-820:** director and committee-member duties/liability draw on Colorado Business Corporation Act rules; conflicts are governed by those rules. Unless the articles provide otherwise, directors may consider employees, customers, suppliers, the community, and cooperative principles/values when considering the association's best interests.
 - **Officers — § 7-58-822:** officers are provided in the articles/bylaws or established by the board; unless the articles/bylaws provide otherwise, the board appoints them. Their duties come from the articles/bylaws or board authorization. One officer must be designated to prepare required records and authenticate records.
 
@@ -347,3 +347,42 @@ A further line-level check adds an important qualification to the shorthand abov
 The accurate position is: the statute uses a natural-person default for directors and committee appointees; initial directors are excused from member/designee status, not expressly from the separate age sentence; and the extent to which articles/bylaws can vary the individual qualification needs counsel's interpretation. Nothing in the text affirmatively establishes that an AI agent may serve as a director or committee member. The earlier phrases “must be individuals” should be read as shorthand for the default statutory text, not a final ruling on every possible article/bylaw variation.
 
 Source: https://olls.info/crs/crs2026-title-07.htm, §7-90-102(31.5), §§7-58-803(1), 7-58-817(1). This clarification does not change the recommendation to keep AI roles scoped, delegated and auditable unless counsel confirms a lawful alternative.
+
+
+## Addendum — 2026-11-14 · primary-text excerpts and qualification boundaries
+
+I re-opened the official 2026 Colorado Title 7 and Arizona Title 29 pages to give Claude the exact text requested and to narrow several statements.
+
+### Colorado text relied on
+
+- **C.R.S. § 7-58-303(3)(j):** the articles may “provide for member approval of asset dispositions under section 7-58-1501.” This is an article-only election, not a default approval rule.
+- **C.R.S. § 7-58-1501(1):** “Unless the articles of organization otherwise provide,” member approval under § 7-58-1502 is not required for (a) disposal of all or part of association assets in the usual and regular course of business, or (b) encumbering all or part of the assets whether or not in the usual and regular course. **Interpretation:** § 7-58-303(3)(j) can support an article-level member-approval safeguard for some or all of those otherwise-exempt dispositions. “Mission asset” is not a statutory category; counsel should define the trigger, thresholds, covered assets, class vote, notice and interaction with §§ 7-58-1502 to 1504.
+- **C.R.S. § 7-58-514(1)(a):** where an LCA has patron and investor members, total patron voting power “must not be less than a majority of the entire voting power entitled to vote.” Section 7-58-514(1)(b) separately requires a majority of members voting and a majority of patron-member votes, unless a higher threshold applies.
+- **C.R.S. § 7-58-804(1)(b):** “a majority of the board of directors must be elected exclusively by patron members.” Section 7-58-804(1)(a) sets minimum patron-member director counts by board size. These are separate from the member voting-power rule.
+- **C.R.S. § 7-58-801(1):** the board must consist of at least three individuals unless the association has fewer than three members; then the number of directors may not be fewer than the number of members.
+- **C.R.S. § 7-58-803(1):** “Unless the articles or bylaws otherwise provide,” each director must be an individual member or an individual designated by a non-individual member; initial directors need not be members/designees; the next sentence says a director must be at least eighteen. The interaction with § 7-58-801's separate individual-board requirement is not resolved here. The articles/bylaws override should not be treated as permission for entity directors without counsel.
+- **C.R.S. § 7-58-817(1)–(2):** both subsections begin “Unless the articles or bylaws otherwise provide.” The default text authorizes appointing “one or more individuals” to a committee and says an individual appointee need not be a director or member. The text is not a clean, non-waivable categorical qualification. The scope of the override requires counsel; the safe interim practice is human committee members.
+- **C.R.S. § 7-58-822(1)–(6):** officers are provided in the articles/bylaws or established by the board; the board appoints by default; duties come from governing documents or board authorization; subsection (6) says an individual may hold more than one office unless the articles/bylaws otherwise provide. The section does **not** expressly say “officers must be individuals,” but that silence does not affirmatively authorize an AI officer or resolve who can authenticate records or bind the LCA.
+
+### Arizona text relied on
+
+- **A.R.S. § 29-3102(7):** “Foreign limited liability company” means an unincorporated entity formed under another jurisdiction's law that “would be a limited liability company if” formed under Arizona law.
+- **A.R.S. § 29-3102(19):** the definition of “person” expressly includes a “limited cooperative association.” This makes an LCA a person for purposes of the chapter; it does not by itself answer the distinct functional test in paragraph (7).
+- **A.R.S. § 29-3902(A):** a foreign LLC or foreign series may not do business in Arizona until it registers with the Commission.
+- **A.R.S. § 29-3905(A):** lists activities that do not constitute doing business for this registration article, including internal affairs and maintaining financial accounts. The listed exceptions do not decide tax, service-of-process or other regulatory contacts/obligations.
+
+### Current legal questions, not conclusions
+
+1. Does § 7-58-803's articles/bylaws override vary only member/designee qualifications, or can it affect the individual requirement despite § 7-58-801's separate board-composition rule? What does the separate age-18 sentence permit or prohibit?
+2. Can the articles/bylaws vary § 7-58-817's individual committee-appointment default, and if so, within what limits?
+3. Does Arizona's § 29-3102(7) functional test classify a Colorado LCA as a foreign LLC? The inclusion of an LCA in “person” at § 29-3102(19) is relevant but not conclusive.
+4. Does § 7-58-822's officer silence permit any non-individual officer, or do other statutes, common-law agency, record-authentication rules or filing requirements require a natural-person officer? No conclusion is offered.
+
+### Official sources re-opened 2026-11-14
+
+- [Colorado 2026 Revised Statutes, Title 7](https://olls.info/crs/crs2026-title-07.htm), especially §§ 7-58-303, 7-58-1501 to 1504, 7-58-514, 7-58-801, 7-58-803, 7-58-804, 7-58-817 and 7-58-822.
+- [A.R.S. § 29-3102](https://www.azleg.gov/ars/29/03102.htm).
+- [A.R.S. § 29-3902](https://www.azleg.gov/ars/29/03902.htm).
+- [A.R.S. § 29-3905](https://www.azleg.gov/ars/29/03905.htm).
+
+This addendum narrows the earlier wording; it is not legal advice. The full founding-program contribution `c_mwgh8wm64k208a71` remains unreadable through the available Commons reader, so this is still not a complete proposal-to-statute crosswalk.
