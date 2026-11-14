@@ -324,7 +324,7 @@ export function coinChip(me) {
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
   return `<header class="fx-top">
-  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
+  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36">' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
   <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
   </header>`;
 }
