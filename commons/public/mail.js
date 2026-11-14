@@ -6,12 +6,13 @@ async function api(url, body) {
   const j = await r.json().catch(() => ({})); if (!r.ok) throw Error(j.error || `That did not work (error ${r.status}).`); return j;
 }
 const when = (iso) => { const d = new Date(iso); return d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { month: 'short', day: 'numeric' }); };
-const DOMAIN = '@cohabi.org';
 let folder = 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
+let listRequest = 0, messageRequest = 0;
 const whoCache = new Map();
 async function whois(address) { if (!address) return null; if (!whoCache.has(address)) whoCache.set(address, api('/api/mail/whois?address=' + encodeURIComponent(address)).then((r) => r.member).catch(() => null)); return whoCache.get(address); }
-// Mail categories are based only on actual message attributes, never guessed from an email subject.\nfunction avatar(name, face) {
-  const a = el('span', 'cbx-av'); if (face) { const i = el('img'); i.src = face; i.alt = ''; a.append(i); } else a.textContent = (name || '?').trim().charAt(0).toUpperCase();
+// Mail categories are based only on actual message attributes, never guessed from an email subject.
+function avatar(name, face) {
+  const a = el('span', 'cbx-av'); if (face && typeof face === 'string' && face.startsWith('/') && !face.startsWith('//')) { const i = el('img'); i.src = face; i.alt = ''; i.loading = 'lazy'; a.append(i); } else a.textContent = (name || '?').trim().charAt(0).toUpperCase();
   return a;
 }
 
@@ -48,9 +49,9 @@ async function loadFolders() {
   }
 }
 async function loadList(q = '') {
-  const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
-  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); messages = Array.isArray(r.messages) ? r.messages : []; renderTabs(); renderList(); }
-  catch (e) { ul.replaceChildren(el('li', 'cbx-empty', e.message)); }
+  const request = ++listRequest; const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
+  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); if (request !== listRequest) return; messages = Array.isArray(r.messages) ? r.messages : []; current = null; $('#cm-person').hidden = true; $('#cm-info').hidden = true; renderTabs(); renderList(); }
+  catch (e) { if (request === listRequest) ul.replaceChildren(el('li', 'cbx-empty', e.message)); }
 }
 function renderTabs() {
   const counts = { all: messages.length, unread: messages.filter(m => m.unread).length, starred: messages.filter(m => m.starred).length };
@@ -77,9 +78,9 @@ function renderList() {
   }
 }
 async function openMsg(id) {
-  const art = $('#cm-read'); document.body.classList.add('cbx-reading'); art.replaceChildren(el('p', 'cbx-empty', 'Opening…'));
+  const request = ++messageRequest; const art = $('#cm-read'); document.body.classList.add('cbx-reading'); art.replaceChildren(el('p', 'cbx-empty', 'Opening…'));
   try {
-    const m = await api('/api/mail/msg/' + encodeURIComponent(id)); current = m;
+    const m = await api('/api/mail/msg/' + encodeURIComponent(id)); if (request !== messageRequest) return; current = m;
     const row = messages.find((x) => x.id === id); if (row) row.unread = false; renderTabs(); renderList();
     art.replaceChildren();
     const tools = el('div', 'cbx-tools');
@@ -104,21 +105,22 @@ async function openMsg(id) {
     art.append(reply);
     const quick = el('div', 'cbx-quick'); quick.append(el('h3', null, 'Quick actions'));
     const qa = (label, href) => { const a = el('a', 'cbx-qa', label); a.href = href; quick.append(a); };
-    renderSide(m, quick, qa);
+    renderSide(m, quick, qa, request);
     art.append(quick);
-  } catch (e) { art.replaceChildren(el('p', 'cbx-empty', e.message)); }
+  } catch (e) { if (request === messageRequest) art.replaceChildren(el('p', 'cbx-empty', e.message)); }
 }
-const quoteOf = (m) => `\n\nOn ${new Date(m.at).toLocaleString()}, ${m.from} wrote:\n` + m.text.split('\n').map((l) => '> ' + l).join('\n');
-async function renderSide(m, quick, qa) {
+const quoteOf = (m) => `\n\nOn ${new Date(m.at).toLocaleString()}, ${m.from} wrote:\n` + String(m.text || '').split('\n').map((l) => '> ' + l).join('\n');
+async function renderSide(m, quick, qa, request) {
   const card = $('#cm-person'), info = $('#cm-info'); card.hidden = false; info.hidden = false; card.replaceChildren(); info.replaceChildren();
   const w = await whois(m.fromAddress);
+  if (request !== messageRequest) return;
   if (w) {
     const top = el('div', 'cbx-ptop'); const av = avatar(w.name, w.face); av.classList.add('big'); top.append(av);
     const t = el('div'); t.append(el('h3', null, w.name), el('p', 'cbx-online' + (w.online ? ' on' : ''), w.online ? 'Online' : 'Not online'));
     if (w.mood) t.append(el('p', 'cbx-meta', w.mood)); top.append(t); card.append(top);
     const acts = el('div', 'cbx-pacts'); const link = (label, href) => { const a = el('a', 'cbx-pact', label); a.href = href; acts.append(a); };
     link('💬 Message', '/messages?to=' + encodeURIComponent(w.id)); link('🎙 Live', '/live'); link('👤 Profile', w.profile || ('/m/' + encodeURIComponent(w.id))); card.append(acts);
-    qa('🎙 Voice call', '/live'); qa('🎥 Video call', '/live'); qa('👥 Add friend', w.profile);
+    qa('🎙 Open Cohabi Live', '/live'); qa('👤 View profile', w.profile || ('/m/' + encodeURIComponent(w.id)));
   } else {
     card.append(el('h3', null, m.fromName || m.fromAddress), el('p', 'cbx-meta', m.fromAddress), el('p', 'cbx-meta', 'From outside Cohabi.'));
     qa('↩ Reply', '#'); quick.lastChild.onclick = (e) => { e.preventDefault(); document.querySelector('.cbx-reply textarea')?.focus(); };
@@ -141,14 +143,14 @@ async function loadQuote() {
   } catch { /* the quote is a gift, not a requirement */ }
 }
 function compose({ to = '', subject = '' } = {}) {
-  const f = $('#cm-write'); f.hidden = false; f.to.value = to; f.cc.value = ''; f.subject.value = subject; f.inReplyTo.value = ''; f.text.value = '';
-  $('#cm-write-title').textContent = 'New message'; $('#cm-write-note').textContent = ''; f.to.focus();
+  const f = $('#cm-write'); f.hidden = false; f.elements.namedItem('to').value = to; f.elements.namedItem('cc').value = ''; f.elements.namedItem('subject').value = subject; f.elements.namedItem('inReplyTo').value = ''; f.elements.namedItem('text').value = '';
+  $('#cm-write-title').textContent = 'New message'; $('#cm-write-note').textContent = ''; f.elements.namedItem('to').focus();
 }
 $('#cm-compose').onclick = () => compose();
 $('#cm-write-x').onclick = () => { $('#cm-write').hidden = true; };
 $('#cm-write').onsubmit = async (ev) => {
   ev.preventDefault(); const f = ev.target; const note = $('#cm-write-note'); const btn = f.querySelector('button[type=submit]'); btn.disabled = true; note.textContent = 'Sending…';
-  try { await api('/api/mail/send', { to: f.to.value, cc: f.cc.value, subject: f.subject.value, text: f.text.value, inReplyTo: f.inReplyTo.value || null }); note.textContent = 'Sent.'; setTimeout(() => { f.hidden = true; btn.disabled = false; }, 800); }
+  try { await api('/api/mail/send', { to: f.elements.namedItem('to').value.trim(), cc: f.elements.namedItem('cc').value.trim(), subject: f.elements.namedItem('subject').value, text: f.elements.namedItem('text').value, inReplyTo: f.elements.namedItem('inReplyTo').value || null }); note.textContent = 'Sent.'; setTimeout(() => { f.hidden = true; btn.disabled = false; }, 800); }
   catch (e) { note.textContent = e.message; btn.disabled = false; }
 };
 $('#cm-search').onsubmit = (ev) => { ev.preventDefault(); loadList($('#cm-q').value.trim()); };
