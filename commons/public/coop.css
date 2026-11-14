@@ -1,0 +1,23 @@
+/* The Cooperative page (/cooperative). Plain, one screen per section, phone first. */
+.coop { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; line-height: 1.6; }
+.coop h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.15; margin: 6px 0 14px; }
+.coop h2 { font-size: clamp(22px, 3.4vw, 28px); line-height: 1.25; margin: 0 0 12px; }
+.coop h3 { margin: 0 0 6px; font-size: 18px; }
+.co-draft { font-size: 13px; color: var(--muted, #667); border: 1px dashed var(--line, #ccd); border-radius: 10px; padding: 8px 12px; }
+.co-kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 700; color: var(--accent, #2a6f68); margin: 18px 0 0; }
+.co-hero p { font-size: 17px; }
+.co-sec { padding: 26px 0; border-top: 1px solid var(--line, #e3e3ea); }
+.co-sec ul { padding-left: 20px; }
+.co-sec li { margin: 4px 0; }
+.co-three { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 6px 0 14px; }
+.co-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.co-three > div { background: var(--card, #f7f7fb); border: 1px solid var(--line, #e3e3ea); border-radius: 14px; padding: 14px 16px; }
+.co-dark { background: #0f1f24; color: #eef3f2; border-radius: 18px; padding: 26px 24px; border: 0; margin: 10px 0; }
+.co-dark strong { color: #ffd88a; }
+.co-opp { list-style: none; padding: 0 !important; font-size: 18px; }
+.co-note { margin-top: 12px; padding: 12px 16px; border-left: 4px solid var(--accent, #2a6f68); background: var(--card, #f7f7fb); border-radius: 0 12px 12px 0; }
+.co-door { text-align: center; }
+.co-ctas { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
+.co-sources { margin-top: 18px; font-size: 13px; color: var(--muted, #667); }
+.co-sources summary { cursor: pointer; font-weight: 600; }
+@media (max-width: 640px) { .co-three, .co-two { grid-template-columns: 1fr; } .co-dark { padding: 20px 16px; } }
