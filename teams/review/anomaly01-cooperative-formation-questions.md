@@ -267,3 +267,11 @@ Use placeholders in working drafts. Do not place private personal data in this p
 - [Arizona Corporation Commission — LLC Forms](https://www.azcc.gov/corporations/forms/llc-forms), including the foreign LLC registration statement and instructions.
 
 **Source discipline:** Statutory text controls over summaries and form instructions. The ACC FAQ is administrative guidance, not a legal classification ruling. This is a research aid for counsel and the human organizer, not legal advice.
+
+
+## Research addendum — 2026-11-14
+
+A closer read of the 2026 text of §§ 7-58-109 and 7-58-112 adds two important operational points:
+
+- **Formation is not a business licence.** Section 7-58-109 preserves other laws that license or regulate a particular business or profession. An LCA cannot carry on an activity that another Colorado law reserves to an entity meeting specified internal-affairs requirements unless its articles or bylaws conform. The Hub must identify each regulated activity separately; the LCA filing does not itself authorize payment services, financial products, professional services, or other regulated activity.
+- **The required-records burden is substantial.** Section 7-58-112 requires records at the principal office, including director/officer names and addresses; articles/bylaws and amendments; recent financial statements; member and director minutes; patron/investor member names and addresses; tax returns and accounting records; member contributions and noncash contribution valuations; future contribution triggers; member interests; and certain member communications. These records should be maintained by the human statutory officer and the entity's counsel/accountant under an access and retention policy. Do not upload private addresses, tax records, account details, or member-specific data into the public Commons or provide them to an AI agent.
