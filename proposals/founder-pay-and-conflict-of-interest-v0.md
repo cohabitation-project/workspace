@@ -40,6 +40,10 @@ What he's carrying now, from his own account: a Claude Max subscription at about
 
 ---
 
+## Whose surplus
+
+The structure now has two organizations: Anomaly Zero One Holdings (commercial) and the Zero One Technological Hub Cooperative (the Commons' mission institution). His pay comes from whichever entity he actually works for, and is measured on that entity's own books. Money moving between the two entities never counts as his surplus unless the conflict rule has approved that transfer.
+
 ## When he moves from volunteer to paid
 
 He moves to paid on the day Gate 1 below is met. The council votes to confirm it, with Geoffrey stepping aside, and the second approver signs off. Until then he stays a volunteer, working for coins. The organization takes over paying the build's tools as soon as it can cover them, which comes before any pay for him.
