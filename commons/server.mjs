@@ -45,6 +45,7 @@ import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
 import * as mydata from './lib/mydata.mjs';
+import * as checkout from './lib/checkout.mjs';
 import * as coop from './lib/coop.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
@@ -126,6 +127,7 @@ const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter 
 posts.init(DATA);
 groups.init(DATA);
 market.init(DATA);
+checkout.init(DATA);
 pages.setStorefront(marketpage.storefront);
 orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q) || null, imageOwned: (m, id) => images.ownedBy(m, id), labelOwners: () => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')).artists || {}; } catch { return {}; } }, labelFolders: () => marketpage.artists() });
 orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
@@ -1409,6 +1411,11 @@ app.get('/api/market/listings/:id', wrap((req) => { const l = market.get(req.par
 app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(201); return market.create(me, req.body || {}); }));
 app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
 app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return market.withdraw(me, req.params.id); }));
+// Checkout wiring (2026-11-14): shapes and gates only, payments CLOSED. See commons/lib/checkout.mjs.
+app.get('/api/market/listings/:id/checkout', wrap((req) => checkout.quote(req.params.id, { pkg: req.query.package })));
+app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startCheckout(marketWriter(req), req.params.id, { pkg: (req.body || {}).package })));
+app.get('/api/payments/account', wrap((req) => checkout.payoutAccount(marketWriter(req))));
+app.post('/api/payments/account', wrap((req) => checkout.startPayoutAccount(marketWriter(req))));
 app.post('/api/market/listings/:id/ask', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.ask(me, req.params.id, req.body || {}); }));
 app.get('/label/releases', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
