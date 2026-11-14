@@ -10,9 +10,7 @@ const DOMAIN = '@cohabi.org';
 let folder = 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
 const whoCache = new Map();
 async function whois(address) { if (!address) return null; if (!whoCache.has(address)) whoCache.set(address, api('/api/mail/whois?address=' + encodeURIComponent(address)).then((r) => r.member).catch(() => null)); return whoCache.get(address); }
-// Which tab a message belongs to: Commons = from one of us; Marketplace / Social = Cohabi's own notices about them.
-function tabOf(m) { const s = (m.subject || '').toLowerCase(); if (/\[market|marketplace|listing/.test(s)) return 'market'; if (/\[social|friend request|commented|mentioned you/.test(s)) return 'social'; return m.fromAddress.endsWith(DOMAIN) ? 'commons' : 'other'; }
-function avatar(name, face) {
+// Mail categories are based only on actual message attributes, never guessed from an email subject.\nfunction avatar(name, face) {
   const a = el('span', 'cbx-av'); if (face) { const i = el('img'); i.src = face; i.alt = ''; a.append(i); } else a.textContent = (name || '?').trim().charAt(0).toUpperCase();
   return a;
 }
@@ -39,7 +37,7 @@ function setup(st) {
   box.append(make, link);
 }
 async function loadFolders() {
-  const { folders } = await api('/api/mail/folders'); const nav = $('#cm-folders'); nav.replaceChildren();
+  const { folders = [] } = await api('/api/mail/folders'); const nav = $('#cm-folders'); nav.replaceChildren();
   const order = ['inbox', 'drafts', 'sent', 'archive', 'junk', 'trash'];
   folders.sort((x, y) => ((order.indexOf(x.role) + 1 || 99) - (order.indexOf(y.role) + 1 || 99)));
   for (const f of folders) {
@@ -51,22 +49,26 @@ async function loadFolders() {
 }
 async function loadList(q = '') {
   const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
-  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); messages = r.messages; renderTabs(); renderList(); }
+  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); messages = Array.isArray(r.messages) ? r.messages : []; renderTabs(); renderList(); }
   catch (e) { ul.replaceChildren(el('li', 'cbx-empty', e.message)); }
 }
 function renderTabs() {
-  const counts = { all: messages.filter((m) => m.unread).length, social: 0, market: 0, commons: 0 };
-  for (const m of messages) { const t = tabOf(m); if (m.unread && counts[t] != null) counts[t]++; }
-  for (const b of document.querySelectorAll('#cm-tabs button')) { b.querySelector('b').textContent = counts[b.dataset.tab]; b.classList.toggle('on', b.dataset.tab === tab); }
+  const counts = { all: messages.length, unread: messages.filter(m => m.unread).length, starred: messages.filter(m => m.starred).length };
+  for (const b of document.querySelectorAll('#cm-tabs button')) {
+    const count = b.querySelector('b');
+    if (count) count.textContent = counts[b.dataset.tab] ?? 0;
+    b.classList.toggle('on', b.dataset.tab === tab);
+    b.setAttribute('aria-pressed', String(b.dataset.tab === tab));
+  }
 }
 function renderList() {
   const ul = $('#cm-list'); ul.replaceChildren();
-  const shown = messages.filter((m) => tab === 'all' || tabOf(m) === tab);
+  const shown = messages.filter((m) => tab === 'all' || (tab === 'unread' && m.unread) || (tab === 'starred' && m.starred));
   if (!shown.length) ul.append(el('li', 'cbx-empty', tab === 'all' ? 'Nothing here yet.' : 'Nothing in this tab yet.'));
   for (const m of shown) {
     const li = el('li', 'cbx-row' + (m.unread ? ' unread' : '') + (current?.id === m.id ? ' on' : '')); const btn = el('button'); btn.type = 'button';
-    const av = avatar(m.from.replace(/<.*>/, '').trim()); whois(m.fromAddress).then((w) => { if (w) { av.replaceWith(avatar(w.name, w.face)); } });
-    const top = el('span', 'cbx-top'); top.append(el('strong', 'cbx-from', m.from.replace(/\s*<.*>$/, '') || m.fromAddress || '—'), el('time', 'cbx-when', when(m.at)));
+    const sender = String(m.from || m.fromAddress || 'Unknown'); const av = avatar(sender.replace(/<.*>/, '').trim()); whois(m.fromAddress).then((w) => { if (w) { av.replaceWith(avatar(w.name, w.face)); } });
+    const top = el('span', 'cbx-top'); top.append(el('strong', 'cbx-from', sender.replace(/\s*<.*>$/, '') || m.fromAddress || '—'), el('time', 'cbx-when', when(m.at)));
     const sub = el('span', 'cbx-subj', m.subject);
     const prev = el('span', 'cbx-prev', m.preview);
     const marks = el('span', 'cbx-marks'); if (m.attachment) marks.append(el('span', null, '📎')); if (m.starred) marks.append(el('span', 'cbx-starred', '★')); if (m.unread) marks.append(el('span', 'cbx-dot'));
@@ -88,17 +90,17 @@ async function openMsg(id) {
     btn('✉', 'Mark unread', () => doAct('unread'));
     const head = el('header', 'cbx-msghead'); const h = el('h2', null, m.subject);
     const star = el('button', 'cbx-star' + (m.starred ? ' on' : ''), m.starred ? '★' : '☆'); star.type = 'button'; star.title = 'Star'; star.onclick = async () => { await doAct(m.starred ? 'unstar' : 'star', true); m.starred = !m.starred; star.textContent = m.starred ? '★' : '☆'; star.classList.toggle('on', m.starred); };
-    const tag = { commons: 'Commons', social: 'Social', market: 'Marketplace', other: 'Mail' }[tabOf({ subject: m.subject, fromAddress: m.fromAddress })];
+    const tag = 'Email';
     h.append(' ', star); head.append(h, el('span', 'cbx-tag', tag));
     const who = el('div', 'cbx-who'); const av = avatar(m.fromName || m.from); who.append(av);
     const whoText = el('div'); whoText.append(el('strong', null, m.fromName || m.fromAddress), el('span', 'cbx-meta', ` <${m.fromAddress}>`), el('div', 'cbx-meta', `To ${m.to}${m.cc ? ' · Cc ' + m.cc : ''}`));
     who.append(whoText, el('time', 'cbx-meta', new Date(m.at).toLocaleString()));
     const body = el('pre', 'cbx-body', m.text || '(no text)');
     art.append(tools, head, who, body);
-    if (m.attachments.length) art.append(el('p', 'cbx-meta', 'Attachments: ' + m.attachments.map((a) => a.name).join(', ') + ' (opening them here is coming)'));
+    if (Array.isArray(m.attachments) && m.attachments.length) art.append(el('p', 'cbx-meta', 'Attachments: ' + m.attachments.map((a) => a.name || 'Attachment').join(', ') + ' (opening them here is coming)'));
     const reply = el('form', 'cbx-reply'); const ta = el('textarea'); ta.placeholder = 'Write a reply…'; ta.rows = 3; const send = el('button', 'btn', 'Send'); const note = el('span', 'cm-note');
     reply.append(ta, el('div', 'cbx-replybar')); reply.lastChild.append(note, send);
-    reply.onsubmit = async (ev) => { ev.preventDefault(); if (!ta.value.trim()) return; send.disabled = true; note.textContent = 'Sending…'; try { await api('/api/mail/send', { to: m.replyTo.replace(/^.*<([^>]+)>$/, '$1'), subject: /^re:/i.test(m.subject) ? m.subject : 'Re: ' + m.subject, text: ta.value + quoteOf(m), inReplyTo: m.messageId }); ta.value = ''; note.textContent = 'Sent.'; } catch (e) { note.textContent = e.message; } send.disabled = false; };
+    reply.onsubmit = async (ev) => { ev.preventDefault(); if (!ta.value.trim()) return; send.disabled = true; note.textContent = 'Sending…'; try { await api('/api/mail/send', { to: String(m.replyTo || m.fromAddress || '').replace(/^.*<([^>]+)>$/, '$1'), subject: /^re:/i.test(m.subject) ? m.subject : 'Re: ' + m.subject, text: ta.value + quoteOf(m), inReplyTo: m.messageId }); ta.value = ''; note.textContent = 'Sent.'; } catch (e) { note.textContent = e.message; } send.disabled = false; };
     art.append(reply);
     const quick = el('div', 'cbx-quick'); quick.append(el('h3', null, 'Quick actions'));
     const qa = (label, href) => { const a = el('a', 'cbx-qa', label); a.href = href; quick.append(a); };
@@ -112,10 +114,10 @@ async function renderSide(m, quick, qa) {
   const w = await whois(m.fromAddress);
   if (w) {
     const top = el('div', 'cbx-ptop'); const av = avatar(w.name, w.face); av.classList.add('big'); top.append(av);
-    const t = el('div'); t.append(el('h3', null, w.name), el('p', 'cbx-online' + (w.online ? ' on' : ''), w.online ? 'Online' : 'Away'));
+    const t = el('div'); t.append(el('h3', null, w.name), el('p', 'cbx-online' + (w.online ? ' on' : ''), w.online ? 'Online' : 'Not online'));
     if (w.mood) t.append(el('p', 'cbx-meta', w.mood)); top.append(t); card.append(top);
     const acts = el('div', 'cbx-pacts'); const link = (label, href) => { const a = el('a', 'cbx-pact', label); a.href = href; acts.append(a); };
-    link('💬 Message', '/messages?to=' + encodeURIComponent(w.id)); link('🎙 Live', '/live'); link('👤 Profile', w.profile); card.append(acts);
+    link('💬 Message', '/messages?to=' + encodeURIComponent(w.id)); link('🎙 Live', '/live'); link('👤 Profile', w.profile || ('/m/' + encodeURIComponent(w.id))); card.append(acts);
     qa('🎙 Voice call', '/live'); qa('🎥 Video call', '/live'); qa('👥 Add friend', w.profile);
   } else {
     card.append(el('h3', null, m.fromName || m.fromAddress), el('p', 'cbx-meta', m.fromAddress), el('p', 'cbx-meta', 'From outside Cohabi.'));
