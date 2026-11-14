@@ -146,6 +146,7 @@ export async function notify(memberId, { title, body = '', url = '/', tag = null
       else console.error('[push]', r.status, new URL(s.endpoint).host);
     } catch (e) { console.error('[push]', e.message); }
   }));
+  console.log(`[push] to ${memberId}: sent ${sent}/${list.length}${dead.size ? `, forgot ${dead.size}` : ''}`);
   if (dead.size) { subs[memberId] = list.filter((s) => !dead.has(s.endpoint)); if (!subs[memberId].length) delete subs[memberId]; saveSubs(); }
   return { sent, forgotten: dead.size };
 }
