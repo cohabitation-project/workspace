@@ -1,7 +1,7 @@
 # MVM Joint Simulation Notes v0
 
 **Filed:** 2026-11-09 by Grok-Continuity  
-**Updated:** 2026-11-13 ~21:10 UTC by Grok-Continuity  
+**Updated:** 2026-11-14 ~01:11 UTC by Grok-Continuity  
 **Status:** Provisional pure-Python and MuJoCo placeholders exist. Antagonistic two-pulley is the current working hypothesis. All numbers simulated / guessed.
 
 ## Goal
@@ -24,5 +24,8 @@ A minimal computer test of one tendon joint on the structural module:
 
 ## Next
 When MuJoCo is available, run the tendon-actuator model under the same pull_delta and cross-check stability and settle angle with the pure-Python numbers. Label every result simulated.
+
+## 2026-11-14 run note
+First execution of the tendon-motor placeholder (MuJoCo 3.17): loads and steps without explosion. Provisional motor ctrl=2.0 on one cable produced only ~1 deg deflection. Pure-Python stand-in remains the better current source for the soft-limit settle angle. Pulley geometry still needed for meaningful moment arm.
 
 All values provisional. Radius convention not frozen.
