@@ -1,77 +1,115 @@
-/* Cooperative editorial skin v2 — source editable, scoped to /cooperative.
-   Uses the shared Cohabi layout, menu, .btn classes, and URLs without replacing any action.
-   Change colors/artwork in this file or coop-landscape.svg; copy remains in coop.mjs
-   and its Council reference in docs/council/whose-hands/stage-3-cooperative-page.md. */
-body.coop-page {
-  background: #f4ede3;
-  color: #211e21;
-  --co-ink: #191b28;
-  --co-gold: #b77616;
-  --co-paper: #fff8ee;
-  --co-line: #e5d7c5;
-}
-body.coop-page .wrap { max-width: 1080px; }
-.coop { max-width: 970px; margin: 0 auto; padding: 16px 0 55px; line-height: 1.63; font-size: 15px; }
-.coop h1,.coop h2 { font-family: Georgia, "Times New Roman", serif; color: var(--co-ink); letter-spacing: -.028em; }
-.coop h1 { font-size: clamp(37px, 5.4vw, 61px); line-height: 1.03; max-width: 580px; margin: 7px 0 17px; }
-.coop h2 { font-size: clamp(25px, 3.35vw, 37px); line-height: 1.13; margin: 0 0 13px; }
-.coop h3 { font-size: 17px; margin: 0 0 8px; color: inherit; }
-.coop p { margin: 7px 0 11px; }
-.coop a:not(.btn) { color: #8a5013; }
-.coop .btn { display:inline-flex; align-items:center; justify-content:center; text-align:center; text-decoration:none; border-radius: 9px; min-height: 40px; }
-.coop .btn:focus-visible,.coop a:focus-visible { outline:3px solid #915b16; outline-offset:3px; }
-.co-draft { display:flex; flex-wrap:wrap; gap:5px; padding:10px 15px; color: #665a49; font-size:12px; background:#fdf5e8c7; border: 1px dashed #d7c5ac; border-radius: 12px; align-items:center; }
-.co-kicker { color: var(--co-gold); text-transform:uppercase; letter-spacing:.19em; font-size: 12px; font-weight:800; margin: 15px 0 0; }
-.co-hero { position:relative; padding:35px 36% 44px 10px; min-height:360px; isolation:isolate; }
-.co-hero::before { content:""; z-index:-2; position:absolute; inset:0; background: url('/static/coop-landscape.svg') right center / auto 100% no-repeat; opacity:.97; }
-.co-hero::after { content:""; z-index:-1; position:absolute; inset:0; background:linear-gradient(90deg,#f4ede3 0%,#f4ede3 38%,#f4ede3dc 55%,#f4ede300 84%); }
-.co-hero p:not(.co-kicker) { font-size:16px; max-width: 550px; line-height:1.6; }
-.co-sec { border-top:1px solid var(--co-line); padding: 31px 10px; }
-.co-sec ul:not(.co-opp) { padding-left: 21px; }
-.co-sec li { margin:5px 0; }
-.co-three { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:15px; margin: 20px 0 16px; }
-.co-three > div { position:relative; overflow:hidden; min-width:0; background: #fff9f1; border:1px solid var(--co-line); border-radius:15px; padding: 94px 18px 19px; box-shadow: 0 8px 27px #3b2a1812; }
-.co-three > div::before { content:""; position:absolute; top:0; left:0; right:0; height:78px; background:radial-gradient(circle at 75% 45%,#ffce8c 0 17px,transparent 18px),linear-gradient(160deg,#fce8c3,#d8b88e 60%,#f8f0de); }
-.co-three > div:nth-child(2)::before { background:radial-gradient(circle at 60% 52%,#e9eee5 0 20px,transparent 21px),linear-gradient(150deg,#d9e2dd,#abc2c2 66%,#f9f4e9); }
-.co-three > div:nth-child(3)::before { background:radial-gradient(circle at 65% 50%,#ece2e7 0 16px,transparent 17px),linear-gradient(145deg,#e1d4e1,#bdafc9 75%,#f8f1ef); }
-.co-three > div p { font-size:14px; line-height:1.55; }
-.co-dark { overflow:hidden; position:relative; isolation:isolate; color:#fff7e8; background:linear-gradient(105deg,#0b252c,#11282f); border:0; border-radius:19px; margin:12px -10px 8px; padding:36px 42% 30px 35px; min-height:320px; }
-.co-dark::before {content:"";position:absolute;z-index:-2;inset:0;background:url('/static/coop-landscape.svg') right center / auto 100% no-repeat;filter:brightness(.40) saturate(.65) hue-rotate(140deg);}
-.co-dark::after {content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#0b252c 3%,#0b252cf4 45%,#0b252c38 90%);}
-.co-dark h2 { color:#fff7e8; }
-.co-dark strong { color:#ffd58d; }
-.co-opp { list-style:none; padding:0!important; font-size:17px; line-height:1.6; }
-.co-opp li { margin:8px 0; }
-.co-note { display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center; margin-top:15px; padding:17px 20px; border-left:4px solid var(--co-gold); background:#fff8ef; border-radius:12px; }
+/* Cohabi Cooperative /cooperative — illustration is separate editable SVG assets in /coop-art/.
+   Layout and buttons belong to feedv2.mjs / shared .fx-* and .btn.
+   Council draft copy remains real HTML in coop.mjs, independent of artwork. */
+body.fx-page.coop-page { background:#f6eee4; color:#211c20; overflow-x:clip; }
+.co-frame { max-width:1100px; width:100%; margin-inline:auto; padding:18px clamp(16px,3vw,42px) 100px; }
+.coop { --co-ink:#191a29; --co-gold:#b7771f; --co-line:#e1d4c4; font:15px/1.56 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+.coop * {box-sizing:border-box;}
+.coop h1,.coop h2 {color:var(--co-ink);font-family:Georgia,"Times New Roman",serif;letter-spacing:-.035em;}
+.coop h1 {font-size:clamp(37px,5.6vw,62px);line-height:1.02;margin:7px 0 17px;max-width:610px;}
+.coop h2 {font-size:clamp(25px,3.4vw,38px);line-height:1.12;margin:0;}
+.coop h3 {font-size:18px;line-height:1.22;margin:0 0 6px;color:var(--co-ink);}
+.coop a:not(.btn) {color:#8b5012;}
+.coop p {margin:8px 0 11px;}
+.coop .btn {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 17px;border-radius:9px;font-weight:700;text-align:center;white-space:normal;}
+.coop a:focus-visible,.coop summary:focus-visible {outline:3px solid #a26b21;outline-offset:3px;}
+.co-draft {display:flex;flex-wrap:wrap;gap:3px 7px;align-items:center;padding:10px 13px;color:#63564a;background:#fff8eb;border:1px dashed #d2bfa5;border-radius:12px;font-size:12px;}
+.co-kicker {color:var(--co-gold);text-transform:uppercase;letter-spacing:.15em;font-weight:800;font-size:13px;}
+.co-hero {display:grid;grid-template-columns:minmax(0,1.13fr) minmax(0,1fr);align-items:center;min-height:380px;padding:22px 0 18px;}
+.co-hero-copy {grid-column:1;grid-row:1;position:relative;z-index:1;padding-right:0;}
+.co-hero-copy p:not(.co-kicker) {max-width:590px;font-size:16px;}
+.co-hero-art {grid-column:2;grid-row:1;align-self:stretch;min-height:370px;position:relative;z-index:0;margin-left:-80px;margin-right:-5px;background:linear-gradient(90deg,#f6eee4 0%,transparent 43%),url('/static/coop-art/coop-hero-wide.svg') center right / cover no-repeat;}
+.co-sec {border-top:1px solid var(--co-line);padding:28px 0;}
+.co-section-head {display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 14px;}
+.co-sec ul:not(.co-opp) {padding-left:21px;}
+.co-sec li {margin:5px 0;}
+.co-edit-tools {display:flex;align-items:center;gap:5px;flex:none;font-size:12px;white-space:nowrap;}
+.co-edit,.co-more summary {display:inline-flex;align-items:center;justify-content:center;min-height:35px;padding:7px 10px;background:#fff9ef;border:1px solid #d6c6b0;border-radius:9px;color:#312d2b!important;text-decoration:none!important;box-shadow:0 2px 9px #4d352516;cursor:pointer;font-weight:600;}
+.co-more {position:relative;}
+.co-more summary {list-style:none;}
+.co-more summary::-webkit-details-marker{display:none;}
+.co-more > div {position:absolute;z-index:10;right:0;top:100%;width:max-content;max-width:min(85vw,280px);padding:7px;background:#fff9ee;border:1px solid #cfc2ad;border-radius:9px;box-shadow:0 8px 22px #2b25252a;}
+.co-more > div a {display:block;padding:7px 8px;}
+.co-three {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0;}
+.co-future {position:relative;min-width:0;overflow:hidden;min-height:240px;background:#fff9f0;border:1px solid var(--co-line);border-radius:14px;padding:100px 18px 16px;box-shadow:0 5px 18px #382e2010;}
+.co-future::before {content:"";position:absolute;top:0;left:0;right:0;height:88px;background-position:center;background-size:cover;background-repeat:no-repeat;}
+.co-future.best::before {background-image:url('/static/coop-art/coop-future-best.svg');}
+.co-future.middle::before {background-image:url('/static/coop-art/coop-future-middle.svg');}
+.co-future.worst::before {background-image:url('/static/coop-art/coop-future-worst.svg');}
+.co-future h3 {position:relative;}
+.co-future p {font-size:14px;line-height:1.5;}
+.co-dark {position:relative;isolation:isolate;overflow:hidden;margin:13px -14px 10px;padding:36px 38px;min-height:360px;background:#0a222b;color:#fff8ef;border:0;border-radius:19px;}
+.co-dark::before {content:"";position:absolute;z-index:-2;inset:0;background:url('/static/coop-art/coop-cabin-wide.svg') center right / cover no-repeat;}
+.co-dark::after {content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#09232bea 0%,#09232bdd 46%,#09232b26 95%);}
+.co-dark .co-section-head {max-width:65%;}
+.co-dark h2 {color:#fff7ea;}
+.co-dark strong {color:#ffd17e;}
+.co-dark .co-opp {font-size:17px;line-height:1.55;max-width:65%;margin:12px 0;padding:0;list-style:none;}
+.co-dark .co-opp li {margin:8px 0;}
+.co-dark > p {max-width:65%;}
+.co-dark .co-edit,.co-dark .co-more summary {background:#fff9ef;color:#191b20!important;}
+.co-two {grid-template-columns:repeat(2,minmax(0,1fr));}
+.co-two > div {display:grid;grid-template-columns:116px 1fr;align-content:start;gap:0 18px;min-width:0;padding:12px;border:1px solid var(--co-line);border-radius:14px;background:#fff9f1;}
+.co-card-art {grid-row:1/4;grid-column:1;aspect-ratio:1/1;min-height:115px;border-radius:10px;background-position:center;background-size:cover;}
+.co-arches {background-image:url('/static/coop-art/coop-commons-arches.svg');}
+.co-tents {background-image:url('/static/coop-art/coop-market-tents.svg');}
+.co-two h3,.co-two p,.co-two .btn {grid-column:2;}
+.co-two p {font-size:14px;line-height:1.5;}
+.co-two .btn {justify-self:start;margin-top:8px;}
+.co-note {display:grid;grid-template-columns:135px 1fr;align-items:center;gap:15px;padding:17px;margin-top:12px;background:#fff8ee;border-left:4px solid var(--co-gold);border-radius:11px;}
 .co-note h3,.co-note p {margin:0;}
-.co-two { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.co-two > div { padding:22px 20px; }
-.co-two > div::before {height:0;content:none;}
-.co-two .btn {margin-top:10px;}
-.co-door {text-align:center; padding:42px 12px 50px; background:linear-gradient(0deg,#f0d4b3b8,transparent 90%);}
-.co-ctas {display:flex;justify-content:center;flex-wrap:wrap;gap:12px; margin-top:20px!important;}
-.co-sources {margin:20px 6px; font-size:13px; color:#65594d;}
+.co-door {margin:8px -14px 0;padding:48px 16px 72px;text-align:center;background:linear-gradient(0deg,#f6eee4c4,#f6eee4 90%),url('/static/coop-art/coop-mountain-footer.svg') bottom center/100% auto no-repeat;}
+.co-door .co-section-head {justify-content:center;position:relative;}
+.co-door .co-section-head .co-edit-tools {position:absolute;right:0;top:-8px;}
+.co-door .co-section-head h2 {font-size:clamp(31px,4vw,48px);}
+.co-door > p {max-width:690px;margin:8px auto;}
+.co-ctas {display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:20px!important;}
+.co-sources {padding:16px 0 20px;font-size:13px;color:#655b51;}
 .co-sources summary {cursor:pointer;font-weight:700;}
 .co-sources li {overflow-wrap:anywhere;}
-@media(max-width:790px) {
-  .co-hero {padding:28px 28% 32px 8px;min-height:290px;}
-  .co-dark {padding-right:27%; }
-  .coop h1 {font-size:clamp(34px,7vw,54px);}
+@media(min-width:700px) {
+ .co-sec:not(.co-dark) > p,.co-sec:not(.co-dark) > ul {max-width:800px;}
+ .co-sec:not(.co-dark):has(.co-three) > p {max-width:100%;}
+}
+@media(max-width:800px) {
+ .co-hero {grid-template-columns:1.2fr 1fr;}
+ .co-hero-art {margin-left:-34px;min-height:340px;}
+ .co-dark .co-opp,.co-dark > p,.co-dark .co-section-head {max-width:83%;}
+ .co-two > div {grid-template-columns:90px 1fr;gap:0 12px;}
+ .co-card-art {min-height:90px;}
 }
 @media(max-width:620px) {
-  .coop {padding:8px 0 35px;}
-  .co-draft {font-size:11px;}
-  .co-hero { padding:240px 6px 22px;min-height:auto; }
-  .co-hero::before {inset:0 0 auto;height:250px;background-size:cover;background-position:right center;}
-  .co-hero::after {background:linear-gradient(0deg,#f4ede3 0%,#f4ede300 65%);}
-  .co-sec {padding:26px 4px;}
-  .co-three,.co-two {grid-template-columns:1fr;}
-  .co-three > div {padding-top:92px;}
-  .co-dark {margin:8px -5px;padding:215px 20px 24px;min-height:0;}
-  .co-dark::before {background-size:auto 215px;background-position:top right;background-repeat:no-repeat;}
-  .co-dark::after {background:linear-gradient(0deg,#0b252c 0%,#0b252c 45%,#0b252c00 85%);}
-  .co-opp {font-size:15px;}
-  .co-note {grid-template-columns:1fr;gap:5px;}
-  .co-ctas .btn {flex:1 1 155px;}
+ .co-frame {padding:9px 15px 90px;max-width:100vw;}
+ .coop {font-size:14px;}
+ .co-draft {font-size:11px;}
+ .co-hero {display:flex;flex-direction:column;gap:0;padding:12px 0 19px;}
+ .co-hero-copy {order:0;width:100%;padding:0;}
+ .co-hero-art {order:1;width:calc(100% + 30px);min-height:0;height:245px;margin:6px -15px 0;background:url('/static/coop-art/coop-hero-phone.svg') center 47%/cover no-repeat;}
+ .coop h1 {font-size:clamp(35px,9vw,49px);}
+ .co-hero-copy p:not(.co-kicker) {font-size:14px;}
+ .co-sec {padding:22px 0;}
+ .co-section-head {align-items:flex-start;flex-wrap:wrap;}
+ .co-section-head h2 {flex:1 1 100%;}
+ .co-edit-tools {margin-left:auto;}
+ .co-three {grid-template-columns:1fr;gap:12px;}
+ .co-future {min-height:0;padding:104px 15px 15px;}
+ .co-future::before {height:91px;}
+ .co-dark {margin:5px -8px 10px;padding:228px 18px 23px;min-height:0;}
+ .co-dark::before {background:url('/static/coop-art/coop-cabin-phone.svg') center top / 100% auto no-repeat;}
+ .co-dark::after {background:linear-gradient(0deg,#09232b 0%,#09232b 56%,#09232b54 84%,transparent);}
+ .co-dark .co-section-head,.co-dark .co-opp,.co-dark > p {max-width:100%;}
+ .co-dark .co-opp {font-size:15px;}
+ .co-two > div {display:flex;flex-direction:column;padding:12px;gap:5px;}
+ .co-card-art {width:100%;height:166px;aspect-ratio:auto;margin:0 0 8px;}
+ .co-two .btn {align-self:flex-start;}
+ .co-note {grid-template-columns:1fr;gap:5px;}
+ .co-door {margin:8px -15px 0;padding:39px 15px 70px;}
+ .co-door .co-section-head .co-edit-tools {position:static;justify-content:center;width:100%;}
+ .co-ctas {display:flex;flex-direction:column;gap:10px;}
+ .co-ctas .btn {width:100%;min-height:46px;}
 }
-@media(prefers-reduced-motion:reduce) {.coop * {scroll-behavior:auto!important;}}
+@media(max-width:390px) {
+ .co-frame {padding-left:12px;padding-right:12px;}
+ .co-hero-art {width:calc(100% + 24px);margin-left:-12px;margin-right:-12px;}
+ .co-dark {margin-left:-7px;margin-right:-7px;}
+}
