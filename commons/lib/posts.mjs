@@ -212,3 +212,37 @@ export function withImages(p) {
 }
 export const get = (id) => { const p = posts.get(String(id || '')); return p ? withImages(p) : null; };
 export const list = ({ by = null, limit = 50, before = null, group = null } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before) && (!group || p.group?.id === group)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);
+
+// ---------------------------------------------------------------- your data (2026-11-14: download and delete)
+const isBy = (x, id) => x === id || (x && typeof x === 'object' && x.id === id);
+/** Everything a member wrote or did on the feed, for "Download your data". */
+export function exportFor(memberId) {
+  const mine = [...posts.values()].filter((p) => p.by === memberId);
+  const myComments = []; for (const l of comments.values()) for (const c of l) if (isBy(c.by, memberId)) myComments.push(c);
+  const myReactions = []; for (const [post, byR] of reacts) for (const [reaction, who] of byR) if (who.has(memberId)) myReactions.push({ post, reaction });
+  const myShares = []; for (const l of shares.values()) for (const s of l) if (isBy(s.by, memberId)) myShares.push(s);
+  return { posts: mine, comments: myComments, reactions: myReactions, shares: myShares };
+}
+/** Erase a member's posts (and the comments under them), their comments, reactions and shares, from memory AND from
+ *  the file: the log is rewritten, so the words are gone, not just hidden behind a "delete" line. */
+export function forgetMember(memberId) {
+  const gonePosts = new Set([...posts.values()].filter((p) => p.by === memberId).map((p) => p.id));
+  let removed = 0;
+  if (FILE && fs.existsSync(FILE)) {
+    const kept = [];
+    for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      let ev; try { ev = JSON.parse(line); } catch { kept.push(line); continue; }
+      const drop = (ev.op === 'add' && ev.post?.by === memberId)
+        || (ev.op === 'delete' && gonePosts.has(ev.id))
+        || ((ev.op === 'comment') && (isBy(ev.comment?.by, memberId) || gonePosts.has(ev.comment?.post)))
+        || ((ev.op === 'react' || ev.op === 'unreact') && (isBy(ev.by, memberId) || gonePosts.has(ev.post)))
+        || (ev.op === 'share' && (isBy(ev.share?.by, memberId) || gonePosts.has(ev.share?.post)))
+        || ((ev.op === 'untag' || ev.op === 'uncomment') && (isBy(ev.by, memberId) || gonePosts.has(ev.post)));
+      if (drop) removed++; else kept.push(line);
+    }
+    const tmp = FILE + '.tmp'; fs.writeFileSync(tmp, kept.length ? kept.join('\n') + '\n' : ''); fs.renameSync(tmp, FILE);
+    init(path.dirname(path.dirname(FILE)));
+  }
+  return { posts: gonePosts.size, records_removed: removed };
+}

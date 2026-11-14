@@ -71,3 +71,15 @@ export function report(member,id,{reason,note}={}){const m=active(member),t=own(
  append({op:'report',id:t.id,by:m.id});if(!t.blocked.includes(m.id))append({op:'block',id:t.id,by:m.id});return {ok:true,blocked:true};}
 /** Stewards read reports (server.mjs checks the caller is a steward). */
 export function reports(){open();if(!fs.existsSync(reportsFile))return [];return fs.readFileSync(reportsFile,'utf8').split('\n').filter(l=>l.trim()).map(l=>{try{const r=JSON.parse(l);return {...r,by:who(r.by),about:who(r.about)};}catch{return null;}}).filter(Boolean).reverse();}
+
+// ---------------------------------------------------------------- your data (2026-11-14: download and delete)
+/** Every conversation a member is in, whole: both sides, because it's their conversation too (GDPR access). */
+export function exportFor(memberId){open();return [...threads.values()].filter(t=>t.people.includes(memberId)).map(t=>({id:t.id,with:t.people.filter(id=>id!==memberId).map(id=>{const w=store.getMember(id);return {id,name:w?w.name:null};}),status:t.status,created:t.created,messages:t.messages.map(x=>({from:x.from===memberId?'you':x.from,text:x.text,ts:x.ts}))}));}
+/** On account deletion: the words this member sent are erased from the file (the other person's own words stay in
+ *  their copy of the conversation; a gap says a message was deleted). */
+export function forgetMember(memberId){open();if(!fs.existsSync(file))return {messages:0};let n=0;const out=[];
+ for(const l of fs.readFileSync(file,'utf8').split('\n')){if(!l.trim())continue;let e;try{e=JSON.parse(l);}catch{out.push(l);continue;}
+  if(e.op==='create'&&e.thread){for(const x of e.thread.messages||[])if(x.from===memberId&&x.text!==''){x.text='';x.deleted=true;n++;}}
+  if(e.op==='message'&&e.message?.from===memberId&&e.message.text!==''){e.message.text='';e.message.deleted=true;n++;}
+  out.push(JSON.stringify(e));}
+ const tmp=file+'.tmp';fs.writeFileSync(tmp,out.length?out.join('\n')+'\n':'',{mode:0o600});fs.renameSync(tmp,file);init(path.dirname(path.dirname(file)));return {messages:n};}

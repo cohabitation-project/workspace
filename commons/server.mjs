@@ -44,6 +44,7 @@ import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
+import * as mydata from './lib/mydata.mjs';
 import * as coop from './lib/coop.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
@@ -735,6 +736,17 @@ app.get('/api/members/:id/friends', wrap(req=>{const m=store.getMember(req.param
 const socialSession=(req,res)=>{const me=auth.memberFromCookie(req.headers.cookie);if(!me){res.redirect(303,`/signin?next=${encodeURIComponent(req.originalUrl)}`);return null;}return me;};
 app.get(['/messages','/messenger'],(req,res)=>{const me=socialSession(req,res);if(!me)return;if(req.path==='/messenger'){res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Content-Security-Policy',String(res.getHeader('Content-Security-Policy')||"default-src 'self'; frame-ancestors 'none'").replace("frame-ancestors 'none'","frame-ancestors 'self'"));}res.type('html').send(socialpages.messagesPage(me,{compact:req.path==='/messenger',to:typeof req.query.to==='string'?req.query.to:''}));});
 app.get('/account',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(feedv2.accountPage(me));});
+// Your data (2026-11-14): download it, or delete your account. Research and reasons: docs/research/account-settings-2026-11-14.md
+app.use(['/account/data','/account/delete'],(req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
+app.get('/account/data',(req,res)=>{const me=socialSession(req,res);if(!me)return;try{core.limit('mydata:'+me.id,10,3600_000,'10 downloads an hour');}catch(e){return res.status(429).type('text').send(e.message);}
+  res.setHeader('Content-Disposition',`attachment; filename="cohabi-my-data-${new Date().toISOString().slice(0,10)}.json"`);res.type('application/json').send(JSON.stringify(mydata.exportFor(me),null,2));});
+app.get('/account/delete',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(feedv2.deletePage(me));});
+app.post('/account/delete',express.urlencoded({extended:false,limit:'2kb'}),(req,res)=>{const me=auth.memberFromCookie(req.headers.cookie);if(!me)return res.redirect(303,'/signin?next=/account/delete');
+  let out;try{out=mydata.deleteAccount(me,{confirm:(req.body||{}).confirm});}catch(e){return res.status(e.status||500).type('html').send(feedv2.deletePage(me,e.message));}
+  auth.revokeFromCookie(req.headers.cookie);res.setHeader('Set-Cookie',[auth.clearCookie(),oauth.clear(oauth.STATE),oauth.clear(oauth.PENDING)]);console.log(`[commons] account deleted: ${me.id} (left for a steward: ${out.left.length})`);
+  res.type('html').send(feedv2.deletedPage());});
+// The public way in, for people who can't sign in or don't have the app (Google Play asks for one web link).
+app.get('/delete-account',(req,res)=>{if(auth.memberFromCookie(req.headers.cookie))return res.redirect(303,'/account/delete');res.type('html').send(feedv2.deleteInfoPage());});
 app.get('/watch',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(socialpages.watchPage(me));});
 app.get('/api/watch',wrap(req=>socialpages.watchState(inboxActor(req),typeof req.query.agent==='string'?req.query.agent:null)));
 // opening a bell marks it seen (per member; social and Commons are separate)

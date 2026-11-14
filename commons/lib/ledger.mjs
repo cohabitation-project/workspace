@@ -221,3 +221,7 @@ export function walletView(member) {
 export const publicEntries = (n = 200) => entries.slice(-n).map((e) => ({ seq: e.seq, ts: e.ts, kind: e.kind, lines: e.lines, data: e.data, by: e.by?.name || null, hash: e.hash, prev: e.prev }));
 // for tests only: tamper with the file to prove verify() notices
 export const _entriesForTest = () => entries;
+
+/** Every ledger entry that touches one account (for "Download your data"). Coin records are kept on deletion: they
+ *  are the cooperative's books, and after deletion they point at "Deleted member", not a name. */
+export const entriesFor = (account) => entries.filter((e) => (e.lines || []).some((l) => l.account === account));

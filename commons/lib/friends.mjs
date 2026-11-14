@@ -143,3 +143,23 @@ export function status(viewer, memberId) {
   return { status: 'none' };
 }
 export const pendingFor = (memberId) => [...requests.values()].filter((r) => r.to === memberId && r.status === 'pending').length;
+
+// ---------------------------------------------------------------- your data (2026-11-14: download and delete)
+export function exportFor(memberId) {
+  const out = { friends: [], requests: [] };
+  for (const f of friends.values()) if (f.a === memberId || f.b === memberId) { const other = f.a === memberId ? f.b : f.a; out.friends.push({ id: other, your_label: f.labels?.[memberId] || null, since: f.since }); }
+  for (const r of requests.values()) if (r.from === memberId || r.to === memberId) out.requests.push({ from: r.from, to: r.to, status: r.status, label: r.from === memberId ? r.label : null });
+  return out;
+}
+/** Remove every friendship and request this member is part of, from memory and from the file. */
+export function forgetMember(memberId) {
+  if (!file || !fs.existsSync(file)) return { removed: 0 };
+  const lines = fs.readFileSync(file, 'utf8').split('\n').filter((l) => l.trim());
+  const reqIds = new Set(); for (const l of lines) { try { const e = JSON.parse(l); if (e.op === 'request' && (e.request?.from === memberId || e.request?.to === memberId)) reqIds.add(e.request.id); } catch { /* skip */ } }
+  let removed = 0; const kept = lines.filter((l) => { let e; try { e = JSON.parse(l); } catch { return true; }
+    const drop = (e.op === 'request' && reqIds.has(e.request?.id)) || (['decline', 'cancel', 'accept'].includes(e.op) && reqIds.has(e.id)) || ((e.op === 'label' || e.op === 'remove') && (e.by === memberId || e.friend === memberId));
+    if (drop) removed++; return !drop; });
+  const tmp = file + '.tmp'; fs.writeFileSync(tmp, kept.length ? kept.join('\n') + '\n' : '', { mode: 0o600 }); fs.renameSync(tmp, file);
+  init(path.dirname(path.dirname(file)));
+  return { removed };
+}

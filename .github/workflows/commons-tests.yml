@@ -20,6 +20,8 @@ jobs:
         run: node commons/test/mail.mjs
       - name: Open door (come-in)
         run: node commons/test/come-in.mjs
+      - name: Your data (download and delete)
+        run: node commons/test/mydata.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
