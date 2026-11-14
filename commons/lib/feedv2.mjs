@@ -363,13 +363,23 @@ export function mailPage(me) {
     mail: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'), search: icon('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
   };
   return socialPage('Cobox', me, `<div class="cbx" id="cm" data-me="${esc(me.id)}">
-<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon">${I.mail}</span><div><h1>Cobox</h1><p>Your mail. Your community. All in one place.</p></div></div>
-  <p class="cbx-tagline">People · AI · Land · A Better Tomorrow</p>
+<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon"><img src="/static/brand/cohabi-icon-512.png" alt="" width="48" height="48"></span><div><h1><span>Cohabi</span> <em>CoBox</em></h1><p>Mail, people and possibility. All in one place.</p></div></div>
+  <p class="cbx-tagline" id="cm-tagline">People <span>·</span> AI <span>·</span> Land <span>·</span> A Better Tomorrow</p>
   <form class="cbx-search" id="cm-search" role="search">${I.search}<input id="cm-q" placeholder="Search mail…" aria-label="Search your mail"></form>
   <p class="cbx-addr" id="cm-addr">Opening your mailbox…</p></section>
 <div class="cm-setup" id="cm-setup" hidden></div>
 <div class="cbx-app" id="cm-app" hidden>
   <aside class="cbx-rail" aria-label="Folders and links">
+    <nav class="cbx-destnav" aria-label="Cohabi destinations">
+      <a href="/feed">${I.social}<span>Home</span></a>
+      <a href="/cobox" class="cbx-dest-on" aria-current="page">${I.mail}<span>CoBox</span></a>
+      <a href="/live">${I.live}<span>Live</span></a>
+      <a href="/feed?tab=groups">${I.groups}<span>Communities</span></a>
+      <a href="/label">${I.market}<span>Marketplace</span></a>
+      <a href="/m/${esc(me.id)}">${I.profile}<span>Profile</span></a>
+      ${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}<span>Commons</span></a>` : ''}
+    </nav>
+    <div class="cbx-rail-divider" aria-hidden="true"></div>
     <button type="button" class="btn cbx-write" id="cm-compose">✎ Compose</button>
     <nav class="cbx-folders" id="cm-folders" aria-label="Folders"></nav>
     <h3>Quick links</h3>
@@ -384,7 +394,7 @@ export function mailPage(me) {
   <aside class="cbx-side" id="cm-side" aria-label="About this conversation">
     <section class="cbx-card" id="cm-person" hidden></section>
     <section class="cbx-card cbx-info" id="cm-info" hidden></section>
-    <section class="cbx-quote" id="cm-quote"><p class="cbx-qtext">A quote from one of us will appear here each day.</p></section>
+    <section class="cbx-quote" id="cm-quote" aria-label="Daily words from the community"><span class="cbx-qlabel">TODAY IN THE COMMONS</span><p class="cbx-qtext">A quote from one of us will appear here each day.</p></section>
   </aside>
 </div>
 <form class="cm-write" id="cm-write" hidden>
@@ -396,7 +406,7 @@ export function mailPage(me) {
   <input type="hidden" name="inReplyTo">
   <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
-<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/feed">${I.social}Social</a><a href="/label">${I.market}Marketplace</a><a href="/headquarters">${I.commons}Commons</a><a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/feed">${I.social}Social</a><a href="/label">${I.market}Marketplace</a>${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}Commons</a>` : ''}<a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
 </div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
