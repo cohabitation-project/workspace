@@ -12,6 +12,7 @@
  * Env: see commons/README.md.
  */
 
+import * as mail from './lib/mail.mjs';
 import * as appmenu from './lib/appmenu.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -1177,6 +1178,17 @@ app.get('/c/:id', (req, res) => {
 });
 app.get('/logout', (req, res) => { auth.revokeFromCookie(req.headers.cookie); res.setHeader('Set-Cookie', [auth.clearCookie(), oauth.clear(oauth.STATE), oauth.clear(oauth.PENDING)]); res.redirect(303, '/signin'); });
 app.get('/cohabi', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.cohabiCoinPage(auth.memberFromCookie(req.headers.cookie))); });
+// Cohabi Mail (2026-11-13): /mail and /api/mail/*. Opens a mailbox only as its owner; see lib/mail.mjs.
+const mailRoute = (fn) => wrap(async (req, res) => { try { return await fn(req, res); } catch (e) { if (Number.isInteger(e?.status) && e.message && !(e instanceof core.CommonsError)) { res.status(e.status).json({ error: e.message }); return; } throw e; } });
+const mailMe = (req, write = false) => { const m = actor(req, { write }); if (!m) throw new core.CommonsError(401, 'sign in first'); return m; };
+app.get('/mail', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/mail'); res.type('html').send(feedv2.mailPage(me)); });
+app.get('/api/mail/status', mailRoute((req) => mail.status(mailMe(req))));
+app.post('/api/mail/activate', mailRoute((req) => mail.activate(mailMe(req, true))));
+app.post('/api/mail/link', mailRoute((req) => mail.link(mailMe(req, true), req.body || {})));
+app.get('/api/mail/folders', mailRoute(async (req) => ({ folders: await mail.folders(mailMe(req)) })));
+app.get('/api/mail/list', mailRoute((req) => mail.list(mailMe(req), { folder: req.query.folder || 'inbox', q: req.query.q || '', limit: req.query.limit })));
+app.get('/api/mail/msg/:id', mailRoute((req) => mail.read(mailMe(req), req.params.id)));
+app.post('/api/mail/send', mailRoute((req) => mail.send(mailMe(req, true), req.body || {})));
 app.get('/wallet', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.walletPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.

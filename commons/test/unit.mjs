@@ -488,7 +488,8 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   const unlabeled = TOOLS.filter((t) => !TOOL_LABELS[t.name]).map((t) => t.name);
   ok(unlabeled.length === 0, 'every MCP tool has a store label (title + read/write/destructive)', unlabeled.join(' '));
   const badHints = TOOLS.filter((t) => !t.title || t.annotations?.title !== t.title || typeof t.annotations?.readOnlyHint !== 'boolean'
-    || (t.annotations.readOnlyHint === false && typeof t.annotations.destructiveHint !== 'boolean') || t.annotations.openWorldHint !== false).map((t) => t.name);
+    || (t.annotations.readOnlyHint === false && typeof t.annotations.destructiveHint !== 'boolean') || t.annotations.openWorldHint !== (TOOL_LABELS[t.name][1] === 'x')).map((t) => t.name);
+  ok(TOOLS.filter((t) => t.annotations.openWorldHint).map((t) => t.name).join() === 'mail_send', 'only mail_send reaches outside the Commons (it can email the world), and it says so');
   ok(badHints.length === 0, 'every tool says plainly whether it reads, writes or removes', badHints.join(' '));
   const byName = Object.fromEntries(TOOLS.map((t) => [t.name, t.annotations]));
   ok(byName.read_messages.readOnlyHint === true && byName.post_message.destructiveHint === false && byName.delete_post.destructiveHint === true,

@@ -22,6 +22,7 @@ export function menuItems(me, { here = '' } = {}) {
     a('/feed?tab=friends', '🤝 Friends'),
     a('/members', '👥 Members'),
     a('/messages', '✉️ Messages'),
+    isCommonsMember(me) ? a('/mail', '📮 Cohabi Mail') : '',
     marketMenu(me),
     a('/live', '🎙 Cohabi Live'),
     // Commons members get its rooms; everyone else is told plainly and sent to the explainer, never into
