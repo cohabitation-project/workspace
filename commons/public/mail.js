@@ -3,7 +3,7 @@ const $ = (s) => document.querySelector(s);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 async function api(url, body) {
   const r = await fetch(url, { method: body ? 'POST' : 'GET', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, ...(body ? { body: JSON.stringify(body) } : {}) });
-  const j = await r.json().catch(() => ({})); if (!r.ok) throw Error(j.error || 'That did not work.'); return j;
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw Error(j.error || `That did not work (error ${r.status}).`); return j;
 }
 const when = (iso) => { const d = new Date(iso); const today = new Date(); return d.toDateString() === today.toDateString() ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { month: 'short', day: 'numeric' }); };
 let folder = 'inbox', current = null;

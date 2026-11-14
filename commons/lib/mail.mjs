@@ -51,7 +51,13 @@ export function localPartFor(m, taken = new Set(Object.values(load()).map((a) =>
 
 // ---- JMAP plumbing
 async function jmapAs(auth, using, methodCalls) {
-  const sess = await fetch(`${BASE()}/.well-known/jmap`, { headers: { Authorization: auth } });
+  // /.well-known/jmap answers with a redirect to the session on its PUBLIC address (https://mail.cohabi.org/...).
+  // A redirect to another host drops the Authorization header, so follow it ourselves, back on this machine.
+  let sess = await fetch(`${BASE()}/.well-known/jmap`, { headers: { Authorization: auth }, redirect: 'manual' });
+  for (let hops = 0; sess.status >= 300 && sess.status < 400 && sess.headers.get('location') && hops < 3; hops++) {
+    const loc = new URL(sess.headers.get('location'), BASE());
+    sess = await fetch(BASE() + loc.pathname + loc.search, { headers: { Authorization: auth }, redirect: 'manual' });
+  }
   if (sess.status === 401) throw mailErr('the mail server refused this mailbox login', 401);
   if (!sess.ok) throw mailErr(`mail server unavailable (${sess.status})`, 502);
   const s = await sess.json();
@@ -80,7 +86,11 @@ export async function activate(m) {
   const dq = pick(await admin([['x:Domain/query', { filter: { name: DOMAIN() } }, 'd']]), 'x:Domain/query');
   const domainId = dq?.ids?.[0]; if (!domainId) throw mailErr(`the mail server has no ${DOMAIN()} domain`, 502);
   const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: [{ '@type': 'Password', secret }] } } }, 'c']]), 'x:Account/set');
-  if (!created?.created?.n) throw mailErr(`the mail server did not create the mailbox: ${JSON.stringify(created?.notCreated?.n || created).slice(0, 200)}`, 502);
+  if (!created?.created?.n) {
+    const why = JSON.stringify(created?.notCreated?.n || created || {});
+    if (/exist|already|duplicate|in use/i.test(why)) throw mailErr(`${address} already exists on the mail server. If it's yours, connect it with its password below.`, 409);
+    throw mailErr(`the mail server did not create the mailbox: ${why.slice(0, 200)}`, 502);
+  }
   load()[m.id] = { address, secret: seal(secret), created: new Date().toISOString(), via: 'provisioned' }; save();
   return status(m);
 }
