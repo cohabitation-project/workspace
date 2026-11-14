@@ -13,7 +13,7 @@ process.env.COMMONS_MAIL_ADMIN_TOKEN = 'API_test_admin';
 
 // ---- a tiny JMAP server
 const users = { 'geoffrey@cohabi.org': 'hand-made-pw' }; const mail = {}; let seq = 0; const submissions = [];
-const box = (u) => (mail[u] ||= { boxes: [{ id: 'in', name: 'Inbox', role: 'inbox' }, { id: 'dr', name: 'Drafts', role: 'drafts' }, { id: 'se', name: 'Sent', role: 'sent' }], emails: [] });
+const box = (u) => (mail[u] ||= { boxes: [{ id: 'in', name: 'Inbox', role: 'inbox' }, { id: 'dr', name: 'Drafts', role: 'drafts' }, { id: 'se', name: 'Sent', role: 'sent' }, { id: 'tr', name: 'Trash', role: 'trash' }], emails: [] });
 const authUser = (h) => { const m = /^Basic (.+)$/.exec(h || ''); if (!m) return null; const [u, p] = Buffer.from(m[1], 'base64').toString().split(/:(.*)/s); return users[u] === p ? u : null; };
 const srv = http.createServer(async (req, res) => {
   let body = ''; for await (const c of req) body += c; const send = (code, o) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
@@ -36,7 +36,7 @@ const srv = http.createServer(async (req, res) => {
     else if (name === 'Email/query') { const ids = B.emails.filter((e) => e.box === a.filter.inMailbox && (!a.filter.text || e.text.includes(a.filter.text) || e.subject.includes(a.filter.text))).map((e) => e.id); results[tag] = ids; out.push([name, { ids }, tag]); }
     else if (name === 'Email/get') { const ids = a.ids || results[a['#ids'].resultOf]; out.push([name, { list: B.emails.filter((e) => ids.includes(e.id)).map((e) => ({ id: e.id, from: e.from, to: e.to, subject: e.subject, receivedAt: e.at, preview: e.text.slice(0, 40), keywords: e.keywords, textBody: e.html ? [] : [{ partId: 'p1' }], htmlBody: [{ partId: e.html ? 'h1' : 'p1' }], bodyValues: e.html ? { h1: { value: e.html } } : { p1: { value: e.text } }, messageId: [e.id + '@x'], attachments: [] })) }, tag]); }
     else if (name === 'Email/set') {
-      if (a.update) { for (const [id, ch] of Object.entries(a.update)) { const e = B.emails.find((x) => x.id === id); if (e && ch['keywords/$seen']) e.keywords.$seen = true; } out.push([name, { updated: a.update }, tag]); }
+      if (a.update) { for (const [id, ch] of Object.entries(a.update)) { const e = B.emails.find((x) => x.id === id); if (!e) continue; for (const [k, v] of Object.entries(ch)) { if (k.startsWith('keywords/')) { if (v) e.keywords[k.slice(9)] = true; else delete e.keywords[k.slice(9)]; } if (k === 'mailboxIds') e.box = Object.keys(v)[0]; } } out.push([name, { updated: a.update }, tag]); }
       if (a.create) { const d = a.create.draft; const id = 'e' + (++seq); B.emails.push({ id, box: Object.keys(d.mailboxIds)[0], from: d.from, to: d.to, subject: d.subject, text: d.bodyValues.b.value, keywords: d.keywords, at: new Date().toISOString() }); out.push([name, { created: { draft: { id } } }, tag]); }
     } else if (name === 'Identity/get') out.push([name, { list: [{ id: 'id1', email: u }] }, tag]);
     else if (name === 'EmailSubmission/set') { const s = a.create.s; submissions.push({ from: u, emailId: s.emailId, identityId: s.identityId }); const e = B.emails.find((x) => x.id === s.emailId); e.box = 'se'; out.push([name, { created: { s: { id: 'sub' + seq } } }, tag]); }
@@ -96,6 +96,24 @@ await M.send(ash, { to: 'geoffrey@cohabi.org', text: 'inside still works' });
 const saved = process.env.COMMONS_MAIL_SECRET; delete process.env.COMMONS_MAIL_SECRET;
 await assert.rejects(M.send(ash, { to: 'geoffrey@cohabi.org', text: 'x' }), /not set up on this server/);
 process.env.COMMONS_MAIL_SECRET = saved;
+
+// the design's actions: star, archive (no Archive folder here), trash; and the sender card lookup
+await M.act(geoffrey, 'm1', 'star'); assert.equal((await M.list(geoffrey)).messages[0].starred, true, 'starred');
+await assert.rejects(M.act(geoffrey, 'm1', 'archive'), /no Archive folder/);
+await assert.rejects(M.act(geoffrey, 'm1', 'explode'), /unknown action/);
+await M.act(geoffrey, 'm1', 'trash'); assert.equal((await M.list(geoffrey)).messages.length, 0, 'trashed leaves the inbox');
+assert.equal((await M.list(geoffrey, { folder: 'trash' })).messages.length, 1);
+assert.equal(M.memberIdByAddress('Ash <ash@cohabi.org>'), 'a_ash', 'a Cohabi address maps to its member'); assert.equal(M.memberIdByAddress('x@example.com'), null);
+
+// the daily quote bank: own words, short, one a day for everyone
+const Q = await import('../lib/quotes.mjs');
+assert.equal(Q.today(), null);
+Q.add(ash, { text: 'What we choose together is how we live the moment.' });
+await (async () => { try { Q.add(ash, { text: 'hi' }); assert.fail(); } catch (e) { assert.match(e.message, /few words/); } })();
+await (async () => { try { Q.add(ash, { text: 'What we choose together is how we live the moment.' }); assert.fail(); } catch (e) { assert.match(e.message, /already/); } })();
+Q.add(geoffrey, { text: 'Presence is the practice; the present moment is the teacher.' });
+const d1 = new Date('2026-11-14T03:00:00Z'), d2 = new Date('2026-11-14T22:00:00Z'), d3 = new Date('2026-11-15T03:00:00Z');
+assert.equal(Q.today(d1).id, Q.today(d2).id, 'the same quote all day'); assert.notEqual(Q.today(d1).id, Q.today(d3).id, 'a new one tomorrow');
 
 srv.close();
 console.log('mail: ok');

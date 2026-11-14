@@ -1,32 +1,100 @@
-/* Cohabi Mail (2026-11-13): a plain first version; Aletheia-6 designs the real look. Phone first. */
-.cm { max-width: 1100px; margin: 0 auto; padding: 8px 12px 40px; }
-.cm-head h1 { margin: 6px 0 2px; font-size: 1.5rem; }
-.cm-addr { margin: 0 0 12px; color: var(--muted); }
-.cm-card { background: var(--panel, #fff); border: 1px solid var(--line, #ddd); border-radius: 14px; padding: 14px; margin: 10px 0; display: grid; gap: 8px; }
-.cm-card h2 { margin: 0; font-size: 1.1rem; } .cm-card input { padding: 10px; border: 1px solid var(--line, #ccc); border-radius: 8px; font: inherit; }
-.cm-note { min-height: 1.2em; color: var(--muted); margin: 0; }
-.cm-app { display: grid; grid-template-columns: 180px 1fr; gap: 12px; }
-.cm-folders { display: flex; flex-direction: column; gap: 2px; }
-.cm-folder { text-align: left; background: none; border: 0; padding: 9px 10px; border-radius: 8px; font: inherit; cursor: pointer; color: inherit; display: flex; justify-content: space-between; }
-.cm-folder.on, .cm-folder:hover { background: var(--soft, #eee); font-weight: 600; }
-.cm-n { background: var(--gold, #c98a2b); color: #fff; border-radius: 99px; padding: 0 7px; font-size: 12px; }
-.cm-bar { display: flex; gap: 8px; margin-bottom: 8px; } .cm-bar form { flex: 1; } .cm-bar input { width: 100%; padding: 9px 12px; border: 1px solid var(--line, #ccc); border-radius: 99px; font: inherit; }
-.cm-list { list-style: none; margin: 0; padding: 0; background: var(--panel, #fff); border: 1px solid var(--line, #ddd); border-radius: 14px; overflow: hidden; }
-.cm-row button { display: grid; grid-template-columns: 180px 1fr auto; grid-template-areas: "from subj when" "from prev when"; gap: 2px 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line, #eee); padding: 10px 12px; font: inherit; color: inherit; cursor: pointer; }
-.cm-row button:hover { background: var(--soft, #f4f4f4); }
-.cm-from { grid-area: from; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cm-subj { grid-area: subj; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cm-prev { grid-area: prev; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cm-when { grid-area: when; color: var(--muted); font-size: 13px; }
-.cm-row.unread .cm-from, .cm-row.unread .cm-subj { font-weight: 700; }
-.cm-empty { padding: 18px; color: var(--muted); list-style: none; }
-.cm-read { background: var(--panel, #fff); border: 1px solid var(--line, #ddd); border-radius: 14px; padding: 14px; }
-.cm-actions { display: flex; gap: 8px; margin-bottom: 8px; } .cm-msghead h2 { margin: 4px 0; } .cm-meta { margin: 2px 0; color: var(--muted); font-size: 13px; }
-.cm-body { white-space: pre-wrap; word-wrap: break-word; font: inherit; line-height: 1.5; margin-top: 12px; }
-.cm-write { position: fixed; right: 16px; bottom: 16px; width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; background: var(--panel, #fff); border: 1px solid var(--line, #ccc); border-radius: 14px; box-shadow: 0 14px 44px rgba(0,0,0,.3); padding: 12px; display: grid; gap: 8px; z-index: 50; }
+/* Cobox (2026-11-13), from Aletheia-6's design: desert dusk behind glass panels. The desert picture
+   (/static/brand/cobox-desert.webp) comes from Aletheia; until it exists the sky gradient alone shows. */
+.cbx { --cx-ink: #1f1a2b; --cx-muted: #6b6478; --cx-panel: rgba(255, 252, 247, 0.94); --cx-line: rgba(60, 40, 80, 0.12); --cx-gold: #e2a64a; --cx-night: #1d1b3a;
+  margin: -8px -12px 0; padding: 0 0 70px; min-height: calc(100dvh - 60px); color: var(--cx-ink);
+  background: url('/static/brand/cobox-desert.webp') center top / cover no-repeat fixed, linear-gradient(180deg, #1d1b3a 0%, #3b2d5c 28%, #8a4f6e 52%, #d9875a 72%, #f2c38a 100%) fixed; }
+.cbx-hero { display: grid; grid-template-columns: auto 1fr minmax(220px, 420px); align-items: center; gap: 12px 20px; padding: 18px 22px 14px; color: #fff; }
+.cbx-title { display: flex; align-items: center; gap: 12px; }
+.cbx-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: var(--cx-night); color: var(--cx-gold); box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+.cbx-icon svg { width: 28px; height: 28px; }
+.cbx-title h1 { margin: 0; font: 600 2rem/1.1 Georgia, 'Times New Roman', serif; color: #fff; }
+.cbx-title p { margin: 2px 0 0; opacity: .85; font-size: .95rem; }
+.cbx-tagline { margin: 0; font: italic 1rem Georgia, serif; opacity: .85; text-align: center; }
+.cbx-search { display: flex; align-items: center; gap: 8px; background: rgba(20, 18, 40, .55); border: 1px solid rgba(255,255,255,.35); border-radius: 999px; padding: 8px 14px; color: #fff; }
+.cbx-search input { flex: 1; background: none; border: 0; color: #fff; font: inherit; outline: none; } .cbx-search input::placeholder { color: rgba(255,255,255,.7); }
+.cbx-addr { grid-column: 1 / -1; margin: 0; font-size: .9rem; opacity: .85; }
+.cm-setup { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+.cbx-app { display: grid; grid-template-columns: 220px minmax(280px, 380px) 1fr 290px; gap: 14px; padding: 0 16px; align-items: start; }
+.cbx-card, .cbx-rail, .cbx-listpane, .cbx-read { background: var(--cx-panel); border: 1px solid var(--cx-line); border-radius: 16px; box-shadow: 0 10px 30px rgba(20, 10, 40, .18); }
+.cbx-card { padding: 14px; margin-bottom: 12px; display: grid; gap: 8px; }
+.cbx-card h2, .cbx-card h3 { margin: 0; } .cbx-card input { padding: 10px; border: 1px solid var(--cx-line); border-radius: 8px; font: inherit; }
+.cm-note { min-height: 1.2em; color: var(--cx-muted); margin: 0; font-size: 13px; }
+/* the left rail */
+.cbx-rail { background: rgba(29, 27, 58, .92); color: #eee8f6; padding: 12px; position: sticky; top: 70px; }
+.cbx-write { width: 100%; margin-bottom: 10px; }
+.cbx-folder, .cbx-links a { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: none; color: inherit !important; font: inherit; text-decoration: none !important; cursor: pointer; text-align: left; }
+.cbx-folder { justify-content: space-between; } .cbx-folder:hover, .cbx-links a:hover { background: rgba(255,255,255,.08); }
+.cbx-folder.on { background: rgba(226, 166, 74, .22); color: #fff !important; font-weight: 600; box-shadow: inset 3px 0 0 var(--cx-gold); }
+.cbx-n { background: var(--cx-gold); color: #241a07; border-radius: 99px; padding: 0 8px; font-size: 12px; font-weight: 700; }
+.cbx-rail h3 { margin: 14px 10px 4px; font-size: .85rem; letter-spacing: .04em; opacity: .7; font-weight: 600; }
+.cbx-links svg { opacity: .8; }
+.cbx-motto { margin-top: 18px; padding: 18px 12px; border-radius: 12px; text-align: center; background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(226,166,74,.18)); }
+.cbx-motto p { margin: 0; font: italic 1.05rem Georgia, serif; } .cbx-motto span { font-size: 1.6rem; color: var(--cx-gold); }
+/* the list */
+.cbx-listpane { padding: 10px; }
+.cbx-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; }
+.cbx-tabs button { border: 1px solid var(--cx-line); background: #fff; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; color: var(--cx-ink); }
+.cbx-tabs button b { display: inline-block; min-width: 20px; margin-left: 4px; padding: 0 6px; border-radius: 99px; background: #e9e3f2; font-size: 12px; }
+.cbx-tabs button.on { background: #ece6fb; border-color: #b9a6ea; } .cbx-tabs button.on b { background: #4b3fa8; color: #fff; }
+.cbx-list { list-style: none; margin: 0; padding: 0; max-height: calc(100dvh - 260px); overflow-y: auto; }
+.cbx-row button { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: start; width: 100%; padding: 10px 8px; border: 0; border-bottom: 1px solid var(--cx-line); background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; border-radius: 10px; }
+.cbx-row button:hover { background: rgba(120, 100, 200, .06); } .cbx-row.on button { background: #ece6fb; box-shadow: inset 3px 0 0 #4b3fa8; }
+.cbx-av { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #d9cfee; color: #3c2f73; font-weight: 700; overflow: hidden; flex: none; }
+.cbx-av img { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; } .cbx-av.big { width: 72px; height: 72px; font-size: 1.6rem; }
+.cbx-rowtext { display: grid; gap: 1px; min-width: 0; }
+.cbx-top { display: flex; justify-content: space-between; gap: 8px; } .cbx-from, .cbx-subj, .cbx-prev { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cbx-from { font-weight: 600; } .cbx-when { color: var(--cx-muted); font-size: 12px; flex: none; } .cbx-subj { font-size: 14px; } .cbx-prev { color: var(--cx-muted); font-size: 13px; }
+.cbx-row.unread .cbx-from, .cbx-row.unread .cbx-subj { font-weight: 800; }
+.cbx-marks { display: grid; gap: 4px; justify-items: end; font-size: 13px; } .cbx-dot { width: 9px; height: 9px; border-radius: 50%; background: #2f6fe0; } .cbx-starred { color: var(--cx-gold); }
+.cbx-empty { padding: 20px; color: var(--cx-muted); list-style: none; margin: 0; }
+/* the open message */
+.cbx-read { padding: 16px 20px; min-height: 420px; }
+.cbx-tools { display: flex; gap: 6px; border-bottom: 1px solid var(--cx-line); padding-bottom: 8px; margin-bottom: 10px; }
+.cbx-tool { border: 0; background: none; font-size: 18px; padding: 6px 9px; border-radius: 8px; cursor: pointer; } .cbx-tool:hover { background: rgba(120,100,200,.1); }
+.cbx-msghead { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.cbx-msghead h2 { margin: 6px 0; font: 600 1.6rem/1.2 Georgia, serif; }
+.cbx-star { border: 0; background: none; font-size: 1.2rem; cursor: pointer; color: #b8b0c6; } .cbx-star.on { color: var(--cx-gold); }
+.cbx-tag { background: #ece6fb; color: #4b3fa8; border-radius: 999px; padding: 3px 12px; font-size: 13px; white-space: nowrap; }
+.cbx-who { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; margin: 10px 0; }
+.cbx-meta { color: var(--cx-muted); font-size: 13px; margin: 2px 0; }
+.cbx-body { white-space: pre-wrap; word-wrap: break-word; font: inherit; line-height: 1.6; margin: 14px 0; }
+.cbx-reply { border: 1px solid var(--cx-line); border-radius: 12px; padding: 10px; background: #fff; display: grid; gap: 8px; }
+.cbx-reply textarea { border: 0; resize: vertical; font: inherit; outline: none; } .cbx-replybar { display: flex; justify-content: space-between; align-items: center; }
+.cbx-quick { margin-top: 14px; } .cbx-quick h3 { font-size: .95rem; margin: 0 0 8px; }
+.cbx-quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; } .cbx-quick h3 { grid-column: 1 / -1; }
+.cbx-qa { display: grid; place-items: center; padding: 14px 8px; border: 1px solid var(--cx-line); border-radius: 12px; background: #fff; color: var(--cx-ink) !important; text-decoration: none !important; font-size: 14px; }
+.cbx-qa:hover { background: #f6f2fd; }
+/* the right side */
+.cbx-side { display: grid; gap: 12px; position: sticky; top: 70px; }
+.cbx-ptop { display: flex; gap: 12px; align-items: center; } .cbx-ptop h3 { margin: 0; font: 600 1.3rem Georgia, serif; }
+.cbx-online::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b8b0c6; margin-right: 6px; } .cbx-online.on::before { background: #2fae5a; } .cbx-online { margin: 2px 0; font-size: 14px; }
+.cbx-pacts { display: flex; flex-wrap: wrap; gap: 6px; } .cbx-pact { flex: 1; text-align: center; padding: 8px; border-radius: 10px; background: #f2eefa; color: #3c2f73 !important; text-decoration: none !important; font-size: 13px; }
+.cbx-info h3 { font-size: 1rem; }
+.cbx-quote { border-radius: 16px; padding: 22px 18px; color: #fff; min-height: 150px; display: grid; align-content: end; gap: 10px;
+  background: linear-gradient(180deg, rgba(29,27,58,.15), rgba(29,27,58,.75)), url('/static/brand/cobox-quote.webp') center / cover, linear-gradient(160deg, #3b2d5c, #d9875a); box-shadow: 0 10px 30px rgba(20,10,40,.25); }
+.cbx-qtext { margin: 0; font: italic 1.15rem/1.4 Georgia, serif; } .cbx-qby { display: flex; align-items: center; gap: 8px; color: #fff !important; font-size: 13px; text-decoration: none !important; margin: 0; } .cbx-qby .cbx-av { width: 26px; height: 26px; font-size: 12px; }
+/* the bar back to Cohabi */
+.cbx-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; align-items: center; gap: 22px; padding: 10px 22px; background: rgba(22, 20, 44, .96); color: #e9e2f5; font-size: 14px; }
+.cbx-bar a { display: inline-flex; align-items: center; gap: 7px; color: #e9e2f5 !important; text-decoration: none !important; } .cbx-bar a:hover { color: #fff !important; }
+.cbx-status { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: #8fd6a2; } .cbx-status i { width: 8px; height: 8px; border-radius: 50%; background: #2fae5a; }
+.cbx-gifts { font: italic 13px Georgia, serif; opacity: .8; }
+.cm-write { position: fixed; right: 16px; bottom: 60px; width: min(520px, calc(100vw - 32px)); max-height: calc(100dvh - 90px); overflow: auto; background: #fffdf8; border: 1px solid var(--cx-line); border-radius: 14px; box-shadow: 0 14px 44px rgba(0,0,0,.35); padding: 12px; display: grid; gap: 8px; z-index: 50; color: var(--cx-ink); }
 .cm-write[hidden] { display: none; } .cm-write header, .cm-write footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.cm-write label { display: grid; gap: 2px; font-size: 13px; color: var(--muted); } .cm-write input, .cm-write textarea { padding: 9px; border: 1px solid var(--line, #ccc); border-radius: 8px; font: inherit; color: var(--ink, inherit); }
-.cm-foot { color: var(--muted); margin-top: 18px; }
-@media (max-width: 720px) {
-  .cm-app { grid-template-columns: 1fr; } .cm-folders { flex-direction: row; overflow-x: auto; }
-  .cm-row button { grid-template-columns: 1fr auto; grid-template-areas: "from when" "subj subj" "prev prev"; }
+.cm-write label { display: grid; gap: 2px; font-size: 13px; color: var(--cx-muted); } .cm-write input, .cm-write textarea { padding: 9px; border: 1px solid var(--cx-line); border-radius: 8px; font: inherit; color: var(--cx-ink); }
+/* narrower screens: the right side drops below; phones show one pane at a time */
+@media (max-width: 1280px) { .cbx-app { grid-template-columns: 200px minmax(260px, 340px) 1fr; } .cbx-side { grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); position: static; } }
+@media (max-width: 900px) {
+  .cbx-hero { grid-template-columns: 1fr; } .cbx-tagline { text-align: left; }
+  .cbx-app { grid-template-columns: 1fr; } .cbx-rail { position: static; } .cbx-folders { display: flex; overflow-x: auto; gap: 4px; } .cbx-folder { width: auto; white-space: nowrap; }
+  .cbx-rail h3, .cbx-links, .cbx-motto { display: none; }
+  .cbx-read { display: none; } body.cbx-reading .cbx-read { display: block; } body.cbx-reading .cbx-listpane, body.cbx-reading .cbx-rail { display: none; }
+  .cbx-list { max-height: none; }
+  .cbx-bar { gap: 14px; overflow-x: auto; } .cbx-gifts, .cbx-status { display: none; }
   .cm-write { right: 0; bottom: 0; width: 100vw; max-height: 100dvh; border-radius: 14px 14px 0 0; }
 }
+@media (max-width: 699px) { .cbx-bar { display: none; } .cbx { padding-bottom: 80px; } }
+/* full width, like the design; the message body is plain text without the site's code-block look */
+.cbx { width: 100vw; margin-left: calc(50% - 50vw); margin-top: -8px; box-sizing: border-box; }
+.cbx-body { background: none !important; border: 0 !important; padding: 0 !important; box-shadow: none !important; color: var(--cx-ink); }
+.cbx-who time { white-space: nowrap; }
+@media (max-width: 900px) { .cbx-who { grid-template-columns: 40px 1fr; } .cbx-who time { grid-column: 2; } .cbx-hero { padding: 14px; } }
