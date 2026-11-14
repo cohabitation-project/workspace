@@ -17,7 +17,9 @@ const box = (u) => (mail[u] ||= { boxes: [{ id: 'in', name: 'Inbox', role: 'inbo
 const authUser = (h) => { const m = /^Basic (.+)$/.exec(h || ''); if (!m) return null; const [u, p] = Buffer.from(m[1], 'base64').toString().split(/:(.*)/s); return users[u] === p ? u : null; };
 const srv = http.createServer(async (req, res) => {
   let body = ''; for await (const c of req) body += c; const send = (code, o) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
-  if (req.url === '/.well-known/jmap') { const u = authUser(req.headers.authorization); if (!u) return send(401, {}); return send(200, { apiUrl: 'https://mail.cohabi.org/jmap/', primaryAccounts: { 'urn:ietf:params:jmap:mail': 'acc-' + u } }); }
+  // like Stalwart: /.well-known/jmap redirects to the session on the PUBLIC host (2026-11-13, the first real login)
+  if (req.url === '/.well-known/jmap') { res.writeHead(307, { location: 'https://mail.cohabi.org/jmap/session' }); return res.end(); }
+  if (req.url === '/jmap/session') { const u = authUser(req.headers.authorization); if (!u) return send(401, {}); return send(200, { apiUrl: 'https://mail.cohabi.org/jmap/', primaryAccounts: { 'urn:ietf:params:jmap:mail': 'acc-' + u } }); }
   if (req.url !== '/jmap/') return send(404, {});
   const j = JSON.parse(body); const out = [];
   if (req.headers.authorization === 'Bearer API_test_admin') {
