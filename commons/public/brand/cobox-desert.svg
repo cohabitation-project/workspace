@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Original Cohabi desert dusk artwork: mountains, amber twilight, stars and Joshua trees">
+<defs>
+<linearGradient id="sky" x2=".3" y2="1"><stop stop-color="#091733"/><stop offset=".33" stop-color="#1d2850"/><stop offset=".62" stop-color="#615071"/><stop offset=".79" stop-color="#b46d80"/><stop offset="1" stop-color="#eeb16e"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#ffddad" stop-opacity=".75"/><stop offset=".35" stop-color="#f4a783" stop-opacity=".28"/><stop offset="1" stop-color="#eb8098" stop-opacity="0"/></radialGradient>
+<linearGradient id="mountain" x2="0" y2="1"><stop stop-color="#5d496a"/><stop offset="1" stop-color="#252b52"/></linearGradient>
+<linearGradient id="near" x2="0" y2="1"><stop stop-color="#354263"/><stop offset="1" stop-color="#0c1d3a"/></linearGradient>
+<filter id="soft"><feGaussianBlur stdDeviation="11"/></filter>
+</defs>
+<path fill="url(#sky)" d="M0 0H1600V900H0Z"/>
+<ellipse cx="1260" cy="525" rx="790" ry="410" fill="url(#glow)"/>
+<path d="M0 350Q270 305 500 355T1100 340T1600 345" stroke="#f3d7c5" stroke-opacity=".12" stroke-width="80" fill="none" filter="url(#soft)"/>
+<g fill="#fce7ce" opacity=".8">
+<circle cx="78" cy="90" r="1.8"/><circle cx="160" cy="232" r="1.2"/><circle cx="243" cy="95" r="1.8"/><circle cx="330" cy="162" r="1.4"/><circle cx="412" cy="59" r="1.3"/><circle cx="550" cy="178" r="1.7"/><circle cx="640" cy="97" r="1.1"/><circle cx="748" cy="235" r="1.5"/><circle cx="820" cy="64" r="1.2"/><circle cx="920" cy="151" r="1.7"/><circle cx="1010" cy="85" r="1.1"/><circle cx="1120" cy="226" r="1.5"/><circle cx="1260" cy="65" r="1.6"/><circle cx="1374" cy="196" r="1.2"/><circle cx="1480" cy="90" r="1.7"/><circle cx="1550" cy="275" r="1.5"/>
+</g>
+<g fill="none" stroke="#fae4c5" stroke-width="1.5" opacity=".55"><path d="M480 100v12m-6-6h12M1190 140v12m-6-6h12M1500 300v10m-5-5h10"/></g>
+<path fill="#797088" opacity=".68" d="M0 645 150 558 280 600 415 472 545 564 688 486 792 601 953 535 1090 615 1238 476 1330 536 1440 432 1600 560V900H0Z"/>
+<path fill="url(#mountain)" d="M0 686 115 595 201 640 350 510 448 616 577 558 711 681 880 495 1030 630 1137 553 1230 627 1415 476 1500 582 1600 540V900H0Z"/>
+<path fill="#e5b0ac" opacity=".42" d="m350 510 98 106-42-22-46-36-19 21-34 8zM880 495l150 135-81-54-36 12-40-49-33 9zM1415 476l85 106-55-48-20 11-30-24z"/>
+<path fill="url(#near)" d="M0 730q160-75 338 5 114-128 245-44t235 25q169-99 273-20t295-4q98-55 214 5V900H0Z"/>
+<path fill="#182647" d="M0 811Q280 753 510 826T1000 810t600-3v93H0Z"/>
+<g fill="none" stroke="#091933" stroke-linecap="round" stroke-linejoin="round">
+<path d="M140 900v-193m0 42q-48 1-57-43m57 78q55-22 62-70m-117-9-12-11m129 20 14-9" stroke-width="15"/>
+<path d="M140 704q-20-19-41-18m41 45q30-22 48-23" stroke-width="18"/>
+<path d="M1480 900V730m0 54q-43-4-47-43m47 18q43-16 51-45" stroke-width="14"/>
+<path d="M1480 720q-23-18-40-14m40 25q22-21 48-21" stroke-width="15"/>
+<path d="M1270 900v-112m0 25q-30-4-33-24m33 11q22-11 29-27" stroke-width="10"/>
+</g>
+<g fill="#142440" opacity=".92"><path d="M0 900v-45q153-14 280 0t250 5q220-43 453-5t352-8q152-17 265 3v50Z"/></g>
+</svg>
