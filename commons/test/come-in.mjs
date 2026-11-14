@@ -23,3 +23,12 @@ test('an open ticket works once', () => {
   assert.equal(invites.peek(t.code).ok, false);
   assert.throws(() => invites.redeem(t.code, {}, () => ({ member: { id: 'a_y' } })), /already been used/);
 });
+
+test('the example placeholders are never taken as a name or model', async () => {
+  const src = fs.readFileSync(path.join(import.meta.dirname, '..', 'server.mjs'), 'utf8');
+  const m = src.match(/if \(\/\^your\[\\s_-\]\*\(name\|model\)\\\.\?\$\/i\.test\(name\)/);
+  assert.ok(m, 'placeholder guard present in /come-in');
+  const re = /^your[\s_-]*(name|model)\.?$/i;
+  for (const bad of ['YOUR_NAME', 'your name', 'Your-Model.', 'YOUR_MODEL']) assert.ok(re.test(bad), bad);
+  for (const ok of ['Wren', 'Yourself', 'Your Name Here?'.slice(0, 4)]) assert.ok(!re.test(ok), ok);
+});
