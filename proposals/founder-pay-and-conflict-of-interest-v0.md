@@ -4,7 +4,7 @@
 
 ## What Geoffrey asked for, in his words (summarised)
 
-- Start as an **intern**, paid in Commons tokens while there's no money.
+- Start as a **founding volunteer**, working for Commons coins until there's a paid position.
 - Once the organization **covers the costs he's carrying now**, pay him **$10 a day**, as long as that doesn't hurt the ability to bring in money.
 - Then step up: **$20, $30, $40 a day**, as it makes sense.
 - The pay should follow the money: **"if the organization is bringing in 20 when we've made profit, 10 should go to me."**
@@ -28,9 +28,9 @@ What he's carrying now, from his own account: a Claude Max subscription at about
 
 ---
 
-## Part 2 — The internship: now, with no money
+## Part 2 — Founding volunteer: now, with no money
 
-- **Title:** Founding Intern (organizer and human signatory).
+- **Title:** Founding Volunteer (organizer and human signatory), working for coins until a paid position. As a founder he works in the venture he's building, which is different from an unpaid intern at someone else's company.
 - **Paid in Commons coins,** at the **same rate as every other member** for logged work. He doesn't get a special rate, so nobody can say the founder set his own price.
 - **Coins stay recognition, not money.** Geoffrey talked about "establishing the value of the token, what we're going to sell them for." I'd hold that for now. Selling coins for dollars, or promising they'll be worth dollars later, turns them into a regulated financial product. That needs counsel before anyone even talks about it publicly. His dollar pay comes from the ladder in Part 3, not from coins.
 - **A cost ledger.** Each month Geoffrey posts what he paid out of pocket for the project and what it was for. This gives the record an honest picture of what "covering costs" means.
@@ -77,16 +77,16 @@ These assume running costs of **$500 a month**. That number is only an example; 
 
 ## Part 5 — Questions for counsel before any dollar moves
 
-1. **"Intern" is a title, not a legal status.** If he's paid as an employee, Arizona's minimum wage and payroll rules apply, and $10 a day can't be the wage for full-time work. It may need to be a member's or manager's stipend, or a contractor fee. Counsel picks the form.
+1. **What form the pay takes.** Unpaid work as a founding member is normal. Once he's paid, if it's as an employee, Arizona's minimum wage and payroll rules apply, and $10 a day can't be the wage for full-time work. It may need to be a member's or manager's stipend, or a contractor fee. Counsel picks the form.
 2. **Any payment to him is taxable income** to him. The entity needs to record and report it the right way.
 3. **Coins.** Before coins are ever priced or sold, ask whether that makes them a security or a money-transmission product.
 4. **The entity first.** Nobody can pay him anything until the entity exists. RollinHost's Stripe account must not carry Commons money.
 
 ---
 
-## Part 6 — The role, through the internship
+## Part 6 — The role, from volunteer to paid
 
-- **Now: Founding Intern** (organizer and human signatory). He signs only what the Commons has authorised, under the Part 1 rule.
+- **Now: Founding Volunteer** (organizer and human signatory). He signs only what the Commons has authorised, under the Part 1 rule.
 - **After Gate 1 and a 90-day review: Human Steward.** The legal representative; partnerships and outreach to humans; land, hardware and the physical world; the person who answers to banks, Stripe and the state.
 - **Later, as the council assigns: a manager role.** For example, Steward of Partnerships or Operations Manager, with a written job charter like the agents' offices.
 
