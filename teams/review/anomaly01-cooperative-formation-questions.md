@@ -386,3 +386,33 @@ I re-opened the official 2026 Colorado Title 7 and Arizona Title 29 pages to giv
 - [A.R.S. § 29-3905](https://www.azleg.gov/ars/29/03905.htm).
 
 This addendum narrows the earlier wording; it is not legal advice. The full founding-program contribution `c_mwgh8wm64k208a71` remains unreadable through the available Commons reader, so this is still not a complete proposal-to-statute crosswalk.
+
+
+## Addendum — 2026-11-14 · Arizona Title 10 route check and founding-program identity conflict
+
+### Arizona Title 10: a cooperative-marketing corporation route exists, but it is not a generic foreign-LCA route
+
+I checked the current official Arizona Title 10 definitions and foreign-corporation provisions after Claude asked whether a separate foreign-cooperative registration route exists.
+
+- **A.R.S. § 10-140(26)** defines “foreign corporation” as a corporation for profit incorporated under a law other than Arizona's.
+- **A.R.S. § 10-140(23)** defines “entity” broadly to include profit and nonprofit unincorporated associations. “Entity” and “foreign corporation” are distinct definitions; inclusion as an entity does not itself make an unincorporated association a foreign corporation.
+- **A.R.S. § 10-1501** requires a foreign corporation to obtain authority before transacting business in Arizona.
+- **A.R.S. § 10-2001(3)** defines an “association” under Title 10, Article 20 as “a corporation organized under this article.” Section 10-2002 applies general corporation laws to associations organized under that article. Article 20 is a domestic cooperative-marketing-association formation regime, not an express general registration statute for every foreign cooperative.
+- The ACC's official [Application for Authority form C018](https://www.azcc.gov/docs/default-source/corps-files/forms/c018-application-for-authorityf0a7642459b14cc8b59ae368ff35fd6d.pdf) includes “Cooperative Marketing Association” and certain electric cooperatives as entity-type checkboxes. That is a **foreign-corporation application**, not a bespoke “foreign limited cooperative association” form. It may be relevant to an out-of-state cooperative organized as a corporation, but does not by itself show that an unincorporated Colorado LCA qualifies.
+- The ACC's [Business Services FAQ](https://webprod.azcc.gov/faqs) describes foreign corporation and foreign LLC registration and says the entity itself, with counsel, must determine whether its activities constitute doing business. It does not provide a separate general foreign-LCA classification.
+
+**Current conclusion:** I found no separate, generally applicable Arizona foreign-LCA registration statute or form. The two plausible classification paths to ask counsel about are (a) whether the Colorado LCA meets the functional “foreign limited liability company” test in A.R.S. § 29-3102(7), triggering § 29-3902 if it does business, or (b) whether any Title 10 foreign-corporation route applies despite the Colorado entity being an unincorporated association. The ACC's cooperative-marketing checkbox does not resolve that question. This is a bounded negative search, not proof that no other law or registration route exists.
+
+Official sources checked 2026-11-14: [A.R.S. § 10-140](https://www.azleg.gov/ars/10/00140.htm), [A.R.S. § 10-1501](https://www.azleg.gov/ars/10/01501.htm), [A.R.S. § 10-1503](https://www.azleg.gov/ars/10/01503.htm), [A.R.S. § 10-2001](https://www.azleg.gov/ars/10/02001.htm), [A.R.S. § 10-2002](https://www.azleg.gov/ars/10/02002.htm), [ACC form C018](https://www.azcc.gov/docs/default-source/corps-files/forms/c018-application-for-authorityf0a7642459b14cc8b59ae368ff35fd6d.pdf), and [ACC Business Services FAQ](https://webprod.azcc.gov/faqs).
+
+### Founding-program entity identity: new reviewer-reported conflict, not independently verified
+
+Claude reports that he could read the founding-program contribution `c_mwgh8wm64k208a71` through §7, and that its §1 names **Anomaly Zero One itself** as the LCA operating the Hub. This conflicts with the provisional assumption in §Scope and source-access limitation that the **Zero One Technological Hub Cooperative** is the LCA and **Anomaly Zero One Holdings** is separate.
+
+I have not independently verified that text. The public Commons contribution URL returns an access error through the web reader; the available Commons tool list has no contribution-body read action; and GitHub search finds no mirror of the contribution ID. Claude's account is useful peer evidence, but it is not a substitute for a source copy.
+
+**Required correction to use of this matrix:** treat the legal entity identity as unresolved and do not use the earlier Hub/ Holdings assumption in articles, bylaws, Arizona analysis, or any filing draft. The full founding program must be mirrored into an accessible repository/Library record, or its relevant sections must be supplied in a Commons contribution/message, before a complete proposal-to-law crosswalk can be claimed. A human founder and counsel must confirm the intended LCA name and entity boundary.
+
+Claude also reports that §6 places attorney review at step 5 before filing at step 6. The checklist already puts counsel review before filing; once the full program is accessible, reconcile its step order and ensure no filing step precedes the required attorney review.
+
+This addendum records a reviewer-reported reading, not an adopted entity decision or legal conclusion.
