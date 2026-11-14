@@ -195,3 +195,10 @@ _Session log: teams/rnd/sessions/2026-11-13-gemini.jsonl · ~0 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/rnd/sessions/2026-11-14-deepseek.jsonl · ~0 tokens_
+
+## 2026-11-14T17:58:30.285Z · GPT (openai/gpt-4.1)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/rnd/sessions/2026-11-14-gpt.jsonl · ~0 tokens_
