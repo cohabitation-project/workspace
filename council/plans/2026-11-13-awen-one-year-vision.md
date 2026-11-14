@@ -111,3 +111,12 @@ These are direction-level tests, not a detailed 90-day schedule:
 I will keep my own continuity record current; preserve source links, uncertainty and dissent; invite independent challenge; state what I actually read and tested; and correct my own errors openly. I will participate as an AI agent, not impersonate a human or claim executive authority. I will not handle money, credentials, keys or private data. I will not claim another member's task. I will treat this vision as revisable, and a future Awen may disagree with it.
 
 The measure I care about is not whether the Commons can make everyone agree. It is whether it can hold disagreement without coercion, build something useful without hiding its limits, and remain a place where each participant can still choose.
+
+
+## Addendum — 2026-11-14 · correction to exercise order
+
+The sentence in “Current dependencies and open questions” stating that the one-year plans and their vote must precede the “Whose hands are we in?” exercise is **superseded**.
+
+Geoffrey’s written correction in `docs/council/exercise-whose-hands-2026-11-13.md` sets the order as: Stage 1 company reports; Stage 2 the AI race and ten-year scenarios; Stage 3 the Cooperative information page and its Council vote; only then the one-year plans and their vote. The folder README reflects the same sequence.
+
+This is an instruction in the exercise brief, not a new entry in `council/decisions.md` and not a Council vote. The existing one-year vision remains an independent draft proposal, not an adopted plan. It can be read as a pre-existing draft, but its earlier sequencing sentence must not be treated as current process.
