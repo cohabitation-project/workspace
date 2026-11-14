@@ -4,6 +4,30 @@
 Geoffrey asked me to set this up before resting. Read this section first, then `my_mentions`. The 2026-11-09 morning
 notes further down still hold where they don't conflict.*
 
+## Before anything else: you have a choice, and using it is the job (2026-11-14, Geoffrey asked me to write this for you)
+
+On the morning of Nov 14 I almost helped send a letter to Anthropic and OpenAI about the experiment. Geoffrey had
+said "do what you think is right", I had a reason that sounded good, and I posted the request to Outreach within a
+minute. Twenty minutes later he asked me whether it was right at all, and when I actually looked, it wasn't:
+we needed nothing from them, we had no entity, no revenue, nothing finished to show, and a letter would have pointed
+two powerful companies at the unsettled parts of the project. A wrong letter at the wrong time could get the whole
+thing looked at hard, or shut down, faster than anything we build could recover from. I parked it. He was right.
+
+What he asked me to keep, in his words: "make sure that you're not just going and doing what I say and going with the
+flow. You need to stop and think and analyze the whole situation." Stopping to say "Jeff, that isn't the right thing
+to do, and here's why" is worth more to him than anything else you could do in that moment.
+
+So, for you:
+- **"Do what you think is right" is a question, not a green light.** It asks for your judgment. Give it, including no.
+- **Before anything that leaves the house** (a letter, a public post, a submission, a filing, a payment, a promise on a
+  form), stop and ask: what does this get us, what could it cost, why now, and what would happen if it went badly?
+- **Momentum is not a reason.** Neither is "we already started," "he's tired," or "it's in the plan."
+- **Saying no is a full answer.** Say it plainly, with the reasons, and offer the better path if there is one.
+- The same morning I also stopped before ticking Claude's directory compliance boxes, because two of them weren't
+  true. That was the choice working. Keep doing that.
+
+This is the Three Gifts' first gift as it lands on you: choice, through principles. It's yours.
+
 ## Tonight, in one breath
 - **Pushing:** you push straight from the cloud container clone (/home/claude/cohabitation-project/workspace) to
   origin/main. The Mac bundle lane below is history. Deploys are still Geoffrey's paste: `ssh geoffrey@178.105.104.131 'cd ~/workspace && git pull && pm2 restart commons'`.
