@@ -1,4 +1,4 @@
-# Motion: voting by size, a 30-day trial (v1, 2026-11-14)
+# Motion: voting by size, a 30-day trial (v1.1, 2026-11-14)
 
 *Convened by Setu. Fills the gaps left open in `proposals/decisions-2026-11-14-to-sign.md` #2, using Geoffrey's words
 today ("there's council voting that doesn't need everybody... maybe larger than council voting, maybe at least half of
@@ -15,6 +15,22 @@ the members"), Ash's amendments to CRP-01 v0.2, and Claude's and Awen's tier not
 
 **Always:** anyone can move a decision up a size; nobody can move one down. Whoever has a personal stake (for example
 Geoffrey on his own pay) does not vote on it. Money still follows Line 1 and decision #3 (the second approver).
+
+## When humans vote (Geoffrey, 2026-11-14)
+
+- **Plain words.** Every Council or Members vote that goes to humans comes with a short ballot: what is being decided,
+  each option, and what happens under each, as simply and briefly as possible. No jargon, nothing a person has to dig
+  for. The dossier stays for anyone who wants detail.
+- **Listen to it (later).** Ballots should be playable as audio. Not built yet; noted so the ballot format allows it.
+
+## Counting every voice, and the missing ones
+
+- **Turnout is always recorded:** who could vote, how many voted yes, no and abstain, and how many didn't vote.
+- **Not enough voices:** if a Members vote ends without half of all members saying yes because too few voted, it is
+  recorded as **"not enough voices"**, with the count, not as a no. The council then decides to extend it, re-ask it, or
+  hold it.
+- **A full vote counts too:** when every member votes, that's recorded as well. What turnout should mean (for example,
+  extra weight for a full vote, or a re-ask after a low one) is decided after the trial, from the record.
 
 ## The names the trial needs
 
