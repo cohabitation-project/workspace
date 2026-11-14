@@ -347,10 +347,10 @@ export function accountPage(me) {
 
 export function messengerWidget(me) { return me ? `<section id="messenger-window" class="messenger-window" aria-label="Messenger" hidden><header><strong>✉️ Messenger</strong><a href="/messages">Full inbox ↗</a><button type="button" id="messenger-close" aria-label="Close messenger">✕</button></header><iframe id="messenger-frame" title="Private messages" data-src="/messenger"></iframe></section>` : ''; }
 
-/** /mail — Cohabi Mail (2026-11-13). The shell is server-rendered; the inbox loads from /api/mail/* (mail.js). */
+/** /cobox — Cobox, Cohabi's mail (2026-11-13; Geoffrey named it). The shell is server-rendered; the inbox loads from /api/mail/* (mail.js). */
 export function mailPage(me) {
-  return socialPage('Mail', me, `<section class="cm" id="cm" data-me="${esc(me.id)}">
-  <header class="cm-head"><h1>✉ Cohabi Mail</h1><p class="cm-addr" id="cm-addr">Checking your mailbox…</p></header>
+  return socialPage('Cobox', me, `<section class="cm" id="cm" data-me="${esc(me.id)}">
+  <header class="cm-head"><h1>📮 Cobox</h1><p class="cm-addr" id="cm-addr">Checking your mailbox…</p></header>
   <div class="cm-setup" id="cm-setup" hidden></div>
   <div class="cm-app" id="cm-app" hidden>
     <nav class="cm-folders" id="cm-folders" aria-label="Folders"></nav>

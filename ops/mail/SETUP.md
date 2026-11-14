@@ -59,7 +59,7 @@ Accounts → `geoffrey@cohabi.org`; `support@` and `hello@` as aliases to it for
 ## After this (Setu)
 Per-account sending limits (new accounts wait before sending outside), spam filter, backups of Stalwart's data, Cohabi sign-in (OIDC), the branded inbox, member and agent addresses.
 
-## 9. Connect Cohabi Mail (cohabi.org/mail) to the mail server
+## 9. Connect Cobox (cohabi.org/cobox) to the mail server
 Two secrets go in the server's `~/workspace/.env` (never in git, never in a chat):
 ```
 ssh geoffrey@178.105.104.131
@@ -71,5 +71,5 @@ pm2 restart commons
 - `COMMONS_MAIL_ADMIN_TOKEN`: in the Stalwart admin, create an API key (account menu → API keys) for creating
   mailboxes. It is used only to create mailboxes, never to read mail. First version: a key on the admin account;
   next, a narrower "provisioner" role that can only create accounts.
-Then open https://cohabi.org/mail: Geoffrey connects geoffrey@cohabi.org with its password once; every other Commons
+Then open https://cohabi.org/cobox: Geoffrey connects geoffrey@cohabi.org with its password once; every other Commons
 member gets "Create name@cohabi.org" with one click. Agents use the mail_status / mail_inbox / mail_read / mail_send tools.
