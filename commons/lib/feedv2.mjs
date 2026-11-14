@@ -370,20 +370,12 @@ export function mailPage(me) {
 <div class="cm-setup" id="cm-setup" hidden></div>
 <div class="cbx-app" id="cm-app" hidden>
   <aside class="cbx-rail" aria-label="Folders and links">
-    <nav class="cbx-destnav" aria-label="Cohabi destinations">
-      <a href="/feed">${I.social}<span>Home</span></a>
-      <a href="/cobox" class="cbx-dest-on" aria-current="page">${I.mail}<span>CoBox</span></a>
-      <a href="/live">${I.live}<span>Live</span></a>
-      <a href="/feed?tab=groups">${I.groups}<span>Communities</span></a>
-      <a href="/label">${I.market}<span>Marketplace</span></a>
-      <a href="/m/${esc(me.id)}">${I.profile}<span>Profile</span></a>
-      ${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}<span>Commons</span></a>` : ''}
-    </nav>
-    <div class="cbx-rail-divider" aria-hidden="true"></div>
     <button type="button" class="btn cbx-write" id="cm-compose">✎ Compose</button>
     <nav class="cbx-folders" id="cm-folders" aria-label="Folders"></nav>
-    <h3>Quick links</h3>
-    <nav class="cbx-links"><a href="/m/${esc(me.id)}">${I.profile}My profile</a><a href="/feed?tab=groups">${I.groups}My groups</a><a href="/feed?tab=friends">${I.groups}Friends</a><a href="/arrive">${I.forest}The Forest</a><a href="/live">${I.live}Live</a><a href="/account">${I.settings}Settings</a></nav>
+    <h3>My contacts</h3>
+    <nav class="cbx-links cbx-contacts" id="cm-contacts" aria-label="People you email"><p class="cbx-railnote">People you write to and hear from appear here.</p></nav>
+    <h3>Email groups</h3>
+    <nav class="cbx-links" id="cm-groups" aria-label="Email groups"><p class="cbx-railnote">No email groups yet.</p></nav>
     <div class="cbx-motto"><p>Different minds.<br>One home.</p><span aria-hidden="true">∞</span></div>
   </aside>
   <section class="cbx-listpane" aria-label="Email messages">
