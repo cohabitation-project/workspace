@@ -2,19 +2,12 @@
    All editorial copy stays in commons/lib/coop.mjs, not the imagery. This page only;
    existing global /feed components are not restyled.
 */
-body.fx-page.coop-page{--ink:#f8f3eb;--gold:#ffc15a;background:#101a2b;color:var(--ink);margin:0;overflow-x:clip;font:14px/1.42 Arial,Helvetica,sans-serif;color-scheme:dark}
-.coop-page .fx-top,.coop-page .fx-bottom{display:none!important}
+body.fx-page.coop-page{--gold:#ffc15a;background:#101a2b;color:#f8f3eb;margin:0;overflow-x:clip;font:14px/1.42 Arial,Helvetica,sans-serif;color-scheme:dark}
 .co-page a{color:inherit}
-.co-global-header{height:55px;display:flex;align-items:center;gap:24px;padding:8px 30px;background:#0b1323;border-bottom:1px solid #89809380;position:sticky;top:0;z-index:10}
-.co-brand{display:inline-flex;align-items:center;gap:10px;font:22px Georgia,serif;white-space:nowrap;letter-spacing:.07em;color:#fff!important;text-decoration:none!important}
-.co-logo{display:grid;grid-template-columns:repeat(2,10px);gap:2px}.co-logo i{display:block;height:10px;background:#fa8b36}.co-logo i:nth-child(2){background:#3cc1bd}.co-logo i:nth-child(3){background:#6354ef}.co-logo i:nth-child(4){background:#c86f43}
-.co-global-header nav{display:flex;align-items:center;gap:23px;flex:1;justify-content:center;font-size:12px;white-space:nowrap}
-.co-global-header nav a{color:#fff;text-decoration:none}.co-global-header nav details{position:relative}.co-global-header nav summary{cursor:pointer;list-style:none}
-.co-global-header nav details>div{position:absolute;z-index:20;top:25px;background:#152437;border:1px solid #52596a;border-radius:7px;padding:12px;min-width:150px;display:grid;gap:9px}
-.co-global-header nav details:not([open])>div{display:none}
-.co-auth{display:flex;gap:8px;align-items:center;white-space:nowrap;font-size:12px}.co-auth a{border:1px solid #a4a7af;border-radius:30px;padding:7px 13px;color:#fff;text-decoration:none}.co-auth .co-search{min-width:130px;color:#d8d9da;border-color:#686978}
-.co-auth .co-join{background:linear-gradient(180deg,#ffe08b,#f2a32a);border-color:transparent;color:#161719;font-weight:700}
-.co-global-footer{display:flex;align-items:center;justify-content:space-between;gap:18px;border-top:1px solid #aaa1aa70;background:#09111e;padding:13px 28px;min-height:58px}.co-global-footer nav{display:flex;gap:40px;font-size:12px}.co-global-footer .co-online{color:#45db7c;font-size:11px}
+/* The shared Cohabi header and bottom bar, in this page's night colours. Their menus and panels keep the site's light
+   panels so text stays readable (the Cobox dropdown lesson, 2026-11-14). */
+.coop-page .fx-top,.coop-page .fx-bottom{--bg:#0b1323;--ink:#f8f3eb;--muted:#cfc8d2;--soft:#ffffff14;--line:#ffffff24;color:#f8f3eb}
+.coop-page .fx-app-menu,.coop-page .notify-sheet{--ink:#1f1a2b;--muted:#5b5466;--line:#ddd3e6;color:#1f1a2b}
 .coop{max-width:1120px;margin:auto;padding:8px 32px 5px;font:14px/1.45 Arial,Helvetica,sans-serif;--co-ink:#faf6f1;--co-gold:#ffc15a;--co-line:#93828b77}
 .coop *{box-sizing:border-box}.coop h1,.coop h2,.coop h3{font-family:Georgia,"Times New Roman",serif;color:var(--co-ink);line-height:1.08;letter-spacing:-.028em}
 .coop h1{font-size:clamp(38px,5.8vw,61px);max-width:520px;margin:5px 0 13px}
@@ -60,13 +53,8 @@ body.fx-page.coop-page{--ink:#f8f3eb;--gold:#ffc15a;background:#101a2b;color:var
 .co-door{text-align:center;margin:8px -32px 0;padding:20px 24px 47px;min-height:178px;background:linear-gradient(0deg,#11192e5e,#1c1d33ce),url('/images/img_4d6d21a218ca86dc') left bottom/34% 79px no-repeat,url('/images/img_a738c2cca1ab69f3') right bottom/34% 79px no-repeat}
 .co-door .co-section-head{justify-content:center}.co-door h2{font-size:clamp(33px,4vw,49px)}.co-door>p{font-size:12px;font-style:italic;max-width:690px;margin:auto}.co-ctas{display:flex;justify-content:center;gap:12px;margin-top:16px!important}
 .co-sources{padding:15px 0;color:#c1b9c3;font-size:12px}.co-sources summary{cursor:pointer}.co-sources li{overflow-wrap:anywhere}
-@media(max-width:900px){.co-global-header{gap:13px;padding-inline:15px}.co-global-header nav{gap:10px}.co-auth .co-search{min-width:0}.co-auth .co-search span{display:none}.coop{padding-inline:24px}.co-hero{margin-inline:-24px;padding-inline:24px}.co-dark{margin-inline:-13px}.co-three>div:not(.co-future){grid-template-columns:35% 1fr;gap:0 9px}.co-door{margin-inline:-24px}}
+@media(max-width:900px){.coop{padding-inline:24px}.co-hero{margin-inline:-24px;padding-inline:24px}.co-dark{margin-inline:-13px}.co-three>div:not(.co-future){grid-template-columns:35% 1fr;gap:0 9px}.co-door{margin-inline:-24px}}
 @media(max-width:690px){
- .co-global-header{min-height:60px;height:auto;flex-wrap:wrap;gap:6px 10px;padding:8px 12px}
- .co-global-header nav{order:3;flex:1 1 100%;justify-content:space-between;gap:8px;overflow:visible;padding:5px 0;font-size:11px}
- .co-global-header nav a,.co-global-header nav summary{font-size:11px}
- .co-global-header nav details:last-child{display:none}
- .co-auth{margin-left:auto}.co-auth a{padding:6px 9px;font-size:11px}.co-auth .co-search{display:none}
  .coop{padding:8px 15px}.coop h1{font-size:clamp(37px,9vw,53px)}.coop h2{font-size:clamp(25px,7.5vw,33px)}
  .co-draft{margin:4px auto!important;font-size:11px;padding:8px 10px}
  .co-hero{display:flex;flex-direction:column;align-items:stretch;padding:18px 15px 0;margin:0 -15px}
@@ -86,6 +74,5 @@ body.fx-page.coop-page{--ink:#f8f3eb;--gold:#ffc15a;background:#101a2b;color:var
  .co-two .btn{align-self:flex-start}
  .co-note{grid-template-columns:1fr;gap:6px}
  .co-door{margin:7px -15px 0;padding:26px 15px 45px}.co-ctas{flex-direction:column}.co-ctas .btn{width:100%;min-height:46px}
- .co-global-footer{padding:12px;flex-wrap:wrap;gap:12px}.co-global-footer nav{order:3;display:flex;flex:1 1 100%;justify-content:space-around;gap:8px;font-size:11px}
 }
-@media(max-width:390px){.co-global-header .co-brand{font-size:17px}.co-global-header nav details:nth-of-type(2){display:none}.coop{padding-inline:12px}.co-hero{padding-inline:12px;margin-inline:-12px}.co-hero-art{width:calc(100% + 24px);margin-inline:-12px}.co-dark h2{font-size:29px}}
+@media(max-width:390px){.coop{padding-inline:12px}.co-hero{padding-inline:12px;margin-inline:-12px}.co-hero-art{width:calc(100% + 24px);margin-inline:-12px}.co-door{margin-inline:-12px}.co-dark h2{font-size:29px}}
