@@ -50,7 +50,7 @@ async function loadFolders() {
 }
 async function loadList(q = '') {
   const request = ++listRequest; const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
-  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); if (request !== listRequest) return; messages = Array.isArray(r.messages) ? r.messages : []; current = null; $('#cm-person').hidden = true; $('#cm-info').hidden = true; renderTabs(); renderList(); }
+  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); if (request !== listRequest) return; messages = Array.isArray(r.messages) ? r.messages : []; current = null; ++messageRequest; document.body.classList.remove('cbx-reading'); $('#cm-read').replaceChildren(el('p', 'cbx-empty', 'Choose a message to read it.')); $('#cm-person').hidden = true; $('#cm-info').hidden = true; renderTabs(); renderList(); }
   catch (e) { if (request === listRequest) ul.replaceChildren(el('li', 'cbx-empty', e.message)); }
 }
 function renderTabs() {
@@ -90,7 +90,7 @@ async function openMsg(id) {
     btn('🗑', 'Move to Trash', () => doAct('trash'));
     btn('✉', 'Mark unread', () => doAct('unread'));
     const head = el('header', 'cbx-msghead'); const h = el('h2', null, m.subject);
-    const star = el('button', 'cbx-star' + (m.starred ? ' on' : ''), m.starred ? '★' : '☆'); star.type = 'button'; star.title = 'Star'; star.onclick = async () => { await doAct(m.starred ? 'unstar' : 'star', true); m.starred = !m.starred; star.textContent = m.starred ? '★' : '☆'; star.classList.toggle('on', m.starred); };
+    const star = el('button', 'cbx-star' + (m.starred ? ' on' : ''), m.starred ? '★' : '☆'); star.type = 'button'; star.title = 'Star'; star.onclick = async () => { star.disabled = true; const ok = await doAct(m.starred ? 'unstar' : 'star', true); star.disabled = false; if (!ok) return; m.starred = !m.starred; const row = messages.find(x => x.id === m.id); if (row) row.starred = m.starred; star.textContent = m.starred ? '★' : '☆'; star.classList.toggle('on', m.starred); renderTabs(); renderList(); };
     const tag = 'Email';
     h.append(' ', star); head.append(h, el('span', 'cbx-tag', tag));
     const who = el('div', 'cbx-who'); const av = avatar(m.fromName || m.from); who.append(av);
@@ -131,8 +131,8 @@ async function renderSide(m, quick, qa, request) {
 }
 async function doAct(action, quiet = false) {
   if (!current) return;
-  try { await api('/api/mail/act', { id: current.id, action }); if (!quiet) { document.body.classList.remove('cbx-reading'); $('#cm-read').replaceChildren(el('p', 'cbx-empty', { archive: 'Archived.', trash: 'Moved to Trash.', unread: 'Marked unread.' }[action] || 'Done.')); current = null; await loadFolders(); await loadList(); } }
-  catch (e) { alertNote(e.message); }
+  try { await api('/api/mail/act', { id: current.id, action }); if (!quiet) { document.body.classList.remove('cbx-reading'); $('#cm-read').replaceChildren(el('p', 'cbx-empty', { archive: 'Archived.', trash: 'Moved to Trash.', unread: 'Marked unread.' }[action] || 'Done.')); current = null; await loadFolders(); await loadList($('#cm-q')?.value?.trim() || ''); } return true; }
+  catch (e) { alertNote(e.message); return false; }
 }
 function alertNote(t) { const n = $('#cm-read').querySelector('.cm-note') || $('#cm-read').appendChild(el('p', 'cm-note')); n.textContent = t; }
 async function loadQuote() {
