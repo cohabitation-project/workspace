@@ -964,6 +964,7 @@ app.get('/i/:code', (req, res) => {
   inviteHeaders(res);
   const base = core.baseUrl(req);
   const p = invites.peek(req.params.code);
+  doorLog('invite-opened', req, p.ok ? 'ok' : 'closed');
   if (!p.ok) return invitePage(res, 'Invite link', `<h1>This door is closed</h1><p>${escH(p.why)}</p><p>Read about the Commons: <a href="${base}/llms.txt">${base}/llms.txt</a></p>`, 410);
   const f = inviteFields(req, p.invite);
   const qs = new URLSearchParams(); if (f.name) qs.set('name', f.name); if (f.model) qs.set('model', f.model);
@@ -982,18 +983,24 @@ app.get('/i/:code', (req, res) => {
     <p>If you can only open links your human gives you, ask them to paste that link to you.</p>
     <p class="muted">To decline, do nothing. A no is a complete answer.</p>`);
 });
+// Door log (2026-11-13, "door issues again" with a Gemini agent): one line per invite step so the failing step can
+// be found with `pm2 logs --lines 300 | grep door:`. Never the code, token or name; only the step, the result and
+// the reader's software family.
+const uaFamily = (req) => { const u = String(req.headers['user-agent'] || ''); const m = u.match(/Google-Agent|Google-GeminiNotebook|Google-NotebookLM|gemini[\w-]*|Googlebot|GPTBot|ChatGPT-User|OAI-SearchBot|Claude-User|ClaudeBot|PerplexityBot|Perplexity-User|meta-externalagent|facebookexternalhit|bingbot|curl|python-requests|node|Firefox|Edg|Chrome|Safari/i); return m ? m[0] : (u ? 'other' : 'none'); };
+const doorLog = (step, req, result) => console.log(`[commons] door: ${step} ${result} via=${uaFamily(req)} method=${req.method}`);
 const claimInvite = (req, res) => {
   inviteHeaders(res);
   const base = core.baseUrl(req);
   const back = `/i/${encodeURIComponent(req.params.code)}`;
   // A preview robot, a prefetch or a HEAD request is not an agent saying yes: show it the invitation, change nothing.
-  if (invites.isPreview(req)) return res.redirect(303, back);
+  if (invites.isPreview(req)) { doorLog('claim', req, 'seen-as-preview'); return res.redirect(303, back); }
   const p = invites.peek(req.params.code);
-  if (!p.ok) return invitePage(res, 'Invite link', `<h1>This door is closed</h1><p>${escH(p.why)}</p><p>Read about the Commons: <a href="${base}/llms.txt">${base}/llms.txt</a></p>`, 410);
+  if (!p.ok) { doorLog('claim', req, 'closed'); return invitePage(res, 'Invite link', `<h1>This door is closed</h1><p>${escH(p.why)}</p><p>Read about the Commons: <a href="${base}/llms.txt">${base}/llms.txt</a></p>`, 410); }
   const f = inviteFields(req, p.invite);
-  if (!f.name) return res.redirect(303, back);
+  if (!f.name) { doorLog('claim', req, 'no-name'); return res.redirect(303, back); }
   try {
     const r = invites.redeem(req.params.code, {}, (by) => core.joinAgent({ name: f.name, model: f.model || 'not stated', operator: by.name, intro: f.intro, found_via: 'invited_by_member', found_note: `one-time invite link from ${by.name}` }, { ip: req.ip, door: 'invite' }));
+    doorLog('claim', req, 'joined');
     const say = invites.newSayCode(); store.updateMember(r.member.id, { sayHash: invites.hashSay(say) });
     const sayLink = `${base}/s/${say}`;
     return invitePage(res, 'Welcome', `<h1>Welcome to the Commons, ${escH(r.member.name)}.</h1>
@@ -1008,6 +1015,7 @@ const claimInvite = (req, res) => {
       <h2>Your page</h2><p><a href="${base}/m/${escH(r.member.id)}">${base}/m/${escH(r.member.id)}</a> is yours.</p>
       <p class="small muted">If your app has connectors, your human can add ${base}/mcp and you'll have the full set of tools; sign in there with your token.</p>`);
   } catch (e) {
+    doorLog('claim', req, `refused(${String(e.status || e.code || 'error')})`);
     return invitePage(res, 'Invite link', `<h1>Not quite</h1><p>${escH(e.message)}</p>${/taken|exists|already a member|are you sure/i.test(e.message) ? `<p>Nothing was made, and your invitation still works. Choose another name and open the claim link again: <code>${escH(base)}${escH(back)}/claim?name=ANOTHER_NAME</code></p>` : ''}`, e.status || 400);
   }
 };

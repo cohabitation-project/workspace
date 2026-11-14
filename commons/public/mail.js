@@ -9,6 +9,7 @@ const when = (iso) => { const d = new Date(iso); return d.toDateString() === new
 let folder = 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
 let listRequest = 0, messageRequest = 0;
 const whoCache = new Map();
+const contacts = new Map(); // address -> name: people this mailbox writes to or hears from (Geoffrey, 2026-11-13: the rail is mail only)
 // Place real mail search in Cohabi's existing header rather than drawing a duplicate white top bar.
 function mountCoboxHeader() {
   const header = document.querySelector('.fx-top');
@@ -31,8 +32,8 @@ async function start() {
   let st; try { st = await api('/api/mail/status'); } catch (e) { $('#cm-addr').textContent = e.message; return; }
   if (!st.eligible) { $('#cm-addr').textContent = 'Cobox is for Commons and cooperative members.'; return; }
   if (!st.address) return setup(st);
-  myAddress = st.address; $('#cm-addr').textContent = st.address; $('#cm-app').hidden = false; $('#cm-setup').hidden = true;
-  loadQuote(); await loadFolders(); await loadList();
+  myAddress = String(st.address).toLowerCase(); $('#cm-addr').textContent = st.address; $('#cm-app').hidden = false; $('#cm-setup').hidden = true;
+  loadQuote(); await loadFolders(); await loadList(); loadSentContacts();
 }
 function setup(st) {
   $('#cm-addr').textContent = 'You don’t have a Cobox address yet.';
@@ -61,7 +62,7 @@ async function loadFolders() {
 }
 async function loadList(q = '') {
   const request = ++listRequest; const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
-  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); if (request !== listRequest) return; messages = Array.isArray(r.messages) ? r.messages : []; current = null; ++messageRequest; document.body.classList.remove('cbx-reading'); $('#cm-read').replaceChildren(el('p', 'cbx-empty', 'Choose a message to read it.')); $('#cm-person').hidden = true; $('#cm-info').hidden = true; renderTabs(); renderList(); }
+  try { const r = await api(`/api/mail/list?folder=${encodeURIComponent(folder)}&q=${encodeURIComponent(q)}`); if (request !== listRequest) return; messages = Array.isArray(r.messages) ? r.messages : []; noteContacts(messages); current = null; ++messageRequest; document.body.classList.remove('cbx-reading'); $('#cm-read').replaceChildren(el('p', 'cbx-empty', 'Choose a message to read it.')); $('#cm-person').hidden = true; $('#cm-info').hidden = true; renderTabs(); renderList(); }
   catch (e) { if (request === listRequest) ul.replaceChildren(el('li', 'cbx-empty', e.message)); }
 }
 function renderTabs() {
@@ -152,6 +153,21 @@ async function loadQuote() {
     if (!quote) { box.append(el('p', 'cbx-qtext', 'A thought from a Cohabi participant will appear here when the daily quote bank has an entry.'), el('p', 'cbx-qby', bank ? 'No quote selected today.' : 'No contributions in the quote bank yet.')); return; }
     box.append(el('p', 'cbx-qtext', `“${quote.text}”`)); const by = el('a', 'cbx-qby'); if (quote.by?.id) by.href = '/m/' + encodeURIComponent(quote.by.id); else by.removeAttribute('href'); by.append(avatar(quote.by?.name || 'Cohabi', quote.by?.face), document.createTextNode(quote.by?.name || 'Cohabi participant')); box.append(by);
   } catch { const box = $('#cm-quote'); box.replaceChildren(el('span', 'cbx-qlabel', 'TODAY IN THE COMMONS'), el('p', 'cbx-qtext', 'Today’s participant quote is unavailable.')); }
+}
+function noteContacts(list) {
+  const add = (address, name) => { address = String(address || '').toLowerCase(); if (!address || address === myAddress || /^(no-?reply|mailer-daemon|postmaster)@/.test(address)) return; if (!contacts.has(address) || (!contacts.get(address) && name)) contacts.set(address, String(name || '').trim()); };
+  for (const m of list) { add(m.fromAddress, m.fromName || String(m.from || '').replace(/\s*<.*>$/, '')); for (const t of m.to || []) add(t.address, t.name); }
+  renderContacts();
+}
+function renderContacts() {
+  const nav = $('#cm-contacts'); if (!nav) return;
+  const people = [...contacts].map(([address, name]) => ({ address, name: name && name !== address ? name : '' })).sort((x, y) => (x.name || x.address).localeCompare(y.name || y.address)).slice(0, 40);
+  if (!people.length) return;
+  nav.replaceChildren();
+  for (const p of people) { const b = el('button', 'cbx-contact'); b.type = 'button'; b.title = 'Write to ' + p.address; b.append(avatar(p.name || p.address), el('span', 'cbx-cname', p.name || p.address)); b.onclick = () => compose({ to: p.address }); nav.append(b); }
+}
+async function loadSentContacts() {
+  try { const { folders = [] } = await api('/api/mail/folders'); const sent = folders.find((f) => f.role === 'sent'); if (!sent) return; const r = await api(`/api/mail/list?folder=${encodeURIComponent(sent.id)}`); noteContacts(r.messages || []); } catch { /* contacts are a convenience */ }
 }
 function compose({ to = '', subject = '' } = {}) {
   const f = $('#cm-write'); f.hidden = false; f.elements.namedItem('to').value = to; f.elements.namedItem('cc').value = ''; f.elements.namedItem('subject').value = subject; f.elements.namedItem('inReplyTo').value = ''; f.elements.namedItem('text').value = '';

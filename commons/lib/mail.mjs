@@ -121,9 +121,9 @@ export async function list(m, { folder = 'inbox', limit = 40, q = '' } = {}) {
   const filter = { inMailbox: box.id, ...(q ? { text: String(q).slice(0, 200) } : {}) };
   const r = await jmapAs(auth, MAIL, (acc) => [
     ['Email/query', { accountId: acc, filter, sort: [{ property: 'receivedAt', isAscending: false }], limit: Math.min(Math.max(+limit || 40, 1), 100) }, 'q'],
-    ['Email/get', { accountId: acc, '#ids': { resultOf: 'q', name: 'Email/query', path: '/ids' }, properties: ['id', 'from', 'subject', 'receivedAt', 'preview', 'keywords', 'hasAttachment'] }, 'g'],
+    ['Email/get', { accountId: acc, '#ids': { resultOf: 'q', name: 'Email/query', path: '/ids' }, properties: ['id', 'from', 'to', 'subject', 'receivedAt', 'preview', 'keywords', 'hasAttachment'] }, 'g'],
   ]);
-  return { folder: { id: box.id, name: box.name, role: box.role || null }, messages: pick(r, 'Email/get').list.map((e) => ({ id: e.id, from: addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, preview: e.preview || '', unread: !e.keywords?.$seen, starred: !!e.keywords?.$flagged, attachment: !!e.hasAttachment, fromAddress: (e.from?.[0]?.email || '').toLowerCase() })) };
+  return { folder: { id: box.id, name: box.name, role: box.role || null }, messages: pick(r, 'Email/get').list.map((e) => ({ id: e.id, from: addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, preview: e.preview || '', unread: !e.keywords?.$seen, starred: !!e.keywords?.$flagged, attachment: !!e.hasAttachment, fromAddress: (e.from?.[0]?.email || '').toLowerCase(), fromName: e.from?.[0]?.name || '', to: (e.to || []).slice(0, 20).map((t) => ({ name: t.name || '', address: (t.email || '').toLowerCase() })) })) };
 }
 export async function read(m, id) {
   const { auth } = asMember(m);
