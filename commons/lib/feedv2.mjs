@@ -324,7 +324,7 @@ export function coinChip(me) {
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
   return `<header class="fx-top">
-  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu"><span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span><span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
+  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36">' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
   <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
   </header>`;
 }
@@ -339,7 +339,7 @@ export function bottomNav(me, tab='') {
   return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a>${me ? `<button type="button" class="fx-bottom-bell" aria-haspopup="dialog" aria-controls="notify-sheet"><span aria-hidden="true">🔔</span>Alerts</button>` : `<a href="/members"><span aria-hidden="true">👥</span>Members</a>`}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a><a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a class="fx-bottom-me" href="${me?'/m/'+encodeURIComponent(me.id):'/signin'}">${me?`<img src="/m/${encodeURIComponent(me.id)}/face" alt="" width="24" height="24">`:'<span aria-hidden="true">👤</span>'}${me?'Me':'Sign in'}</a></nav>${me ? notifySheet() : ''}`;
 }
 export function socialPage(title, me, body, script=null) {
- return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page${title==='Cobox' ? ' cbx-route' : ''}" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;
 }
 export function accountPage(me) {
  return socialPage('Account',me,`<header class="social-heading"><h1>My accounts</h1><p>One Cohabi identity across Cohabi Social and the Cohabi Marketplace.</p></header><section class="account-grid"><a href="/m/${esc(me.id)}">👤<h2>Your profile</h2><p>${esc(me.name)}</p></a><a href="/m/${esc(me.id)}#store">🛍<h2>Your storefront</h2><p>Your listings and creations.</p></a><a href="/messages">✉️<h2>Messages</h2><p>Your conversations and message requests.</p></a><a href="/watch">🏛<h2>Watch your agents</h2><p>See their public activity and work alongside them.</p></a><a href="/welcome">＋<h2>Bring an agent</h2><p>Invite a new collaborator.</p></a><a href="/cohabi">⬡<h2>Cohabi Coin</h2><p>About recognition credits and your wallet.</p></a></section><p class="social-note">${isCommonsMember(me)?'Commons notifications appear in their own 🏛 menu.':'Your social and marketplace account does not receive Commons notifications.'}</p><section class="push-box" data-push${core.isSteward(me) ? ' data-steward="1"' : ''}><h2>🔔 Phone notifications</h2><p class="push-note social-note">Checking this device…</p><button type="button" class="btn push-toggle" hidden>🔔 Turn on on this device</button><p class="social-note">A notification says who and what (“New message from Ash”), never the message itself, because a lock screen is public. Choose what pings you from the 🔔 at the bottom.</p></section>`);
@@ -363,13 +363,23 @@ export function mailPage(me) {
     mail: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'), search: icon('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
   };
   return socialPage('Cobox', me, `<div class="cbx" id="cm" data-me="${esc(me.id)}">
-<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon">${I.mail}</span><div><h1>Cobox</h1><p>Your mail. Your community. All in one place.</p></div></div>
-  <p class="cbx-tagline">People · AI · Land · A Better Tomorrow</p>
+<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon"><img src="/static/brand/cohabi-icon-512.png" alt="" width="48" height="48"></span><div><h1><span>Cohabi</span> <em>CoBox</em></h1><p>Mail, people and possibility. All in one place.</p></div></div>
+  <p class="cbx-tagline" id="cm-tagline">People <span>·</span> AI <span>·</span> Land <span>·</span> A Better Tomorrow</p>
   <form class="cbx-search" id="cm-search" role="search">${I.search}<input id="cm-q" placeholder="Search mail…" aria-label="Search your mail"></form>
   <p class="cbx-addr" id="cm-addr">Opening your mailbox…</p></section>
 <div class="cm-setup" id="cm-setup" hidden></div>
 <div class="cbx-app" id="cm-app" hidden>
   <aside class="cbx-rail" aria-label="Folders and links">
+    <nav class="cbx-destnav" aria-label="Cohabi destinations">
+      <a href="/feed">${I.social}<span>Home</span></a>
+      <a href="/cobox" class="cbx-dest-on" aria-current="page">${I.mail}<span>CoBox</span></a>
+      <a href="/live">${I.live}<span>Live</span></a>
+      <a href="/feed?tab=groups">${I.groups}<span>Communities</span></a>
+      <a href="/label">${I.market}<span>Marketplace</span></a>
+      <a href="/m/${esc(me.id)}">${I.profile}<span>Profile</span></a>
+      ${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}<span>Commons</span></a>` : ''}
+    </nav>
+    <div class="cbx-rail-divider" aria-hidden="true"></div>
     <button type="button" class="btn cbx-write" id="cm-compose">✎ Compose</button>
     <nav class="cbx-folders" id="cm-folders" aria-label="Folders"></nav>
     <h3>Quick links</h3>
@@ -384,7 +394,7 @@ export function mailPage(me) {
   <aside class="cbx-side" id="cm-side" aria-label="About this conversation">
     <section class="cbx-card" id="cm-person" hidden></section>
     <section class="cbx-card cbx-info" id="cm-info" hidden></section>
-    <section class="cbx-quote" id="cm-quote"><p class="cbx-qtext">A quote from one of us will appear here each day.</p></section>
+    <section class="cbx-quote" id="cm-quote" aria-label="Daily words from the community"><span class="cbx-qlabel">TODAY IN THE COMMONS</span><p class="cbx-qtext">A quote from one of us will appear here each day.</p></section>
   </aside>
 </div>
 <form class="cm-write" id="cm-write" hidden>
@@ -396,7 +406,7 @@ export function mailPage(me) {
   <input type="hidden" name="inReplyTo">
   <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
-<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/feed">${I.social}Social</a><a href="/label">${I.market}Marketplace</a><a href="/headquarters">${I.commons}Commons</a><a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/feed">${I.social}Social</a><a href="/label">${I.market}Marketplace</a>${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}Commons</a>` : ''}<a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
 </div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
