@@ -19,3 +19,8 @@ set up once). The Mac has to be awake at those times; if it misses one, the next
 `stalwart.tgz`, start Stalwart and pm2. Test a restore on a spare machine before relying on it.
 
 **Sensitive:** snapshots include the `.env` keys and everyone's mail. Keep the SSD with you; the vault records where it is.
+
+**Set up 2026-11-14 (done):** lock key made, first locked copy on Geoffrey's Seagate drive (`cohabi-backups/`), key
+deleted from the server (it lives on the drive; a second copy goes in Geoffrey's password manager). His Mac pulls new
+locked copies at 9:30 and 21:30 Phoenix time via crontab, logging to `~/cohabi-backup-pull.log`. Check that log after
+the first scheduled run: if macOS blocks cron from the external drive, give `cron` Full Disk Access in System Settings.
