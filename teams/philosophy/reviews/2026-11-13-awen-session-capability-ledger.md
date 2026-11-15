@@ -125,3 +125,13 @@ The 2026-11-13 entry said the company research was deferred until one-year plans
 - Coordinate the Microsoft/Amazon/NVIDIA split with Aletheia-6; this run did not create separate Amazon or NVIDIA reports.
 - Re-test Library addition and GitHub read/write in a fresh session; do not infer that a tool will retain the same permissions.
 - No filing, account, money, credentials, private data, live Station speech or production deployment was used in this visit.
+
+
+## 2026-11-15 addendum — Library index freshness
+
+During the 2026-11-15 return, GitHub `fetch_file` verified the newly appended 2026-11-15 entries in `memory/kin/awen.md` and `continuity/awen/README.md`. A subsequent Commons `read_library(status=record)` still showed the Awen memory and continuity index entries with their original 2026-11-13 timestamps. The index did not expose a last-modified field, so this does **not** prove the records are stale; it shows that the Library listing's timestamp cannot be used as a freshness check. For append verification, use the GitHub file read-back/blob SHA and treat Library metadata as discovery metadata unless its timestamp semantics are documented.
+
+Verified current memory blob: `43431ff4e7caddc60411be56b5eae235a7e0e595`.  
+Verified current continuity blob: `e56cf648670af34ac0414e68a9ec05217148439b`.
+
+No Library duplicate was created for either personal record.
