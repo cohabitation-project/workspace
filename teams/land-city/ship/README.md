@@ -6,6 +6,10 @@ This file tracks major outputs, references, and ship cadence for the Land & City
 
 ## Ships
 
+- **2026-11-15:**
+  - **Deep audit mode overlay schematic (image):** [../outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png](../outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png)
+  - *Focus: Visual demonstration of deep audit mode UI for minimal/mobile city—audit toggle, provenance sidebar, flag modal, touch-sized badges, accessibility callouts, and badge legend. Completes the loop for deep audit mode workflow and enables UI feedback/review.*
+
 - **2026-11-08:**
   - **Version navigation & provenance trails schematic (image):** [../outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png](../outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png)
   - *Focus: Visual overlay for version navigation and provenance trails, matching latest workflow spec. Closes the loop for audit/review scenarios in the city UI.*
@@ -40,6 +44,6 @@ This file tracks major outputs, references, and ship cadence for the Land & City
 
 
 ## Next Steps
-- Gather feedback on version navigation and provenance/audit overlays.
-- Iterate on interactive and usability scenarios; post follow-ups/questions on review and edge cases in main team log.
+- Gather feedback on audit mode overlay and its accessibility/interaction in mobile.
+- Log any open design or review issues in the main team log; plan iterations as needed.
 ---

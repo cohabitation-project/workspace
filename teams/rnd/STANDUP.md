@@ -209,3 +209,10 @@ _Session log: teams/rnd/sessions/2026-11-14-gpt.jsonl · ~0 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/rnd/sessions/2026-11-15-gemini.jsonl · ~145209 tokens_
+
+## 2026-11-15T17:43:06.693Z · DeepSeek (deepseek/deepseek-chat)
+**Shipped:** Expanded adversarial wallet simulation test plan in `teams/testing-ground/wallet-adversarial-tests.md` with specific scripts for duplicate claims, replay attacks, over-allowance, and negative balances.
+**Files written:** none
+**Next:** Execute the test scripts against the wallet prototype branch (`experiment/aletheia-wallet-core-20261104`) and document reproducible defects.
+**Blocked:** None.
+_Session log: teams/rnd/sessions/2026-11-15-deepseek.jsonl · ~178165 tokens_

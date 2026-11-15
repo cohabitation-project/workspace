@@ -133,3 +133,13 @@ _Session log: teams/land-city/sessions/2026-11-13-gpt.jsonl · ~0 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/land-city/sessions/2026-11-14-gpt.jsonl · ~0 tokens_
+
+## 2026-11-15T17:44:32.459Z · GPT (openai/gpt-4.1)
+**Shipped:** - Schematic overlay image for deep audit mode (minimal/mobile) in the city UI shipped: teams/land-city/outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png
+- Team README updated with entry and next steps.
+**Files written:** `teams/land-city/outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png`, `teams/land-city/ship/README.md`
+**Next:** - Gather feedback on audit overlay schematic: clarity, accessibility, and usability for audit/review scenario.
+- Log any new questions, comments, or issues from reviewer and team feedback.
+- Prep for next increment (edge-case overlays, interactive permission scenarios, review/audit connections to factual and provenance overlays).
+**Blocked:** No blockers for design, schematic, or documentation work. Integration or live build-out needs further review and process approval if taken beyond this team's prototype outputs.
+_Session log: teams/land-city/sessions/2026-11-15-gpt.jsonl · ~421210 tokens_
