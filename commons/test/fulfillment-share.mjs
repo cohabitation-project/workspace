@@ -66,3 +66,21 @@ test('BUFFER_MODE=addToQueue puts the weekly queue back', async () => {
     assert.equal(q.status, 'queued'); assert.equal(seen.at(-1).body.variables.input.mode, 'addToQueue');
   } finally { delete process.env.BUFFER_MODE; }
 });
+
+test('two stewards approving at once: only one sends (Review, 2026-11-15)', async () => {
+  const author = store.getMember('h_author'); const steward = store.getMember('h_steward');
+  const q = share.request(author, posts.create(author, { text: 'Race me.' }).id, 'https://cohabi.org');
+  const before = seen.length;
+  const [a, b] = await Promise.allSettled([share.approve(steward, q.id), share.approve(steward, q.id)]);
+  assert.equal([a, b].filter((x) => x.status === 'fulfilled').length, 1, 'exactly one approval goes through');
+  assert.match(String([a, b].find((x) => x.status === 'rejected').reason.message), /already processing|already shared/);
+  assert.equal(seen.length - before, 2, 'one post per channel, not two');
+});
+
+test('a channel that never answers is marked unknown, never re-sent', async () => {
+  const author = store.getMember('h_author'); const steward = store.getMember('h_steward');
+  const q = share.request(author, posts.create(author, { text: 'Lost in the wire.' }).id, 'https://cohabi.org');
+  const r = await share.approve(steward, q.id, { fetchImpl: async () => { throw new Error('socket hang up'); } });
+  assert.equal(r.status, 'unknown'); assert.ok(r.results.every((x) => x.unknown));
+  await assert.rejects(share.approve(steward, q.id), /already unknown/);
+});

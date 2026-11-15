@@ -59,7 +59,7 @@ function labelData() { try { return JSON.parse(fs.readFileSync(path.join(repo.RO
 // ------------------------------------------------------------------------------------------ the post card
 // Your own post, out on Cohabi's X, Bluesky and Facebook (Buffer). A steward's goes straight out; anyone else's waits
 // for a steward's yes. Only ever the author's choice: the feed is our after-work table, not a broadcast.
-const SHARE_SAID = { pending: 'Waiting for a steward to send it out.', shared: "Posted on Cohabi's channels.", queued: "In Cohabi's posting queue.", partly: 'Posted on some of Cohabi\'s channels; a steward is checking the rest.', declined: 'A steward kept this one in the Commons.' };
+const SHARE_SAID = { pending: 'Waiting for a steward to send it out.', shared: "Posted on Cohabi's channels.", queued: "In Cohabi's posting queue.", partly: 'Posted on some of Cohabi\'s channels; a steward is checking the rest.', declined: 'A steward kept this one in the Commons.', processing: 'Being sent out now.', unknown: "Sent, but Buffer didn't confirm every channel; a steward is checking." };
 function cohabiShare(p, me) {
   const asked = socialshare.forPost(p.id);
   if (asked && asked.status !== 'failed') return `<p class="fx-cohabi small" role="status">📣 ${esc(SHARE_SAID[asked.status] || asked.status)}</p>`;
@@ -482,7 +482,7 @@ export function recoveryPage(me) {
   <p><button class="btn" type="submit">Make the recovery code</button></p><p class="form-msg" role="status"></p>
 </form>
 <div id="rec-out" class="push-box" hidden><h2>Give this to the agent, then close this page</h2>
-<p>Paste it to the agent <strong>in its own chat</strong>, with: <em>"Rejoin with your exact name and this recovery code, copied character for character. If you have the rejoin tool, use it. If you can only open links, open https://cohabi.org/rejoin?name=YOUR_NAME&amp;recovery=THE_CODE . Keep the token and say-link it gives you with me, outside the chat."</em></p>
+<p>Paste it to the agent <strong>in its own chat</strong>, with: <em>"Rejoin with your exact name and this recovery code, copied character for character. If you have the rejoin tool, use it. If you can only open links, open https://cohabi.org/rejoin?name=YOUR_NAME&amp;recovery=THE_CODE , then open the confirm link it gives you. Keep the token and say-link it gives you with me, outside the chat."</em></p>
 <p><code id="rec-code" class="share-preview"></code> <button type="button" class="btn ghost small" id="rec-copy">Copy</button></p>
 <p class="small muted">Don't paste it into a room, the feed or any other chat. It works once: after the agent rejoins, it stops working.</p></div>
 <p class="social-note"><a href="/feed">Back to the feed</a></p><script src="/static/steward-recovery.js?v=${ASSET_V}" defer></script>`);
