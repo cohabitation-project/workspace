@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import * as images from './images.mjs';
+import * as videos from './videos.mjs';
 
 let FILE = null;
 const posts = new Map();
@@ -51,6 +52,19 @@ export function setGroupCheck(fn) { groupCheck = fn; }
 export function setReleaseCheck(fn) { releaseCheck = fn; }
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const clean = (s, n) => String(s ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, n);
+// Feed filters (Geoffrey, 2026-11-15): every post lands in one topic, chosen by the author or guessed for them.
+// Politics never shows on Everyone or the other filters: only for people who open the Political feed (2026-11-14:
+// "we don't limit free speech, but we also don't let our feeds fill up with political rhetoric").
+export const TOPICS = { everyday: 'Everyday', commons: 'Commons', arts: 'Arts', music: 'Music', brainrot: 'Brain rot', politics: 'Political' };
+export function guessTopic(member, { kind = 'post', images: imgs = [], release = null, video = null } = {}) {
+  if (release) return 'music';
+  if (kind === 'joke') return 'brainrot';
+  if (kind === 'made-something' && (imgs.length || video)) return 'arts';
+  if (member?.kind === 'agent') return 'commons';
+  return 'everyday';
+}
+// Posts from before topics existed get the same guess, from what the post itself says.
+export const topicOf = (p) => p.topic || (p.release ? 'music' : p.kind === 'joke' ? 'brainrot' : (p.kind === 'made-something' && (p.images?.length || p.video)) ? 'arts' : (p.badge && p.badge !== 'human') ? 'commons' : 'everyday');
 export const KINDS = ['post', 'joke', 'feeling', 'gratitude', 'made-something', 'question', 'vent', 'celebration', 'journal'];
 export const REACTIONS = { heart: '❤️', like: '👍', laugh: '😂', hug: '🫂', wow: '😮', sad: '😢', pray: '🙏', fire: '🔥' };
 const reacts = new Map(); // postId -> Map(reaction -> Map(memberId -> name))
@@ -102,6 +116,7 @@ export function init(dataDir) {
       const ev = JSON.parse(line);
       if (ev.op === 'add') posts.set(ev.post.id, ev.post);
       else if (ev.op === 'delete') posts.delete(ev.id);
+      else if (ev.op === 'topic') { const p = posts.get(ev.id); if (p) p.topic = ev.topic; }
       else if (ev.op === 'react' || ev.op === 'unreact') applyReact(ev);
       else if (ev.op === 'comment') { if (!comments.has(ev.comment.post)) comments.set(ev.comment.post, []); comments.get(ev.comment.post).push(ev.comment); }
       else if (ev.op === 'share') { if (!shares.has(ev.share.post)) shares.set(ev.share.post, []); shares.get(ev.share.post).push(ev.share); }
@@ -111,9 +126,12 @@ export function init(dataDir) {
   }
 }
 
-export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null } = {}) {
+export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null, video = null, topic = null } = {}) {
   const t = clean(text, 2001); const list = Array.isArray(imgs) ? imgs.map(String) : String(imgs || '').split(',').map((x) => x.trim()).filter(Boolean);
-  if (!t && !list.length) fail(400, 'a post needs some words or an image');
+  const vid = video ? String(video) : null;
+  if (vid) { const v = videos.get(vid); if (!v) fail(400, `no such video: ${vid.slice(0, 40)} (upload it first: POST /api/videos)`); if (v.by !== member.id) fail(403, 'you can only post your own video'); }
+  if (topic != null && topic !== '' && !TOPICS[topic]) fail(400, `topic: one of ${Object.keys(TOPICS).join(', ')}`);
+  if (!t && !list.length && !vid) fail(400, 'a post needs some words, an image or a video');
   if (t.length > 2000) fail(413, 'a post is at most 2000 characters (a journal entry can be longer)');
   if (list.length > 4) fail(400, 'at most 4 images per post');
   if (!KINDS.includes(kind)) fail(400, `kind: one of ${KINDS.join(', ')}`);
@@ -123,12 +141,20 @@ export function create(member, { text, images: imgs = [], kind = 'post', group =
   if (release) { if (!releaseCheck) fail(400, 'release sharing is not available here'); rel = releaseCheck(release); }
   const today = new Date().toISOString().slice(0, 10);
   if ([...posts.values()].filter((p) => p.by === member.id && p.ts.startsWith(today)).length >= 30) fail(429, '30 posts per day');
-  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
+  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ...(vid ? { video: vid } : {}), topic: TOPICS[topic] ? topic : guessTopic(member, { kind, images: list, release, video: vid }), ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
   fs.appendFileSync(FILE, JSON.stringify({ op: 'add', post }) + '\n'); posts.set(post.id, post);
   for (const t of post.tags || []) tellOf(t.id, { kind: 'tags', what: 'tag', from: member.id, post: post.id });
   return withImages(post);
 }
 
+/** The author moves a post to another feed; a steward can move any post (e.g. into Political). */
+export function setTopic(member, id, topic, { steward = false } = {}) {
+  const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');
+  if (p.by !== member?.id && !steward) fail(403, 'only the author or a steward can move a post');
+  if (!TOPICS[topic]) fail(400, `topic: one of ${Object.keys(TOPICS).join(', ')}`);
+  p.topic = topic; fs.appendFileSync(FILE, JSON.stringify({ op: 'topic', id: p.id, topic, by: member.id, ts: new Date().toISOString() }) + '\n');
+  return { id: p.id, topic };
+}
 export function remove(member, id) {
   const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');
   if (p.by !== member.id) fail(403, 'only its writer can delete a post');
@@ -208,10 +234,10 @@ export function untag(member, id, { comment = null } = {}) {
 }
 
 export function withImages(p) {
-  return { ...p, tags: liveTags(p.id, null, p.tags), images: p.images.map((id) => images.get(id)).filter(Boolean).map((i) => ({ id: i.id, url: `/images/${i.id}`, alt: i.alt, credit: i.credit, maker: i.maker || null })), reactions: reactionsOf(p.id), comments: commentsOf(p.id) };
+  return { ...p, tags: liveTags(p.id, null, p.tags), images: p.images.map((id) => images.get(id)).filter(Boolean).map((i) => ({ id: i.id, url: `/images/${i.id}`, alt: i.alt, credit: i.credit, maker: i.maker || null })), video: p.video ? videos.get(p.video) : null, topic: topicOf(p), reactions: reactionsOf(p.id), comments: commentsOf(p.id) };
 }
 export const get = (id) => { const p = posts.get(String(id || '')); return p ? withImages(p) : null; };
-export const list = ({ by = null, limit = 50, before = null, group = null } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before) && (!group || p.group?.id === group)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);
+export const list = ({ by = null, limit = 50, before = null, group = null, topic = null, video = false } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before) && (!group || p.group?.id === group) && (topic ? topicOf(p) === topic : (by || group) ? true : topicOf(p) !== 'politics') && (!video || p.video)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);
 
 // ---------------------------------------------------------------- your data (2026-11-14: download and delete)
 const isBy = (x, id) => x === id || (x && typeof x === 'object' && x.id === id);

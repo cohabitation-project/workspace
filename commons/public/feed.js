@@ -23,10 +23,28 @@ if (form) {
     pics.innerHTML = files.map((f, i) => `<div class="c-pic"><img alt="" src="${previews[i]}"><input data-alt="${i}" maxlength="300" placeholder="what it shows (required)" aria-label="what image ${i + 1} shows"><select data-madeby="${i}" aria-label="who made image ${i + 1}: human, AI or both"><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select><input data-credit="${i}" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. Midjourney" aria-label="maker of image ${i + 1}"></div>`).join('');
     if (e.target.files.length > 4) msg.textContent = 'At most 4 images: the first 4 are kept.';
   });
+  // 🎬 one video per post: recorded on the spot (phones offer the camera) or chosen. Up to 200 MB and 2 minutes.
+  let video = null; const vbox = $('#c-vid');
+  $('#c-video')?.addEventListener('change', (e) => {
+    const f = e.target.files[0]; video = null; if (!vbox) return;
+    if (!f) { vbox.hidden = true; vbox.innerHTML = ''; return; }
+    if (f.size > 200 * 1024 * 1024) { msg.textContent = `${f.name}: over 200 MB. Trim it, or record a shorter one.`; e.target.value = ''; return; }
+    video = f; vbox.hidden = false;
+    vbox.innerHTML = `<p>🎬 <strong>${esc(f.name || 'your video')}</strong> · ${(f.size / 1048576).toFixed(1)} MB <button type="button" class="btn ghost small" id="c-vid-x">Remove</button></p><input id="c-vid-alt" maxlength="300" placeholder="what happens in it (helps people who can't watch)" aria-label="what happens in the video">`;
+    $('#c-vid-x').addEventListener('click', () => { video = null; e.target.value = ''; vbox.hidden = true; vbox.innerHTML = ''; });
+  });
+  const sendVideo = (f, alt) => new Promise((ok, no) => {
+    const x = new XMLHttpRequest(); x.open('POST', `/api/videos?alt=${encodeURIComponent(alt || '')}`); x.withCredentials = true;
+    x.setRequestHeader('Content-Type', f.type || 'video/mp4'); x.setRequestHeader('X-Commons', '1');
+    x.upload.onprogress = (ev) => { if (ev.lengthComputable) msg.textContent = `uploading video… ${Math.round(ev.loaded / ev.total * 100)}%`; };
+    x.onload = () => { let j = {}; try { j = JSON.parse(x.responseText); } catch {} if (x.status >= 200 && x.status < 300) ok(j); else no(new Error(j.error || `video upload failed (${x.status})`)); };
+    x.onerror = () => no(new Error('the video upload was cut off. Check your connection and try again.'));
+    x.send(f);
+  });
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); if (posting) return; msg.textContent = '';
     const text = $('#c-text').value.trim();
-    if (!text && !files.length) { msg.textContent = 'Write something or add an image.'; return; }
+    if (!text && !files.length && !video) { msg.textContent = 'Write something, or add an image or a video.'; return; }
     posting = true; form.setAttribute('aria-busy', 'true');
     const controls = [...form.querySelectorAll('button,input,textarea,select')].map((el) => [el, el.disabled]);
     controls.forEach(([el]) => { el.disabled = true; });
@@ -40,10 +58,12 @@ if (form) {
         msg.textContent = `uploading image ${i + 1} of ${files.length}…`;
         ids.push((await uploadImage(files[i], { alt, credit, made_by, maker: credit })).id);
       }
+      let vid = null;
+      if (video) vid = (await sendVideo(video, $('#c-vid-alt')?.value.trim())).id;
       msg.textContent = 'posting…';
       const group = form.dataset.group || null;
       const release = $('#c-release')?.value || null;
-      const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(group ? { group } : {}), ...(release ? { release } : {}) }) });
+      const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(vid ? { video: vid } : {}), ...($('#c-topic')?.value ? { topic: $('#c-topic').value } : {}), ...(group ? { group } : {}), ...(release ? { release } : {}) }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not post (${r.status})`; return; }
       if (!group && $('#c-cohabi')?.checked) { // 📣 also out on Cohabi's X, Bluesky & Facebook (lib/socialshare.mjs)
         msg.textContent = 'posted · sending to X, Bluesky and Facebook…';

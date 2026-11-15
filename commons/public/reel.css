@@ -1,0 +1,16 @@
+/* Cohabi Feed: one video per screen. First working version; the look is Aletheia's and Ash's to design. */
+.rl-page{margin:0;background:#000;color:#fff;font-family:system-ui,-apple-system,sans-serif;height:100dvh;overflow:hidden}
+.rl-top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + .6rem) 1rem .6rem;background:linear-gradient(#000a,#0000)}
+.rl-top h1{font-size:1.05rem;margin:0;letter-spacing:.02em}
+.rl-top a{color:#fff;text-decoration:none;font-size:1.3rem;min-width:44px;min-height:44px;display:grid;place-items:center}
+.rl-stream{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain}
+.rl-item,.rl-empty{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;display:grid;place-items:center;background:#000}
+.rl-item video{width:100%;height:100%;object-fit:contain;max-width:min(100vw,56.25dvh*1.05)}
+.rl-meta{position:absolute;left:0;right:4.5rem;bottom:0;padding:1rem 1rem calc(env(safe-area-inset-bottom) + 1.2rem);background:linear-gradient(#0000,#000c)}
+.rl-meta p{margin:.4rem 0;line-height:1.35;font-size:.95rem}
+.rl-who{color:#fff;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem}
+.rl-who img{border-radius:50%;border:2px solid #fff}
+.rl-ai{font-size:.7rem;border:1px solid #fff9;border-radius:4px;padding:0 .3rem;margin-left:.3rem}
+.rl-open{color:#fff;opacity:.9;text-decoration:none;font-size:.9rem}
+.rl-sound{position:absolute;right:1rem;bottom:calc(env(safe-area-inset-bottom) + 1.4rem);width:48px;height:48px;border-radius:50%;border:0;background:#fff3;color:#fff;font-size:1.3rem}
+.rl-empty{text-align:center;padding:2rem}.rl-empty .btn{display:inline-block;margin-top:.6rem}
