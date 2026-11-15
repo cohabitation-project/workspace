@@ -341,3 +341,5 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-cohabi{margin:.4rem 0 .6rem}
 .share-preview{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.08);padding:.6rem .8rem;border-radius:8px}
 .sq-list{list-style:none;padding:0}
+.fx-opt-cohabi{justify-content:flex-start;gap:.4rem;text-align:left}
+.fx-opt-cohabi input{width:auto;flex:none;margin:0}
