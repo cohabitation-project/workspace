@@ -7,7 +7,7 @@
 set -euo pipefail
 WS=/home/geoffrey/workspace
 OUT=/var/backups/commons
-KEEP=14
+KEEP=4   # 2 days on the server; the Mac pulls every locked copy to the drive, which keeps the long history
 STAMP=$(date -u +%Y%m%d-%H%M)
 mkdir -p "$OUT"; chmod 750 "$OUT"; chown root:geoffrey "$OUT"
 
@@ -17,7 +17,10 @@ DATA=$(grep -E '^COMMONS_DATA=' "$WS/.env" 2>/dev/null | tail -1 | cut -d= -f2- 
 case "$DATA" in /*) ;; *) DATA="$WS/$DATA" ;; esac
 
 # Stalwart's data: the common install locations.
-STAL=""; for d in /opt/stalwart /var/lib/stalwart; do [ -d "$d" ] && STAL="$d" && break; done
+STAL=""; for d in /opt/stalwart-mail /opt/stalwart /var/lib/stalwart-mail /var/lib/stalwart; do [ -d "$d" ] && STAL="$d" && break; done
+# Or wherever the service says it lives (its --config path's folder).
+if [ -z "$STAL" ]; then CFG=$(systemctl cat stalwart stalwart-mail 2>/dev/null | grep -o -- '--config[= ][^ ]*' | head -1 | sed 's/--config[= ]//'); [ -n "$CFG" ] && STAL=$(dirname "$(dirname "$CFG")"); fi
+[ -z "$STAL" ] && echo "$(date -u +%FT%TZ) WARNING: mail data folder not found; mail NOT in this backup" >> "$OUT/backup.log"
 
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 LIST="$TMP/list"; : > "$LIST"
