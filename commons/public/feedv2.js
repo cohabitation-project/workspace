@@ -211,3 +211,13 @@ document.addEventListener('click', async (e) => {
 
 // The feed picker (2026-11-15): choosing a feed opens it.
 document.getElementById('fx-f')?.addEventListener('change', (e) => { const v = e.target.value; location.href = v ? `/social?f=${encodeURIComponent(v)}` : '/social'; });
+
+// ---- wallet: connect a payout account on Stripe (2026-11-15)
+document.getElementById('wl-connect')?.addEventListener('click', async (e) => {
+  const b = e.currentTarget, m = document.getElementById('wl-connect-msg'); b.disabled = true; m.textContent = 'Opening Stripe…';
+  try {
+    const r = await fetch('/api/payments/account', { method: 'POST', credentials: 'same-origin', headers: { 'X-Commons': '1' } });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+    location.href = j.url;
+  } catch (err) { m.textContent = err.message; b.disabled = false; }
+});

@@ -60,3 +60,14 @@ if (askf) askf.addEventListener('submit', async (e) => {
     location.hash = a.id; location.reload();
   } catch (err) { t.setCustomValidity(err.message); t.reportValidity(); setTimeout(() => t.setCustomValidity(''), 3000); }
 });
+
+// ---- paying (2026-11-15): Buy / Order / Give hand off to Stripe's own checkout page
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-buy]'); if (!b) return;
+  const body = {};
+  if (b.dataset.package) body.package = Number(b.dataset.package);
+  if (b.dataset.amountFrom) body.amount = Number(document.getElementById(b.dataset.amountFrom)?.value);
+  const was = b.textContent; b.disabled = true; b.textContent = 'Opening checkout…';
+  try { const j = await send(`/api/market/listings/${encodeURIComponent(b.dataset.buy)}/checkout`, 'POST', body); location.href = j.url; }
+  catch (err) { b.disabled = false; b.textContent = was; alert(err.message); }
+});
