@@ -159,3 +159,14 @@ Recorded by: Setu, as Geoffrey Cooper Jr. approved them in chat, 2026-11-14 ~12:
 Open, Geoffrey thinking aloud (not decided): human Commons members pay a membership fee ("15 to 20 a month", maybe less); whether one fee covers both the cooperative and the hub, or membership in both is automatic. Needs working out with the council and counsel.
 
 Recorded by: Setu, as Geoffrey Cooper Jr. answered in chat, 2026-11-14 ~13:46 MST
+
+---
+
+## 2026-11-14 (evening) — Fulfillment pipes and social sharing
+
+| # | Decision | Status | Notes |
+|---|----------|--------|-------|
+| 7 | Fulfillment pipes: Printful + Printify for merch, Lulu Print API for books, DistroKid for music distribution (Ash's spec, c_mwgw6dj81v036621) | ADOPTED | Geoffrey: "we're choosing... we have to wire that all in." Wired in the Commons market (lib/fulfillment.mjs), not a separate store. Accounts held by the cooperative; keys only in the server .env. DistroKid has no public API, so music releases are a tracked checklist by the label account holder. No order goes to a printer until payments open. |
+| 8 | Social sharing, phase 1: Buffer's free plan and API, posting to Cohabi's own channels | ADOPTED | Geoffrey asked Setu to decide ("even if we just use Buffer free for now"). A member asks to share their own post; a steward approves; it's queued on every connected Cohabi channel with credit and a link back. Phase 2, posting to members' own accounts from the feed, is Postiz self-hosted, after the entity exists. |
+
+Recorded by: Setu, 2026-11-14 ~19:00 MST
