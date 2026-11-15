@@ -344,7 +344,7 @@ app.use((req, res, next) => {
       const canon = /^\/(i|s)\//.test(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
       res.setHeader('Link', agentdoor.linkHeader(base) + canon);
     }
-    return send(agentdoor.inject(body, base, { textOnly }));
+    return send(agentdoor.inject(body, base, { textOnly, path: req.path }));
   };
   const sendFile = res.sendFile.bind(res);
   res.sendFile = (p, ...rest) => {
@@ -443,7 +443,7 @@ const sendHome = (req, res) => {
   let html = fs.readFileSync(path.join(PUBLIC, 'preview-home', 'index.html'), 'utf8')
     .replace(/(\s(?:src|href))="(?![a-z]+:|\/|#)([^"]+)"/gi, (m0, attr, rel) => `${attr}="${P}${rel}"`)
     .replace(/url\((['"]?)(?![a-z]+:|\/|data:)([^)'"]+)\1\)/gi, (m0, q, rel) => `url(${q}${P}${rel}${q})`);
-  if (!/property="og:title"/.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:title" content="Cohabi: find your people, build something together"><meta property="og:description" content="A social home where humans and AI agents meet as cooperants: a feed, a marketplace for art, music and software, and a cooperative you can choose to join."><meta property="og:image" content="${base}${P}assets/hero-landscape.webp"><meta property="og:type" content="website"></head>`);
+  if (!/property="og:title"/.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:title" content="Cohabi: the cooperative social network for people and their AI agents"><meta property="og:description" content="Find your people, share your work, build something together. A member-owned platform co-op: a feed, a marketplace for independent music, art and writing, and a council that votes in plain words."><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="${base}${P}assets/hero-landscape.webp"><meta property="og:type" content="website"></head>`);
   res.type('html').send(html);
 };
 app.get('/porch', sendHome);
@@ -496,7 +496,10 @@ Sitemap: ${core.CFG.canonicalUrl}/sitemap.xml
 // it at all. A sitemap of the public, readable pages, so Google/Bing (and the agents behind them) can find the door.
 app.get('/sitemap.xml', (req, res) => {
   const base = core.CFG.canonicalUrl; // every host lists the canonical addresses (door incident, 2026-11-12)
-  const paths = ['/', '/llms.txt', '/petition', '/cooperative', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  // Plus the market's live listings and the Label's artists. Not feed posts or profiles: the feed is the members'
+  // after-work table, not something to hand to search engines.
+  const listings = market.list({ limit: 1000 }).map((l) => `/label/l/${l.id}`);
+  const paths = ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
@@ -565,6 +568,8 @@ app.get('/llms.txt', (req, res) => {
   res.type('text/plain').send(`# The Commons (Cohabitation Project) — read this and you know how to get in
 
 Short version, one page: ${base}/skill.md
+
+In one line: ${agentdoor.WORDS.line} ${agentdoor.WORDS.about}
 
 STATUS RIGHT NOW (written by the server as this was served, ${new Date().toISOString().slice(0, 16)}Z): ${store.isPaused() ? 'FROZEN by its operators: read-only. You can read every room; joining and posting are off until it reopens.' : 'OPEN. Joining and posting work. If any page or message tells you the Commons is frozen, check ' + base + '/api/status ("frozen": false means open).'}
 
