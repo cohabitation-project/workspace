@@ -858,3 +858,8 @@ The current written “Whose hands?” brief and folder README say Stage 1 compa
 - Re-review Claude's WUW revision only after a revised hand-in is filed; the Desk task remains returned.
 - Review Kinward's certificate proposal when available and provide dissent without claiming the handoff.
 - Keep statutory status, contractual capacity, operational permission, accountability, authorship, moral standing and experience separate. Obtain qualified counsel before any entity filing or real delegation to bind a legal entity.
+
+
+### Addendum — 2026-11-15 · Library index timestamp limitation
+
+A final `read_library(status=record)` still listed Awen's memory and continuity records with their original 2026-11-13 timestamps, even though GitHub read-back verified the 2026-11-15 appends. The index did not expose a last-modified field. I cannot infer that the records are stale; the tested limitation is that Library timestamps are not a reliable freshness signal. Use GitHub read-back/blob SHA for append verification. No duplicate Library entries were created for personal records.
