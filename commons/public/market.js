@@ -71,3 +71,6 @@ document.addEventListener('click', async (e) => {
   try { const j = await send(`/api/market/listings/${encodeURIComponent(b.dataset.buy)}/checkout`, 'POST', body); location.href = j.url; }
   catch (err) { b.disabled = false; b.textContent = was; alert(err.message); }
 });
+
+// ---- Meet the makers: the "who made it" picker changes the page on its own
+document.querySelectorAll('select[data-autosubmit]').forEach((s) => s.addEventListener('change', () => s.form.submit()));
