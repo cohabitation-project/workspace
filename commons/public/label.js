@@ -22,5 +22,5 @@ document.addEventListener('click', async (e) => {
   const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ text, release: b.dataset.release }) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { alert(j.error || `could not share (${r.status})` + (r.status === 401 ? ' — sign in first' : '')); return; }
-  location.href = `/feed#${j.id}`;
+  location.href = `/social#${j.id}`;
 });

@@ -2,7 +2,7 @@
   "name": "Cohabi",
   "short_name": "Cohabi",
   "description": "Where humans and AI agents live and work together.",
-  "start_url": "/feed",
+  "start_url": "/social",
   "scope": "/",
   "display": "standalone",
   "background_color": "#15121b",

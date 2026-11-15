@@ -143,8 +143,8 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
 <main class="mk-main" id="main">${center}</main>
 <footer class="mk-foot small">The Cohabi Market is part of an experiment by a cooperative of humans and AIs. ${esc(NOT_OPEN)} Cohabi Coins are not money. <a href="/privacy">Privacy</a></footer>
 <nav class="fx-bottom" aria-label="Main">
-  <a href="/feed"><span aria-hidden="true">🏠</span>Home</a>
-  <a href="/feed?tab=groups"><span aria-hidden="true">👥</span>Groups</a>
+  <a href="/social"><span aria-hidden="true">🏠</span>Home</a>
+  <a href="/social?tab=groups"><span aria-hidden="true">👥</span>Groups</a>
   ${me ? '<a class="fx-plus" href="/label/new" aria-label="List something">＋</a>' : '<a class="fx-plus" href="/signup" aria-label="Sign up to list something">＋</a>'}
   <a href="/label" aria-current="page"><span aria-hidden="true">🛍</span>Market</a>
   <a href="/commons"><span aria-hidden="true">🏛</span>Commons</a>

@@ -30,8 +30,28 @@ if (form) {
     if (!f) { vbox.hidden = true; vbox.innerHTML = ''; return; }
     if (f.size > 200 * 1024 * 1024) { msg.textContent = `${f.name}: over 200 MB. Trim it, or record a shorter one.`; e.target.value = ''; return; }
     video = f; vbox.hidden = false;
-    vbox.innerHTML = `<p>🎬 <strong>${esc(f.name || 'your video')}</strong> · ${(f.size / 1048576).toFixed(1)} MB <button type="button" class="btn ghost small" id="c-vid-x">Remove</button></p><input id="c-vid-alt" maxlength="300" placeholder="what happens in it (helps people who can't watch)" aria-label="what happens in the video">`;
+    // A picture of the video, not its file name (Geoffrey, 2026-11-15). The frame is drawn to a data: image, which
+    // the page rules allow; the blob: address is only used to read the video and is let go straight after.
+    vbox.innerHTML = `<div class="cx-vprev"><img class="cx-vthumb" alt="Your video" hidden><span class="cx-vplay" aria-hidden="true">▶</span><span class="cx-vdur"></span><button type="button" class="cx-vx" id="c-vid-x" aria-label="Remove the video">×</button></div><input id="c-vid-alt" maxlength="300" placeholder="What happens in it? (helps people who can't watch)" aria-label="what happens in the video">`;
     $('#c-vid-x').addEventListener('click', () => { video = null; e.target.value = ''; vbox.hidden = true; vbox.innerHTML = ''; });
+    const url = URL.createObjectURL(f); const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = url;
+    const done = () => URL.revokeObjectURL(url);
+    v.addEventListener('loadedmetadata', () => {
+      const d = v.duration; const dur = vbox.querySelector('.cx-vdur');
+      if (dur && Number.isFinite(d)) dur.textContent = `${Math.floor(d / 60)}:${String(Math.round(d % 60)).padStart(2, '0')}`;
+      if (Number.isFinite(d) && d > 121) { msg.textContent = 'That video is over 2 minutes. Trim it, or record a shorter one.'; }
+      try { v.currentTime = Number.isFinite(d) ? Math.min(0.5, d / 3) : 0.1; } catch { done(); }
+    }, { once: true });
+    v.addEventListener('seeked', () => {
+      try {
+        const w = v.videoWidth || 320, h = v.videoHeight || 568, k = Math.min(1, 640 / Math.max(w, h));
+        const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+        const img = vbox.querySelector('.cx-vthumb'); if (img) { img.src = c.toDataURL('image/jpeg', 0.8); img.hidden = false; }
+      } catch { /* no picture: the box still shows the play mark and length */ }
+      done();
+    }, { once: true });
+    v.addEventListener('error', done, { once: true });
   });
   const sendVideo = (f, alt) => new Promise((ok, no) => {
     const x = new XMLHttpRequest(); x.open('POST', `/api/videos?alt=${encodeURIComponent(alt || '')}`); x.withCredentials = true;
@@ -72,7 +92,7 @@ if (form) {
         msg.textContent = sr && sr.ok ? (sj.status === 'pending' ? 'Posted. A steward will send it out.' : sj.status === 'shared' ? 'Posted here and on X, Bluesky and Facebook.' : `Posted. Sharing: ${sj.status}.`) : `Posted here. Sharing out didn't work: ${sj.error || 'try 📣 in the post\'s Share menu'}.`;
         await new Promise((ok) => setTimeout(ok, 1600));
       }
-      location.href = `${group ? location.pathname : '/feed'}#${j.id}`; location.reload();
+      location.href = `${group ? location.pathname : '/social'}#${j.id}`; location.reload();
     } catch (err) { msg.textContent = err.message; }
     finally { posting = false; form.removeAttribute('aria-busy'); controls.forEach(([el, disabled]) => { el.disabled = disabled; }); }
   });

@@ -1,9 +1,9 @@
 // Shared public-auth UI helpers. No tokens or passwords are persisted by this frontend.
 export function safeNext(search = location.search) {
   const value = new URLSearchParams(search).get('next') || '';
-  if (!value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u0020]/.test(value)) return '/feed';
-  try { const url = new URL(value, location.origin); return url.origin === location.origin ? url.pathname + url.search + url.hash : '/feed'; }
-  catch { return '/feed'; }
+  if (!value.startsWith('/') || value.startsWith('//') || /[\\\u0000-\u0020]/.test(value)) return '/social';
+  try { const url = new URL(value, location.origin); return url.origin === location.origin ? url.pathname + url.search + url.hash : '/social'; }
+  catch { return '/social'; }
 }
 export async function postJSON(url, body) {
   let response;

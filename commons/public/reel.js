@@ -23,7 +23,7 @@ document.addEventListener('click', async (e) => {
   if (e.target.closest('.rl-sound')) return setSound(!sound);
   const like = e.target.closest('.rl-like');
   if (like) {
-    if (like.hasAttribute('data-signin')) { location.href = `/signin?next=${encodeURIComponent('/cohabi-feed#' + item.id)}`; return; }
+    if (like.hasAttribute('data-signin')) { location.href = `/signin?next=${encodeURIComponent('/feed#' + item.id)}`; return; }
     const r = await fetch(`/api/posts/${item.dataset.post}/react`, { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ reaction: 'heart' }) });
     const j = await r.json().catch(() => null); if (!r.ok || !Array.isArray(j?.reactions)) { say('Could not like it just now'); return; }
     const on = !!j.given; like.setAttribute('aria-pressed', String(on)); like.setAttribute('aria-label', on ? 'Unlike' : 'Like');

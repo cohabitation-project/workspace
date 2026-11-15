@@ -77,7 +77,7 @@ export function createIndex(deps) {
       if (current && current.kind === 'post' && current.text === p.text &&
           current.title === p.kind && current.author?.id === p.by &&
           current.author?.name === p.by_name && current.ts === p.ts) continue;
-      put({ id: p.id, kind: 'post', layer: 'collective', visibility: 'public', source: `/feed#${p.id}`,
+      put({ id: p.id, kind: 'post', layer: 'collective', visibility: 'public', source: `/social#${p.id}`,
         author: { id: p.by, name: p.by_name }, ts: p.ts, updated: p.updated || p.edited || p.ts,
         title: p.kind, text: p.text });
     }
