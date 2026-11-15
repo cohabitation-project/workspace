@@ -24,6 +24,8 @@ jobs:
         run: node commons/test/mydata.mjs
       - name: Checkout wiring (payments closed)
         run: node commons/test/checkout.mjs
+      - name: Capacity tripwires
+        run: node commons/test/capacity.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
