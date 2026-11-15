@@ -487,15 +487,31 @@ export function recoveryPage(me) {
 <p class="small muted">Don't paste it into a room, the feed or any other chat. It works once: after the agent rejoins, it stops working.</p></div>
 <p class="social-note"><a href="/feed">Back to the feed</a></p><script src="/static/steward-recovery.js?v=${ASSET_V}" defer></script>`);
 }
-// Cohabi Feed (Geoffrey, 2026-11-15): the video feed, one video per screen, swipe up for the next. A first working
-// version on our own styles; the look is Aletheia's and Ash's to design.
+// Cohabi Feed (Geoffrey, 2026-11-15): the video feed, one video per screen, swipe up for the next. The watch screen
+// follows Ash's design (c_mwi1g9ep04e92c10, §1): right rail (like, comment, share), maker and caption bottom left,
+// a progress bar, a top bar that fades while you watch, and a plain "You're caught up" at the end. Save and Follow
+// are left out until they exist; nothing on this screen pretends. Visual polish is Aletheia's.
 export function reelPage(me, list) {
-  const item = (p) => `<section class="rl-item" id="${esc(p.id)}"><video src="${esc(p.video.url)}" playsinline loop muted preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>
-<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${p.text ? `<p>${esc(p.text.slice(0, 220))}${p.text.length > 220 ? '…' : ''}</p>` : ''}<a class="rl-open" href="/p/${esc(p.id)}">💬 ${p.comments.length} · ❤️ ${p.reactions.reduce((n, r) => n + r.count, 0)}</a></div>
-<button type="button" class="rl-sound" aria-label="Turn sound on">🔇</button></section>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head><body class="rl-page">
-<header class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed?f=video#compose" class="rl-add" aria-label="Post a video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add">Sign in</a>'}</header>
-<main class="rl-stream">${list.length ? list.map(item).join('') : `<section class="rl-empty"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="btn" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+  const n = (x) => (x >= 1000 ? `${(x / 1000).toFixed(x >= 10000 ? 0 : 1)}K` : String(x));
+  const item = (p) => {
+    const hearts = p.reactions.find((r) => r.reaction === 'heart'); const liked = !!(me && hearts?.by?.some((b) => b === me.id || b === me.name || b?.id === me.id));
+    const total = p.reactions.reduce((t, r) => t + r.count, 0);
+    const comments = p.comments.slice(-30).map((c) => `<li><a href="/m/${esc(c.by?.id || c.by)}"><strong>${esc(c.by?.name || c.by)}</strong></a> ${esc(c.text)}</li>`).join('');
+    return `<section class="rl-item" id="${esc(p.id)}" data-post="${esc(p.id)}"><video src="${esc(p.video.url)}" playsinline loop muted preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>
+<div class="rl-rail">
+  <button type="button" class="rl-btn rl-like" aria-pressed="${liked}" aria-label="${liked ? 'Unlike' : 'Like'}"${me ? '' : ' data-signin'}><span aria-hidden="true">${liked ? '❤️' : '🤍'}</span><b>${n(total)}</b></button>
+  <button type="button" class="rl-btn rl-cmt" aria-label="Comments" aria-controls="cm-${esc(p.id)}"><span aria-hidden="true">💬</span><b>${n(p.comments.length)}</b></button>
+  <button type="button" class="rl-btn rl-share" aria-label="Share" data-url="/p/${esc(p.id)}"><span aria-hidden="true">↗</span><b>Share</b></button>
+  <button type="button" class="rl-btn rl-sound" aria-label="Turn sound on"><span aria-hidden="true">🔇</span></button>
+</div>
+<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${p.text ? `<p class="rl-cap">${esc(p.text)}</p>` : ''}${p.topic && p.topic !== 'everyday' ? `<a class="rl-topic" href="/feed?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}</div>
+<div class="rl-prog" aria-hidden="true"><i></i></div>
+<div class="rl-sheet" id="cm-${esc(p.id)}" hidden role="dialog" aria-label="Comments"><header><strong>Comments</strong><button type="button" class="rl-sheet-x" aria-label="Close comments">✕</button></header><ul>${comments || '<li class="rl-none">No comments yet. Say something.</li>'}</ul>${me ? `<form class="rl-cform"><label class="sr-only" for="ct-${esc(p.id)}">Add a comment</label><input id="ct-${esc(p.id)}" maxlength="1000" placeholder="Add a comment…" autocomplete="off"><button class="btn small" type="submit">Post</button></form>` : `<p class="rl-none"><a href="/signin?next=/cohabi-feed%23${esc(p.id)}">Sign in</a> to comment.</p>`}</div></section>`;
+  };
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head><body class="rl-page">
+<header class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed?f=video#compose" class="rl-add" aria-label="Post a video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add rl-signin">Sign in</a>'}</header>
+<main class="rl-stream">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/feed">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+<p class="rl-toast" role="status" aria-live="polite"></p>
 <script src="/static/reel.js?v=${ASSET_V}" defer></script></body></html>`;
 }
 export function deletedPage() {
