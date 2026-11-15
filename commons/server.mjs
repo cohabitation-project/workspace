@@ -361,7 +361,13 @@ const staticDiscovery = (res, p) => { if (/\.html?$/i.test(p)) res.setHeader('Li
 // Speed (2026-11-11). A file asked for with ?v=<build> never changes under that address, so the browser may keep it
 // for a year; a new build changes the address. Pictures and fonts kept in the repo may be kept for a day.
 app.use(['/static', '/homepage-preview'], (req, res, next) => {
-  if (req.query.v) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  // Only the build stamp (?v=<base-36 boot time>, set fresh on every restart) is safe to keep forever. A hand-written
+  // ?v=name-date inside a script never changes on its own, so a browser kept the OLD file for a year (2026-11-15:
+  // the 🎬 Video button did nothing on Geoffrey's phone). Those, and scripts or styles with no ?v, are re-checked
+  // on every load (cheap: the server answers 304 when nothing changed).
+  const v = String(req.query.v || '');
+  if (/^[0-9a-z]{6,12}$/.test(v)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  else if (/\.(m?js|css)$/i.test(req.path)) res.setHeader('Cache-Control', 'no-cache');
   else if (/\.(webp|png|jpe?g|gif|svg|woff2?|ico)$/i.test(req.path)) res.setHeader('Cache-Control', 'public, max-age=86400');
   next();
 });

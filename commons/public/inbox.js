@@ -1,4 +1,4 @@
-import './feedv2.js?v=four-square-messenger-20261111';
+import './feedv2.js?v=video-fix-20261115';
 const $=id=>document.getElementById(id);
 const status=$('dm-status');
 const nonce=()=>crypto.randomUUID();
