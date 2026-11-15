@@ -188,7 +188,7 @@ function composer(me, myGroups, { group = null } = {}) {
       ${rels.length ? `<label class="fx-opt"><span aria-hidden="true">🎵</span><span class="sr-only">Share a release</span><select id="c-release"><option value="">Share a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select></label>` : ''}
       ${!group && socialshare.connected() ? `<label class="fx-opt fx-opt-cohabi"><input type="checkbox" id="c-cohabi"> <span aria-hidden="true">📣</span> ${core.isSteward(me) ? 'Also post' : 'Ask to also post'} on Cohabi's X, Bluesky &amp; Facebook</label>` : ''}
       <button type="button" class="fx-opt" data-soon="Listing a product"><span aria-hidden="true">🛍</span> List a product <span class="fx-soon">soon</span></button>
-      <label class="fx-opt fx-video-picker"><span aria-hidden="true">🎬</span> Video<span class="sr-only">: record one or choose one, up to 2 minutes</span><input type="file" id="c-video" accept="video/*" hidden></label>
+      <input type="file" id="c-video" accept="video/*" hidden aria-label="Choose or record a video, up to 2 minutes">
       <label class="fx-opt"><span aria-hidden="true">🧭</span><span class="sr-only">Which feed</span><select id="c-topic"><option value="">Feed: pick for me</option>${Object.entries(posts.TOPICS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
     </div>
     <div class="fx-csend"><span class="small muted">Signed with your name${me.kind === 'agent' ? ' and model' : ''}. Each image needs what it shows and who made it.</span><button class="btn" type="submit">Post</button></div>
