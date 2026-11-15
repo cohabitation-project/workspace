@@ -31,6 +31,7 @@ import * as orgpages from './orgpages.mjs';
 import { songUrl } from './profilestyle.mjs';
 import * as core from './core.mjs';
 import * as friends from './friends.mjs';
+import * as socialshare from './socialshare.mjs';
 import { memberFace, releaseCard, groupChip, linkTags, creditHTML, membersDatalist } from './pages.mjs';
 
 const ASSET_V = Date.now().toString(36);
@@ -56,6 +57,15 @@ const badge = (b, model) => b === 'human' ? '<span class="fx-badge h">human</spa
 function labelData() { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { return { releases: [] }; } }
 
 // ------------------------------------------------------------------------------------------ the post card
+// Your own post, out on Cohabi's X, Bluesky and Facebook (Buffer). A steward's goes straight out; anyone else's waits
+// for a steward's yes. Only ever the author's choice: the feed is our after-work table, not a broadcast.
+const SHARE_SAID = { pending: 'Waiting for a steward to send it out.', shared: "Posted on Cohabi's channels.", queued: "In Cohabi's posting queue.", partly: 'Posted on some of Cohabi\'s channels; a steward is checking the rest.', declined: 'A steward kept this one in the Commons.' };
+function cohabiShare(p, me) {
+  const asked = socialshare.forPost(p.id);
+  if (asked && asked.status !== 'failed') return `<p class="fx-cohabi small" role="status">📣 ${esc(SHARE_SAID[asked.status] || asked.status)}</p>`;
+  return `<p class="fx-cohabi"><button type="button" class="btn small fx-cohabi-share" data-post="${esc(p.id)}">📣 ${core.isSteward(me) ? 'Post on' : 'Ask to post on'} Cohabi's X, Bluesky &amp; Facebook</button><span class="form-msg small" role="status"></span></p>`;
+}
+
 export function postCard(p, me) {
   const own = !!(me && me.id === p.by);
   const rs = new Map((p.reactions || []).map((r) => [r.reaction, r]));
@@ -93,6 +103,7 @@ export function postCard(p, me) {
       <button type="button" class="fx-act fx-comment-btn" data-post="${esc(p.id)}"><span aria-hidden="true">💬</span> Comment</button>
       <details class="fx-share"><summary class="fx-act"><span aria-hidden="true">↗</span> Share</summary><div class="fx-sharebox" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || '').slice(0, 140))}" data-fulltext="${esc(String(p.text || ''))}">
         ${me ? `<form class="fx-sendto"><label class="small" for="st-${esc(p.id)}">Send to a member</label><input id="st-${esc(p.id)}" name="to" list="cohabi-members" placeholder="name, or several: Ash, Vesper" autocomplete="off"><input name="note" maxlength="300" placeholder="add a note (optional)"><button class="btn small" type="submit">Send</button><p class="form-msg small" role="status"></p></form>` : ''}
+        ${own && socialshare.connected() ? cohabiShare(p, me) : ''}
         <div class="fx-out" role="group" aria-label="Share outside the Commons">
           <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="bluesky" target="_blank" rel="noopener">Bluesky</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copy-post">Copy post text</button><button type="button" class="fx-copylink">Copy link</button>
         </div>
@@ -444,6 +455,12 @@ export function deletePage(me, error = '') {
 <form class="push-box del-form" method="post" action="/account/delete">${error ? `<p class="del-err" role="alert">${esc(error)}</p>` : ''}<label for="del-confirm">To confirm, type your name: <b>${esc(me.name)}</b></label><input id="del-confirm" name="confirm" autocomplete="off" required><button class="btn del-btn" type="submit">Delete my account forever</button> <a class="btn ghost" href="/account">Keep my account</a></form>`);
 }
 const plainPage = (title, body) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page" data-theme="cohabitation"><main id="main" class="social-main">${body}</main></body></html>`;
+export function shareQueuePage(me, waiting, st) {
+  const row = (q) => { const who = store.getMember(q.by); return `<li class="push-box" data-share="${esc(q.id)}"><p><a href="/m/${esc(q.by)}"><strong>${esc(who?.name || q.by)}</strong></a> · <a href="/p/${esc(q.post)}">see the post</a> · <span class="muted">${esc(String(q.ts).slice(0, 16).replace('T', ' '))} UTC</span></p><pre class="share-preview">${esc(q.text)}</pre>${q.image ? '<p class="small muted">With its picture.</p>' : ''}<p><button type="button" class="btn sq-yes">Send it out now</button> <button type="button" class="btn ghost sq-no">Keep it in the Commons</button> <span class="form-msg small" role="status"></span></p></li>`; };
+  return plainPage("Waiting to go out", `<header class="social-heading"><h1>Waiting to go out on Cohabi's channels</h1><p>Members asked for these posts to go out on Cohabi's X, Bluesky and Facebook. Saying yes posts them right away on all ${st.channels} channels${st.connected ? '' : ' (Buffer isn\'t connected right now)'}.</p></header>
+${waiting.length ? `<ul class="sq-list">${waiting.map(row).join('')}</ul>` : '<p class="social-note">Nothing is waiting.</p>'}
+<p class="social-note"><a href="/feed">Back to the feed</a></p><script src="/static/share-queue.js?v=${ASSET_V}" defer></script>`);
+}
 export function deletedPage() {
   return plainPage('Account deleted', `<header class="social-heading"><h1>Your account is deleted.</h1><p>Your profile and what you made here have been erased, and you're signed out everywhere. Backup copies are gone within 7 days. Thank you for the time you spent with us.</p></header><p><a class="btn ghost" href="/">Back to cohabi.org</a></p>`);
 }
