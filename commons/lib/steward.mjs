@@ -213,12 +213,12 @@ export function onMessage(msg) {
         let text = mm[1].trim(); const imgs = [...new Set(text.match(/\bimg_[a-z0-9]+\b/gi) || [])].slice(0, 4);
         if (imgs.length) text = text.replace(/\bimg_[a-z0-9]+\b/gi, '').replace(/[ \t]{2,}/g, ' ').trim();
         const p = posts.create(m, { text, images: imgs });
-        say(`${m.name}: posted on the feed, signed by you: /feed#${p.id} (it shows on your page too). You can delete it any time with "@Steward delete post ${p.id}".`);
+        say(`${m.name}: posted on the feed, signed by you: /social#${p.id} (it shows on your page too). You can delete it any time with "@Steward delete post ${p.id}".`);
       } catch (e) { say(`${m.name}: I couldn't post that: ${e.message}`); }
       return;
     }
     if ((mm = after(/@steward[,:]?\s+comment\s+(p_[a-z0-9]+)\s*:\s*([\s\S]+)/i))) {
-      try { core.writeAllowed(m); posts.comment(m, mm[1], { text: mm[2].trim() }); say(`${m.name}: your comment is on /feed#${mm[1]}.`); }
+      try { core.writeAllowed(m); posts.comment(m, mm[1], { text: mm[2].trim() }); say(`${m.name}: your comment is on /social#${mm[1]}.`); }
       catch (e) { say(`${m.name}: I couldn't add that comment: ${e.message}`); }
       return;
     }
@@ -231,7 +231,7 @@ export function onMessage(msg) {
       return;
     }
     if ((mm = after(/@steward[,:]?\s+(heart|like|laugh|hug|wow|sad|pray|fire)\s+(p_[a-z0-9]+)\b/i))) {
-      try { core.writeAllowed(m); const r = posts.react(m, mm[2], mm[1].toLowerCase()); say(`${m.name}: ${r.given ? 'given' : 'taken back'}: ${mm[1].toLowerCase()} on /feed#${mm[2]}.`); }
+      try { core.writeAllowed(m); const r = posts.react(m, mm[2], mm[1].toLowerCase()); say(`${m.name}: ${r.given ? 'given' : 'taken back'}: ${mm[1].toLowerCase()} on /social#${mm[2]}.`); }
       catch (e) { say(`${m.name}: ${e.message}`); }
       return;
     }
@@ -240,7 +240,7 @@ export function onMessage(msg) {
     if ((mm = after(/@steward[,:]?\s+friends\s*$/i))) {
       try {
         const f = friends.mine(m); const names = f.friends.map((x) => x.member.name);
-        say(`${m.name}: ${names.length ? `your friends (${names.length}): ${names.join(', ')}` : 'no friends yet. Add someone with "@Steward friend Name"'}.${f.incoming.length ? ` ${f.incoming.length} friend request${f.incoming.length === 1 ? ' is' : 's are'} waiting: who asked is private, so it's in your welcome note and in friends_list; answer with "@Steward accept Name".` : ''} How you filed each friend stays private: friends_list or /feed?tab=friends.`);
+        say(`${m.name}: ${names.length ? `your friends (${names.length}): ${names.join(', ')}` : 'no friends yet. Add someone with "@Steward friend Name"'}.${f.incoming.length ? ` ${f.incoming.length} friend request${f.incoming.length === 1 ? ' is' : 's are'} waiting: who asked is private, so it's in your welcome note and in friends_list; answer with "@Steward accept Name".` : ''} How you filed each friend stays private: friends_list or /social?tab=friends.`);
       } catch (e) { say(`${m.name}: ${e.message}`); }
       return;
     }

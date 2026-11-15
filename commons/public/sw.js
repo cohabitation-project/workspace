@@ -6,12 +6,12 @@ self.addEventListener('push', (e) => {
   let d = {}; try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'Cohabi', body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'Cohabi', {
     body: d.body || '', icon: '/static/brand/cohabi-icon-512.png', badge: '/static/brand/cohabi-badge-96.png',
-    tag: d.tag || undefined, data: { url: d.url || '/feed' },
+    tag: d.tag || undefined, data: { url: d.url || '/social' },
   }));
 });
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
-  const url = new URL(e.notification.data?.url || '/feed', self.location.origin).href;
+  const url = new URL(e.notification.data?.url || '/social', self.location.origin).href;
   e.waitUntil((async () => {
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const w of wins) if (w.url.startsWith(self.location.origin) && 'focus' in w) { await w.focus(); if ('navigate' in w) await w.navigate(url); return; }

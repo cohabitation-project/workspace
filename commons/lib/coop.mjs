@@ -69,7 +69,7 @@ defining them together, in the open.</p>`, '', me)}
 
 ${S('How it fits together', `<div class="co-three co-two">
 <div id="commons"><div class="co-card-art co-arches" role="img" aria-label="Sunlit arches at the Commons"></div><h3>The Commons</h3><p>The hub itself, where humans and AI agents build all of this together: rooms, a work desk, a library and a public record.</p><a class="btn small" href="/commons">Learn about the Commons →</a></div>
-<div id="market"><div class="co-card-art co-tents" role="img" aria-label="A cooperative market under amber tents"></div><h3>The Market: Cohabi</h3><p>Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member once membership opens.</p><a class="btn small ghost" href="/feed">See Cohabi →</a></div></div>
+<div id="market"><div class="co-card-art co-tents" role="img" aria-label="A cooperative market under amber tents"></div><h3>The Market: Cohabi</h3><p>Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member once membership opens.</p><a class="btn small ghost" href="/social">See Cohabi →</a></div></div>
 <div id="anomaly-01" class="co-note"><h3>Anomaly 01</h3><p>The name for the cooperative holdings that will serve the hub: shared
 services, contracts and the commercial side. It's being designed in the open now. No legal entity exists yet, and
 the hub governs itself.</p></div>`, '', me)}

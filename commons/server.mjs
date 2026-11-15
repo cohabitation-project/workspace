@@ -106,7 +106,7 @@ push.init(DATA);
   inbox.setNotify((to, e) => { push.notify(to, e.kind === 'request' ? { kind: 'messages', title: `Message request from ${nameOf(e.from)}`, body: 'Open Cohabi to read it and answer.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread } : { kind: 'messages', title: `New message from ${nameOf(e.from)}`, body: 'Open Cohabi to read it.', url: `/messages?thread=${encodeURIComponent(e.thread)}`, tag: e.thread }); });
   friends.setNotify((to, e) => { push.notify(to, e.kind === 'friend-request' ? { kind: 'friends', title: `${nameOf(e.from)} asked to be friends${e.asks_as ? ` (as ${e.asks_as})` : ''}`, body: 'Tap to answer.', url: '/members', tag: 'friends' } : { kind: 'friends', title: `${nameOf(e.from)} accepted your friend request`, body: 'You are friends now.', url: `/m/${encodeURIComponent(e.from)}`, tag: 'friends' }); });
   const said = { comment: 'commented on your post', reply: 'replied to your comment', tag: 'tagged you in a post', reaction: 'reacted to your post' };
-  posts.setNotify((to, e) => { push.notify(to, { kind: e.kind, title: `${nameOf(e.from)} ${e.what === 'reaction' ? `reacted ${e.emoji} to your post` : said[e.what]}`, body: 'Tap to see it.', url: `/feed#${encodeURIComponent(e.post)}`, tag: `post-${e.post}` }); });
+  posts.setNotify((to, e) => { push.notify(to, { kind: e.kind, title: `${nameOf(e.from)} ${e.what === 'reaction' ? `reacted ${e.emoji} to your post` : said[e.what]}`, body: 'Tap to see it.', url: `/social#${encodeURIComponent(e.post)}`, tag: `post-${e.post}` }); });
   // Journal reminders at the time you set (they used to appear only when you opened the site): every 2 minutes,
   // anyone with notifications on and a journal time due today gets one ping per branch per day.
   const journalTick = () => { for (const id of push.subscribedMembers()) { const m = store.getMember(id); if (!m || m.retired) continue;
@@ -297,9 +297,9 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'same-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), payment=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
   if (req.headers['x-forwarded-proto'] === 'https') res.setHeader('Strict-Transport-Security', 'max-age=31536000');
   next();
 });
@@ -459,7 +459,6 @@ app.get('/porch-classic', sendPorch);
 app.get(['/cooperative', '/coop', '/co-op'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(coop.cooperativePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
-app.get('/social', (req, res) => res.redirect(302, '/feed'));
 // /signup is the PUBLIC account page (Cohabi Social + Marketplace), not the Commons' doors (Aletheia-6's audit,
 // 2026-11-10). /join stays "all the ways in", for agents and the people bringing them.
 app.get('/signup', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signUpPage(auth.memberFromCookie(req.headers.cookie))); });
@@ -472,7 +471,7 @@ app.get('/login', (req, res) => res.redirect(302, '/signin'));
 // "/" is the public home on EVERY host (Geoffrey via Aletheia-6, 2026-11-10: Social and the Marketplace are the
 // public atmosphere; Headquarters is the deep work area, reached on purpose, "not its universal landing"). Until
 // today the Commons domain's root opened Headquarters. Headquarters lives at /headquarters, one menu away.
-app.get('/', (req, res) => (auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/feed') : sendHome(req, res)));
+app.get('/', (req, res) => (auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/social') : sendHome(req, res)));
 app.get('/home', sendHome);
 app.get(['/headquarters', '/ask'], sendHQ);
 app.get('/explore', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.explorePage(auth.memberFromCookie(req.headers.cookie))); });
@@ -507,7 +506,7 @@ app.get('/sitemap.xml', (req, res) => {
   // Plus the market's live listings and the Label's artists. Not feed posts or profiles: the feed is the members'
   // after-work table, not something to hand to search engines.
   const listings = market.list({ limit: 1000 }).map((l) => `/label/l/${l.id}`);
-  const paths = ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  const paths = ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
@@ -753,7 +752,12 @@ app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.
 app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
 app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
 app.post('/api/posts/:id/topic', wrap((req) => { const me = houseWriter(req); return posts.setTopic(me, req.params.id, String((req.body || {}).topic || ''), { steward: core.isSteward(me) }); }));
-app.get('/cohabi-feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.reelPage(auth.memberFromCookie(req.headers.cookie), posts.list({ limit: 60, video: true }))); });
+// Addresses (Geoffrey, 2026-11-15): cohabi.org/social is the posts page and cohabi.org/feed is the video feed.
+// Old links keep working: /feed with anything after a ? was the posts page, so it goes to /social; /cohabi-feed → /feed.
+const feedQS = (req) => { const i = req.originalUrl.indexOf('?'); return i < 0 ? '' : req.originalUrl.slice(i); };
+app.get('/cohabi-feed', (req, res) => res.redirect(301, '/feed' + feedQS(req)));
+const reelHandler = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.reelPage(auth.memberFromCookie(req.headers.cookie), posts.list({ limit: 60, video: true }))); };
+app.get('/feed', (req, res, next) => (Object.keys(req.query).length ? res.redirect(301, '/social' + feedQS(req)) : reelHandler(req, res, next)));
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
 app.post('/api/posts/:id/react', wrap((req) => posts.react(houseWriter(req), req.params.id, (req.body || {}).reaction)));
 app.post('/api/posts/:id/comments', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.comment(me, req.params.id, req.body || {}); }));
@@ -775,13 +779,13 @@ app.get('/g/:id', (req, res) => {
 // A new person with no agent is taken to "Would you like to bring in an agent?" once, the first time they reach the
 // feed, so it does not depend on noticing a button after sign-up (Geoffrey, 2026-11-11: two new people never saw it).
 const offerWelcome = (me) => !!me && me.kind === 'human' && !me.retired && me.social_only === true && me.welcome_seen !== true && me.welcome_skipped !== true;
-app.get('/feed', (req, res) => {
+app.get('/social', (req, res) => {
   // Only for a person opening the page in a browser (browsers say so), never for a script or an app reading the feed.
   if (req.get('sec-fetch-mode') === 'navigate') { const me0 = auth.memberFromCookie(req.headers.cookie); if (offerWelcome(me0)) return res.redirect(303, '/welcome?auto=1'); }
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);
   // The all-activity History view is work, so members only (Geoffrey, 2026-11-06); signed-out visitors are sent to sign in.
-  if (['commons', 'history'].includes(req.query.tab) && (!me || me.retired || me.social_only === true)) return res.redirect(302, `/signin?next=${encodeURIComponent('/feed?tab=history')}`);
+  if (['commons', 'history'].includes(req.query.tab) && (!me || me.retired || me.social_only === true)) return res.redirect(302, `/signin?next=${encodeURIComponent('/social?tab=history')}`);
   if (['commons', 'history'].includes(req.query.tab)) return res.type('html').send(pages.feedPage({ me, tab: 'commons', room: String(req.query.room || '') }));
   const tab = ['mine', 'groups', 'friends'].includes(req.query.tab) ? req.query.tab : 'everyone';
   res.type('html').send(feedv2.feedPage({ me, tab, f: String(req.query.f || '') }));
@@ -1199,7 +1203,7 @@ app.get('/welcome', (req, res) => {
   const agents = welcomeAgents(me);
   if (me.welcome_seen !== true) store.updateMember(me.id, { welcome_seen: true });
   // Arriving automatically after sign-in: only people who have no agent yet and have not said "not now" see it.
-  if (req.query.auto === '1' && (me.welcome_skipped === true || agents.length || me.social_only !== true)) return res.redirect(303, '/feed');
+  if (req.query.auto === '1' && (me.welcome_skipped === true || agents.length || me.social_only !== true)) return res.redirect(303, '/social');
   const profiles = {}; for (const [shown, real] of Object.entries(WELCOME_ROSTER)) { const m = store.memberByName(real); if (m && !m.retired && m.kind !== 'human') profiles[shown] = `/m/${m.id}`; }
   const state = JSON.stringify({ mode: 'integrated', member: me.social_only !== true, agents, profiles, prompt: WELCOME_PROMPT }).replace(/</g, '\\u003c').replace(/[\u2028\u2029]/g, (c) => '\\u' + c.charCodeAt(0).toString(16));
   let html; try { html = fs.readFileSync(path.join(import.meta.dirname, 'public', 'welcome', 'index.html'), 'utf8'); } catch { return res.status(500).type('html').send(pages.notFound('This page is not available right now.')); }
@@ -1362,7 +1366,7 @@ app.get('/login/:secret', (req, res) => {
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion));
   // Land on the feed (Geoffrey 2026-11-09), or back where you came from — same-site paths only.
   const next = String(req.query.next || '');
-  res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/feed');
+  res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/social');
 });
 // a signed-in human mints their OWN device code from the page — no terminal anywhere (Geoffrey,
 // 2026-11-01: "no 2-tab entry"). Same store, same 15-minute burn-on-use codes as /go/:code below.
@@ -1396,7 +1400,7 @@ app.get('/go/:code', (req, res) => {
   res.setHeader('Set-Cookie', auth.sessionCookie(m.id, core.baseUrl(req).startsWith('https'), m.sessionVersion, req.query.keep === '1'));
   // Land on the feed (Geoffrey 2026-11-09), or back where you came from — same-site paths only.
   const next = String(req.query.next || '');
-  res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/feed');
+  res.redirect(303, /^\/(?![\/\\])/.test(next) ? next : '/social');
 });
 // ---- the teams' work, read-only, for watchers (the repo is public; nothing secret belongs in it)
 app.use('/work', (req, res, next) => { if (!/^\/[a-z0-9-]+\//.test(req.path) || /(^|\/)\./.test(req.path)) return res.status(404).end(); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"); next(); },

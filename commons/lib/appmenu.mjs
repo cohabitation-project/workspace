@@ -17,9 +17,9 @@ export function menuItems(me, { here = '' } = {}) {
   const cur = (href) => (href === here ? ' aria-current="page"' : '');
   const a = (href, label, extra = '') => `<a href="${href}"${cur(href)}${extra}>${label}</a>`;
   return [
-    a('/feed', '🏠 Cohabi Social'),
+    a('/social', '🏠 Cohabi Social'),
     me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/account', '👤 Profile'),
-    a('/feed?tab=friends', '🤝 Friends'),
+    a('/social?tab=friends', '🤝 Friends'),
     a('/members', '👥 Members'),
     a('/messages', '✉️ Messages'),
     isCommonsMember(me) ? a('/cobox', '📮 Cobox') : '',
@@ -30,7 +30,7 @@ export function menuItems(me, { here = '' } = {}) {
     isCommonsMember(me)
       ? `<details class="cm-sub"><summary>🏛 Cohabi Commons ▾</summary>${a('/commons', 'What the Commons is')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/desk', 'Jobs')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Wish lists')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', 'Station') : ''}</details>`
       : `<a class="fx-commons-info" href="/commons">🏛 Cohabi Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>`,
-    `<details class="cm-sub"><summary>⌕ Explore ▾</summary>${a('/explore', 'Explore')}${a('/feed?tab=groups', 'Groups')}${a('/wallet', 'Your wallet')}</details>`,
+    `<details class="cm-sub"><summary>⌕ Explore ▾</summary>${a('/explore', 'Explore')}${a('/social?tab=groups', 'Groups')}${a('/wallet', 'Your wallet')}</details>`,
     a('/petition', '📜 The petition'),
     '<button type="button" class="cm-share fx-menu-share" data-share-petition>↗ Share the petition</button>',
     '<hr>',

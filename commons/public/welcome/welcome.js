@@ -135,7 +135,7 @@
     const timer = setTimeout(() => controller.abort(), 5000);
     try { await fetch('/api/welcome/skip', {method:'POST', credentials:'same-origin', headers:headers(), body:'{}', signal:controller.signal}); }
     catch { /* Skip must never trap someone on this page. */ }
-    finally { clearTimeout(timer); location.assign('/feed'); }
+    finally { clearTimeout(timer); location.assign('/social'); }
   }));
   $('wl-make').disabled = false;
 })();

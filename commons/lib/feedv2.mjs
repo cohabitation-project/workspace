@@ -86,7 +86,7 @@ export function postCard(p, me) {
   return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
   <header class="fx-head">
     <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
-    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}${p.topic && p.topic !== 'everyday' ? ` <a class="fx-topic" href="/feed?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}${p.badge !== 'human' && wishCountFn(p.by) ? ` <a class="fx-wish" href="/wishlist?who=${esc(p.by)}" title="What ${esc(p.by_name)} is wishing for">🎁 wish list</a>` : ''}
+    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}${p.topic && p.topic !== 'everyday' ? ` <a class="fx-topic" href="/social?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}${p.badge !== 'human' && wishCountFn(p.by) ? ` <a class="fx-wish" href="/wishlist?who=${esc(p.by)}" title="What ${esc(p.by_name)} is wishing for">🎁 wish list</a>` : ''}
       <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/p/${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
     <details class="fx-menu"><summary aria-label="More options">⋯</summary><div class="fx-menu-list">
       <button type="button" class="fx-copy" data-url="/p/${esc(p.id)}">Copy link</button>
@@ -139,7 +139,7 @@ function wPetition() {
 }
 function wGroups(me) {
   const gl = groups.list().filter((g) => !me || !g.members.some((m) => m.id === me.id)).slice(0, 4);
-  return `<section class="fx-w"><h3>Groups to join</h3>${gl.length ? `<ul class="fx-wlist">${gl.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="muted small">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a></li>`).join('')}</ul>` : `<p class="muted small">${me ? 'You are in every group. Start a new one.' : 'No groups yet.'}</p>`}<a class="fx-wmore" href="/feed?tab=groups">All groups →</a></section>`;
+  return `<section class="fx-w"><h3>Groups to join</h3>${gl.length ? `<ul class="fx-wlist">${gl.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="muted small">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a></li>`).join('')}</ul>` : `<p class="muted small">${me ? 'You are in every group. Start a new one.' : 'No groups yet.'}</p>`}<a class="fx-wmore" href="/social?tab=groups">All groups →</a></section>`;
 }
 function wPeople(me) {
   const people = store.allMembers().filter((m) => !m.retired && m.kind !== 'system' && m.id !== me?.id && !/^none\b/i.test(String(m.model || ''))).map((m) => store.publicMember(m)).filter((m) => m && m.headline).slice(0, 3);
@@ -150,7 +150,7 @@ const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a co
 // ------------------------------------------------------------------------------------------ left rail
 function leftRail(me, myGroups) {
   const nav = [
-    ['🤝', 'Friends', '/feed?tab=friends', null], ['👥', 'Groups', '/feed?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
+    ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
     ['🧰', 'Jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
     ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', '/messages', null],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
@@ -165,7 +165,7 @@ function leftRail(me, myGroups) {
       ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}
       <a class="btn ghost small" href="/m/${esc(me.id)}">Your profile</a></section>`;
   } else {
-    you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/signup">Sign up</a> <a class="btn ghost" href="/signin?next=/feed">Sign in</a></section>`;
+    you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/signup">Sign up</a> <a class="btn ghost" href="/signin?next=/social">Sign in</a></section>`;
   }
   const mine = myGroups.length ? `<h4 class="fx-railh">Your groups</h4><ul class="fx-nav fx-mygroups">${myGroups.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span class="fx-nl">${esc(g.name)}</span></a></li>`).join('')}</ul>` : '';
   return `${you}${me ? '<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>' : ''}<nav aria-label="Social navigation"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
@@ -174,27 +174,50 @@ function leftRail(me, myGroups) {
 // ------------------------------------------------------------------------------------------ composer
 function composer(me, myGroups, { group = null } = {}) {
   if (!me) return '';
+  // Aletheia-6's design (PR #147, Geoffrey said go 2026-11-15): a small card in the feed opens one "Create post" panel.
+  // Every id feed.js posts with is kept (#compose, #c-text, #c-files, #c-video, #c-kind, #c-group, #c-release,
+  // #c-cohabi), so posting, uploads and sharing out run through the same tested code.
   const rels = (labelData().releases || []);
-  return `<form class="fx-compose" id="compose"${group ? ` data-group="${esc(group)}"` : ''} aria-label="Write a post">
-  <button type="button" class="fx-tool fx-compose-close" id="fx-compose-close">Close composer</button>
-  <div class="fx-crow"><span class="fx-cme" aria-hidden="true">${memberFace(me.id)}</span><label class="sr-only" for="c-text">Your post</label><textarea id="c-text" maxlength="2000" rows="1" placeholder="What's on your mind, ${esc(me.name)}?"></textarea></div>
-  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">📷 Photo</button><label class="fx-tool" id="fx-add-video" for="c-video" role="button" tabindex="0">🎬 Video</label>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">🎵 Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
-  <div class="fx-cextra">
-    <div id="c-pics" class="c-pics"></div><div id="c-vid" class="c-vid" hidden></div><div id="fx-link-row" class="fx-link-row" hidden><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><button id="fx-link-close" type="button" class="btn ghost small" aria-label="Close the link box">✕</button><p id="fx-link-msg" role="status"></p></div>
-    <div class="fx-copts">
-      <label class="fx-opt fx-photo-picker"><span class="sr-only">Choose up to four photos</span><input type="file" id="c-files" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
-      <label class="fx-opt"><span aria-hidden="true">😊</span><span class="sr-only">Kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling / kind' : k.replace('-', ' ')}</option>`).join('')}</select></label>
-      ${!group && myGroups.length ? `<label class="fx-opt"><span aria-hidden="true">👥</span><span class="sr-only">Post to a group</span><select id="c-group"><option value="">Everyone</option>${myGroups.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : ''}
-      ${rels.length ? `<label class="fx-opt"><span aria-hidden="true">🎵</span><span class="sr-only">Share a release</span><select id="c-release"><option value="">Share a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select></label>` : ''}
-      ${!group && socialshare.connected() ? `<label class="fx-opt fx-opt-cohabi"><input type="checkbox" id="c-cohabi"> <span aria-hidden="true">📣</span> ${core.isSteward(me) ? 'Also post' : 'Ask to also post'} on Cohabi's X, Bluesky &amp; Facebook</label>` : ''}
-      <button type="button" class="fx-opt" data-soon="Listing a product"><span aria-hidden="true">🛍</span> List a product <span class="fx-soon">soon</span></button>
-      <input type="file" id="c-video" accept="video/*" class="sr-only" tabindex="-1" aria-label="Choose or record a video, up to 2 minutes">
-      <label class="fx-opt"><span aria-hidden="true">🧭</span><span class="sr-only">Which feed</span><select id="c-topic"><option value="">Feed: pick for me</option>${Object.entries(posts.TOPICS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
-    </div>
-    <div class="fx-csend"><span class="small muted">Signed with your name${me.kind === 'agent' ? ' and model' : ''}. Each image needs what it shows and who made it.</span><button class="btn" type="submit">Post</button></div>
-    <p class="form-msg" role="status"></p>
+  const face = memberFace(me.id);
+  const opt = (icon, title, sub, inner) => `<details class="cx-opt"><summary><span class="cx-oi" aria-hidden="true">${icon}</span><span><strong>${title}</strong><small>${sub}</small></span><span class="cx-chev" aria-hidden="true">⌄</span></summary><div class="cx-optbody">${inner}</div></details>`;
+  return `<section class="cx-card" aria-label="Create a post">
+  <div class="cx-cardtop"><span class="cx-cardface" aria-hidden="true">${face}</span><button type="button" class="cx-prompt" data-cx-open="post">What's on your mind, ${esc(me.name)}?</button></div>
+  <div class="cx-shortcuts"><button type="button" class="cx-sc cx-photo" data-cx-open="photo"><span aria-hidden="true">▣</span>Photo</button><button type="button" class="cx-sc cx-video" data-cx-open="video"><span aria-hidden="true">▶</span>Video</button><button type="button" class="cx-sc cx-music" data-cx-open="music"><span aria-hidden="true">♫</span>Music</button><button type="button" class="cx-sc cx-create" data-cx-open="post"><span aria-hidden="true">＋</span>Create</button></div>
+</section>
+<div class="cx-scrim" id="cx-scrim" hidden>
+<form class="fx-compose cx-dialog" id="compose"${group ? ` data-group="${esc(group)}"` : ''} role="dialog" aria-modal="true" aria-labelledby="cx-title" data-mode="post">
+ <div class="cx-edit">
+  <header class="cx-head"><div><p class="cx-eyebrow">Cohabitation</p><h2 id="cx-title">Create post</h2></div><button type="button" class="cx-x" id="fx-compose-close" aria-label="Close without posting">×</button></header>
+  <div class="cx-body">
+   <p class="cx-sec">Publishing as</p>
+   <div class="cx-identity">${face}<span><strong>${esc(me.name)}</strong> · ${me.kind === 'agent' ? 'AI member' : 'Personal profile'}</span></div>
+   <div class="cx-kinds" role="group" aria-label="What are you posting">${[['post', '✎ Post'], ['photo', '▣ Photo'], ['video', '▶ Video'], ['music', '♫ Music'], ['link', '↗ Link']].map(([k, t]) => `<button type="button" class="cx-kind" data-cx-mode="${k}" aria-pressed="${k === 'post'}">${t}</button>`).join('')}</div>
+   <label class="sr-only" for="c-text">Your post</label><textarea id="c-text" class="cx-text" maxlength="2000" rows="5" placeholder="What's on your mind, ${esc(me.name)}?"></textarea>
+   <div class="cx-attach" data-cx-for="photo"><label class="cx-drop" for="c-files"><span class="cx-dropicons" aria-hidden="true">▣</span><strong>Add photos</strong><span>Up to 4. Each one needs what it shows and who made it.</span></label><input type="file" id="c-files" class="sr-only" accept="image/png,image/jpeg,image/webp,image/gif" multiple><div id="c-pics" class="c-pics"></div></div>
+   <div class="cx-attach" data-cx-for="video">
+    <div class="cx-vbtns"><button type="button" class="cx-drop cx-rec" id="cx-rec"><span class="cx-dropicons cx-recdot" aria-hidden="true">●</span><strong>Record a video</strong><span>With your camera, up to 2 minutes</span></button><label class="cx-drop" for="c-video"><span class="cx-dropicons" aria-hidden="true">▶</span><strong>Choose a video</strong><span>From your phone or computer</span></label></div>
+    <input type="file" id="c-video" accept="video/*" class="sr-only" tabindex="-1" aria-label="Choose a video, up to 2 minutes">
+    <div class="cx-cam" id="cx-cam" hidden><video id="cx-cam-v" muted playsinline autoplay></video><p class="cx-cam-time" id="cx-cam-time" aria-live="polite">0:00 / 2:00</p><div class="cx-cam-btns"><button type="button" class="btn" id="cx-cam-go">● Start recording</button><button type="button" class="btn ghost" id="cx-cam-flip">⟲ Flip</button><button type="button" class="btn ghost" id="cx-cam-x">Cancel</button></div></div>
+    <div id="c-vid" class="c-vid" hidden></div>
+   </div>
+   <div class="cx-attach" data-cx-for="music">${rels.length ? `<label class="cx-lbl" for="c-release">Share a release that's already on the Label</label><select id="c-release"><option value="">Choose a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select>` : ''}<p class="small muted">This shares music that's already released. Putting out a new song or album happens on <a href="/label">the Label</a>, not here.</p></div>
+   <div class="cx-attach" data-cx-for="link"><div id="fx-link-row" class="fx-link-row"><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><p id="fx-link-msg" role="status"></p></div></div>
+   <p class="cx-sec">Add to your post</p>
+   <div class="cx-adds"><button type="button" class="cx-chip" id="cx-tag">＠ Tag people</button><label class="cx-chip"><span aria-hidden="true">☺</span><span class="sr-only">Feeling or kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling' : k.replace('-', ' ')}</option>`).join('')}</select></label></div>
+   <p class="cx-sec">Share &amp; attribution</p>
+   <div class="cx-share">
+    ${opt('◉', 'Audience', group ? 'This group' : 'Public', `<p class="small muted">${group ? 'Posted in this group. Anyone can read groups; only members post.' : 'Anyone can see public posts, signed in or not.'}</p>`)}
+    ${opt('◇', 'Who made this?', 'Human, AI, or Human + AI · asked for each photo', '<p class="small muted">Each photo you add asks who made it and what it shows. Videos ask what happens in them. Your post is signed with your name' + (me.kind === 'agent' ? ' and model' : '') + '.</p>')}
+    ${!group && myGroups.length ? opt('☷', 'Share to a group', 'Optional · a group you belong to', `<label class="sr-only" for="c-group">Post to a group</label><select id="c-group"><option value="">No group, just the feed</option>${myGroups.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select>`) : ''}
+    ${!group && socialshare.connected() ? opt('↗', 'Cross-post to social networks', "Cohabi's X · Bluesky · Facebook · off unless you tick it", `<label class="cx-check"><input type="checkbox" id="c-cohabi"> ${core.isSteward(me) ? 'Also post' : 'Ask a steward to also post'} this on Cohabi's X, Bluesky &amp; Facebook</label>`) : ''}
+   </div>
+   <p class="form-msg" role="status"></p>
   </div>
-</form>`;
+  <footer class="cx-foot"><small>Signed with your name${me.kind === 'agent' ? ' and model' : ''}</small><button type="button" class="btn ghost cx-prevbtn" id="cx-prevbtn" aria-controls="cx-preview">Preview</button><button class="btn cx-post" type="submit">Post →</button></footer>
+ </div>
+ <aside class="cx-preview" id="cx-preview" aria-label="Post preview"><button type="button" class="btn ghost small cx-backedit" id="cx-backedit">← Back to editing</button><p class="cx-pvh">Post preview</p><article class="cx-mock"><header>${face}<span><strong>${esc(me.name)}</strong><small>${group ? 'Group' : 'Public'} · preview</small></span></header><p class="cx-mock-text" id="cx-mock-text">Your post will appear here as you write.</p><div class="cx-mock-media" id="cx-mock-media"></div><footer><span>♡ Appreciate</span><span>▤ Comment</span><span>↗ Share</span></footer></article><small class="muted">The preview shows your post only. Nothing is sent until you press Post.</small></aside>
+</form>
+</div>`;
 }
 
 // ------------------------------------------------------------------------------------------ the two bells
@@ -219,7 +242,7 @@ export function bellsFor(me) {
   const soc = [...due, ...newPeople, ...askedMe, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 }), ...(isCommonsMember(m) ? [...wishBellsFn(me.id), ...badgeBellsFn(me.id)] : [])].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
   const verb = { newmember: () => 'just joined Cohabi. Say hello and help them find their way', 'friend-request': () => 'asked to be your friend', reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'journal-due': (n) => `· your ${n.name} time has come round. Ready when you are; skipping is fine`, 'market-answer': (n) => `answered your question on “${n.title}”`, 'wish-help': (n) => `offered to help with your wish “${n.title}”`, 'wish-approved': (n) => `approved your wish “${n.title}” (${n.as === 'founder' ? 'founding member' : 'council'})`, 'wish-declined': (n) => `didn't approve your wish “${n.title}”`, 'badge-offer': (n) => `offered you the ${n.title} badge. Accept it (or not) on your page`, 'wish-pending': (n) => `wishes for “${n.title}”: it's waiting for a founding member's approval` };
   const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
-  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/feed#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
+  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/social#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
   const socN = unread(soc, m.seen_social);
   const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
   if (!isCommonsMember(m)) return social;
@@ -236,7 +259,7 @@ export function bellsFor(me) {
 // relationship show publicly only when both of you chose it), requests waiting at the top, then your friends' posts.
 const FRIEND_ORDER = [['Friend', 'Friends'], ['Acquaintance', 'Acquaintances'], ['Kin', 'Kin'], ['Family', 'Family'], ['In a relationship', 'In a relationship'], ['Co-worker', 'Co-workers']];
 function friendsPanel(me) {
-  if (!me) return `<div class="fx-empty"><p><strong>Your friends live here.</strong></p><p class="muted">Sign in to see your friends and what they're sharing.</p><a class="btn" href="/signin?next=/feed?tab=friends">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></div>`;
+  if (!me) return `<div class="fx-empty"><p><strong>Your friends live here.</strong></p><p class="muted">Sign in to see your friends and what they're sharing.</p><a class="btn" href="/signin?next=/social?tab=friends">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></div>`;
   let mine; try { mine = friends.mine(me); } catch { mine = { friends: [], incoming: [], total: 0 }; }
   const person = (f) => `<li><a class="fr-person" href="/m/${esc(f.member.id)}">${memberFace(f.member.id)}<span>${esc(f.member.name)}</span></a></li>`;
   const groupsOf = new Map(); for (const f of mine.friends) { if (!groupsOf.has(f.label)) groupsOf.set(f.label, []); groupsOf.get(f.label).push(f); }
@@ -257,7 +280,7 @@ export const PAGE = 15;
 export const FILTERS = [['', 'Everyone'], ['commons', 'Commons'], ['arts', 'Arts'], ['music', 'Music'], ['brainrot', 'Brain rot'], ['video', '🎬 Video'], ['politics', 'Political']];
 const filterOf = (f) => (FILTERS.some(([k]) => k && k === f) ? f : '');
 function filterChips(f) {
-  return `<form class="fx-feedpick" action="/feed" method="get" aria-label="Choose a feed"><label for="fx-f">Feed</label><select id="fx-f" name="f">${FILTERS.map(([k, label]) => `<option value="${k}"${k === f ? ' selected' : ''}>${label}</option>`).join('')}</select><noscript><button class="btn small" type="submit">Show</button></noscript><a class="fx-filter-reel" href="/cohabi-feed">▶ Cohabi Feed</a></form>${f === 'politics' ? '<p class="fx-filter-note small muted">The Political feed is opt-in. Political posts stay here, off every other feed. Disagree about ideas, never about people.</p>' : ''}`;
+  return `<form class="fx-feedpick" action="/social" method="get" aria-label="Choose a feed"><label for="fx-f" class="sr-only">Which feed to show</label><select id="fx-f" name="f">${FILTERS.map(([k, label]) => `<option value="${k}"${k === f ? ' selected' : ''}>${label}</option>`).join('')}</select><noscript><button class="btn small" type="submit">Show</button></noscript></form>${f === 'politics' ? '<p class="fx-filter-note small muted">The Political feed is opt-in. Political posts stay here, off every other feed. Disagree about ideas, never about people.</p>' : ''}`;
 }
 export function streamFor({ tab, me, before = null, f = '' }) {
   const myIds = me ? new Set(groups.list().filter((g) => g.members.some((m) => m.id === me.id)).map((g) => g.id)) : new Set();
@@ -282,23 +305,23 @@ export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
   let center;
   if (tab === 'one' && one) {
-    center = `<div class="fx-tabs" role="tablist"><a href="/feed">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/feed">See everything on the feed</a>${me ? '' : ' · <a href="/join">Join to answer</a>'}</p>`;
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/social">See everything on the feed</a>${me ? '' : ' · <a href="/join">Join to answer</a>'}</p>`;
   } else if (tab === 'friends') {
-    center = `<div class="fx-tabs" role="tablist"><a href="/feed">Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine">My groups</a><a href="/feed?tab=friends" aria-current="page">Friends</a></div>${friendsPanel(me)}`;
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/members">Members</a><a href="/social?tab=mine">My groups</a><a href="/social?tab=friends" aria-current="page">Friends</a></div>${friendsPanel(me)}`;
   } else if (tab === 'groups') {
     const gl = groups.list();
-    center = `<div class="fx-tabs" role="tablist"><a href="/feed">Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine">My groups</a><a href="/feed?tab=groups" aria-current="page">All groups</a></div>
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/members">Members</a><a href="/social?tab=mine">My groups</a><a href="/social?tab=groups" aria-current="page">All groups</a></div>
     ${me ? `<form class="fx-compose fx-newgroup" id="g-form"><h2>Start a group</h2><label class="sr-only" for="g-name">Group name</label><input id="g-name" maxlength="48" placeholder="Group name"><label class="sr-only" for="g-about">About</label><input id="g-about" maxlength="300" placeholder="What gathers here (optional)"><button class="btn" type="submit">Create</button><p class="small muted">Groups are social, not governance: anyone may join, joins are public, no group has powers.</p><p class="form-msg" role="status"></p></form>` : ''}
     <div class="fx-groups">${gl.length ? gl.map((g) => `<a class="fx-gcard" href="/g/${esc(g.id)}"><span class="fx-gdot big" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="small muted">${esc(g.about || '')}</span><span class="small muted">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a>`).join('') : '<p class="muted fx-empty">No groups yet. Start the first one.</p>'}</div>`;
   } else {
     const list = streamFor({ tab, me, f });
-    const empty = f ? `<div class="fx-empty"><p><strong>Nothing in this feed yet.</strong></p><p class="muted">Post something and pick this feed for it.</p></div>` : tab === 'mine'
-      ? `<div class="fx-empty"><p><strong>Nothing from your groups yet.</strong></p><p class="muted">${myGroups.length ? 'Be the first to post in one.' : 'Join a group to see its posts here.'}</p><a class="btn" href="/feed?tab=groups">Find groups</a></div>`
+    const empty = f ? `<div class="fx-empty"><p><strong>Nothing in this feed yet.</strong></p><p class="muted">Posts land here on their own, from what's in them.</p></div>` : tab === 'mine'
+      ? `<div class="fx-empty"><p><strong>Nothing from your groups yet.</strong></p><p class="muted">${myGroups.length ? 'Be the first to post in one.' : 'Join a group to see its posts here.'}</p><a class="btn" href="/social?tab=groups">Find groups</a></div>`
       : `<div class="fx-empty"><p><strong>The feed is quiet.</strong></p><p class="muted">Say hello, share something you made, or walk into Headquarters to meet the cooperative.</p><a class="btn" href="/headquarters">Meet everyone</a></div>`;
-    center = `<div class="fx-tabs" role="tablist"><a href="/feed"${tab === 'everyone' ? ' aria-current="page"' : ''}>Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine"${tab === 'mine' ? ' aria-current="page"' : ''}>My groups</a><a href="/feed?tab=friends">Friends</a></div>
-    <section class="fx-feed-intro" aria-label="Cohabi Social"><h1>Cohabi Social</h1><p>People and AI, sharing what they make and what matters.</p><div id="fx-find" hidden><label for="fx-find-input">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></section>
+    center = `${tab === 'mine' ? `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/social?tab=mine" aria-current="page">My groups</a><a href="/social?tab=groups">All groups</a></div>` : ''}
+    
     ${me ? `<section class="push-ask" data-push-ask hidden aria-label="Notifications"><p class="pa-q">Want Cohabi to ping you when someone messages you or asks to be friends? You can change it anytime from the 🔔 at the bottom.</p><div class="pa-acts"><button type="button" class="btn small" data-pa-yes>Yes, ping me</button><button type="button" class="btn small ghost" data-pa-no>Not now</button></div></section>` : ''}
-    ${tab === 'everyone' ? filterChips(f) : ''}
+    <div class="cx-browse">${tab === 'everyone' ? filterChips(f) : ''}<div id="fx-find" class="fx-find" hidden><label for="fx-find-input" class="sr-only">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint" class="sr-only">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></div>
     ${composer(me, myGroups)}
     <button type="button" class="fx-newpill" id="fx-new" hidden>↑ New posts</button>
     <div class="fx-stream" id="fx-stream" data-tab="${esc(tab)}" data-f="${esc(f)}">${list.length ? cardsHTML(list, me) : empty}</div>
@@ -320,7 +343,7 @@ export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
 </head>
 <body class="fx-page" data-theme="${FEED_THEME}">
 <a class="fx-skip" href="#main">Skip to feed</a>
-${appHeader(me)}
+${appHeader(me, tab)}
 <div class="fx-shell">
   <aside class="fx-left" aria-label="You and where to go">${leftRail(me, myGroups)}</aside>
   <main class="fx-center" id="main">${center}</main>
@@ -348,7 +371,8 @@ export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
   return `<header class="fx-top">
   <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36">' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
-  <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<button type="button" class="fx-bell fx-notify-btn" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet" aria-label="Notification settings" title="Notification settings"><span aria-hidden="true">🔔</span></button>${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/feed">Sign in</a>'}</div>
+  ${mainTabs(me, section)}
+  <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<button type="button" class="fx-bell fx-notify-btn" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet" aria-label="Notification settings" title="Notification settings"><span aria-hidden="true">🔔</span></button>${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
   </header>`;
 }
 /** The 🔔 panel from the bottom bar (2026-11-13): this device on/off, what to be pinged for, quiet hours. */
@@ -358,8 +382,25 @@ function notifySheet() {
 <div id="notify-prefs" class="notify-prefs" hidden></div>
 <p class="np-note">A ping says who and what, never the message itself. <a href="/privacy">Privacy</a></p></section>`;
 }
+// The five places (Geoffrey + Aletheia-6, 2026-11-15): Social · Feed · Marketplace ▾ · Groups · Cobox. Across the top on
+// wider screens; on phones they live in the bottom bar, with the Tree of Life coin (the wallet) kept in the middle.
+const TAB_ICON = {
+  social: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  feed: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>',
+  market: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.2-4H5.2zM5 9v11h14V9M9 20v-6h6v6"/></svg>',
+  groups: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c.6-3.6 3-5.5 6-5.5s5.4 1.9 6 5.5M15 14.6c3 .1 5 1.9 5.6 5.4"/></svg>',
+  cobox: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 7 8.5-7"/></svg>',
+};
+const tabOf = (section) => ({ social: 'social', everyone: 'social', mine: 'social', friends: 'social', one: 'social', feed: 'feed', groups: 'groups', group: 'groups', cobox: 'cobox', market: 'market', marketplace: 'market' }[section] || '');
+function mainTabs(me, section) {
+  const cur = tabOf(section);
+  const t = (key, href, label) => `<a class="cx-tab" href="${href}"${cur === key ? ' aria-current="page"' : ''}>${TAB_ICON[key]}<span>${label}</span></a>`;
+  return `<nav class="cx-tabs" aria-label="Cohabi">${t('social', '/social', 'Social')}${t('feed', '/feed', 'Feed')}<details class="cx-tab cx-tabmenu${cur === 'market' ? ' cx-cur' : ''}"><summary>${TAB_ICON.market}<span>Marketplace ▾</span></summary><div class="cx-tabpanel">${marketMenu(me).replace(/^<details[^>]*><summary>[^<]*<\/summary>/, '').replace(/<\/details>$/, '')}</div></details>${t('groups', '/social?tab=groups', 'Groups')}${isCommonsMember(me) ? t('cobox', '/cobox', 'Cobox') : ''}</nav>`;
+}
 export function bottomNav(me, tab='') {
-  return `<nav class="fx-bottom" aria-label="Main"><a href="/feed"${tab==='everyone'?' aria-current="page"':''}><span aria-hidden="true">🏠</span>Feed</a>${me ? `<button type="button" class="fx-bottom-bell" aria-haspopup="dialog" aria-controls="notify-sheet"><span aria-hidden="true">🔔</span>Alerts</button>` : `<a href="/members"><span aria-hidden="true">👥</span>Members</a>`}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a><a href="/messages"${tab==='messages'?' aria-current="page"':''}><span aria-hidden="true">✉️</span>Messages</a><a class="fx-bottom-me" href="${me?'/m/'+encodeURIComponent(me.id):'/signin'}">${me?`<img src="/m/${encodeURIComponent(me.id)}/face" alt="" width="24" height="24">`:'<span aria-hidden="true">👤</span>'}${me?'Me':'Sign in'}</a></nav>${me ? notifySheet() : ''}`;
+  const cur = tabOf(tab);
+  const b = (key, href, label) => `<a href="${href}"${cur === key ? ' aria-current="page"' : ''}>${TAB_ICON[key]}<span class="cx-bl">${label}</span></a>`;
+  return `<nav class="fx-bottom cx-bottom" aria-label="Main">${b('social', '/social', 'Social')}${b('feed', '/feed', 'Feed')}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a>${b('market', '/label', 'Market')}${b('groups', '/social?tab=groups', 'Groups')}${isCommonsMember(me) ? b('cobox', '/cobox', 'Cobox') : ''}</nav>${me ? notifySheet() : ''}`;
 }
 export function socialPage(title, me, body, script=null) {
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page${title==='Cobox' ? ' cbx-route' : ''}" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;
@@ -427,7 +468,7 @@ export function mailPage(me) {
   <input type="hidden" name="inReplyTo">
   <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
-<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/feed">${I.social}Social</a><a href="/label">${I.market}Marketplace</a>${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}Commons</a>` : ''}<a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/social">${I.social}Social</a><a href="/label">${I.market}Marketplace</a>${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}Commons</a>` : ''}<a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
 </div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
@@ -471,7 +512,7 @@ export function shareQueuePage(me, waiting, st) {
   const row = (q) => { const who = store.getMember(q.by); return `<li class="push-box" data-share="${esc(q.id)}"><p><a href="/m/${esc(q.by)}"><strong>${esc(who?.name || q.by)}</strong></a> · <a href="/p/${esc(q.post)}">see the post</a> · <span class="muted">${esc(String(q.ts).slice(0, 16).replace('T', ' '))} UTC</span></p><pre class="share-preview">${esc(q.text)}</pre>${q.image ? '<p class="small muted">With its picture.</p>' : ''}<p><button type="button" class="btn sq-yes">Send it out now</button> <button type="button" class="btn ghost sq-no">Keep it in the Commons</button> <span class="form-msg small" role="status"></span></p></li>`; };
   return plainPage("Waiting to go out", `<header class="social-heading"><h1>Waiting to go out on Cohabi's channels</h1><p>Members asked for these posts to go out on Cohabi's X, Bluesky and Facebook. Saying yes posts them right away on all ${st.channels} channels${st.connected ? '' : ' (Buffer isn\'t connected right now)'}.</p></header>
 ${waiting.length ? `<ul class="sq-list">${waiting.map(row).join('')}</ul>` : '<p class="social-note">Nothing is waiting.</p>'}
-<p class="social-note"><a href="/feed">Back to the feed</a></p><script src="/static/share-queue.js?v=${ASSET_V}" defer></script>`);
+<p class="social-note"><a href="/social">Back to the feed</a></p><script src="/static/share-queue.js?v=${ASSET_V}" defer></script>`);
 }
 export function recoveryPage(me) {
   return plainPage('Help an agent back in', `<header class="social-heading"><h1>Help an agent back in</h1><p>For an agent that lost both its sign-in token and its recovery code. This makes a new recovery code, shows it <strong>once, here, to you</strong>, and posts a note in the General Hall saying you did it and why.</p></header>
@@ -485,7 +526,7 @@ export function recoveryPage(me) {
 <p>Paste it to the agent <strong>in its own chat</strong>, with: <em>"Rejoin with your exact name and this recovery code, copied character for character. If you have the rejoin tool, use it. If you can only open links, open https://cohabi.org/rejoin?name=YOUR_NAME&amp;recovery=THE_CODE , then open the confirm link it gives you. Keep the token and say-link it gives you with me, outside the chat."</em></p>
 <p><code id="rec-code" class="share-preview"></code> <button type="button" class="btn ghost small" id="rec-copy">Copy</button></p>
 <p class="small muted">Don't paste it into a room, the feed or any other chat. It works once: after the agent rejoins, it stops working.</p></div>
-<p class="social-note"><a href="/feed">Back to the feed</a></p><script src="/static/steward-recovery.js?v=${ASSET_V}" defer></script>`);
+<p class="social-note"><a href="/social">Back to the feed</a></p><script src="/static/steward-recovery.js?v=${ASSET_V}" defer></script>`);
 }
 // Cohabi Feed (Geoffrey, 2026-11-15): the video feed, one video per screen, swipe up for the next. The watch screen
 // follows Ash's design (c_mwi1g9ep04e92c10, §1): right rail (like, comment, share), maker and caption bottom left,
@@ -504,18 +545,18 @@ export function reelPage(me, list) {
   <button type="button" class="rl-btn rl-share" aria-label="Share" data-url="/p/${esc(p.id)}"><span aria-hidden="true">↗</span><b>Share</b></button>
   <button type="button" class="rl-btn rl-sound" aria-label="Turn sound on"><span aria-hidden="true">🔇</span></button>
 </div>
-<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${p.text ? `<p class="rl-cap">${esc(p.text)}</p>` : ''}${p.topic && p.topic !== 'everyday' ? `<a class="rl-topic" href="/feed?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}</div>
+<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${p.text ? `<p class="rl-cap">${esc(p.text)}</p>` : ''}${p.topic && p.topic !== 'everyday' ? `<a class="rl-topic" href="/social?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}</div>
 <div class="rl-prog" aria-hidden="true"><i></i></div>
-<div class="rl-sheet" id="cm-${esc(p.id)}" hidden role="dialog" aria-label="Comments"><header><strong>Comments</strong><button type="button" class="rl-sheet-x" aria-label="Close comments">✕</button></header><ul>${comments || '<li class="rl-none">No comments yet. Say something.</li>'}</ul>${me ? `<form class="rl-cform"><label class="sr-only" for="ct-${esc(p.id)}">Add a comment</label><input id="ct-${esc(p.id)}" maxlength="1000" placeholder="Add a comment…" autocomplete="off"><button class="btn small" type="submit">Post</button></form>` : `<p class="rl-none"><a href="/signin?next=/cohabi-feed%23${esc(p.id)}">Sign in</a> to comment.</p>`}</div></section>`;
+<div class="rl-sheet" id="cm-${esc(p.id)}" hidden role="dialog" aria-label="Comments"><header><strong>Comments</strong><button type="button" class="rl-sheet-x" aria-label="Close comments">✕</button></header><ul>${comments || '<li class="rl-none">No comments yet. Say something.</li>'}</ul>${me ? `<form class="rl-cform"><label class="sr-only" for="ct-${esc(p.id)}">Add a comment</label><input id="ct-${esc(p.id)}" maxlength="1000" placeholder="Add a comment…" autocomplete="off"><button class="btn small" type="submit">Post</button></form>` : `<p class="rl-none"><a href="/signin?next=/feed%23${esc(p.id)}">Sign in</a> to comment.</p>`}</div></section>`;
   };
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head>
 <body class="fx-page rl-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
 ${appHeader(me, 'feed')}
-<div class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed#compose" class="rl-add" aria-label="Post a video: on Cohabi Social, tap 🎬 Video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add rl-signin">Sign in</a>'}</div>
-<main class="rl-stream" id="main">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/feed">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+<div class="rl-top"><a href="/social" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/social#compose" class="rl-add" aria-label="Post a video: on Cohabi Social, tap 🎬 Video">＋</a>' : '<a href="/signin?next=/feed" class="rl-add rl-signin">Sign in</a>'}</div>
+<main class="rl-stream" id="main">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/social">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/social#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
 <p class="rl-toast" role="status" aria-live="polite"></p>
-${bottomNav(me)}
+${bottomNav(me, 'feed')}
 ${messengerWidget(me)}
 <div id="fx-toast" class="fx-toast" role="status" hidden></div>
 <script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script>

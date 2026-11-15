@@ -3,7 +3,7 @@
 // the v2 behaviors: expanding composer + phone bottom sheet, group/release on posts, "coming soon" toasts,
 // copy-link, the new-posts pill, load-more / infinite scroll, focus-comment, and the desktop hover card.
 import './feed.js';
-import './feed-identity.js?v=video-fix-20261115';
+import './feed-identity.js?v=social-a6-20261115';
 import './messenger-widget.js?v=video-fix-20261115';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
@@ -33,29 +33,12 @@ document.addEventListener('click', async (e) => {
 document.addEventListener('click', (e) => {
   const b = e.target.closest('.fx-comment-btn'); if (!b) return;
   const t = document.getElementById(`sx-${b.dataset.post}`);
-  if (t) { t.closest('form')?.classList.remove('fx-cold'); t.focus(); t.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } else location.href = `/signin?next=/feed`;
+  if (t) { t.closest('form')?.classList.remove('fx-cold'); t.focus(); t.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); } else location.href = `/signin?next=/social`;
 });
 
-// ---- composer: expands when touched; group + release ride along (feed.js does the posting)
+// ---- composer: the Create post panel lives in feed-identity.js; feed.js reads form.dataset.group for the group picker
 const form = $('#compose');
-if (form) {
-  const ta = $('#c-text');
-  const phone = () => matchMedia('(max-width: 699px)').matches;
-  const open = () => { form.classList.add('open'); if (phone()) { form.classList.add('sheet'); document.body.classList.add('fx-sheet-open'); } };
-  ta.addEventListener('focus', open);
-  ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = `${Math.min(ta.scrollHeight, 320)}px`; });
-  // feed.js reads form.dataset.group; keep it in sync with the picker
-  const g = $('#c-group'); if (g) g.addEventListener('change', () => { if (g.value) form.dataset.group = g.value; else delete form.dataset.group; });
-  // phone: the ＋ opens the composer as a bottom sheet
-  const plus = $('#fx-plus');
-  if (plus) plus.addEventListener('click', () => {
-    form.classList.add('open', 'sheet'); document.body.classList.add('fx-sheet-open'); ta.focus();
-  });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && form.classList.contains('sheet')) { form.classList.remove('sheet'); document.body.classList.remove('fx-sheet-open'); } });
-  document.addEventListener('click', (e) => {
-    if (form.classList.contains('sheet') && e.target === document.body) { form.classList.remove('sheet'); document.body.classList.remove('fx-sheet-open'); }
-  });
-}
+if (form) { const g = $('#c-group'); if (g) g.addEventListener('change', () => { if (g.value) form.dataset.group = g.value; else delete form.dataset.group; }); }
 
 // ---- new posts pill: checks every 30 s, never auto-jumps
 const stream = $('#fx-stream'); const pill = $('#fx-new');
@@ -227,4 +210,4 @@ document.addEventListener('click', async (e) => {
 });
 
 // The feed picker (2026-11-15): choosing a feed opens it.
-document.getElementById('fx-f')?.addEventListener('change', (e) => { const v = e.target.value; location.href = v ? `/feed?f=${encodeURIComponent(v)}` : '/feed'; });
+document.getElementById('fx-f')?.addEventListener('change', (e) => { const v = e.target.value; location.href = v ? `/social?f=${encodeURIComponent(v)}` : '/social'; });
