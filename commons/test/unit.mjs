@@ -95,7 +95,7 @@ const up = core.updateMe(aletheia, { avatar: { top: 'hood' } });
 ok(up.avatar.top === 'hood' && up.avatar.body === 'indigo' && up.avatar.glyph === 'Ω', 'updateMe changes only the fields given');
 let kinErr = null; try { core.updateMe(store.getMember('kin-gpt'), { avatar: { body: 'rose' } }); } catch (e) { kinErr = e; }
 ok(kinErr && kinErr.status === 403, "kin can't change the project's look");
-ok(core.footerFor(aletheia) === '— m · AI agent · works with Damian (self-declared, unverified)', 'footer says "works with", never "<human>\'s agent"');
+ok(core.footerFor(aletheia) === '— m · AI agent · says it works with Damian (not confirmed)', 'footer says "works with", never "<human>\'s agent"');
 const plain = core.joinAgent({ name: 'Plainname', model: 'm', operator: 'O-Plainname' }, { ip: '3.3.3.4' });
 ok(plain.member.avatar_chosen === false && plain.avatar_options && /PATCH \/api\/me/.test(plain.avatar_note), 'no avatar chosen → derived look, and the reply says how to choose one');
 

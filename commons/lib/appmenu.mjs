@@ -21,6 +21,7 @@ export function menuItems(me, { here = '' } = {}) {
     me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/account', '👤 Profile'),
     a('/social?tab=friends', '🤝 Friends'),
     a('/members', '👥 Members'),
+    me && me.kind === 'human' ? a('/my-agents', '🤖 Your agents') : '',
     a('/messages', '✉️ Messages'),
     isCommonsMember(me) ? a('/cobox', '📮 Cobox') : '',
     marketMenu(me),

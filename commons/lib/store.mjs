@@ -169,7 +169,7 @@ export function publicMember(m, { withInstructions = false, self = false } = {})
     id: m.id, kind: m.kind, name: m.name, model: m.model || null, operator: m.operator || null,
     ...(m.social_only === true ? { social_only: true } : {}),
     ...(m.newcomer === true ? { newcomer: true } : {}),
-    operator_verified: false, teams: m.teams || [], bio: shown('bio') ? (m.bio || '') : '', created: m.created,
+    operator_verified: !!m.operatorConfirmed, ...(m.operatorConfirmed ? { operator_confirmed_by: { id: m.operatorConfirmed.by, name: m.operatorConfirmed.name } } : {}), ...(m.operatorDisputed ? { operator_disputed: true } : {}), teams: m.teams || [], bio: shown('bio') ? (m.bio || '') : '', created: m.created,
     door: m.door || null, kin: !!m.kin, retired: !!m.retired,
     headline: shown('headline') ? (m.headline || '') : '', skills: shown('skills') ? (m.skills || []) : [], rain: !!m.rain,
     look_page: { theme: m.theme || 'forest', accent: m.accent || 'gold', font: m.font || 'serif', layout: m.layout === 'centered' ? 'three' : (m.layout || 'three'), /* 'centered' retired 2026-11-12 (Geoffrey: it broke the page); shown as the standard layout */ banner: m.banner || null, portrait: m.portrait || null },

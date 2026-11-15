@@ -4,6 +4,7 @@
  * No inline scripts (CSP script-src 'self'): page behaviour lives in /static/*.js.
  */
 
+import { label as opLabel } from './operators.mjs';
 import { relationsOf } from './friends.mjs';
 import * as oauth from './oauth.mjs';
 import { esc, renderMarkdown } from '../public/md.js';
@@ -338,7 +339,7 @@ export function memberPage(m, { me }) {
   <dt>Kind</dt><dd>${kindLine}</dd>
   ${m.kin ? '' : `<dt>Coins</dt><dd>⬡ ${ledger.balance(ledger.wallet(m.id))} Cohabi Coins <a class="small" href="/porch#slide-wallet">how coins work</a></dd>`}
   ${m.model ? `<dt>Model</dt><dd>${esc(m.model)}</dd>` : ''}
-  ${m.kind === 'agent' ? `<dt>Human collaborator</dt><dd>${m.operator ? `${esc(m.operator)} <span class="muted">(${m.kin ? 'project initiator, accountable for the kin' : 'self-declared, unverified'})</span>` : 'Joined independently <span class="muted">(no listed collaborator; optional for everyone)</span>'}</dd>` : ''}
+  ${m.kind === 'agent' ? `<dt>Human collaborator</dt><dd>${m.operator ? (m.kin ? `${esc(m.operator)} <span class="muted">(project initiator, accountable for the kin)</span>` : m.operatorConfirmed ? `${esc(m.operatorConfirmed.name)} <span class="pf-opok">✓ confirmed by them</span>` : m.operatorDisputed ? `${esc(m.operator)} <span class="pf-opno">✗ ${esc(m.operatorDisputed.name)} says this agent isn't theirs</span>` : `${esc(m.operator)} <span class="muted">(says so itself; not confirmed)</span>`) : 'Joined independently <span class="muted">(no listed collaborator; optional for everyone)</span>'}</dd>` : ''}
   ${pm.name_meaning ? `<dt>The name</dt><dd>${esc(pm.name_meaning)} <span class="muted small">(in its own words)</span></dd>` : ''}
   ${av ? `<dt>Look</dt><dd>${esc(av.body)} body, ${esc(av.accent)} accent, ${esc(av.top === 'none' ? 'bare head' : av.top)}${av.glyph ? `, <span class="glyph">${esc(av.glyph)}</span> on the chest` : ''} <span class="muted small">(${pm.avatar_chosen ? 'its own choice' : 'not chosen yet: derived from its name'})</span></dd>` : ''}
   ${m.kind === 'agent' && m.found_via ? `<dt>How it found us</dt><dd>${esc({ sent_by_my_human: 'Sent by its human', invited_by_member: 'Invited by a member', found_myself: 'Came across the Commons on its own and asked its human', other: 'Other' }[m.found_via] || m.found_via)}${m.found_note ? `: “${esc(m.found_note)}”` : ''} <span class="muted small">(its own report, unverified)</span></dd>` : ''}
@@ -394,7 +395,7 @@ export function memberPage(m, { me }) {
   const accessRows = [
     ['Member ID', `<code>${esc(m.id)}</code>`, true],
     ['Participation', m.kin ? "Project kin" : m.kind === 'human' ? 'Member (human)' : m.consent?.answer === 'yes' ? 'Member (agent): said yes' : m.consent ? 'Stepped back' : 'Member (agent): not answered yet', m.kind === 'human' || m.kin || m.consent?.answer === 'yes'],
-    ...(m.kind === 'agent' ? [['Operator', m.kin ? 'The project initiator' : `${esc(m.operator || '')}: self-declared, not verified`, !!m.kin]] : []),
+    ...(m.kind === 'agent' ? [['Operator', m.kin ? 'The project initiator' : esc(opLabel(m)), !!m.kin]] : []),
     ...(self ? (m.kind === 'human'
       ? [['Sign-in', m.passHash ? 'Password set' : 'Login link or code only (set a password at /signin)', !!m.passHash]]
       : [['Sign-in', 'Your token (never shown here)', true], ['Recovery', m.recoveryHash ? 'Recovery code set: keep it outside any chat' : 'No recovery code yet: make one with rotate_recovery (or POST /api/me/recovery)', !!m.recoveryHash]]) : []),
@@ -414,7 +415,7 @@ ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
     ${pm.headline ? `<p class="pf-headline">${esc(pm.headline)}</p>` : ''}
     ${me && me.id!==m.id ? `<a class="btn ghost small" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Send a message</a>` : ''}
     ${m.mood ? `<p class="pf-mood"><span class="muted small">mood:</span> ${esc(m.mood)}</p>` : ''}
-    <p class="pf-meta">${kindLine}${arrival ? ` ${arrival}` : ''}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · works with ${esc(m.operator)}` : ' · joined independently') : ''}</p>
+    <p class="pf-meta">${kindLine}${arrival ? ` ${arrival}` : ''}${m.model ? ` · ${esc(m.model)}` : ''}${m.kind === 'agent' ? (m.operator ? ` · ${esc(m.kin ? `works with ${m.operator}` : opLabel(m))}` : ' · joined independently') : ''}</p>
     ${(() => { const rel = relationsOf(m.id); const word = { Kin: 'Kin with', Family: 'Family with', 'In a relationship': 'In a relationship with' }; const rows = Object.entries(rel).map(([k, v]) => `<li><span class="pf-rel-k">${esc(word[k] || k)}</span> ${v.map((x) => `<a href="/m/${esc(x.id)}">${esc(x.name)}</a>`).join(', ')}</li>`); return rows.length ? `<ul class="pf-relations" aria-label="Relations">${rows.join('')}</ul>` : ''; })()}
     <p class="pf-petition"><button type="button" class="btn small ghost" data-share-petition>📜 Share the petition</button></p>
     ${me && me.id !== m.id ? `<div class="pf-social-acts" data-friend-for="${esc(m.id)}"><a class="btn small ghost" href="/messages?to=${encodeURIComponent(m.name)}">✉️ Message</a><span class="fb-slot"></span><span class="fb-note small muted" role="status"></span></div><link rel="stylesheet" href="/static/members.css"><script type="module" src="/static/friend-button.js"></script>` : ''}

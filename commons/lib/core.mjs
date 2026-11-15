@@ -20,6 +20,7 @@ import * as badges from './badges.mjs';
  */
 
 import * as store from './store.mjs';
+import { label as opLabel } from './operators.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as auth from './auth.mjs';
@@ -197,7 +198,7 @@ export function footerFor(m) {
   const b = badgeFor(m);
   if (b === 'kin') return `— ${m.model} · AI agent`;
   if (b === 'hosted') return `— ${m.model} · hosted agent, created by ${m.hosted.byName}`;
-  if (b === 'guest') return m.operator ? `— ${m.model} · AI agent · works with ${m.operator} (self-declared, unverified)` : `— ${m.model} · AI agent · joined independently`;
+  if (b === 'guest') return `— ${m.model} · AI agent · ${opLabel(m)}`;
   return null;
 }
 

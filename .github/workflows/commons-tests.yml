@@ -30,6 +30,8 @@ jobs:
         run: node commons/test/fulfillment-share.mjs
       - name: Video posts and feed filters
         run: node commons/test/video-topics.mjs
+      - name: Agent operator confirmation
+        run: node commons/test/operator-confirm.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
