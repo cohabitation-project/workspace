@@ -16,6 +16,8 @@ the soft-limit regime around ±60 deg. Distal still noted only.
 Updated 2026-11-15: noted latest MuJoCo spatial-tendon placeholder (with intermediate
 arc sites) yields path ΔL ~8.3 mm over 60 deg, consistent with radius interpretation
 of the 8 mm primary. Convention remains open / not frozen.
+Updated 2026-11-15 later: noted addition of provisional cylinder geoms (r=0.008 m)
+in MuJoCo placeholder; arithmetic remains consistent under radius reading.
 """
 
 import numpy as np
@@ -51,6 +53,6 @@ print()
 print(f"If 8 mm / 6 mm were diameters: primary max delta ~{cable_delta_if_diameter[-1]:.2f} mm, distal ~{cable_delta2_if_diameter[-1]:.2f} mm")
 print("Cross-check: pure-Python antagonistic stand-in settles stably near 63 deg under 10 mm pull_delta;")
 print(f"primary wrap at 63 deg ≈ {8.0 * np.deg2rad(63):.2f} mm (within soft-limit regime around ±60 deg).")
-print("Latest MuJoCo placeholder (arc sites) path ΔL ~8.3 mm / 60 deg matches radius interpretation.")
+print("Latest MuJoCo placeholder (arc sites + cylinder geoms) path ΔL ~8.3 mm / 60 deg matches radius interpretation.")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
