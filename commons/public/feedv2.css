@@ -353,3 +353,8 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fx-video video{width:100%;max-height:80vh;border-radius:12px;background:#000;display:block}
 .c-vid video{width:100%;max-height:50vh;border-radius:10px;background:#000;margin:.4rem 0}
 .fx-video-picker{cursor:pointer}
+/* Feed picker: one dropdown instead of a row of pills (Geoffrey, 2026-11-15). Look to be designed by Aletheia. */
+.fx-feedpick{display:flex;align-items:center;gap:.6rem;margin:.2rem 0 .7rem;flex-wrap:wrap}
+.fx-feedpick label{font-weight:700}
+.fx-feedpick select{font:inherit;padding:.45rem 2rem .45rem .7rem;border-radius:10px;border:1px solid rgba(127,127,127,.4);background:transparent;color:inherit;min-height:44px}
+.fx-feedpick .fx-filter-reel{margin-left:auto;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}
