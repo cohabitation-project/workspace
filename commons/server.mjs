@@ -47,6 +47,8 @@ import * as invites from './lib/invites.mjs';
 import * as mydata from './lib/mydata.mjs';
 import * as checkout from './lib/checkout.mjs';
 import * as capacity from './lib/capacity.mjs';
+import * as fulfillment from './lib/fulfillment.mjs';
+import * as socialshare from './lib/socialshare.mjs';
 import * as coop from './lib/coop.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
@@ -130,6 +132,8 @@ groups.init(DATA);
 market.init(DATA);
 checkout.init(DATA);
 capacity.start();
+fulfillment.init(DATA);
+socialshare.init(DATA);
 pages.setStorefront(marketpage.storefront);
 orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q) || null, imageOwned: (m, id) => images.ownedBy(m, id), labelOwners: () => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')).artists || {}; } catch { return {}; } }, labelFolders: () => marketpage.artists() });
 orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
@@ -1464,6 +1468,18 @@ app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(re
 app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
 app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return market.withdraw(me, req.params.id); }));
 app.get('/api/capacity', wrap((req) => { const me = auth.memberFromCookie(req.headers.cookie); if (!core.isSteward(me)) throw new core.CommonsError(403, 'stewards only'); return capacity.measure(); }));
+// Fulfillment wiring (2026-11-14): Printful/Printify merch, Lulu books, DistroKid releases by checklist. See lib/fulfillment.mjs.
+app.get('/api/fulfillment/status', wrap(() => fulfillment.status()));
+app.get('/api/market/listings/:id/fulfillment', wrap((req) => ({ link: fulfillment.linkFor(req.params.id), release: fulfillment.release(req.params.id) })));
+app.post('/api/market/listings/:id/fulfillment', wrap((req) => fulfillment.link(marketWriter(req), req.params.id, req.body || {})));
+app.delete('/api/market/listings/:id/fulfillment', wrap((req) => fulfillment.unlink(marketWriter(req), req.params.id)));
+app.post('/api/market/listings/:id/release', wrap((req) => { const b = req.body || {}; return fulfillment.markRelease(marketWriter(req), req.params.id, b.step, b.done !== false); }));
+// Sharing out to Cohabi's own social channels through Buffer (phase 1). See lib/socialshare.mjs.
+app.get('/api/share/status', wrap(() => socialshare.status()));
+app.post('/api/share', wrap((req, res) => { res.status(201); return socialshare.request(marketWriter(req), (req.body || {}).post, core.baseUrl(req)); }));
+app.get('/api/share/queue', wrap((req) => socialshare.pending(auth.memberFromCookie(req.headers.cookie))));
+app.post('/api/share/:id/approve', wrap((req) => socialshare.approve(auth.memberFromCookie(req.headers.cookie), req.params.id)));
+app.post('/api/share/:id/decline', wrap((req) => socialshare.decline(auth.memberFromCookie(req.headers.cookie), req.params.id)));
 // Checkout wiring (2026-11-14): shapes and gates only, payments CLOSED. See commons/lib/checkout.mjs.
 app.get('/api/market/listings/:id/checkout', wrap((req) => checkout.quote(req.params.id, { pkg: req.query.package })));
 app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startCheckout(marketWriter(req), req.params.id, { pkg: (req.body || {}).package })));
