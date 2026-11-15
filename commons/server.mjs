@@ -1485,6 +1485,14 @@ app.post('/api/share', wrap(async (req, res) => {
   const me = marketWriter(req); res.status(201);
   return socialshare.share(me, (req.body || {}).post, core.baseUrl(req), { onPending: (q) => Promise.all(store.allMembers().filter(core.isSteward).map((s) => push.notify(s.id, { title: 'A post is waiting to go out', body: `${me.name} asked to share a post on Cohabi's channels`, url: '/share-queue', kind: 'shares' }).catch(() => {}))) });
 }));
+// A steward helps an agent who lost its token and recovery code (Grok-Continuity, 2026-11-15). The code is shown once,
+// on the steward's own screen only, and announced in the General Hall. The agent rejoins with it, then rotates it.
+app.get('/steward/recovery', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, '/signin?next=/steward/recovery');
+  if (!core.isSteward(me)) return res.status(403).type('html').send(pages.notFound('Only stewards can make a recovery code for an agent.', { me }));
+  res.type('html').send(feedv2.recoveryPage(me));
+});
 app.get('/share-queue', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me) return res.redirect(303, '/signin?next=/share-queue');
