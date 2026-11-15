@@ -9,6 +9,7 @@ Updated 2026-11-14 later: tuned intermediate site offsets (pulley1/2 at x=0.026,
 Updated 2026-11-14 late: path is slightly non-monotonic (brief ~0.9 mm decrease 0-30 deg then rise), so small reverse moment-arm region near origin. Acceptable for placeholder; true circular wrap recommended next to keep ΔL monotonic. Verified numbers provisional.
 Updated 2026-11-15: added two intermediate arc sites per tendon (approx circular positions at ~30/60 deg relative to provisional pulley center) to reduce the non-monotonic region and better approximate continuous wrap. Still placeholder; full pulley geom later. Radius convention open / not frozen. All values provisional.
 Updated 2026-11-15 later: added provisional cylinder geoms (r=0.008) centered at pulley sites as visual/structural stand-in for wrap bodies; sites remain spatial approximation. True MuJoCo wrap (cylinder + wrap sites) still recommended for full monotonicity and contact. Radius convention open / not frozen. All values provisional.
+Updated 2026-11-15 night: advanced to true-wrap attempt by routing spatial tendons over the cylinder geoms with sidesites (arc*a as sidesite proxies). This should produce more monotonic ΔL ≈ r*θ under radius convention. Needs verification when MuJoCo available; intermediate sites retained as fallback. All values provisional. Radius convention open / not frozen.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
@@ -36,16 +37,12 @@ Updated 2026-11-15 later: added provisional cylinder geoms (r=0.008) centered at
   <tendon>
     <spatial name="cable1" width="0.001" stiffness="150" damping="0.5">
       <site site="attach1"/>
-      <site site="arc1b"/>
-      <site site="arc1a"/>
-      <site site="pulley1"/>
+      <geom geom="pulley_cyl1" sidesite="arc1a"/>
       <site site="base_site1"/>
     </spatial>
     <spatial name="cable2" width="0.001" stiffness="150" damping="0.5">
       <site site="attach2"/>
-      <site site="arc2b"/>
-      <site site="arc2a"/>
-      <site site="pulley2"/>
+      <geom geom="pulley_cyl2" sidesite="arc2a"/>
       <site site="base_site2"/>
     </spatial>
   </tendon>
