@@ -30,7 +30,9 @@ const MODES = ['shareNow', 'addToQueue', 'shareNext'];
 const mode = () => (MODES.includes(env('BUFFER_MODE')) ? env('BUFFER_MODE') : 'shareNow');
 
 let FILE = null; let queue = [];
-export function init(dataDir) { const d = path.join(dataDir, 'social'); fs.mkdirSync(d, { recursive: true, mode: 0o700 }); FILE = path.join(d, 'share-queue.json'); try { queue = JSON.parse(fs.readFileSync(FILE, 'utf8')) || []; } catch { queue = []; } }
+export function init(dataDir) { const d = path.join(dataDir, 'social'); fs.mkdirSync(d, { recursive: true, mode: 0o700 }); FILE = path.join(d, 'share-queue.json'); try { queue = JSON.parse(fs.readFileSync(FILE, 'utf8')) || []; } catch { queue = []; }
+  // A share cut off mid-send by a restart is never re-sent automatically: it shows as unknown for a steward to check.
+  let changed = false; for (const q of queue) if (q.status === 'processing') { q.status = 'unknown'; changed = true; } if (changed) save(); }
 const save = () => { const t = FILE + '.tmp'; fs.writeFileSync(t, JSON.stringify(queue, null, 1), { mode: 0o600 }); fs.renameSync(t, FILE); };
 
 export const status = () => ({ provider: 'buffer', phase: 1, connected: connected(), channels: channels().length, pending: queue.filter((q) => q.status === 'pending').length, mode: mode(), note: "Phase 1 shares to Cohabi's own channels, with the author's request and a steward's yes (a steward's own post goes straight out). Posts go out at once. Members' own accounts come with Postiz in phase 2." });
@@ -69,14 +71,25 @@ export async function approve(member, id, { fetchImpl = fetch } = {}) {
   if (!isSteward(member)) fail(403, 'stewards only');
   const q = queue.find((x) => x.id === id); if (!q) fail(404, 'no such request'); if (q.status !== 'pending') fail(409, `already ${q.status}`);
   if (!connected()) fail(503, "Buffer isn't connected yet: the operator sets BUFFER_API_KEY and BUFFER_CHANNEL_IDS on the server.");
-  const results = [];
+  // Claim it before the first network call (Aletheia-6 and Ash, Review, 2026-11-15): two stewards pressing at once
+  // could both pass the pending check and post twice. The claim is synchronous and saved, so the second one gets 409.
+  q.status = 'processing'; q.decided_by = member.id; q.decided_at = new Date().toISOString(); q.results = []; save();
   for (const ch of channels()) {
     const input = { text: q.text, channelId: ch, schedulingType: 'automatic', mode: mode(), ...(q.image ? { assets: { images: [{ url: q.image }] } } : {}) };
-    const r = await fetchImpl(API(), { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env('BUFFER_API_KEY')}` }, body: JSON.stringify({ query: 'mutation Share($input: CreatePostInput!) { createPost(input: $input) { ... on PostActionSuccess { post { id } } ... on MutationError { message } } }', variables: { input } }) });
-    const j = await r.json().catch(() => ({}));
-    const ok = r.ok && j?.data?.createPost?.post?.id;
-    results.push({ channel: ch, ok: !!ok, buffer_post: ok || null, error: ok ? null : (j?.data?.createPost?.message || j?.errors?.[0]?.message || `HTTP ${r.status}`) });
+    let rec;
+    try {
+      const r = await fetchImpl(API(), { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env('BUFFER_API_KEY')}` }, body: JSON.stringify({ query: 'mutation Share($input: CreatePostInput!) { createPost(input: $input) { ... on PostActionSuccess { post { id } } ... on MutationError { message } } }', variables: { input } }) });
+      const j = await r.json().catch(() => ({}));
+      const ok = r.ok && j?.data?.createPost?.post?.id;
+      rec = { channel: ch, ok: !!ok, buffer_post: ok || null, error: ok ? null : (j?.data?.createPost?.message || j?.errors?.[0]?.message || `HTTP ${r.status}`) };
+    } catch (e) {
+      // The request may or may not have reached Buffer. Never retry it blindly: a steward checks Buffer.
+      rec = { channel: ch, ok: false, unknown: true, buffer_post: null, error: `no answer from Buffer (${String(e.message || e).slice(0, 120)}); check Buffer before trying again` };
+    }
+    q.results.push(rec); save(); // each channel's receipt is kept as soon as it is known
   }
-  q.status = results.every((x) => x.ok) ? (mode() === 'shareNow' ? 'shared' : 'queued') : results.some((x) => x.ok) ? 'partly' : 'failed'; q.results = results; q.decided_by = member.id; q.decided_at = new Date().toISOString(); save();
+  const results = q.results;
+  q.status = results.every((x) => x.ok) ? (mode() === 'shareNow' ? 'shared' : 'queued') : results.some((x) => x.unknown) ? 'unknown' : results.some((x) => x.ok) ? 'partly' : 'failed';
+  save();
   return q;
 }
