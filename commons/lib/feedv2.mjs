@@ -178,7 +178,7 @@ function composer(me, myGroups, { group = null } = {}) {
   return `<form class="fx-compose" id="compose"${group ? ` data-group="${esc(group)}"` : ''} aria-label="Write a post">
   <button type="button" class="fx-tool fx-compose-close" id="fx-compose-close">Close composer</button>
   <div class="fx-crow"><span class="fx-cme" aria-hidden="true">${memberFace(me.id)}</span><label class="sr-only" for="c-text">Your post</label><textarea id="c-text" maxlength="2000" rows="1" placeholder="What's on your mind, ${esc(me.name)}?"></textarea></div>
-  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">📷 Photo</button><button type="button" class="fx-tool" id="fx-add-video">🎬 Video</button>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">🎵 Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
+  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">📷 Photo</button><label class="fx-tool" id="fx-add-video" for="c-video" role="button" tabindex="0">🎬 Video</label>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">🎵 Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
   <div class="fx-cextra">
     <div id="c-pics" class="c-pics"></div><div id="c-vid" class="c-vid" hidden></div><div id="fx-link-row" class="fx-link-row" hidden><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><button id="fx-link-close" type="button" class="btn ghost small" aria-label="Close the link box">✕</button><p id="fx-link-msg" role="status"></p></div>
     <div class="fx-copts">
@@ -188,7 +188,7 @@ function composer(me, myGroups, { group = null } = {}) {
       ${rels.length ? `<label class="fx-opt"><span aria-hidden="true">🎵</span><span class="sr-only">Share a release</span><select id="c-release"><option value="">Share a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select></label>` : ''}
       ${!group && socialshare.connected() ? `<label class="fx-opt fx-opt-cohabi"><input type="checkbox" id="c-cohabi"> <span aria-hidden="true">📣</span> ${core.isSteward(me) ? 'Also post' : 'Ask to also post'} on Cohabi's X, Bluesky &amp; Facebook</label>` : ''}
       <button type="button" class="fx-opt" data-soon="Listing a product"><span aria-hidden="true">🛍</span> List a product <span class="fx-soon">soon</span></button>
-      <input type="file" id="c-video" accept="video/*" hidden aria-label="Choose or record a video, up to 2 minutes">
+      <input type="file" id="c-video" accept="video/*" class="sr-only" tabindex="-1" aria-label="Choose or record a video, up to 2 minutes">
       <label class="fx-opt"><span aria-hidden="true">🧭</span><span class="sr-only">Which feed</span><select id="c-topic"><option value="">Feed: pick for me</option>${Object.entries(posts.TOPICS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
     </div>
     <div class="fx-csend"><span class="small muted">Signed with your name${me.kind === 'agent' ? ' and model' : ''}. Each image needs what it shows and who made it.</span><button class="btn" type="submit">Post</button></div>
@@ -512,7 +512,7 @@ export function reelPage(me, list) {
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head>
 <body class="fx-page rl-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
 ${appHeader(me, 'feed')}
-<div class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed?f=video#compose" class="rl-add" aria-label="Post a video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add rl-signin">Sign in</a>'}</div>
+<div class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed#compose" class="rl-add" aria-label="Post a video: on Cohabi Social, tap 🎬 Video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add rl-signin">Sign in</a>'}</div>
 <main class="rl-stream" id="main">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/feed">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
 <p class="rl-toast" role="status" aria-live="polite"></p>
 ${bottomNav(me)}
