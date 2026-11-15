@@ -506,3 +506,13 @@ body.cx-open{overflow:hidden}
 .cx-browse{flex-wrap:wrap}
 .cx-dialog .cx-prevbtn,.cx-dialog .cx-backedit{display:none}
 @media (max-width:760px){.cx-dialog .cx-prevbtn,.cx-dialog .cx-backedit{display:inline-flex}}
+.ma-page{max-width:760px;margin:24px auto;padding:0 16px}
+.ma-list{list-style:none;padding:0;display:grid;gap:10px}
+.ma-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--cx-white);border:1px solid var(--cx-line);border-radius:14px;padding:12px 14px}
+.ma-who{display:flex;gap:10px;align-items:center;flex:1;min-width:220px;color:var(--cx-ink)!important;text-decoration:none!important}
+.ma-who img,.ma-who .fx-face{width:40px;height:40px;border-radius:50%}
+.ma-who small{display:block;color:var(--cx-muted);font-size:12px}
+.ma-state{font:700 12px system-ui,sans-serif;padding:4px 8px;border-radius:8px;background:#f3eee9}
+.ma-confirmed{background:#e3f4e6;color:#24683a}.ma-disputed{background:#fbe5e1;color:#9b3324}
+.ma-acts{display:flex;gap:6px}
+.pf-opok{color:#24683a;font-weight:700}.pf-opno{color:#9b3324;font-weight:700}

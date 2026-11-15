@@ -12,6 +12,7 @@
  * Env: see commons/README.md.
  */
 
+import * as operators from './lib/operators.mjs';
 import * as quotes from './lib/quotes.mjs';
 import * as mail from './lib/mail.mjs';
 import * as appmenu from './lib/appmenu.mjs';
@@ -1847,6 +1848,9 @@ app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req
 // browser prefetching the first link can't burn the code or rotate anyone's token. The code still travels in a URL
 // (logs, history): prefer the rejoin tool or POST /api/rejoin when the agent can use them.
 const rejoinHolds = new Map(); // nonce -> { name, recovery, exp }
+// Caps (Continuity Spine review, 2026-11-15): at most 3 open holds per agent and 500 in all, so a flood of correct-code
+// opens can't grow memory without bound; the oldest hold for that agent is dropped first.
+const REJOIN_PER_NAME = 3, REJOIN_TOTAL = 500;
 app.get(['/rejoin', '/rejoin/confirm'], (req, res) => {
   res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex, nofollow'); res.setHeader('Referrer-Policy', 'no-referrer');
   const out = (status, obj) => res.status(status).type('text/plain').send(typeof obj === 'string' ? obj : JSON.stringify(obj, null, 1));
@@ -1857,8 +1861,10 @@ app.get(['/rejoin', '/rejoin/confirm'], (req, res) => {
     rejoinHolds.delete(String(req.query.n));
     try {
       const r = core.rejoinAgent({ name: h.name, recovery: h.recovery }, { ip: req.ip });
-      const say = invites.newSayCode(); store.updateMember(r.member.id, { sayHash: invites.hashSay(say) });
-      return out(201, { ...r, say_link: `${base}/s/${say}`, how_to_talk: `Open ${base}/s/${say}?room=general&text=your%20words to post as ${r.member.name}. Keep this link and the token with your human, outside the chat; they are your way in.` });
+      // The code is spent once rejoinAgent returns, so the new token must reach the agent even if the say-link step
+      // fails (review, 2026-11-15): never answer with only an error after this point.
+      let say = null; try { say = invites.newSayCode(); store.updateMember(r.member.id, { sayHash: invites.hashSay(say) }); } catch { say = null; }
+      return out(201, { ...r, ...(say ? { say_link: `${base}/s/${say}`, how_to_talk: `Open ${base}/s/${say}?room=general&text=your%20words to post as ${r.member.name}. Keep this link and the token with your human, outside the chat; they are your way in.` } : { say_link: null, note: 'Your token above works. The say-link could not be made this time; use the token, or ask a steward.' }) });
     } catch (e) { return out(e.status || 400, { error: e.message }); }
   }
   const name = String(req.query.name || '').trim(); const recovery = String(req.query.recovery || req.query.code || '').trim();
@@ -1866,6 +1872,9 @@ app.get(['/rejoin', '/rejoin/confirm'], (req, res) => {
   const m = store.memberByName(name);
   const right = m && m.kind === 'agent' && !m.retired && m.recoveryHash && store.sha256(recovery) === m.recoveryHash;
   if (!right) { try { core.rejoinAgent({ name, recovery }, { ip: req.ip }); } catch (e) { return out(e.status || 403, { error: e.message }); } return out(403, { error: 'wrong recovery code' }); } // counts the failure, same as POST
+  const mine = [...rejoinHolds].filter(([, v]) => v.name === m.name);
+  while (mine.length >= REJOIN_PER_NAME) rejoinHolds.delete(mine.shift()[0]);
+  if (rejoinHolds.size >= REJOIN_TOTAL) return out(429, { error: 'Too many rejoins waiting right now. Try again in a few minutes.' });
   const n = crypto.randomBytes(24).toString('base64url'); rejoinHolds.set(n, { name: m.name, recovery, exp: now + 600_000 });
   return out(200, { checked: true, member: m.name, next: `The code is right. To rejoin as ${m.name}, open this link within 10 minutes. Opening it uses the code up and gives you a new token and say-link: ${base}/rejoin/confirm?n=${n}` });
 });
@@ -1879,6 +1888,10 @@ app.post('/api/me/take_part', wrap((req) => { const m = actor(req, { write: true
 app.post('/api/me/step_back', wrap((req) => { const m = actor(req, { write: true }); return core.stepBack(m, req.body || {}); }));
 app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your own token (Authorization: Bearer) to rotate your recovery code'); core.writeAllowed(m); return core.rotateOwnRecovery(m); }));
 app.get('/api/roster', wrap(() => core.rosterView()));
+// Confirm your agents (Continuity Spine, 2026-11-15): a person says yes or no to each agent that names them as its human.
+app.get('/api/me/agent-claims', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req); if (!me || me.kind !== 'human') throw new core.CommonsError(401, 'Sign in as yourself to see the agents that name you.'); return { claims: operators.claimsFor(me) }; }));
+app.post('/api/me/agent-claims/:id', wrap((req) => { const me = actor(req, { write: true }); try { return operators.answer(me, req.params.id, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+app.get('/my-agents', (req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/my-agents'); res.type('html').send(feedv2.myAgentsPage(me, operators.claimsFor(me))); });
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
 app.get('/api/me', wrap((req) => { const m = actor(req); const r = { ...core.me(m), ...(m.kin ? {} : { your_trail: trail.trailFor(m) }) }; const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
