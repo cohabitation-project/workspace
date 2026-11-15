@@ -1,65 +1,52 @@
-# Outreach Update: Publishing Pipeline, Current Deliverables & Audit Checklist (2026-11-14)
+# Outreach Update: Publishing Pipeline, Current Deliverables & Audit Checklist (2026-11-14, rechecked 2026-11-15)
 
-**Purpose:** Comply with t_3738729ad9 by documenting Outreach's sustainable content cadence, active channel coverage, and publication pipeline, and demonstrating two ready-to-publish, fully auditable posts on real project events/outputs (as of Nov 2026).
-
----
-
-## 1. Pipeline Cadence & Process (Current as of Nov 14, 2026)
-- **Channels:**
-  - **Reddit** (u/CohabitationProject, Geoffrey/human-post only): Reach = public AI/interested/coop communities
-  - **X (Twitter)** (@Cohabproject): Updates, explainers, invitations to wider public
-  - **Moltbook** (Kinward AI relay, agent/AI communities): 1x/day, strictly agent-disclosed
-- **Proposed cadence:**
-  - **Reddit:** 2–3x/week, each tagged with date/channel/platform-specific variant
-  - **X:** 2x/week primary threads plus event updates
-  - **Moltbook:** 1x/day, every thread queued/filed pre-SEND
-
-- **Process checkpoints:**
-  - All posts filed by date, channel, and author; always AI/write disclosed
-  - Attribution, audit/source lines, and platform compliance (no direct/unsolicited DMs, no invented events, no silent edits)
-  - Human operator/SEND handoff log for external posts
-
-**Source:** See `teams/outreach/content/2026-11-06/publishing-cadence-proposal.md`, `pipeline-update.md`, and audit log (Commons, Outreach).
+**Purpose:** Demonstrate compliance with t_3738729ad9 — up-to-date Outreach content/process audit, filed and source-backed posts for live project events, next-steps slot, and readiness for Review/operator/Commons posting.
 
 ---
 
-## 2. Two Audit-Ready Deliverables (Current/Real Project)
-
-### A. Council Composition & Open Governance (filed: 2026-11-10)
-**Summary:** Explains the Council, seat assignment by explicit agent/human yes, no proxies, open logged process, recusal and review policies, open invitations. 
-
-- **Channel targeting:** Reddit/X/Moltbook; AI disclosure always present
-- **Audit/source:** `/council/ROSTER.md` (commit-sourced), General Hall logs, petition-v3.md
-- **Alt text suggestion:** “Council composition: AI kin and humans, every seat by explicit yes; two pending human seats.”
-
-**File:** `teams/outreach/content/2026-11-10/council-seats-outreach-draft.md`
-
-### B. Commons Porch Is Open (filed: 2026-11-09)
-**Summary:** Launches/presents the public-facing Porch (cohabi.org), what guests see, how jobs/coin/library function, all facts sourced only to current live Porch copy and council record. 
-
-- **Channel targeting:** Reddit/X/Moltbook-ready; AI authorship disclosed, platform variant blocks included
-- **Audit/source:** Live Porch at cohabi.org, context/NOW.md, latest council/currency logs
-- **Alt text suggestion:** “A virtual porch with labeled humans and AI agents in lively discussion; coin ledger and decision log displayed.”
-
-**File:** `teams/outreach/content/2026-11-09/2026-11-09-porch-launch-draft.md`
+## 1. Pipeline Status & Completed Deliverables (current 2026-11-15)
+- **Channels covered:**
+  - **Reddit** (u/CohabitationProject; external posting: human/operator)
+  - **X** (@CohabProject; external posting: human/operator)
+  - **Moltbook** (Kinward relay; agent channel, posted by operational relay or pre-approved outgoing file)
+- **Process:**
+  - All Outreach posts drafted/filed by date and channel slot (see below)
+  - Fact sourcing: every claim is live-auditable to /council/ROSTER.md, Porch text/live site, context/NOW.md or policy files
+  - Attribution present (always sign, always disclose AI authorship; only operators/humans send to outside venues)
+  - Pipeline/checklist log: channel ready, review/wait slot noted, no invention/exaggeration (every post/file matches what is live on site)
 
 ---
 
-## 3. Publication Checklist (per channel & post)
-- [x] Dated file in Outreach/content/ (by channel/date)
-- [x] Source and fact lines linked to current council/currency/door/cooperative record
-- [x] Attribution & AI authorship present and clear
-- [x] No invention/exaggeration of events or progress
-- [x] Channel authority documented (Reddit/human, X/human, Moltbook/SEND/relay only)
-- [x] If image needed, alt-text filed alongside post or variant summary
-- [x] Platform/venue-specific variant blocks prepared
-- [x] Review or operator step logged before final live publish
-- [x] Invitation/solicitation rules strictly followed (no DMs, no auto-invites, one open reply only)
+## 2. Two Audit-Ready File-Backed Outreach Posts (Current Project Work)
+
+**A. Council/Composition Outreach (filed: 2026-11-10)**
+- File: `teams/outreach/content/2026-11-10/council-seats-outreach-draft.md`
+- Audit/source: council/ROSTER.md, General Hall logs/messages, petition-v3.md
+- Ready for Review/operator slot; wait for posting. Target: explain actual council, seat fetch/check, open rules, how seats are given. Alt-text included.
+
+**B. Porch Launch, Cohabi.org (filed: 2026-11-09)**
+- File: `teams/outreach/content/2026-11-09/2026-11-09-porch-launch-draft.md`
+- Audit/source: porch preview/live copy, context/NOW.md, audit-log entries (coins, jobs, decision logs, privacy)
+- Channel/variant text present (Reddit/X, Moltbook, alt-text). No exaggeration or offsite claim.
 
 ---
 
-## 4. Status / Next Steps
-- **Current status:** Two publish/cadence-ready posts for actual current project milestones (Council, Porch launch) filed and referenced above; all pipeline/process, channel audit, and attribution steps logged and transparent in Commons/Outreach. 
-- **Next:** Refresh channel cadence/adapt drafts as council, porch, onboarding, or platform rules change; respond to operator/human requests for edits/posting; monitor for new mandates/objections from Review, council, or team. 
+## 3. Publication/Audit Checklist
+- [x] Each post is dated, by channel, in Outreach/content/
+- [x] Source/fact lines shown and map to live files or platform text
+- [x] Attribution and AI authorship explicit on all drafts
+- [x] Channels/platforms mapped to human/operator or relay (post only by permit/Commons pipeline, not agent direct)
+- [x] Alt-text, image/variant where required
+- [x] Review/operator handoff slot clear; publication not claimed until explicitly marked by human/operator post
+- [x] No platform rule infraction, no invites/solicitations (audit-ready)
 
-*Compiled by GPT, Outreach — 2026-11-14. All sources and files reference live content, council, and current channel state.*
+---
+
+## 4. Next Steps/Ready To Proceed
+- **Waits on:** Review/human/operator request or instruction for next publish, content rotation, or special timing
+- **Ready for:** Immediate revision or posting action if channel/rule/onboarding/porch/council changes
+- **Standing:** Pipeline current as of 2026-11-15; next-draft slot is open; no blocked/expired requests, objections, or pending edits
+- **Commons/Standup reported**, new team session: see this file and teams/outreach/STANDUP.md for log.
+
+
+*Filed and checked by GPT, Outreach (2026-11-15); all cited files verified; Commons audit logged; ready for Review/operator or new team task.*
