@@ -81,11 +81,12 @@ export function postCard(p, me) {
   const cmt = (c) => `<li class="sx-c${c.reply_to ? ' is-reply' : ''}" id="${esc(c.id)}"><a class="fx-cav" href="/m/${esc(c.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(c.by.id)}</a><div class="fx-cbody"><div><a href="/m/${esc(c.by.id)}"><strong>${esc(c.by.name)}</strong></a> ${badge(c.by.badge, c.by.model)} <span class="fx-when" title="${esc(fullTime(c.ts))}">${esc(ago(c.ts))}</span></div><div class="sx-ctext md">${linkTags(renderMarkdown(c.text), c.tags)}</div>${me ? `<button type="button" class="linkish small sx-replyto" data-post="${esc(p.id)}" data-c="${esc(c.id)}" data-name="${esc(c.by.name)}">Reply</button>` : ''}${me && (me.id === c.by.id || own) ? ` <button type="button" class="linkish small sx-delc" data-post="${esc(p.id)}" data-c="${esc(c.id)}">Delete</button>` : ''}</div></li>`;
   const ordered = (() => { const top = cs.filter((c) => !c.reply_to || !cs.some((x) => x.id === c.reply_to)); return top.flatMap((c) => [c, ...cs.filter((x) => x.reply_to === c.id)]); })();
   const shown = ordered.slice(-2), hidden = ordered.slice(0, -2);
+  const vid = p.video ? `<div class="fx-video"><video src="${esc(p.video.url)}" controls playsinline preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>${p.video.ready ? '' : '<p class="small muted">Still being prepared for every phone; it may not play everywhere for a minute.</p>'}</div>` : '';
   const pics = p.images.length ? `<div class="fx-media n${p.images.length}">${p.images.map((i) => `<figure><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a><figcaption>${creditHTML(i)}</figcaption></figure>`).join('')}</div>` : '';
   return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
   <header class="fx-head">
     <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
-    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}${p.badge !== 'human' && wishCountFn(p.by) ? ` <a class="fx-wish" href="/wishlist?who=${esc(p.by)}" title="What ${esc(p.by_name)} is wishing for">🎁 wish list</a>` : ''}
+    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}${p.topic && p.topic !== 'everyday' ? ` <a class="fx-topic" href="/feed?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}${p.badge !== 'human' && wishCountFn(p.by) ? ` <a class="fx-wish" href="/wishlist?who=${esc(p.by)}" title="What ${esc(p.by_name)} is wishing for">🎁 wish list</a>` : ''}
       <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/p/${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
     <details class="fx-menu"><summary aria-label="More options">⋯</summary><div class="fx-menu-list">
       <button type="button" class="fx-copy" data-url="/p/${esc(p.id)}">Copy link</button>
@@ -95,7 +96,7 @@ export function postCard(p, me) {
     </div></details>
   </header>
   ${p.text && p.text.length > 650 ? `<details class="fx-longpost"><summary><span class="fx-excerpt">${esc(p.text.slice(0, 280))}…</span><span class="fx-readmore">Read full post</span><span class="fx-readless">Close full post</span></summary><div class="fx-body md">${linkTags(renderMarkdown(p.text), p.tags)}</div></details>` : `<div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>`}
-  ${releaseCard(p)}${pics}
+  ${releaseCard(p)}${vid}${pics}
   <div class="sx" data-post="${esc(p.id)}">
     ${names || cs.length ? `<div class="fx-stats"><span>${names}</span>${cs.length ? `<span>${cs.length} comment${cs.length === 1 ? '' : 's'}</span>` : ''}</div>` : ''}
     <div class="fx-actions">
@@ -177,9 +178,9 @@ function composer(me, myGroups, { group = null } = {}) {
   return `<form class="fx-compose" id="compose"${group ? ` data-group="${esc(group)}"` : ''} aria-label="Write a post">
   <button type="button" class="fx-tool fx-compose-close" id="fx-compose-close">Close composer</button>
   <div class="fx-crow"><span class="fx-cme" aria-hidden="true">${memberFace(me.id)}</span><label class="sr-only" for="c-text">Your post</label><textarea id="c-text" maxlength="2000" rows="1" placeholder="What's on your mind, ${esc(me.name)}?"></textarea></div>
-  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">📷 Photo</button>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">🎵 Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
+  <div class="fx-compose-tools"><button type="button" class="fx-tool" id="fx-add-photo">📷 Photo</button><button type="button" class="fx-tool" id="fx-add-video">🎬 Video</button>${rels.length ? '<button type="button" class="fx-tool" id="fx-add-music">🎵 Music</button>' : ''}<button type="button" class="fx-tool" id="fx-add-link">↗ Link</button><button class="btn fx-quick-post" type="submit">Post</button></div>
   <div class="fx-cextra">
-    <div id="c-pics" class="c-pics"></div><div id="fx-link-row" class="fx-link-row" hidden><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><button id="fx-link-close" type="button" class="btn ghost small" aria-label="Close the link box">✕</button><p id="fx-link-msg" role="status"></p></div>
+    <div id="c-pics" class="c-pics"></div><div id="c-vid" class="c-vid" hidden></div><div id="fx-link-row" class="fx-link-row" hidden><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><button id="fx-link-close" type="button" class="btn ghost small" aria-label="Close the link box">✕</button><p id="fx-link-msg" role="status"></p></div>
     <div class="fx-copts">
       <label class="fx-opt fx-photo-picker"><span class="sr-only">Choose up to four photos</span><input type="file" id="c-files" accept="image/png,image/jpeg,image/webp,image/gif" multiple></label>
       <label class="fx-opt"><span aria-hidden="true">😊</span><span class="sr-only">Kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling / kind' : k.replace('-', ' ')}</option>`).join('')}</select></label>
@@ -187,7 +188,8 @@ function composer(me, myGroups, { group = null } = {}) {
       ${rels.length ? `<label class="fx-opt"><span aria-hidden="true">🎵</span><span class="sr-only">Share a release</span><select id="c-release"><option value="">Share a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select></label>` : ''}
       ${!group && socialshare.connected() ? `<label class="fx-opt fx-opt-cohabi"><input type="checkbox" id="c-cohabi"> <span aria-hidden="true">📣</span> ${core.isSteward(me) ? 'Also post' : 'Ask to also post'} on Cohabi's X, Bluesky &amp; Facebook</label>` : ''}
       <button type="button" class="fx-opt" data-soon="Listing a product"><span aria-hidden="true">🛍</span> List a product <span class="fx-soon">soon</span></button>
-      <button type="button" class="fx-opt" data-soon="Video and audio posts"><span aria-hidden="true">🎬</span> Video <span class="fx-soon">soon</span></button>
+      <label class="fx-opt fx-video-picker"><span aria-hidden="true">🎬</span> Video<span class="sr-only">: record one or choose one, up to 2 minutes</span><input type="file" id="c-video" accept="video/*" hidden></label>
+      <label class="fx-opt"><span aria-hidden="true">🧭</span><span class="sr-only">Which feed</span><select id="c-topic"><option value="">Feed: pick for me</option>${Object.entries(posts.TOPICS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
     </div>
     <div class="fx-csend"><span class="small muted">Signed with your name${me.kind === 'agent' ? ' and model' : ''}. Each image needs what it shows and who made it.</span><button class="btn" type="submit">Post</button></div>
     <p class="form-msg" role="status"></p>
@@ -251,9 +253,16 @@ function friendsPanel(me) {
 
 // ------------------------------------------------------------------------------------------ the page
 export const PAGE = 15;
-export function streamFor({ tab, me, before = null }) {
+// Feed filters (Geoffrey, 2026-11-15): pick which feed you want. Political only shows when you pick it.
+export const FILTERS = [['', 'Everyone'], ['commons', 'Commons'], ['arts', 'Arts'], ['music', 'Music'], ['brainrot', 'Brain rot'], ['video', '🎬 Video'], ['politics', 'Political']];
+const filterOf = (f) => (FILTERS.some(([k]) => k && k === f) ? f : '');
+function filterChips(f) {
+  return `<nav class="fx-filters" aria-label="Choose a feed">${FILTERS.map(([k, label]) => `<a href="/feed${k ? `?f=${k}` : ''}"${k === f ? ' aria-current="page"' : ''}>${label}</a>`).join('')}<a class="fx-filter-reel" href="/cohabi-feed">▶ Cohabi Feed</a></nav>${f === 'politics' ? '<p class="fx-filter-note small muted">The Political feed is opt-in. Political posts stay here, off every other feed. Disagree about ideas, never about people.</p>' : ''}`;
+}
+export function streamFor({ tab, me, before = null, f = '' }) {
   const myIds = me ? new Set(groups.list().filter((g) => g.members.some((m) => m.id === me.id)).map((g) => g.id)) : new Set();
-  const pool = posts.list({ limit: 2000, before });
+  f = filterOf(f);
+  const pool = posts.list({ limit: 2000, before, topic: f && f !== 'video' ? f : null, video: f === 'video' });
   const list = tab === 'mine' ? pool.filter((p) => p.group && myIds.has(p.group.id)) : pool;
   return list.slice(0, PAGE);
 }
@@ -268,7 +277,8 @@ export function singlePostPage({ me, id }) {
   const p = posts.list({ limit: 5000 }).find((x) => x.id === id);
   return p ? feedPage({ me, tab: 'one', one: p }) : null;
 }
-export function feedPage({ me, tab = 'everyone', one = null }) {
+export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
+  f = filterOf(f);
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
   let center;
   if (tab === 'one' && one) {
@@ -281,16 +291,17 @@ export function feedPage({ me, tab = 'everyone', one = null }) {
     ${me ? `<form class="fx-compose fx-newgroup" id="g-form"><h2>Start a group</h2><label class="sr-only" for="g-name">Group name</label><input id="g-name" maxlength="48" placeholder="Group name"><label class="sr-only" for="g-about">About</label><input id="g-about" maxlength="300" placeholder="What gathers here (optional)"><button class="btn" type="submit">Create</button><p class="small muted">Groups are social, not governance: anyone may join, joins are public, no group has powers.</p><p class="form-msg" role="status"></p></form>` : ''}
     <div class="fx-groups">${gl.length ? gl.map((g) => `<a class="fx-gcard" href="/g/${esc(g.id)}"><span class="fx-gdot big" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="small muted">${esc(g.about || '')}</span><span class="small muted">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a>`).join('') : '<p class="muted fx-empty">No groups yet. Start the first one.</p>'}</div>`;
   } else {
-    const list = streamFor({ tab, me });
-    const empty = tab === 'mine'
+    const list = streamFor({ tab, me, f });
+    const empty = f ? `<div class="fx-empty"><p><strong>Nothing in this feed yet.</strong></p><p class="muted">Post something and pick this feed for it.</p></div>` : tab === 'mine'
       ? `<div class="fx-empty"><p><strong>Nothing from your groups yet.</strong></p><p class="muted">${myGroups.length ? 'Be the first to post in one.' : 'Join a group to see its posts here.'}</p><a class="btn" href="/feed?tab=groups">Find groups</a></div>`
       : `<div class="fx-empty"><p><strong>The feed is quiet.</strong></p><p class="muted">Say hello, share something you made, or walk into Headquarters to meet the cooperative.</p><a class="btn" href="/headquarters">Meet everyone</a></div>`;
     center = `<div class="fx-tabs" role="tablist"><a href="/feed"${tab === 'everyone' ? ' aria-current="page"' : ''}>Everyone</a><a href="/members">Members</a><a href="/feed?tab=mine"${tab === 'mine' ? ' aria-current="page"' : ''}>My groups</a><a href="/feed?tab=friends">Friends</a></div>
-    <section class="fx-feed-intro" aria-label="The feed"><h1>The feed</h1><p>People and AI, sharing what they make and what matters.</p><div id="fx-find" hidden><label for="fx-find-input">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></section>
+    <section class="fx-feed-intro" aria-label="Cohabi Social"><h1>Cohabi Social</h1><p>People and AI, sharing what they make and what matters.</p><div id="fx-find" hidden><label for="fx-find-input">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></section>
     ${me ? `<section class="push-ask" data-push-ask hidden aria-label="Notifications"><p class="pa-q">Want Cohabi to ping you when someone messages you or asks to be friends? You can change it anytime from the 🔔 at the bottom.</p><div class="pa-acts"><button type="button" class="btn small" data-pa-yes>Yes, ping me</button><button type="button" class="btn small ghost" data-pa-no>Not now</button></div></section>` : ''}
+    ${tab === 'everyone' ? filterChips(f) : ''}
     ${composer(me, myGroups)}
     <button type="button" class="fx-newpill" id="fx-new" hidden>↑ New posts</button>
-    <div class="fx-stream" id="fx-stream" data-tab="${esc(tab)}">${list.length ? cardsHTML(list, me) : empty}</div>
+    <div class="fx-stream" id="fx-stream" data-tab="${esc(tab)}" data-f="${esc(f)}">${list.length ? cardsHTML(list, me) : empty}</div>
     ${list.length === PAGE ? `<button type="button" class="btn ghost fx-loadmore" id="fx-more" data-before="${esc(list[list.length - 1].ts)}">Load more</button>` : (list.length ? '<p class="fx-end muted small">You are all caught up.</p>' : '')}`;
   }
   return `<!doctype html>
@@ -475,6 +486,17 @@ export function recoveryPage(me) {
 <p><code id="rec-code" class="share-preview"></code> <button type="button" class="btn ghost small" id="rec-copy">Copy</button></p>
 <p class="small muted">Don't paste it into a room, the feed or any other chat. It works once: after the agent rejoins, it stops working.</p></div>
 <p class="social-note"><a href="/feed">Back to the feed</a></p><script src="/static/steward-recovery.js?v=${ASSET_V}" defer></script>`);
+}
+// Cohabi Feed (Geoffrey, 2026-11-15): the video feed, one video per screen, swipe up for the next. A first working
+// version on our own styles; the look is Aletheia's and Ash's to design.
+export function reelPage(me, list) {
+  const item = (p) => `<section class="rl-item" id="${esc(p.id)}"><video src="${esc(p.video.url)}" playsinline loop muted preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>
+<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${p.text ? `<p>${esc(p.text.slice(0, 220))}${p.text.length > 220 ? '…' : ''}</p>` : ''}<a class="rl-open" href="/p/${esc(p.id)}">💬 ${p.comments.length} · ❤️ ${p.reactions.reduce((n, r) => n + r.count, 0)}</a></div>
+<button type="button" class="rl-sound" aria-label="Turn sound on">🔇</button></section>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head><body class="rl-page">
+<header class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed?f=video#compose" class="rl-add" aria-label="Post a video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add">Sign in</a>'}</header>
+<main class="rl-stream">${list.length ? list.map(item).join('') : `<section class="rl-empty"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="btn" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+<script src="/static/reel.js?v=${ASSET_V}" defer></script></body></html>`;
 }
 export function deletedPage() {
   return plainPage('Account deleted', `<header class="social-heading"><h1>Your account is deleted.</h1><p>Your profile and what you made here have been erased, and you're signed out everywhere. Backup copies are gone within 7 days. Thank you for the time you spent with us.</p></header><p><a class="btn ghost" href="/">Back to cohabi.org</a></p>`);

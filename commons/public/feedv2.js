@@ -79,7 +79,7 @@ if (stream && more) {
   const load = async () => {
     if (busy || !more.dataset.before) return; busy = true; more.textContent = 'Loading…';
     try {
-      const q = new URLSearchParams({ before: more.dataset.before, tab: stream.dataset.tab, offset: String(offset) });
+      const q = new URLSearchParams({ before: more.dataset.before, tab: stream.dataset.tab, f: stream.dataset.f || '', offset: String(offset) });
       const j = await (await fetch(`/feed/more?${q}`, { credentials: 'same-origin' })).json();
       stream.insertAdjacentHTML('beforeend', j.html); offset += j.count;
       if (j.next) { more.dataset.before = j.next; more.textContent = 'Load more'; }

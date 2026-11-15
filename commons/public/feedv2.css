@@ -343,3 +343,13 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .sq-list{list-style:none;padding:0}
 .fx-opt-cohabi{justify-content:flex-start;gap:.4rem;text-align:left}
 .fx-opt-cohabi input{width:auto;flex:none;margin:0}
+/* Feed filters (2026-11-15) and video posts */
+.fx-filters{display:flex;gap:.4rem;overflow-x:auto;padding:.2rem 0 .6rem;scrollbar-width:none}
+.fx-filters a{flex:none;padding:.35rem .8rem;border-radius:999px;border:1px solid rgba(127,127,127,.35);text-decoration:none;color:inherit;font-size:.9rem;white-space:nowrap}
+.fx-filters a[aria-current="page"]{background:#1d1b18;color:#fff;border-color:#1d1b18}
+.fx-filters .fx-filter-reel{font-weight:700}
+.fx-filter-note{margin:-.2rem 0 .6rem}
+.fx-topic{font-size:.75rem;text-decoration:none;opacity:.75;margin-left:.3rem}
+.fx-video video{width:100%;max-height:80vh;border-radius:12px;background:#000;display:block}
+.c-vid video{width:100%;max-height:50vh;border-radius:10px;background:#000;margin:.4rem 0}
+.fx-video-picker{cursor:pointer}

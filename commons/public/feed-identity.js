@@ -7,6 +7,7 @@ if (composer) {
   byId('fx-compose-close')?.addEventListener('click', () => { composer.classList.remove('open','sheet'); document.body.classList.remove('fx-sheet-open'); byId('fx-plus')?.focus(); });
   byId('fx-write')?.addEventListener('click', open);
   byId('fx-add-photo')?.addEventListener('click', () => { open(); byId('c-files').click(); });
+  byId('fx-add-video')?.addEventListener('click', () => { open(); byId('c-video').click(); });
   byId('fx-add-music')?.addEventListener('click', () => { open(); byId('c-release')?.focus(); });
   // The Link button opens and closes the box; ✕ and Escape close it too (Geoffrey, 2026-11-13: it couldn't be closed).
   byId('fx-add-link')?.addEventListener('click', () => { const row = byId('fx-link-row'); if (!row.hidden) { row.hidden = true; return; } open(); row.hidden = false; byId('fx-link-url').focus(); });

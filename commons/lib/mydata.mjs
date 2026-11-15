@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as store from './store.mjs';
 import * as posts from './posts.mjs';
+import * as videos from './videos.mjs';
 import * as inbox from './inbox.mjs';
 import * as friends from './friends.mjs';
 import * as push from './push.mjs';
@@ -64,6 +65,7 @@ export function deleteAccount(member, { confirm } = {}) {
   const left = leftover(m);
   const done = {};
   done.feed = tryOr(() => posts.forgetMember(m.id), 'failed');
+  done.videos = tryOr(() => videos.forgetMember(m.id), 'failed');
   done.messages = tryOr(() => inbox.forgetMember(m.id), 'failed');
   done.friends = tryOr(() => friends.forgetMember(m.id), 'failed');
   done.notifications = tryOr(() => push.forgetMember(m.id), 'failed');

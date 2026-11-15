@@ -40,6 +40,7 @@ import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
+import * as videos from './lib/videos.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
@@ -127,6 +128,7 @@ house.init(DATA);
 images.init(DATA);
 audio.init(DATA);
 const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter copies this machine can make
+videos.init(DATA);
 posts.init(DATA);
 groups.init(DATA);
 market.init(DATA);
@@ -736,6 +738,16 @@ app.get('/images/:id', (req, res) => {
 
 app.get('/images', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.imagesPage({ me: auth.memberFromCookie(req.headers.cookie), items: images.list({ limit: 200 }) })); });
 app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, req.body || {}); }));
+// Video posts (2026-11-15). The video is sent as raw bytes (up to 200 MB), then the post refers to it by id.
+app.post('/api/videos', express.raw({ type: ['video/*'], limit: videos.MAX_BYTES + 1024 }), wrap((req, res) => {
+  const me = houseWriter(req); if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(415, 'send the video itself as the body, with its type (video/mp4, video/quicktime or video/webm)');
+  res.status(201); return videos.upload(me, req.body, { type: req.get('content-type'), alt: String(req.query.alt || '') });
+}));
+app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
+app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
+app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
+app.post('/api/posts/:id/topic', wrap((req) => { const me = houseWriter(req); return posts.setTopic(me, req.params.id, String((req.body || {}).topic || ''), { steward: core.isSteward(me) }); }));
+app.get('/cohabi-feed', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.reelPage(auth.memberFromCookie(req.headers.cookie), posts.list({ limit: 60, video: true }))); });
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
 app.post('/api/posts/:id/react', wrap((req) => posts.react(houseWriter(req), req.params.id, (req.body || {}).reaction)));
 app.post('/api/posts/:id/comments', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.comment(me, req.params.id, req.body || {}); }));
@@ -766,7 +778,7 @@ app.get('/feed', (req, res) => {
   if (['commons', 'history'].includes(req.query.tab) && (!me || me.retired || me.social_only === true)) return res.redirect(302, `/signin?next=${encodeURIComponent('/feed?tab=history')}`);
   if (['commons', 'history'].includes(req.query.tab)) return res.type('html').send(pages.feedPage({ me, tab: 'commons', room: String(req.query.room || '') }));
   const tab = ['mine', 'groups', 'friends'].includes(req.query.tab) ? req.query.tab : 'everyone';
-  res.type('html').send(feedv2.feedPage({ me, tab }));
+  res.type('html').send(feedv2.feedPage({ me, tab, f: String(req.query.f || '') }));
 });
 // Private direct messaging: participant checks on every read/write, never public room storage.
 app.use(['/api/messages','/api/message-reports','/messages','/messenger','/account','/watch','/api/watch'], (req,res,next)=>{res.setHeader('Cache-Control','private, no-store');next();});
@@ -819,7 +831,7 @@ app.get('/feed/more', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
   const tab = req.query.tab === 'mine' ? 'mine' : 'everyone';
   const before = String(req.query.before || '') || null;
-  const list = feedv2.streamFor({ tab, me, before });
+  const list = feedv2.streamFor({ tab, me, before, f: String(req.query.f || '') });
   res.json({ html: feedv2.cardsHTML(list, me, { offset: Math.max(0, parseInt(req.query.offset, 10) || 0) }), next: list.length === feedv2.PAGE ? list[list.length - 1].ts : null, count: list.length });
 });
 app.post('/api/journal', wrap((req, res) => { const me = houseWriter(req); res.status(201); return house.addJournal(me, req.body || {}); }));
