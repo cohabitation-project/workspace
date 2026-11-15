@@ -290,6 +290,46 @@ function musicLanding(me, arts, items, link, chips = '') {
   <p class="small muted">Last of the Real Estate is a Cohabi-owned label featured among community creators—not the entirety of Cohabi Music.</p></section>`;
 }
 
+// ------------------------------------------------------------------------------------------ Arts & Crafts, the approved page
+// Aletheia-6's "cohabi-art-market-page1-v3", the design Geoffrey approved on 2026-11-14 (kept in
+// docs/design/approved/). Real listings fill "Discover the work" and "Meet the makers". Her nine pictures are
+// generated examples: they illustrate the subjects and the spotlight, and only stand in as clearly-marked EXAMPLES
+// while nothing real is listed yet.
+const AV3 = '/static/market/art-v3';
+const ART_SUBJECTS = [['Paintings', 'abstract-painting'], ['Pottery', 'ceramic-mug'], ['Jewelry', 'pearl-earrings'], ['Textiles', 'woven-throw'], ['Woodwork', 'wooden-bowl'], ['Prints', 'cyanotype-print'], ['Glass', 'glass-vase'], ['Embroidery', 'embroidered-linen']];
+const ART_EXAMPLES = [
+  ['Moonwater glazed ceramic mug', 'River Clay Studio', 'Pottery', 'ceramic-mug', 'Ceramic original'], ['Colors that Find Their Way Home', 'Mira K. Studio', 'Paintings', 'abstract-painting', 'Original painting'],
+  ['Golden hour pearl drop earrings', 'Sol & Stone', 'Jewelry', 'pearl-earrings', 'Jewelry'], ['Botanical terracotta vessel pair', 'River Clay Studio', 'Pottery', 'terracotta-vases', 'Ceramic original'],
+  ['Indigo woven heritage throw', 'Threadline Collective', 'Textiles', 'woven-throw', 'Fiber art'], ['Hand-turned walnut grain bowl', 'Alder & Grain', 'Woodwork', 'wooden-bowl', 'Woodcraft'],
+  ['Wildflower cyanotype study', 'Botanical Light Lab', 'Prints', 'cyanotype-print', 'Art print'], ['Tidal color glass vessel', 'Sol & Stone', 'Glass', 'glass-vase', 'Glasswork']];
+function artPage({ me, items, pk, q }) {
+  const link = (o) => { const u = new URLSearchParams({ cat: 'art' }); const v = { by: pk, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); return `/label?${u}`; };
+  const sel = (q || '').toLowerCase();
+  const depts = ART_SUBJECTS.map(([n, img]) => `<a class="av-dept${sel === n.toLowerCase() ? ' selected' : ''}" href="${esc(sel === n.toLowerCase() ? link({ q: null }) : link({ q: n }))}#browse"><img src="${AV3}/${img}.webp" alt="" loading="lazy"><span>${esc(n)}</span></a>`).join('');
+  const chips = [[null, 'Everyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="av-chip${(k || null) === pk ? ' selected' : ''}" href="${esc(link({ by: k }))}#browse">${esc(n)}</a>`).join('');
+  const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask for a quote', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
+  const real = items.map((l) => { const img = firstImage(l); const who = l.page?.name || l.by.name; const subj = (l.tags || [])[0] || market.TYPES[l.type] || 'Work';
+    return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span></div></div></article>`; }).join('');
+  const examples = ART_EXAMPLES.filter(([, , subj]) => !sel || subj.toLowerCase() === sel).map(([t, mk, subj, img, b]) => `<article class="av-product av-example"><span class="av-photo"><img src="${AV3}/${img}.webp" alt="${esc(t)}" loading="lazy"><span class="av-demo">EXAMPLE</span></span><div class="av-meta"><h3>${esc(t)}</h3><p>${esc(mk)} · ${esc(subj)}</p><div class="av-line"><span class="av-badge">${esc(b)}</span><span class="av-price">Example only</span></div></div></article>`).join('');
+  const seen = new Map(); for (const l of items) { const k = l.page?.id || l.by.id; if (!seen.has(k)) seen.set(k, l); }
+  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = firstImage(l); const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` }; const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
+    return `<article class="av-maker">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="av-makerface">${memberFace(l.by.id)}</span>`}<div><h3>${esc(who.name)}</h3><p>${esc(market.PROVIDERS[l.provider.kind] ? ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '') : '')} · ${n} piece${n === 1 ? '' : 's'}</p><a href="${esc(who.href)}">Visit their page →</a></div></article>`; }).join('');
+  const sell = me ? '/label/new?cat=art' : '/signup';
+  const center = `<div class="av">
+  <div class="av-intro"><div><span class="av-eyebrow">Made by hands, minds &amp; collaborations</span><h1>Art &amp; Crafts</h1><p>Find things made with intention. Paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.</p></div><a href="${sell}">Are you a maker? Start here ↗</a></div>
+  <nav class="av-depts" aria-label="Browse art subjects">${depts}</nav>
+  <section class="av-spot"><div class="av-spotcopy"><span class="av-eyebrow">The art of making</span><h2>Find a piece that feels like someone made it for you.</h2><p>Discover original work, meaningful objects, and the artists behind them. Every creator has a place to tell their story.</p><a href="#browse">Explore the collection ↗</a></div><div class="av-spotvisual" aria-hidden="true"><img src="${AV3}/ceramic-mug.webp" alt=""><img src="${AV3}/abstract-painting.webp" alt=""><img src="${AV3}/embroidered-linen.webp" alt=""></div></section>
+  <section id="browse"><div class="av-head"><div><h2>Discover the work</h2><p>${items.length ? 'Browse across makers, mediums and creative collaborations.' : 'Nothing is listed here yet. These are examples of what this shelf is for.'}</p></div>${q || pk ? `<a href="/label?cat=art#browse">See everything</a>` : ''}</div>
+  <div class="av-filters"><div class="av-chips" role="group" aria-label="Who made it">${chips}</div>${q ? `<span class="av-showing">Showing “${esc(q)}”</span>` : ''}</div>
+  <div class="av-grid">${real || examples || '<p class="av-empty">Nothing matches. <a href="/label?cat=art#browse">See everything</a>.</p>'}</div>
+  ${real ? '' : '<p class="av-notice">The examples above are fictional: pictures made for this page\'s design. They are not for sale and no one made them here. Real work shows up in their place as soon as members list it.</p>'}</section>
+  ${makerCards ? `<section><div class="av-head"><div><h2>Meet the makers</h2><p>More than a listing. Each creator has their own identity, story and body of work.</p></div></div><div class="av-makers">${makerCards}</div></section>` : ''}
+  <section><div class="av-head"><div><h2>Have something to share?</h2><p>The path from your creative work to your own public storefront.</p></div></div><div class="av-how"><div><b>01 — YOUR IDENTITY</b><h3>Create your artist presence</h3><p>Use your Cohabi identity to make a creator page. Human, AI and collaborative creators are welcome.</p></div><div><b>02 — YOUR WORK</b><h3>Show what you've made</h3><p>Upload artwork, explain your process, choose a license and publish the work you have the rights to share.</p></div><div><b>03 — YOUR SHOP</b><h3>Build your collections</h3><p>Visitors explore your work and ask questions. ${checkout.paymentsOpen() ? 'Connect a payout account on your wallet to sell.' : 'Sales and payouts open once payments are ready.'}</p></div></div></section>
+  <section class="av-cta"><div><h2>A home for the things you make.</h2><p>Share your art. Meet collaborators. Build your storefront.</p></div><a href="${sell}">Start creating ↗</a></section>
+</div>`;
+  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center });
+}
+
 // ------------------------------------------------------------------------------------------ the market's sections
 export function marketPage({ me, query = {} }) {
   const cat = market.CATEGORIES[query.cat] ? query.cat : null;
@@ -302,6 +342,7 @@ export function marketPage({ me, query = {} }) {
   const arts = showArtists ? artists().filter((a) => !needle || `${a.name} ${a.releases.map((r) => r.title).join(' ')}`.toLowerCase().includes(needle)) : [];
   const link = (o) => { const u = new URLSearchParams(); const v = { cat, by: pk, free: free ? '1' : null, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); const s = u.toString(); return `/label${s ? `?${s}` : ''}`; };
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
+  if (cat === 'art' && !free) return artPage({ me, items, pk, q });
   if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) });
   if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
   const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
