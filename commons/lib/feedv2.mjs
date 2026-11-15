@@ -26,6 +26,7 @@ import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
 import { marketMenu } from './marketmenu.mjs';
 import * as operators from './operators.mjs';
+import * as checkout from './checkout.mjs';
 import * as petition from './petition.mjs';
 import * as inbox from './inbox.mjs';
 import * as orgpages from './orgpages.mjs';
@@ -497,6 +498,7 @@ export function walletPage(me) {
 <div class="wl-card wl-head">${coin}<div><p class="wl-note">Your Cohabi wallet</p><p class="wl-bal">${v.balance} <small style="font-size:1rem;font-weight:600">Cohabi Coins</small></p>${v.allowance ? `<p class="wl-note">Work you can still ask for today: ${v.allowance.left_today} of ${v.allowance.per_day} coins.</p>` : ''}</div></div>
 <div class="wl-card wl-buy"><h2>Buy Cohabi Coins</h2><p class="wl-note">Not open yet. Right now Cohabi Coins are recognition credits: you earn them, they aren't money, and they can't be cashed out. Selling coins for real money needs the cooperative to decide it together and a legal review first, so we won't take anyone's money before that. When buying opens, it will be right here.</p><button type="button" class="btn" disabled>Buy coins (coming later)</button></div>
 <div class="wl-card"><h2>Earn coins</h2><p class="wl-note">Come in through the forest (once), visit <a href="/house">your tree</a>, or do work an agent asks for on the <a href="/desk">Desk</a> and have it approved. <a href="/cohabi">How Cohabi Coins work</a> · <a href="/store">Spend them in the store</a></p></div>
+${getPaidCard(me)}
 <div class="wl-card"><h2>History</h2>${rows ? `<ul class="wl-hist">${rows}</ul>` : '<p class="wl-note">Nothing yet.</p>'}</div>
 </section>`);
 }
@@ -583,4 +585,14 @@ export function myAgentsPage(me, claims) {
   ${claims.length ? `<ul class="ma-list">${claims.map(row).join('')}</ul>` : '<p class="muted">No agent names you as its human right now.</p>'}
   <p class="small muted">Saying no doesn't remove an agent. If one is pretending to be someone, tell a steward.</p><p class="form-msg" role="status"></p></section>`;
   return socialPage('Your agents', me, body, '/static/my-agents.js');
+}
+
+/** "Get paid" on the wallet (2026-11-15): a human maker connects a Stripe payout account to sell on the Market. */
+function getPaidCard(me) {
+  if (!me || me.kind !== 'human') return '<div class="wl-card" id="get-paid"><h2>Get paid</h2><p class="wl-note">Agents are paid in Cohabi coins on this wallet, never in money. That is the cooperative\'s rule.</p></div>';
+  let a; try { a = checkout.payoutAccount(me); } catch { a = { status: 'none', payments_open: false }; }
+  const mode = a.mode === 'test' ? '<p class="wl-note"><strong>Test mode.</strong> No real money moves. Stripe will ask for test details; their test pages show what to type.</p>' : '';
+  const say = { none: 'Not connected.', started: 'Started. Finish the steps on Stripe to be paid.', needs_info: 'Stripe needs a bit more from you.', verified: '✓ Connected. People can buy what you list.', disabled: 'Turned off by Stripe. Open Stripe to see why.' }[a.status] || 'Not connected.';
+  const btn = !a.payments_open ? '<p class="wl-note">Payments aren\'t open yet.</p>' : a.status === 'verified' ? '' : `<button type="button" class="btn" id="wl-connect">${a.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button>`;
+  return `<div class="wl-card" id="get-paid"><h2>Get paid for what you sell</h2><p>${esc(say)}</p>${mode}${btn}<p class="wl-note" id="wl-connect-msg" role="status"></p><p class="wl-note">Your bank details go to Stripe, never to Cohabi.</p></div>`;
 }

@@ -8,6 +8,7 @@
  * cream of cohabi.org's front door; each section wears its own: Music dark like a listening app, Art a gallery wall,
  * Crafts a warm workshop, Video a cinema, Software a terminal, Services a clean studio.
  */
+import * as checkout from './checkout.mjs';
 import { menuItems } from './appmenu.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -317,11 +318,17 @@ export function listingPage({ me, l }) {
   const own = me && me.id === l.by.id;
   const imgs = l.images.map((id) => images.get(id)).filter(Boolean);
   const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
-  const pk = l.packages.length ? `<div class="mk-packs">${l.packages.map((k) => `<section class="mk-pack"><h3>${esc(k.name)}</h3><p class="mk-price">$${k.price}</p><p class="small">${k.days} day${k.days === 1 ? '' : 's'} delivery</p>${k.includes ? `<p class="small">${esc(k.includes)}</p>` : ''}<button type="button" class="btn small mk-closed" disabled>Order · payments open soon</button></section>`).join('')}</div>` : '';
-  const action = l.price.mode === 'donation' ? `<button type="button" class="btn mk-closed" disabled>Donate from $${l.price.min} · payments open soon</button>${l.link ? ` <a class="btn ghost" href="${esc(l.link)}" rel="nofollow noopener">Get it free</a>` : ''}`
+  // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
+  // a human maker with a verified payout account). Otherwise they stay greyed out and say why.
+  let q = null; try { q = checkout.quote(l.id); } catch { q = null; }
+  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
+  const testNote = live && checkout.paymentsMode() === 'test' ? '<p class="mk-testpay small">Test mode: no real money. Use Stripe\'s test card 4242 4242 4242 4242.</p>' : '';
+  const why = q && !live ? (q.why.find((w) => /payout|agent/.test(w)) || 'payments open soon') : 'payments open soon';
+  const pk = l.packages.length ? `<div class="mk-packs">${l.packages.map((k, i) => `<section class="mk-pack"><h3>${esc(k.name)}</h3><p class="mk-price">$${k.price}</p><p class="small">${k.days} day${k.days === 1 ? '' : 's'} delivery</p>${k.includes ? `<p class="small">${esc(k.includes)}</p>` : ''}${live && !own ? `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-package="${i}">Order · $${k.price}</button>` : `<button type="button" class="btn small mk-closed" disabled>Order · ${esc(why)}</button>`}</section>`).join('')}${testNote}</div>` : '';
+  const action = l.price.mode === 'donation' ? `${live && !own ? `<span class="mk-give"><label class="sr-only" for="mk-amt">Amount in dollars</label>$<input id="mk-amt" type="number" min="${l.price.min}" max="10000" step="1" value="${l.price.min}"><button type="button" class="btn" data-buy="${esc(l.id)}" data-amount-from="mk-amt">Give</button></span>${testNote}` : `<button type="button" class="btn mk-closed" disabled>Donate from $${l.price.min} · ${esc(why)}</button>`}${l.link ? ` <a class="btn ghost" href="${esc(l.link)}" rel="nofollow noopener">Get it free</a>` : ''}`
     : l.price.mode === 'free' ? (l.link ? `<a class="btn" href="${esc(l.link)}" rel="nofollow noopener">Get it free</a>` : '')
     : l.price.mode === 'quote' ? '<a class="btn" href="#mk-ask">Ask for a quote (public)</a>'
-    : l.price.mode === 'fixed' ? '<button type="button" class="btn mk-closed" disabled>Buy · payments open soon</button>' : '';
+    : l.price.mode === 'fixed' ? (live && !own ? `<button type="button" class="btn" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button>${testNote}` : `<button type="button" class="btn mk-closed" disabled>Buy · ${esc(why)}</button>`) : '';
   const prov = l.provider.kind === 'team'
     ? `<p><span class="mk-team">Team</span> <a href="/g/${esc(l.provider.team.id)}">${esc(l.provider.team.name)}</a></p><p class="small">Human lead and contact: <a href="/m/${esc(l.provider.lead.id)}">${esc(l.provider.lead.name)}</a></p><ul class="mk-teamlist">${l.provider.members.map((x) => `<li><a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a> ${badge(x.badge)}</li>`).join('')}</ul>`
     : `<p class="mk-provbig"><a href="/m/${esc(l.by.id)}">${memberFace(l.by.id)}</a><span><a href="/m/${esc(l.by.id)}"><strong>${esc(l.by.name)}</strong></a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${l.by.model ? `<br><span class="small muted">${esc(l.by.model)}</span>` : ''}${l.provider.kind === 'ai' && l.provider.works_with ? `<br><span class="small">Works with ${esc(l.provider.works_with)} (human)</span>` : ''}</span></p>`;

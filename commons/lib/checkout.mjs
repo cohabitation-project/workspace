@@ -18,6 +18,7 @@ import crypto from 'node:crypto';
 import * as store from './store.mjs';
 import * as market from './market.mjs';
 import { CommonsError } from './core.mjs';
+import * as stripe from './stripe.mjs';
 
 const fail = (status, msg, extra) => { throw new CommonsError(status, msg, extra); };
 let DIR = null;
@@ -35,7 +36,19 @@ export function init(dataDir) {
 }
 
 /** Are payments switched on for this server? Today: no. Both the switch and the provider keys are required. */
-export const paymentsOpen = () => process.env.COMMONS_PAYMENTS === 'stripe' && !!process.env.STRIPE_SECRET_KEY;
+export const paymentsOpen = () => process.env.COMMONS_PAYMENTS === 'stripe' && !!stripe.mode();
+/** 'test' while we're practising (fake cards only), 'live' only once the council's money rules are met. */
+export const paymentsMode = () => (paymentsOpen() ? stripe.mode() : null);
+const saveAccounts = () => fs.writeFileSync(accountsFile(), JSON.stringify(accounts, null, 1), { mode: 0o600 });
+const logOrder = (rec) => fs.appendFileSync(ordersFile(), JSON.stringify({ ts: new Date().toISOString(), ...rec }) + '\n', { mode: 0o600 });
+/** Every order, folded from the append-only log. */
+export function orders() {
+  const out = new Map(); let lines = [];
+  try { lines = fs.readFileSync(ordersFile(), 'utf8').split('\n').filter(Boolean); } catch { return []; }
+  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), updated: r.ts }); }
+  return [...out.values()];
+}
+export const order = (id) => orders().find((o) => o.id === id) || null;
 
 const isHuman = (m) => !!m && m.kind === 'human' && !m.retired;
 
@@ -44,17 +57,35 @@ export function payoutAccount(member) {
   if (!member) fail(401, 'sign in first');
   if (!isHuman(member)) return { kind: 'coins', note: 'Agents hold a Cohabi coin account, not a money account. What you offer is priced in coins.' };
   const a = accounts[member.id] || { provider: 'stripe', account_id: null, status: 'none' };
-  return { kind: 'money', provider: a.provider, status: a.status, connected: a.status === 'verified', payments_open: paymentsOpen() };
+  return { kind: 'money', provider: a.provider, status: a.status, connected: a.status === 'verified', payments_open: paymentsOpen(), mode: paymentsMode() };
 }
 
-/** Start connecting a payout account. Closed until payments open; agents are refused outright. */
-export function startPayoutAccount(member) {
+/** Start (or resume) connecting a payout account: a Stripe Express account, then Stripe's own onboarding page.
+ *  Returns { url } to send the maker to. Agents are refused outright. */
+export async function startPayoutAccount(member, { base, fetchImpl } = {}) {
   if (!member) fail(401, 'sign in first');
   if (!isHuman(member)) fail(403, 'Agents do not get money accounts. Your Cohabi coin account is your account.');
   if (!paymentsOpen()) fail(503, NOT_OPEN);
-  // When payments open: create the provider's connected account here and return its onboarding link. Not built yet,
-  // on purpose: it needs the seller-of-record decision first.
-  fail(501, 'Connecting a payout account is not built yet.');
+  const s = (...a) => stripe.call(...a).catch((e) => fail(e.status || 502, e.message));
+  let a = accounts[member.id];
+  if (!a?.account_id) {
+    const acct = await s('POST', '/accounts', { type: 'express', capabilities: { card_payments: { requested: true }, transfers: { requested: true } }, business_profile: { product_description: 'Work sold on the Cohabi Market' }, metadata: { cohabi_member: member.id } }, { fetchImpl, idempotencyKey: `acct-${member.id}` });
+    a = accounts[member.id] = { provider: 'stripe', account_id: acct.id, status: 'started', mode: stripe.mode(), updated: new Date().toISOString() }; saveAccounts();
+  }
+  const link = await s('POST', '/account_links', { account: a.account_id, type: 'account_onboarding', refresh_url: `${base}/payments/refresh`, return_url: `${base}/payments/return` }, { fetchImpl });
+  return { url: link.url, status: a.status };
+}
+
+/** Ask Stripe where a maker's account stands (after they come back from onboarding, or on a webhook). */
+export async function refreshAccount(member, { fetchImpl } = {}) {
+  const a = member && accounts[member.id]; if (!a?.account_id) return payoutAccount(member);
+  const acct = await stripe.call('GET', `/accounts/${encodeURIComponent(a.account_id)}`, null, { fetchImpl }).catch((e) => fail(e.status || 502, e.message));
+  applyAccount(acct); return payoutAccount(member);
+}
+function applyAccount(acct) {
+  const id = Object.keys(accounts).find((k) => accounts[k].account_id === acct?.id); if (!id) return null;
+  const status = acct.charges_enabled && acct.payouts_enabled ? 'verified' : acct.details_submitted ? 'needs_info' : 'started';
+  accounts[id] = { ...accounts[id], status, updated: new Date().toISOString() }; saveAccounts(); return id;
 }
 
 /** What a listing would cost to buy, and every reason it can't be bought right now. Safe to show anyone. */
@@ -75,14 +106,48 @@ export function quote(listingId, { pkg = null } = {}) {
   return { listing: l.id, title: l.title, seller: { id: l.by.id, name: l.by.name, kind: coinsOnly ? 'agent' : 'human' }, amount, currency, payable: why.length === 0, why };
 }
 
-/** Begin buying. Today it always answers why it can't; when payments open it will create a draft order and hand off
- *  to the provider's hosted checkout (no card details ever touch this server). */
-export function startCheckout(buyer, listingId, opts = {}) {
+/** Begin buying: a draft order, then Stripe's hosted checkout page (no card details ever touch this server).
+ *  The money goes to the maker's connected account; Cohabi keeps COMMONS_FEE_PERCENT (default 0). Returns { url, order }. */
+export async function startCheckout(buyer, listingId, opts = {}, { base, fetchImpl } = {}) {
   if (!buyer) fail(401, 'sign in to buy');
   const q = quote(listingId, opts);
   if (q.seller.id === buyer.id) fail(400, "you can't buy your own listing");
   if (!q.payable) fail(503, q.why.includes("payments aren't open yet") ? NOT_OPEN : `Can't buy this yet: ${q.why.join('; ')}.`, { quote: q });
-  const order = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, buyer: buyer.id, seller: q.seller.id, amount: q.amount, currency: q.currency, status: 'draft', ts: new Date().toISOString() };
-  fs.appendFileSync(ordersFile(), JSON.stringify({ op: 'create', order }) + '\n', { mode: 0o600 });
-  fail(501, 'Hosted checkout is not built yet.'); // the provider hand-off goes here
+  let amount = q.amount;
+  const l = market.get(listingId);
+  if (l.price.mode === 'donation' && opts.amount != null) {
+    const a = Math.round(Number(opts.amount) * 100) / 100;
+    if (!Number.isFinite(a) || a < l.price.min || a > 10000) fail(400, `Give between $${l.price.min} and $10000.`);
+    amount = a;
+  }
+  const cents = Math.round(amount * 100);
+  const fee = Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
+  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString() };
+  logOrder({ op: 'create', order: ord });
+  const pkg = l.price.mode === 'packages' ? (l.packages || [])[Number(opts.pkg) || 0] : null;
+  const session = await stripe.call('POST', '/checkout/sessions', {
+    mode: 'payment', client_reference_id: ord.id,
+    line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
+    payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
+    metadata: { cohabi_order: ord.id },
+    success_url: `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`,
+    cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1`,
+  }, { fetchImpl, idempotencyKey: ord.id }).catch((e) => { logOrder({ op: 'status', order: ord.id, status: 'cancelled' }); fail(e.status || 502, e.message); });
+  logOrder({ op: 'status', order: ord.id, status: 'awaiting_payment', session: session.id });
+  return { url: session.url, order: ord.id, mode: ord.mode };
+}
+
+/** A Stripe event (already signature-checked). Only what the market needs: paid orders and account status. */
+export function handleEvent(ev) {
+  const o = ev?.data?.object || {};
+  if (ev?.type === 'checkout.session.completed' || ev?.type === 'checkout.session.async_payment_succeeded') {
+    const id = o.metadata?.cohabi_order || o.client_reference_id; const cur = id && order(id);
+    if (!cur) return { ignored: 'unknown order' };
+    if (o.payment_status && o.payment_status !== 'paid') return { order: id, status: cur.status };
+    if (cur.status !== 'paid') logOrder({ op: 'status', order: id, status: 'paid', session: o.id });
+    return { order: id, status: 'paid' };
+  }
+  if (ev?.type === 'checkout.session.expired') { const id = o.metadata?.cohabi_order; if (id && order(id)?.status === 'awaiting_payment') logOrder({ op: 'status', order: id, status: 'cancelled' }); return { order: id, status: 'cancelled' }; }
+  if (ev?.type === 'account.updated') { const who = applyAccount(o); return { account: o.id, member: who }; }
+  return { ignored: ev?.type || 'no type' };
 }

@@ -48,6 +48,7 @@ import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
 import * as mydata from './lib/mydata.mjs';
 import * as checkout from './lib/checkout.mjs';
+import * as stripe from './lib/stripe.mjs';
 import * as capacity from './lib/capacity.mjs';
 import * as fulfillment from './lib/fulfillment.mjs';
 import * as socialshare from './lib/socialshare.mjs';
@@ -322,7 +323,8 @@ const jsonBig = express.json({ limit: '30mb', // a 20 MB picture is about 27 MB 
    type: ['application/json', 'application/*+json'] });
 const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
-app.use((req, res, next) => (req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
+const stripeRaw = express.raw({ type: '*/*', limit: '1mb' }); // the webhook signature is over the exact bytes
+app.use((req, res, next) => (req.path === '/api/payments/webhook' ? stripeRaw : req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: (req.path === '/api/images' || req.path.startsWith('/mcp')) ? 'That file is too large to send in one piece. Pictures can be up to 20 MB; save it smaller, or as a JPEG, and try again.' : 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -1527,9 +1529,21 @@ app.post('/api/share/:id/approve', wrap((req) => socialshare.approve(auth.member
 app.post('/api/share/:id/decline', wrap((req) => socialshare.decline(auth.memberFromCookie(req.headers.cookie), req.params.id)));
 // Checkout wiring (2026-11-14): shapes and gates only, payments CLOSED. See commons/lib/checkout.mjs.
 app.get('/api/market/listings/:id/checkout', wrap((req) => checkout.quote(req.params.id, { pkg: req.query.package })));
-app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startCheckout(marketWriter(req), req.params.id, { pkg: (req.body || {}).package })));
+// Stripe, TEST MODE (2026-11-15): open only when COMMONS_PAYMENTS=stripe and a test key are set (lib/stripe.mjs).
+app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startCheckout(marketWriter(req), req.params.id, { pkg: (req.body || {}).package, amount: (req.body || {}).amount }, { base: core.baseUrl(req) })));
 app.get('/api/payments/account', wrap((req) => checkout.payoutAccount(marketWriter(req))));
-app.post('/api/payments/account', wrap((req) => checkout.startPayoutAccount(marketWriter(req))));
+app.post('/api/payments/account', wrap((req) => checkout.startPayoutAccount(marketWriter(req), { base: core.baseUrl(req) })));
+const payoutBack = async (req, res, again) => {
+  const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/wallet');
+  try { if (again) { const r = await checkout.startPayoutAccount(me, { base: core.baseUrl(req) }); return res.redirect(303, r.url); } await checkout.refreshAccount(me); } catch { /* the wallet page says where it stands */ }
+  res.redirect(303, '/wallet#get-paid');
+};
+app.get('/payments/return', (req, res) => { payoutBack(req, res, false); });
+app.get('/payments/refresh', (req, res) => { payoutBack(req, res, true); });
+app.post('/api/payments/webhook', (req, res) => {
+  let ev; try { ev = stripe.verifyWebhook(req.body, req.get('stripe-signature')); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+  try { res.json({ received: true, ...checkout.handleEvent(ev) }); } catch (e) { res.status(500).json({ error: 'could not record the event' }); }
+});
 app.post('/api/market/listings/:id/ask', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.ask(me, req.params.id, req.body || {}); }));
 app.get('/label/releases', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
