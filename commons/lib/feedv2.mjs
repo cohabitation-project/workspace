@@ -185,6 +185,7 @@ function composer(me, myGroups, { group = null } = {}) {
       <label class="fx-opt"><span aria-hidden="true">😊</span><span class="sr-only">Kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling / kind' : k.replace('-', ' ')}</option>`).join('')}</select></label>
       ${!group && myGroups.length ? `<label class="fx-opt"><span aria-hidden="true">👥</span><span class="sr-only">Post to a group</span><select id="c-group"><option value="">Everyone</option>${myGroups.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : ''}
       ${rels.length ? `<label class="fx-opt"><span aria-hidden="true">🎵</span><span class="sr-only">Share a release</span><select id="c-release"><option value="">Share a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select></label>` : ''}
+      ${!group && socialshare.connected() ? `<label class="fx-opt fx-opt-cohabi"><input type="checkbox" id="c-cohabi"> <span aria-hidden="true">📣</span> ${core.isSteward(me) ? 'Also post' : 'Ask to also post'} on Cohabi's X, Bluesky &amp; Facebook</label>` : ''}
       <button type="button" class="fx-opt" data-soon="Listing a product"><span aria-hidden="true">🛍</span> List a product <span class="fx-soon">soon</span></button>
       <button type="button" class="fx-opt" data-soon="Video and audio posts"><span aria-hidden="true">🎬</span> Video <span class="fx-soon">soon</span></button>
     </div>

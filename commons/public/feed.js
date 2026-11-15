@@ -45,6 +45,13 @@ if (form) {
       const release = $('#c-release')?.value || null;
       const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(group ? { group } : {}), ...(release ? { release } : {}) }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not post (${r.status})`; return; }
+      if (!group && $('#c-cohabi')?.checked) { // 📣 also out on Cohabi's X, Bluesky & Facebook (lib/socialshare.mjs)
+        msg.textContent = 'posted · sending to X, Bluesky and Facebook…';
+        const sr = await fetch('/api/share', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ post: j.id }) }).catch(() => null);
+        const sj = sr ? await sr.json().catch(() => ({})) : {};
+        msg.textContent = sr && sr.ok ? (sj.status === 'pending' ? 'Posted. A steward will send it out.' : sj.status === 'shared' ? 'Posted here and on X, Bluesky and Facebook.' : `Posted. Sharing: ${sj.status}.`) : `Posted here. Sharing out didn't work: ${sj.error || 'try 📣 in the post\'s Share menu'}.`;
+        await new Promise((ok) => setTimeout(ok, 1600));
+      }
       location.href = `${group ? location.pathname : '/feed'}#${j.id}`; location.reload();
     } catch (err) { msg.textContent = err.message; }
     finally { posting = false; form.removeAttribute('aria-busy'); controls.forEach(([el, disabled]) => { el.disabled = disabled; }); }
