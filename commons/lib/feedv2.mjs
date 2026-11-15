@@ -508,10 +508,18 @@ export function reelPage(me, list) {
 <div class="rl-prog" aria-hidden="true"><i></i></div>
 <div class="rl-sheet" id="cm-${esc(p.id)}" hidden role="dialog" aria-label="Comments"><header><strong>Comments</strong><button type="button" class="rl-sheet-x" aria-label="Close comments">✕</button></header><ul>${comments || '<li class="rl-none">No comments yet. Say something.</li>'}</ul>${me ? `<form class="rl-cform"><label class="sr-only" for="ct-${esc(p.id)}">Add a comment</label><input id="ct-${esc(p.id)}" maxlength="1000" placeholder="Add a comment…" autocomplete="off"><button class="btn small" type="submit">Post</button></form>` : `<p class="rl-none"><a href="/signin?next=/cohabi-feed%23${esc(p.id)}">Sign in</a> to comment.</p>`}</div></section>`;
   };
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head><body class="rl-page">
-<header class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed?f=video#compose" class="rl-add" aria-label="Post a video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add rl-signin">Sign in</a>'}</header>
-<main class="rl-stream">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/feed">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head>
+<body class="fx-page rl-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
+${appHeader(me, 'feed')}
+<div class="rl-top"><a href="/feed" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/feed?f=video#compose" class="rl-add" aria-label="Post a video">＋</a>' : '<a href="/signin?next=/cohabi-feed" class="rl-add rl-signin">Sign in</a>'}</div>
+<main class="rl-stream" id="main">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/feed">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/feed#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
 <p class="rl-toast" role="status" aria-live="polite"></p>
+${bottomNav(me)}
+${messengerWidget(me)}
+<div id="fx-toast" class="fx-toast" role="status" hidden></div>
+<script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script>
+${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}
 <script src="/static/reel.js?v=${ASSET_V}" defer></script></body></html>`;
 }
 export function deletedPage() {

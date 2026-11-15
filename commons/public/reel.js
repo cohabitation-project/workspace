@@ -1,5 +1,8 @@
 // Cohabi Feed watch screen (Ash's design §1): the video on screen plays and the rest pause; sound stays off until
 // you turn it on, then stays on; like, comments sheet, share, progress you can tap to jump, top bar fades.
+// Fit the video area between the shared header and the bottom bar.
+const fit = () => { const h = document.querySelector('.fx-top')?.offsetHeight || 0; const f = document.querySelector('.fx-bottom'); const fb = f && getComputedStyle(f).display !== 'none' ? f.offsetHeight : 0; document.documentElement.style.setProperty('--rl-head', `${h}px`); document.documentElement.style.setProperty('--rl-foot', `${fb}px`); document.documentElement.style.setProperty('--rl-h', `${innerHeight - h - fb}px`); };
+fit(); addEventListener('resize', fit);
 const H = { 'content-type': 'application/json', 'x-commons': '1' };
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const toast = document.querySelector('.rl-toast');
