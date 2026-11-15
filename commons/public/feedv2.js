@@ -225,3 +225,6 @@ document.addEventListener('click', async (e) => {
   const said = { pending: 'Asked. A steward will send it out.', shared: "Posted on Cohabi's channels.", queued: "In Cohabi's posting queue.", partly: "Posted on some of Cohabi's channels.", failed: 'Buffer refused it. Try again later.' }[j.status] || j.status;
   b.parentElement.innerHTML = `📣 ${said}`;
 });
+
+// The feed picker (2026-11-15): choosing a feed opens it.
+document.getElementById('fx-f')?.addEventListener('change', (e) => { const v = e.target.value; location.href = v ? `/feed?f=${encodeURIComponent(v)}` : '/feed'; });

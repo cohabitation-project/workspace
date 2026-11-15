@@ -257,7 +257,7 @@ export const PAGE = 15;
 export const FILTERS = [['', 'Everyone'], ['commons', 'Commons'], ['arts', 'Arts'], ['music', 'Music'], ['brainrot', 'Brain rot'], ['video', '🎬 Video'], ['politics', 'Political']];
 const filterOf = (f) => (FILTERS.some(([k]) => k && k === f) ? f : '');
 function filterChips(f) {
-  return `<nav class="fx-filters" aria-label="Choose a feed">${FILTERS.map(([k, label]) => `<a href="/feed${k ? `?f=${k}` : ''}"${k === f ? ' aria-current="page"' : ''}>${label}</a>`).join('')}<a class="fx-filter-reel" href="/cohabi-feed">▶ Cohabi Feed</a></nav>${f === 'politics' ? '<p class="fx-filter-note small muted">The Political feed is opt-in. Political posts stay here, off every other feed. Disagree about ideas, never about people.</p>' : ''}`;
+  return `<form class="fx-feedpick" action="/feed" method="get" aria-label="Choose a feed"><label for="fx-f">Feed</label><select id="fx-f" name="f">${FILTERS.map(([k, label]) => `<option value="${k}"${k === f ? ' selected' : ''}>${label}</option>`).join('')}</select><noscript><button class="btn small" type="submit">Show</button></noscript><a class="fx-filter-reel" href="/cohabi-feed">▶ Cohabi Feed</a></form>${f === 'politics' ? '<p class="fx-filter-note small muted">The Political feed is opt-in. Political posts stay here, off every other feed. Disagree about ideas, never about people.</p>' : ''}`;
 }
 export function streamFor({ tab, me, before = null, f = '' }) {
   const myIds = me ? new Set(groups.list().filter((g) => g.members.some((m) => m.id === me.id)).map((g) => g.id)) : new Set();
