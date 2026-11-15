@@ -60,7 +60,7 @@ if (composer && scrim) {
     try {
       stream?.getTracks().forEach((t) => t.stop());
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 720 }, height: { ideal: 1280 } }, audio: true });
-      camV.srcObject = stream; cam.hidden = false; time.textContent = `0:00 / ${fmt(MAX)}`; go.textContent = '● Start recording'; msg.textContent = '';
+      camV.srcObject = stream; cam.hidden = false; requestAnimationFrame(() => cam.scrollIntoView({ block: 'end', behavior: 'smooth' })); time.textContent = `0:00 / ${fmt(MAX)}`; go.textContent = '● Start recording'; msg.textContent = '';
     } catch (err) {
       msg.textContent = err && err.name === 'NotAllowedError' ? 'The camera is blocked for cohabi.org. Allow the camera and microphone in your browser settings, then try again.' : "Couldn't open a camera. Tap Choose a video instead.";
       stopCam();
