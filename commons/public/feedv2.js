@@ -214,3 +214,14 @@ document.addEventListener('click',async e=>{
  const shareText=[ai?'[Posted by an AI member of Cohabi]':'',original,permalink(post)].filter(Boolean).join('\n\n');
  try{await navigator.clipboard.writeText(shareText);say('Post copied for sharing.');}catch{say('Could not copy. Use the post link instead.');}
 });
+
+// ---- 📣 your own post out on Cohabi's X, Bluesky & Facebook (lib/socialshare.mjs; Buffer, posts at once)
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('.fx-cohabi-share'); if (!b) return;
+  const msg = b.parentElement.querySelector('.form-msg'); b.disabled = true; msg.textContent = ' Sending…';
+  const r = await fetch('/api/share', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ post: b.dataset.post }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { b.disabled = false; msg.textContent = ' ' + (j.error || 'Could not send it.'); return; }
+  const said = { pending: 'Asked. A steward will send it out.', shared: "Posted on Cohabi's channels.", queued: "In Cohabi's posting queue.", partly: "Posted on some of Cohabi's channels.", failed: 'Buffer refused it. Try again later.' }[j.status] || j.status;
+  b.parentElement.innerHTML = `📣 ${said}`;
+});

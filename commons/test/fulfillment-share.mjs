@@ -42,7 +42,27 @@ test('a share needs the author to ask and a steward to approve; it posts to ever
   assert.equal(q.status, 'pending'); assert.match(q.text, /Ana Maker on Cohabi https:\/\/cohabi\.org\/m\/h_author/);
   await assert.rejects(share.approve(other, q.id), /stewards only/);
   const done = await share.approve(steward, q.id);
-  assert.equal(done.status, 'queued'); assert.equal(seen.length, 2);
-  assert.equal(seen[0].auth, 'Bearer test-key'); assert.equal(seen[0].body.variables.input.mode, 'addToQueue');
+  assert.equal(done.status, 'shared'); assert.equal(seen.length, 2);
+  assert.equal(seen[0].auth, 'Bearer test-key'); assert.equal(seen[0].body.variables.input.mode, 'shareNow', 'posts go out at once');
   assert.deepEqual(seen.map((s) => s.body.variables.input.channelId), ['ch1', 'ch2']);
+  assert.throws(() => share.request(author, p.id, 'https://cohabi.org'), /already shared/);
+  assert.equal(share.forPost(p.id).status, 'shared');
+});
+
+test("the Share button: a member's post waits and pings stewards; a steward's own post goes straight out", async () => {
+  const author = store.getMember('h_author'); const steward = store.getMember('h_steward');
+  const before = seen.length; const pinged = [];
+  const a = await share.share(author, posts.create(author, { text: 'A hard day, but the mural is done.' }).id, 'https://cohabi.org', { onPending: (q) => pinged.push(q.id) });
+  assert.equal(a.status, 'pending'); assert.deepEqual(pinged, [a.id]); assert.equal(seen.length, before, 'nothing sent without a steward');
+  const s = await share.share(steward, posts.create(steward, { text: 'Open mic in the Commons tonight.' }).id, 'https://cohabi.org', { onPending: () => pinged.push('x') });
+  assert.equal(s.status, 'shared'); assert.equal(seen.length, before + 2); assert.equal(pinged.length, 1, 'no ping for a steward\'s own post');
+});
+
+test('BUFFER_MODE=addToQueue puts the weekly queue back', async () => {
+  process.env.BUFFER_MODE = 'addToQueue';
+  try {
+    const steward = store.getMember('h_steward');
+    const q = await share.share(steward, posts.create(steward, { text: 'Queued one.' }).id, 'https://cohabi.org');
+    assert.equal(q.status, 'queued'); assert.equal(seen.at(-1).body.variables.input.mode, 'addToQueue');
+  } finally { delete process.env.BUFFER_MODE; }
 });

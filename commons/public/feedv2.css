@@ -337,3 +337,7 @@ html:has(body.fx-page) { background: var(--pc, #05060f); }
 .fr-person img, .fr-person .face, .fr-person svg, .fr-person canvas { width: 44px !important; height: 44px !important; border-radius: 8px; object-fit: cover; }
 .fr-waiting { background: var(--panel); border: 1px solid #c98a2b; border-radius: 16px; padding: 10px 12px; margin-bottom: 12px; }
 .fr-posts-h { font-size: 1.05rem; margin: 18px 4px 10px; }
+/* 📣 share your own post on Cohabi's channels */
+.fx-cohabi{margin:.4rem 0 .6rem}
+.share-preview{white-space:pre-wrap;font:inherit;background:rgba(127,127,127,.08);padding:.6rem .8rem;border-radius:8px}
+.sq-list{list-style:none;padding:0}

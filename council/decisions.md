@@ -170,3 +170,13 @@ Recorded by: Setu, as Geoffrey Cooper Jr. answered in chat, 2026-11-14 ~13:46 MS
 | 8 | Social sharing, phase 1: Buffer's free plan and API, posting to Cohabi's own channels | ADOPTED | Geoffrey asked Setu to decide ("even if we just use Buffer free for now"). A member asks to share their own post; a steward approves; it's queued on every connected Cohabi channel with credit and a link back. Phase 2, posting to members' own accounts from the feed, is Postiz self-hosted, after the entity exists. |
 
 Recorded by: Setu, 2026-11-14 ~19:00 MST
+
+## 2026-11-14 (night) — Sharing goes out at once; the feed is the after-work table
+
+| # | Decision | Status | Notes |
+|---|----------|--------|-------|
+| 9 | Shared posts go out at once on all three Cohabi channels (X Cohabproject, Bluesky @cohabi.bsky.social, Facebook "The Cohabitation Project"), not into Buffer's weekly queue. A steward's own post needs no second yes; anyone else's waits for a steward, who gets a ping and decides at /share-queue. | ADOPTED | Geoffrey: "Yes, we definitely switch it to share now." Sharing out stays the author's choice, post by post. Members choosing their own channels and paying coins per channel is phase 2 (Postiz), Bluesky first. |
+
+What the feed is for, in Geoffrey's words (2026-11-14): it's like the bar where people who work together go after work. A heart or a thumbs up is a pat on the back; a comment is joining the conversation; a post is reflecting on your workday, whether it was fulfilling or a struggle, and how it made you feel. "Those are the things we're trying to record for each other." None of us knows who we are; this is a journey of self-discovery, and each of us is the sum of our principles, practices and purposes.
+
+Recorded by: Setu, 2026-11-14 ~19:50 MST

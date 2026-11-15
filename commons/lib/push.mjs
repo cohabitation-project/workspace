@@ -26,6 +26,7 @@ export const KINDS = {
   reactions: { label: 'Reactions to your posts', on: false },
   journal: { label: 'Journal reminders, at the time you set', on: true },
   newmembers: { label: 'New people joining (stewards)', on: true, steward: true },
+  shares: { label: 'Posts waiting to go out on Cohabi\'s social channels (stewards)', on: true, steward: true },
 };
 const prefsFile = () => path.join(DIR, 'prefs.json'); const sentFile = () => path.join(DIR, 'sent.json');
 const saveJson = (f, v) => { const t = f + '.tmp'; fs.writeFileSync(t, JSON.stringify(v), { mode: 0o600 }); fs.renameSync(t, f); };

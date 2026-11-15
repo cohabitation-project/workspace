@@ -1476,7 +1476,16 @@ app.delete('/api/market/listings/:id/fulfillment', wrap((req) => fulfillment.unl
 app.post('/api/market/listings/:id/release', wrap((req) => { const b = req.body || {}; return fulfillment.markRelease(marketWriter(req), req.params.id, b.step, b.done !== false); }));
 // Sharing out to Cohabi's own social channels through Buffer (phase 1). See lib/socialshare.mjs.
 app.get('/api/share/status', wrap(() => socialshare.status()));
-app.post('/api/share', wrap((req, res) => { res.status(201); return socialshare.request(marketWriter(req), (req.body || {}).post, core.baseUrl(req)); }));
+app.post('/api/share', wrap(async (req, res) => {
+  const me = marketWriter(req); res.status(201);
+  return socialshare.share(me, (req.body || {}).post, core.baseUrl(req), { onPending: (q) => Promise.all(store.allMembers().filter(core.isSteward).map((s) => push.notify(s.id, { title: 'A post is waiting to go out', body: `${me.name} asked to share a post on Cohabi's channels`, url: '/share-queue', kind: 'shares' }).catch(() => {}))) });
+}));
+app.get('/share-queue', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, '/signin?next=/share-queue');
+  if (!core.isSteward(me)) return res.status(403).type('html').send(pages.notFound('Only stewards decide what goes out on Cohabi\'s social channels.', { me }));
+  res.type('html').send(feedv2.shareQueuePage(me, socialshare.pending(me), socialshare.status()));
+});
 app.get('/api/share/queue', wrap((req) => socialshare.pending(auth.memberFromCookie(req.headers.cookie))));
 app.post('/api/share/:id/approve', wrap((req) => socialshare.approve(auth.memberFromCookie(req.headers.cookie), req.params.id)));
 app.post('/api/share/:id/decline', wrap((req) => socialshare.decline(auth.memberFromCookie(req.headers.cookie), req.params.id)));
