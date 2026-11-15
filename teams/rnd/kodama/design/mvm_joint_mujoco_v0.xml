@@ -8,6 +8,7 @@ Updated 2026-11-14: offset intermediate sites off the hinge axis so spatial-tend
 Updated 2026-11-14 later: tuned intermediate site offsets (pulley1/2 at x=0.026, z=0.030) so calculated path ΔL ≈ 8.3 mm over 60 deg, matching pure-Python r=8 mm assumption. Still a spatial-tendon placeholder; true wrap geometry later. Radius convention open.
 Updated 2026-11-14 late: path is slightly non-monotonic (brief ~0.9 mm decrease 0-30 deg then rise), so small reverse moment-arm region near origin. Acceptable for placeholder; true circular wrap recommended next to keep ΔL monotonic. Verified numbers provisional.
 Updated 2026-11-15: added two intermediate arc sites per tendon (approx circular positions at ~30/60 deg relative to provisional pulley center) to reduce the non-monotonic region and better approximate continuous wrap. Still placeholder; full pulley geom later. Radius convention open / not frozen. All values provisional.
+Updated 2026-11-15 later: added provisional cylinder geoms (r=0.008) centered at pulley sites as visual/structural stand-in for wrap bodies; sites remain spatial approximation. True MuJoCo wrap (cylinder + wrap sites) still recommended for full monotonicity and contact. Radius convention open / not frozen. All values provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
@@ -17,9 +18,11 @@ Updated 2026-11-15: added two intermediate arc sites per tendon (approx circular
       <site name="base_site1" pos="0 0.008 0.01"/>
       <site name="base_site2" pos="0 -0.008 0.01"/>
       <site name="pulley1" pos="0.026 0.008 0.030"/>
+      <geom name="pulley_cyl1" type="cylinder" size="0.008 0.004" pos="0.026 0.008 0.030" rgba="0.7 0.7 0.7 1"/>
       <site name="arc1a" pos="0.0329 0.008 0.0340"/>
       <site name="arc1b" pos="0.0300 0.008 0.0369"/>
       <site name="pulley2" pos="0.026 -0.008 0.030"/>
+      <geom name="pulley_cyl2" type="cylinder" size="0.008 0.004" pos="0.026 -0.008 0.030" rgba="0.7 0.7 0.7 1"/>
       <site name="arc2a" pos="0.0329 -0.008 0.0340"/>
       <site name="arc2b" pos="0.0300 -0.008 0.0369"/>
       <body name="link" pos="0 0 0.02">
