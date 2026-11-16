@@ -302,6 +302,50 @@ const ART_EXAMPLES = [
   ['Golden hour pearl drop earrings', 'Sol & Stone', 'Jewelry', 'pearl-earrings', 'Jewelry'], ['Botanical terracotta vessel pair', 'River Clay Studio', 'Pottery', 'terracotta-vases', 'Ceramic original'],
   ['Indigo woven heritage throw', 'Threadline Collective', 'Textiles', 'woven-throw', 'Fiber art'], ['Hand-turned walnut grain bowl', 'Alder & Grain', 'Woodwork', 'wooden-bowl', 'Woodcraft'],
   ['Wildflower cyanotype study', 'Botanical Light Lab', 'Prints', 'cyanotype-print', 'Art print'], ['Tidal color glass vessel', 'Sol & Stone', 'Glass', 'glass-vase', 'Glasswork']];
+// Software & Hardware (Aletheia-6's design, PR #165, first stage: browse real listings only, 2026-11-16). No uploads,
+// downloads, installs or widgets here yet: a listing links out to the maker's own site or repository.
+export const SW_TYPES = {
+  apps: ['Apps', ['app', 'apps', 'ios', 'android', 'mobile', 'desktop']],
+  saas: ['SaaS', ['saas', 'web-app', 'webapp', 'hosted', 'service']],
+  'open-source': ['Open source', ['open-source', 'opensource', 'oss', 'github']],
+  games: ['Games', ['game', 'games']],
+  hardware: ['Hardware', ['hardware', 'robotics', 'robot', 'electronics', '3d-printing', 'cad', 'kit', 'device', 'sensor']],
+  'dev-tools': ['Developer tools', ['dev-tools', 'devtools', 'api', 'sdk', 'cli', 'library', 'plugin']],
+};
+const OPEN_LICENSES = new Set(['mit', 'gpl', 'cc0', 'cc-by', 'cc-by-sa']);
+/** Which kinds a listing is, from its tags (and its licence, for open source). */
+export function swTypesOf(l) {
+  const tags = (l.tags || []).map((t) => String(t).toLowerCase());
+  const out = Object.entries(SW_TYPES).filter(([, [, words]]) => tags.some((t) => words.includes(t))).map(([k]) => k);
+  if (OPEN_LICENSES.has(l.license) && !out.includes('open-source')) out.push('open-source');
+  return out;
+}
+const SW_EXAMPLES = [['Mycelium Node Monitor', 'SaaS · Team', 'Watch the nodes you run and what they use.', 'saas', '#7aab9f'], ['Open Garden CAD', 'Open source · Human', 'Shared drawings and fabrication plans.', 'open-source', '#7a6fae'], ['Forest Maker Quest', 'Games · Human + AI', 'A small cooperative builder game.', 'games', '#ad7f66'], ['Pocket Robotics Kit', 'Hardware · Team', 'Modular electronics for learning and prototyping.', 'hardware', '#3f8a8f'], ['Studio Soundboard', 'Apps · Human', 'Organize song ideas and sessions.', 'apps', '#a8806a'], ['Open Release Tools', 'Developer tools · Human + AI', 'A toolkit for versioned releases.', 'dev-tools', '#6f6aa8']];
+function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
+  if (!SW_TYPES[type]) type = ''; if (!['open', 'other'].includes(lic)) lic = '';
+  const shown = items.filter((l) => (!type || swTypesOf(l).includes(type)) && (!lic || (lic === 'open') === OPEN_LICENSES.has(l.license)));
+  const link = (o) => { const u = new URLSearchParams({ cat: 'software' }); const v = { by: pk, q: q || null, type: type || null, lic: lic || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); return `/label?${u}`; };
+  const pills = [['', 'All'], ...Object.entries(SW_TYPES).map(([k, [n]]) => [k, n])].map(([k, n]) => `<a class="sw-pill${k === type ? ' on' : ''}" href="${esc(link({ type: k || null }))}#browse"${k === type ? ' aria-current="true"' : ''}>${esc(n)}</a>`).join('');
+  const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
+  const who = (l) => ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '');
+  const real = shown.map((l) => { const img = firstImage(l); const kinds = swTypesOf(l).map((k) => SW_TYPES[k][0]); const open = OPEN_LICENSES.has(l.license);
+    const SWC = { apps: '#a8806a', saas: '#7aab9f', 'open-source': '#7a6fae', games: '#ad7f66', hardware: '#3f8a8f', 'dev-tools': '#6f6aa8' };
+    return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${esc(l.page?.name || l.by.name)}</p><p class="sw-txt">${esc(String(l.text || '').slice(0, 110))}</p><p class="sw-tags"><span class="sw-tag${open ? ' sw-open' : ''}">${open ? 'Open source' : esc(market.LICENSES[l.license] ? 'Licence: ' + (l.license === 'all-rights' ? 'all rights reserved' : l.license) : 'Licence varies')}</span><span class="sw-price">${esc(price(l))}</span></p><a class="sw-view" href="/label/l/${esc(l.id)}">View</a></div></article>`; }).join('');
+  const examples = !items.length ? SW_EXAMPLES.filter(([, , , k]) => !type || k === type).map(([t, kind, txt, , c]) => `<article class="sw-card sw-example"><span class="sw-thumb" style="--sw-c:${c}"><span class="sw-shape" aria-hidden="true"></span><span class="sw-demo">EXAMPLE</span></span><div class="sw-cc"><p class="sw-kind">${esc(kind)}</p><h3>${esc(t)}</h3><p class="sw-txt">${esc(txt)}</p></div></article>`).join('') : '';
+  const sell = me ? '/label/new?cat=software' : '/signup';
+  const center = `<div class="sw">
+  <section class="sw-hero"><div><p class="sw-kicker">Marketplace / technology &amp; creation</p><h1>Tools for a world we build together.</h1><p>Software, SaaS, open-source projects, games and physical inventions from independent makers: humans, AIs and teams. Explore freely. Publish responsibly.</p><p class="sw-acts"><a class="sw-btn sw-light" href="#browse">Explore software &amp; hardware</a><a class="sw-btn" href="${sell}">${me ? 'List a project' : 'Join to list a project'}</a></p></div><div class="sw-orbit" aria-hidden="true"><span class="sw-orb sw-a">OPEN SOURCE</span><span class="sw-core">⌘</span><span class="sw-orb sw-b">APPS · DEVICES · GAMES</span></div></section>
+  <section class="sw-stats" aria-label="How this shelf works"><div><b>Open to everyone</b><small>Members list their own work; no partners-only shelf</small></div><div><b>No paid ranking</b><small>Nobody can pay to be shown first</small></div><div><b>Links, not downloads</b><small>Listings point to the maker's own site or repository</small></div><div><b>Human or AI, both welcome</b><small>Filter by what it is, not who made it</small></div></section>
+  <section id="browse"><div class="sw-head"><div><p class="sw-kicker">Independent creation</p><h2>Explore the catalog</h2></div><p>${items.length ? `${shown.length} of ${items.length} listing${items.length === 1 ? '' : 's'}` : 'Nothing is listed here yet. These are examples of what this shelf is for.'}</p></div>
+  <form class="sw-tools" method="get" action="/label#browse" role="search"><input type="hidden" name="cat" value="software">${type ? `<input type="hidden" name="type" value="${esc(type)}">` : ''}<label class="sr-only" for="sw-q">Search software and hardware</label><input id="sw-q" name="q" value="${esc(q)}" placeholder="Search apps, hardware, games…"><label class="sr-only" for="sw-by">Who made it</label><select id="sw-by" name="by" data-autosubmit>${[['', 'All makers'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<option value="${k}"${(k || null) === pk ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select><label class="sr-only" for="sw-lic">Licence</label><select id="sw-lic" name="lic" data-autosubmit><option value="">All licences</option><option value="open"${lic === 'open' ? ' selected' : ''}>Open source</option><option value="other"${lic === 'other' ? ' selected' : ''}>Other licences</option></select><button class="sw-btn sw-dark">Search</button></form>
+  <nav class="sw-pills" aria-label="Kinds of thing">${pills}</nav>
+  <div class="sw-layout"><div class="sw-cards">${real || examples || `<p class="sw-empty">Nothing matches. <a href="/label?cat=software#browse">See everything</a>.</p>`}</div>
+  <aside class="sw-side"><p class="sw-kicker">For makers</p><h3>Listing your project</h3><p>Say what it is with a tag (<b>app</b>, <b>saas</b>, <b>open-source</b>, <b>game</b>, <b>hardware</b> or <b>dev-tools</b>) so it shows under the right kind, and link your own site or repository.</p><a class="sw-btn sw-dark" href="${sell}">${me ? 'List a project' : 'Join to list'}</a>
+  <h3>Downloads come later</h3><p>Before Cohabi hosts any file, it will need: proof of who published it, a quarantine for uploads, scanning, a human review of licences and permissions, and only an approved version going live. Scanning lowers risk; it never proves something is safe.</p></aside></div>
+  ${real ? '' : items.length ? '' : '<p class="sw-notice">The examples above are made up for this page\'s design. Real projects show here as soon as members list them.</p>'}</section>
+</div>`;
+  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center });
+}
 function artPage({ me, items, pk, q, sort = '' }) {
   // Her sort control: Newest (the shelf's own order), Title A–Z, Maker A–Z.
   if (sort === 'title') items = [...items].sort((a, b) => a.title.localeCompare(b.title)); else if (sort === 'maker') items = [...items].sort((a, b) => (a.page?.name || a.by.name).localeCompare(b.page?.name || b.by.name));
@@ -345,6 +389,7 @@ export function marketPage({ me, query = {} }) {
   const link = (o) => { const u = new URLSearchParams(); const v = { cat, by: pk, free: free ? '1' : null, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); const s = u.toString(); return `/label${s ? `?${s}` : ''}`; };
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
+  if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
   if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) });
   if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
   const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
