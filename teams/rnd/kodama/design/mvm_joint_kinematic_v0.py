@@ -27,6 +27,8 @@ Updated 2026-11-16: confirmed both sidesite pairs (arc*a at 30° and arc*b at 60
 for primary and distal sit at exact 8 mm radius (dx = r*cos, dz = r*sin).
 Updated 2026-11-16 late: noted unused arc*b sites (60°) available for future
 multi-point wrap approximation; current MuJoCo uses only *a.
+Updated 2026-11-16 evening: added chord approximation between *a (30°) and *b (60°)
+— 4.141 mm chord vs 4.189 mm arc (error ~0.05 mm) — confirming readiness for multi-point wrap.
 """
 
 import numpy as np
@@ -64,6 +66,7 @@ print("Cross-check: pure-Python antagonistic stand-in settles stably near 63 deg
 print(f"primary wrap at 63 deg ≈ {8.0 * np.deg2rad(63):.2f} mm (within soft-limit regime around ±60 deg).")
 print("Sidesite confirmation: both arc*a (30°) and arc*b (60°) pairs for primary/distal are at exact 8 mm radius from pulley centers.")
 print("Unused arc*b (60°) sites available for future multi-point wrap; current MuJoCo placeholder routes over cylinder + *a only.")
+print("Dual-sidesite chord: distance between 30° and 60° points = 4.141 mm vs ideal arc 4.189 mm (error ~0.05 mm). Ready for multi-point approximation.")
 print("Latest MuJoCo placeholder (geom + sidesite over cylinder) expected to improve monotonic ΔL toward r·θ; prior arc-site path ~8.3 mm / 60 deg matches radius interpretation.")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
