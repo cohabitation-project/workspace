@@ -25,7 +25,7 @@ import * as house from './house.mjs';
 import * as groups from './groups.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
-import { marketMenu } from './marketmenu.mjs';
+import { marketMenu, pagesOf as myPagesOf } from './marketmenu.mjs';
 import * as operators from './operators.mjs';
 import * as checkout from './checkout.mjs';
 import * as petition from './petition.mjs';
@@ -329,7 +329,7 @@ export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
       : `<div class="fx-empty"><p><strong>The feed is quiet.</strong></p><p class="muted">Say hello, share something you made, or walk into Headquarters to meet the cooperative.</p><a class="btn" href="/headquarters">Meet everyone</a></div>`;
     center = `${tab === 'mine' ? `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/social?tab=mine" aria-current="page">My groups</a><a href="/social?tab=groups">All groups</a></div>` : ''}
     
-    ${me ? `<section class="push-ask" data-push-ask hidden aria-label="Notifications"><p class="pa-q">Want Cohabi to ping you when someone messages you or asks to be friends? You can change it anytime from the 🔔 at the bottom.</p><div class="pa-acts"><button type="button" class="btn small" data-pa-yes>Yes, ping me</button><button type="button" class="btn small ghost" data-pa-no>Not now</button></div></section>` : ''}
+    ${me ? `<section class="push-ask" data-push-ask hidden aria-label="Notifications"><p class="pa-q">Want Cohabi to ping you when someone messages you or asks to be friends? You can change it anytime from your picture, top right → Notification settings.</p><div class="pa-acts"><button type="button" class="btn small" data-pa-yes>Yes, ping me</button><button type="button" class="btn small ghost" data-pa-no>Not now</button></div></section>` : ''}
     <div class="cx-browse">${tab === 'everyone' ? filterChips(f) : ''}<div id="fx-find" class="fx-find" hidden><label for="fx-find-input" class="sr-only">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint" class="sr-only">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></div>
     ${composer(me, myGroups)}
     <button type="button" class="fx-newpill" id="fx-new" hidden>↑ New posts</button>
@@ -381,8 +381,23 @@ export function appHeader(me, section='social') {
   return `<header class="fx-top">
   <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36">' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
   ${mainTabs(me, section)}
-  <div class="fx-topr">${me ? `<a class="fx-bell cx-msgr" id="messenger-launch" data-inbox-bell href="/messages" aria-controls="messenger-window" aria-expanded="false" aria-label="Messenger: ${count} unread" title="Messenger">${TAB_ICON.chat}${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<button type="button" class="fx-bell fx-notify-btn" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet" aria-label="Notification settings" title="Notification settings"><span aria-hidden="true">🔔</span></button>${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
+  <div class="fx-topr">${me ? `<a class="fx-bell cx-msgr" id="messenger-launch" data-inbox-bell href="/messages" aria-controls="messenger-window" aria-expanded="false" aria-label="Messenger: ${count} unread" title="Messenger">${TAB_ICON.chat}${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}${meMenu(me)}` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
   </header>`;
+}
+/** Your face, top right, opens your menu (Geoffrey, 2026-11-16): the 🔔 settings button left the top bar and lives here,
+ * with your profile, its settings, your pages and agents, account settings and sign out. */
+function myPagesLinks(me) {
+  let ps = []; try { ps = myPagesOf(me); } catch { ps = []; }
+  return ps.length ? `<p class="fx-meh">Your pages</p>${ps.slice(0, 8).map((p) => `<a class="fx-mepage" href="${esc(p.href)}">📄 ${esc(p.name)}</a>`).join('')}` : '<a href="/page/new">＋ Make a page</a>';
+}
+function meMenu(me) {
+  const id = encodeURIComponent(me.id);
+  const a = (href, label) => `<a href="${href}">${label}</a>`;
+  return `<details class="fx-memenu"><summary class="fx-me" aria-label="Your menu: profile and settings">${memberFace(me.id)}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-mepanel" aria-label="You">
+<a class="fx-mehead" href="/m/${id}">${memberFace(me.id)}<span><strong>${esc(store.getMember(me.id)?.name || 'You')}</strong><small>See your profile</small></span></a>
+${a(`/m/${id}#edit`, '✎ Profile settings')}${myPagesLinks(me)}${a('/my-agents', '🤖 Your agents')}${a('/wallet', '🪙 Your wallet')}
+<button type="button" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet">🔔 Notification settings</button>
+${a('/account', '⚙ Account settings')}${a('/privacy', '🔒 Privacy')}<a href="/logout" class="fx-meout">Sign out</a></nav></details>`;
 }
 /** The 🔔 panel from the bottom bar (2026-11-13): this device on/off, what to be pinged for, quiet hours. */
 function notifySheet() {
@@ -404,7 +419,7 @@ const TAB_ICON = {
 const tabOf = (section) => ({ social: 'social', everyone: 'social', mine: 'social', friends: 'social', one: 'social', feed: 'feed', groups: 'groups', group: 'groups', cobox: 'cobox', market: 'market', marketplace: 'market' }[section] || '');
 function mainTabs(me, section) {
   const cur = tabOf(section);
-  const t = (key, href, label) => `<a class="cx-tab" href="${href}"${cur === key ? ' aria-current="page"' : ''}>${TAB_ICON[key]}<span>${label}</span></a>`;
+  const t = (key, href, label) => `<a class="cx-tab" href="${href}"${cur === key ? ' aria-current="page"' : ''}${key === 'cobox' ? ' data-cobox-mark' : ''}>${TAB_ICON[key]}<span>${label}</span></a>`;
   return `<nav class="cx-tabs" aria-label="Cohabi">${t('social', '/social', 'Social')}${t('feed', '/feed', 'Feed')}<details class="cx-tab cx-tabmenu${cur === 'market' ? ' cx-cur' : ''}"><summary>${TAB_ICON.market}<span>Marketplace ▾</span></summary><div class="cx-tabpanel">${marketMenu(me).replace(/^<details[^>]*><summary>[^<]*<\/summary>/, '').replace(/<\/details>$/, '')}</div></details>${t('groups', '/social?tab=groups', 'Groups')}${isCommonsMember(me) ? t('cobox', '/cobox', 'Cobox') : ''}</nav>`;
 }
 export function bottomNav(me, tab='') {
@@ -412,7 +427,7 @@ export function bottomNav(me, tab='') {
   // menu and the left rail, for balance. The coin in the middle is the post button: on Social it opens Create post,
   // anywhere else it takes you there. Your wallet stays one tap away on the coin count at the top.
   const cur = tabOf(tab);
-  const b = (key, href, label) => `<a href="${href}"${cur === key ? ' aria-current="page"' : ''}>${TAB_ICON[key]}<span class="cx-bl">${label}</span></a>`;
+  const b = (key, href, label) => `<a href="${href}"${cur === key ? ' aria-current="page"' : ''}${key === 'cobox' ? ' data-cobox-mark' : ''}>${TAB_ICON[key]}<span class="cx-bl">${label}</span></a>`;
   const post = me ? `<a class="fx-coin cx-coinpost" href="/social#compose" data-cx-open="post" aria-label="Create a post"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"><span class="cx-plus" aria-hidden="true">＋</span></a>` : '<a class="fx-coin" href="/signup" aria-label="Join Cohabi"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a>';
   return `<nav class="fx-bottom cx-bottom" aria-label="Main">${b('social', '/social', 'Social')}${b('feed', '/feed', 'Feed')}${post}${b('market', '/label', 'Market')}${isCommonsMember(me) ? b('cobox', '/cobox', 'Cobox') : b('groups', '/social?tab=groups', 'Groups')}</nav>${me ? notifySheet() : ''}`;
 }

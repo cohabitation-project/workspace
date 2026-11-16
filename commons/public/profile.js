@@ -40,6 +40,7 @@ if (dlg) {
   });
   const form = $('#pf-form'); const msg = form.querySelector('.form-msg');
   $('#pf-edit').addEventListener('click', () => { msg.textContent = ''; dlg.showModal(); });
+  if (location.hash === '#edit') { msg.textContent = ''; dlg.showModal(); history.replaceState(null, '', location.pathname + location.search); } // from the profile menu, top right
   $('#pf-cancel').addEventListener('click', () => dlg.close());
   $('#pf-cancel2')?.addEventListener('click', () => dlg.close());
   for (const r of dlg.querySelectorAll('input[type=range]')) r.addEventListener('input', () => { const o = r.parentElement.querySelector('output'); if (o) o.textContent = r.value; });

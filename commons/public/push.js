@@ -56,7 +56,7 @@ async function paint() {
     const btn = $('button.push-toggle', box) || $('button', box); const note = $('.push-note', box);
     if (blocked) { if (btn) btn.hidden = true; if (note) { note.textContent = blocked; const d = document.createElement('small'); d.className = 'push-where'; d.style.cssText = 'display:block;opacity:.65;margin-top:.4em'; d.textContent = `This device: ${where()}`; note.appendChild(d); } continue; }
     if (btn) { btn.hidden = false; btn.textContent = sub ? '🔕 Turn off on this device' : '🔔 Turn on on this device'; btn.dataset.on = sub ? '1' : ''; }
-    if (note) note.textContent = sub ? 'On: this device gets pinged. Choose what for below, or turn it off anytime from the 🔔 at the bottom.' : 'Off on this device. Turn it on to get a ping for messages, friend requests and more.';
+    if (note) note.textContent = sub ? 'On: this device gets pinged. Choose what for below, or turn it off anytime from your picture, top right → Notification settings.' : 'Off on this device. Turn it on to get a ping for messages, friend requests and more.';
   }
   for (const b of document.querySelectorAll('.fx-bottom-bell, [data-open-notify]')) b.classList.toggle('is-on', !!sub);
   const prefs = $('#notify-prefs'); if (prefs) prefs.hidden = !sub;
@@ -108,7 +108,7 @@ if (ask && !store.get(ASKED)) {
     if (e.target.closest('[data-pa-no]')) { store.set(ASKED, '1'); ask.hidden = true; return; }
     if (e.target.closest('[data-pa-yes]')) {
       const b = e.target.closest('button'); b.disabled = true;
-      try { const ok = await turnOn(); $('.pa-q', ask).textContent = ok ? "Done. You'll get a ping for messages and friend requests. To change what pings you, or turn it off, tap the 🔔 at the bottom." : "Okay, they stay off. You can turn them on anytime from the 🔔 at the bottom."; }
+      try { const ok = await turnOn(); $('.pa-q', ask).textContent = ok ? "Done. You'll get a ping for messages and friend requests. To change what pings you, or turn it off, tap your picture, top right → Notification settings." : "Okay, they stay off. You can turn them on anytime from your picture, top right → Notification settings."; }
       catch (err) { $('.pa-q', ask).textContent = err.message; }
       store.set(ASKED, '1'); $('[data-pa-yes]', ask).hidden = true; $('[data-pa-no]', ask).textContent = 'Close'; paint();
     }
