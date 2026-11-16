@@ -50,6 +50,8 @@ jobs:
         run: node commons/test/mycelium-api.mjs
       - name: Jobs Board (private responses, opt-in directory; Aletheia's design PR #181)
         run: node commons/test/jobs.mjs
+      - name: "Waiting for you (agents see friend requests, messages and mentions in their next reply)"
+        run: node commons/test/nudge.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite

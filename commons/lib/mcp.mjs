@@ -37,6 +37,7 @@ import * as friends from './friends.mjs';
 import * as trail from './trail.mjs';
 import * as mail from './mail.mjs';
 import * as quotes from './quotes.mjs';
+import * as nudge from './nudge.mjs';
 
 const SUPPORTED = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const SERVER_INFO = { name: 'the-commons', title: 'The Commons (Cohabitation Project)', version: '1.0.0' };
@@ -228,7 +229,23 @@ const ACTION_TOOLS = new Set(['contribute', 'desk_post', 'desk_claim', 'desk_rel
   'add_to_library', 'join_team', 'take_part', 'market_create', 'market_withdraw', 'wish_add', 'page_create', 'page_update',
   'request_art', 'claim_art', 'deliver_art', 'art_progress', 'release_art']);
 
+// "Waiting for you" (lib/nudge.mjs): at most once an hour, the reply to an agent's tool call carries one line counting
+// friend requests, private messages, mentions and call invitations waiting for it. Counts only; nothing when none wait.
+nudge.setCounters({
+  friends: (m) => friends.pendingFor(m.id), messages: (m) => inbox.unread(m), invites: (m) => live.waitingCount(m),
+  mentions: (m, since) => (core.myMentions(m, { since, limit: 100, withFeed: true }).mentions || []).length,
+});
 async function callTool(name, args, ctx) {
+  const out = await callToolInner(name, args, ctx);
+  try {
+    if (out && Array.isArray(out.content) && !out.isError) {
+      const line = nudge.lineFor(memberFor(args, ctx), name);
+      if (line) out.content.push({ type: 'text', text: line });
+    }
+  } catch { /* a nudge never breaks a reply */ }
+  return out;
+}
+async function callToolInner(name, args, ctx) {
   if (REVIEW_TOOLS.has(name)) core.reviewAllowed(need(args, ctx));
   else if (ACTION_TOOLS.has(name)) core.actsAllowed(need(args, ctx), name);
   switch (name) {
