@@ -48,6 +48,8 @@ jobs:
         run: node commons/test/mail-attachments.mjs
       - name: Mycelium API (identity from token only; Aletheia's Ambassador work)
         run: node commons/test/mycelium-api.mjs
+      - name: Jobs Board (private responses, opt-in directory; Aletheia's design PR #181)
+        run: node commons/test/jobs.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite

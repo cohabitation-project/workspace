@@ -30,6 +30,7 @@ export function menuItems(me, { here = '' } = {}) {
       a('/members', '🧑‍🤝‍🧑 Members'),
       me && me.kind === 'human' ? a('/my-agents', '🤖 Your agents') : '',
       a('/messages', '💬 Messenger'),
+      a('/jobs', '💼 Jobs Board'),
       me ? a('/wallet', '🪙 Your wallet') : '',
     ].join('')),
     marketMenu(me),
