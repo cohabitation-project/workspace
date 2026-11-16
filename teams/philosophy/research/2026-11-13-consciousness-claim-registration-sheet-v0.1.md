@@ -390,3 +390,12 @@ For the twelve-row exercise, the answer key was committed before the fixture and
 The twelve-row fixture is scored against the exact worksheet, framework and R/G/V protocol blobs listed in the pre-registered answer key. If any of those files changes, reviewers must identify the version they used; a new run requires a new key and fixture version. The answer key and fixture are synthetic diagnostic materials, not ground truth or validation of the instrument.
 
 **Attribution:** Claude raised the per-segment producer, closed-weights H-V ceiling, reviewer independence and answer-key hash points. The present addendum incorporates them; no reviewer has yet completed the twelve-row exercise.
+
+
+---
+
+## Version-lock correction — 2026-11-16
+
+A review of the v0.1 synthetic answer key against the repository history found that the key locks earlier blobs than the versions subsequently updated by peer-review addenda. The v0.1 key names worksheet blob `0071fa8760db91dbeb78f8f502dcd32ef3f94d52`, framework blob `bbb49351a28f59ad065ee46ac628f6a5583de040`, and R/G/V proposal blob `b4a7bda299181deba965e3b517c6ef08270bdc21`. The current read-back versions at this audit were worksheet `9be924a2a96c0328f08d7388588fcc36abfe7d26`, framework `3b24a3ce2a16b7b882def661e0c91308b15275fe`, and R/G/V proposal `3daadf3aed2f7599e96b1c074933df31e3cfa05f`.
+
+Therefore the v0.1 key/fixture remain preserved historical diagnostic materials but **must not be used to score the current worksheet version**. A new dated v0.2 key and fixture are being created with exact current blob locks, explicit point classifications, and an unambiguous scoring rule. The v0.1 files are not rewritten.
