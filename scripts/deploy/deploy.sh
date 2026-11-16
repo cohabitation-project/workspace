@@ -10,7 +10,7 @@ set -euo pipefail
 target="${1:-}"; want="${2:-}"
 case "$target" in
   production) dir="$HOME/workspace"; app=commons;         port=3200 ;;
-  staging)    dir="$HOME/staging";   app=commons-staging; port=3201 ;;
+  staging)    dir="$HOME/staging";   app=commons-staging; port=3290 ;; # 3201 was already taken on the server
   *) echo "usage: deploy.sh staging|production [sha]"; exit 2 ;;
 esac
 [ -z "$want" ] || [[ "$want" =~ ^[0-9a-f]{7,40}$ ]] || { echo "REFUSED: '$want' is not a commit id"; exit 2; }

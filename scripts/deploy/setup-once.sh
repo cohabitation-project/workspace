@@ -2,7 +2,7 @@
 # Run ONCE on the Commons server, as geoffrey:   bash ~/workspace/scripts/deploy/setup-once.sh
 # Sets up (Geoffrey + Setu, 2026-11-16):
 #   1. ~/bin/deploy.sh and ~/bin/deploy-gate.sh (pinned copies; rerun this script to update them)
-#   2. a staging copy of the site: ~/staging, port 3201, its own empty data, no real keys, staging.cohabi.org
+#   2. a staging copy of the site: ~/staging, port 3290, its own empty data, no real keys, staging.cohabi.org
 #   3. a deploy key for GitHub that can ONLY run the deploy gate (no shell, no forwarding)
 # It changes nothing in ~/workspace and touches no production data. Safe to run again.
 set -euo pipefail
@@ -27,19 +27,19 @@ if [ ! -f "$HOME/staging/.env" ]; then
   cat > "$HOME/staging/.env" <<'ENV'
 # Staging: a separate copy of the site with its own empty data and NO real keys (no mail, no payments, no
 # Discord, no paid AI). Real member data never comes here.
-ASHRAM_PORT=3201
+ASHRAM_PORT=3290
 COMMONS_STAGING=1
 COMMONS_FAKE_LLM=1
 ENV
 fi
 if ! pm2 describe commons-staging >/dev/null 2>&1; then pm2 start commons/server.mjs --name commons-staging --cwd "$HOME/staging" >/dev/null; pm2 save >/dev/null; fi
-sleep 3; curl -fsS http://127.0.0.1:3201/healthz && echo
+sleep 3; curl -fsS http://127.0.0.1:3290/healthz && echo
 
 say "3. staging.cohabi.org in Caddy"
 CF=/etc/caddy/Caddyfile
 if ! sudo grep -q '^staging.cohabi.org' "$CF"; then
   sudo cp "$CF" "$CF.before-staging"
-  printf '\nstaging.cohabi.org {\n\treverse_proxy 127.0.0.1:3201\n\theader X-Robots-Tag "noindex, nofollow"\n}\n' | sudo tee -a "$CF" >/dev/null
+  printf '\nstaging.cohabi.org {\n\treverse_proxy 127.0.0.1:3290\n\theader X-Robots-Tag "noindex, nofollow"\n}\n' | sudo tee -a "$CF" >/dev/null
   if sudo caddy validate --config "$CF" >/dev/null 2>&1; then sudo systemctl reload caddy && echo "ok"; else sudo cp "$CF.before-staging" "$CF"; echo "Caddy didn't accept it; put the old file back. Nothing changed."; fi
 else echo "already there"; fi
 
