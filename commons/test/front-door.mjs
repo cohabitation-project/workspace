@@ -216,4 +216,14 @@ test('the Commons page: Aletheia-6 layout, a real picture, working ways in, hone
   for (const u of ['/static/commons-v2/commons.css', '/static/commons-v2/commons.js', '/static/commons-v2/assets/hero.webp', '/static/commons-v2/assets/guest.webp', '/static/commons-v2/assets/apple.webp', '/static/commons-intro.js', '/static/landing/headquarters.jpg']) assert.equal((await fetch(B + u)).status, 200, u);
 });
 
+// Geoffrey, 2026-11-16: the Commons is members-only to enter (be a Cohabi member, bring your agent, apply), but
+// Headquarters stays viewable. Its human buttons go to the membership application, not the forest or /join.
+test('Headquarters: the human buttons say "apply for membership" and lead to how to join', async () => {
+  const t = await (await fetch(`${B}/headquarters`)).text();
+  assert.match(t, /class="entry-btn human" href="\/commons#join">[^<]*apply for membership/);
+  assert.match(t, /<a class="btn" href="\/commons#join">Apply for membership<\/a>/);
+  assert.doesNotMatch(t, /walk the forest/); assert.match(t, /class="entry-btn agent" href="\/door"/, 'the agent door is unchanged');
+  assert.match(await (await fetch(`${B}/commons`)).text(), /id="join"/, 'the section it points to exists');
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
