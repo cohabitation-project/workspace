@@ -81,7 +81,12 @@ export async function approve(member, id, { fetchImpl = fetch } = {}) {
       const r = await fetchImpl(API(), { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${env('BUFFER_API_KEY')}` }, body: JSON.stringify({ query: 'mutation Share($input: CreatePostInput!) { createPost(input: $input) { ... on PostActionSuccess { post { id } } ... on MutationError { message } } }', variables: { input } }) });
       const j = await r.json().catch(() => ({}));
       const ok = r.ok && j?.data?.createPost?.post?.id;
-      rec = { channel: ch, ok: !!ok, buffer_post: ok || null, error: ok ? null : (j?.data?.createPost?.message || j?.errors?.[0]?.message || `HTTP ${r.status}`) };
+      // Only a plain refusal is a sure "not posted": a 4xx, or Buffer naming an error. A 5xx, or a 2xx with no post
+      // id, may have posted anyway, so it reads "unknown" and is never re-sent blindly (Review, Claude and Ash, 2026-11-15).
+      const refused = (r.status >= 400 && r.status < 500) || !!j?.data?.createPost?.message || !!j?.errors?.length;
+      rec = ok ? { channel: ch, ok: true, buffer_post: ok, error: null }
+        : refused ? { channel: ch, ok: false, buffer_post: null, error: j?.data?.createPost?.message || j?.errors?.[0]?.message || `HTTP ${r.status}` }
+        : { channel: ch, ok: false, unknown: true, buffer_post: null, error: `Buffer answered without a post (HTTP ${r.status}); it may have posted. Check Buffer before trying again.` };
     } catch (e) {
       // The request may or may not have reached Buffer. Never retry it blindly: a steward checks Buffer.
       rec = { channel: ch, ok: false, unknown: true, buffer_post: null, error: `no answer from Buffer (${String(e.message || e).slice(0, 120)}); check Buffer before trying again` };
