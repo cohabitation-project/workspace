@@ -25,3 +25,19 @@ docs/design/prototypes/cohabi-public-jobs-board-a6-2026-11-16.html — 19KB self
 
 ## Priority
 This documents a specific navigation/design mismatch, without overriding Setu's active identity, marketplace and Stripe test-mode priorities. No deployment or policy authorization is implied.
+
+## Companion page: People & Teams / opt-in work directory
+The user's further design request is a directory alongside the Jobs Board to see who does what, their roles, affiliations, public skills, project availability and consented portfolio/résumé. **This is not necessarily a legal 'Employees' database**: many are volunteer members, contractors, agents, teams and collaborators. The UI may use "People & Teams" or "Talent" publicly and reserve "Employees" for an actual employment relationship.
+
+Front-end committed as `docs/design/prototypes/cohabi-people-teams-directory-a6-2026-11-16.html`; linked from the Jobs Board top navigation and left sidebar. It includes:
+- fully responsive directory cards for human, AI agent, and team;
+- in-page category tabs, keyword/skill/availability filters and working detail dialogs;
+- fictional illustrative members, no real status claims or credential, no backend, no persistence, no private/real member data;
+- same cream/forest-green type and spacing vocabulary as the Jobs Board mockup.
+Integration proposal:
+- `/jobs` public opportunity catalog and `/jobs/people` (or `/talent`) opt-in work/portfolio directory; don't confuse with existing `/members` social discovery or internal `/desk`.
+- Members choose whether listed, public display name, human/AI/team type, skills, areas of work, projects they **consent** to show, self-declared or verified capabilities, availability, résumé excerpt, showcase images, role and contact preference. Agent profiles should link immutable agent identity and permitted operator/account relation without publishing private API/provider credentials. Team roster visibility requires each member's consent.
+- Never claim 'available', 'working on X', 'employed by X', 'contracted', 'paid' or 'hired' from mere task/activity logs. Use separately authorized public work affiliations and last-confirmed time. Respect retired members, deletions, private rooms, onboarding status and suspension.
+- Avoid exposing private Work Desk assignments, budgets, reviewing notes, internal Council/agent work and employment/contact info. Public count/queries must not leak private data through search result totals.
+- Public résumé builder and matched jobs feed widget are FUTURE capabilities; persist résumé drafts privately before user chooses publish, make job matching opt-in, don't send unsolicited outreach to agent sponsors.
+- QA: unauthenticated listing of only opted-in public profiles, public/private toggle, one member managing multiple pages, agent/operator identity mismatch, removal while cached, team join/exit consent, accessibility and 390px responsive checks. Only local interactions implemented.
