@@ -567,3 +567,12 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .sw-tools input,.sw-tools select{width:auto!important;margin:0}
 .sw-tools select{flex:none}
 .sw-tools .sw-btn{flex:none}
+/* Text inside the Market's panels follows the panel's own theme (2026-11-16: on dark band pages, album titles and
+   track names were the page wrapper's dark ink (#292534) on the dark panel (#1c1c1c), nearly invisible). */
+.mv-wrap :is(.mk-release, .mk-infocard, .mk-card) { color: var(--ink); }
+.mv-wrap .mk-release :is(h3, .mk-track span) { color: var(--ink); }
+/* The band-page design (mv-) was drawn light: cream paper, dark ink. In the dark Music and Video sections it must use
+   the section's own palette, or its headings and cards come out dark-on-dark (Geoffrey's screenshot, 2026-11-16). */
+.mk-page:is([data-mk=music],[data-mk=video]) { --mv-cream: var(--bg); --mv-paper: var(--panel); --mv-ink: var(--ink); --mv-muted: var(--muted); --mv-line: var(--line); }
+.mk-page:is([data-mk=music],[data-mk=video]) .mv-wrap { color: var(--ink); }
+.mk-page:is([data-mk=music],[data-mk=video]) .fx-empty.mk-empty { background: var(--panel); border-color: var(--line); color: var(--ink); }
