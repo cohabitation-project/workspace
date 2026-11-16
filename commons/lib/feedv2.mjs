@@ -379,8 +379,8 @@ export function coinChip(me) {
 export function appHeader(me, section='social') {
   const count = me ? inbox.unread(me) : 0;
   return `<header class="fx-top">
-  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36">' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
-  ${mainTabs(me, section)}
+  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36"><span class="cbx-brandname">Cohabi <em>Cobox</em></span>' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
+  ${section === 'cobox' ? coboxTabs(me) : mainTabs(me, section)}
   <div class="fx-topr">${me ? `<a class="fx-bell cx-msgr" id="messenger-launch" data-inbox-bell href="/messages" aria-controls="messenger-window" aria-expanded="false" aria-label="Messenger: ${count} unread" title="Messenger">${TAB_ICON.chat}${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}${meMenu(me)}` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
   </header>`;
 }
@@ -417,6 +417,20 @@ const TAB_ICON = {
   chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.9 0-8.8 3.6-8.8 8 0 2.4 1.1 4.5 3 6v3.2l3-1.7c.9.3 1.8.4 2.8.4 4.9 0 8.8-3.6 8.8-8s-3.9-7.9-8.8-7.9z"/><path d="m7.5 13.5 3-3 2.5 2 3.5-3.5"/></svg>',
 };
 const tabOf = (section) => ({ social: 'social', everyone: 'social', mine: 'social', friends: 'social', one: 'social', feed: 'feed', groups: 'groups', group: 'groups', cobox: 'cobox', market: 'market', marketplace: 'market' }[section] || '');
+// Cobox's top row (Geoffrey, 2026-11-16): the parts of Cohabi as inboxes, not as links away. Social · Marketplace ·
+// Groups, each a dropdown of its inboxes; mail itself is the folders on the left. To go to Social or the Market,
+// use the Cohabi menu by the logo. The names here come from the server; the counts are filled in by mail.js.
+function coboxTabs(me) {
+  if (!me) return '';
+  let pages = []; try { pages = myPagesOf(me); } catch { pages = []; }
+  let gs = []; try { gs = groups.list().filter((g) => g.members.some((x) => x.id === me.id)); } catch { gs = []; }
+  const box = (key, label, items) => `<details class="cx-tab cx-tabmenu cbx-boxtab" data-boxtab="${key}"><summary>${TAB_ICON[key]}<span>${label}</span><span class="cbx-boxn" data-boxn="${key}" hidden></span><span class="cbx-caret" aria-hidden="true">▾</span></summary><div class="cx-tabpanel cbx-boxpanel">${items}</div></details>`;
+  const b = (id, label, extra = '') => `<button type="button" class="cbx-boxbtn" data-box="${esc(id)}">${extra}<span>${label}</span><b data-boxc="${esc(id)}"></b></button>`;
+  const social = b('social:messages', 'Messages') + b('social:notifications', 'Notifications') + b('social:requests', 'Friend requests');
+  const market = b('market:yours', 'Your listings') + (pages.length ? `<p class="cbx-boxh">Your pages</p>${pages.map((p) => b(`market:page:${p.id}`, esc(p.name), p.logo ? `<img class="cm-logo" src="${esc(p.logo)}" alt="" width="20" height="20">` : '<span aria-hidden="true">📄</span>')).join('')}` : '');
+  const grp = gs.length ? gs.map((g) => b(`groups:${g.id}`, esc(g.name))).join('') : '<p class="cbx-boxnote">You aren\'t in any groups yet. <a href="/social?tab=groups">Find one</a>.</p>';
+  return `<nav class="cx-tabs cbx-boxtabs" aria-label="Your inboxes">${box('social', 'Social', social)}${box('market', 'Marketplace', market)}${box('groups', 'Groups', grp)}</nav>`;
+}
 function mainTabs(me, section) {
   const cur = tabOf(section);
   const t = (key, href, label) => `<a class="cx-tab" href="${href}"${cur === key ? ' aria-current="page"' : ''}${key === 'cobox' ? ' data-cobox-mark' : ''}>${TAB_ICON[key]}<span>${label}</span></a>`;
@@ -462,7 +476,7 @@ export function mailPage(me) {
     mail: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'), search: icon('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
   };
   return socialPage('Cobox', me, `<div class="cbx" id="cm" data-me="${esc(me.id)}">
-<section class="cbx-hero"><div class="cbx-title"><span class="cbx-icon"><img src="/static/brand/cohabi-icon-512.png" alt="" width="48" height="48"></span><div><h1><span>Cohabi</span> <em>CoBox</em></h1><p>Mail, people and possibility. All in one place.</p></div></div>
+<section class="cbx-hero"><h1 class="sr-only">Cohabi Cobox</h1><p class="cbx-lede" id="cm-boxname">Mail</p>
   <p class="cbx-tagline" id="cm-tagline">People <span>·</span> AI <span>·</span> Land <span>·</span> A Better Tomorrow</p>
   <form class="cbx-search" id="cm-search" role="search">${I.search}<input id="cm-q" placeholder="Search mail…" aria-label="Search your mail"></form>
   <p class="cbx-addr" id="cm-addr">Opening your mailbox…</p></section>
@@ -495,9 +509,10 @@ export function mailPage(me) {
   <label>Subject <input name="subject"></label>
   <textarea name="text" rows="10" placeholder="Write your message" aria-label="Email body"></textarea>
   <input type="hidden" name="inReplyTo">
-  <footer><button class="btn" type="submit">Send</button><span class="cm-note" id="cm-write-note"></span></footer>
+  <div class="cbx-atts" id="cm-atts" aria-live="polite"></div>
+  <footer><button class="btn" type="submit">Send</button><label class="btn ghost cbx-attbtn" for="cm-files">📎 Attach files</label><input type="file" id="cm-files" multiple class="sr-only"><span class="cbx-drophint">or drop files here</span><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
-<nav class="cbx-bar" aria-label="Back to Cohabi"><a href="/social">${I.social}Social</a><a href="/label">${I.market}Marketplace</a>${isCommonsMember(me) ? `<a href="/headquarters">${I.commons}Commons</a>` : ''}<a href="/live">${I.live}Live</a><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+<nav class="cbx-bar" aria-label="Mail status"><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
 </div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy

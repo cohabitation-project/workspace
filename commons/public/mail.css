@@ -413,3 +413,50 @@
 .cbx-contact .cbx-av { width: 26px; height: 26px; font-size: 12px; flex: none; }
 .cbx-cname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .cbx-railnote { margin: 2px 10px 8px; font-size: 12.5px; line-height: 1.4; color: #aab3cc; }
+/* Cobox top row = your inboxes (Geoffrey, 2026-11-16) */
+.cbx-route .cbx-brandname{font:600 clamp(19px,1.7vw,25px) Georgia,serif;color:#fffdf8;white-space:nowrap;margin-left:8px}
+.cbx-route .cbx-brandname em{font-style:normal;color:#f0b773}
+.cbx-route .fx-brand{display:flex;align-items:center}
+.cbx-route .cbx-boxtabs{flex:none;justify-content:flex-start;margin-left:clamp(10px,2vw,28px)}
+.cbx-route .cbx-boxtab>summary{position:relative;background:none!important;border-bottom:3px solid transparent;gap:8px}
+.cbx-route .cbx-boxtab>summary:hover{border-bottom-color:rgba(240,183,115,.55)}
+.cbx-route .cbx-boxtab[open]>summary,.cbx-route .cbx-boxtab.cbx-cur>summary{border-bottom-color:#f0b773;background:none!important;color:#fff!important}
+.cbx-route .cbx-caret{font-size:11px;opacity:.8}
+.cbx-boxn{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#e5484d;color:#fff;font:700 10px/18px system-ui,sans-serif;text-align:center}
+/* the dropdown is white: its words are dark (the header's white link colour used to reach in here) */
+.cbx-route .fx-top .cx-tabpanel a,.cbx-route .fx-top .cx-tabpanel summary,.cbx-route .fx-top .cx-tabpanel button,.cbx-route .fx-top .cx-tabpanel p{color:#1b2c4e!important}
+.cbx-boxpanel{min-width:260px}
+.cbx-boxbtn{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:10px 12px;border:0;border-radius:8px;background:none;font:600 14px system-ui,sans-serif;text-align:left;cursor:pointer}
+.cbx-boxbtn span{flex:1}.cbx-boxbtn b{font:700 11px system-ui,sans-serif;color:#8a2b2b!important}
+.cbx-boxbtn:hover{background:#f2eaf3}.cbx-boxbtn[aria-current="true"]{background:#efe6f6;box-shadow:inset 3px 0 0 #6b4a8f}
+.cbx-boxh{margin:8px 12px 2px;font:700 11px system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#6d6378!important}
+.cbx-boxnote{margin:6px 12px;font-size:13px}
+.cbx-route .cbx-lede{font:600 18px Georgia,serif;color:#132340;margin:0}
+.cbx-route .cbx-bar{justify-content:flex-end}
+/* the tab itself never turns into a lilac box (only the gold underline marks it) */
+.cbx-route .cbx-boxtab,.cbx-route .cbx-boxtab:hover{background:none!important}
+.cbx-boxbtn span{text-align:left}
+/* phones: the inbox row is its own full-width line in the header (the main tabs are hidden on phones) */
+@media (max-width:899px){
+  .cbx-route .fx-top{flex-wrap:wrap!important;row-gap:6px}
+  .cbx-route .cbx-boxtabs{display:flex;order:20;flex:1 0 100%;margin:0 -12px -12px;padding:0 4px;gap:0;justify-content:space-around;background:rgba(10,18,40,.6);border-top:1px solid rgba(245,183,102,.3)}
+  .cbx-route .cbx-boxtab{position:static}
+  .cbx-route .cbx-boxtab>summary{min-height:46px;padding:0 8px;font-size:14px}
+  .cbx-route .cbx-brandname{display:none}
+  .cbx-route .cbx-boxpanel{position:absolute;left:8px;right:8px;top:100%;min-width:0}
+  .cbx-route .fx-top{position:relative}
+}
+.cbx-boxbtn>span[aria-hidden],.cbx-boxbtn>img{flex:none}
+/* attachments (2026-11-16) */
+.cbx-atts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.cbx-attchip{display:inline-flex;align-items:center;gap:6px;border:1px solid #d9d2e4;background:#f6f2fa;color:#1b2c4e!important;border-radius:999px;padding:6px 6px 6px 12px;font-size:13px;text-decoration:none!important;min-height:36px}
+a.cbx-attchip{padding-right:12px}a.cbx-attchip:hover{background:#ece3f5}
+.cbx-attchip.bad{border-color:#f1c9c4;background:#fdecea;color:#8a2b2b!important}
+.cbx-attx{border:0;background:none;cursor:pointer;color:inherit;min-width:28px;min-height:28px;border-radius:50%}
+.cbx-attx:hover{background:#0000000f}
+.cbx-attlist{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0}
+.cbx-attlist .cbx-meta{margin:0 6px 0 0}
+.cbx-attbtn{margin-left:6px;min-height:44px;display:inline-flex;align-items:center;cursor:pointer}
+.cbx-drophint{font-size:12px;color:#6d6378;margin-left:6px}
+#cm-write.cbx-drop{outline:3px dashed #d99b40;outline-offset:-6px}
+@media (max-width:699px){.cbx-drophint{display:none}}

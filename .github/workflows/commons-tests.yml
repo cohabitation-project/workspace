@@ -42,6 +42,10 @@ jobs:
         run: node commons/test/creator-studio.mjs
       - name: Software & Hardware shelf (kinds from tags)
         run: node commons/test/software-shelf.mjs
+      - name: Cobox inboxes (Social, Marketplace, Groups)
+        run: node commons/test/cobox-inboxes.mjs
+      - name: Cobox attachments (send and open)
+        run: node commons/test/mail-attachments.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
