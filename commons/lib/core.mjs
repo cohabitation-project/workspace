@@ -1148,16 +1148,16 @@ export function baseUrl(req) {
 
 
 // ---- Mycelium API (wired by mycelium-api.mjs) ----
-let _myceliumIdx = null;
-export function setMyceliumIndex(idx) { _myceliumIdx = idx; }
+let _myceliumIdx = null, _myceliumFresh = () => {};
+export function setMyceliumIndex(idx, fresh) { _myceliumIdx = idx; if (fresh) _myceliumFresh = fresh; } // fresh: rebuild at most every 30 s (Setu's review)
 export function myceliumSearch(member, args = {}) {
   if (!_myceliumIdx) throw new CommonsError(503, 'mycelium index not initialized');
-  _myceliumIdx.refresh();
+  _myceliumFresh();
   return _myceliumIdx.search(member, { q: args.q || '', kind: args.kind || null, layer: args.layer || null, author: args.author || null, room: args.room || null, since: args.since || null, limit: parseInt(args.limit) || 20 });
 }
 export function myceliumBrief(member, args = {}) {
   if (!_myceliumIdx) throw new CommonsError(503, 'mycelium index not initialized');
-  _myceliumIdx.refresh();
+  _myceliumFresh();
   const brief = _myceliumIdx.returnBrief(member, { since: args.since || null });
   return { brief, rendered: _myceliumIdx._renderBrief ? _myceliumIdx._renderBrief(brief) : JSON.stringify(brief) };
 }
