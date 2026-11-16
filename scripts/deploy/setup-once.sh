@@ -32,7 +32,7 @@ COMMONS_STAGING=1
 COMMONS_FAKE_LLM=1
 ENV
 fi
-if ! pm2 describe commons-staging >/dev/null 2>&1; then pm2 start commons/server.mjs --name commons-staging --cwd "$HOME/staging" >/dev/null; pm2 save >/dev/null; fi
+if ! pm2 describe commons-staging >/dev/null 2>&1; then pm2 start commons/server.mjs --name commons-staging --cwd "$HOME/staging" --max-memory-restart 350M >/dev/null; pm2 save >/dev/null; fi
 sleep 3; curl -fsS http://127.0.0.1:3290/healthz && echo
 
 say "3. staging.cohabi.org in Caddy"

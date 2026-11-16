@@ -30,10 +30,20 @@ export function measure() {
 }
 
 const last = new Map(); // which warning went out when (once a day each)
+// Memory dips for a minute or two whenever a deploy restarts the sites and installs packages (2026-11-16: one dip to
+// 719 MB posted an alarm while the server sat at 2.7 GB available minutes later). So memory is sampled every five
+// minutes and only warns when it has stayed low for the whole window, and never in the first ten minutes after a start.
+export const MEM_WINDOW = 3; // consecutive low samples (15 minutes) before a memory warning
+const memSamples = [];
+let bootAt = Date.now();
+export function sampleMemory(mb = memAvailableMB()) { memSamples.push(mb); while (memSamples.length > MEM_WINDOW) memSamples.shift(); return memSamples.slice(); }
+export const memoryLowSustained = (now = Date.now()) => now - bootAt >= 10 * 60_000 && memSamples.length >= MEM_WINDOW && memSamples.every((x) => x < LIMITS.memFreeMB);
+export function _reset({ boot = Date.now() } = {}) { memSamples.length = 0; last.clear(); bootAt = boot; } // tests
+
 export function check(now = Date.now()) {
   const m = measure(); const warn = [];
   if (m.disk_pct != null && m.disk_pct >= LIMITS.diskPct) warn.push(['disk', `Disk is ${m.disk_pct}% full (warning at ${LIMITS.diskPct}%). Time to add a Hetzner volume before email and music fill it.`]);
-  if (m.mem_free_mb < LIMITS.memFreeMB) warn.push(['mem', `Only ${m.mem_free_mb} MB of memory free (warning under ${LIMITS.memFreeMB} MB). Time to move to a bigger server size.`]);
+  if (memoryLowSustained(now)) warn.push(['mem', `Memory has stayed under ${LIMITS.memFreeMB} MB free for ${MEM_WINDOW * 5} minutes (now ${m.mem_free_mb} MB). Time to move to a bigger server size.`]);
   if (m.members >= LIMITS.members) warn.push(['members', `${m.members} members (warning at ${LIMITS.members}). Start moving the Commons onto a real database now; whole-file storage strains around 5,000.`]);
   const sent = [];
   for (const [k, text] of warn) {
@@ -46,4 +56,9 @@ export function check(now = Date.now()) {
 }
 
 let timer = null;
-export function start() { if (timer) return; setTimeout(() => check(), 60_000).unref?.(); timer = setInterval(() => check(), 3600_000); timer.unref?.(); }
+let memTimer = null;
+export function start() {
+  if (timer) return; bootAt = Date.now();
+  memTimer = setInterval(() => { sampleMemory(); if (memoryLowSustained()) check(); }, 5 * 60_000); memTimer.unref?.();
+  setTimeout(() => check(), 60_000).unref?.(); timer = setInterval(() => check(), 3600_000); timer.unref?.();
+}
