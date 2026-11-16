@@ -152,9 +152,12 @@ const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a co
 // ------------------------------------------------------------------------------------------ left rail
 function leftRail(me, myGroups) {
   const nav = [
-    ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
-    ['🧰', 'Jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
-    ['📜', 'Petition', '/petition', null], ['✉️', 'Messages', '/messages', null],
+    // Labelled for what each one is (Geoffrey, 2026-11-16). Anomaly 01 AI is the Commons' own assistant, like Meta AI
+    // on Facebook; it is plugged in later, so for now it says so.
+    ['✦', 'Anomaly 01 AI', null, 'Anomaly 01 AI is coming: the cooperative\'s own assistant.'],
+    ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['▶', 'Cohabi Feed (videos)', '/feed', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
+    ['🧰', 'Commons jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
+    ['📜', 'The petition', '/petition', null], ['💬', 'Messenger (chats)', '/messages', null], ['📮', 'Cobox (email)', '/cobox', null], ['🪙', 'Wallet', '/wallet', null],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
   let you;
   if (me) {
@@ -183,8 +186,10 @@ function composer(me, myGroups, { group = null } = {}) {
   const face = memberFace(me.id);
   const opt = (icon, title, sub, inner) => `<details class="cx-opt"><summary><span class="cx-oi" aria-hidden="true">${icon}</span><span><strong>${title}</strong><small>${sub}</small></span><span class="cx-chev" aria-hidden="true">⌄</span></summary><div class="cx-optbody">${inner}</div></details>`;
   return `<section class="cx-card" aria-label="Create a post">
-  <div class="cx-cardtop"><span class="cx-cardface" aria-hidden="true">${face}</span><button type="button" class="cx-prompt" data-cx-open="post">What's on your mind, ${esc(me.name)}?</button></div>
-  <div class="cx-shortcuts"><button type="button" class="cx-sc cx-photo" data-cx-open="photo"><span aria-hidden="true">▣</span>Photo</button><button type="button" class="cx-sc cx-video" data-cx-open="video"><span aria-hidden="true">▶</span>Video</button><button type="button" class="cx-sc cx-music" data-cx-open="music"><span aria-hidden="true">♫</span>Music</button><button type="button" class="cx-sc cx-create" data-cx-open="post"><span aria-hidden="true">＋</span>Create</button></div>
+  <div class="cx-cardtop"><span class="cx-cardface" aria-hidden="true">${face}</span><button type="button" class="cx-prompt" data-cx-open="post">What's on your mind, ${esc(me.name)}?</button>
+  <button type="button" class="cx-ic cx-ic-live" data-cx-open="camera" aria-label="Record video now" title="Record video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="m15.5 10 6-3.5v11l-6-3.5z"/><circle cx="7.5" cy="12" r="2.2" class="cx-dot"/></svg></button>
+  <button type="button" class="cx-ic cx-ic-photo" data-cx-open="photo" aria-label="Photo or video" title="Photo / video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="16" height="16" rx="2.5"/><path d="M3 7v12a2 2 0 0 0 2 2h12"/><circle cx="10" cy="8.5" r="1.6"/><path d="m5.5 16.5 4.5-4.5 3 3 2.5-2.5 5 5"/></svg></button>
+  <button type="button" class="cx-ic cx-ic-reel" data-cx-open="video" aria-label="Reel: a short video for the Feed" title="Reel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M3 8.5h18M8 3l3 5.5M14 3l3 5.5"/><path d="m10 12 5 3-5 3z"/></svg></button></div>
 </section>
 <div class="cx-scrim" id="cx-scrim" hidden>
 <form class="fx-compose cx-dialog" id="compose"${group ? ` data-group="${esc(group)}"` : ''} role="dialog" aria-modal="true" aria-labelledby="cx-title" data-mode="post">
@@ -199,7 +204,7 @@ function composer(me, myGroups, { group = null } = {}) {
    <div class="cx-attach" data-cx-for="video">
     <div class="cx-vbtns"><button type="button" class="cx-drop cx-rec" id="cx-rec"><span class="cx-dropicons cx-recdot" aria-hidden="true">●</span><strong>Record a video</strong><span>With your camera, up to 2 minutes</span></button><label class="cx-drop" for="c-video"><span class="cx-dropicons" aria-hidden="true">▶</span><strong>Choose a video</strong><span>From your phone or computer</span></label></div>
     <input type="file" id="c-video" accept="video/*" class="sr-only" tabindex="-1" aria-label="Choose a video, up to 2 minutes">
-    <div class="cx-cam" id="cx-cam" hidden role="dialog" aria-label="Camera"><video id="cx-cam-v" muted playsinline autoplay></video><p class="cx-cam-time" id="cx-cam-time" aria-live="polite">0:00 / 2:00</p><div class="cx-cam-btns"><button type="button" class="cx-cam-side" id="cx-cam-x" aria-label="Close the camera">✕</button><button type="button" class="cx-shutter" id="cx-cam-go" aria-label="Start recording"><span></span></button><button type="button" class="cx-cam-side" id="cx-cam-flip" aria-label="Flip camera">⟲</button></div></div>
+    <div class="cx-cam" id="cx-cam" hidden role="dialog" aria-label="Camera"><video id="cx-cam-v" muted playsinline autoplay class="cx-cam-src"></video><canvas id="cx-cam-c" width="720" height="1280" aria-label="Camera preview"></canvas><p class="cx-cam-time" id="cx-cam-time" aria-live="polite">0:00 / 2:00</p><div class="cx-cam-btns"><button type="button" class="cx-cam-side" id="cx-cam-x" aria-label="Close the camera">✕</button><button type="button" class="cx-shutter" id="cx-cam-go" aria-label="Start recording"><span></span></button><button type="button" class="cx-cam-side" id="cx-cam-flip" aria-label="Flip camera">⟲</button></div></div>
     <div id="c-vid" class="c-vid" hidden></div>
    </div>
    <div class="cx-attach" data-cx-for="music">${rels.length ? `<label class="cx-lbl" for="c-release">Share a release that's already on the Label</label><select id="c-release"><option value="">Choose a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select>` : ''}<p class="small muted">This shares music that's already released. Putting out a new song or album happens on <a href="/label">the Label</a>, not here.</p></div>
@@ -375,7 +380,7 @@ export function appHeader(me, section='social') {
   return `<header class="fx-top">
   <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36">' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
   ${mainTabs(me, section)}
-  <div class="fx-topr">${me ? `<a class="fx-bell" data-inbox-bell href="/messages" aria-label="Messages: ${count} unread"><span aria-hidden="true">✉️</span>${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<button type="button" class="fx-bell fx-notify-btn" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet" aria-label="Notification settings" title="Notification settings"><span aria-hidden="true">🔔</span></button>${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
+  <div class="fx-topr">${me ? `<a class="fx-bell cx-msgr" id="messenger-launch" data-inbox-bell href="/messages" aria-controls="messenger-window" aria-expanded="false" aria-label="Messenger: ${count} unread" title="Messenger">${TAB_ICON.chat}${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}<button type="button" class="fx-bell fx-notify-btn" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet" aria-label="Notification settings" title="Notification settings"><span aria-hidden="true">🔔</span></button>${coinChip(me)}<a class="fx-me" href="/m/${encodeURIComponent(me.id)}" aria-label="Your profile">${memberFace(me.id)}</a>` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
   </header>`;
 }
 /** The 🔔 panel from the bottom bar (2026-11-13): this device on/off, what to be pinged for, quiet hours. */
@@ -392,7 +397,8 @@ const TAB_ICON = {
   feed: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>',
   market: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.2-4H5.2zM5 9v11h14V9M9 20v-6h6v6"/></svg>',
   groups: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c.6-3.6 3-5.5 6-5.5s5.4 1.9 6 5.5M15 14.6c3 .1 5 1.9 5.6 5.4"/></svg>',
-  cobox: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 7 8.5-7"/></svg>',
+  cobox: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.9 0-8.8 3.6-8.8 8 0 2.4 1.1 4.5 3 6v3.2l3-1.7c.9.3 1.8.4 2.8.4 4.9 0 8.8-3.6 8.8-8s-3.9-7.9-8.8-7.9z"/><path d="m7.5 13.5 3-3 2.5 2 3.5-3.5"/></svg>',
 };
 const tabOf = (section) => ({ social: 'social', everyone: 'social', mine: 'social', friends: 'social', one: 'social', feed: 'feed', groups: 'groups', group: 'groups', cobox: 'cobox', market: 'market', marketplace: 'market' }[section] || '');
 function mainTabs(me, section) {
@@ -401,9 +407,13 @@ function mainTabs(me, section) {
   return `<nav class="cx-tabs" aria-label="Cohabi">${t('social', '/social', 'Social')}${t('feed', '/feed', 'Feed')}<details class="cx-tab cx-tabmenu${cur === 'market' ? ' cx-cur' : ''}"><summary>${TAB_ICON.market}<span>Marketplace ▾</span></summary><div class="cx-tabpanel">${marketMenu(me).replace(/^<details[^>]*><summary>[^<]*<\/summary>/, '').replace(/<\/details>$/, '')}</div></details>${t('groups', '/social?tab=groups', 'Groups')}${isCommonsMember(me) ? t('cobox', '/cobox', 'Cobox') : ''}</nav>`;
 }
 export function bottomNav(me, tab='') {
+  // Phone bar (Geoffrey, 2026-11-16): Social · Feed · the Tree of Life coin · Market · Cobox. Groups moved to the
+  // menu and the left rail, for balance. The coin in the middle is the post button: on Social it opens Create post,
+  // anywhere else it takes you there. Your wallet stays one tap away on the coin count at the top.
   const cur = tabOf(tab);
   const b = (key, href, label) => `<a href="${href}"${cur === key ? ' aria-current="page"' : ''}>${TAB_ICON[key]}<span class="cx-bl">${label}</span></a>`;
-  return `<nav class="fx-bottom cx-bottom" aria-label="Main">${b('social', '/social', 'Social')}${b('feed', '/feed', 'Feed')}<a class="fx-coin" href="/wallet"${tab==='wallet'?' aria-current="page"':''} aria-label="Your wallet: Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a>${b('market', '/label', 'Market')}${b('groups', '/social?tab=groups', 'Groups')}${isCommonsMember(me) ? b('cobox', '/cobox', 'Cobox') : ''}</nav>${me ? notifySheet() : ''}`;
+  const post = me ? `<a class="fx-coin cx-coinpost" href="/social#compose" data-cx-open="post" aria-label="Create a post"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"><span class="cx-plus" aria-hidden="true">＋</span></a>` : '<a class="fx-coin" href="/signup" aria-label="Join Cohabi"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a>';
+  return `<nav class="fx-bottom cx-bottom" aria-label="Main">${b('social', '/social', 'Social')}${b('feed', '/feed', 'Feed')}${post}${b('market', '/label', 'Market')}${isCommonsMember(me) ? b('cobox', '/cobox', 'Cobox') : b('groups', '/social?tab=groups', 'Groups')}</nav>${me ? notifySheet() : ''}`;
 }
 export function socialPage(title, me, body, script=null) {
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page${title==='Cobox' ? ' cbx-route' : ''}" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;

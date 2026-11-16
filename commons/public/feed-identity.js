@@ -17,7 +17,7 @@ if (composer && scrim) {
   };
   const close = () => { stopCam(); scrim.hidden = true; document.body.classList.remove('cx-open'); opener?.focus?.(); };
   document.addEventListener('click', (e) => {
-    const o = e.target.closest('[data-cx-open]'); if (o) { e.preventDefault(); open(o.dataset.cxOpen, o); return; }
+    const o = e.target.closest('[data-cx-open]'); if (o) { e.preventDefault(); if (o.dataset.cxOpen === 'camera') { open('video', o); startCam(); } else open(o.dataset.cxOpen, o); return; }
     const m = e.target.closest('[data-cx-mode]'); if (m) { setMode(m.dataset.cxMode); return; }
     if (e.target === scrim) close();
   });
@@ -54,11 +54,17 @@ if (composer && scrim) {
   const fmt = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
   // Chrome and Firefox: WebM with Opus sound (reliable); Safari: MP4 with AAC. The server makes every one an MP4.
   const pickType = () => (window.MediaRecorder ? ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs="avc1.42E01E,mp4a.40.2"', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '' : '');
+  // The whole camera picture is fitted inside the vertical frame, never cropped, so nothing looks zoomed in
+  // (Geoffrey, 2026-11-16); a soft blurred copy fills the edges, as phones do. The preview IS this canvas, so what you
+  // see is exactly what records.
   const draw = () => {
-    if (!ctx2 || !camV.videoWidth) { raf = requestAnimationFrame(draw); return; }
-    const vw = camV.videoWidth, vh = camV.videoHeight, k = Math.max(W / vw, H / vh), dw = vw * k, dh = vh * k;
-    ctx2.save(); if (facing === 'user') { ctx2.translate(W, 0); ctx2.scale(-1, 1); } // a selfie looks like a mirror, as on every phone
-    ctx2.drawImage(camV, (W - dw) / 2, (H - dh) / 2, dw, dh); ctx2.restore();
+    if (ctx2 && camV.videoWidth) {
+      const vw = camV.videoWidth, vh = camV.videoHeight;
+      ctx2.save(); if (facing === 'user') { ctx2.translate(W, 0); ctx2.scale(-1, 1); } // selfie as a mirror, like every phone
+      const kc = Math.max(W / vw, H / vh); ctx2.filter = 'blur(28px) brightness(.7)'; ctx2.drawImage(camV, (W - vw * kc) / 2, (H - vh * kc) / 2, vw * kc, vh * kc); ctx2.filter = 'none';
+      const kf = Math.min(W / vw, H / vh); ctx2.drawImage(camV, (W - vw * kf) / 2, (H - vh * kf) / 2, vw * kf, vh * kf);
+      ctx2.restore();
+    }
     raf = requestAnimationFrame(draw);
   };
   function stopCam() {
@@ -74,8 +80,9 @@ if (composer && scrim) {
       stream?.getTracks().forEach((t) => t.stop());
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, aspectRatio: { ideal: 9 / 16 }, height: { ideal: 1280 } }, audio: { echoCancellation: true, noiseSuppression: true } });
       camV.srcObject = stream; await camV.play().catch(() => {});
+      if (!canvas) { canvas = byId('cx-cam-c'); ctx2 = canvas.getContext('2d'); } cancelAnimationFrame(raf); draw();
       cam.hidden = false; document.body.classList.add('cx-camopen'); time.textContent = `0:00 / ${fmt(MAX)}`; msg.textContent = '';
-      cam.classList.toggle('cx-mirror', facing === 'user');
+      
       if (!stream.getAudioTracks().length) msg.textContent = 'No microphone found: this video will have no sound.';
     } catch (err) {
       msg.textContent = err && err.name === 'NotAllowedError' ? 'The camera or microphone is blocked for cohabi.org. Allow both in your browser settings, then try again.' : "Couldn't open a camera. Tap Choose a video instead.";
@@ -88,7 +95,6 @@ if (composer && scrim) {
   go?.addEventListener('click', () => {
     if (!stream) return;
     if (rec) { rec.stop(); return; }
-    canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H; ctx2 = canvas.getContext('2d'); draw();
     const out = canvas.captureStream(30); stream.getAudioTracks().forEach((t) => out.addTrack(t));
     const type = pickType(); chunks = [];
     try { rec = type ? new MediaRecorder(out, { mimeType: type, videoBitsPerSecond: 2_500_000, audioBitsPerSecond: 128_000 }) : new MediaRecorder(out); } catch { msg.textContent = "This browser can't record video here. Tap Choose a video instead."; return; }
