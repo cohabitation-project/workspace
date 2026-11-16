@@ -23,6 +23,8 @@ over the cylinder geoms. Expected to improve monotonicity of ΔL toward ideal r�
 still provisional pending MuJoCo verification. Radius convention open / not frozen.
 Updated 2026-11-15 evening: confirmed sidesite arc1a offset from cylinder center
 is ~7.98 mm at ~30 deg, closely matching the 8 mm radius convention.
+Updated 2026-11-16: confirmed both sidesite pairs (arc*a at 30° and arc*b at 60°)
+for primary and distal sit at exact 8 mm radius (dx = r*cos, dz = r*sin).
 """
 
 import numpy as np
@@ -58,7 +60,7 @@ print()
 print(f"If 8 mm / 6 mm were diameters: primary max delta ~{cable_delta_if_diameter[-1]:.2f} mm, distal ~{cable_delta2_if_diameter[-1]:.2f} mm")
 print("Cross-check: pure-Python antagonistic stand-in settles stably near 63 deg under 10 mm pull_delta;")
 print(f"primary wrap at 63 deg ≈ {8.0 * np.deg2rad(63):.2f} mm (within soft-limit regime around ±60 deg).")
-print("Sidesite confirmation: arc1a offset from pulley center is ~7.98 mm at ~30 deg, matching radius convention.")
+print("Sidesite confirmation: both arc*a (30°) and arc*b (60°) pairs for primary/distal are at exact 8 mm radius from pulley centers.")
 print("Latest MuJoCo placeholder (geom + sidesite over cylinder) expected to improve monotonic ΔL toward r·θ; prior arc-site path ~8.3 mm / 60 deg matches radius interpretation.")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
