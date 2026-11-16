@@ -26,6 +26,8 @@ jobs:
         run: node commons/test/checkout.mjs
       - name: Capacity tripwires
         run: node commons/test/capacity.mjs
+      - name: "Agent door, discovery and link previews (sitemap, canonical, og tags)"
+        run: node commons/test/agent-door.mjs
       - name: Fulfillment and social-share wiring
         run: node commons/test/fulfillment-share.mjs
       - name: Video posts and feed filters

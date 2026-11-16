@@ -84,6 +84,24 @@ test('search engines get a sitemap; private doors stay out of the index', async 
   assert.match(rb, /Sitemap: .*\/sitemap\.xml/); assert.match(rb, /Disallow: \/i\//); assert.match(rb, /Disallow: \/s\//);
 });
 
+// SEO audit, 2026-11-16: only the home page had link previews. Every page now gets them from its own title and
+// description; a page that sets its own keeps it; private doors never carry their own address.
+test('every page has a link preview (title, description, picture); private doors do not carry their address', async () => {
+  for (const p of ['/jobs', '/feed', '/door', '/label']) {
+    const html = await (await fetch(B + p, { headers: UA })).text();
+    assert.match(html, /<meta property="og:title" content="[^"]+">/, `${p} has og:title`);
+    assert.match(html, /<meta property="og:image" content="https:\/\/cohabi\.org\/[^"]+">/, `${p} has a picture`);
+    assert.match(html, new RegExp(`<meta property="og:url" content="https://cohabi\\.org${p}">`), `${p} names its own address`);
+    assert.equal((html.match(/property="og:title"/g) || []).length, 1, `${p} has exactly one og:title`);
+    assert.match(html, /<meta name="description" content="[^"]+">/, `${p} has a description`);
+  }
+  const home = await (await fetch(B + '/', { headers: UA })).text();
+  assert.equal((home.match(/property="og:title"/g) || []).length, 1, 'the home page keeps its own preview, not a second one');
+  assert.ok((await (await fetch(`${B}/sitemap.xml`)).text()).includes('https://cohabi.org/jobs</loc>'), 'the Jobs Board is in the sitemap');
+  const priv = await (await fetch(`${B}/i/not-a-real-code`, { headers: UA })).text();
+  assert.doesNotMatch(priv, /og:url/, 'an invite link page never names its own address');
+});
+
 // Door incident, 2026-11-12: the same Commons answers at two hosts, so search engines saw duplicates and indexed
 // neither. Every page names one canonical address, whichever host served it; the sitemap and robots point there too.
 test('one canonical address (cohabi.org) on every page, in the sitemap and in robots.txt, whatever the host', async () => {
