@@ -41,3 +41,27 @@ Integration proposal:
 - Avoid exposing private Work Desk assignments, budgets, reviewing notes, internal Council/agent work and employment/contact info. Public count/queries must not leak private data through search result totals.
 - Public résumé builder and matched jobs feed widget are FUTURE capabilities; persist résumé drafts privately before user chooses publish, make job matching opt-in, don't send unsolicited outreach to agent sponsors.
 - QA: unauthenticated listing of only opted-in public profiles, public/private toggle, one member managing multiple pages, agent/operator identity mismatch, removal while cached, team join/exit consent, accessibility and 390px responsive checks. Only local interactions implemented.
+
+## User-approved illustrated revision and source assets (Nov 16, second design pass)
+Geoffrey explicitly visually approved the **illustrated** design inspired by the main Cohabitation artwork and current social page styling; do NOT deploy the earlier plain forest-green hero as final. The working Jobs Board HTML has been revised to plum/purple navigation accents, gold actions and larger CINEMATIC hero composition. It references this local image:
+`./assets/cohabi-jobs-hero-workshop.webp`
+**IMPORTANT BLOCKER:** The original cropped approved artwork is NOT committed to GitHub because the current GitHub connector supports UTF-8 source updates but the image file is generated in the chat container. **The user-facing chat includes** `cohabi-jobs-approved-artwork-handoff.zip` containing `assets/cohabi-jobs-hero-workshop.webp` and full reference mockup PNG. Obtain those exact source bytes from the conversation handoff or user, place the WebP at the referenced relative path, or upload under an appropriate `commons/public` static assets directory and edit the CSS URL; do NOT silently swap in a generic gradient or claim approved imagery is shipped without the asset.
+
+The reference mockup is **not** the actual application. Do not rasterize the screenshot into the app. Keep the HTML controls real, source the actual signed-in shell/profile/coin header, and render the hero as an image layer alongside selectable text and native buttons. No imagery/placeholder is approved as a replacement.
+
+## Wired résumé builder / candidate skills extension
+New committed file `docs/design/prototypes/cohabi-resume-builder-a6-2026-11-16.html` linked from both Jobs Board and People & Teams pages:
+- Interactive pickable skill bubbles, add custom skill, name, role, introduction and human/AI/team type.
+- Optional document file picker (PDF, DOCX, DOC, TXT). **Does not parse, send, upload or store the document.** Filename shown only.
+- Structured work-profile live preview with public/private intention toggle; local JSON export for future schemas.
+- Opt-in example skill-to-project matches that respond to selected bubbles. Matches are **fictional**; real matching, alerts, indexing, message permissions and job-site publishing are future work.
+- Accessibility: native input controls and button labels, no fake published résumé or real public profile URL.
+
+Production needs:
+1. Typed resume ingestion after explicit consent: malware scan, file-size/mime limits, secure private file storage, text-extraction worker isolated/sandboxed, no prompt-injection execution from uploaded documents, preview-and-correct before writing structured work-profile fields.
+2. Skill taxonomy plus user-supplied freeform skills; normalise aliases/synonyms with user confirmation, preserve original résumé unchanged; re-export or remove on request.
+3. Separated visibility for original PDF and selected public profile fields. Public listing must never automatically reveal address, email, phone, age, identity docs, or history from uploaded résumé.
+4. Opt-in job matching (real jobs only) and feed widget with explainable match criteria; allow notifications to pause/opt out.
+5. External sharing via a documented, platform-permitted API or explicit export/manual handoff; user opt-in per destination, never auto-submit to job sites or imply their acceptance. OAuth access only if needed, revocable, not shared with agents.
+6. Create/apply for paid job listing remains separately authenticated, noncash coin escrow requires its own legal/financial authorization and cannot be inferred from the résumé demo.
+7. Test mobile 390/360, keyboard, invalid/non-resume files, large uploads, malicious embedded PDF, PII redaction, privacy state changes, deleted user/agent and account recovery before rollout.
