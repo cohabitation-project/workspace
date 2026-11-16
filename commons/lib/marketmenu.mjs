@@ -8,7 +8,7 @@ import * as orgpages from './orgpages.mjs';
 export function pagesOf(me) {
   if (!me) return [];
   try {
-    return orgpages.managedBy(me.id).map((p) => ({ name: p.name, href: orgpages.href(p), kind: p.kind || 'page' }))
+    return orgpages.managedBy(me.id).map((p) => ({ name: p.name, href: orgpages.href(p), kind: p.kind || 'page', logo: p.portrait ? `/images/${p.portrait}` : null }))
       .filter((p) => p && typeof p.name === 'string' && typeof p.href === 'string' && /^\/(?!\/)/.test(p.href));
   } catch { return []; }
 }
@@ -19,7 +19,7 @@ function yourPages(me, pages) {
   if (!me) return '';
   const groups = new Map();
   for (const p of pages) { const g = KIND_GROUP[p.kind] || 'Other pages'; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(p); }
-  const inner = [...groups].map(([g, ps]) => `<p class="cm-h">${esc(g)}</p>${ps.map((p) => `<a class="mk-page" href="${esc(p.href)}">📄 ${esc(p.name)}</a>`).join('')}`).join('');
+  const inner = [...groups].map(([g, ps]) => `<p class="cm-h">${esc(g)}</p>${ps.map((p) => `<a class="mk-page" href="${esc(p.href)}">${p.logo ? `<img class="cm-logo" src="${esc(p.logo)}" alt="" width="20" height="20">` : '📄'} ${esc(p.name)}</a>`).join('')}`).join('');
   return `<details class="cm-sub cm-sub2"><summary>📄 Your pages ▾</summary>${inner || '<p class="cm-note">You don\'t run a page yet.</p>'}<a href="/page/new">＋ Make a page</a></details>`;
 }
 export function marketMenu(me) {
