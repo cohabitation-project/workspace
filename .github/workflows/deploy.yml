@@ -56,6 +56,11 @@ jobs:
           install -m 700 -d ~/.ssh
           # Tolerate a pasted key with Windows line endings or stray spaces at the ends of lines.
           printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' | sed -e 's/[[:space:]]*$//' -e '/^$/d' > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # A paste of only the key's body (its BEGIN/END lines left behind) is still the key: put them back.
+          if ! grep -q '^-----BEGIN OPENSSH PRIVATE KEY-----$' ~/.ssh/deploy; then
+            { echo '-----BEGIN OPENSSH PRIVATE KEY-----'; grep -v '^-----' ~/.ssh/deploy; echo '-----END OPENSSH PRIVATE KEY-----'; } > ~/.ssh/deploy.tmp && mv ~/.ssh/deploy.tmp ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+            echo "key check: added the missing BEGIN/END lines"
+          fi
           # Describe the key's shape (never its contents) so a bad paste is easy to spot.
           first="$(head -1 ~/.ssh/deploy)"; last="$(tail -1 ~/.ssh/deploy)"
           echo "key check: $(wc -l < ~/.ssh/deploy) lines; first line is BEGIN: $([ "$first" = '-----BEGIN OPENSSH PRIVATE KEY-----' ] && echo yes || echo "NO (starts '${first:0:12}')"); last line is END: $([ "$last" = '-----END OPENSSH PRIVATE KEY-----' ] && echo yes || echo NO)"
