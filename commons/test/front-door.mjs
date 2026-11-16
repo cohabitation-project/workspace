@@ -117,7 +117,18 @@ test('a person can create a public account; it has social standing, not Commons 
 test('the coin link goes to the coin page; the Commons links go to the Commons page', () => {
   const links = anchorsOf(html);
   assert.ok(links.some((a) => /coin system/i.test(a.text) && a.href === '/cohabi'));
-  assert.ok(links.some((a) => /Discover the Commons/.test(a.text) && a.href === '/commons'));
+  assert.ok(links.some((a) => a.href === '/commons'), 'the Commons is still reachable from the menu');
+  // Geoffrey, 2026-11-16: one button per idea. The cooperative panel has only "Read about the cooperative", and
+  // "A world we can build" is a description, not a door into the forest.
+  assert.ok(!links.some((a) => /Discover the Commons|Discover the world/.test(a.text)), 'the extra buttons are gone');
+  assert.ok(links.some((a) => /Read about the cooperative/.test(a.text) && a.href === '/cooperative'));
+});
+
+test('the cooperative page ends at sign-up, and its Market card goes to the Market', async () => {
+  const t = await (await fetch(`${B}/cooperative`)).text();
+  const door = t.slice(t.indexOf('This is the door.'));
+  assert.match(door, /href="\/signup">Sign up to Cohabi/); assert.doesNotMatch(door.slice(0, 1200), /href="\/(join|arrive|headquarters)"/);
+  assert.match(t, /href="\/label">Visit the Market/); assert.doesNotMatch(t, /See Cohabi →/);
 });
 
 // Regression for the shadowed door (Aletheia-6, 2026-11-10): the early ['/','/door','/headquarters'] handler was
