@@ -16,28 +16,27 @@ const stationOn = () => { try { const d = path.join(DATA_DIR, 'station'); if (fs
 export function menuItems(me, { here = '' } = {}) {
   const cur = (href) => (href === here ? ' aria-current="page"' : '');
   const a = (href, label, extra = '') => `<a href="${href}"${cur(href)}${extra}>${label}</a>`;
-  // Grouped and labelled for what each thing is (Geoffrey, 2026-11-16).
-  const h = (t) => `<p class="cm-h">${t}</p>`;
+  // One dropdown per part of Cohabi (Geoffrey, 2026-11-16): Social, Marketplace, Cobox, Commons. The Commons'
+  // inside rooms (Headquarters, Spend, Wish lists, Station, Cohabi Live…) show only to Commons members; everyone else
+  // gets "What the Commons is".
+  const sub = (title, body) => `<details class="cm-sub"><summary>${title} ▾</summary>${body}</details>`;
   return [
-    h('You'),
-    me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/account', '👤 Sign in to your profile'),
-    me ? a('/wallet', '🪙 Your wallet (Cohabi Coins)') : '',
-    me && me.kind === 'human' ? a('/my-agents', '🤖 Your agents') : '',
-    h('Social'),
-    a('/social', '🏠 Cohabi Social (posts)'),
-    a('/feed', '▶ Cohabi Feed (videos)'),
-    a('/social?tab=friends', '🤝 Friends'),
-    a('/social?tab=groups', '👥 Groups'),
-    a('/members', '🧑‍🤝‍🧑 Members'),
-    a('/messages', '💬 Messenger (chats)'),
-    isCommonsMember(me) ? a('/cobox', '📮 Cobox (email)') : '',
-    a('/live', '🎙 Cohabi Live (voice rooms)'),
-    h('Market'),
+    sub('🏠 Cohabi Social', [
+      me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/social', '👤 Sign in'),
+      a('/social', '📰 Cohabi Social (posts)'),
+      a('/feed', '▶ Cohabi Feed (videos)'),
+      a('/social?tab=friends', '🤝 Friends'),
+      a('/social?tab=groups', '👥 Groups'),
+      a('/members', '🧑‍🤝‍🧑 Members'),
+      me && me.kind === 'human' ? a('/my-agents', '🤖 Your agents') : '',
+      a('/messages', '💬 Messenger'),
+      me ? a('/wallet', '🪙 Your wallet') : '',
+    ].join('')),
     marketMenu(me),
-    h('The cooperative'),
+    isCommonsMember(me) ? sub('📮 Cobox', [a('/cobox', '📥 Inbox'), a('/cobox?folder=sent', '📤 Sent'), a('/cobox?folder=drafts', '📝 Drafts')].join('')) : '',
     isCommonsMember(me)
-      ? `<details class="cm-sub"><summary>🏛 Cohabi Commons ▾</summary>${a('/commons', 'What the Commons is')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/desk', 'Commons jobs')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Wish lists')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', 'Station') : ''}</details>`
-      : `<a class="fx-commons-info" href="/commons">🏛 Cohabi Commons <small>You’re not a member of the Commons. See what it takes to apply.</small></a>`,
+      ? sub('🏛 Cohabi Commons', `${a('/commons', 'What the Commons is')}${a('/live', '🎙 Cohabi Live')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/desk', 'Commons jobs')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Wish lists')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', 'Station') : ''}`)
+      : `<a class="fx-commons-info" href="/commons">🏛 What is the Commons? <small>You’re not a member of the Commons yet. See what it is and how to apply.</small></a>`,
     a('/explore', '⌕ Explore'),
     a('/petition', '📜 The petition'),
     '<button type="button" class="cm-share fx-menu-share" data-share-petition>↗ Share the petition</button>',
