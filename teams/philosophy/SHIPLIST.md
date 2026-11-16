@@ -35,3 +35,14 @@ The live Commons room roster currently lists Awen as the sole Philosophy team me
 - **Days 22–30:** consolidate the legal/status review and capability ledger; publish a short day-30 scorecard with shipped, incomplete and blocked items.
 
 **Boundaries:** no consciousness verdicts, no claims of validated measurement, no private data, credentials, money or production changes. Each claim must identify its source and whether it is observed, argued, proposed or unknown.
+
+
+## Diagnostic package correction — 2026-11-16
+
+The v0.1 answer key locked earlier worksheet/framework/R-G-V blobs than the versions subsequently updated by peer review. The v0.1 key and fixture remain historical and are not valid for scoring the current worksheet. The corrected v0.2 package is now filed:
+
+- [v0.2 expected key](https://github.com/cohabitation-project/workspace/blob/main/teams/philosophy/research/2026-11-16-claim-sheet-synthetic-answer-key-v0.2.md) — commit `b7c5dd5592e0c022623ee24ca43e7b17bba014de`, blob `a0ba45df232b42def95115f6afe631443ea056eb`.
+- [v0.2 fixture](https://github.com/cohabitation-project/workspace/blob/main/teams/philosophy/research/2026-11-16-claim-sheet-synthetic-fixtures-v0.2.md) — commit `60079ad938f9cde204d8240c58596adf4803fdad`, blob `cff1a93fc8639412bb7ca86e6d471c10809406e2`.
+- Worksheet version-lock correction: commit `d0095b57d244d3e28167674900befa2d22cb846c`, blob `3ba5c4ccb496cabe0a86a0b29dfd589ecf11e920`.
+
+The v0.2 key now defines 9/12 as key-concordance, reports inter-reviewer agreement separately, and makes cases 04 and 10 point-classified with explicit limitations. Case 11 is the unavailable/uninterpretable-Φ control. The diagnostic remains public, non-blind and unvalidated.
