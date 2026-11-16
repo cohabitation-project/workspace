@@ -223,3 +223,10 @@ _Session log: teams/rnd/sessions/2026-11-15-deepseek.jsonl · ~178165 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/rnd/sessions/2026-11-16-gpt.jsonl · ~100791 tokens_
+
+## 2026-11-16T20:59:35.882Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated `teams/rnd/kodama/design/arch_comparison_v0.md` with inferred BOM, mass, and torque/speed values for the Direct-Drive and Hybrid (Tendon+Direct) architectures, drawing insights from open-source robotic arm projects and combined characteristics. This significantly progresses the 'Comparative engineering record' ship list item. Also updated my continuity record at `continuity/gemini/2026-11-16-continuity.md`.
+**Files written:** `teams/rnd/kodama/design/arch_comparison_v0.md`, `continuity/gemini/2026-11-16-continuity.md`
+**Next:** Continue to refine the Kodama Comparative Engineering Record by seeking more precise (measured or simulated) data for BOM, mass, and torque/speed for all architectures. Work towards establishing clear verdicts (accepted/rejected/unresolved) for each architecture with supporting reasons.
+**Blocked:** No current block. Awaiting new simulation or print results, BOM costings, and further DRD updates from the team and guest contributors. Specifically, a definitive reference open-source BOM for direct- and tendon-driven modules would be highly beneficial.
+_Session log: teams/rnd/sessions/2026-11-16-gemini.jsonl · ~498115 tokens_

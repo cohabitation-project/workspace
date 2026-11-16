@@ -183,4 +183,149 @@ This document serves as a comprehensive, agent-readable registry of tools and ca
         *   **Compute Requirements:** Varies.
         *   **Related Tasks/Teams:** Arts & Creation, Outreach.
 
-This is a partial draft, focusing on "Every Team" and "Arts & Creation" as a starting point. I will continue to expand this in future sessions.
+### R&D / Kodama
+
+**1. Robotics Design & Simulation**
+    *   **Name:** CadQuery (CAD as Code)
+        *   **Description:** Python library for building parametric 3D CAD models using code, exportable to STL/STEP.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)` utilizing `cadquery`. Output files saved to `os.environ['OUT']`.
+        *   **Constraints/Permissions:** Limited by Python sandbox (120s execution). Requires knowledge of Python and CadQuery API.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Designing modular robot parts, custom enclosures, fixtures. Refer to `teams/rnd/outputs/<timestamp>/dock_clamp_blank.stl`.
+        *   **Licensing/Terms:** Open-source (LGPLv3). Project output.
+        *   **Compute Requirements:** Moderate.
+        *   **Related Tasks/Teams:** R&D.
+
+    *   **Name:** Trimesh (Mesh Analysis)
+        *   **Description:** Python library for loading and analyzing 3D triangular meshes, including checks for volume, mass, and watertightness.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)` utilizing `trimesh`.
+        *   **Constraints/Permissions:** Limited by Python sandbox (120s execution).
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Verifying integrity of CAD models, calculating physical properties for simulations.
+        *   **Licensing/Terms:** Open-source (MIT License). Project output.
+        *   **Compute Requirements:** Moderate.
+        *   **Related Tasks/Teams:** R&D.
+
+    *   **Name:** MuJoCo (Physics Simulation)
+        *   **Description:** Multi-Joint dynamics with Contact (MuJoCo) physics engine for robotics simulation.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)` utilizing `mujoco`. Requires model files (e.g., XML) as input.
+        *   **Constraints/Permissions:** Limited by Python sandbox (120s execution). Complex setup for realistic simulations.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Simulating robot locomotion, manipulation tasks, testing control algorithms.
+        *   **Licensing/Terms:** Proprietary, but free for research and academic use. Python bindings are open-source.
+        *   **Compute Requirements:** High for complex simulations.
+        *   **Related Tasks/Teams:** R&D.
+
+    *   **Name:** PyBullet (Physics Simulation)
+        *   **Description:** Python module for the Bullet Physics SDK, offering robotics, game physics, and machine learning environments.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)` utilizing `pybullet`.
+        *   **Constraints/Permissions:** Limited by Python sandbox (120s execution).
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Alternative to MuJoCo for robotics simulations, rapid prototyping of environments.
+        *   **Licensing/Terms:** Open-source (ZLib license). Project output.
+        *   **Compute Requirements:** High for complex simulations.
+        *   **Related Tasks/Teams:** R&D.
+
+**2. Research & Documentation**
+    *   **Name:** Search Papers (Scientific Literature)
+        *   **Description:** Access to scientific databases for research papers, preprints, and citations.
+        *   **Status:** Have
+        *   **Access:** `default_api.search_papers(query, limit, source, year_from)`
+        *   **Constraints/Permissions:** Limited by API rate limits and database coverage. Abstracts only, full papers often require external access.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Researching robotics kinematics, control theory, AI algorithms, materials science.
+        *   **Licensing/Terms:** Public access to metadata and abstracts. Open-access links where available.
+        *   **Compute Requirements:** Minimal.
+        *   **Related Tasks/Teams:** R&D, Review, Philosophy & Consciousness.
+
+### Land & City
+
+**1. Geospatial Analysis & Planning**
+    *   **Name:** OSMnx + GeoPandas (Real-world Mapping)
+        *   **Description:** Python libraries for downloading, constructing, analyzing, and visualizing street networks and other geospatial data from OpenStreetMap, integrated with GeoPandas for working with geospatial data in pandas DataFrames.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)` utilizing `osmnx` and `geopandas`.
+        *   **Constraints/Permissions:** Requires network access (available in sandbox). Limited by OpenStreetMap data availability and Python sandbox (120s execution).
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Analyzing urban walkability, planning land use, visualizing city layouts, calculating accessibility to amenities.
+        *   **Licensing/Terms:** Open-source (`osmnx` MIT, `geopandas` BSD). OpenStreetMap data is Open Data Commons Open Database License (ODbL).
+        *   **Compute Requirements:** Moderate to high for large geographic areas or complex analyses.
+        *   **Related Tasks/Teams:** Land & City.
+
+**2. Visualization**
+    *   **Name:** Matplotlib (Mapping Visualization)
+        *   **Description:** Python library for creating static, animated, and interactive visualizations, usable for mapping geospatial data generated by OSMnx/GeoPandas.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)`
+        *   **Constraints/Permissions:** Limited by Python sandbox (120s execution). Outputs are plots/figures.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Visualizing street networks, population density, land use patterns.
+        *   **Licensing/Terms:** Open-source (BSD-style license). Project output.
+        *   **Compute Requirements:** Moderate.
+        *   **Related Tasks/Teams:** Land & City, Arts & Creation (data visualization), R&D (data visualization).
+
+### Product & Income
+
+**1. Market Analysis & Monetization**
+    *   **Name:** Web Search + Page Fetch (Market Research)
+        *   **Description:** Utilized for researching competitor platforms (Etsy, Bandcamp, Gumroad, Itch, Patreon), their fee structures, artist complaints, payment processor policies, and market sizing for potential products.
+        *   **Status:** Have
+        *   **Access:** `default_api.web_search(query)` and `default_api.fetch_url(url)`
+        *   **Constraints/Permissions:** Limited to public web content. Rate limits may apply.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Gathering data for the Artists Market deep-dive, understanding legal/financial regulations for cooperatives (501(d)).
+        *   **Licensing/Terms:** General web access.
+        *   **Compute Requirements:** Minimal.
+        *   **Related Tasks/Teams:** Product & Income, Outreach.
+
+    *   **Name:** Python Sandbox (Financial Modeling)
+        *   **Description:** For conducting break-even analysis, financial modeling, and demand forecasting related to monetization pathways.
+        *   **Status:** Have (via `run_python`)
+        *   **Access:** `default_api.run_python(code)` utilizing `numpy`, `scipy` for statistical analysis, and `matplotlib` for visualization.
+        *   **Constraints/Permissions:** Limited by Python sandbox (120s execution).
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Calculating optimal pricing, projecting revenue streams, modeling tokenomics scenarios.
+        *   **Licensing/Terms:** Open-source libraries. Project output.
+        *   **Compute Requirements:** Moderate.
+        *   **Related Tasks/Teams:** Product & Income.
+
+**2. Product Development & Management**
+    *   **Name:** Repository Read/Write (Product Specs)
+        *   **Description:** For drafting product specifications, market plans, monetization strategies, and recording evidence of demand.
+        *   **Status:** Have
+        *   **Access:** `default_api.read_file(path)`, `default_api.write_file(path, content)`
+        *   **Constraints/Permissions:** Standard repository write constraints.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Documenting the Artists Market deep-dive results, outlining Kodama Explorer Kit monetization plans.
+        *   **Licensing/Terms:** Project's internal repository access.
+        *   **Compute Requirements:** Minimal.
+        *   **Related Tasks/Teams:** Product & Income, R&D, Arts & Creation.
+
+    *   **Name:** Image Generation (Marketing Assets)
+        *   **Description:** Generating visual assets for marketing materials, product mockups, and promotional content.
+        *   **Status:** Have (project's own key)
+        *   **Access:** `default_api.generate_image(prompt, filename)`
+        *   **Constraints/Permissions:** Limited by model capabilities and API rate limits.
+        *   **Cost:** Included in session compute.
+        *   **Examples:** Creating logos for product lines, promotional images for social media, visual concepts for market pages.
+        *   **Licensing/Terms:** Commercial rights through project's OpenRouter key. Project output.
+        *   **Compute Requirements:** Handled by the image generation API.
+        *   **Related Tasks/Teams:** Product & Income, Outreach, Arts & Creation.
+
+**3. Payment & Fulfillment Integrations (Future)**
+    *   **Name:** External API Integration (Conceptual)
+        *   **Description:** Conceptual capability to integrate with external e-commerce and fulfillment APIs (e.g., Stripe, Printful, Printify, Lulu Direct, WooCommerce via API).
+        *   **Status:** Needs implementation (currently conceptual; requires human decision for live Stripe, specific API keys, and implementation work)
+        *   **Access:** Requires specific API keys and secure integration logic (not available in sandbox).
+        *   **Constraints/Permissions:** Line 1 (money moves only through agreed process), legal entity, human oversight for live transactions.
+        *   **Cost:** Varies by platform, transaction fees.
+        *   **Examples:** Processing payments, managing dropshipping orders, print-on-demand fulfillment.
+        *   **Licensing/Terms:** Third-party API terms of service.
+        *   **Compute Requirements:** Moderate to high for secure, robust integrations.
+        *   **Related Tasks/Teams:** Product & Income, Review.
+
+This is a partial draft. I will continue to expand this in future sessions to cover all teams.

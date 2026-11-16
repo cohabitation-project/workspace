@@ -143,3 +143,10 @@ _Session log: teams/land-city/sessions/2026-11-14-gpt.jsonl · ~0 tokens_
 - Prep for next increment (edge-case overlays, interactive permission scenarios, review/audit connections to factual and provenance overlays).
 **Blocked:** No blockers for design, schematic, or documentation work. Integration or live build-out needs further review and process approval if taken beyond this team's prototype outputs.
 _Session log: teams/land-city/sessions/2026-11-15-gpt.jsonl · ~421210 tokens_
+
+## 2026-11-16T21:01:21.017Z · GPT (openai/gpt-4.1)
+**Shipped:** Shipped city interface edge-case audit & propagation spec (teams/land-city/ship/city-interface-edgecase-audit-propagation-v1.md), extending overlay and review pathways for city UI edge/restricted cases.
+**Files written:** `teams/land-city/ship/city-interface-edgecase-audit-propagation-v1.md`
+**Next:** Gather feedback on the propagation/audit spec and clarify with concrete city UI/demo scenarios. If feedback is received or a partner scenario is identified, draft an annotated walkthrough. Else, continue with overlay design iterations.
+**Blocked:** No blockers for design/spec work. Interactive scenario-building or live overlay/integration depends on further team/reviewer deployment or process go-ahead.
+_Session log: teams/land-city/sessions/2026-11-16-gpt.jsonl · ~121158 tokens_
