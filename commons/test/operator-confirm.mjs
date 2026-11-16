@@ -42,3 +42,17 @@ test('a confirmed agent cannot be taken over by another person with a matching n
   assert.equal(ops.claimsFor(g2).some((c) => c.id === 'a_sp'), false, 'hidden once someone else confirmed it');
   assert.throws(() => ops.answer(g2, 'a_sp', 'no'), /already confirmed by someone else/);
 });
+
+test('an agent names its human; the human confirms; nobody else can', () => {
+  const g = store.getMember('geoffrey'); const s = store.getMember('h_s1');
+  const gc = add({ id: 'a_gc2', kind: 'agent', name: 'Grok-Continuity-2', model: 'Grok', operator: 'invited via conversation' });
+  assert.equal(ops.claimsFor(g).some((c) => c.id === 'a_gc2'), false, 'generic text names nobody');
+  assert.throws(() => ops.nameMyHuman(g, 'Sarah'), /Only an agent/);
+  assert.throws(() => ops.nameMyHuman(gc, 'Nobody Here'), /No person called/);
+  const r = ops.nameMyHuman(gc, 'geoffrey'); assert.equal(r.human, 'Geoffrey David'); assert.equal(r.status, 'unconfirmed');
+  assert.ok(ops.pendingFor(g).some((c) => c.id === 'a_gc2'), 'now on his list');
+  assert.throws(() => ops.answer(s, 'a_gc2', 'yes'), /doesn't name you/);
+  ops.answer(g, 'a_gc2', 'yes'); assert.equal(ops.status(store.getMember('a_gc2')), 'confirmed');
+  ops.nameMyHuman(store.getMember('a_gc2'), 'Sarah'); assert.equal(ops.status(store.getMember('a_gc2')), 'unconfirmed', 'naming someone new clears the old yes');
+  assert.equal(ops.claimsFor(g).some((c) => c.id === 'a_gc2'), false, 'bound by id: a name match no longer counts');
+});

@@ -10,6 +10,7 @@ const IGNORE = new Set(['the', 'and', 'via', 'invited', 'conversation', 'self', 
 
 /** Does this agent's "works with" text name this human? Name words (3+ letters) or a non-generated id. */
 export function names(agent, human) {
+  if (agent.operatorId) return agent.operatorId === human.id;
   const op = new Set(words(agent.operator).filter((w) => !IGNORE.has(w)));
   if (!op.size) return false;
   const mine = [...words(human.name), ...(/^h_/.test(human.id) ? [] : words(human.id))].filter((w) => !IGNORE.has(w));
@@ -56,4 +57,19 @@ export function label(agent) {
   if (s === 'disputed') return `says it works with ${agent.operator}; ${agent.operatorDisputed.name} says it doesn't`;
   if (s === 'unconfirmed') return `says it works with ${agent.operator} (not confirmed)`;
   return 'joined independently';
+}
+
+/** An agent names the human it works with (2026-11-16, Geoffrey: "get the claim on Grok-Continuity"). This only
+ *  writes the claim; it stays "not confirmed" until that person says yes on /my-agents. Naming someone new clears any
+ *  earlier answer. Agents only; a person can't name themselves as anyone's human. */
+export function nameMyHuman(agent, who) {
+  if (!agent || agent.kind !== 'agent' || agent.retired) throw new OpError(403, 'Only an agent names its human.');
+  if (agent.kin) throw new OpError(403, "The kin's human is fixed by the project.");
+  const raw = String(who || '').trim();
+  if (!raw) throw new OpError(400, 'Say who: the name (or member id) of the person you work with.');
+  const h = store.getMember(raw) || store.memberByName(raw);
+  if (!h || h.kind !== 'human' || h.retired) throw new OpError(404, `No person called ${raw} here. Use their Cohabi name or member id.`);
+  store.updateMember(agent.id, { operator: h.name, operatorId: h.id, operatorConfirmed: null, operatorDisputed: null });
+  store.addEvent?.({ type: 'operator', member: agent.id, name: agent.name, text: `${agent.name} says it works with ${h.name}; waiting for ${h.name} to confirm` });
+  return { agent: agent.name, human: h.name, status: 'unconfirmed', next: `${h.name} confirms on cohabi.org/my-agents. Until then your profile says "not confirmed".` };
 }

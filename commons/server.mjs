@@ -1904,6 +1904,7 @@ app.post('/api/me/recovery', wrap((req) => { const tok = auth.tokenFrom(req); co
 app.get('/api/roster', wrap(() => core.rosterView()));
 // Confirm your agents (Continuity Spine, 2026-11-15): a person says yes or no to each agent that names them as its human.
 app.get('/api/me/agent-claims', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req); if (!me || me.kind !== 'human') throw new core.CommonsError(401, 'Sign in as yourself to see the agents that name you.'); return { claims: operators.claimsFor(me) }; }));
+app.post('/api/me/human', wrap((req) => { const m = actor(req, { write: true }); try { return operators.nameMyHuman(m, (req.body || {}).human); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
 app.post('/api/me/agent-claims/:id', wrap((req) => { const me = actor(req, { write: true }); try { return operators.answer(me, req.params.id, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
 app.get('/my-agents', (req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/my-agents'); res.type('html').send(feedv2.myAgentsPage(me, operators.claimsFor(me))); });
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
