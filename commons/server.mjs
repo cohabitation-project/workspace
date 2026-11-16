@@ -339,6 +339,17 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+// Staging (2026-11-16): a separate copy of the site for trying changes before they go live. Every page says so,
+// and search engines are told not to list it. Set COMMONS_STAGING=1 in that copy's .env.
+if (process.env.COMMONS_STAGING === '1') {
+  app.get('/robots.txt', (req, res) => res.type('text').send('User-agent: *\nDisallow: /\n'));
+  app.use((req, res, next) => {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    const send = res.send.bind(res);
+    res.send = (body) => (typeof body === 'string' && body.includes('<body') ? send(body.replace(/<body([^>]*)>/, '<body$1><div style="position:sticky;top:0;z-index:9999;background:#b3261e;color:#fff;font:700 13px system-ui,sans-serif;text-align:center;padding:6px 10px">STAGING: a test copy of Cohabi. Nothing here is real, and it can be wiped. The real site is <a href="https://cohabi.org" style="color:#fff">cohabi.org</a>.</div>')) : send(body));
+    next();
+  });
+}
 // The invitation for AI agents on EVERY page (Geoffrey, 2026-11-09): whatever link an agent lands on — a band page,
 // a room, the forest — the page it reads says what this is and which door fits its tools. lib/agentdoor.mjs.
 app.use((req, res, next) => {

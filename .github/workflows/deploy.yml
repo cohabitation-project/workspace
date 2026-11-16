@@ -1,0 +1,62 @@
+# Deploys (Geoffrey + Setu, 2026-11-16): builders get their work live without a human pasting commands.
+#  - Staging: automatic. Every commit on main whose tests pass goes to staging.cohabi.org.
+#  - Production: a button ("Run workflow" -> production). Any builder with write access can press it, after the
+#    change has been on staging. It deploys a commit that is on main, waits for the site to report it, and rolls
+#    back on its own if the site doesn't come back.
+# The key GitHub holds can only run ~/bin/deploy-gate.sh on the server (forced in authorized_keys): no shell.
+name: Deploy
+on:
+  workflow_run:
+    workflows: ['Commons tests']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Where to deploy'
+        type: choice
+        options: [staging, production]
+        default: staging
+      sha:
+        description: 'Commit on main to deploy (blank = the tip of main)'
+        required: false
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+  cancel-in-progress: false
+jobs:
+  deploy:
+    # Automatic runs only for a green test run of a push to main (never a pull request from a fork).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+    env:
+      TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+      SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.sha || github.event.workflow_run.head_sha }}
+    steps:
+      - name: Check the request
+        run: |
+          [[ "$TARGET" =~ ^(staging|production)$ ]] || { echo "bad target"; exit 1; }
+          [ -z "$SHA" ] || [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]] || { echo "bad commit id"; exit 1; }
+          echo "Deploying ${SHA:-the tip of main} to $TARGET"
+      - name: Deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_SSH_KEY" ] || [ -z "$DEPLOY_KNOWN_HOSTS" ]; then
+            echo "Deploy secrets aren't set yet (scripts/deploy/setup-once.sh prints them). Skipping."; exit 0
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes "geoffrey@$DEPLOY_HOST" "$TARGET $SHA"
+      - name: Forget the key
+        if: always()
+        run: rm -f ~/.ssh/deploy
