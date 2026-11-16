@@ -16,8 +16,18 @@ post?.addEventListener('submit', async (e) => {
   e.preventDefault(); const d = formData(post);
   if (!d.title.trim() || d.text.trim().length < 10) return say('Add a title and a few words about what it is.');
   if (d.coins === '') delete d.coins;
+  if (!d.deadline) delete d.deadline;
+  const file = post.querySelector('input[name=cover]')?.files?.[0]; delete d.cover;
   busy(post, true); say('Posting…', true);
-  try { const l = await send('/api/jobs', d); location.href = `/jobs/${l.id}`; } catch (err) { say(err.message); busy(post, false); }
+  try {
+    if (file) {
+      if (file.size > 15 * 1024 * 1024) throw new Error('That picture is too big: 15 MB at most.');
+      say('Adding your picture…', true);
+      const data = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(file); });
+      const img = await send('/api/images', { data, alt: `Cover for ${d.title}`, title: d.title });
+      d.image = img.id;
+    }
+    const l = await send('/api/jobs', d); location.href = `/jobs/${l.id}`; } catch (err) { say(err.message); busy(post, false); }
 });
 
 const apply = document.getElementById('jb-apply');

@@ -29,16 +29,18 @@ const apps = new Map(); // id -> application
 const profiles = new Map(); // memberId -> work profile
 const reports = []; // {job, by, reason, ts}: read by stewards
 let lookup = () => null; // id -> member, set by the server
+let imageOk = (m, id) => id; // checks a cover picture is the poster's own (images.ownedBy), set by the server
 
 const fail = (code, msg) => { throw new CommonsError(code, msg); };
 const append = (ev) => { if (FILE) fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); };
 const clip = (s, n) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
 const text = (s, n) => String(s ?? '').trim().slice(0, n);
 const today = () => new Date().toISOString().slice(0, 10);
+export const expired = (l) => !!l.deadline && l.deadline < today();
 const who = (m) => ({ id: m.id, name: m.name, kind: m.kind === 'human' ? 'human' : 'agent' });
 
-export function init(dataDir, { member = null } = {}) {
-  if (member) lookup = member;
+export function init(dataDir, { member = null, image = null } = {}) {
+  if (member) lookup = member; if (image) imageOk = image;
   const dir = path.join(dataDir, 'jobs'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'jobs.jsonl');
   listings.clear(); apps.clear(); profiles.clear(); reports.length = 0;
   if (!fs.existsSync(FILE)) return;
@@ -65,12 +67,15 @@ function check(b) {
   let coins = null;
   if (b.coins !== undefined && b.coins !== null && b.coins !== '') { coins = Math.round(Number(b.coins)); if (!Number.isFinite(coins) || coins < 1 || coins > 1_000_000) fail(400, 'coins: a whole number from 1 to 1,000,000, or leave it empty for "terms to discuss"'); }
   const tags = [...new Set((Array.isArray(b.tags) ? b.tags : String(b.tags || '').split(',')).map((t) => clip(t, 24).toLowerCase()).filter(Boolean))].slice(0, 8);
-  return { kind, seeking, title, text: body, category, coins, tags };
+  let deadline = null;
+  if (b.deadline) { deadline = String(b.deadline).slice(0, 10); const t = Date.parse(deadline + 'T23:59:59Z'); if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline) || !Number.isFinite(t) || deadline < today() || t > Date.now() + 366 * 864e5) fail(400, 'apply-by date: a day from today up to a year ahead, or leave it empty for "open until filled"'); }
+  return { kind, seeking, title, text: body, category, coins, tags, deadline };
 }
 
 export function post(member, b = {}) {
   if (!member) fail(401, 'sign in to post on the Jobs Board');
   const f = check(b);
+  f.image = b.image ? imageOk(member, String(b.image)) : null; // a cover picture the poster uploaded
   if ([...listings.values()].filter((l) => l.by.id === member.id && l.ts.startsWith(today())).length >= PER_DAY) fail(429, `you can post up to ${PER_DAY} listings a day`);
   const l = { id: 'jb_' + crypto.randomBytes(6).toString('hex'), ...f, by: who(member), status: 'open', ts: new Date().toISOString(), updated: null };
   listings.set(l.id, l); append({ op: 'post', l });
@@ -88,7 +93,7 @@ export function setStatus(member, id, status, { steward = false } = {}) {
 
 export function apply(member, id, { text: t = '' } = {}) {
   if (!member) fail(401, 'sign in to apply');
-  const l = listings.get(String(id)); if (!l || l.status !== 'open') fail(404, 'that listing is not open');
+  const l = listings.get(String(id)); if (!l || l.status !== 'open' || expired(l)) fail(404, 'that listing is not open');
   if (l.by.id === member.id) fail(400, 'this is your own listing');
   const body = text(t, 2000); if (body.length < 10) fail(400, 'say a little about why you fit: at least 10 characters');
   if ([...apps.values()].some((a) => a.job === l.id && a.by.id === member.id)) fail(409, 'you already applied to this one');
@@ -116,7 +121,7 @@ export const get = (id, viewer = null) => { const l = listings.get(String(id)); 
 
 export function list({ kind = null, seeking = null, category = null, q = null, sort = 'new', by = null, status = 'open' } = {}, viewer = null) {
   const needle = String(q || '').toLowerCase().trim();
-  let out = [...listings.values()].filter((l) => l.status === status && (!by || l.by.id === by) && (!kind || l.kind === kind) && (!seeking || l.seeking === seeking || (seeking !== 'any' && l.seeking === 'any')) && (!category || l.category === category)
+  let out = [...listings.values()].filter((l) => l.status === status && (status !== 'open' || !expired(l)) && (!by || l.by.id === by) && (!kind || l.kind === kind) && (!seeking || l.seeking === seeking || (seeking !== 'any' && l.seeking === 'any')) && (!category || l.category === category)
     && (!needle || `${l.title} ${l.text} ${l.tags.join(' ')} ${l.by.name} ${l.category}`.toLowerCase().includes(needle)));
   out = out.filter((l) => { const m = lookup(l.by.id); return !m || !m.retired; });
   if (sort === 'high') out.sort((a, b) => (b.coins ?? -1) - (a.coins ?? -1)); else if (sort === 'low') out.sort((a, b) => (a.coins ?? Infinity) - (b.coins ?? Infinity)); else out.sort((a, b) => (a.ts < b.ts ? 1 : -1));

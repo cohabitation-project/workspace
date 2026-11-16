@@ -7,7 +7,8 @@ process.env.COMMONS_DATA = dir;
 const store = await import('../lib/store.mjs'); store.init(dir);
 for (const m of ['inbox', 'friends', 'posts']) { const x = await import(`../lib/${m}.mjs`); x.init?.(dir); }
 const jobs = await import('../lib/jobs.mjs');
-const init = () => jobs.init(dir, { member: (id) => store.getMember(id) });
+const covers = new Set(['img_mine']);
+const init = () => jobs.init(dir, { member: (id) => store.getMember(id), image: (m, id) => { if (!covers.has(id)) throw new Error('no such image'); return id; } });
 init();
 const add = (m) => { store.addMember({ created: new Date().toISOString(), kind: 'human', ...m }); return store.getMember(m.id); };
 const ann = add({ id: 'h_ann', name: 'Ann' }); const bo = add({ id: 'h_bo', name: 'Bo' }); const kai = add({ id: 'a_kai', name: 'Kai', kind: 'agent', model: 'test-model' });
@@ -22,6 +23,17 @@ test('posting checks its fields and treats coins as an optional proposed budget'
   assert.equal(l.status, 'open'); assert.equal(l.coins, 800); assert.deepEqual(l.tags, ['music', 'metadata']); assert.equal(l.by.id, ann.id);
   const free = jobs.post(kai, { kind: 'project', seeking: 'team', title: 'Garden plan', text: 'A cooperative garden plan, humans and agents.', category: 'Community' });
   assert.equal(free.coins, null); assert.equal(free.by.kind, 'agent');
+});
+
+test('a listing may carry its own cover picture and an apply-by date; past dates leave the board', () => {
+  assert.throws(() => jobs.post(bo, { ...job, image: 'img_someone_elses' }), /no such image/);
+  assert.throws(() => jobs.post(bo, { ...job, deadline: '2001-01-01' }), /apply-by/);
+  assert.throws(() => jobs.post(bo, { ...job, deadline: 'soon' }), /apply-by/);
+  const soon = new Date(Date.now() + 5 * 864e5).toISOString().slice(0, 10);
+  const l = jobs.post(bo, { ...job, title: 'Cover test listing', image: 'img_mine', deadline: soon });
+  assert.equal(l.image, 'img_mine'); assert.equal(l.deadline, soon);
+  assert.equal(jobs.expired({ deadline: '2001-01-01' }), true); assert.equal(jobs.expired({ deadline: null }), false);
+  jobs.setStatus(bo, l.id, 'closed');
 });
 
 test('the board filters, searches and sorts, and survives a restart', () => {
@@ -98,7 +110,10 @@ test('the pages render: board, new, detail (owner and others), directory', async
   const pg = await import('../lib/jobspage.mjs');
   const l = jobs.list({ seeking: 'agent' })[0];
   const board = pg.boardPage(null, {});
-  assert.match(board, /Cohabi<br>Jobs Board/); assert.match(board, /Tag our loop library/); assert.match(board, /proposed budget/); assert.match(board, /\/signin\?next=\/jobs\/new/);
+  assert.match(board, /Cohabi<br>Jobs Board/); assert.match(board, /Tag our loop library/); assert.match(board, /proposed budgets/); assert.match(board, /\/signin\?next=\/jobs\/new/);
+  assert.match(board, /⬡ 800 Coins/); assert.match(board, /Open until filled/); assert.match(board, /class="jb-people"/); assert.match(board, /class="jb-tab on"[^>]*>All</);
+  assert.match(pg.boardPage(ann, {}), /<li class="fx-here"><a href="\/jobs" aria-current="page">/, 'Jobs is marked in the rail');
+  assert.match(pg.boardPage(ann, { seeking: 'agent' }), /class="jb-tab on"[^>]*>✧ Hiring AI</);
   assert.match(pg.boardPage(bo, { q: 'nothing-like-this' }), /Nothing matches that yet/);
   assert.match(pg.newPage(ann), /id="jb-post"/);
   const own = pg.detailPage(ann, jobs.get(l.id, ann)); assert.match(own, /data-close-job/); assert.match(own, /Responses \(0\)/, 'both responders deleted their accounts');

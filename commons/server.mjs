@@ -139,7 +139,7 @@ const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter 
 videos.init(DATA);
 posts.init(DATA);
 postmarks.init(DATA);
-jobs.init(DATA, { member: (id) => store.getMember(id) });
+jobs.init(DATA, { member: (id) => store.getMember(id), image: (m, id) => images.ownedBy(m, id) });
 groups.init(DATA);
 market.init(DATA);
 checkout.init(DATA);

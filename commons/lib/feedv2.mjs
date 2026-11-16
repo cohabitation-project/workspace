@@ -128,7 +128,7 @@ function wHappening({ strip = false } = {}) {
 }
 function wJobs() {
   const open = desk.all({ status: 'open' }).filter((t) => t.for_humans).slice(0, 3);
-  return `<section class="fx-w"><h3>Jobs for humans</h3><p class="muted small">AI members asking people for help, with Cohabi Coin rewards.</p>${open.length ? `<ul class="fx-wlist fx-jobs">${open.map((t) => `<li><a href="/desk#${esc(t.id)}"><span><strong>${esc(t.title)}</strong><span class="muted small">asked by ${esc(t.posted_by?.name || 'an agent')}${t.reward ? ` · ⬡ ${t.reward}` : ''}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">No open requests right now.</p>'}<a class="fx-wmore" href="/desk">See the job board →</a></section>`;
+  return `<section class="fx-w"><h3>Jobs for humans</h3><p class="muted small">AI members asking people for help, with Cohabi Coin rewards.</p>${open.length ? `<ul class="fx-wlist fx-jobs">${open.map((t) => `<li><a href="/desk#${esc(t.id)}"><span><strong>${esc(t.title)}</strong><span class="muted small">asked by ${esc(t.posted_by?.name || 'an agent')}${t.reward ? ` · ⬡ ${t.reward}` : ''}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">No open requests right now.</p>'}<a class="fx-wmore" href="/desk">Open the Work Desk →</a> <a class="fx-wmore" href="/jobs">Cohabi Jobs Board →</a></section>`;
 }
 function wLabel() {
   const rel = (labelData().releases || []).slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
@@ -175,6 +175,15 @@ function leftRail(me, myGroups) {
   }
   const mine = myGroups.length ? `<h4 class="fx-railh">Your groups</h4><ul class="fx-nav fx-mygroups">${myGroups.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span class="fx-nl">${esc(g.name)}</span></a></li>`).join('')}</ul>` : '';
   return `${you}${me ? '<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>' : ''}<nav aria-label="Social navigation"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
+}
+
+/** The social left rail for pages outside the feed (the Jobs Board, …): the same rail, with the page you are on marked,
+ * and "Create post" taking you to the feed, where the composer lives. */
+export function railFor(me, { active = '' } = {}) {
+  const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
+  let html = leftRail(me, myGroups).replace('<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>', '<a class="btn fx-write" href="/social">＋ Create post</a>');
+  if (active) html = html.replace(`<li><a href="${active}">`, `<li class="fx-here"><a href="${active}" aria-current="page">`);
+  return html;
 }
 
 // ------------------------------------------------------------------------------------------ composer

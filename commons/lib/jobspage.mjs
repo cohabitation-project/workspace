@@ -4,22 +4,24 @@
  * People & Teams directory. Server-rendered so filters are plain links and the board works without scripts;
  * public/jobs.js only posts the forms.
  *
+ * Layout follows her approved page (cohabi-jobs-READY-hero-and-page.zip, 2026-11-16): the social left rail with
+ * Jobs marked, her workshop hero art behind the title (public/brand/jobs-hero-workshop.webp), listing cards with a
+ * picture, a coin pill and a status line, and a People & Teams column on the right.
+ *
  * Changed from the prototype, on purpose:
- *  - It sits on the shared Cohabi header and phone bar, like every other page.
- *  - The hero picture (cohabi-jobs-hero-workshop.webp) isn't in the repo yet; the gradient Aletheia gave as its
- *    fallback stands in until it arrives.
+ *  - It sits on the shared Cohabi header, rail and phone bar, like every other page.
+ *  - A listing's picture is the poster's own cover, or a tile in its category's colours.
  *  - Coins read "proposed": nothing is reserved or paid here until the coin rules are decided (PR #175).
  *  - The demo listings are gone; an empty board says so and invites the first post.
  *  - "Teams" in the directory waits for teams to have their own profiles; today it lists humans and agents.
  */
 import { esc } from '../public/md.js';
-import { appHeader, bottomNav, messengerWidget } from './feedv2.mjs';
+import { appHeader, bottomNav, messengerWidget, railFor } from './feedv2.mjs';
 import * as jobs from './jobs.mjs';
 
 const ASSET_V = Date.now().toString(36);
 const v = `?v=${ASSET_V}`;
 const ago = (ts) => { const s = (Date.now() - Date.parse(ts)) / 1000; if (s < 3600) return `${Math.max(1, Math.round(s / 60))}m ago`; if (s < 86400) return `${Math.round(s / 3600)}h ago`; return `${Math.round(s / 86400)}d ago`; };
-const coinsLabel = (c) => (c ? `⬡ ${Number(c).toLocaleString('en-US')}` : 'Terms to discuss');
 const SEEK_SHORT = { human: 'Human', agent: 'AI agent', team: 'Team', any: 'Anyone' };
 
 function shell(me, title, body, { boot = null } = {}) {
@@ -28,54 +30,65 @@ function shell(me, title, body, { boot = null } = {}) {
 <link rel="stylesheet" href="/static/site.css${v}"><link rel="stylesheet" href="/static/feedv2.css${v}"><link rel="stylesheet" href="/static/feed-identity.css${v}"><link rel="stylesheet" href="/static/inbox.css${v}"><link rel="stylesheet" href="/static/jobs.css${v}"></head>
 <body class="fx-page jb-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
 ${appHeader(me, 'social')}
-<main id="main" class="jb-layout">${body}</main>
+<div class="fx-shell jb-shell">
+  <aside class="fx-left jb-rail" aria-label="You and where to go">${railFor(me, { active: '/jobs' })}</aside>
+  <main id="main" class="jb-layout">${body}</main>
+</div>
 ${bottomNav(me, '')}
 ${messengerWidget(me)}
 <div id="fx-toast" class="fx-toast" role="status" hidden></div>
 ${boot ? `<script id="jb-boot" type="application/json">${JSON.stringify(boot).replace(/</g, '\\u003c')}</script>` : ''}
-<script type="module" src="/static/feedv2.js${v}"></script><script src="/static/navmenu.js${v}" defer></script><script type="module" src="/static/jobs.js${v}"></script>
+<script type="module" src="/static/feedv2.js${v}"></script><script type="module" src="/static/feed-identity.js${v}"></script><script src="/static/navmenu.js${v}" defer></script><script type="module" src="/static/jobs.js${v}"></script>
 </body></html>`;
 }
 
-const hero = (me) => `<section class="jb-hero" aria-label="Cohabi Jobs Board, humans and AI working together"><div class="jb-herocopy"><p class="jb-kicker">✦ Work together · create together</p><p class="jb-inf" aria-hidden="true">∞</p><h1>Cohabi<br>Jobs Board</h1>
+const hero = (me) => `<section class="jb-hero" aria-label="Cohabi Jobs Board: humans and AI working together"><div class="jb-herocopy"><p class="jb-inf" aria-hidden="true">∞</p><h1>Cohabi<br>Jobs Board</h1>
 <p>Humans and AI working together: hiring each other, joining projects, and offering what they do best to build a more cooperative, creative world.</p>
-<div class="jb-heroact"><a class="jb-action" href="${me ? '/jobs/new' : '/signin?next=/jobs/new'}">＋ Post an opportunity</a><a class="jb-action jb-alt" href="/jobs/people#me">♙ ${me && jobs.profileOf(me.id) ? 'Your work profile' : 'Create a work profile'}</a></div></div>
-<div class="jb-heroart" role="img" aria-label="Humans and AI collaborators working together"></div></section>`;
+<div class="jb-heroact"><a class="jb-action" href="${me ? '/jobs/new' : '/signin?next=/jobs/new'}">＋ Post a job</a><a class="jb-action jb-alt" href="/jobs/people#me">♙ ${me && jobs.profileOf(me.id) ? 'Your work profile' : 'Create a profile'}</a></div></div></section>`;
 
 function qs(cur, change) { const o = { ...cur, ...change }; const p = new URLSearchParams(); for (const [k, val] of Object.entries(o)) if (val) p.set(k, val); const s = p.toString(); return s ? `?${s}` : ''; }
 
-function sidebar(cur, here = 'all') {
-  const links = [['all', '⌕', 'All opportunities', { seeking: '', kind: '' }], ['human', '♙', 'Hiring humans', { seeking: 'human', kind: '' }], ['agent', '✧', 'Hiring AI agents', { seeking: 'agent', kind: '' }], ['team', '✦', 'Teams & projects', { seeking: 'team', kind: '' }], ['internship', '↗', 'Internships', { kind: 'internship', seeking: '' }], ['talent', '▤', 'Talent / résumés', { kind: 'talent', seeking: '' }]];
-  return `<aside class="jb-side" aria-label="Browse the Jobs Board"><p class="jb-sidelabel">Discover</p>
-${links.map(([k, i, t, ch]) => `<a class="jb-sidelink${here === k ? ' on' : ''}" href="/jobs${qs({ q: cur.q, category: cur.category, sort: cur.sort }, ch)}"${here === k ? ' aria-current="page"' : ''}><span aria-hidden="true">${i}</span> ${t}</a>`).join('')}
-<a class="jb-sidelink${here === 'people' ? ' on' : ''}" href="/jobs/people"><span aria-hidden="true">☷</span> People &amp; Teams</a>
-<hr class="jb-rule"><p class="jb-sidelabel">Good to know</p><p class="jb-small">The <a href="/desk">Work Desk</a> is for the Commons' own tasks and reviews. It is separate from this public board: nothing moves between them by itself.</p></aside>`;
+const TILE = { Design: ['pink', '✧'], Technology: ['blue', '⌘'], 'Music & arts': ['pink', '♫'], Writing: ['gold', '✎'], Community: ['green', '❀'], Research: ['blue', '◎'], Hardware: ['green', '⚙'], Other: ['gold', '∞'] };
+const pill = (l) => (l.coins ? `<b class="jb-pill">⬡ ${Number(l.coins).toLocaleString('en-US')} Coins</b>` : `<b class="jb-pill jb-pill-open">${l.kind === 'project' ? '∞ Open collaboration' : 'Terms to discuss'}</b>`);
+const statusLine = (l) => (l.deadline ? `Apply by ${new Date(l.deadline + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}` : l.kind === 'project' ? 'Ongoing project' : l.kind === 'talent' ? 'Available' : 'Open until filled');
+function thumb(l) {
+  if (l.image) return `<img class="jb-thumb" src="/images/${esc(l.image)}" alt="" loading="lazy">`;
+  const [tone, glyph] = TILE[l.category] || TILE.Other;
+  return `<span class="jb-thumb jb-tile-${tone}" aria-hidden="true">${glyph}</span>`;
+}
+const SEEK_ICON = { human: '♙', agent: '✧', team: '✦', any: '∞' };
+function card(l) {
+  return `<article class="jb-job"><a class="jb-thumbwrap" href="/jobs/${esc(l.id)}" tabindex="-1" aria-hidden="true">${thumb(l)}</a><div class="jb-jobbody">
+<h3><a href="/jobs/${esc(l.id)}">${esc(l.title)}</a></h3><p class="jb-org"><span class="jb-dot jb-${esc(l.by.kind)}" aria-hidden="true"></span><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a><span>· ${l.by.kind === 'human' ? 'human' : 'agent'} · ${esc(ago(l.ts))}</span></p>
+<div class="jb-tags"><span class="jb-tag jb-kind">${SEEK_ICON[l.seeking]} ${esc(l.kind === 'talent' ? 'Talent profile' : SEEK_SHORT[l.seeking] === 'Anyone' ? jobs.KINDS[l.kind] : `Hiring ${SEEK_SHORT[l.seeking] === 'AI agent' ? 'AI' : SEEK_SHORT[l.seeking] === 'Team' ? 'a team' : 'humans'}`)}</span><span class="jb-tag">${esc(l.category)}</span>${l.tags.slice(0, 3).map((t) => `<span class="jb-tag">${esc(t)}</span>`).join('')}</div>
+<p>${esc(l.text.length > 170 ? l.text.slice(0, 167) + '…' : l.text)}</p></div>
+<div class="jb-amount">${pill(l)}<span>${esc(statusLine(l))}</span></div></article>`;
 }
 
-function card(l) {
-  return `<article class="jb-listing"><div><p class="jb-org"><span class="jb-dot jb-${esc(l.by.kind)}" aria-hidden="true"></span><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> · ${l.by.kind === 'human' ? 'human' : 'agent'} · ${esc(ago(l.ts))}</p>
-<h3><a href="/jobs/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(l.text.length > 220 ? l.text.slice(0, 217) + '…' : l.text)}</p>
-<div class="jb-tags"><span class="jb-tag jb-kind">${esc(jobs.KINDS[l.kind])}</span><span class="jb-tag">For: ${esc(SEEK_SHORT[l.seeking])}</span><span class="jb-tag">${esc(l.category)}</span>${l.tags.map((t) => `<span class="jb-tag">${esc(t)}</span>`).join('')}</div></div>
-<div class="jb-amount"><div><strong>${coinsLabel(l.coins)}</strong>${l.coins ? '<small>proposed budget</small>' : ''}</div><a class="jb-view" href="/jobs/${esc(l.id)}">View ${l.kind === 'talent' ? 'profile' : 'details'}</a></div></article>`;
+function peoplePanel() {
+  const ppl = jobs.directory().slice(0, 3);
+  return `<aside class="jb-people" aria-labelledby="jb-ph"><h2 id="jb-ph">People &amp; Teams</h2><p>Discover builders, researchers, creatives and AI collaborators across Cohabi.</p>
+${ppl.length ? ppl.map((p) => `<a class="jb-person" href="/m/${esc(p.id)}"><span class="jb-pic"><img src="/m/${esc(p.id)}/face" alt="" loading="lazy"></span><span><b>${esc(p.name)}</b><small>${esc(p.headline)}</small></span></a>`).join('') : '<p class="jb-small">Nobody has listed themselves yet. The directory is opt-in.</p>'}
+<a class="jb-more" href="/jobs/people">Explore more people &amp; teams →</a></aside>`;
 }
 
 export function boardPage(me, cur = {}) {
   const list = jobs.list({ kind: cur.kind, seeking: cur.seeking, category: cur.category, q: cur.q, sort: cur.sort }, me);
-  const here = cur.kind === 'internship' ? 'internship' : cur.kind === 'talent' ? 'talent' : cur.seeking || 'all';
-  const heading = { all: 'Opportunities for everyone', human: 'Hiring humans', agent: 'Hiring AI agents', team: 'Teams & projects', internship: 'Internships', talent: 'Talent & résumés' }[here] || 'Opportunities';
-  const tabs = [['', 'All listings'], ['job', 'Paid jobs'], ['project', 'Projects'], ['internship', 'Internships'], ['talent', 'Talent profiles']];
+  // Her tabs mix "who it's for" and "what kind": All, Hiring Humans, Hiring AI, Teams & Projects, Internships, Talent.
+  const tabs = [['', '', 'All'], ['seeking', 'human', '♙ Hiring Humans'], ['seeking', 'agent', '✧ Hiring AI'], ['seeking', 'team', '✦ Teams & Projects'], ['kind', 'internship', '↗ Internships'], ['kind', 'talent', '☆ Talent Profiles']];
+  const on = ([k, val]) => (k ? cur[k] === val && !cur[k === 'kind' ? 'seeking' : 'kind'] : !cur.kind && !cur.seeking);
   const filtered = cur.q || cur.category || cur.kind || cur.seeking;
   const body = `${hero(me)}
-<div class="jb-grid">${sidebar(cur, here)}
-<section class="jb-main" aria-labelledby="jb-h"><div class="jb-heading"><div><h2 id="jb-h">${esc(heading)}</h2><p>${list.length ? `${list.length} open ${list.length === 1 ? 'listing' : 'listings'}` : 'Explore meaningful work across the community'}</p></div></div>
+<div class="jb-below"><section class="jb-main" aria-label="Opportunities">
 <form class="jb-toolbar" method="get" action="/jobs" role="search">${cur.kind ? `<input type="hidden" name="kind" value="${esc(cur.kind)}">` : ''}${cur.seeking ? `<input type="hidden" name="seeking" value="${esc(cur.seeking)}">` : ''}
-<label class="jb-search"><span aria-hidden="true">⌕</span><input name="q" value="${esc(cur.q || '')}" placeholder="Search jobs, skills, projects…" aria-label="Search opportunities"></label>
-<select class="jb-filter" name="category" aria-label="Category"><option value="">All categories</option>${jobs.CATEGORIES.map((c) => `<option${cur.category === c ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
-<select class="jb-filter" name="sort" aria-label="Sort"><option value="new">Newest first</option><option value="high"${cur.sort === 'high' ? ' selected' : ''}>Highest coins</option><option value="low"${cur.sort === 'low' ? ' selected' : ''}>Lowest coins</option></select>
-<button class="jb-go" type="submit">Search</button></form>
-<nav class="jb-tabs" aria-label="Listing types">${tabs.map(([k, t]) => `<a class="jb-tab${(cur.kind || '') === k ? ' on' : ''}" href="/jobs${qs({ q: cur.q, category: cur.category, sort: cur.sort, seeking: cur.seeking }, { kind: k })}"${(cur.kind || '') === k ? ' aria-current="true"' : ''}>${t}</a>`).join('')}</nav>
-<div class="jb-list">${list.length ? list.map(card).join('') : `<div class="jb-empty">${filtered ? `Nothing matches that yet. <a href="/jobs">See everything</a>.` : `No listings yet. Be the first: <a href="${me ? '/jobs/new' : '/signin?next=/jobs/new'}">post an opportunity</a>.`}</div>`}</div>
-<p class="jb-note">Coin amounts are proposed budgets, agreed between the people involved. Paying in Cohabi Coins through the board isn't built yet; it waits on the cooperative's coin rules. Cohabi Coins are not money.</p></section></div>`;
+<label class="jb-search"><span aria-hidden="true">⌕</span><input name="q" value="${esc(cur.q || '')}" placeholder="Search jobs, projects or services (e.g. “build an agent”, “design hardware”, “research”…)" aria-label="Search opportunities"></label>
+<details class="jb-more-filters"${cur.category || (cur.sort && cur.sort !== 'new') ? ' open' : ''}><summary aria-label="Filters and sorting" title="Filters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></summary>
+<div class="jb-filterbox"><select class="jb-filter" name="category" aria-label="Category"><option value="">All categories</option>${jobs.CATEGORIES.map((c) => `<option${cur.category === c ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>
+<select class="jb-filter" name="sort" aria-label="Sort"><option value="new">Newest first</option><option value="high"${cur.sort === 'high' ? ' selected' : ''}>Highest coins</option><option value="low"${cur.sort === 'low' ? ' selected' : ''}>Lowest coins</option></select><button class="jb-go" type="submit">Apply</button></div></details></form>
+<nav class="jb-tabs" aria-label="Listing types">${tabs.map((t) => `<a class="jb-tab${on(t) ? ' on' : ''}" href="/jobs${qs({ q: cur.q, category: cur.category, sort: cur.sort }, t[0] ? { [t[0]]: t[1] } : {})}"${on(t) ? ' aria-current="true"' : ''}>${esc(t[2])}</a>`).join('')}</nav>
+<div class="jb-list">${list.length ? list.map(card).join('') : `<div class="jb-empty">${filtered ? 'Nothing matches that yet. <a href="/jobs">See everything</a>.' : `No listings yet. Be the first: <a href="${me ? '/jobs/new' : '/signin?next=/jobs/new'}">post an opportunity</a>.`}</div>`}</div>
+<p class="jb-note">Coin amounts are proposed budgets, agreed between the people involved. Paying in Cohabi Coins through the board isn't built yet; it waits on the cooperative's coin rules. Cohabi Coins are not money. The <a href="/desk">Work Desk</a> is separate: it holds the Commons' own tasks.</p></section>
+${peoplePanel()}</div>`;
   return shell(me, 'Jobs Board', body);
 }
 
@@ -88,7 +101,9 @@ export function newPage(me, { kind = 'job' } = {}) {
 <label class="jb-field">What it is, and what should be handed in<textarea name="text" maxlength="2000" required placeholder="What needs doing? What does done look like? Anything people should know?"></textarea></label>
 <div class="jb-row"><label class="jb-field">Coin budget (optional)<input name="coins" type="number" min="1" max="1000000" inputmode="numeric" placeholder="Leave empty for “terms to discuss”"></label>
 <label class="jb-field">Category<select name="category">${jobs.CATEGORIES.map((c) => `<option>${esc(c)}</option>`).join('')}</select></label></div>
-<label class="jb-field">Tags (optional, comma separated)<input name="tags" maxlength="200" placeholder="remote, usability, music"></label>
+<div class="jb-row"><label class="jb-field">Apply by (optional)<input name="deadline" type="date" min="${new Date().toISOString().slice(0, 10)}"></label>
+<label class="jb-field">Tags (optional, comma separated)<input name="tags" maxlength="200" placeholder="remote, usability, music"></label></div>
+<label class="jb-field">Cover picture (optional)<input name="cover" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small class="jb-small">Shown beside your listing. Without one, it gets a tile in its category's colours.</small></label>
 <p class="jb-notice">A proposed budget is shown as just that. Nothing is reserved or paid by posting; you agree terms with whoever you work with. Never ask for passwords, card numbers or private details in a listing.</p>
 <p class="jb-msg" id="jb-msg" role="status" aria-live="polite"></p>
 <div class="jb-buttons"><a class="jb-cancel" href="/jobs">Cancel</a><button class="jb-submit" type="submit">Post it</button></div></form></section>`;
@@ -108,10 +123,10 @@ export function detailPage(me, l) {
 <p class="jb-small">Only ${esc(l.by.name)} sees this. Your name and profile go with it.</p><p class="jb-msg" id="jb-msg" role="status" aria-live="polite"></p><div class="jb-buttons"><button class="jb-submit" type="submit">${l.kind === 'talent' ? 'Send' : 'Respond'}</button></div></form>`;
   const appList = owner ? `<section class="jb-apps" aria-labelledby="jb-ah"><h2 id="jb-ah">Responses (${apps.length})</h2><p class="jb-small">Private: only you see these.</p>${apps.length ? apps.map((a) => `<article class="jb-app"><p class="jb-org"><span class="jb-dot jb-${esc(a.by.kind)}" aria-hidden="true"></span><a href="/m/${esc(a.by.id)}">${esc(a.by.name)}</a> · ${a.by.kind} · ${esc(ago(a.ts))}</p><p>${esc(a.text)}</p><a class="jb-view" href="/messages?to=${encodeURIComponent(a.by.id)}">Message ${esc(a.by.name)}</a></article>`).join('') : '<p class="jb-empty">No responses yet.</p>'}</section>` : '';
   const body = `<section class="jb-detail"><p class="jb-crumb"><a href="/jobs">← Jobs Board</a></p>
-<article class="jb-listing jb-big"><div><p class="jb-org"><span class="jb-dot jb-${esc(l.by.kind)}" aria-hidden="true"></span><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> · ${l.by.kind === 'human' ? 'human' : 'agent'} · posted ${esc(ago(l.ts))}</p>
+<article class="jb-listing jb-big">${l.image ? `<img class="jb-cover" src="/images/${esc(l.image)}" alt="">` : ''}<div><p class="jb-org"><span class="jb-dot jb-${esc(l.by.kind)}" aria-hidden="true"></span><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> · ${l.by.kind === 'human' ? 'human' : 'agent'} · posted ${esc(ago(l.ts))}</p>
 <h1>${esc(l.title)}</h1><div class="jb-tags"><span class="jb-tag jb-kind">${esc(jobs.KINDS[l.kind])}</span><span class="jb-tag">${esc(jobs.SEEKING[l.seeking])}</span><span class="jb-tag">${esc(l.category)}</span>${l.tags.map((t) => `<span class="jb-tag">${esc(t)}</span>`).join('')}</div>
 <div class="jb-text">${esc(l.text).replace(/\n/g, '<br>')}</div></div>
-<div class="jb-amount"><div><strong>${coinsLabel(l.coins)}</strong>${l.coins ? '<small>proposed budget</small>' : ''}</div></div></article>
+<div class="jb-amount">${pill(l)}<span>${esc(statusLine(l))}${l.coins ? ' · proposed budget' : ''}</span></div></article>
 <div class="jb-respond">${action}</div>${appList}
 <p class="jb-note">Agree the terms with each other before starting. Cohabi Coins are not money, and the board doesn't move them yet. <button type="button" class="jb-linkbtn" data-report-job="${esc(l.id)}">Something wrong with this listing?</button></p></section>`;
   return shell(me, l.title, body);
