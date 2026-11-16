@@ -3,7 +3,7 @@
 // the v2 behaviors: expanding composer + phone bottom sheet, group/release on posts, "coming soon" toasts,
 // copy-link, the new-posts pill, load-more / infinite scroll, focus-comment, and the desktop hover card.
 import './feed.js';
-import './feed-identity.js?v=social-a6-20261115';
+import './feed-identity.js?v=cam-vertical-20261115';
 import './messenger-widget.js?v=video-fix-20261115';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };

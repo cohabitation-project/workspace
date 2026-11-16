@@ -44,25 +44,41 @@ if (composer && scrim) {
   const watch = new MutationObserver(paint); for (const id of ['c-pics', 'c-vid']) { const el = byId(id); if (el) watch.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'hidden'] }); }
 
   // ● Record a video with the camera, right here (Geoffrey, 2026-11-15: "shoot live video to post it").
+  // The camera fills the whole screen while it's open, and the recording is ALWAYS vertical (9:16): each camera
+  // frame is drawn, centre-cropped, onto a 720×1280 canvas, and the canvas is what gets recorded, together with the
+  // microphone's own track. So a phone held either way, or a laptop's landscape webcam, still posts a vertical video
+  // with sound (2026-11-15: a vertical phone video posted sideways and silent).
   const cam = byId('cx-cam'), camV = byId('cx-cam-v'), go = byId('cx-cam-go'), time = byId('cx-cam-time'), msg = composer.querySelector('.form-msg');
-  let stream = null, rec = null, chunks = [], facing = 'user', started = 0, tick = null;
-  const MAX = 120;
+  const W = 720, H = 1280, MAX = 120;
+  let stream = null, rec = null, chunks = [], facing = 'user', started = 0, tick = null, raf = 0, canvas = null, ctx2 = null;
   const fmt = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
-  const pickType = () => (window.MediaRecorder ? ['video/mp4;codecs=avc1,mp4a', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t)) || '' : '');
+  // Chrome and Firefox: WebM with Opus sound (reliable); Safari: MP4 with AAC. The server makes every one an MP4.
+  const pickType = () => (window.MediaRecorder ? ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs="avc1.42E01E,mp4a.40.2"', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '' : '');
+  const draw = () => {
+    if (!ctx2 || !camV.videoWidth) { raf = requestAnimationFrame(draw); return; }
+    const vw = camV.videoWidth, vh = camV.videoHeight, k = Math.max(W / vw, H / vh), dw = vw * k, dh = vh * k;
+    ctx2.save(); if (facing === 'user') { ctx2.translate(W, 0); ctx2.scale(-1, 1); } // a selfie looks like a mirror, as on every phone
+    ctx2.drawImage(camV, (W - dw) / 2, (H - dh) / 2, dw, dh); ctx2.restore();
+    raf = requestAnimationFrame(draw);
+  };
   function stopCam() {
-    clearInterval(tick); tick = null;
+    clearInterval(tick); tick = null; cancelAnimationFrame(raf); raf = 0;
     if (rec && rec.state !== 'inactive') { rec.onstop = null; rec.stop(); }
     rec = null; stream?.getTracks().forEach((t) => t.stop()); stream = null;
-    if (camV) camV.srcObject = null; if (cam) cam.hidden = true;
+    if (camV) camV.srcObject = null; if (cam) cam.hidden = true; document.body.classList.remove('cx-camopen');
+    go?.classList.remove('cx-recording'); if (go) go.setAttribute('aria-label', 'Start recording');
   }
   const startCam = async () => {
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { msg.textContent = "This browser can't record here. Tap Choose a video: on a phone it offers your camera too."; return; }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg.textContent = "This browser can't record here. Tap Choose a video: on a phone it offers your camera too."; return; }
     try {
       stream?.getTracks().forEach((t) => t.stop());
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 720 }, height: { ideal: 1280 } }, audio: true });
-      camV.srcObject = stream; cam.hidden = false; requestAnimationFrame(() => cam.scrollIntoView({ block: 'end', behavior: 'smooth' })); time.textContent = `0:00 / ${fmt(MAX)}`; go.textContent = '● Start recording'; msg.textContent = '';
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, aspectRatio: { ideal: 9 / 16 }, height: { ideal: 1280 } }, audio: { echoCancellation: true, noiseSuppression: true } });
+      camV.srcObject = stream; await camV.play().catch(() => {});
+      cam.hidden = false; document.body.classList.add('cx-camopen'); time.textContent = `0:00 / ${fmt(MAX)}`; msg.textContent = '';
+      cam.classList.toggle('cx-mirror', facing === 'user');
+      if (!stream.getAudioTracks().length) msg.textContent = 'No microphone found: this video will have no sound.';
     } catch (err) {
-      msg.textContent = err && err.name === 'NotAllowedError' ? 'The camera is blocked for cohabi.org. Allow the camera and microphone in your browser settings, then try again.' : "Couldn't open a camera. Tap Choose a video instead.";
+      msg.textContent = err && err.name === 'NotAllowedError' ? 'The camera or microphone is blocked for cohabi.org. Allow both in your browser settings, then try again.' : "Couldn't open a camera. Tap Choose a video instead.";
       stopCam();
     }
   };
@@ -72,16 +88,18 @@ if (composer && scrim) {
   go?.addEventListener('click', () => {
     if (!stream) return;
     if (rec) { rec.stop(); return; }
+    canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H; ctx2 = canvas.getContext('2d'); draw();
+    const out = canvas.captureStream(30); stream.getAudioTracks().forEach((t) => out.addTrack(t));
     const type = pickType(); chunks = [];
-    try { rec = type ? new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 2_500_000 }) : new MediaRecorder(stream); } catch { msg.textContent = "This browser can't record video here. Tap Choose a video instead."; return; }
+    try { rec = type ? new MediaRecorder(out, { mimeType: type, videoBitsPerSecond: 2_500_000, audioBitsPerSecond: 128_000 }) : new MediaRecorder(out); } catch { msg.textContent = "This browser can't record video here. Tap Choose a video instead."; return; }
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
     rec.onstop = () => {
       const base = (rec?.mimeType || type || 'video/webm').split(';')[0];
       const file = new File(chunks, `recording-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.${base.includes('mp4') ? 'mp4' : 'webm'}`, { type: base });
-      stopCam();
+      rec = null; stopCam();
       const input = byId('c-video'); const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    rec.start(1000); started = Date.now(); go.textContent = '■ Stop'; go.classList.add('cx-recording');
+    rec.start(1000); started = Date.now(); go.classList.add('cx-recording'); go.setAttribute('aria-label', 'Stop recording');
     tick = setInterval(() => { const s = (Date.now() - started) / 1000; time.textContent = `${fmt(s)} / ${fmt(MAX)}`; if (s >= MAX) rec?.stop(); }, 250);
   });
 
