@@ -51,3 +51,29 @@
 .rl-prog{left:max(0px, calc(50% - var(--col) / 2));right:max(0px, calc(50% - var(--col) / 2))}
 .rl-sheet{left:max(0px, calc(50% - var(--col) / 2 - 2rem));right:max(0px, calc(50% - var(--col) / 2 - 2rem))}
 @media (max-width:700px){.rl-rail{right:.5rem}.rl-meta{left:0;right:4.8rem}.rl-prog,.rl-sheet{left:0;right:0}}
+/* Save, More, add friend, report, double-tap heart (Ash's design §1, 2026-11-16) */
+.rl-rail{gap:.55rem}
+.rl-btn span{width:44px;height:44px;font-size:1.55rem}
+@media (max-height:640px){.rl-rail{gap:.25rem;bottom:4.2rem}.rl-btn b{font-size:.7rem}}
+.rl-friend{margin-left:.5rem;font:inherit;font-size:.8rem;font-weight:700;color:#fff;background:none;border:1px solid #fffc;border-radius:8px;padding:.2rem .6rem;cursor:pointer;text-decoration:none;vertical-align:middle;min-height:32px}
+.rl-friend.is-sent{border-color:#fff6;color:#fffb;font-weight:600;cursor:default}
+.rl-burst{position:absolute;left:50%;top:45%;font-size:6rem;transform:translate(-50%,-50%) scale(0);opacity:0;pointer-events:none;z-index:4;text-shadow:0 2px 12px #0008}
+.rl-burst.on{animation:rlpop .75s ease-out}
+@keyframes rlpop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15);opacity:1}60%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-60%) scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.rl-burst.on{animation:none}}
+.rl-moresheet{overflow-y:auto}
+.rl-moreitem{display:block;padding:.8rem 1rem;border-bottom:1px solid #fff1;text-decoration:none;min-height:44px}
+.rl-rform fieldset{border:0;margin:0;padding:.6rem 1rem 1rem;display:flex;flex-direction:column;gap:.45rem}
+.rl-rform legend{font-weight:700;padding:0;margin-bottom:.2rem}
+.rl-rform label{display:flex;align-items:center;gap:.5rem;min-height:36px}
+.rl-rform input[name=note]{background:#fff1;border:1px solid #fff3;border-radius:8px;color:#fff;padding:.55rem .7rem;font:inherit}
+.rl-note{font-size:.85rem;color:#fffc;margin:0 0 .3rem;line-height:1.35}
+.rl-moresheet>.rl-note{padding:1rem}
+/* rail fits beside the caption on phones */
+.rl-rail{bottom:1.4rem;gap:.35rem}
+.rl-btn{min-height:44px}
+.rl-btn span{width:40px;height:40px;font-size:1.4rem}
+.rl-btn b{font-size:.72rem}
+.rl-btn svg{width:26px;height:26px}
+.rl-rform label{justify-content:flex-start;width:auto}
+.rl-rform input[type=radio]{width:20px;height:20px;flex:none;margin:0;accent-color:#e8b45c}

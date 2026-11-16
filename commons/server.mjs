@@ -41,6 +41,7 @@ import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
+import * as postmarks from './lib/postmarks.mjs';
 import * as videos from './lib/videos.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
@@ -132,6 +133,7 @@ audio.init(DATA);
 const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter copies this machine can make
 videos.init(DATA);
 posts.init(DATA);
+postmarks.init(DATA);
 groups.init(DATA);
 market.init(DATA);
 checkout.init(DATA);
@@ -760,6 +762,12 @@ app.post('/api/posts/:id/topic', wrap((req) => { const me = houseWriter(req); re
 const feedQS = (req) => { const i = req.originalUrl.indexOf('?'); return i < 0 ? '' : req.originalUrl.slice(i); };
 app.get('/cohabi-feed', (req, res) => res.redirect(301, '/feed' + feedQS(req)));
 const reelHandler = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.reelPage(auth.memberFromCookie(req.headers.cookie), posts.list({ limit: 60, video: true }))); };
+// Saved videos (Ash's Feed design §1: save on the rail). Private to the saver.
+app.get('/feed/saved', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/feed/saved'); res.setHeader('Cache-Control', 'private, no-store'); const list = postmarks.savedBy(me.id).map((id) => posts.get(id)).filter((p) => p && p.video); res.type('html').send(feedv2.reelPage(me, list, { saved: true })); });
+app.post('/api/posts/:id/save', wrap((req) => { const me = houseWriter(req); if (!posts.get(req.params.id)) throw new core.CommonsError(404, 'no such post'); return postmarks.toggleSave(me, req.params.id); }));
+// Reports never take anything down by themselves; a steward reads them and decides in the open (Ash's spec §3).
+app.post('/api/posts/:id/report', wrap((req) => { const me = houseWriter(req); if (!posts.get(req.params.id)) throw new core.CommonsError(404, 'no such post'); return postmarks.report(me, req.params.id, req.body || {}); }));
+app.get('/api/post-reports', wrap((req) => { const me = actor(req); if (!core.isSteward(me)) throw new core.CommonsError(403, 'Only a steward of the Commons reads post reports.'); return { reports: postmarks.allReports(), reasons: postmarks.REASONS }; }));
 app.get('/feed', (req, res, next) => (Object.keys(req.query).length ? res.redirect(301, '/social' + feedQS(req)) : reelHandler(req, res, next)));
 app.delete('/api/posts/:id', wrap((req) => posts.remove(houseWriter(req), req.params.id)));
 app.post('/api/posts/:id/react', wrap((req) => posts.react(houseWriter(req), req.params.id, (req.body || {}).reaction)));

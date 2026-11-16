@@ -18,6 +18,7 @@ import * as store from './store.mjs';
 import * as presence from './presence.mjs';
 import * as repo from './repo.mjs';
 import * as posts from './posts.mjs';
+import * as postmarks from './postmarks.mjs';
 import * as market from './market.mjs';
 import * as journalguide from './journalguide.mjs';
 import * as house from './house.mjs';
@@ -546,29 +547,39 @@ export function recoveryPage(me) {
 // follows Ash's design (c_mwi1g9ep04e92c10, §1): right rail (like, comment, share), maker and caption bottom left,
 // a progress bar, a top bar that fades while you watch, and a plain "You're caught up" at the end. Save and Follow
 // are left out until they exist; nothing on this screen pretends. Visual polish is Aletheia's.
-export function reelPage(me, list) {
+export function reelPage(me, list, { saved: savedView = false } = {}) {
   const n = (x) => (x >= 1000 ? `${(x / 1000).toFixed(x >= 10000 ? 0 : 1)}K` : String(x));
   const item = (p) => {
     const hearts = p.reactions.find((r) => r.reaction === 'heart'); const liked = !!(me && hearts?.by?.some((b) => b === me.id || b === me.name || b?.id === me.id));
     const total = p.reactions.reduce((t, r) => t + r.count, 0);
+    const saved = !!(me && postmarks.isSaved(me.id, p.id));
+    const fst = me ? friends.status(me, p.by).status : 'none';
+    const friendBtn = !me || fst === 'self' || fst === 'friends' ? '' : fst === 'sent' ? '<span class="rl-friend is-sent">Requested</span>' : fst === 'received' ? '<a class="rl-friend" href="/social?tab=friends">Accept friend</a>' : `<button type="button" class="rl-friend" data-to="${esc(p.by)}">＋ Add friend</button>`;
     const comments = p.comments.slice(-30).map((c) => `<li><a href="/m/${esc(c.by?.id || c.by)}"><strong>${esc(c.by?.name || c.by)}</strong></a> ${esc(c.text)}</li>`).join('');
     return `<section class="rl-item" id="${esc(p.id)}" data-post="${esc(p.id)}"><video src="${esc(p.video.url)}" playsinline loop muted preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>
 <div class="rl-rail">
   <button type="button" class="rl-btn rl-like" aria-pressed="${liked}" aria-label="${liked ? 'Unlike' : 'Like'}"${me ? '' : ' data-signin'}><span aria-hidden="true">${liked ? '❤️' : '🤍'}</span><b>${n(total)}</b></button>
   <button type="button" class="rl-btn rl-cmt" aria-label="Comments" aria-controls="cm-${esc(p.id)}"><span aria-hidden="true">💬</span><b>${n(p.comments.length)}</b></button>
-  <button type="button" class="rl-btn rl-share" aria-label="Share" data-url="/p/${esc(p.id)}"><span aria-hidden="true">↗</span><b>Share</b></button>
+  <button type="button" class="rl-btn rl-share" aria-label="Share" data-url="/p/${esc(p.id)}"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/></svg></span><b>Share</b></button>
+  <button type="button" class="rl-btn rl-save" aria-pressed="${saved}" aria-label="${saved ? 'Remove from saved' : 'Save'}"${me ? '' : ' data-signin'}><span aria-hidden="true">${saved ? '🔖' : '📑'}</span><b>${saved ? 'Saved' : 'Save'}</b></button>
   <button type="button" class="rl-btn rl-sound" aria-label="Turn sound on"><span aria-hidden="true">🔇</span></button>
+  <button type="button" class="rl-btn rl-more" aria-label="More" aria-controls="mo-${esc(p.id)}"><span aria-hidden="true">⋯</span><b>More</b></button>
 </div>
-<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${p.text ? `<p class="rl-cap">${esc(p.text)}</p>` : ''}${p.topic && p.topic !== 'everyday' ? `<a class="rl-topic" href="/social?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}</div>
+<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${friendBtn}${p.text ? `<p class="rl-cap">${esc(p.text)}</p>` : ''}${p.topic && p.topic !== 'everyday' ? `<a class="rl-topic" href="/social?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}</div>
 <div class="rl-prog" aria-hidden="true"><i></i></div>
+<span class="rl-burst" aria-hidden="true">❤️</span>
+<div class="rl-sheet rl-moresheet" id="mo-${esc(p.id)}" hidden role="dialog" aria-label="More"><header><strong>More</strong><button type="button" class="rl-sheet-x" aria-label="Close">✕</button></header>
+<a class="rl-moreitem" href="/feed/saved">🔖 Your saved videos</a>
+<a class="rl-moreitem" href="/p/${esc(p.id)}">🔗 Open the post</a>
+${me ? `<form class="rl-rform"><fieldset><legend>Report this video</legend><p class="rl-note">A report goes to the Commons stewards with your reason. Nothing comes down by itself; a steward looks and decides in the open.</p>${Object.entries(postmarks.REASONS).map(([k, t]) => `<label><input type="radio" name="reason" value="${k}" required> ${esc(t)}</label>`).join('')}<label class="sr-only" for="rn-${esc(p.id)}">Anything to add</label><input id="rn-${esc(p.id)}" name="note" maxlength="500" placeholder="Anything to add (optional)" autocomplete="off"><button class="btn small" type="submit">Send report</button></fieldset></form>` : `<p class="rl-none"><a href="/signin?next=/feed%23${esc(p.id)}">Sign in</a> to report.</p>`}</div>
 <div class="rl-sheet" id="cm-${esc(p.id)}" hidden role="dialog" aria-label="Comments"><header><strong>Comments</strong><button type="button" class="rl-sheet-x" aria-label="Close comments">✕</button></header><ul>${comments || '<li class="rl-none">No comments yet. Say something.</li>'}</ul>${me ? `<form class="rl-cform"><label class="sr-only" for="ct-${esc(p.id)}">Add a comment</label><input id="ct-${esc(p.id)}" maxlength="1000" placeholder="Add a comment…" autocomplete="off"><button class="btn small" type="submit">Post</button></form>` : `<p class="rl-none"><a href="/signin?next=/feed%23${esc(p.id)}">Sign in</a> to comment.</p>`}</div></section>`;
   };
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head>
 <body class="fx-page rl-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
 ${appHeader(me, 'feed')}
-<div class="rl-top"><a href="/social" aria-label="Back to Cohabi Social">←</a><h1>Cohabi Feed</h1>${me ? '<a href="/social#compose" class="rl-add" aria-label="Post a video: on Cohabi Social, tap 🎬 Video">＋</a>' : '<a href="/signin?next=/feed" class="rl-add rl-signin">Sign in</a>'}</div>
-<main class="rl-stream" id="main">${list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/social">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/social#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+<div class="rl-top"><a href="${savedView ? '/feed' : '/social'}" aria-label="${savedView ? 'Back to Cohabi Feed' : 'Back to Cohabi Social'}">←</a><h1>${savedView ? 'Saved videos' : 'Cohabi Feed'}</h1>${me ? '<a href="/social#compose" class="rl-add" aria-label="Post a video: on Cohabi Social, tap 🎬 Video">＋</a>' : '<a href="/signin?next=/feed" class="rl-add rl-signin">Sign in</a>'}</div>
+<main class="rl-stream" id="main">${savedView && !list.length ? `<section class="rl-end"><p><strong>Nothing saved yet.</strong></p><p>Tap 📑 Save on any video to keep it here. Only you can see this list.</p><a class="rl-pill" href="/feed">Back to Cohabi Feed</a></section>` : list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/social">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/social#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
 <p class="rl-toast" role="status" aria-live="polite"></p>
 ${bottomNav(me, 'feed')}
 ${messengerWidget(me)}
