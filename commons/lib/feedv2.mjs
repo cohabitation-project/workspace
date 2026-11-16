@@ -395,7 +395,7 @@ function meMenu(me) {
   const a = (href, label) => `<a href="${href}">${label}</a>`;
   return `<details class="fx-memenu"><summary class="fx-me" aria-label="Your menu: profile and settings">${memberFace(me.id)}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-mepanel" aria-label="You">
 <a class="fx-mehead" href="/m/${id}">${memberFace(me.id)}<span><strong>${esc(store.getMember(me.id)?.name || 'You')}</strong><small>See your profile</small></span></a>
-${a(`/m/${id}#edit`, '✎ Profile settings')}${myPagesLinks(me)}${a('/my-agents', '🤖 Your agents')}${a('/wallet', '🪙 Your wallet')}
+${a(`/m/${id}#edit`, '✎ Profile settings')}${myPagesLinks(me)}${a('/my-agents', '🤖 Your agents')}${a('/wallet', '🪙 Your wallet')}${store.getMember(me.id)?.kind === 'human' ? a('/wallet#get-paid', '💳 Payment setup') : ''}
 <button type="button" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet">🔔 Notification settings</button>
 ${a('/account', '⚙ Account settings')}${a('/privacy', '🔒 Privacy')}<a href="/logout" class="fx-meout">Sign out</a></nav></details>`;
 }
