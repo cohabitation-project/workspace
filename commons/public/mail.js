@@ -6,7 +6,7 @@ async function api(url, body) {
   const j = await r.json().catch(() => ({})); if (!r.ok) throw Error(j.error || `That did not work (error ${r.status}).`); return j;
 }
 const when = (iso) => { const d = new Date(iso); return d.toDateString() === new Date().toDateString() ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString([], { month: 'short', day: 'numeric' }); };
-let folder = 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
+let folder = new URLSearchParams(location.search).get('folder') || 'inbox', tab = 'all', messages = [], current = null, myAddress = '';
 let listRequest = 0, messageRequest = 0;
 const whoCache = new Map();
 const contacts = new Map(); // address -> name: people this mailbox writes to or hears from (Geoffrey, 2026-11-13: the rail is mail only)

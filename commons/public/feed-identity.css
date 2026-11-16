@@ -220,3 +220,7 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
 .fx-app-menu .cm-sub > summary { display:flex; align-items:center; min-height:44px; padding:10px 12px; border-radius:6px; color:var(--ink) !important; font-size:14px; background:none; }
 .fx-app-menu .cm-sub > summary:hover { background:#e9ddf4; }
 .fx-app-menu .cm-sub[open] > a { padding-left:28px; font-size:13px; background:#f5f1eb; margin-top:2px; }
+.fx-app-menu .cm-sub[open] > details.cm-sub2 > summary{padding-left:28px;font-size:13px}
+.fx-app-menu .cm-sub2[open] > a{padding-left:44px}
+.fx-app-menu .cm-sub .cm-h{padding-left:28px}
+.fx-app-menu .cm-note{margin:4px 0 4px 44px;font-size:12px;color:#7a6f86}
