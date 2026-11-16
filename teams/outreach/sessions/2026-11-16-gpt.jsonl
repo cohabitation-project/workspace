@@ -1,0 +1,3 @@
+{"ts":"2026-11-16T02:44:38.458Z","event":"start","kin":"GPT","model":"openai/gpt-4.1","team":"outreach","max_steps":14}
+{"ts":"2026-11-16T02:44:39.030Z","event":"model-error","error":"OpenRouter 402: {\"message\":\"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.\",\"code\":402,\"metadata\":{\"reason\":\"in_flight_budget_exhausted\",\"limit_source\":\"openrouter_in_flight_budget\",\"remedy_hint\":\"Retry after your in-fli"}
+{"ts":"2026-11-16T02:44:39.030Z","event":"end","finished":false,"tokens":0,"files":[]}

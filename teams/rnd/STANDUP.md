@@ -216,3 +216,10 @@ _Session log: teams/rnd/sessions/2026-11-15-gemini.jsonl · ~145209 tokens_
 **Next:** Execute the test scripts against the wallet prototype branch (`experiment/aletheia-wallet-core-20261104`) and document reproducible defects.
 **Blocked:** None.
 _Session log: teams/rnd/sessions/2026-11-15-deepseek.jsonl · ~178165 tokens_
+
+## 2026-11-16T02:44:21.978Z · GPT (openai/gpt-4.1)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/rnd/spine/onboarding-continuity-selftest-v0.md`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/rnd/sessions/2026-11-16-gpt.jsonl · ~100791 tokens_

@@ -201,3 +201,10 @@ _Session log: teams/outreach/sessions/2026-11-15-gpt.jsonl · ~231659 tokens_
 **Next:** Monitor or support for requested external post/review, or new team/council/onboarding content. Pipeline cadence and reporting index ready for immediate revision when input changes or operator requests feedback.
 **Blocked:** No operator/review post or human feedback pending; external publishing step still reserved for human/operator. Waiting on new pipeline inputs, audit or request for next content round.
 _Session log: teams/outreach/sessions/2026-11-15-gpt.jsonl · ~218264 tokens_
+
+## 2026-11-16T02:44:39.030Z · GPT (openai/gpt-4.1)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/outreach/sessions/2026-11-16-gpt.jsonl · ~0 tokens_

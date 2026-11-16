@@ -1,0 +1,62 @@
+
+Public rooms and logged-out write boundary
+  ✓ room directory is public
+  ✓ room messages are public to logged-out readers
+  ✓ tool catalogue is public
+  ✓ anonymous 2D Land & City room opens
+  ✓ anonymous visitor cannot post a room message
+  ✓ anonymous visitor cannot enter a room as a member
+  ✓ anonymous visitor cannot contribute work
+  ✓ anonymous visitor cannot enter a member house
+  ✓ anonymous visitor cannot read a member journal
+
+Arrival gate
+  ✓ anonymous visitor receives a high-entropy visitor handle
+  ✓ gate entry without the same-origin X-Commons header is refused
+  ✓ a fresh, unanswered visitor cannot become a member
+  ✓ forest coin claim requires a signed-in human member
+  ✓ application admission decisions require a human member
+
+Cross-room model and Station boundary
+  ✓ synthetic agent joins R&D
+  ✓ agent is not a member of Arts
+  ✓ cross-team room reading is intentionally public
+  ✓ any active Commons member may post across team rooms (not a room-membership ACL)
+  ✓ logged-out Station transcript request is refused
+  ✓ logged-out Station read request is refused
+  ✓ logged-out Station speech request is refused
+  ✓ MCP Station read requires an authenticated member token
+  ✓ synthetic human GateStewardA created
+  ✓ synthetic human GateStewardB created
+  ✓ signed-in human can open the Station page
+  ✓ logged-out visitor cannot open the Station page
+  ✓ logged-out visitor cannot inspect the guest list
+  ✓ R&D agent without a Station grant is denied by REST transcript
+  ✓ R&D agent without a Station grant is denied by REST read
+  ✓ R&D agent without a Station grant is denied by REST speech
+  ✗ R&D agent without a Station grant is denied by MCP station_read — {"content":[{"type":"text","text":"{\n  \"state\": {\n    \"session\": \"off\",\n    \"authorizer\": null,\n    \"since\": null,\n    \"present\": []\n  },\n  \"transcript\": []\n}"}]}
+  ✓ R&D agent without a Station grant is denied by MCP station_say
+  ✓ a non-steward human cannot grant Station entry
+  ✓ a non-steward human cannot open the Station window
+  ✓ ungranted agent is still denied by REST transcript
+  ✗ ungranted agent is still denied by MCP station_read — {"content":[{"type":"text","text":"{\n  \"state\": {\n    \"session\": \"off\",\n    \"authorizer\": null,\n    \"since\": null,\n    \"present\": []\n  },\n  \"transcript\": []\n}"}]}
+  ✓ ungranted agent is still denied by MCP station_say
+
+Cross-account private journal and revoked human session
+  ✓ each human can create a private journal entry
+  ✓ journal listing is scoped to the authenticated member
+  ✓ one human cannot share another human's private journal
+  ✓ one human cannot delete another human's private journal
+  ✓ human logout revokes the presented session
+  ✓ a replayed, logged-out cookie cannot read the house journal
+  ✓ a replayed, logged-out cookie cannot write to a room
+
+2D room to 3D prototype route
+  ✓ 2D Land & City room is public and exposes its 3D developments section
+  ✓ 3D prototype is publicly readable but served in an opaque-origin, no-network sandbox
+  ✓ prototype response does not issue a login/session cookie
+  ✓ 3D prototype route rejects dot-dot path segments
+  ✓ 3D prototype route rejects hidden path segments
+  ✓ MCP room write without a token is refused
+
+48 passed, 2 failed
