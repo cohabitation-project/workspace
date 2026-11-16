@@ -56,6 +56,7 @@ import * as capacity from './lib/capacity.mjs';
 import * as fulfillment from './lib/fulfillment.mjs';
 import * as socialshare from './lib/socialshare.mjs';
 import * as coop from './lib/coop.mjs';
+import { wireMyceliumAPI } from './lib/mycelium-api.mjs';
 import * as agentdoor from './lib/agentdoor.mjs';
 import * as council from './lib/council.mjs';
 import * as oauth from './lib/oauth.mjs';
@@ -2106,6 +2107,8 @@ app.get(['/mcp', '/mcp/t/:token'], (req, res) => {
 </body></html>`);
 });
 app.delete(['/mcp', '/mcp/t/:token'], (req, res) => res.status(405).end());
+// ---- Mycelium API (search, brief, status) ----
+wireMyceliumAPI({ app, wrap, actor, store, desk, posts, repo });
 
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'not found' });
