@@ -84,3 +84,19 @@ test('a channel that never answers is marked unknown, never re-sent', async () =
   assert.equal(r.status, 'unknown'); assert.ok(r.results.every((x) => x.unknown));
   await assert.rejects(share.approve(steward, q.id), /already unknown/);
 });
+
+test('Buffer answering without a post (500, or 200 with no id) is unknown; a plain refusal (4xx) is failed', async () => {
+  const author = store.getMember('h_author'); const steward = store.getMember('h_steward');
+  const answer = (status, body) => async () => ({ ok: status < 300, status, json: async () => body });
+  const run = async (status, body) => share.approve(steward, share.request(author, posts.create(author, { text: `case ${status} ${Math.random()}` }).id, 'https://cohabi.org').id, { fetchImpl: answer(status, body) });
+  const a = await run(500, { errors: [] }); // may have posted, then crashed
+  assert.equal(a.status, 'unknown'); assert.ok(a.results.every((x) => x.unknown && !x.ok));
+  const b = await run(200, { data: { createPost: {} } }); // 200 but no post id
+  assert.equal(b.status, 'unknown');
+  const c = await run(400, { errors: [{ message: 'bad channel' }] }); // a plain refusal: nothing was posted
+  assert.equal(c.status, 'failed'); assert.ok(c.results.every((x) => !x.unknown));
+  const d = await run(200, { data: { createPost: { message: 'Text too long' } } }); // Buffer names the error
+  assert.equal(d.status, 'failed');
+  const e = await run(200, { data: { createPost: { post: { id: 'bp_1' } } } }); // paired allow case
+  assert.equal(e.status, 'shared');
+});
