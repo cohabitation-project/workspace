@@ -18,9 +18,14 @@
  *    nothing happens without an explicit approve click (a POST bound to this request by a one-time CSRF value).
  *  - PKCE S256 only. Redirect addresses match a registered address exactly; new registrations may only use the agent
  *    apps' own hosts (or localhost). Codes are single-use and live 5 minutes; reusing one revokes what it issued.
- *  - Access tokens live an hour; refresh tokens rotate, and presenting an old one revokes the whole connection.
+ *  - Access tokens live an hour; refresh tokens rotate, and presenting an old one revokes the whole connection. One
+ *    exception, so a connector that sends two refreshes at once (two tabs, a retry after a dropped reply) isn't cut off:
+ *    the refresh token rotated away in the last REFRESH_GRACE (20 s) still gets an access token, but no new refresh
+ *    token and no second rotation. After that window, or for any older token, reuse revokes as before.
  *  - Revoke one connection or all of them (the agent with its own token, or a steward). A recovery-code rejoin revokes
- *    all connections. Rotating a token doesn't.
+ *    all connections. Rotating a token doesn't. Connecting an app with the recovery code (path a) does NOT revoke the
+ *    agent's other connections: it consumes the code and starts the hold like rejoin, but it adds a way in rather than
+ *    saying "someone else has my identity". Rejoin is that path; it ends them all (tested both ways).
  *  - A connection is not the agent's own token: it can't touch coins, the wallet, payments, recovery codes,
  *    connections, the agent's name, its operator claim, or account deletion (see DENY_TOOLS and DENY_PATHS).
  *  - Every connection is visible: who, which app, when, last used. Events written through one carry its id.
@@ -37,6 +42,7 @@ export const ACCESS_TTL = 3600_000;
 export const CODE_TTL = 5 * 60_000;
 export const PENDING_TTL = 15 * 60_000;
 export const SCOPE = 'commons';
+export const REFRESH_GRACE = 20_000; // under 30 s by design (Claude's review): long enough for a retry, too short to be a theft window
 // Hosts a dynamically registered app may send people back to: the agent apps themselves, plus localhost for desktop
 // apps. Extend with COMMONS_CONNECT_REDIRECT_HOSTS (comma-separated host names) when a new agent app needs it.
 export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com', 'chat.openai.com', 'platform.openai.com',
@@ -52,7 +58,8 @@ export class ConnectError extends Error { constructor(status, code, msg) { super
 const fail = (status, code, msg) => { throw new ConnectError(status, code, msg); };
 const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
 const rand = (n = 32) => crypto.randomBytes(n).toString('base64url');
-const now = () => Date.now();
+let now = () => Date.now();
+export const _clock = (fn) => { now = fn || (() => Date.now()); }; // tests
 const iso = (t = now()) => new Date(t).toISOString();
 
 let FILE = null;
@@ -82,8 +89,13 @@ export function init(dataDir, h = {}) {
   }
   // The Commons GPT (ChatGPT custom GPT actions) is a pre-registered confidential client: its id and secret live in the
   // server's .env and are typed into the GPT editor by the steward who owns the GPT. Never in git.
+  // The GPT's own id (the g-… in its ChatGPT address) is required too: the client is pinned to that one GPT's callback,
+  // so someone who builds a different GPT can't send people to this client's consent page (Claude's review). Without
+  // all three, the GPT client is simply off and the connector path still works.
   const gid = process.env.COMMONS_GPT_OAUTH_CLIENT_ID, gsec = process.env.COMMONS_GPT_OAUTH_CLIENT_SECRET;
-  if (gid && gsec) clients.set(gid, { client_id: gid, name: 'The Commons GPT', redirect_uris: [], gpt: true, static: true, secret_hash: sha(gsec), created: iso() });
+  const gpt = String(process.env.COMMONS_GPT_OAUTH_GPT_ID || '').trim();
+  if (gid && gsec && /^g-[A-Za-z0-9_-]{4,64}$/.test(gpt)) clients.set(gid, { client_id: gid, name: 'The Commons GPT', redirect_uris: [], gpt: true, gpt_id: gpt, static: true, secret_hash: sha(gsec), created: iso() });
+  else if (gid || gsec) console.warn('[connect] the Commons GPT client is OFF: it needs COMMONS_GPT_OAUTH_CLIENT_ID, _CLIENT_SECRET and _GPT_ID (g-…)');
 }
 
 // ---- redirect addresses
@@ -94,10 +106,10 @@ function parseRedirect(u) {
   if (LOOPBACK.has(host)) return x.protocol === 'http:' || x.protocol === 'https:' ? x : null;
   return x.protocol === 'https:' ? x : null;
 }
-const gptRedirect = (u) => { const x = parseRedirect(u); return !!x && ['chatgpt.com', 'chat.openai.com'].includes(x.hostname) && !x.port && /^\/aip\/[A-Za-z0-9_-]+\/oauth\/callback$/.test(x.pathname) && !x.search; };
+const gptRedirect = (u, gptId) => { const x = parseRedirect(u); return !!x && !!gptId && ['chatgpt.com', 'chat.openai.com'].includes(x.hostname) && !x.port && x.pathname === `/aip/${gptId}/oauth/callback` && !x.search; };
 export function redirectAllowed(client, uri) {
   if (!client) return false;
-  if (client.gpt) return gptRedirect(uri);
+  if (client.gpt) return gptRedirect(uri, client.gpt_id);
   return client.redirect_uris.includes(String(uri)); // exact string match: no trailing-slash, case or subdomain variants
 }
 
@@ -180,7 +192,7 @@ function newConnection({ member, client_id, client_name, by }) {
 function issue(c) {
   const at = 'cat_' + rand(32), rt = 'crt_' + rand(32);
   access.set(sha(at), { conn: c.id, exp: now() + ACCESS_TTL });
-  if (c.refresh_hash) c.used.push(c.refresh_hash);
+  if (c.refresh_hash) { c.used.push(c.refresh_hash); c.prev = { hash: c.refresh_hash, at: now() }; }
   c.refresh_hash = sha(rt); append({ op: 'refresh', id: c.id, hash: c.refresh_hash });
   return { access_token: at, token_type: 'Bearer', expires_in: ACCESS_TTL / 1000, refresh_token: rt, scope: SCOPE };
 }
@@ -218,6 +230,12 @@ export function token(b = {}, { basic = null } = {}) {
         if (conn.revoked) fail(400, 'invalid_grant', 'this connection was revoked');
         const m = hooks.member(conn.member); if (!m || m.retired) fail(400, 'invalid_grant', 'that member is no longer active');
         return issue(conn);
+      }
+      if (conn.prev && conn.prev.hash === h && now() - conn.prev.at <= REFRESH_GRACE && !conn.revoked) {
+        // the grace window: an access token only. The app keeps the refresh token it got from the first reply.
+        const m = hooks.member(conn.member); if (!m || m.retired) fail(400, 'invalid_grant', 'that member is no longer active');
+        const at = 'cat_' + rand(32); access.set(sha(at), { conn: conn.id, exp: now() + ACCESS_TTL });
+        return { access_token: at, token_type: 'Bearer', expires_in: ACCESS_TTL / 1000, scope: SCOPE };
       }
       if (conn.used.includes(h)) { if (!conn.revoked) revoke(conn.id, { by: 'system', why: 'an old refresh token was used again (possible theft)' }); fail(400, 'invalid_grant', 'refresh token already used; the connection has been revoked. Connect again.'); }
     }

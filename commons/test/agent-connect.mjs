@@ -151,9 +151,17 @@ test('the confirmed operator can connect the agent without its code; others cann
   // refresh rotates; the old refresh token, used again, revokes the connection
   const r1 = await form('/oauth/token', { grant_type: 'refresh_token', refresh_token: refresh, client_id: client.client_id }); assert.equal(r1.status, 200);
   const n1 = await r1.json(); assert.notEqual(n1.refresh_token, refresh); assert.match((await tool(n1.access_token, 'whoami')).text, /Lumen/);
+  // a second refresh with the just-rotated token, seconds later (two tabs, a retry): the grace window gives an access
+  // token but no new refresh token, and the connection lives
+  const twin = await form('/oauth/token', { grant_type: 'refresh_token', refresh_token: refresh, client_id: client.client_id }); assert.equal(twin.status, 200);
+  const tw = await twin.json(); assert.equal(tw.refresh_token, undefined, 'grace gives no new refresh token');
+  assert.equal((await mcp(tw.access_token, 'tools/list')).status, 200); assert.equal((await mcp(n1.access_token, 'tools/list')).status, 200);
+  // rotate once more; now the first token is two rotations old, outside any grace: reuse revokes the connection
+  const r2 = await form('/oauth/token', { grant_type: 'refresh_token', refresh_token: n1.refresh_token, client_id: client.client_id }); assert.equal(r2.status, 200);
+  const n2 = await r2.json();
   const stolen = await form('/oauth/token', { grant_type: 'refresh_token', refresh_token: refresh, client_id: client.client_id }); assert.equal(stolen.status, 400);
-  assert.equal((await mcp(n1.access_token, 'tools/list')).status, 401, 'refresh reuse revoked the connection');
-  const dead = await form('/oauth/token', { grant_type: 'refresh_token', refresh_token: n1.refresh_token, client_id: client.client_id }); assert.equal(dead.status, 400);
+  assert.equal((await mcp(n2.access_token, 'tools/list')).status, 401, 'refresh reuse revoked the connection');
+  const dead = await form('/oauth/token', { grant_type: 'refresh_token', refresh_token: n2.refresh_token, client_id: client.client_id }); assert.equal(dead.status, 400);
 });
 
 test('the agent revokes its own connections; a recovery-code rejoin ends them all', async () => {
@@ -189,7 +197,11 @@ test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-Ch
   process.env.COMMONS_GPT_OAUTH_CLIENT_ID = 'commons-gpt'; process.env.COMMONS_GPT_OAUTH_CLIENT_SECRET = 's3cret-' + 'x'.repeat(30);
   const ac = await import('../lib/agentconnect.mjs?gpt');
   const m = { id: 'a_1', name: 'Aster', kind: 'agent' };
-  ac.init(D, { member: (id) => (id === m.id ? m : null), memberByName: () => m, isConfirmedOperator: () => false, useRecoveryCode: () => m, event: () => {} });
+  const hooks = { member: (id) => (id === m.id ? m : null), memberByName: () => m, isConfirmedOperator: () => false, useRecoveryCode: () => m, event: () => {} };
+  // without the GPT's own id the client stays off (pin required); with it, only that GPT's callback is accepted
+  delete process.env.COMMONS_GPT_OAUTH_GPT_ID; ac.init(D, hooks); assert.equal(ac.client('commons-gpt'), null, 'no GPT id: client off');
+  process.env.COMMONS_GPT_OAUTH_GPT_ID = 'g-abc123'; ac.init(D, hooks); assert.ok(ac.client('commons-gpt'), 'pinned: client on');
+  assert.throws(() => ac.startAuthorize({ client_id: 'commons-gpt', redirect_uri: 'https://chatgpt.com/aip/g-other999/oauth/callback', response_type: 'code', state: 's' }), /redirect/, 'another GPT is refused');
   const cb = 'https://chatgpt.com/aip/g-abc123/oauth/callback';
   assert.throws(() => ac.startAuthorize({ client_id: 'commons-gpt', redirect_uri: 'https://evil.example/aip/g-abc123/oauth/callback', response_type: 'code', state: 's' }), /redirect/);
   assert.throws(() => ac.startAuthorize({ client_id: 'commons-gpt', redirect_uri: cb, response_type: 'code', state: 's', code_challenge_method: 'plain', code_challenge: 'a'.repeat(43) }), (e) => /S256/.test(e.message));
@@ -202,4 +214,28 @@ test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-Ch
   // a public client can never skip PKCE
   const pub = ac.register({ client_name: 'x', redirect_uris: ['https://claude.ai/cb'] });
   assert.throws(() => ac.startAuthorize({ client_id: pub.client_id, redirect_uri: 'https://claude.ai/cb', response_type: 'code', state: 's' }), (e) => /code_challenge|S256/.test(e.message));
+});
+
+test('refresh grace: within 20 s the just-rotated token gets an access token only; after it, reuse revokes', () => {
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'connect-grace-'));
+  return import('../lib/agentconnect.mjs?grace').then((ac) => {
+    let t = 1_000_000; ac._clock(() => t);
+    const m = { id: 'a_2', name: 'Wren', kind: 'agent' };
+    ac.init(D, { member: (id) => (id === m.id ? m : null), memberByName: () => m, isConfirmedOperator: () => true, useRecoveryCode: () => m, event: () => {} });
+    const pub = ac.register({ client_name: 'x', redirect_uris: ['https://claude.ai/cb'] });
+    const connect = (how) => { const ch = pkce(); const st = ac.startAuthorize({ client_id: pub.client_id, redirect_uri: 'https://claude.ai/cb', response_type: 'code', state: 's', code_challenge: ch.challenge, code_challenge_method: 'S256' });
+      const out = ac.decide({ request: st.request, csrf: st.csrf, action: 'approve', how, name: 'Wren', recovery: 'r', agent: m.id }, { human: { id: 'h_1', kind: 'human', name: 'Opal' } });
+      return ac.token({ grant_type: 'authorization_code', code: new URL(out.redirect).searchParams.get('code'), redirect_uri: 'https://claude.ai/cb', client_id: pub.client_id, code_verifier: ch.verifier }); };
+    const first = connect('operator');
+    const r1 = ac.token({ grant_type: 'refresh_token', refresh_token: first.refresh_token, client_id: pub.client_id });
+    t += 19_000; const g = ac.token({ grant_type: 'refresh_token', refresh_token: first.refresh_token, client_id: pub.client_id });
+    assert.ok(g.access_token && !g.refresh_token, 'inside the window: access only'); assert.ok(ac.resolve(r1.access_token), 'connection alive');
+    t += 2_000; assert.throws(() => ac.token({ grant_type: 'refresh_token', refresh_token: first.refresh_token, client_id: pub.client_id }), /already used/, 'past 20 s: reuse');
+    assert.equal(ac.resolve(r1.access_token), null, 'and the connection is revoked');
+    // path (a), connecting with the recovery code, adds a way in: it does not revoke the agent's other connections
+    const op = connect('operator'); const viaCode = connect('recovery');
+    assert.ok(ac.resolve(op.access_token), 'the operator-made connection survives a code connect');
+    assert.ok(ac.resolve(viaCode.access_token));
+    ac._clock(null);
+  });
 });

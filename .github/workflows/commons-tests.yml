@@ -11,6 +11,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      # An unreadable workflow file shows no run at all, which looks like silence, not failure (an unquoted "OAuth: …"
+      # step name did exactly that on 2026-11-16). Parse every workflow so a broken one fails loudly here instead.
+      - name: "Workflow files parse (YAML)"
+        run: python3 -c "import sys, glob, yaml; [yaml.safe_load(open(f)) for f in glob.glob('.github/workflows/*.y*ml')]; print('workflows ok')"
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
       - run: npm ci
