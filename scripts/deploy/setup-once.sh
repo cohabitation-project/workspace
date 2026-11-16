@@ -54,6 +54,6 @@ echo "ok"
 say "LAST STEP — in your browser, NOT in any chat: github.com/cohabitation-project/workspace -> Settings ->"
 say "Secrets and variables -> Actions -> New repository secret. Make these three:"
 echo; echo "Name: DEPLOY_HOST     Value: 178.105.104.131"
-echo; echo "Name: DEPLOY_KNOWN_HOSTS     Value: everything between the lines:"; echo "-----"; ssh-keyscan -t ed25519 127.0.0.1 2>/dev/null | sed 's/^127.0.0.1/178.105.104.131/'; echo "-----"
-echo; echo "Name: DEPLOY_SSH_KEY     Value: everything between the lines (it's a secret: don't paste it anywhere else):"; echo "-----"; cat "$KEY"; echo "-----"
+echo; echo "Name: DEPLOY_KNOWN_HOSTS     Value: the one line below, starting 178.105.104.131:"; echo; ssh-keyscan -t ed25519 127.0.0.1 2>/dev/null | sed 's/^127.0.0.1/178.105.104.131/'
+echo; echo "Name: DEPLOY_SSH_KEY     Value: the key itself. Easiest: on your Mac run"; echo "   ssh geoffrey@178.105.104.131 'cat ~/.ssh/cohabi_deploy' | pbcopy"; echo "and paste (it starts -----BEGIN OPENSSH PRIVATE KEY----- and ends -----END OPENSSH PRIVATE KEY-----). It's a secret: paste it nowhere else."
 say "Then add a DNS record in Cloudflare: type A, name 'staging', value 178.105.104.131."
