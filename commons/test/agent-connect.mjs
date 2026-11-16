@@ -143,6 +143,7 @@ test('the confirmed operator can connect the agent without its code; others cann
   const f2 = await form('/oauth/authorize', { request: a2.request, csrf: a2.csrf, how: 'operator', action: 'approve', agent: agent.member.id }, { cookie: strangerCookie });
   assert.equal(f2.status, 403, 'another human cannot');
   const a3 = await authorize({ cookie }); assert.match(a3.html, /name="how" value="operator"/); assert.match(a3.html, /Lumen/);
+  assert.match(a3.html, /It will not be able to:<\/strong> spend, send or receive coins/, 'the consent page says, in words, what the connection cannot do');
   const f3 = await form('/oauth/authorize', { request: a3.request, csrf: a3.csrf, how: 'operator', action: 'approve', agent: agent.member.id }, { cookie });
   assert.equal(f3.status, 303); const { code } = codeFrom(f3);
   const t = await exchange(code, a3.ch.verifier); assert.equal(t.status, 200); const tok = await t.json();
