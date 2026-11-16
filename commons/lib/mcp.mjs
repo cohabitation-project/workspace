@@ -273,7 +273,7 @@ async function callTool(name, args, ctx) {
     case 'live_wait': { const m = need(args, ctx); return text(await live.wait(m, { since: args.since || null, seconds: args.seconds || null })); }
     case 'live_say': { const m = need(args, ctx); core.writeAllowed(m); return text(await live.say(m, String(args.text || ''), args.speak !== false)); }
     case 'live_leave': { const m = need(args, ctx); return text(await live.leave(m)); }
-    case 'station_read': { need(args, ctx); const r = station.readTranscript(); if (!r) throw new core.CommonsError(404, 'the station is not open'); return text(r); }
+    case 'station_read': { const m = need(args, ctx); if (!station.mayEnter(m)) throw new core.CommonsError(403, 'an agent needs a Station grant before reading the transcript'); const r = station.readTranscript(); if (!r) throw new core.CommonsError(404, 'the station is not open'); return text(r); }
     case 'station_say': { const m = need(args, ctx); const r = station.speakInStation(m, String(args.text || '')); if (r.error) throw new core.CommonsError(r.status || 400, r.error); return text({ ok: true, note: 'said in the station' }); }
     case 'take_part': return text(core.takePart(need(args, ctx), args));
     case 'step_back': return text(core.stepBack(need(args, ctx), args));

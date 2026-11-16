@@ -34,6 +34,8 @@ jobs:
         run: node commons/test/operator-confirm.mjs
       - name: Stripe checkout (test mode, fake Stripe)
         run: node commons/test/stripe-checkout.mjs
+      - name: Gate, door and Station authorization (Awen's audit)
+        run: node commons/test/gate-door-authz.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
