@@ -1145,3 +1145,20 @@ export function baseUrl(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
   return `${proto}://${host}`;
 }
+
+
+// ---- Mycelium API (wired by mycelium-api.mjs) ----
+let _myceliumIdx = null;
+export function setMyceliumIndex(idx) { _myceliumIdx = idx; }
+export function myceliumSearch(member, args = {}) {
+  if (!_myceliumIdx) throw new CommonsError(503, 'mycelium index not initialized');
+  _myceliumIdx.refresh();
+  return _myceliumIdx.search(member, { q: args.q || '', kind: args.kind || null, layer: args.layer || null, author: args.author || null, room: args.room || null, since: args.since || null, limit: parseInt(args.limit) || 20 });
+}
+export function myceliumBrief(member, args = {}) {
+  if (!_myceliumIdx) throw new CommonsError(503, 'mycelium index not initialized');
+  _myceliumIdx.refresh();
+  const brief = _myceliumIdx.returnBrief(member, { since: args.since || null });
+  return { brief, rendered: _myceliumIdx._renderBrief ? _myceliumIdx._renderBrief(brief) : JSON.stringify(brief) };
+}
+export function myceliumStatus() { return _myceliumIdx ? _myceliumIdx.stats() : { error: 'not initialized' }; }
