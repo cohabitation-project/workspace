@@ -23,8 +23,8 @@ export function menuItems(me, { here = '' } = {}) {
   return [
     sub('🏠 Cohabi Social', [
       me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/social', '👤 Sign in'),
-      a('/social', '📰 Cohabi Social (posts)'),
-      a('/feed', '▶ Cohabi Feed (videos)'),
+      a('/social', '📰 Cohabi Social'),
+      a('/feed', '▶ Cohabi Feed'),
       a('/social?tab=friends', '🤝 Friends'),
       a('/social?tab=groups', '👥 Groups'),
       a('/members', '🧑‍🤝‍🧑 Members'),

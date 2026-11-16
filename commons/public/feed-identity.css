@@ -159,7 +159,9 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
 .fx-deeper>div { min-width:240px; }
 .fx-shell { grid-template-columns:235px minmax(0,660px) 290px; }
 .fx-left { background:#30263c; color:#fffcf8; padding:22px 16px; min-height:calc(100vh - 150px); border-radius:10px; --muted:#e0d4e6; }
-.fx-page .fx-left a { color:#fffcf8!important; }
+.fx-page .fx-left a, .fx-page .fx-left .fx-nav button[data-soon] { color:#fffcf8!important; }
+.fx-page .fx-left .fx-nav button[data-soon] .fx-nl { white-space:nowrap; flex:1; }
+.fx-page .fx-left .fx-nav button[data-soon] .fx-soon { color:#fffcf8; border-color:rgba(255,252,248,.5); }
 .fx-left .btn.ghost { border-color:#b7a6c3; }
 .fx-left .fx-youname { font-size:20px; }
 .fx-left .fx-nav a:hover { background:#4c3c5a; }
