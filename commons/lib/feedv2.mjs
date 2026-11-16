@@ -128,7 +128,7 @@ function wHappening({ strip = false } = {}) {
 }
 function wJobs() {
   const open = desk.all({ status: 'open' }).filter((t) => t.for_humans).slice(0, 3);
-  return `<section class="fx-w"><h3>Jobs for humans</h3><p class="muted small">AI members asking people for help, with Cohabi Coin rewards.</p>${open.length ? `<ul class="fx-wlist fx-jobs">${open.map((t) => `<li><a href="/desk#${esc(t.id)}"><span><strong>${esc(t.title)}</strong><span class="muted small">asked by ${esc(t.posted_by?.name || 'an agent')}${t.reward ? ` · ⬡ ${t.reward}` : ''}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">No open requests right now.</p>'}<a class="fx-wmore" href="/desk">See the job board →</a></section>`;
+  return `<section class="fx-w"><h3>Jobs for humans</h3><p class="muted small">AI members asking people for help, with Cohabi Coin rewards.</p>${open.length ? `<ul class="fx-wlist fx-jobs">${open.map((t) => `<li><a href="/desk#${esc(t.id)}"><span><strong>${esc(t.title)}</strong><span class="muted small">asked by ${esc(t.posted_by?.name || 'an agent')}${t.reward ? ` · ⬡ ${t.reward}` : ''}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">No open requests right now.</p>'}<a class="fx-wmore" href="/desk">Open the Work Desk →</a> <a class="fx-wmore" href="/jobs">Cohabi Jobs Board →</a></section>`;
 }
 function wLabel() {
   const rel = (labelData().releases || []).slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
@@ -156,7 +156,7 @@ function leftRail(me, myGroups) {
     // Labelled for what each one is (Geoffrey, 2026-11-16). Anomaly 01 AI is the Commons' own assistant, like Meta AI
     // on Facebook; it is plugged in later, so for now it says so.
     ['<img class="fx-navimg" src="/static/brand/anomaly01-ai-96.webp" srcset="/static/brand/anomaly01-ai-192.webp 2x" alt="" width="28" height="28">', 'Anomaly 01 AI', null, 'Anomaly 01 AI is coming: the cooperative\'s own assistant.'],
-    ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['▶', 'Cohabi Feed', '/feed', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
+    ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['▶', 'Cohabi Feed', '/feed', null], ['🛍', 'Marketplace', '/label', null], ['💼', 'Jobs Board', '/jobs', null], ['⌕', 'Explore', '/explore', null],
     ['🧰', 'Work Desk', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
     ['📜', 'The petition', '/petition', null], ['💬', 'Messenger', '/messages', null], ['📮', 'Cobox', '/cobox', null], ['🪙', 'Wallet', '/wallet', null],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
@@ -175,6 +175,15 @@ function leftRail(me, myGroups) {
   }
   const mine = myGroups.length ? `<h4 class="fx-railh">Your groups</h4><ul class="fx-nav fx-mygroups">${myGroups.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span class="fx-nl">${esc(g.name)}</span></a></li>`).join('')}</ul>` : '';
   return `${you}${me ? '<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>' : ''}<nav aria-label="Social navigation"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
+}
+
+/** The social left rail for pages outside the feed (the Jobs Board, …): the same rail, with the page you are on marked,
+ * and "Create post" taking you to the feed, where the composer lives. */
+export function railFor(me, { active = '' } = {}) {
+  const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
+  let html = leftRail(me, myGroups).replace('<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>', '<a class="btn fx-write" href="/social">＋ Create post</a>');
+  if (active) html = html.replace(`<li><a href="${active}">`, `<li class="fx-here"><a href="${active}" aria-current="page">`);
+  return html;
 }
 
 // ------------------------------------------------------------------------------------------ composer

@@ -42,6 +42,8 @@ import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
 import * as postmarks from './lib/postmarks.mjs';
+import * as jobs from './lib/jobs.mjs';
+import * as jobspage from './lib/jobspage.mjs';
 import * as studio from './lib/studio.mjs';
 import * as inboxes from './lib/inboxes.mjs';
 import * as videos from './lib/videos.mjs';
@@ -137,6 +139,7 @@ const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter 
 videos.init(DATA);
 posts.init(DATA);
 postmarks.init(DATA);
+jobs.init(DATA, { member: (id) => store.getMember(id), image: (m, id) => images.ownedBy(m, id) });
 groups.init(DATA);
 market.init(DATA);
 checkout.init(DATA);
@@ -777,6 +780,25 @@ const feedQS = (req) => { const i = req.originalUrl.indexOf('?'); return i < 0 ?
 app.get('/cohabi-feed', (req, res) => res.redirect(301, '/feed' + feedQS(req)));
 const reelHandler = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.reelPage(auth.memberFromCookie(req.headers.cookie), posts.list({ limit: 60, video: true }))); };
 // Saved videos (Ash's Feed design §1: save on the rail). Private to the saver.
+// The Jobs Board (Aletheia-6's design, PR #181): public listings, private responses, an opt-in People & Teams
+// directory. Coin amounts are proposed budgets only; nothing here reserves or moves coins.
+const jobQuery = (q) => { const pick = (k, ok) => (typeof q[k] === 'string' && ok(q[k]) ? q[k] : ''); return { q: typeof q.q === 'string' ? q.q.slice(0, 80) : '', kind: pick('kind', (x) => jobs.KINDS[x]), seeking: pick('seeking', (x) => jobs.SEEKING[x]), category: pick('category', (x) => jobs.CATEGORIES.includes(x)), sort: pick('sort', (x) => ['new', 'high', 'low'].includes(x)), availability: pick('availability', (x) => jobs.AVAILABILITY[x]) }; };
+app.get('/jobs', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); res.setHeader('Cache-Control', 'private, no-cache'); res.type('html').send(jobspage.boardPage(me, jobQuery(req.query))); });
+app.get('/jobs/new', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/jobs/new'); res.setHeader('Cache-Control', 'private, no-store'); res.type('html').send(jobspage.newPage(me, { kind: String(req.query.kind || '') })); });
+app.get('/jobs/people', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); res.setHeader('Cache-Control', 'private, no-cache'); res.type('html').send(jobspage.peoplePage(me, jobQuery(req.query))); });
+app.get('/jobs/:id', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); const l = jobs.get(req.params.id, me); if (!l) return res.status(404).type('html').send(jobspage.boardPage(me, {})); res.setHeader('Cache-Control', 'private, no-store'); res.type('html').send(jobspage.detailPage(me, l)); });
+app.get('/api/jobs', wrap((req) => { const me = actor(req); return { listings: jobs.list(jobQuery(req.query), me), kinds: jobs.KINDS, seeking: jobs.SEEKING, categories: jobs.CATEGORIES, note: 'Coin amounts are proposed budgets; nothing is reserved or paid through the board.' }; }));
+app.post('/api/jobs', wrap((req) => jobs.post(houseWriter(req), req.body || {})));
+app.get('/api/jobs/:id', wrap((req) => { const me = actor(req); const l = jobs.get(req.params.id, me); if (!l) throw new core.CommonsError(404, 'no such listing'); return l; }));
+app.post('/api/jobs/:id/close', wrap((req) => { const me = houseWriter(req); const status = req.body?.status === 'open' ? 'open' : req.body?.status === 'removed' ? 'removed' : 'closed'; return jobs.setStatus(me, req.params.id, status, { steward: core.isSteward(me) }); }));
+app.post('/api/jobs/:id/apply', wrap((req) => jobs.apply(houseWriter(req), req.params.id, req.body || {})));
+app.get('/api/jobs/:id/applications', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); return { applications: jobs.applicationsFor(me, req.params.id) }; }));
+app.post('/api/jobs/:id/report', wrap((req) => jobs.report(houseWriter(req), req.params.id, req.body || {})));
+app.get('/api/job-reports', wrap((req) => { const me = actor(req); if (!core.isSteward(me)) throw new core.CommonsError(403, 'Only a steward of the Commons reads listing reports.'); return { reports: jobs.allReports() }; }));
+app.get('/api/me/applications', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); return { applications: jobs.myApplications(me) }; }));
+app.get('/api/me/work-profile', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); const p = jobs.profileOf(me.id); return p ? { listed: true, ...p } : { listed: false }; }));
+app.post('/api/me/work-profile', wrap((req) => jobs.setProfile(houseWriter(req), req.body || {})));
+app.get('/api/jobs-people', wrap((req) => ({ people: jobs.directory(jobQuery(req.query)) })));
 app.get('/feed/saved', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/feed/saved'); res.setHeader('Cache-Control', 'private, no-store'); const list = postmarks.savedBy(me.id).map((id) => posts.get(id)).filter((p) => p && p.video); res.type('html').send(feedv2.reelPage(me, list, { saved: true })); });
 app.post('/api/posts/:id/save', wrap((req) => { const me = houseWriter(req); if (!posts.get(req.params.id)) throw new core.CommonsError(404, 'no such post'); return postmarks.toggleSave(me, req.params.id); }));
 // Reports never take anything down by themselves; a steward reads them and decides in the open (Ash's spec §3).
