@@ -507,3 +507,7 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 @media(max-width:700px){.av-intro>a{display:none}.av-intro h1{font-size:33px}.av-depts{gap:10px 7px;padding:12px 0 20px}.av-dept{font-size:10px;gap:7px}.av-spot{grid-template-columns:1fr;margin:5px 0 22px}.av-spotcopy{padding:23px}.av-spotcopy h2{font-size:31px}.av-spotvisual{height:165px;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr}.av-spotvisual img:first-child{grid-row:auto}.av-head{margin:25px 0 14px}.av-head h2{font-size:25px}.av-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 11px}.av-makers{grid-template-columns:1fr}.av-how{grid-template-columns:1fr;gap:4px;padding:16px}.av-cta{display:block;padding:24px;margin:28px 0}.av-cta a{display:inline-block;margin-top:15px}}
 .av-sort{font-size:12px;color:#56606c;display:flex;align-items:center;gap:8px;margin-left:auto}
 .av-sort select{border:1px solid #ddd;border-radius:7px;background:#fff;padding:8px;font-size:11px}
+/* A page's text follows its own theme (2026-11-16): the v3 market frame fixed the ink dark, so names and words on
+   dark-themed pages (music, midnight, navy, video, software — band and label pages by default) were dark on dark. */
+.mk-pagebody .mv-wrap{--mv-ink:var(--ink);--mv-muted:var(--muted);color:var(--ink)}
+.mk-pagebody .mv-pill{color:#292534!important}.mk-pagebody .mv-pill[aria-current="page"]{color:#fff!important}

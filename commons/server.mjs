@@ -42,6 +42,7 @@ import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
 import * as postmarks from './lib/postmarks.mjs';
+import * as studio from './lib/studio.mjs';
 import * as videos from './lib/videos.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
@@ -1469,7 +1470,9 @@ app.get('/label/new', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || ''), asPage: String(req.query.as || '') || null }));
 });
 // ---- band, artist and business pages (2026-11-07): run by members, from their own login
-app.get('/page/new', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/page/new'); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.newPageForm({ me })); });
+// Creator Studio (Aletheia-6's design, PR #167): the guided way to make a page. The one-screen form stays at /page/new/simple.
+app.get(['/page/new', '/studio'], (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/page/new'); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(studio.studioPage(me, { kind: String(req.query.kind || '') })); });
+app.get('/page/new/simple', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/page/new/simple'); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.newPageForm({ me })); });
 app.get('/page/:slug', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const pg = orgpages.findSlug(String(req.params.slug));
   if (!pg) return res.status(404).type('html').send(pages.notFound('No such page.', { me }));

@@ -255,3 +255,4 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
 .cx-tabpanel .cm-h { margin:6px 12px 0 26px; font:700 11px system-ui,sans-serif; letter-spacing:.04em; text-transform:uppercase; color:#6d6378; }
 .cx-tabpanel .cm-note { margin:4px 12px 4px 26px; font-size:13px; color:#6d6378; }
 .cx-tabpanel .cm-sub[open] > a, .cx-tabpanel .cm-sub[open] > .cm-h { display:block; }
+.cm-logo{width:20px;height:20px;border-radius:5px;object-fit:cover;vertical-align:-4px;display:inline-block}

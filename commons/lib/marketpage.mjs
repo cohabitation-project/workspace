@@ -124,7 +124,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
   // market's own section pills, then the search. Payment setup lives on the wallet ("Get paid").
   const pill = (href, label, on) => `<a class="mv-pill" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
   const pills = [pill('/label', 'Marketplace', !section), ...Object.entries(SHORT).map(([k, n]) => pill(`/label?cat=${k}`, n, k === section)),
-    me ? pill('/label/new', 'Creator Studio', section === 'studio') : '', me && me.kind === 'human' ? pill('/wallet#get-paid', 'Payment Setup', false) : ''].join('');
+    me ? pill('/studio', 'Creator Studio', section === 'studio') : '', me && me.kind === 'human' ? pill('/wallet#get-paid', 'Payment Setup', false) : ''].join('');
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -545,7 +545,7 @@ export function pagePage({ me, p, folder = null }) {
     ${shop}</div>
   </div>
   ${mgr ? editDialog(p, me) + membersDatalist() : ''}`;
-  return frame({ me, title: p.name, description: `${p.name}: ${profilekinds.BADGE[p.kind]} on Cohabi.`, section: orgpages.themeOf(p), center, scripts: ['/static/label.js', '/static/market.js', '/static/pages.js'] }).replace('<body class="fx-page mk-page"', `<body class="fx-page mk-page mk-pagebody"${p.accent ? ` style="--gold:${esc(p.accent)}"` : ''}`);
+  return frame({ me, title: p.name, description: `${p.name}: ${profilekinds.BADGE[p.kind]} on Cohabi.`, section: orgpages.themeOf(p), center, scripts: ['/static/label.js', '/static/market.js', '/static/pages.js'] }).replace('<body class="fx-page mk-page mv-page"', `<body class="fx-page mk-page mv-page mk-pagebody"${p.accent ? ` style="--gold:${esc(p.accent)}"` : ''}`); // the v3 frame added mv-page (2026-11-15), so this class and the accent had stopped applying
 }
 function editDialog(p, me) {
   const opt = (obj, cur) => Object.entries(obj).map(([k, n]) => `<option value="${esc(k)}"${k === cur ? ' selected' : ''}>${esc(n)}</option>`).join('');

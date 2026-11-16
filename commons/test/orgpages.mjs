@@ -63,7 +63,7 @@ const prof = await page(`/m/${owner.id}`, owner.ck);
 ok('your profile lists the pages you run, with Create a page', /pf-pages/.test(prof) && /href="\/page\/rollinhost"><strong>RollinHost<\/strong>/.test(prof) && /href="\/page\/new"/.test(prof));
 const menu = await page('/label', owner.ck);
 ok('the COHABI menu switches between your profile and your pages', /<span class="mk-menuh">You<\/span>/.test(menu) && /href="\/page\/rollinhost"/.test(menu));
-ok('Create a page has its own form', /id="pg-new"/.test(await page('/page/new', owner.ck)));
+ok('Create a page has its own form', /id="pg-new"/.test(await page('/page/new/simple', owner.ck)));
 ok('/api/me/pages lists them', (await call('/api/me/pages', null, owner.H, 'GET')).j.pages.some((x) => x.slug === 'rollinhost'));
 
 // record labels: a page that gathers band and artist pages
@@ -72,7 +72,7 @@ ok("the Label's own page lists its artists from the Label's record", /<h1>Last o
 ok('its banner shows the album covers', /class="mk-herocovers"/.test(lr));
 const ol = await call('/api/pages', { kind: 'label', name: 'Otto Records' }, other.H);
 ok('a member starts a record label page', ol.status === 201 && ol.j.kind === 'label');
-ok('the Create a page form offers a record label, and says it will cost something one day', /<option value="label">Record label<\/option>/.test(await page('/page/new', other.ck)) && /Starting a record label will cost something one day/.test(await page('/page/new', other.ck)));
+ok('the Create a page form offers a record label, and says it will cost something one day', /<option value="label">Record label<\/option>/.test(await page('/page/new/simple', other.ck)) && /Starting a record label will cost something one day/.test(await page('/page/new/simple', other.ck)));
 const addA = await call(`/api/pages/${ol.j.id}`, { add_artist: 'the-sunday-room' }, other.H, 'PATCH');
 ok('a label adds a band page its manager also runs', addA.status === 200 && addA.j.roster.includes('the-sunday-room'));
 const gl = await call('/api/pages', { kind: 'label', name: 'Gemma Label' }, g.H);

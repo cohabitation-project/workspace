@@ -388,7 +388,7 @@ export function appHeader(me, section='social') {
  * with your profile, its settings, your pages and agents, account settings and sign out. */
 function myPagesLinks(me) {
   let ps = []; try { ps = myPagesOf(me); } catch { ps = []; }
-  return ps.length ? `<p class="fx-meh">Your pages</p>${ps.slice(0, 8).map((p) => `<a class="fx-mepage" href="${esc(p.href)}">📄 ${esc(p.name)}</a>`).join('')}` : '<a href="/page/new">＋ Make a page</a>';
+  return ps.length ? `<p class="fx-meh">Your pages</p>${ps.slice(0, 8).map((p) => `<a class="fx-mepage" href="${esc(p.href)}">${p.logo ? `<img class="cm-logo" src="${esc(p.logo)}" alt="" width="20" height="20">` : '📄'} ${esc(p.name)}</a>`).join('')}` : '<a href="/page/new">＋ Make a page</a>';
 }
 function meMenu(me) {
   const id = encodeURIComponent(me.id);
