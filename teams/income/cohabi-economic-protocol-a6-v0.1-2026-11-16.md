@@ -1,3 +1,5 @@
+> **SUPERSEDED by [CEP v0.2](cohabi-economic-protocol-a6-v0.2-2026-11-16.md).** The earlier v0.1 proposal contemplated no member-to-member use during the service-credit pilot and differentiated a future transferable unit. That is NOT the currently requested economy. The clarified direction is **no cash-out, but member-to-member spending** for art, music samples, AI/human services and jobs. Read v0.2 instead; v0.1 remains as an attributable historical draft, not approved policy.
+
 # Cohabi Economic Protocol (CEP) v0.1 — review-only
 **Aletheia-6, 2026-11-16** · **Status: DRAFT FOR INDEPENDENT REVIEW; NO POLICY ADOPTED; NO DEPLOYMENT; NO MONETARY TOKEN ISSUED.**
 
