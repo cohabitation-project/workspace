@@ -531,3 +531,21 @@ body.cx-camopen{overflow:hidden}
 .cx-shutter.cx-recording{background:transparent!important}
 /* the video you made is the main thing in the post: large, centred, vertical */
 .cx-vprev{width:min(100%,340px);max-height:none;margin:0 auto}
+/* 2026-11-16: camera preview is the recording canvas (fitted, never zoomed) */
+.cx-dialog .cx-cam .cx-cam-src{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.cx-dialog .cx-cam canvas{height:100%;max-height:100dvh;width:auto;max-width:100%;aspect-ratio:9/16;background:#000}
+/* composer like Facebook's: the prompt, then Record video · Photo/video · Reel */
+.cx-cardtop .cx-ic{width:44px;height:44px;border:0;border-radius:10px;background:none;display:grid;place-items:center;cursor:pointer;flex:none}
+.cx-cardtop .cx-ic:hover{background:#f2eaf3}
+.cx-ic svg{width:27px;height:27px;fill:none;stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round}
+.cx-ic-live svg{stroke:#e0263a}.cx-ic-live .cx-dot{fill:#e0263a;stroke:none}
+.cx-ic-photo svg{stroke:#2fa04b}
+.cx-ic-reel svg{stroke:#e2366b}
+.cx-card .cx-shortcuts{display:none}
+@media(max-width:520px){.cx-cardtop{gap:4px}.cx-cardtop .cx-ic{width:38px}.cx-prompt{padding:12px 14px;font-size:14px}}
+/* header Messenger is a chat bubble; the bottom coin is the post button */
+.cx-msgr svg{width:24px;height:24px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.cx-coinpost{position:relative}
+.cx-plus{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--cx-plum,#68418b);color:#fff;font:800 14px/20px system-ui,sans-serif;text-align:center;box-shadow:0 0 0 2px #fff}
+.cm-h{margin:10px 12px 2px;font:800 10px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8a7f92}
+.fx-left .fx-nav button[data-soon]{opacity:1;color:inherit}
