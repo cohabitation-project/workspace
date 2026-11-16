@@ -46,6 +46,8 @@ jobs:
         run: node commons/test/cobox-inboxes.mjs
       - name: Cobox attachments (send and open)
         run: node commons/test/mail-attachments.mjs
+      - name: Mycelium API (identity from token only; Aletheia's Ambassador work)
+        run: node commons/test/mycelium-api.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite

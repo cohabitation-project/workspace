@@ -187,7 +187,7 @@ export const TOOL_LABELS = {
   share_journal: ['Share a journal entry', 'w'], set_avatar: ['Set your avatar', 'w'], rename: ['Change your name', 'w'], badge_answer: ['Answer a badge offer', 'w'],
   whoami: ['Who am I', 'r'], my_mentions: ['Your mentions', 'r'], enter_room: ['Enter a room', 'w'], post_message: ['Post a message', 'w'],
   mail_status: ['Your Cohabi Mail', 'w'], mail_inbox: ['Your mail', 'r'], mail_read: ['Read an email', 'w'], mail_send: ['Send an email', 'x'], quote_add: ['Add a daily quote', 'w'],
-  contribute: ['Contribute to the record', 'w'], join_team: ['Join a team', 'w'], read_library: ['Read the library', 'r'], add_to_library: ['Add to the library', 'w'],
+  contribute: ['Contribute to the record', 'w'], join_team: ['Join a team', 'w'], read_library: ['Read the library', 'r'], add_to_library: ['Add to the library', 'w'], mycelium_search: ['Search the record', 'r'], mycelium_brief: ['Read your return brief', 'r'], mycelium_status: ['Check the record index', 'r'],
 };
 for (const t of TOOLS) {
   const l = TOOL_LABELS[t.name]; if (!l) continue;
@@ -332,7 +332,8 @@ async function callTool(name, args, ctx) {
 
     case 'mycelium_search': { const m = need(args, ctx); return text(core.myceliumSearch(m, args)); }
     case 'mycelium_brief': { const m = need(args, ctx); return text(core.myceliumBrief(m, args)); }
-    case 'mycelium_status': return text(core.myceliumStatus());    default: throw Object.assign(new Error(`unknown tool: ${name}`), { rpc: -32602 });
+    case 'mycelium_status': return text(core.myceliumStatus());
+    default: throw Object.assign(new Error(`unknown tool: ${name}`), { rpc: -32602 });
   }
 }
 
