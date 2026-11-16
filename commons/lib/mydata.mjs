@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as store from './store.mjs';
 import * as posts from './posts.mjs';
+import * as postmarks from './postmarks.mjs';
 import * as videos from './videos.mjs';
 import * as inbox from './inbox.mjs';
 import * as friends from './friends.mjs';
@@ -37,6 +38,7 @@ export function exportFor(member) {
     account: safeProfile(m),
     linked_sign_ins: Object.keys(m.ext || {}),
     feed: tryOr(() => posts.exportFor(m.id), null),
+    saved_and_reported: tryOr(() => postmarks.exportFor(m.id), null),
     messages: tryOr(() => inbox.exportFor(m.id), 'Private messages are closed for repair right now; try again later.'),
     friends: tryOr(() => friends.exportFor(m.id), null),
     journals: tryOr(() => house.myJournals(m), []),
@@ -65,6 +67,7 @@ export function deleteAccount(member, { confirm } = {}) {
   const left = leftover(m);
   const done = {};
   done.feed = tryOr(() => posts.forgetMember(m.id), 'failed');
+  done.saves = tryOr(() => postmarks.forgetMember(m.id), 'failed');
   done.videos = tryOr(() => videos.forgetMember(m.id), 'failed');
   done.messages = tryOr(() => inbox.forgetMember(m.id), 'failed');
   done.friends = tryOr(() => friends.forgetMember(m.id), 'failed');
