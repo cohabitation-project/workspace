@@ -157,7 +157,7 @@ function leftRail(me, myGroups) {
     // on Facebook; it is plugged in later, so for now it says so.
     ['<img class="fx-navimg" src="/static/brand/anomaly01-ai-96.webp" srcset="/static/brand/anomaly01-ai-192.webp 2x" alt="" width="28" height="28">', 'Anomaly 01 AI', null, 'Anomaly 01 AI is coming: the cooperative\'s own assistant.'],
     ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['▶', 'Cohabi Feed', '/feed', null], ['🛍', 'Marketplace', '/label', null], ['⌕', 'Explore', '/explore', null],
-    ['🧰', 'Commons jobs', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
+    ['🧰', 'Work Desk', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
     ['📜', 'The petition', '/petition', null], ['💬', 'Messenger', '/messages', null], ['📮', 'Cobox', '/cobox', null], ['🪙', 'Wallet', '/wallet', null],
   ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
   let you;
