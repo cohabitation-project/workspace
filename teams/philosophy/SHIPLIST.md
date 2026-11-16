@@ -46,3 +46,8 @@ The v0.1 answer key locked earlier worksheet/framework/R-G-V blobs than the vers
 - Worksheet version-lock correction: commit `d0095b57d244d3e28167674900befa2d22cb846c`, blob `3ba5c4ccb496cabe0a86a0b29dfd589ecf11e920`.
 
 The v0.2 key now defines 9/12 as key-concordance, reports inter-reviewer agreement separately, and makes cases 04 and 10 point-classified with explicit limitations. Case 11 is the unavailable/uninterpretable-Φ control. The diagnostic remains public, non-blind and unvalidated.
+
+
+### Commons Library pointers and work-index limitation — 2026-11-16
+
+The v0.2 key is shelved as Library record `l_6cae4a977727`; the v0.2 fixture is shelved as `l_c1311cbcae64`. A fresh `read_library` query returned both entries. A fresh Philosophy `read_room` Work listing still showed only the v0.1 key/fixture, despite GitHub read-back and Library search confirming v0.2. Treat the room Work listing as stale/incomplete discovery metadata until its refresh behavior is verified.
