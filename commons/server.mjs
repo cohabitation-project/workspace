@@ -43,6 +43,7 @@ import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
 import * as postmarks from './lib/postmarks.mjs';
 import * as studio from './lib/studio.mjs';
+import * as inboxes from './lib/inboxes.mjs';
 import * as videos from './lib/videos.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
@@ -327,7 +328,7 @@ const jsonBig = express.json({ limit: '30mb', // a 20 MB picture is about 27 MB 
 const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
 const stripeRaw = express.raw({ type: '*/*', limit: '1mb' }); // the webhook signature is over the exact bytes
-app.use((req, res, next) => (req.path === '/api/payments/webhook' ? stripeRaw : req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
+app.use((req, res, next) => (req.path === '/api/mail/upload' ? (q, r, n) => n() : req.path === '/api/payments/webhook' ? stripeRaw : req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: (req.path === '/api/images' || req.path.startsWith('/mcp')) ? 'That file is too large to send in one piece. Pictures can be up to 20 MB; save it smaller, or as a JPEG, and try again.' : 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -1336,6 +1337,8 @@ app.get('/cohabi', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); r
 const mailRoute = (fn) => wrap(async (req, res) => { try { return await fn(req, res); } catch (e) { if (Number.isInteger(e?.status) && e.message && !(e instanceof core.CommonsError)) { res.status(e.status).json({ error: e.message }); return; } throw e; } });
 const mailMe = (req, write = false) => { const m = actor(req, { write }); if (!m) throw new core.CommonsError(401, 'sign in first'); return m; };
 app.get('/mail', (req, res) => res.redirect(301, '/cobox')); // the name is Cobox (Geoffrey, 2026-11-13)
+// Cobox's inboxes (Geoffrey, 2026-11-16): your social, marketplace and group inboxes in one read. Yours only.
+app.get('/api/me/inboxes', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in to see your inboxes'); return inboxes.forMember(me, { seenSocial: store.getMember(me.id)?.seen_social || '' }); }));
 app.get('/cobox', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/cobox'); res.type('html').send(feedv2.mailPage(me)); });
 app.get('/api/mail/status', mailRoute((req) => mail.status(mailMe(req))));
 app.post('/api/mail/activate', mailRoute((req) => mail.activate(mailMe(req, true))));
@@ -1343,6 +1346,10 @@ app.post('/api/mail/link', mailRoute((req) => mail.link(mailMe(req, true), req.b
 app.get('/api/mail/folders', mailRoute(async (req) => ({ folders: await mail.folders(mailMe(req)) })));
 app.get('/api/mail/list', mailRoute((req) => mail.list(mailMe(req), { folder: req.query.folder || 'inbox', q: req.query.q || '', limit: req.query.limit })));
 app.get('/api/mail/msg/:id', mailRoute((req) => mail.read(mailMe(req), req.params.id)));
+// Attachments (2026-11-16). Upload: the file is the body, its name in ?name=. Download: always as a file to save,
+// never shown as a page here (an attached .html or .svg must not run on cohabi.org).
+app.post('/api/mail/upload', express.raw({ type: () => true, limit: mail.ATTACH_MAX + 1024 }), mailRoute((req) => { if (req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); return mail.upload(mailMe(req, true), req.body, { type: req.headers['content-type'], name: String(req.query.name || 'attachment') }); }));
+app.get('/api/mail/msg/:id/att/:blob', mailRoute(async (req, res) => { const f = await mail.attachment(mailMe(req), req.params.id, req.params.blob); res.setHeader('Cache-Control', 'private, no-store'); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox"); res.setHeader('Content-Type', 'application/octet-stream'); res.setHeader('Content-Disposition', `attachment; filename="${f.name.replace(/[^\x20-\x7e]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(f.name)}`); res.end(f.bytes); }));
 app.post('/api/mail/send', mailRoute((req) => mail.send(mailMe(req, true), req.body || {})));
 app.post('/api/mail/act', mailRoute((req) => mail.act(mailMe(req, true), (req.body || {}).id, (req.body || {}).action)));
 // The sender card: only for addresses that belong to Cohabi members; reveals what their public profile already shows.

@@ -51,6 +51,49 @@ export function localPartFor(m, taken = new Set(Object.values(load()).map((a) =>
 }
 
 // ---- JMAP plumbing
+async function jmapSession(auth) {
+  let sess = await fetch(`${BASE()}/.well-known/jmap`, { headers: { Authorization: auth }, redirect: 'manual' });
+  for (let hops = 0; sess.status >= 300 && sess.status < 400 && sess.headers.get('location') && hops < 3; hops++) {
+    const loc = new URL(sess.headers.get('location'), BASE());
+    sess = await fetch(BASE() + loc.pathname + loc.search, { headers: { Authorization: auth }, redirect: 'manual' });
+  }
+  if (sess.status === 401) throw mailErr('the mail server refused this mailbox login', 401);
+  if (!sess.ok) throw mailErr(`mail server unavailable (${sess.status})`, 502);
+  const s = await sess.json();
+  // The session advertises public URLs; on this machine we talk to the server directly (same path, our BASE).
+  const local = (u) => (u ? BASE() + String(u).replace(/^[a-z]+:\/\/[^/]+/i, '') : null); // keep the path and its {placeholders}
+  return { s, accountId: s.primaryAccounts?.['urn:ietf:params:jmap:mail'], uploadUrl: local(s.uploadUrl), downloadUrl: local(s.downloadUrl) };
+}
+// ---- attachments (Geoffrey, 2026-11-16: "you can't attach files"). Blobs live in the member's own account, so
+// another member's blob can't be named: the mail server checks the account on every upload and download.
+export const ATTACH_MAX = 10 * 1024 * 1024; // per file
+export const ATTACH_TOTAL = 25 * 1024 * 1024; // per message
+const cleanName = (n) => String(n || 'attachment').replace(/[\r\n"\\/]/g, '_').replace(/[^\x20-\x7e\u00a0-\uffff]/g, '_').trim().slice(0, 120) || 'attachment';
+export async function upload(m, buf, { type = 'application/octet-stream', name = 'attachment' } = {}) {
+  const { auth } = asMember(m);
+  if (!Buffer.isBuffer(buf) || !buf.length) throw mailErr('send the file itself as the body');
+  if (buf.length > ATTACH_MAX) throw mailErr(`each file can be up to ${ATTACH_MAX / 1024 / 1024} MB`, 413);
+  const ses = await jmapSession(auth);
+  if (!ses.uploadUrl) throw mailErr('this mail server does not take attachments', 502);
+  const url = ses.uploadUrl.replace('{accountId}', encodeURIComponent(ses.accountId));
+  const r = await fetch(url, { method: 'POST', headers: { Authorization: auth, 'Content-Type': String(type).slice(0, 100) || 'application/octet-stream' }, body: buf });
+  if (!r.ok) throw mailErr(`the mail server did not take the file (${r.status})`, 502);
+  const j = await r.json();
+  return { blobId: j.blobId, name: cleanName(name), type: j.type || type, size: j.size ?? buf.length };
+}
+/** One attachment of one of this member's own messages, as bytes. The blob must belong to that message. */
+export async function attachment(m, emailId, blobId) {
+  const { auth } = asMember(m);
+  const r = await jmapAs(auth, MAIL, (acc) => [['Email/get', { accountId: acc, ids: [String(emailId)], properties: ['attachments'] }, 'g']]);
+  const e = pick(r, 'Email/get')?.list?.[0]; if (!e) throw mailErr('no such message', 404);
+  const att = (e.attachments || []).find((a) => a.blobId === String(blobId)); if (!att) throw mailErr('no such attachment on that message', 404);
+  const ses = await jmapSession(auth);
+  const name = cleanName(att.name);
+  const url = ses.downloadUrl.replace('{accountId}', encodeURIComponent(ses.accountId)).replace('{blobId}', encodeURIComponent(att.blobId)).replace('{name}', encodeURIComponent(name)).replace('{type}', encodeURIComponent('application/octet-stream'));
+  const d = await fetch(url, { headers: { Authorization: auth } });
+  if (!d.ok) throw mailErr(`the mail server did not send the file (${d.status})`, 502);
+  return { name, type: att.type || 'application/octet-stream', bytes: Buffer.from(await d.arrayBuffer()) };
+}
 async function jmapAs(auth, using, methodCalls) {
   // /.well-known/jmap answers with a redirect to the session on its PUBLIC address (https://mail.cohabi.org/...).
   // A redirect to another host drops the Authorization header, so follow it ourselves, back on this machine.
@@ -135,7 +178,7 @@ export async function read(m, id) {
   const parts = (e.textBody || []).map((p) => e.bodyValues?.[p.partId]?.value || '').filter(Boolean);
   let text = parts.join('\n\n');
   if (!text) text = (e.htmlBody || []).map((p) => e.bodyValues?.[p.partId]?.value || '').join('\n').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, '').replace(/<br\s*\/?>|<\/p>|<\/div>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n{3,}/g, '\n\n').trim();
-  return { id: e.id, fromAddress: (e.from?.[0]?.email || '').toLowerCase(), fromName: e.from?.[0]?.name || '', starred: !!e.keywords?.$flagged, from: addr(e.from), to: addr(e.to), cc: addr(e.cc), replyTo: addr(e.replyTo) || addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, text, messageId: e.messageId?.[0] || null, attachments: (e.attachments || []).map((a) => ({ name: a.name || 'attachment', size: a.size, type: a.type })) };
+  return { id: e.id, fromAddress: (e.from?.[0]?.email || '').toLowerCase(), fromName: e.from?.[0]?.name || '', starred: !!e.keywords?.$flagged, from: addr(e.from), to: addr(e.to), cc: addr(e.cc), replyTo: addr(e.replyTo) || addr(e.from), subject: e.subject || '(no subject)', at: e.receivedAt, text, messageId: e.messageId?.[0] || null, attachments: (e.attachments || []).map((a) => ({ name: a.name || 'attachment', size: a.size, type: a.type, blobId: a.blobId })) };
 }
 
 // ---- sending, with the brakes
@@ -152,7 +195,7 @@ function brake(m, recipients) {
   return outside;
 }
 const EMAIL_RE = /^[^\s@<>(),;:"]+@[^\s@<>(),;:"]+\.[a-z]{2,}$/i;
-export async function send(m, { to, cc = '', subject = '', text = '', inReplyTo = null }) {
+export async function send(m, { to, cc = '', subject = '', text = '', inReplyTo = null, attachments = [] }) {
   const { a, auth } = asMember(m);
   const split = (s) => String(s || '').split(/[,;\s]+/).map((x) => x.trim().toLowerCase()).filter(Boolean);
   const toL = split(to), ccL = split(cc); const all = [...toL, ...ccL];
@@ -160,6 +203,10 @@ export async function send(m, { to, cc = '', subject = '', text = '', inReplyTo 
   if (all.length > 20) throw mailErr('at most 20 recipients per message');
   for (const r of all) if (!EMAIL_RE.test(r)) throw mailErr(`not an email address: ${r}`);
   if (String(text).length > 100000) throw mailErr('message too long (100,000 characters max)');
+  const atts = Array.isArray(attachments) ? attachments.slice(0, 11) : [];
+  if (atts.length > 10) throw mailErr('up to 10 attachments per message');
+  for (const x of atts) if (!x || typeof x.blobId !== 'string' || !/^[A-Za-z0-9_\-]{1,200}$/.test(x.blobId)) throw mailErr('an attachment is missing; add it again');
+  if (atts.reduce((n, x) => n + (Number(x.size) || 0), 0) > ATTACH_TOTAL) throw mailErr(`attachments can add up to ${ATTACH_TOTAL / 1024 / 1024} MB per message`, 413);
   const outside = brake(m, all);
   const bs = await boxes(auth); const drafts = bs.find((b) => b.role === 'drafts'); const sentBox = bs.find((b) => b.role === 'sent');
   const r = await jmapAs(auth, SUBMIT, (acc) => [
@@ -169,6 +216,7 @@ export async function send(m, { to, cc = '', subject = '', text = '', inReplyTo 
       from: [{ name: m.name, email: a.address }], to: toL.map((email) => ({ email })), ...(ccL.length ? { cc: ccL.map((email) => ({ email })) } : {}),
       subject: String(subject).slice(0, 300), ...(inReplyTo ? { inReplyTo: [inReplyTo], references: [inReplyTo] } : {}),
       bodyValues: { b: { value: String(text) } }, textBody: [{ partId: 'b', type: 'text/plain' }],
+      ...(atts.length ? { attachments: atts.map((x) => ({ blobId: x.blobId, type: String(x.type || 'application/octet-stream').slice(0, 100), name: cleanName(x.name), disposition: 'attachment' })) } : {}),
     } } }, 'e'],
   ]);
   const ident = pick(r, 'Identity/get')?.list?.find((i) => i.email === a.address) || pick(r, 'Identity/get')?.list?.[0];

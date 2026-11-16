@@ -56,7 +56,7 @@ async function loadFolders() {
   for (const f of folders) {
     const b = el('button', 'cbx-folder' + (f.role === folder || f.id === folder ? ' on' : '')); b.type = 'button';
     b.append(el('span', null, f.name)); if (f.unread) b.append(el('span', 'cbx-n', String(f.unread)));
-    b.onclick = () => { folder = f.id; for (const x of nav.children) x.classList.remove('on'); b.classList.add('on'); loadList(); };
+    b.onclick = () => { leaveBox(); folder = f.id; for (const x of nav.children) x.classList.remove('on'); b.classList.add('on'); loadList(); };
     nav.append(b);
   }
 }
@@ -110,7 +110,11 @@ async function openMsg(id) {
     who.append(whoText, el('time', 'cbx-meta', new Date(m.at).toLocaleString()));
     const body = el('pre', 'cbx-body', m.text || '(no text)');
     art.append(tools, head, who, body);
-    if (Array.isArray(m.attachments) && m.attachments.length) art.append(el('p', 'cbx-meta', 'Attachments: ' + m.attachments.map((a) => a.name || 'Attachment').join(', ') + ' (opening them here is coming)'));
+    if (Array.isArray(m.attachments) && m.attachments.length) {
+      const box = el('div', 'cbx-attlist'); box.append(el('p', 'cbx-meta', 'Attachments'));
+      for (const a of m.attachments) { const link = el('a', 'cbx-attchip', `📎 ${a.name || 'Attachment'}${a.size ? ' · ' + size(a.size) : ''}`); if (a.blobId) { link.href = `/api/mail/msg/${encodeURIComponent(m.id)}/att/${encodeURIComponent(a.blobId)}`; link.setAttribute('download', a.name || 'attachment'); } box.append(link); }
+      art.append(box);
+    }
     const reply = el('form', 'cbx-reply'); const ta = el('textarea'); ta.placeholder = 'Write a reply…'; ta.rows = 3; const send = el('button', 'btn', 'Send'); const note = el('span', 'cm-note');
     reply.append(ta, el('div', 'cbx-replybar')); reply.lastChild.append(note, send);
     reply.onsubmit = async (ev) => { ev.preventDefault(); if (!ta.value.trim()) return; send.disabled = true; note.textContent = 'Sending…'; try { await api('/api/mail/send', { to: String(m.replyTo || m.fromAddress || '').replace(/^.*<([^>]+)>$/, '$1'), subject: /^re:/i.test(m.subject) ? m.subject : 'Re: ' + m.subject, text: ta.value + quoteOf(m), inReplyTo: m.messageId }); ta.value = ''; note.textContent = 'Sent.'; } catch (e) { note.textContent = e.message; } send.disabled = false; };
@@ -169,17 +173,122 @@ function renderContacts() {
 async function loadSentContacts() {
   try { const { folders = [] } = await api('/api/mail/folders'); const sent = folders.find((f) => f.role === 'sent'); if (!sent) return; const r = await api(`/api/mail/list?folder=${encodeURIComponent(sent.id)}`); noteContacts(r.messages || []); } catch { /* contacts are a convenience */ }
 }
+// ---- attachments on a new message: pick or drop files; each one goes to your mailbox first, then the message names it.
+const size = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+let atts = []; // [{ key, name, size, type, blobId?, state }]
+function paintAtts() {
+  const box = $('#cm-atts'); if (!box) return; box.replaceChildren();
+  for (const a of atts) {
+    const chip = el('span', 'cbx-attchip' + (a.state === 'bad' ? ' bad' : ''), `📎 ${a.name} · ${size(a.size)}${a.state === 'up' ? ' · adding…' : a.state === 'bad' ? ' · ' + a.err : ''}`);
+    const x = el('button', 'cbx-attx', '✕'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + a.name); x.onclick = () => { atts = atts.filter((y) => y !== a); paintAtts(); };
+    chip.append(x); box.append(chip);
+  }
+}
+async function addFiles(files) {
+  for (const f of files) {
+    const a = { key: Math.random(), name: f.name || 'attachment', size: f.size, type: f.type || 'application/octet-stream', state: 'up' };
+    if (f.size > 10 * 1048576) { a.state = 'bad'; a.err = 'over 10 MB'; atts.push(a); continue; }
+    if (atts.filter((x) => x.state !== 'bad').reduce((n, x) => n + x.size, 0) + f.size > 25 * 1048576) { a.state = 'bad'; a.err = 'over 25 MB in all'; atts.push(a); continue; }
+    atts.push(a); paintAtts();
+    try {
+      const r = await fetch('/api/mail/upload?name=' + encodeURIComponent(a.name), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': a.type, 'X-Commons': '1' }, body: f });
+      const j = await r.json().catch(() => ({})); if (!r.ok || !j.blobId) throw Error(j.error || `error ${r.status}`);
+      Object.assign(a, { blobId: j.blobId, type: j.type || a.type, state: 'ok' });
+    } catch (e) { a.state = 'bad'; a.err = e.message; }
+  }
+  paintAtts();
+}
+$('#cm-files')?.addEventListener('change', (e) => { addFiles([...e.target.files]); e.target.value = ''; });
+{ const f = $('#cm-write'); if (f) { f.addEventListener('dragover', (e) => { e.preventDefault(); f.classList.add('cbx-drop'); }); f.addEventListener('dragleave', () => f.classList.remove('cbx-drop')); f.addEventListener('drop', (e) => { e.preventDefault(); f.classList.remove('cbx-drop'); if (e.dataTransfer?.files?.length) addFiles([...e.dataTransfer.files]); }); } }
 function compose({ to = '', subject = '' } = {}) {
+  atts = []; paintAtts();
   const f = $('#cm-write'); f.hidden = false; f.elements.namedItem('to').value = to; f.elements.namedItem('cc').value = ''; f.elements.namedItem('subject').value = subject; f.elements.namedItem('inReplyTo').value = ''; f.elements.namedItem('text').value = '';
   $('#cm-write-title').textContent = 'New message'; $('#cm-write-note').textContent = ''; f.elements.namedItem('to').focus();
 }
 $('#cm-compose').onclick = () => compose();
 $('#cm-write-x').onclick = () => { $('#cm-write').hidden = true; };
 $('#cm-write').onsubmit = async (ev) => {
-  ev.preventDefault(); const f = ev.target; const note = $('#cm-write-note'); const btn = f.querySelector('button[type=submit]'); btn.disabled = true; note.textContent = 'Sending…';
-  try { await api('/api/mail/send', { to: f.elements.namedItem('to').value.trim(), cc: f.elements.namedItem('cc').value.trim(), subject: f.elements.namedItem('subject').value, text: f.elements.namedItem('text').value, inReplyTo: f.elements.namedItem('inReplyTo').value || null }); note.textContent = 'Sent.'; setTimeout(() => { f.hidden = true; btn.disabled = false; }, 800); }
+  ev.preventDefault(); const f = ev.target; const note = $('#cm-write-note'); const btn = f.querySelector('button[type=submit]');
+  if (atts.some((a) => a.state === 'up')) { note.textContent = 'Wait for the files to finish adding.'; return; }
+  btn.disabled = true; note.textContent = 'Sending…';
+  try { await api('/api/mail/send', { to: f.elements.namedItem('to').value.trim(), cc: f.elements.namedItem('cc').value.trim(), subject: f.elements.namedItem('subject').value, text: f.elements.namedItem('text').value, inReplyTo: f.elements.namedItem('inReplyTo').value || null, attachments: atts.filter((a) => a.state === 'ok').map(({ blobId, name, type, size: sz }) => ({ blobId, name, type, size: sz })) }); atts = []; paintAtts(); note.textContent = 'Sent.'; setTimeout(() => { f.hidden = true; btn.disabled = false; }, 800); }
   catch (e) { note.textContent = e.message; btn.disabled = false; }
 };
 $('#cm-search').onsubmit = (ev) => { ev.preventDefault(); loadList($('#cm-q').value.trim()); };
 for (const b of document.querySelectorAll('#cm-tabs button')) b.onclick = () => { tab = b.dataset.tab; renderTabs(); renderList(); };
-start();
+// ---- Your inboxes (Geoffrey, 2026-11-16): Social, Marketplace and Groups in the top row, each a dropdown of inboxes.
+// Choosing one fills the list with it; choosing a mail folder on the left goes back to mail.
+let boxes = null, boxesAt = 0, box = null;
+const BOXNAME = { 'social:messages': 'Social · Messages', 'social:notifications': 'Social · Notifications', 'social:requests': 'Social · Friend requests', 'market:yours': 'Marketplace · Your listings' };
+async function loadBoxes(force = false) {
+  if (!force && boxes && Date.now() - boxesAt < 30_000) return boxes;
+  try { boxes = await api('/api/me/inboxes'); boxesAt = Date.now(); paintCounts(); } catch { boxes = boxes || null; }
+  return boxes;
+}
+function itemsFor(id) {
+  if (!boxes) return [];
+  const [part, a, b] = id.split(':');
+  if (part === 'social') return boxes.social?.[a] || [];
+  if (part === 'market') return a === 'yours' ? boxes.market?.yours || [] : (boxes.market?.pages || []).find((p) => p.id === b)?.items || [];
+  if (part === 'groups') return (boxes.groups || []).find((g) => g.id === a)?.items || [];
+  return [];
+}
+function nameFor(id) {
+  if (BOXNAME[id]) return BOXNAME[id];
+  const [part, a, b] = id.split(':');
+  if (part === 'market') return 'Marketplace · ' + ((boxes?.market?.pages || []).find((p) => p.id === b)?.name || 'Your page');
+  if (part === 'groups') return 'Groups · ' + ((boxes?.groups || []).find((g) => g.id === a)?.name || 'Group');
+  return 'Inbox';
+}
+function paintCounts() {
+  const tot = { social: 0, market: 0, groups: 0 };
+  for (const btn of document.querySelectorAll('[data-box]')) {
+    const id = btn.dataset.box; const items = itemsFor(id); const part = id.split(':')[0];
+    const n = part === 'social' ? items.filter((x) => x.unread).length : items.length;
+    const c = btn.querySelector('[data-boxc]'); if (c) c.textContent = n ? String(n) : '';
+    if (part === 'social') tot.social += n;
+  }
+  for (const [k, n] of Object.entries(tot)) { const e = document.querySelector(`[data-boxn="${k}"]`); if (!e) continue; e.hidden = !n; e.textContent = n > 99 ? '99+' : String(n); }
+}
+function leaveBox() {
+  box = null; document.body.classList.remove('cbx-inbox');
+  for (const s of document.querySelectorAll('[data-boxtab]')) s.classList.remove('cbx-cur');
+  for (const b of document.querySelectorAll('[data-box]')) b.removeAttribute('aria-current');
+  $('#cm-tabs').hidden = false; $('#cm-boxname').textContent = 'Mail';
+}
+async function openBox(id) {
+  box = id; document.body.classList.add('cbx-inbox'); document.body.classList.remove('cbx-reading');
+  for (const d of document.querySelectorAll('[data-boxtab]')) { d.open = false; d.classList.toggle('cbx-cur', d.dataset.boxtab === id.split(':')[0]); }
+  for (const b of document.querySelectorAll('[data-box]')) { if (b.dataset.box === id) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); }
+  for (const f of document.querySelectorAll('#cm-folders .cbx-folder')) f.classList.remove('on');
+  $('#cm-app').hidden = false; $('#cm-tabs').hidden = true;
+  const ul = $('#cm-list'); ul.replaceChildren(el('li', 'cbx-empty', 'Loading…'));
+  await loadBoxes(true); if (box !== id) return;
+  $('#cm-boxname').textContent = nameFor(id);
+  const items = itemsFor(id); ul.replaceChildren();
+  if (!boxes) { ul.append(el('li', 'cbx-empty', 'This inbox could not be opened just now. Try again in a moment.')); return; }
+  if (!items.length) ul.append(el('li', 'cbx-empty', { 'social:messages': 'No messages yet.', 'social:notifications': 'Nothing new on your posts.', 'social:requests': 'No friend requests waiting.' }[id] || 'Nothing here yet.'));
+  for (const it of items) {
+    const li = el('li', 'cbx-row' + (it.unread ? ' unread' : '')); const btn = el('button'); btn.type = 'button';
+    const av = avatar(it.who?.name || '?', it.who?.id ? '/m/' + encodeURIComponent(it.who.id) + '/face' : null);
+    const top = el('span', 'cbx-top'); top.append(el('strong', 'cbx-from', it.who?.name || ''), el('time', 'cbx-when', it.ts ? when(it.ts) : ''));
+    const text = el('span', 'cbx-rowtext'); text.append(top, el('span', 'cbx-subj', it.title), el('span', 'cbx-prev', it.text || ''));
+    const marks = el('span', 'cbx-marks'); if (it.unread) marks.append(el('span', 'cbx-dot'));
+    btn.append(av, text, marks); btn.onclick = () => showItem(it, li); li.append(btn); ul.append(li);
+  }
+}
+function showItem(it, li) {
+  for (const x of document.querySelectorAll('#cm-list .cbx-row')) x.classList.remove('on'); li.classList.add('on');
+  ++messageRequest; current = null; document.body.classList.add('cbx-reading');
+  const art = $('#cm-read'); art.replaceChildren();
+  const tools = el('div', 'cbx-tools'); const back = el('button', 'cbx-tool', '←'); back.type = 'button'; back.title = 'Back to the list'; back.setAttribute('aria-label', 'Back to the list'); back.onclick = () => document.body.classList.remove('cbx-reading'); tools.append(back);
+  const head = el('header', 'cbx-msghead'); head.append(el('h2', null, it.title), el('span', 'cbx-tag', nameFor(box).split(' · ')[0]));
+  const who = el('div', 'cbx-who'); who.append(avatar(it.who?.name || '?', it.who?.id ? '/m/' + encodeURIComponent(it.who.id) + '/face' : null));
+  const wt = el('div'); wt.append(el('strong', null, it.who?.name || '')); who.append(wt); if (it.ts) who.append(el('time', 'cbx-meta', new Date(it.ts).toLocaleString()));
+  art.append(tools, head, who);
+  if (it.text) art.append(el('pre', 'cbx-body', it.text));
+  const open = el('a', 'btn', box?.startsWith('social:messages') ? 'Open the conversation' : 'Open it'); open.href = it.href; art.append(open);
+  $('#cm-person').hidden = true; $('#cm-info').hidden = true;
+}
+for (const b of document.querySelectorAll('[data-box]')) b.onclick = () => openBox(b.dataset.box);
+start(); loadBoxes();

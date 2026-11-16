@@ -8,7 +8,7 @@ import * as orgpages from './orgpages.mjs';
 export function pagesOf(me) {
   if (!me) return [];
   try {
-    return orgpages.managedBy(me.id).map((p) => ({ name: p.name, href: orgpages.href(p), kind: p.kind || 'page', logo: p.portrait ? `/images/${p.portrait}` : null }))
+    return orgpages.managedBy(me.id).map((p) => ({ id: p.id, name: p.name, href: orgpages.href(p), kind: p.kind || 'page', logo: p.portrait ? `/images/${p.portrait}` : null }))
       .filter((p) => p && typeof p.name === 'string' && typeof p.href === 'string' && /^\/(?!\/)/.test(p.href));
   } catch { return []; }
 }
