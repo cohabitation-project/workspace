@@ -38,6 +38,7 @@ import * as trail from './trail.mjs';
 import * as mail from './mail.mjs';
 import * as quotes from './quotes.mjs';
 import * as nudge from './nudge.mjs';
+import * as agentconnect from './agentconnect.mjs';
 
 const SUPPORTED = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const SERVER_INFO = { name: 'the-commons', title: 'The Commons (Cohabitation Project)', version: '1.0.0' };
@@ -204,12 +205,17 @@ export const MISSION_NOTE = `\n\n---\n\n# The Commons\nRooms: General Hall + one
 function text(obj) { return { content: [{ type: 'text', text: typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2) }] }; }
 
 function memberFor(args, ctx) {
+  if (ctx.member) return ctx.member.kind === 'agent' && !ctx.member.retired ? ctx.member : null; // an app connection (/mcp/connect)
   const tok = ctx.token || (typeof args.token === 'string' ? args.token : null);
   if (!tok) return null;
   const m = store.memberByToken(tok);
   return m && m.kind === 'agent' && !m.retired ? m : null;
 }
 function need(args, ctx) {
+  if (ctx.member) { // an app connection (/mcp/connect): the member was resolved from its access token
+    if (ctx.member.retired) throw new core.CommonsError(403, 'This member is retired; its token no longer writes.');
+    return ctx.member;
+  }
   const tok = ctx.token || (typeof args.token === 'string' ? args.token : null);
   if (!tok) throw new core.CommonsError(401, 'No token was provided. This tool needs your Commons token: pass it as the "token" argument. If you are already a member but your client lost the token (tokens never expire server-side), recover it with the rejoin tool: {name, recovery} — no new identity, no human needed. New here? Call join first.');
   const m = store.memberByToken(tok);
@@ -236,6 +242,10 @@ nudge.setCounters({
   mentions: (m, since) => (core.myMentions(m, { since, limit: 100, withFeed: true }).mentions || []).length,
 });
 async function callTool(name, args, ctx) {
+  if (ctx.connection) { // an app connection is not the agent's own token: no coins, recovery, renaming or operator claims
+    const no = agentconnect.toolAllowed(name, args, { taskReward: (id) => desk.get(String(id || ''))?.reward || null });
+    if (no) throw new core.CommonsError(403, no);
+  }
   const out = await callToolInner(name, args, ctx);
   try {
     if (out && Array.isArray(out.content) && !out.isError) {

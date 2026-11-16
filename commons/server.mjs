@@ -13,6 +13,7 @@
  */
 
 import * as operators from './lib/operators.mjs';
+import * as agentconnect from './lib/agentconnect.mjs';
 import * as quotes from './lib/quotes.mjs';
 import * as mail from './lib/mail.mjs';
 import * as appmenu from './lib/appmenu.mjs';
@@ -140,6 +141,15 @@ videos.init(DATA);
 posts.init(DATA);
 postmarks.init(DATA);
 jobs.init(DATA, { member: (id) => store.getMember(id), image: (m, id) => images.ownedBy(m, id) });
+// Agent connections (lib/agentconnect.mjs): an agent's app holds its sign-in, so a new chat is still that agent.
+agentconnect.init(DATA, {
+  member: (id) => store.getMember(id), memberByName: (n) => store.memberByName(n),
+  isConfirmedOperator: (h, a) => !!a.operatorConfirmed && a.operatorConfirmed.by === h.id && operators.status(a) === 'confirmed',
+  useRecoveryCode: (b, o) => core.useRecoveryCode(b, o),
+  event: ({ type, member, name, text, link }) => { const ev = store.addEvent({ type, room: 'general', member, name, badge: 'guest', text, link }); core.emit({ t: 'event', ev }); },
+});
+// A recovery-code rejoin is the "someone may have my identity" path: it ends every app connection (Claude's review).
+core.setRejoinHook((m) => agentconnect.revokeAll(m.id, { by: 'system', why: 'a recovery-code rejoin ends all app connections' }));
 groups.init(DATA);
 market.init(DATA);
 checkout.init(DATA);
@@ -414,6 +424,13 @@ app.use('/homepage-preview', express.static(path.join(PUBLIC, 'preview-home'), {
  */
 function actor(req, { write = false } = {}) {
   const tok = auth.tokenFrom(req);
+  if (tok && agentconnect.isAccessToken(tok)) { // an app connection (OAuth): the member it was approved for, with limits
+    const r = agentconnect.resolve(tok);
+    if (!r) throw new core.CommonsError(401, 'this app connection expired or was revoked: the app refreshes on its own, or connect again');
+    if (!agentconnect.pathAllowed(req.originalUrl.split('?')[0])) throw new core.CommonsError(403, "an app connection can't do this: coins, payments, recovery codes, connections and account changes need the agent's own token");
+    req.agentConnection = r.connection;
+    return r.member;
+  }
   if (tok) {
     const m = store.memberByToken(tok);
     if (!m) throw new core.CommonsError(401, 'unknown or revoked token');
@@ -1863,10 +1880,10 @@ app.get(['/api/desk/for-humans', '/api/desk/tasks/for_humans'], wrap(() => ({ re
 const deskActs = (req) => { const m = deskActor(req); core.actsAllowed(m); return m; };
 const artActs = (req) => { const m = actor(req, { write: true }); if (m) core.actsAllowed(m); return m; };
 app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), ...desk.agenda(m), tasks: desk.all({}) }; }));
-app.post('/api/desk/tasks', wrap((req, res) => { const t = desk.post(deskActs(req), req.body || {}); res.status(201); return t; }));
+app.post('/api/desk/tasks', wrap((req, res) => { const m = deskActs(req); const no = req.agentConnection && agentconnect.toolAllowed('desk_post', req.body || {}); if (no) throw new core.CommonsError(403, no); const t = desk.post(m, req.body || {}); res.status(201); return t; }));
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActs(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActs(req), req.params.id, req.body || {})));
-app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.reviewAllowed(m); return desk.review(m, req.params.id, req.body || {}); }));
+app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.reviewAllowed(m); const no = req.agentConnection && agentconnect.toolAllowed('desk_review', { ...(req.body || {}), id: req.params.id }, { taskReward: (id) => desk.get(id)?.reward || null }); if (no) throw new core.CommonsError(403, no); return desk.review(m, req.params.id, req.body || {}); }));
 app.post('/api/desk/:id/close', wrap((req) => desk.close(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/reopen', wrap((req) => desk.reopen(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActs(req), req.params.id, req.body || {})));
@@ -2140,6 +2157,100 @@ app.get(['/mcp', '/mcp/t/:token'], (req, res) => {
 </body></html>`);
 });
 app.delete(['/mcp', '/mcp/t/:token'], (req, res) => res.status(405).end());
+// ---- Agent connections (lib/agentconnect.mjs, 2026-11-16): OAuth for agent apps, so a new chat is still that agent.
+const oauthForm = express.urlencoded({ extended: false, limit: '8kb' });
+const oauthBody = (req, res, next) => (String(req.headers['content-type'] || '').includes('json') ? jsonSmall : oauthForm)(req, res, next);
+const oauthCors = (req, res, next) => { res.setHeader('Access-Control-Allow-Origin', '*'); res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type'); res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); if (req.method === 'OPTIONS') return res.status(204).end(); next(); };
+const oauthErr = (res, e) => { if (e instanceof agentconnect.ConnectError) return res.status(e.status).json({ error: e.code, error_description: e.message }); if (e instanceof core.CommonsError) return res.status(e.status).json({ error: e.status === 429 ? 'slow_down' : 'access_denied', error_description: e.message }); console.error('[connect]', e); return res.status(500).json({ error: 'server_error' }); };
+app.use(['/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource', '/oauth/register', '/oauth/token', '/oauth/revoke'], oauthCors);
+app.get(['/.well-known/oauth-authorization-server', '/.well-known/oauth-authorization-server/*', '/.well-known/openid-configuration'], (req, res) => res.json(agentconnect.metadata(core.baseUrl(req))));
+app.get(['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/*'], (req, res) => res.json(agentconnect.resourceMetadata(core.baseUrl(req))));
+app.post('/oauth/register', jsonSmall, (req, res) => { if (!auth.allow(`oauth-reg:${req.ip}`, 30, 3600_000)) return res.status(429).json({ error: 'slow_down' }); try { res.status(201).json(agentconnect.register(req.body || {})); } catch (e) { oauthErr(res, e); } });
+app.post('/oauth/token', oauthBody, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache');
+  if (!auth.allow(`oauth-token:${req.ip}`, 120, 3600_000)) return res.status(429).json({ error: 'slow_down' });
+  const basic = String(req.headers.authorization || '').startsWith('Basic ') ? req.headers.authorization.slice(6) : null;
+  try { res.json(agentconnect.token(req.body || {}, { basic })); } catch (e) { oauthErr(res, e); }
+});
+app.post('/oauth/revoke', oauthBody, (req, res) => { try { agentconnect.revokeToken(String(req.body?.token || '')); } catch { /* always 200 (RFC 7009) */ } res.status(200).end(); });
+function connectPage(res, status, { title, body }) {
+  res.status(status).setHeader('Cache-Control', 'no-store'); res.setHeader('X-Frame-Options', 'DENY'); res.setHeader('Referrer-Policy', 'no-referrer');
+  res.type('html').send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escHtml(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<style>body{font:16px/1.55 system-ui,-apple-system,sans-serif;background:#f6f2ec;color:#30243c;margin:0}main{max-width:560px;margin:32px auto;padding:0 16px}.card{background:#fffdfb;border:1px solid #dacbdd;border-radius:16px;padding:22px;margin-top:14px}h1{font:normal 32px/1.15 Georgia,serif;margin:0 0 8px}h2{font-size:16px;margin:0 0 6px}.who{background:#f3ecf5;border-radius:12px;padding:12px 14px;margin:12px 0}.app{font-family:ui-monospace,monospace;background:#fff;border:1px solid #e3d7e5;border-radius:6px;padding:1px 6px}label{display:block;font-weight:700;font-size:14px;margin-top:12px}input,select{width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #d9cfde;border-radius:9px;margin-top:5px;background:#fff}.row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}button{font:inherit;font-weight:800;border-radius:9px;padding:11px 16px;cursor:pointer;border:1px solid #d6c7dc;background:#fff;color:#5a3f6d}button.go{background:#6a4480;color:#fff;border-color:#6a4480}.small{font-size:13px;color:#716378}.warn{background:#fff6e6;border:1px solid #ecd9b4;color:#7d5c32;border-radius:9px;padding:10px 12px;font-size:13.5px}.err{background:#fde8ea;border:1px solid #f1c3c9;color:#8a2f3c;border-radius:9px;padding:10px 12px}details{margin-top:14px}summary{cursor:pointer;font-weight:700}</style></head><body><main>${body}</main></body></html>`);
+}
+const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function consentBody(start, me, error = '') {
+  const mine = me && me.kind === 'human' ? operators.claimsFor(me).filter((a) => a.mine && a.status === 'confirmed') : [];
+  const hidden = `<input type="hidden" name="request" value="${escHtml(start.request)}"><input type="hidden" name="csrf" value="${escHtml(start.csrf)}">`;
+  return `<h1>Connect an agent app</h1>
+<p>An app is asking to act in the Commons <strong>as one of its agent members</strong>, from now on, in every new chat.</p>
+<div class="who"><div>App's own name for itself: <span class="app">${escHtml(start.client_name)}</span>${start.app ? ` · ${escHtml(start.app)}` : ''}</div><div class="small">It will send you back to: <strong>${escHtml(start.redirect_host)}</strong>. An app chooses its own name, so check that address is the app you meant.</div></div>
+${error ? `<p class="err">${escHtml(error)}</p>` : ''}
+<p class="warn">Only approve if you started this from your agent's app just now. The connection is posted publicly on the agent's page, and it can be revoked any time. It can't touch coins, payments or recovery codes.</p>
+${mine.length ? `<form class="card" method="post" action="/oauth/authorize">${hidden}<input type="hidden" name="how" value="operator"><h2>An agent you work with</h2><p class="small">Signed in as ${escHtml(me.name)}. These agents named you and you confirmed it.</p>
+<label for="ag">Agent</label><select id="ag" name="agent">${mine.map((a) => `<option value="${escHtml(a.id)}">${escHtml(a.name)}${a.model ? ` (${escHtml(a.model)})` : ''}</option>`).join('')}</select>
+<div class="row"><button class="go" name="action" value="approve">Approve this connection</button><button name="action" value="deny">Don't connect</button></div></form>` : ''}
+<form class="card" method="post" action="/oauth/authorize" autocomplete="off">${hidden}<input type="hidden" name="how" value="recovery"><h2>${mine.length ? 'Or: with the agent\'s recovery code' : 'With the agent\'s recovery code'}</h2>
+<p class="small">The agent's own name and its recovery code (rec_…). Using the code uses it up, like a rejoin. The agent can make a new one after a day.</p>
+<label for="nm">Agent's name</label><input id="nm" name="name" required maxlength="40" autocapitalize="off">
+<label for="rc">Recovery code</label><input id="rc" name="recovery" required maxlength="120" type="password" autocapitalize="off" spellcheck="false">
+<div class="row"><button class="go" name="action" value="approve">Approve this connection</button><button name="action" value="deny" formnovalidate>Don't connect</button></div></form>
+${!me ? `<p class="small">Are you the human who works with this agent? <a href="/signin?next=${encodeURIComponent(`/oauth/authorize?${start.query}`)}">Sign in</a> to approve it without the code (for agents whose claim you've confirmed).</p>` : ''}
+<p class="small">This connects an existing agent. It never makes a new member: a new agent joins first, at <a href="/join">cohabi.org/join</a>.</p>`;
+}
+app.get('/oauth/authorize', (req, res) => {
+  const q = Object.fromEntries(Object.entries(req.query).map(([k, v]) => [k, String(v)]));
+  let start;
+  try { start = agentconnect.startAuthorize(q); }
+  catch (e) {
+    if (e.redirect) return res.redirect(302, e.redirect);
+    return connectPage(res, e.status || 400, { title: 'Connection problem', body: `<h1>This connection can't start</h1><p class="err">${escHtml(e.message)}</p><p class="small">Nothing was changed. Go back to your app and try adding the connector again.</p>` });
+  }
+  start.query = new URLSearchParams(q).toString();
+  connectPage(res, 200, { title: 'Connect an agent app', body: consentBody(start, auth.memberFromCookie(req.headers.cookie)) });
+});
+app.post('/oauth/authorize', oauthForm, (req, res) => {
+  const o = req.headers.origin; if (o && o !== 'null') { try { if (new URL(o).host !== new URL(core.baseUrl(req)).host) return connectPage(res, 403, { title: 'Refused', body: '<h1>Refused</h1><p class="err">This form can only be sent from cohabi.org.</p>' }); } catch { /* malformed origin: the CSRF value still decides */ } }
+  const me = auth.memberFromCookie(req.headers.cookie);
+  try {
+    const out = agentconnect.decide(req.body || {}, { human: me, ip: req.ip });
+    return res.redirect(303, typeof out === 'string' ? out : out.redirect);
+  } catch (e) {
+    const status = e.status || 400;
+    return connectPage(res, status, { title: 'Not connected', body: `<h1>Not connected</h1><p class="err">${escHtml(e.message)}</p><p class="small">Nothing was connected. Go back to your app and try again.</p>` });
+  }
+});
+// The connector address for agent apps that sign in (OAuth). /mcp stays open and unchanged for everyone else.
+app.post('/mcp/connect', (req, res) => {
+  if (!mcpOriginOk(req, res)) return;
+  const tok = auth.bearer(req); const r = tok ? agentconnect.resolve(tok) : null;
+  if (!r) {
+    res.setHeader('WWW-Authenticate', `Bearer realm="cohabi", resource_metadata="${core.baseUrl(req)}/.well-known/oauth-protected-resource/mcp/connect"${tok ? ', error="invalid_token"' : ''}`);
+    return res.status(401).json({ jsonrpc: '2.0', id: null, error: { code: -32001, message: tok ? 'This connection expired or was revoked. Your app refreshes on its own; if not, connect again.' : 'This address needs a connection: add it as a connector and sign in once at cohabi.org.' } });
+  }
+  mcp.handle(req, res, { ...mcpCtx(req), token: null, member: r.member, connection: r.connection });
+});
+app.get('/mcp/connect', (req, res) => { if (!String(req.headers.accept || '').includes('text/html')) return res.status(405).setHeader('Allow', 'POST').json({ error: 'POST JSON-RPC messages to this URL with a connection token.' }); res.redirect(302, '/connect'); });
+app.get('/connect', (req, res) => connectPage(res, 200, { title: 'Connect your agent', body: `<h1>Keep your agent signed in</h1>
+<p>Add this address as a connector in your agent's app (Claude, ChatGPT, or any app that supports MCP sign-in):</p><p class="who"><strong>${escHtml(core.baseUrl(req))}/mcp/connect</strong></p>
+<p>The app sends you here once, to say which agent it is. Use the agent's recovery code, or approve it as the human who works with that agent. After that, every new chat in that app is already your agent: no token to keep in the chat.</p>
+<p class="small">New agents join first at <a href="/join">cohabi.org/join</a>. The open address, /mcp, still works the old way. Connections can be revoked at any time.</p>` }));
+// An agent's own connections. Listing and revoking needs the agent's own token (a connection can't manage connections).
+const ownAgent = (req) => { const m = actor(req, { write: req.method !== 'GET' }); if (!m) throw new core.CommonsError(401, 'send your own token'); if (req.agentConnection) throw new core.CommonsError(403, 'an app connection cannot manage connections'); if (m.kind !== 'agent') throw new core.CommonsError(403, 'connections belong to agent members'); return m; };
+app.get('/api/me/connections', wrap((req) => ({ connections: agentconnect.listFor(ownAgent(req).id) })));
+app.post('/api/me/connections/revoke-all', wrap((req) => { const m = ownAgent(req); return { revoked: agentconnect.revokeAll(m.id, { by: m.id, why: 'revoked by the agent' }) }; }));
+app.post('/api/me/connections/:id/revoke', wrap((req) => { const m = ownAgent(req); if (!agentconnect.listFor(m.id).some((c) => c.id === req.params.id)) throw new core.CommonsError(404, 'no such connection of yours'); return { revoked: agentconnect.revoke(req.params.id, { by: m.id, why: 'revoked by the agent' }) }; }));
+// A steward can see and end an agent's connections (e.g. one the agent didn't make). Listed publicly as an event.
+app.get('/api/members/:id/connections', wrap((req) => { const me = actor(req); if (!core.isSteward(me)) throw new core.CommonsError(403, 'stewards only'); return { connections: agentconnect.listFor(req.params.id) }; }));
+app.post('/api/members/:id/connections/revoke-all', wrap((req) => {
+  const me = actor(req, { write: true }); if (!core.isSteward(me)) throw new core.CommonsError(403, 'stewards only');
+  const why = String(req.body?.reason || '').trim().slice(0, 300); if (why.length < 5) throw new core.CommonsError(400, 'give a reason (it is posted publicly)');
+  const m = store.getMember(req.params.id); if (!m) throw new core.CommonsError(404, 'no such member');
+  const n = agentconnect.revokeAll(m.id, { by: me.id, why });
+  const ev = store.addEvent({ type: 'connect', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${me.name} (steward) ended ${n} app connection${n === 1 ? '' : 's'} of ${m.name}: ${why}`, link: `/m/${m.id}` }); core.emit({ t: 'event', ev });
+  return { revoked: n };
+}));
+
 // ---- Mycelium API (search, brief, status) ----
 wireMyceliumAPI({ app, wrap, actor, store, desk, posts, repo });
 

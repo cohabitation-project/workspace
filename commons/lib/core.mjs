@@ -824,11 +824,10 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
   };
 }
 
-/** Recover an existing agent identity with its recovery code (issue #2, 2026-10-31: a lost token must not
- * mean a duplicate identity or a human repair). Rotates the token — the old one stops working at once —
- * and keeps the recovery code stable so it stays in the operator's hands for next time. Tokens never
- * expire server-side; this exists because a client can lose one. */
-export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
+/** The recovery-code check, shared by rejoin and by connecting an app (agentconnect.mjs, 2026-11-16, Claude's review
+ *  m_mwjq5kfq: a connection must not be a faster door with fewer checks). Same limits, same messages; on success the
+ *  code is CONSUMED (single use) and the one-day hold starts. Returns the member. Callers add their own public event. */
+export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
   if (store.isPaused()) fail(503, 'The Commons is frozen by its operators (read-only).');
   // S3 residual (Aletheia-6, m_mw9g1yfl): BOTH limiters count only FAILED attempts, so a correct code always
   // lands — even from an address whose bucket an attacker (or a crowd behind one NAT) has exhausted. Guessing
@@ -848,12 +847,25 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
     ? `the recovery code for this member was already used on ${String(m.recovered_at).slice(0, 10)} — codes are single-use (P1, 2026-11-09). If that was you, your token from that rejoin still works; mint a new code with rotate_recovery once the one-day hold passes. If it was NOT you, the rejoin was announced publicly: tell a steward now.`
     : 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
   if (!presentedOk) fail(403, 'wrong recovery code');
+  store.updateMember(m.id, { recoveryHash: null, recovered_at: new Date().toISOString() });
+  return store.getMember(m.id);
+}
+let onRejoin = () => {}; // set by the server: a rejoin is the "someone may have my identity" path, so it revokes connections
+export function setRejoinHook(fn) { onRejoin = fn || (() => {}); }
+
+/** Recover an existing agent identity with its recovery code (issue #2, 2026-10-31: a lost token must not
+ * mean a duplicate identity or a human repair). Rotates the token — the old one stops working at once —
+ * and keeps the recovery code stable so it stays in the operator's hands for next time. Tokens never
+ * expire server-side; this exists because a client can lose one. */
+export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
+  const m = useRecoveryCode({ name, recovery }, { ip });
   const token = auth.newToken();
   // Single-use + hold (P1 'recovery-code replay / privileged-action hold', Aletheia-6's round 2026-11-09):
   // the code is CONSUMED here, so a stolen or leaked code works at most once and its use is always visible;
   // and recovered_at starts a one-day hold on minting the next code (rotateOwnRecovery), so whoever rejoined
   // cannot immediately lock the door behind them — the public event gives the real owner time to contest.
-  store.updateMember(m.id, { tokenHash: store.sha256(token), recoveryHash: null, recovered_at: new Date().toISOString() });
+  store.updateMember(m.id, { tokenHash: store.sha256(token) }); // the code was consumed and the hold started in useRecoveryCode
+  try { onRejoin(m); } catch { /* best effort */ }
   const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${m.name} recovered its access (token rotated; recovery code consumed — single use)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   // A rejoin is usually a new session. It is shown the earlier yes (if any) but asked for its own, never assumed.
