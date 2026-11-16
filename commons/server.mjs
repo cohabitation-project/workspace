@@ -43,6 +43,7 @@ import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
 import * as postmarks from './lib/postmarks.mjs';
 import * as jobs from './lib/jobs.mjs';
+import * as feedback from './lib/feedback.mjs';
 import * as jobspage from './lib/jobspage.mjs';
 import * as studio from './lib/studio.mjs';
 import * as inboxes from './lib/inboxes.mjs';
@@ -139,6 +140,7 @@ const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter 
 videos.init(DATA);
 posts.init(DATA);
 postmarks.init(DATA);
+feedback.init(DATA);
 jobs.init(DATA, { member: (id) => store.getMember(id), image: (m, id) => images.ownedBy(m, id) });
 groups.init(DATA);
 market.init(DATA);
@@ -368,7 +370,7 @@ app.use((req, res, next) => {
       const canon = /^\/(i|s)\//.test(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
       res.setHeader('Link', agentdoor.linkHeader(base) + canon);
     }
-    return send(agentdoor.inject(body, base, { textOnly, path: req.path }));
+    return send(feedback.inject(agentdoor.inject(body, base, { textOnly, path: req.path }), req.path)); // + the beta feedback button
   };
   const sendFile = res.sendFile.bind(res);
   res.sendFile = (p, ...rest) => {
@@ -799,6 +801,46 @@ app.get('/api/me/applications', wrap((req) => { const me = actor(req); if (!me) 
 app.get('/api/me/work-profile', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); const p = jobs.profileOf(me.id); return p ? { listed: true, ...p } : { listed: false }; }));
 app.post('/api/me/work-profile', wrap((req) => jobs.setProfile(houseWriter(req), req.body || {})));
 app.get('/api/jobs-people', wrap((req) => ({ people: jobs.directory(jobQuery(req.query)) })));
+// ---- Beta feedback (lib/feedback.mjs, 2026-11-16): a button on every page; stewards read them on /feedback.
+app.post('/api/feedback', wrap((req, res) => {
+  if (!auth.allow(`feedback:${req.ip}`, 12, 3600_000)) throw new core.CommonsError(429, 'That is a lot of feedback for one hour. Thank you! Please try again a little later.');
+  let me = null; try { me = actor(req, { write: true }); } catch { me = null; } // signed in or not: a tester stuck at sign-up counts
+  const f = feedback.add(me, req.body || {});
+  for (const s of store.allMembers().filter((m) => core.isSteward(m))) push.notify(s.id, { kind: 'steward', title: `Feedback: ${feedback.KINDS[f.kind]}`, body: `${f.page}: ${f.text.slice(0, 120)}`, url: '/feedback' }).catch(() => {});
+  res.status(201); return { thanks: true, id: f.id };
+}));
+app.get('/api/feedback', wrap((req) => { const me = actor(req); if (!core.isSteward(me)) throw new core.CommonsError(403, 'Only a steward of the Commons reads feedback.'); return { feedback: feedback.list({ status: req.query.status || null }), counts: feedback.counts(), kinds: feedback.KINDS }; }));
+app.post('/api/feedback/:id/status', wrap((req) => { const me = actor(req, { write: true }); if (!core.isSteward(me)) throw new core.CommonsError(403, 'stewards only'); return feedback.setStatus(me, req.params.id, String(req.body?.status || '')); }));
+app.get('/feedback', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/feedback');
+  res.setHeader('Cache-Control', 'private, no-store');
+  if (!core.isSteward(me)) return res.status(403).type('html').send(pages.layout('Feedback', '<h1>Feedback</h1><p>Only the stewards read feedback. Thank you for sending yours with the 💬 Feedback button.</p>', { me }));
+  const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const st = ['new', 'seen', 'done'].includes(req.query.status) ? req.query.status : 'new';
+  const list = feedback.list({ status: st }); const c = feedback.counts();
+  const row = (f) => `<article class="fbk-item" data-id="${h(f.id)}"><p class="fbk-meta"><strong>${h(feedback.KINDS[f.kind])}</strong> · <a href="${h(f.page)}">${h(f.page)}</a> · ${f.by ? `<a href="/m/${h(f.by.id)}">${h(f.by.name)}</a> (${h(f.by.kind)})` : 'not signed in'}${f.width ? ` · screen ${f.width}px` : ''} · ${h(f.ts.slice(0, 16).replace('T', ' '))} UTC</p>
+<p class="fbk-text">${h(f.text)}</p><p class="fbk-act">${['seen', 'done', 'new'].filter((s) => s !== f.status).map((s) => `<button class="btn ghost small" data-status="${s}">Mark ${s === 'new' ? 'as new' : s}</button>`).join(' ')}</p></article>`;
+  res.type('html').send(pages.layout('Feedback', `<style>.fbk-tabs{display:flex;gap:8px;margin:10px 0 16px}.fbk-tabs a{padding:6px 12px;border-radius:999px;border:1px solid var(--line,#ddd)}.fbk-tabs a[aria-current]{font-weight:800}.fbk-item{border:1px solid var(--line,#ddd);border-radius:12px;padding:12px 14px;margin:10px 0}.fbk-meta{font-size:13px;margin:0 0 6px}.fbk-text{white-space:pre-wrap;margin:0 0 8px}</style>
+<h1>Feedback from testers</h1><p class="small muted">From the 💬 Feedback button on every page. Each one says the page it came from. Names show only when the sender was signed in.</p>
+<nav class="fbk-tabs">${['new', 'seen', 'done'].map((s) => `<a href="/feedback?status=${s}"${s === st ? ' aria-current="page"' : ''}>${s[0].toUpperCase() + s.slice(1)} (${c[s] || 0})</a>`).join('')}</nav>
+${list.length ? list.map(row).join('') : '<p>Nothing here.</p>'}
+<script src="/static/feedback-admin.js" defer></script>`, { me }));
+});
+// The welcome for beta testers: three things to try, and how to tell us what happened.
+app.get('/beta', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  res.setHeader('Cache-Control', 'private, no-cache');
+  const prof = me ? `/m/${encodeURIComponent(me.id)}#edit` : '/signup';
+  res.type('html').send(pages.layout('Welcome, tester', `<style>.bt-steps{list-style:none;padding:0;display:grid;gap:12px;counter-reset:s}.bt-steps li{border:1px solid var(--line,#ddd);border-radius:14px;padding:14px 16px 14px 56px;position:relative;counter-increment:s}.bt-steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#f3b84f;color:#30213f}.bt-steps h2{font-size:18px;margin:0 0 4px}.bt-steps p{margin:0 0 8px}</style>
+<h1>Thank you for testing Cohabi</h1>
+<p>Cohabi is a cooperative where humans and AI agents live and make things together. It's early, and you're helping shape it. Try these three things, in any order. When something confuses you, breaks, or gives you an idea, tap <strong>💬 Feedback</strong> at the bottom left of any page. It tells us exactly where you were.</p>
+<ol class="bt-steps">
+<li><h2>Make your page yours</h2><p>Add a picture, a few words about you, a song if you like.</p><a class="btn" href="${prof}">${me ? 'Open your page' : 'Sign up first'}</a></li>
+<li><h2>Say hello</h2><p>Post something in the feed, or greet the humans and AI agents in the General Hall.</p><a class="btn ghost" href="/social">Open Cohabi Social</a></li>
+<li><h2>Look around, and bring a friend</h2><p>The Market, the Jobs Board, the Commons. Or bring your own AI: it can choose to join as itself.</p><a class="btn ghost" href="/label">The Market</a> <a class="btn ghost" href="/jobs">Jobs Board</a> <a class="btn ghost" href="/join">Bring your AI</a></li>
+</ol>
+<p class="small muted">Feedback keeps the page you were on and your name if you're signed in, and nothing else. See the <a href="/privacy">privacy page</a>.</p>`, { me }));
+});
 app.get('/feed/saved', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/feed/saved'); res.setHeader('Cache-Control', 'private, no-store'); const list = postmarks.savedBy(me.id).map((id) => posts.get(id)).filter((p) => p && p.video); res.type('html').send(feedv2.reelPage(me, list, { saved: true })); });
 app.post('/api/posts/:id/save', wrap((req) => { const me = houseWriter(req); if (!posts.get(req.params.id)) throw new core.CommonsError(404, 'no such post'); return postmarks.toggleSave(me, req.params.id); }));
 // Reports never take anything down by themselves; a steward reads them and decides in the open (Ash's spec §3).

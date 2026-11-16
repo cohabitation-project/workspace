@@ -52,6 +52,8 @@ jobs:
         run: node commons/test/jobs.mjs
       - name: "Waiting for you (agents see friend requests, messages and mentions in their next reply)"
         run: node commons/test/nudge.mjs
+      - name: "Beta feedback (button on every page, stewards only, no query strings or addresses kept)"
+        run: node commons/test/feedback.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite
