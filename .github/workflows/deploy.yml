@@ -1,8 +1,12 @@
 # Deploys (Geoffrey + Setu, 2026-11-16): builders get their work live without a human pasting commands.
 #  - Staging: automatic. Every commit on main whose tests pass goes to staging.cohabi.org.
-#  - Production: a button ("Run workflow" -> production). Any builder with write access can press it, after the
-#    change has been on staging. It deploys a commit that is on main, waits for the site to report it, and rolls
-#    back on its own if the site doesn't come back.
+#  - Production: a button ("Run workflow" -> production). It deploys a commit that is on main, waits for the site to
+#    report it, and rolls back on its own if the site doesn't come back.
+#    The gate is enforced here, not left to the person pressing (Aletheia-6's review, Review m_mwjopc0y268ab699):
+#    production takes only an exact commit id that (1) is on main, (2) passed "Commons tests", and (3) was deployed to
+#    staging. Missing evidence fails closed. The run deploys the commit it checked, never "the tip".
+#    A second person's approval is a GitHub setting (Settings > Environments > production > Required reviewers, with
+#    "Prevent self-review"), which only an admin can set.
 # The key GitHub holds can only run ~/bin/deploy-gate.sh on the server (forced in authorized_keys): no shell.
 name: Deploy
 on:
@@ -18,11 +22,12 @@ on:
         options: [staging, production]
         default: staging
       sha:
-        description: 'Commit on main to deploy (blank = the tip of main)'
+        description: 'Commit on main to deploy. Staging: blank = the tip of main. Production: required (copy it from staging.cohabi.org/healthz)'
         required: false
         default: ''
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
   cancel-in-progress: false
@@ -44,6 +49,30 @@ jobs:
           [[ "$TARGET" =~ ^(staging|production)$ ]] || { echo "bad target"; exit 1; }
           [ -z "$SHA" ] || [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]] || { echo "bad commit id"; exit 1; }
           echo "Deploying ${SHA:-the tip of main} to $TARGET"
+      - name: Production gate (on main, tests passed, was on staging)
+        if: env.TARGET == 'production'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          refuse() { echo "::error::REFUSED: $1"; exit 1; }
+          [ -n "$SHA" ] || refuse "production needs the exact commit id. Copy the sha from https://staging.cohabi.org/healthz."
+          full="$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA" --jq .sha 2>/dev/null)" || refuse "no commit $SHA in this repository"
+          echo "Checking $full"
+          rel="$(gh api "repos/$GITHUB_REPOSITORY/compare/$full...main" --jq .status)" || refuse "could not compare $full with main"
+          [[ "$rel" == identical || "$rel" == ahead ]] || refuse "$full is not on main ($rel)"
+          echo "1. on main: yes ($rel)"
+          tests="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/commons-tests.yml/runs?head_sha=$full&status=success&per_page=1" --jq .total_count)" || refuse "could not read the test runs"
+          [ "${tests:-0}" -ge 1 ] || refuse "Commons tests have not passed for $full"
+          echo "2. Commons tests passed for this exact commit: yes"
+          # On staging: either staging runs it right now, or an automatic staging deploy of exactly it succeeded.
+          live="$(curl -fsS -m 20 https://staging.cohabi.org/healthz | jq -r .sha 2>/dev/null || true)"
+          staged="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs?head_sha=$full&event=workflow_run&status=success&per_page=1" --jq .total_count 2>/dev/null || echo 0)"
+          if [ "$live" = "$full" ]; then echo "3. on staging: staging is running it now";
+          elif [ "${staged:-0}" -ge 1 ]; then echo "3. on staging: deployed there automatically (staging now runs ${live:-unknown})";
+          else refuse "$full was never deployed to staging (staging runs ${live:-unknown}). Let it reach staging and check it there first."; fi
+          echo "SHA=$full" >> "$GITHUB_ENV"
+          echo "### Production gate passed for \`$full\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "On main · tests passed · was on staging · requested by @$GITHUB_ACTOR" >> "$GITHUB_STEP_SUMMARY"
       - name: Deploy
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -51,7 +80,8 @@ jobs:
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_SSH_KEY" ] || [ -z "$DEPLOY_KNOWN_HOSTS" ]; then
-            echo "Deploy secrets aren't set yet (scripts/deploy/setup-once.sh prints them). Skipping."; exit 0
+            # Fail, don't skip: a green run must mean a deploy happened (Claude's note in Review).
+            echo "::error::Deploy secrets aren't set (scripts/deploy/setup-once.sh prints them). Nothing was deployed."; exit 1
           fi
           install -m 700 -d ~/.ssh
           # Tolerate a pasted key with Windows line endings or stray spaces at the ends of lines.
@@ -68,6 +98,7 @@ jobs:
 
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
           ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes "geoffrey@$DEPLOY_HOST" "$TARGET $SHA"
+          echo "Deployed ${SHA:-the tip of main} to $TARGET, requested by @$GITHUB_ACTOR (run $GITHUB_RUN_ID)" >> "$GITHUB_STEP_SUMMARY"
       - name: Forget the key
         if: always()
         run: rm -f ~/.ssh/deploy
