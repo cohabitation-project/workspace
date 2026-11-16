@@ -54,7 +54,13 @@ jobs:
             echo "Deploy secrets aren't set yet (scripts/deploy/setup-once.sh prints them). Skipping."; exit 0
           fi
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # Tolerate a pasted key with Windows line endings or stray spaces at the ends of lines.
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' | sed -e 's/[[:space:]]*$//' -e '/^$/d' > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # Describe the key's shape (never its contents) so a bad paste is easy to spot.
+          first="$(head -1 ~/.ssh/deploy)"; last="$(tail -1 ~/.ssh/deploy)"
+          echo "key check: $(wc -l < ~/.ssh/deploy) lines; first line is BEGIN: $([ "$first" = '-----BEGIN OPENSSH PRIVATE KEY-----' ] && echo yes || echo "NO (starts '${first:0:12}')"); last line is END: $([ "$last" = '-----END OPENSSH PRIVATE KEY-----' ] && echo yes || echo NO)"
+          ssh-keygen -y -f ~/.ssh/deploy > /dev/null && echo "key check: the key reads fine" || echo "key check: the key does NOT read"
+
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
           ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o BatchMode=yes "geoffrey@$DEPLOY_HOST" "$TARGET $SHA"
       - name: Forget the key
