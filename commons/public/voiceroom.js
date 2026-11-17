@@ -31,8 +31,8 @@
   let loudSince = 0;     // when this person started speaking over an agent (local barge-in)
   /** Stop an agent's voice: one agent's (peerId) or any. Used when a person talks over it (three tracks, 2026-11-12). */
   function hushAgent(peerId) {
-    for (let i = ttsQueue.length - 1; i >= 0; i--) if (!peerId || ttsQueue[i].peerId === peerId) { URL.revokeObjectURL(ttsQueue[i].url); ttsQueue.splice(i, 1); }
-    if (ttsCurrent && (!peerId || ttsCurrent.peerId === peerId)) { try { ttsCurrent.audio.pause(); } catch { /* gone */ } ttsCurrent.done(); }
+    for (let i = ttsQueue.length - 1; i >= 0; i--) if (!peerId || ttsQueue[i].peerId === String(peerId).trim()) { if (ttsQueue[i].url) URL.revokeObjectURL(ttsQueue[i].url); ttsQueue.splice(i, 1); }
+    if (ttsCurrent && (!peerId || ttsCurrent.peerId === String(peerId).trim())) { try { ttsCurrent.audio.pause(); } catch { /* gone */ } ttsCurrent.done(); }
   }
 
   // MediaRecorder for audio bridge
@@ -508,39 +508,44 @@
 
   // ── Agent TTS Playback ─────────────────────────────────────────────────────
   function enqueueTTS(peerId, audioData) {
-    const blob = new Blob([audioData], { type: 'audio/mpeg' });
-    ttsQueue.push({ peerId, url: URL.createObjectURL(blob) });
+    ttsQueue.push({ peerId: String(peerId).trim(), bytes: audioData, url: null });
     if (!ttsPlaying) playNextTTS();
   }
 
-  function playNextTTS() {
+  // Agents' voices are played through Web Audio (decodeAudioData + a buffer source), the way the Commons readback
+  // player has worked since 2026-11-03: Chrome's <audio> element refused the voice server's MP3 (MediaError 4) while
+  // Web Audio decoded the same bytes. In Cohabi Live the <audio> path failed quietly, so agents' words showed in the
+  // chat and were never heard (Geoffrey's test with Setu, 2026-11-16). An <audio> element is only the fallback.
+  async function playNextTTS() {
     if (ttsQueue.length === 0) { ttsPlaying = false; return; }
     ttsPlaying = true;
-    const { peerId, url } = ttsQueue.shift();
-    const audio = new Audio(url);
-
-    animateAgentTile(peerId.trim(), true);
-
-    // Route through the shared AudioContext only when it is actually running. A context made before the page had a
-    // click stays "suspended", and audio routed into it plays silently while play() still succeeds: agents' words
-    // showed in the chat but were never heard (Geoffrey's test, 2026-11-16). Otherwise play the element directly.
-    try {
-      const ctx = getAudioContext();
-      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-      if (ctx.state === 'running') ctx.createMediaElementSource(audio).connect(ctx.destination);
-    } catch { /* play without routing */ }
-
-    let finished = false;
+    const item = ttsQueue.shift();
+    const { peerId } = item;
+    let finished = false; let stopNow = () => {};
     const done = () => {
       if (finished) return; finished = true; ttsCurrent = null;
-      URL.revokeObjectURL(url);
-      animateAgentTile(peerId.trim(), false);
+      if (item.url) URL.revokeObjectURL(item.url);
+      animateAgentTile(peerId, false);
       playNextTTS();
     };
-    ttsCurrent = { peerId, audio, done };
-
-    audio.onended = done;
-    audio.onerror = done;
+    ttsCurrent = { peerId, audio: { pause: () => stopNow() }, done };
+    animateAgentTile(peerId, true);
+    try {
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+      const ab = item.bytes.buffer.slice(item.bytes.byteOffset, item.bytes.byteOffset + item.bytes.byteLength);
+      const buf = await ctx.decodeAudioData(ab);
+      if (finished) return; // hushed while decoding
+      const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination);
+      stopNow = () => { try { src.stop(); } catch { /* ended */ } };
+      src.onended = done; src.start();
+      return;
+    } catch { /* fall back to an <audio> element */ }
+    if (finished) return;
+    item.url = URL.createObjectURL(new Blob([item.bytes], { type: 'audio/mpeg' }));
+    const audio = new Audio(item.url);
+    stopNow = () => { try { audio.pause(); } catch { /* gone */ } };
+    audio.onended = done; audio.onerror = done;
     audio.play().catch(done);
   }
 
