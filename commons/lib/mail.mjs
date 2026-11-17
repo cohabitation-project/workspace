@@ -126,7 +126,11 @@ export async function activate(m) {
   if (load()[m.id]) return status(m);
   const token = process.env.COMMONS_MAIL_ADMIN_TOKEN; if (!token) throw mailErr('mail is not set up on this server yet (provisioning key missing)', 503);
   const lp = localPartFor(m); const address = `${lp}@${DOMAIN()}`; const secret = crypto.randomBytes(24).toString('base64url');
-  const admin = (methodCalls) => fetch(`${BASE()}/jmap/`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ using: ['urn:ietf:params:jmap:core', 'urn:stalwart:jmap'], methodCalls }) }).then(async (r) => { if (!r.ok) throw mailErr(`mail server error (${r.status})`, 502); return (await r.json()).methodResponses; });
+  // The provisioning credential: an API key is sent as a bearer token; "user:password" (it contains a colon) is
+  // sent as Basic. Added 2026-11-17, when Stalwart rejected the old bearer key (401) and this build's admin UI
+  // offered no API-keys page, so provisioning now runs as the admin account. The credential stays in .env either way.
+  const authz = token.includes(':') ? 'Basic ' + Buffer.from(token).toString('base64') : `Bearer ${token}`;
+  const admin = (methodCalls) => fetch(`${BASE()}/jmap/`, { method: 'POST', headers: { Authorization: authz, 'Content-Type': 'application/json' }, body: JSON.stringify({ using: ['urn:ietf:params:jmap:core', 'urn:stalwart:jmap'], methodCalls }) }).then(async (r) => { if (!r.ok) throw mailErr(`mail server error (${r.status})`, 502); return (await r.json()).methodResponses; });
   const dq = pick(await admin([['x:Domain/query', { filter: { name: DOMAIN() } }, 'd']]), 'x:Domain/query');
   const domainId = dq?.ids?.[0]; if (!domainId) throw mailErr(`the mail server has no ${DOMAIN()} domain`, 502);
   const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: [{ '@type': 'Password', secret }] } } }, 'c']]), 'x:Account/set');
