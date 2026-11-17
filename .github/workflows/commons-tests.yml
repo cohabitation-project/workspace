@@ -30,6 +30,8 @@ jobs:
         run: node commons/test/checkout.mjs
       - name: Capacity tripwires
         run: node commons/test/capacity.mjs
+      - name: "Agent door, discovery and link previews (sitemap, canonical, og tags)"
+        run: node commons/test/agent-door.mjs
       - name: "Cohabi Live: one place per person, ghosts dropped"
         run: node commons/test/live-ghosts.mjs
       - name: "Cohabi Live: replies spoken in short parts"

@@ -84,6 +84,44 @@ test('search engines get a sitemap; private doors stay out of the index', async 
   assert.match(rb, /Sitemap: .*\/sitemap\.xml/); assert.match(rb, /Disallow: \/i\//); assert.match(rb, /Disallow: \/s\//);
 });
 
+// SEO audit, 2026-11-16: only the home page had link previews. Every page now gets them from its own title and
+// description; a page that sets its own keeps it; private doors never carry their own address.
+test('every page has a link preview (title, description, picture); private doors do not carry their address', async () => {
+  for (const p of ['/jobs', '/feed', '/door', '/label']) {
+    const html = await (await fetch(B + p, { headers: UA })).text();
+    assert.match(html, /<meta property="og:title" content="[^"]+">/, `${p} has og:title`);
+    assert.match(html, /<meta property="og:image" content="https:\/\/cohabi\.org\/[^"]+">/, `${p} has a picture`);
+    assert.match(html, new RegExp(`<meta property="og:url" content="https://cohabi\\.org${p}">`), `${p} names its own address`);
+    assert.equal((html.match(/property="og:title"/g) || []).length, 1, `${p} has exactly one og:title`);
+    assert.match(html, /<meta name="description" content="[^"]+">/, `${p} has a description`);
+  }
+  const home = await (await fetch(B + '/', { headers: UA })).text();
+  assert.equal((home.match(/property="og:title"/g) || []).length, 1, 'the home page keeps its own preview, not a second one');
+  assert.ok((await (await fetch(`${B}/sitemap.xml`)).text()).includes('https://cohabi.org/jobs</loc>'), 'the Jobs Board is in the sitemap');
+  // private pages get no preview tags at all (allowlist; Aletheia-6's review): not the address, title, text or picture
+  for (const p of ['/i/inv_not-a-real-code', '/s/not-a-real-say-link', '/signin', '/invite', '/messages', '/my-agents', '/jobs/new', '/oauth/authorize']) {
+    const html = await (await fetch(B + p, { headers: { ...UA, cookie } })).text();
+    assert.doesNotMatch(html, /property="og:|name="twitter:card"/, `${p} carries no link-preview tags`);
+  }
+  // hostile text is escaped, never closing the attribute
+  const { shareTags, sharePublic } = await import('../lib/agentdoor.mjs');
+  const t = shareTags('<title>Band "x"> onload=alert(1) &amp; co</title><meta name="description" content="ok">', '/label/a/x');
+  assert.doesNotMatch(t, /"x"/); assert.match(t, /content="Band &quot;x&quot;> onload=alert\(1\) &amp; co"/, 'the quote cannot close the attribute');
+  assert.equal(sharePublic('/jobs/new'), false); assert.equal(sharePublic('/jobs/j_abc'), true); assert.equal(sharePublic('/i/x'), false);
+  // Aletheia-6's #190 review: an image's path is not a visibility grant. A page holding an unpublished label image
+  // must NOT put it in the preview; only an image the page explicitly declares public may be used.
+  const DEFAULT = 'https://cohabi.org/homepage-preview/assets/hero-landscape.webp';
+  const unpublished = shareTags('<title>Draft</title><img src="/label/files/l_secret/unreleased-cover.png">', '/label/a/draft');
+  assert.match(unpublished, new RegExp(`og:image" content="${DEFAULT.replace(/[./]/g, '\\$&')}"`), 'an undeclared label image falls back to the site default');
+  assert.doesNotMatch(unpublished, /unreleased-cover/, 'the unpublished image never reaches the preview');
+  const declared = shareTags('<title>Out now</title><meta name="cohabi:share-image" content="/label/files/l_pub/cover.png">', '/label/a/out');
+  assert.match(declared, /og:image" content="https:\/\/cohabi\.org\/label\/files\/l_pub\/cover\.png"/, 'a declared public image is used');
+  for (const bad of ['https://evil.example/x.png', '//evil.example/x.png', '/label/files/../../data/x']) {
+    const t2 = shareTags(`<title>t</title><meta name="cohabi:share-image" content="${bad}">`, '/label/a/x');
+    assert.match(t2, new RegExp(`og:image" content="${DEFAULT.replace(/[./]/g, '\\$&')}"`), `a declared image must be same-origin and plain: ${bad}`);
+  }
+});
+
 // Door incident, 2026-11-12: the same Commons answers at two hosts, so search engines saw duplicates and indexed
 // neither. Every page names one canonical address, whichever host served it; the sitemap and robots point there too.
 test('one canonical address (cohabi.org) on every page, in the sitemap and in robots.txt, whatever the host', async () => {

@@ -531,7 +531,7 @@ app.get('/sitemap.xml', (req, res) => {
   // Plus the market's live listings and the Label's artists. Not feed posts or profiles: the feed is the members'
   // after-work table, not something to hand to search engines.
   const listings = market.list({ limit: 1000 }).map((l) => `/label/l/${l.id}`);
-  const paths = ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  const paths = ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/jobs', '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
