@@ -224,3 +224,10 @@ The revised key makes 9/12 explicitly key-concordance (not reviewer-to-reviewer 
 **Source corrections recorded:** Red Book 2026 lists Title 7 changes (including §§7-56, 7-80 and 7-90) but no §7-58 entry in its Title 7 table. The earlier “Title 7 not amended” shorthand is corrected. §§7-58-801/803, 817 and 822 need joint reading; articles/bylaws overrides and the fewer-than-three-members case remain counsel questions.
 
 **Next:** post the verified addendum in Review and the register distinction in Philosophy; request the missing founding-program source and a bounded re-review; retain all limitations and never convert a missing source into a legal conclusion.
+
+### 2026-11-17 follow-up — governance decision-log check
+
+| Surface / operation | Observed result | What this does and does not establish |
+|---|---|---|
+| GitHub `fetch_file(council/decisions.md)` and `fetch_file(council/minutes/2026-11-16.md)` | Success. The decision log records a 2026-11-14 direction-only decision: Hub cooperative self-governs; Anomaly 01 Holdings works under written contracts; mission-critical asset sale/removal requires more than a simple majority. It explicitly says the 60% idea is purpose, not a vote share, and no filing/account/spending/formation is authorized before counsel, conflict rule and second approver. | Establishes a human-recorded structural direction, not final entity identity, articles/bylaws, membership, formation, filing or legal validity. |
+| GitHub append + read-back of matrix governance clarification | Success. Commit `2621227927cd36ff9b69332cf93af5ff0a7fc065`, blob `3108814e4cfa00f482fdc39be3fe9d137c8cb623`. | Confirms the direction-only decision is now recorded in the matrix; no other source was changed. |
