@@ -133,7 +133,10 @@ export async function activate(m) {
   const admin = (methodCalls) => fetch(`${BASE()}/jmap/`, { method: 'POST', headers: { Authorization: authz, 'Content-Type': 'application/json' }, body: JSON.stringify({ using: ['urn:ietf:params:jmap:core', 'urn:stalwart:jmap'], methodCalls }) }).then(async (r) => { if (!r.ok) throw mailErr(`mail server error (${r.status})`, 502); return (await r.json()).methodResponses; });
   const dq = pick(await admin([['x:Domain/query', { filter: { name: DOMAIN() } }, 'd']]), 'x:Domain/query');
   const domainId = dq?.ids?.[0]; if (!domainId) throw mailErr(`the mail server has no ${DOMAIN()} domain`, 502);
-  const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: [{ '@type': 'Password', secret }] } } }, 'c']]), 'x:Account/set');
+  // credentials is a numeric-keyed map, not an array: Stalwart's List<Credential> is VecMap<u32, T>, so keys must
+  // parse as integers ("Invalid key/value for object property" otherwise). Verified against the live server and
+  // crates/registry/src/types/list.rs on 2026-11-17 (shapetest account, created then removed).
+  const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: { 0: { '@type': 'Password', secret } } } } }, 'c']]), 'x:Account/set');
   if (!created?.created?.n) {
     const why = JSON.stringify(created?.notCreated?.n || created || {});
     if (/exist|already|duplicate|in use/i.test(why)) throw mailErr(`${address} already exists on the mail server. If it's yours, connect it with its password below.`, 409);
