@@ -36,12 +36,22 @@ export function init(dataDir) {
 const append = (ev) => { if (FILE) fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); };
 
 /** The page a tester was on, without anything after "?" or "#", and only a path on this site. */
+// Paths whose next segment is a secret (an invite, a say-link, a sign-in link, a short link, a Live guest link).
+// The browser script never sends these pages, but POST /api/feedback takes any `page`, so the server is what keeps
+// them out of feedback.jsonl, the steward inbox and notifications (Aletheia-6's review of #187).
+const SECRET_SEGMENT = /^\/(i|s|login|go|live)\/[^/]+/i;
+const OUR_HOSTS = /^(?:[a-z0-9-]+\.)?(cohabi\.org|lastoftherealestate\.com)$|^(localhost|127\.0\.0\.1)$/i;
 export function cleanPage(p) {
   let s = String(p || '').trim();
-  try { if (/^https?:/i.test(s)) s = new URL(s).pathname; } catch { s = ''; }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(s)) { // a full address: only our own sites count; anything else is just "/"
+    try { const u = new URL(s); if (!/^https?:$/.test(u.protocol) || !OUR_HOSTS.test(u.hostname)) return '/'; s = u.pathname; } catch { return '/'; }
+  }
   s = s.split(/[?#]/)[0];
-  if (!s.startsWith('/')) return '/';
-  return s.replace(/[^\w\-./~%@:+]/g, '').slice(0, 200) || '/';
+  if (!s.startsWith('/') || s.startsWith('//')) return '/';
+  try { s = decodeURIComponent(s); } catch { /* keep as is */ }
+  s = s.replace(/\/{2,}/g, '/');
+  s = s.replace(SECRET_SEGMENT, (m0, kind) => `/${kind.toLowerCase()}/[private]`).replace(/^(\/(?:i|s|login|go|live)\/\[private\]).*$/i, '$1');
+  return s.replace(/[^\w\-./~%@:+\[\]]/g, '').slice(0, 200) || '/';
 }
 
 export function add(member, b = {}) {

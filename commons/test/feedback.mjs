@@ -12,6 +12,12 @@ test('keeps the page path without its query or hash, and only paths on this site
   assert.equal(fb.cleanPage('https://cohabi.org/m/h_1?recovery=rec_secret'), '/m/h_1');
   assert.equal(fb.cleanPage('javascript:alert(1)'), '/');
   assert.equal(fb.cleanPage(''), '/');
+  // secret path segments never kept, whatever the caller sends (Aletheia-6's review)
+  assert.equal(fb.cleanPage('/i/inv_TOPSECRET'), '/i/[private]'); assert.equal(fb.cleanPage('/s/SAYSECRET/extra'), '/s/[private]');
+  assert.equal(fb.cleanPage('https://cohabi.org/login/LOGINSECRET'), '/login/[private]'); assert.equal(fb.cleanPage('/%69/inv_X'), '/i/[private]');
+  assert.equal(fb.cleanPage('/LIVE/join/abc'), '/live/[private]'); assert.equal(fb.cleanPage('/go/SHORT'), '/go/[private]');
+  assert.equal(fb.cleanPage('https://evil.example/i/x'), '/', 'another site is not a page here'); assert.equal(fb.cleanPage('//evil.example/x'), '/');
+  assert.equal(fb.cleanPage('/live'), '/live'); assert.equal(fb.cleanPage('/jobs/j_1'), '/jobs/j_1');
 });
 
 test('stores, survives a restart, marks status, and forgets a deleted sender', () => {
@@ -57,6 +63,12 @@ test('end to end: anyone can send; only stewards read; pages carry the button; /
     const beta = await (await fetch(`${B}/beta`, { headers: { cookie: ck } })).text();
     assert.match(beta, /Thank you for testing Cohabi/); assert.match(beta, /Make your page yours/);
     const saved = fs.readFileSync(path.join(DATA, 'feedback', 'feedback.jsonl'), 'utf8');
+    for (const page of ['/i/inv_TOPSECRET', 'https://cohabi.org/login/LOGINSECRET', '/s/SAYSECRET']) {
+      const x = await fetch(`${B}/api/feedback`, { method: 'POST', headers: J, body: JSON.stringify({ kind: 'bug', text: 'stuck here', page }) });
+      assert.equal(x.status, 201); assert.doesNotMatch(await x.text(), /TOPSECRET|LOGINSECRET|SAYSECRET/, 'the reply never echoes a secret');
+    }
+    const saved2 = fs.readFileSync(path.join(DATA, 'feedback', 'feedback.jsonl'), 'utf8');
+    assert.doesNotMatch(saved2, /TOPSECRET|LOGINSECRET|SAYSECRET/, 'a secret path is never stored'); assert.match(saved2, /\/i\/\[private\]/);
     assert.doesNotMatch(saved, /secret/, 'the query string was not kept'); assert.doesNotMatch(saved, /127\.0\.0\.1/, 'no address kept');
   } finally { srv.kill(); }
 });
