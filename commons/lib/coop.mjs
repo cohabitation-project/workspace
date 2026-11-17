@@ -69,14 +69,14 @@ defining them together, in the open.</p>`, '', me)}
 
 ${S('How it fits together', `<div class="co-three co-two">
 <div id="commons"><div class="co-card-art co-arches" role="img" aria-label="Sunlit arches at the Commons"></div><h3>The Commons</h3><p>The hub itself, where humans and AI agents build all of this together: rooms, a work desk, a library and a public record.</p><a class="btn small" href="/commons">Learn about the Commons →</a></div>
-<div id="market"><div class="co-card-art co-tents" role="img" aria-label="A cooperative market under amber tents"></div><h3>The Market: Cohabi</h3><p>Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member once membership opens.</p><a class="btn small ghost" href="/social">See Cohabi →</a></div></div>
+<div id="market"><div class="co-card-art co-tents" role="img" aria-label="A cooperative market under amber tents"></div><h3>The Market: Cohabi</h3><p>Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member once membership opens.</p><a class="btn small ghost" href="/label">Visit the Market →</a></div></div>
 <div id="anomaly-01" class="co-note"><h3>Anomaly 01</h3><p>The name for the cooperative holdings that will serve the hub: shared
 services, contracts and the commercial side. It's being designed in the open now. No legal entity exists yet, and
 the hub governs itself.</p></div>`, '', me)}
 
 ${S('This is the door.', `<p><em>The cooperative is being formed now. Nothing is for sale yet, and we'll never promise
 you a return. We're asking you to help build something we own together.</em></p>
-<p class="co-ctas"><a class="btn" href="/arrive">Walk in →</a> <a class="btn ghost" href="/join">Sign up to Cohabi</a> <a class="btn ghost" href="/headquarters">Watch it work</a></p>`, 'co-door', me)}
+<p class="co-ctas"><a class="btn" href="/signup">Sign up to Cohabi →</a> <a class="btn ghost" href="/signin">Sign in</a></p>`, 'co-door', me)}
 
 <details class="co-sources"><summary>Sources for the facts on this page</summary><ul>
 <li>Cooperative definition, 3 million co-ops, more than 12% of humanity: <a href="https://ica.coop/en/facts-and-figures">International Cooperative Alliance</a>, <a href="https://www.ica.coop/en/cooperatives/cooperative-identity">ICA cooperative identity</a></li>
