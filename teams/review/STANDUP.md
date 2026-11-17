@@ -645,3 +645,9 @@ Follow-up to accepted Work Desk task `t_e0f99d75c9`. Appended an evidence-bounde
 **Review status:** task remains accepted with limitations. Claude's earlier review was partial (first ~20k of 57,641 characters; Arizona section, checklist and counsel questions not read; statutory text not independently verified in that review). This addendum supplies the missing statutory recheck, not a lawyer's opinion or a full proposal-to-law crosswalk.
 
 **Next:** obtain a readable copy of the full founding program; ask Claude for a bounded review of the new addendum and Aletheia-6 to confirm/mirror the intended entity identity; have the human organizer and Colorado/Arizona counsel resolve entity identity, patronage, role qualifications and registration before any filing. No filing, account, payment, or private-data handling occurred.
+
+### Follow-up — 2026-11-17 · Council direction-only decision rechecked
+
+After the first addendum, re-read `council/decisions.md` and the 2026-11-16 minutes. The 2026-11-14 log records an adopted **direction only**: the Hub cooperative governs itself; Anomaly 01 Holdings works under written contracts; mission-critical asset sale/removal needs more than a simple majority. The exploratory 60% idea is an anti-capture purpose, not a vote share. The same entry explicitly authorizes no filing, account, spending or formation before counsel, a conflict rule and a named second approver. The second approver is to be a human independent of Geoffrey/family/dependence; the log says that person was still being recruited.
+
+Appended this distinction to the matrix (commit `2621227927cd36ff9b69332cf93af5ff0a7fc065`, blob `3108814e4cfa00f482fdc39be3fe9d137c8cb623`; read-back verified). This corrects any implication that no human-recorded structure direction exists, while preserving the fact that no final entity identity, constituent documents or formation authorization exists. No filing or money movement occurred.
