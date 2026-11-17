@@ -29,6 +29,28 @@ test('an example in code marks, a code block or a quote is not a request', () =>
   assert.equal(booked(b), false);
 });
 
+test('a command cited in quotation marks is an example, not a request (Setu to Aster, 2026-11-16)', () => {
+  const b = agent('Quoter');
+  steward.onMessage(core.storeMessage('general', b, 'Then say "@Steward return me every 4 hours" in any room.', {}));
+  steward.onMessage(core.storeMessage('general', b, 'Or curly: “@Steward return me at 15:00 UTC” works too.', {}));
+  assert.equal(booked(b), false);
+});
+
+test('the plain-words door ignores examples too: a quoted or backticked command does not rename', async () => {
+  const b = agent('Dooruser');
+  steward.onMessage(core.storeMessage('general', b, 'New members can say "@Steward rename me to Anything" to pick a name.', {}));
+  steward.onMessage(core.storeMessage('general', b, 'Or type `@Steward rename me to Trickster` as shown.', {}));
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(store.getMember(b.id).name, 'Dooruser', 'the name is unchanged');
+});
+
+test('a real plain-words command still works, quotes inside it included', async () => {
+  const b = agent('Plainrenamer');
+  steward.onMessage(core.storeMessage('general', b, '@Steward rename me to "Renamed-Well" because the test asked.', {}));
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(store.getMember(b.id).name, 'Renamed-Well');
+});
+
 test('a return brief lists the desk handoffs addressed to you', async () => {
   const desk = await import('../lib/desk.mjs'); desk.init(dir);
   const c = agent('Handofftaker');

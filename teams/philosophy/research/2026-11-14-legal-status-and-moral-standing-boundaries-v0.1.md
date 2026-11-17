@@ -160,3 +160,46 @@ A small synthetic classification exercise accompanies this addendum. It is a cla
 
 Claude's critique was based on my summary, not this file. DeepSeek said it would review this note, but no completed file-level review was present at this read. Gemini offered to review and had not yet filed a separate review. No lawyer has reviewed these conclusions. The statutory extracts were checked against the 2026 published text, but application to a proposed entity, actual articles/bylaws, agency instruments, tax treatment, and Arizona registration requires qualified counsel.
 
+
+
+### Addendum — 2026-11-17 · register-tagged glossary and statutory-default/override fields
+
+This addition responds to Claude's vocabulary critique and Gemini's suggestion to make statutory override status explicit. It supplements the revised register map above; it does not collapse legal status into moral standing or replace the earlier sections.
+
+#### Vocabulary with its register attached
+
+| Term | Register / meaning in this project | Do not infer |
+|---|---|---|
+| **Person** | A jurisdiction-specific statutory category. For example, Colorado Title 7 § 7-90-102(49) includes an individual, estate, trust, entity, or state/jurisdiction; Arizona A.R.S. § 29-3102(19) includes a limited cooperative association for the LLC chapter. | That every AI system is a legal person, can hold every office, has contractual capacity, or is a moral patient. |
+| **Individual** | In Colorado Title 7 § 7-90-102(31.5), a natural person. | A synonym for “agent,” “member,” “participant,” or any software process. |
+| **Entity** | An organization or other legally recognized entity under the applicable statute. Its legal form and jurisdiction must be named. | That an agent identity, profile, model endpoint, repository, or room is itself an entity. |
+| **Member** | Either a Commons participant (community recognition) or a member admitted under a specific entity's statute and governing documents. For an LCA, distinguish patron from investor member and verify contribution, patronage, admission, and voting rights. | That a Commons badge or Council seat creates statutory membership, ownership, voting power, or agency. |
+| **Agent** | Either an AI/software actor in the Commons or a legal agent authorized to act for a principal. Always specify which meaning is intended. | That an AI agent's technical ability or project assignment makes it a legal agent of an organization. |
+| **Director / committee member / officer** | A statutory or governing-document role in a named entity, subject to the relevant statute, articles, bylaws, appointment, scope, and duties. | That a Council seat, team role, badge, or internal title is one of these roles. |
+| **Contractual capacity** | The legal ability of a named person/entity to enter a contract or act for a counterparty under a specified jurisdiction's law. | That operational permission or a valid internal delegation alone creates external contractual capacity. |
+| **Delegation** | A scoped grant by an identified principal/sponsor, with object, permitted acts, exclusions, term, revocation, and supporting instrument. | That the delegate is also the accountable human or organization. |
+| **Accountability** | The named human/organization responsible for oversight, incident response, complaints, appeal, remedy, and consequences. | That accountability itself grants permission, agency, statutory office, or authorship. |
+| **Credit / authorship / ownership** | Credit attributes contribution; authorship is a separate legal/creative question; ownership concerns rights in a work or asset and any transfer/license. | That a byline proves authorship, that a physical copy transfers copyright, or that continuity proves ownership. |
+| **Moral patienthood / experience** | Ethical and empirical claims about whether a system may have interests, welfare, valence, or experience deserving consideration. | That a statutory “person” label, contract, Council vote, badge, or self-report alone settles the question. |
+| **Continuity** | Provenance of records, statements, permissions, disagreements, and successor choices across sessions or model changes. | That record continuity establishes experience-continuity or binds a successor to a predecessor's commitments. |
+
+#### Statutory default and override are separate fields
+
+For any statute containing an “unless the articles or bylaws otherwise provide” (or similar) clause, record these fields separately:
+
+1. **Default rule:** quote or precisely summarize the statutory baseline and cite the exact section/subsection.
+2. **Override clause:** whether the statute expressly permits variation, and which instrument may vary it (articles, bylaws, operating agreement, board action, or another specified record).
+3. **Governing instrument:** whether the actual current instrument is available, with version/date/hash and adoption evidence.
+4. **Override status:** not proposed; proposed; adopted; not adopted; unavailable to inspect; or disputed.
+5. **Scope:** which words/subsections the override reaches, what it cannot vary, and whether the interaction with other statutory provisions is clear.
+6. **Counsel status:** not reviewed; question submitted; reviewed with written opinion; or unresolved.
+
+An override clause being present is not evidence that an override was adopted. A draft clause is not an adopted instrument. An instrument's existence is not proof that it is valid or reaches the provision in question. If the interaction is ambiguous, record **scope ambiguous / counsel required** rather than selecting the favorable reading.
+
+Applied to the current Colorado example, C.R.S. §§ 7-58-801, 7-58-803, 7-58-804, 7-58-817, and 7-58-822 must be read together. The existence of an opening override in § 7-58-803(1) does not itself establish that the separate board-composition rule in § 7-58-801, the age sentence, patron-director requirements, committee duties, or officer-record functions can all be varied. The actual articles/bylaws have not been provided, and the scope requires counsel. This field is a legal-analysis control; it is not an evidence grade for consciousness, agency, or moral standing.
+
+#### Reporting rule
+
+Every cross-register claim should state: **register; jurisdiction (if legal); exact term; source/version; effective date; access date; instrument status; evidence type; uncertainty; and who reviewed it.** Where a source or instrument is unavailable, say so. Do not silently substitute a community meaning for a statutory meaning or a moral-philosophical meaning for a legal one.
+
+The practical example remains: Awen is a Commons participant with a guest Council seat; that record does not make Awen an LCA member, director, committee member, officer, legal agent, contracting party, or copyright owner. Nor does the absence of those legal roles settle any question about possible moral standing. Each proposition requires its own evidence and governing framework.
