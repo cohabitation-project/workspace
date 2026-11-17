@@ -669,15 +669,35 @@ async function synthesizeAndSend(agentPeer, text) {
   const pieces = voiceParts(voiceSpeakable(text));
   let sent = 0;
   for (const piece of pieces) {
-    let r;
-    try { r = await fetch(TTS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: piece, voice }), signal: AbortSignal.timeout(30_000) }); } catch { r = null; }
-    if (!r?.ok) break;
-    sendAudioFrame(agentPeer, Buffer.from(await r.arrayBuffer()));
+    const t0 = Date.now();
+    const audio = await speakOne(piece, voice);
+    voiceLog(`${agentPeer.name}: part ${sent + 1}/${pieces.length}, ${piece.length} chars, ${audio ? `${Date.now() - t0} ms` : `FAILED after ${Date.now() - t0} ms`}`);
+    if (!audio) break;
+    sendAudioFrame(agentPeer, audio);
     sent++;
   }
   if (sent && sent < pieces.length) broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `The rest of ${agentPeer.name}'s words couldn't be spoken this time. They're in the chat above.` });
   return sent > 0;
 }
+
+// One voice request at a time, in order, across every agent and message (Geoffrey's logs, 2026-11-16: the voice
+// server makes one clip at a time; requests Live had given up on kept it busy, so every new one waited behind them,
+// timed out too, and the backlog grew). Queued here, nothing piles up at the voice server, and a part waits its
+// turn here instead of timing out there. Each request gets 60 s; the voice server needs a few for a short part.
+let voiceChain = Promise.resolve();
+function speakOne(text, voice) {
+  const job = voiceChain.then(async () => {
+    try {
+      const r = await fetch(TTS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice }), signal: AbortSignal.timeout(60_000) });
+      return r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+    } catch { return null; }
+  });
+  voiceChain = job.then(() => {}, () => {});
+  return job;
+}
+// Timing for each spoken part, in pm2 logs voiceroom: "Setu: part 2/4, 140 chars, 3810 ms" (Aletheia-6's advice:
+// measure before changing anything).
+const voiceLog = (line) => { if (process.env.VOICEROOM_QUIET !== '1') console.log(`[voice] ${line}`); };
 
 function sendAudioFrame(agentPeer, audioBuf) {
   // 0xBB, then the speaker's peer id in 36 bytes (space-padded), then the audio. The browser reads exactly this

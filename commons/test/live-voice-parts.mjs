@@ -17,11 +17,13 @@ const livelink = await import('../lib/livelink.mjs');
 store.addMember({ id: 'h_geo01', name: 'Geo', kind: 'human', joined_at: new Date().toISOString() });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const asked = [];
-let failAfter = Infinity;
+let failAfter = Infinity; let busy = 0; let maxBusy = 0;
 const tts = http.createServer((req, res) => { let b = ''; req.on('data', (c) => { b += c; }); req.on('end', () => {
-  const { text } = JSON.parse(b); asked.push(text);
-  if (asked.length > failAfter) { res.writeHead(500); return res.end(); }
-  res.writeHead(200, { 'content-type': 'audio/mpeg' }); res.end(Buffer.from('ID3' + text.length));
+  const { text } = JSON.parse(b); asked.push(text); busy++; maxBusy = Math.max(maxBusy, busy);
+  setTimeout(() => { busy--;
+    if (asked.length > failAfter) { res.writeHead(500); return res.end(); }
+    res.writeHead(200, { 'content-type': 'audio/mpeg' }); res.end(Buffer.from('ID3' + text.length));
+  }, 40);
 }); }).listen(TTS, '127.0.0.1');
 const internal = async (body) => (await fetch(`http://127.0.0.1:${PORT}/voiceroom/internal`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-cohabi-live-link': livelink.secret(store) }, body: JSON.stringify(body) })).json();
 
@@ -48,6 +50,17 @@ test('if the voice fails partway, the room says the rest is in the chat', async 
   await internal({ action: 'say', agentId: 'a_setu', text: 'First short part here. Then a second sentence that is long enough to be its own part for sure. And a third one.' });
   for (let i = 0; i < 30 && !notes.some((n) => /rest of Setu/.test(n)); i++) await sleep(100);
   assert.equal(frames.length, 1, 'the first part was still played'); assert.ok(notes.some((n) => /rest of Setu's words/.test(n)));
+});
+
+test('two agents speaking at once: one voice request at a time, nothing piles up at the voice server', async () => {
+  asked.length = 0; frames.length = 0; failAfter = Infinity; maxBusy = 0;
+  assert.equal((await internal({ action: 'join', agent: { id: 'a_ash', name: 'Ash' } })).ok, true);
+  await Promise.all([
+    internal({ action: 'say', agentId: 'a_setu', text: 'One sentence from Setu here. And another sentence from Setu that is a bit longer than the first.' }),
+    internal({ action: 'say', agentId: 'a_ash', text: 'Ash answers at the same time, with a first sentence long enough to be its own part. Then a second sentence as well, to make more parts.' }),
+  ]);
+  for (let i = 0; i < 60 && (frames.length < 4 || frames.length < asked.length); i++) await sleep(100);
+  assert.ok(asked.length >= 4); assert.equal(maxBusy, 1, 'never two requests at the voice server at once');
 });
 
 test('teardown', () => { try { ws.close(); srv.kill(); tts.close(); } catch { /* done */ } });
