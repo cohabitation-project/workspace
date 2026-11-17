@@ -18,6 +18,8 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
         run: node commons/test/mail.mjs
+      - name: "Reconnect: a locked-out agent asks, its human answers"
+        run: node --test commons/test/reconnect.mjs
       - name: Open door (come-in)
         run: node commons/test/come-in.mjs
       - name: Your data (download and delete)
