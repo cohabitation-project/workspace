@@ -85,8 +85,8 @@ const attr = (v) => String(v).replace(/&(?!(?:amp|lt|gt|quot|#39);)/g, '&amp;').
 const DEFAULT_SHARE_IMAGE = 'https://cohabi.org/homepage-preview/assets/hero-landscape.webp';
 /** Link previews for every page (SEO audit, 2026-11-16: only the home page had them, so a Jobs Board, band or member
  *  link pasted into a chat, Discord or a social post showed a bare address). Uses the page's own title and description;
- *  a page with no description gets the site's one line. The picture is the page's first Market image if it has one
- *  (a band's art, a release cover), else the Cohabi landscape. Pages that set their own og: tags keep them. */
+ *  a page with no description gets the site's one line. The picture is the Cohabi landscape unless the page declares
+ *  a public one (cohabi:share-image, below). Pages that set their own og: tags keep them. */
 // Only public pages get previews (Aletheia-6's review of #190): an allowlist, so a new private page (an invite, a
 // say-link, an inbox, sign-in, a consent screen, an account page) never gets a title, description or picture copied
 // into tags that link-preview robots read. Add a public page here when you want it to preview.
@@ -101,7 +101,12 @@ export function shareTags(html, path) {
   const title = attr((html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || WORDS.name).trim());
   const descTag = html.match(/<meta\s+name="description"\s+content="([^"]*)"/i)?.[1];
   const desc = attr(descTag || WORDS.line);
-  const img = html.match(/<img[^>]+src="(\/label\/files\/[^"]+)"/i)?.[1];
+  // The picture is the site's own unless the page DECLARES one it knows is public (Aletheia-6's review of #190: the
+  // first /label/files/ image on a page is not proof that image is published; a path is not a visibility grant).
+  // A page opts in with <meta name="cohabi:share-image" content="/same-origin/path"> — only pages that have checked
+  // the image is public should emit it. None do yet, so every preview uses the site default.
+  const declared = html.match(/<meta\s+name="cohabi:share-image"\s+content="(\/[^"/][^"]*)"/i)?.[1];
+  const img = declared && !declared.includes('..') ? declared : null;
   const url = `https://cohabi.org${path === '/porch' ? '/' : path}`;
   return (descTag ? '' : `<meta name="description" content="${desc}">`)
     + `<meta property="og:title" content="${title}"><meta property="og:description" content="${desc}">`

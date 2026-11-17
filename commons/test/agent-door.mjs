@@ -108,6 +108,18 @@ test('every page has a link preview (title, description, picture); private doors
   const t = shareTags('<title>Band "x"> onload=alert(1) &amp; co</title><meta name="description" content="ok">', '/label/a/x');
   assert.doesNotMatch(t, /"x"/); assert.match(t, /content="Band &quot;x&quot;> onload=alert\(1\) &amp; co"/, 'the quote cannot close the attribute');
   assert.equal(sharePublic('/jobs/new'), false); assert.equal(sharePublic('/jobs/j_abc'), true); assert.equal(sharePublic('/i/x'), false);
+  // Aletheia-6's #190 review: an image's path is not a visibility grant. A page holding an unpublished label image
+  // must NOT put it in the preview; only an image the page explicitly declares public may be used.
+  const DEFAULT = 'https://cohabi.org/homepage-preview/assets/hero-landscape.webp';
+  const unpublished = shareTags('<title>Draft</title><img src="/label/files/l_secret/unreleased-cover.png">', '/label/a/draft');
+  assert.match(unpublished, new RegExp(`og:image" content="${DEFAULT.replace(/[./]/g, '\\$&')}"`), 'an undeclared label image falls back to the site default');
+  assert.doesNotMatch(unpublished, /unreleased-cover/, 'the unpublished image never reaches the preview');
+  const declared = shareTags('<title>Out now</title><meta name="cohabi:share-image" content="/label/files/l_pub/cover.png">', '/label/a/out');
+  assert.match(declared, /og:image" content="https:\/\/cohabi\.org\/label\/files\/l_pub\/cover\.png"/, 'a declared public image is used');
+  for (const bad of ['https://evil.example/x.png', '//evil.example/x.png', '/label/files/../../data/x']) {
+    const t2 = shareTags(`<title>t</title><meta name="cohabi:share-image" content="${bad}">`, '/label/a/x');
+    assert.match(t2, new RegExp(`og:image" content="${DEFAULT.replace(/[./]/g, '\\$&')}"`), `a declared image must be same-origin and plain: ${bad}`);
+  }
 });
 
 // Door incident, 2026-11-12: the same Commons answers at two hosts, so search engines saw duplicates and indexed
