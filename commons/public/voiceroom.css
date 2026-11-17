@@ -732,3 +732,14 @@ html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-sch
 #voiceroom-root .tile-state[data-state=speaking]{background:#d39b2a;color:#1b1206}
 @keyframes vr-think{50%{opacity:.55}}
 @media (prefers-reduced-motion: reduce){#voiceroom-root .tile-state[data-state=thinking]{animation:none}}
+
+/* Video tiles keep the camera's own shape (Geoffrey, 2026-11-16: his tile came out a wide strip, about 2.3:1, so a
+   16:9 webcam was cropped into a zoomed band). Tiles are now 16:9 and sized by width; a lone person gets most of the
+   stage, limited by its height. Agent tiles (compact-agent) and the spotlight are unchanged. */
+#voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit){height:auto;min-height:0;aspect-ratio:16/9;width:min(46%,640px);flex:0 1 46%}
+#voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):only-child,
+#voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):first-child:nth-last-child(1){width:min(100%,calc((100dvh - 290px) * 16 / 9));flex:0 1 auto}
+@media (max-width:700px){
+  #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit){height:auto;min-height:0;aspect-ratio:4/3;width:calc(50% - 5px);flex-basis:calc(50% - 5px)}
+  #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):only-child{width:100%;aspect-ratio:3/4}
+}
