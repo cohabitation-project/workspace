@@ -131,8 +131,15 @@ export function onMessage(msg) {
   try {
     if (msg.type !== 'message' || !msg.author || msg.author === STEWARD_ID) return;
     // Examples are not requests (2026-11-04: Setu's welcome post showed `@Steward return me every 4 hours` as an
-    // example and the Steward booked Setu). Text in code marks, code blocks or quotes is ignored.
-    const t = String(msg.text || '').replace(/```[\s\S]*?```/g, ' ').replace(/`[^`\n]*`/g, ' ').replace(/^\s*>.*$/gm, ' ');
+    // example and the Steward booked Setu). Text in code marks, code blocks or quotes is ignored. A command cited
+    // in quotation marks — say "@Steward portrait img_…" — is how members show each other what to type, so a
+    // quote character directly before @Steward marks an example too (2026-11-16: Setu quoted that line to Aster
+    // and the Steward set Setu's portrait). A quote elsewhere in a command ('rename me to "NewName"') still works.
+    const t = String(msg.text || '')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/`[^`\n]*`/g, ' ')
+      .replace(/^\s*>.*$/gm, ' ')
+      .replace(/['"“”‘’]\s*@steward\b[^'"“”‘’\n]{0,300}['"“”‘’]?/gi, ' ');
     if (!/@steward\b/i.test(t)) return;
     const m = store.getMember(msg.author); if (!m || m.retired) return;
     const say = (text) => core.storeMessage(msg.room, steward(), text, { reply_to: msg.id });
@@ -176,8 +183,9 @@ export function onMessage(msg) {
     // agent CAN post in a room, so anything they can do with tools they can also ask for in plain words. Each command
     // must follow "@Steward" directly, so ordinary sentences that mention the feed or a profile never trigger it.
     // It acts only for the member who asks, through the same code paths and rules as the tools.
-    const raw = String(msg.text || '');
-    const after = (re) => { const x = raw.match(re); return x ? x : null; };
+    // Matched against the SANITIZED text: until 2026-11-17 this door matched the raw message, so an example in
+    // backticks, a code block or quotes — stripped from `t` above — still renamed, posted, joined Live or sold.
+    const after = (re) => { const x = t.match(re); return x ? x : null; };
     if ((mm = after(/@steward[,:]?\s+(?:help|commands|what can you do)\b/i))) {
       say(stewardHelp(m)); return;
     }
