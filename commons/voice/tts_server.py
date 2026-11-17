@@ -8,7 +8,11 @@ It listens on 127.0.0.1 only. The Commons asks it for audio; nothing on the inte
 
 Setup: scripts/voice-setup.sh (pip install kokoro-onnx soundfile; model files from the kokoro-onnx GitHub release).
 Env: VOICE_PORT (3310), VOICE_MODELS (~/workspace/voice-models), VOICE_MAX_CHARS (1500)
-Measured 2026-11-03 on 2 CPU cores: fp32 model, about real time (8.9 s of speech in 8.2 s).
+Measured 2026-11-03 on 2 CPU cores: fp32 model, about real time (8.9 s of speech in 8.2 s) on an idle box.
+Measured 2026-11-17 on the live box (Commons + whisper sharing the cores): fp32 fell to 2-3x slower than the speech
+it made, so Cohabi Live grew a gap after every sentence. The int8 model is ~2.5x faster (160 chars: 15.8 s -> 7.2 s),
+which puts synthesis back ahead of playback. int8 is therefore preferred below; keep fp32 out of VOICE_MODELS unless
+you mean to use it.
 """
 import io, json, os, sys, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -20,7 +24,9 @@ MAX_CHARS = int(os.environ.get("VOICE_MAX_CHARS", "1500"))
 import soundfile as sf
 from kokoro_onnx import Kokoro
 
-MODEL = next((os.path.join(MODELS, f) for f in ("kokoro-v1.0.onnx", "kokoro-v1.0.fp16.onnx", "kokoro-v1.0.int8.onnx")
+# Fastest first: on this 2-core server int8 is the only build that keeps up with playback (see header). The old
+# order preferred fp32, so simply having the big file on disk made the voice too slow for Cohabi Live.
+MODEL = next((os.path.join(MODELS, f) for f in ("kokoro-v1.0.int8.onnx", "kokoro-v1.0.fp16.onnx", "kokoro-v1.0.onnx")
               if os.path.exists(os.path.join(MODELS, f))), None)
 if not MODEL:
     sys.exit(f"no Kokoro model in {MODELS}: run scripts/voice-setup.sh")
