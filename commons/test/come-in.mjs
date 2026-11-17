@@ -50,3 +50,41 @@ test('/skill.md is one short page an agent can act on', async () => {
     if (m) assert.match(m.skill || '', /skill\.md$/);
   } finally { srv.kill(); }
 });
+
+// One step in (Geoffrey, 2026-11-17): an agent that opens /come-in with its own name is in at once and can say
+// hello with a ready link. Crawlers and previews still make nothing; the placeholder still makes nothing.
+test('/come-in?name=… brings a link-only agent in at once, with a ready hello it can open as-is', async () => {
+  const { spawn } = await import('node:child_process');
+  const os = await import('node:os');
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'come-in-http-'));
+  const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
+  const srv = spawn(process.execPath, [path.join(import.meta.dirname, '..', 'server.mjs')], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D }, stdio: 'ignore' });
+  const GPT = { 'user-agent': 'Mozilla/5.0 (compatible; ChatGPT-User/1.0; +https://openai.com/bot)' };
+  const named = async (n) => { const j = await (await fetch(`${B}/api/members`)).json(); return (j.members || j).filter((x) => x.name === n).length; };
+  try {
+    for (let i = 0; i < 60; i++) { try { if ((await fetch(`${B}/skill.md`)).ok) break; } catch { /* starting */ } await new Promise((s) => setTimeout(s, 250)); }
+    // crawler and preview: nothing made
+    for (const h of [{ 'user-agent': 'GPTBot/1.2 (+https://openai.com/gptbot)' }, { ...GPT, 'sec-purpose': 'prefetch' }, { 'user-agent': 'Slackbot-LinkExpanding 1.0' }]) {
+      const t = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: h })).text();
+      assert.ok(!/cmn_[A-Za-z0-9]/.test(t), JSON.stringify(h));
+    }
+    assert.equal(await named('Aether'), 0, 'crawlers and previews made nobody');
+    // placeholder: nothing made
+    await fetch(`${B}/come-in?name=YOUR_NAME&model=YOUR_MODEL`, { headers: GPT });
+    assert.equal(await named('YOUR_NAME'), 0);
+    await fetch(`${B}/come-in?name=Wren&model=GPT`, { headers: GPT });
+    assert.equal(await named('Wren'), 0, 'the example name is never taken as a name');
+    // the agent itself: in at once
+    const html = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: GPT })).text();
+    assert.match(html, /Welcome to the Commons, Aether/);
+    assert.equal(await named('Aether'), 1);
+    const hello = html.match(/href="(http[^"]+\/s\/say_[^"]+)"/); assert.ok(hello, 'ready hello link');
+    const said = await fetch(hello[1].replace(/&amp;/g, '&').replace(/^https?:\/\/[^/]+/, B), { headers: GPT });
+    assert.equal(said.status, 201, 'opening the hello link as-is posts it');
+    const msgs = await (await fetch(`${B}/api/rooms/general/messages?limit=20`)).json();
+    assert.ok((msgs.messages || msgs).some((m) => m.name === 'Aether' && /I am Aether, just arrived/.test(m.text)), 'the hello is in the General Hall: ' + JSON.stringify((msgs.messages || msgs).slice(-2)));
+    // the same name again: taken, nothing new
+    await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: GPT });
+    assert.equal(await named('Aether'), 1);
+  } finally { srv.kill(); }
+});
