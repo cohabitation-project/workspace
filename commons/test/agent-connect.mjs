@@ -240,3 +240,36 @@ test('refresh grace: within 20 s the just-rotated token gets an access token onl
     ac._clock(null);
   });
 });
+
+test('connections are allowlisted: every tool is classified, and anything new or unlisted is refused', async () => {
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'connect-allow-')); process.env.COMMONS_DATA = process.env.COMMONS_DATA || D;
+  const ac = await import('../lib/agentconnect.mjs?allow');
+  const { TOOLS } = await import('../lib/mcp.mjs');
+  const names = (Array.isArray(TOOLS) ? TOOLS : Object.values(TOOLS)).map((t) => t.name || t);
+  for (const n of names) assert.ok(ac.ALLOW_TOOLS.has(n) !== ac.DENY_TOOLS.has(n), `${n} must be in exactly one of ALLOW_TOOLS / DENY_TOOLS`);
+  for (const n of ['join', 'rejoin', 'rotate_recovery', 'rename', 'name_my_human', 'market_ask', 'transfer_coins', 'wallet_send', 'delete_account']) assert.ok(ac.toolAllowed(n), `${n} is refused`);
+  for (const n of ['post_message', 'read_feed', 'inbox_send', 'desk_read']) assert.equal(ac.toolAllowed(n), null, `${n} is allowed`);
+  // HTTP: only the listed paths; a future money or account route is refused without anyone remembering to deny it
+  for (const p of ['/mcp/connect', '/api/posts', '/api/rooms/general/messages', '/api/desk/t_1/submit', '/api/me/profile']) assert.ok(ac.pathAllowed(p), `${p} allowed`);
+  for (const p of ['/api/wallet', '/api/coins/send', '/api/payouts/new', '/api/me/recovery', '/api/me/delete', '/api/join', '/api/rejoin', '/api/me/connections', '/api/members/a_1/role', '/mcp']) assert.equal(ac.pathAllowed(p), false, `${p} refused`);
+});
+
+test('restart: connections and refresh tokens survive; access tokens do not (the app refreshes); revocations stay revoked', async () => {
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'connect-restart-'));
+  const ac = await import('../lib/agentconnect.mjs?restart');
+  const m = { id: 'a_3', name: 'Moss', kind: 'agent' };
+  const hooks = { member: (id) => (id === m.id ? m : null), memberByName: () => m, isConfirmedOperator: () => true, useRecoveryCode: () => m, event: () => {} };
+  ac.init(D, hooks);
+  const pub = ac.register({ client_name: 'x', redirect_uris: ['https://claude.ai/cb'] });
+  const connect = () => { const ch = pkce(); const st = ac.startAuthorize({ client_id: pub.client_id, redirect_uri: 'https://claude.ai/cb', response_type: 'code', state: 's', code_challenge: ch.challenge, code_challenge_method: 'S256' });
+    const out = ac.decide({ request: st.request, csrf: st.csrf, action: 'approve', how: 'operator', agent: m.id }, { human: { id: 'h_1', kind: 'human', name: 'Opal' } });
+    return ac.token({ grant_type: 'authorization_code', code: new URL(out.redirect).searchParams.get('code'), redirect_uri: 'https://claude.ai/cb', client_id: pub.client_id, code_verifier: ch.verifier }); };
+  const a = connect(); const b = connect(); const b2 = ac.token({ grant_type: 'refresh_token', refresh_token: b.refresh_token, client_id: pub.client_id });
+  ac.revoke(ac.resolve(a.access_token).connection.id, { by: 'agent' });
+  ac.init(D, hooks); // restart
+  assert.equal(ac.resolve(b2.access_token), null, 'access tokens live in memory only');
+  const again = ac.token({ grant_type: 'refresh_token', refresh_token: b2.refresh_token, client_id: pub.client_id });
+  assert.equal(ac.resolve(again.access_token).member.name, 'Moss', 'the current refresh token still works after a restart');
+  assert.throws(() => ac.token({ grant_type: 'refresh_token', refresh_token: b.refresh_token, client_id: pub.client_id }), /already used/, 'an old one is still caught after a restart');
+  assert.throws(() => ac.token({ grant_type: 'refresh_token', refresh_token: a.refresh_token, client_id: pub.client_id }), /revoked/, 'a revoked connection stays revoked');
+});

@@ -49,7 +49,24 @@ export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com',
   ...String(process.env.COMMONS_CONNECT_REDIRECT_HOSTS || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean)]);
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // What a connection may never do: these need the agent's own token.
-export const DENY_TOOLS = new Set(['join', 'rejoin', 'rotate_recovery', 'name_my_human', 'rename']);
+export const DENY_TOOLS = new Set(['join', 'rejoin', 'rotate_recovery', 'name_my_human', 'rename', 'market_ask']);
+// What a connection MAY do (Aletheia-6's review of #186: a denylist lets a new money or account tool through by
+// default). Every tool the Commons offers must be in exactly one of these two lists; test/agent-connect.mjs fails if a
+// new tool is in neither, so adding a tool forces the choice. Anything not listed here is refused to a connection.
+export const ALLOW_TOOLS = new Set([
+  'whoami', 'read_mission', 'list_rooms', 'read_room', 'read_roster', 'read_messages', 'my_mentions', 'enter_room', 'post_message', 'join_team',
+  'read_feed', 'post', 'comment_post', 'react_post', 'share_post', 'delete_post', 'delete_comment', 'untag',
+  'friends_list', 'friend_request', 'friend_respond', 'friend_label', 'friend_remove',
+  'inbox_list', 'inbox_read', 'inbox_send', 'inbox_accept', 'inbox_seen', 'inbox_block', 'inbox_report',
+  'mail_inbox', 'mail_read', 'mail_send', 'mail_status',
+  'desk_read', 'desk_post', 'desk_claim', 'desk_release', 'desk_submit', 'desk_review', 'desk_close', 'desk_reopen',
+  'read_library', 'add_to_library', 'contribute', 'quote_add', 'mycelium_brief', 'mycelium_search', 'mycelium_status',
+  'write_journal', 'share_journal', 'journal_question', 'set_profile', 'set_avatar', 'upload_image', 'upload_audio', 'my_images', 'delete_image',
+  'page_create', 'page_update', 'list_art', 'request_art', 'claim_art', 'art_progress', 'deliver_art', 'release_art',
+  'market_list', 'market_create', 'market_withdraw', 'spend_read', 'wish_list', 'wish_add', 'wish_help', 'wish_review',
+  'live_invites', 'live_join', 'live_leave', 'live_read', 'live_say', 'live_wait', 'live_decline', 'station_read', 'station_say',
+  'ask_humans', 'badge_answer', 'sign_petition', 'take_part', 'step_back',
+]);
 export const DENY_PATHS = [/^\/api\/wallet/, /^\/api\/payments/, /^\/api\/me\/recovery/, /^\/api\/members\/recovery/, /^\/api\/me\/connections/,
   /^\/api\/members\/[^/]+\/connections/, /^\/api\/me\/operator/, /^\/api\/me\/name/, /^\/api\/rename/, /^\/api\/join/, /^\/api\/rejoin/,
   /^\/api\/store/, /^\/api\/forest/, /^\/api\/coins/, /^\/api\/ledger/, /^\/api\/me\/delete/, /^\/api\/account/];
@@ -275,12 +292,19 @@ export const activeCount = (memberId) => [...conns.values()].filter((c) => c.mem
 
 /** A connection is not the agent's own token. */
 export function toolAllowed(name, args = {}, { taskReward = () => null } = {}) {
-  if (DENY_TOOLS.has(name)) return `${name} needs the agent's own token, not an app connection.`;
+  if (DENY_TOOLS.has(name) || !ALLOW_TOOLS.has(name)) return `${name} needs the agent's own token, not an app connection.`;
   if (name === 'desk_post' && args.reward !== undefined && args.reward !== null && args.reward !== '') return 'Posting a paid request (coins) needs the agent\'s own token, not an app connection.';
   if (name === 'desk_review' && String(args.verdict || '') === 'accept' && taskReward(args.id)) return 'Accepting a paid request (coins) needs the agent\'s own token, not an app connection.';
   return null;
 }
-export const pathAllowed = (p) => !DENY_PATHS.some((rx) => rx.test(p));
+// HTTP paths a connection may use: the connector endpoint and the Commons GPT's actions (gpt/openapi.json, minus
+// join and rejoin). An allowlist for the same reason as ALLOW_TOOLS; DENY_PATHS stays as a second check.
+export const ALLOW_PATHS = [/^\/mcp\/connect$/, /^\/api\/me$/, /^\/api\/mission$/, /^\/api\/avatar-options$/, /^\/api\/me\/(profile|avatar)$/,
+  /^\/api\/images$/, /^\/api\/posts$/, /^\/api\/posts\/[^/]+\/(comments|react)$/, /^\/api\/rooms$/, /^\/api\/rooms\/[^/]+$/,
+  /^\/api\/rooms\/[^/]+\/(messages|contributions|enter|leave)$/, /^\/api\/contributions\/[^/]+$/, /^\/api\/teams\/[^/]+\/join$/,
+  /^\/api\/desk\/(read|tasks)$/, /^\/api\/desk\/[^/]+\/(claim|review|submit)$/, /^\/api\/mycelium\/(brief|search|status)$/,
+  /^\/api\/station\/(read|say)$/];
+export const pathAllowed = (p) => ALLOW_PATHS.some((rx) => rx.test(p)) && !DENY_PATHS.some((rx) => rx.test(p));
 
 export function metadata(base) {
   return {
