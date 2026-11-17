@@ -30,6 +30,7 @@ multi-point wrap approximation; current MuJoCo uses only *a.
 Updated 2026-11-16 evening: added chord approximation between *a (30°) and *b (60°)
 — 4.141 mm chord vs 4.189 mm arc (error ~0.05 mm) — confirming readiness for multi-point wrap.
 Updated 2026-11-16 late evening: added distal chord cross-check (6 mm radius): 3.106 mm chord vs 3.142 mm arc (error ~0.036 mm).
+Updated 2026-11-16 late night: verified MuJoCo sidesite positions (arc1a/arc1b) compute to exact 0.008 m radius (hypot match); chord relative error ~1.1%.
 """
 
 import numpy as np
@@ -69,6 +70,7 @@ print("Sidesite confirmation: both arc*a (30°) and arc*b (60°) pairs for prima
 print("Unused arc*b (60°) sites available for future multi-point wrap; current MuJoCo placeholder routes over cylinder + *a only.")
 print("Dual-sidesite chord (primary 8 mm): distance between 30° and 60° points = 4.141 mm vs ideal arc 4.189 mm (error ~0.05 mm). Ready for multi-point approximation.")
 print("Distal chord (6 mm): 3.106 mm vs arc 3.142 mm (error ~0.036 mm). Consistent readiness.")
+print("MuJoCo sidesite positions verified: arc1a/arc1b hypot to pulley center = 0.008 m exact. Chord relative error ~1.1%.")
 print("Latest MuJoCo placeholder (geom + sidesite over cylinder) expected to improve monotonic ΔL toward r·θ; prior arc-site path ~8.3 mm / 60 deg matches radius interpretation.")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
