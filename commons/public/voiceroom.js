@@ -533,6 +533,9 @@
     try {
       const ctx = getAudioContext();
       if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+      if (ctx.state !== 'running') { // the browser won't play yet: keep this voice for when sound is turned on
+        finished = true; ttsCurrent = null; ttsPlaying = false; animateAgentTile(peerId, false); ttsQueue.unshift(item); soundPrompt(ctx); return;
+      }
       const ab = item.bytes.buffer.slice(item.bytes.byteOffset, item.bytes.byteOffset + item.bytes.byteLength);
       const buf = await ctx.decodeAudioData(ab);
       if (finished) return; // hushed while decoding
@@ -545,8 +548,19 @@
     item.url = URL.createObjectURL(new Blob([item.bytes], { type: 'audio/mpeg' }));
     const audio = new Audio(item.url);
     stopNow = () => { try { audio.pause(); } catch { /* gone */ } };
-    audio.onended = done; audio.onerror = done;
-    audio.play().catch(done);
+    audio.onended = done; audio.onerror = () => { soundPrompt(); done(); };
+    audio.play().catch(() => { soundPrompt(); done(); });
+  }
+
+  // When the browser won't play sound yet (no click since the page loaded, or a voice that failed), say so instead of
+  // staying silent (Claude's review of #197): one button, which turns sound on for the rest of the meeting.
+  function soundPrompt(ctx) {
+    if (document.getElementById('vr-sound-on')) return;
+    const b = document.createElement('button');
+    b.id = 'vr-sound-on'; b.type = 'button'; b.textContent = '🔈 Tap to turn on sound';
+    b.setAttribute('style', 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:50;padding:12px 18px;border-radius:999px;border:1px solid #e9c46a;background:#2b2038;color:#fff;font:600 16px system-ui;box-shadow:0 8px 24px #0006;cursor:pointer');
+    b.addEventListener('click', () => { (ctx || getAudioContext()).resume().catch(() => {}); b.remove(); if (!ttsPlaying) playNextTTS(); });
+    document.body.appendChild(b);
   }
 
   // listening / heard you / thinking come from the server; "speaking" is shown only while the voice actually plays here.

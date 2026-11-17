@@ -53,4 +53,30 @@ test('a window that vanished without closing (no answer to pings) is dropped', a
   live.close(); try { ghost.terminate(); } catch { /* gone */ }
 });
 
+const livelink = await import('../lib/livelink.mjs');
+const internal = async (body) => (await fetch(`http://127.0.0.1:${PORT}/voiceroom/internal`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-cohabi-live-link': livelink.secret(store) }, body: JSON.stringify(body) })).json();
+
+test('a sole member who refreshes keeps the meeting: agents and what was said stay (Claude\'s review)', async () => {
+  const first = await open('h_geo01');
+  assert.equal((await internal({ action: 'join', agent: { id: 'a_setu', name: 'Setu' } })).ok, true);
+  await internal({ action: 'say', agentId: 'a_setu', text: 'hello', speak: false });
+  const second = await open('h_geo01'); await sleep(300);
+  assert.notEqual(first.readyState, WebSocket.OPEN, 'the old window left');
+  const st = await internal({ action: 'state' });
+  assert.ok(st.participants.some((p) => p.name === 'Setu'), 'the agent is still in the meeting');
+  assert.ok(st.recent.some((r) => r.text === 'hello'), 'what was said is still there');
+  await internal({ action: 'leave', agentId: 'a_setu' }); second.close(); await sleep(200);
+});
+
+test('a refresh in a full room still gets back in; a new person is still turned away', async () => {
+  const geo = await open('h_geo01');
+  for (let i = 0; i < 5; i++) await internal({ action: 'join', agent: { id: `a_f${i}`, name: `F${i}` } });
+  assert.equal(await count(), 6, 'full');
+  const again = await open('h_geo01'); await sleep(200);
+  assert.equal(again.readyState, WebSocket.OPEN, 'Geo refreshed into a full room'); assert.equal(await count(), 6);
+  await assert.rejects(open('h_ana01'), 'a seventh person is refused');
+  for (let i = 0; i < 5; i++) await internal({ action: 'leave', agentId: `a_f${i}` });
+  again.close(); try { geo.terminate(); } catch { /* gone */ } await sleep(200);
+});
+
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });

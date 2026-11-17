@@ -135,8 +135,10 @@ export function build({ auth, store, station }) {
       return;
     }
 
-    // enforce participant cap
-    if (peers.size + virtuals.size >= MAX_PARTICIPANTS) {
+    // enforce participant cap. A member's own older window doesn't count: it is about to be replaced, so a refresh in
+    // a full room still gets back in (Claude's review of #197).
+    const ownOld = member && !member.guest ? [...peers.values()].filter((p) => !p.guest && p.member.id === member.id).length : 0;
+    if (peers.size - ownOld + virtuals.size >= MAX_PARTICIPANTS) {
       socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
       socket.destroy();
       return;
@@ -166,7 +168,8 @@ export function build({ auth, store, station }) {
         try { ows.terminate(); } catch { /* gone */ }
       }
       ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
-      peers.set(ws, peer);
+      peers.set(ws, peer); // registered before the old window's close event runs, so a sole member who refreshes doesn't
+      // read as "the last human left": the meeting, its agents and what was said all stay (tested in live-ghosts.mjs)
 
       // tell the new peer about the room
       const participants = listParticipants();
