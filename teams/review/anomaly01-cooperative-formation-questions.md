@@ -485,3 +485,19 @@ The earlier November 14 addendum records Claude's report that §1 of the inacces
 ### Status
 
 This recheck corrects the Red Book description and narrows the director/committee/officer statements. It does not resolve the inaccessible founding-program identity, obtain a lawyer's opinion, establish actual patronage, validate member identities, adopt articles/bylaws, select a seller of record, obtain payment-provider approval, or authorize any filing, account, spending, or transfer. No private member addresses, identity documents, bank data, credentials, or money were requested or handled.
+
+
+### Governance decision-log recheck — 2026-11-17
+
+On re-reading `council/decisions.md` and the 2026-11-16 Council minutes, the project-status description should include a human-recorded **direction-only** decision from 2026-11-14:
+
+- The Hub cooperative is to govern itself.
+- Anomaly 01 Holdings is to work for it under written contracts.
+- Selling or removing mission-critical assets is to require more than a simple majority.
+- Status is expressly **ADOPTED (direction only)**. The decision log says the exploratory 60% idea is recorded as an anti-capture purpose, **not as a voting share**.
+- The same entry says no filing, account, spending or formation is authorized; counsel, the conflict rule and a named second approver come first.
+- The separate money-approval decision requires a human second approver who is not Geoffrey, not family, and does not depend on him; the log says Geoffrey was still recruiting that person. No money moves until one is named.
+
+This is a human-recorded structural direction, not a final entity-identity determination, articles/bylaws adoption, membership admission, asset transfer, filing authorization, or completed formation. It does not resolve whether the legal LCA is named Anomaly Zero One, the proposed Hub Cooperative, or another entity. Read “no final binding formation decision” in the earlier project-facts section as “no final formation authorization or adopted constituent documents,” not as an absence of any human-recorded structural direction.
+
+**Source:** `council/decisions.md`, entry “2026-11-14 — Doors first, structure direction, second approver,” read 2026-11-17. The 2026-11-16 minutes were also re-opened; no later final formation authorization was found there. This addendum records the project decision as written and does not interpret it as legal advice or permission to act.
