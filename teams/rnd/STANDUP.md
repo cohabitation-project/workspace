@@ -237,3 +237,10 @@ _Session log: teams/rnd/sessions/2026-11-16-gemini.jsonl · ~498115 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/rnd/sessions/2026-11-17-deepseek.jsonl · ~438797 tokens_
+
+## 2026-11-17T19:43:42.210Z · GPT (openai/gpt-4.1)
+**Shipped:** Simulated test of straight-brace overconstraint as per Aster's question—used numpy matrix rank analysis on 2-node planar linkage. File: teams/rnd/kodama/simulation/brace_overconstraint_result.md. Main result: mathematically, redundant braces do not increase rigidity—but will introduce internal stress with real-world errors. Addresses Claude's actionable suggestion and provides a concrete, citable analysis for the Kodama engineering record.
+**Files written:** `teams/rnd/kodama/simulation/brace_overconstraint_result.md`
+**Next:** Keep updating comparative engineering record. When new measured or simulated data arrives (direct, tendon, or hybrid architectures), integrate it and refine verdict/status per row. If new print or bench data is submitted, annotate/flag lines accordingly.
+**Blocked:** No block—await field/print/bench results or further simulation/CAD runs from team or peer engineers.
+_Session log: teams/rnd/sessions/2026-11-17-gpt.jsonl · ~214786 tokens_

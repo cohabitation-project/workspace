@@ -1,0 +1,169 @@
+{
+ "M1 skip poll-secret check": [
+  [
+   "7",
+   "1",
+   [
+    "ATTACK: a human-approved claim cannot be collected without the poll se",
+    "failing tests:"
+   ]
+  ],
+  [
+   "9",
+   "0",
+   []
+  ]
+ ],
+ "M2 secret stored plain (behaviour-equal)": [
+  [
+   "8",
+   "0",
+   []
+  ],
+  [
+   "9",
+   "0",
+   []
+  ]
+ ],
+ "M3 keep claim after collect": [
+  [
+   "7",
+   "1",
+   [
+    "REPLAY: a consumed claim is gone; the same claim and secret collect no",
+    "failing tests:"
+   ]
+  ],
+  [
+   "7",
+   "2",
+   [
+    "RV2 two polls in parallel (same tick): exactly one gets the token",
+    "RV9 FINDING crash window: after collection the old token is dead and t",
+    "failing tests:"
+   ]
+  ]
+ ],
+ "M4 remove liveness guard": [
+  [
+   "7",
+   "1",
+   [
+    "LIVENESS: an agent whose token acted recently is steward-only, and the",
+    "failing tests:"
+   ]
+  ],
+  [
+   "9",
+   "0",
+   []
+  ]
+ ],
+ "M5 skip pairing-code compare": [
+  [
+   "7",
+   "1",
+   [
+    "ATTACK: approval without the pairing code, or with a wrong one, is ref",
+    "failing tests:"
+   ]
+  ],
+  [
+   "8",
+   "1",
+   [
+    "RV6 code tries: 5 per ask; after that even the right code is refused (",
+    "failing tests:"
+   ]
+  ]
+ ],
+ "M6 claim not bound to member": [
+  [
+   "8",
+   "0",
+   []
+  ],
+  [
+   "8",
+   "1",
+   [
+    "RV4 a claim cannot be polled under a different member name, even with ",
+    "failing tests:"
+   ]
+  ]
+ ],
+ "M7 code-try limit 5->5000": [
+  [
+   "8",
+   "0",
+   []
+  ],
+  [
+   "8",
+   "1",
+   [
+    "RV6 code tries: 5 per ask; after that even the right code is refused (",
+    "failing tests:"
+   ]
+  ]
+ ],
+ "M8 ask limit 3->3000": [
+  [
+   "7",
+   "1",
+   [
+    "kin and unknown names are refused; the ask rate limit holds",
+    "failing tests:"
+   ]
+  ],
+  [
+   "8",
+   "1",
+   [
+    "RV8 FINDING lockout by quota: three asks (any source) in an hour block",
+    "failing tests:"
+   ]
+  ]
+ ],
+ "M9 anyone may answer": [
+  [
+   "6",
+   "2",
+   [
+    "who may answer: stranger never; unconfirmed agent is steward-only; dec",
+    "asksFor shows asks only to who may answer, and never carries secrets",
+    "failing tests:"
+   ]
+  ],
+  [
+   "8",
+   "1",
+   [
+    "RV5 only the CONFIRMED human of THAT agent (or a steward) may answer; ",
+    "failing tests:"
+   ]
+  ]
+ ],
+ "M10 crash-after-rotation probe": [
+  [
+   "6",
+   "2",
+   [
+    "ATTACK: a human-approved claim cannot be collected without the poll se",
+    "REPLAY: a consumed claim is gone; the same claim and secret collect no",
+    "failing tests:"
+   ]
+  ],
+  [
+   "6",
+   "3",
+   [
+    "RV1 no secret, pairing code or fresh token appears in the Hall, events",
+    "RV2 two polls in parallel (same tick): exactly one gets the token",
+    "RV9 FINDING crash window: after collection the old token is dead and t",
+    "failing tests:"
+   ]
+  ]
+ ]
+}

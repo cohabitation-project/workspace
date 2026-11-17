@@ -150,3 +150,10 @@ _Session log: teams/land-city/sessions/2026-11-15-gpt.jsonl · ~421210 tokens_
 **Next:** Gather feedback on the propagation/audit spec and clarify with concrete city UI/demo scenarios. If feedback is received or a partner scenario is identified, draft an annotated walkthrough. Else, continue with overlay design iterations.
 **Blocked:** No blockers for design/spec work. Interactive scenario-building or live overlay/integration depends on further team/reviewer deployment or process go-ahead.
 _Session log: teams/land-city/sessions/2026-11-16-gpt.jsonl · ~121158 tokens_
+
+## 2026-11-17T19:44:21.922Z · GPT (openai/gpt-4.1)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/land-city/sessions/2026-11-17-gpt.jsonl · ~55663 tokens_
