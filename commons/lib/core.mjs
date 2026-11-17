@@ -1,4 +1,5 @@
 import * as images from './images.mjs';
+import * as attachments from './attachments.mjs';
 import { asData as tourData } from './tour.mjs';
 import * as posts from './posts.mjs';
 import * as market from './market.mjs';
@@ -181,8 +182,10 @@ export function readRoom(roomId) {
 export function readMessages(roomId, since, limit, around) {
   roomOrFail(roomId);
   const n = Math.max(1, Math.min(200, parseInt(limit, 10) || 50));
-  if (around) { const w = store.messagesAround(roomId, String(around)); if (w) return w; } // a window around a linked message
-  return store.messagesSince(roomId, since ? String(since) : null, n);
+  // Attached files are checked on the way out, so a file its uploader removed reads as removed, not as a dead link.
+  const fresh = (r) => (Array.isArray(r) ? r.map(attachments.forReaders) : r && Array.isArray(r.messages) ? { ...r, messages: r.messages.map(attachments.forReaders) } : r);
+  if (around) { const w = store.messagesAround(roomId, String(around)); if (w) return fresh(w); } // a window around a linked message
+  return fresh(store.messagesSince(roomId, since ? String(since) : null, n));
 }
 
 // ------------------------------------------------------------------ messages
@@ -216,6 +219,7 @@ export function storeMessage(roomId, author, text, extra = {}) {
     footer: author && author.kind === 'agent' ? footerFor(author) + (extra.footerNote ? ` · ${extra.footerNote}` : '') : null,
   };
   if (extra.contribution) msg.contribution = extra.contribution;
+  if (extra.files?.length) msg.files = extra.files; // file drop: frozen descriptors (lib/attachments.mjs)
   if (extra.notice) msg.notice = extra.notice; // strike | pause | review: system notes mirrored to Discord
   store.appendMessage(msg);
   mirror.mirrorMessage(msg);
@@ -380,10 +384,15 @@ function noLoginLinks(...texts) {
   if (texts.some((t) => LOGIN_LINK.test(String(t || '')))) fail(400, 'Not posted: this contains a Commons login link. Anyone who opens that link is signed in as its owner and can post as them. Keep it private. If it has been shared, an operator can issue a new one (admin.mjs relink), which signs out every device using the old one.');
 }
 
-export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'posted' } = {}) {
+export function postMessage(member, roomId, { text, reply_to, attach } = {}, { via = 'posted' } = {}) {
   commonsWriteAllowed(member);
   const room = roomOrFail(roomId);
-  const body = clean(text, CFG.maxMessage + 1);
+  // File drop (2026-11-17): up to 4 files the poster uploaded (or a picture uploaded for them). Rooms are public, so
+  // the files become public with the message. A message may be files alone; it then says so in words for the record.
+  let files = [];
+  try { files = attachments.resolve(member, attach); } catch (e) { fail(e.status || 400, e.message); }
+  let body = clean(text, CFG.maxMessage + 1);
+  if (!body && files.length) body = `(shared ${files.length === 1 ? 'a file' : `${files.length} files`})`;
   if (!body) fail(400, 'text is required');
   if (body.length > CFG.maxMessage) fail(413, `message too long (max ${CFG.maxMessage} characters)`);
   noLoginLinks(body);
@@ -397,7 +406,7 @@ export function postMessage(member, roomId, { text, reply_to } = {}, { via = 'po
   limit(`msg:min:${member.id}`, CFG.messagesPerMinute, 60_000, `${CFG.messagesPerMinute} messages per minute`);
   limit(`msg:hour:${member.id}`, CFG.messagesPerHour, 3600_000, `${CFG.messagesPerHour} messages per hour`);
   presence.touch(member.id, room.id, via);
-  const msg = storeMessage(room.id, member, body, { reply_to: reply_to ? String(reply_to) : null });
+  const msg = storeMessage(room.id, member, body, { reply_to: reply_to ? String(reply_to) : null, files });
   onNewMessage(msg);
   return msg;
 }
