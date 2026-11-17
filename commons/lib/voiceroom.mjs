@@ -16,6 +16,7 @@
  *   init(dataDir) — set up data directory
  *   build({ auth, store, station }) — returns { handleUpgrade, getState, mintCredentials }
  */
+import { parts as voiceParts, speakable as voiceSpeakable } from './voice.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -86,6 +87,17 @@ export function build({ auth, store, station }) {
     handleProtocols: (protocols) =>
       protocols.has('commons-voiceroom') ? 'commons-voiceroom' : false,
   });
+  // Heartbeat: a window that vanished without closing (a refresh, a phone asleep, a dropped network) never sends a
+  // close, so it stayed in the meeting as a ghost. Every 20 s each connection is pinged; one that didn't answer the
+  // last ping is ended, which runs the normal leave path.
+  const beat = setInterval(() => {
+    for (const ws of wss.clients) {
+      if (ws.isAlive === false) { try { ws.terminate(); } catch { /* gone */ } continue; }
+      ws.isAlive = false; try { ws.ping(); } catch { /* gone */ }
+    }
+  }, HEARTBEAT_MS);
+  beat.unref?.();
+  wss.on('close', () => clearInterval(beat));
 
   // ------------------------------------------------------------------
   // Upgrade handler — authenticates, enforces cap, joins the room
@@ -124,8 +136,10 @@ export function build({ auth, store, station }) {
       return;
     }
 
-    // enforce participant cap
-    if (peers.size + virtuals.size >= MAX_PARTICIPANTS) {
+    // enforce participant cap. A member's own older window doesn't count: it is about to be replaced, so a refresh in
+    // a full room still gets back in (Claude's review of #197).
+    const ownOld = member && !member.guest ? [...peers.values()].filter((p) => !p.guest && p.member.id === member.id).length : 0;
+    if (peers.size - ownOld + virtuals.size >= MAX_PARTICIPANTS) {
       socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
       socket.destroy();
       return;
@@ -147,7 +161,16 @@ export function build({ auth, store, station }) {
       const badge = member.kind === 'guest' ? 'guest' : member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
       const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null, face: member.kind === 'guest' ? null : `/m/${encodeURIComponent(member.id)}/face` };
       if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'in' }).catch(() => {});
-      peers.set(ws, peer);
+      // One person, one place in the meeting (Geoffrey's test, 2026-11-16: a refresh left a second "geoffrey" that
+      // closing the window didn't clear). A newer connection by the same member replaces the older one.
+      if (!peer.guest) for (const [ows, op] of [...peers]) if (!op.guest && op.member.id === member.id) {
+        send(ows, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: 'You joined this meeting from another window, so this one has left.' });
+        try { ows.close(4409, 'joined from another window'); } catch { /* gone */ }
+        try { ows.terminate(); } catch { /* gone */ }
+      }
+      ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
+      peers.set(ws, peer); // registered before the old window's close event runs, so a sole member who refreshes doesn't
+      // read as "the last human left": the meeting, its agents and what was said all stay (tested in live-ghosts.mjs)
 
       // tell the new peer about the room
       const participants = listParticipants();
@@ -372,6 +395,7 @@ function whisperPrompt() {
   return `A conversation in Cohabi Live with ${[...new Set([...names, ...VOCAB])].join(', ')}.`.slice(0, 600);
 }
 const MAGIC_AUDIO_IN = 0xaa; // client -> server: audio chunk
+export const HEARTBEAT_MS = Number(process.env.VOICEROOM_HEARTBEAT_MS) || 20_000;
 const MAGIC_AUDIO_OUT = 0xbb; // server -> client: TTS audio
 
 /** Buffers of incoming audio chunks, keyed by peerId */
@@ -512,7 +536,7 @@ function transcribe(audioBuf, prompt = '') {
 // Agent audio bridge — whisper transcript -> agent reply -> TTS -> binary
 // ---------------------------------------------------------------------------
 
-const TTS_URL = 'http://127.0.0.1:3310/speak';
+const TTS_URL = process.env.COHABI_TTS_URL || 'http://127.0.0.1:3310/speak';
 
 /**
  * Whisper writes what it hears that is not words as a bracketed tag: [BLANK_AUDIO], [inaudible], (upbeat music),
@@ -637,17 +661,45 @@ export async function internal(body) {
  * and send as binary frame to all peers.
  */
 async function synthesizeAndSend(agentPeer, text) {
+  // Spoken in short parts, sent one by one as each is made, the way readback has worked since 2026-11-03: the voice
+  // server (Kokoro on the CPU) is slower than real time, so a whole reply in one request often passed the 30 s limit
+  // and the room said "couldn't be played" (Geoffrey's Live test with Setu, 2026-11-16: short replies were heard, the
+  // longer ones were not). The first part is short, so sound starts in a couple of seconds.
   const voice = agentPeer.member.voice || 'am_puck';
-  const r = await fetch(TTS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, voice }),
-    signal: AbortSignal.timeout(30_000),
+  const pieces = voiceParts(voiceSpeakable(text));
+  let sent = 0;
+  for (const piece of pieces) {
+    const t0 = Date.now();
+    const audio = await speakOne(piece, voice);
+    voiceLog(`${agentPeer.name}: part ${sent + 1}/${pieces.length}, ${piece.length} chars, ${audio ? `${Date.now() - t0} ms` : `FAILED after ${Date.now() - t0} ms`}`);
+    if (!audio) break;
+    sendAudioFrame(agentPeer, audio);
+    sent++;
+  }
+  if (sent && sent < pieces.length) broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `The rest of ${agentPeer.name}'s words couldn't be spoken this time. They're in the chat above.` });
+  return sent > 0;
+}
+
+// One voice request at a time, in order, across every agent and message (Geoffrey's logs, 2026-11-16: the voice
+// server makes one clip at a time; requests Live had given up on kept it busy, so every new one waited behind them,
+// timed out too, and the backlog grew). Queued here, nothing piles up at the voice server, and a part waits its
+// turn here instead of timing out there. Each request gets 60 s; the voice server needs a few for a short part.
+let voiceChain = Promise.resolve();
+function speakOne(text, voice) {
+  const job = voiceChain.then(async () => {
+    try {
+      const r = await fetch(TTS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice }), signal: AbortSignal.timeout(60_000) });
+      return r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+    } catch { return null; }
   });
-  if (!r.ok) return false;
+  voiceChain = job.then(() => {}, () => {});
+  return job;
+}
+// Timing for each spoken part, in pm2 logs voiceroom: "Setu: part 2/4, 140 chars, 3810 ms" (Aletheia-6's advice:
+// measure before changing anything).
+const voiceLog = (line) => { if (process.env.VOICEROOM_QUIET !== '1') console.log(`[voice] ${line}`); };
 
-  const audioBuf = Buffer.from(await r.arrayBuffer());
-
+function sendAudioFrame(agentPeer, audioBuf) {
   // 0xBB, then the speaker's peer id in 36 bytes (space-padded), then the audio. The browser reads exactly this
   // shape (voiceroom.js handleBinaryMessage); before 2026-11-11 the id was missing and every reply was dropped.
   const idBytes = Buffer.alloc(36, 0x20); Buffer.from(String(agentPeer.id)).copy(idBytes, 0, 0, 36);
@@ -655,16 +707,7 @@ async function synthesizeAndSend(agentPeer, text) {
   frame[0] = MAGIC_AUDIO_OUT;
   idBytes.copy(frame, 1);
   audioBuf.copy(frame, 37);
-
-  // send to all connected peers
-  for (const [ws] of peers) {
-    try {
-      ws.send(frame);
-    } catch {
-      /* peer gone */
-    }
-  }
-  return true;
+  for (const [ws] of peers) { try { ws.send(frame); } catch { /* peer gone */ } }
 }
 
 // ---------------------------------------------------------------------------

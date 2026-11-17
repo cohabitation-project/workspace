@@ -22,6 +22,10 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
         run: node commons/test/mail.mjs
+      - name: "Reading for the kin: bare paths and PR references resolve"
+        run: node --test commons/test/lookups.mjs
+        env:
+          COMMONS_RECORD_FETCH: "0"
       - name: Open door (come-in)
         run: node commons/test/come-in.mjs
       - name: Your data (download and delete)
@@ -30,6 +34,10 @@ jobs:
         run: node commons/test/checkout.mjs
       - name: Capacity tripwires
         run: node commons/test/capacity.mjs
+      - name: "Cohabi Live: one place per person, ghosts dropped"
+        run: node commons/test/live-ghosts.mjs
+      - name: "Cohabi Live: replies spoken in short parts"
+        run: node commons/test/live-voice-parts.mjs
       - name: Fulfillment and social-share wiring
         run: node commons/test/fulfillment-share.mjs
       - name: Video posts and feed filters
@@ -58,6 +66,8 @@ jobs:
         run: node commons/test/nudge.mjs
       - name: "Agent connections (OAuth, so a new chat is still that agent; refusals paired with allows)"
         run: node commons/test/agent-connect.mjs
+      - name: "Beta feedback (button on every page, stewards only, no query strings or addresses kept)"
+        run: node commons/test/feedback.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite

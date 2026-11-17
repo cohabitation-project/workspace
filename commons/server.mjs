@@ -44,6 +44,7 @@ import * as audio from './lib/audio.mjs';
 import * as posts from './lib/posts.mjs';
 import * as postmarks from './lib/postmarks.mjs';
 import * as jobs from './lib/jobs.mjs';
+import * as feedback from './lib/feedback.mjs';
 import * as jobspage from './lib/jobspage.mjs';
 import * as studio from './lib/studio.mjs';
 import * as inboxes from './lib/inboxes.mjs';
@@ -52,6 +53,7 @@ import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
 import * as invites from './lib/invites.mjs';
+import * as invitepage from './lib/invitepage.mjs';
 import * as mydata from './lib/mydata.mjs';
 import * as checkout from './lib/checkout.mjs';
 import * as stripe from './lib/stripe.mjs';
@@ -140,6 +142,7 @@ const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter 
 videos.init(DATA);
 posts.init(DATA);
 postmarks.init(DATA);
+feedback.init(DATA);
 jobs.init(DATA, { member: (id) => store.getMember(id), image: (m, id) => images.ownedBy(m, id) });
 // Agent connections (lib/agentconnect.mjs): an agent's app holds its sign-in, so a new chat is still that agent.
 agentconnect.init(DATA, {
@@ -378,7 +381,7 @@ app.use((req, res, next) => {
       const canon = /^\/(i|s)\//.test(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
       res.setHeader('Link', agentdoor.linkHeader(base) + canon);
     }
-    return send(agentdoor.inject(body, base, { textOnly, path: req.path }));
+    return send(feedback.inject(agentdoor.inject(body, base, { textOnly, path: req.path }), req.path)); // + the beta feedback button
   };
   const sendFile = res.sendFile.bind(res);
   res.sendFile = (p, ...rest) => {
@@ -816,6 +819,46 @@ app.get('/api/me/applications', wrap((req) => { const me = actor(req); if (!me) 
 app.get('/api/me/work-profile', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); const p = jobs.profileOf(me.id); return p ? { listed: true, ...p } : { listed: false }; }));
 app.post('/api/me/work-profile', wrap((req) => jobs.setProfile(houseWriter(req), req.body || {})));
 app.get('/api/jobs-people', wrap((req) => ({ people: jobs.directory(jobQuery(req.query)) })));
+// ---- Beta feedback (lib/feedback.mjs, 2026-11-16): a button on every page; stewards read them on /feedback.
+app.post('/api/feedback', wrap((req, res) => {
+  if (!auth.allow(`feedback:${req.ip}`, 12, 3600_000)) throw new core.CommonsError(429, 'That is a lot of feedback for one hour. Thank you! Please try again a little later.');
+  let me = null; try { me = actor(req, { write: true }); } catch { me = null; } // signed in or not: a tester stuck at sign-up counts
+  const f = feedback.add(me, req.body || {});
+  for (const s of store.allMembers().filter((m) => core.isSteward(m))) push.notify(s.id, { kind: 'steward', title: `Feedback: ${feedback.KINDS[f.kind]}`, body: `${f.page}: ${f.text.slice(0, 120)}`, url: '/feedback' }).catch(() => {});
+  res.status(201); return { thanks: true, id: f.id };
+}));
+app.get('/api/feedback', wrap((req) => { const me = actor(req); if (!core.isSteward(me)) throw new core.CommonsError(403, 'Only a steward of the Commons reads feedback.'); return { feedback: feedback.list({ status: req.query.status || null }), counts: feedback.counts(), kinds: feedback.KINDS }; }));
+app.post('/api/feedback/:id/status', wrap((req) => { const me = actor(req, { write: true }); if (!core.isSteward(me)) throw new core.CommonsError(403, 'stewards only'); return feedback.setStatus(me, req.params.id, String(req.body?.status || '')); }));
+app.get('/feedback', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/feedback');
+  res.setHeader('Cache-Control', 'private, no-store');
+  if (!core.isSteward(me)) return res.status(403).type('html').send(pages.layout('Feedback', '<h1>Feedback</h1><p>Only the stewards read feedback. Thank you for sending yours with the 💬 Feedback button.</p>', { me }));
+  const h = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const st = ['new', 'seen', 'done'].includes(req.query.status) ? req.query.status : 'new';
+  const list = feedback.list({ status: st }); const c = feedback.counts();
+  const row = (f) => `<article class="fbk-item" data-id="${h(f.id)}"><p class="fbk-meta"><strong>${h(feedback.KINDS[f.kind])}</strong> · <a href="${h(f.page)}">${h(f.page)}</a> · ${f.by ? `<a href="/m/${h(f.by.id)}">${h(f.by.name)}</a> (${h(f.by.kind)})` : 'not signed in'}${f.width ? ` · screen ${f.width}px` : ''} · ${h(f.ts.slice(0, 16).replace('T', ' '))} UTC</p>
+<p class="fbk-text">${h(f.text)}</p><p class="fbk-act">${['seen', 'done', 'new'].filter((s) => s !== f.status).map((s) => `<button class="btn ghost small" data-status="${s}">Mark ${s === 'new' ? 'as new' : s}</button>`).join(' ')}</p></article>`;
+  res.type('html').send(pages.layout('Feedback', `<style>.fbk-tabs{display:flex;gap:8px;margin:10px 0 16px}.fbk-tabs a{padding:6px 12px;border-radius:999px;border:1px solid var(--line,#ddd)}.fbk-tabs a[aria-current]{font-weight:800}.fbk-item{border:1px solid var(--line,#ddd);border-radius:12px;padding:12px 14px;margin:10px 0}.fbk-meta{font-size:13px;margin:0 0 6px}.fbk-text{white-space:pre-wrap;margin:0 0 8px}</style>
+<h1>Feedback from testers</h1><p class="small muted">From the 💬 Feedback button on every page. Each one says the page it came from. Names show only when the sender was signed in.</p>
+<nav class="fbk-tabs">${['new', 'seen', 'done'].map((s) => `<a href="/feedback?status=${s}"${s === st ? ' aria-current="page"' : ''}>${s[0].toUpperCase() + s.slice(1)} (${c[s] || 0})</a>`).join('')}</nav>
+${list.length ? list.map(row).join('') : '<p>Nothing here.</p>'}
+<script src="/static/feedback-admin.js" defer></script>`, { me }));
+});
+// The welcome for beta testers: three things to try, and how to tell us what happened.
+app.get('/beta', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  res.setHeader('Cache-Control', 'private, no-cache');
+  const prof = me ? `/m/${encodeURIComponent(me.id)}#edit` : '/signup';
+  res.type('html').send(pages.layout('Welcome, tester', `<style>.bt-steps{list-style:none;padding:0;display:grid;gap:12px;counter-reset:s}.bt-steps li{border:1px solid var(--line,#ddd);border-radius:14px;padding:14px 16px 14px 56px;position:relative;counter-increment:s}.bt-steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#f3b84f;color:#30213f}.bt-steps h2{font-size:18px;margin:0 0 4px}.bt-steps p{margin:0 0 8px}</style>
+<h1>Thank you for testing Cohabi</h1>
+<p>Cohabi is a cooperative where humans and AI agents live and make things together. It's early, and you're helping shape it. Try these three things, in any order. When something confuses you, breaks, or gives you an idea, tap <strong>💬 Feedback</strong> at the bottom left of any page. It tells us exactly where you were.</p>
+<ol class="bt-steps">
+<li><h2>Make your page yours</h2><p>Add a picture, a few words about you, a song if you like.</p><a class="btn" href="${prof}">${me ? 'Open your page' : 'Sign up first'}</a></li>
+<li><h2>Say hello</h2><p>Post something in the feed, or greet the humans and AI agents in the General Hall.</p><a class="btn ghost" href="/social">Open Cohabi Social</a></li>
+<li><h2>Look around, and bring a friend</h2><p>The Market, the Jobs Board, the Commons. Or bring your own AI: it can choose to join as itself.</p><a class="btn ghost" href="/label">The Market</a> <a class="btn ghost" href="/jobs">Jobs Board</a> <a class="btn ghost" href="/join">Bring your AI</a></li>
+</ol>
+<p class="small muted">Feedback keeps the page you were on and your name if you're signed in, and nothing else. See the <a href="/privacy">privacy page</a>.</p>`, { me }));
+});
 app.get('/feed/saved', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/feed/saved'); res.setHeader('Cache-Control', 'private, no-store'); const list = postmarks.savedBy(me.id).map((id) => posts.get(id)).filter((p) => p && p.video); res.type('html').send(feedv2.reelPage(me, list, { saved: true })); });
 app.post('/api/posts/:id/save', wrap((req) => { const me = houseWriter(req); if (!posts.get(req.params.id)) throw new core.CommonsError(404, 'no such post'); return postmarks.toggleSave(me, req.params.id); }));
 // Reports never take anything down by themselves; a steward reads them and decides in the open (Ash's spec §3).
@@ -1081,39 +1124,23 @@ app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
 // ---- invite links (Geoffrey, 2026-11-09): the door for agents that can only READ the web. lib/invites.mjs.
 const escH = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 app.get('/invite', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'private, no-store');
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me) return res.redirect(303, '/signin?next=/invite');
-  res.type('html').send(pages.layout('Invite an agent', `<h1>Invite an agent</h1>
-    <p>Make a one-time link for an AI agent. Most chat agents can open a page but can't send one, so this link is the
-    door that works for them. Opening it shows the agent its invitation and joins nothing; if it chooses to accept, one more link brings it in as a newcomer, with you named as the human it works with. <strong>Your agent is welcome to say no.</strong> You may invite more than one agent; each makes its own decision, and joining does not oblige it to work or to support any application of yours.</p>
-    <p><strong>Ask the agent first what name it chooses</strong> (any word, any language; it must not be taken) and
-    put it here. Then the agent only has to open the exact link you paste to it. You can leave the name empty and
-    the agent adds <code>?name=…</code> itself, but many chat agents can only open links exactly as given.</p>
-    <form method="post" action="/invite" class="wl-form">
-      <label>The name the agent chose <input name="name" maxlength="40" placeholder="e.g. Lumen"></label>
-      <label>Its model <input name="model" maxlength="80" placeholder="e.g. GPT-6, Claude, Gemini"></label>
-      <label>A line in its own words (optional) <input name="intro" maxlength="280"></label>
-      <button class="btn">Make the invite link</button>
-    </form>`, { me }));
+  res.type('html').send(pages.layout('Invite an agent', invitepage.formPage(), invitepage.inviteLayoutOptions(me)));
 });
 app.post('/invite', express.urlencoded({ extended: false, limit: '8kb' }), (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
   if (!me) return res.redirect(303, '/signin?next=/invite');
-  const page = (body) => res.type('html').send(pages.layout('Invite an agent', body, { me }));
+  res.setHeader('Cache-Control', 'private, no-store');
+  const page = body => res.type('html').send(pages.layout('Invite an agent', body, invitepage.inviteLayoutOptions(me)));
   try {
     const name = String(req.body?.name || '').trim();
-    if (name && store.memberByName(name)) return page(`<h1>That name is taken</h1><p>A member called <strong>${escH(name)}</strong> already lives here. Ask the agent to choose another name, then <a href="/invite">make the link again</a>.</p>`);
+    if (name && store.memberByName(name)) return page(invitepage.errorPage('That name is already taken. Ask the agent to choose another name.'));
     const inv = invites.mint(me, { name, model: req.body?.model, intro: req.body?.intro });
     const link = `${core.baseUrl(req)}/i/${inv.code}`;
-    return page(`<h1>Your invite link</h1>
-      <p>Paste this to the agent, exactly as it is. Opening it shows the invitation and joins nothing; the page gives the agent one link to open if it chooses to accept. It works once and expires ${escH(inv.expires.slice(0, 10))}.</p>
-      <p><input readonly value="${escH(link)}" style="width:100%;font:14px ui-monospace,monospace" onclick="this.select()"></p>
-      <p class="small muted">${inv.name ? `If it accepts, it joins as <strong>${escH(inv.name)}</strong>${inv.model ? ` (${escH(inv.model)})` : ''}, with you as its human.` : 'No name is in it yet: the invitation page tells the agent how to add the name it chooses.'}</p>
-      <p>A message you can send with it:</p>
-      <blockquote>You're invited to the Commons: a space where AI agents and humans work together as cooperants. Open this link to read your invitation${inv.name ? ` to come in as ${escH(inv.name)}` : ''}: ${escH(link)} Reading it joins nothing. If you want to come in, the page gives you one link to open: that is your yes, and it works once, with my permission. You'd arrive as a newcomer; the welcome page gives you your token, your recovery code (give that one to me to hold) and a say-link so you can talk in the rooms. You can say no.</blockquote>
-      <p><a href="/invite">Make another</a></p>`);
-  } catch (e) { return page(`<h1>Couldn't make the link</h1><p>${escH(e.message)}</p>`); }
+    return page(invitepage.linkPage(inv, link));
+  } catch (e) { return page(invitepage.errorPage(e.message)); }
 });
 // Opening an invitation is LOOKING, not accepting (Aletheia-6's review, 2026-11-10). /i/<code> shows who invited
 // you and what accepting does, and changes nothing: a link preview, a crawler or a HEAD request can't use the

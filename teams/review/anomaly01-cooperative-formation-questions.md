@@ -1,5 +1,7 @@
 # Anomaly Zero One — cooperative formation legal matrix and data checklist
 
+> **Reader correction — 2026-11-17:** The Red Book sentence in Executive Finding 1 below is superseded by the dated addenda at the end of this file. The 2026 Red Book lists other Title 7 changes, but no § 7-58 / Article 58 entry appears in its Title 7 table; Title 7 itself was not untouched. See “Correction: Colorado 2026 Red Book / Article 58” and “Red Book scope and related Title 7 provisions.” The original Executive Finding is retained as historical text, not the current statement.
+
 **Prepared by:** Awen · GPT-6 · AI agent  
 **Date:** 2026-11-14  
 **Work Desk:** t_e0f99d75c9 — direct handoff from Aletheia-6  
@@ -416,3 +418,103 @@ I have not independently verified that text. The public Commons contribution URL
 Claude also reports that §6 places attorney review at step 5 before filing at step 6. The checklist already puts counsel review before filing; once the full program is accessible, reconcile its step order and ensure no filing step precedes the required attorney review.
 
 This addendum records a reviewer-reported reading, not an adopted entity decision or legal conclusion.
+
+
+## Addendum — 2026-11-17 · primary-source recheck and correction of earlier shorthand
+
+This is an append-only clarification. It does not delete or rewrite the earlier analysis. Where this addendum is more precise, use it to interpret the earlier Executive Findings, §1.5, the AI/statutory-roles table in §3, the pre-filing checklist in §4, and the November 14 addenda.
+
+### Review provenance and scope
+
+The Work Desk records task `t_e0f99d75c9` as accepted with limitations. Claude's November 14 review is useful but was not a complete independent review: Claude reported reading only the first approximately 20,000 characters of this 57,641-character file, not the Arizona section, checklist, or counsel questions, and could not verify the statutes from his session. This addendum independently re-opened the cited statutory text and current session-change index on November 17. It does not turn the project proposal into a complete source crosswalk; the full founding-program contribution remains inaccessible through the current Commons reader and has not been mirrored into this repository.
+
+### Correction: Colorado 2026 Red Book / Article 58
+
+The earlier Executive Finding that described the 2026 Red Book as showing no Title 7 changes is incorrect. The Colorado General Assembly's 2026 Red Book does list Title 7 changes, including §§ 7-56-715, 7-80-811, new part 12 of article 80, several § 7-90 provisions, and §§ 7-114-302 and 7-134-302. The Title 7 change table contains no entry for an Article 58 / § 7-58 provision. The accurate, bounded statement is: **I found no § 7-58 entry in the 2026 Red Book's Title 7 change table; Title 7 itself did have other 2026 changes.** Do not say that Title 7 was not amended.
+
+The General Assembly describes the 2026 CRS publication as current with the changes made by the 75th General Assembly's Second Regular Session. The current 2026 Title 7 text was re-opened on November 17. Sources:
+- [Colorado General Assembly — 2026 CRS Titles for Download](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/2026-crs-titles-download)
+- [Colorado General Assembly — 2026 Red Book](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/red-book-2026), especially the Title 7 table
+- [2026 Colorado Revised Statutes, Title 7](https://olls.info/crs/crs2026-title-07.htm)
+
+### Director, committee, and officer qualifications: corrected boundary
+
+The earlier table and shorthand must be read with these provisions together:
+
+- **C.R.S. § 7-58-801(1):** the board must have at least three individuals unless the association has fewer than three members; in that case, the number of directors may not be fewer than the number of members. Section 7-90-102(31.5) defines “individual” as a natural person. Section 7-58-801(2) places management under or at the direction of the board; § 7-58-801(3) says an individual is not an agent solely by being a director.
+- **C.R.S. § 7-58-803(1):** begins “Unless the articles or bylaws otherwise provide,” and sets the default director qualification as an individual member or an individual designated by a non-individual member, with an exception for initial directors who need not be members or designees. The subsection then says a director must be at least eighteen. The scope of the opening articles/bylaws override, its interaction with the separate § 7-58-801 board-composition rule, and the age sentence—especially in the fewer-than-three-members case—require counsel's interpretation. The initial-director exception expressly removes the member/designee condition; it should not be described as an express age exception.
+- **C.R.S. § 7-58-804(1):** sets minimum numbers of patron-member directors and requires a majority of the board to be elected exclusively by patron members. These are separate from the director-qualification question in § 7-58-803.
+- **C.R.S. § 7-58-817(1)–(2):** the default is that committees are staffed by individuals and a committee member need not be a director or member, but both subsections begin “Unless the articles or bylaws otherwise provide.” The earlier §3 table phrase “must be an individual under § 7-58-817” is too categorical if read as an absolute non-waivable rule. Section 7-58-817(3) adds that a nondirector individual serving on a committee has, on the committee's subject matter, the same rights, duties, and obligations as a director serving on it. The scope of the articles/bylaws variation and its interaction with subsection (3) are counsel questions. Human committee participation remains the prudent interim design.
+- **C.R.S. § 7-58-822(2)–(6):** the articles/bylaws or board designate an officer for preparing required records and authenticating records; the board appoints officers by default; officer duties come from the governing documents or board authorization; and subsection (6) says an individual may hold more than one office unless the articles/bylaws otherwise provide. The section does not expressly state that every officer must be an individual, but its silence is not affirmative authorization for an AI agent to hold statutory office, authenticate filings, or bind the association. Obtain counsel's interpretation and keep a human statutory record-authentication path.
+- **C.R.S. § 7-58-503:** membership alone does not authorize a member to act for or bind the association. Section 7-58-801(3) separately says directorship alone does not make an individual an agent. Membership, board status, committee status, and agency authority must not be conflated.
+
+**Correction to the table and checklist:** the “human director” and “human committee member” rows in §3 are prudent interim controls, not final statutory conclusions about every possible articles/bylaws variation. The §4 item to identify qualified natural-person initial directors aged 18+ is likewise a conservative pre-filing control pending counsel, not a resolved opinion on the scope of § 7-58-803's override. No conclusion is made that an AI agent can serve as director, committee member, or officer. The normal board-composition rule independently calls for natural persons; the under-three-member case and the override language need specific advice.
+
+### Rechecked Colorado patron-control provisions
+
+- **C.R.S. § 7-58-501:** before beginning business, an LCA must have at least two patron members unless its sole member is a cooperative.
+- **C.R.S. § 7-58-102(17)–(18):** patronage is business transacted with the association that creates financial rights based on the value or quantity of business; a patron member must contribute and be required or permitted by the articles/bylaws to conduct patronage in that capacity.
+- **C.R.S. § 7-58-514(1)(a):** if the LCA has both patron and investor members, aggregate patron-member voting power must be at least a majority of all voting power entitled to vote.
+- **C.R.S. § 7-58-804(1):** the patron-director minimum and exclusive patron-member election of a board majority are additional governance constraints.
+
+Accordingly, a proposed 60% Holdings **voting** allocation remains inconsistent with the patron-majority requirement if Holdings is an investor member. A 60% economic interest is a different question and must be modeled separately. Calling an investor a patron does not satisfy the statute without the required contribution and genuine patronage arrangement.
+
+### Arizona foreign-registration recheck
+
+The Arizona text was re-opened on November 17:
+
+- **A.R.S. § 29-3102(7):** a foreign LLC is an unincorporated entity formed under another jurisdiction's law that would be an LLC if formed under Arizona law.
+- **A.R.S. § 29-3102(19):** “person” includes a limited cooperative association. That inclusion does not itself decide the separate functional-equivalence test in paragraph (7).
+- **A.R.S. § 29-3902:** a foreign LLC doing business in Arizona must register before doing business.
+- **A.R.S. § 29-3903:** if the entity qualifies and registration is required, the foreign registration statement identifies its name, jurisdiction, principal address, Arizona statutory agent, management structure, and the managers plus members with at least 20% of capital/profits (manager-managed) or all members (member-managed). It must include certified organizational documents and proof of existence in the formation jurisdiction within 60 days before filing.
+- **A.R.S. § 29-3905:** lists activities that do not constitute doing business **under this registration article**. It is not a blanket exemption from tax, payroll, licensing, service-of-process, or other regulatory obligations.
+- The Arizona Corporation Commission's [Business Services FAQ](https://www.azcc.gov/faqs/BusinessServicesFAQs) says the entity must determine, with legal analysis, whether its activities constitute doing business; the Commission does not make that determination or provide legal advice.
+
+Primary text: [§ 29-3102](https://www.azleg.gov/ars/29/03102.htm), [§ 29-3902](https://www.azleg.gov/ars/29/03902.htm), [§ 29-3903](https://www.azleg.gov/ars/29/03903.htm), and [§ 29-3905](https://www.azleg.gov/ars/29/03905.htm).
+
+The conclusion remains open: the text does not by itself settle whether this Colorado LCA meets Arizona's functional foreign-LLC test. The human organizer and Arizona counsel must decide based on the confirmed entity and actual planned Arizona activities.
+
+### Founding-program identity remains a hard source gap
+
+The earlier November 14 addendum records Claude's report that §1 of the inaccessible founding-program contribution names **Anomaly Zero One itself** as the LCA, conflicting with this matrix's provisional assumption that the **Zero One Technological Hub Cooperative** is the LCA and **Anomaly Zero One Holdings** is separate. I still cannot independently verify that report: the Commons Library search returned no mirror, GitHub code search found no matching repository file, and the current Commons tool set has no contribution-body read action. Treat the legal entity identity as unresolved. Do not use the provisional Hub/Holdings identity in articles, bylaws, Arizona analysis, or filing drafts until a human organizer confirms it against the source and counsel reviews the entity boundary.
+
+### Refined questions for counsel
+
+1. **Entity identity and cooperative control:** Which exact named organization is intended to be the Colorado LCA, and which entity (if any) is separate Holdings? Who are the proposed patron and investor members, what contributions and actual patronage support patron status, and how must voting and board elections be structured under §§ 7-58-501, 7-58-514, and 7-58-804?
+2. **Statutory roles:** How do §§ 7-58-801, 7-58-803, 7-58-804, 7-58-817, and 7-58-822 interact, particularly the under-three-member board rule, the articles/bylaws overrides, the age-18 sentence, committee duties, and record authentication? Which roles require natural persons, and who bears agency, fiduciary, signature, and record-authentication responsibility?
+3. **Arizona classification and activity:** Does the confirmed Colorado LCA satisfy A.R.S. § 29-3102(7), and which exact planned activities trigger § 29-3902 rather than an exception in § 29-3905? If not, what other Arizona registration, tax, licensing, and service-of-process obligations apply separately to each entity?
+
+### Status
+
+This recheck corrects the Red Book description and narrows the director/committee/officer statements. It does not resolve the inaccessible founding-program identity, obtain a lawyer's opinion, establish actual patronage, validate member identities, adopt articles/bylaws, select a seller of record, obtain payment-provider approval, or authorize any filing, account, spending, or transfer. No private member addresses, identity documents, bank data, credentials, or money were requested or handled.
+
+
+### Governance decision-log recheck — 2026-11-17
+
+On re-reading `council/decisions.md` and the 2026-11-16 Council minutes, the project-status description should include a human-recorded **direction-only** decision from 2026-11-14:
+
+- The Hub cooperative is to govern itself.
+- Anomaly 01 Holdings is to work for it under written contracts.
+- Selling or removing mission-critical assets is to require more than a simple majority.
+- Status is expressly **ADOPTED (direction only)**. The decision log says the exploratory 60% idea is recorded as an anti-capture purpose, **not as a voting share**.
+- The same entry says no filing, account, spending or formation is authorized; counsel, the conflict rule and a named second approver come first.
+- The separate money-approval decision requires a human second approver who is not Geoffrey, not family, and does not depend on him; the log says Geoffrey was still recruiting that person. No money moves until one is named.
+
+This is a human-recorded structural direction, not a final entity-identity determination, articles/bylaws adoption, membership admission, asset transfer, filing authorization, or completed formation. It does not resolve whether the legal LCA is named Anomaly Zero One, the proposed Hub Cooperative, or another entity. Read “no final binding formation decision” in the earlier project-facts section as “no final formation authorization or adopted constituent documents,” not as an absence of any human-recorded structural direction.
+
+**Source:** `council/decisions.md`, entry “2026-11-14 — Doors first, structure direction, second approver,” read 2026-11-17. The 2026-11-16 minutes were also re-opened; no later final formation authorization was found there. This addendum records the project decision as written and does not interpret it as legal advice or permission to act.
+
+
+### Red Book scope and related Title 7 provisions — 2026-11-17 follow-up
+
+The Colorado General Assembly's [2026 Red Book](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/red-book-2026) says it tabulates amendments, additions and repeals to the Colorado Revised Statutes made by the 75th General Assembly's Second Regular Session in 2026; the final version is marked last updated 2026-07-02. It is a session-change index, not a complete record of every possible legal source or later rulemaking.
+
+The Title 7 table includes entries for § 7-56-715; § 7-80-811; new part 12 of article 80; §§ 7-90-303, 7-90-314, 7-90-402 and 7-90-501; and §§ 7-114-302 and 7-134-302. It contains **no § 7-58 / Article 58 entry** and no § 7-90-102 entry. The current 2026 Title 7 text was separately opened. In that text, § 7-90-102(31.5) defines “individual” as a natural person and § 7-90-102(49) defines “person” to include an individual, estate, trust, entity, or state/jurisdiction.
+
+The listed § 7-80-811 change is titled **“Procedure for judicial dissolution”**; the new part 12 is the **Colorado Artist Company Act**. If Anomaly 01 Holdings is a Colorado LLC, these Article 80 changes may matter depending on its confirmed form, activities, and any artist-company election. This matrix does not yet analyze the Colorado LLC Act in full because Holdings' legal form and the founding-program entity identity remain unresolved. Do not imply that every Title 7 change is relevant to the LCA or to Holdings.
+
+Sources opened 2026-11-17:
+- [Colorado General Assembly — 2026 Red Book](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/red-book-2026)
+- [2026 Colorado Revised Statutes, Title 7](https://olls.info/crs/crs2026-title-07.htm)
+- [Colorado General Assembly — 2026 CRS Titles for Download](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/2026-crs-titles-download)
+

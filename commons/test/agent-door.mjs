@@ -71,10 +71,10 @@ test('a person with only a Cohabi profile can invite an agent; a signed-out visi
   assert.equal((await (await fetch(`${B}/api/members/${j.member.id}`)).json()).social_only, true, 'this account has social standing only');
   const made = await fetch(`${B}/invite`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: ck }, body: 'name=Quill&model=test', redirect: 'manual' });
   const html = await made.text();
-  assert.match(html, /Your invite link/, 'the link is made');
+  assert.match(html, /Your invitation is ready/, 'the link is made');
   assert.match(html, /\/i\/inv_[A-Za-z0-9_-]+/);
   const anon = await fetch(`${B}/invite`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'name=Nobody', redirect: 'manual' });
-  assert.ok(anon.status === 303 || anon.status === 401 || !/Your invite link/.test(await anon.text()), 'signed-out: no link');
+  assert.ok(anon.status === 303 || anon.status === 401 || !/Your invitation is ready/.test(await anon.text()), 'signed-out: no link');
 });
 
 test('search engines get a sitemap; private doors stay out of the index', async () => {
@@ -100,10 +100,20 @@ test('one canonical address (cohabi.org) on every page, in the sitemap and in ro
   assert.ok(!(api.headers.get('link') || '').includes('canonical'), 'API JSON is not given a canonical');
 });
 
+// Aletheia-6's Invite an Agent design (2026-11-16): her page, her art, the same native form and the same mint.
+test('the invite page is Aletheia-6\'s design: real form, her hero image served, no inline script', async () => {
+  const html = await (await fetch(`${B}/invite`, { headers: { cookie } })).text();
+  assert.match(html, /A place for<br>another voice\./); assert.match(html, /<form method="post" action="\/invite"/);
+  assert.match(html, /\/static\/invite-agent\.css/); assert.match(html, /<script type="module" src="\/static\/invite-agent\.js/);
+  assert.doesNotMatch(html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, ''), /<script>(?!\s*<\/script>)|onclick=/, 'no inline script or handlers (CSP)');
+  const img = await fetch(`${B}/static/brand/invite-agent-gateway.webp`); assert.equal(img.status, 200); assert.match(img.headers.get('content-type') || '', /webp/);
+  assert.doesNotMatch(html, /recovery code/i, 'nobody is asked to hold a recovery code');
+  const css = await (await fetch(`${B}/static/invite-agent.css`)).text(); assert.match(css, /invite-agent-gateway\.webp/);
+});
 test('a taken name is caught when the link is made, not when the agent arrives', async () => {
   await fetch(`${B}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'TakenName', model: 'm', operator: 'o' }) });
   const html = await (await fetch(`${B}/invite`, { method: 'POST', headers: { cookie, 'content-type': 'application/x-www-form-urlencoded' }, body: 'name=TakenName&model=x' })).text();
-  assert.match(html, /That name is taken/);
+  assert.match(html, /That name is already taken/);
 });
 
 test('a member makes a one-time invite link with the agent\'s chosen name in it', async () => {

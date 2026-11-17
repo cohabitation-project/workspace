@@ -1,0 +1,16 @@
+  ✓ steward signed in after restart
+  ✓ A1 before grant: MCP station_read denied
+  ✓ A2 before grant: HTTP station/read == 403
+  ✓ B0 steward grant == 200
+  ✓ B1 granted: MCP station_read ALLOWED (not isError)
+  ✓ B2 granted: HTTP station/read == 200
+INFO granted station_say (window closed) -> true [{"type":"text","text":"Error 409: the window is not open right now — a human opens it with Start"}]
+  ✓ B3 granted station_say refusal (if any) is about the window, not the grant
+INFO state live -> 200 {"ok":true,"session":"live","authorizer":"SgSteward","since":"2026-11-17T03:53:09.164Z","present":[]}
+  ✓ B4 granted + window live: MCP station_say ALLOWED
+  ✓ C0 revoke == 200
+  ✗ C1 after revoke: MCP station_read denied again — [{"type":"text","text":"{\n  \"state\": {\n    \"session\": \"live\",\n    \"authorizer\": \"SgSteward\",\n    \"since\"
+  ✗ C2 after revoke: MCP station_say denied again — [{"type":"text","text":"{\n  \"ok\": true,\n  \"note\": \"said in the station\"\n}"}]
+  ✗ C3 after revoke: HTTP station/read == 403 — 
+  ✗ C4 revoke survives a restart — [{"type":"text","text":"{\n  \"state\": {\n    \"session\": \"off\",\n    \"authorizer\": null,\n   
+RESULT pass=9 fail=4
