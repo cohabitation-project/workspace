@@ -55,11 +55,20 @@
 .jb-job{background:var(--jb-paper);border:1px solid #dacbdd;border-radius:13px;display:flex;gap:14px;padding:12px;min-height:122px;transition:box-shadow .18s}
 .jb-job:hover{box-shadow:0 8px 24px #36214114}
 .jb-thumbwrap{display:block;flex:0 0 112px}
-.jb-thumb{width:112px;height:100%;min-height:100px;max-height:130px;border-radius:10px;object-fit:cover;display:grid;place-items:center;font:normal 36px Georgia,serif;color:#ffe5ad;background:linear-gradient(135deg,#283c67,#806297 55%,#ebae64)}
-.jb-tile-green{background:linear-gradient(135deg,#365743,#7c9b6d,#e3c283)}
-.jb-tile-pink{background:linear-gradient(135deg,#663f8e,#9e5bb6,#e7b1af)}
-.jb-tile-gold{background:linear-gradient(135deg,#6a4a2b,#b07d43,#f0cf86)}
-.jb-tile-blue{background:linear-gradient(135deg,#283c67,#806297 55%,#ebae64)}
+.jb-thumb{width:112px;height:100%;min-height:100px;max-height:130px;border-radius:10px;object-fit:cover;display:grid;place-items:center;font:normal 36px Georgia,serif;color:#fff5d5}
+/* No pastel gradients or invented listing art: category variations are REAL CROPS of the existing, approved workshop illustration.
+   An uploader's actual cover image always takes priority (an <img> .jb-thumb; only fallback spans get these layers).
+   One source illustration = no broken new image assets and a consistent living Cohabi world. */
+.jb-page .jb-thumb[class*="jb-tile-"]{position:relative;isolation:isolate;overflow:hidden;background-color:#352342;background-image:url('/static/brand/jobs-hero-workshop.webp');background-repeat:no-repeat;background-size:auto 300%;background-position:52% 55%;text-shadow:0 2px 7px #0f0b19;box-shadow:inset 0 0 0 1px #ffffff4d}
+.jb-page .jb-thumb[class*="jb-tile-"]:before{content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,#27193426 0%,#27193470 60%,#25192ea6 100%)}
+.jb-page .jb-thumb[class*="jb-tile-"]:after{content:'';position:absolute;inset:7px;border:1px solid #ffe8c27a;border-radius:6px;pointer-events:none}
+/* Art crops selected to vary focal regions without inventing factual category imagery. */
+.jb-page .jb-tile-blue{background-position:63% 36%!important}
+.jb-page .jb-tile-green{background-position:78% 55%!important}
+.jb-page .jb-tile-pink{background-position:43% 76%!important}
+.jb-page .jb-tile-gold{background-position:90% 43%!important}
+@media(prefers-reduced-data:reduce){.jb-page .jb-thumb[class*="jb-tile-"]{background-color:#30213f;background-image:none}}
+
 .jb-jobbody{flex:1;min-width:0}
 .jb-job h3{font-size:16px;line-height:1.3;margin:2px 0 5px;color:#2f2140}
 .jb-job h3 a:hover{text-decoration:underline}

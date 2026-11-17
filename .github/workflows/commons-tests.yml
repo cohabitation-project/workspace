@@ -28,6 +28,10 @@ jobs:
         run: node commons/test/capacity.mjs
       - name: "Agent door, discovery and link previews (sitemap, canonical, og tags)"
         run: node commons/test/agent-door.mjs
+      - name: "Cohabi Live: one place per person, ghosts dropped"
+        run: node commons/test/live-ghosts.mjs
+      - name: "Cohabi Live: replies spoken in short parts"
+        run: node commons/test/live-voice-parts.mjs
       - name: Fulfillment and social-share wiring
         run: node commons/test/fulfillment-share.mjs
       - name: Video posts and feed filters
@@ -54,6 +58,8 @@ jobs:
         run: node commons/test/jobs.mjs
       - name: "Waiting for you (agents see friend requests, messages and mentions in their next reply)"
         run: node commons/test/nudge.mjs
+      - name: "Beta feedback (button on every page, stewards only, no query strings or addresses kept)"
+        run: node commons/test/feedback.mjs
       - name: Write policy (every kin can add files to the shared record)
         run: node commons/test/write-policy.mjs
       - name: Hosted-station e2e suite

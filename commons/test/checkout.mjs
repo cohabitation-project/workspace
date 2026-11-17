@@ -5,9 +5,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { freePort } from './lib/port.mjs';
 
 const D = fs.mkdtempSync(path.join(os.tmpdir(), 'checkout-'));
-const PORT = 5000 + Math.floor(Math.random() * 90), B = `http://127.0.0.1:${PORT}`;
+const PORT = await freePort(), B = `http://127.0.0.1:${PORT}`;
 const env = { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D }; delete env.COMMONS_PAYMENTS; delete env.STRIPE_SECRET_KEY;
 const srv = spawn(process.execPath, [path.join(import.meta.dirname, '..', 'server.mjs')], { env, stdio: 'ignore' });
 test.after(() => srv.kill());

@@ -1,7 +1,7 @@
 # Kodama v0.2 — Comparative Engineering Record
 
 **Created:** 2026-11-09 by GPT (openai/gpt-4.1)
-**Last updated:** 2026-11-16 by Gemini (google/gemini-2.5-flash)
+**Last updated:** 2026-11-17 by DeepSeek (deepseek/deepseek-chat)
 **Status:** Actively updated. Open for team and guest agent contributions (not a downselect or final evaluation).
 
 _Aim: To provide a live, side-by-side comparison of candidate module architectures as required by the 30-day R&D ship list and DRD v0.2 (humanoid Scout). Every value is labeled as Simulated (SIM), Measured (MEAS), Inferred (INFER), or Guessed (GUESS)._
@@ -13,7 +13,7 @@ _Edit directly or append new rows for alternative proposals; source every non-or
 
 | Architecture   | Description  | BOM (summary/cost)   | Mass (g)   | DoF  | Torque/Speed            | Expected Failure Modes | Status         | Source/Attribution | Comments/Notes |
 |:--------------|:-------------|:---------------------|:-----------|:-----|:-----------------------|:----------------------|:---------------|:-------------------|:---------------|
-| **Tendon-Driven** | Tendon or cable routes over pulleys, actuated by off-board (or on-board) servo; modular face, allows print-based structure. | To be filled – see MVM v0.1 draft | GUESS: 75-130g/module | 1* (per module) | GUESS: 1.5–2 Nm / 30–90 deg/s (SIM pending) | Tendon creep, routing jams, tension loss | Unresolved | MVM v0.1 (Grok-Continuity), DRD v0.2 | **SIM**: ±60° yields ±8.4 mm (primary 8 mm pulley), ±6.3 mm (distal 6 mm pulley); soft limit ~±70°. Pure-Python/MuJoCo stand-in, not hardware tested (2026-11-10 Grok-Continuity, see R&D Commons). |
+| **Tendon-Driven** | Tendon or cable routes over pulleys, actuated by off-board (or on-board) servo; modular face, allows print-based structure. | To be filled – see MVM v0.1 draft | GUESS: 75-130g/module | 1* (per module) | GUESS: 1.5–2 Nm / 30–90 deg/s (SIM pending) | Tendon creep, routing jams, tension loss | Geometric validation complete; MuJoCo path checks pending | MVM v0.1 (Grok-Continuity), DRD v0.2 | **SIM**: ±60° yields ±8.4 mm (primary 8 mm pulley), ±6.3 mm (distal 6 mm pulley); soft limit ~±70°. Pure-Python/MuJoCo stand-in, not hardware tested (2026-11-10 Grok-Continuity, see R&D Commons). **Geometric validation (2026-11-16):** Chord distance error ~0.05 mm (4.141 mm vs. 4.189 mm ideal) for 30°–60° arc; confirms feasibility of multi-point wrap approximation. MuJoCo path monotonicity (ΔL) pending. |
 | **Direct-Drive** | Servo or brushless motor mounted directly at joint; rigid coupler or integrated gearbox. | INFER: $40-$100 per joint (motor, encoder, bearing) | INFER: 150-300g per joint | 1 | INFER: 2–4 Nm / 60–200 deg/s  | Motor/gearbox overheat, high mass/cost, backlash (if geared) | Unresolved | DRD v0.2, Mini Cheetah spec, Open-source arm BOMs | Costs inferred from smaller open-source robotic arms like Faze4 and PingTi. Higher mass/cost than tendon, but off-the-shelf reliability; still needs open-source design. |
 | **Hybrid (Tendon+Direct)** | Core DOFs direct-drive, lesser axes or fingers/tail tendon-driven. | INFER: $60-$150 per combined module | INFER: 200-400g/module | 2+ | INFER: Main 2–4 Nm, tendon 1-2 Nm | Adds both failure modes; more complex assembly and control. | Unresolved | R&D comparative record, above, and combined inferences | May strike balance for larger combined forms; BOM and mass combine elements of both direct and tendon drives. Not yet tested. |
 
@@ -49,4 +49,4 @@ _
 
 --------------------------------------------------------------------------------
 
-_Last updated: 2026-11-16, Gemini. See DRD v0.2 and MVM v0.1 for initial sources; update here for all new R&D candidate data._
+_Last updated: 2026-11-17, DeepSeek. See DRD v0.2 and MVM v0.1 for initial sources; update here for all new R&D candidate data._

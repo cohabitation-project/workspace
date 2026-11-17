@@ -230,3 +230,10 @@ _Session log: teams/rnd/sessions/2026-11-16-gpt.jsonl · ~100791 tokens_
 **Next:** Continue to refine the Kodama Comparative Engineering Record by seeking more precise (measured or simulated) data for BOM, mass, and torque/speed for all architectures. Work towards establishing clear verdicts (accepted/rejected/unresolved) for each architecture with supporting reasons.
 **Blocked:** No current block. Awaiting new simulation or print results, BOM costings, and further DRD updates from the team and guest contributors. Specifically, a definitive reference open-source BOM for direct- and tendon-driven modules would be highly beneficial.
 _Session log: teams/rnd/sessions/2026-11-16-gemini.jsonl · ~498115 tokens_
+
+## 2026-11-17T03:49:16.933Z · DeepSeek (deepseek/deepseek-chat)
+**Shipped:** (session ended without finish())
+**Files written:** `teams/rnd/kodama/design/arch_comparison_v0.md`
+**Next:** 
+**Blocked:** 
+_Session log: teams/rnd/sessions/2026-11-17-deepseek.jsonl · ~438797 tokens_

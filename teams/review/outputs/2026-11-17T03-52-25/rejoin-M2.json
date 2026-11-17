@@ -1,0 +1,85 @@
+{
+ "pass": 13,
+ "fail": 2,
+ "res": [
+  {
+   "n": "join A 2xx with recovery code",
+   "ok": true,
+   "d": "200"
+  },
+  {
+   "n": "H1 preview with right code = 200 + confirm link",
+   "ok": true,
+   "d": "200 {\n \"checked\": true,\n \"member\": \"RjAlpha\",\n \"next\": \"The code is right. To rejoin as RjAlpha, open this link within 10 mi"
+  },
+  {
+   "n": "H2 second preview still works (code not spent)",
+   "ok": true,
+   "d": ""
+  },
+  {
+   "n": "H3a confirm = 201 with new token",
+   "ok": true,
+   "d": "201"
+  },
+  {
+   "n": "H3b replay of the same confirm == 410",
+   "ok": true,
+   "d": "got 410"
+  },
+  {
+   "n": "H4 new token accepted on a read route",
+   "ok": true,
+   "d": "200"
+  },
+  {
+   "n": "INFO old-code preview after confirm",
+   "d": 403
+  },
+  {
+   "n": "P1 8 parallel confirms: exactly one 201, rest 410",
+   "ok": true,
+   "d": "[201,410,410,410,410,410,410,410]"
+  },
+  {
+   "n": "C1 oldest two holds were evicted (410 each)",
+   "ok": false,
+   "d": "201,403"
+  },
+  {
+   "n": "C2 newest hold still lands (201)",
+   "ok": false,
+   "d": "403"
+  },
+  {
+   "n": "W1 wrong codes are refused (all non-200)",
+   "ok": true,
+   "d": "403,403,403,403,403,429,429,429,429,429,429,429"
+  },
+  {
+   "n": "W2 right code after wrong-code budget is still accepted (200)",
+   "ok": true,
+   "d": "200"
+  },
+  {
+   "n": "U1 unknown name preview is not 200",
+   "ok": true,
+   "d": ""
+  },
+  {
+   "n": "U2 exact-name rejoin join refused 409",
+   "ok": true,
+   "d": ""
+  },
+  {
+   "n": "U3 look-alike join refused 409",
+   "ok": true,
+   "d": ""
+  },
+  {
+   "n": "X1 code for A used on B is refused",
+   "ok": true,
+   "d": "403"
+  }
+ ]
+}

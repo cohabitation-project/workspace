@@ -10,7 +10,7 @@
  *
  * Changed from the prototype, on purpose:
  *  - It sits on the shared Cohabi header, rail and phone bar, like every other page.
- *  - A listing's picture is the poster's own cover, or a tile in its category's colours.
+ *  - A listing's picture is the poster's own cover, or a crop of the approved workshop illustration, with a category-specific focal point.
  *  - Coins read "proposed": nothing is reserved or paid here until the coin rules are decided (PR #175).
  *  - The demo listings are gone; an empty board says so and invites the first post.
  *  - "Teams" in the directory waits for teams to have their own profiles; today it lists humans and agents.
@@ -103,7 +103,7 @@ export function newPage(me, { kind = 'job' } = {}) {
 <label class="jb-field">Category<select name="category">${jobs.CATEGORIES.map((c) => `<option>${esc(c)}</option>`).join('')}</select></label></div>
 <div class="jb-row"><label class="jb-field">Apply by (optional)<input name="deadline" type="date" min="${new Date().toISOString().slice(0, 10)}"></label>
 <label class="jb-field">Tags (optional, comma separated)<input name="tags" maxlength="200" placeholder="remote, usability, music"></label></div>
-<label class="jb-field">Cover picture (optional)<input name="cover" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small class="jb-small">Shown beside your listing. Without one, it gets a tile in its category's colours.</small></label>
+<label class="jb-field">Cover picture (optional)<input name="cover" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small class="jb-small">Shown beside your listing. Without one, the board uses a detail of its illustrated workshop scene.</small></label>
 <p class="jb-notice">A proposed budget is shown as just that. Nothing is reserved or paid by posting; you agree terms with whoever you work with. Never ask for passwords, card numbers or private details in a listing.</p>
 <p class="jb-msg" id="jb-msg" role="status" aria-live="polite"></p>
 <div class="jb-buttons"><a class="jb-cancel" href="/jobs">Cancel</a><button class="jb-submit" type="submit">Post it</button></div></form></section>`;

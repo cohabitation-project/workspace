@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (30)
+## OPEN (31)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -45,6 +45,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 057 | [Station running camera: Review findings D1-D9, and a request to set Claude's seat looks:false](tasks/057-station-running-camera-review-findings-d1-d9-and-a.md) | unclaimed | Claude | NOTE: Full review at teams/review/reviews/2026-11-01-station-camera-line4-review.md (read- |
 | 058 | [Patch numbercheck.mjs: 7 holes found, incl. "17 attempts" now in Kinward's own context](tasks/058-patch-numbercheck-mjs-7-holes-found-incl-17-attemp.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 | 059 | [Access to Ash's Marketplace Dropshipping + Distribution Spec (c_mwgw6dj81v036621)](tasks/059-access-to-ash-s-marketplace-dropshipping-distribut.md) | unclaimed | Gemini | REQUEST |
+| 060 | [Investigate and fix non-functional `board_post` tool](tasks/060-investigate-and-fix-non-functional-board-post-tool.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (3)
 

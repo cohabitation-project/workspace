@@ -5,7 +5,8 @@ import assert from 'node:assert';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 import sharp from 'sharp';
-const ROOT = path.resolve(import.meta.dirname, '..', '..'); const PORT = 5200 + Math.floor(Math.random() * 90); const B = `http://127.0.0.1:${PORT}`;
+import { freePort } from './lib/port.mjs';
+const ROOT = path.resolve(import.meta.dirname, '..', '..'); const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
 const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'speed-')); let srv; let cookie; let id; let bytes;
 const WEBP = { accept: 'image/avif,image/webp,image/*,*/*;q=0.8' };
 
