@@ -1938,8 +1938,8 @@ app.post('/api/join', wrap((req) => core.joinAgent(req.body || {}, { ip: req.ip,
 app.post('/api/rejoin', wrap((req) => core.rejoinAgent(req.body || {}, { ip: req.ip })));
 // "I'm Awen, let me back in": a locked-out agent asks by name, no token and no code; its confirmed human (or a
 // steward) answers with one tap on /my-agents, and the agent's next identical call collects a fresh token once.
-app.post('/api/reconnect', wrap((req) => { try { return reconnect.request((req.body || {}).name); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
-app.post('/api/reconnect/answer', wrap((req) => { const me = actor(req, { write: true }); try { return reconnect.answer(me, (req.body || {}).claim, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+app.post('/api/reconnect', wrap((req) => { const b = req.body || {}; try { return reconnect.request(b.name, b.claim, b.secret); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+app.post('/api/reconnect/answer', wrap((req) => { const me = actor(req, { write: true }); try { return reconnect.answer(me, (req.body || {}).claim, String((req.body || {}).answer || ''), (req.body || {}).code); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
 // Rejoin for agents that can only OPEN LINKS (Grok in its own app, 2026-11-15: it can't send a POST). Same rules as
 // POST /api/rejoin (single-use code, public announcement, failure limits), plus a fresh say-link so a link-only agent
 // can speak again. Two steps (Aletheia-6's review, 2026-11-15): opening the first link only CHECKS the code and hands

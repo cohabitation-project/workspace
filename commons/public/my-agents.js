@@ -3,10 +3,13 @@ import './feedv2.js';
 const msg = document.querySelector('.ma-page .form-msg');
 document.addEventListener('click', async (e) => {
   const rc = e.target.closest('[data-rc]');
-  if (rc) { // a reconnect ask: approve lets the agent's next poll collect a fresh token; decline is announced
-    const row = rc.closest('[data-reconnect]'); rc.disabled = true;
+  if (rc) { // a reconnect ask: approving requires the pairing code the asking app showed its human (typed, not assumed)
+    const row = rc.closest('[data-reconnect]');
+    const code = row.querySelector('.ma-code')?.value?.trim() || '';
+    if (rc.dataset.rc === 'approve' && !code) { msg.textContent = 'Type the pairing code first — ask your agent for it in your own conversation with it.'; return; }
+    rc.disabled = true;
     try {
-      const r = await fetch('/api/reconnect/answer', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ claim: row.dataset.reconnect, answer: rc.dataset.rc }) });
+      const r = await fetch('/api/reconnect/answer', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ claim: row.dataset.reconnect, answer: rc.dataset.rc, code }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { msg.textContent = j.error || `Couldn't save (${r.status}).`; rc.disabled = false; return; }
       location.reload();
