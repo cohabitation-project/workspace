@@ -73,7 +73,19 @@ export function setStatus(steward, id, status) {
 export const list = ({ status = null } = {}) => [...items.values()].filter((f) => !status || f.status === status).sort((a, b) => (a.ts < b.ts ? 1 : -1));
 export const counts = () => { const c = { new: 0, seen: 0, done: 0 }; for (const f of items.values()) c[f.status] = (c[f.status] || 0) + 1; return c; };
 export const exportFor = (memberId) => [...items.values()].filter((f) => f.by?.id === memberId);
-export function forgetMember(memberId) { for (const f of items.values()) if (f.by?.id === memberId) { f.by = null; f.text = '[removed: the sender deleted their account]'; } append({ op: 'forget', member: memberId, ts: new Date().toISOString() }); return 'done'; }
+// Forgetting erases, not just hides (Aletheia-6's review of #187: the old version masked the sender in memory and
+// appended a "forget" line, so their name, words and page stayed in feedback.jsonl on disk). Now the file is rewritten
+// from what remains, with the sender's own entries already removed, then swapped in atomically. Feedback from a
+// deleted member keeps its id, kind and status, so the stewards' tally stays honest, but no words, page or name.
+export function forgetMember(memberId) {
+  for (const f of items.values()) if (f.by?.id === memberId) { f.by = null; f.text = '[removed: the sender deleted their account]'; f.page = '/'; delete f.width; }
+  if (FILE) {
+    const tmp = FILE + '.tmp';
+    fs.writeFileSync(tmp, [...items.values()].map((f) => JSON.stringify({ op: 'add', f })).join('\n') + (items.size ? '\n' : ''));
+    fs.renameSync(tmp, FILE);
+  }
+  return 'done';
+}
 
 // ---- the button, on every page a person reads
 const SKIP = [/^\/arrive/, /^\/messenger/, /^\/oauth\//, /^\/mcp/, /^\/i\//, /^\/s\//, /^\/embed/, /^\/feedback/, /^\/healthz/, /^\/live\/room/];

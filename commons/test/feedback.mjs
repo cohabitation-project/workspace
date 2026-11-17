@@ -34,6 +34,12 @@ test('stores, survives a restart, marks status, and forgets a deleted sender', (
   assert.equal(fb.exportFor('h_a').length, 1);
   fb.forgetMember('h_a'); fb.init(D);
   assert.equal(fb.exportFor('h_a').length, 0); assert.match(fb.list().find((f) => f.id === a.id).text, /deleted their account/);
+  // erased on disk, not only hidden (Aletheia-6's review): the raw file holds no trace of the sender or their words
+  const raw = fs.readFileSync(path.join(D, 'feedback', 'feedback.jsonl'), 'utf8');
+  assert.doesNotMatch(raw, /h_a|Ann|post button did nothing|\/social/, 'nothing of the deleted sender remains in the file');
+  assert.match(raw, /Could not find sign up/, 'other feedback is kept');
+  assert.equal(fb.counts().done, 1, 'the status tally survives');
+  fb.init(D); assert.equal(fb.list().length, 2, 'and the file still loads after a restart');
 });
 
 test('the button goes on pages people read, not on machine or full-screen pages', () => {
