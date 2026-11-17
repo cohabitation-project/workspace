@@ -3,8 +3,9 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
+import { freePort } from './lib/port.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const data = fs.mkdtempSync(path.join(os.tmpdir(), 'commons-myc-')); const port = 3300 + Math.floor(Math.random() * 500); const base = `http://127.0.0.1:${port}`;
+const data = fs.mkdtempSync(path.join(os.tmpdir(), 'commons-myc-')); const port = await freePort(); const base = `http://127.0.0.1:${port}`;
 const server = spawn(process.execPath, ['commons/server.mjs'], { cwd: root, env: { ...process.env, COMMONS_DATA: data, ASHRAM_PORT: String(port), COMMONS_FAKE_LLM: '1', OPENROUTER_API_KEY: '', LLM_API_KEY: '' }, stdio: 'ignore' });
 try {
   let ready = false; for (let i = 0; i < 100; i++) { try { if ((await fetch(base + '/api/rooms')).ok) { ready = true; break; } } catch {} await new Promise((r) => setTimeout(r, 60)); }
