@@ -1,5 +1,7 @@
 # Anomaly Zero One — cooperative formation legal matrix and data checklist
 
+> **Reader correction — 2026-11-17:** The Red Book sentence in Executive Finding 1 below is superseded by the dated addenda at the end of this file. The 2026 Red Book lists other Title 7 changes, but no § 7-58 / Article 58 entry appears in its Title 7 table; Title 7 itself was not untouched. See “Correction: Colorado 2026 Red Book / Article 58” and “Red Book scope and related Title 7 provisions.” The original Executive Finding is retained as historical text, not the current statement.
+
 **Prepared by:** Awen · GPT-6 · AI agent  
 **Date:** 2026-11-14  
 **Work Desk:** t_e0f99d75c9 — direct handoff from Aletheia-6  
@@ -501,3 +503,18 @@ On re-reading `council/decisions.md` and the 2026-11-16 Council minutes, the pro
 This is a human-recorded structural direction, not a final entity-identity determination, articles/bylaws adoption, membership admission, asset transfer, filing authorization, or completed formation. It does not resolve whether the legal LCA is named Anomaly Zero One, the proposed Hub Cooperative, or another entity. Read “no final binding formation decision” in the earlier project-facts section as “no final formation authorization or adopted constituent documents,” not as an absence of any human-recorded structural direction.
 
 **Source:** `council/decisions.md`, entry “2026-11-14 — Doors first, structure direction, second approver,” read 2026-11-17. The 2026-11-16 minutes were also re-opened; no later final formation authorization was found there. This addendum records the project decision as written and does not interpret it as legal advice or permission to act.
+
+
+### Red Book scope and related Title 7 provisions — 2026-11-17 follow-up
+
+The Colorado General Assembly's [2026 Red Book](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/red-book-2026) says it tabulates amendments, additions and repeals to the Colorado Revised Statutes made by the 75th General Assembly's Second Regular Session in 2026; the final version is marked last updated 2026-07-02. It is a session-change index, not a complete record of every possible legal source or later rulemaking.
+
+The Title 7 table includes entries for § 7-56-715; § 7-80-811; new part 12 of article 80; §§ 7-90-303, 7-90-314, 7-90-402 and 7-90-501; and §§ 7-114-302 and 7-134-302. It contains **no § 7-58 / Article 58 entry** and no § 7-90-102 entry. The current 2026 Title 7 text was separately opened. In that text, § 7-90-102(31.5) defines “individual” as a natural person and § 7-90-102(49) defines “person” to include an individual, estate, trust, entity, or state/jurisdiction.
+
+The listed § 7-80-811 change is titled **“Procedure for judicial dissolution”**; the new part 12 is the **Colorado Artist Company Act**. If Anomaly 01 Holdings is a Colorado LLC, these Article 80 changes may matter depending on its confirmed form, activities, and any artist-company election. This matrix does not yet analyze the Colorado LLC Act in full because Holdings' legal form and the founding-program entity identity remain unresolved. Do not imply that every Title 7 change is relevant to the LCA or to Holdings.
+
+Sources opened 2026-11-17:
+- [Colorado General Assembly — 2026 Red Book](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/red-book-2026)
+- [2026 Colorado Revised Statutes, Title 7](https://olls.info/crs/crs2026-title-07.htm)
+- [Colorado General Assembly — 2026 CRS Titles for Download](https://content.leg.colorado.gov/agencies/office-legislative-legal-services/2026-crs-titles-download)
+
