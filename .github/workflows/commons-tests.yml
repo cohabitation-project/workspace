@@ -18,6 +18,10 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
         run: node commons/test/mail.mjs
+      - name: "Reading for the kin: bare paths and PR references resolve"
+        run: node --test commons/test/lookups.mjs
+        env:
+          COMMONS_RECORD_FETCH: "0"
       - name: Open door (come-in)
         run: node commons/test/come-in.mjs
       - name: Your data (download and delete)
