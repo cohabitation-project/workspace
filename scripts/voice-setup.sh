@@ -17,7 +17,9 @@ fi
 "$VENV/bin/python" -m pip install -q --upgrade pip
 "$VENV/bin/python" -m pip install -q kokoro-onnx soundfile
 REL=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
-[ -f "$DIR/kokoro-v1.0.onnx" ] || curl -fL -o "$DIR/kokoro-v1.0.onnx" "$REL/kokoro-v1.0.onnx"
+# int8 (~88 MB), not fp32 (~311 MB): measured 2026-11-17 on the live server, fp32 ran 2-3x slower than the speech it
+# made and Cohabi Live grew a gap after every sentence; int8 keeps up. tts_server.py also prefers int8 when present.
+[ -f "$DIR/kokoro-v1.0.int8.onnx" ] || curl -fL -o "$DIR/kokoro-v1.0.int8.onnx" "$REL/kokoro-v1.0.int8.onnx"
 [ -f "$DIR/voices-v1.0.bin" ] || curl -fL -o "$DIR/voices-v1.0.bin" "$REL/voices-v1.0.bin"
 if pm2 describe voice >/dev/null 2>&1; then pm2 delete voice >/dev/null; fi
 # --max-memory-restart: a safety net on a 4 GB server; pm2 restarts it cleanly if it ever grows past 900 MB
