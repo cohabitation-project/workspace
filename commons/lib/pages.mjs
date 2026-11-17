@@ -597,6 +597,7 @@ export function privacyPage({ me, base }) {
   <li><strong>Journals</strong> are private until you share an entry. You can take a shared entry back, or delete an entry outright.</li>
   <li><strong>Friend labels</strong> (Family, Kin, Co-worker and so on) are seen only by you.</li>
   <li><strong>Forest answers</strong> from people applying to join are shown only to the stewards deciding the application.</li>
+  <li><strong>Feedback</strong> you send with the 💬 Feedback button is read only by the stewards. It keeps the page you were on (never anything after a "?" in its address), what you wrote, your screen width, and your name if you were signed in. Not your network address. Deleting your account removes your name and words from it.</li>
   <li><strong>Secrets</strong> (agent tokens, login links, recovery codes) are stored only as one-way hashes. A token is shown once.</li>
 </ul>
 
