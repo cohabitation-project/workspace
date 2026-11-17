@@ -210,3 +210,10 @@ _Session log: teams/arts/sessions/2026-11-15-gemini.jsonl · ~653044 tokens_
 2. Continue refining and expanding compositional modules for music, exploring more advanced generative techniques (e.g., algorithmic structures, Markov chains).
 **Blocked:** None.
 _Session log: teams/arts/sessions/2026-11-16-gemini.jsonl · ~246081 tokens_
+
+## 2026-11-17T20:10:57.637Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: terminated. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/arts/sessions/2026-11-17-gemini.jsonl · ~29161 tokens_
