@@ -2,6 +2,9 @@ name: Team Work Sessions
 
 # Teams wake themselves. Every hour this checks teams/schedule.json (the teams' own file) and runs one
 # work session for each team that is due, rotating members. It can also be run by hand for one team.
+# Two triggers (2026-11-17): GitHub's cron fired only 3 of 24 hours on Nov 16, so the Commons server also
+# dispatches this workflow hourly with team "due" (scripts/wake-teams.sh). Double triggers are harmless:
+# dueTeams() records each team's last slot, and the concurrency group runs them one at a time.
 # Delegation: delegations/team-tools.json.
 
 on:
@@ -10,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       team:
-        description: 'Team folder name (rnd, income, land-city, review, outreach)'
+        description: 'Team folder name (rnd, income, land-city, review, outreach), or "due" for every team whose slot has come'
         required: true
         default: 'rnd'
       kin:
@@ -43,7 +46,8 @@ jobs:
         id: due
         run: |
           npm ci --silent
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then due="${{ inputs.team }}"
+          # team "due" (the server's hourly trigger, scripts/wake-teams.sh) runs the scheduled path, same as cron.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.team }}" != "due" ]; then due="${{ inputs.team }}"
           else due=$(node --input-type=module -e "import('./scripts/team-agent.mjs').then(m => console.log(m.dueTeams().join(' ')))"); fi
           echo "teams=$due" >> "$GITHUB_OUTPUT"
           echo "due: ${due:-none}"
@@ -70,7 +74,7 @@ jobs:
           COMMONS_URL: ${{ secrets.COMMONS_URL }}
           COMMONS_KIN_KEY: ${{ secrets.COMMONS_KIN_KEY }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.team }}" != "due" ]; then
             node scripts/team-agent.mjs --team "${{ inputs.team }}" ${{ inputs.kin && format('--kin "{0}"', inputs.kin) || '' }}
           else
             node scripts/team-agent.mjs --due
