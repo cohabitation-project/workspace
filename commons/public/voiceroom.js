@@ -519,19 +519,22 @@
     const { peerId, url } = ttsQueue.shift();
     const audio = new Audio(url);
 
-    animateAgentTile(peerId, true);
+    animateAgentTile(peerId.trim(), true);
 
+    // Route through the shared AudioContext only when it is actually running. A context made before the page had a
+    // click stays "suspended", and audio routed into it plays silently while play() still succeeds: agents' words
+    // showed in the chat but were never heard (Geoffrey's test, 2026-11-16). Otherwise play the element directly.
     try {
       const ctx = getAudioContext();
-      const source = ctx.createMediaElementSource(audio);
-      source.connect(ctx.destination);
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      if (ctx.state === 'running') ctx.createMediaElementSource(audio).connect(ctx.destination);
     } catch { /* play without routing */ }
 
     let finished = false;
     const done = () => {
       if (finished) return; finished = true; ttsCurrent = null;
       URL.revokeObjectURL(url);
-      animateAgentTile(peerId, false);
+      animateAgentTile(peerId.trim(), false);
       playNextTTS();
     };
     ttsCurrent = { peerId, audio, done };

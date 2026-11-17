@@ -86,6 +86,17 @@ export function build({ auth, store, station }) {
     handleProtocols: (protocols) =>
       protocols.has('commons-voiceroom') ? 'commons-voiceroom' : false,
   });
+  // Heartbeat: a window that vanished without closing (a refresh, a phone asleep, a dropped network) never sends a
+  // close, so it stayed in the meeting as a ghost. Every 20 s each connection is pinged; one that didn't answer the
+  // last ping is ended, which runs the normal leave path.
+  const beat = setInterval(() => {
+    for (const ws of wss.clients) {
+      if (ws.isAlive === false) { try { ws.terminate(); } catch { /* gone */ } continue; }
+      ws.isAlive = false; try { ws.ping(); } catch { /* gone */ }
+    }
+  }, HEARTBEAT_MS);
+  beat.unref?.();
+  wss.on('close', () => clearInterval(beat));
 
   // ------------------------------------------------------------------
   // Upgrade handler — authenticates, enforces cap, joins the room
@@ -147,6 +158,14 @@ export function build({ auth, store, station }) {
       const badge = member.kind === 'guest' ? 'guest' : member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent';
       const peer = { id: peerId, member, name: member.name, badge, guest: member.guest || null, face: member.kind === 'guest' ? null : `/m/${encodeURIComponent(member.id)}/face` };
       if (peer.guest) livelink.call(STORE, `${livelink.commonsUrl()}/api/live/internal/guest`, { op: 'event', gid: peer.guest.gid, event: 'in' }).catch(() => {});
+      // One person, one place in the meeting (Geoffrey's test, 2026-11-16: a refresh left a second "geoffrey" that
+      // closing the window didn't clear). A newer connection by the same member replaces the older one.
+      if (!peer.guest) for (const [ows, op] of [...peers]) if (!op.guest && op.member.id === member.id) {
+        send(ows, { type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: 'You joined this meeting from another window, so this one has left.' });
+        try { ows.close(4409, 'joined from another window'); } catch { /* gone */ }
+        try { ows.terminate(); } catch { /* gone */ }
+      }
+      ws.isAlive = true; ws.on('pong', () => { ws.isAlive = true; });
       peers.set(ws, peer);
 
       // tell the new peer about the room
@@ -372,6 +391,7 @@ function whisperPrompt() {
   return `A conversation in Cohabi Live with ${[...new Set([...names, ...VOCAB])].join(', ')}.`.slice(0, 600);
 }
 const MAGIC_AUDIO_IN = 0xaa; // client -> server: audio chunk
+export const HEARTBEAT_MS = Number(process.env.VOICEROOM_HEARTBEAT_MS) || 20_000;
 const MAGIC_AUDIO_OUT = 0xbb; // server -> client: TTS audio
 
 /** Buffers of incoming audio chunks, keyed by peerId */
