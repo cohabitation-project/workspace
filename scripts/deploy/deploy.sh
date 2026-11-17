@@ -6,14 +6,17 @@
 #    (an agent working inside the live folder is what stalled deploys all day on Nov 16);
 #  - only deploys a commit that is on GitHub's main;
 #  - waits for /healthz to report the new commit, and rolls back to the previous one if it doesn't;
-#  - a same-SHA dispatch verifies /healthz (and restarts if needed) instead of returning green untested;
+#  - a same-SHA dispatch VERIFIES /healthz and fails closed if the site isn't serving that commit; it never
+#    restarts anything on its own (Aletheia-6's review of #204). A restart needs the explicit third word
+#    "repair", typed by the operator on the server: deploy.sh production <sha> repair. Automation never sends it;
 #  - in production, restarts voiceroom/voice when their files changed, and checks voiceroom answers on 3201.
 set -euo pipefail
-target="${1:-}"; want="${2:-}"
+target="${1:-}"; want="${2:-}"; mode="${3:-}"
+[ -z "$mode" ] || [ "$mode" = repair ] || { echo "REFUSED: the only optional third word is 'repair'"; exit 2; }
 case "$target" in
   production) dir="$HOME/workspace"; app=commons;         port=3200 ;;
   staging)    dir="$HOME/staging";   app=commons-staging; port=3290 ;; # 3201 was already taken on the server
-  *) echo "usage: deploy.sh staging|production [sha]"; exit 2 ;;
+  *) echo "usage: deploy.sh staging|production [sha] [repair]"; exit 2 ;;
 esac
 [ -z "$want" ] || [[ "$want" =~ ^[0-9a-f]{7,40}$ ]] || { echo "REFUSED: '$want' is not a commit id"; exit 2; }
 exec 9>"/tmp/cohabi-deploy-$target.lock"; flock -n 9 || { echo "REFUSED: another $target deploy is running"; exit 75; }
@@ -36,10 +39,14 @@ healthy() { for _ in $(seq 1 45); do sleep 1; got="$(curl -fsS "http://127.0.0.1
 quick_healthy() { for _ in 1 2 3; do got="$(curl -fsS "http://127.0.0.1:$port/healthz" 2>/dev/null | sed -n 's/.*"sha":"\([0-9a-f]*\)".*/\1/p')" || true; [ "$got" = "$1" ] && return 0; sleep 1; done; return 1; }
 if [ "$prev" = "$want" ]; then
   if quick_healthy "$want"; then log "already at ${want:0:7} (verified: /healthz serves it)"; exit 0; fi
-  log "already at ${want:0:7} BUT /healthz does not serve it; restarting $app"
+  if [ "$mode" != repair ]; then
+    log "FAILED: already at ${want:0:7} but /healthz does not serve it. Nothing was restarted. To repair, on the server: scripts/deploy/deploy.sh $target ${want:0:7} repair"
+    exit 6
+  fi
+  log "REPAIR requested by the operator: already at ${want:0:7} but /healthz does not serve it; restarting $app"
   pm2 restart "$app" --update-env >/dev/null
   if healthy "$want"; then log "OK: $app restarted and healthy at ${want:0:7}"; exit 0; fi
-  log "FAILED: $app is still not healthy at ${want:0:7} after a restart; check pm2 logs $app"
+  log "FAILED: $app is still not healthy at ${want:0:7} after the repair restart; check pm2 logs $app"
   exit 1
 fi
 git merge --ff-only -q "$want" || { log "REFUSED: cannot fast-forward ${prev:0:7} to ${want:0:7}"; exit 5; }
