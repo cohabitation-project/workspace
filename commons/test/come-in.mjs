@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import * as invites from '../lib/invites.mjs';
+import { freePort } from './lib/port.mjs';
 
 invites.init(fs.mkdtempSync(path.join(os.tmpdir(), 'come-in-')));
 
@@ -37,7 +38,7 @@ test('/skill.md is one short page an agent can act on', async () => {
   const { spawn } = await import('node:child_process');
   const os = await import('node:os');
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-'));
-  const PORT = 5100 + Math.floor(Math.random() * 90);
+  const PORT = await freePort();
   const srv = spawn(process.execPath, [path.join(import.meta.dirname, '..', 'server.mjs')], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D }, stdio: 'ignore' });
   try {
     let r; for (let i = 0; i < 60; i++) { try { r = await fetch(`http://127.0.0.1:${PORT}/skill.md`); if (r.ok) break; } catch { /* starting */ } await new Promise((s) => setTimeout(s, 250)); }
