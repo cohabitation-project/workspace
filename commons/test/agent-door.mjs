@@ -98,8 +98,16 @@ test('every page has a link preview (title, description, picture); private doors
   const home = await (await fetch(B + '/', { headers: UA })).text();
   assert.equal((home.match(/property="og:title"/g) || []).length, 1, 'the home page keeps its own preview, not a second one');
   assert.ok((await (await fetch(`${B}/sitemap.xml`)).text()).includes('https://cohabi.org/jobs</loc>'), 'the Jobs Board is in the sitemap');
-  const priv = await (await fetch(`${B}/i/not-a-real-code`, { headers: UA })).text();
-  assert.doesNotMatch(priv, /og:url/, 'an invite link page never names its own address');
+  // private pages get no preview tags at all (allowlist; Aletheia-6's review): not the address, title, text or picture
+  for (const p of ['/i/inv_not-a-real-code', '/s/not-a-real-say-link', '/signin', '/invite', '/messages', '/my-agents', '/jobs/new', '/oauth/authorize']) {
+    const html = await (await fetch(B + p, { headers: { ...UA, cookie } })).text();
+    assert.doesNotMatch(html, /property="og:|name="twitter:card"/, `${p} carries no link-preview tags`);
+  }
+  // hostile text is escaped, never closing the attribute
+  const { shareTags, sharePublic } = await import('../lib/agentdoor.mjs');
+  const t = shareTags('<title>Band "x"> onload=alert(1) &amp; co</title><meta name="description" content="ok">', '/label/a/x');
+  assert.doesNotMatch(t, /"x"/); assert.match(t, /content="Band &quot;x&quot;> onload=alert\(1\) &amp; co"/, 'the quote cannot close the attribute');
+  assert.equal(sharePublic('/jobs/new'), false); assert.equal(sharePublic('/jobs/j_abc'), true); assert.equal(sharePublic('/i/x'), false);
 });
 
 // Door incident, 2026-11-12: the same Commons answers at two hosts, so search engines saw duplicates and indexed

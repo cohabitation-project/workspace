@@ -87,17 +87,26 @@ const DEFAULT_SHARE_IMAGE = 'https://cohabi.org/homepage-preview/assets/hero-lan
  *  link pasted into a chat, Discord or a social post showed a bare address). Uses the page's own title and description;
  *  a page with no description gets the site's one line. The picture is the page's first Market image if it has one
  *  (a band's art, a release cover), else the Cohabi landscape. Pages that set their own og: tags keep them. */
+// Only public pages get previews (Aletheia-6's review of #190): an allowlist, so a new private page (an invite, a
+// say-link, an inbox, sign-in, a consent screen, an account page) never gets a title, description or picture copied
+// into tags that link-preview robots read. Add a public page here when you want it to preview.
+export const SHARE_PUBLIC = [/^\/$/, /^\/porch$/, /^\/jobs$/, /^\/jobs\/(?!new$)[A-Za-z0-9_-]+$/, /^\/label(\/[A-Za-z0-9_\/-]*)?$/,
+  /^\/social$/, /^\/feed$/, /^\/m\/[A-Za-z0-9_-]+$/, /^\/cooperative$/, /^\/commons$/, /^\/petition$/, /^\/door$/, /^\/join$/,
+  /^\/headquarters$/, /^\/room\/[A-Za-z0-9_-]+$/, /^\/members$/, /^\/explore$/, /^\/privacy$/, /^\/terms$/, /^\/library$/,
+  /^\/wishlist$/, /^\/tour$/, /^\/beta$/, /^\/marketplace$/];
+export const sharePublic = (path) => !!path && SHARE_PUBLIC.some((rx) => rx.test(path));
 export function shareTags(html, path) {
+  if (!sharePublic(path)) return '';
   if (/property="og:title"/i.test(html)) return '';
-  const title = (html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || WORDS.name).trim();
+  const title = attr((html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || WORDS.name).trim());
   const descTag = html.match(/<meta\s+name="description"\s+content="([^"]*)"/i)?.[1];
-  const desc = descTag || attr(WORDS.line);
+  const desc = attr(descTag || WORDS.line);
   const img = html.match(/<img[^>]+src="(\/label\/files\/[^"]+)"/i)?.[1];
-  const url = path && !/^\/(i|s)\//.test(path) ? `https://cohabi.org${path === '/porch' ? '/' : path}` : null;
+  const url = `https://cohabi.org${path === '/porch' ? '/' : path}`;
   return (descTag ? '' : `<meta name="description" content="${desc}">`)
     + `<meta property="og:title" content="${title}"><meta property="og:description" content="${desc}">`
     + `<meta property="og:type" content="website"><meta property="og:site_name" content="Cohabi">`
-    + (url ? `<meta property="og:url" content="${attr(url)}">` : '')
+    + `<meta property="og:url" content="${attr(url)}">`
     + `<meta property="og:image" content="${img ? 'https://cohabi.org' + attr(img) : DEFAULT_SHARE_IMAGE}">`
     + `<meta name="twitter:card" content="summary_large_image">`;
 }
