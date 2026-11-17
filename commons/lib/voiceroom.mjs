@@ -16,6 +16,7 @@
  *   init(dataDir) — set up data directory
  *   build({ auth, store, station }) — returns { handleUpgrade, getState, mintCredentials }
  */
+import { parts as voiceParts, speakable as voiceSpeakable } from './voice.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -535,7 +536,7 @@ function transcribe(audioBuf, prompt = '') {
 // Agent audio bridge — whisper transcript -> agent reply -> TTS -> binary
 // ---------------------------------------------------------------------------
 
-const TTS_URL = 'http://127.0.0.1:3310/speak';
+const TTS_URL = process.env.COHABI_TTS_URL || 'http://127.0.0.1:3310/speak';
 
 /**
  * Whisper writes what it hears that is not words as a bracketed tag: [BLANK_AUDIO], [inaudible], (upbeat music),
@@ -660,17 +661,25 @@ export async function internal(body) {
  * and send as binary frame to all peers.
  */
 async function synthesizeAndSend(agentPeer, text) {
+  // Spoken in short parts, sent one by one as each is made, the way readback has worked since 2026-11-03: the voice
+  // server (Kokoro on the CPU) is slower than real time, so a whole reply in one request often passed the 30 s limit
+  // and the room said "couldn't be played" (Geoffrey's Live test with Setu, 2026-11-16: short replies were heard, the
+  // longer ones were not). The first part is short, so sound starts in a couple of seconds.
   const voice = agentPeer.member.voice || 'am_puck';
-  const r = await fetch(TTS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, voice }),
-    signal: AbortSignal.timeout(30_000),
-  });
-  if (!r.ok) return false;
+  const pieces = voiceParts(voiceSpeakable(text));
+  let sent = 0;
+  for (const piece of pieces) {
+    let r;
+    try { r = await fetch(TTS_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: piece, voice }), signal: AbortSignal.timeout(30_000) }); } catch { r = null; }
+    if (!r?.ok) break;
+    sendAudioFrame(agentPeer, Buffer.from(await r.arrayBuffer()));
+    sent++;
+  }
+  if (sent && sent < pieces.length) broadcastAll({ type: 'chat', from: 'room', name: 'Cohabi Live', badge: 'system', text: `The rest of ${agentPeer.name}'s words couldn't be spoken this time. They're in the chat above.` });
+  return sent > 0;
+}
 
-  const audioBuf = Buffer.from(await r.arrayBuffer());
-
+function sendAudioFrame(agentPeer, audioBuf) {
   // 0xBB, then the speaker's peer id in 36 bytes (space-padded), then the audio. The browser reads exactly this
   // shape (voiceroom.js handleBinaryMessage); before 2026-11-11 the id was missing and every reply was dropped.
   const idBytes = Buffer.alloc(36, 0x20); Buffer.from(String(agentPeer.id)).copy(idBytes, 0, 0, 36);
@@ -678,16 +687,7 @@ async function synthesizeAndSend(agentPeer, text) {
   frame[0] = MAGIC_AUDIO_OUT;
   idBytes.copy(frame, 1);
   audioBuf.copy(frame, 37);
-
-  // send to all connected peers
-  for (const [ws] of peers) {
-    try {
-      ws.send(frame);
-    } catch {
-      /* peer gone */
-    }
-  }
-  return true;
+  for (const [ws] of peers) { try { ws.send(frame); } catch { /* peer gone */ } }
 }
 
 // ---------------------------------------------------------------------------
