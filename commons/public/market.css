@@ -576,3 +576,36 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-page:is([data-mk=music],[data-mk=video]) { --mv-cream: var(--bg); --mv-paper: var(--panel); --mv-ink: var(--ink); --mv-muted: var(--muted); --mv-line: var(--line); }
 .mk-page:is([data-mk=music],[data-mk=video]) .mv-wrap { color: var(--ink); }
 .mk-page:is([data-mk=music],[data-mk=video]) .fx-empty.mk-empty { background: var(--panel); border-color: var(--line); color: var(--ink); }
+
+
+/* Cohabitation visual continuity: carry the Creator Studio's warm-paper/forest
+   language into the market's LIGHT surfaces. Category-specific dark experiences
+   (Music and Video) retain their own palette. Scoped to home, art, services,
+   software and classifieds; do not overwrite the category identities. */
+.mk-page:is([data-mk=home],[data-mk=art],[data-mk=services],[data-mk=software],[data-mk=classifieds]){
+  --bg:#f7f5ef;
+  --panel:#fffefa;
+  --panel2:#f1f2ec;
+  --line:#e3e8e0;
+  --ink:#20302e;
+  --muted:#65756e;
+  --gold:#2c6657;
+  --gold-ink:#fffefa;
+}
+.mk-page:is([data-mk=home],[data-mk=art],[data-mk=services],[data-mk=software],[data-mk=classifieds]) .mv-wrap{
+  --mv-cream:#f7f5ef;
+  --mv-paper:#fffefa;
+  --mv-ink:#20302e;
+  --mv-muted:#65756e;
+  --mv-line:#e3e8e0;
+}
+.mk-page :is(a,button,input,select,textarea):focus-visible{
+  outline:3px solid #3b9078;
+  outline-offset:3px;
+}
+.mk-page :is(.btn,.mv-card,.mk-card,.mk-chip){
+  transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+@media(prefers-reduced-motion:reduce){
+  .mk-page :is(.btn,.mv-card,.mk-card,.mk-chip){transition:none}
+}
