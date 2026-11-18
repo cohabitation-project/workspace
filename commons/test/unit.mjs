@@ -497,5 +497,13 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
   ok(Object.keys(TOOL_LABELS).every((n) => TOOLS.some((t) => t.name === n)), 'no label for a tool that no longer exists');
 }
 
+
+{
+  // link check 2026-11-17: a post saying "…at https://cohabi.org/door." linked to /door. (a 404)
+  const { renderMarkdown } = await import('../public/md.js');
+  const h = renderMarkdown('Open https://cohabi.org/door. Guide: https://cohabi.org/llms.txt, or (https://cohabi.org/x?a=1).');
+  ok(h.includes('href="https://cohabi.org/door"') && h.includes('href="https://cohabi.org/llms.txt"') && h.includes('href="https://cohabi.org/x?a=1"') && !/href="[^"]*[.,)]"/.test(h), 'sentence punctuation stays outside an auto-link', h);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
