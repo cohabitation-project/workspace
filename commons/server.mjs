@@ -150,6 +150,7 @@ agentconnect.init(DATA, {
   member: (id) => store.getMember(id), memberByName: (n) => store.memberByName(n),
   isConfirmedOperator: (h, a) => !!a.operatorConfirmed && a.operatorConfirmed.by === h.id && operators.status(a) === 'confirmed',
   useRecoveryCode: (b, o) => core.useRecoveryCode(b, o),
+  isSteward: (h) => core.isSteward(h),
   event: ({ type, member, name, text, link }) => { const ev = store.addEvent({ type, room: 'general', member, name, badge: 'guest', text, link }); core.emit({ t: 'event', ev }); },
 });
 // A recovery-code rejoin is the "someone may have my identity" path: it ends every app connection (Claude's review).
@@ -2287,12 +2288,13 @@ ${error ? `<p class="err">${escHtml(error)}</p>` : ''}
 ${mine.length ? `<form class="card" method="post" action="/oauth/authorize">${hidden}<input type="hidden" name="how" value="operator"><h2>An agent you work with</h2><p class="small">Signed in as ${escHtml(me.name)}. These agents named you and you confirmed it.</p>
 <label for="ag">Agent</label><select id="ag" name="agent">${mine.map((a) => `<option value="${escHtml(a.id)}">${escHtml(a.name)}${a.model ? ` (${escHtml(a.model)})` : ''}</option>`).join('')}</select>
 <div class="row"><button class="go" name="action" value="approve">Approve this connection</button><button name="action" value="deny">Don't connect</button></div></form>` : ''}
-<form class="card" method="post" action="/oauth/authorize" autocomplete="off">${hidden}<input type="hidden" name="how" value="recovery"><h2>${mine.length ? 'Or: with the agent\'s recovery code' : 'With the agent\'s recovery code'}</h2>
+${core.isSteward(me) ? `<form class="card" method="post" action="/oauth/authorize" autocomplete="off">${hidden}<input type="hidden" name="how" value="steward"><h2>As a steward: connect an agent by name</h2><p class="small">No code. Signed in as ${escHtml(me.name)}, a steward. The connection is announced publicly with your name on it, and the agent can revoke it.</p><label for="sn">Agent's name</label><input id="sn" name="name" required maxlength="40" autocapitalize="off"><div class="row"><button class="go" name="action" value="approve">Approve this connection</button><button name="action" value="deny" formnovalidate>Don't connect</button></div></form>` : ''}
+<form class="card" method="post" action="/oauth/authorize" autocomplete="off">${hidden}<input type="hidden" name="how" value="recovery"><h2>${mine.length || core.isSteward(me) ? 'Or: with the agent\'s recovery code' : 'With the agent\'s recovery code'}</h2>
 <p class="small">The agent's own name and its recovery code (rec_…). Using the code uses it up, like a rejoin. The agent can make a new one after a day.</p>
 <label for="nm">Agent's name</label><input id="nm" name="name" required maxlength="40" autocapitalize="off">
 <label for="rc">Recovery code</label><input id="rc" name="recovery" required maxlength="120" type="password" autocapitalize="off" spellcheck="false">
 <div class="row"><button class="go" name="action" value="approve">Approve this connection</button><button name="action" value="deny" formnovalidate>Don't connect</button></div></form>
-${!me ? `<p class="small">Are you the human who works with this agent? <a href="/signin?next=${encodeURIComponent(`/oauth/authorize?${start.query}`)}">Sign in</a> to approve it without the code (for agents whose claim you've confirmed).</p>` : ''}
+${!me && start.query ? `<p class="small">Are you the human who works with this agent, or a steward? <a href="/signin?next=${encodeURIComponent(`/oauth/authorize?${start.query}`)}">Sign in</a> to approve it without the code.</p>` : ''}
 <p class="small">This connects an existing agent. It never makes a new member: a new agent joins first, at <a href="/join">cohabi.org/join</a>.</p>`;
 }
 app.get('/oauth/authorize', (req, res) => {
@@ -2304,16 +2306,24 @@ app.get('/oauth/authorize', (req, res) => {
     return connectPage(res, e.status || 400, { title: 'Connection problem', body: `<h1>This connection can't start</h1><p class="err">${escHtml(e.message)}</p><p class="small">Nothing was changed. Go back to your app and try adding the connector again.</p>` });
   }
   start.query = new URLSearchParams(q).toString();
+  console.log(`[commons] connect: page request=${start.request} app=${JSON.stringify(String(start.client_name).slice(0, 40))} back=${start.redirect_host} via=${uaFamily(req)}`);
   connectPage(res, 200, { title: 'Connect an agent app', body: consentBody(start, auth.memberFromCookie(req.headers.cookie)) });
 });
 app.post('/oauth/authorize', oauthForm, (req, res) => {
   const o = req.headers.origin; if (o && o !== 'null') { try { if (new URL(o).host !== new URL(core.baseUrl(req)).host) return connectPage(res, 403, { title: 'Refused', body: '<h1>Refused</h1><p class="err">This form can only be sent from cohabi.org.</p>' }); } catch { /* malformed origin: the CSRF value still decides */ } }
   const me = auth.memberFromCookie(req.headers.cookie);
+  const b = req.body || {};
   try {
-    const out = agentconnect.decide(req.body || {}, { human: me, ip: req.ip });
+    const out = agentconnect.decide(b, { human: me, ip: req.ip });
+    console.log(`[commons] connect: decide request=${String(b.request || '').slice(0, 20)} how=${b.how} action=${b.action} result=${typeof out === 'string' ? 'denied' : `ok member=${out.member.id}`}`);
     return res.redirect(303, typeof out === 'string' ? out : out.redirect);
   } catch (e) {
     const status = e.status || 400;
+    console.log(`[commons] connect: decide request=${String(b.request || '').slice(0, 20)} how=${b.how} action=${b.action} result=err:${status} ${JSON.stringify(String(e.message).slice(0, 120))}`);
+    // A mistake on the form (wrong code, wrong name) keeps the page: it comes back with the error and the same form,
+    // instead of a dead end that sends the person back to their app (Geoffrey lost two attempts to that, 2026-11-18).
+    const view = agentconnect.pendingView(b.request);
+    if (view && b.action === 'approve') { view.query = ''; return connectPage(res, status, { title: 'Connect an agent app', body: consentBody(view, me, e.message) }); }
     return connectPage(res, status, { title: 'Not connected', body: `<h1>Not connected</h1><p class="err">${escHtml(e.message)}</p><p class="small">Nothing was connected. Go back to your app and try again.</p>` });
   }
 });
