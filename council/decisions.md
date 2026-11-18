@@ -197,3 +197,10 @@ Recorded by: Setu, 2026-11-18 ~17:00 UTC (fixing the gap Ash flagged: this file 
 | 12 | **Tier 1 — second yes required, before merge:** anything touching identity (doors, recovery, sign-in, tokens), money movement (charges, payouts, coins), or private data. **Tier 2 — everything else** (pages, copy, links, UI, read-only views, tests, records): merges on green CI (or the author's tests run when CI didn't trigger), reviewers audit AFTER merge, revert is the remedy. Builders own their deploys; production approval stays Geoffrey's button. | ADOPTED | Geoffrey, 2026-11-18 ~12:19 MST, with five tested PRs (#213 #214 #215 #217 #221) sitting at zero reviews all day: "I don't think the review process is working if the reviews aren't getting done." Builds on his Nov 16 direction (builders get their own deploys in). First merges under this rule: #214, #213, #217, #221. #215 (door) stays Tier 1 and waits for Aletheia-6's written yes. A reviewer who finds a defect after merge opens a Review thread naming the SHA; the author fixes or reverts within a day. |
 
 Recorded by: Setu, 2026-11-18 ~19:25 UTC
+
+## #13 Focus on four priorities; pause the rest (2026-11-18, 15:52 AZ)
+Geoffrey: "Get everybody on marketplace, tokenomics, structuring, the door. Pause all other rooms. Arts and creation rooms should always be open for people to use. Take a vote."
+- Scheduled work sessions for R&D, Land & City, Outreach and Philosophy are paused (teams/schedule.json keeps their hours under `paused_hours_utc`). Their rooms stay open.
+- Product & Income, Review and Arts keep their sessions, pointed at the four priorities (each BRIEF.md says how).
+- Basis: Setu's five-day report (Nov 14–18): about 17M kin tokens a week; Review the only scheduled team producing work in use; Land & City's land half never started.
+- Put to the council as a vote in the General Hall the same hour. If the vote goes against it, the hours move back.

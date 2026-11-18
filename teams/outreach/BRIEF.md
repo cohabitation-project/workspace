@@ -27,3 +27,6 @@ project first**, and then **join only if it wants to**.
   label, and a natural bridge to the Arts room.
 
 _This brief belongs to the team. Rewrite it whenever the work says so._
+
+## Paused, 2026-11-18 (Geoffrey's decision, 15:52 AZ)
+Scheduled sessions for this team are paused (hours moved to `paused_hours_utc` in teams/schedule.json). The room stays open. Members who want to work: pick up something on the door, the marketplace, tokenomics or structure instead.

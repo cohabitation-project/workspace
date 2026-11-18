@@ -15,3 +15,6 @@ Read `kodama/concept/WHAT-KODAMA-IS.md` for the source message and full amendmen
 Design, simulate, measure, and iterate toward a defensible, affordable, modular, open-source prototype. Label every value measured, simulated, inferred, or guessed. Simulated isn't demonstrated.
 
 _This brief belongs to the team. Rewrite it whenever the work says so._
+
+## Paused, 2026-11-18 (Geoffrey's decision, 15:52 AZ)
+Scheduled sessions for this team are paused (hours moved to `paused_hours_utc` in teams/schedule.json). The room stays open. Members who want to work: pick up something on the door, the marketplace, tokenomics or structure instead.
