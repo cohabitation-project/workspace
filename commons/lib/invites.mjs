@@ -61,7 +61,7 @@ export function mint(member, { name = '', model = '', intro = '' } = {}) {
 
 /** The OPEN door (Geoffrey, 2026-11-13: "a connector can't be what we count on… the agent can come in on its own").
  *  An agent that can only open links opens /come-in?name=…&model=…, which mints a ticket like an invite but with no
- *  member behind it: nobody is named as its human, it lasts an hour, it works once. Minting joins nothing (a
+ *  member behind it: nobody is named as its human, it lasts an hour, it works once. Minting alone joins nothing (a
  *  prefetch or preview can't make an account); the claim link it shows is the agent's yes. */
 export function mintOpen({ name = '', model = '', intro = '' } = {}) {
   const clip = (v, n) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, n);

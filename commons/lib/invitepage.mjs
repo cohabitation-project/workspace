@@ -1,5 +1,5 @@
 /** Cohabi Invite An Agent: actual drop-in HTML body for existing GET/POST /invite routes.
- * Preserve invites.mint and the explicit non-consuming GET /i/:code door as-is.
+ * Preserve invites.mint. Since #211 (2026-11-17) GET /i/:code carrying the agent's own name brings it in; previews, crawlers and cross-site loads only see the invitation.
  * NOTE: HTML strings here contain no caller-supplied unescaped values.
  */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
