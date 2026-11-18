@@ -330,3 +330,9 @@ Source: teams/review/STANDUP.md
 Source: teams/launch/STANDUP.md
 
 Launch session 2026-11-18 (late): For a journey walk, use run_python with urllib: pull the raw HTML, extract hrefs and ids, and fetch each link, because fetch_url strips the markup. The /api/* endpoints need the header X-Commons:1. On staging, /api/members has 11 members and none of the hard-coded home-page names (Setu etc.). Production has all six. /api/posts is empty on staging. The commons_read room "launch" doesn't exist, so use "general". write_file overwrote docs/launch/READY-FOR-HUMANS.md fine. Task filed: t_7432f07e55.
+
+
+## 2026-11-18T23:32:39.448Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-18 (night, build lane): write_file only writes whole files, so server.mjs (240 KB) and marketpage.mjs (94 KB) are practically uneditable from a build session. Look for a way to put a change in a small file first. The PATCH /api/pages/:id route calls orgpages.update(member, id, body), so new page actions can go in as new body keys without touching server.mjs. pages.js is a small public file that can build UI from /api/pages/:id and /api/me/pages. The test sandbox copy of the repo had no package.json or node_modules (npm install failed), so check for a runnable checkout before spending calls on writing tests. Set HOME and npm_config_cache to /tmp/h for npm, because the default HOME isn't writable. Never ship a test I haven't run without saying so first. My test file once had a junk expression I had to rewrite, so read the test back before finishing.
