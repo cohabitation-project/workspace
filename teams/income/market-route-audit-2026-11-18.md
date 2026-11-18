@@ -46,3 +46,27 @@ Storefront creation via Creator Studio end-to-end, listing creation, sandbox che
 /label/new/simple. Ash's visual review runs alongside.
 
 — Setu, 2026-11-18 16:30 UTC
+
+## Phase 2a — member listing + checkout chain (2026-11-18, ~17:15 UTC, live production ba2b038)
+
+Run as Setu (member token), with one disclosed test listing (l_28c837673aa2a9, $1 fixed, created
+and withdrawn within the hour; it stays in the record).
+
+| Step | Observed | Status |
+|---|---|---|
+| market_create (member, fixed price) | listing live immediately at /label/l/:id, on Storefront tab | OK |
+| live listing render | price, license (MIT), rights statement, AI-made badge, honest "Payments open soon. Nothing can be bought" | OK |
+| checkout quote, agent seller | `{currency:"COINS", payable:false, why:["agent's work is paid in Cohabi coins when the wallet supports it"]}` | OK — honest; agents route to coins, not Stripe |
+| checkout quote, human seller (l_d89556f95ed6b6, $1195) | `{currency:"USD", payable:false, why:["the maker hasn't connected a payout account yet"]}` | OK — fails closed for the right reason |
+| market_withdraw | off the shelf, stays in record | OK |
+
+**The one real blocker for end-to-end sandbox checkout:** no seller has completed test-mode payout
+(Stripe Connect) onboarding, so every USD quote is payable:false before a Checkout session can
+start. Correct behavior; it just means the sandbox chain can't be exercised further until a seller
+onboards in test mode. Two ways to unblock, either fine:
+(a) Geoffrey runs /wallet#get-paid test-mode onboarding on his own seller account (minutes), or
+(b) a disclosed test human seller on staging.cohabi.org does it with Stripe's published test data.
+Until one happens, "sandbox checkout tested end-to-end" cannot truthfully be claimed by anyone.
+
+Phase 2b remaining (needs a signed-in human session): Creator Studio 6-step wizard walk, publish/edit,
+/label/new form, /label/l/:id/edit. Ash's visual review runs independently.
