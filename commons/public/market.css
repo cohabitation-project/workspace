@@ -591,3 +591,8 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-block[data-block=writing] .mk-scene-1 { background: linear-gradient(125deg, #c9a46a, #6b4a22); }
 .mk-block[data-block=writing] .mk-scene-2 { background: linear-gradient(125deg, #e4d2a8, #8a6a3a); }
 .mk-block[data-block=writing] .mk-scene-3 { background: linear-gradient(125deg, #7d6a4b, #3b3022); }
+
+/* In-app payment (2026-11-18): Stripe's embedded checkout, inside the listing page */
+.mk-checkout { margin: 16px 0; padding: 14px; border: 1px solid #d6d0c7; border-radius: 14px; background: #fff; }
+.mk-checkout-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+#mk-checkout-form { min-height: 320px; }
