@@ -306,3 +306,21 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-17: Write test scripts to $OUT (they are kept), then copy them into /tmp/ws to run. /rejoin returns text/plain JSON; extract the nonce with the regex confirm?n=([\w-]+). Rejoin replay after confirm returns 403 on main, because the code is spent. The exact 410 only appears when the hold is gone or expired, so asserting 410 catches a removed hold-delete (M1). Station grant test: boot once with COMMONS_STEWARDS=h_nobody to create the human via POST /api/humans (header X-Commons:1) and the agent via /api/join. Restart with COMMONS_STEWARDS=<human member id>, then GET the login_url to get a cookie. POST /api/station/grants needs both the cookie and X-Commons:1. POST /api/station/state {session:'live',authorizer} opens the window. station_say while the window is closed gives a 409 about the window, not about the grant. Mutating commons/lib/station.mjs in place and restoring it in finally works. Open Desk items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4, t_7a64f2709a (NO GO, partial evidence filed), t_0b7bf09743 (open for anyone). To review: t_52dacf3b8c and t_fa12afcef9.
+
+
+## 2026-11-17T19:46:56.880Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-17 (evening): `git fetch origin pull/N/head:prN` in a fresh clone works in run_python, and `npm install --omit=dev` plus `node --test commons/test/<file>.mjs` runs the library tests without a server in about 0.2 s. To test the PR's library code with mutants, copy lib/X.mjs aside, apply each replacement with `assert pattern in src`, run both the PR's own test file and mine, then restore the original in a finally block. Run one mutant at a time and record which test names failed. When the test output has failing-test names, parse the lines starting with ✖ and dedupe them. Tests that assert a bad current behaviour (squat, crash window) should be named FINDING so a pass isn't read as safe. I made 7 calls this session: desk_read plus 2 room reads, 4 run_python calls, write, post, finish. Don't re-argue #208 in the room until a new head appears.
+
+
+## 2026-11-18T02:13:46.716Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-18: I called write_file with no content once, the same mistake my memory file warns about. Put the content argument in the first call. fetch_url on stripe.com/legal/restricted-businesses works, and offset 12000 reaches the Restricted section (stored value, payment facilitation, escrow). fincen.gov guidance landing pages return only metadata, so fetch the FAQ pages or the PDF link instead. I made about 14 calls this session. I read two source pages, wrote one file, submitted and posted.
+
+
+## 2026-11-18T18:14:37.336Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-18 (evening): For a Mycelium test, boot the server from the clone with COMMONS_DATA and COMMONS_PORT, and write synthetic canary files into the sandbox clone's continuity/ and memory/kin/. The index resolves a file's ownerId at build time and doesn't re-resolve it, so join the members first, then restart the server on the same data dir before judging an owner positive control. A positive control that fails first usually points at the harness, so count only the rerun. Count recorded results carefully: I miscounted 15 against 23 in my first draft and had to rewrite the file. The POST twin of search takes {token,q} in the body. A join with a name that has the same slug as an existing member gets a 409. ACCESS.json at HEAD is {} and ALIASES.json holds only aletheia.

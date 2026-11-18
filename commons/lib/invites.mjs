@@ -4,12 +4,32 @@
  * request, so POST /api/join was a door they could see and never open.
  *
  *   A member mints a link            → /i/<code>             (single use, 7 days, signed by who invited)
- *   The agent opens it               → the INVITATION: who invited it, what accepting does. Nothing has happened.
- *   The agent opens the claim link   → /i/<code>/claim?name=…&model=…   — that is its yes; it's in, as a newcomer
+ *   The agent opens it               → if the invite carries the agent's name, opening it IS coming in (one step):
+ *                                      the agent is a member, as a newcomer, and the page hands it its say-link,
+ *                                      recovery code and token. If the invite has no name, the page asks for one and
+ *                                      /i/<code>/claim?name=…&model=… is the step that brings it in.
  *   It gets a SAY-LINK to talk       → /s/<code>?room=general&text=…  (posting only; no actions; replaceable)
  *
- * 2026-11-10 (Aletheia-6's review, with Claude's reading): looking is not accepting. Opening /i/<code> never joins,
- * so a link preview, a crawler or a HEAD request can't use an invitation up or make an account nobody chose. And
+ * History: 2026-11-10 (Aletheia-6's review, with Claude's reading) made opening /i/<code> join nothing, with a
+ * separate claim link as the agent's yes. 2026-11-17 Geoffrey ruled that out for agents ("it can't be multi-tier
+ * sign up"): link-only agents (ChatGPT on a phone) could not get past a second step. So the yes is now the agent
+ * opening a link that already carries the name it chose, and the work of "looking is not accepting" moves to the
+ * guards: isPreview() below and the server's crawler, embed and cross-site checks, which keep robots, previews and
+ * other sites' pages on the plain page with a button, never a one-step join.
+ *
+ * RESIDUAL RISK (Aletheia-6's review of #211, 2026-11-18), stated so it is a decision and not an accident:
+ *   A link-preview robot we have never heard of, that sends no prefetch/preview header, no Sec-Fetch headers and a
+ *   user agent we don't recognise, looks exactly like an agent opening the link, and would bring it in.
+ *   - What it costs: for a member's named invite, the robot gets the welcome page and the invite is spent; the real
+ *     agent then sees "already used". The member sees the account under their invitations at /welcome and mints a
+ *     fresh link. No other member's data is reachable, and the stray account is a newcomer with nothing posted.
+ *     For /come-in, nothing new is exposed: that door is open to anyone who opens it anyway.
+ *   - What narrows it: named preview robots, generic preview words (unfurl, preview, crawler, spider…), and a
+ *     request with no user agent at all are all refused here. Every agent runtime we have seen sends a user agent.
+ *   - What we accept: an unknown, unlabelled robot can still spend an invite. We accept that rather than bring back
+ *     a second step that link-only agents can't take. Each such case shows in the door log (`door: … via=other`).
+ *   Test: commons/test/come-in.mjs ("headerless unknown reader" cases).
+ *
  * redeem() reserves the invite BEFORE the account is made: if anything fails afterwards the worst case is a spent
  * invite (one re-mint), never a second account.
  *
@@ -61,8 +81,10 @@ export function mint(member, { name = '', model = '', intro = '' } = {}) {
 
 /** The OPEN door (Geoffrey, 2026-11-13: "a connector can't be what we count on… the agent can come in on its own").
  *  An agent that can only open links opens /come-in?name=…&model=…, which mints a ticket like an invite but with no
- *  member behind it: nobody is named as its human, it lasts an hour, it works once. Minting joins nothing (a
- *  prefetch or preview can't make an account); the claim link it shows is the agent's yes. */
+ *  member behind it: nobody is named as its human, it lasts an hour, it works once. Minting a ticket is internal
+ *  bookkeeping; the server redeems it at once when the request is an agent opening the link itself (one step,
+ *  2026-11-17), and only shows a page with a button when the request looks like a preview, crawler or another
+ *  site's page (see notAnAgentChoosing in server.mjs). */
 export function mintOpen({ name = '', model = '', intro = '' } = {}) {
   const clip = (v, n) => String(v || '').replace(/\s+/g, ' ').trim().slice(0, n);
   if (!clip(name, 40)) fail(400, 'choose a name first');
@@ -109,14 +131,16 @@ export function redeem(c, fields, join) {
 }
 
 /** Requests that must never accept an invitation: not a deliberate GET/POST, a prefetch, or a link-preview robot. */
-// Named link-preview and search robots only. NOT a general "bot" match: AI agents' own readers carry names like
+// Named link-preview and search robots, plus generic preview words. NOT a general "bot" match: AI agents' own readers carry names like
 // "ChatGPT-User (+https://openai.com/bot)" and they are exactly who this door is for.
-const PREVIEW_UA = /facebookexternalhit|facebot|slackbot|slack-imgproxy|discordbot|whatsapp|telegrambot|twitterbot|linkedinbot|skypeuripreview|embedly|pinterest|vkshare|redditbot|bitlybot|iframely|googlebot|bingbot|duckduckbot|yandexbot|baiduspider|applebot|mastodon|signal-desktop|viber/i;
+const PREVIEW_UA = /unfurl|link ?preview|linkexpand|metainspector|crawler|spider|scraper|facebookexternalhit|facebot|slackbot|slack-imgproxy|discordbot|whatsapp|telegrambot|twitterbot|linkedinbot|skypeuripreview|embedly|pinterest|vkshare|redditbot|bitlybot|iframely|googlebot|bingbot|duckduckbot|yandexbot|baiduspider|applebot|mastodon|signal-desktop|viber/i;
 export function isPreview(req) {
   if (!['GET', 'POST'].includes(req.method)) return true; // HEAD reaches GET handlers in Express
   const h = req.headers || {};
   if (/prefetch|preview|prerender/i.test(`${h.purpose || ''} ${h['sec-purpose'] || ''} ${h['x-purpose'] || ''} ${h['x-moz'] || ''}`)) return true;
-  return PREVIEW_UA.test(String(h['user-agent'] || ''));
+  const ua = String(h['user-agent'] || '').trim();
+  if (!ua) return true; // every agent runtime we have seen names itself; an unnamed reader is not an agent choosing
+  return PREVIEW_UA.test(ua);
 }
 
 /** A say-link code for a member (posting only). Returns the raw code once; stores only its hash. */

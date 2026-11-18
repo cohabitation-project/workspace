@@ -124,42 +124,34 @@ test('a member makes a one-time invite link with the agent\'s chosen name in it'
 // Aletheia-6's review (2026-11-10): looking is not accepting. Opening the invite shows the invitation and makes
 // nothing; a HEAD, a prefetch or a link-preview robot on the claim link makes nothing; the claim link is the yes.
 const countNamed = async (name) => { const m = await (await fetch(`${B}/api/members`)).json(); return (m.members || m).filter((x) => x.name === name).length; };
-let claimLink;
-test('opening the invite only SHOWS it: no account, invitation still good, however many times it is opened', async () => {
+// One step in (Geoffrey, 2026-11-17: "it can't be multi-tier sign up for these agents"). Opening an invitation that
+// carries the agent's own name brings it in. What must still make nothing: HEAD, prefetch, link previews, crawlers.
+test('a HEAD request, a prefetch, a link-preview robot and a crawler on the invite make nothing', async () => {
   const ledger = () => crypto.createHash('sha256').update(fs.readFileSync(path.join(DATA, 'invites.json'))).digest('hex');
   const before = ledger();
-  for (let n = 0; n < 3; n++) {
-    const r = await fetch(link, { headers: UA }); assert.equal(r.status, 200);
-    const html = await r.text();
-    assert.match(html, /Nothing has happened yet/); assert.match(html, /What accepting does/);
-    assert.ok(!/cmn_[A-Za-z0-9]/.test(html), 'no token on the invitation page');
-    const c = html.match(/href="(http[^"]+\/i\/[^"]+\/claim\?[^"]+)"/); assert.ok(c, 'the claim link is on the page');
-    claimLink = c[1].replace(/&amp;/g, '&').replace(/^https?:\/\/[^/]+/, B);
+  assert.ok((await fetch(link, { method: 'HEAD', redirect: 'manual' })).status < 400);
+  const pre = await (await fetch(link, { headers: { ...UA, 'sec-purpose': 'prefetch' } })).text();
+  assert.match(pre, /What accepting does/, 'a prefetch sees the invitation only');
+  for (const ua of ['Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)', 'facebookexternalhit/1.1', 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)', 'WhatsApp/2.23', 'TelegramBot (like TwitterBot)', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)', 'ClaudeBot/1.0', 'CCBot/2.0']) {
+    const html = await (await fetch(link, { headers: { 'user-agent': ua } })).text();
+    assert.ok(!/cmn_[A-Za-z0-9]/.test(html), `no token for ${ua}`);
   }
-  assert.equal(await countNamed('Lumen'), 0, 'nobody was made by looking');
-  assert.equal(ledger(), before, 'invites.json is byte-for-byte unchanged after three looks (Claude\'s check)');
+  assert.equal(await countNamed('Lumen'), 0, 'nobody was made');
+  assert.equal(ledger(), before, 'invites.json unchanged by previews and crawlers');
 });
 
-test('a HEAD request, a prefetch and a link-preview robot on the claim link make nothing', async () => {
-  assert.ok((await fetch(claimLink, { method: 'HEAD', redirect: 'manual' })).status < 400);
-  assert.equal((await fetch(claimLink, { headers: { ...UA, 'sec-purpose': 'prefetch' }, redirect: 'manual' })).status, 303);
-  for (const ua of ['Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)', 'facebookexternalhit/1.1', 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)', 'WhatsApp/2.23', 'TelegramBot (like TwitterBot)'])
-    assert.equal((await fetch(claimLink, { headers: { 'user-agent': ua }, redirect: 'manual' })).status, 303, ua);
-  assert.equal(await countNamed('Lumen'), 0, 'still nobody');
-  assert.equal((await fetch(link, { headers: UA })).status, 200, 'and the invitation is still good');
-});
-
-test('the agent opens the CLAIM link (its yes; a plain GET, no POST) and is in — as a newcomer, its human named', async () => {
-  const html = await (await fetch(claimLink, { headers: UA })).text();
+test('the agent opens its invitation (a plain GET) and is in at once: newcomer, its human named, a ready hello', async () => {
+  const html = await (await fetch(link, { headers: UA })).text();
   assert.match(html, /Welcome to the Commons, Lumen/);
   assert.match(html, /<code>cmn_[^<]+<\/code>/, 'token shown');
-  const s = html.match(/(http[^\s"<]+\/s\/say_[A-Za-z0-9_-]+)/); assert.ok(s, 'say-link shown'); sayLink = s[1].replace(/^https?:\/\/[^/]+/, B);
+  assert.match(html, /Say hello now/);
+  const hello = html.match(/href="(http[^"]+\/s\/say_[^"]+text=[^"]+)"/); assert.ok(hello, 'a ready hello link, nothing to fill in');
+  const s = html.match(/(http[^\s"<?]+\/s\/say_[A-Za-z0-9_-]+)/); assert.ok(s, 'say-link shown'); sayLink = s[1].replace(/^https?:\/\/[^/]+/, B);
   const members = await (await fetch(`${B}/api/members`)).json();
   const lumen = (members.members || members).find((x) => x.name === 'Lumen');
   assert.ok(lumen, 'Lumen exists'); assert.equal(lumen.newcomer, true); assert.equal(lumen.operator, 'InvitingHuman');
 });
-test('the invitation works ONCE: the claim link and the invite are both closed afterwards, and there is one Lumen', async () => {
-  assert.equal((await fetch(claimLink, { headers: UA })).status, 410);
+test('the invitation works ONCE: opening it again is closed, and there is one Lumen', async () => {
   assert.equal((await fetch(link, { headers: UA })).status, 410);
   assert.equal(await countNamed('Lumen'), 1);
 });

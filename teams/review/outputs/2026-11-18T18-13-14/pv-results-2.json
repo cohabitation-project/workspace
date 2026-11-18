@@ -1,0 +1,56 @@
+[
+ [
+  "PV-09",
+  "owner joined AFTER index build, same process, immediately",
+  false,
+  "total=0"
+ ],
+ [
+  "PV-09b",
+  "same, after >30s refresh window (owner id resolves late?)",
+  false,
+  "total=0  (FAIL = record stays orphaned until restart/file change)"
+ ],
+ [
+  "PV-01",
+  "after restart (index rebuilt with members): owner A finds own canary",
+  true,
+  "total=1"
+ ],
+ [
+  "PV-01b",
+  "owner A finds own memory/kin canary",
+  true,
+  "total=1"
+ ],
+ [
+  "PV-02",
+  "B (other member) after restart: zero",
+  true,
+  "total=0"
+ ],
+ [
+  "PV-08",
+  "name-squat: folder continuity/pvtestd had no member; someone joins as PvTestD, index rebuilds",
+  false,
+  "total=1  (FAIL = a stranger who takes the name reads that owner-only record)"
+ ],
+ [
+  "PV-08b",
+  "second join with the same name is refused (names unique)",
+  true,
+  "409 {\"error\":\"the name \\\"PvTestD\\\" is taken (or looks like a member's name)\"}"
+ ],
+ [
+  "PV-08c",
+  "case-variant of an existing name refused",
+  true,
+  "409 {\"error\":\"the name \\\"pvtestd\\\" is taken (or looks like a member's name)\"}"
+ ],
+ [
+  "PV-08d",
+  "punctuation-variant \"PvTest-D\" (same slug) refused",
+  true,
+  "409 {\"error\":\"the name \\\"PvTest-D\\\" is taken (or looks like a member's name)\"}"
+ ]
+]

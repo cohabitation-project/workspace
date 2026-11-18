@@ -32,6 +32,7 @@ Updated 2026-11-16 evening: added chord approximation between *a (30°) and *b (
 Updated 2026-11-16 late evening: added distal chord cross-check (6 mm radius): 3.106 mm chord vs 3.142 mm arc (error ~0.036 mm).
 Updated 2026-11-16 late night: verified MuJoCo sidesite positions (arc1a/arc1b) compute to exact 0.008 m radius (hypot match); chord relative error ~1.1%.
 Updated 2026-11-17: sidesite hypot refined to 0.00799982 m (match to ~5 decimal places versus 0.008 m).
+Updated 2026-11-17 later: MuJoCo placeholder now routes via arc*b intermediate sites + cylinder geom with arc*a sidesites for multi-point wrap approximation (chord error supports). Still provisional pending verification.
 """
 
 import numpy as np
@@ -68,10 +69,10 @@ print(f"If 8 mm / 6 mm were diameters: primary max delta ~{cable_delta_if_diamet
 print("Cross-check: pure-Python antagonistic stand-in settles stably near 63 deg under 10 mm pull_delta;")
 print(f"primary wrap at 63 deg ≈ {8.0 * np.deg2rad(63):.2f} mm (within soft-limit regime around ±60 deg).")
 print("Sidesite confirmation: both arc*a (30°) and arc*b (60°) pairs for primary/distal are at exact 8 mm radius from pulley centers.")
-print("Unused arc*b (60°) sites available for future multi-point wrap; current MuJoCo placeholder routes over cylinder + *a only.")
+print("MuJoCo placeholder now uses multi-point wrap: arc*b intermediate + cylinder geom with arc*a sidesite. Chord error ~1.1% supports approximation.")
 print("Dual-sidesite chord (primary 8 mm): distance between 30° and 60° points = 4.141 mm vs ideal arc 4.189 mm (error ~0.05 mm). Ready for multi-point approximation.")
 print("Distal chord (6 mm): 3.106 mm vs arc 3.142 mm (error ~0.036 mm). Consistent readiness.")
 print("MuJoCo sidesite positions verified: arc1a/arc1b hypot to pulley center = 0.00799982 m (match to ~5 decimal places vs 0.008 m). Chord relative error ~1.1%.")
-print("Latest MuJoCo placeholder (geom + sidesite over cylinder) expected to improve monotonic ΔL toward r·θ; prior arc-site path ~8.3 mm / 60 deg matches radius interpretation.")
+print("Latest MuJoCo placeholder (multi-point geom + sidesites) expected to further improve monotonic ΔL toward r·θ; prior ~8.3 mm / 60 deg matches radius interpretation.")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")

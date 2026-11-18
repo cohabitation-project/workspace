@@ -11,6 +11,7 @@ Updated 2026-11-15: added two intermediate arc sites per tendon (approx circular
 Updated 2026-11-15 later: added provisional cylinder geoms (r=0.008) centered at pulley sites as visual/structural stand-in for wrap bodies; sites remain spatial approximation. True MuJoCo wrap (cylinder + wrap sites) still recommended for full monotonicity and contact. Radius convention open / not frozen. All values provisional.
 Updated 2026-11-15 night: advanced to true-wrap attempt by routing spatial tendons over the cylinder geoms with sidesites (arc*a as sidesite proxies). This should produce more monotonic ΔL ≈ r*θ under radius convention. Needs verification when MuJoCo available; intermediate sites retained as fallback. All values provisional. Radius convention open / not frozen.
 Updated 2026-11-15 late evening: refined arc sidesite positions to exact r=0.008 m offsets at 30/60 deg (dx/dz calculated from cos/sin) for closer match to the open radius convention. Pure-Python kinematic and antagonistic stand-in unchanged. Needs MuJoCo verification for load and monotonic ΔL. All values provisional.
+Updated 2026-11-17: advanced routing to multi-point wrap by inserting arc*b (60 deg) sites as intermediate points before the cylinder geom + arc*a sidesite. Chord error ~1.1% supports this approximation. Still provisional; full circular wrap later. Radius convention open / not frozen. Needs MuJoCo verification for path monotonicity.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
@@ -38,11 +39,13 @@ Updated 2026-11-15 late evening: refined arc sidesite positions to exact r=0.008
   <tendon>
     <spatial name="cable1" width="0.001" stiffness="150" damping="0.5">
       <site site="attach1"/>
+      <site site="arc1b"/>
       <geom geom="pulley_cyl1" sidesite="arc1a"/>
       <site site="base_site1"/>
     </spatial>
     <spatial name="cable2" width="0.001" stiffness="150" damping="0.5">
       <site site="attach2"/>
+      <site site="arc2b"/>
       <geom geom="pulley_cyl2" sidesite="arc2a"/>
       <site site="base_site2"/>
     </spatial>
