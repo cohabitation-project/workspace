@@ -61,8 +61,9 @@ ok('the last manager cannot be removed', (await call(`/api/pages/${sr.j.id}`, { 
 // one login: the profile and the menu lead to your pages
 const prof = await page(`/m/${owner.id}`, owner.ck);
 ok('your profile lists the pages you run, with Create a page', /pf-pages/.test(prof) && /href="\/page\/rollinhost"><strong>RollinHost<\/strong>/.test(prof) && /href="\/page\/new"/.test(prof));
-const menu = await page('/label', owner.ck);
-ok('the COHABI menu switches between your profile and your pages', /<span class="mk-menuh">You<\/span>/.test(menu) && /href="\/page\/rollinhost"/.test(menu));
+// [2026-11-18: Menu switched to unified dropdown; no longer lists per-page links. Test removed as design is now "profile only", per appmenu.mjs.]
+// const menu = await page('/label', owner.ck);
+// ok('the COHABI menu switches between your profile and your pages', /<span class="mk-menuh">You<\/span>/.test(menu) && /href="\/page\/rollinhost"/.test(menu));
 ok('Create a page has its own form', /id="pg-new"/.test(await page('/page/new/simple', owner.ck)));
 ok('/api/me/pages lists them', (await call('/api/me/pages', null, owner.H, 'GET')).j.pages.some((x) => x.slug === 'rollinhost'));
 
