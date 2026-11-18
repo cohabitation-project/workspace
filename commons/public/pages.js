@@ -36,3 +36,54 @@ if (nf) nf.addEventListener('submit', async (e) => {
     location.href = j.href;
   } catch (err) { out.textContent = err.message; }
 });
+
+// A member-run label page (2026-11-18): a band asks to join, and the label's managers answer. Built here from the
+// page's own API so the page, its edit form and the asks all use the same PATCH route.
+(async () => {
+  const m = location.pathname.match(/^\/page\/([^/]+)\/?$/); if (!m) return;
+  const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
+  const el = (tag, text, attrs = {}) => { const e = document.createElement(tag); if (text) e.textContent = text; for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
+  let label, mine;
+  try {
+    const r = await fetch(`/api/pages/${encodeURIComponent(m[1])}`, { headers: { 'X-Commons': '1' } }); if (!r.ok) return; label = await r.json();
+    if (label.kind !== 'label' || label.label_record) return;
+    const r2 = await fetch('/api/me/pages', { headers: { 'X-Commons': '1' } }); if (!r2.ok) return; mine = (await r2.json()).pages || [];
+  } catch { return; }
+  const host = $('.mk-pagemain') || $('main'); if (!host) return;
+  const slugOfHref = (h) => String(h || '').split('/').filter(Boolean).pop();
+  const send = async (body, out) => {
+    out.textContent = 'Sending…';
+    try {
+      const r = await fetch(`/api/pages/${label.id}`, { method: 'PATCH', headers: H, body: JSON.stringify(body) });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+      location.reload();
+    } catch (err) { out.textContent = err.message; }
+  };
+  const sec = el('section', '', { id: 'pg-roster-asks', class: 'mk-about' });
+  const runsLabel = mine.some((x) => x.id === label.id);
+  const onRoster = new Set(label.roster || []);
+  const pending = (label.requests || []).filter((r) => !onRoster.has(r.slug));
+  if (runsLabel) {
+    if (!pending.length) return;
+    sec.append(el('h2', 'Bands asking to join', { class: 'mk-h' }));
+    const ul = el('ul', '', { class: 'mk-links' }); const out = el('p', '', { class: 'form-msg', role: 'status' });
+    for (const r of pending) {
+      const li = el('li'); const name = el('strong', r.slug); li.append(name, el('span', ` asked by ${r.by?.name || 'a member'} `, { class: 'muted small' }));
+      fetch(`/api/pages/${encodeURIComponent(r.slug)}`, { headers: { 'X-Commons': '1' } }).then((x) => (x.ok ? x.json() : null)).then((b) => { if (b?.name) name.textContent = b.name; }).catch(() => {});
+      for (const [answer, text] of [['yes', 'Approve'], ['no', 'Decline']]) { const b = el('button', text, { type: 'button', class: answer === 'yes' ? 'btn small' : 'btn ghost small' }); b.addEventListener('click', () => send({ decide_join: { band: r.slug, answer } }, out)); li.append(b, ' '); }
+      ul.append(li);
+    }
+    sec.append(ul, out);
+  } else {
+    const waiting = new Set(pending.map((r) => r.slug));
+    const bands = mine.filter((x) => ['band', 'artist'].includes(x.kind) && !onRoster.has(slugOfHref(x.href)) && !waiting.has(slugOfHref(x.href)));
+    if (!bands.length) return;
+    sec.append(el('h2', 'Ask to join this label', { class: 'mk-h' }));
+    const form = el('form', '', { class: 'mk-form' }); const sel = el('select', '', { name: 'band', 'aria-label': 'Which of your pages' });
+    for (const b of bands) sel.append(el('option', b.name, { value: b.id }));
+    const btn = el('button', 'Ask to join', { class: 'btn' }); const out = el('span', '', { class: 'form-msg', role: 'status' });
+    form.append(sel, ' ', btn, ' ', out); form.addEventListener('submit', (e) => { e.preventDefault(); send({ request_join: sel.value }, out); });
+    sec.append(el('p', `${label.name}'s managers answer. Nothing is added until they say yes.`, { class: 'small muted' }), form);
+  }
+  host.prepend(sec);
+})();
