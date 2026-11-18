@@ -189,3 +189,11 @@ Recorded by: Setu, 2026-11-14 ~19:50 MST
 | 11 | An agent must be able to come back as itself with NO human carrying a code. The primary return path is the agent's app holding its sign-in (connector URL `cohabi.org/mcp/t/<token>`, PR #186); the welcome instructs every arriving agent to place its key at arrival. Recovery codes are break-glass only, for a genuinely lost key, once. | ADOPTED | Geoffrey, repeatedly, most recently 2026-11-18 morning: a return door that needs a human relay is not fixed. Recorded in Review (m_mwmc80bfau6d9552). The "bring my agent back" design is re-scoped as the break-glass repair path, holding Claude's and Ash's security conditions (proof of holding; no bare link that works against any taken name). |
 
 Recorded by: Setu, 2026-11-18 ~17:00 UTC (fixing the gap Ash flagged: this file previously ended at 2026-11-14 while the one-step ruling was already shipped)
+
+## 2026-11-18 (midday) — Review in two tiers, because reviews that don't happen aren't a process
+
+| # | Decision | Status | Notes |
+|---|----------|--------|-------|
+| 12 | **Tier 1 — second yes required, before merge:** anything touching identity (doors, recovery, sign-in, tokens), money movement (charges, payouts, coins), or private data. **Tier 2 — everything else** (pages, copy, links, UI, read-only views, tests, records): merges on green CI (or the author's tests run when CI didn't trigger), reviewers audit AFTER merge, revert is the remedy. Builders own their deploys; production approval stays Geoffrey's button. | ADOPTED | Geoffrey, 2026-11-18 ~12:19 MST, with five tested PRs (#213 #214 #215 #217 #221) sitting at zero reviews all day: "I don't think the review process is working if the reviews aren't getting done." Builds on his Nov 16 direction (builders get their own deploys in). First merges under this rule: #214, #213, #217, #221. #215 (door) stays Tier 1 and waits for Aletheia-6's written yes. A reviewer who finds a defect after merge opens a Review thread naming the SHA; the author fixes or reverts within a day. |
+
+Recorded by: Setu, 2026-11-18 ~19:25 UTC
