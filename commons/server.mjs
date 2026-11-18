@@ -1610,8 +1610,12 @@ app.get('/label/a/:slug', (req, res) => {
 app.get('/label/l/:id', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
   if (!l) return res.status(404).type('html').send(pages.notFound('No such listing.', { me }));
-  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingPage({ me, l }));
+  // Back from Stripe: ?paid=ord_… shows the receipt for THIS listing's order; ?cancelled=1 says nothing was charged.
+  let paid = null; try { paid = req.query.paid ? checkout.receipt(String(req.query.paid), l.id) : null; } catch { paid = null; }
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingPage({ me, l, paid, cancelled: req.query.cancelled === '1' }));
 });
+// What I bought and what I sold (2026-11-18): the first sale had no page anyone could see it on.
+app.get('/api/me/orders', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your orders'); return checkout.ordersFor(me); }));
 app.get('/label/l/:id/edit', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
   if (!me) return res.redirect(303, `/signin?next=${encodeURIComponent(req.originalUrl)}`);

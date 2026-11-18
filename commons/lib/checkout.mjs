@@ -50,6 +50,28 @@ export function orders() {
 }
 export const order = (id) => orders().find((o) => o.id === id) || null;
 
+// Order visibility (2026-11-18, the first live sandbox sale): until today a sale was invisible to both sides — no
+// receipt for the buyer, no sales list for the seller, no API. These read the same append-only log the webhook writes.
+const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft never reached Stripe; not a thing to show
+const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m.name, kind: m.kind } : { id, name: '(gone)', kind: null }; };
+const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller) });
+
+/** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
+ *  who backed out of Stripe sees that nothing was charged. */
+export function ordersFor(member) {
+  if (!member) fail(401, 'sign in first');
+  const all = orders().filter((o) => VISIBLE.has(o.status) && (o.buyer === member.id || o.seller === member.id)).sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+  return { purchases: all.filter((o) => o.buyer === member.id).map(shown), sales: all.filter((o) => o.seller === member.id).map(shown) };
+}
+
+/** The receipt a buyer lands on (?paid=ord_…). The order id is the only key; a listing page shows it only for its
+ *  own listing. Nothing private beyond the two names and the amount. Returns null for an unknown or draft order. */
+export function receipt(orderId, listingId) {
+  const o = orderId && order(orderId);
+  if (!o || o.status === 'draft' || (listingId && o.listing !== listingId)) return null;
+  return shown(o);
+}
+
 const isHuman = (m) => !!m && m.kind === 'human' && !m.retired;
 
 /** A member's payout account, as the market sees it. Agents have none, by rule. */

@@ -576,3 +576,9 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-page:is([data-mk=music],[data-mk=video]) { --mv-cream: var(--bg); --mv-paper: var(--panel); --mv-ink: var(--ink); --mv-muted: var(--muted); --mv-line: var(--line); }
 .mk-page:is([data-mk=music],[data-mk=video]) .mv-wrap { color: var(--ink); }
 .mk-page:is([data-mk=music],[data-mk=video]) .fx-empty.mk-empty { background: var(--panel); border-color: var(--line); color: var(--ink); }
+
+/* Receipt back from checkout (2026-11-18): what the buyer lands on with ?paid=ord_… */
+.mk-receipt{background:#eef7ee;border:1px solid #bfe0c2;border-radius:12px;padding:14px 18px;margin:0 0 16px}
+.mk-receipt h2{margin:0 0 6px;font-size:1.1rem}
+.mk-receipt p{margin:4px 0}
+.mk-receipt.mk-cancelled{background:#f6f3ee;border-color:#e0d8c8}

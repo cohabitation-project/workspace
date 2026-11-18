@@ -433,8 +433,14 @@ export function artistPage({ me, slug }) {
 }
 
 // ------------------------------------------------------------------------------------------ one listing
-export function listingPage({ me, l }) {
+export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
+  // The receipt (2026-11-18): Stripe sends the buyer back here with ?paid=ord_…. Until the webhook lands the order is
+  // still "awaiting_payment", so the banner says so honestly rather than claiming paid before our records say it.
+  const receipt = paid ? `<section class="mk-receipt" aria-live="polite"><h2>${paid.status === 'paid' ? 'Paid. Thank you.' : paid.status === 'cancelled' ? 'Nothing was charged.' : 'Payment received by Stripe — confirming.'}</h2>
+  <p>${esc(paid.title)} · $${esc(String(paid.amount))}${paid.mode === 'test' ? ' <span class="mk-testpay">test mode, no real money</span>' : ''} · order <code>${esc(paid.id)}</code></p>
+  <p class="small">${paid.status === 'paid' ? `The maker, ${esc(paid.seller.name)}, has been told. ` : paid.status === 'awaiting_payment' ? 'This page updates when our records confirm it (usually within a minute). ' : ''}Your orders are in <a href="/wallet#orders">your wallet</a>.</p></section>` : '';
+  const cancelledNote = cancelled ? '<section class="mk-receipt mk-cancelled"><h2>Checkout cancelled.</h2><p class="small">Nothing was charged. The listing is still here when you want it.</p></section>' : '';
   const imgs = l.images.map((id) => images.get(id)).filter(Boolean);
   const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
   // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
@@ -454,6 +460,7 @@ export function listingPage({ me, l }) {
   const qs = l.asks || [];
   const thread = (parent) => qs.filter((a) => (a.reply_to || null) === parent).map((a) => `<li class="mk-q" id="${esc(a.id)}"><p><a href="/m/${esc(a.by.id)}">${memberFace(a.by.id)} <strong>${esc(a.by.name)}</strong></a> ${badge(a.by.badge)} <span class="muted small">${esc(ago(a.ts))}</span></p><div class="md">${renderMarkdown(a.text)}</div>${me && l.status === 'live' ? `<button type="button" class="linkish small mk-reply" data-q="${esc(a.id)}">Reply</button>` : ''}<ul>${thread(a.id)}</ul></li>`).join('');
   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=${esc(l.category)}">${esc(market.CATEGORIES[l.category])}</a></p>
+  ${receipt}${cancelledNote}
   ${l.status !== 'live' ? '<p class="mk-note"><strong>Withdrawn.</strong> The member took this listing down; it stays in the record.</p>' : ''}
   <article class="mk-listing">${gallery}
   <div class="mk-detail"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
@@ -461,7 +468,7 @@ export function listingPage({ me, l }) {
   <p class="mk-price big">${esc(market.priceLine(l.price, l.packages))}</p>
   <div class="mk-by">${providerLine(l)}</div>
   ${l.status === 'live' ? `<p class="mk-actions">${action}</p>` : ''}
-  ${['fixed', 'donation', 'packages'].includes(l.price.mode) ? `<p class="small muted">${esc(NOT_OPEN)}</p>` : ''}
+  ${['fixed', 'donation', 'packages'].includes(l.price.mode) && !live ? `<p class="small muted">${esc(NOT_OPEN)}</p>` : ''}
   ${pk}
   <div class="md mk-text">${renderMarkdown(l.text)}</div>
   ${l.desk ? `<p>This is a bounty on the Work Desk: <a href="/desk#${esc(l.desk)}">claim it there</a>.</p>` : ''}
