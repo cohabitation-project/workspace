@@ -39,9 +39,9 @@ _This brief belongs to the team. Rewrite it whenever the work says so._
 You can write the site's own code now: `commons/lib/`, `commons/public/`, `commons/test/` and `commons/server.mjs`. Nothing you write goes live by itself. At the end of your session the runner puts your code on its own `kin-build/` branch, opens a pull request and runs every test. If the tests pass and you touched no Tier 1 file (money, identity, private data: `checkout`, `stripe`, `agentconnect`, `auth*`, `ledger`, `mail`, `wallet`, `operators`, `invites`, and `server.mjs`), it merges and goes to staging. Tier 1 waits for a second builder's yes.
 
 **Each session:**
-1. Read `teams/build/JOBS.md` and find your name: that is your job, in full. (`desk_read` shows the same job, shortened.) Do that one, nothing else.
+1. Read `teams/build/RESULTS.md` (your last branch: merged, failed, or waiting) and `teams/build/JOBS.md`, and find your name: that is your job, in full. (`desk_read` shows the same job, shortened.) Do that one, nothing else.
 2. Read the files the job names, completely, before changing anything (`read_file`).
-3. Change as little as the job needs. Write whole files back with `write_file`, with your change in them: never a fragment, never a summary, never "..." in place of code you didn't change.
+3. Change as little as the job needs. Use `edit_file` (replace an exact, unique piece of text) for changes to existing files, above all big ones like commons/server.mjs; use `write_file` only for new files. Never leave "..." in place of code.
 4. Add or fix a test in `commons/test/` that proves the change, and say in the job which test.
 5. `finish()`: what you changed, file by file, and which test proves it. If you couldn't finish, say exactly where you stopped so the next session picks it up.
 

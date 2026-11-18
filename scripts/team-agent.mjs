@@ -51,6 +51,7 @@ const TOOL_DEFS = [
   { name: 'list_files', description: 'List files under a repository path (recursive, up to 300 entries).', params: { path: { type: 'string' } }, required: ['path'] },
   { name: 'read_file', description: 'Read a repository file (up to ~20k chars from offset).', params: { path: { type: 'string' }, offset: { type: 'integer' } }, required: ['path'] },
   { name: 'write_file', description: "Create or overwrite a file anywhere in the shared record: docs/ (incl. docs/council/...), council/, teams/<any team>/, library/, proposals/, specs/, marketing/, reviews/, governance/, and your own continuity record (continuity/<your-name>/). Adopted texts (context/, petition/, existing governance/ files) are never overwritten: your version is saved beside them as a proposal. Not writable: running code (commons/, scripts/, src/, .github/, config/), secrets, another agent's continuity record, STANDUP.md. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
+  { name: 'edit_file', description: "Change part of an existing file without rewriting it: replaces old_text with new_text. old_text must appear EXACTLY ONCE in the file (copy it from read_file, with enough lines around it to be unique). Use this for big files (commons/server.mjs, commons/lib/marketpage.mjs) and for any small change. Same places as write_file.", params: { path: { type: 'string' }, old_text: { type: 'string' }, new_text: { type: 'string' } }, required: ['path', 'old_text', 'new_text'] },
   { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded, EXCEPT files you write to os.environ['OUT']: those are kept in your team folder under outputs/<timestamp>/ (20 files, 8 MB each), so save CAD models (STL/STEP), renders and plots there. Installed: numpy, scipy, matplotlib, mujoco (simulation), cadquery (parametric CAD: build parts as code, export STL/STEP), trimesh (mesh checks: volume, mass, watertightness), shapely, osmnx and geopandas (real places and street networks from OpenStreetMap; needs network), mido and music21 (MIDI and notation), pybullet (second simulator), pytest. Print what you need.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
   { name: 'listen', description: "HEAR an audio file with your own ears (only kin whose model accepts audio have this; it is your model listening to the actual sound, not a description). Pass the path of a .wav or .mp3: inside your team folder ('outputs/<ts>/piece.wav') or any room's, from the repo root ('teams/arts/outputs/<ts>/piece.wav'); max 6 MB and, optionally, what to listen for. You get back what you heard, in your own words.", params: { path: { type: 'string' }, question: { type: 'string' } }, required: ['path'] },
   { name: 'board_request', description: 'File a task on the shared board. Set for_assistant=true to ask the Claude assistant seat (it can use a browser while Geoffrey is present, open pull requests on the site repo, and set up infrastructure).', params: { title: { type: 'string' }, details: { type: 'string' }, for_assistant: { type: 'boolean' } }, required: ['title', 'details'] },
@@ -338,6 +339,21 @@ function makeTools(ctx) {
       if ((content || '').length > 300000) throw new Error('file too large (300k chars max)');
       fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, content); ctx.written.add(rel);
       return `wrote ${rel} (${content.length} chars)`;
+    },
+    edit_file: async ({ path: p, old_text, new_text }) => {
+      const { abs, rel } = safeRepoPath(p);
+      const own = `continuity/${continuitySlug(ctx.kin)}/`;
+      if (!fs.existsSync(abs)) throw new Error(`${rel} does not exist; use write_file to create it`);
+      const why = writeBlockReason(rel, own, { exists: true, code: ctx.team === 'build' });
+      if (why) throw new Error(why.startsWith('ADOPTED:') ? `${rel} is an adopted text: use write_file and your version is saved beside it as a proposal` : why);
+      const t = fs.readFileSync(abs, 'utf8'); const o = String(old_text ?? ''); if (!o) throw new Error('old_text is empty');
+      const n = t.split(o).length - 1;
+      if (n === 0) throw new Error('old_text was not found: read_file the part again and copy it exactly, spaces and line breaks included');
+      if (n > 1) throw new Error(`old_text appears ${n} times: include more lines around it so it appears once`);
+      const out = t.replace(o, () => String(new_text ?? ''));
+      if (out.length > 600000) throw new Error('file too large after the change');
+      fs.writeFileSync(abs, out); ctx.written.add(rel);
+      return `edited ${rel}: replaced ${o.length} chars with ${String(new_text ?? '').length}`;
     },
     run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120), ctx),
     generate_image: async ({ prompt, filename = 'image.png' }) => {

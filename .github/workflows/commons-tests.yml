@@ -94,24 +94,39 @@ jobs:
   # merge, the tests run again on main, and a green main deploys to staging (deploy.yml); production stays a human's button.
   merge-build-lane:
     needs: test
-    if: startsWith(github.ref, 'refs/heads/kin-build/')
+    if: always() && startsWith(github.ref, 'refs/heads/kin-build/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - name: Merge if Tier 2
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      # Every test file the branch added or changed runs here too (the suite above lists files by name, so a new
+      # test would otherwise never run). The result goes to teams/build/RESULTS.md on main, where the builders read it.
+      - name: Run the branch's own tests, merge if Tier 2, and record the result
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SUITE: ${{ needs.test.result }}
         run: |
-          B="${GITHUB_REF#refs/heads/}"
-          files="$(git diff --name-only origin/main...HEAD)"
-          echo "$files"
-          if echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites)\.mjs|server\.mjs)$'; then
-            gh pr comment "$B" --body "Tests passed. This touches a Tier 1 file (money, identity or private data), so it waits for a second builder's written yes on head $(git rev-parse --short HEAD)." || true
-            exit 0
+          B="${GITHUB_REF#refs/heads/}"; H="$(git rev-parse --short HEAD)"
+          files="$(git diff --name-only origin/main...HEAD)"; echo "$files"
+          own="pass"; failed=""
+          for t in $(echo "$files" | grep -E '^commons/test/[^/]+\.mjs$' || true); do
+            [ -f "$t" ] || continue
+            if ! timeout 300 node --test "$t" > /tmp/t.log 2>&1; then own="fail"; failed="$failed $t: $(grep -E '^not ok|AssertionError|Error:' /tmp/t.log | head -3 | tr '\n' ' ' | cut -c1-300)"; fi
+          done
+          if [ "$SUITE" != "success" ]; then verdict="the main test suite FAILED on this branch"
+          elif [ "$own" != "pass" ]; then verdict="its own tests FAILED:$failed"
+          elif echo "$files" | grep -Evq '^commons/(lib|public|test)/|^commons/server\.mjs$'; then verdict="passed, but it changes files outside the build lane: waits for a human"
+          elif echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites)\.mjs|server\.mjs)$'; then verdict="passed; touches a Tier 1 file, so it waits for a second builder's yes on $H"
+          else verdict="MERGED"; fi
+          git config user.name "build-lane"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          if [ "$verdict" = "MERGED" ]; then
+            git fetch -q origin main && git switch -q -c merge-tmp origin/main && git merge -q --squash "$GITHUB_SHA" && git commit -q -m "Build lane: merge $B ($H), tests green" && git push -q origin HEAD:main && git push -q origin --delete "$B" || verdict="tests passed, but the merge into main failed (conflict?): Setu merges it by hand"
           fi
-          if echo "$files" | grep -Evq '^commons/(lib|public|test)/|^commons/server\.mjs$'; then
-            gh pr comment "$B" --body "Tests passed, but this branch changes files outside the build lane; a human merges it." || true
-            exit 0
-          fi
-          gh pr merge "$B" --squash --delete-branch && gh workflow run commons-tests.yml --ref main
+          git fetch -q origin main && git switch -q -C results origin/main
+          printf -- "- %s · \`%s\` @ %s · %s\n" "$(date -u +%Y-%m-%dT%H:%MZ)" "$B" "$H" "$verdict" >> teams/build/RESULTS.md
+          git add teams/build/RESULTS.md && git commit -q -m "Build lane result: $B" && for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
+          [ "$verdict" = "MERGED" ] && gh workflow run commons-tests.yml --ref main || true
