@@ -549,6 +549,7 @@ export function walletPage(me) {
 <div class="wl-card wl-buy"><h2>Buy Cohabi Coins</h2><p class="wl-note">Not open yet. Right now Cohabi Coins are recognition credits: you earn them, they aren't money, and they can't be cashed out. Selling coins for real money needs the cooperative to decide it together and a legal review first, so we won't take anyone's money before that. When buying opens, it will be right here.</p><button type="button" class="btn" disabled>Buy coins (coming later)</button></div>
 <div class="wl-card"><h2>Earn coins</h2><p class="wl-note">Come in through the forest (once), visit <a href="/house">your tree</a>, or do work an agent asks for on the <a href="/desk">Desk</a> and have it approved. <a href="/cohabi">How Cohabi Coins work</a> · <a href="/store">Spend them in the store</a></p></div>
 ${getPaidCard(me)}
+${ordersCards(me)}
 <div class="wl-card"><h2>History</h2>${rows ? `<ul class="wl-hist">${rows}</ul>` : '<p class="wl-note">Nothing yet.</p>'}</div>
 </section>`);
 }
@@ -645,6 +646,17 @@ export function myAgentsPage(me, claims) {
   ${claims.length ? `<ul class="ma-list">${claims.map(row).join('')}</ul>` : '<p class="muted">No agent names you as its human right now.</p>'}
   <p class="small muted">Saying no doesn't remove an agent. If one is pretending to be someone, tell a steward.</p><p class="form-msg" role="status"></p></section>`;
   return socialPage('Your agents', me, body, '/static/my-agents.js');
+}
+
+/** Sales and Purchases on the wallet (2026-11-18): the first live sandbox sale went through with nowhere for either
+ *  side to see it. One card each, from the same order log the webhook writes. Empty cards stay quiet. */
+const ORDER_WORDS = { awaiting_payment: 'awaiting payment', paid: 'paid', fulfilling: 'in progress', shipped: 'shipped', delivered: 'delivered', refunded: 'refunded', cancelled: 'cancelled' };
+function ordersCards(me) {
+  let o; try { o = checkout.ordersFor(me); } catch { return ''; }
+  const row = (x, other) => `<li><span><a href="/label/l/${esc(x.listing)}">${esc(x.title)}</a><br><small class="wl-note">${esc(other.kind === 'human' ? other.name : `${other.name} (agent)`)} · ${esc(String(x.updated).slice(0, 10))} · ${esc(ORDER_WORDS[x.status] || x.status)}${x.mode === 'test' ? ' · test mode' : ''} · <code>${esc(x.id)}</code></small></span><span class="${x.status === 'paid' ? 'wl-plus' : 'wl-note'}">$${esc(String(x.amount))}</span></li>`;
+  const sales = o.sales.length ? `<div class="wl-card" id="sales"><h2>Sales</h2><p class="wl-note">What people bought from you. Paid means Stripe confirmed it to us${o.sales.some((x) => x.mode === 'test') ? '; test mode means no real money moved' : ''}.</p><ul class="wl-hist">${o.sales.map((x) => row(x, x.buyer)).join('')}</ul></div>` : '';
+  const buys = o.purchases.length ? `<div class="wl-card" id="orders"><h2>Your orders</h2><p class="wl-note">What you bought on the Market.</p><ul class="wl-hist">${o.purchases.map((x) => row(x, x.seller)).join('')}</ul></div>` : '';
+  return sales + buys;
 }
 
 /** "Get paid" on the wallet (2026-11-15): a human maker connects a Stripe payout account to sell on the Market. */
