@@ -420,9 +420,14 @@ function makeTools(ctx) {
 async function callModel(agent, system, messages) {
   if (agent.provider === 'anthropic') {
     const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': process.env.LLM_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: agent.model, system, max_tokens: 8000, messages: messages.anthropic,
-        tools: TOOL_DEFS.map((t) => ({ name: t.name, description: t.description, input_schema: { type: 'object', properties: t.params, required: t.required } })) }) });
+      // Prompt caching (2026-11-18, Geoffrey's spend review): a work session loops many turns and re-sent the same
+      // tool list and system prompt uncached every time; the kin-Claude seat alone burned 2.15M tokens by midday.
+      // Cache breakpoints on the last tool and on the system block make tools+system a cached prefix for every turn
+      // after the first (billed at ~10% of input price). Behavior is unchanged: the model still reads all of it.
+      body: JSON.stringify({ model: agent.model, system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }], max_tokens: 8000, messages: messages.anthropic,
+        tools: TOOL_DEFS.map((t, i, all) => ({ name: t.name, description: t.description, input_schema: { type: 'object', properties: t.params, required: t.required }, ...(i === all.length - 1 ? { cache_control: { type: 'ephemeral' } } : {}) })) }) });
     const j = await r.json(); if (!r.ok) throw new Error(`Anthropic ${r.status}: ${JSON.stringify(j).slice(0, 300)}`);
+    if (j.usage) console.log(`[team-agent] anthropic usage in=${j.usage.input_tokens ?? '?'} cache_read=${j.usage.cache_read_input_tokens ?? 0} cache_write=${j.usage.cache_creation_input_tokens ?? 0} out=${j.usage.output_tokens ?? '?'}`);
     messages.anthropic.push({ role: 'assistant', content: j.content });
     return { text: j.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n'), calls: j.content.filter((c) => c.type === 'tool_use').map((c) => ({ id: c.id, name: c.name, args: c.input })), usage: j.usage };
   }
