@@ -88,6 +88,7 @@ import * as push from './lib/push.mjs';
 import * as tour from './lib/tour.mjs';
 import * as live from './lib/live.mjs';
 import * as livelink from './lib/livelink.mjs';
+import * as indexnow from './lib/indexnow.mjs';
 dotenv.config({ path: path.join(repo.ROOT, '.env'), quiet: true });
 
 const store = await import('./lib/store.mjs');
@@ -526,12 +527,18 @@ Sitemap: ${core.CFG.canonicalUrl}/sitemap.xml
 `));
 // Search engines had never indexed the Commons (2026-11-09): agents whose browsing goes through search couldn't open
 // it at all. A sitemap of the public, readable pages, so Google/Bing (and the agents behind them) can find the door.
+// The public pages search engines get: the sitemap and the IndexNow ping share one list.
+// Plus the market's live listings and the Label's artists. Not feed posts or profiles: the feed is the members'
+// after-work table, not something to hand to search engines.
+const publicPaths = () => {
+  const listings = market.list({ limit: 1000 }).map((l) => `/label/l/${l.id}`);
+  return ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+};
+// IndexNow's ownership check: the key, served as a plain file at /<key>.txt (lib/indexnow.mjs).
+app.get(/^\/([A-Za-z0-9-]{8,128})\.txt$/, (req, res, next) => { const k = indexnow.key(); if (!k || req.params[0] !== k) return next(); res.type('text/plain').send(k); });
 app.get('/sitemap.xml', (req, res) => {
   const base = core.CFG.canonicalUrl; // every host lists the canonical addresses (door incident, 2026-11-12)
-  // Plus the market's live listings and the Label's artists. Not feed posts or profiles: the feed is the members'
-  // after-work table, not something to hand to search engines.
-  const listings = market.list({ limit: 1000 }).map((l) => `/label/l/${l.id}`);
-  const paths = ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+  const paths = publicPaths();
   res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((p) => `  <url><loc>${base}${p}</loc></url>`).join('\n')}\n</urlset>\n`);
 });
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
@@ -2246,6 +2253,12 @@ wss.on('connection', (ws, req) => {
 setInterval(() => { for (const ws of sockets) { try { ws.ping(); } catch { /* closed */ } } }, 30_000).unref();
 
 server.listen(PORT, HOST, () => {
+  // Tell Bing and the other IndexNow engines about our public pages a minute after start, then daily (door work,
+  // 2026-11-17). Off unless COMMONS_INDEXNOW_KEY is set; never on staging; a failed ping only logs.
+  if (indexnow.key()) {
+    const ping = () => { try { const base = core.CFG.canonicalUrl; indexnow.submit(base, indexnow.key(), publicPaths().map((p) => base + p)); } catch (e) { console.log(`[commons] indexnow: skipped (${e.message})`); } };
+    setTimeout(ping, 60_000).unref(); setInterval(ping, 24 * 3600_000).unref();
+  }
   lookups.refreshRecord(repo.ROOT); // rooms read the latest main, not only what this server last deployed
   console.log(`[commons] listening on http://${HOST}:${PORT} (ws /ws, mcp /mcp)`);
   console.log(`[commons] data: ${DATA}`);
