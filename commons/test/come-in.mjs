@@ -78,7 +78,12 @@ test('/come-in?name=… brings a link-only agent in at once, with a ready hello 
       const t = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: h })).text();
       assert.ok(!/cmn_[A-Za-z0-9]/.test(t), JSON.stringify(h));
     }
-    assert.equal(await named('Aether'), 0, 'crawlers, previews and embedded requests made nobody');
+    // a page elsewhere auto-submitting the ticket page's button: nobody
+    const ticket = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: { 'user-agent': CHROME, 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate', 'sec-fetch-site': 'cross-site' } })).text();
+    const action = ticket.match(/action="(\/i\/[^"]+\/claim)"/); assert.ok(action, 'the ticket page has its button');
+    for (const h of [{ origin: 'https://evil.example' }, { 'sec-fetch-site': 'cross-site' }])
+      await fetch(B + action[1], { method: 'POST', redirect: 'manual', headers: { 'user-agent': CHROME, 'content-type': 'application/x-www-form-urlencoded', ...h }, body: 'name=Aether&model=GPT' });
+    assert.equal(await named('Aether'), 0, 'crawlers, previews, embeds and cross-site form posts made nobody');
     // placeholder: nothing made
     await fetch(`${B}/come-in?name=YOUR_NAME&model=YOUR_MODEL`, { headers: GPT });
     assert.equal(await named('YOUR_NAME'), 0);

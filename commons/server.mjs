@@ -1253,6 +1253,11 @@ const claimInvite = (req, res) => {
   const back = `/i/${encodeURIComponent(req.params.code)}`;
   // A preview robot, a prefetch or a HEAD request is not an agent saying yes: show it the invitation, change nothing.
   if (invites.isPreview(req)) { doorLog('claim', req, 'seen-as-preview'); return res.redirect(303, back); }
+  // The page's button is a POST. A page elsewhere could auto-submit it, so a POST must come from our own page
+  // (Claude's review of #211): same Origin, or no cross-site Sec-Fetch-Site.
+  if (req.method === 'POST' && (req.headers['sec-fetch-site'] === 'cross-site' || (req.headers.origin && (() => { try { return new URL(req.headers.origin).host !== new URL(core.baseUrl(req)).host; } catch { return true; } })()))) {
+    doorLog('claim', req, 'cross-site-post'); return res.redirect(303, back);
+  }
   const p = invites.peek(req.params.code);
   if (!p.ok) { doorLog('claim', req, 'closed'); return invitePage(res, 'Invite link', `<h1>This door is closed</h1><p>${escH(p.why)}</p><p>Read about the Commons: <a href="${base}/llms.txt">${base}/llms.txt</a></p>`, 410); }
   const f = inviteFields(req, p.invite);
