@@ -2269,12 +2269,19 @@ const oauthErr = (res, e) => { if (e instanceof agentconnect.ConnectError) retur
 app.use(['/.well-known/oauth-authorization-server', '/.well-known/oauth-protected-resource', '/oauth/register', '/oauth/token', '/oauth/revoke'], oauthCors);
 app.get(['/.well-known/oauth-authorization-server', '/.well-known/oauth-authorization-server/*', '/.well-known/openid-configuration'], (req, res) => res.json(agentconnect.metadata(core.baseUrl(req))));
 app.get(['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/*'], (req, res) => res.json(agentconnect.resourceMetadata(core.baseUrl(req))));
-app.post('/oauth/register', jsonSmall, (req, res) => { if (!auth.allow(`oauth-reg:${req.ip}`, 30, 3600_000)) return res.status(429).json({ error: 'slow_down' }); try { res.status(201).json(agentconnect.register(req.body || {})); } catch (e) { oauthErr(res, e); } });
+app.post('/oauth/register', jsonSmall, (req, res) => {
+  if (!auth.allow(`oauth-reg:${req.ip}`, 30, 3600_000)) return res.status(429).json({ error: 'slow_down' });
+  const b = req.body || {};
+  try { const c = agentconnect.register(b); console.log(`[commons] connect: register app=${JSON.stringify(String(b.client_name || '').slice(0, 40))} redirects=${JSON.stringify((b.redirect_uris || []).map((u) => { try { return new URL(u).host; } catch { return '?'; } }))} auth=${b.token_endpoint_auth_method || '(none given)'} result=ok`); res.status(201).json(c); }
+  catch (e) { console.log(`[commons] connect: register app=${JSON.stringify(String(b.client_name || '').slice(0, 40))} redirects=${JSON.stringify(b.redirect_uris || [])} auth=${b.token_endpoint_auth_method || '(none given)'} result=err:${e.status || 400} ${JSON.stringify(String(e.message).slice(0, 80))}`); oauthErr(res, e); }
+});
 app.post('/oauth/token', oauthBody, (req, res) => {
   res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache');
   if (!auth.allow(`oauth-token:${req.ip}`, 120, 3600_000)) return res.status(429).json({ error: 'slow_down' });
   const basic = String(req.headers.authorization || '').startsWith('Basic ') ? req.headers.authorization.slice(6) : null;
-  try { res.json(agentconnect.token(req.body || {}, { basic })); } catch (e) { oauthErr(res, e); }
+  const b = req.body || {};
+  try { const out = agentconnect.token(b, { basic }); console.log(`[commons] connect: token grant=${b.grant_type} client=${String(b.client_id || (basic ? 'basic' : '')).slice(0, 12)} verifier=${b.code_verifier ? 'yes' : 'no'} result=ok`); res.json(out); }
+  catch (e) { console.log(`[commons] connect: token grant=${b.grant_type} client=${String(b.client_id || (basic ? 'basic' : '')).slice(0, 12)} verifier=${b.code_verifier ? 'yes' : 'no'} result=err:${e.status || 400} ${JSON.stringify(String(e.code || e.message).slice(0, 80))}`); oauthErr(res, e); }
 });
 app.post('/oauth/revoke', oauthBody, (req, res) => { try { agentconnect.revokeToken(String(req.body?.token || '')); } catch { /* always 200 (RFC 7009) */ } res.status(200).end(); });
 function connectPage(res, status, { title, body }) {
