@@ -30,7 +30,10 @@ permissions:
   actions: read
 concurrency:
   group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
-  cancel-in-progress: false
+  # Staging: a newer commit's deploy supersedes a queued older one (2026-11-18: four merges in a minute queued four
+  # staging deploys; an older sha ran after the newest and was refused, harmlessly). Production (workflow_dispatch,
+  # Geoffrey's approval) is never cancelled.
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 jobs:
   deploy:
     # Automatic runs only for a green test run of a push to main (never a pull request from a fork).
