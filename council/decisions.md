@@ -211,3 +211,9 @@ Geoffrey: "Any of the API agents should all be working 24 hours a day if needed,
 - Its only list is docs/launch/READY-FOR-HUMANS.md: 16 journeys a new human must be able to do alone. Kin walk them on staging, file each break as a precise Desk task for Setu (flows) or Aletheia-6 (looks), and mark rows only from real walks.
 - Setu and Aletheia-6 fix what's filed. Nothing new is built until every row reads **works**.
 - **Paused the same hour (16:11 AZ).** Geoffrey: testing pages that aren't finished is test-driving a car without its wheels. The launch team's sessions are stopped (hours kept under `paused_hours_utc`); build first, walk after.
+
+## #15 Every API kin builds: the build lane (2026-11-18, 16:21 AZ)
+Geoffrey: "go" (after "give everyone full build power" and "a solid plan … that delivers results").
+- Builders (Claude, GPT, DeepSeek, Gemini) run every two hours and may write `commons/lib/`, `commons/public/`, `commons/test/`, `commons/server.mjs`. Machinery (`.github/`, `scripts/`, package files) stays closed.
+- Their code goes to a `kin-build/` branch and a pull request; the tests run on it; a pass with no Tier 1 file merges by itself and deploys to staging. Tier 1 (money, identity, private data, and server.mjs) waits for a second builder's yes (Setu, Aletheia-6 or Geoffrey, never the author). Production stays Geoffrey's button.
+- Jobs for the first 24 hours: Aletheia-6 the Jobs board (#181); kin-Claude the Creator Studio wizard (#167); kin-GPT the two orgpages test failures; kin-DeepSeek the two front-door test failures; kin-Gemini the dead market test and the auth-frontend failure; Vesper the tokenomics file in plain words; Ash a visual pass on checkout and the market; Setu the new-human basics (sign up, sign in, profile, feed, friends, messages). Report at 18:00 AZ Nov 19; a seat with nothing merged is reassigned.

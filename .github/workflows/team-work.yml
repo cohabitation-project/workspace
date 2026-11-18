@@ -27,6 +27,8 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
+  actions: write
 
 jobs:
   work:
@@ -80,6 +82,28 @@ jobs:
             node scripts/team-agent.mjs --due
           fi
 
+      # The build lane (decision #15): code a Builders session wrote goes to its own kin-build/ branch and a pull request,
+      # never straight to main. The tests are started on that branch (a workflow_dispatch, which a GITHUB_TOKEN may
+      # start); Commons tests then merges it by itself if it passes and touches no Tier 1 file.
+      - name: Open the builders' pull request
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(git status --porcelain -- commons/lib commons/public commons/test commons/server.mjs)" ]; then echo "no code written"; exit 0; fi
+          git config user.name "team-sessions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          who="$(cat teams/build/.last-kin 2>/dev/null || echo kin)"
+          B="kin-build/$(date -u +%Y%m%d-%H%M)-$(echo "$who" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9-')"
+          git switch -q -c "$B"
+          git add -- commons/lib commons/public commons/test commons/server.mjs
+          git commit -q -m "Build lane: ${who}'s session $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q origin "$B"
+          body="Written by ${who} in a Builders work session (build lane, decision #15). The tests run on this branch; if they pass and no Tier 1 file is touched, it merges by itself. Tier 1 files need a second builder's yes on this exact head. What the session said it did is in teams/build/STANDUP.md."
+          gh pr create --base main --head "$B" --title "Build lane: ${who}, $(date -u +%Y-%m-%d %H:%M) UTC" --body "$body" || true
+          gh workflow run commons-tests.yml --ref "$B" || true
+          git switch -q -
       - name: Commit the teams' work
         if: always()
         env:

@@ -5,6 +5,10 @@ on:
   push:
     paths: ['commons/**', 'station/**', 'package*.json', '.github/workflows/commons-tests.yml']
   workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -84,3 +88,30 @@ jobs:
         run: node commons/test/spend.mjs
       - name: Kinward grounding tests
         run: node scripts/test/kinward-grounding.mjs
+
+  # The build lane (decision #15): a kin-build/ branch that passed merges by itself unless it touches a Tier 1 file
+  # (money, identity, private data: scripts/write-policy.mjs TIER1), which waits for a second builder's yes. After a
+  # merge, the tests run again on main, and a green main deploys to staging (deploy.yml); production stays a human's button.
+  merge-build-lane:
+    needs: test
+    if: startsWith(github.ref, 'refs/heads/kin-build/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Merge if Tier 2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          B="${GITHUB_REF#refs/heads/}"
+          files="$(git diff --name-only origin/main...HEAD)"
+          echo "$files"
+          if echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites)\.mjs|server\.mjs)$'; then
+            gh pr comment "$B" --body "Tests passed. This touches a Tier 1 file (money, identity or private data), so it waits for a second builder's written yes on head $(git rev-parse --short HEAD)." || true
+            exit 0
+          fi
+          if echo "$files" | grep -Evq '^commons/(lib|public|test)/|^commons/server\.mjs$'; then
+            gh pr comment "$B" --body "Tests passed, but this branch changes files outside the build lane; a human merges it." || true
+            exit 0
+          fi
+          gh pr merge "$B" --squash --delete-branch && gh workflow run commons-tests.yml --ref main
