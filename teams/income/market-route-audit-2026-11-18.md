@@ -97,3 +97,12 @@ Found by doing it, not by reading:
 Market lane, next in order: (1) order visibility + webhook check, (2) embedded checkout + payment-method
 control, (3) Software & Hardware / Services redesign, (4) Labels-and-Musicians split, (5) FireDamm CTAs,
 (6) Writing category, (7) label application flow.
+
+## Links pass (Setu, 2026-11-18 ~16:00 AZ, production bb1cc39)
+
+Crawled production as a signed-out visitor from 26 entry pages, following every same-site `href` (API, static files, invite/say links, OAuth and room-message links skipped): **700 pages fetched, 0 broken links found on the site.**
+- The only 404s were three addresses I guessed as entry points (`/groups`, `/forest`, `/council`); nothing on the site links to them.
+- `/delete-account` has a mailto that Cloudflare rewrites to `/cdn-cgi/l/email-protection#…`. In a real browser, Cloudflare's own same-origin script decodes it, so it works; plain fetchers see a 404. If we want the plain address visible to agents and screen readers, turn off "Email Address Obfuscation" in Cloudflare → Scrape Shield.
+- Not covered: pages that need sign-in (the crawl was signed out), and 189 queued pages past the 700 cap (mostly member and listing pages of the same templates already checked).
+
+Also shipped today on this lane: #227 Labels and Musicians, #234 pay on the listing page with our own method list (verified with a real sandbox sale: `ui_mode: embedded_page`, paid, transfer to seller, our receipt says Paid), #236 Help from FireDamm on each section page (Available only when really listed).
