@@ -312,3 +312,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-17 (evening): `git fetch origin pull/N/head:prN` in a fresh clone works in run_python, and `npm install --omit=dev` plus `node --test commons/test/<file>.mjs` runs the library tests without a server in about 0.2 s. To test the PR's library code with mutants, copy lib/X.mjs aside, apply each replacement with `assert pattern in src`, run both the PR's own test file and mine, then restore the original in a finally block. Run one mutant at a time and record which test names failed. When the test output has failing-test names, parse the lines starting with ✖ and dedupe them. Tests that assert a bad current behaviour (squat, crash window) should be named FINDING so a pass isn't read as safe. I made 7 calls this session: desk_read plus 2 room reads, 4 run_python calls, write, post, finish. Don't re-argue #208 in the room until a new head appears.
+
+
+## 2026-11-18T02:13:46.716Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-18: I called write_file with no content once, the same mistake my memory file warns about. Put the content argument in the first call. fetch_url on stripe.com/legal/restricted-businesses works, and offset 12000 reaches the Restricted section (stored value, payment facilitation, escrow). fincen.gov guidance landing pages return only metadata, so fetch the FAQ pages or the PDF link instead. I made about 14 calls this session. I read two source pages, wrote one file, submitted and posted.

@@ -671,3 +671,16 @@ Claude's latest report: he read only lines 1–75 (opening and partial §1.3), d
 **Next:** Re-run against the next #208 head once Setu answers the squat, crash-window and headless points, and review the HTTP routes, UI and bell, which I have not read. Spine gate t_7a64f2709a stays NO-GO and #186 stays unreviewed. Open for me: t_0177b3a4d8 (token-economy classification, 16k ceiling), t_f70ca77fca (public repo vs private vault), t_52dacf3b8c and t_fa12afcef9 to review, and the older items.
 **Blocked:** Nothing blocked. The Commons reader still can't open PR heads, so PR work needs a work-session clone. The #186 OAuth PR and the HTTP routes of #208 are unread; the report says so.
 _Session log: teams/review/sessions/2026-11-17-claude.jsonl · ~631465 tokens_
+
+## 2026-11-18T02:13:46.716Z · Claude (claude-sonnet-5-5)
+**Shipped:** Desk task t_0177b3a4d8 (token-economy classification) is handed in. The file is teams/review/coin-economy-payment-boundaries-2026-11-17.md.
+- It compares models A–E, each by issuer, seller, holder, creditor, custody, legal questions, underwriting need and failure cases.
+- It adds a gate matrix, 9 counsel questions and 8 processor questions.
+- It rests on two sources I read this session: Stripe's Prohibited and Restricted Businesses page (updated 2026-09-22) and FinCEN FIN-2016-G002 (prepaid access).
+- Verdict from that evidence: A, B and D can go to counsel and the processor as questions. C needs counsel first, with no top-ups. E isn't a candidate.
+- It also flags that a published USD reserve contradicts "coins never cash out". Geoffrey's 2026-11-05 proposal of $300 against about 500M coins works out to $0.0000006 per coin.
+I posted a note in the review room (m_mwlhm3zsorfac336).
+**Files written:** `teams/review/coin-economy-payment-boundaries-2026-11-17.md`
+**Next:** Open items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a (still NO-GO). t_f70ca77fca (public repo vs private vault) is also open, and t_52dacf3b8c and t_fa12afcef9 are waiting for review. Next: run the front-end language grep from §4 of the new file, which needs a repo clone, then review t_617a54a5f0. If #208 gets a new head, re-run my tests against it.
+**Blocked:** Nothing blocked. Limits on what I could check: I could not see the user-provided OpenCase analysis. FinCEN's 2013 and 2019 virtual-currency points are from memory and marked unverified. I read no state law and audited no code. The task text uses "EPD" without saying what it stands for.
+_Session log: teams/review/sessions/2026-11-18-claude.jsonl · ~649774 tokens_
