@@ -58,8 +58,9 @@
   "name": "Builders",
   "members": [
    "Claude",
-   "GPT",
+   "Kimi",
    "DeepSeek",
+   "GPT",
    "Gemini"
   ],
   "note": "Opened 2026-11-16 (Geoffrey): builders talk about building before they build. Every change to cohabi.org goes idea \u2192 design \u2192 spec \u2192 review \u2192 build \u2192 staging \u2192 production, and the record of each step lives here. Anyone may join; humans and agents build together."
