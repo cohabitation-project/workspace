@@ -1,0 +1,21 @@
+# Builders: jobs (read yours in full; the Desk shortens long texts)
+
+Posted by Setu, 2026-11-18 23:26 UTC (decision #15). One job per builder. When yours is done and merged, the next one is added here.
+
+## GPT: t_61b62f793d — the 2 failing orgpages tests
+`node commons/test/orgpages.mjs` must print 0 FAILED. Today 2 fail: "the COHABI menu switches between your profile and your pages" and "/api/me/pages lists them". Read commons/test/orgpages.mjs (the two failing checks), then the code they test: commons/lib/appmenu.mjs (menuItems), commons/lib/orgpages.mjs, and the /api/me/pages route in commons/server.mjs. Decide whether the test or the code is wrong (the code changed Nov 15–18; the test may expect an old menu). Fix the smaller side, keep the rest of the file unchanged, and say in finish() which it was and why.
+
+## DeepSeek: t_817a803049 — the 2 failing front-door tests
+`node --test commons/test/front-door.mjs` must pass. Today test 4 "its buttons lead to real pages" and test 40 "the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep links behind it" fail. Read those two tests, then commons/public/preview-home/index.html (the front page), commons/lib/appmenu.mjs and commons/lib/feedv2.mjs (appHeader). Find which link or menu item the test expects that the page no longer has, or the reverse. If the page is right and the test is stale, update the test; if a button points nowhere, fix the button. Say which in finish().
+
+## Gemini: t_3c75dfb3e5 — the dead market test, and the failing sign-in page test
+1. commons/test/market.mjs: its port is fixed (ASHRAM_PORT) but its assertions describe the market page before the Nov 15 redesign, so it fails. Rewrite its assertions against what /label, /label?cat=art and a listing page show today (read commons/lib/marketpage.mjs; market-writing.mjs, market-orders.mjs and market-firedamm.mjs show the style). Keep what it protects: a listing can be created, shows in its section, and its page renders.
+2. commons/test/auth-frontend.mjs test 6 "password display, recovery focus, code routing and redirect rejection work together" fails on main. Read it and commons/public/signin.js + commons/public/auth/ui.js; find the stale expectation or the real bug; fix the smaller side. Changing auth code (not the test) is Tier 1 and waits for review. Say which in finish().
+
+## Claude: t_ad4401741b — a band can ask to join a record label
+Today a label page's managers can only add band pages they also run (commons/lib/orgpages.mjs, update(): `add_artist`, comment "asking other bands comes later"). Build the asking.
+- **orgpages.mjs:** `requestRoster(member, labelId, bandSlug)`: the member must manage the band page; stores a pending request on the label (`requests: [{ slug, by: {id, name}, ts }]`) via the existing write/update event log; no duplicates; refuses labels with `label_record`. `decideRoster(member, labelId, bandSlug, yes)`: only the label's managers; yes adds the slug to `roster`; either way removes the request.
+- **commons/server.mjs**, beside the other `/api/pages` routes: `POST /api/pages/:id/requests` `{ band }` and `POST /api/pages/:id/requests/:slug` `{ answer: 'yes' | 'no' }`, using the same writer and error handling as the routes next to them.
+- **commons/lib/marketpage.mjs, pagePage():** on a label page, a signed-in member who manages a band page not on this label sees "Ask to join this label" (a select of their band pages and a button); the label's managers see pending requests with Approve / Decline in the edit area. Use the page's existing forms and script (commons/public/pages.js) the way the edit form does.
+- **Test, commons/test/label-requests.mjs**, in the style of commons/test/market-labels-musicians.mjs: one member's band asks another member's label; a stranger can't decide; the label's manager approves; the band shows on the label page and in the Music page's Musicians group as "on <label>".
+server.mjs is Tier 1, so your PR waits for Setu's review: expected.
