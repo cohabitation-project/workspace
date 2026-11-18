@@ -582,3 +582,12 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-receipt h2{margin:0 0 6px;font-size:1.1rem}
 .mk-receipt p{margin:4px 0}
 .mk-receipt.mk-cancelled{background:#f6f3ee;border-color:#e0d8c8}
+
+/* Books & Writing (2026-11-18): warm paper and ink, the one section that reads like a page */
+.mk-page[data-mk=writing] { --bg: #f7f3ea; --panel: #fffdf7; --panel2: #f1ebdc; --line: #d8cfb8; --ink: #221d16; --muted: #6a6151; --gold: #7a4a1f; --gold-ink: #fff; background: #f7f3ea; }
+.mk-page[data-mk=writing] h1, .mk-page[data-mk=writing] .mk-body h3, .mk-page[data-mk=writing] .mv-hero h1 { font-family: Georgia, 'Times New Roman', serif; letter-spacing: 0; }
+.mk-block[data-block=writing]::after { content: 'Books, poetry, zines, essays and manuscripts'; }
+.mk-block[data-block=writing] .mk-blockart:not(.has-img) { background: repeating-linear-gradient(0deg, #efe7d4 0 22px, #d9cfb6 22px 23px); }
+.mk-block[data-block=writing] .mk-scene-1 { background: linear-gradient(125deg, #c9a46a, #6b4a22); }
+.mk-block[data-block=writing] .mk-scene-2 { background: linear-gradient(125deg, #e4d2a8, #8a6a3a); }
+.mk-block[data-block=writing] .mk-scene-3 { background: linear-gradient(125deg, #7d6a4b, #3b3022); }

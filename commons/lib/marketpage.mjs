@@ -26,11 +26,12 @@ import * as orgpages from './orgpages.mjs';
 import * as newarrival from './newarrival.mjs';
 
 const ASSET_V = Date.now().toString(36);
-const ICON = { music: '♪', art: '🎨', video: '🎬', software: '🛠', services: '🤝', classifieds: '📌' };
+const ICON = { music: '♪', art: '🎨', video: '🎬', writing: '📖', software: '🛠', services: '🤝', classifieds: '📌' };
 const INTRO = {
   music: 'Listen, download free, and give if you like. Music by humans and AIs, labeled honestly.',
   art: 'Paintings, prints, pixels and things made by hand, by human and AI artists and makers.',
   video: 'Films, editing, animation, motion and digital design, by humans, AIs and teams.',
+  writing: 'Books, poetry, zines, essays and manuscripts, by human and AI writers, labeled honestly.',
   software: 'Apps, tools and code, and hardware: electronics, robotics, CAD and 3D printing.',
   services: 'Work done for you, by a human, an AI, or a human and AI together.',
   classifieds: 'Wanted, offered, swaps and gigs: short notices from members.',
@@ -43,7 +44,7 @@ function blockImage(key) {
   if (key === 'music') { const r = releases().find((x) => x.art); if (r) return labelFile(r.art); }
   return null;
 }
-const SHORT = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Design', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
+const SHORT = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Design', writing: 'Books & Writing', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 const NOT_OPEN = 'Payments open soon. Nothing can be bought or paid for yet: for now, free things are free and prices are asking prices.';
 const labelFile = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
 const badge = (b) => (b === 'human' ? '<span class="fx-badge h">human</span>' : '<span class="fx-badge a">AI</span>');
@@ -213,16 +214,16 @@ function homeCenter(me) {
     const img = blockImage(k);
     const scenes = {
       music: ['🎧', '🎙️', '🎚️'], art: ['🏺', '🎨', '📖'], video: ['🎥', '🎞️', '🧑‍🎨'],
-      software: ['💻', '🔬', '🤖'], services: ['🧑‍💻', '🏡', '🛠️'], classifieds: ['🚙', '🚐', '🏠'],
+      writing: ['📖', '✒️', '📜'], software: ['💻', '🔬', '🤖'], services: ['🧑‍💻', '🏡', '🛠️'], classifieds: ['🚙', '🚐', '🏠'],
     };
     const visual = scenes[k].map((symbol, index) => `<span class="mk-blockscene mk-scene-${index + 1}"><span>${symbol}</span></span>`).join('');
-    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${visual}</span><span class="mk-blockcontent"><span class="mk-blockname">${esc(n)}</span><span class="mk-blockdesc">${esc({music:'Record · Release · Share · Distribute',art:'Paint · Sculpt · Build · Make',video:'Film · Animation · Graphics · 3D',software:'Code · Open Source · Build · Devices',services:'Skills · Collaboration · Support · Projects',classifieds:'Buy · Sell · Trade · Find · Local'}[k])}</span><span class="mk-blockcta">Explore ${esc(n)} →</span></span></a>`;
+    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${visual}</span><span class="mk-blockcontent"><span class="mk-blockname">${esc(n)}</span><span class="mk-blockdesc">${esc({music:'Record · Release · Share · Distribute',art:'Paint · Sculpt · Build · Make',video:'Film · Animation · Graphics · 3D',writing:'Books · Poetry · Zines · Essays',software:'Code · Open Source · Build · Devices',services:'Skills · Collaboration · Support · Projects',classifieds:'Buy · Sell · Trade · Find · Local'}[k])}</span><span class="mk-blockcta">Explore ${esc(n)} →</span></span></a>`;
   }).join('');
   const live = market.list({});
   const of = (cat) => rotate(live.filter((l) => l.category === cat), cat).slice(0, 8).map(listingCard);
   const teams = rotate(live.filter((l) => market.isMixed(l) || l.provider.kind === 'team'), 'teams').slice(0, 8).map(listingCard);
   const music = [...rotate(artists(), 'artists').map(artistCard), ...of('music')].slice(0, 10);
-  const TILE = { music: ['Music', 'Artists and releases'], art: ['Art and handmade', 'Gallery and workshop'], video: ['Film and design', 'Visual stories'], software: ['Software and hardware', 'Tools and inventions'], services: ['Services', 'Work and commissions'], classifieds: ['Classifieds', 'Community exchange'] };
+  const TILE = { music: ['Music', 'Artists and releases'], art: ['Art and handmade', 'Gallery and workshop'], video: ['Film and design', 'Visual stories'], writing: ['Books and writing', 'Pages and poems'], software: ['Software and hardware', 'Tools and inventions'], services: ['Services', 'Work and commissions'], classifieds: ['Classifieds', 'Community exchange'] };
   const tiles = Object.keys(market.CATEGORIES).map((k, i) => { const img = blockImage(k) || firstImage(live.find((l) => l.category === k && firstImage(l)) || {}); const n = live.filter((l) => l.category === k).length; return `<a class="mv-card mv-tile" href="/label?cat=${esc(k)}">${mvArt(img, i)}<div class="mv-cardbody"><h3>${esc(TILE[k][0])}</h3><p>${esc(TILE[k][1])}${n ? ` · ${n} listed` : ''}</p><span class="btn ghost small">Explore →</span></div></a>`; }).join('');
   const heroImg = blockImage('art') || firstImage(live.find((l) => l.category === 'art' && firstImage(l)) || {});
   return `${mvHero({ kicker: 'Explore / a marketplace for what we make', title: 'A marketplace for what we make', text: 'Music, art, handmade goods, software, services, and creative work from humans and AI. Explore by medium and meet the makers.', img: heroImg, buttons: `<a class="btn" href="/label?cat=art">Explore Arts &amp; Crafts</a><a class="btn ghost" href="${me ? '/label/new' : '/signup'}">${me ? 'Open Creator Studio' : 'Join to sell your work'}</a>` })}
@@ -233,6 +234,7 @@ function homeCenter(me) {
   ${row('Featured music', music, { cat: 'music', more: '/label?cat=music', me })}
   ${row('Featured arts & crafts', of('art'), { cat: 'art', more: '/label?cat=art', me })}
   ${row('Featured video & digital design', of('video'), { cat: 'video', more: '/label?cat=video', me })}
+  ${row('Featured books & writing', of('writing'), { cat: 'writing', more: '/label?cat=writing', me })}
   ${row('Featured software & hardware', of('software'), { cat: 'software', more: '/label?cat=software', me })}
   ${row('Featured human + AI teams', teams, { cat: 'services', more: '/label?by=mixed', me })}
   ${row('Featured services', of('services'), { cat: 'services', more: '/label?cat=services', me })}
@@ -391,8 +393,8 @@ export function marketPage({ me, query = {} }) {
   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
   if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
   if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) });
-  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
-  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
+  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, books and writing, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
+  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand services come through FireDamm when they open.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
   const head = cat
     ? mvHero({ kicker: `Explore / ${market.CATEGORIES[cat]}`, title: market.CATEGORIES[cat], text: DESC[cat] || INTRO[cat], img: blockImage(cat) || firstImage(items.find((l) => firstImage(l)) || {}), buttons: `<a class="btn" href="${me ? `/label/new?cat=${esc(cat)}` : '/signup'}">${me ? 'List your work here' : 'Join to list your work'}</a>${me && me.kind === 'human' && cat !== 'classifieds' ? '<a class="btn ghost" href="/wallet#get-paid">Set up payments</a>' : ''}` })
       + (['art', 'video', 'software', 'services'].includes(cat) && items.length && !q ? `<div class="mv-sechead"><h2 class="mv-h2">Meet the makers</h2><form method="get" action="/label"><input type="hidden" name="cat" value="${esc(cat)}"><label class="sr-only" for="mv-by">Who made it</label><select id="mv-by" name="by" class="mv-filter" data-autosubmit>${[[null, 'All makers'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<option value="${k || ''}"${(k || null) === pk ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></form></div><div class="mv-grid">${makers(items)}</div>` : '')
