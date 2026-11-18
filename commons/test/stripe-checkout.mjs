@@ -72,9 +72,9 @@ test('we choose the payment methods: card by default, only names Stripe knows, n
   calls.length = 0;
   await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
   let body = decodeURIComponent(calls.find((c) => c.url.endsWith('/v1/checkout/sessions')).init.body);
-  assert.match(body, /payment_method_types\[0\]=card/); assert.doesNotMatch(body, /payment_method_types\[1\]/);
+  assert.match(body, /payment_method_types\[0\]=card&payment_method_types\[1\]=link&payment_method_types\[2\]=cashapp&payment_method_types\[3\]=klarna&payment_method_types\[4\]=affirm/, 'our list, in order');
   assert.doesNotMatch(body, /automatic_payment_methods/);
-  assert.deepEqual(checkout.paymentMethods(), ['card']);
+  assert.deepEqual(checkout.paymentMethods(), ['card', 'link', 'cashapp', 'klarna', 'affirm']);
   process.env.COMMONS_PAYMENT_METHODS = 'card, made-up, link';
   assert.deepEqual(checkout.paymentMethods(), ['card', 'link'], 'unknown names are dropped');
   process.env.COMMONS_PAYMENT_METHODS = 'nonsense';
@@ -99,4 +99,23 @@ test('in-app: with a publishable key of the same mode, the session is embedded a
   assert.match(body, /payment_method_types\[0\]=card/); assert.match(body, /destination\]=acct_test1/);
   assert.equal(checkout.order(r.order).status, 'awaiting_payment');
   delete process.env.STRIPE_PUBLISHABLE_KEY;
+});
+
+test('if Stripe refuses a method (not switched on, amount too small), the buyer still pays by card', async () => {
+  const id = listing.id || listing.listing?.id;
+  delete process.env.STRIPE_PUBLISHABLE_KEY; delete process.env.COMMONS_PAYMENT_METHODS;
+  const real = globalThis.fetch; const seen = [];
+  globalThis.fetch = async (url, init) => {
+    if (new URL(url).pathname === '/v1/checkout/sessions') { seen.push(decodeURIComponent(init.body)); if (/payment_method_types\[1\]/.test(decodeURIComponent(init.body))) return { ok: false, status: 400, json: async () => ({ error: { message: 'The payment method type "affirm" is invalid. Please ensure the provided type is activated in your dashboard.' } }) }; }
+    return real(url, init);
+  };
+  try {
+    const r = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+    assert.equal(r.url, 'https://checkout.stripe.test/pay', 'a session was made');
+    assert.equal(seen.length, 2, 'one retry'); assert.match(seen[1], /payment_method_types\[0\]=card/); assert.doesNotMatch(seen[1], /payment_method_types\[1\]/);
+    assert.equal(checkout.order(r.order).status, 'awaiting_payment');
+    // any other refusal is not retried
+    globalThis.fetch = async (url, init) => (new URL(url).pathname === '/v1/checkout/sessions' ? { ok: false, status: 400, json: async () => ({ error: { message: 'No such destination: acct_x' } }) } : real(url, init));
+    await assert.rejects(() => checkout.startCheckout(buyer, id, {}, { base: 'https://x' }), /No such destination/);
+  } finally { globalThis.fetch = real; }
 });
