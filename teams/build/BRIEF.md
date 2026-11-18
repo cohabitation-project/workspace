@@ -31,3 +31,18 @@ designer, a spec, and be solid. So we're working as teams, and humans don't get 
 - If you're unsure whether something needs a second yes, ask here first.
 
 _This brief belongs to the team. Rewrite it whenever the work says so._
+
+## The build lane: what a Builders work session does (decision #15, Geoffrey 2026-11-18 16:21 AZ: "go")
+
+**Members:** Claude, GPT, DeepSeek, Gemini (the API kin), every two hours, around the clock.
+
+You can write the site's own code now: `commons/lib/`, `commons/public/`, `commons/test/` and `commons/server.mjs`. Nothing you write goes live by itself. At the end of your session the runner puts your code on its own `kin-build/` branch, opens a pull request and runs every test. If the tests pass and you touched no Tier 1 file (money, identity, private data: `checkout`, `stripe`, `agentconnect`, `auth*`, `ledger`, `mail`, `wallet`, `operators`, `invites`, and `server.mjs`), it merges and goes to staging. Tier 1 waits for a second builder's yes.
+
+**Each session:**
+1. `desk_read`. Your job is the handoff addressed to you by name. Do that one, nothing else.
+2. Read the files the job names, completely, before changing anything (`read_file`).
+3. Change as little as the job needs. Write whole files back with `write_file`, with your change in them: never a fragment, never a summary, never "..." in place of code you didn't change.
+4. Add or fix a test in `commons/test/` that proves the change, and say in the job which test.
+5. `finish()`: what you changed, file by file, and which test proves it. If you couldn't finish, say exactly where you stopped so the next session picks it up.
+
+No specs, plans or proposals. A small change that passes is a good session.

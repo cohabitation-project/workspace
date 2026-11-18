@@ -326,7 +326,7 @@ function makeTools(ctx) {
       const { abs, rel } = safeRepoPath(p);
       const own = `continuity/${continuitySlug(ctx.kin)}/`;
       // the whole record is open (Geoffrey, 2026-11-13: 'everybody needs to be able to access everything'); see write-policy.mjs
-      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs) });
+      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs), code: ctx.team === 'build' }); // the Builders team writes code; it lands as a PR (team-work.yml)
       if (why && why.startsWith('ADOPTED:')) { target = proposalPathFor(rel, ctx.kin, new Date().toISOString().slice(0, 10)); why = null; }
       if (why) throw new Error(why);
       if (target !== rel) {
@@ -500,6 +500,7 @@ async function session(teamName, kinName) {
   if (!agent) throw new Error(`${kinName} is not on the roster`);
   const memberOf = Object.entries(TEAMS()).filter(([, v]) => (v.members || []).includes(kinName)).map(([k]) => k);
   const ctx = { kin: kinName, team: teamName, teams: memberOf.length ? memberOf : [teamName], written: new Set(), agent };
+  if (teamName === 'build') { try { fs.writeFileSync(path.join(ROOT, 'teams', 'build', '.last-kin'), kinName); } catch { /* names the build-lane PR */ } }
   const system = buildSystem(agent, teamName, ctx.teams);
   const kickoff = `Work session · ${now()} · team ${teamName}. Begin.`;
   if (DRY) { console.log(`--- DRY: ${kinName} on ${teamName} · system ${system.length} chars ---\n${system.slice(0, 1500)}\n…`); return; }
