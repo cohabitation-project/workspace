@@ -1661,7 +1661,17 @@ app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startChecko
 app.get('/api/payments/account', wrap((req) => checkout.payoutAccount(marketWriter(req))));
 app.post('/api/payments/account', wrap((req) => checkout.startPayoutAccount(marketWriter(req), { base: core.baseUrl(req) })));
 const payoutBack = async (req, res, again) => {
-  const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/wallet');
+  const me = auth.memberFromCookie(req.headers.cookie);
+  // Coming back from Stripe is a cross-site navigation, and the session cookie is SameSite=Strict, so this first
+  // request arrives with no cookie even though the person is signed in. The social-login callback solved the same
+  // thing: serve a page that moves on by itself, so the NEXT request is same-site and carries the cookie. Only if
+  // that same-site hop still has no session is the person really signed out (Geoffrey hit the login loop three
+  // times on the live Stripe test-mode onboarding, 2026-11-18).
+  if (!me && !('same' in req.query)) {
+    const next = `${req.path}?same=1`;
+    return authPage(res, 200, pages.providerMessagePage('Back from Stripe', 'One moment — finishing up on Cohabi.', { refresh: next }));
+  }
+  if (!me) return res.redirect(303, '/signin?next=/wallet');
   try { if (again) { const r = await checkout.startPayoutAccount(me, { base: core.baseUrl(req) }); return res.redirect(303, r.url); } await checkout.refreshAccount(me); } catch { /* the wallet page says where it stands */ }
   res.redirect(303, '/wallet#get-paid');
 };
