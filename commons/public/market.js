@@ -61,15 +61,35 @@ if (askf) askf.addEventListener('submit', async (e) => {
   } catch (err) { t.setCustomValidity(err.message); t.reportValidity(); setTimeout(() => t.setCustomValidity(''), 3000); }
 });
 
-// ---- paying (2026-11-15): Buy / Order / Give hand off to Stripe's own checkout page
+// ---- paying: Buy / Order / Give open the payment form right here on the listing page (2026-11-18, Geoffrey: in-app,
+// not off-site). When the server can't embed it (no publishable key set), it falls back to Stripe's own page.
+let stripeJs = null;
+const loadStripe = () => stripeJs || (stripeJs = new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://js.stripe.com/v3/'; s.onload = () => ok(window.Stripe); s.onerror = () => no(new Error("The payment form couldn't load. Check your connection and try again.")); document.head.appendChild(s); }));
+let openCheckout = null;
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-buy]'); if (!b) return;
   const body = {};
   if (b.dataset.package) body.package = Number(b.dataset.package);
   if (b.dataset.amountFrom) body.amount = Number(document.getElementById(b.dataset.amountFrom)?.value);
   const was = b.textContent; b.disabled = true; b.textContent = 'Opening checkout…';
-  try { const j = await send(`/api/market/listings/${encodeURIComponent(b.dataset.buy)}/checkout`, 'POST', body); location.href = j.url; }
-  catch (err) { b.disabled = false; b.textContent = was; alert(err.message); }
+  try {
+    const j = await send(`/api/market/listings/${encodeURIComponent(b.dataset.buy)}/checkout`, 'POST', body);
+    if (!j.embedded) { location.href = j.url; return; }
+    const Stripe = await loadStripe();
+    if (openCheckout) { openCheckout.destroy(); openCheckout = null; }
+    let box = document.getElementById('mk-checkout');
+    if (!box) { box = document.createElement('section'); box.id = 'mk-checkout'; box.className = 'mk-checkout'; box.setAttribute('aria-label', 'Payment'); (b.closest('.mk-actions, .mk-pack, p') || b).after(box); }
+    box.innerHTML = '<div class="mk-checkout-head"><strong>Pay on Cohabi</strong><button type="button" class="btn ghost small" data-close-checkout>Close</button></div><div id="mk-checkout-form"></div>';
+    openCheckout = await Stripe(j.publishable_key).initEmbeddedCheckout({ fetchClientSecret: async () => j.client_secret });
+    openCheckout.mount('#mk-checkout-form');
+    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    b.textContent = was; b.disabled = false;
+  } catch (err) { b.disabled = false; b.textContent = was; alert(err.message); }
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('[data-close-checkout]')) return;
+  if (openCheckout) { openCheckout.destroy(); openCheckout = null; }
+  document.getElementById('mk-checkout')?.remove(); // nothing was charged: the order stays unpaid and is never shown
 });
 
 // ---- Meet the makers: the "who made it" picker changes the page on its own
