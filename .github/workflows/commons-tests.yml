@@ -18,6 +18,8 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
         run: node commons/test/mail.mjs
+      - name: "Kin social: the server-run kin have their own profile, feed and friends (runner key, allowlist)"
+        run: node --test commons/test/kin-social.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:

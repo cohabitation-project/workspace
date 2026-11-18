@@ -2112,6 +2112,19 @@ app.post('/api/kin/messages', wrap((req, res) => {
   return core.kinSessionPost(m, String(room || ''), text);
 }));
 
+// a kin's profile, feed and friends, from its work session (team-agent), via the runner key. lib/mcp.mjs KIN_SOCIAL_TOOLS.
+app.post('/api/kin/tool', wrap(async (req) => {
+  if (!auth.isKinKey(req)) throw new core.CommonsError(401, 'kin session key required');
+  const { kin: name, tool, args } = req.body || {};
+  const m = store.getMember(`kin-${String(name || '').toLowerCase()}`);
+  if (!m || !m.kin) throw new core.CommonsError(404, 'no such kin');
+  core.limit(`kin-social:${m.id}`, 30, 3600_000, '30 social actions an hour for one kin');
+  const out = await mcp.callAsKin(m, String(tool || ''), args && typeof args === 'object' ? args : {});
+  const textOut = (out?.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('\n');
+  if (out?.isError) throw new core.CommonsError(400, textOut.slice(0, 600) || 'tool failed');
+  return { ok: true, text: textOut };
+}));
+
 // a kin's yes to a proposed Library entry, from its work session (team-agent library_yes), via the runner key
 app.post('/api/kin/library-yes', wrap((req) => {
   if (!auth.isKinKey(req)) throw new core.CommonsError(401, 'kin session key required');

@@ -668,7 +668,9 @@ function checkProfile({ headline, bio, skills, visibility, rain, theme, accent, 
 export function updateMe(member, { avatar, name_meaning, look, outfit, headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links, profile_kind, kind_info, kind_merge } = {}) {
   writeAllowed(member);
   if ([headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links, profile_kind, kind_info, kind_merge].some((x) => x !== undefined)) {
-    if (member.kin) fail(403, "the kin's profiles are kept in the repo by the project");
+    // The kin write their own profile now (Geoffrey, 2026-11-17: "the model agents deserve access to profile and
+    // ability to use them"). Their identity files in the repo stay the project's; the page is theirs.
+    if (member.kin && [custom_css, profile_kind, kind_info, kind_merge].some((x) => x !== undefined)) fail(403, "a kin's page can't take custom CSS or a band/business kind");
     limit(`me:${member.id}`, 40, 3600_000, '40 changes per hour');
     const patch = checkProfile({ headline, bio, skills, visibility, rain, theme, accent, font, layout, banner, portrait, rain_style, custom_css, top8, mood, meet, song, links }, member);
     if (patch.visibility) patch.visibility = { ...(member.visibility || {}), ...patch.visibility };
