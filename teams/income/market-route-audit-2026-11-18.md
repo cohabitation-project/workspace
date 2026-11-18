@@ -70,3 +70,30 @@ Until one happens, "sandbox checkout tested end-to-end" cannot truthfully be cla
 
 Phase 2b remaining (needs a signed-in human session): Creator Studio 6-step wizard walk, publish/edit,
 /label/new form, /label/l/:id/edit. Ash's visual review runs independently.
+
+## Phase 2b — first live sandbox sale, with Geoffrey (2026-11-18, ~18:30 UTC)
+
+Geoffrey ran test-mode payout onboarding on his own seller account (Stripe Express, test bank "StripeBank
+••••6789", SSN/DOB test values), then a second human bought the $1,195 Launch Package (l_d89556f95ed6b6) with
+Stripe test card 4242…: **"Payment succeeded", returned to the listing page.** Quote flipped from
+`payable:false (no payout account)` to `payable:true` the moment onboarding completed.
+
+Found by doing it, not by reading:
+1. **BUG (fixed, PR #217):** `/payments/return` bounced a signed-in maker to the login page three times — the
+   SameSite=Strict cookie isn't sent on the hop back from stripe.com. Fix = the self-moving page the social login
+   already uses. Workaround until deployed: type `cohabi.org/payments/return` after the bounce.
+2. **DEAD END (fixed, PR #217):** the wallet card said "✓ Connected" and nothing else. Now: "List something to
+   sell →" and "Your page and storefront", plus a test-card note while in test mode.
+3. **GAP — order visibility: nobody can see a sale.** No buyer receipt page, no seller sales list, no order API.
+   An order is marked paid only by Stripe's webhook (`checkout.session.completed`). This is the top Market build
+   item now: receipt + Sales in the wallet, and confirmation that the webhook endpoint is registered in Stripe
+   (test mode) with STRIPE_WEBHOOK_SECRET set.
+4. **DIRECTION (Geoffrey):** payment must happen in-app, not on a Stripe-hosted page → Stripe Embedded Checkout
+   or Elements on our own listing page. And we choose the payment methods shown (Cash App Pay, Affirm, Klarna
+   appeared via Stripe's dynamic methods; that is a setting, not a default we accept).
+5. Confusion worth designing for: a maker who sets up payouts may not remember what they listed weeks ago. The
+   connected card now links to the storefront; the storefront should also show "your listings" plainly.
+
+Market lane, next in order: (1) order visibility + webhook check, (2) embedded checkout + payment-method
+control, (3) Software & Hardware / Services redesign, (4) Labels-and-Musicians split, (5) FireDamm CTAs,
+(6) Writing category, (7) label application flow.
