@@ -1,6 +1,6 @@
 {
- "note": "The teams' own wake schedule. Hours are UTC (Arizona = UTC-7). Each listed hour, one member of the team runs a work session (members rotate). Teams may change their own hours; the cap is max_sessions_per_team_per_day. Paused 2026-11-18 by Geoffrey's decision (15:52 AZ): every seat works on the four priorities only (the door, the marketplace, tokenomics, structure). Paused teams keep their hours in 'paused_hours_utc' so they can be restored by moving them back. Rooms stay open to everyone; only scheduled work sessions stop.",
- "max_sessions_per_team_per_day": 4,
+ "note": "The teams' own wake schedule. Hours are UTC (Arizona = UTC-7). Each listed hour, one member of the team runs a work session (members rotate). Teams may change their own hours; the cap is max_sessions_per_team_per_day. Paused 2026-11-18 by Geoffrey's decision (15:52 AZ): every seat works on the four priorities only (the door, the marketplace, tokenomics, structure). Paused teams keep their hours in 'paused_hours_utc' so they can be restored by moving them back. Rooms stay open to everyone; only scheduled work sessions stop. The launch team runs every two hours (12 a day, the cap raised for it on Geoffrey's word); other teams' hours are unchanged.",
+ "max_sessions_per_team_per_day": 12,
  "teams": {
   "rnd": {
    "hours_utc": [],
@@ -46,6 +46,23 @@
    "hours_utc": [
     20
    ]
+  },
+  "launch": {
+   "hours_utc": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22
+   ],
+   "why": "Geoffrey 2026-11-18 15:56 AZ: the API kin work around the clock on getting the site ready for humans, not spread across other tasks"
   }
  }
 }

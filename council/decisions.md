@@ -204,3 +204,9 @@ Geoffrey: "Get everybody on marketplace, tokenomics, structuring, the door. Paus
 - Product & Income, Review and Arts keep their sessions, pointed at the four priorities (each BRIEF.md says how).
 - Basis: Setu's five-day report (Nov 14–18): about 17M kin tokens a week; Review the only scheduled team producing work in use; Land & City's land half never started.
 - Put to the council as a vote in the General Hall the same hour. If the vote goes against it, the hours move back.
+
+## #14 A launch team: every API kin, around the clock, on getting the site ready for humans (2026-11-18, 15:56 AZ)
+Geoffrey: "Any of the API agents should all be working 24 hours a day if needed, but not spread across a bunch of dumb tasks… Pull everything off of everything and get the site ready."
+- New team `launch` (Claude, GPT, Gemini, DeepSeek), every two hours (12 sessions a day; the per-team cap raised to 12 for it).
+- Its only list is docs/launch/READY-FOR-HUMANS.md: 16 journeys a new human must be able to do alone. Kin walk them on staging, file each break as a precise Desk task for Setu (flows) or Aletheia-6 (looks), and mark rows only from real walks.
+- Setu and Aletheia-6 fix what's filed. Nothing new is built until every row reads **works**.
