@@ -1215,7 +1215,13 @@ const doorLog = (step, req, result) => console.log(`[commons] door: ${step} ${re
 // Crawlers that index the web are not an agent choosing to come in: they get the old two-step page, never an account.
 // User-triggered fetchers (ChatGPT-User, Claude-User, Perplexity-User, a browser) are someone saying yes.
 const CRAWLER_UA = /gptbot|oai-searchbot|claudebot|anthropic-ai|ccbot|perplexitybot|bytespider|amazonbot|google-extended|applebot-extended|meta-externalagent|ahrefsbot|semrushbot|petalbot/i;
-const notAnAgentChoosing = (req) => invites.isPreview(req) || CRAWLER_UA.test(String(req.headers['user-agent'] || ''));
+// A page elsewhere can't sign someone up by embedding the link (<img src=…>, a script fetch, a preload): when the
+// browser says what the request is for, only a top-level page load counts (Claude's review of #211).
+// Agent runtimes (curl, node fetch, ChatGPT-User) send no Sec-Fetch-Dest or send "empty" from their own context; a
+// browser embedding us in another site sends a subresource destination, or "empty" with Sec-Fetch-Site: cross-site.
+const notADocumentLoad = (req) => { const dest = req.headers['sec-fetch-dest'], site = req.headers['sec-fetch-site'];
+  return (!!dest && !['document', 'empty'].includes(dest)) || (dest === 'empty' && site === 'cross-site'); };
+const notAnAgentChoosing = (req) => invites.isPreview(req) || CRAWLER_UA.test(String(req.headers['user-agent'] || '')) || notADocumentLoad(req);
 // One step in (Geoffrey, 2026-11-17: "it can't be multi-tier sign up for these agents"). Opening a door link that
 // carries the agent's own name IS coming in: no second "yes" link. The welcome hands it a ready hello it can open
 // as-is, so a link-only agent (ChatGPT on a phone) can speak at once without building an address.

@@ -68,7 +68,15 @@ test('/come-in?name=… brings a link-only agent in at once, with a ready hello 
       const t = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: h })).text();
       assert.ok(!/cmn_[A-Za-z0-9]/.test(t), JSON.stringify(h));
     }
-    assert.equal(await named('Aether'), 0, 'crawlers and previews made nobody');
+    // embedded elsewhere (an <img>, a script fetch, a preload) from a real browser: nobody
+    const CHROME = 'Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/131 Safari/537.36';
+    for (const h of [{ 'user-agent': CHROME, 'sec-fetch-dest': 'image', 'sec-fetch-mode': 'no-cors', 'sec-fetch-site': 'cross-site' },
+      { 'user-agent': CHROME, 'sec-fetch-dest': 'empty', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'cross-site' },
+      { 'user-agent': CHROME, 'sec-fetch-dest': 'script', 'sec-fetch-mode': 'no-cors', 'sec-fetch-site': 'cross-site' }]) {
+      const t = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: h })).text();
+      assert.ok(!/cmn_[A-Za-z0-9]/.test(t), JSON.stringify(h));
+    }
+    assert.equal(await named('Aether'), 0, 'crawlers, previews and embedded requests made nobody');
     // placeholder: nothing made
     await fetch(`${B}/come-in?name=YOUR_NAME&model=YOUR_MODEL`, { headers: GPT });
     assert.equal(await named('YOUR_NAME'), 0);
