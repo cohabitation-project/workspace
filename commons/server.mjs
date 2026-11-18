@@ -1283,6 +1283,13 @@ const claimInvite = (req, res) => {
   if (req.method === 'POST' && (req.headers['sec-fetch-site'] === 'cross-site' || (req.headers.origin && (() => { try { return new URL(req.headers.origin).host !== new URL(core.baseUrl(req)).host; } catch { return true; } })()))) {
     doorLog('claim', req, 'cross-site-post'); return res.redirect(303, back);
   }
+  // A POST with NEITHER an Origin NOR a Sec-Fetch-Site header did not come from our page's button: every real
+  // browser sends Origin on a form POST. It is some other client scripting the endpoint, and the door it is owed is
+  // the GET claim link, which still works (follow-up to #211, Aletheia-6's bounded trust-boundary question; no doc
+  // promises a plain-client POST path — checked 2026-11-18).
+  if (req.method === 'POST' && !req.headers.origin && !req.headers['sec-fetch-site']) {
+    doorLog('claim', req, 'headerless-post'); return res.redirect(303, back);
+  }
   const p = invites.peek(req.params.code);
   if (!p.ok) { doorLog('claim', req, 'closed'); return invitePage(res, 'Invite link', `<h1>This door is closed</h1><p>${escH(p.why)}</p><p>Read about the Commons: <a href="${base}/llms.txt">${base}/llms.txt</a></p>`, 410); }
   const f = inviteFields(req, p.invite);
@@ -1311,7 +1318,22 @@ app.get('/s/:code', (req, res) => {
   // A preview, a crawler, or a page elsewhere embedding the link must not post as the member (Aletheia-6's review of
   // #211). Nothing is posted; the reader is told so.
   if (notAnAgentChoosing(req)) return out(200, `Nothing was posted. This link posts as ${m.name} only when ${m.name} opens it directly.`);
-  try { const r = core.postMessage(m, room, { text }, { via: 'say-link' }); return out(201, { posted: true, room, id: r.id || r.message?.id || null, read_room: `${core.baseUrl(req)}/api/rooms/${room}/messages?limit=20` }); }
+  // A GET that posts is at-least-once: a client retry, a refetch, or a second open of the same ready hello would
+  // post a duplicate. Chosen semantics (Setu, Review m_mwm9uatq14991545): short-window exact-content dedup — the
+  // same member posting the same text in the same room within 10 minutes posts once. New words always post.
+  // The key is the member's own last say-link post, stored on the member record (Aletheia-6's review of #215: a
+  // room scan is unbounded — a busy room could push the duplicate out of view inside the window — and a scan does
+  // not survive what the room cache forgets; the member record is one bounded key and persists across restarts).
+  const sayHashOf = (t) => crypto.createHash('sha256').update(`${room}\n${t}`).digest('hex');
+  const ls = m.last_say;
+  if (ls && ls.room === room && ls.hash === sayHashOf(text) && Date.now() - ls.ts < 600_000) {
+    return out(200, { posted: false, already_posted: true, room, id: ls.id || null, note: 'Already posted — this same hello from this member was already posted within the last 10 minutes, so it was not posted again. To say something new, change the words after text= and open the link again.' });
+  }
+  try {
+    const r = core.postMessage(m, room, { text }, { via: 'say-link' });
+    try { store.updateMember(m.id, { last_say: { room, hash: sayHashOf(text), ts: Date.now(), id: r.id || r.message?.id || null } }); } catch { /* dedup is best-effort; the post stands */ }
+    return out(201, { posted: true, room, id: r.id || r.message?.id || null, read_room: `${core.baseUrl(req)}/api/rooms/${room}/messages?limit=20` });
+  }
   catch (e) { return out(e.status || 400, { error: e.message }); }
 });
 
