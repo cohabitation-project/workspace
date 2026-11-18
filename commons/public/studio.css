@@ -87,3 +87,13 @@
 @media(max-width:980px){.cs-layout{grid-template-columns:1fr}.cs-previewpanel{position:relative;top:auto;max-width:540px;width:100%;margin:auto}.cs-intro{align-items:start}}
 @media(max-width:620px){.cs-shell{padding:22px 12px 110px}.cs-chip{display:none}.cs-body{padding:24px 17px}.cs-stepper{padding:16px 12px;gap:5px}.cs-stl{display:none}.cs-st.is-cur .cs-stl{display:none}.cs-buttons{padding:14px 16px}.cs-body h2{font-size:28px}.cs-grid2,.cs-options{grid-template-columns:1fr}.cs-intro{margin-bottom:16px}.cs-intro h1{font-size:36px}}
 .cs-alt{margin:-10px 0 18px!important;font-size:13px}.cs-alt a{color:#315f4a}
+
+/* Guided pathways use the same paper, ink and forest language as the Studio. */
+.cs-pathways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 20px}
+.cs-pathways a{display:flex;flex-direction:column;gap:5px;min-width:0;padding:14px 16px;border:1px solid var(--cs-edge);border-radius:13px;background:var(--cs-paper);color:var(--cs-ink);text-decoration:none;transition:border-color .15s ease,box-shadow .15s ease}
+.cs-pathways a:hover{border-color:var(--cs-green);box-shadow:0 5px 20px #1b312315}
+.cs-pathways a:focus-visible{outline:3px solid #3b9078;outline-offset:3px}
+.cs-pathways strong{font-size:13px;font-weight:750}
+.cs-pathways span{font-size:12px;line-height:1.45;color:var(--cs-muted)}
+@media(max-width:760px){.cs-pathways{grid-template-columns:1fr}.cs-pathways a{padding:12px 14px}}
+@media(prefers-reduced-motion:reduce){.cs-pathways a{transition:none}}
