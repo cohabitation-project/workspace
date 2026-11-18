@@ -24,6 +24,7 @@ export const KINDS = { band: 'Band / musician', artist: 'Artist / maker', busine
 export const THEMES = { navy: 'Navy and gold', midnight: 'Midnight and ember', music: 'Dark, like a listening app', art: 'Gallery white', video: 'Cinema', software: 'Terminal', services: 'Clean studio', classifieds: 'Newsprint', home: 'Cream' };
 const DEFAULT_THEME = { band: 'music', artist: 'art', business: 'services', label: 'music' };
 const ACCENT_RX = /^#[0-9a-f]{6}$/i;
+const MAX_REQUESTS = 20; // pending asks on one label at a time, so a label's page can't be flooded
 
 let FILE = null;
 const pages = new Map();
@@ -82,6 +83,8 @@ export function rosterOf(lbl, folders = hooks.labelFolders()) {
 }
 /** The label pages a band or artist page is on. */
 export const labelsFor = (pg) => [...pages.values()].filter((l) => l.kind === 'label' && (l.label_record ? pg.label : (l.roster || []).includes(pg.slug)));
+/** The bands waiting to join a label (asks whose band is not already on its roster). */
+export const pendingRequests = (lbl) => (lbl?.requests || []).filter((r) => !(lbl.roster || []).includes(r.slug));
 export const href = (p) => (p.label ? `/label/a/${p.slug}` : `/page/${p.slug}`);
 export const themeOf = (p) => (THEMES[p.theme] ? p.theme : DEFAULT_THEME[p.kind] || 'home');
 
@@ -101,8 +104,52 @@ export function create(member, { kind, name } = {}) {
 }
 /** The server's own changes to a page (seeded pictures and listings), never a member's. */
 export function systemPatch(id, patch) { const p = get(id); if (!p) return null; write({ op: 'update', id: p.id, patch, by: 'system', ts: new Date().toISOString() }); return get(p.id); }
+
+const labelOf = (labelId) => { const l = get(labelId) || bySlug(labelId); if (!l) fail(404, 'no such page'); if (l.kind !== 'label') fail(400, 'only a label page has artists'); if (l.label_record) fail(400, "this label's artists come from the Label's own record"); return l; };
+const bandOf = (ref) => { const a = bySlug(String(ref ?? '')) || get(String(ref ?? '')); if (!a || !['band', 'artist'].includes(a.kind)) fail(400, 'no such band or artist page'); return a; };
+/**
+ * A band or artist asks to join a label (2026-11-18). The member must run the band's page; the label's managers
+ * decide. The ask is stored on the label ("requests"), through the same event log as every other page change.
+ */
+export function requestRoster(member, labelId, bandSlug) {
+  if (!member) fail(401, 'sign in to ask a label');
+  const l = labelOf(labelId); const a = bandOf(bandSlug);
+  if (!isManager(a, member.id)) fail(403, `you can ask for ${a.name} once you run its page`);
+  if (isManager(l, member.id)) fail(400, `you run ${l.name}: add ${a.name} from Edit this page`);
+  if ((l.roster || []).includes(a.slug)) fail(409, `${a.name} is already on ${l.name}`);
+  const pending = pendingRequests(l);
+  if (pending.some((r) => r.slug === a.slug)) fail(409, `${a.name} has already asked ${l.name}`);
+  if (pending.length >= MAX_REQUESTS) fail(429, `${l.name} has ${MAX_REQUESTS} asks waiting; try again once its managers have answered some`);
+  const requests = [...pending, { slug: a.slug, by: { id: member.id, name: member.name }, ts: new Date().toISOString() }];
+  write({ op: 'update', id: l.id, patch: { requests }, by: member.id, ts: new Date().toISOString() });
+  return get(l.id);
+}
+/** The label's managers answer an ask. Yes puts the band on the roster; either way the ask is cleared. */
+export function decideRoster(member, labelId, bandSlug, yes) {
+  const l = labelOf(labelId);
+  if (!isManager(l, member?.id)) fail(403, 'only the members who run this label can answer');
+  const slug = String(bandSlug ?? '');
+  if (!(l.requests || []).some((r) => r.slug === slug)) fail(404, 'no such ask on this label');
+  const patch = { requests: l.requests.filter((r) => r.slug !== slug) };
+  if (yes) {
+    const a = bandOf(slug);
+    const roster = l.roster || [];
+    if (!roster.includes(a.slug)) patch.roster = [...roster, a.slug];
+  }
+  write({ op: 'update', id: l.id, patch, by: member.id, ts: new Date().toISOString() });
+  return get(l.id);
+}
+
 export function update(member, id, b = {}) {
   const p = get(id); if (!p) fail(404, 'no such page');
+  // asking a label to take a band, and the label's answer, travel on the page's PATCH route (2026-11-18); they are
+  // not edits to the page's own fields, so they go alone.
+  if (b.request_join !== undefined) { if (Object.keys(b).length > 1) fail(400, 'ask to join on its own'); return requestRoster(member, p.id, b.request_join); }
+  if (b.decide_join !== undefined) {
+    if (Object.keys(b).length > 1) fail(400, 'answer an ask on its own');
+    const d = b.decide_join || {}; if (!['yes', 'no'].includes(d.answer)) fail(400, "answer: 'yes' or 'no'");
+    return decideRoster(member, p.id, d.band, d.answer === 'yes');
+  }
   if (!isManager(p, member?.id)) fail(403, 'only the members who run this page can change it');
   const patch = {};
   if (b.name !== undefined) { if (p.label) fail(400, "a Label artist's name comes from the Label's record"); const nm = clip(b.name, 60); if (nm.length < 2) fail(400, 'name: 2 to 60 characters'); patch.name = nm; }
@@ -125,14 +172,16 @@ export function update(member, id, b = {}) {
     const keep = new Set(p.gallery || []); // pictures already on the page (e.g. seeded from the business's own site) may stay
     patch.gallery = ids.map((id) => (keep.has(id) ? id : hooks.imageOwned(member, String(id)))).filter(Boolean);
   }
-  // a label's artists: a label's managers add band or artist pages they also run (asking other bands comes later)
+  // a label's artists: a label's managers add band or artist pages they also run directly; other bands ask
+  // (requestRoster) and the managers answer (decideRoster)
   if (b.add_artist !== undefined) {
     if (p.kind !== 'label') fail(400, 'only a label page has artists');
     if (p.label_record) fail(400, "this label's artists come from the Label's own record");
     const a = bySlug(String(b.add_artist)) || get(String(b.add_artist)); if (!a || !['band', 'artist'].includes(a.kind)) fail(400, 'no such band or artist page');
-    if (!isManager(a, member.id)) fail(403, `you can add ${a.name} once you also run its page (or its managers add you)`);
+    if (!isManager(a, member.id)) fail(403, `you can add ${a.name} once you also run its page, or ask ${a.name}'s managers to request a place here`);
     const roster = p.roster || []; if (roster.includes(a.slug)) fail(409, `${a.name} is already on this label`);
     patch.roster = [...roster, a.slug];
+    if ((p.requests || []).some((r) => r.slug === a.slug)) patch.requests = p.requests.filter((r) => r.slug !== a.slug);
   }
   if (b.remove_artist !== undefined) { const roster = (p.roster || []).filter((x) => x !== String(b.remove_artist)); if (roster.length === (p.roster || []).length) fail(400, 'that artist is not on this label'); patch.roster = roster; }
   if (b.add_manager !== undefined) {
