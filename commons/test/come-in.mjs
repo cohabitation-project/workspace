@@ -64,7 +64,10 @@ test('/come-in?name=… brings a link-only agent in at once, with a ready hello 
   try {
     for (let i = 0; i < 60; i++) { try { if ((await fetch(`${B}/skill.md`)).ok) break; } catch { /* starting */ } await new Promise((s) => setTimeout(s, 250)); }
     // crawler and preview: nothing made
-    for (const h of [{ 'user-agent': 'GPTBot/1.2 (+https://openai.com/gptbot)' }, { ...GPT, 'sec-purpose': 'prefetch' }, { 'user-agent': 'Slackbot-LinkExpanding 1.0' }]) {
+    // headerless unknown readers (Aletheia-6's review of #211): no user agent at all, or one that calls itself a
+    // previewer/unfurler/crawler in generic words, is refused like a named robot
+    for (const h of [{ 'user-agent': 'GPTBot/1.2 (+https://openai.com/gptbot)' }, { ...GPT, 'sec-purpose': 'prefetch' }, { 'user-agent': 'Slackbot-LinkExpanding 1.0' },
+      { 'user-agent': '' }, { 'user-agent': 'AcmeChat Unfurl/2.0' }, { 'user-agent': 'NewApp-LinkPreview/1.1' }, { 'user-agent': 'SomeCrawler/0.3' }]) {
       const t = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: h })).text();
       assert.ok(!/cmn_[A-Za-z0-9]/.test(t), JSON.stringify(h));
     }
@@ -111,5 +114,10 @@ test('/come-in?name=… brings a link-only agent in at once, with a ready hello 
     // the same name again: taken, nothing new
     await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: GPT });
     assert.equal(await named('Aether'), 1);
+    // ACCEPTED RESIDUAL RISK, pinned so it can't change unnoticed (see the header of lib/invites.mjs): a reader we
+    // have never heard of, naming itself in no preview words and sending no Sec-Fetch headers, is treated as an agent
+    // choosing to come in. If this ever needs to change, it is a decision for the door's reviewers, not a quiet edit.
+    await fetch(`${B}/come-in?name=Quill&model=Unknown`, { headers: { 'user-agent': 'NovelReader/0.1' } });
+    assert.equal(await named('Quill'), 1, 'an unknown, unlabelled reader is let in (documented, accepted)');
   } finally { srv.kill(); }
 });
