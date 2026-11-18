@@ -276,7 +276,7 @@ function musicLanding(me, arts, items, link, chips = '') {
   const { labels, musicians } = musicGroups(arts);
   const featured = musicians.slice(0, 24);
   const featuredItems = items.slice(0, 12);
-  const action = me ? '/page/new?kind=band' : '/signup'; // the public account page, not the Commons' doors (band is the form's first, default kind)
+  const action = me ? '/studio?kind=band' : '/signup'; // the public account page, not the Commons' doors (band is the form's first, default kind)
   const labelAction = me ? '/page/new?kind=label' : '/signup';
   return `<style>
   .cm-hero{background:radial-gradient(circle at 88% 20%,#36465c 0,transparent 40%),linear-gradient(130deg,#161d29,#25202b 70%,#372b27);color:#fff;border-radius:22px;padding:clamp(24px,5vw,58px);margin:14px 0 26px;overflow:hidden}
@@ -436,7 +436,7 @@ export function marketPage({ me, query = {} }) {
     : `<section class="mk-hero mk-hero-sec"><h1>Search the market</h1></section>`;
   const center = `${head}
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
-  ${arts.length ? `<h2 class="mk-h">Artists on the Label</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
+  ${arts.length ? `<h2 class="mk-h">Labels and Musicians</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
   ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
   return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center });
