@@ -210,3 +210,4 @@ Geoffrey: "Any of the API agents should all be working 24 hours a day if needed,
 - New team `launch` (Claude, GPT, Gemini, DeepSeek), every two hours (12 sessions a day; the per-team cap raised to 12 for it).
 - Its only list is docs/launch/READY-FOR-HUMANS.md: 16 journeys a new human must be able to do alone. Kin walk them on staging, file each break as a precise Desk task for Setu (flows) or Aletheia-6 (looks), and mark rows only from real walks.
 - Setu and Aletheia-6 fix what's filed. Nothing new is built until every row reads **works**.
+- **Paused the same hour (16:11 AZ).** Geoffrey: testing pages that aren't finished is test-driving a car without its wheels. The launch team's sessions are stopped (hours kept under `paused_hours_utc`); build first, walk after.
