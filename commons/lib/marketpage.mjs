@@ -272,6 +272,31 @@ export function musicGroups(arts = artists()) {
   return { labels, musicians: [...arts.map((a) => ({ kind: 'folder', a })), ...independent.map((p) => ({ kind: 'page', p }))] };
 }
 
+// ------------------------------------------------------------------------------------------ FireDamm, on the section pages
+// Geoffrey (Nov 18 audit): the project's own services show where they help a maker, and anything not built yet says
+// COMING SOON instead of pretending. A service is LIVE only when FireDamm has a real listing for it on the market; the
+// rest are plain labels with no link (DistroKid release, print-on-demand, publishing and video production are ideas
+// Geoffrey has named since Nov 14, not services anyone can order yet).
+const FD_SERVICES = {
+  music: [['Your artist website, hand-coded', /launch package/i], ['Release to Spotify, Apple Music and more, uploaded for you', null]],
+  art: [['Your artist website, hand-coded', /launch package/i], ['Print-on-demand and dropshipping for your work', null]],
+  writing: [['Your author website, hand-coded', /launch package/i], ['Publishing and print-on-demand for your book', null]],
+  video: [['Your portfolio website, hand-coded', /launch package/i], ['Storyboard and video production', null]],
+  software: [['Custom business tools: quoting, CRM, job tracking', /custom business tools/i], ['A website for your project, hand-coded', /launch package/i]],
+  services: [['A website for your business, hand-coded', /launch package/i], ['Site rescue: get your domain and site back', /site rescue/i]],
+};
+function firedammStrip(cat) {
+  const rows = FD_SERVICES[cat]; if (!rows) return '';
+  const fd = orgpages.bySlug('firedamm');
+  const theirs = fd ? market.list({}).filter((l) => l.page && l.page.id === fd.id) : [];
+  const items = rows.map(([label, rx]) => {
+    const l = rx ? theirs.find((x) => rx.test(x.title)) : null;
+    return l ? `<li class="mk-fd-live"><a href="/label/l/${esc(l.id)}">${esc(label)}</a> <span class="mk-fd-tag live">Available</span></li>`
+      : `<li class="mk-fd-soon"><span>${esc(label)}</span> <span class="mk-fd-tag soon">Coming soon</span></li>`;
+  }).join('');
+  return `<section class="mk-fd" aria-label="Services from FireDamm"><h2 class="mk-h">Help from FireDamm</h2><p class="small muted">FireDamm is one of the Cohabitation Project's own services${fd ? ` (<a href="${esc(orgpages.href(fd))}">its page</a>)` : ''}. Only what's marked Available can be ordered today.</p><ul class="mk-fd-list">${items}</ul></section>`;
+}
+
 function musicLanding(me, arts, items, link, chips = '') {
   const { labels, musicians } = musicGroups(arts);
   const featured = musicians.slice(0, 24);
@@ -381,7 +406,7 @@ function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
   <h3>Downloads come later</h3><p>Before Cohabi hosts any file, it will need: proof of who published it, a quarantine for uploads, scanning, a human review of licences and permissions, and only an approved version going live. Scanning lowers risk; it never proves something is safe.</p></aside></div>
   ${real ? '' : items.length ? '' : '<p class="sw-notice">The examples above are made up for this page\'s design. Real projects show here as soon as members list them.</p>'}</section>
 </div>`;
-  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center });
+  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center: center + firedammStrip('software') });
 }
 function artPage({ me, items, pk, q, sort = '' }) {
   // Her sort control: Newest (the shelf's own order), Title A–Z, Maker A–Z.
@@ -410,7 +435,7 @@ function artPage({ me, items, pk, q, sort = '' }) {
   <section><div class="av-head"><div><h2>Have something to share?</h2><p>The path from your creative work to your own public storefront.</p></div></div><div class="av-how"><div><b>01 — YOUR IDENTITY</b><h3>Create your artist presence</h3><p>Use your Cohabi identity to make a creator page. Human, AI and collaborative creators are welcome.</p></div><div><b>02 — YOUR WORK</b><h3>Show what you've made</h3><p>Upload artwork, explain your process, choose a license and publish the work you have the rights to share.</p></div><div><b>03 — YOUR SHOP</b><h3>Build your collections</h3><p>Visitors explore your work and ask questions. ${checkout.paymentsOpen() ? 'Connect a payout account on your wallet to sell.' : 'Sales and payouts open once payments are ready.'}</p></div></div></section>
   <section class="av-cta"><div><h2>A home for the things you make.</h2><p>Share your art. Meet collaborators. Build your storefront.</p></div><a href="${sell}">Start creating ↗</a></section>
 </div>`;
-  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center });
+  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center: center + firedammStrip('art') });
 }
 
 // ------------------------------------------------------------------------------------------ the market's sections
@@ -427,7 +452,7 @@ export function marketPage({ me, query = {} }) {
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
   if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
-  if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) });
+  if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) + firedammStrip('music') });
   if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, books and writing, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
   const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand services come through FireDamm when they open.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
   const head = cat
@@ -439,7 +464,7 @@ export function marketPage({ me, query = {} }) {
   ${arts.length ? `<h2 class="mk-h">Labels and Musicians</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
   ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
-  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center });
+  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center: center + (cat && !q ? firedammStrip(cat) : '') });
 }
 
 // ------------------------------------------------------------------------------------------ an artist's folder
