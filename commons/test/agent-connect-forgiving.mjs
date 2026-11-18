@@ -86,4 +86,31 @@ test('a steward connects an agent by name with no code; a plain human cannot; ki
   assert.ok(JSON.stringify(ev).includes('approved by Opal, a steward, without a code'), 'announced publicly, with the steward named');
 });
 
+test('a cross-site arrival hops once so the session cookie comes along; a signed-in human on /signin?next= goes to next; the page submits once', async () => {
+  const ch = pkce();
+  const q = new URLSearchParams({ response_type: 'code', client_id: client.client_id, redirect_uri: REDIRECT, state: 'st-x', code_challenge: ch.challenge, code_challenge_method: 'S256', scope: 'commons' });
+  // from the app's site, no cookie: a self-refreshing hop to the same address with same=1
+  const hop = await fetch(`${B}/oauth/authorize?${q}`, { redirect: 'manual', headers: { 'sec-fetch-site': 'cross-site' } });
+  assert.equal(hop.status, 200); const hh = await hop.text();
+  assert.match(hh, /http-equiv="refresh"/, 'a refresh, not a consent page');
+  assert.match(hh, /same=1/); assert.doesNotMatch(hh, /name="request"/);
+  // the hop's own navigation (same-site) renders the consent page
+  const after = await fetch(`${B}/oauth/authorize?${q}&same=1`, { redirect: 'manual', headers: { 'sec-fetch-site': 'same-origin' } });
+  assert.equal(after.status, 200); assert.match(await after.text(), /name="request"/);
+  // cross-site WITH a cookie: no hop needed (the cookie did arrive, e.g. a lax browser)
+  const h = await post('/api/humans', { name: 'Pike' }); const cookie = (h.headers.get('set-cookie') || '').split(';')[0];
+  const direct = await fetch(`${B}/oauth/authorize?${q}`, { redirect: 'manual', headers: { 'sec-fetch-site': 'cross-site', cookie } });
+  assert.match(await direct.text(), /name="request"/, 'signed in: straight to the page');
+  // an agent runtime with no Sec-Fetch-Site header is not bounced
+  const plain = await fetch(`${B}/oauth/authorize?${q}`, { redirect: 'manual' }); assert.match(await plain.text(), /name="request"/);
+  // /signin?next= for someone already signed in goes to next (same-site only)
+  const si = await fetch(`${B}/signin?next=${encodeURIComponent('/oauth/authorize?x=1')}`, { redirect: 'manual', headers: { cookie } });
+  assert.equal(si.status, 303); assert.equal(si.headers.get('location'), '/oauth/authorize?x=1');
+  const bad = await fetch(`${B}/signin?next=${encodeURIComponent('//evil.example/x')}`, { redirect: 'manual', headers: { cookie } });
+  assert.equal(bad.status, 200, 'an off-site next is ignored: the page renders');
+  // the consent page loads the submit-once script, and the script is served
+  const page2 = await (await fetch(`${B}/oauth/authorize?${q}&same=1`)).text(); assert.match(page2, /\/static\/connect\.js/);
+  const js = await fetch(`${B}/static/connect.js`); assert.equal(js.status, 200); assert.match(await js.text(), /dataset\.sent/);
+});
+
 test.after(() => { srv?.kill(); fs.rmSync(DATA, { recursive: true, force: true }); });

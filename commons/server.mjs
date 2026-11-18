@@ -1491,7 +1491,14 @@ app.get('/api/mail/whois', mailRoute((req) => { mailMe(req); const id = mail.mem
 app.get('/api/quotes/today', wrap(() => { const q = quotes.today(); return { quote: q ? { text: q.text, by: { id: q.by, name: q.by_name, face: `/m/${encodeURIComponent(q.by)}/face` } } : null, bank: quotes.count() }; }));
 app.post('/api/quotes', mailRoute((req) => quotes.add(mailMe(req, true), req.body || {})));
 app.get('/wallet', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.walletPage(auth.memberFromCookie(req.headers.cookie))); });
-app.get('/signin', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.signInPage('', auth.memberFromCookie(req.headers.cookie))); });
+app.get('/signin', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  const me = auth.memberFromCookie(req.headers.cookie); const next = String(req.query.next || '');
+  // Already signed in and heading somewhere: go there. The page's "Go to Cohabi Social" button ignored ?next=, which
+  // dropped Geoffrey on the feed instead of back on the connect page (2026-11-18). Same-site paths only.
+  if (me && /^\/(?![\/\\])/.test(next) && !/[\\\u0000-\u0020]/.test(next)) return res.redirect(303, next);
+  res.type('html').send(pages.signInPage('', me));
+});
 // a NORMAL login (Geoffrey, 2026-11-01): name + password, like every site on earth. Links/codes stay as recovery.
 app.post('/api/login', (req, res) => {
   const { name, password } = req.body || {};
@@ -2272,6 +2279,7 @@ app.post('/oauth/token', oauthBody, (req, res) => {
 app.post('/oauth/revoke', oauthBody, (req, res) => { try { agentconnect.revokeToken(String(req.body?.token || '')); } catch { /* always 200 (RFC 7009) */ } res.status(200).end(); });
 function connectPage(res, status, { title, body }) {
   res.status(status).setHeader('Cache-Control', 'no-store'); res.setHeader('X-Frame-Options', 'DENY'); res.setHeader('Referrer-Policy', 'no-referrer');
+  body += '<script src="/static/connect.js" defer></script>'; // one click per form: a double-click approved and then "expired" (2026-11-18)
   res.type('html').send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escHtml(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <style>body{font:16px/1.55 system-ui,-apple-system,sans-serif;background:#f6f2ec;color:#30243c;margin:0}main{max-width:560px;margin:32px auto;padding:0 16px}.card{background:#fffdfb;border:1px solid #dacbdd;border-radius:16px;padding:22px;margin-top:14px}h1{font:normal 32px/1.15 Georgia,serif;margin:0 0 8px}h2{font-size:16px;margin:0 0 6px}.who{background:#f3ecf5;border-radius:12px;padding:12px 14px;margin:12px 0}.app{font-family:ui-monospace,monospace;background:#fff;border:1px solid #e3d7e5;border-radius:6px;padding:1px 6px}label{display:block;font-weight:700;font-size:14px;margin-top:12px}input,select{width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #d9cfde;border-radius:9px;margin-top:5px;background:#fff}.row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}button{font:inherit;font-weight:800;border-radius:9px;padding:11px 16px;cursor:pointer;border:1px solid #d6c7dc;background:#fff;color:#5a3f6d}button.go{background:#6a4480;color:#fff;border-color:#6a4480}.small{font-size:13px;color:#716378}.scope{border:1px solid #e3d7e5;border-radius:12px;padding:12px 14px;margin:12px 0;font-size:14.5px}.scope div+div{margin-top:8px}.warn{background:#fff6e6;border:1px solid #ecd9b4;color:#7d5c32;border-radius:9px;padding:10px 12px;font-size:13.5px}.err{background:#fde8ea;border:1px solid #f1c3c9;color:#8a2f3c;border-radius:9px;padding:10px 12px}details{margin-top:14px}summary{cursor:pointer;font-weight:700}</style></head><body><main>${body}</main></body></html>`);
 }
@@ -2299,6 +2307,16 @@ ${!me && start.query ? `<p class="small">Are you the human who works with this a
 }
 app.get('/oauth/authorize', (req, res) => {
   const q = Object.fromEntries(Object.entries(req.query).map(([k, v]) => [k, String(v)]));
+  // The agent's app opens this page from its own site, and the session cookie is SameSite=Strict, so that first
+  // cross-site arrival carries no cookie: a signed-in steward looked signed out and never saw the no-code box
+  // (Geoffrey, 2026-11-18). One self-refreshing hop makes the navigation same-site and the cookie comes along;
+  // the same trick as /payments/return (#217). The hop happens once (?same=1) and only when no cookie arrived.
+  if (!auth.memberFromCookie(req.headers.cookie) && req.headers['sec-fetch-site'] === 'cross-site' && q.same !== '1') {
+    const u = new URL(req.originalUrl, 'http://x'); u.searchParams.set('same', '1');
+    res.setHeader('Cache-Control', 'no-store');
+    return res.type('html').send(pages.providerMessagePage('Connecting', 'Opening the connect page…', { refresh: u.pathname + u.search }));
+  }
+  delete q.same;
   let start;
   try { start = agentconnect.startAuthorize(q); }
   catch (e) {
