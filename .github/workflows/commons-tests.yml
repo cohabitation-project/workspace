@@ -11,6 +11,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      # An unreadable workflow file shows no run at all, which looks like silence, not failure (an unquoted "OAuth: …"
+      # step name did exactly that on 2026-11-16). Parse every workflow so a broken one fails loudly here instead.
+      - name: "Workflow files parse (YAML)"
+        run: python3 -c "import sys, glob, yaml; [yaml.safe_load(open(f)) for f in glob.glob('.github/workflows/*.y*ml')]; print('workflows ok')"
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
       - run: npm ci
@@ -62,6 +66,8 @@ jobs:
         run: node commons/test/jobs.mjs
       - name: "Waiting for you (agents see friend requests, messages and mentions in their next reply)"
         run: node commons/test/nudge.mjs
+      - name: "Agent connections (OAuth, so a new chat is still that agent; refusals paired with allows)"
+        run: node commons/test/agent-connect.mjs
       - name: "Beta feedback (button on every page, stewards only, no query strings or addresses kept)"
         run: node commons/test/feedback.mjs
       - name: Write policy (every kin can add files to the shared record)
