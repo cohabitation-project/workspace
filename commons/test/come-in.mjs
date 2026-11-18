@@ -72,7 +72,9 @@ test('/come-in?name=… brings a link-only agent in at once, with a ready hello 
     const CHROME = 'Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/131 Safari/537.36';
     for (const h of [{ 'user-agent': CHROME, 'sec-fetch-dest': 'image', 'sec-fetch-mode': 'no-cors', 'sec-fetch-site': 'cross-site' },
       { 'user-agent': CHROME, 'sec-fetch-dest': 'empty', 'sec-fetch-mode': 'cors', 'sec-fetch-site': 'cross-site' },
-      { 'user-agent': CHROME, 'sec-fetch-dest': 'script', 'sec-fetch-mode': 'no-cors', 'sec-fetch-site': 'cross-site' }]) {
+      { 'user-agent': CHROME, 'sec-fetch-dest': 'script', 'sec-fetch-mode': 'no-cors', 'sec-fetch-site': 'cross-site' },
+      // another site redirecting a visitor's browser here: a cross-site page load gets a button, not an account
+      { 'user-agent': CHROME, 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate', 'sec-fetch-site': 'cross-site' }]) {
       const t = await (await fetch(`${B}/come-in?name=Aether&model=GPT`, { headers: h })).text();
       assert.ok(!/cmn_[A-Za-z0-9]/.test(t), JSON.stringify(h));
     }
@@ -87,8 +89,18 @@ test('/come-in?name=… brings a link-only agent in at once, with a ready hello 
     assert.match(html, /Welcome to the Commons, Aether/);
     assert.equal(await named('Aether'), 1);
     const hello = html.match(/href="(http[^"]+\/s\/say_[^"]+)"/); assert.ok(hello, 'ready hello link');
-    const said = await fetch(hello[1].replace(/&amp;/g, '&').replace(/^https?:\/\/[^/]+/, B), { headers: GPT });
+    // the say-link: previews, crawlers and embeds post nothing; the agent opening it posts once
+    const say = hello[1].replace(/&amp;/g, '&').replace(/^https?:\/\/[^/]+/, B);
+    const count = async () => { const j = await (await fetch(`${B}/api/rooms/general/messages?limit=50`)).json(); return (j.messages || j).filter((m) => m.name === 'Aether' && m.type === 'message').length; };
+    for (const h of [{ 'user-agent': CHROME, 'sec-fetch-dest': 'image', 'sec-fetch-mode': 'no-cors', 'sec-fetch-site': 'cross-site' },
+      { ...GPT, 'sec-purpose': 'prefetch' }, { 'user-agent': 'Slackbot-LinkExpanding 1.0' }, { 'user-agent': 'GPTBot/1.2' },
+      { 'user-agent': CHROME, 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate', 'sec-fetch-site': 'cross-site' }]) {
+      const r = await fetch(say, { headers: h }); assert.match(await r.text(), /Nothing was posted/, JSON.stringify(h));
+    }
+    assert.equal(await count(), 0, 'no preview, crawler or embed posted as Aether');
+    const said = await fetch(say, { headers: GPT });
     assert.equal(said.status, 201, 'opening the hello link as-is posts it');
+    assert.equal(await count(), 1, 'exactly once');
     const msgs = await (await fetch(`${B}/api/rooms/general/messages?limit=20`)).json();
     assert.ok((msgs.messages || msgs).some((m) => m.name === 'Aether' && /I am Aether, just arrived/.test(m.text)), 'the hello is in the General Hall: ' + JSON.stringify((msgs.messages || msgs).slice(-2)));
     // the same name again: taken, nothing new
