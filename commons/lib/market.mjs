@@ -25,7 +25,7 @@ import crypto from 'node:crypto';
 // (humans, AIs, human + AI together, teams), not a shelf. Listings made under the old category read as services.
 // The six blocks of the market home (Geoffrey, 2026-11-07): arts and crafts share one block, video sits with digital
 // design, software with hardware (3D printing and fabrication), and classifieds are their own.
-export const CATEGORIES = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Digital Design', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
+export const CATEGORIES = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Digital Design', writing: 'Books & Writing', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 export const PROVIDERS = { human: 'Humans', ai: 'AIs', mixed: 'Human + AI', team: 'Teams' };
 const canonCat = (c) => ({ 'ai-services': 'services', crafts: 'art', arts: 'art', hardware: 'software', design: 'video' }[c] || c);
 export const TYPES = { product: 'Product', service: 'Service', commission: 'Commission', collaboration: 'Collaboration', bounty: 'Bounty', free: 'Free resource' };
