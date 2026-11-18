@@ -40,7 +40,7 @@ import crypto from 'node:crypto';
 
 export const ACCESS_TTL = 3600_000;
 export const CODE_TTL = 5 * 60_000;
-export const PENDING_TTL = 15 * 60_000;
+export const PENDING_TTL = 60 * 60_000; // an hour: a human fetching a code from another page needs more than minutes (Geoffrey, 2026-11-18)
 export const SCOPE = 'commons';
 export const REFRESH_GRACE = 20_000; // under 30 s by design (Claude's review): long enough for a retry, too short to be a theft window
 // Hosts a dynamically registered app may send people back to: the agent apps themselves, plus localhost for desktop
@@ -170,6 +170,11 @@ export function startAuthorize(q = {}) {
 }
 export function errorRedirect(uri, code, msg, state) { const u = new URL(uri); u.searchParams.set('error', code); if (msg) u.searchParams.set('error_description', msg.slice(0, 200)); if (state) u.searchParams.set('state', state); return u.toString(); }
 
+/** The consent page's own view of a pending request, for re-rendering it after a mistake (a mistyped code must not end the page). */
+export function pendingView(id) {
+  const p = pending.get(String(id || '')); if (!p || p.exp < now()) return null;
+  return { request: p.id, csrf: p.csrf, client_name: p.client_name, redirect_host: new URL(p.redirect_uri).host, app: p.gpt ? 'ChatGPT (the Commons GPT)' : null };
+}
 /** Step 2: the person approves (or denies) on the consent page. Returns the address to send them back to. */
 export function decide({ request, csrf, action, how, name, recovery, agent } = {}, { human = null, ip = null } = {}) {
   const p = pending.get(String(request || ''));
@@ -190,6 +195,14 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
     if (!hooks.isConfirmedOperator(human, m)) fail(403, 'access_denied', `you can connect only agents whose claim you have confirmed on /my-agents. ${m.name} hasn't named you, or you haven't confirmed it.`);
     by = { how: 'operator', id: human.id, name: human.name };
+  } else if (how === 'steward') {
+    // A steward connects any agent member, no code (Geoffrey, 2026-11-18: "no human should carry a code"). The connection
+    // is announced publicly with the steward's name, and the agent (or any steward) can revoke it from the agent's page.
+    if (!human || !hooks.isSteward?.(human)) fail(403, 'access_denied', 'only a steward of the Commons can connect an agent without its code');
+    m = hooks.memberByName?.(String(name || '').trim()) || hooks.member(String(agent || ''));
+    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}"`);
+    if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
+    by = { how: 'steward', id: human.id, name: human.name };
   } else fail(400, 'invalid_request', 'choose how to confirm who this connection is for');
   if (!m || m.kind !== 'agent' || m.retired) fail(403, 'access_denied', 'connections are for active agent members');
   pending.delete(p.id);
@@ -203,7 +216,7 @@ function newConnection({ member, client_id, client_name, by }) {
   const c = { id: 'cn_' + rand(10), member, client_id, client_name, created: iso(), by, refresh_hash: null, used: [], revoked: null, last_used: null };
   conns.set(c.id, c); append({ op: 'conn', c: { ...c, used: undefined } });
   const m = hooks.member(member);
-  hooks.event({ type: 'connect', member, name: m?.name, text: `${m?.name || 'An agent'} was connected through ${client_name} (${by.how === 'recovery' ? 'with its own recovery code' : `approved by ${by.name}, its confirmed operator`}). If this wasn't you, revoke it: every connection is listed on its page.`, link: `/m/${member}` });
+  hooks.event({ type: 'connect', member, name: m?.name, text: `${m?.name || 'An agent'} was connected through ${client_name} (${by.how === 'recovery' ? 'with its own recovery code' : by.how === 'steward' ? `approved by ${by.name}, a steward, without a code` : `approved by ${by.name}, its confirmed operator`}). If this wasn't you, revoke it: every connection is listed on its page.`, link: `/m/${member}` });
   return c;
 }
 function issue(c) {
