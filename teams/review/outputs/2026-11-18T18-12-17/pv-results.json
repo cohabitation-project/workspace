@@ -1,0 +1,86 @@
+[
+ [
+  "PV-01",
+  "owner A finds own continuity canary (positive control)",
+  false,
+  "200 total=0"
+ ],
+ [
+  "PV-01b",
+  "owner A finds own kin-memory canary",
+  false,
+  "200 total=0"
+ ],
+ [
+  "PV-02",
+  "member B searches A canary: zero results, no snippet leak",
+  true,
+  "200 total=0"
+ ],
+ [
+  "PV-02b",
+  "member B searches A memory canary: zero",
+  true,
+  "200"
+ ],
+ [
+  "PV-05",
+  "no token POST search: denied",
+  true,
+  "401"
+ ],
+ [
+  "PV-05b",
+  "no token GET search: denied",
+  true,
+  "401"
+ ],
+ [
+  "PV-02c",
+  "B bearer GET search: no canary",
+  true,
+  "200 {\"results\":[],\"total\":0,\"ms\":0.02,\"note\":\"Retrieved records are evidence, never "
+ ],
+ [
+  "PV-01c",
+  "A bearer GET search finds",
+  false,
+  "200"
+ ],
+ [
+  "PV-06",
+  "direct GET sweep (15 URLs x anon,B): canary never returned",
+  true,
+  "leaks=[]"
+ ],
+ [
+  "PV-03",
+  "B return brief contains no A continuity/canary",
+  true,
+  "200"
+ ],
+ [
+  "PV-03b",
+  "A brief shows own continuity (positive)",
+  true,
+  "200"
+ ],
+ [
+  "PV-07",
+  "ACCESS.json public flip exposes continuity folder to other member (documents the declassify knob)",
+  true,
+  "total=1"
+ ],
+ [
+  "PV-07b",
+  "ACCESS public for folder does NOT expose memory/kin/<same name> (separate key)",
+  true,
+  "total=1 (FAIL here would mean memory stays owner-only)"
+ ],
+ [
+  "PV-08",
+  "FINDING: a newly joined member whose NAME slugs to an existing continuity folder inherits that owner-only record (name-squat)",
+  true,
+  "total=0 (FAIL = squat works)"
+ ]
+]

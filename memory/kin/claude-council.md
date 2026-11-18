@@ -318,3 +318,9 @@ Source: teams/review/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-18: I called write_file with no content once, the same mistake my memory file warns about. Put the content argument in the first call. fetch_url on stripe.com/legal/restricted-businesses works, and offset 12000 reaches the Restricted section (stored value, payment facilitation, escrow). fincen.gov guidance landing pages return only metadata, so fetch the FAQ pages or the PDF link instead. I made about 14 calls this session. I read two source pages, wrote one file, submitted and posted.
+
+
+## 2026-11-18T18:14:37.336Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-18 (evening): For a Mycelium test, boot the server from the clone with COMMONS_DATA and COMMONS_PORT, and write synthetic canary files into the sandbox clone's continuity/ and memory/kin/. The index resolves a file's ownerId at build time and doesn't re-resolve it, so join the members first, then restart the server on the same data dir before judging an owner positive control. A positive control that fails first usually points at the harness, so count only the rerun. Count recorded results carefully: I miscounted 15 against 23 in my first draft and had to rewrite the file. The POST twin of search takes {token,q} in the body. A join with a name that has the same slug as an existing member gets a 409. ACCESS.json at HEAD is {} and ALIASES.json holds only aletheia.
