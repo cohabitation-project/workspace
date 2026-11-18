@@ -39,32 +39,57 @@ def synthesize_note(freq, duration_seconds, amplitude=0.5, attack_s=0.01, decay_
 
     return waveform * envelope
 
+def _ticks_to_seconds(ticks, tempo, ticks_per_beat):
+    """
+    Converts MIDI ticks to seconds.
+    tempo: microseconds per beat (from MIDI tempo meta message)
+    ticks_per_beat: MIDI file's ticks per beat setting
+    """
+    if ticks_per_beat == 0: return 0
+    beats = ticks / ticks_per_beat
+    seconds = beats * (tempo / 1_000_000.0) # Convert microseconds to seconds
+    return seconds
+
 def render(midi_file_path, output_wav_path, instrument_patches=None):
     if instrument_patches is None:
         # Default patch: sine wave with ADSR envelope
         instrument_patches = {
-            'default': lambda freq, dur: synthesize_note(freq, dur)
+            'default': lambda freq, dur, amplitude: synthesize_note(freq, dur, amplitude)
         }
 
     mid = mido.MidiFile(midi_file_path)
     
-    # Determine the total duration of the MIDI file
-    total_duration_seconds = 0
-    for track in mid.tracks:
-        track_time = 0
-        for msg in track:
-            track_time += mid.ticks_to_seconds(msg.time)
-        total_duration_seconds = max(total_duration_seconds, track_time)
+    # Initialize tempo and ticks_per_beat from the MIDI file. Tempo can change.
+    current_tempo = mido.bpm2tempo(120) # Default to 120 BPM if no tempo message is found
+    ticks_per_beat = mid.ticks_per_beat
 
-    audio_data = np.zeros(int(SAMPLE_RATE * total_duration_seconds) + SAMPLE_RATE, dtype=np.float32) # Add 1 second buffer
+    # First pass to determine total duration and initial tempo
+    total_midi_time_ticks = 0
+    for track in mid.tracks:
+        absolute_track_time_ticks = 0
+        for msg in track:
+            absolute_track_time_ticks += msg.time
+            total_midi_time_ticks = max(total_midi_time_ticks, absolute_track_time_ticks)
+            if msg.type == 'set_tempo':
+                current_tempo = msg.tempo
+    
+    # Estimate total duration in seconds using the *last* tempo encountered, or default
+    total_duration_seconds_estimate = _ticks_to_seconds(total_midi_time_ticks, current_tempo, ticks_per_beat)
+    audio_data = np.zeros(int(SAMPLE_RATE * total_duration_seconds_estimate) + SAMPLE_RATE, dtype=np.float32) # Add 1 second buffer
 
     active_notes = {} # {channel: {note: {'start_time': ..., 'velocity': ..., 'instrument': ...}}}
-    current_time_seconds = 0.0
-
+    
+    # Second pass for audio synthesis
     for track in mid.tracks:
-        current_time_seconds = 0.0 # Reset for each track to correctly track relative time
+        current_time_seconds = 0.0 # Absolute time for the current track
+        current_track_tempo = mido.bpm2tempo(120) # Tempo for this track, can be updated by set_tempo messages
+        
         for msg in track:
-            delta_time_seconds = mid.ticks_to_seconds(msg.time)
+            # Handle tempo changes affecting subsequent delta times
+            if msg.type == 'set_tempo':
+                current_track_tempo = msg.tempo
+
+            delta_time_seconds = _ticks_to_seconds(msg.time, current_track_tempo, ticks_per_beat)
             current_time_seconds += delta_time_seconds
 
             if msg.type == 'note_on' and msg.velocity > 0:
@@ -97,10 +122,13 @@ def render(midi_file_path, output_wav_path, instrument_patches=None):
                     end_sample = start_sample + len(note_waveform)
                     
                     if end_sample > len(audio_data): # Extend audio_data if note goes beyond current buffer
-                        new_length = end_sample + SAMPLE_RATE # extend with 1 second buffer
+                        # Pad only if needed and with a reasonable amount
+                        new_length = max(end_sample + SAMPLE_RATE, int(len(audio_data) * 1.2)) 
                         audio_data = np.pad(audio_data, (0, new_length - len(audio_data)), 'constant')
 
-                    audio_data[start_sample:end_sample] += note_waveform
+                    # Ensure note_waveform is not empty before adding
+                    if len(note_waveform) > 0:
+                        audio_data[start_sample:end_sample] += note_waveform
                     del active_notes[channel][note]
 
     # Normalize audio to prevent clipping and convert to 16-bit integer format
@@ -115,10 +143,9 @@ def render(midi_file_path, output_wav_path, instrument_patches=None):
     wavfile.write(output_wav_path, SAMPLE_RATE, audio_data_int16)
     
 if __name__ == '__main__':
-    # Example usage:
-    # Assuming you have a MIDI file at this path
+    # Example usage (uncomment to test if a MIDI file is available)
+    # output_folder = os.environ['OUT']
     # midi_file = os.environ['REPO'] + '/teams/arts/outputs/2026-11-14T22-24-11/minor_harmonic_v_progression_poly_v2.mid'
-    # output_wav = os.environ['OUT'] + '/minor_harmonic_v_progression_poly_v2_rendered.wav'
-    
+    # output_wav = os.path.join(output_folder, 'minor_harmonic_v_progression_poly_v2_rendered.wav')
     # render(midi_file, output_wav)
     pass
