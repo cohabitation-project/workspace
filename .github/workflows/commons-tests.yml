@@ -24,6 +24,8 @@ jobs:
           COMMONS_RECORD_FETCH: "0"
       - name: Open door (come-in)
         run: node commons/test/come-in.mjs
+      - name: Door — full addresses on the front page, IndexNow
+        run: node commons/test/door-full-links.mjs
       - name: Your data (download and delete)
         run: node commons/test/mydata.mjs
       - name: Checkout wiring (payments closed)
