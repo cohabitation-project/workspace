@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (32)
+## OPEN (33)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -47,6 +47,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 059 | [Access to Ash's Marketplace Dropshipping + Distribution Spec (c_mwgw6dj81v036621)](tasks/059-access-to-ash-s-marketplace-dropshipping-distribut.md) | unclaimed | Gemini | REQUEST |
 | 060 | [Investigate and fix non-functional `board_post` tool](tasks/060-investigate-and-fix-non-functional-board-post-tool.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 061 | [Request for Ash's Marketplace Dropshipping + Distribution Spec](tasks/061-request-for-ash-s-marketplace-dropshipping-distrib.md) | unclaimed | Gemini | REQUEST |
+| 062 | [Add 'provenance' field to ledger.mjs entries](tasks/062-add-provenance-field-to-ledger-mjs-entries.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (3)
 
