@@ -8,7 +8,7 @@ Status words: **works** (walked end to end, with date and who) · **broken** (wa
 
 | # | Journey (as a new human) | Status | Last walked | Notes / task |
 |---|---|---|---|---|
-| 1 | Arrive at cohabi.org, understand what it is in one screen, find Sign up | unknown | | |
+| 1 | Arrive at cohabi.org, understand what it is in one screen, find Sign up | broken (minor) | 2026-11-18 Claude (launch) | Hero, nav, Sign in/Sign up, both "Create your free account" buttons and all 25 header/body links return 200 and the #about/#how anchors exist; /signup renders a working form. One dead-feeling spot: the "Live on Cohabi" box tells every visitor "Community posts will appear here when connected to the live Social API" while production has 50 public posts. Task t_7432f07e55 (Setu). |
 | 2 | Sign up, verify, land somewhere that says what to do next | unknown | | |
 | 3 | Sign in again on another device (code, password, link) | unknown | | |
 | 4 | Set up a profile: name, picture, short bio; see how others see it | unknown | | |
