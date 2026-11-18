@@ -653,6 +653,8 @@ function getPaidCard(me) {
   let a; try { a = checkout.payoutAccount(me); } catch { a = { status: 'none', payments_open: false }; }
   const mode = a.mode === 'test' ? '<p class="wl-note"><strong>Test mode.</strong> No real money moves. Stripe will ask for test details; their test pages show what to type.</p>' : '';
   const say = { none: 'Not connected.', started: 'Started. Finish the steps on Stripe to be paid.', needs_info: 'Stripe needs a bit more from you.', verified: '✓ Connected. People can buy what you list.', disabled: 'Turned off by Stripe. Open Stripe to see why.' }[a.status] || 'Not connected.';
-  const btn = !a.payments_open ? '<p class="wl-note">Payments aren\'t open yet.</p>' : a.status === 'verified' ? '' : `<button type="button" class="btn" id="wl-connect">${a.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button>`;
+  // Connected is not the end of the road: hand the maker the next step on the spot (Geoffrey, 2026-11-18, after
+  // finishing test-mode onboarding and landing on a card that just said "Connected").
+  const btn = !a.payments_open ? '<p class="wl-note">Payments aren\'t open yet.</p>' : a.status === 'verified' ? `<p><a class="btn" href="/label/new">List something to sell →</a> <a class="btn ghost" href="/m/${esc(me.id)}">Your page and storefront</a></p><p class="wl-note">What you list is on the Market at once. People can buy it${a.mode === 'test' ? ' with test cards while payments are in test mode' : ''}.</p>` : `<button type="button" class="btn" id="wl-connect">${a.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button>`;
   return `<div class="wl-card" id="get-paid"><h2>Get paid for what you sell</h2><p>${esc(say)}</p>${mode}${btn}<p class="wl-note" id="wl-connect-msg" role="status"></p><p class="wl-note">Your bank details go to Stripe, never to Cohabi.</p></div>`;
 }
