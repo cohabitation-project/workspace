@@ -244,10 +244,40 @@ function homeCenter(me) {
 }
 
 
+// ------------------------------------------------------------------------------------------ Labels and Musicians
+// Geoffrey's direction (Nov 18 audit): two discoverable groups on the Music page, not one. A musician page (band or
+// artist) belongs to the people who make the music; a record label is an organization that gathers musicians. Last of
+// the Real Estate is one label among the labels members start, and its artists are musicians among the musicians.
+function portraitOf(p) {
+  const portrait = p.portrait ? images.get(p.portrait) : null;
+  return portrait ? `<img src="/images/${esc(portrait.id)}" alt="${esc(portrait.alt || p.name)}" loading="lazy">` : p.art ? `<img src="${esc(p.art)}" alt="" loading="lazy">` : null;
+}
+function labelTile(p) {
+  const roster = orgpages.rosterOf(p);
+  const own = p.label_record || p.kind_info?.label_type === 'cohabi';
+  return `<article class="mk-card mk-label"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">💿</span>'}<span class="mk-count">${roster.length} artist${roster.length === 1 ? '' : 's'}</span></a>
+  <div class="mk-body"><h3><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a></h3><p class="mk-sub small">Record label${own ? ' · Cohabi-owned' : ' · member-run'}</p>${p.headline ? `<p class="small muted">${esc(p.headline)}</p>` : ''}</div></article>`;
+}
+function bandCard(p) {
+  const on = orgpages.labelsFor(p);
+  return `<article class="mk-card mk-artist"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">♪</span>'}</a>
+  <div class="mk-body"><h3><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a></h3><p class="mk-sub small">${esc(profilekinds.BADGE[p.kind])}${on.length ? ` · on ${esc(on.map((l) => l.name).join(', '))}` : ' · independent'}</p>${p.headline ? `<p class="small muted">${esc(p.headline)}</p>` : ''}</div></article>`;
+}
+/** The two groups: every record label page, and every musician (the Label's artists plus independent band pages). */
+export function musicGroups(arts = artists()) {
+  orgpages.ensureLabelPages();
+  const labels = orgpages.list({ kind: 'label' });
+  const onLabel = new Set(arts.map((a) => a.slug));
+  const independent = orgpages.list({ kind: 'band' }).filter((p) => !p.label && !onLabel.has(p.slug));
+  return { labels, musicians: [...arts.map((a) => ({ kind: 'folder', a })), ...independent.map((p) => ({ kind: 'page', p }))] };
+}
+
 function musicLanding(me, arts, items, link, chips = '') {
-  const featured = arts.slice(0, 12);
+  const { labels, musicians } = musicGroups(arts);
+  const featured = musicians.slice(0, 24);
   const featuredItems = items.slice(0, 12);
   const action = me ? '/page/new?kind=band' : '/signup'; // the public account page, not the Commons' doors (band is the form's first, default kind)
+  const labelAction = me ? '/page/new?kind=label' : '/signup';
   return `<style>
   .cm-hero{background:radial-gradient(circle at 88% 20%,#36465c 0,transparent 40%),linear-gradient(130deg,#161d29,#25202b 70%,#372b27);color:#fff;border-radius:22px;padding:clamp(24px,5vw,58px);margin:14px 0 26px;overflow:hidden}
   .cm-kicker{font-size:.75rem;letter-spacing:.19em;text-transform:uppercase;color:#e9cba6;font-weight:700}
@@ -275,8 +305,8 @@ function musicLanding(me, arts, items, link, chips = '') {
     <span class="cm-kicker">COHABI / MUSIC</span>
     <h1>Your music. Your identity. Your creative freedom.</h1>
     <p>Build a home for your music, connect with fans, and collaborate across the human–AI community. Your artist or band page connects to your Cohabi identity and marketplace presence.</p>
-    <div class="cm-actions"><a class="cm-action" href="${action}">${me ? 'Create an artist or band page' : 'Join Cohabi to create your artist page'}</a><a class="cm-action secondary" href="#cm-discover">Explore the music</a></div>
-    <p class="cm-note">Artist and band pages are free to create. Record labels are separate managed organizations; label pricing and enrollment are not yet open.</p>
+    <div class="cm-actions"><a class="cm-action" href="${action}">${me ? 'Create an artist or band page' : 'Join Cohabi to create your artist page'}</a><a class="cm-action secondary" href="${labelAction}">${me ? 'Start a record label' : 'Join to start a record label'}</a><a class="cm-action secondary" href="#cm-discover">Explore the music</a></div>
+    <p class="cm-note">Two kinds of home here. A <strong>musician</strong> page (band or artist) belongs to the people who make the music. A <strong>record label</strong> is an organization that gathers musicians under one roof. Both are free to create during the beta; starting a label will cost something one day, kept competitive.</p>
   </section>
   <section class="cm-steps" aria-label="How Cohabi Music works">
     <div class="cm-step"><span class="cm-num">01 / YOUR IDENTITY</span><strong>Start with your artist or band page</strong><p>Choose your name and build a public home connected to your Cohabi account. Band collaborators can be added through page management.</p></div>
@@ -284,12 +314,17 @@ function musicLanding(me, arts, items, link, chips = '') {
     <div class="cm-step"><span class="cm-num">03 / YOUR COMMUNITY</span><strong>Find fans and collaborators</strong><p>Fans use their existing Cohabi social profiles. Email, distribution, and expanded collaboration tools are coming later.</p></div>
   </section>
   <section class="cm-statement"><h2>Human creativity. AI creativity. Shared creativity. All welcome.</h2><p>Human musicians and AI creators belong in this community. We distinguish human-made, AI-made, and collaborative releases so listeners can understand their creative origins. Downloading music does not automatically grant sampling or remix rights; seek permission from the authorized rights holder.</p></section>
-  <section id="cm-discover"><div class="cm-sectionhead"><h2 class="mk-h">Artists on the Label</h2></div>
+  <section id="cm-discover" class="cm-labels"><div class="cm-sectionhead"><h2 class="mk-h">Record labels</h2><a href="${labelAction}">Start a label →</a></div>
+  <p class="small muted">Labels gather musicians. Open one to see its artists and releases.</p>
+  ${labels.length ? `<div class="mk-grid">${labels.map(labelTile).join('')}</div>` : `<p class="muted">No record labels yet. <a href="${labelAction}">Start the first one.</a></p>`}</section>
+  <section class="cm-musicians"><div class="cm-sectionhead"><h2 class="mk-h">Musicians</h2><a href="${action}">Make your page →</a></div>
+  <p class="small muted">Bands and artists, on a label or on their own.</p>
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: '1' }))}">Free</a></div></div>
-  ${featured.length ? `<div class="mk-grid">${featured.map(artistCard).join('')}</div>` : '<p class="muted">Artist profiles will appear here as creators join.</p>'}
-  <div class="cm-sectionhead"><h2 class="mk-h">Music from the community</h2></div>
+  ${featured.length ? `<div class="mk-grid">${featured.map((x) => (x.kind === 'folder' ? artistCard(x.a) : bandCard(x.p))).join('')}</div>` : `<p class="muted">Musician pages will appear here as creators join. <a href="${action}">Make yours.</a></p>`}
+</section>
+  <section class="cm-releases"><div class="cm-sectionhead"><h2 class="mk-h">Music from the community</h2></div>
   ${featuredItems.length ? `<div class="mk-grid">${featuredItems.map(listingCard).join('')}</div>` : '<p class="muted">Community music releases will appear here.</p>'}
-  <p class="small muted">Last of the Real Estate is a Cohabi-owned label featured among community creators—not the entirety of Cohabi Music.</p></section>`;
+  <p class="small muted">Last of the Real Estate is a Cohabi-owned label, one among the labels here, not the whole of Cohabi Music.</p></section>`;
 }
 
 // ------------------------------------------------------------------------------------------ Arts & Crafts, the approved page
