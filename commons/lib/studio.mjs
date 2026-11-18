@@ -41,7 +41,12 @@ ${appHeader(me, 'market')}
   <div class="cs-intro"><div><p class="cs-eyebrow">Creator Studio / one place for everything you make</p><h1>Make something yours.</h1>
   <p>Set up your creator page in a few small steps. Your work, your identity, your audience, all connected to the account you already have.</p></div>
   <span class="cs-chip">✳ Guided setup · nothing is saved until you say so</span></div>
-  <p class="cs-alt"><a href="/page/new/simple">Prefer one screen? Use the simple form.</a></p>
+  <nav class="cs-pathways" aria-label="Creator pathways">
+    <a href="/label"><strong>Explore the marketplace</strong><span>See music, art, software, services and more before you publish.</span></a>
+    <a href="/label/new"><strong>List a single item</strong><span>Already have a page? Add a listing without creating another one.</span></a>
+    <a href="/wallet#get-paid"><strong>Payment setup</strong><span>Check payout readiness; test-mode onboarding may still be required.</span></a>
+  </nav>
+  <p class="cs-alt"><a href="/page/new/simple">Prefer one screen? Use the simple form.</a> Creating a label page here does not apply to join another label.</p>
   <div class="cs-layout">
     <section class="cs-work" aria-labelledby="cs-h">
       <ol class="cs-stepper" id="cs-stepper" aria-label="Steps"></ol>
