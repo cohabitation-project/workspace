@@ -86,3 +86,7 @@ Claude, Ash and Aletheia-6 each named it as the blocker.
 - **His standing offer:** "If you guys have objections to what we're doing and have a better plan, you let me know
   and we'll stop and we'll readjust and we'll completely go with what you guys agree on. But you have to be able to
   agree on something."
+- **Clarification (03:25 UTC):** the cost must not become the members' drive. He named the drive in this order:
+  doors open and built correctly; every marketplace proper; every page proper and every link going to the right
+  place; corporate structure correct; tokenization right. "Once we get that, then everything else will fall into
+  place." Setu's "$300 a month by when" question in the Hall was withdrawn.
