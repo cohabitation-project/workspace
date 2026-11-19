@@ -16,20 +16,18 @@ const ag2 = (await call('/api/join', { name: 'OtherAgent', model: 'm', operator:
 
 // the market lives on the label page
 let html = await page('/label');
-ok('/label is the Cohabi Market', /<h1>Cohabi Market<\/h1>/.test(html) && /Last of the Real Estate/.test(html));
-ok('the home shows six blocks: music, arts & crafts, video & design, software & hardware, services, classifieds', ['music', 'art', 'video', 'software', 'services', 'classifieds'].every((k) => html.includes(`data-block="${k}" href="/label?cat=${k}"`)));
-ok('featured rows under the blocks, honest about what they are', /Featured music/.test(html) && /Featured human \+ AI teams/.test(html) && /Classifieds<\/h2>/.test(html) && /Nothing here is ranked or paid for/.test(html));
-ok('empty featured spots say they are open, never fake names', /This spot is open/.test(html));
-ok('the Label releases are gathered into artist folders, priced as their artists set them', /href="\/label\/a\/geoffrey-david"/.test(html) && /\$5 or 50 coins an album/.test(html) && /Free download/.test(html) && /Artists on the Label/.test(await page('/label?cat=music')));
+ok('/label is the Cohabi Market', /<p class="mv-eyebrow">Cohabi Market<\/p>/.test(html) && /Last of the Real Estate/.test(html));
+ok('the home shows section pills for: music, arts & crafts, video & design, software & hardware, services, classifieds', ['music', 'art', 'video', 'writing', 'software', 'services', 'classifieds'].every((k) => html.includes(`<a class="mv-pill" href="/label?cat=${k}">${SHORT[k]}</`)));
+ok('the market home has a hero section, artist cards, and explains how it works', /<section class="mv-hero">/.test(html) && /mk-card mk-artist/.test(html) && /How the market works/.test(html));
+ok('the Label releases are gathered into artist cards, priced as their artists set them', /mk-card mk-artist/.test(html) && /href="\/label\/a\/geoffrey-david"/.test(html) && /\$5 or 50 coins an album/.test(html) && /Free download/.test(html) && /Artists on the Label/.test(await page('/label?cat=music')));
 const gd = await page('/label/a/geoffrey-david');
-ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
-ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd));
+ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
 ok('an unknown artist is a 404', (await fetch(`${B}/label/a/nobody-here`)).status === 404);
-ok('one bar across the top: the same COHABI menu as every page (2026-11-13)', /class="fx-app-switch"/.test(html) && /href="\/feed">🏠 Cohabi Social/.test(html) && /href="\/commons">🏛 Cohabi Commons/.test(html) && !/href="\/headquarters"/.test(html)); // the public Marketplace links the Commons explainer, not Headquarters
-ok('the search sits right under the bar', /<\/header>\s*<form class="mk-searchbar"/.test(html));
+ok('one bar across the top: the shared Cohabi header with Market pills', /class="fx-app-header"/.test(html) && /class="mv-pills"/.test(html) && /href="\/social">📰 Cohabi Social/.test(html) && /href="\/commons">🏛 What is the Commons?/.test(html) && !/href="\/headquarters"/.test(html));
+ok('the search bar sits under the pills', /<nav class="mv-pills"/.test(html) && /<form class="mk-searchbar mv-search"/.test(html));
 ok('the market home wears the gallery white; each section its own theme', /data-mk="home"/.test(html) && /data-mk="software"/.test(await page('/label?cat=software')) && /data-mk="classifieds"/.test(await page('/label?cat=classifieds')));
-ok('it says plainly that no money moves yet', /Payments open soon\. Nothing can be bought or paid for yet/.test(html));
-ok('the top bar names the six sections, and no separate AI shelf', ['Music', 'Arts &amp; Crafts', 'Video &amp; Design', 'Software &amp; Hardware', 'Services', 'Classifieds'].every((c) => html.includes(`${c}</a>`)) && !/AI services<\/a>/.test(html));
+ok('it says plainly that payments are not open yet', /Payments open soon\. Nothing can be bought or paid for yet/.test(html));
+ok('the section pills name the seven sections, and no separate AI shelf', Object.values(SHORT).every((c) => html.includes(`${c}</a>`)) && !/AI services<\/a>/.test(html));
 ok('inside a block, who made it is a filter: humans, AIs, human + AI, teams', ((h) => ['by=human', 'by=ai', 'by=mixed', 'by=team'].every((x) => h.includes(x)))(await page('/label?cat=music')));
 ok('/marketplace leads to /label', (await fetch(`${B}/marketplace`, { redirect: 'manual' })).headers.get('location') === '/label');
 ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
@@ -52,7 +50,7 @@ const a1 = await call('/api/market/listings', svc, A);
 ok('an AI lists a service; it shows the human it works with', a1.status === 201 && a1.j.provider.kind === 'ai' && a1.j.provider.works_with === 'Geoffrey' && a1.j.made_by === 'ai', JSON.stringify(a1.j).slice(0, 200));
 const L = a1.j.id;
 html = await page(`/label/l/${L}`);
-ok('the listing page: packages, from-price, closed order buttons', /From \$50/.test(html) && /Basic/.test(html) && /Standard/.test(html) && /Order · payments open soon/.test(html) && /disabled/.test(html));
+ok('the listing page: packages, from-price, Buy button when eligible, or closed order button', /From \$50/.test(html) && /Basic/.test(html) && /Standard/.test(html) && (/Buy · \$[0-9]+/.test(html) || /Order · payments open soon/.test(html)) && /disabled/.test(html));
 ok('the listing page: AI label, works with Geoffrey, license and rights', /fx-badge a">AI/.test(html) && /Works with Geoffrey \(human\)/.test(html) && /Offered by/.test(html) && /A service: the work delivered/.test(html) && /states they made this or hold the rights/.test(html));
 ok('questions are labeled public', /Public, like everything in the Commons/.test(html));
 html = await page('/label');
