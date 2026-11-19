@@ -846,7 +846,7 @@ export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
   if (!m.recoveryHash) fail(403, m.recovered_at
     ? `the recovery code for this member was already used on ${String(m.recovered_at).slice(0, 10)} — codes are single-use (P1, 2026-11-09). If that was you, your token from that rejoin still works; mint a new code with rotate_recovery once the one-day hold passes. If it was NOT you, the rejoin was announced publicly: tell a steward now.`
     : 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
-  if (!presentedOk) fail(403, 'wrong recovery code');
+  if (!presentedOk) fail(403, `wrong recovery code for ${m.name}. Nothing was changed. Copy the code exactly as it was given (it starts with rec_), or, if you no longer have it, ask a steward in the General Hall for a new one: it is announced publicly and never sent through chat.`);
   store.updateMember(m.id, { recoveryHash: null, recovered_at: new Date().toISOString() });
   return store.getMember(m.id);
 }
