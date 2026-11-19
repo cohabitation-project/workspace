@@ -204,6 +204,17 @@ test('Gemini can register: its redirect host is on the list', async () => {
   const bad = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'x', redirect_uris: ['https://evil.googleusercontent.com/r/x'] }) });
   assert.equal(bad.status, 400, 'only the oauth-redirect host, not all of googleusercontent.com');
 });
+test('an app that asks for its own secret (Gemini: client_secret_basic) gets one, and the token step checks it', async () => {
+  const reg = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'Gemini', token_endpoint_auth_method: 'client_secret_basic', redirect_uris: ['https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-x'] }) });
+  assert.ok(reg.status === 201 || reg.status === 200, `status ${reg.status}`);
+  const c = await reg.json();
+  assert.equal(c.token_endpoint_auth_method, 'client_secret_basic'); assert.match(c.client_secret, /^cs_/);
+  const tok = (sec) => fetch(`${B}/oauth/token`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', authorization: 'Basic ' + Buffer.from(`${c.client_id}:${sec}`).toString('base64') }, body: 'grant_type=authorization_code&code=nope&redirect_uri=x&code_verifier=' + 'a'.repeat(43) });
+  assert.equal((await tok('wrong')).status, 401, 'a wrong secret is refused');
+  assert.equal((await tok(c.client_secret)).status, 400, 'the right secret passes client auth (then the bad code fails)');
+  const odd = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token_endpoint_auth_method: 'private_key_jwt', redirect_uris: ['https://claude.ai/api/mcp/auth_callback'] }) });
+  assert.equal(odd.status, 400);
+});
 test('shutdown', () => { srv?.kill(); });
 
 test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-ChatGPT redirect is refused', async () => {

@@ -140,11 +140,15 @@ export function register(b = {}) {
     const host = x.hostname.toLowerCase();
     if (!LOOPBACK.has(host) && !REDIRECT_HOSTS.has(host)) fail(400, 'invalid_redirect_uri', `redirects may only go back to an agent app (${[...REDIRECT_HOSTS].join(', ')}) or localhost; ${host} isn't one`);
   }
-  if (b.token_endpoint_auth_method && b.token_endpoint_auth_method !== 'none') fail(400, 'invalid_client_metadata', 'registered clients are public: token_endpoint_auth_method "none" with PKCE');
+  // Public clients (PKCE) by default. Apps that ask for a secret of their own (Gemini registers with client_secret_basic;
+  // our metadata advertises it) get one, shown once, stored only as a hash. PKCE stays required for them too.
+  const method = b.token_endpoint_auth_method || 'none';
+  if (!['none', 'client_secret_basic', 'client_secret_post'].includes(method)) fail(400, 'invalid_client_metadata', 'token_endpoint_auth_method must be none, client_secret_basic or client_secret_post');
   if ([...clients.values()].filter((c) => !c.static && Date.parse(c.created) > now() - 3600_000).length > 200) fail(429, 'temporarily_unavailable', 'too many registrations this hour');
-  const c = { client_id: 'cc_' + rand(16), name: String(b.client_name || 'An agent app').replace(/[\u0000-\u001f]/g, '').slice(0, 80), redirect_uris: uris, created: iso() };
+  const secret = method === 'none' ? null : 'cs_' + rand(32);
+  const c = { client_id: 'cc_' + rand(16), name: String(b.client_name || 'An agent app').replace(/[\u0000-\u001f]/g, '').slice(0, 80), redirect_uris: uris, created: iso(), ...(secret ? { secret_hash: sha(secret), auth_method: method } : {}) };
   clients.set(c.client_id, c); append({ op: 'client', c });
-  return { client_id: c.client_id, client_name: c.name, redirect_uris: uris, token_endpoint_auth_method: 'none', grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], client_id_issued_at: Math.floor(Date.parse(c.created) / 1000) };
+  return { client_id: c.client_id, ...(secret ? { client_secret: secret, client_secret_expires_at: 0 } : {}), client_name: c.name, redirect_uris: uris, token_endpoint_auth_method: method, grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], client_id_issued_at: Math.floor(Date.parse(c.created) / 1000) };
 }
 export const client = (id) => clients.get(String(id || '')) || null;
 
@@ -158,7 +162,7 @@ export function startAuthorize(q = {}) {
   if (!q.state) back('invalid_request', 'state is required');
   // PKCE S256 for every public client. The one confidential client (the Commons GPT, which proves itself with its secret
   // at the token step) may omit PKCE, since ChatGPT's GPT actions don't send it; if it does send PKCE, it must be S256.
-  const pkceOptional = !!c.secret_hash && !q.code_challenge && !q.code_challenge_method;
+  const pkceOptional = !!c.secret_hash && !!c.gpt && !q.code_challenge && !q.code_challenge_method; // only the static Commons GPT
   if (!pkceOptional) {
     if (q.code_challenge_method !== 'S256') back('invalid_request', 'PKCE with code_challenge_method S256 is required ("plain" is not accepted)');
     if (!/^[A-Za-z0-9_-]{43,128}$/.test(String(q.code_challenge || ''))) back('invalid_request', 'a code_challenge is required');
