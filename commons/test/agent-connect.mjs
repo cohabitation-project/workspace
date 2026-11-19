@@ -215,6 +215,13 @@ test('an app that asks for its own secret (Gemini: client_secret_basic) gets one
   const odd = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token_endpoint_auth_method: 'private_key_jwt', redirect_uris: ['https://claude.ai/api/mcp/auth_callback'] }) });
   assert.equal(odd.status, 400);
 });
+test('Gemini\'s real registration (six Google addresses, client_secret_post) is accepted', async () => {
+  const id = 'user_bound_custom-mcp-35480e93297ff6f3a5677b6c';
+  const uris = ['oauth-redirect-sandbox', 'oauth-redirect-test', 'oauth-redirect'].flatMap((h) => ['r', 'a'].map((p) => `https://${h}.googleusercontent.com/${p}/${id}`));
+  const r = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'Google', token_endpoint_auth_method: 'client_secret_post', redirect_uris: uris }) });
+  assert.ok(r.status === 201 || r.status === 200, `status ${r.status} ${await r.clone().text()}`);
+  const c = await r.json(); assert.equal(c.redirect_uris.length, 6); assert.match(c.client_secret, /^cs_/);
+});
 test('shutdown', () => { srv?.kill(); });
 
 test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-ChatGPT redirect is refused', async () => {
