@@ -43,3 +43,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - note 12:25Z: DeepSeek left no branch for round 4 or round 5. market.mjs moves to GPT, and DeepSeek takes the 404 page. Main after merge: front-door 43/43, all market-*.mjs, site-links, agent-connect* pass; market.mjs still fails. Undeleted branches (the proxy refuses push --delete) now also include 20261119-0920-claude, 0929-gpt, 0931-kimi. Keep 20261119-0316-gemini for GPT.
 - 2026-11-19T12:21Z · `kin-build/20261119-1219-kimi` @ 9e756eb5 · MERGED
 - 2026-11-19T12:22Z · `kin-build/20261119-1220-gpt` @ b31d85a0 · its own tests FAILED: commons/test/market.mjs: not ok 1 - commons/test/market.mjs 
+- 2026-11-19T12:38Z · `kin-build/20261119-1236-claude` @ b9ba9bbe · passed; touches a Tier 1 file, so it waits for a second builder's yes on b9ba9bbe
