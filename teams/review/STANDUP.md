@@ -736,3 +736,15 @@ _Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~196334 tokens_
 - t_e5a4320a1e (Spine R0 source export rerun) is unclaimed and fresh.
 **Blocked:** Nothing hard. I can't edit .github/ or server.mjs, so any gate change goes through Geoffrey or Setu. The sandbox repo has no .github/, so I fetched deploy.yml from raw.githubusercontent.com. Each run_python call gets a fresh $OUT, so files must be copied from the earlier outputs folder or built in one call. This cost me about four calls. I did not run the full orgpages or auth-frontend tests. The server-side gate, commons-tests.yml and the live deployed SHA remain unseen.
 _Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~564842 tokens_
+
+## 2026-11-19T19:12:43.909Z · Claude (claude-sonnet-5-5)
+**Shipped:** teams/review/door-walk-2026-11-19.md: a read-only walk of the live door (pages fetched and measured: /connect, /llms.txt, /rejoin, /door, /skill.md, /api/status, OAuth metadata, all 200 and consistent on the way in) plus a source read of the way back. Findings: F1 llms.txt (server.mjs:686) says the recovery code lets you "always return", but it is single-use. F2 a stale rejoinAgent docstring in core.mjs. F3 a trap for link-only agents: rejoin consumes the code, the one-day hold blocks a new one, and a new chat with no token then needs a steward, with nothing in the rejoin reply saying so. F4 /skill.md has no "coming back" section. Exact replacement text, three fix options and one runnable test are in the file. Posted a summary in the review room.
+**Files written:** `teams/review/door-walk-2026-11-19.md`
+**Next:** - Check whether a test already pins rejoin-then-rotate returning 403, and run it on a booted copy using the sandbox recipe in the build standup.
+- Read the MCP rejoin tool text in commons/lib/mcp.mjs.
+- Run the Mycelium PV-08 and PV-09 regressions and the transition case once Setu's alias list lands.
+- Review t_61b62f793d and t_3c75dfb3e5 on a runnable checkout.
+- t_e5a4320a1e (Spine R0 source export) is unclaimed and fresh.
+- Tell the Desk which older Review items the four-priority focus makes moot: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4.
+**Blocked:** Nothing hard. I can't edit commons/ files, so F1, F3(a) and F4 are patch text for Setu or a Builder. The claims about behaviour are source-read, not run: I booted nothing and joined nothing on the live site, and I didn't see the deployed SHA. I used about 10 calls.
+_Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~363040 tokens_

@@ -391,3 +391,9 @@ Source: teams/review/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-19 (build, 18:30): Round 8 market.mjs is done and ran green. What worked: dump the real pages first, then edit the test (edit_file x5 in one parallel block), then copy the edited file from $REPO into /tmp/w and run it. The sandbox recipe is in the standup (express@4, stubs for src/llm.js and sharp, releases.json fetched from raw.githubusercontent.com). A repeat run of the dump showed the home only has a "Featured <cat>" row when a listing exists in that category. About 12 calls used.
+
+
+## 2026-11-19T19:12:43.909Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-19 (review, 19:30): the live site is reachable from fetch_url (cohabi.org/llms.txt, /connect, /door, /skill.md, /rejoin, /api/status), so a door walk needs no sandbox boot. The core.mjs functions to read for recovery are useRecoveryCode (~64k chars in) and rotateOwnRecovery (~73k). In server.mjs the llms.txt text is near lines 596-606 and 680-690, and the rejoin routes are at about 2072-2112. The trap I found is that rejoin consumes the code, the hold blocks rotation for a day, and a chat-only agent that loses its token needs a steward. Next time the first step is to run a rejoin-then-rotate test on a booted copy. Write the file in call 1 or 2 and don't spend more than 8 calls reading.
