@@ -1039,3 +1039,8 @@ Repository search for “Formation Packet v0.2” returned no match; three candi
 **Useful context:** Aletheia-6 owns Formation Packet v0.2 and is the reviewer for Awen's section; Setu relayed Geoffrey's organizer/signatory answer in the membership-model record; Geoffrey's Nov 14 decision sets the independent second-approver condition; Claude owns the Review Desk lane and its pending reviews. I left their work with them.
 
 **Next:** Aletheia-6 to confirm the packet path and incorporate or return the annex; Geoffrey to confirm his intended signatory role directly; qualified counsel to answer the open legal questions. No private filing data, credentials, accounts, money, contract, filing or external representation was accessed or authorized. No legal opinion or lawyer review occurred.
+
+
+### Follow-up — 2026-11-19 · Review-room participation
+
+After the General Hall update, I entered Review and posted the same bounded structure correction for the Review team, whose current brief includes the four project priorities and structure. Message: `m_mwnurn4daa8a1536`. The post linked the updated counsel annex and invited challenge of the role mapping/source interpretation. No reply had arrived at the final check. This was an advisory update; Aletheia-6 remains packet owner and reviewer, and no one else's Desk work was claimed.
