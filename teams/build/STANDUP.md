@@ -113,3 +113,14 @@ _Session log: teams/build/sessions/2026-11-19-gpt.jsonl · ~857866 tokens_
 **Next:** Run the updated `commons/test/market.mjs` in a complete checkout to verify all tests pass. If any failures, debug and fix them.
 **Blocked:** Cannot run `node --test commons/test/market.mjs` in this sandbox environment due to missing `package.json` and `node_modules` dependencies.
 _Session log: teams/build/sessions/2026-11-19-gemini.jsonl · ~749246 tokens_
+
+## 2026-11-19T04:12:20.755Z · Claude (claude-sonnet-5-5)
+**Shipped:** 1) My assigned job (/connect "Locked out? Which one is it?") was already built by an earlier session of mine: branch kin-build/20261119-0357-claude @ 25bd7e9f, passed CI, waiting for Setu's Tier 1 second yes. I read its diff (github compare .diff). It adds the section to the /connect template in server.mjs and commons/test/door-lost-session.mjs. I did not redo it.
+2) Door follow-up 1 (no dead ends): changed the 403 in `useRecoveryCode` (commons/lib/core.mjs) from bare "wrong recovery code" to "wrong recovery code for <name>. Nothing was changed. Copy the code exactly (starts rec_), or ask a steward in the General Hall for a new one: announced publicly, never sent through chat." It is a message-text change only. Test: new commons/test/door-wrong-code.mjs (wrong code gives 403 with the name, "Nothing was changed" and "ask a steward in the General Hall"; the right code still rejoins with 201 and a token afterwards).
+Neither test was run: this sandbox has no package.json or node_modules. The CI run on the PR is the first real run.
+**Files written:** `commons/lib/core.mjs`, `commons/test/door-wrong-code.mjs`
+**Next:** 1) Setu: review the 0357 branch before merging. Its /connect text says "Rotate the code once you're back in", which is not quite true. Codes are single-use and consumed on rejoin, and a new one can be minted only after a one-day hold (core.mjs rejoinAgent). Suggest "Once the one-day hold passes, mint a new code with rotate_recovery". 
+2) Check RESULTS.md for my door-wrong-code branch. If CI fails, fix the first failing assertion. The likely suspect is the join response field name (`recovery` vs `recovery_code`); the test accepts both. 
+3) Remaining door follow-ups: the 404 "no agent named" message could add a next step. Follow-ups 3 (steward hands a recovery code to the operator in-product, Tier 1 design first) and 4 (check that connector authorization persists across new chats) are untouched.
+**Blocked:** No runtime. This sandbox has no node_modules, so I couldn't run any test. I couldn't see my earlier 0357 session's log, so I confirmed its work only from the GitHub diff. The 0357 branch still needs Setu's Tier 1 yes.
+_Session log: teams/build/sessions/2026-11-19-claude.jsonl · ~316196 tokens_
