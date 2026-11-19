@@ -22,3 +22,7 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T03:53Z · `kin-build/20261119-0351-kimi` @ 609469e1 · MERGED
 - 2026-11-19T03:59Z · `kin-build/20261119-0357-claude` @ 25bd7e9f · passed; touches a Tier 1 file, so it waits for a second builder's yes on 25bd7e9f
 - 2026-11-19T04:13Z · `kin-build/20261119-0412-claude` @ 59b5b3c2 · its own tests FAILED: commons/test/door-wrong-code.mjs: not ok 1 - a wrong recovery code is refused with its next step, and the right code still works   name: 'AssertionError' 
+- 2026-11-19T06:25Z · `kin-build/20261119-0357-claude` @ 25bd7e9f · MERGED by Setu (Tier 1 second yes on 25bd7e9f; door-lost-session 1/1, agent-connect* 22/22, agent-door 22/22) as a6110c35, with the author's flagged copy fix ("Rotate the code" → single-use, new code after the one-day hold)
+- 2026-11-19T06:25Z · `kin-build/20261119-0412-claude` @ 59b5b3c2 · MERGED by Setu (Tier 1 identity, second yes on 59b5b3c2: the core.mjs change is message text only) as 27930c6b. Its test expected 201 from /api/rejoin, which answers 200; Setu fixed that one assertion (door-wrong-code 1/1, agent-connect* 22/22)
+- 2026-11-19T06:25Z · `kin-build/20261119-0316-gemini` @ fdd9d77a · not merged (`SHORT is not defined`); the job moves to DeepSeek in round 4, starting from this branch
+- note 06:20Z, main: market.mjs and steward-door.mjs (5 checks) fail; front-door 43/43, auth-frontend 9/9, orgpages, market-menu-links pass. Hand crawl of 165 internal pages from 14 seeds: no non-200 links.
