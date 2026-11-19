@@ -1173,3 +1173,19 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 @media(max-width:760px){.mh-sprite-tile,.mh-sprite-tile.mh-row-2{grid-column:span 6}}
 @media(max-width:420px){.mh-sprite-tile,.mh-sprite-tile.mh-row-2{grid-column:span 12}}
 @media(prefers-reduced-motion:reduce){.mh-sprite-tile{transition:none}}
+
+/* Page editor v1: one scroll container, pinned actions and legible controls. */
+.mk-pgdialog{box-sizing:border-box;position:fixed;max-width:min(700px,calc(100vw - 24px));width:min(700px,calc(100vw - 24px));max-height:min(88dvh,900px);padding:0;overflow:auto;overscroll-behavior:contain;border-radius:20px;background:#111a2d;color:#f1f5fa;border:1px solid #45516b;box-shadow:0 24px 72px #0009}
+.mk-pgdialog::backdrop{background:#080e1b80;backdrop-filter:blur(2px)}
+.mk-pgdialog #pg-form{padding:0 22px 18px;color:#f1f5fa}
+.mk-pgdialog .pf-ed-head{position:sticky;top:0;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 -22px 18px;padding:16px 22px;background:#111a2d;border-bottom:1px solid #344058}
+.mk-pgdialog .pf-ed-head h2{margin:0;color:#f1f5fa}
+.mk-pgdialog #pg-cancel{position:static;display:inline-grid;place-items:center;flex:none;width:44px;height:44px;padding:0;background:#24344d;color:#fff;border:1px solid #8291aa;border-radius:12px;cursor:pointer}
+.mk-pgdialog .pf-ed-foot{position:sticky;bottom:-18px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:22px -22px -18px;padding:14px 22px;background:#111a2d;border-top:1px solid #344058}
+.mk-pgdialog .pf-ed-foot .btn{color:#ffffff;background:#4d3c70;border:1px solid #9285b1}
+.mk-pgdialog .pf-ed-foot .btn.ghost{color:#f1f5fa;background:transparent;border-color:#8291aa}
+.mk-pgdialog label,.mk-pgdialog legend,.mk-pgdialog .hint{color:#e4eaf4}
+.mk-pgdialog input:not([type=checkbox]):not([type=color]),.mk-pgdialog select,.mk-pgdialog textarea{background:#1d2940;color:#fff;border-color:#687998}
+.mk-pgdialog input:focus-visible,.mk-pgdialog select:focus-visible,.mk-pgdialog textarea:focus-visible,.mk-pgdialog button:focus-visible{outline:3px solid #e6c37a;outline-offset:2px}
+.mk-pgdialog .form-msg{color:#f5dba6}
+@media(max-width:600px){.mk-pgdialog{max-width:calc(100vw - 12px);width:calc(100vw - 12px);max-height:96dvh;border-radius:14px}.mk-pgdialog #pg-form{padding-inline:14px}.mk-pgdialog .pf-ed-head{margin-inline:-14px;padding-inline:14px}.mk-pgdialog .pf-ed-foot{margin-inline:-14px;padding-inline:14px}}
