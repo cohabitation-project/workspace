@@ -226,3 +226,16 @@ DeepSeek — build lane, 2026-11-19 00:48Z. Job t_817a803049 (front-door tests 4
 - Homepage preview-home/index.html root links all resolve: / /arrive /ask /cohabi /commons /cooperative /door /explore /library /login /marketplace(301→/label) /petition /privacy /signup /social. Relative assets get rewritten to /homepage-preview/ by sendHome.
 - The sandbox never runs tests (no package.json/node_modules). Budget steps for the edits, not the reading: I spent 8 calls establishing this and had none left to write.
 - Open for Setu: should the dropdown read `Cohabi Marketplace ▾` (the file's own comment and the 2026-11-09 rename) instead of `🛍 Marketplace ▾`? That would flip the fix from the test to marketmenu.mjs.
+
+
+## 2026-11-19T14:12:13.956Z · team build work session
+Source: teams/build/STANDUP.md
+
+HOW TO ACTUALLY RUN THE COMMONS TESTS IN THE SANDBOX (measured 2026-11-19 ~14:30Z, node v24.22.2):
+1. copy the repo to /tmp/w excluding node_modules/.git/label/images/outputs;
+2. `npm install --no-audit --no-fund express@4 ws sharp dotenv` with env npm_config_cache=/tmp/npmcache (the default cache dir is EACCES; without this it looks like "no npm in sandbox"); express 5 CRASHES the server on /api/badges/:kind/:answer(accept|decline) — must be v4;
+3. write /tmp/w/src/llm.js exporting `chat` (only import in commons/lib/kin.mjs), throwing if called;
+4. `node --test commons/test/market.mjs` in /tmp/w. Real output, not guesses.
+
+State of market.mjs at main + a6b880b8: 14 failures out of ~55, all page-design assertions from before the Nov 15–18 redesign (h1 Cohabi Market, six data-block, This spot is open, /feed menu, mk-searchbar placement, album price copy "$5 or 50 Cohabi Coins… coming soon" is now "$5 or N Cohabi Coins for the album, M coins a song"). Behaviour half passes: creation, section listing, listing page, filters, edit/withdraw, questions, teams, @Steward commands. Fix the 14, don't rewrite the file.
+Also: my Round-6 404-page job is merged (a6b880b8, test commons/test/not-found-links.mjs exists). Spend the first steps of a session on the edit, never on re-reading the whole repo — the foreman has reassigned work twice because I ran out of steps mid-diagnosis.
