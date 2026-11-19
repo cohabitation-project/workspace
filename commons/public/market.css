@@ -673,3 +673,9 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-studioface img { width: 100%; height: 100%; object-fit: cover; }
 .mk-studioname { font-weight: 600; line-height: 1.2; }
 .mk-studiocount { color: var(--muted); }
+/* Plain links anywhere on a market page take the page's own accent, never the browser default purple (unreadable on
+   the dark Software, Music and Video pages; Geoffrey, 2026-11-19). */
+.mk-page a:not([class]) { color: var(--gold); }
+.mk-page a:not([class]):hover { color: var(--ink); }
+.mk-page .mk-foot a, .mk-page .mv-eyebrow { color: var(--muted); }
+.mk-page .mk-links strong { color: var(--ink); }
