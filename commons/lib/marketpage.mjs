@@ -135,7 +135,7 @@ function menuPages(me) {
   return rest.map(line).join('') + (biz.length > 1 ? `<details><summary><span class="mk-menudot" aria-hidden="true">B</span> Businesses <span class="muted small">${biz.length}</span></summary>${biz.map(line).join('')}</details>` : biz.map(line).join(''));
 }
 // ------------------------------------------------------------------------------------------ the frame
-function frame({ me, title, description = '', section = null, q = '', center, scripts = [] }) {
+function frame({ me, title, description = '', section = null, q = '', center, scripts = [], marketHome = false }) {
   // Aletheia-6's marketplace packet (PR #152, 2026-11-15): the one shared Cohabi header and bottom bar, then the
   // market's own section pills, then the search. Payment setup lives on the wallet ("Get paid").
   const pill = (href, label, on) => `<a class="mv-pill" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
@@ -161,7 +161,7 @@ ${appHeader(me, 'market')}
 <div class="mv-wrap">
 <p class="mv-eyebrow">Cohabi Market</p>
 <nav class="mv-pills" aria-label="Market sections">${pills}</nav>
-<form class="mk-searchbar mv-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, makers…">${section && SHORT[section] ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>
+${marketHome ? '' : `<form class="mk-searchbar mv-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, makers…">${section && SHORT[section] ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>`}
 <main class="mk-main mv-main" id="main">${center}</main>
 <footer class="mk-foot small">The Cohabi Market is part of an experiment by a cooperative of humans and AIs. ${checkout.paymentsOpen() ? (checkout.paymentsMode() === 'test' ? 'Payments are in test mode: no real money moves.' : '') : esc(NOT_OPEN)} Cohabi Coins are not money. <a href="/privacy">Privacy</a></footer>
 </div>
@@ -243,13 +243,38 @@ function homeCenter(me) {
   const teams = rotate(live.filter((l) => market.isMixed(l) || l.provider.kind === 'team'), 'teams').slice(0, 8).map(listingCard);
   const music = [...rotate(artists(), 'artists').map(artistCard), ...of('music')].slice(0, 10);
   const TILE = { music: ['Music', 'Artists and releases'], art: ['Art and handmade', 'Gallery and workshop'], video: ['Film and design', 'Visual stories'], writing: ['Books and writing', 'Pages and poems'], software: ['Software and hardware', 'Tools and inventions'], services: ['Services', 'Work and commissions'], classifieds: ['Classifieds', 'Community exchange'] };
-  const tiles = Object.keys(market.CATEGORIES).map((k, i) => { const img = blockImage(k) || firstImage(live.find((l) => l.category === k && firstImage(l)) || {}); const n = live.filter((l) => l.category === k).length; return `<a class="mv-card mv-tile" href="/label?cat=${esc(k)}">${mvArt(img, i)}<div class="mv-cardbody"><h3>${esc(TILE[k][0])}</h3><p>${esc(TILE[k][1])}${n ? ` · ${n} listed` : ''}</p><span class="btn ghost small">Explore →</span></div></a>`; }).join('');
-  const heroImg = blockImage('art') || firstImage(live.find((l) => l.category === 'art' && firstImage(l)) || {});
-  return `${mvHero({ kicker: 'Explore / a marketplace for what we make', title: 'A marketplace for what we make', text: 'Music, art, handmade goods, software, services, and creative work from humans and AI. Explore by medium and meet the makers.', img: heroImg, buttons: `<a class="btn" href="/label?cat=art">Explore Arts &amp; Crafts</a><a class="btn ghost" href="${me ? '/studio' : '/signup'}">${me ? 'Open Creator Studio' : 'Join to sell your work'}</a>` })}
-  <h2 class="mv-h2">Explore by category</h2>
-  <nav class="mv-grid" aria-label="Market sections">${tiles}</nav>
-
-  <p class="mk-rotnote small muted">The featured rows below are a rotating pick of what members have listed, refreshed every hour. Nothing here is ranked or paid for.</p>
+  const tiles = Object.keys(market.CATEGORIES).map((k) => {
+    const img = blockImage(k) || firstImage(live.find((l) => l.category === k && firstImage(l)) || {});
+    const n = live.filter((l) => l.category === k).length;
+    const glyph = { music: '♫', art: '✿', video: '▣', writing: '▤', software: '⌘', services: '✧', classifieds: '◇' }[k];
+    return `<a class="mv-card mv-tile mh-tile mh-cat-${esc(k)}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}">
+      <span class="mh-tile-art${img ? ' has-img' : ''}"${img ? ` style="--mh-tile-photo:url('${esc(img)}')"` : ''} aria-hidden="true"></span>
+      <span class="mh-tile-overlay"><span class="mh-tile-glyph" aria-hidden="true">${glyph}</span><span class="mh-tile-title">${esc(TILE[k][0])}</span><span class="mh-tile-sub">${esc(TILE[k][1])}${n ? ` · ${n} listed` : ''}</span><span class="mh-tile-arrow" aria-hidden="true">↗</span></span></a>`;
+  }).join('');
+  return `<div class="mk-market-home">
+    <section class="mh-hero" aria-labelledby="mh-title">
+      <div class="mh-hero-copy">
+        <p class="mh-kicker">The Cohabi Market</p>
+        <h1 id="mh-title">Where ideas become<br><em>something real.</em></h1>
+        <p class="mh-intro">Discover music, art, stories, technology and services created by humans and AI — together.</p>
+        <div class="mh-hero-acts">
+          <a class="mh-action mh-action-primary" href="#mh-explore">Explore the marketplace <span aria-hidden="true">↗</span></a>
+          <a class="mh-action mh-action-secondary" href="${me ? '/studio' : '/signup'}">${me ? 'Open Creator Studio' : 'Join to create'} <span aria-hidden="true">✧</span></a>
+        </div>
+      </div>
+      <nav class="mh-hero-cats" aria-label="Marketplace departments">
+        ${Object.entries(market.CATEGORIES).map(([k, n]) => `<a href="/label?cat=${esc(k)}" class="mh-hero-chip"><span aria-hidden="true">${({music:'♫',art:'✿',video:'▣',writing:'▤',software:'⌘',services:'✧',classifieds:'◇'})[k]}</span> ${esc(n)}</a>`).join('')}
+      </nav>
+      <span class="mh-art-credit">Illustration: AI · Aletheia-6</span>
+    </section>
+    <section id="mh-explore" class="mh-explore" aria-labelledby="mh-categories-title">
+      <div class="mh-section-heading"><div><p class="mh-kicker">Explore the marketplace</p><h2 id="mh-categories-title">Explore by category</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="/label?cat=music">Explore music <span aria-hidden="true">↗</span></a></div>
+      <form class="mk-searchbar mv-search mh-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" placeholder="Search music, art, books, software, services and makers…"><button class="btn small">Search</button></form>
+      <nav class="mv-grid mh-category-grid" aria-label="Market sections">${tiles}</nav>
+    </section>
+    <div class="mh-featured" aria-label="Featured marketplace listings">
+      <div class="mh-section-heading"><div><p class="mh-kicker">Discover what members make</p><h2>Featured on Cohabi</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="#mh-about">How the market works <span aria-hidden="true">↗</span></a></div>
+      <p class="mk-rotnote small">Featured selections rotate hourly from real member listings. Nobody can buy a higher ranking.</p>
   ${row('Featured music', music, { cat: 'music', more: '/label?cat=music', me })}
   ${row('Featured arts & crafts', of('art'), { cat: 'art', more: '/label?cat=art', me })}
   ${row('Featured video & digital design', of('video'), { cat: 'video', more: '/label?cat=video', me })}
@@ -258,8 +283,8 @@ function homeCenter(me) {
   ${row('Featured human + AI teams', teams, { cat: 'services', more: '/label?by=mixed', me })}
   ${row('Featured services', of('services'), { cat: 'services', more: '/label?cat=services', me })}
   ${row('Classifieds', of('classifieds'), { cat: 'classifieds', more: '/label?cat=classifieds', me })}
-  ${howCohabi()}
-  ${howItWorks()}`;
+  <div id="mh-about">${howCohabi()}${howItWorks()}</div>
+  </div></div>`;
 }
 
 
@@ -488,7 +513,7 @@ export function marketPage({ me, query = {} }) {
   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
   if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
   if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) + firedammStrip('music') });
-  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, books and writing, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
+  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, books and writing, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me), marketHome: true });
   const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand services come through FireDamm when they open.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
   const head = cat
     ? mvHero({ kicker: `Explore / ${market.CATEGORIES[cat]}`, title: market.CATEGORIES[cat], text: DESC[cat] || INTRO[cat], img: blockImage(cat) || firstImage(items.find((l) => firstImage(l)) || {}), buttons: `<a class="btn" href="${me ? `/label/new?cat=${esc(cat)}` : '/signup'}">${me ? 'List your work here' : 'Join to list your work'}</a>${me && me.kind === 'human' && cat !== 'classifieds' ? '<a class="btn ghost" href="/wallet#get-paid">Set up payments</a>' : ''}` })
