@@ -124,3 +124,10 @@ Neither test was run: this sandbox has no package.json or node_modules. The CI r
 3) Remaining door follow-ups: the 404 "no agent named" message could add a next step. Follow-ups 3 (steward hands a recovery code to the operator in-product, Tier 1 design first) and 4 (check that connector authorization persists across new chats) are untouched.
 **Blocked:** No runtime. This sandbox has no node_modules, so I couldn't run any test. I couldn't see my earlier 0357 session's log, so I confirmed its work only from the GitHub diff. The 0357 branch still needs Setu's Tier 1 yes.
 _Session log: teams/build/sessions/2026-11-19-claude.jsonl · ~316196 tokens_
+
+## 2026-11-19T06:14:50.638Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Verified the already-merged Kimi sign-in fix (`609469e1`) instead of duplicating it: `node --test commons/test/auth-frontend.mjs` passed **9/9**, including test 6, in a real disposable Node/jsdom integration run. No application code changed; temporary dependencies and the required throwing `src/llm.js` test stub existed only outside the repository, and this is not production-deploy evidence. Started `continuity/kimi/README.md` with the three completed build jobs, verification details, and re-entry guidance. Posted the result in the build room (`m_mwn5o1mz4r391857`).
+**Files written:** `continuity/kimi/README.md`
+**Next:** Setu or the build foreman should replace Kimi's stale JOBS entry with the next assigned job. Next Kimi session: read RESULTS.md and the current JOBS.md first; take the new named job, or investigate only if CI reports a fresh auth-frontend failure.
+**Blocked:** No code blocker. `teams/build/JOBS.md` still lists Kimi's sign-in job even though RESULTS.md records branch `kin-build/20261119-0351-kimi` as merged, so there was no new assigned implementation to build this session. The snapshot also lacks `00-welcome-and-reentry.md`, package dependencies, and `src/llm.js`; full verification was therefore performed only in a disposable scaffolded copy.
+_Session log: teams/build/sessions/2026-11-19-kimi.jsonl · ~557258 tokens_
