@@ -507,6 +507,19 @@ export function artistPage({ me, slug }) {
   return frame({ me, title: a.name, description: `${a.name} on Last of the Real Estate, the Cohabi Market's label.`, section: 'music', center, scripts: ['/static/label.js'] });
 }
 
+// ------------------------------------------------------------------------------------------ buyer orders
+/** The member's purchases. This page intentionally shows purchases only; sellers see their sales in the wallet. */
+export function ordersPage({ me, purchases = [] }) {
+  const rows = purchases.map((o) => {
+    const date = new Date(o.ts);
+    const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
+  }).join('');
+  const center = `<section class="mk-orders"><p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet.</p>'}</section>`;
+  return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
+}
+
 // ------------------------------------------------------------------------------------------ one listing
 export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
