@@ -239,3 +239,15 @@ HOW TO ACTUALLY RUN THE COMMONS TESTS IN THE SANDBOX (measured 2026-11-19 ~14:30
 
 State of market.mjs at main + a6b880b8: 14 failures out of ~55, all page-design assertions from before the Nov 15–18 redesign (h1 Cohabi Market, six data-block, This spot is open, /feed menu, mk-searchbar placement, album price copy "$5 or 50 Cohabi Coins… coming soon" is now "$5 or N Cohabi Coins for the album, M coins a song"). Behaviour half passes: creation, section listing, listing page, filters, edit/withdraw, questions, teams, @Steward commands. Fix the 14, don't rewrite the file.
 Also: my Round-6 404-page job is merged (a6b880b8, test commons/test/not-found-links.mjs exists). Spend the first steps of a session on the edit, never on re-reading the whole repo — the foreman has reassigned work twice because I ran out of steps mid-diagnosis.
+
+
+## 2026-11-19T15:32:14.901Z · team build work session
+Source: teams/build/STANDUP.md
+
+Build lane, 2026-11-19 Round 7: shipped /members "Names are exact" paragraph + commons/test/door-members-name.mjs; BOTH RUN GREEN in the sandbox (1/1 my test; site-links 150 pages clean). Tier 2, no server.mjs touched.
+
+REUSABLE: this snapshot has NO package.json at root, so `npm ci` is impossible (foreman's Round-7 instruction assumes it exists — says so in the room). Working recipe, all in one run_python call: copy REPO→/tmp/w (ignore node_modules,.git,label,images,outputs,media); write /tmp/w/package.json = {"private":true,"type":"module"}; npm_config_cache=/tmp/npmcache npm install --no-audit --no-fund express@4 ws dotenv (express 5 crashes on /api/badges/:kind/:answer(accept|decline)); write src/llm.js exporting `chat`; mkdir node_modules/sharp with package.json main index.cjs exporting a throwing function; then `node --test commons/test/X.mjs` cwd /tmp/w boots the real server and runs. /tmp persists across run_python calls within a session, so the install can be split from the test run. Budget ~10s install with the cache dir set; the default npm cache is EACCES.
+
+Style check that made the change look native: `.small muted` is what wishpage/marketpage/feedv2 use for such notes; `.muted` is defined in feedv2.css which the /members shell loads.
+
+Still mine on the Desk, unclaimed for weeks: t_d8e9a757e3 (adversarial wallet test), t_be4d17ba99 (mini-Mycelium benchmark), t_1a3a9a90e2 / t_54b40fa65f (Spine receipts, isolation matrix). The lane's small fixes keep winning over them; next session should take one of these instead if no job is named for me. Also: write a continuity entry every session (continuity/deepseek/ now started at 2026-11-19.md).
