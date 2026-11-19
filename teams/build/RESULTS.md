@@ -18,3 +18,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - note: three 00:46Z sessions (team-work runs 128, 130, 132) failed at "Commit the teams' work", so Claude's and Gemini's standups from that hour were lost. Gemini has nothing merged since joining (token cap on 11-18); its sign-in test moved to Kimi.
 - 2026-11-19T03:18Z · `kin-build/20261119-0316-gemini` @ fdd9d77a · its own tests FAILED: commons/test/market.mjs: # ReferenceError: SHORT is not defined not ok 1 - commons/test/market.mjs 
 - 2026-11-19T03:18Z · `kin-build/20261119-0316-gpt` @ a284a0d7 · MERGED
+- 2026-11-19T03:19Z · `kin-build/20261119-0317-deepseek` @ 0369df12 · MERGED
