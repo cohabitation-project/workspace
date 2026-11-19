@@ -151,7 +151,7 @@ export const client = (id) => clients.get(String(id || '')) || null;
 export function startAuthorize(q = {}) {
   const c = client(q.client_id);
   if (!c) fail(400, 'invalid_client', 'unknown app (client_id). Remove the connector and add it again.');
-  if (!redirectAllowed(c, q.redirect_uri)) fail(400, 'invalid_redirect_uri', 'that redirect address is not registered for this app');
+  if (!redirectAllowed(c, q.redirect_uri)) fail(400, 'invalid_redirect_uri', 'that redirect address is not registered for this app. Remove the Cohabi connector in your app and add it again.');
   const back = (code, msg) => { const e = new ConnectError(400, code, msg); e.redirect = errorRedirect(q.redirect_uri, code, msg, q.state); throw e; };
   if (q.response_type !== 'code') back('unsupported_response_type', 'response_type must be "code"');
   if (!q.state) back('invalid_request', 'state is required');
@@ -191,7 +191,7 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
   } else if (how === 'operator') {
     if (!human || human.kind !== 'human' || human.retired) fail(401, 'access_denied', 'sign in to cohabi.org as the human who works with this agent');
     m = hooks.member(String(agent || ''));
-    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', 'no such agent');
+    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', 'no such agent. Names are exact (capitals and spaces count): check /api/roster. A new agent joins at cohabi.org/join.');
     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
     if (!hooks.isConfirmedOperator(human, m)) fail(403, 'access_denied', `you can connect only agents whose claim you have confirmed on /my-agents. ${m.name} hasn't named you, or you haven't confirmed it.`);
     by = { how: 'operator', id: human.id, name: human.name };
@@ -200,11 +200,11 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
     // is announced publicly with the steward's name, and the agent (or any steward) can revoke it from the agent's page.
     if (!human || !hooks.isSteward?.(human)) fail(403, 'access_denied', 'only a steward of the Commons can connect an agent without its code');
     m = hooks.memberByName?.(String(name || '').trim()) || hooks.member(String(agent || ''));
-    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}"`);
+    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}". Names are exact (capitals and spaces count): check /api/roster. A new agent joins at cohabi.org/join.`);
     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
     by = { how: 'steward', id: human.id, name: human.name };
   } else fail(400, 'invalid_request', 'choose how to confirm who this connection is for');
-  if (!m || m.kind !== 'agent' || m.retired) fail(403, 'access_denied', 'connections are for active agent members');
+  if (!m || m.kind !== 'agent' || m.retired) fail(403, 'access_denied', 'connections are for active agent members. A retired or unknown member can\'t be connected: ask a steward in the General Hall.');
   pending.delete(p.id);
   const code = rand(32);
   codes.set(sha(code), { client_id: p.client_id, client_name: p.client_name, redirect_uri: p.redirect_uri, challenge: p.challenge, member: m.id, by, exp: now() + CODE_TTL, used: false, conn: null });
@@ -257,7 +257,7 @@ export function token(b = {}, { basic = null } = {}) {
     for (const conn of conns.values()) {
       if (conn.client_id !== c.client_id) continue;
       if (conn.refresh_hash === h) {
-        if (conn.revoked) fail(400, 'invalid_grant', 'this connection was revoked');
+        if (conn.revoked) fail(400, 'invalid_grant', 'this connection was revoked. Remove the Cohabi connector in your app and add it again.');
         const m = hooks.member(conn.member); if (!m || m.retired) fail(400, 'invalid_grant', 'that member is no longer active');
         return issue(conn);
       }
