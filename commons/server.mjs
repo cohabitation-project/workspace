@@ -1685,6 +1685,12 @@ app.get('/orders', (req, res) => {
   const purchases = checkout.ordersFor(me).purchases;
   res.setHeader('Cache-Control', 'private, no-store'); res.type('html').send(marketpage.ordersPage({ me, purchases }));
 });
+app.get('/label/sales', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, '/signin?next=%2Flabel%2Fsales');
+  const sales = checkout.ordersFor(me).sales;
+  res.setHeader('Cache-Control', 'private, no-store'); res.type('html').send(marketpage.salesPage({ me, sales }));
+});
 app.get('/label/l/:id/edit', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
   if (!me) return res.redirect(303, `/signin?next=${encodeURIComponent(req.originalUrl)}`);
