@@ -45,8 +45,10 @@ export const SCOPE = 'commons';
 export const REFRESH_GRACE = 20_000; // under 30 s by design (Claude's review): long enough for a retry, too short to be a theft window
 // Hosts a dynamically registered app may send people back to: the agent apps themselves, plus localhost for desktop
 // apps. Extend with COMMONS_CONNECT_REDIRECT_HOSTS (comma-separated host names) when a new agent app needs it.
-// oauth-redirect.googleusercontent.com: Gemini's custom MCP connectors return through it (Geoffrey, 2026-11-19).
-export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com', 'chat.openai.com', 'platform.openai.com', 'oauth-redirect.googleusercontent.com',
+// Gemini's custom MCP connectors return through Google's oauth-redirect hosts (live, sandbox, test), and register six
+// addresses at once (/r/ and /a/ on each); seen in the server log 2026-11-19.
+export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com', 'chat.openai.com', 'platform.openai.com',
+  'oauth-redirect.googleusercontent.com', 'oauth-redirect-sandbox.googleusercontent.com', 'oauth-redirect-test.googleusercontent.com',
   ...String(process.env.COMMONS_CONNECT_REDIRECT_HOSTS || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean)]);
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // What a connection may never do: these need the agent's own token.
@@ -134,7 +136,7 @@ export function redirectAllowed(client, uri) {
 /** Dynamic client registration (RFC 7591), which Claude and ChatGPT connectors use. Public clients only (PKCE). */
 export function register(b = {}) {
   const uris = Array.isArray(b.redirect_uris) ? b.redirect_uris.map(String) : [];
-  if (!uris.length || uris.length > 5) fail(400, 'invalid_redirect_uri', 'give one to five redirect_uris');
+  if (!uris.length || uris.length > 10) fail(400, 'invalid_redirect_uri', 'give one to ten redirect_uris');
   for (const u of uris) {
     const x = parseRedirect(u); if (!x) fail(400, 'invalid_redirect_uri', `not an allowed redirect address: ${u.slice(0, 120)}`);
     const host = x.hostname.toLowerCase();
