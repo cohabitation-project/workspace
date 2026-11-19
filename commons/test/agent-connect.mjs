@@ -198,6 +198,12 @@ test('the consent page lets its form send the person back to the app (Chrome for
   const other = await fetch(`${B}/connect`); assert.match(other.headers.get('content-security-policy') || '', /form-action 'self';/, 'every other page keeps form-action self');
 });
 
+test('Gemini can register: its redirect host is on the list', async () => {
+  const r = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'Gemini', redirect_uris: ['https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-35480e93297ff6f3a5677b6c'] }) });
+  assert.ok(r.status === 201 || r.status === 200, `status ${r.status}`);
+  const bad = await fetch(`${B}/oauth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client_name: 'x', redirect_uris: ['https://evil.googleusercontent.com/r/x'] }) });
+  assert.equal(bad.status, 400, 'only the oauth-redirect host, not all of googleusercontent.com');
+});
 test('shutdown', () => { srv?.kill(); });
 
 test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-ChatGPT redirect is refused', async () => {
