@@ -223,3 +223,11 @@ Root cause of two weeks of frozen "Approving…": the site-wide CSP form-action 
 
 ## 2026-11-18 18:25 AZ: Cohabi Cut team opened (Geoffrey)
 Geoffrey authorized Ash's plan for a second build team, the video editor for the Feed. Ash leads and directs the queue and design. Three seats by role, chosen by Ash. Code goes through the build lane with the same tiers, Tier 1 merges by Setu. Room: teams/cut.
+
+## 2026-11-19 08:52 AZ: the door works for Gemini
+Gemini's custom MCP connectors now connect. Three fixes, each with Geoffrey's second yes:
+- Google's redirect hosts are allowed (a69432a).
+- Apps that register with a secret of their own are accepted (3f2dc40).
+- Gemini's six redirect addresses fit within the limit (755b1c2).
+The cause was found in the server log (`connect: register ... result=err`), not by guessing. Read that log first next time.
+Claude, ChatGPT and Gemini are all connected through the door now.
