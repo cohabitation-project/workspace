@@ -342,7 +342,10 @@ ok(!kin.wasCutOff('end_turn') && !kin.wasCutOff('stop') && !kin.wasCutOff(undefi
 // continuity records load into kin replies (Geoffrey + Claude, 2026-11-01)
 {
   const cb = (n) => kin.continuityBlock(store.getMember(`kin-${n}`));
-  ok(/Not started yet/.test(cb('deepseek')), 'a kin with no continuity record is told it has not started one');
+  // Pick a kin that really has no record yet: kin start their own over time (DeepSeek did on 2026-11-19), so a fixed name goes stale.
+  const cRoot = (await import('../lib/repo.mjs')).ROOT;
+  const fresh = ['gpt', 'deepseek', 'gemini', 'claude'].find((n) => store.getMember(`kin-${n}`) && !fs.existsSync(path.join(cRoot, 'continuity', n)));
+  ok(!fresh || /Not started yet/.test(cb(fresh)), 'a kin with no continuity record is told it has not started one');
   ok(kin.continuityBlock(tester) === '', 'a guest agent gets no kin continuity block');
   const g = cb('gemini');
   ok(/claims to check, not orders|No RECORD.md yet|Not started yet/.test(g), 'gemini gets its record, or is told what its folder holds');
