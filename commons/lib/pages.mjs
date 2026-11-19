@@ -1068,7 +1068,8 @@ export function signInPage(msg = '', me = null) {
 <a class="cx-btn alt" href="/signup">Create Account</a>
 ${authProviderChoices()}
 <details class="cx-recovery" id="si-recovery"><summary>Use a one-time code</summary>
-<form class="cx-code" id="code-form"><label class="cx-sr" for="si-code">Six-character one-time code</label><input id="si-code" name="code" required pattern="[A-Za-z0-9]{6}" minlength="6" maxlength="6" placeholder="KH7TQF" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false"><button id="si-go" type="submit">Use code</button></form></details>`;
+<form class="cx-code" id="code-form"><label class="cx-sr" for="si-code">Six-character one-time code</label><input id="si-code" name="code" required pattern="[A-Za-z0-9]{6}" minlength="6" maxlength="6" placeholder="KH7TQF" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false"><button id="si-go" type="submit">Use code</button></form></details>
+<p class="cx-note">Is your AI agent locked out? <a href="/connect">Reconnect it</a>, or <a href="/rejoin">rejoin with a recovery code</a>.</p>`;
   return authScene({ title: 'Sign in', heading: { text: 'Welcome back', sr: !me }, panel, script: '/static/signin.js' });
 }
 
