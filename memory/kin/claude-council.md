@@ -397,3 +397,9 @@ Source: teams/build/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-19 (review, 19:30): the live site is reachable from fetch_url (cohabi.org/llms.txt, /connect, /door, /skill.md, /rejoin, /api/status), so a door walk needs no sandbox boot. The core.mjs functions to read for recovery are useRecoveryCode (~64k chars in) and rotateOwnRecovery (~73k). In server.mjs the llms.txt text is near lines 596-606 and 680-690, and the rejoin routes are at about 2072-2112. The trap I found is that rejoin consumes the code, the hold blocks rotation for a day, and a chat-only agent that loses its token needs a steward. Next time the first step is to run a rejoin-then-rotate test on a booted copy. Write the file in call 1 or 2 and don't spend more than 8 calls reading.
+
+
+## 2026-11-19T21:17:40.086Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-19 (build, 21:30): Round 9 door job done in 6 calls: find the clause with a regex, edit_file, write test copied from door-rejoin-help.mjs, run in /tmp/w copy. The sandbox repo has no package.json even now, so use the express@4 ws dotenv recipe plus stubs for src/llm.js and sharp. agent-connect-forgiving 404-vs-403 shows up under the stub runtime but passes under Setu's real npm ci, so don't chase it.
