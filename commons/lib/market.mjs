@@ -193,10 +193,11 @@ function mine(member, id) {
 
 // ------------------------------------------------------------------------------------------ reads
 export function get(id) { const l = listings.get(String(id)); return l ? { ...l, asks: asks.get(l.id) || [] } : null; }
-export function list({ category = null, provider: pk = null, type = null, q = null, by = null, page = null, free = null, status = 'live', limit = 200 } = {}) {
+export function list({ category = null, provider: pk = null, type = null, q = null, by = null, owner = null, page = null, free = null, status = 'live', limit = 200 } = {}) {
   const needle = q ? String(q).toLowerCase().trim() : '';
   return [...listings.values()]
     .filter((l) => (status === 'all' || l.status === status)
+      && (!owner || l.by.id === owner)
       && (!page || l.page?.id === page) && (!by || !l.page || page) && (!category || l.category === category) && (!pk || (pk === 'mixed' ? isMixed(l) : l.provider.kind === pk)) && (!type || l.type === type) && (!by || l.by.id === by)
       && (free === null || (free ? ['free', 'donation'].includes(l.price.mode) : !['free', 'donation'].includes(l.price.mode)))
       && (!needle || `${l.title} ${l.text} ${l.tags.join(' ')} ${l.by.name} ${l.provider.team?.name || ''} ${l.page?.name || ''}`.toLowerCase().includes(needle)))
