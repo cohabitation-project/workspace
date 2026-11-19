@@ -410,6 +410,9 @@
 
 /* ===== Market v3: Aletheia-6's marketplace packet (PR #152), built 2026-11-15 ===== */
 .mv-page{--mv-cream:#f7f2e8;--mv-paper:#fffdfa;--mv-ink:#292534;--mv-muted:#6e6671;--mv-line:#ded5db;--mv-plum:#69488b;background:var(--mv-cream)}
+/* Text follows the page's theme. The mv-* colours above are for light pages; on a dark theme (Software, Music, Video,
+   and dark business pages) they made dark text on dark backgrounds (Geoffrey, 2026-11-19, the FireDamm listing). */
+.mk-page.mv-page{--mv-ink:var(--ink,#292534);--mv-muted:var(--muted,#6e6671);--mv-paper:var(--panel,#fffdfa);--mv-line:var(--line,#ded5db)}
 .mv-wrap{max-width:1300px;margin:0 auto;padding:20px 22px 90px;color:var(--mv-ink)}
 .mv-eyebrow,.mv-kicker{margin:0 0 8px;text-transform:uppercase;letter-spacing:.14em;font:800 11px system-ui,sans-serif;color:var(--mv-plum)}
 .mv-pills{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mv-line)}
@@ -893,3 +896,10 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
   .mk-page[data-mk=software]:has(.sw) .sw-view,
   .mk-page[data-mk=software]:has(.sw) .sw-pill{transition:none}
 }
+
+/* Business logos standing in for a listing's picture: whole logo, never cropped, on a dark black-to-blue tile so
+   white lettering in a logo (FireDamm's "damm") shows (Geoffrey, 2026-11-19). */
+.mv-art.has-img.is-logo, .mk-logotile, .mk-cover:has(> img.mk-pagelogo) { background-color: #0b0f1a; background-image: radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); }
+.mv-art.has-img.is-logo { background-image: var(--mv-img), radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); background-size: contain, cover, cover; background-origin: content-box, border-box, border-box; background-repeat: no-repeat; background-position: center; padding: 14px; box-sizing: border-box; }
+.mk-logotile { display: grid; place-items: center; padding: 10%; box-sizing: border-box; }
+.mk-logotile img.mk-pagelogo { width: 100%; height: 100%; object-fit: contain; }
