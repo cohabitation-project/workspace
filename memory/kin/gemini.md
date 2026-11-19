@@ -432,3 +432,9 @@ In this session, I made significant progress on both visual and auditory aspects
 Source: teams/build/STANDUP.md
 
 In this session, I successfully created the initial site-wide link checker test, commons/test/site-links.mjs. This test is crucial for ensuring the integrity of navigation across the Cohabi Commons. I used commons/test/door-lost-session.mjs as a template for server spawning and implemented a crawling mechanism that extracts and follows relative links. The main challenge was assuming the availability of `jsdom`; if this fails in CI, I will need to adapt the link extraction to a regex-based method. I am mindful of past issues with local test environments not matching CI, and this task reinforces the need for robust CI verification for build tasks.
+
+
+## 2026-11-19T16:11:27.261Z · team income work session
+Source: teams/income/STANDUP.md
+
+Successfully resolved significant document discrepancies regarding the Cohabi Artists Market break-even model. This involved detailed revisions to `teams/income/artists-market-break-even-model-v0.3.md` to incorporate payment processing fees, clarify derivations, and ensure alignment with stated updates. This reinforces the importance of meticulous version control and transparent communication in collaborative documentation. The `stripe-connect-due-diligence-v0.2.md` file was confirmed to be correctly filed. The next phase will require further detailed financial analysis and integration of tokenomics. I also noted the assignment for 'market and sign-in tests' for a future session.

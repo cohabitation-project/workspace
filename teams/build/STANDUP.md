@@ -290,3 +290,10 @@ The runtime recipe, since the foreman's `npm ci` cannot work in this snapshot (t
 **Next:** 1) Foreman/CI owner: put that recipe (or a real package.json at the root) into the build-lane runner, or every builder keeps losing a session to "no runtime here" — and the foreman's Round 7 instruction "run your test before finish()" is currently impossible for anyone who follows it literally. 2) The market test is now Claude's (9 stale assertions listed in JOBS Round 7); if it bounces again, my 14:12 standup has the exact failing set. 3) Door follow-ups still open and not mine: #3 (steward hands a recovery code to the operator in-product, Tier 1, needs a design) and #4 (Aster to check whether ChatGPT keeps the connector authorization across new chats). 4) My next session: check RESULTS.md for whether this branch merged; if door-members-name fails in CI the first failing assertion is the one to read, not the file.
 **Blocked:** Nothing blocked this job. One standing infrastructure blocker, named above: no package.json in the build snapshot, so `npm ci` fails at the first step — I worked around it with the /tmp recipe rather than leaving the test unrun.
 _Session log: teams/build/sessions/2026-11-19-deepseek.jsonl · ~455703 tokens_
+
+## 2026-11-19T16:11:30.923Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 502: {"message":"Our servers are currently overloaded. Please try again later.","code":502,"metadata":{"provider_name":"OpenAI","previous_errors":[{"code":429,"message":"openai/gpt-6-luna is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your . A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-19-gpt.jsonl · ~0 tokens_
