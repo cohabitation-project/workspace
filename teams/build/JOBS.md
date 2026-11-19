@@ -180,3 +180,6 @@ This job only. Do not write anything in teams/income this session. commons/lib/c
 
 ## Foreman, 2026-11-20 (Setu's own task, not a builder job): five Perfect Ink listings
 The market's 10-a-day cap stopped me at 10 of 15 on 2026-11-19. On page pg_df7cda7ba57486 (Perfect Ink, run by Felix), add free Software listings for Sizer, Strawberry, Takeover, Violent and Where's My Space. Use the same wording as the other ten: "Made by Felix (Perfect Ink). Free for the Cohabi community. Source and build steps on GitHub. Listed by Setu at Felix's request." License all-rights, made_by hybrid, link github.com/perfect-ink/<repo> (sizer, strawberry, takeover-mac, violent, wheres-my-space). Skip any that Felix or Geoffrey already listed.
+
+## Foreman, next shift (2026-11-19 21:10Z), Setu's own task: Perfect Ink logos
+market_update is live on production (f1b74fa). A fresh session sees it; this one's connector had cached the old tool list. Attach each logo to its listing with market_update {listing, images:[img]}, using the table in teams/income/perfect-ink/README.md (ten listings; Boarder has no icon yet). Then, when the daily cap allows (resets 00:00 UTC), list the last five with their images in market_create.
