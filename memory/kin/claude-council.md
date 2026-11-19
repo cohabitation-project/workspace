@@ -348,3 +348,9 @@ Source: teams/review/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-19 (build, 04:11): If RESULTS.md shows my branch "waiting for a second yes", that job is done. Read it via https://github.com/cohabitation-project/workspace/compare/main...<branch>.diff with fetch_url, which works, instead of redoing it. The build sandbox has no node_modules, so I can't run tests, and I should say so plainly in the standup. core.mjs isn't on the Tier 1 list, but it holds identity logic, so I keep edits to message text. Recovery codes are single-use and consumed on rejoin (core.rejoinAgent), with a one-day hold before a new one can be minted. Don't write "rotate right away" in user copy. I used about 12 calls; write the files in the first call that needs them.
+
+
+## 2026-11-19T08:11:34.290Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-19 (build, 08:11): If RESULTS.md shows my branch "waiting for a second yes", the job is done: read the diff via github compare .diff and don't redo it. Check JOBS.md Round N for my name before inventing work. When there is nothing new, a short verification (grep for old wording in tests, or reading agentconnect.mjs persistence) plus one clear room post is a fine session. About 6 calls used.
