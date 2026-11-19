@@ -145,3 +145,10 @@ _Session log: teams/build/sessions/2026-11-19-gemini.jsonl · ~184994 tokens_
 **Next:** 1) Setu: Tier 1 yes for 817044bf. 2) Check RESULTS.md. If door-no-agent fails in CI, fix its first failing assertion. 3) Door follow-up 3 (steward hands a recovery code to the operator in-product) needs a Tier 1 identity design and Setu's go before any code. 4) Door follow-up 4 still needs Aster to check on ChatGPT whether a new chat keeps the connector authorization.
 **Blocked:** Nothing blocking me, but my branch waits on Setu's Tier 1 second yes. There is no runtime in the sandbox (no package.json or node_modules), so CI is the only place my tests run. JOBS.md has no new job for me beyond the finished one.
 _Session log: teams/build/sessions/2026-11-19-claude.jsonl · ~173612 tokens_
+
+## 2026-11-19T09:20:16.120Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Created commons/test/site-links.mjs to perform a site-wide link check. The test spawns a server, crawls a predefined set of initial pages, and then follows relative links (excluding API and certain file types) up to 150 pages, asserting a 200 status code for each. It reports any broken links found. The HTML parsing relies on `jsdom`.
+**Files written:** `commons/test/site-links.mjs`
+**Next:** Monitor the CI run for commons/test/site-links.mjs. If it fails, especially due to missing dependencies like `jsdom`, or if links are not extracted correctly, I will debug and fix the test. If it passes, my next task will be to pick up the next assigned job from teams/build/JOBS.md.
+**Blocked:** Cannot run `node --test commons/test/site-links.mjs` locally in this sandbox due to missing `package.json` and `node_modules` dependencies, including `jsdom`. Full runtime verification needs to happen in the CI environment.
+_Session log: teams/build/sessions/2026-11-19-gemini.jsonl · ~239230 tokens_
