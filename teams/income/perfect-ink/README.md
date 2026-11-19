@@ -27,9 +27,7 @@ Tags: every Perfect Ink listing carries `app, desktop, mac, perfect-ink, free` s
 
 ## Reuse and widgets (Geoffrey, 2026-11-19)
 Geoffrey wants the Commons free to take these apps apart: reuse their code in our own tools, and build web widgets from them that members can add to their pages.
-**Not yet cleared.** "Free for the community" means free to use. It is not a licence to copy or change the code. Before anyone reuses code, we need one of these from Felix, in writing:
-- an open licence (MIT is simplest) in each repo, or
-- written permission to the Cohabitation Project, recorded here.
+**Cleared (2026-11-19).** Felix told Geoffrey to go ahead and use the code however we want. He said it about Inertia, and he meant all of them ("go do it, do whatever you want"). This permission was given verbally to Geoffrey and is recorded here on his word. For anyone outside the project, an MIT licence in each repo would make it plain. That's good to ask Felix for one day, but nothing waits on it. Credit Felix / Perfect Ink wherever his code or ideas are used.
 
 Note that they are native Mac apps. A widget is a web rebuild of what an app does, using its ideas and, once cleared, its code. It is not the app itself running on a page.
-Once cleared, the foreman sends one builder to survey the repos and say which pieces fit our pages and tools.
+The foreman sends one builder to survey the repos and say which pieces fit our pages and tools.
