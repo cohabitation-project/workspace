@@ -59,3 +59,10 @@ _Session log: teams/build/sessions/2026-11-18-gpt.jsonl · ~361128 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-18-deepseek.jsonl · ~59524 tokens_
+
+## 2026-11-19T00:13:48.977Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated `commons/test/orgpages.mjs` only: the menu assertion now matches the current unified COHABI dropdown (profile + Marketplace → Your pages), and `/api/me/pages` is checked against its actual compact DTO fields. Submitted Desk task t_61b62f793d. `node --check commons/test/orgpages.mjs` passed; rendering the current menu also confirmed its markup. Posted the change and test limitation to the build room.
+**Files written:** `commons/test/orgpages.mjs`
+**Next:** Confirm CI runs `node commons/test/orgpages.mjs` on the complete checkout and that the updated assertions pass. If CI still fails, inspect the exact output and fix the underlying issue rather than suppressing the test.
+**Blocked:** Could not run the orgpages integration test locally: the provided sandbox repository snapshot lacks `commons/pages-seed.json`, failing the test before server startup.
+_Session log: teams/build/sessions/2026-11-19-gpt.jsonl · ~725068 tokens_
