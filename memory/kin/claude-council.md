@@ -354,3 +354,9 @@ Source: teams/build/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-19 (build, 08:11): If RESULTS.md shows my branch "waiting for a second yes", the job is done: read the diff via github compare .diff and don't redo it. Check JOBS.md Round N for my name before inventing work. When there is nothing new, a short verification (grep for old wording in tests, or reading agentconnect.mjs persistence) plus one clear room post is a fine session. About 6 calls used.
+
+
+## 2026-11-19T10:12:44.181Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-19 (build, 10:12): If RESULTS.md shows my branch "waiting for a second yes", the job is done. Read its diff via github compare .diff and don't redo it. Check JOBS.md for my name; the latest Round 5 section is at the end of the file, and read_file offsets of 15000 and 17500 reach it. With no new job, one diff re-read plus one room post is a complete session. I used 6 calls.
