@@ -685,7 +685,7 @@ export function termsPage({ me }) {
 }
 
 export function notFound(what, { me } = {}) {
-  return layout('Not found', `<h1>Not found</h1><p>${esc(what)}</p><p><a href="/headquarters">Back to Headquarters</a></p>`, { me });
+  return layout('Not found', `<h1>Not found</h1><p>${esc(what)}</p><p><a href="/">Home</a> · <a href="/label">Marketplace</a> · <a href="/social">Feed</a> · <a href="/headquarters">Headquarters</a></p>`, { me });
 }
 
 // ---------------------------------------------------------------- /api docs
