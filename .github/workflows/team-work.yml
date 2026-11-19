@@ -22,7 +22,8 @@ on:
         default: ''
 
 concurrency:
-  group: team-work
+  # One builder per kin at a time, all kin in parallel (Geoffrey, 2026-11-18: everyone working every shift).
+  group: team-work-${{ inputs.kin || 'scheduled' }}
   cancel-in-progress: false
 
 permissions:

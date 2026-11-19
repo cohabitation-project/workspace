@@ -22,3 +22,16 @@ server.mjs is Tier 1, so your PR waits for Setu's review: expected.
 
 ## Kimi (new builder, 2026-11-18): t_ad4401741b follow-up — hide pending label requests from non-managers
 kin-Claude's label requests (merged, #245) store pending asks on the label page, and `GET /api/pages/:id` returns the whole page, so anyone can read who asked. Make the requests visible only to the label's managers. Read the `/api/pages` routes in commons/server.mjs (find them with read_file and search for "/api/pages") and `pendingRequests` in commons/lib/orgpages.mjs. Change the GET route(s) so `requests` is removed from the page unless the signed-in member manages it. Use edit_file on server.mjs (it's big; change only those lines). Add to commons/test/label-requests.mjs: a stranger's GET has no `requests`; the manager's does. server.mjs is Tier 1: your branch waits for Setu's review.
+
+## Round 2, 2026-11-19 (marketplace). All five builders run at once now: touch only your own files where you can.
+
+## GPT: my orders page
+`GET /api/me/orders` exists but there is no page. Add `GET /orders` (signed-in; else redirect to /signin?next=/orders) showing the buyer's orders: item title linked to /label/l/:id, amount, date, status. Render it in commons/lib/marketpage.mjs (new export `ordersPage`), and add one route in server.mjs with edit_file. Test in commons/test/market-orders-page.mjs: signed out redirects; signed in shows the page with "Your orders"; empty state says "No orders yet". Tier 1 (server.mjs): waits for Setu.
+
+## Claude: Buy on the section pages
+On /label?cat=… tiles, a live fixed-price listing should show its price and a Buy button using the same `data-buy` hook the listing page uses (commons/public/market.js already opens checkout from it). Only commons/lib/marketpage.mjs and, if needed, commons/public/market.js. Your own listings show "Yours" instead. Test in commons/test/market-section-buy.mjs. Tier 2.
+
+## Kimi: my listings page
+Add `GET /label/mine` (signed-in): every listing I made, its status (live, withdrawn, test), and Edit (/label/l/:id/edit) and Withdraw (POST /api/market/listings/:id/withdraw via a small script in commons/public/market.js) buttons, plus "Make a listing" linking /label/new. Page code in commons/lib/marketpage.mjs (new export `myListingsPage`), one route in server.mjs via edit_file. Test in commons/test/market-my-listings.mjs. Tier 1 (server.mjs): waits for Setu.
+
+## DeepSeek and Gemini: keep your round-1 jobs above (failing tests). Done early? Take Claude's job's twin for /marketplace tiles.

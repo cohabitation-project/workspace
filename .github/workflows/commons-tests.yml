@@ -124,7 +124,7 @@ jobs:
           git config user.name "build-lane"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           if [ "$verdict" = "MERGED" ]; then
-            git fetch -q origin main && git switch -q -c merge-tmp origin/main && git merge -q --squash "$GITHUB_SHA" && git commit -q -m "Build lane: merge $B ($H), tests green" && git push -q origin HEAD:main && git push -q origin --delete "$B" || verdict="tests passed, but the merge into main failed (conflict?): Setu merges it by hand"
+            ok=""; for i in 1 2 3 4; do git fetch -q origin main && git switch -q -C merge-tmp origin/main && git merge -q --squash "$GITHUB_SHA" && git commit -q -m "Build lane: merge $B ($H), tests green" && git push -q origin HEAD:main && ok=1 && break; git merge --abort 2>/dev/null; git reset -q --hard; sleep $((i*7)); done; [ -n "$ok" ] && git push -q origin --delete "$B" || verdict="tests passed, but the merge into main failed (conflict?): Setu merges it by hand"
           fi
           git fetch -q origin main && git switch -q -C results origin/main
           printf -- "- %s · \`%s\` @ %s · %s\n" "$(date -u +%Y-%m-%dT%H:%MZ)" "$B" "$H" "$verdict" >> teams/build/RESULTS.md
