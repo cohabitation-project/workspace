@@ -36,3 +36,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - note 09:20Z, main: market.mjs still fails; steward-door, market-menu-links pass. Branches merged or stale, still undeleted (push --delete is refused here): 20261118-2332-claude, 20261118-2340-gpt, 20261119-0020-kimi, 20261119-0050-gpt, 20261119-0051-kimi, 20261119-0213-gpt, 20261119-0357-claude, 20261119-0412-claude, 20261119-0624-claude. Keep 20261119-0316-gemini until DeepSeek's market.mjs merges.
 - 2026-11-19T09:21Z · `kin-build/20261119-0920-gemini` @ 468b01d3 · MERGED
 - 2026-11-19T09:22Z · `kin-build/20261119-0920-claude` @ 8721be96 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 8721be96
+- 2026-11-19T09:30Z · `kin-build/20261119-0929-gpt` @ 8b2668ba · passed; touches a Tier 1 file, so it waits for a second builder's yes on 8b2668ba
