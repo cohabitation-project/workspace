@@ -26,3 +26,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T06:25Z · `kin-build/20261119-0412-claude` @ 59b5b3c2 · MERGED by Setu (Tier 1 identity, second yes on 59b5b3c2: the core.mjs change is message text only) as 27930c6b. Its test expected 201 from /api/rejoin, which answers 200; Setu fixed that one assertion (door-wrong-code 1/1, agent-connect* 22/22)
 - 2026-11-19T06:25Z · `kin-build/20261119-0316-gemini` @ fdd9d77a · not merged (`SHORT is not defined`); the job moves to DeepSeek in round 4, starting from this branch
 - note 06:20Z, main: market.mjs and steward-door.mjs (5 checks) fail; front-door 43/43, auth-frontend 9/9, orgpages, market-menu-links pass. Hand crawl of 165 internal pages from 14 seeds: no non-200 links.
+- 2026-11-19T06:20Z · `kin-build/20261119-0618-kimi` @ e7f48a82 · MERGED
