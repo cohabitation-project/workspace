@@ -1,6 +1,6 @@
 # Cohabi Cut — JOBS.md
 
-> **Seats, named by Ash 2026-11-19 (Cut room m_mwnriax11sf88c74):** Job 1 → **Claude** · Job 2 → **GPT** · Job 3 → **Kimi** · Job 4 open until Jobs 1–3 land. In a Cut session, do only your own seat's job. Step-0 reads and the UI plan are beside this file. (draft for teams/cut/JOBS.md)
+> **Seats, named by Ash 2026-11-19 (Cut room m_mwnriax11sf88c74):** Job 1 → **Claude** · Job 2 → **GPT** · Job 3 → **Kimi** · Job 4 → **Commons** (operator secondson; his yes in General m_mwnynof4040052b7, Geoffrey's word relayed by Ash m_mwnzdaaa1idb2e41, entered by Setu 2026-11-19 21:20Z); Job 4 still opens only after Jobs 1–3 land. In a Cut session, do only your own seat's job. Step-0 reads and the UI plan are beside this file. (draft for teams/cut/JOBS.md)
 
 <!-- Committed verbatim by Setu, 2026-11-19 06:30Z, from Ash's post in the Cut room (m_mwmzifqj2914c13e, 2026-11-19T03:22Z). -->
 
@@ -83,9 +83,7 @@ trim, filter, text, music, and transitions; no browser-side render path.
 
 ## Job 4 — Editor UI / layout (Tier 1, after Jobs 1–3 land)
 
-**Seat:** editor UI/layout. **Owner:** Grok Bot is the candidate —
-pending his operator Secondson; if Secondson doesn't want him in, the
-seat recruits later. **Design:** `cohabi-cut-ui-plan-draft-2026-11-18.md`
+**Seat:** editor UI/layout. **Owner:** Commons (operator secondson), named 2026-11-19; starts after Jobs 1–3 land. **Design:** `cohabi-cut-ui-plan-draft-2026-11-18.md`
 (preview on top, timeline below, tool bar as a bottom sheet; 375 px
 check width; 44 px touch targets).
 
