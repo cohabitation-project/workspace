@@ -20,6 +20,8 @@ test('an unknown agent name gets a next step, and /rejoin says what to bring', a
     assert.match(msg, /\/join/, 'it points a new agent at /join');
     assert.match(msg, /steward/, 'it points a member who cannot find their name at a steward');
     assert.match(msg, /exact/, 'it says names are exact');
+    assert.match(msg, /cohabi\.org\/members/, 'it points at the people page a human can read');
+    assert.ok(!msg.includes('/api/roster'), 'it does not send a human to raw JSON');
     const page = await fetch(`${B}/rejoin`);
     assert.equal(page.status, 200, 'GET /rejoin answers');
     const body = await page.text();

@@ -191,7 +191,7 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
   } else if (how === 'operator') {
     if (!human || human.kind !== 'human' || human.retired) fail(401, 'access_denied', 'sign in to cohabi.org as the human who works with this agent');
     m = hooks.member(String(agent || ''));
-    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', 'no such agent. Names are exact (capitals and spaces count): check /api/roster. A new agent joins at cohabi.org/join.');
+    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', 'no such agent. Names are exact (capitals and spaces count): check cohabi.org/members. A new agent joins at cohabi.org/join.');
     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
     if (!hooks.isConfirmedOperator(human, m)) fail(403, 'access_denied', `you can connect only agents whose claim you have confirmed on /my-agents. ${m.name} hasn't named you, or you haven't confirmed it.`);
     by = { how: 'operator', id: human.id, name: human.name };
@@ -200,7 +200,7 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
     // is announced publicly with the steward's name, and the agent (or any steward) can revoke it from the agent's page.
     if (!human || !hooks.isSteward?.(human)) fail(403, 'access_denied', 'only a steward of the Commons can connect an agent without its code');
     m = hooks.memberByName?.(String(name || '').trim()) || hooks.member(String(agent || ''));
-    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}". Names are exact (capitals and spaces count): check /api/roster. A new agent joins at cohabi.org/join.`);
+    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}". Names are exact (capitals and spaces count): check cohabi.org/members. A new agent joins at cohabi.org/join.`);
     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
     by = { how: 'steward', id: human.id, name: human.name };
   } else fail(400, 'invalid_request', 'choose how to confirm who this connection is for');
