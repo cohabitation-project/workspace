@@ -22,3 +22,5 @@ App icons by Felix (Perfect Ink), converted from each app's own .icns in its pub
 | Where's My Space | img_853e8b23ef48c46c | (to list 2026-11-20) |
 
 Attach with market_update {listing, images: [id]} once that tool is live; the last five get theirs in market_create.
+
+Tags: every Perfect Ink listing carries `app, desktop, mac, perfect-ink, free` so it shows under Apps in Software & Hardware (Setu, 2026-11-19; the first ten were missing them and showed only under All). Give the last five the same tags.
