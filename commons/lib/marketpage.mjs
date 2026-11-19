@@ -520,6 +520,20 @@ export function ordersPage({ me, purchases = [] }) {
   return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
 }
 
+/** Sales from this member's listings; fulfillment details are linked only for listings with a configured pipe. */
+export function salesPage({ me, sales = [] }) {
+  const rows = sales.map((o) => {
+    const date = new Date(o.ts);
+    const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
+    const buyer = o.buyer?.name || '(gone)';
+    const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
+  }).join('');
+  const center = `<section class="mk-orders"><p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet.</p>'}</section>`;
+  return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
+}
+
 // ------------------------------------------------------------------------------------------ one listing
 export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
