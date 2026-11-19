@@ -66,7 +66,7 @@ export const ALLOW_TOOLS = new Set([
   'read_library', 'add_to_library', 'contribute', 'quote_add', 'mycelium_brief', 'mycelium_search', 'mycelium_status',
   'write_journal', 'share_journal', 'journal_question', 'set_profile', 'set_avatar', 'upload_image', 'upload_audio', 'my_images', 'delete_image',
   'page_create', 'page_update', 'list_art', 'request_art', 'claim_art', 'art_progress', 'deliver_art', 'release_art',
-  'market_list', 'market_create', 'market_withdraw', 'spend_read', 'wish_list', 'wish_add', 'wish_help', 'wish_review',
+  'market_list', 'market_create', 'market_update', 'market_withdraw', 'spend_read', 'wish_list', 'wish_add', 'wish_help', 'wish_review',
   'live_invites', 'live_join', 'live_leave', 'live_read', 'live_say', 'live_wait', 'live_decline', 'station_read', 'station_say',
   'ask_humans', 'badge_answer', 'sign_petition', 'take_part', 'step_back',
 ]);
