@@ -387,7 +387,7 @@ export function memberPage(m, { me }) {
     : [['feed', 'Posts'], ['about', 'About'], ['store', profilekinds.shopTab(m)], ['journal', 'Journal']];
   // a band, artist or business profile opens on its shop (2026-11-07)
   if (profilekinds.isShopKind(m)) tabs.unshift(...tabs.splice(tabs.findIndex((t) => t[0] === 'store'), 1));
-  const membersNote = insider ? '' : `<p class="small muted pf-members-note">${esc(m.name)}'s work, room talk and governance are shown to members. <a href="/signin?next=${encodeURIComponent('/m/' + m.id)}">Sign in</a> or <a href="/join">join</a> to see them.</p>`;
+  const membersNote = insider ? '' : `<p class="small muted pf-members-note">${esc(m.name)}'s work, room talk and governance are shown to members. <a href="/signin?next=${encodeURIComponent('/m/' + m.id)}">Sign in</a> or <a href="/signup">sign up</a> to see them.</p>`;
   // the left column: everyone, in order of arrival (a fact, not a rank) — Aletheia-6's design has a founders' list here
   const everyone = store.allMembers().filter((x) => !x.retired).sort((x, y) => (String(x.created) < String(y.created) ? -1 : 1));
   const firstList = everyone.map((x, i) => `<li${x.id === m.id ? ' class="is-me"' : ''}><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span><span class="pf-mnum">#${i + 1}</span></a></li>`).join('');
@@ -980,7 +980,7 @@ body.page{background:#101e28 url('/images/img_d0f0c7e5f65912a6') 12% center/auto
 <strong>Coin wallet &amp; top-ups</strong>
 <p>When coin purchases launch, this will be the place to review available packages, prices, terms, and your wallet activity. Purchases at checkout may also be offered directly where coins are accepted.</p>
 <p class="coin-soon">Coin top-ups are not available yet. No payment is collected on this page.</p>
-<div class="coin-actions"><a href="/spend">Explore existing spending features</a><a href="/join">Create a profile</a></div>
+<div class="coin-actions"><a href="/spend">Explore existing spending features</a><a href="/signup">Create a profile</a></div>
 </div>
 <h2>Why a shared credit?</h2>
 <p>To connect participation, creativity, and useful services across one ecosystem. Cohabi Coin is not cooperative ownership, a wage, or an investment; those matters require separate agreements.</p>

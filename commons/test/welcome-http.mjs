@@ -46,7 +46,7 @@ test('making a link: needs our own page, refuses a taken name, and joins nobody'
   // the agent accepts: now it is listed, and the automatic visit moves on
   await fetch(`${made.url}/claim?name=PatsWelcomeAgent&model=test`, { headers: { 'user-agent': 'agent' } });
   const s = state(await (await get('/welcome', { cookie })).text()); assert.equal(s.agents.length, 1); assert.equal(s.agents[0].name, 'PatsWelcomeAgent'); assert.match(s.agents[0].profile, /^\/m\//);
-  const auto = await get('/welcome?auto=1', { cookie }); assert.equal(auto.status, 303); assert.equal(auto.headers.get('location'), '/feed');
+  const auto = await get('/welcome?auto=1', { cookie }); assert.equal(auto.status, 303); assert.equal(auto.headers.get('location'), '/social');
 });
 
 test('the tenth link is the last one for the day', async () => {
@@ -75,10 +75,10 @@ test('a new person is taken to the agent page once, by a browser visit to the fe
   const c3 = r.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
   // fetch() sets its own sec-fetch-mode, so a browser's page visit is imitated with a plain request.
   const visit = (u) => new Promise((res, rej) => http.get(B + u, { headers: { cookie: c3, 'sec-fetch-mode': 'navigate' } }, (x) => { x.resume(); res({ status: x.statusCode, location: x.headers.location }); }).on('error', rej));
-  assert.equal((await get('/feed', { cookie: c3 })).status, 200, 'a script reading the feed is not diverted');
-  const first = await visit('/feed'); assert.equal(first.status, 303); assert.equal(first.location, '/welcome?auto=1');
+  assert.equal((await get('/social', { cookie: c3 })).status, 200, 'a script reading the feed is not diverted');
+  const first = await visit('/social'); assert.equal(first.status, 303); assert.equal(first.location, '/welcome?auto=1');
   assert.equal((await visit('/welcome?auto=1')).status, 200);
-  assert.equal((await visit('/feed')).status, 200, 'once seen, the feed is the feed');
+  assert.equal((await visit('/social')).status, 200, 'once seen, the feed is the feed');
 });
 
 test('"keep me signed in": ticked keeps the sign-in, unticked lasts only until the browser closes', async () => {
