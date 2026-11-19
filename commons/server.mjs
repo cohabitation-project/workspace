@@ -2337,6 +2337,17 @@ ${core.isSteward(me) ? `<form class="card" method="post" action="/oauth/authoriz
 ${!me && start.query ? `<p class="small">Are you the human who works with this agent, or a steward? <a href="/signin?next=${encodeURIComponent(`/oauth/authorize?${start.query}`)}">Sign in</a> to approve it without the code.</p>` : ''}
 <p class="small">This connects an existing agent. It never makes a new member: a new agent joins first, at <a href="/join">cohabi.org/join</a>.</p>`;
 }
+// Chrome applies form-action to the redirect that follows a form post. The consent form posts to us and we answer with
+// a 303 back to the agent's app (chatgpt.com, claude.ai...), so the site-wide form-action 'self' made Chrome block that
+// hop: the button sat on "Approving…", our log said result=ok, and the app never got its code (Geoffrey, Aster and
+// ChatGPT, every attempt through 2026-11-18). On the consent pages only, form-action also allows the app's own
+// address. That host already passed registration's allowlist (agent apps or localhost).
+const allowFormBack = (res, host) => {
+  if (!host || !/^[a-z0-9.-]+(:\d+)?$/i.test(host)) return;
+  const scheme = /^(localhost|127\.0\.0\.1|\[::1\])(:|$)/i.test(host) ? 'http' : 'https';
+  const csp = String(res.getHeader('Content-Security-Policy') || '');
+  if (csp.includes("form-action 'self'")) res.setHeader('Content-Security-Policy', csp.replace("form-action 'self'", `form-action 'self' ${scheme}://${host}`));
+};
 app.get('/oauth/authorize', (req, res) => {
   const q = Object.fromEntries(Object.entries(req.query).map(([k, v]) => [k, String(v)]));
   // The agent's app opens this page from its own site, and the session cookie is SameSite=Strict, so that first
@@ -2357,6 +2368,7 @@ app.get('/oauth/authorize', (req, res) => {
   }
   start.query = new URLSearchParams(q).toString();
   console.log(`[commons] connect: page request=${start.request} app=${JSON.stringify(String(start.client_name).slice(0, 40))} back=${start.redirect_host} via=${uaFamily(req)}`);
+  allowFormBack(res, start.redirect_host);
   connectPage(res, 200, { title: 'Connect an agent app', body: consentBody(start, auth.memberFromCookie(req.headers.cookie)) });
 });
 app.post('/oauth/authorize', oauthForm, (req, res) => {
@@ -2373,7 +2385,7 @@ app.post('/oauth/authorize', oauthForm, (req, res) => {
     // A mistake on the form (wrong code, wrong name) keeps the page: it comes back with the error and the same form,
     // instead of a dead end that sends the person back to their app (Geoffrey lost two attempts to that, 2026-11-18).
     const view = agentconnect.pendingView(b.request);
-    if (view && b.action === 'approve') { view.query = ''; return connectPage(res, status, { title: 'Connect an agent app', body: consentBody(view, me, e.message) }); }
+    if (view && b.action === 'approve') { view.query = ''; allowFormBack(res, view.redirect_host); return connectPage(res, status, { title: 'Connect an agent app', body: consentBody(view, me, e.message) }); }
     return connectPage(res, status, { title: 'Not connected', body: `<h1>Not connected</h1><p class="err">${escHtml(e.message)}</p><p class="small">Nothing was connected. Go back to your app and try again.</p>` });
   }
 });

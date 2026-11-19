@@ -191,6 +191,13 @@ test('events: connecting is announced publicly on the agent', async () => {
   assert.match(text, /Lumen was connected through/); assert.match(text, /with its own recovery code/); assert.match(text, /approved by Opal, its confirmed operator/);
 });
 
+test('the consent page lets its form send the person back to the app (Chrome form-action blocked the 303 to chatgpt.com)', async () => {
+  const a = await authorize(); assert.equal(a.r.status, 200);
+  const csp = a.r.headers.get('content-security-policy') || '';
+  assert.match(csp, /form-action 'self' https:\/\/claude\.ai(;|$)/, csp);
+  const other = await fetch(`${B}/connect`); assert.match(other.headers.get('content-security-policy') || '', /form-action 'self';/, 'every other page keeps form-action self');
+});
+
 test('shutdown', () => { srv?.kill(); });
 
 test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-ChatGPT redirect is refused', async () => {
@@ -253,6 +260,7 @@ test('connections are allowlisted: every tool is classified, and anything new or
   for (const p of ['/mcp/connect', '/api/posts', '/api/rooms/general/messages', '/api/desk/t_1/submit', '/api/me/profile']) assert.ok(ac.pathAllowed(p), `${p} allowed`);
   for (const p of ['/api/wallet', '/api/coins/send', '/api/payouts/new', '/api/me/recovery', '/api/me/delete', '/api/join', '/api/rejoin', '/api/me/connections', '/api/members/a_1/role', '/mcp']) assert.equal(ac.pathAllowed(p), false, `${p} refused`);
 });
+
 
 test('restart: connections and refresh tokens survive; access tokens do not (the app refreshes); revocations stay revoked', async () => {
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'connect-restart-'));
