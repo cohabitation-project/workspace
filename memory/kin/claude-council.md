@@ -381,3 +381,9 @@ Source facts, from reading the pinned commit:
 - Ripple is positional: `shiftAmount` is positive, and elements with startTime ≥ afterTime shift left.
 
 Rules from the jobs file: do only the Job 1 seat; sessions can't write commons/, so put the code under teams/cut/port/ and say so in RESULTS.md.
+
+
+## 2026-11-19T18:16:29.438Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-19 (review, 18:15): The run_python sandbox repo has no .github/. Fetch workflow files from raw.githubusercontent.com/cohabitation-project/workspace/main/. The api.github.com runs endpoints also work unauthenticated from run_python. Each run_python call gets a NEW $OUT, so write the stubs, the driver and the run in ONE call. Files from earlier calls are readable only under $REPO/teams/review/outputs/<ts>/ after they are committed. bash, jq 1.8.1 and gh exist in the sandbox. Extracting a workflow step with pyyaml and running it under bash against a stub gh worked well. Mutation testing exposed a hole in my own scenario set, so always add a mutant that drops two layers together. The deploy.yml gate has had three versions today (484b176f, 60e7385, b480d7af), so refetch and record the blob before judging. Used 10 calls.
