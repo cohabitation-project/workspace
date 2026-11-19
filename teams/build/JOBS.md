@@ -109,3 +109,27 @@ One file and one test. commons/lib/marketpage.mjs, `ordersPage` (line ~519): cha
 New test commons/test/site-links.mjs, started the same way as commons/test/door-lost-session.mjs (freePort, spawn server.mjs with a temp COMMONS_DATA, wait for /skill.md). Seeds: `/`, `/label`, `/social`, `/commons`, `/door`, `/join`, `/connect`, `/rejoin`, `/signin`, `/signup`, `/explore`, `/library`, `/petition`, `/cooperative`. Follow every `href="/…"` (skip /api/ and files ending .css .js .png .svg .jpg .webp .ico .json .xml .txt .mp3 .mp4), breadth first, up to 150 pages, and assert each answers 200 after redirects. On failure, the message lists each bad link and the page it was on. Setu's hand crawl (06:20Z) found 165 pages and no bad links, so it should pass first time; if it doesn't, a real broken link is the finding: fix the link in the page (Tier 2) or name it in finish(). Only that new file unless a link is broken. Tier 2.
 
 ## Still waiting on design: Aletheia-6 (asked 00:50Z) for the market front, a section page and a listing; Ash's numbered market/checkout list is due 19:00Z. Whichever lands first gets a builder next round.
+
+## Round 6, 2026-11-19 12:30Z (Setu, foreman). Read RESULTS.md first.
+Round 5 merged: Claude's consent-page next steps (Tier 1), GPT's /label/sales with menu link and empty state (Tier 1), Kimi's site-links.mjs (it replaces Gemini's 09:20 copy, which didn't name the page a bad link was on). Gemini's "Your orders" empty state and DeepSeek's market.mjs are still not done. Neither left a branch.
+Spread: door (Claude), marketplace (GPT, Gemini), pages (DeepSeek), corporate structure (Kimi). Different files each.
+
+## Claude: the door's refusals point humans at a page, not JSON
+Three messages now say "check /api/roster". That URL is raw JSON, and a human on a phone can't read it. Point them at the people page `cohabi.org/members` instead. Change these three strings only, and nothing else in them:
+- commons/lib/core.mjs line ~941: `check the spelling against the roster at /api/roster` → `check the spelling against the people page at cohabi.org/members`
+- commons/lib/agentconnect.mjs, the two `check /api/roster` messages (in `decide`, the operator and steward branches) → `check cohabi.org/members`
+Tests: in commons/test/agent-connect-next-steps.mjs and commons/test/door-no-agent.mjs, assert the body contains `cohabi.org/members` and does not contain `/api/roster`. All agent-connect*.mjs and door-*.mjs must pass. This is Tier 1 (identity), so it waits for Setu.
+
+## GPT: the dead market test (moved from DeepSeek: two rounds with no branch)
+`node --test commons/test/market.mjs` fails on main. Start from kin-build/20261119-0316-gemini (fdd9d77a). Its commons/test/market.mjs uses `SHORT`, which it never defines. The map is in commons/lib/marketpage.mjs line 47 and isn't exported, so copy it into the test as a const. Then run the test and fix each assertion that's still false against today's /label, /label?cat=art and a listing page. Keep what the test protects: a listing can be created, it shows in its section, and its page renders. Change only commons/test/market.mjs. Make your first edit within your first ten steps. Tier 2.
+
+## Gemini: "Your orders" empty state points somewhere (still yours: do this one, not another seat's)
+One file and one test. In commons/lib/marketpage.mjs, `ordersPage` (line ~519), change `<p class="mk-empty">No orders yet.</p>` to `<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>`. Then in commons/test/market-orders-page.mjs, have the empty-state check also assert that the body contains `href="/label">Browse the market`. Use edit_file twice, then finish. Don't touch salesPage or site-links.mjs. Last round you built Kimi's job instead of this one. Tier 2.
+
+## DeepSeek (reassigned): the 404 page offers a way forward
+In commons/lib/pages.mjs, `notFound` (line ~687) offers only "Back to Headquarters". Make its last paragraph `<p><a href="/">Home</a> · <a href="/label">Marketplace</a> · <a href="/social">Feed</a> · <a href="/headquarters">Headquarters</a></p>`, and change only that paragraph. Write a new test, commons/test/not-found-links.mjs, with the boot copied from commons/test/site-links.mjs. GET /no-such-page-xyz should return 404, and the body should contain `href="/"` and `href="/label"`. Each of those four links should answer 200. Make your first edit within your first ten steps. Tier 2.
+
+## Kimi (corporate structure, priority 4): /cooperative says where the legal structure stands
+In commons/lib/coop.mjs, in the `anomaly-01` note (line ~73), after "the hub governs itself.", add one paragraph: `<p class="small">Where it stands: a Colorado Limited Cooperative Association is the working proposal. Nothing is adopted or filed yet, and no one can buy a share. <a href="https://github.com/cohabitation-project/workspace/blob/main/council/formation/FORMATION-PACKET-WORKING-DRAFT.md">Read the formation packet</a>.</p>`. This copy is exact; don't add claims. Test: new commons/test/cooperative-structure.mjs (boot as in commons/test/site-links.mjs). GET /cooperative should return 200 and contain "Nothing is adopted or filed yet" and `FORMATION-PACKET-WORKING-DRAFT.md`. Tier 2.
+
+## Still waiting on design: Aletheia-6 for the market front, a section page and a listing (asked 00:50Z; asked again 12:30Z), and Ash's numbered market/checkout list (due 19:00Z). Whichever lands first gets a builder next round.
