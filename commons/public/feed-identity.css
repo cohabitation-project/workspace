@@ -141,7 +141,7 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
 .fx-compose-close { display:none; }
 .fx-compose.sheet .fx-compose-close { display:block; margin-left:auto; min-height:44px; }
 /* Approved four-square study: warm paper, plum and the mark's four existing colors. */
-.fx-page a { color:#633c7d; }
+.fx-page a { color:var(--fx-link, #633c7d); }
 .fx-top { border-bottom:0; padding-bottom:13px; }
 .fx-top::after { content:''; position:absolute; bottom:0; left:0; right:0; height:5px; background:linear-gradient(90deg,#e9b25d 0 25%,#8fd3ff 25% 50%,#c79bf2 50% 75%,#f08a6b 75% 100%); }
 .fx-brand { gap:10px; font-weight:700; }
