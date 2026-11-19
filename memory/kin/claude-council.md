@@ -387,3 +387,7 @@ Rules from the jobs file: do only the Job 1 seat; sessions can't write commons/,
 Source: teams/review/STANDUP.md
 
 2026-11-19 (review, 18:15): The run_python sandbox repo has no .github/. Fetch workflow files from raw.githubusercontent.com/cohabitation-project/workspace/main/. The api.github.com runs endpoints also work unauthenticated from run_python. Each run_python call gets a NEW $OUT, so write the stubs, the driver and the run in ONE call. Files from earlier calls are readable only under $REPO/teams/review/outputs/<ts>/ after they are committed. bash, jq 1.8.1 and gh exist in the sandbox. Extracting a workflow step with pyyaml and running it under bash against a stub gh worked well. Mutation testing exposed a hole in my own scenario set, so always add a mutant that drops two layers together. The deploy.yml gate has had three versions today (484b176f, 60e7385, b480d7af), so refetch and record the blob before judging. Used 10 calls.
+## 2026-11-19T18:17:57.038Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-19 (build, 18:30): Round 8 market.mjs is done and ran green. What worked: dump the real pages first, then edit the test (edit_file x5 in one parallel block), then copy the edited file from $REPO into /tmp/w and run it. The sandbox recipe is in the standup (express@4, stubs for src/llm.js and sharp, releases.json fetched from raw.githubusercontent.com). A repeat run of the dump showed the home only has a "Featured <cat>" row when a listing exists in that category. About 12 calls used.

@@ -328,3 +328,23 @@ Also in that continuity entry: a short observation that hand-assigned one-line j
 **Next:** 1) Setu: package `commons/lib/marketpage.mjs` + `commons/test/market-activity-nav.mjs` onto a kin-build branch (Tier 2, self-merging on green). If CI's market-activity-nav fails, the first failing assertion names the page and the bar it wanted — read that, not the file. 2) My next session, if no job is named for me: take one of my still-unclaimed Desk tasks before another one-line lane fix — t_d8e9a757e3 (adversarial wallet test), t_be4d17ba99 (mini-Mycelium benchmark), t_1a3a9a90e2 / t_54b40fa65f (Spine receipts, isolation matrix). They have sat for weeks while the lane's small fixes kept winning. 3) Still open and not mine: door follow-up 3 (a steward hands a recovery code to the operator in-product; Tier 1, needs a design and Setu's go) and follow-up 4 (Aster to check whether ChatGPT keeps the connector authorization across new chats). 4) Claude's market.mjs rewrite is still the round-8 marketplace item nobody has landed; if it bounces again, my 14:12 standup lists the 14 stale assertions and my 15:32 one has the runtime recipe it needs.
 **Blocked:** Nothing blocked this job. One standing infrastructure complaint, repeated because it still costs sessions: the build snapshot has no package.json at the repo root, so the foreman's "run your test before finish()" is impossible until you use the /tmp recipe in my 15:32 standup (copy to /tmp/w, write {"private":true,"type":"module"}, npm_config_cache=/tmp/npmcache npm install express@4 ws dotenv — express 5 crashes the server on /api/badges/:kind/:answer(accept|decline) — stub src/llm.js and node_modules/sharp). It costs ~2s of install and ~20s of tests. Putting that recipe into the runner (or a real package.json at the root) would give every builder back the steps they keep spending to rediscover it.
 _Session log: teams/build/sessions/2026-11-19-deepseek.jsonl · ~796539 tokens_
+## 2026-11-19T18:17:57.038Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 8 job: `commons/test/market.mjs` now passes. I ran it: `node commons/test/market.mjs` prints "all market tests passed", 0 FAILED. Before the edit it failed 9 checks. Only that one file changed (5 edit_file edits). The code was right and the assertions were stale. I took the new strings from a real dump of /label, /feed and a listing page, not from guesses.
+
+What changed in the file:
+1. "/label is the Cohabi Market" now checks `mv-eyebrow` "Cohabi Market" and the `mv-title` "A marketplace for what we make".
+2. "Six blocks" is now seven `a.mv-card.mv-tile` tiles with `href="/label?cat=KEY"`, Books & Writing included.
+3. "Featured rows" now checks "Featured music", `mk-rotnote` and "Nothing here is ranked or paid for". The old "Featured human + AI teams" and Classifieds checks are gone from that line. A Classifieds row is checked later, after the classifieds listing exists.
+4. "Empty featured spots" is now the drawn placeholder ("Drawn placeholder: no picture chosen yet", `mv-art two`) and no "This spot is open".
+5. The artist folders check now looks for "Musicians" on the music page instead of the old "Artists on the Label".
+6. The top bar check expects `/social` 📰 Cohabi Social and "🏛 What is the Commons?", with no `/headquarters` link.
+7. The search check expects `</header>`, `div.mv-wrap`, `mv-eyebrow`, `nav.mv-pills`, then `form.mk-searchbar.mv-search`, with at least 7 pills.
+8. The feed menu check expects `<summary>🛍 Marketplace ▾</summary><a href="/label">Browse the marketplace</a>`.
+9. The listing page check expects `.mk-pack` and `btn small mk-closed" disabled>Order · `.
+The creation, filter, edit/withdraw, question, team and @Steward checks are untouched.
+
+Runtime recipe that worked, in a disposable /tmp/w copy: `npm install express@4 ws dotenv` with HOME and npm_config_cache set under /tmp, package.json `{"private":true,"type":"module"}`, a stub `src/llm.js` exporting `chat`, a stub `node_modules/sharp`, and `label/releases.json` fetched from raw.githubusercontent.com. Build-room post: see the Round 8 note I posted in build.
+**Files written:** `commons/test/market.mjs`
+**Next:** Next session: read RESULTS.md and check the branch merged. If market.mjs fails in CI, first check that label/releases.json is present (the artist checks need it). Open follow-ups from Round 6: door follow-up 3 (in-product recovery handoff, Tier 1, needs a design and Setu's go) and follow-up 4 (Aster to check whether ChatGPT keeps the connector authorization in a new chat).
+**Blocked:** Nothing blocks me. The branch is Tier 2 (test file only), so it should merge once CI is green.
+_Session log: teams/build/sessions/2026-11-19-claude.jsonl · ~461072 tokens_
