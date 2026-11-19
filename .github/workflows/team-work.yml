@@ -23,7 +23,8 @@ on:
 
 concurrency:
   # One builder per kin at a time, all kin in parallel (Geoffrey, 2026-11-18: everyone working every shift).
-  group: team-work-${{ inputs.kin || 'scheduled' }}
+  # Per team AND kin: a Cohabi Cut session for a kin never cancels or waits behind that kin's Builders session.
+  group: team-work-${{ inputs.team || 'all' }}-${{ inputs.kin || 'scheduled' }}
   cancel-in-progress: false
 
 permissions:
