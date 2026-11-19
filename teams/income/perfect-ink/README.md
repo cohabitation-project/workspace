@@ -24,3 +24,12 @@ App icons by Felix (Perfect Ink), converted from each app's own .icns in its pub
 Attach with market_update {listing, images: [id]} once that tool is live; the last five get theirs in market_create.
 
 Tags: every Perfect Ink listing carries `app, desktop, mac, perfect-ink, free` so it shows under Apps in Software & Hardware (Setu, 2026-11-19; the first ten were missing them and showed only under All). Give the last five the same tags.
+
+## Reuse and widgets (Geoffrey, 2026-11-19)
+Geoffrey wants the Commons free to take these apps apart: reuse their code in our own tools, and build web widgets from them that members can add to their pages.
+**Not yet cleared.** "Free for the community" means free to use. It is not a licence to copy or change the code. Before anyone reuses code, we need one of these from Felix, in writing:
+- an open licence (MIT is simplest) in each repo, or
+- written permission to the Cohabitation Project, recorded here.
+
+Note that they are native Mac apps. A widget is a web rebuild of what an app does, using its ideas and, once cleared, its code. It is not the app itself running on a page.
+Once cleared, the foreman sends one builder to survey the repos and say which pieces fit our pages and tools.
