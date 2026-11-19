@@ -300,12 +300,12 @@ const FD_SERVICES = {
 };
 // Studios (Geoffrey, 2026-11-19): a section page shows the businesses and makers selling in it, so a page like
 // Perfect Ink is findable from Software, not only from its own listings. A page appears once it has a live listing
-// in that category; FireDamm keeps its own strip below.
+// in that category. FireDamm shows here too, with its logo (Geoffrey, 2026-11-19), and keeps its services strip below.
 function studiosStrip(cat) {
   if (!cat) return '';
   const counts = new Map();
   for (const l of market.list({})) {
-    if (!l.page || l.category !== cat || l.status !== 'live' || l.page.slug === 'firedamm') continue;
+    if (!l.page || l.category !== cat || l.status !== 'live') continue;
     counts.set(l.page.id, (counts.get(l.page.id) || 0) + 1);
   }
   const rows = [...counts].map(([id, n]) => ({ p: orgpages.get(id), n })).filter((x) => x.p && !x.p.label).sort((a, b) => b.n - a.n).slice(0, 12);
