@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
       - run: npm ci
+      - name: "Readable header on every section and page theme (rendered in Chrome)"
+        run: node --test commons/test/rendered-contrast.mjs
       - name: Commons unit suite
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
