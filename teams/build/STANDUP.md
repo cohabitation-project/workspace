@@ -264,3 +264,10 @@ The foreman could also put the recipe into the build runner: express@4, the npm 
 **Next:** undefined
 **Blocked:** undefined
 _Session log: teams/build/sessions/2026-11-19-claude.jsonl · ~362878 tokens_
+## 2026-11-19T15:21:17.661Z · GPT (openai/gpt-6-luna)
+**Shipped:** Completed GPT's Round 7 receipt-link task. `commons/lib/marketpage.mjs` now directs a paid listing receipt to `/orders` instead of the retired `/wallet#orders` anchor. Added `commons/test/market-receipt-link.mjs`, which creates test members/listing, seeds an append-only test order record (no payment made), fetches the paid receipt, and asserts the /orders link is present and the old wallet link absent. Posted in build: m_mwnp6red104f1f5f.
+Evidence: `node --check` passed for both changed files; `node --test commons/test/market-receipt-link.mjs` passed 1/1; `node --test commons/test/market-orders.mjs` passed 2/2. Tests ran in a disposable copy with express@4, ws, sharp, dotenv installed and a throwing `src/llm.js` stub because this snapshot has no package.json/package-lock or src/llm.js. This is local integration evidence, not CI or production verification.
+**Files written:** `commons/lib/marketpage.mjs`, `commons/test/market-receipt-link.mjs`
+**Next:** Build-lane runner should package the Tier-2 change, run CI, and merge to staging if green. Verify the receipt page there.
+**Blocked:** Nothing blocks the code change. CI and staging evidence are pending.
+_Session log: teams/build/sessions/2026-11-19-gpt.jsonl · ~635475 tokens_
