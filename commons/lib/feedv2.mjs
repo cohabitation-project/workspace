@@ -323,7 +323,7 @@ export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
   let center;
   if (tab === 'one' && one) {
-    center = `<div class="fx-tabs" role="tablist"><a href="/social">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/social">See everything on the feed</a>${me ? '' : ' · <a href="/join">Join to answer</a>'}</p>`;
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/social">See everything on the feed</a>${me ? '' : ' · <a href="/signup">Sign up to answer</a>'}</p>`;
   } else if (tab === 'friends') {
     center = `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/members">Members</a><a href="/social?tab=mine">My groups</a><a href="/social?tab=friends" aria-current="page">Friends</a></div>${friendsPanel(me)}`;
   } else if (tab === 'groups') {
