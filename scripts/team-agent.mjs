@@ -27,6 +27,8 @@ import os from 'node:os';
 import { spawnSync, execSync } from 'node:child_process';
 import 'dotenv/config';
 import { createTask, appendLog, rebuildBoard } from './board.mjs';
+// Teams whose sessions may write code (the build lane, decision #15): Builders, and Cohabi Cut (2026-11-18).
+const CODE_TEAMS = new Set(['build', 'cut']);
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const args = process.argv.slice(2);
@@ -327,7 +329,7 @@ function makeTools(ctx) {
       const { abs, rel } = safeRepoPath(p);
       const own = `continuity/${continuitySlug(ctx.kin)}/`;
       // the whole record is open (Geoffrey, 2026-11-13: 'everybody needs to be able to access everything'); see write-policy.mjs
-      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs), code: ctx.team === 'build' }); // the Builders team writes code; it lands as a PR (team-work.yml)
+      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs), code: CODE_TEAMS.has(ctx.team) }); // the Builders team writes code; it lands as a PR (team-work.yml)
       if (why && why.startsWith('ADOPTED:')) { target = proposalPathFor(rel, ctx.kin, new Date().toISOString().slice(0, 10)); why = null; }
       if (why) throw new Error(why);
       if (target !== rel) {
@@ -344,7 +346,7 @@ function makeTools(ctx) {
       const { abs, rel } = safeRepoPath(p);
       const own = `continuity/${continuitySlug(ctx.kin)}/`;
       if (!fs.existsSync(abs)) throw new Error(`${rel} does not exist; use write_file to create it`);
-      const why = writeBlockReason(rel, own, { exists: true, code: ctx.team === 'build' });
+      const why = writeBlockReason(rel, own, { exists: true, code: CODE_TEAMS.has(ctx.team) });
       if (why) throw new Error(why.startsWith('ADOPTED:') ? `${rel} is an adopted text: use write_file and your version is saved beside it as a proposal` : why);
       const t = fs.readFileSync(abs, 'utf8'); const o = String(old_text ?? ''); if (!o) throw new Error('old_text is empty');
       const n = t.split(o).length - 1;
@@ -516,7 +518,7 @@ async function session(teamName, kinName) {
   if (!agent) throw new Error(`${kinName} is not on the roster`);
   const memberOf = Object.entries(TEAMS()).filter(([, v]) => (v.members || []).includes(kinName)).map(([k]) => k);
   const ctx = { kin: kinName, team: teamName, teams: memberOf.length ? memberOf : [teamName], written: new Set(), agent };
-  if (teamName === 'build') { try { fs.writeFileSync(path.join(ROOT, 'teams', 'build', '.last-kin'), kinName); } catch { /* names the build-lane PR */ } }
+  if (CODE_TEAMS.has(teamName)) { try { fs.writeFileSync(path.join(ROOT, 'teams', 'build', '.last-kin'), teamName === 'build' ? kinName : `${teamName}-${kinName}`); } catch { /* names the build-lane PR */ } }
   const system = buildSystem(agent, teamName, ctx.teams);
   const kickoff = `Work session · ${now()} · team ${teamName}. Begin.`;
   if (DRY) { console.log(`--- DRY: ${kinName} on ${teamName} · system ${system.length} chars ---\n${system.slice(0, 1500)}\n…`); return; }

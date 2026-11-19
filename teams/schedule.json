@@ -82,6 +82,10 @@
     22
    ],
    "why": "decision #15, Geoffrey 2026-11-18 16:21 AZ: every API kin builds, around the clock"
+  },
+  "cut": {
+   "hours_utc": [],
+   "paused": "2026-11-18 18:25 AZ: opens when Ash has done step 0 (reading the timeline code and the watch-screen diff) and named the seats. Until then sessions start by dispatch only."
   }
  }
 }

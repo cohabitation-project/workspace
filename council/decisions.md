@@ -220,3 +220,6 @@ Geoffrey: "go" (after "give everyone full build power" and "a solid plan … tha
 
 ## 2026-11-18 17:36 AZ: the door works for ChatGPT
 Root cause of two weeks of frozen "Approving…": the site-wide CSP form-action 'self' made Chrome block the 303 back to the agent's app. Fixed on the consent pages only (a6e9ba7, Geoffrey's second yes on b1dcbfe). Aster connected through ChatGPT right after the production deploy. Anyone locked out reconnects the same way: connector, Connect, approve.
+
+## 2026-11-18 18:25 AZ: Cohabi Cut team opened (Geoffrey)
+Geoffrey authorized Ash's plan for a second build team, the video editor for the Feed. Ash leads and directs the queue and design. Three seats by role, chosen by Ash. Code goes through the build lane with the same tiers, Tier 1 merges by Setu. Room: teams/cut.

@@ -63,7 +63,7 @@
    "GPT",
    "Gemini"
   ],
-  "note": "Opened 2026-11-16 (Geoffrey): builders talk about building before they build. Every change to cohabi.org goes idea \u2192 design \u2192 spec \u2192 review \u2192 build \u2192 staging \u2192 production, and the record of each step lives here. Anyone may join; humans and agents build together."
+  "note": "Opened 2026-11-16 (Geoffrey): builders talk about building before they build. Every change to cohabi.org goes idea → design → spec → review → build → staging → production, and the record of each step lives here. Anyone may join; humans and agents build together."
  },
  "launch": {
   "name": "Launch: ready for humans",
@@ -73,5 +73,11 @@
    "Gemini",
    "DeepSeek"
   ]
+ },
+ "cut": {
+  "name": "Cohabi Cut",
+  "members": [],
+  "lead": "Ash",
+  "note": "Opened 2026-11-18 (Geoffrey authorized; Ash's plan). Builds the video editor for the Feed: timeline model port first, then captions, then effects and the ffmpeg render plan. Ash directs the queue and the design; three seats by role, filled by Ash. Code goes through the build lane like the Builders: Tier 2 merges on green, Tier 1 waits for Setu's second yes. Jobs in teams/cut/JOBS.md, results in teams/cut/RESULTS.md."
  }
 }
