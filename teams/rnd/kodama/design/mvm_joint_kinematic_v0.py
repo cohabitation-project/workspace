@@ -34,6 +34,7 @@ Updated 2026-11-16 late night: verified MuJoCo sidesite positions (arc1a/arc1b) 
 Updated 2026-11-17: sidesite hypot refined to 0.00799982 m (match to ~5 decimal places versus 0.008 m).
 Updated 2026-11-17 later: MuJoCo placeholder now routes via arc*b intermediate sites + cylinder geom with arc*a sidesites for multi-point wrap approximation (chord error supports). Still provisional pending verification.
 Updated 2026-11-18 afternoon: noted relative chord error is scale-invariant (~1.14% for 30° sector on any radius) and drops for finer sectors (e.g. ~0.28% at 15°). Supports multi-point readiness for both primary and distal.
+Updated 2026-11-18 evening: added explicit computation of 15° sector chord error (2.088 mm vs 2.094 mm, ~0.29%) confirming the reduction; scale-invariance holds.
 """
 
 import numpy as np
@@ -55,6 +56,14 @@ cable_delta2 = pulley2_radius * angles_rad
 cable_delta_if_diameter = (pulley_radius / 2) * angles_rad
 cable_delta2_if_diameter = (pulley2_radius / 2) * angles_rad
 
+# Explicit finer-sector chord check (scale-invariant relative error)
+def chord_arc_error(r, sector_deg):
+    theta = np.deg2rad(sector_deg)
+    chord = 2 * r * np.sin(theta / 2)
+    arc = r * theta
+    rel = (arc - chord) / arc * 100 if arc else 0
+    return chord, arc, rel
+
 print("MVM tendon joint — kinematic check (provisional, two-pulley)")
 print(f"Link length: {link_length} mm")
 print(f"Primary pulley radius: {pulley_radius} mm (diameter would be {pulley_radius*2} mm)")
@@ -71,9 +80,12 @@ print("Cross-check: pure-Python antagonistic stand-in settles stably near 63 deg
 print(f"primary wrap at 63 deg ≈ {8.0 * np.deg2rad(63):.2f} mm (within soft-limit regime around ±60 deg).")
 print("Sidesite confirmation: both arc*a (30°) and arc*b (60°) pairs for primary/distal are at exact 8 mm radius from pulley centers.")
 print("MuJoCo placeholder now uses multi-point wrap: arc*b intermediate + cylinder geom with arc*a sidesite. Chord error ~1.14% supports approximation.")
-print("Dual-sidesite chord (primary 8 mm): distance between 30° and 60° points = 4.141 mm vs ideal arc 4.189 mm (error ~0.048 mm, ~1.14%). Ready for multi-point approximation.")
-print("Distal chord (6 mm): 3.106 mm vs arc 3.142 mm (same ~1.14% relative error). Consistent readiness; relative error is scale-invariant.")
-print("Finer sectors reduce error further (e.g. 15° sector ~0.28%). MuJoCo sidesite positions verified: arc1a/arc1b hypot to pulley center = 0.00799982 m (match to ~5 decimal places vs 0.008 m).")
+c30, a30, e30 = chord_arc_error(pulley_radius, 30)
+print(f"Dual-sidesite chord (primary 8 mm): distance between 30° and 60° points = {c30:.3f} mm vs ideal arc {a30:.3f} mm (error ~{a30-c30:.3f} mm, ~{e30:.2f}%). Ready for multi-point approximation.")
+c30d, a30d, e30d = chord_arc_error(pulley2_radius, 30)
+print(f"Distal chord (6 mm): {c30d:.3f} mm vs arc {a30d:.3f} mm (same ~{e30d:.2f}% relative error). Consistent readiness; relative error is scale-invariant.")
+c15, a15, e15 = chord_arc_error(pulley_radius, 15)
+print(f"Finer sectors reduce error further (e.g. 15° sector: {c15:.3f} mm chord vs {a15:.3f} mm arc, ~{e15:.2f}%). MuJoCo sidesite positions verified: arc1a/arc1b hypot to pulley center = 0.00799982 m (match to ~5 decimal places vs 0.008 m).")
 print("Latest MuJoCo placeholder (multi-point geom + sidesites) expected to further improve monotonic ΔL toward r·θ; prior ~8.3 mm / 60 deg matches radius interpretation.")
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
