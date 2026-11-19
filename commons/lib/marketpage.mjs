@@ -727,7 +727,7 @@ export function pagePage({ me, p, folder = null }) {
     <div class="mk-pageface">${face}</div>
     <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.project_service ? '<p class="mk-ourservice">Part of the Cohabitation Project\'s own services</p>' : ''}${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
     <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>${newarrival.label(x.id)}`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
-    ${mgr ? '<p><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button></p>' : ''}</div>
+    ${mgr ? '<p class="mk-pgtools"><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button> <label class="btn ghost small mk-quick">🖼 Change picture<input type="file" data-pg-quick="portrait" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <label class="btn ghost small mk-quick">🏞 Change background<input type="file" data-pg-quick="banner" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <span class="small mk-quickmsg" role="status" aria-live="polite"></span></p>' : ''}</div>
     ${heroCovers(covers)}
   </section>
   ${folder ? songsBlock(folder) : ''}

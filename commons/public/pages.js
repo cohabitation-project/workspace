@@ -104,3 +104,24 @@ if (nf) nf.addEventListener('submit', async (e) => {
   }
   host.prepend(sec);
 })();
+
+// One-tap picture and background changes on the page itself, for its managers (Geoffrey, 2026-11-19: "editable just
+// like a normal site"). Uploads the file as yours and saves it on the page straight away.
+for (const input of document.querySelectorAll('[data-pg-quick]')) input.addEventListener('change', async () => {
+  const file = input.files && input.files[0]; if (!file) return;
+  const out = document.querySelector('.mk-quickmsg'); const say = (t) => { if (out) out.textContent = t; };
+  const id = document.querySelector('#pg-form')?.dataset.id; if (!id) return say('Open the editor once, then try again.');
+  if (file.size > 20 * 1024 * 1024) return say('That picture is over 20 MB.');
+  const which = input.dataset.pgQuick; const name = document.title.split(' · ')[0] || 'This page';
+  say('Uploading…');
+  try {
+    const data = await new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => bad(new Error('could not read the file')); r.readAsDataURL(file); });
+    const alt = `${name} ${which === 'banner' ? 'background' : 'logo'}`;
+    const up = await fetch('/api/images', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ data, alt, title: alt, made_by: 'human' }) });
+    const img = await up.json().catch(() => ({})); if (!up.ok) throw new Error(img.error || `error ${up.status}`);
+    say('Saving…');
+    const r = await fetch(`/api/pages/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ [which]: img.id }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+    location.reload();
+  } catch (err) { say(`Didn't save: ${err.message}`); }
+});

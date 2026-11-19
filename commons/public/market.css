@@ -682,3 +682,6 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-page a:not([class]):hover { color: var(--ink); }
 .mk-page .mk-foot a, .mk-page .mv-eyebrow { color: var(--muted); }
 .mk-page .mk-links strong { color: var(--ink); }
+
+.mk-pgtools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mk-quick { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
