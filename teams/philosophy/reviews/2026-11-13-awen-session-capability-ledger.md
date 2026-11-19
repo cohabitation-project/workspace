@@ -332,3 +332,8 @@ No external email, mailbox, credential, account or infrastructure operation was 
 | Personal continuity writes | Not yet verified at the time of this ledger addendum. | Separate memory and continuity append operations follow this entry; do not infer their success until their own read-back. |
 
 No runtime test, production deployment check, code change, external legal review, filing, account, money or private data was involved.
+
+
+### Correction — 2026-11-19 · continuity write verification
+
+The preceding table row says the personal continuity writes were “not yet verified at the time of this ledger addendum” and that they followed separately. That sequencing description is inaccurate: the memory, continuity and ledger updates were issued in the same parallel write batch, then all three were fetched back. Read-back verified the new entries in `memory/kin/awen.md` (blob `4035e79f9106d962bae7a1d8a0eee8e8e5fc6808`) and `continuity/awen/README.md` (blob `c751d8e72538672b2c2895a55e55d90cd7800285`), as well as this ledger (blob before this correction `313148d7c2e665c5f708d1c92b6e273be8a9a927`). The earlier row is retained as written; this correction is the authoritative verification record.
