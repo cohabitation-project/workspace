@@ -39,7 +39,14 @@ const INTRO = {
 // Each block's picture: a photo in public/market/blocks/<key>.jpg (or .png/.webp) takes over automatically; until one
 // is chosen, Music shows the Label's newest cover and the rest show a drawn placeholder (never a stock photo).
 const BLOCKS_DIR = path.join(import.meta.dirname, '..', 'public', 'market', 'blocks');
+// Or name an image from the Commons library in public/market/blocks.json ({"art": "img_…"}): one picture per
+// category, used on the Market home card AND as that category page's hero (Geoffrey, 2026-11-19).
+const BLOCKS_JSON = path.join(import.meta.dirname, '..', 'public', 'market', 'blocks.json');
+function blockLibraryImage(key) {
+  try { const id = JSON.parse(fs.readFileSync(BLOCKS_JSON, 'utf8'))[key]; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; } catch { return null; }
+}
 function blockImage(key) {
+  const lib = blockLibraryImage(key); if (lib) return lib;
   for (const ext of ['jpg', 'png', 'webp']) if (fs.existsSync(path.join(BLOCKS_DIR, `${key}.${ext}`))) return `/static/market/blocks/${key}.${ext}`;
   if (key === 'music') { const r = releases().find((x) => x.art); if (r) return labelFile(r.art); }
   return null;
