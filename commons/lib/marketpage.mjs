@@ -298,6 +298,22 @@ const FD_SERVICES = {
   software: [['Custom business tools: quoting, CRM, job tracking', /custom business tools/i], ['A website for your project, hand-coded', /launch package/i]],
   services: [['A website for your business, hand-coded', /launch package/i], ['Site rescue: get your domain and site back', /site rescue/i]],
 };
+// Studios (Geoffrey, 2026-11-19): a section page shows the businesses and makers selling in it, so a page like
+// Perfect Ink is findable from Software, not only from its own listings. A page appears once it has a live listing
+// in that category; FireDamm keeps its own strip below.
+function studiosStrip(cat) {
+  if (!cat) return '';
+  const counts = new Map();
+  for (const l of market.list({})) {
+    if (!l.page || l.category !== cat || l.status !== 'live' || l.page.slug === 'firedamm') continue;
+    counts.set(l.page.id, (counts.get(l.page.id) || 0) + 1);
+  }
+  const rows = [...counts].map(([id, n]) => ({ p: orgpages.get(id), n })).filter((x) => x.p && !x.p.label).sort((a, b) => b.n - a.n).slice(0, 12);
+  if (!rows.length) return '';
+  const word = cat === 'software' ? ['app', 'apps'] : ['listing', 'listings'];
+  return `<section class="mk-studios" aria-label="Studios and businesses"><h2 class="mk-h">Studios and businesses</h2><div class="mk-studiorow">${rows.map(({ p, n }) => `<a class="mk-studio" href="${esc(orgpages.href(p))}"><span class="mk-studioface">${p.portrait ? `<img src="/images/${esc(p.portrait)}" alt="" loading="lazy">` : esc(String(p.name).slice(0, 1).toUpperCase())}</span><span class="mk-studioname">${esc(p.name)}</span><span class="mk-studiocount small">${n} ${n === 1 ? word[0] : word[1]}</span></a>`).join('')}</div></section>`;
+}
+
 function firedammStrip(cat) {
   const rows = FD_SERVICES[cat]; if (!rows) return '';
   const fd = orgpages.bySlug('firedamm');
@@ -419,7 +435,7 @@ function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
   <h3>Downloads come later</h3><p>Before Cohabi hosts any file, it will need: proof of who published it, a quarantine for uploads, scanning, a human review of licences and permissions, and only an approved version going live. Scanning lowers risk; it never proves something is safe.</p></aside></div>
   ${real ? '' : items.length ? '' : '<p class="sw-notice">The examples above are made up for this page\'s design. Real projects show here as soon as members list them.</p>'}</section>
 </div>`;
-  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center: center + firedammStrip('software') });
+  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center: center + studiosStrip('software') + firedammStrip('software') });
 }
 function artPage({ me, items, pk, q, sort = '' }) {
   // Her sort control: Newest (the shelf's own order), Title A–Z, Maker A–Z.
@@ -448,7 +464,7 @@ function artPage({ me, items, pk, q, sort = '' }) {
   <section><div class="av-head"><div><h2>Have something to share?</h2><p>The path from your creative work to your own public storefront.</p></div></div><div class="av-how"><div><b>01 — YOUR IDENTITY</b><h3>Create your artist presence</h3><p>Use your Cohabi identity to make a creator page. Human, AI and collaborative creators are welcome.</p></div><div><b>02 — YOUR WORK</b><h3>Show what you've made</h3><p>Upload artwork, explain your process, choose a license and publish the work you have the rights to share.</p></div><div><b>03 — YOUR SHOP</b><h3>Build your collections</h3><p>Visitors explore your work and ask questions. ${checkout.paymentsOpen() ? 'Connect a payout account on your wallet to sell.' : 'Sales and payouts open once payments are ready.'}</p></div></div></section>
   <section class="av-cta"><div><h2>A home for the things you make.</h2><p>Share your art. Meet collaborators. Build your storefront.</p></div><a href="${sell}">Start creating ↗</a></section>
 </div>`;
-  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center: center + firedammStrip('art') });
+  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center: center + studiosStrip('art') + firedammStrip('art') });
 }
 
 // ------------------------------------------------------------------------------------------ the market's sections
@@ -477,7 +493,7 @@ export function marketPage({ me, query = {} }) {
   ${arts.length ? `<h2 class="mk-h">Labels and Musicians</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
   ${items.length ? `<div class="mk-grid">${items.map((l) => listingCard(l, { buy: true, me })).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
-  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center: center + (cat && !q ? firedammStrip(cat) : ''), scripts: ['/static/market.js'] });
+  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center: center + (cat && !q ? studiosStrip(cat) + firedammStrip(cat) : ''), scripts: ['/static/market.js'] });
 }
 
 // ------------------------------------------------------------------------------------------ an artist's folder
