@@ -707,3 +707,21 @@ export function pagesCard(memberId, { self = false } = {}) {
   const groups = [['band', 'Bands'], ['label', 'Labels'], ['artist', 'Artists'], ['business', 'Businesses']].map(([k, n]) => [n, mine.filter((p) => p.kind === k)]).filter(([, l]) => l.length);
   return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? groups.map(([n, l]) => `<p class="small muted pf-pagesh">${n}</p><ul>${l.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a></li>`).join('')}</ul>`).join('') : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
 }
+
+/** A member's purchases, linked back to the listing they bought. */
+export function ordersPage({ me, orders }) {
+  const purchases = orders?.purchases || [];
+  const rows = purchases.map((o) => {
+    const n = Number(o.amount);
+    let amount = '—';
+    if (Number.isFinite(n)) {
+      try { amount = new Intl.NumberFormat('en-US', { style: 'currency', currency: /^[A-Z]{3}$/.test(o.currency) ? o.currency : 'USD' }).format(n); }
+      catch { amount = `${esc(o.currency || 'USD')} ${n.toFixed(2)}`; }
+    }
+    const time = new Date(o.ts);
+    const date = Number.isNaN(time.getTime()) ? String(o.ts || '') : time.toISOString().slice(0, 10);
+    return `<li class="mk-order"><div><a href="/label/l/${esc(o.listing)}"><strong>${esc(o.title)}</strong></a><p class="small muted">${esc(date)}</p></div><div class="mk-order-meta"><span>${amount}</span><span class="mk-order-status">${esc(o.status)}</span></div></li>`;
+  }).join('');
+  const center = `<section class="mk-orders"><h1>Your orders</h1>${rows ? `<ol class="mk-order-list">${rows}</ol>` : '<p class="mk-empty">No orders yet.</p>'}</section>`;
+  return frame({ me, title: 'Your orders', description: 'See the marketplace orders you have bought.', section: 'orders', center });
+}

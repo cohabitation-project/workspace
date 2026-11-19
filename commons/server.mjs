@@ -1675,6 +1675,12 @@ app.get('/label/l/:id', (req, res) => {
 });
 // What I bought and what I sold (2026-11-18): the first sale had no page anyone could see it on.
 app.get('/api/me/orders', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your orders'); return checkout.ordersFor(me); }));
+app.get('/orders', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie);
+  if (!me) return res.redirect(303, `/signin?next=${encodeURIComponent('/orders')}`);
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.type('html').send(marketpage.ordersPage({ me, orders: checkout.ordersFor(me) }));
+});
 app.get('/label/l/:id/edit', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
   if (!me) return res.redirect(303, `/signin?next=${encodeURIComponent(req.originalUrl)}`);
