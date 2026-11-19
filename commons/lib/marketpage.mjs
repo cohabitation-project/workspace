@@ -508,6 +508,12 @@ export function artistPage({ me, slug }) {
 }
 
 // ------------------------------------------------------------------------------------------ buyer orders
+// The three activity pages (orders, sales, my listings) link to each other, so a member who lands on one can reach
+// the others without going back through the market (Round 8, 2026-11-19). The current page carries aria-current.
+function activityNav(current) {
+  const item = (href, label, key) => `<a href="${href}"${key === current ? ' aria-current="page"' : ''}>${label}</a>`;
+  return `<nav class="mk-activity small" aria-label="Your market activity">${item('/orders', 'Your orders', 'orders')} · ${item('/label/sales', 'Your sales', 'sales')} · ${item('/label/mine', 'Your listings', 'mine')}</nav>`;
+}
 /** The member's purchases. This page intentionally shows purchases only; sellers see their sales in the wallet. */
 export function ordersPage({ me, purchases = [] }) {
   const rows = purchases.map((o) => {
@@ -516,7 +522,7 @@ export function ordersPage({ me, purchases = [] }) {
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
   }).join('');
-  const center = `<section class="mk-orders"><p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet.</p>'}</section>`;
+  const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
   return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
 }
 
@@ -530,7 +536,7 @@ export function salesPage({ me, sales = [] }) {
     const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
   }).join('');
-  const center = `<section class="mk-orders"><p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
+  const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
   return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
 }
 
@@ -596,7 +602,7 @@ export function myListingsPage({ me }) {
     return `<div class="mk-shopitem" data-listing="${esc(l.id)}" data-status="${esc(status)}">${listingCard(l)}
     <div class="mk-ownbar"><strong>Status: ${esc(status)}</strong> ${l.status === 'live' ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button>` : ''}</div></div>`;
   }).join('');
-  const center = `<p class="crumbs small"><a href="/label">Market</a> / your listings</p>
+  const center = `${activityNav('mine')}<p class="crumbs small"><a href="/label">Market</a> / your listings</p>
   <h1 class="mk-formh">Your listings</h1>
   <p class="mk-lede">Everything you have listed, newest first, including work offered as one of your pages. Withdrawn listings stay in the record.</p>
   <p><a class="btn" href="/label/new">Make a listing</a></p>
