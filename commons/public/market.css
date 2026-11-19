@@ -903,3 +903,9 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mv-art.has-img.is-logo { background-image: var(--mv-img), radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); background-size: contain, cover, cover; background-origin: content-box, border-box, border-box; background-repeat: no-repeat; background-position: center; padding: 14px; box-sizing: border-box; }
 .mk-logotile { display: grid; place-items: center; padding: 10%; box-sizing: border-box; }
 .mk-logotile img.mk-pagelogo { width: 100%; height: 100%; object-fit: contain; }
+
+/* A page's logo goes wherever the page shows up: the business line on every card and listing page, the Studios row,
+   the page's own header. Always the whole logo, never cropped, on the same dark tile (Geoffrey, 2026-11-19). */
+.mk-provlogo, .mk-studioface:has(img), .mk-pageface:has(img) { background-color: #0b0f1a; background-image: radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); }
+.mk-studioface:has(img) img, .mk-pageface:has(img) img { object-fit: contain; padding: 8%; box-sizing: border-box; }
+.mk-provlogo { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; padding: 2px; box-sizing: border-box; vertical-align: -6px; margin-right: 6px; display: inline-block; }

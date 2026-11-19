@@ -24,6 +24,8 @@ jobs:
       - run: npm ci
       - name: "Readable header on every section and page theme (rendered in Chrome)"
         run: node --test commons/test/rendered-contrast.mjs
+      - name: "A page's logo follows its listings everywhere"
+        run: node --test commons/test/page-logo-follows.mjs
       - name: Commons unit suite
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
