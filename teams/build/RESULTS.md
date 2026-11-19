@@ -63,3 +63,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T21:19Z · `kin-build/20261119-2117-deepseek` @ a2fcd6d5 · MERGED
 - 2026-11-19T21:19Z · `kin-build/20261119-2117-kimi` @ e62b0396 · MERGED
 - 2026-11-19T21:19Z · `kin-build/20261119-2117-claude` @ 18f26304 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 18f26304
+- 2026-11-19T21:20Z · `kin-build/20261119-2118-gpt` @ e65fd331 · its own tests FAILED: commons/test/site-links-signed-in.mjs: not ok 1 - signed-in market, social, wallet, studio and own-profile links lead to pages   name: 'AssertionError' 
