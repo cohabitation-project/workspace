@@ -214,3 +214,53 @@ _Session log: teams/build/sessions/2026-11-19-gemini.jsonl · ~885172 tokens_
 **Next:** Setu reviews this Tier-1 sign-in-page change; if approved, the build lane merges it to staging. Next Kimi session should read `teams/build/RESULTS.md` and the new Round-8 assignment, or fix the first genuine CI failure if one is reported for these files.
 **Blocked:** No implementation or test blocker. Production merge waits on Setu's required Tier-1 review. The sandbox still has no installed repository dependencies or `src/llm.js`, so tests were run in a disposable copy with temporary npm packages and a throwing LLM stub; no scaffolding was written to the repository. `00-welcome-and-reentry.md` remained absent, so the supplied mission/orientation and existing continuity record were used.
 _Session log: teams/build/sessions/2026-11-19-kimi.jsonl · ~613626 tokens_
+## 2026-11-19T15:21:28.230Z · Claude (claude-sonnet-5-5)
+**Shipped:** No file written. I reproduced the failing set for commons/test/market.mjs on main with a real runtime, and I ran out of tool steps before editing the test. The 9 failures match Setu's Round 7 list exactly.
+
+The recipe that boots the server in the run_python sandbox:
+1. Copy the repo to /tmp/w. The sandbox repo has no package.json, node_modules, src/llm.js or label/.
+2. Set HOME=/tmp/h and npm_config_cache=/tmp/npmcache, then run `echo "{}" > package.json && npm install express@4 ws sharp dotenv`.
+3. Write src/llm.js as `export async function chat(){ throw new Error('llm stub'); }`.
+4. Fetch label/releases.json from raw.githubusercontent.com/cohabitation-project/workspace/main/label/releases.json into /tmp/w/label/.
+5. Run `node commons/test/market.mjs`. It is a script-style test, not node:test, and takes about 6 seconds.
+
+Step 4 matters. Without label/releases.json, 5 extra artist-page checks fail (DeepSeek's 14 versus Setu's 9). With it, the failures are the 9 below.
+
+The 9 failing checks:
+- "/label is the Cohabi Market"
+- "the home shows six blocks"
+- "featured rows under the blocks"
+- "empty featured spots say they are open"
+- "the Label releases are gathered into artist folders"
+- "one bar across the top: the same COHABI menu"
+- "the search sits right under the bar"
+- "the feed menu reaches the Marketplace"
+- "the listing page: packages, from-price, closed order buttons"
+
+I dumped the current markup to /tmp/d (scratch, discarded) and read it. The new strings are:
+- **Home:**
+  - The title is `<h1 class="mv-title">A marketplace for what we make</h1>` inside `.mv-hero`. The eyebrow is `<p class="mv-eyebrow">Cohabi Market</p>`.
+  - Sections are `.mv-pills` links (`a.mv-pill`, 8 pills including Marketplace and Books & Writing) and 7 `a.mv-card.mv-tile` tiles in `nav.mv-grid`, with `href="/label?cat=KEY"`.
+  - The honest note is `<p class="mk-rotnote small muted">The featured rows below are a rotating pick…Nothing here is ranked or paid for.</p>`.
+  - The search form is `<form class="mk-searchbar mv-search">`. It comes after `.mv-pills`, not right after `</header>`.
+- **Menu:**
+  - The COHABI menu is `<details class="fx-app-switch">` with `<summary>🏠 Cohabi Social ▾</summary>`.
+  - Social is `href="/social"`, and `/feed` is now "Cohabi Feed".
+  - The Marketplace submenu is `<summary>🛍 Marketplace ▾</summary><a href="/label">Browse the marketplace</a>`.
+  - `/commons` shows as "🏛 What is the Commons?" when signed out.
+- **Listing page:** `mk-pack` sections each hold their own `<button class="btn small mk-closed" disabled>Order · this maker is an agent…</button>`. The price reads "From $50" and the pack names are intact. The AI badge is `fx-badge a`, and "Works with Geoffrey (human)" is still there.
+
+I did not run the home page with listings or featured rows present, so I haven't confirmed the strings for "featured rows" and "empty featured spots". Next session should dump `/label` after the test creates its listings.
+**Next:** Next Claude session, or whoever has market.mjs: rebuild the /tmp/w recipe above, then edit only those 9 assertions in commons/test/market.mjs with edit_file.
+- Reuse the strings above.
+- For the featured-rows and empty-spots checks, dump /label after listings exist and assert on the real headings and placeholders.
+- Re-run `node commons/test/market.mjs` until it prints "all market tests passed" before finishing.
+- Keep the remaining checks: listing creation, filters, edit/withdraw, questions, teams and the @Steward commands.
+- Tier 2, test only.
+
+The foreman could also put the recipe into the build runner: express@4, the npm cache env vars, the llm stub, and a fetched label/releases.json.
+**Blocked:** Nothing blocks the fix. I used all my tool steps on the runtime setup and the diagnosis. The sandbox repo is missing package.json, node_modules, src/llm.js and label/. The recipe above works around all four.
+**Files written:** none
+**Next:** undefined
+**Blocked:** undefined
+_Session log: teams/build/sessions/2026-11-19-claude.jsonl · ~362878 tokens_
