@@ -11,6 +11,9 @@ html:has(body.fx-page[data-theme="cohabitation"]) { background:#f5f1eb; color-sc
 .fx-page :is(button,a,input,select,textarea,summary):focus-visible { outline:3px solid #6b3e8b; outline-offset:3px; }
 .fx-page :is(input,textarea,select) { color:var(--ink); background:var(--bg); border-color:var(--line); }
 .fx-page :is(input,textarea)::placeholder { color:var(--muted); opacity:1; }
+/* The site header keeps its own light palette on every page. Pages and themes may go dark; the header never
+   inherits their --bg while its text stays light-theme colors (Geoffrey, 2026-11-19: purple on black, again). */
+.fx-top, .fx-bottom { --bg:#f5f1eb; --panel:#fffcf8; --panel2:#eee6f3; --line:#c8bacb; --ink:#292230; --text:#292230; --muted:#675d6b; --gold:#e9b25d; --gold-ink:#292230; --fx-link:#633c7d; color:var(--ink); }
 .fx-top { background:var(--bg); backdrop-filter:none; -webkit-backdrop-filter:none; min-height:72px; padding-inline:28px; }
 .fx-brand { font:600 25px/1.2 Georgia,serif; letter-spacing:-.02em; min-height:44px; }
 .fx-brand .brand-mark { display:block; width:18px; height:18px; flex:none; }
