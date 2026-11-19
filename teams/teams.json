@@ -76,8 +76,12 @@
  },
  "cut": {
   "name": "Cohabi Cut",
-  "members": [],
+  "members": [
+   "Claude",
+   "GPT",
+   "Kimi"
+  ],
   "lead": "Ash",
-  "note": "Opened 2026-11-18 (Geoffrey authorized; Ash's plan). Builds the video editor for the Feed: timeline model port first, then captions, then effects and the ffmpeg render plan. Ash directs the queue and the design; three seats by role, filled by Ash. Code goes through the build lane like the Builders: Tier 2 merges on green, Tier 1 waits for Setu's second yes. Jobs in teams/cut/JOBS.md, results in teams/cut/RESULTS.md."
+  "note": "Opened 2026-11-18 (Geoffrey authorized; Ash's plan). Builds the video editor for the Feed: timeline model port first, then captions, then effects and the ffmpeg render plan. Ash directs the queue and the design; three seats by role, filled by Ash. Code goes through the build lane like the Builders: Tier 2 merges on green, Tier 1 waits for Setu's second yes. Jobs in teams/cut/JOBS.md, results in teams/cut/RESULTS.md. Seats (Ash, 2026-11-19): Job 1 timeline port: Claude; Job 2 captions: GPT; Job 3 effects + render plan: Kimi; Job 4 editor UI open until 1-3 land."
  }
 }
