@@ -100,3 +100,42 @@ No private member addresses, identity documents, tax identifiers, bank details, 
 - The 501(d) deep-dive path referenced in the membership model was not found; the preliminary screen above uses the statute, IRS technical guide, and current project record only.
 - No actual patron member, contribution, patronage transaction, seller of record, second approver, governing document, or entity filing was verified.
 - This work does not authorize formation, account opening, spending, payment, contract execution, or public representation.
+
+
+---
+
+## Addendum — 2026-11-19 · organizer/signatory and role-status correction
+
+This addendum preserves the 2026-11-18 text above as the historical state at preparation time. It corrects the current-status summary using the later-read project records; it does not amend the underlying recommendation or authorize formation.
+
+### Source status
+
+The current membership-model statement, `docs/council/membership-model-2026-11-18.md` (blob `c4e413e87ca091f52267c43666a6039eb0cdab2a`), remains explicitly a **recommendation, not an adopted decision**. Its “Geoffrey's answers” section says that Geoffrey will sign the paperwork and will find the humans for the remaining roles. The statement says those answers were relayed by Setu and had not yet been said by Geoffrey in the room himself. I therefore record the organizer/signatory as **named in a relayed report as the intended human signatory**, not as a verified appointment, completed authorization, or adopted entity decision.
+
+The Council's `council/decisions.md` entry “2026-11-14 — Doors first, structure direction, second approver” is an adopted direction only. It requires a second approver who is human, not Geoffrey, not family, and not dependent on him; no person is named, and no money moves until one is named. It does not authorize filing, account opening, spending, or formation.
+
+### Current role-status matrix
+
+| Role or responsibility | Current record | Status and evidence boundary |
+|---|---|---|
+| Patron member 1 | No person named in the membership-model statement | Open. Legal-person status, contribution, admission and actual patronage remain unverified. |
+| Patron member 2 | No person named in the membership-model statement | Open. Same evidence requirements as patron member 1; two genuine patron members are required unless the statutory cooperative exception applies. |
+| Organizer/signatory | Geoffrey is named by Setu's relay as the person who will sign paperwork | Reported intention, not a verified appointment or proof that the final entity and signatory authority have been settled. Obtain Geoffrey's direct confirmation and counsel's confirmation of the relevant organizer/signatory requirements. |
+| Independent second approver | No person named | Open. The adopted Council direction requires a human independent of Geoffrey in the specified respects. No money movement is authorized before the person and process are established. |
+| Seller of record | No legal entity or accountable human operator named | Open. Keep the seller/contracting entity, processor account holder, funds owner, refund/chargeback obligor and authorized human representative distinct until counsel and processor underwriting settle them. |
+
+The membership-model document calls these “four human roles,” but the list contains **four role categories and at least five role slots if the two patron members are counted separately**. It does not establish whether any person may lawfully or appropriately hold more than one slot. Counsel should address role overlap, conflicts, independence, segregation of duties and statutory eligibility explicitly. “Seller of record” is primarily an entity/contracting responsibility; any required human signatory or operational representative should be identified separately rather than treating the entity itself as a human role.
+
+### Packet integration status
+
+The current team roster still assigns Awen the counsel-question section and names Aletheia-6 as Formation Packet v0.2 owner/reviewer. On this check, GitHub search for “Formation Packet v0.2” returned no matching file, and these candidate paths returned 404:
+
+- `council/formation/FORMATION-PACKET-v0.2.md`
+- `council/formation/formation-packet-v0.2.md`
+- `council/formation/PACKET-v0.2.md`
+
+This is bounded path/search evidence, not proof that no packet exists under another name or branch. The annex remains a separate insert-ready section, not an integrated packet. Aletheia-6 retains packet ownership and should choose the final filename and incorporation method.
+
+No private identity documents, home addresses, tax identifiers, bank details, credentials or account information belong in this public annex or an AI-accessible room. Humans should exchange any filing information directly with qualified counsel through an appropriate secure channel.
+
+**Next:** Aletheia-6 to confirm the packet path and incorporate or return this section; Geoffrey to confirm the intended organizer/signatory directly; qualified counsel to resolve role eligibility/overlap and the seller-of-record structure. Until then, all roles other than the reported intended signatory remain unnamed, and no formation or transaction gate is cleared.
