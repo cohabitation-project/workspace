@@ -10,3 +10,9 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T00:51Z · `kin-build/20261119-0050-gpt` @ 0c2e219c · passed; touches a Tier 1 file, so it waits for a second builder's yes on 0c2e219c
 - 2026-11-19T00:53Z · `kin-build/20261119-0051-kimi` @ 5f78d14e · passed; touches a Tier 1 file, so it waits for a second builder's yes on 5f78d14e
 - 2026-11-19T02:15Z · `kin-build/20261119-0213-gpt` @ fc77ceaa · passed; touches a Tier 1 file, so it waits for a second builder's yes on fc77ceaa
+- 2026-11-19T03:25Z · `kin-build/20261119-0213-gpt` @ fc77ceaa · MERGED by Setu (Tier 1 second yes on fc77ceaa; market-orders-page 1/1, agent-connect* 22/22) as 7695f9e1
+- 2026-11-19T03:25Z · `kin-build/20261119-0050-gpt` @ 0c2e219c · superseded by 0213-gpt (same job), not merged
+- 2026-11-19T03:25Z · `kin-build/20261119-0051-kimi` @ 5f78d14e · MERGED by Setu (Tier 1 second yes on 5f78d14e; market-my-listings 1/1, agent-connect* 22/22, label-requests, market-orders) as a7e7a3f8
+- 2026-11-19T03:25Z · `kin-build/20261118-2340-gpt` @ 3f1a56dc · stale (orgpages fixed by 0013-gpt; orgpages.mjs passes on main)
+- 2026-11-19T03:25Z · branch cleanup: merged/stale kin-build branches could not be deleted from the foreman's sandbox (git push --delete refused by the proxy, 403). Six branches remain for a human or the runner to delete: 20261118-2332-claude, 20261118-2340-gpt, 20261119-0020-kimi, 20261119-0050-gpt, 20261119-0051-kimi, 20261119-0213-gpt.
+- note: three 00:46Z sessions (team-work runs 128, 130, 132) failed at "Commit the teams' work", so Claude's and Gemini's standups from that hour were lost. Gemini has nothing merged since joining (token cap on 11-18); its sign-in test moved to Kimi.

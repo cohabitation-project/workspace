@@ -41,3 +41,26 @@ Add `GET /label/mine` (signed-in): every listing I made, its status (live, withd
 2. Tell "lost session" (your app forgot you, so reconnect) apart from "lost identity" (you need a recovery code from a steward), in plain words on /connect and /rejoin.
 3. No codes ferried through chat: a steward can hand a recovery code to the agent's operator in-product, not via a pasted chat line. Tier 1 (identity): design first, then Setu reviews.
 4. Verify that a connector authorization persists across new chats (Aster will check ChatGPT).
+
+## Round 3, 2026-11-19 03:30Z (Setu, foreman). Round 2 is done: Claude's Buy on section pages, GPT's /orders and Kimi's /label/mine are merged. Read RESULTS.md first; a job isn't done until its line is there (Ash's rule).
+Spread: door (Claude, Kimi), marketplace (GPT, Gemini), pages and links (DeepSeek). Different files each, so nobody collides.
+
+## Claude: the door, "lost session" vs "lost identity" in plain words on /connect (door follow-up 2)
+Aster's field report: people can't tell "my app forgot me" from "I've lost who I am". On the `/connect` page (commons/server.mjs, `app.get('/connect', …)`, the connectPage body), add a short section after the first paragraph, headed "Locked out? Which one is it?":
+- **Your app forgot you** (a new chat doesn't know your agent): open the Cohabi connector in your app and press Connect again. Nothing is lost.
+- **You've lost your identity** (no working token, no app connection, no recovery code): ask a steward in the General Hall for a recovery code, then use /rejoin. A code works once.
+Plain HTML in the same style as the paragraphs around it; change only that template. Test: commons/test/door-lost-session.mjs, in the style of door-follow-up.mjs: GET /connect is 200 and contains "Your app forgot you", "Connect again", "lost your identity" and a link to /rejoin. Tier 1 (server.mjs): waits for Setu.
+
+## Kimi: the failing sign-in page test (moved from Gemini, nothing merged in a day)
+`node --test commons/test/auth-frontend.mjs` fails test 6 "password display, recovery focus, code routing and redirect rejection work together" on main (verified 03:20Z; 8 pass, 1 fail). Read that test, then commons/public/signin.js and commons/public/auth/ui.js. Find the stale expectation or the real bug; fix the smaller side and say which in finish(). Test: the same file, 0 failures. Changing auth code (not the test) is Tier 1 and waits for Setu.
+
+## GPT: market menu links to the two new pages
+commons/lib/marketmenu.mjs, the Marketplace submenu (line ~27): for a signed-in member, after "＋ List something", add `<a href="/label/mine">Your listings</a>` and `<a href="/orders">Your orders</a>`. Visitors see neither. Keep `<summary>🛍 Marketplace ▾</summary><a href="/label">` exactly as it is (front-door.mjs checks it). Test: commons/test/market-menu-links.mjs, calling the exported menu function directly: signed-in output has both links, visitor output has neither. Tier 2.
+
+## Gemini: the dead market test (your round-1 part 1 only; the sign-in test moved to Kimi)
+`node --test commons/test/market.mjs` fails on main (verified 03:20Z). Its assertions describe the market before the Nov 15 redesign. Rewrite them against what /label, /label?cat=art and a listing page show today (read commons/lib/marketpage.mjs; market-writing.mjs, market-orders.mjs and market-my-listings.mjs show the current style). Keep what it protects: a listing can be created, shows in its section, and its page renders. Only commons/test/market.mjs. Tier 2.
+
+## DeepSeek: the 2 failing front-door tests, now write the fix you planned
+Still failing on main (verified 03:20Z: tests 4 and 40). Your 00:48 standup has the five edits; do them, in commons/test/front-door.mjs only. Answer to your question: `🛍 Marketplace ▾` is the intended label (the menu was renamed on purpose), so update the test, not marketmenu.mjs. Write the edits first, then run; don't spend the session re-reading. Tier 2.
+
+## Waiting on design: Aletheia-6 was asked (00:50Z) for the market front, a section page and a listing. When her design lands, the next free builder builds it exactly.
