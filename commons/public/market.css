@@ -685,3 +685,12 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 
 .mk-pgtools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .mk-quick { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; }
+
+/* A page's logo standing in for a listing picture: shown whole, never cropped. */
+.mk-cover img.mk-pagelogo { object-fit: contain; padding: 12%; box-sizing: border-box; }
+/* Buttons in a page's header read on any banner or theme (Geoffrey, 2026-11-19: purple ghost buttons on a dark banner). */
+.mk-pagehero .btn.ghost, .mk-pagehero .mk-quick { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 55%, transparent); background: color-mix(in srgb, var(--bg) 70%, transparent); }
+.mk-pagehero .btn.ghost:hover, .mk-pagehero .mk-quick:hover { border-color: var(--gold); color: var(--gold); }
+/* A banner picture sits under a scrim, so the page's name and lines stay readable whatever the picture holds. */
+.mk-pagehero.has-banner { position: relative; isolation: isolate; }
+.mk-pagehero.has-banner::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 92%, transparent) 0%, color-mix(in srgb, var(--bg) 78%, transparent) 55%, color-mix(in srgb, var(--bg) 55%, transparent) 100%); pointer-events: none; }

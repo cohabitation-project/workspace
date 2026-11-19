@@ -94,7 +94,9 @@ function providerLine(l) {
 }
 function cover(l) {
   const im = l.images[0] ? images.get(l.images[0]) : null;
-  return im ? `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}" loading="lazy">` : `<span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span>`;
+  if (im) return `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}" loading="lazy">`;
+  const pg = pagePortrait(l);
+  return pg ? `<img class="mk-pagelogo" src="${esc(pg)}" alt="${esc(l.page.name)} logo" loading="lazy">` : `<span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span>`;
 }
 const madeBy = (l) => (l.made_by === 'human' ? '' : `<span class="mk-made">${l.made_by === 'hybrid' ? 'human + AI' : 'AI-made'}</span>`);
 // Buy on a section tile (2026-11-19). Only a live fixed-price listing gets one; the maker sees "Yours". It reuses the
@@ -181,6 +183,10 @@ function mvHero({ kicker, title, text, buttons = '', img = null }) {
 }
 const SHAPES = ['one', 'two', 'three', 'four', 'five', 'six'];
 const firstImage = (l) => { const id = (l.images || [])[0]; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
+// A listing with no picture of its own shows its business page's picture (Geoffrey, 2026-11-19: when a page changes
+// its logo, that's how its listings should show up in the market). Cards only; hero and tile art still use real photos.
+const pagePortrait = (l) => { const pg = l.page && orgpages.get(l.page.id); const id = pg?.portrait; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
+const cardImage = (l) => firstImage(l) || pagePortrait(l);
 const mvArt = (img, i) => (img ? `<div class="mv-art has-img" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
 /** One card per maker in this section: their newest work's picture and title, then a way to their page. Real data only. */
 function makers(list) {
@@ -189,7 +195,7 @@ function makers(list) {
   return [...seen.values()].slice(0, 9).map((l, i) => {
     const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` };
     const tag = (l.tags || [])[0] || ({ fixed: 'For sale', packages: 'Commissions', donation: 'Pay what you like', free: 'Free', quote: 'Ask for a quote' }[l.price.mode] || 'Work');
-    return `<article class="mv-card">${mvArt(firstImage(l), i)}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
+    return `<article class="mv-card">${mvArt(cardImage(l), i)}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
   }).join('');
 }
 
@@ -419,7 +425,7 @@ function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
   const pills = [['', 'All'], ...Object.entries(SW_TYPES).map(([k, [n]]) => [k, n])].map(([k, n]) => `<a class="sw-pill${k === type ? ' on' : ''}" href="${esc(link({ type: k || null }))}#browse"${k === type ? ' aria-current="true"' : ''}>${esc(n)}</a>`).join('');
   const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
   const who = (l) => ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '');
-  const real = shown.map((l) => { const img = firstImage(l); const kinds = swTypesOf(l).map((k) => SW_TYPES[k][0]); const open = OPEN_LICENSES.has(l.license);
+  const real = shown.map((l) => { const img = cardImage(l); const kinds = swTypesOf(l).map((k) => SW_TYPES[k][0]); const open = OPEN_LICENSES.has(l.license);
     const SWC = { apps: '#a8806a', saas: '#7aab9f', 'open-source': '#7a6fae', games: '#ad7f66', hardware: '#3f8a8f', 'dev-tools': '#6f6aa8' };
     return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${esc(l.page?.name || l.by.name)}</p><p class="sw-txt">${esc(String(l.text || '').slice(0, 110))}</p><p class="sw-tags"><span class="sw-tag${open ? ' sw-open' : ''}">${open ? 'Open source' : esc(market.LICENSES[l.license] ? 'Licence: ' + (l.license === 'all-rights' ? 'all rights reserved' : l.license) : 'Licence varies')}</span><span class="sw-price">${esc(price(l))}</span></p><a class="sw-view" href="/label/l/${esc(l.id)}">View</a></div></article>`; }).join('');
   const examples = !items.length ? SW_EXAMPLES.filter(([, , , k]) => !type || k === type).map(([t, kind, txt, , c]) => `<article class="sw-card sw-example"><span class="sw-thumb" style="--sw-c:${c}"><span class="sw-shape" aria-hidden="true"></span><span class="sw-demo">EXAMPLE</span></span><div class="sw-cc"><p class="sw-kind">${esc(kind)}</p><h3>${esc(t)}</h3><p class="sw-txt">${esc(txt)}</p></div></article>`).join('') : '';
@@ -445,11 +451,11 @@ function artPage({ me, items, pk, q, sort = '' }) {
   const depts = ART_SUBJECTS.map(([n, img]) => `<a class="av-dept${sel === n.toLowerCase() ? ' selected' : ''}" href="${esc(sel === n.toLowerCase() ? link({ q: null }) : link({ q: n }))}#browse"><img src="${AV3}/${img}.webp" alt="" loading="lazy"><span>${esc(n)}</span></a>`).join('');
   const chips = [[null, 'Everyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="av-chip${(k || null) === pk ? ' selected' : ''}" href="${esc(link({ by: k }))}#browse">${esc(n)}</a>`).join('');
   const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask for a quote', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
-  const real = items.map((l) => { const img = firstImage(l); const who = l.page?.name || l.by.name; const subj = (l.tags || [])[0] || market.TYPES[l.type] || 'Work';
+  const real = items.map((l) => { const img = cardImage(l); const who = l.page?.name || l.by.name; const subj = (l.tags || [])[0] || market.TYPES[l.type] || 'Work';
     return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span></div></div></article>`; }).join('');
   const examples = ART_EXAMPLES.filter(([, , subj]) => !sel || subj.toLowerCase() === sel).map(([t, mk, subj, img, b]) => `<article class="av-product av-example"><span class="av-photo"><img src="${AV3}/${img}.webp" alt="${esc(t)}" loading="lazy"><span class="av-demo">EXAMPLE</span></span><div class="av-meta"><h3>${esc(t)}</h3><p>${esc(mk)} · ${esc(subj)}</p><div class="av-line"><span class="av-badge">${esc(b)}</span><span class="av-price">Example only</span></div></div></article>`).join('');
   const seen = new Map(); for (const l of items) { const k = l.page?.id || l.by.id; if (!seen.has(k)) seen.set(k, l); }
-  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = firstImage(l); const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` }; const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
+  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = cardImage(l); const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` }; const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
     return `<article class="av-maker">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="av-makerface">${memberFace(l.by.id)}</span>`}<div><h3>${esc(who.name)}</h3><p>${esc(market.PROVIDERS[l.provider.kind] ? ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '') : '')} · ${n} piece${n === 1 ? '' : 's'}</p><a href="${esc(who.href)}">Visit their page →</a></div></article>`; }).join('');
   const sell = me ? '/label/new?cat=art' : '/signup';
   const center = `<div class="av">
