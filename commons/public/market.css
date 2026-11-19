@@ -658,7 +658,7 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-fd { margin: 28px 0 8px; padding: 16px 18px; border: 1px dashed #cdbfae; border-radius: 14px; }
 .mk-fd-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
 .mk-fd-list li { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
-.mk-fd-soon span:first-child { color: #6d6570; }
+.mk-fd-soon span:first-child { color: var(--muted); }
 .mk-fd-tag { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
 .mk-fd-tag.live { background: #e3f1e4; color: #285c2f; }
 .mk-fd-tag.soon { background: #f1ece4; color: #7d6542; }
@@ -707,6 +707,7 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-page[data-mk=software]:has(.sw) {
   --bg:#111522;--panel:#1f2030;--panel2:#262535;--line:#51465c;
   --ink:#f8f4ee;--muted:#dbd2d4;--gold:#ffcb75;--gold-ink:#16151c;
+  --mv-ink:#f8f4ee;--mv-muted:#dbd2d4;--mv-paper:#1f2030;--mv-line:#51465c; /* rows below the cards (studios, FireDamm) */
   background:linear-gradient(180deg,#111827,#1b1926 55%,#101621) fixed!important;
   color:#f8f4ee;
 }
