@@ -1,6 +1,8 @@
 // The Cohabi Market on the label page (2026-11-07; docs/design/marketplace-v1-audit.md). Run: node commons/test/market.mjs
 import { spawn } from 'node:child_process'; import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
 import { promote } from './lib/promote.mjs';
+// Keep the market's section labels in sync with the pills rendered by marketpage.mjs.
+const SHORT = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Design', writing: 'Books & Writing', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 const ROOT = path.resolve(import.meta.dirname, '..', '..'); const B = 'http://127.0.0.1:3495';
 let failures = 0; const ok = (n, c, x = '') => { console.log(`${c ? '✓' : '✗'} ${n}${x && !c ? ' — ' + x : ''}`); if (!c) failures++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -18,6 +20,7 @@ const ag2 = (await call('/api/join', { name: 'OtherAgent', model: 'm', operator:
 let html = await page('/label');
 ok('/label is the Cohabi Market', /<h1>Cohabi Market<\/h1>/.test(html) && /Last of the Real Estate/.test(html));
 ok('the home shows six blocks: music, arts & crafts, video & design, software & hardware, services, classifieds', ['music', 'art', 'video', 'software', 'services', 'classifieds'].every((k) => html.includes(`data-block="${k}" href="/label?cat=${k}"`)));
+ok('the section pills link to every market category with its current label', Object.entries(SHORT).every(([k, label]) => html.includes(`<a class="mv-pill" href="/label?cat=${k}">${label}</a>`)));
 ok('featured rows under the blocks, honest about what they are', /Featured music/.test(html) && /Featured human \+ AI teams/.test(html) && /Classifieds<\/h2>/.test(html) && /Nothing here is ranked or paid for/.test(html));
 ok('empty featured spots say they are open, never fake names', /This spot is open/.test(html));
 ok('the Label releases are gathered into artist folders, priced as their artists set them', /href="\/label\/a\/geoffrey-david"/.test(html) && /\$5 or 50 coins an album/.test(html) && /Free download/.test(html) && /Artists on the Label/.test(await page('/label?cat=music')));
@@ -25,7 +28,7 @@ const gd = await page('/label/a/geoffrey-david');
 ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
 ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd));
 ok('an unknown artist is a 404', (await fetch(`${B}/label/a/nobody-here`)).status === 404);
-ok('one bar across the top: the same COHABI menu as every page (2026-11-13)', /class="fx-app-switch"/.test(html) && /href="\/feed">🏠 Cohabi Social/.test(html) && /href="\/commons">🏛 Cohabi Commons/.test(html) && !/href="\/headquarters"/.test(html)); // the public Marketplace links the Commons explainer, not Headquarters
+ok('one bar across the top: the shared Cohabi menu, without a Headquarters link for visitors', /class="fx-app-switch"/.test(html) && /href="\/social">📰 Cohabi Social/.test(html) && /href="\/commons">🏛 What is the Commons\?/.test(html) && !/href="\/headquarters"/.test(html)); // public pages link to the Commons explainer, not the member Headquarters
 ok('the search sits right under the bar', /<\/header>\s*<form class="mk-searchbar"/.test(html));
 ok('the market home wears the gallery white; each section its own theme', /data-mk="home"/.test(html) && /data-mk="software"/.test(await page('/label?cat=software')) && /data-mk="classifieds"/.test(await page('/label?cat=classifieds')));
 ok('it says plainly that no money moves yet', /Payments open soon\. Nothing can be bought or paid for yet/.test(html));
@@ -33,7 +36,7 @@ ok('the top bar names the six sections, and no separate AI shelf', ['Music', 'Ar
 ok('inside a block, who made it is a filter: humans, AIs, human + AI, teams', ((h) => ['by=human', 'by=ai', 'by=mixed', 'by=team'].every((x) => h.includes(x)))(await page('/label?cat=music')));
 ok('/marketplace leads to /label', (await fetch(`${B}/marketplace`, { redirect: 'manual' })).headers.get('location') === '/label');
 ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
-ok('the feed menu reaches the Marketplace', /<summary>🛍 Cohabi Marketplace ▾<\/summary><a href="\/label">/.test(await page('/feed', ck))); // 2026-11-13: the top bar is gone; it's in COHABI ▾
+ok('the feed menu reaches the Marketplace', /<summary>🛍 Marketplace ▾<\/summary><a href="\/label">Browse the marketplace<\/a>/.test(await page('/feed', ck))); // the shared menu label is Marketplace
 
 // listing: validation
 const base = { title: 'Morning Bells', text: 'A short piece for two bells.', category: 'music', type: 'product', price: { mode: 'donation' }, license: 'cc-by', rights: true, tags: 'bells, ambient' };
