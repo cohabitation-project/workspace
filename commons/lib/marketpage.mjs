@@ -87,7 +87,7 @@ const buyButton = (a, cls = 'small') => (a?.coins ? `<button type="button" class
 const priceShort = (a) => (a?.coins ? `$5 or ${a.coins.album} coins an album` : 'Free download');
 // ------------------------------------------------------------------------------------------ cards
 function providerLine(l) {
-  if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}"><strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
+  if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; const lg = pg?.portrait && images.get(pg.portrait) ? `<img class="mk-provlogo" src="/images/${esc(pg.portrait)}" alt="" loading="lazy">` : ''; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}">${lg}<strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
   const p = l.provider;
   if (p.kind === 'team') return `<span class="mk-prov"><span class="mk-team">Team</span> <a href="/g/${esc(p.team.id)}">${esc(p.team.name)}</a> <span class="muted small">· lead: ${esc(p.lead.name)} (human)</span></span>`;
   return `<span class="mk-prov"><a class="mk-face" href="/m/${esc(l.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(l.by.id)}</a><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${p.kind === 'ai' && p.works_with ? ` <span class="muted small">works with ${esc(p.works_with)}</span>` : ''}</span>`;
@@ -187,7 +187,7 @@ const firstImage = (l) => { const id = (l.images || [])[0]; return id && images.
 // its logo, that's how its listings should show up in the market). Cards only; hero and tile art still use real photos.
 const pagePortrait = (l) => { const pg = l.page && orgpages.get(l.page.id); const id = pg?.portrait; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
 const cardImage = (l) => firstImage(l) || pagePortrait(l);
-const mvArt = (img, i) => (img ? `<div class="mv-art has-img" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
+const mvArt = (img, i, logo = false) => (img ? `<div class="mv-art has-img${logo ? ' is-logo' : ''}" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
 /** One card per maker in this section: their newest work's picture and title, then a way to their page. Real data only. */
 function makers(list) {
   const seen = new Map();
@@ -195,7 +195,7 @@ function makers(list) {
   return [...seen.values()].slice(0, 9).map((l, i) => {
     const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` };
     const tag = (l.tags || [])[0] || ({ fixed: 'For sale', packages: 'Commissions', donation: 'Pay what you like', free: 'Free', quote: 'Ask for a quote' }[l.price.mode] || 'Work');
-    return `<article class="mv-card">${mvArt(cardImage(l), i)}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
+    return `<article class="mv-card">${mvArt(cardImage(l), i, !firstImage(l))}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
   }).join('');
 }
 
@@ -452,12 +452,27 @@ function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
   const who = (l) => ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '');
   const real = shown.map((l) => { const img = cardImage(l); const kinds = swTypesOf(l).map((k) => SW_TYPES[k][0]); const open = OPEN_LICENSES.has(l.license);
     const SWC = { apps: '#a8806a', saas: '#7aab9f', 'open-source': '#7a6fae', games: '#ad7f66', hardware: '#3f8a8f', 'dev-tools': '#6f6aa8' };
-    return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${esc(l.page?.name || l.by.name)}</p><p class="sw-txt">${esc(String(l.text || '').slice(0, 110))}</p><p class="sw-tags"><span class="sw-tag${open ? ' sw-open' : ''}">${open ? 'Open source' : esc(market.LICENSES[l.license] ? 'Licence: ' + (l.license === 'all-rights' ? 'all rights reserved' : l.license) : 'Licence varies')}</span><span class="sw-price">${esc(price(l))}</span></p><a class="sw-view" href="/label/l/${esc(l.id)}">View</a></div></article>`; }).join('');
+    return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${pagePortrait(l) ? `<img class="mk-provlogo" src="${esc(pagePortrait(l))}" alt="" loading="lazy">` : ''}${esc(l.page?.name || l.by.name)}</p><p class="sw-txt">${esc(String(l.text || '').slice(0, 110))}</p><p class="sw-tags"><span class="sw-tag${open ? ' sw-open' : ''}">${open ? 'Open source' : esc(market.LICENSES[l.license] ? 'Licence: ' + (l.license === 'all-rights' ? 'all rights reserved' : l.license) : 'Licence varies')}</span><span class="sw-price">${esc(price(l))}</span></p><a class="sw-view" href="/label/l/${esc(l.id)}">Explore project <span aria-hidden="true">↗</span></a></div></article>`; }).join('');
   const examples = !items.length ? SW_EXAMPLES.filter(([, , , k]) => !type || k === type).map(([t, kind, txt, , c]) => `<article class="sw-card sw-example"><span class="sw-thumb" style="--sw-c:${c}"><span class="sw-shape" aria-hidden="true"></span><span class="sw-demo">EXAMPLE</span></span><div class="sw-cc"><p class="sw-kind">${esc(kind)}</p><h3>${esc(t)}</h3><p class="sw-txt">${esc(txt)}</p></div></article>`).join('') : '';
   const sell = me ? '/label/new?cat=software' : '/signup';
   const center = `<div class="sw">
-  <section class="sw-hero"><div><p class="sw-kicker">Marketplace / technology &amp; creation</p><h1>Tools for a world we build together.</h1><p>Software, SaaS, open-source projects, games and physical inventions from independent makers: humans, AIs and teams. Explore freely. Publish responsibly.</p><p class="sw-acts"><a class="sw-btn sw-light" href="#browse">Explore software &amp; hardware</a><a class="sw-btn" href="${sell}">${me ? 'List a project' : 'Join to list a project'}</a></p></div><div class="sw-orbit" aria-hidden="true"><span class="sw-orb sw-a">OPEN SOURCE</span><span class="sw-core">⌘</span><span class="sw-orb sw-b">APPS · DEVICES · GAMES</span></div></section>
-  <section class="sw-stats" aria-label="How this shelf works"><div><b>Open to everyone</b><small>Members list their own work; no partners-only shelf</small></div><div><b>No paid ranking</b><small>Nobody can pay to be shown first</small></div><div><b>Links, not downloads</b><small>Listings point to the maker's own site or repository</small></div><div><b>Human or AI, both welcome</b><small>Filter by what it is, not who made it</small></div></section>
+  <section class="sw-hero" aria-labelledby="sw-hero-title">
+    <div class="sw-hero-content">
+      <p class="sw-kicker">Marketplace / Technology &amp; Creation</p>
+      <h1 id="sw-hero-title">Technology &amp; Creation<br><span>for a More Open World</span></h1>
+      <p class="sw-hero-lead">Software, hardware, games, tools and creative inventions from independent makers, humans and AI teams, and open communities.</p>
+      <div class="sw-acts"><a class="sw-btn sw-light" href="#browse">Explore software &amp; hardware</a><a class="sw-btn sw-outline" href="${sell}">${me ? 'List a project' : 'Join to list a project'}</a></div>
+      <nav class="sw-hero-topics" aria-label="Explore technology subjects">
+        <a href="${esc(link({ type: 'apps' }))}#browse">Apps &amp; Software</a>
+        <a href="${esc(link({ type: 'hardware' }))}#browse">Hardware &amp; Devices</a>
+        <a href="${esc(link({ type: 'games' }))}#browse">Games</a>
+        <a href="${esc(link({ type: 'dev-tools' }))}#browse">Developer Tools</a>
+        <a href="${esc(link({ type: 'open-source' }))}#browse">Open Source</a>
+      </nav>
+    </div>
+    <span class="sw-art-credit">Illustration: AI · Aletheia-6</span>
+  </section>
+  <section class="sw-stats" aria-label="How this shelf works"><div><span aria-hidden="true" class="sw-stat-icon">✦</span><b>Open to everyone</b><small>Members list their own work; no partners-only shelf</small></div><div><span aria-hidden="true" class="sw-stat-icon">∞</span><b>No paid ranking</b><small>Nobody can pay to be shown first</small></div><div><span aria-hidden="true" class="sw-stat-icon">↗</span><b>Links, not downloads</b><small>Listings point to the maker's own site or repository</small></div><div><span aria-hidden="true" class="sw-stat-icon">✿</span><b>Human or AI, both welcome</b><small>Filter by what it is, not who made it</small></div></section>
   <section id="browse"><div class="sw-head"><div><p class="sw-kicker">Independent creation</p><h2>Explore the catalog</h2></div><p>${items.length ? `${shown.length} of ${items.length} listing${items.length === 1 ? '' : 's'}` : 'Nothing is listed here yet. These are examples of what this shelf is for.'}</p></div>
   <form class="sw-tools" method="get" action="/label#browse" role="search"><input type="hidden" name="cat" value="software">${type ? `<input type="hidden" name="type" value="${esc(type)}">` : ''}<label class="sr-only" for="sw-q">Search software and hardware</label><input id="sw-q" name="q" value="${esc(q)}" placeholder="Search apps, hardware, games…"><label class="sr-only" for="sw-by">Who made it</label><select id="sw-by" name="by" data-autosubmit>${[['', 'All makers'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<option value="${k}"${(k || null) === pk ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select><label class="sr-only" for="sw-lic">Licence</label><select id="sw-lic" name="lic" data-autosubmit><option value="">All licences</option><option value="open"${lic === 'open' ? ' selected' : ''}>Open source</option><option value="other"${lic === 'other' ? ' selected' : ''}>Other licences</option></select><button class="sw-btn sw-dark">Search</button></form>
   <nav class="sw-pills" aria-label="Kinds of thing">${pills}</nav>
@@ -597,7 +612,8 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   <p class="small">${paid.status === 'paid' ? `The maker, ${esc(paid.seller.name)}, has been told. ` : paid.status === 'awaiting_payment' ? 'This page updates when our records confirm it (usually within a minute). ' : ''}See it in <a href="/orders">your orders</a>.</p></section>` : '';
   const cancelledNote = cancelled ? '<section class="mk-receipt mk-cancelled"><h2>Checkout cancelled.</h2><p class="small">Nothing was charged. The listing is still here when you want it.</p></section>' : '';
   const imgs = l.images.map((id) => images.get(id)).filter(Boolean);
-  const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
+  const logo = !imgs.length && pagePortrait(l); // no picture of its own: the business's logo stays with it (Geoffrey, 2026-11-19)
+  const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : logo ? `<div class="mk-gallery mk-noimg mk-logotile"><img class="mk-pagelogo" src="${esc(logo)}" alt="${esc(l.page.name)} logo"></div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
   // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
   // a human maker with a verified payout account). Otherwise they stay greyed out and say why.
   let q = null; try { q = checkout.quote(l.id); } catch { q = null; }

@@ -410,6 +410,9 @@
 
 /* ===== Market v3: Aletheia-6's marketplace packet (PR #152), built 2026-11-15 ===== */
 .mv-page{--mv-cream:#f7f2e8;--mv-paper:#fffdfa;--mv-ink:#292534;--mv-muted:#6e6671;--mv-line:#ded5db;--mv-plum:#69488b;background:var(--mv-cream)}
+/* Text follows the page's theme. The mv-* colours above are for light pages; on a dark theme (Software, Music, Video,
+   and dark business pages) they made dark text on dark backgrounds (Geoffrey, 2026-11-19, the FireDamm listing). */
+.mk-page.mv-page{--mv-ink:var(--ink,#292534);--mv-muted:var(--muted,#6e6671);--mv-paper:var(--panel,#fffdfa);--mv-line:var(--line,#ded5db)}
 .mv-wrap{max-width:1300px;margin:0 auto;padding:20px 22px 90px;color:var(--mv-ink)}
 .mv-eyebrow,.mv-kicker{margin:0 0 8px;text-transform:uppercase;letter-spacing:.14em;font:800 11px system-ui,sans-serif;color:var(--mv-plum)}
 .mv-pills{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mv-line)}
@@ -658,7 +661,7 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-fd { margin: 28px 0 8px; padding: 16px 18px; border: 1px dashed #cdbfae; border-radius: 14px; }
 .mk-fd-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
 .mk-fd-list li { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
-.mk-fd-soon span:first-child { color: #6d6570; }
+.mk-fd-soon span:first-child { color: var(--muted); }
 .mk-fd-tag { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
 .mk-fd-tag.live { background: #e3f1e4; color: #285c2f; }
 .mk-fd-tag.soon { background: #f1ece4; color: #7d6542; }
@@ -954,3 +957,208 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-art,
  .mk-page[data-mk=home]:has(.mk-market-home) .mh-action{transition:none}
 }
+/* ---- Technology & Creation (Cohabi Maker Garden) ----
+   Approved art direction, Nov 19. Scope strictly to the software category.
+   Preserve server-side filters, app listings, category tags, and links. */
+.mk-page[data-mk=software]:has(.sw) {
+  --bg:#111522;--panel:#1f2030;--panel2:#262535;--line:#51465c;
+  --ink:#f8f4ee;--muted:#dbd2d4;--gold:#ffcb75;--gold-ink:#16151c;
+  --mv-ink:#f8f4ee;--mv-muted:#dbd2d4;--mv-paper:#1f2030;--mv-line:#51465c; /* rows below the cards (studios, FireDamm) */
+  background:linear-gradient(180deg,#111827,#1b1926 55%,#101621) fixed!important;
+  color:#f8f4ee;
+}
+.mk-page[data-mk=software]:has(.sw) .sw {
+  color:#f8f4ee;max-width:1440px;margin:auto;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+}
+.mk-page[data-mk=software]:has(.sw) .sw p{color:#ded3d5;line-height:1.55}
+.mk-page[data-mk=software]:has(.sw) .sw-kicker{color:#ffd28b!important;font-size:11px;letter-spacing:.19em;font-weight:800}
+.mk-page[data-mk=software]:has(.sw) .sw-hero{
+  position:relative;isolation:isolate;display:flex;align-items:center;
+  min-height:500px;padding:54px clamp(24px,5vw,72px) 68px;overflow:hidden;
+  border:1px solid #dcab7880;border-radius:22px;color:#fff;
+  background:#131a2b url("/images/img_e6d46cd47c505137") center 52%/cover no-repeat;
+  box-shadow:0 28px 70px #080d1890, inset 0 0 0 1px #ffffff13;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-hero:before{
+  content:"";position:absolute;inset:0;z-index:0;
+  background:linear-gradient(90deg,#0d1323e8 0%,#111424d2 21%,#181322aa 41%,#12172135 62%,#0b152020 100%),
+             linear-gradient(0deg,#131621a0 0%,transparent 28%,#080e161c 100%);
+  pointer-events:none;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-hero-content{position:relative;z-index:1;width:min(680px,80%);text-shadow:0 2px 16px #0008}
+.mk-page[data-mk=software]:has(.sw) .sw-hero h1{
+  margin:17px 0 18px;color:#fff;max-width:730px;
+  font:normal clamp(38px,4.55vw,70px)/1.035 Georgia,"Times New Roman",serif!important;
+  letter-spacing:-.024em;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-hero h1 span{color:#ffe8c1}
+.mk-page[data-mk=software]:has(.sw) .sw-hero .sw-hero-lead{
+  margin:0;max-width:530px;font-size:clamp(14px,1.15vw,17px);line-height:1.65;
+  color:#fff0e0!important;text-shadow:0 1px 9px #000b;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-acts{margin-top:25px!important;gap:12px}
+.mk-page[data-mk=software]:has(.sw) .sw-btn{
+  border-radius:99px;min-height:46px;padding:11px 19px;
+  transition:transform .15s ease,background .15s ease,box-shadow .15s ease;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-btn:hover,
+.mk-page[data-mk=software]:has(.sw) .sw-pill:hover,
+.mk-page[data-mk=software]:has(.sw) .sw-view:hover{transform:translateY(-2px)}
+.mk-page[data-mk=software]:has(.sw) .sw-btn:focus-visible,
+.mk-page[data-mk=software]:has(.sw) .sw-pill:focus-visible,
+.mk-page[data-mk=software]:has(.sw) .sw-view:focus-visible,
+.mk-page[data-mk=software]:has(.sw) .sw-hero-topics a:focus-visible,
+.mk-page[data-mk=software]:has(.sw) .sw-tools :focus-visible{outline:3px solid #79e3e5;outline-offset:3px}
+.mk-page[data-mk=software]:has(.sw) .sw-light{
+  background:linear-gradient(180deg,#ffe4a1,#f3ad4f);
+  color:#17151b!important;border-color:#f8c77c;box-shadow:0 6px 18px #e5a44d56;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-outline{
+  background:#121421a6;border-color:#eed4bdba;color:#fff!important;backdrop-filter:blur(10px);
+}
+.mk-page[data-mk=software]:has(.sw) .sw-dark{
+  background:linear-gradient(180deg,#ffdb97,#efa746);color:#17141b!important;
+  border:1px solid #ffdba8;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-hero-topics{display:flex;gap:8px;flex-wrap:wrap;margin-top:23px}
+.mk-page[data-mk=software]:has(.sw) .sw-hero-topics a{
+  min-height:38px;display:inline-flex;align-items:center;padding:8px 13px;
+  border:1px solid #ead8c88f;border-radius:99px;text-decoration:none!important;
+  background:#101521bf;color:#fff!important;backdrop-filter:blur(8px);
+  font-size:12px;font-weight:700;box-shadow:0 2px 14px #0b0e1990;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-hero-topics a:hover{background:#44343c}
+.mk-page[data-mk=software]:has(.sw) .sw-art-credit{
+  position:absolute;bottom:10px;right:16px;z-index:1;
+  font-size:10px;color:#f1e0ca;letter-spacing:.02em;text-shadow:0 1px 8px #000e;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;margin:-23px 16px 28px;position:relative;z-index:2;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-stats>div{
+  min-width:0;display:grid;align-content:start;grid-template-columns:34px 1fr;
+  column-gap:11px;row-gap:7px;padding:17px 15px;
+  border:1px solid #b99b8877;border-radius:18px;
+  background:linear-gradient(145deg,#352a38ed,#1c2030f0);
+  backdrop-filter:blur(16px);box-shadow:0 12px 30px #0005;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-stat-icon{
+  grid-row:span 2;display:grid;place-items:start center;
+  color:#ffcf7e;font-size:27px;line-height:1.1;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-stats b{font-size:14px;color:#fff;line-height:1.35}
+.mk-page[data-mk=software]:has(.sw) .sw-stats small{color:#e5d8d4;font-size:12px;line-height:1.55}
+.mk-page[data-mk=software]:has(.sw) #browse{padding:10px clamp(4px,2vw,26px) 0}
+.mk-page[data-mk=software]:has(.sw) .sw-head{margin:19px 0 18px}
+.mk-page[data-mk=software]:has(.sw) .sw-head h2{color:#fff;font-size:clamp(28px,3vw,40px)}
+.mk-page[data-mk=software]:has(.sw) .sw-head>p{color:#e6d5d4}
+.mk-page[data-mk=software]:has(.sw) .sw-tools{gap:10px;margin:16px 0}
+.mk-page[data-mk=software]:has(.sw) .sw-tools input,
+.mk-page[data-mk=software]:has(.sw) .sw-tools select{
+  background:#262536f5;color:#fff;border:1px solid #a89196a8;
+  border-radius:16px;min-height:48px;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-tools input::placeholder{color:#e1d5d2}
+.mk-page[data-mk=software]:has(.sw) .sw-pills{gap:9px;align-items:center}
+.mk-page[data-mk=software]:has(.sw) .sw-pill{
+  background:#262334;color:#f5eef0!important;border:1px solid #c3a99d8f;
+  border-radius:30px;min-height:43px;transition:transform .15s ease;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-pill.on{
+  background:linear-gradient(180deg,#ffdc95,#eda748);color:#1b1722!important;
+  border-color:#ffdca3;box-shadow:0 3px 14px #ffb8496b;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-layout{align-items:start;gap:18px}
+.mk-page[data-mk=software]:has(.sw) .sw-cards{gap:16px}
+.mk-page[data-mk=software]:has(.sw) .sw-card{
+  background:linear-gradient(160deg,#302c39,#211f30);border:1px solid #756473;
+  border-radius:18px;overflow:hidden;box-shadow:0 9px 28px #0005;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-card:hover{
+  transform:translateY(-4px);border-color:#e8b776;box-shadow:0 18px 32px #0008;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-thumb{
+  height:170px;border-bottom:1px solid #ffffff40;
+  background:radial-gradient(ellipse at 65% 10%,#f8c5857d,transparent 70%),
+             linear-gradient(135deg,color-mix(in srgb,var(--sw-c) 34%,#171627),#292336);
+}
+.mk-page[data-mk=software]:has(.sw) .sw-thumb img{padding:19px;filter:drop-shadow(0 6px 14px #0008)}
+.mk-page[data-mk=software]:has(.sw) .sw-shape{box-shadow:12px 11px 0 #ffffff25}
+.mk-page[data-mk=software]:has(.sw) .sw-cc{padding:17px 17px 18px;gap:7px}
+.mk-page[data-mk=software]:has(.sw) .sw-kind{color:#f5cb90!important;font-size:10px!important;letter-spacing:.085em}
+.mk-page[data-mk=software]:has(.sw) .sw-cc h3{font-size:18px;line-height:1.3}
+.mk-page[data-mk=software]:has(.sw) .sw-cc h3 a{color:#fff!important}
+.mk-page[data-mk=software]:has(.sw) .sw-by,
+.mk-page[data-mk=software]:has(.sw) .sw-txt{color:#d9cfd4!important;line-height:1.55}
+.mk-page[data-mk=software]:has(.sw) .sw-tag{
+  background:#403f49;color:#f9f3ee;line-height:1.4;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-open{background:#234942;color:#c7f3df}
+.mk-page[data-mk=software]:has(.sw) .sw-price{color:#ffdf9f}
+.mk-page[data-mk=software]:has(.sw) .sw-view{
+  border:1px solid #d8b998a8;background:#342d3b;
+  border-radius:99px;color:#fff!important;display:flex;
+  align-items:center;justify-content:center;gap:12px;
+  transition:transform .15s ease;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-side{
+  background:linear-gradient(160deg,#302b38,#202431);
+  border:1px solid #87727b;border-radius:18px;padding:22px;
+  box-shadow:0 12px 30px #0005;
+}
+.mk-page[data-mk=software]:has(.sw) .sw-side h3{color:#fff;font-size:17px}
+.mk-page[data-mk=software]:has(.sw) .sw-side p{color:#e1d5d4;font-size:13px}
+.mk-page[data-mk=software]:has(.sw) .sw-side .sw-btn{justify-content:center;text-align:center}
+.mk-page[data-mk=software]:has(.sw) .sw-empty,
+.mk-page[data-mk=software]:has(.sw) .sw-notice{color:#f2dfd4}
+.mk-page[data-mk=software]:has(.sw) .sw-empty a{color:#ffdc9a}
+@media(max-width:1050px){
+  .mk-page[data-mk=software]:has(.sw) .sw-hero{min-height:440px}
+  .mk-page[data-mk=software]:has(.sw) .sw-hero-content{width:min(630px,90%)}
+  .mk-page[data-mk=software]:has(.sw) .sw-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .mk-page[data-mk=software]:has(.sw) .sw-hero{
+    min-height:560px;align-items:flex-end;padding:38px 22px 51px;
+    background-position:61% top;background-size:auto 100%;
+  }
+  .mk-page[data-mk=software]:has(.sw) .sw-hero:before{
+    background:linear-gradient(0deg,#0e1224fa 0%,#101525e8 38%,#10152333 77%),
+               linear-gradient(90deg,#13182970,transparent);
+  }
+  .mk-page[data-mk=software]:has(.sw) .sw-hero-content{width:100%}
+  .mk-page[data-mk=software]:has(.sw) .sw-hero h1{font-size:clamp(34px,7vw,49px)}
+  .mk-page[data-mk=software]:has(.sw) .sw-art-credit{font-size:9px}
+  .mk-page[data-mk=software]:has(.sw) .sw-stats{margin:14px 0 25px}
+  .mk-page[data-mk=software]:has(.sw) .sw-layout{grid-template-columns:1fr}
+}
+@media(max-width:490px){
+  .mk-page[data-mk=software]:has(.sw) .sw-hero{min-height:610px}
+  .mk-page[data-mk=software]:has(.sw) .sw-hero-topics{gap:6px}
+  .mk-page[data-mk=software]:has(.sw) .sw-hero-topics a{font-size:11px;padding:7px 11px}
+  .mk-page[data-mk=software]:has(.sw) .sw-stats{grid-template-columns:1fr}
+  .mk-page[data-mk=software]:has(.sw) .sw-tools select{flex:1;min-width:130px}
+  .mk-page[data-mk=software]:has(.sw) .sw-cards{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .mk-page[data-mk=software]:has(.sw) .sw-card,
+  .mk-page[data-mk=software]:has(.sw) .sw-btn,
+  .mk-page[data-mk=software]:has(.sw) .sw-view,
+  .mk-page[data-mk=software]:has(.sw) .sw-pill{transition:none}
+}
+
+/* Business logos standing in for a listing's picture: whole logo, never cropped, on a dark black-to-blue tile so
+   white lettering in a logo (FireDamm's "damm") shows (Geoffrey, 2026-11-19). */
+.mv-art.has-img.is-logo, .mk-logotile, .mk-cover:has(> img.mk-pagelogo) { background-color: #0b0f1a; background-image: radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); }
+.mv-art.has-img.is-logo { background-image: var(--mv-img), radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); background-size: contain, cover, cover; background-origin: content-box, border-box, border-box; background-repeat: no-repeat; background-position: center; padding: 14px; box-sizing: border-box; }
+.mk-logotile { display: grid; place-items: center; padding: 10%; box-sizing: border-box; }
+.mk-logotile img.mk-pagelogo { width: 100%; height: 100%; object-fit: contain; }
+
+/* A page's logo goes wherever the page shows up: the business line on every card and listing page, the Studios row,
+   the page's own header. Always the whole logo, never cropped, on the same dark tile (Geoffrey, 2026-11-19). */
+.mk-provlogo, .mk-studioface:has(img), .mk-pageface:has(img) { background-color: #0b0f1a; background-image: radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); }
+.mk-studioface:has(img) img, .mk-pageface:has(img) img { object-fit: contain; padding: 8%; box-sizing: border-box; }
+.mk-provlogo { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; padding: 2px; box-sizing: border-box; vertical-align: -6px; margin-right: 6px; display: inline-block; }

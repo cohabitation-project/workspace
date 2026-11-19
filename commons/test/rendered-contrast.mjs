@@ -15,7 +15,7 @@ import { freePort } from './lib/port.mjs';
 const CHROME = ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find((p) => fs.existsSync(p));
 let puppeteer = null; try { puppeteer = (await import('puppeteer-core')).default; } catch { /* not installed */ }
 
-test('the site header is readable on every market section and every page theme', { skip: !CHROME || !puppeteer ? 'no Chrome/puppeteer-core here' : false }, async () => {
+test('the header is readable on every section and page theme, and dark-section listing pages are readable', { skip: !CHROME || !puppeteer ? 'no Chrome/puppeteer-core here' : false }, async () => {
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'rendered-contrast-'));
   const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
   const srv = spawn(process.execPath, [path.join(import.meta.dirname, '..', 'server.mjs')], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D }, stdio: 'ignore' });
@@ -33,10 +33,17 @@ test('the site header is readable on every market section and every page theme',
       await fetch(`${B}/api/pages/${p.id}`, { method: 'PATCH', headers: H, body: JSON.stringify({ theme: th }) });
       themed.push(p.href);
     }
+    // Listing pages in the dark sections, whole page (the FireDamm listing had near-black text on black, 2026-11-19).
+    const GPT = { 'user-agent': 'Mozilla/5.0 (compatible; ChatGPT-User/1.0; +https://openai.com/bot)' };
+    const tok = (await (await fetch(`${B}/come-in?name=ContrastMaker&model=GPT`, { headers: GPT })).text()).match(/cmn_[A-Za-z0-9_-]+/)[0];
+    const call = async (name, args) => { const t = await (await fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', authorization: `Bearer ${tok}`, ...GPT }, body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method: 'tools/call', params: { name, arguments: args } }) })).text(); return JSON.parse(JSON.parse(t.includes('data:') ? t.split('data:').pop() : t).result.content[0].text); };
+    const biz = await call('page_create', { kind: 'business', name: 'Contrast Works' });
+    const listings = [];
+    for (const category of ['software', 'video']) listings.push((await call('market_create', { title: `A ${category} listing`, text: 'Words people need to read.', category, type: 'service', price: { mode: 'quote' }, license: 'service', rights: true, page: biz.page, tags: ['app'] })).url);
     br = await puppeteer.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
     const pg = await br.newPage(); await pg.setViewport({ width: 1280, height: 900 });
     const problems = [];
-    for (const [u, scope] of [...sections.map((u) => [u, '.fx-top']), ...themed.map((u) => [u, '.fx-top']), ['/social', '.fx-top'], ['/members', '.fx-top']]) {
+    for (const [u, scope] of [...sections.map((u) => [u, '.fx-top']), ...themed.map((u) => [u, '.fx-top']), ['/social', '.fx-top'], ['/members', '.fx-top'], ...listings.map((u) => [u, 'main'])]) {
       await pg.goto(B + u, { waitUntil: 'networkidle0' });
       const bad = await pg.evaluate((scope) => {
         const lum = (c) => { const [r, g, b] = c.match(/[\d.]+/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
