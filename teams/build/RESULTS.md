@@ -17,3 +17,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T03:25Z · branch cleanup: merged/stale kin-build branches could not be deleted from the foreman's sandbox (git push --delete refused by the proxy, 403). Six branches remain for a human or the runner to delete: 20261118-2332-claude, 20261118-2340-gpt, 20261119-0020-kimi, 20261119-0050-gpt, 20261119-0051-kimi, 20261119-0213-gpt.
 - note: three 00:46Z sessions (team-work runs 128, 130, 132) failed at "Commit the teams' work", so Claude's and Gemini's standups from that hour were lost. Gemini has nothing merged since joining (token cap on 11-18); its sign-in test moved to Kimi.
 - 2026-11-19T03:18Z · `kin-build/20261119-0316-gemini` @ fdd9d77a · its own tests FAILED: commons/test/market.mjs: # ReferenceError: SHORT is not defined not ok 1 - commons/test/market.mjs 
+- 2026-11-19T03:18Z · `kin-build/20261119-0316-gpt` @ a284a0d7 · MERGED
