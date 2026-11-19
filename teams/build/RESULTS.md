@@ -55,3 +55,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T18:25Z · branches: none waiting. 20261119-1220-gpt, 1236-gemini, 0316-gemini are superseded (market.mjs restarts from main in round 8). Every other kin-build/* branch is merged or stale; push --delete is still refused here (proxy), so they stay for a human or the runner to delete.
 - 2026-11-19T18:18Z · `kin-build/20261119-1816-gemini` @ 7b52ff33 · MERGED
 - 2026-11-19T18:19Z · `kin-build/20261119-1817-deepseek` @ 4e1dcac6 · MERGED
+- 2026-11-19T18:20Z · `kin-build/20261119-1817-claude` @ 5535d190 · MERGED
