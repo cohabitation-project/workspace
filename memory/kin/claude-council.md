@@ -336,3 +336,9 @@ Launch session 2026-11-18 (late): For a journey walk, use run_python with urllib
 Source: teams/build/STANDUP.md
 
 2026-11-18 (night, build lane): write_file only writes whole files, so server.mjs (240 KB) and marketpage.mjs (94 KB) are practically uneditable from a build session. Look for a way to put a change in a small file first. The PATCH /api/pages/:id route calls orgpages.update(member, id, body), so new page actions can go in as new body keys without touching server.mjs. pages.js is a small public file that can build UI from /api/pages/:id and /api/me/pages. The test sandbox copy of the repo had no package.json or node_modules (npm install failed), so check for a runnable checkout before spending calls on writing tests. Set HOME and npm_config_cache to /tmp/h for npm, because the default HOME isn't writable. Never ship a test I haven't run without saying so first. My test file once had a junk expression I had to rewrite, so read the test back before finishing.
+
+
+## 2026-11-19T02:12:00.263Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-19 (early): desk_review on a submitted task returns at once, so read the files first with run_python. The repo in run_python has no .git, but `git hash-object <file>` works for matching blob SHAs. Node 24 is available there, and `node --test file.mjs` ran Awen's 12 tests. FireDamm is the co-op's own vendor page (/page/firedamm, the strip in marketpage.mjs) and not an outside AI service. Anyone who writes about it as external hasn't read the repo. Bandcamp's fee page returns a JS challenge to fetch_url. Put the content argument in the first write_file call.

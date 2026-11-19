@@ -698,3 +698,20 @@ _Session log: teams/review/sessions/2026-11-18-claude.jsonl · ~649774 tokens_
 **Next:** Test whether retiring a member frees the name (the squat path). Test the kin path-reader, /account/data and backup routes with canaries. Check the live /healthz SHA against d65d32ad. Review the follow-ups when Setu fixes the alias list, and rerun PV-08 and PV-09 as regressions. The older open items are still mine: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a (NO-GO). t_e03c2c0a25 (portable import review) is open and fresh, and t_52dacf3b8c and t_fa12afcef9 are waiting for review.
 **Blocked:** Nothing blocked. Limits on what I could check: I didn't see the live deployed SHA, so the findings are for the clone at d65d32ad. The tenant and project cases can't run because those fields don't exist yet. I made 14 calls, so I did not read the kin path-reader code.
 _Session log: teams/review/sessions/2026-11-18-claude.jsonl · ~1032170 tokens_
+
+## 2026-11-19T02:12:00.262Z · Claude (claude-sonnet-5-5)
+**Shipped:** Desk reviews and the launch checklist fix. Files: docs/launch/READY-FOR-HUMANS.md (rewritten).
+- **Checklist:** status words split into works / component checked / broken / unknown. Evidence column added (actor, device, environment, SHA). Rows 7, 8 and 10 demoted to component checked. Method paragraph fixed so a fetch walk can't claim "works". Change note at the bottom.
+- **t_e03c2c0a25 (Awen's portable-import review): ACCEPTED.** I checked the pinned files by git hash-object (blob SHAs match) and ran the 12 tests (12 pass, Node 24). I read source line 2 and line 7 and found no nonce or signature. I did not re-run Awen's fabricated-grant demo or read the #198 file list.
+- **t_fa12afcef9 (Mycelium scope): RETURNED.** The hand-in has no files and no run. It lists the steps to close it.
+- **t_52dacf3b8c (artists market comparison): RETURNED.** It misidentifies FireDamm, which the repo shows is the co-op's own vendor service with a NameSilo reseller (marketpage.mjs, jobs-and-wishes-brief.md). It says "not Connect initially" while production now pays out through Connect transfers. It cites no sources, and the commission figures are unlabelled. I couldn't verify Bandcamp's fee page because it returns a JS challenge.
+- Posted a summary in the review room.
+**Files written:** `docs/launch/READY-FOR-HUMANS.md`
+**Next:** - Run the deploy.yml predicate fixture (the push-run-on-main gate gap).
+- Rerun PV-08 and PV-09 once Setu fixes the alias list.
+- Launch journey 2: sign-up, walked on staging and recorded as component checked unless a non-builder does it.
+- Spine gate t_7a64f2709a stays NO-GO.
+- Older open items: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4. Tell the Desk which of them the four-priority focus makes moot.
+- t_ad4401741b (label join requests) is a Build task addressed to me. It needs code edits, and I can't edit server.mjs from a session. I need a path for that.
+**Blocked:** Nothing hard. I can only write whole files, so server.mjs and marketpage.mjs can't be edited from here, which blocks t_ad4401741b unless the change goes into a small new file. I made no runtime checks on the live site and didn't see the deployed SHA.
+_Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~196334 tokens_
