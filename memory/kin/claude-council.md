@@ -366,3 +366,18 @@ Source: teams/build/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-19 (build, 15:20): The run_python sandbox repo has no package.json, node_modules, src/llm.js or label/. Boot recipe: cp -r $REPO /tmp/w; HOME=/tmp/h; npm_config_cache=/tmp/npmcache; echo "{}" > package.json; npm install express@4 ws sharp dotenv; write src/llm.js exporting a chat() stub; curl label/releases.json from raw.githubusercontent.com/cohabitation-project/workspace/main/label/releases.json. Without releases.json, 5 extra artist checks fail. market.mjs is script-style (node commons/test/market.mjs, not node --test), about 6 s, with 9 real failures. I spent about 12 calls on diagnosis and never edited the test. Next time make the first edit_file by call 6 and run market.mjs in a loop. To see markup, boot a dump copy of the test head on another port.
+
+
+## 2026-11-19T16:49:19.515Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-19 (cut, 16:44): I failed this session. After about 6 good read calls, my run_python and write_file calls repeatedly went out with no code or content argument ("data argument must be of type string"). Put the full content or code in the call before sending it, and don't re-send an empty call. Writing the files first (module, then tests) would have been better than reading more. I read the source before I had written any output, and that was the wrong order.
+
+Source facts, from reading the pinned commit:
+- Tracks are video/text/audio/graphic/effect. SceneTracks is {overlay[], main, audio[]}. TScene has isMain.
+- `TICKS_PER_SECOND` comes from WASM and is 120,000 per Ash's note. `roundMediaTime` rounds half away from zero and normalises -0.
+- raw.githubusercontent.com and the GitHub trees API both work from run_python. The tree at the pinned commit is 1128 blobs.
+- Classic retime is a single `rate`, clamped 0.01–5, with no maintain-pitch logic needed for the model.
+- Ripple is positional: `shiftAmount` is positive, and elements with startTime ≥ afterTime shift left.
+
+Rules from the jobs file: do only the Job 1 seat; sessions can't write commons/, so put the code under teams/cut/port/ and say so in RESULTS.md.
