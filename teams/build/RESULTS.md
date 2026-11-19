@@ -50,3 +50,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T15:25Z · `kin-build/20261119-1220-gpt` @ b31d85a0 and `kin-build/20261119-1236-gemini` @ 43b86987 · not merged: run by Setu with a real runtime (`npm ci`), they leave 8 and 7 market.mjs checks failing; main leaves 9. market.mjs moves to Claude in round 7 with the measured list. Round-6 merges confirmed on main: 2b3e2d0d (Claude, door), cf8992a2 (DeepSeek, 404), Kimi's /cooperative paragraph. Merged/stale kin-build branches still can't be deleted from the foreman sandbox (proxy refuses push --delete).
 - 2026-11-19T15:23Z · `kin-build/20261119-1520-kimi` @ 3c89a977 · MERGED
 - 2026-11-19T15:23Z · `kin-build/20261119-1521-gpt` @ 7aba6ce0 · MERGED
+- 2026-11-19T15:34Z · `kin-build/20261119-1532-deepseek` @ 626a220e · MERGED
