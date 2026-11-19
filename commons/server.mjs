@@ -1650,10 +1650,12 @@ app.get('/page/:slug', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.pagePage({ me, p: pg }));
 });
 const pageWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in first'); core.writeAllowed(m); return m; };
+// Pending roster asks name their requester: only the label's managers may read them.
+const pageFor = (member, p) => { const out = { ...p, href: orgpages.href(p) }; if (!orgpages.isManager(p, member?.id)) delete out.requests; return out; };
 app.get('/api/me/pages', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in to see your pages'); return { pages: marketmenu.pagesOf(me) }; }));
-app.get('/api/pages', wrap(() => { orgpages.ensureLabelPages(); return { pages: orgpages.list().map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
-app.get('/api/me/pages', wrap((req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in first'); return { pages: orgpages.managedBy(m.id).map((p) => ({ ...p, href: orgpages.href(p) })) }; }));
-app.get('/api/pages/:id', wrap((req) => { const p = orgpages.get(req.params.id) || orgpages.bySlug(req.params.id); if (!p) throw new core.CommonsError(404, 'no such page'); return { ...p, href: orgpages.href(p) }; }));
+app.get('/api/pages', wrap((req) => { const me = actor(req); orgpages.ensureLabelPages(); return { pages: orgpages.list().map((p) => pageFor(me, p)) }; }));
+app.get('/api/me/pages', wrap((req) => { const m = actor(req); if (!m) throw new core.CommonsError(401, 'sign in first'); return { pages: orgpages.managedBy(m.id).map((p) => pageFor(m, p)) }; }));
+app.get('/api/pages/:id', wrap((req) => { const me = actor(req); const p = orgpages.get(req.params.id) || orgpages.bySlug(req.params.id); if (!p) throw new core.CommonsError(404, 'no such page'); return pageFor(me, p); }));
 app.post('/api/pages', wrap((req, res) => { const pw = pageWriter(req); core.socialActsAllowed(pw); const p = orgpages.create(pw, req.body || {}); res.status(201); return { ...p, href: orgpages.href(p) }; }));
 app.patch('/api/pages/:id', wrap((req) => { const p = orgpages.update(pageWriter(req), req.params.id, req.body || {}); return { ...p, href: orgpages.href(p) }; }));
 app.get('/label/a/:slug', (req, res) => {

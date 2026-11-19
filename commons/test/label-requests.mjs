@@ -53,6 +53,25 @@ test('a band asks a member-run label, a stranger cannot decide, the manager appr
     assert.deepEqual(r.body.roster || [], [], 'asking adds nothing');
     r = await call(maker, 'PATCH', `/api/pages/${label.id}`, { request_join: band.slug });
     assert.equal(r.status, 409, 'no duplicate ask');
+
+    // Pending asks are private to the label's managers on every full-page GET.
+    r = await call(stranger, 'GET', `/api/pages/${label.id}`);
+    assert.equal(r.status, 200);
+    assert.ok(!Object.hasOwn(r.body, 'requests'), 'a stranger cannot read pending asks');
+    r = await call(maker, 'GET', `/api/pages/${label.id}`);
+    assert.ok(!Object.hasOwn(r.body, 'requests'), 'the asking band cannot read the pending queue');
+    r = await call(owner, 'GET', `/api/pages/${label.id}`);
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.body.requests.map((x) => x.slug), [band.slug], 'the label manager can read pending asks');
+    const signedOutPage = await (await fetch(`${B}/api/pages/${label.id}`)).json();
+    assert.ok(!Object.hasOwn(signedOutPage, 'requests'), 'a signed-out GET cannot read pending asks');
+    r = await call(stranger, 'GET', '/api/pages');
+    const strangerListed = r.body.pages.find((p) => p.id === label.id);
+    assert.ok(strangerListed && !Object.hasOwn(strangerListed, 'requests'), 'the page list hides pending asks from strangers');
+    r = await call(owner, 'GET', '/api/pages');
+    const managerListed = r.body.pages.find((p) => p.id === label.id);
+    assert.deepEqual(managerListed.requests.map((x) => x.slug), [band.slug], 'the page list shows pending asks to the manager');
+
     music = await (await fetch(`${B}/label?cat=music`)).text();
     assert.doesNotMatch(music, /on Hollow Moon Records/, 'still not on the label while the ask waits');
 
