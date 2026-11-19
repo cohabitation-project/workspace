@@ -547,6 +547,23 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   return frame({ me, title: l.title, description: `${market.CATEGORIES[l.category]} on the Cohabi Market, by ${l.by.name}.`, section: l.category, center, scripts: ['/static/market.js'] });
 }
 
+// ------------------------------------------------------------------------------------------ my listings
+/** Every listing this member made, including work offered as one of their pages and listings no longer live. */
+export function myListingsPage({ me }) {
+  const items = market.list({ owner: me.id, status: 'all', limit: Number.MAX_SAFE_INTEGER });
+  const rows = items.map((l) => {
+    const status = l.test ? 'test' : l.status;
+    return `<div class="mk-shopitem" data-listing="${esc(l.id)}" data-status="${esc(status)}">${listingCard(l)}
+    <div class="mk-ownbar"><strong>Status: ${esc(status)}</strong> ${l.status === 'live' ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button>` : ''}</div></div>`;
+  }).join('');
+  const center = `<p class="crumbs small"><a href="/label">Market</a> / your listings</p>
+  <h1 class="mk-formh">Your listings</h1>
+  <p class="mk-lede">Everything you have listed, newest first, including work offered as one of your pages. Withdrawn listings stay in the record.</p>
+  <p><a class="btn" href="/label/new">Make a listing</a></p>
+  ${items.length ? `<div class="mk-grid">${rows}</div>` : '<p class="muted">No listings yet. <a href="/label/new">Make your first listing.</a></p>'}`;
+  return frame({ me, title: 'Your listings', description: 'Your Cohabi Market listings.', center, scripts: ['/static/market.js'] });
+}
+
 // ------------------------------------------------------------------------------------------ the form
 export function listingForm({ me, l = null, cat = null, asPage = null }) {
   const v = (k, d = '') => esc(l ? (l[k] ?? d) : d);

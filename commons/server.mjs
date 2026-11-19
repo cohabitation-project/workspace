@@ -1623,6 +1623,10 @@ app.post('/api/wishes/:id/decline', wrap((req) => wishes.decline(wishWriter(req)
 app.post('/api/wishes/:id/help', wrap((req, res) => { const m = wishWriter(req); res.status(201); return wishes.help(m, req.params.id, req.body || {}); }));
 app.post('/api/wishes/:id/close', wrap((req) => wishes.close(wishWriter(req), req.params.id, req.body || {})));
 app.get('/label', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.marketPage({ me: auth.memberFromCookie(req.headers.cookie), query: req.query })); });
+app.get('/label/mine', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/mine');
+  res.setHeader('Cache-Control', 'private, no-store'); res.type('html').send(marketpage.myListingsPage({ me }));
+});
 // Church Searcher's records, as data for his in-canvas pitch (public; same info as /label). (Geoffrey 2026-11-07)
 app.get('/api/label/artist/:slug', (req, res) => {
   let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = {}; }
