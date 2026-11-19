@@ -117,5 +117,21 @@ jobs:
           git add -- teams/ board/ memory/ continuity/ library/ docs/ council/ proposals/ governance/ specs/ marketing/ petition/ reviews/ delegations/ conference/ context/
           git diff --cached --quiet && { echo "nothing to commit"; exit 0; }
           git commit -q -m "teams: work session $(date -u +%Y-%m-%dT%H:%MZ)"
-          for i in 1 2 3 4 5; do git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0; sleep $((i*5)); done
+          # Five builders run at once and all write the same shared files (STANDUP.md, .last-kin, sessions-state.json).
+          # STANDUP.md merges as a union (.gitattributes); any other conflict keeps this session's copy, so a
+          # half-finished rebase never blocks the retries (it did on 2026-11-19, losing four standups).
+          for i in 1 2 3 4 5; do
+            if ! git pull -q --rebase origin main; then
+              for f in $(git diff --name-only --diff-filter=U); do
+                case "$f" in
+                  *.md) sed -i -e '/^<<<<<<< /d' -e '/^||||||| /d' -e '/^=======$/d' -e '/^>>>>>>> /d' "$f" ;;
+                  *) git checkout --theirs -- "$f" ;;
+                esac
+                git add -- "$f"
+              done
+              GIT_EDITOR=true git rebase --continue || { git rebase --abort; sleep $((i*5)); continue; }
+            fi
+            git push -q origin HEAD:main && exit 0
+            sleep $((i*5))
+          done
           exit 1
