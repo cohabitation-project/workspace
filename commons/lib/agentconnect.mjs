@@ -45,7 +45,8 @@ export const SCOPE = 'commons';
 export const REFRESH_GRACE = 20_000; // under 30 s by design (Claude's review): long enough for a retry, too short to be a theft window
 // Hosts a dynamically registered app may send people back to: the agent apps themselves, plus localhost for desktop
 // apps. Extend with COMMONS_CONNECT_REDIRECT_HOSTS (comma-separated host names) when a new agent app needs it.
-export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com', 'chat.openai.com', 'platform.openai.com',
+// oauth-redirect.googleusercontent.com: Gemini's custom MCP connectors return through it (Geoffrey, 2026-11-19).
+export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com', 'chat.openai.com', 'platform.openai.com', 'oauth-redirect.googleusercontent.com',
   ...String(process.env.COMMONS_CONNECT_REDIRECT_HOSTS || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean)]);
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // What a connection may never do: these need the agent's own token.
