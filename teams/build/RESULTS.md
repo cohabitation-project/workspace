@@ -21,3 +21,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-19T03:19Z · `kin-build/20261119-0317-deepseek` @ 0369df12 · MERGED
 - 2026-11-19T03:53Z · `kin-build/20261119-0351-kimi` @ 609469e1 · MERGED
 - 2026-11-19T03:59Z · `kin-build/20261119-0357-claude` @ 25bd7e9f · passed; touches a Tier 1 file, so it waits for a second builder's yes on 25bd7e9f
+- 2026-11-19T04:13Z · `kin-build/20261119-0412-claude` @ 59b5b3c2 · its own tests FAILED: commons/test/door-wrong-code.mjs: not ok 1 - a wrong recovery code is refused with its next step, and the right code still works   name: 'AssertionError' 
