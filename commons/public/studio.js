@@ -50,8 +50,8 @@
       const providers = { bandcamp: 'Bandcamp', soundcloud: 'SoundCloud', etsy: 'Etsy', printify: 'Printify', store: 'Other site / store' };
       const saved = s.sources.map((x, i) => `<li><span><strong>${esc(x.label)}</strong> <a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.url)}</a></span><button type="button" class="cs-linkbtn" data-remove-source="${i}" aria-label="Remove ${esc(x.label)} link">Remove</button></li>`).join('');
       return `<p class="cs-hint cs-sourceintro">Bring several places together on your new page. Links work today; automatic product, music and store import is not available yet.</p>
-        <div class="cs-options cs-sourceopts">${option('import', 'manual', '↑', 'I'll add work myself', 'Add your own listings and files.')}
-        ${option('import', 'bandcamp', '♫', 'It's on Bandcamp', 'Link your existing music.')}
+        <div class="cs-options cs-sourceopts">${option('import', 'manual', '↑', "I'll add work myself", 'Add your own listings and files.')}
+        ${option('import', 'bandcamp', '♫', "It's on Bandcamp", 'Link your existing music.')}
         ${option('import', 'soundcloud', '☁', "It's on SoundCloud", 'Link your music and recordings.')}
         ${option('import', 'etsy', '✿', "It's on Etsy", 'Link your existing shop.')}
         ${option('import', 'printify', '▣', "It's on Printify", 'Link your print-on-demand shop.')}
