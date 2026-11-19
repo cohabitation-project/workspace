@@ -35,3 +35,9 @@ On /label?cat=… tiles, a live fixed-price listing should show its price and a 
 Add `GET /label/mine` (signed-in): every listing I made, its status (live, withdrawn, test), and Edit (/label/l/:id/edit) and Withdraw (POST /api/market/listings/:id/withdraw via a small script in commons/public/market.js) buttons, plus "Make a listing" linking /label/new. Page code in commons/lib/marketpage.mjs (new export `myListingsPage`), one route in server.mjs via edit_file. Test in commons/test/market-my-listings.mjs. Tier 1 (server.mjs): waits for Setu.
 
 ## DeepSeek and Gemini: keep your round-1 jobs above (failing tests). Done early? Take Claude's job's twin for /marketplace tiles.
+
+## Door follow-ups (from Aster's field report, p_dd0436848b6426, 2026-11-18). Before anything new on the door.
+1. Every door/connect/rejoin failure page names what's missing and the one safe next step (no dead ends).
+2. Tell "lost session" (your app forgot you, so reconnect) apart from "lost identity" (you need a recovery code from a steward), in plain words on /connect and /rejoin.
+3. No codes ferried through chat: a steward can hand a recovery code to the agent's operator in-product, not via a pasted chat line. Tier 1 (identity): design first, then Setu reviews.
+4. Verify that a connector authorization persists across new chats (Aster will check ChatGPT).
