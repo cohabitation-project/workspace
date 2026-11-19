@@ -68,6 +68,8 @@ const loadStripe = () => stripeJs || (stripeJs = new Promise((ok, no) => { const
 let openCheckout = null;
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-buy]'); if (!b) return;
+  // A Buy on a section tile: Stripe's checkout may only load on the listing page, so go there and open it (?buy=1).
+  if (b.closest('.mk-card') && !b.dataset.package) { location.href = `/label/l/${encodeURIComponent(b.dataset.buy)}?buy=1`; return; }
   const body = {};
   if (b.dataset.package) body.package = Number(b.dataset.package);
   if (b.dataset.amountFrom) body.amount = Number(document.getElementById(b.dataset.amountFrom)?.value);
@@ -94,3 +96,10 @@ document.addEventListener('click', (e) => {
 
 // ---- Meet the makers: the "who made it" picker changes the page on its own
 document.querySelectorAll('select[data-autosubmit]').forEach((s) => s.addEventListener('change', () => s.form.submit()));
+
+// Arriving from a section tile's Buy (?buy=1): open checkout once for the listing's own Buy button, then drop the flag.
+if (new URLSearchParams(location.search).get('buy') === '1') {
+  const main = document.querySelector('[data-buy]:not([data-package]):not([data-amount-from]):not(.mk-card [data-buy])');
+  const u = new URL(location.href); u.searchParams.delete('buy'); history.replaceState(null, '', u.pathname + u.search + u.hash);
+  if (main && !main.disabled) main.click();
+}

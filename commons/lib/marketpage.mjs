@@ -97,12 +97,25 @@ function cover(l) {
   return im ? `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}" loading="lazy">` : `<span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span>`;
 }
 const madeBy = (l) => (l.made_by === 'human' ? '' : `<span class="mk-made">${l.made_by === 'hybrid' ? 'human + AI' : 'AI-made'}</span>`);
-export function listingCard(l) {
+// Buy on a section tile (2026-11-19). Only a live fixed-price listing gets one; the maker sees "Yours". It reuses the
+// listing page's data-buy hook; market.js sends a tile's click to the listing page (?buy=1), because only that page's
+// policy lets Stripe's checkout load. `buy` is opt-in: `.map(listingCard)` passes an index as the 2nd argument.
+function tileBuy(l, me) {
+  if (!l.price || l.price.mode !== 'fixed' || l.status !== 'live') return '';
+  if (me && me.id === l.by.id) return '<p class="mk-buy small"><span class="mk-yours">Yours</span></p>';
+  let q = null; try { q = checkout.quote(l.id); } catch { return ''; }
+  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
+  if (!live) return '';
+  if (!me) return `<p class="mk-buy"><a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in to buy · $${l.price.amount}</a></p>`;
+  return `<p class="mk-buy"><button type="button" class="btn small" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button></p>`;
+}
+export function listingCard(l, opts = {}) {
+  const buy = opts && opts.buy ? tileBuy(l, opts.me || null) : '';
   return `<article class="mk-card"><a class="mk-cover" href="/label/l/${esc(l.id)}">${cover(l)}</a>
   <div class="mk-body"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
   <h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3>
   <p class="mk-price">${esc(market.priceLine(l.price, l.packages))}</p>
-  ${providerLine(l)}</div></article>`;
+  ${providerLine(l)}${buy}</div></article>`;
 }
 const howItWorks = () => `<details class="mk-how"><summary>How the market works</summary><ul class="small">
   <li><strong>No money moves yet.</strong> Payments open soon; free downloads work now.</li>
@@ -463,8 +476,8 @@ export function marketPage({ me, query = {} }) {
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
   ${arts.length ? `<h2 class="mk-h">Labels and Musicians</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
-  ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
-  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center: center + (cat && !q ? firedammStrip(cat) : '') });
+  ${items.length ? `<div class="mk-grid">${items.map((l) => listingCard(l, { buy: true, me })).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
+  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center: center + (cat && !q ? firedammStrip(cat) : ''), scripts: ['/static/market.js'] });
 }
 
 // ------------------------------------------------------------------------------------------ an artist's folder
