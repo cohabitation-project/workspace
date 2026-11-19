@@ -20,9 +20,9 @@ import * as profilekinds from './profilekinds.mjs';
 
 // A record label is a page too (Geoffrey, 2026-11-07): it gathers band pages, like a label page on Bandcamp. Starting a
 // label will cost money one day (pricing to be decided, competitively); during the beta it is free.
-export const KINDS = { band: 'Band / musician', artist: 'Artist / maker', business: 'Business / services', label: 'Record label' };
+export const KINDS = { band: 'Band / musician', label: 'Record label', artist: 'Artist / maker', software: 'Software / app developer', writing: 'Writer / publisher', business: 'Business / services' };
 export const THEMES = { navy: 'Navy and gold', midnight: 'Midnight and ember', music: 'Dark, like a listening app', art: 'Gallery white', video: 'Cinema', software: 'Terminal', services: 'Clean studio', classifieds: 'Newsprint', home: 'Cream' };
-const DEFAULT_THEME = { band: 'music', artist: 'art', business: 'services', label: 'music' };
+const DEFAULT_THEME = { band: 'music', label: 'music', artist: 'art', software: 'software', writing: 'home', business: 'services' };
 const ACCENT_RX = /^#[0-9a-f]{6}$/i;
 const MAX_REQUESTS = 20; // pending asks on one label at a time, so a label's page can't be flooded
 
