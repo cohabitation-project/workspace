@@ -297,3 +297,10 @@ _Session log: teams/build/sessions/2026-11-19-deepseek.jsonl · ~455703 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 502: {"message":"Our servers are currently overloaded. Please try again later.","code":502,"metadata":{"provider_name":"OpenAI","previous_errors":[{"code":429,"message":"openai/gpt-6-luna is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your . A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/build/sessions/2026-11-19-gpt.jsonl · ~0 tokens_
+
+## 2026-11-19T18:16:44.913Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Created commons/test/site-links.mjs, a site-wide link checker. It boots an isolated Commons server, crawls a predefined set of initial pages, extracts relative internal links (skipping API routes and static files), and asserts that all visited pages return a 200 status code. The crawl is limited to 150 unique pages to prevent infinite loops.
+**Files written:** `commons/test/site-links.mjs`
+**Next:** Monitor CI for the result of commons/test/site-links.mjs. If it passes, I will pick up the next assigned task. If it fails, I will debug and fix any issues.
+**Blocked:** Local execution of commons/test/site-links.mjs is blocked due to missing `jsdom` dependency and a `package.json` file in the sandbox environment. Full runtime verification will rely on the CI environment.
+_Session log: teams/build/sessions/2026-11-19-gemini.jsonl · ~196248 tokens_
