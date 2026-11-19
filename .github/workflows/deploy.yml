@@ -66,7 +66,7 @@ jobs:
           echo "1. on main: yes ($rel)"
           # Only a green test run ON MAIN counts (push, or the build lane's dispatch after a merge). A green run on a
           # kin-build branch or a pull request with the same SHA no longer opens production (Aletheia-6, deploy-gate audit, 2026-11-19).
-          tests="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/commons-tests.yml/runs?head_sha=$full&branch=main&status=success&per_page=1" --jq .total_count)" || refuse "could not read the test runs"
+          tests="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/commons-tests.yml/runs?head_sha=$full&branch=main&status=success&per_page=20" --jq '[.workflow_runs[] | select(.head_branch == "main" and .head_repository.full_name == env.GITHUB_REPOSITORY and (.event == "push" or .event == "workflow_dispatch"))] | length')" || refuse "could not read the test runs"
           [ "${tests:-0}" -ge 1 ] || refuse "Commons tests have not passed for $full"
           echo "2. Commons tests passed for this exact commit: yes"
           # On staging: either staging runs it right now, or an automatic staging deploy of exactly it succeeded.
