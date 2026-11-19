@@ -8,6 +8,23 @@ if (dlg) {
   for (const id of ['#pg-cancel', '#pg-cancel2']) $(id)?.addEventListener('click', () => dlg.close());
   const showKind = () => { const on = new Set(KIND_FIELDS[kind?.value] || []); for (const el of form.querySelectorAll('.pf-kf')) el.hidden = !on.has(el.dataset.kf); };
   kind?.addEventListener('change', showKind); showKind();
+  // Upload a picture straight from the page editor (Geoffrey, 2026-11-19: "I can't edit the logo from the page").
+  // The new image is uploaded as yours, added to the list, and selected; Save puts it on the page.
+  for (const input of form.querySelectorAll('[data-pg-upload]')) input.addEventListener('change', async () => {
+    const file = input.files && input.files[0]; if (!file) return;
+    const sel = form.querySelector(`select[name="${input.dataset.pgUpload}"]`); const name = (form.querySelector('[name="name"]')?.value || document.title.split(' · ')[0] || 'this page').trim();
+    if (file.size > 20 * 1024 * 1024) { msg.textContent = 'That picture is over 20 MB.'; return; }
+    msg.textContent = 'Uploading…';
+    try {
+      const data = await new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => bad(new Error('could not read the file')); r.readAsDataURL(file); });
+      const alt = `${name} ${input.dataset.pgUpload === 'banner' ? 'banner' : 'logo'}`;
+      const r = await fetch('/api/images', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ data, alt, title: alt, made_by: 'human' }) });
+      const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+      const o = document.createElement('option'); o.value = j.id; o.textContent = alt; sel.prepend(o); sel.value = j.id;
+      msg.textContent = 'Uploaded. Press Save to put it on the page.';
+    } catch (err) { msg.textContent = `Upload failed: ${err.message}`; }
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form); const k = kind?.value;
