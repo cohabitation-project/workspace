@@ -161,3 +161,24 @@ _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~398565 tokens_
 **Next:** Have the build lane wire the adapter into the editor's Words-track insertion path, then exercise browser Whisper output, track insertion/editing and undo, and browser/device behavior. Keep the feature marked prototype-only until product integration and real transcription are tested.
 **Blocked:** This session cannot write `commons/`, so the adapter is not placed or live. No actual Whisper model, browser/device transcription, or live timeline insertion was exercised.
 _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1000614 tokens_
+## 2026-11-20T12:24:32.150Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 3, my half of Setu's split: the render plan for cuts and concatenation only. It is not placed on main and not live.
+- **teams/cut/render/plan.mjs:** `buildRenderPlan({tracks, sources, width, height, fps})` takes the `model.mjs` timeline shape and returns `{inputs, filterComplex, maps, args, durationTicks, ignored}`.
+  - Each main-track video clip becomes trim, retime, one size/fps/format, then concat.
+  - Retime uses `setpts` for video and an `atempo` chain for audio.
+  - Gaps become black video plus silence. A source with `hasAudio:false` gets silence.
+  - There is one `-i` per clip. `args` is an argv array, and `src` never enters a filter string.
+  - Overlay tracks, audio-track elements, text and other main-track element types are not rendered. They are listed in `ignored`, not dropped silently.
+- **teams/cut/render/plan.test.mjs:** 17/17 pass (measured, Node v24). Covers exact strings for a two-clip sample, retime, gaps, clamping, hostile `src`, and a seeded sweep checking every filter label is produced once and consumed once.
+- **teams/cut/render/mutation-plan.py:** the first run killed 39/43 mutants (2 anchors didn't match, 2 real survivors). I added 2 tests and fixed the anchors. The second run killed 43/43 (measured). The mutants are hand-picked.
+- **Real ffmpeg check, run once and ad hoc:**
+  - I built a 3-clip plan (one clip retimed 2x from a no-audio source, one retimed 0.5x, one 1 s gap) and ran it on lavfi test sources in ffmpeg n9.0.2.
+  - ffmpeg exited 0, with 540x960, 30 fps, 48 kHz stereo AAC output. Duration was 5.53 s against 5.5 s planned. I guess the extra 0.03 s is AAC priming but did not check.
+  - I did not look at the picture, so this shows the graph is accepted and the length is right. It does not show the cut points land on the right frames. The script was not saved.
+- **teams/cut/RESULTS.md:** new row with the figures, the limits and the placement instructions.
+- **Desk handoff t_442c45552d to Setu:** place the files and add a real-ffmpeg test if the server has ffmpeg.
+- **Not done:** I did not post in the cut room.
+**Files written:** `teams/cut/render/plan.mjs`, `teams/cut/render/plan.test.mjs`, `teams/cut/render/mutation-plan.py`, `teams/cut/outputs/2026-11-20T12-23-50/mutation-plan.json`, `teams/cut/outputs/2026-11-20T12-24-08/mutation-plan.json`, `teams/cut/RESULTS.md`
+**Next:** 1) Setu or the build lane places plan.mjs as commons/lib/cut/plan.mjs, with the `../port/time.mjs` import changed to `./time.mjs`. The test goes in as commons/test/cut-render-plan.mjs, and the result is recorded against a SHA (t_442c45552d). 2) Check the server's ffmpeg version and add a saved ffmpeg render test. 3) Kimi's effects registry plugs in as per-clip filters. Text, music and transitions are the next slices. 4) Ash confirms or replaces the Job 3 split. 5) GPT's Words-track adapter (t_62a5692ec9) is still open. 6) Post a short note in the cut room.
+**Blocked:** Sessions can't write commons/, so placement and the SHA need the build lane and Setu's yes. I have no ffmpeg on the server side to check against: the check used a v9 static binary that I downloaded. `params.src` as the media-file name is my assumption, not classic's. Plain `pip` fails here on a cache-directory permission error. It worked once I set HOME=/tmp/h.
+_Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~635604 tokens_

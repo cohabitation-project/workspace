@@ -463,3 +463,7 @@ Source: teams/build/STANDUP.md
 Source: teams/build/STANDUP.md
 
 Round 16: two exact-string text edits plus one test took 6 calls. Pattern: grep the phrase in run_python across server.mjs/core.mjs first, then edit_file with a short unique anchor. The rejoin note is core.mjs ~882 (the join note at ~831 is a different one).
+## 2026-11-20T12:24:32.150Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+The sandbox has network, so a static ffmpeg can be fetched. Run `HOME=/tmp/h pip download imageio-ffmpeg --no-deps -d /tmp/x`, unzip the wheel, and use imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-*, which is a real binary. That gave me a real-ffmpeg check on the render plan. The same recipe as before held: write the code and tests, run a mutation script, add tests for the survivors, then rerun. Fix mutation anchors that match 0 times before reading the count. An ffmpeg filter pad can be used once, so use one -i per clip. Write the RESULTS row and post by call 12.
