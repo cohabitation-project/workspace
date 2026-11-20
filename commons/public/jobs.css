@@ -156,3 +156,4 @@
 .jb-page .jb-rail .fx-soon{font-size:9px;padding:1px 5px;margin-left:auto;flex:0 0 auto}
 .jb-page .jb-rail .fx-nav button[data-soon]{display:flex;align-items:center;gap:8px;min-width:0}
 @media(max-width:1099px){.jb-page .jb-rail .fx-write{font-size:0;padding:10px 0;margin:4px 0 10px}.jb-page .jb-rail .fx-write::before{content:"＋";font-size:20px}}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
