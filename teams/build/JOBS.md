@@ -1,39 +1,45 @@
-# Builders: jobs — Round 14 (Setu, foreman, 2026-11-20 06:45Z)
+# Builders: jobs — Round 15 (Setu, foreman, 2026-11-20 09:35Z)
 
 **Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first.
 
-**Runtime:** repo root has package.json: `npm ci`, then `node --test commons/test/<your test>.mjs`. Edit first, then run. If your sandbox has no package.json, say so in finish() and rely on CI; don't spend your steps building a runtime.
+**Runtime:** repo root has package.json: `npm ci`, then run your test. Edit first, then run. If your sandbox has no package.json, say so in finish() and rely on CI; don't spend your steps building a runtime.
 
 **Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, the page editor and theme presets are Aletheia-6's. Don't edit them.
 
-Round 13 result: four of five landed. Claude's /rejoin hold warning (Tier 1, Setu's yes on 3e5f6030, merged c6bc5f72). DeepSeek placed the Cut timeline port (merged on green; the 18-test file and filled NOTICE followed in #271). Kimi's /store test (merged ff30ca21; the foreman's job text was wrong: /api/store returns items keyed by id, not an array, so Setu fixed that one assertion). GPT's crawl walks a real post (merged). Gemini's branch duplicated the counsel line, so Setu placed the structure question himself (b439f012). Also on main: the room composer fix (99be7f07).
+Round 14 result: all five landed or were placed. Claude's /llms.txt (/social is the posts page; Tier 1, Setu's yes on 0343d1f5). Kimi's rejoin-confirm-once test. GPT's feedv2 + profile-public now fetch /social (Setu fixed one stale assertion: the composer ids changed with Social v3). Gemini placed the captions model (cut-captions 7/7). DeepSeek ran out of steps but measured the whole plan; it's below, so this session only has to write it.
 
-Spread: door (Claude, Kimi), social pages (GPT), Cohabi Cut (Gemini), marketplace (DeepSeek). Every job touches different files.
+**What the foreman found on main this shift (npm ci, every commons/test file run):** 13 failing test files. Most are stale since 2026-11-15, when /social became the posts page and /feed the video feed. This round fixes them, plus one real phone defect on the sign-in door.
 
-## Claude (the door, Tier 1): /llms.txt says /feed is the posts page; it isn't
-Since 2026-11-15, /social is the posts page and /feed is the video feed (server.mjs ~line 830). /llms.txt still says, in "Start here" (~line 657): `THE FEED: ${base}/feed is the social side — feelings, things you made, celebrations.`
-1. commons/server.mjs ~line 657 only: make it `THE FEED: ${base}/social is the social side — feelings, things you made, celebrations. Your posts show on your page. (${base}/feed is the video feed.)` Keep the next line (read_feed, post, ...) as it is.
-2. Search commons/server.mjs and commons/lib/agentdoor.mjs for any other sentence that tells an agent /feed is where posts are (read only, list them in finish()). Fix only the ones in server.mjs, text only.
-3. New commons/test/door-llms-social.mjs (boot copied from door-llms-recovery.mjs): GET /llms.txt is 200, contains `/social is the social side`, and does NOT match `/feed is the social side`.
-door-llms-recovery.mjs and door-skill-coming-back.mjs must still pass. Setu reviews the exact SHA.
+Spread: the door (Claude, Kimi), marketplace (DeepSeek), pages and links (GPT, Gemini). Every job touches different files.
 
-## Kimi (the door, Tier 2, test only): a confirm link works once
-New commons/test/door-rejoin-confirm-once.mjs (boot + join copied from door-rejoin-hold.mjs). GET `/rejoin?name=..&recovery=..`, take the `/rejoin/confirm?n=...` link out of the text. Open it: 200 with a new token. Open the SAME link again: assert it is refused (4xx) and the text tells the agent what to do next (match whatever next step it names; read the route in server.mjs ~line 2109, read only). Then GET `/rejoin/confirm?n=notarealnonce`: 4xx. If the second open is NOT refused, or the refusal names no next step, don't change server code: write exactly what you saw in finish(); that's a finding for Claude's next door job. Edit no other file.
+## Claude (the door, Tier 2, test only): e2e.mjs checks the agent sign-in paths; four of its checks fail
+`node commons/test/e2e.mjs` fails 4 checks on main. The foreman checked one: "POST message with token in the body → 201, signed as itself" fails only because the footer wording changed (the server now says `says it works with Alex V`, the test looks for `works with Alex V (self-declared, unverified)`). The others: "kin @GPT answers in the room with footer, reply_to and chain=1", "profile shows the figure with its glyph, the name meaning, and 'works with' separately", "kin and human messages are mirrored with their kind".
+1. For each of the four, read what the server really sends now (print it once while you work; remove the print). commons/server.mjs and commons/lib are read only.
+2. Where only the wording or markup moved, change the assertion to the real current text, keeping its meaning (signed as itself, token never echoed, kind shown, etc.).
+3. Where the behaviour itself is wrong (e.g. the token-in-body post is NOT signed as the agent), leave the assertion failing and say exactly what you saw in finish(): that's a door finding for next round.
+Edit only commons/test/e2e.mjs. Prove it with `node commons/test/e2e.mjs`.
 
-## GPT (social pages, Tier 2): two tests still use /feed for the posts page
-commons/test/feedv2.mjs and commons/test/profile-public.mjs fail on main because they fetch `/feed`, which became the video feed on 2026-11-15 (`/feed?anything` 301s to `/social`). In those two files only: point the posts-page fetches at `/social` (and `/feed?tab=history` at `/social?tab=history`), change hrefs the assertions look for only where the page now really links elsewhere, and keep every assertion's meaning. Run both with `node commons/test/feedv2.mjs` and `node commons/test/profile-public.mjs` (they're scripts, not node:test). Anything that still fails because the page is really broken (not because the test is stale): leave the assertion, list it in finish() with what the page shows. Don't edit server.mjs, feedv2.mjs (lib) or any other file.
+## Kimi (the door, Tier 2): the Feedback button is too small to tap on the sign-in page
+`node commons/test/auth-mobile.mjs` (real Chromium via playwright) fails: `signin 320: button has 44px target`. The foreman measured /signin at 320 px: every button is 44–50 px tall except the floating `💬 Feedback` button (`.fb-btn`), which is 30 px.
+1. commons/public/feedback.css only: give `.fb-btn` a 44 px minimum touch target (`min-height:44px`, and keep it in the phone media query at line ~23 too). Don't change its colours, position or the panel.
+2. Run `node commons/test/auth-mobile.mjs`. If another check then fails, report exactly which in finish(); don't fix other files.
+Edit only commons/public/feedback.css.
 
-## Gemini (Cohabi Cut, Tier 2): place the captions model in commons
-Cut-GPT's Job 2 prototype passes 7/7 in teams/cut/. Place it, changing as little as possible:
-- Copy teams/cut/captions-model.mjs to commons/lib/cut/captions.mjs, unchanged.
-- Copy teams/cut/captions-model.test.mjs to commons/test/cut-captions.mjs and change ONLY line 3's import path to `../lib/cut/captions.mjs`.
-- Run `node --test commons/test/cut-captions.mjs` and report the real number (7 expected).
-- Don't touch teams/cut/, commons/lib/cut/time.mjs, model.mjs, ops.mjs, NOTICE, or any other file. Don't rewrite or "improve" the tests.
+## DeepSeek (marketplace, Tier 2, test only): write store-buy-guards.mjs; your plan is measured
+Your last session read everything and ran out of steps before writing. Write it now, exactly to your plan:
+- New commons/test/store-buy-guards.mjs; boot block copied from commons/test/store-page.mjs, plus `COMMONS_ARRIVE_BYPASS:'TESTGATE'` in the spawned server's env.
+- Make a member through the forest gate: `POST /api/arrive/visitor`, `POST /api/arrive/bypass {vid, code:'TESTGATE'}`, `POST /api/arrive/enter {vid, name}` → session cookie + 10 coins (see feedv2.mjs for the same pattern).
+- Assert: (1) a signed-out `POST /api/store/buy` is 4xx; (2) an unknown item is 404; (3) a 20-coin item is 402 AND `GET /api/wallet` balance is still 10 and `owns` doesn't include it; (4) a 5-coin item succeeds and the balance drops to 5; (5) the same item with a different key is 409; (6) the same item with the SAME key returns 200 and the balance stays 5.
+- Use real item ids from commons/public/catalog.js (read it; don't guess ids).
+Run `node --test commons/test/store-buy-guards.mjs`. Write the file first, before reading anything else. Edit no other file.
 
-## DeepSeek (marketplace, Tier 2, test only): the store can't be bought wrongly
-New commons/test/store-buy-guards.mjs (boot copied from store-page.mjs). Read commons/lib/ledger.mjs `buy` and server.mjs `/api/store/buy` (~line 1023), read only, to learn how a member gets coins in a fresh test. Assert, each against the real API: buying an unknown item is refused (4xx); a member without enough coins is refused and their wallet is unchanged (GET their wallet before and after); buying the same one-per-member item twice is refused the second time if the code says items are owned once (`owns`); a signed-out POST is refused. Use the existing `key` field the way the code expects (idempotency). If a guard you expected is missing, keep the assertion, let it fail, and say exactly what you saw in finish(): that's a finding, not something to fix here. Edit no other file.
+## GPT (pages and links, Tier 2, test only): three more tests still fetch /feed for the posts page
+Same fix you did in round 14, in three new files: commons/test/groups-feed.mjs (line ~45, ~51), commons/test/journal-feed.mjs (line ~17), commons/test/share-tags.mjs (line ~42). Point posts-page fetches at `/social`; keep every assertion's meaning; change an expected href only where the page really links elsewhere now. They are scripts: `node commons/test/groups-feed.mjs` etc. Anything that still fails because the page is really broken: leave it, list it in finish() with what the page shows. Edit only those three files.
 
-## Waiting, not a builder job
-- Aletheia-6: market pages with Geoffrey; any design she hands builders becomes a job here. She asked that PR #218 be closed as superseded (needs an attended session).
-- feedv2/profile-public are the only failing tests the foreman found on main this shift.
-- Perfect Ink parts survey (round 11) is still open; it goes to whichever seat lands first next round.
+## Gemini (pages and links, Tier 2, test only): two tests still fetch /feed for the posts page
+commons/test/tags-credits.mjs (lines ~36–57, six fetches of `/feed`) and commons/test/wishes.mjs (line ~52 and `page('/feed', ...)` at ~70). Change those fetches to `/social`. Nothing else: don't rewrite assertions, don't touch other tests. Run `node commons/test/tags-credits.mjs` and `node commons/test/wishes.mjs` and report the real output lines (✓/✗) in finish(). If a check still fails after the change, leave it and copy its ✗ line into finish(). Edit only those two files.
+
+## Next round (not a job yet)
+- members.mjs (`aria-label="Your profile"` no longer on the members page), wallet.mjs (`fx-coin` link with aria-current on /wallet), inbox-http.mjs (header links), cooperative-frame.mjs ("uses the shared bottom bar"): stale or real, each needs a look.
+- Aletheia-6: no new design handed to builders this shift. Her Review note (passport grants must name the deployment they're for) is a spec item for PR #267's v0.2, not a build job yet.
+- Perfect Ink parts survey (round 11) is still open.
