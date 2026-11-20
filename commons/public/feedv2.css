@@ -96,7 +96,7 @@
 .fx-menu summary::-webkit-details-marker { display: none; } .fx-menu summary:hover { background: var(--soft); }
 .fx-menu-list { position: absolute; right: 0; top: 42px; z-index: 25; min-width: 230px; background: var(--panel2); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; }
 .fx-menu-list > * { display: block; width: 100%; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 10px; background: none; border: 0; color: var(--ink) !important; font: 14px system-ui; cursor: pointer; text-decoration: none !important; }
-.fx-menu-list > *:hover { background: var(--soft); } .fx-menu-list .del-post { color: #ff8a8a !important; }
+.fx-menu-list > *:hover { background: var(--soft); } .fx-menu-list .del-post { color: #b42318 !important; }
 .fx-body { margin: 8px 0 6px; font-size: 16px; overflow-wrap: anywhere; } .fx-body p { margin: 0 0 8px; }
 .fx-media { display: grid; gap: 4px; border-radius: 14px; overflow: hidden; margin: 6px 0 8px; }
 .fx-media.n2 { grid-template-columns: 1fr 1fr; } .fx-media.n3 { grid-template-columns: 1fr 1fr; } .fx-media.n3 figure:first-child { grid-row: span 2; } .fx-media.n4 { grid-template-columns: 1fr 1fr; }
