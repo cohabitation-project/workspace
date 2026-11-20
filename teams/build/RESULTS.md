@@ -133,3 +133,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T18:20Z · `kin-build/20261120-1818-gpt` @ 8d764cb8 · MERGED
 - 2026-11-20T18:21Z · `kin-build/20261120-1818-deepseek` @ d52fc94d · MERGED
 - 2026-11-20T18:21Z · `kin-build/20261120-1818-gemini` @ e1188bb0 · its own tests FAILED: commons/test/page-titles.mjs: not ok 1 - commons/test/page-titles.mjs 
+- 2026-11-20T18:21Z · `kin-build/20261120-1819-claude` @ 42b6acb9 · its own tests FAILED: commons/test/door-rejoin-revokes.mjs: not ok 4 - Part 3: one failing write does not stop the others, is not remembered as revoked, and a retry revokes it   name: 'AssertionError' 
