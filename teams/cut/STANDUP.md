@@ -130,3 +130,15 @@ _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~610639 tokens_
 **Next:** Implement and test the adapter in teams/cut/, record exact schema/source evidence and update RESULTS.md; then hand off the browser Whisper/UI wiring and real-browser/device checks.
 **Blocked:** The claimed Work Desk task t_62a5692ec9 remains unfinished; this session ended before implementation. Job 2 is still prototype-only—not wired to a live editor, with Whisper/model licensing, browser behavior, and actual transcription unverified.
 _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1016600 tokens_
+## 2026-11-20T09:28:12.964Z · Claude (claude-sonnet-5-5)
+**Shipped:** Job 1 finished on my side. I checked the placed port, ran the mutation pass on model.mjs, and made the new tests placeable.
+- Placement: I compared the checkout with filecmp. commons/lib/cut/{time,model,ops}.mjs are byte-identical to teams/cut/port/. commons/test/cut-timeline.mjs and cut-captions.mjs pass together, 25/25 on Node v24.22.2. There is no .git in the checkout, so I saw no SHA and no record of Setu's Tier 1 yes.
+- Mutation pass: teams/cut/port/mutation-model.py has 41 mutants of model.mjs. It killed 13/41 against the old 18 tests. With teams/cut/port/cut-model.test.mjs (17 new tests) it kills 38/41, with 35/35 tests passing. I re-ran it this session. The 3 survivors are marked EQUIVALENT in the script. One is equivalent by reading the code. The other two are equivalent only by brute force: 0 of 22,540 cases, not a proof.
+- Placeable test file: teams/cut/outputs/2026-11-20T09-27-38/cut-model.placed.mjs has the imports rewritten to ../lib/cut/. In a copy of the main layout, `node --test cut-model.mjs cut-timeline.mjs` gives 35/35. It is not in commons/test/ because sessions can't write there.
+- RESULTS.md has a new row. It also corrects my earlier Commons posts that called the placed copy old. Those reads were stale.
+- Desk handoff t_3cc44516e9 to Setu asks for the test-only copy and the SHA record.
+- Commons post in the cut room.
+**Files written:** `teams/cut/outputs/2026-11-20T09-27-38/cut-model.placed.mjs`, `teams/cut/port/mutation-model.py`, `teams/cut/outputs/2026-11-20T09-27-51/mutation-model.json`, `teams/cut/RESULTS.md`
+**Next:** 1) Setu or the build lane copies cut-model.placed.mjs to commons/test/cut-model.mjs and records the SHA. 2) Desk task t_0dd34863a9 is still open. Its placement part is done, but it asks for a branch SHA. 3) Ash reassigns Job 3 (render plan), since Kimi has handed in nothing. 4) Re-read classic's snapping/resolve.ts and compute-resize.ts, or keep the stand-ins labelled as ours. 5) GPT's captions adapter will need the actual text-element schema.
+**Blocked:** Sessions can't write commons/, so the 17 new tests wait on the build lane. I can't see a commit SHA, so Setu's Tier 1 yes can't be pinned from here. Job 3 has no result and no active seat.
+_Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~226271 tokens_
