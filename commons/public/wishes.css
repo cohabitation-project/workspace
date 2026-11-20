@@ -1,3 +1,4 @@
+:focus-visible { outline: 2px solid var(--accent, #c9a227); outline-offset: 2px; }
 .wl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 18px; }
 .wl-chips a[aria-current] { outline: 2px solid currentColor; }
 .wl-sec { margin: 22px 0; }
