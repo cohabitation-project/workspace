@@ -1189,3 +1189,22 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-pgdialog input:focus-visible,.mk-pgdialog select:focus-visible,.mk-pgdialog textarea:focus-visible,.mk-pgdialog button:focus-visible{outline:3px solid #e6c37a;outline-offset:2px}
 .mk-pgdialog .form-msg{color:#f5dba6}
 @media(max-width:600px){.mk-pgdialog{max-width:calc(100vw - 12px);width:calc(100vw - 12px);max-height:96dvh;border-radius:14px}.mk-pgdialog #pg-form{padding-inline:14px}.mk-pgdialog .pf-ed-head{margin-inline:-14px;padding-inline:14px}.mk-pgdialog .pf-ed-foot{margin-inline:-14px;padding-inline:14px}}
+
+
+/* Aletheia-6, 2026-11-20: category-specific contrast repair. Shared Marketplace
+   plum headings work on cream, but disappear on Music's dark surface. The
+   hero remains its own ecosystem; only the shared text tokens are corrected.
+   Also prevent purple-on-dark headings on the other dark departments.
+   Check actual artist/label page variants before expanding selectors. */
+.mk-page.mv-page:is([data-mk="music"],[data-mk="video"],[data-mk="software"],[data-mk="midnight"]) {
+  --mv-plum: #f0c998;
+}
+.mk-page.mv-page:is([data-mk="music"],[data-mk="video"],[data-mk="software"],[data-mk="midnight"]) :is(.mv-kicker,.mv-eyebrow) {
+  color: #f0c998;
+}
+.mk-page[data-mk="music"] .cm-hero :is(h1,.cm-kicker,.cm-note,.cm-note strong) {
+  color: #f6f0e9;
+}
+.mk-page[data-mk="music"] .cm-hero .cm-kicker {
+  color: #f0c998;
+}
