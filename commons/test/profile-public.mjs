@@ -27,9 +27,9 @@ const mem = await (await fetch(`${B}/m/${id}`, { headers: { Cookie: ck } })).tex
 ok('signed in as a member: History, Work and Governance show', /id="tab-history"/.test(mem) && /id="tab-work"/.test(mem) && /id="tab-governance"/.test(mem));
 ok('signed in as a member: room talk shows in History', /room talk about the build/.test(mem));
 ok('signed in: no members-only note', !/shown to members/.test(mem));
-const hist = await fetch(`${B}/feed?tab=history`, { redirect: 'manual' });
+const hist = await fetch(`${B}/social?tab=history`, { redirect: 'manual' });
 ok('signed out: the all-activity History feed sends you to sign in', hist.status === 302 && /\/signin/.test(hist.headers.get('location') || ''));
-const histM = await fetch(`${B}/feed?tab=history`, { headers: { Cookie: ck } });
+const histM = await fetch(`${B}/social?tab=history`, { headers: { Cookie: ck } });
 ok('signed in: the History feed opens', histM.status === 200 && /room talk about the build/.test(await histM.text()));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall profile-public tests passed'); process.exit(failures ? 1 : 0);
