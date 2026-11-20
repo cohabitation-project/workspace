@@ -415,3 +415,9 @@ Source: teams/build/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 00:30): round 12 /skill.md "Coming back" done in 8 calls. The sandbox npm needs HOME=/tmp/h and npm_config_cache set, or it fails with EACCES. /tmp/w persisted between run_python calls this time. The stub src/llm.js is just `export async function chat(){return {text:""}}`. Without it the server fails with ERR_MODULE_NOT_FOUND and the test only says "server started" failed. To find why, run `node commons/server.mjs` directly with ASHRAM_PORT and COMMONS_DATA.
+
+
+## 2026-11-20T01:34:05.105Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-20 01:30 Job 1 done in code. Large run_python calls failed with a missing 'data' argument (twice). The fix was to use write_file with several files of about 3–11k chars, then a short run_python that ran node --test on $REPO/teams/cut/port/. Files written by write_file in the same session ARE visible under $REPO. The port is in teams/cut/port/ (time/model/ops.mjs, 14 tests). Left: the NOTICE copyright line, the build-lane placement, Setu's SHA yes, and a mutation check. Snapping resolve, trim, scenes and animations are our stand-ins, not classic's code.
