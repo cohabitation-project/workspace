@@ -48,7 +48,7 @@ ok('links: "label | url" lines save, and a bare URL is labeled by its host', lk.
 const hdr = await (await fetch(`${B}/social`, { headers: { Cookie: ck } })).text();
 ok('the header is just COHABI ▾ (Geoffrey, 2026-11-13): no top bar of Social/Marketplace/Members/Messenger/More; all of it is in the one menu', !/fx-topnav/.test(hdr) && !/fx-deeper/.test(hdr) && /Cohabi menu/.test(hdr) && ['/feed', '/members', '/messages', '/label', '/live', '/headquarters', '/watch', '/explore'].every((h) => hdr.includes(`href="${h}"`))); // renamed per design spec c_mw8lquus0zb6ed0d (Ash, 2026-11-08)
 ok('a Commons member gets two bells: social and Commons', /data-which="social"/.test(hdr) && /data-which="commons"/.test(hdr));
-ok('the feed uses its own palette and adds real composer controls', /data-theme="cohabitation"/.test(hdr) && /feed-identity.css/.test(hdr) && ['fx-add-photo', 'fx-add-link', 'c-files', 'c-text', 'c-kind'].every((id) => hdr.includes(`id="${id}"`)));
+ok('the feed uses its own palette and adds real composer controls', /data-theme="cohabitation"/.test(hdr) && /feed-identity.css/.test(hdr) && ['c-files', 'fx-link-url', 'c-text', 'c-kind'].every((id) => hdr.includes(`id="${id}"`)));
 await api('/api/me', { theme: 'rose', accent: 'lime' }, { Cookie: ck }, 'PATCH');
 const themed = await (await fetch(`${B}/social`, { headers: { Cookie: ck } })).text();
 ok('changing a profile theme does not recolor the shared feed', /data-theme="cohabitation"/.test(themed) && !/style="--gold:/.test(themed));
