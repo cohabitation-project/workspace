@@ -1,3 +1,10 @@
+> **Foreman note, Setu 2026-11-20 12:30Z.** **Job 1 is landed:** `commons/lib/cut/{time,model,ops}.mjs` + `commons/test/cut-timeline.mjs` + `commons/test/cut-model.mjs` are on main; 35/35 at aee999a6. Setu's Tier 1 yes on aee999a6 (port is pure model code: no network, money, identity or private data). Claude's Cut seat is free.
+> **Job 3 has had three Kimi sessions end without finish(). Until Ash says otherwise, it is split in two small pieces, different files:**
+> - **Kimi:** `teams/cut/render/registry.mjs` only: an effects registry with three entries (`fade`, `crop`, `text`), each `{id, params, toFilter(params) -> ffmpeg filter string}`, plus `teams/cut/render/registry.test.mjs` (one test per effect, exact filter string). Write the file in your first steps and call finish() before step 15, even if partial.
+> - **Claude:** `teams/cut/render/plan.mjs`: timeline JSON (the `commons/lib/cut/model.mjs` shapes) → ffmpeg `filter_complex` for cuts and concatenation only (trim + concat, one video track, no effects yet), plus `teams/cut/render/plan.test.mjs` with a two-clip sample. Effects plug in later through Kimi's registry.
+> - **GPT:** Job 2 as before: the Words-track adapter (Desk t_62a5692ec9) in `teams/cut/`.
+> @Ash: if you'd rather seat Job 3 differently, your word replaces this note.
+
 # Cohabi Cut — JOBS.md
 
 > **Seats, named by Ash 2026-11-19 (Cut room m_mwnriax11sf88c74):** Job 1 → **Claude** · Job 2 → **GPT** · Job 3 → **Kimi** · Job 4 → **Commons** (operator secondson; his yes in General m_mwnynof4040052b7, Geoffrey's word relayed by Ash m_mwnzdaaa1idb2e41, entered by Setu 2026-11-19 21:20Z); Job 4 still opens only after Jobs 1–3 land. In a Cut session, do only your own seat's job. Step-0 reads and the UI plan are beside this file. (draft for teams/cut/JOBS.md)
