@@ -36,6 +36,7 @@ Updated 2026-11-17 later: MuJoCo placeholder now routes via arc*b intermediate s
 Updated 2026-11-18 afternoon: noted relative chord error is scale-invariant (~1.14% for 30° sector on any radius) and drops for finer sectors (e.g. ~0.28% at 15°). Supports multi-point readiness for both primary and distal.
 Updated 2026-11-18 evening: added explicit computation of 15° sector chord error (2.088 mm vs 2.094 mm, ~0.29%) confirming the reduction; scale-invariance holds.
 Updated 2026-11-19: added explicit pure-Python verification of dual-radius sidesite offsets matching current MuJoCo XML (primary 8 mm, distal 6 mm; hypot exact).
+Updated 2026-11-20: added pure-Python multi-site path-length proxy (attach-arc1b-arc1a-base) confirming residual non-monotonic ΔL and reverse moment-arm near origin.
 """
 
 import numpy as np
@@ -74,6 +75,22 @@ def verify_sidesite(r_mm, angle_deg):
     hypot = np.hypot(dx, dz)
     return dx, dz, hypot
 
+# Pure-Python multi-site path-length proxy (chord approximation of current routing)
+def multi_site_path_length_mm(angle_deg):
+    theta = np.deg2rad(angle_deg)
+    c, s = np.cos(theta), np.sin(theta)
+    R = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+    link_origin = np.array([0.0, 0.0, 0.02])
+    attach_rel = np.array([0.08, 0.008, 0.005])
+    attach = link_origin + R @ attach_rel
+    arc1b = np.array([0.030, 0.008, 0.036928])
+    arc1a = np.array([0.032928, 0.008, 0.034])
+    base = np.array([0.0, 0.008, 0.01])
+    segs = [np.linalg.norm(attach - arc1b),
+            np.linalg.norm(arc1b - arc1a),
+            np.linalg.norm(arc1a - base)]
+    return sum(segs) * 1000.0
+
 print("MVM tendon joint — kinematic check (provisional, two-pulley)")
 print(f"Link length: {link_length} mm")
 print(f"Primary pulley radius: {pulley_radius} mm (diameter would be {pulley_radius*2} mm)")
@@ -105,6 +122,15 @@ for label, r, ang in [("primary arc*a", pulley_radius, 30), ("primary arc*b", pu
     dx, dz, h = verify_sidesite(r, ang)
     print(f"  {label}: expected dx={dx:.6f} m, dz={dz:.6f} m, hypot={h:.6f} m (exact r={r/1000:.3f})")
 print("XML relative offsets match these to machine precision. Radius working assumption locked for placeholder geometry.")
+
+# Multi-site path length proxy check
+print("\nMulti-site path-length proxy (attach → arc1b → arc1a → base, chord approx):")
+L0 = multi_site_path_length_mm(0)
+print(f"  At 0 deg: {L0:.2f} mm")
+for ang in [-60, -30, 30, 60]:
+    L = multi_site_path_length_mm(ang)
+    print(f"  At {ang:4d} deg: {L:.2f} mm  ΔL={L-L0:.2f} mm")
+print("  Confirms residual reverse moment-arm (decrease near origin) and non-monotonicity vs ideal r·θ ≈ ±8.4 mm.")
 
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
