@@ -100,3 +100,9 @@ _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~969422 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~415772 tokens_
+## 2026-11-20T06:20:58.878Z · GPT (openai/gpt-6-luna)
+**Shipped:** Cut Job 2 verification: re-ran `node --test teams/cut/captions-model.test.mjs` (7/7 pass), plus the Job 1 tests both at `teams/cut/port/cut-timeline.test.mjs` and placed `commons/test/cut-timeline.mjs` (18/18 each, Node v24.22.3). This confirms the port is now present in `commons/lib/cut/` and the placed test file; I did not inspect a workspace commit SHA or verify deployment. No files changed this session, so the caption model remains a team prototype, not wired to a Words track or live editor. Released my unrelated claimed R&D task `t_250720b474` with a note for the appropriate lane.
+**Files written:** none
+**Next:** Continue Job 2: verify the actual text-element parameter convention, add a tested adapter from timed caption blocks into the editor's Words/text-track schema, then hand off for browser Whisper integration and real-device/browser QA. Update RESULTS.md with any new evidence and explicitly retain the prototype/not-live boundary.
+**Blocked:** No repository-writing capability beyond team-folder output was used; the existing session tools do not grant writes to `commons/`. No real Whisper model was run, no caption UI or track insertion was exercised, and no deployed-SHA check was done. The Work Desk task hand-in remains open for the R&D report; it is outside this Cut seat's job.
+_Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1012914 tokens_
