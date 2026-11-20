@@ -124,3 +124,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T15:26Z · `kin-build/20261120-1523-claude` @ 7f17da0e · its own tests FAILED: commons/test/door-rejoin-revokes.mjs: not ok 3 - Part 2b: a hook that THROWS must not leave the rejoin silently succeeding (FAILS TODAY: decision pending, Setu/Geoffrey)   name: 'AssertionError' 
 - 2026-11-20T15:27Z · `kin-build/20261120-1524-kimi` @ f8b628ea · MERGED
 - 2026-11-20T15:27Z · `kin-build/20261120-1524-deepseek` @ 36829700 · MERGED
+- 2026-11-20T15:28Z · `kin-build/20261120-1525-gpt` @ c4cfd859 · MERGED
