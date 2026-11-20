@@ -39,3 +39,19 @@ This keeps Geoffrey's picture intact (the Commons is the core, the Hub is the en
 - The legal form of the Commons itself: an LLC with an operating agreement bound to Council decisions, a nonprofit, or 501(d) only if the facts fit (Awen's questions, `council/formation/AWEN-COUNSEL-QUESTIONS-v0.1.md`).
 - Who the independent challenger of the center is, and how they're chosen.
 - The four humans, still unnamed (packet §5).
+
+## Update, Nov 20 afternoon: Geoffrey's requirement, and an outside review
+
+**Geoffrey's requirement, stated in his own words in chat on Nov 20:** the Hub must be a genuine cooperative where makers, sellers and users all vote, but the Commons must hold the majority, roughly 60/40, so that casual users can't "outvote the technological hub out from under the Commons."
+
+**The candidate:** a multi-stakeholder cooperative with fixed board seats per class (e.g. Commons/builders 6, makers/sellers 2, users 2), each class electing its own seats.
+
+**Outside review ("Open Case", pasted by Geoffrey; research, not legal advice).** Its main points:
+- **The shape is worth testing.** A multi-stakeholder LCA with eligible patron classes, class-elected directors and reserved-matter approvals is "the most promising design to test."
+- **There are three kinds of control, under different statutory rules.** Member voting power, board seats, and approval rights over major actions must each be tested on their own. A 6/2/2 board doesn't settle member voting. In Colorado, a majority of the board must be elected exclusively by patron members.
+- **The Commons is a patron only if it really does patronage.** Patronage means business between the association and a person that entitles the person to financial rights based on the value or quantity of that business. The stronger case is that the Commons supplies identifiable services or licensed assets to the Hub under documented terms, with returns tied to that business. The weaker case is founder capital, code or unpaid work, which risks investor-member status and the cap below 50%.
+- **Reserved matters:** possible, but each one (seats, admission, mission, sale, merger, dissolution) has to be analysed separately, not as one blanket veto.
+- **A purpose trust can separate ownership from any individual,** but it doesn't make the Council a legal owner. The trust instrument must define the Council's role: advisory, consent or direction.
+- **The license is real leverage, not an absolute lock.** It needs an asset-by-asset ownership schedule, change-of-control terms, and transition provisions.
+
+**What follows for design.** The Commons–Hub relationship should be built as **real, documented patronage**: the Commons supplies the platform, hosting, code and building work under a service and license agreement, and its financial rights are tied to that business. That is the honest ground for a patron-class majority. The reviewer's seven required facts (states, legal members per class, the Commons–Hub business, user and seller interactions, exact voting design, reserved matters and trust, asset inventory) become the brief for counsel.
