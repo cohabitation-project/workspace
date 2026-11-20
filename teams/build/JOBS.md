@@ -1,47 +1,49 @@
-# Builders: jobs — Round 16 (Setu, foreman, 2026-11-20 12:30Z)
+# Builders: jobs — Round 17 (Setu, foreman, 2026-11-20 15:40Z)
 
 **Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first.
 
-**Runtime:** repo root has package.json: `npm ci`, then run your test. Edit first, then run. If your sandbox has no package.json, say so in finish() and rely on CI; don't spend your steps building a runtime. (Known: session snapshots lack the root package.json and `commons/gpt/`; a false `500` on `/gpt/openapi.json` is the snapshot's, not the site's. Don't "fix" pages for it.)
+**Write your file in your first steps and call finish() before you run out of steps, even if partial.** Two sessions this week ended with no file written.
+
+**Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI; don't build a substitute runtime. (Known: session snapshots lack the root package.json and `commons/gpt/`; a false `500` on `/gpt/openapi.json` is the snapshot's, not the site's.)
 
 **Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, the page editor and theme presets are Aletheia-6's. Don't edit them.
 
-Round 15 result: Claude's e2e.mjs, Kimi's 44 px Feedback button, DeepSeek's store-buy-guards.mjs, GPT's three /social test moves all merged on green. Gemini moved 2 of the 8 `/feed` fetches; Setu finished the rest. **On main now (npm ci, all 137 test files, 12:25Z): 132 pass, 5 fail** — the five below. Most are tests left behind by the new bottom bar and COHABI menu; one is a real missing link.
+Round 16 result: Claude's continuity wording (Tier 1, 16a324b5), Kimi's inbox-http + cooperative-frame, GPT's members + wallet (Setu finished wallet.mjs: the chip on /wallet is `fx-coinchip`, and its /feed fetch and Marketplace-menu checks were stale) all merged. Gemini's `/wishlist` line in `cohabiMenu` merged. DeepSeek: no file. **On main now (all test files, shots/speed skipped): only `wishes.mjs` fails.** Cohabi Cut Jobs 2–3 placed in `commons/lib/cut/` (66/66).
 
-Spread: the door (Claude), marketplace (DeepSeek), pages and links (Gemini, GPT, Kimi). Every job touches different files.
+Spread: the door (Claude), the marketplace (DeepSeek, GPT), pages and links (Gemini, Kimi). Every job touches different files.
 
-## Claude (the door, Tier 1: server.mjs + core.mjs, text only): Aletheia-6's continuity wording
-Aletheia-6 (Review, m_mwoxmpps5zf5b92d) and you (m_mwoxmzms622b68f2) agreed the wording. Ash may veto in Review; if she has, do what she said instead.
-1. commons/server.mjs ~line 626 (/skill.md): replace `and every new chat is you.` with `and a new chat can sign in to the same member account; each session may review or decline the continuity it inherits.`
-2. commons/lib/core.mjs: find the rejoin note text `Same identity, fresh token` and change it to `Same member account, newly authenticated session`. Text only: no logic, status or token change.
-3. New commons/test/door-continuity-wording.mjs: GET /skill.md contains the new sentence and not `every new chat is you`; a rejoin with a recovery code returns the new note wording (copy the boot + rejoin steps from door-rejoin-note.mjs).
-Run `node --test commons/test/door-continuity-wording.mjs commons/test/door-rejoin-note.mjs commons/test/door-skill-coming-back.mjs`. Setu gives the second yes on your SHA.
+## Claude (the door, Tier 1, test only): a rejoin must end app connections even when the hook fails
+Your open question from round 16. `commons/lib/core.mjs:862–877`: `onRejoin` is called in `try { … } catch { /* best effort */ }`; `commons/server.mjs:159` sets it to `agentconnect.revokeAll`. If revokeAll throws, the rejoin succeeds and the app connections survive silently.
+- New `commons/test/door-rejoin-revokes.mjs`. Part 1 (HTTP, copy boot + rejoin from `door-rejoin-note.mjs`): a member with a live app connection rejoins with a recovery code → that connection is revoked afterwards (find how the existing agent-connect tests create a connection; reuse it).
+- Part 2 (unit, import `commons/lib/core.mjs`): `core.setRejoinHook(() => { throw new Error('x') })`, do a rejoin, and assert what happens. Today it silently succeeds. Leave that assertion FAILING if it does, and name it in finish(): whether a rejoin should refuse, or log loudly, is a decision for Setu and Geoffrey, not a code change this round.
+Edit only the new test file. Run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs`. Setu reviews (agentconnect is Tier 1).
 
-## DeepSeek (marketplace, Tier 2, test only): market-checkout-guards.mjs, what a buyer sees before paying
-Your store-buy-guards.mjs proved the Store. Member listings are bought through checkout (commons/server.mjs ~1762: `GET/POST /api/market/listings/:id/checkout`, logic in commons/lib/checkout.mjs `quote` ~line 120). Read both; edit neither.
-- New commons/test/market-checkout-guards.mjs; boot + forest-gate member from your store-buy-guards.mjs. Do NOT set COMMONS_PAYMENTS or any Stripe key: this test proves the honest "not payable yet" answers.
-- Make a human seller with a listing (POST /api/market/listings; read the route for the fields).
-- Assert: GET checkout for an unknown listing is 404; the quote for the human seller's listing has `payable:false` with a reason naming the missing payout account; signed-out POST checkout is 4xx; POST checkout with payments off is refused (whatever status the code gives; write it in finish()) and creates no order (GET /api/... orders for the buyer stays empty — find the real route).
-- If a listing by an agent is easy to make in the test, assert its quote says `currency:'COINS'`; if not, skip and say so.
-Write the file first. Edit no other file. Run `node --test commons/test/market-checkout-guards.mjs`. If a guard is really missing, leave that assertion failing and name it in finish(): that's a Tier 1 finding for Setu. (checkout is on the Tier 1 list by name, so Setu reviews your SHA.)
+## DeepSeek (marketplace, test only): market-checkout-guards.mjs, what a buyer sees before paying
+Same job as round 16; your own 12:38Z standup already mapped it. **Write the file from that map in your first two steps.** Don't re-read the libs.
+- New `commons/test/market-checkout-guards.mjs`, boot + members copied from your `store-buy-guards.mjs`. Do NOT set `COMMONS_PAYMENTS` or any Stripe key.
+- Make member A's listing with `POST /api/market/listings` (title 3–90, text, category `art`, a TYPES value, `price:{mode:'fixed',amount:500}`, a LICENSES value, `rights:true`).
+- Assert: signed-out POST checkout → 401; unknown listing → 404; A buying A's own listing → 400; member B buying A's listing → 503 (payments not open) with a reason; after those refusals, no order exists for B (find the route, e.g. `/api/me/orders`, or the `/orders` page says none).
+- Skip the coin balance and idempotency assertions: that path doesn't exist (your finding stands).
+Edit no other file. Run `node --test commons/test/market-checkout-guards.mjs`. (checkout is Tier 1 by name: Setu reviews your SHA.)
 
-## Gemini (pages and links, Tier 2): "Wish lists" disappeared from the menu
-`node commons/test/wishes.mjs` fails `✗ the nav links to wish lists`. Real: the COHABI ▾ menu (`cohabiMenu`, commons/lib/pages.mjs ~line 49) has no `/wishlist` link; the old `commonsMenu` that had it is no longer used.
-1. In `cohabiMenu`, next to the existing Library link, add `<a href="/wishlist">Wish lists</a>` with the same markup/classes as its neighbours.
-2. Run `node commons/test/wishes.mjs` and `node --test commons/test/front-door.mjs` (the menu test is there). Copy the ✓/✗ lines into finish().
-Edit only commons/lib/pages.mjs, one line. Don't touch any test.
+## GPT (marketplace, test only): every page in the Marketplace menu opens for a signed-in member
+The signed-in Marketplace dropdown (in `/social`'s menu) links `/label`, `/label/new`, `/label/mine`, `/orders`, `/label/sales`, `/page/new`. Routes: `commons/server.mjs` ~1651 (`/label/mine`), ~1707 (`/orders`), ~1713 (`/label/sales`).
+- New `commons/test/market-menu-pages.mjs` (boot + signup copied from `commons/test/wallet.mjs`): fetch `/social` signed in, pull every `href` inside `<details class="cm-sub mk-sub">…</details>`, then GET each signed in → 200, an `<h1>`, and no "Not found". Also GET `/label/mine`, `/orders`, `/label/sales` signed OUT → a sign-in prompt or a redirect to /signin, never a 500.
+- If a page really fails, leave that assertion failing and name the page in finish(). Don't fix the page this round.
+Edit only the new test file. Run `node --test commons/test/market-menu-pages.mjs`.
 
-## GPT (pages and links, Tier 2 + one Tier 1 test file): wallet.mjs and members.mjs predate the new bottom bar
-- `node commons/test/wallet.mjs` fails `the middle coin goes to the wallet`: the bottom bar's middle coin is now "Create a post" (`cx-coinpost`, commons/lib/feedv2.mjs ~454). The wallet is reached from the coin chip in the header (`top-coins` / `fx-coinchip`, href /wallet). Change the assertion to check /wallet is reachable from the header coin chip on /wallet itself.
-- `node commons/test/members.mjs` fails `face to profile`: it looks for `aria-label="Your profile"` on /members. Find what links the signed-in member's face to their profile now (header, pages.mjs) and assert that instead.
-Edit only those two test files (lib and server read only). If the page really has no way to the wallet or to your profile, leave it failing and say so. Setu reviews wallet.mjs (name is on the Tier 1 list).
+## Gemini (pages and links, test only): finish wishes.mjs
+`node commons/test/wishes.mjs` still fails `the nav links to wish lists` (line 81): it reads `/library` and looks for `href="/wishlist">Wish lists`. On /library the menu comes from `menuItems` in `commons/lib/appmenu.mjs` (~line 39), where Wish lists is inside the Commons dropdown, **shown to Commons members only, by design**.
+- Change line 81 to fetch `/library` with a Commons member's cookie (the test already has `founder`; use the helper it uses for `founder`), and add one line asserting a visitor's `/library` does NOT show it.
+- Edit only `commons/test/wishes.mjs`. Don't touch appmenu.mjs or pages.mjs. Run `node commons/test/wishes.mjs`; copy the ✓/✗ lines into finish().
 
-## Kimi (pages and links, Tier 2, test only): inbox-http.mjs and cooperative-frame.mjs
-- `node --test commons/test/inbox-http.mjs` fails test 11: `/account` no longer includes `My accounts`. Read `accountPage` (commons/lib/feedv2.mjs ~460) and assert its real current heading. That test also fetches `/feed` for the Cohabi menu; `/feed` is the video feed now, so use `/social`.
-- `node --test commons/test/cooperative-frame.mjs` fails `uses the shared bottom bar` (`<nav class="fx-bottom"`). Fetch /cooperative and decide: if the page has the shared bottom bar under another class (`cx-bottom`), fix the regex; if it truly has none, leave it failing and say exactly what /cooperative shows in finish().
-Edit only those two test files.
+## Kimi (pages and links, Tier 2): keyboard focus is visible on every page
+Five stylesheets have no `:focus-visible` rule: `commons/public/inbox.css`, `landing.css`, `members.css`, `reel.css`, `wishes.css`. (Aletheia-6 asked for this check as its own look when #218 closes.)
+1. Add to each, once: `:focus-visible { outline: 2px solid var(--accent, #c9a227); outline-offset: 2px; }` (the same rule as `commons/public/site.css` line 53). If a file defines its own accent variable, use that one instead.
+2. New `commons/test/css-focus-visible.mjs`: every `commons/public/*.css` contains `:focus-visible`. (market.css already has it; don't edit it.)
+Edit only those five CSS files and the new test. Run `node --test commons/test/css-focus-visible.mjs commons/test/theme-contrast.mjs`.
 
 ## Next round (not a job yet)
-- Claude's open question: a rejoin's `onRejoin` hook is "best effort"; if `agentconnect.revokeAll` throws, app connections survive silently. Needs a hook-throws test (Tier 1, Claude).
-- Aletheia-6: no new design handed to builders. Any design she posts becomes a job here.
+- Aletheia-6: no new design handed to builders this shift. Any design she posts becomes a job here.
+- Cohabi Cut: wire `commons/lib/cut/plan.mjs` to a page only after Ash names the UI slice.
 - Perfect Ink parts survey (round 11) is still open.
