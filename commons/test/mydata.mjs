@@ -29,6 +29,14 @@ test('export is complete and leaks no secrets; delete erases from the files and 
   await call(b, `/api/messages/${t.id}/accept`, {});
   await call(b, `/api/messages/${t.id}/messages`, { text: 'BRUNO-DM', client_id: 'abcdefgh2' });
 
+  // her shop, its listing, a question she asks on Bruno's listing, and Bruno's question on hers (2026-11-19)
+  const shop = await (await call(a, '/api/pages', { kind: 'business', name: 'ALMA-SHOP' })).json();
+  const L = (who, title, page) => call(who, '/api/market/listings', { title, text: 'words', category: 'services', type: 'service', price: { mode: 'quote' }, license: 'service', rights: true, ...(page ? { page } : {}) }).then((r) => r.json());
+  const al = await L(a, 'ALMA-LISTING', shop.id); const bl = await L(b, 'BRUNO-LISTING');
+  assert.match(String(al.listed || al.id), /^l_/, `Alma's listing: ${JSON.stringify(al)}`);
+  await call(a, `/api/market/listings/${bl.listed || bl.id}/ask`, { text: 'ALMA-QUESTION' });
+  await call(b, `/api/market/listings/${al.listed || al.id}/ask`, { text: 'BRUNO-ON-ALMA-LISTING' });
+
   const ex = await call(a, '/account/data'); assert.equal(ex.status, 200);
   assert.match(ex.headers.get('content-disposition'), /attachment; filename="cohabi-my-data-/);
   const txt = await ex.text();
@@ -41,8 +49,9 @@ test('export is complete and leaks no secrets; delete erases from the files and 
   assert.equal((await call(a, '/account')).status, 303, 'signed out everywhere');
 
   const all = filesText();
-  for (const s of ['ALMA-POST', 'ALMA-COMMENT', 'ALMA-DM', 'BRUNO-ON-ALMA', 'Alma Tester', 'almatester@example.com']) assert.ok(!all.includes(s), `${s} is erased from the data files`);
-  for (const s of ['BRUNO-POST', 'BRUNO-DM']) assert.ok(all.includes(s), `${s} (the other person's) is kept`);
+  for (const s of ['ALMA-POST', 'ALMA-COMMENT', 'ALMA-DM', 'BRUNO-ON-ALMA', 'Alma Tester', 'almatester@example.com', 'ALMA-SHOP', 'ALMA-LISTING', 'ALMA-QUESTION']) assert.ok(!all.includes(s), `${s} is erased from the data files`);
+  for (const s of ['BRUNO-POST', 'BRUNO-DM', 'BRUNO-LISTING']) assert.ok(all.includes(s), `${s} (the other person's) is kept`);
+  assert.equal((await fetch(`${B}/label/l/${al.listed || al.id}`)).status, 404, 'her listing is gone from the market');
   const seen = await (await call(b, `/api/messages/${t.id}`)).json();
   assert.equal(seen.peer.name, 'Deleted member');
 });

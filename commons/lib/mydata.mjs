@@ -27,6 +27,8 @@ import * as images from './images.mjs';
 import * as house from './house.mjs';
 import * as ledger from './ledger.mjs';
 import * as repo from './repo.mjs';
+import * as market from './market.mjs';
+import * as orgpages from './orgpages.mjs';
 
 const SECRET = /hash|secret|token|password|passhash|key|cookie|recovery|ext$|^ext|ip$/i;
 const safeProfile = (m) => Object.fromEntries(Object.entries(m).filter(([k]) => !SECRET.test(k)));
@@ -79,6 +81,8 @@ export function deleteAccount(member, { confirm } = {}) {
   done.friends = tryOr(() => friends.forgetMember(m.id), 'failed');
   done.notifications = tryOr(() => push.forgetMember(m.id), 'failed');
   done.journals = tryOr(() => house.myJournals(m).map((j) => house.deleteJournal(m, j.id)).length, 'failed');
+  done.listings = tryOr(() => market.forgetMember(m.id), 'failed');
+  done.pages = tryOr(() => orgpages.forgetMember(m.id), 'failed');
   done.pictures = tryOr(() => images.byMember(m.id).map((it) => images.remove(m, it.id)).length, 'failed');
   for (const [k, v] of Object.entries(done)) if (v === 'failed') left.push(`${k}: automatic erase failed`);
   done.public_notices = tryOr(() => store.scrubName(m.id, m.name), 'failed');
