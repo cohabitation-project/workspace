@@ -1162,3 +1162,14 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-provlogo, .mk-studioface:has(img), .mk-pageface:has(img) { background-color: #0b0f1a; background-image: radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); }
 .mk-studioface:has(img) img, .mk-pageface:has(img) img { object-fit: contain; padding: 8%; box-sizing: border-box; }
 .mk-provlogo { width: 22px; height: 22px; border-radius: 6px; object-fit: contain; padding: 2px; box-sizing: border-box; vertical-align: -6px; margin-right: 6px; display: inline-block; }
+
+/* Aletheia-6's approved category tiles (2026-11-19): one picture, shown tile by tile. Its words are part of the art,
+   so nothing is laid on top; each tile is a link with its own accessible name. Row 1 has four tiles, row 2 three. */
+.mh-sprite-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:13px;margin-bottom:30px}
+.mh-sprite-tile{display:block;grid-column:span 3;border-radius:16px;background-repeat:no-repeat;background-color:#1b1726;box-shadow:0 8px 24px #0008;outline-offset:3px;transition:transform .2s ease,box-shadow .2s ease}
+.mh-sprite-tile.mh-row-2{grid-column:span 4}
+.mh-sprite-tile:hover{transform:translateY(-4px);box-shadow:0 16px 32px #000c}
+.mh-sprite-tile:focus-visible{outline:3px solid #ffdd94}
+@media(max-width:760px){.mh-sprite-tile,.mh-sprite-tile.mh-row-2{grid-column:span 6}}
+@media(max-width:420px){.mh-sprite-tile,.mh-sprite-tile.mh-row-2{grid-column:span 12}}
+@media(prefers-reduced-motion:reduce){.mh-sprite-tile{transition:none}}
