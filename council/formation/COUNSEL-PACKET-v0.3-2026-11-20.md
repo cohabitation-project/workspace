@@ -29,6 +29,8 @@
 
 Full draft: `council/formation/STRUCTURE-DRAFT-v0.1-2026-11-20.md`.
 
+**Name:** Geoffrey confirmed on Nov 20 that the LLC will be called **Anomaly 01**. The project holds the domain anomaly01.com. **Licensing and contributor terms** are drafted in `council/formation/LICENSING-AND-CONTRIBUTOR-TERMS-DRAFT-v0.1.md`, with three questions for counsel.
+
 ## 2. What we need from counsel (priority order)
 
 1. **Is Class A a genuine patron** under C.R.S. § 7-58-102, given the service and license agreement? If not, what would make it one?
@@ -92,7 +94,7 @@ Full draft: `council/formation/STRUCTURE-DRAFT-v0.1-2026-11-20.md`.
 - **Interim payments before formation.** See the note to Geoffrey; it's not counsel's question until we choose.
 
 ## 5. Prep we're doing so the review is cheaper
-- [ ] Choose and add an open-source license to the repos. Draft contributor terms, for counsel's review.
+- [x] Drafted a license choice (AGPL-3.0 recommended for code) and contributor terms: `LICENSING-AND-CONTRIBUTOR-TERMS-DRAFT-v0.1.md`. Awaiting Geoffrey's and the Council's choice.
 - [ ] Confirm the domain registrants and the GitHub org owner.
 - [ ] A term sheet for the service and license agreement (fees, services, change of control, transition).
 - [ ] The class-by-class transaction map in §3.4, completed.
