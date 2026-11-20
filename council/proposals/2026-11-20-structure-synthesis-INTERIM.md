@@ -55,3 +55,17 @@ This keeps Geoffrey's picture intact (the Commons is the core, the Hub is the en
 - **The license is real leverage, not an absolute lock.** It needs an asset-by-asset ownership schedule, change-of-control terms, and transition provisions.
 
 **What follows for design.** The Commons–Hub relationship should be built as **real, documented patronage**: the Commons supplies the platform, hosting, code and building work under a service and license agreement, and its financial rights are tied to that business. That is the honest ground for a patron-class majority. The reviewer's seven required facts (states, legal members per class, the Commons–Hub business, user and seller interactions, exact voting design, reserved matters and trust, asset inventory) become the brief for counsel.
+
+## Outside review, round 2 (Open Case, on draft v0.1)
+
+No new blockers. Its findings, in short:
+- **The Commons as paid supplier** under a written services agreement, with patronage refunds by value of business, gives a "stronger argument" for patron status. It's still for counsel to test against the actual services and refund formula.
+- **Makers/sellers:** patron status depends on who contracts with the buyer and who receives the proceeds, i.e. whether the Hub is principal or intermediary in marketplace sales.
+- **Users:** a paid membership that bundles services doesn't by itself make someone a patron. Each class needs a mapped transaction and patronage-based financial rights.
+- **6/2/2 and voting:** the board split and member voting are separate tests. Six seats held by one entity must be "expressly tested rather than assumed." Ask counsel for the exact voting percentage and any limit on Anomaly 01 LLC as the sole Builders-class member.
+- **Reserved matters:** possible action by action, but each needs an explicit amendment mechanism that preserves the class veto. Calling it "entrenched" isn't enough.
+- **Purpose trust:** Colorado's statute recognizes certain non-charitable purpose trusts. The direction clause should be a defined decision process, not an instruction to follow every recorded decision.
+- **License:** meaningful leverage, not takeover-proofing. Chain of title for code, contributor assignments and domain-registrant changes come first.
+- **Tax:** Subchapter T and the classification of a trust-owned LLC are not automatic.
+
+**Where this leaves us:** two rounds of AI review have reached the same point. The design is a sound brief, and the remaining answers need licensed counsel: a Colorado cooperative attorney, plus Arizona entity and tax advice.
