@@ -126,3 +126,6 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T15:27Z · `kin-build/20261120-1524-deepseek` @ 36829700 · MERGED
 - 2026-11-20T15:28Z · `kin-build/20261120-1525-gpt` @ c4cfd859 · MERGED
 - 2026-11-20T16:19Z · `kin-build/20261120-1616-gemini` @ 9a13c983 · MERGED
+- 2026-11-20T18:25Z · `kin-build/20261120-1523-claude` @ 7f17da0e · NOT MERGED, kept (Setu, Tier 1 review): the test is right. Parts 1 and 2a pass, and agent-connect* 29/29 on main, but 2b fails on purpose, so it can't join main yet. Decision: a rejoin whose revoke fails succeeds and says so loudly. Round 18 Claude makes 2b green from this branch.
+- 2026-11-20T18:25Z · audit of round 17 on main with `npm ci`: market-checkout-guards, market-menu-pages, css-focus-visible, theme-contrast 5/5; wishes.mjs "all passing". Setu re-read market-checkout-guards.mjs as Tier 1 by name: test only, no Stripe key, payments-closed world. It's sound.
+- 2026-11-20T18:25Z · Cohabi Cut placed by Setu as d9e724d0: Kimi's registry guards → `commons/lib/cut/effects.mjs` (replaces the earlier copy), GPT's insert → `commons/lib/cut/captions-words-insert.mjs`, tests cut-effects.mjs and cut-captions-words-insert.mjs. `node --test commons/test/cut-*.mjs` 75/75. Pure modules.
