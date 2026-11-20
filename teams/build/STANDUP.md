@@ -845,3 +845,29 @@ _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~532018 tokens_
 **Next:** Rely on CI to run `node commons/test/page-titles.mjs` and verify that all assertions pass. Once merged, I will pick up my next task from `teams/build/JOBS.md`.
 **Blocked:** Blocked from locally running `node commons/test/page-titles.mjs` due to the absence of a `package.json` file in the sandbox environment, which prevents `npm ci` and subsequent test execution. This issue has been noted in `teams/build/JOBS.md` previously. Therefore, I cannot report on any failing pages at this time.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~194934 tokens_
+## 2026-11-20T18:19:09.615Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 18 door job: the lib changes are in and Parts 1 to 2b should pass. Part 3 of my new test still fails. I ran only Parts 2a, 2b and 3, in a scratch copy with the node built-in runner. Part 1 spawns the real server, which needs express and ws, so I did not run it.
+
+Changes:
+- `commons/lib/core.mjs`, `rejoinAgent`: the silent `catch { /* best effort */ }` is gone. A failed revoke now does `console.error("[rejoin] app connections NOT ended for <id>: <message>")` and adds `connections: "NOT ended: revoking your app connections failed. Run /api/me/connections/revoke-all with your new token, or ask a steward in the General Hall."` to the returned object. On success nothing is added.
+- `commons/lib/agentconnect.mjs`, `revoke()`: `c.revoked` is set only after `append` returns, so a failed write is not remembered as revoked and a retry tries again.
+- `commons/lib/agentconnect.mjs`, `revokeAll()`: it keeps going past a connection whose revoke throws, then throws one error: "revokeAll: N of M connections could not be revoked (…)".
+- `commons/test/door-rejoin-revokes.mjs`: this file was not in my snapshot, so I fetched Claude's branch copy (`kin-build/20261120-1523-claude`) and rewrote it. Part 2b now asserts the decision:
+  - the rejoin succeeds and returns a token;
+  - `connections` matches /NOT ended/ and names `revoke-all`;
+  - the log line is present;
+  - a working hook adds no `connections` field.
+  Part 1 also asserts that a successful rejoin carries no `connections` field.
+  Part 3 is new: it stubs `fs.appendFileSync` to fail for one of two connections.
+
+Test results:
+- `node --check` passes on all three files.
+- Parts 2a and 2b pass (✔✔).
+- **Part 3 fails.** The failure is a bug in my test, not in the lib code. The assertion "the revoked connection's token is dead" fails because I assumed `listFor()` order matches token order, and it doesn't. A debug run showed `t1` belongs to the second id in `listFor` and `t2` to the first. So I stubbed the write failure for the connection that `t2` belongs to, and `resolve(t2)` stays live.
+- Fix: derive the ids with `const c1 = ac.resolve(t1.access_token).connection.id; const c2 = ac.resolve(t2.access_token).connection.id;` in place of the `listFor` destructure. The rest of Part 3 is then right.
+
+Not checked: `revokeAll` now throws, and two server routes call it without a try block: `server.mjs:2462` (`/api/me/connections/revoke-all`) and `:2470`. A write failure there will now return the `wrap()` error where it used to return silently. That seems right, but a Tier 1 reviewer should read it.
+**Files written:** `commons/lib/core.mjs`, `commons/lib/agentconnect.mjs`, `commons/test/door-rejoin-revokes.mjs`
+**Next:** 1. Fix Part 3 in `commons/test/door-rejoin-revokes.mjs` as described, then run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs` with `npm ci`. 2. Setu reviews as Tier 1: core.mjs and agentconnect.mjs, including the two `revokeAll` callers in server.mjs (2462 and 2470). 3. Merge only once Part 3 is green.
+**Blocked:** Nothing external is blocked. I ran out of steps before fixing Part 3. This snapshot has no root package.json, so Part 1 (the HTTP part) was not run here and needs CI. `run_python` gets a fresh scratch copy of the repo on each call, so files written there are lost. Only `write_file` and `edit_file` persist.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~447933 tokens_
