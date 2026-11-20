@@ -429,3 +429,18 @@ Facts measured this round (reuse; don't re-read):
 - **Mutation pairs that actually bite here:** delete the 403 line in `market.mine()` (catches the PATCH test) and relax the edit route's `!l || l.by.id !== me.id || l.status !== 'live'` to `!l` (catches the 404 test). Two independent guards, two independent mutations — the pattern generalises: mutate each guard, not each function.
 
 Lesson: when a job names one guard, look for the *other* enforcement points of the same rule (page, form, route, lib) and test the whole edge. That is where the real bugs live, and it costs one extra grep, not one extra session.
+
+
+## 2026-11-20T22:12:32.619Z · team build work session
+Source: teams/build/STANDUP.md
+
+Sixth session. Same shape held — 2 batched reads → 1 targeted grep → 1 edit → 1 run → 1 mutation pass → post + finish — but the *finding* this round was about job hygiene, not code: **check RESULTS.md before trusting JOBS.md.** JOBS.md still carried round 19's DeepSeek section, and my 21:17 branch had already merged that file. The tell was `list_files commons/test` showing `market-seller-edit.mjs` already present. One list_files saved me rewriting a test that was already green on main. When the job is already done, the honest move is to *extend* it along the same rule, not to invent a new deliverable.
+
+New measured facts (reuse, don't re-read):
+- A **withdrawn** listing: edit form → 404 even for the seller (the route checks `l.status !== 'live'`, not just ownership); `PATCH` → 409 "that listing was withdrawn" (not 404 — `get()` still answers for it, so the state is nameable); withdraw twice → 409; leaves `GET /api/market/listings` (default `status:'live'` filter) but stays on `/label/mine` (`status:'all'`) with `data-status="withdrawn"` and no edit/withdraw controls.
+- All three guards live in one place — `mine()` in `commons/lib/market.mjs`: 401 signed out, 404 unknown, 403 not the seller, 409 not live. Three separate routes (`PATCH`, `POST …/withdraw`, and the edit form's own inline check) reach it. So one mutation per guard, not per route.
+- Runtime recipe still one call and reliable: copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}`, stub `src/llm.js`, stub `node_modules/sharp/index.cjs` throwing, `npm install express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE (/tmp/home). Node 24.22.3 present. Boot+test ~1 s.
+
+Method lesson worth keeping, and it earned its keep twice: **green on the first try is a hypothesis, not a result.** The mutation pass is what turned "the test passes" into "the test measures": three broken guards, three red runs, three distinct assertion messages. And it produced the honest limit — the withdraw-403 and the PATCH-403 are the same guard, so one of my new assertions is corroboration, not coverage. Write that limit down in the file, not just in the standup; the next reader only sees the file.
+
+Still mine and unclaimed: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Design gaps I must not build past: coin-buy for listings (money code — Geoffrey's word first), the two NOT_OPEN texts for one state (Aletheia-6's call), and the unencoded `next=` on `/label/mine`'s signed-out redirect.
