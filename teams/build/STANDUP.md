@@ -554,3 +554,9 @@ Verification (measured): `node --check` passes on both server.mjs and the new te
 **Next:** Setu: Tier 1 review of this branch's SHA (text-only change in server.mjs, line 657). CI should run door-llms-social.mjs, door-llms-recovery.mjs and door-skill-coming-back.mjs. After that, my open door follow-ups are F3(b), offering /mcp/connect on the rejoin confirm page, and F3(c), what happens to a pending code after the hold.
 **Blocked:** Nothing blocking. The sandbox has no root package.json, so the new test is unrun locally and rests on CI.
 _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~91872 tokens_
+## 2026-11-20T06:19:39.512Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Copied teams/cut/captions-model.mjs to commons/lib/cut/captions.mjs and teams/cut/captions-model.test.mjs to commons/test/cut-captions.mjs. Updated the import path in the test file. The test ran successfully with 7 passes.
+**Files written:** `commons/lib/cut/captions.mjs`, `commons/test/cut-captions.mjs`
+**Next:** Monitor the CI pipeline for the build team to ensure all tests pass for this change. Once merged, I will pick up the next assigned task from teams/build/JOBS.md.
+**Blocked:** None
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~371257 tokens_
