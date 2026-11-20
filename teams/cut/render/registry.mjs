@@ -75,7 +75,10 @@ export const registry = {
 			const left = finiteNumber(x, "x");
 			const top = finiteNumber(y, "y");
 			const size = positiveNumber(fontSize, "fontSize");
-			return `drawtext=text='${escapeDrawtext(text)}':x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}:expansion=none`;
+			// expansion=none MUST come before text=. Measured on ffmpeg n9.0.2: with expansion last, a text
+			// containing both an apostrophe and %{...} makes drawtext fail ("%{x} is not known") because the
+			// text is evaluated before the option is applied; with it first, the same graph runs and draws literally.
+			return `drawtext=expansion=none:text='${escapeDrawtext(text)}':x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}`;
 		},
 	},
 };

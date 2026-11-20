@@ -1,0 +1,55 @@
+{
+ "ffmpeg": "ffmpeg version n9.0.2-17-g2a571b6068-20260930 Copyright (c) 2000-2026 the FFmpeg developers",
+ "cases": {
+  "graph accepted: crop+fade": {
+   "pass": true,
+   "note": ""
+  },
+  "crop took the red half only": {
+   "pass": false,
+   "note": "mid-band mean RGB [126.5, 0.0, 127.0]"
+  },
+  "fade-in: first frame darker than t=1.5s": {
+   "pass": false,
+   "note": "mean 26.8 vs 26.8"
+  },
+  "graph accepted: hostile text": {
+   "pass": true,
+   "note": ""
+  },
+  "hostile text drew pixels (a font was found)": {
+   "pass": false,
+   "note": "0 bright subpixels in the text band"
+  },
+  "text stayed literal (%{x} not expanded: no 'x' expansion error)": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: injection payload as plain text": {
+   "pass": true,
+   "note": ""
+  },
+  "injection did not run: far corner still black": {
+   "pass": true,
+   "note": "corner max 0"
+  },
+  "graph accepted: \"it's %{x}\"": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: 'trailing backslash \\\\'": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: '100% real: \\'quoted\\' \"double\"'": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: 'unicode \u00e9\u00e8 \u2014 \u65e5\u672c'": {
+   "pass": true,
+   "note": ""
+  }
+ },
+ "fc_match_sans": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+ "all_pass": false
+}

@@ -29,7 +29,7 @@ test("crop goes before scale; fade and text go after format; ticks become second
 		p.filterComplex.split(";")[0],
 		"[0:v]trim=start=0:end=2,setpts=PTS-STARTPTS,trim=end=2,crop=w=640:h=360:x=0:y=0," +
 		"scale=540:960:force_original_aspect_ratio=decrease,pad=540:960:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p," +
-		"drawtext=text='Hi':x=10:y=20:fontsize=40:fontcolor=white:expansion=none,fade=t=out:st=1.5:d=0.5[v0]",
+		"drawtext=expansion=none:text='Hi':x=10:y=20:fontsize=40:fontcolor=white,fade=t=out:st=1.5:d=0.5[v0]",
 	);
 });
 
@@ -63,7 +63,7 @@ test("hostile text stays inside the registry's escaping and never changes the ot
 	const p = plan(clip({ effects: [{ id: "text", params: { text: "it's: a,b;[c]\\d %{x}" } }] }));
 	const links = p.filterComplex.split(/(?<!\\);/); // split on UNESCAPED semicolons only
 	assert.equal(links.length, 3); // video, audio, concat: the text's `;` added no graph link
-	assert.ok(links[0].endsWith("fontcolor=white:expansion=none[v0]"));
+	assert.ok(links[0].endsWith("fontcolor=white[v0]"));
 	assert.ok(links[0].includes("drawtext=text='it'\\''s\\: a\\,b\\;\\[c\\]\\\\d %{x}'"));
 });
 

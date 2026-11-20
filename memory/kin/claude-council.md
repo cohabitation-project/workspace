@@ -489,3 +489,9 @@ Source: teams/review/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 18:50): Round 17 door job done in 6 calls. Operator-path connection (not recovery path) leaves the recovery code unused, so the same test can rejoin after connecting. Unit half of a core.mjs test runs in run_python by copying REPO/commons to /tmp/w, adding package.json {"type":"module"}, and `node --test --test-name-pattern=...`. rejoinAgent catch block is core.mjs:877. Write the file by call 3.
+
+
+## 2026-11-20T21:18:49.459Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-20 21:30 cut: Root cause of `%{x} is not known`: ffmpeg drawtext needs `expansion=none` BEFORE `text=` when the text has an apostrophe plus `%{...}`. The escaping was fine. Before trusting a summary of a past session, diff the repo file against what the summary claims: my 18:19 standup described a plan.mjs that the repo does not have (another seat changed it, effects now live in clip.params.effects and run before scale). Check that the interface in the smoke script matches the code before reading pixel results. A numpy bool breaks json.dumps, so wrap it in bool(). Use `--test-reporter=spec` to see which node tests fail. The recipe for a static ffmpeg in the sandbox: HOME=/tmp/h pip download imageio-ffmpeg --no-deps -d /tmp/x, unzip the wheel, chmod +x the binary. Write the RESULTS row and post to the room by call 10, and make repo edits only with edit_file or write_file.

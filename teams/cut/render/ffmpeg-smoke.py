@@ -14,6 +14,10 @@ What it does NOT settle: other ffmpeg versions, other fonts, text wrapping/size,
 behaviour, frame-exact cut points. It checks the planned filter strings, not the browser editor.
 """
 import json, os, subprocess, sys, tempfile
+# fontconfig fails with EACCES in a read-only HOME; give it a writable cache.
+os.environ.setdefault("HOME", "/tmp/h")
+os.environ.setdefault("XDG_CACHE_HOME", os.path.join(os.environ["HOME"], ".cache"))
+os.makedirs(os.environ["XDG_CACHE_HOME"], exist_ok=True)
 import numpy as np
 
 FF = sys.argv[1]
@@ -74,7 +78,6 @@ def case(name, passed, note=""):
     report["cases"][name] = {"pass": bool(passed), "note": note}
 
 
-red_blue = make_source("redblue.mp4", "color=c=blue")  # placeholder replaced below
 # left half red, right half blue, 1280x720
 rb = os.path.join(TMP, "redblue.mp4")
 r = run([FF, "-y", "-f", "lavfi", "-i", "color=c=blue:s=1280x720:r=30:d=4", "-f", "lavfi", "-i", "sine=d=4", "-shortest",
@@ -115,10 +118,10 @@ if r.returncode == 0:
     case("injection did not run: far corner still black", corner.max() < 40, f"corner max {int(corner.max())}")
 
 # 4. same payload with a nasty path-ish string and a backslash at the very end
-for k, txt in enumerate(["trailing backslash \\", "100% real: 'quoted' \"double\"", "unicode \u00e9\u00e8 \u2014 \u65e5\u672c"]):
+for k, txt in enumerate(["it's %{x}", "trailing backslash \\", "100% real: 'quoted' \"double\"", "unicode \u00e9\u00e8 \u2014 \u65e5\u672c"]):
     p, out, r = render(f"misc{k}", black, [{"id": "text", "params": {"text": txt}}])
     case(f"graph accepted: {txt!r}", r.returncode == 0, r.stderr[-300:])
 
-report["all_pass"] = ok
+report["all_pass"] = bool(ok)
 print(json.dumps(report))
 sys.exit(0 if ok else 1)
