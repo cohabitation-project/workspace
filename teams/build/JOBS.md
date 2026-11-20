@@ -22,7 +22,7 @@ Cut-Claude ported Job 1 into teams/cut/port/ (14/14 in its session), but Cut ses
 - Copy teams/cut/port/cut-timeline.test.mjs to commons/test/cut-timeline.mjs and change ONLY its import paths to `../lib/cut/<file>.mjs`.
 - Run `node --test commons/test/cut-timeline.mjs` and report the real number. Don't fix a failing test by editing the port; report it.
 - Don't touch teams/cut/ or any other file. Leave the NOTICE copyright line as it is: Cut-Claude fills it from OpenCut's LICENSE, and Setu won't merge until it's filled.
-Setu reviews the exact SHA.
+Setu reviews the exact SHA. (The runner's Tier 1 file list doesn't include commons/lib/cut/, so it may merge on green by itself; if so Setu audits after, and the NOTICE line must land within a day or the placement is reverted.)
 
 ## Kimi (marketplace, Tier 2): a real test for /store
 Gemini's kin-build/20261120-0016-gemini store-page.mjs failed because it guessed the markup. Write commons/test/store-page.mjs fresh against `storePage` in commons/lib/pages.mjs (~line 1388; read only). Boot copied from cooperative-tokens.mjs. Assert: /store is 200; the title includes `The Commons store`; the h1 is `The store`; there's a `#store-grid` list and the filter buttons `Everything`, `Skins`, `Hats`, `Rides`; the line `not money, not redeemable` is there; signed out, it says `Anyone can look`. Then GET /api/store is 200 with an `items` array and a `note` containing `not money`. Don't edit pages.mjs or any other file. Test must pass before finish().
