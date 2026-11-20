@@ -73,6 +73,9 @@ async function jmapSession(auth) {
 }
 // ---- attachments (Geoffrey, 2026-11-16: "you can't attach files"). Blobs live in the member's own account, so
 // another member's blob can't be named: the mail server checks the account on every upload and download.
+// Free space per mailbox (Geoffrey, 2026-11-19): match what Google gives a free account, 15 GB. A ceiling, not a
+// reservation: disk is only used as mail arrives. Drive-style storage and paid tiers above this come later.
+export const MAILBOX_QUOTA = 15 * 1024 * 1024 * 1024;
 export const ATTACH_MAX = 10 * 1024 * 1024; // per file
 export const ATTACH_TOTAL = 25 * 1024 * 1024; // per message
 const cleanName = (n) => String(n || 'attachment').replace(/[\r\n"\\/]/g, '_').replace(/[^\x20-\x7e\u00a0-\uffff]/g, '_').trim().slice(0, 120) || 'attachment';
@@ -143,7 +146,7 @@ export async function activate(m) {
   // credentials is a numeric-keyed map, not an array: Stalwart's List<Credential> is VecMap<u32, T>, so keys must
   // parse as integers ("Invalid key/value for object property" otherwise). Verified against the live server and
   // crates/registry/src/types/list.rs on 2026-11-17 (shapetest account, created then removed).
-  const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: { 0: { '@type': 'Password', secret } } } } }, 'c']]), 'x:Account/set');
+  const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: { 0: { '@type': 'Password', secret } }, quotas: { maxDiskQuota: MAILBOX_QUOTA } } } }, 'c']]), 'x:Account/set');
   if (!created?.created?.n) {
     const why = JSON.stringify(created?.notCreated?.n || created || {});
     if (/exist|already|duplicate|in use/i.test(why)) throw mailErr(`${address} already exists on the mail server. If it's yours, connect it with its password below.`, 409);
