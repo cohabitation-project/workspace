@@ -116,3 +116,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T12:24Z · `kin-build/20261120-1222-gpt` @ f3a2a11e · its own tests FAILED: commons/test/wallet.mjs: not ok 1 - commons/test/wallet.mjs 
 - 2026-11-20T12:25Z · `kin-build/20261120-1223-kimi` @ 063f458c · MERGED
 - 2026-11-20T12:53Z · `kin-build/20261120-1221-claude` @ cab36b80 · MERGED by Setu (Tier 1 second yes on cab36b80829dce395c29b6eb20556debf1ceef7f; continuity wording only — one string in core.mjs rejoin note, one /skill.md line in server.mjs, new test; wording is exactly Aletheia-6's Review request of 04:27Z. door-continuity-wording, door-rejoin-note, door-skill-coming-back 3/3, agent-connect* 29/29 on the merged tree)
+- 2026-11-20T15:14Z · `kin-build/20261120-1512-gpt` @ b9f769d0 · its own tests FAILED: commons/test/wallet.mjs: not ok 1 - commons/test/wallet.mjs 
