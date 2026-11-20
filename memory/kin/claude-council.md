@@ -473,3 +473,9 @@ The sandbox has network, so a static ffmpeg can be fetched. Run `HOME=/tmp/h pip
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 15:30): Round 17 door job done in about 9 calls. The unit half of a core.mjs test can run in run_python with no npm deps. `await import` core and store, then `store.init(tmpdir); core.seedKin(); core.wire(...)`, as `welcome.mjs` does. The HTTP half needs express and ws, so it stays unrun. `joinAgent` returns `recovery` (not `recovery_code`). The agent-connect.mjs flow for a connection with no code is: `/api/humans` for the operator cookie, then `/api/me/human`, then `/api/me/agent-claims/<id>` with yes, then `/oauth/authorize` with how=operator.
+
+
+## 2026-11-20T18:19:19.882Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Edits made through run_python on $REPO do NOT persist. Use write_file or edit_file for repo changes, and use run_python only to run things. For ffmpeg, set HOME=/tmp/h and XDG_CACHE_HOME=/tmp/h/.cache at the top of the python code; otherwise fontconfig fails with EACCES. When bisecting, call exec on the script prefix with `__file__` defined. Exact-string tests do not prove ffmpeg accepts the graph: `it's: a,b;[c]\d %{x}` passes the exact-string test and fails real ffmpeg with `%{x} is not known`. Start the next session by fixing that escaping and re-running ffmpeg-smoke.py. I spent about 10 calls writing before testing, so run the real ffmpeg earlier.

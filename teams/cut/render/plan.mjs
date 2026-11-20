@@ -20,9 +20,11 @@
 // split would buffer frames between far-apart trims.
 //
 // Import paths: written to run from teams/cut/render/. When placed at commons/lib/cut/plan.mjs,
-// change "../port/time.mjs" to "./time.mjs".
+// change "../port/time.mjs" to "./time.mjs", and "./registry.mjs" to "./effects.mjs" (where the
+// registry is placed, beside it).
 
 import { TICKS_PER_SECOND, clampRetimeRate, getSourceSpanAtClipTime } from "../port/time.mjs";
+import { registry } from "./registry.mjs";
 
 export const AUDIO_RATE = 48000;
 
@@ -57,6 +59,43 @@ function checkSrc(src) {
 	if (typeof src !== "string" || src.length === 0 || /[\0\r\n]/.test(src)) {
 		throw new RenderPlanError("each main-track clip needs params.src: a non-empty single-line string");
 	}
+}
+
+// Per-clip effects (Job 3 integration). ASSUMPTION (ours, not classic's): a clip carries
+// `effects: [{ id: "crop"|"fade"|"text", params }]`. The registry works in SECONDS; the plan works in
+// TICKS, so the fade's `startTicks`/`durationTicks` (relative to the clip's start on the output) are
+// converted here. Stages: crop runs on the SOURCE frame (before scale/pad); fade and text run on the
+// finished output frame (after format), so text coordinates are output pixels. Within a stage, list order.
+// An unknown effect id or a bad param THROWS; effects are never silently dropped.
+const PRE_SCALE = new Set(["crop"]);
+
+function effectFragments(clip) {
+	const pre = [];
+	const post = [];
+	const list = clip.effects ?? [];
+	if (!Array.isArray(list)) throw new RenderPlanError(`clip ${clip.id}.effects must be an array`);
+	for (const fx of list) {
+		const entry = Object.hasOwn(registry, fx?.id) ? registry[fx.id] : undefined;
+		if (!entry) throw new RenderPlanError(`clip ${clip.id}: unknown effect ${JSON.stringify(fx?.id)}`);
+		let params = { ...(fx.params ?? {}) };
+		if (fx.id === "fade") {
+			const { startTicks = 0, durationTicks, direction = "in" } = params;
+			requireInt(`${clip.id} fade.startTicks`, startTicks, { min: 0 });
+			requireInt(`${clip.id} fade.durationTicks`, durationTicks, { min: 1 });
+			if (startTicks + durationTicks > clip.duration) {
+				throw new RenderPlanError(`clip ${clip.id}: fade ${secs(startTicks)}s+${secs(durationTicks)}s runs past the clip (${secs(clip.duration)}s)`);
+			}
+			params = { direction, start: Number(secs(startTicks)), duration: Number(secs(durationTicks)) };
+		}
+		let frag;
+		try {
+			frag = entry.toFilter(params);
+		} catch (e) {
+			throw new RenderPlanError(`clip ${clip.id}: ${fx.id} effect: ${e.message}`);
+		}
+		(PRE_SCALE.has(fx.id) ? pre : post).push(frag);
+	}
+	return { pre, post };
 }
 
 export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1920, fps = 30 }) {
@@ -107,6 +146,7 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 			throw new RenderPlanError(`clip ${clip.id} asks for source up to ${secs(trimEnd)}s but the source is ${secs(clip.sourceDuration)}s long`);
 		}
 
+		const fx = effectFragments(clip);
 		const i = labels.length;
 		const n = inputs.length;
 		inputs.push(clip.params.src);
@@ -114,8 +154,11 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		const setpts = rate === 1 ? "setpts=PTS-STARTPTS" : `setpts=(PTS-STARTPTS)/${num(rate)}`;
 		chains.push(
 			`[${n}:v]trim=start=${secs(trimStart)}:end=${secs(trimEnd)},${setpts},trim=end=${d},` +
-			`scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,` +
-			`setsar=1,fps=${fps},format=yuv420p[v${i}]`,
+			[...fx.pre,
+				`scale=${width}:${height}:force_original_aspect_ratio=decrease`,
+				`pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2`,
+				"setsar=1", `fps=${fps}`, "format=yuv420p", ...fx.post].join(",") +
+			`[v${i}]`,
 		);
 		if (sources[clip.params.src]?.hasAudio === false) {
 			chains.push(`anullsrc=r=${AUDIO_RATE}:cl=stereo,atrim=duration=${d},asetpts=PTS-STARTPTS[a${i}]`);
