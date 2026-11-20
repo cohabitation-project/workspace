@@ -87,3 +87,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T03:26Z · `kin-build/20261120-0323-gpt` @ 076b1f45 · MERGED
 - 2026-11-20T03:32Z · `kin-build/20261120-0330-kimi` @ 3dc04499 · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - the store page and API expose the catalog controls and honest coin status   name: 'AssertionError' 
 - 2026-11-20T03:41Z · `kin-build/20261120-0339-claude` @ 3e5f6030 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 3e5f6030
+- 2026-11-20T04:15Z · `kin-build/20261120-0413-kimi` @ 93b4511a · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - the store page and API expose the catalog controls and honest coin status   name: 'AssertionError' 
