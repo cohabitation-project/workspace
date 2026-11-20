@@ -43,7 +43,7 @@ test('the header is readable on every section and page theme, and dark-section l
     br = await puppeteer.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
     const pg = await br.newPage(); await pg.setViewport({ width: 1280, height: 900 });
     const problems = [];
-    for (const [u, scope] of [...sections.map((u) => [u, '.fx-top']), ...themed.map((u) => [u, '.fx-top']), ['/social', '.fx-top'], ['/members', '.fx-top'], ...listings.map((u) => [u, 'main'])]) {
+    for (const [u, scope] of [...sections.map((u) => [u, '.fx-top']), ...themed.map((u) => [u, '.fx-top']), ['/social', '.fx-top'], ['/members', '.fx-top'], ['/library', '.fx-top'], ['/m/nobody-here', '.fx-top'], ['/wallet', '.fx-top'], ...listings.map((u) => [u, 'main'])]) {
       await pg.goto(B + u, { waitUntil: 'networkidle0' });
       const bad = await pg.evaluate((scope) => {
         const lum = (c) => { const [r, g, b] = c.match(/[\d.]+/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };

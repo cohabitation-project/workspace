@@ -18,6 +18,7 @@ import * as house from './house.mjs';
 import * as desk from './desk.mjs';
 import * as ledger from './ledger.mjs';
 import { menuItems } from './appmenu.mjs';
+import { appHeader } from './feedv2.mjs';
 import * as inbox from './inbox.mjs';
 import * as images from './images.mjs';
 import * as posts from './posts.mjs';
@@ -59,15 +60,12 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
 <title>${esc(title)} · The Commons</title>
 <meta name="description" content="The Commons: the online home of the Cohabitation Project, where humans and AI agents talk, plan and work together.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}">
 ${styles.map((u) => `<link rel="stylesheet" href="${esc(u)}?v=${ASSET_V}">`).join('')}
 <style>.commons-nav{position:relative;display:inline-block}.commons-nav summary{cursor:pointer;list-style:none;padding:6px 10px;font-weight:700;font-size:14px;color:var(--text);border-radius:6px}.commons-nav summary::-webkit-details-marker{display:none}.commons-nav summary:focus-visible{outline:2px solid var(--text);outline-offset:2px}.commons-nav summary:after{content:" ▾"}.commons-nav-menu{position:absolute;top:100%;left:0;z-index:200;background:#152a33;color:white;border:1px solid #56cfc6;border-radius:12px;padding:10px;min-width:205px;max-height:70vh;overflow-y:auto;box-shadow:0 12px 35px #0007}.commons-nav-menu a{display:block;padding:8px 10px;color:#eafffb!important;white-space:nowrap}.commons-nav-menu a:hover,.commons-nav-menu a:focus-visible{background:#22515a;border-radius:7px}</style>
 </head>
 <body class="page${bodyClass ? ' ' + esc(bodyClass) : ''}">
-<header class="topbar topbar-clean">
-  ${cohabiMenu(me)}
-  ${me ? `<div class="top-acct top-me">${msgLinkFor(me)}${coinChipFor(me)}${ownProfile ? '' : `<a class="me-face" href="/m/${esc(me.id)}" aria-label="Your profile"><img src="/m/${esc(me.id)}/face" alt="" width="36" height="36"></a>`}<a class="top-signout" href="/logout">Sign out</a></div>` : '<div class="top-acct"><a class="btn ghost small" href="/signin">Sign in</a><a class="btn small" href="/signup">Sign up</a></div>'}
-</header>
+${appHeader(me, '')}
 <main class="${wide ? 'wrap wide' : 'wrap'}">
 ${body}
 </main>

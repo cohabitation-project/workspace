@@ -187,19 +187,14 @@ test('the homepage never leads to Headquarters: Explore is a public hub, The Wor
 });
 
 test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep links behind it', async () => {
-  for (const [url, headers] of [['/library', COHABI], ['/petition', {}], ['/headquarters', {}]]) {
+  // 2026-11-19 (Geoffrey: profile pages and the 404 still had the old header): every page built by pages.layout now
+  // carries the same header as Social and the Marketplace (feedv2 appHeader), so there is one header, not two.
+  for (const [url, headers] of [['/library', COHABI], ['/m/nobody-here', {}]]) {
     const t = await (await fetch(B + url, { headers })).text();
-    const bar = t.slice(t.indexOf('<header class="topbar'), t.indexOf('</header>'));
-    assert.match(bar, /<details class="cohabi-menu"><summary class="brand"/, `${url}: the logo opens the one menu`);
-    const outside = bar.replace(/<details class="cohabi-menu">[\s\S]*<\/nav><\/details>/, '');
-    // 2026-11-16: the visitor's line is "What is the Commons?" and the note says what it is and how to apply; the
-    // Social submenu leads with Cohabi Social at /social (/feed is the old address, labelled Cohabi Feed); the
-    // market dropdown reads 🛍 Marketplace (marketmenu.mjs).
-    assert.match(bar, /href="\/commons">🏛 What is the Commons\? <small>/, `${url}: a visitor is told plainly and sent to the explainer (one menu everywhere, 2026-11-16)`);
-    assert.match(bar, /not a member of the Commons yet\. See what it is and how to apply\./, `${url}: the visitor's note says what the Commons is and how to apply`);
-    for (const deep of ['/headquarters', '/tools', '/images', '/submit', '/store', '/desk', '/spend', '/feed', '/label', '/petition']) assert.ok(!outside.includes(`href="${deep}"`), `${url}: ${deep} is not in the bar itself`);
-    assert.match(bar, /href="\/social">[^<]*Cohabi Social[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Marketplace ▾<\/summary><a href="\/label">/, `${url}: Cohabi Social, then the Marketplace dropdown (2026-11-13, labels 2026-11-16)`);
-    assert.match(outside, /href="\/signin"[^>]*>Sign in[\s\S]*href="\/signup"[^>]*>Sign up/, `${url}: a visitor sees Sign in and Sign up`);
+    assert.ok(!t.includes('<header class="topbar'), `${url}: the old header is gone`);
+    const bar = t.slice(t.indexOf('<header class="fx-top"'), t.indexOf('</header>'));
+    assert.match(bar, /<details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">/, `${url}: the logo opens the one menu`);
+    assert.match(bar, /href="\/signup"[^>]*>Sign up[\s\S]*href="\/signin[^"]*"[^>]*>Sign in/, `${url}: a visitor sees Sign up and Sign in`);
     for (const kept of ['/tools', '/images', '/submit', '/store']) assert.ok(t.includes(`href="${kept}"`), `${url}: ${kept} is still reachable from the page`);
   }
   // Social and the Marketplace keep their own designed headers: the logo leads home, "The Commons" opens the
