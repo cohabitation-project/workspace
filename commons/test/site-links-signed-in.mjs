@@ -57,6 +57,24 @@ test('signed-in market, social, wallet, studio and own-profile links lead to pag
     }
     assert.ok(ready, 'isolated Commons server started');
 
+    // Give the signed-in feed a real post whose own-page link must be crawled.
+    const createPost = await fetch(`${B}/api/posts`, {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json', 'x-commons': '1' },
+      body: JSON.stringify({ text: 'Signed-in link crawl fixture post.' })
+    });
+    assert.equal(createPost.status, 201, 'the signed-in member can create a text post');
+    const post = await createPost.json();
+    assert.ok(post.id, 'the post API returns its id');
+    const postPageHref = `/p/${post.id}`;
+    // /social is already a seed above; explicitly seed the post page as well as walking its feed link.
+    if (!queued.has(postPageHref)) {
+      queue.push({ href: postPageHref, from: 'post created by test' });
+      queued.add(postPageHref);
+    }
+    let postPageLinksFound = 0;
+    let postPagesCrawled = 0;
+
     while (queue.length > 0 && pagesCrawled < 150) {
       const { href: currentHref, from } = queue.shift();
       queued.delete(currentHref);
@@ -66,6 +84,7 @@ test('signed-in market, social, wallet, studio and own-profile links lead to pag
       const knownBroken = KNOWN_BROKEN.find((item) => normalizeHref(item.href, B) === currentHref);
       if (knownBroken) continue;
       pagesCrawled++;
+      if (currentHref === postPageHref) postPagesCrawled++;
 
       let response;
       try {
@@ -91,6 +110,7 @@ test('signed-in market, social, wallet, studio and own-profile links lead to pag
         if (!rawHref || !rawHref.startsWith('/') || skipLink(rawHref)) return;
         const normalized = normalizeHref(rawHref, B);
         if (!normalized) return; // Ignore protocol-relative links to other origins.
+        if (currentHref === '/social' && normalized === postPageHref) postPageLinksFound++;
         if (KNOWN_BROKEN.some((item) => normalizeHref(item.href, B) === normalized)) return;
         if (!visited.has(normalized) && !queued.has(normalized)) {
           queue.push({ href: normalized, from: currentHref });
@@ -99,6 +119,8 @@ test('signed-in market, social, wallet, studio and own-profile links lead to pag
       });
     }
 
+    assert.ok(postPageLinksFound > 0, `/social links to the created post page ${postPageHref}`);
+    assert.ok(postPagesCrawled > 0, `the signed-in crawl visits the post page ${postPageHref}`);
     if (badLinks.length > 0) {
       assert.fail(`Found ${badLinks.length} bad signed-in links:\n${badLinks.join('\n')}`);
     }
