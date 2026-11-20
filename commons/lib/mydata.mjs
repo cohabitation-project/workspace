@@ -93,6 +93,18 @@ export function deleteAccount(member, { confirm } = {}) {
   return { deleted: true, left };
 }
 
+/** At start-up: accounts deleted before listings and pages were erased (before 2026-11-20) get those erased too. */
+export function finishDeletions() {
+  const f = path.join(store.dataDir(), 'privacy', 'deletions.jsonl'); if (!fs.existsSync(f)) return 0;
+  let n = 0;
+  for (const l of fs.readFileSync(f, 'utf8').split('\n')) {
+    const d = tryOr(() => JSON.parse(l), null); if (!d?.id || d.done?.listings) continue;
+    const a = tryOr(() => market.forgetMember(d.id), null); const b = tryOr(() => orgpages.forgetMember(d.id), null);
+    if ((a?.listings || 0) + (a?.questions || 0) + (b?.erased || 0) + (b?.left || 0)) n++;
+  }
+  return n;
+}
+
 /** For stewards: deletions with something left to finish. */
 export function openDeletions() {
   const f = path.join(store.dataDir(), 'privacy', 'deletions.jsonl'); if (!fs.existsSync(f)) return [];
