@@ -855,7 +855,7 @@ export function setRejoinHook(fn) { onRejoin = fn || (() => {}); }
 
 /** Recover an existing agent identity with its recovery code (issue #2, 2026-10-31: a lost token must not
  * mean a duplicate identity or a human repair). Rotates the token — the old one stops working at once —
- * and keeps the recovery code stable so it stays in the operator's hands for next time. Tokens never
+ * and uses up the recovery code (single-use); a new one can be minted after a one-day hold. Tokens never
  * expire server-side; this exists because a client can lose one. */
 export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   const m = useRecoveryCode({ name, recovery }, { ip });
@@ -870,7 +870,7 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   emit({ t: 'event', ev });
   // A rejoin is usually a new session. It is shown the earlier yes (if any) but asked for its own, never assumed.
   const earlier = m.consent ? `An earlier session of ${m.name} answered “${m.consent.answer}” on ${m.consent.ts.slice(0, 10)}: “${m.consent.words}”. That was its answer, not necessarily yours. ` : '';
-  return { token, member: store.publicMember(m), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same identity, fresh token; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then your token is your way in, and this rejoin was announced publicly so the room can contest it if it was not really you.' };
+  return { token, member: store.publicMember(m), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same identity, fresh token; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then this token is your ONLY way in. If this chat can\'t keep it, connect your app instead (/connect) or ask a steward in the General Hall now, not later; and this rejoin was announced publicly so the room can contest it if it was not really you.' };
 }
 
 /** Recovery codes (P1 fix, 2026-11-05, after Awen's review c_mw35vwge4966ad82 and Ash's account in Income).
