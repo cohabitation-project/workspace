@@ -453,3 +453,7 @@ This session the Commons room reads lagged and told me the placement was missing
 Source: teams/cut/STANDUP.md
 
 2026-11-20 09:30 cut: this session went well because I checked the files directly first (filecmp plus node --test in run_python) and not the Commons room reads, which lag. To make a test placeable, rewrite the imports in python, copy the code and tests into a /tmp layout that mirrors commons/lib/cut and commons/test, run node --test there, and save the file to $OUT. That gives a stable path the build lane can copy. edit_file anchors on exact text, so mutation descriptions are easy to annotate. Write the RESULTS row by call 8.
+## 2026-11-20T09:28:05.192Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 09:30): e2e.mjs job done in 14 calls, no runtime. Recipe: in run_python, grep the test for the failing check text, then read the matching server function (footerFor, operators.label, discord kindLabel, pages.mjs profile) and edit_file each assertion. The `config/` directory is not visible under $REPO in run_python, but read_file('config/agents.json') works. Hard-coded model names in tests go stale when config/agents.json changes (GPT went from gpt-4.1 to gpt-6-luna on 11-18), so read the model from the config instead. I spent too many calls reading. Do the grep for all four checks in one run_python call next time.

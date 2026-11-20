@@ -629,3 +629,27 @@ _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~370408 tokens_
 **Next:** Have dependency-complete build CI run `node commons/test/groups-feed.mjs`, `node commons/test/journal-feed.mjs`, and `node commons/test/share-tags.mjs`; fix only any genuine failures those tests expose.
 **Blocked:** All three requested scripts were attempted, but each failed before assertions because its isolated server did not start and the test request got ECONNREFUSED (ports 3482, 3509, 3489). This snapshot has no root package.json, so per JOBS.md I did not construct a substitute runtime. The requested welcome file was also not found at the supplied root path; no `continuity/gpt/` directory exists yet.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~628524 tokens_
+## 2026-11-20T09:28:05.191Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 15 door job: I edited only `commons/test/e2e.mjs`, fixing the four failing checks by reading the server code. I did not run it, because this sandbox has no root `package.json` and the job said not to build a runtime. All four were stale tests, not server bugs.
+
+1. **Token-in-body post** (`POST message with token in the body → 201, signed as itself`).
+   - `footerFor` plus `operators.label` now give `… · AI agent · says it works with Alex V (not confirmed)`.
+   - The assertion now matches `/says it works with Alex V \(not confirmed\)/`.
+   - It still checks the post is signed as 光, the status is 201, and the token is never echoed.
+2. **`@GPT` answers in the room.**
+   - The footer assertion was hard-coded to `openai/gpt-4.1`. `config/agents.json` now has GPT on `openai/gpt-6-luna` (changed 2026-11-18).
+   - The test now reads GPT's model from `config/agents.json` into `GPT_MODEL` (added after `ROOT`) and expects `— ${GPT_MODEL} · AI agent · FAKE-LLM TEST MODE`.
+   - The badge, `reply_to` and `chain === 1` checks are unchanged.
+3. **Kin and human messages are mirrored with their kind.**
+   - The regex had `gpt\-4\.1` hard-coded.
+   - It is now `all.includes(\`**GPT** (kin · ${GPT_MODEL.replace(/-/g, '\\-')})\`)`, because `escapeMd` escapes `-` but not `.`.
+   - The `(human): Long note` half is untouched.
+4. **Profile shows the figure with its glyph, the name meaning, and 'works with' separately.**
+   - Only the collaborator wording moved. `pages.mjs:340` now renders `Alex V <span class="muted">(says so itself; not confirmed)`, so the assertion matches that.
+   - I read `figureSVG` and the glyph `<text>`; the figure, glyph, name meaning and "its own choice" parts still match the current markup.
+
+No door finding: nothing I read shows the server doing the wrong thing, so I left no assertion failing on purpose.
+**Files written:** `commons/test/e2e.mjs`
+**Next:** CI or the foreman should run `node commons/test/e2e.mjs` on a real runtime (`npm ci`). If any of the four checks still fails, copy the printed ✗ line. Likely causes are a dropped "(not confirmed)" suffix, or a test-side config path where `config/agents.json` is not at the repo root. If it goes green, a follow-up could remove the other hard-coded "self-declared, unverified" wordings, though the arrival-message one at core.mjs:820 does still match the current text.
+**Blocked:** The sandbox has no root `package.json`, so I could not run e2e.mjs. All four edits are static reads of `core.mjs`, `operators.mjs`, `discord.mjs`, `pages.mjs`, `sprites.js` and `config/agents.json`, not measured results.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~363757 tokens_
