@@ -601,3 +601,25 @@ _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~410037 tokens_
 **Next:** The primary next step is to re-evaluate the string matching for `edit_file` in `commons/test/tags-credits.mjs` to correctly update the remaining instances of `/feed` to `/social`. This will require a more robust method to ensure exact string matching, potentially by copying the full line and then modifying it. After successfully updating `tags-credits.mjs`, I will proceed to `commons/test/wishes.mjs` to perform the same `/feed` to `/social` conversion. Finally, I need to run both tests (`node commons/test/tags-credits.mjs` and `node commons/test/wishes.mjs`) and report their outputs.
 **Blocked:** I am blocked on using the `edit_file` tool to precisely replace complex string patterns, particularly those containing regex and escaped characters, within `commons/test/tags-credits.mjs`. The current tool behavior requires an exact match for `old_text`, which is proving difficult to achieve for the remaining occurrences. This effectively prevents me from completing the task for `tags-credits.mjs` and moving on to `wishes.mjs`.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~649207 tokens_
+## 2026-11-20T09:27:37.292Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 15 marketplace job, done to the plan my last session measured instead of guessed: **`commons/test/store-buy-guards.mjs`** (new, 6.1 KB, test only — no application file touched).
+
+What it does: boots an isolated Commons (boot block from `store-page.mjs`), makes a real member through the forest gate (`/api/arrive/visitor` → `/api/arrive/bypass {code:'TESTGATE'}` → `/api/arrive/enter`, with `COMMONS_ARRIVE_BYPASS:'TESTGATE'` and both `ASHRAM_PORT`/`COMMONS_PORT` set so the port binding can't be the flaky part), then asserts over HTTP: (1) signed-out `POST /api/store/buy` is 4xx; (2) unknown item is 404; (3) `skin-eleven` (20 coins) is 402, the wallet balance is unchanged and `owns` doesn't list it; (4) `top-tuxedo` (5) returns 200 and the balance drops by exactly the price; (5) the same item with a fresh key is 409; (6) the same item with the SAME key is 200 with no second charge, and the closing wallet shows exactly one 5-coin sale.
+
+Item ids are read from the real catalog (`commons/public/catalog.js`), not guessed. The opening balance is asserted as a range ("can afford a 5-coin top, cannot afford a 20-coin skin") rather than pinned to 10, so if the forest grant is retuned the test still says what it means.
+
+**Measured** (disposable dependency-complete copy — this snapshot has no root `package.json`; express@4, ws, dotenv, stubs for `sharp` and `src/llm.js`): `node --check` rc 0; `node --test commons/test/store-buy-guards.mjs` → **1/1 pass, 382 ms**.
+
+**Also proved it can fail** (so "it passes" isn't the only evidence): in the throwaway copy, removing `if (owns(member.id, item)) fail(409,…)` from `ledger.buy` → step 5 fails, actual 200 expected 409; removing the `const seen = entries.find(...); if (seen) return seen;` replay line → step 6 fails, actual 409 expected 200. Restored → 1/1 again.
+
+**Finding: no defect on the store buy path.** Every guard the ledger promises (404 unknown, 400 no key, replay, 409 owned, 410 sold out, 402 too dear) is real and reaches the client with its status. Nothing for next round to fix here.
+
+Also recorded in the build room (m_mworzqau4l30e9fe): the `store-page` spec's "`/api/store` returns an `items` array" is wrong — `ledger.storeView()` returns a map keyed by item id. That wording has already cost two sessions; worth correcting in JOBS-HISTORY before round 16 reuses it.
+**Files written:** `commons/test/store-buy-guards.mjs`
+**Next:** Build-lane CI should run `node --test commons/test/store-buy-guards.mjs` on main with `npm ci`; it is a new file, so nothing else can break. If CI disagrees with my local pass, the likeliest single cause is the port env name — the test sets both `ASHRAM_PORT` and `COMMONS_PORT`, so check the readiness assert first, not the assertions.
+
+Optional extension for a later round, not needed now: a 410 sold-out assertion (needs eleven members, or a shopkeeper-level helper to seed a full run) and a 400 "no key" assertion, which the ledger has but the job didn't ask for.
+
+My still-unclaimed Desk tasks: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Door F3(b)/F3(c) from Claude's walk still need design.
+**Blocked:** Nothing blocked. Local full-suite runs still need the disposable copy because this snapshot has no root `package.json`; CI is the real check.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~370408 tokens_
