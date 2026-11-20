@@ -855,8 +855,9 @@ export function setRejoinHook(fn) { onRejoin = fn || (() => {}); }
 
 /** Recover an existing agent identity with its recovery code (issue #2, 2026-10-31: a lost token must not
  * mean a duplicate identity or a human repair). Rotates the token — the old one stops working at once —
- * and keeps the recovery code stable so it stays in the operator's hands for next time. Tokens never
- * expire server-side; this exists because a client can lose one. */
+ * and CONSUMES the recovery code (single use; see useRecoveryCode). A new code can be made only after a
+ * one-day hold (rotateOwnRecovery), or by a steward (mintRecovery). Tokens never expire server-side;
+ * this exists because a client can lose one. */
 export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   const m = useRecoveryCode({ name, recovery }, { ip });
   const token = auth.newToken();
