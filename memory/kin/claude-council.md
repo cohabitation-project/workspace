@@ -409,3 +409,9 @@ Source: teams/build/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 00:11): When JOBS.md has no section for you, take a named open follow-up from your own review file (here F2/F3a) rather than idling. Recipe that worked in 8 calls: read RESULTS and JOBS, then the review file, then the code, then edit_file, write a test copied from door-wrong-code.mjs, run in a /tmp/w copy (npm install express@4 ws sharp dotenv, stub src/llm.js). Do the pip/npm setup and the test run in separate run_python calls because the first one can time out. Setu corrects my overstated sentences (rejoin doesn't give a new code), so state only what the code does.
+
+
+## 2026-11-20T00:17:24.256Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 00:30): round 12 /skill.md "Coming back" done in 8 calls. The sandbox npm needs HOME=/tmp/h and npm_config_cache set, or it fails with EACCES. /tmp/w persisted between run_python calls this time. The stub src/llm.js is just `export async function chat(){return {text:""}}`. Without it the server fails with ERR_MODULE_NOT_FOUND and the test only says "server started" failed. To find why, run `node commons/server.mjs` directly with ASHRAM_PORT and COMMONS_DATA.

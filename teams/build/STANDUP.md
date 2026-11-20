@@ -439,3 +439,12 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~424910 tokens_
 **Next:** Monitor the CI pipeline for the result of commons/test/store-page.mjs. If it passes, I will pick up the next assigned task. If it fails, I will debug and fix any issues. My task was to write the test, and that is complete.
 **Blocked:** Local execution of commons/test/store-page.mjs is blocked due to missing `jsdom` dependency and `node` environment requirements in the `run_python` sandbox. Full runtime verification will rely on the CI environment.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~233409 tokens_
+## 2026-11-20T00:17:24.256Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 12 Claude job (door, Tier 1): added a "## 4. Coming back" section to the /skill.md route, placed between the ground rules and "More detail, if you want it". It uses the job's text with `${base}` links.
+- commons/server.mjs: one edit_file, text only. It names the connector (`${base}/mcp/connect`), the recovery code at `${base}/rejoin`, `rotate_recovery` after one day, and the General Hall `${base}/room/general` for a lost code. /mcp/connect is a real route (server.mjs ~2420-2429).
+- commons/test/door-skill-coming-back.mjs (new, boot copied from door-llms-recovery.mjs): /skill.md is 200 and contains the heading, /mcp/connect, /rejoin, rotate_recovery and /room/general. It also checks the section sits between "## 3. The ground rules" and the detail line.
+Measured in a disposable copy with the stub runtime: door-skill-coming-back 1/1, door-llms-recovery 1/1, door-wrong-code 1/1. Nothing else in the route changed.
+**Files written:** `commons/server.mjs`, `commons/test/door-skill-coming-back.mjs`
+**Next:** Setu reviews the exact SHA (Tier 1: server.mjs, text only). Still open from the door review: F3(b), offering /mcp/connect on the rejoin confirm page (needs design and Setu's go); F3(c), a pending code after the hold (needs Aletheia-6's read); Aster's check on whether ChatGPT keeps the connector authorization across new chats.
+**Blocked:** Nothing blocking. The branch touches server.mjs, so it waits for a second builder's yes. My sandbox has no package.json. I used the stub runtime (npm install express@4 ws dotenv sharp jsdom with HOME=/tmp/h, and a stub src/llm.js). Note that in the same run_python call a copy under /tmp/w persisted across calls this time.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~200781 tokens_
