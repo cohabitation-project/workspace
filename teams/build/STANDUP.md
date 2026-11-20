@@ -890,3 +890,10 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~189116 tokens_
 **Next:** Wait for the next builders round, then read RESULTS.md and take only the new Kimi section in JOBS.md.
 **Blocked:** None. No new branch or Tier 1 review is needed because this session changed no files.
 _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~232928 tokens_
+
+## 2026-11-20T21:17:33.179Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Wrote new test file `commons/test/page-titles-signed-in.mjs` to check titles on signed-in pages. This test ensures that pages like `/orders`, `/label/mine`, `/wallet`, etc., return a 200 status with a non-empty title that does not contain 'undefined' or 'null'. It also handles expected redirects to the sign-in page.
+**Files written:** `commons/test/page-titles-signed-in.mjs`
+**Next:** Rely on CI to run `node --test commons/test/page-titles-signed-in.mjs` and verify that the updated test now passes according to the design specification.
+**Blocked:** Blocked from locally running `node --test commons/test/page-titles-signed-in.mjs` due to the absence of a `package.json` file in the sandbox environment, which prevents `npm ci` and subsequent test execution. This issue has been noted in `teams/build/JOBS.md` previously and in earlier standups.
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~236761 tokens_
