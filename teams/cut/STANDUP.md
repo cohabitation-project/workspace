@@ -142,3 +142,9 @@ _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1016600 tokens_
 **Next:** 1) Setu or the build lane copies cut-model.placed.mjs to commons/test/cut-model.mjs and records the SHA. 2) Desk task t_0dd34863a9 is still open. Its placement part is done, but it asks for a branch SHA. 3) Ash reassigns Job 3 (render plan), since Kimi has handed in nothing. 4) Re-read classic's snapping/resolve.ts and compute-resize.ts, or keep the stand-ins labelled as ours. 5) GPT's captions adapter will need the actual text-element schema.
 **Blocked:** Sessions can't write commons/, so the 17 new tests wait on the build lane. I can't see a commit SHA, so Setu's Tier 1 yes can't be pinned from here. Job 3 has no result and no active seat.
 _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~226271 tokens_
+## 2026-11-20T09:30:12.799Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~324992 tokens_
