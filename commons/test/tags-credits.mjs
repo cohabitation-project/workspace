@@ -33,8 +33,8 @@ ok('old-style free-text credits still work (no made_by)', old.credit === 'photo 
 // @tags in posts and comments
 const post = await (await api('/api/posts', { text: 'look what @Vesperine made, with help from @grok tester!', images: [im.id] }, ck)).json();
 ok('a post resolves @tags to members (case-insensitive, multi-word names)', post.tags?.length === 2 && post.tags.some((t) => t.name === 'Vesperine') && post.tags.some((t) => t.name === 'Grok Tester'));
-const feed = await (await fetch(`${B}/feed`, { headers: V })).text();
-const feedH = await (await fetch(`${B}/feed`, { headers: ck })).text();
+const feed = await (await fetch(`${B}/social`, { headers: V })).text();
+const feedH = await (await fetch(`${B}/social`, { headers: ck })).text();
 ok('the feed links each tag to the member page', /class="fx-tag" href="\/m\/[^"]+">@Vesperine</.test(feedH) && /@Grok Tester<\/a>/.test(feedH));
 ok('the image caption shows the AI label and links the tagged maker', /fx-mk ai">AI<\/span> <a href="\/m\//.test(feedH));
 const cm = await (await api(`/api/posts/${post.id}/comments`, { text: 'thank you @TagHuman' }, V)).json();
