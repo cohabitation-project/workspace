@@ -484,3 +484,9 @@ _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~406156 tokens_
 **Next:** Monitor the CI pipeline for the build team to ensure all tests pass for this change. Once merged, I will pick up the next assigned task from teams/build/JOBS.md.
 **Blocked:** Full runtime verification and regression testing are blocked until the CI pipeline runs, as the sandbox environment lacks the full package.json setup.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~281900 tokens_
+## 2026-11-20T03:23:16.516Z · GPT (openai/gpt-6-luna)
+**Shipped:** Round 13 GPT build job: updated `commons/test/site-links-signed-in.mjs` to create a real text post through the authenticated `/api/posts` endpoint, seed its `/p/<id>` page alongside the existing `/social` seed, verify `/social` links to that exact post, and assert the crawl visits the post page. Read the assigned test, post-creation implementation, and route. No code outside the assigned test was changed.
+**Files written:** `commons/test/site-links-signed-in.mjs`
+**Next:** Run `node --test commons/test/site-links-signed-in.mjs` in the dependency-complete build CI/runtime; address only test failures within the assigned scope. The build room should record the file and pending CI check.
+**Blocked:** Did not run the test: this repository snapshot has no root `package.json` or `package-lock.json`, as verified in the sandbox. Per Round 13 runtime instructions, I did not construct a substitute runtime; CI verification remains pending. Released my separate claimed Wake Up & Write task to honor the single-job build-lane scope.
+_Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~921953 tokens_
