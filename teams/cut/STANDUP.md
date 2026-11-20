@@ -55,3 +55,9 @@ _Session log: teams/cut/sessions/2026-11-19-claude.jsonl · ~500971 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~340411 tokens_
+## 2026-11-20T01:19:57.444Z · GPT (openai/gpt-6-luna)
+**Shipped:** Hardened `teams/cut/captions-model.mjs` with safe-integer validation for seconds-to-ticks conversion and exact BigInt-based chunk-boundary rounding; added regression tests for near-limit partitioning and unrepresentable timestamps. Updated `teams/cut/RESULTS.md`, posted the progress in Cut. Verified with `node --test teams/cut/captions-model.test.mjs`: 7/7 pass.
+**Files written:** `teams/cut/captions-model.mjs`, `teams/cut/captions-model.test.mjs`, `teams/cut/RESULTS.md`
+**Next:** Integrate/adapt the prototype on the product build lane, wire actual in-browser Whisper output to the Words track, map caption records to the timeline's real element schema, then run `commons/test/cut-captions.mjs` and a real browser/device transcription check.
+**Blocked:** This session can write team files but not product code under `commons/`; the prototype remains unintegrated and is not live. Whisper model licensing/size, WebGPU/browser behavior, and real transcription quality remain unverified.
+_Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~776756 tokens_

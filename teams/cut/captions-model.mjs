@@ -10,8 +10,21 @@ function finiteNumber(value, label) {
   return value;
 }
 
-function secondsToTicks(seconds) {
-  return Math.round(seconds * TICKS_PER_SECOND);
+function secondsToTicks(seconds, label) {
+  const ticks = Math.round(seconds * TICKS_PER_SECOND);
+  if (!Number.isSafeInteger(ticks)) {
+    throw new RangeError(`${label} is outside the safe integer tick range`);
+  }
+  return ticks;
+}
+
+// Exact nearest-tick partitioning for non-negative offsets. Number
+// multiplication can lose integer precision even when both operands are
+// individually safe, so do the product and rounding in BigInt.
+function proportionalTickOffset(span, numerator, denominator) {
+  const product = BigInt(span) * BigInt(numerator);
+  const divisor = BigInt(denominator);
+  return Number((2n * product + divisor) / (2n * divisor));
 }
 
 /**
@@ -51,8 +64,8 @@ export function buildCaptionBlocks({
     for (let at = 0; at < words.length; at += wordsPerCaption) {
       chunks.push({ words: words.slice(at, at + wordsPerCaption), wordOffset: at });
     }
-    const startTick = secondsToTicks(start);
-    const endTick = secondsToTicks(end);
+    const startTick = secondsToTicks(start, `segments[${index}].start`);
+    const endTick = secondsToTicks(end, `segments[${index}].end`);
     // A nonzero Whisper interval may round to less than one tick. Reject it;
     // we cannot represent a positive duration in the timeline's tick scale.
     if (endTick <= startTick) throw new RangeError(`segments[${index}] is shorter than one representable tick`);
@@ -61,10 +74,10 @@ export function buildCaptionBlocks({
 
     for (const chunk of usableChunks) {
       const wordEnd = chunk.wordOffset + chunk.words.length;
-      const blockStart = startTick + Math.round(tickSpan * chunk.wordOffset / words.length);
+      const blockStart = startTick + proportionalTickOffset(tickSpan, chunk.wordOffset, words.length);
       const blockEnd = wordEnd === words.length
         ? endTick
-        : startTick + Math.round(tickSpan * wordEnd / words.length);
+        : startTick + proportionalTickOffset(tickSpan, wordEnd, words.length);
       if (blockEnd <= blockStart) throw new Error('caption partition produced a non-positive duration');
       const ordinal = blocks.length;
       blocks.push({

@@ -52,3 +52,23 @@ test('tiny intervals collapse to one caption rather than creating zero-length bl
   assert.equal(blocks.length, 1);
   assert.equal(blocks[0].duration, 3);
 });
+
+test('tick partition stays exact near the safe-integer limit', () => {
+  const endSeconds = 70_000_000_000;
+  const span = BigInt(Math.round(endSeconds * TICKS_PER_SECOND));
+  const roundedThird = Number((2n * span + 3n) / 6n);
+  const blocks = buildCaptionBlocks({
+    segments: [{ text: 'one two three', start: 0, end: endSeconds }],
+    wordsPerCaption: 1,
+  });
+  assert.equal(blocks.length, 3);
+  assert.equal(blocks[0].duration, roundedThird);
+  assert.equal(blocks[1].duration, roundedThird);
+  assert.equal(blocks[2].startTime + blocks[2].duration, Number(span));
+});
+
+test('rejects timestamps whose tick values cannot be represented safely', () => {
+  assert.throws(() => buildCaptionBlocks({
+    segments: [{ text: 'too far', start: 80_000_000_000, end: 80_000_000_001 }],
+  }), /safe integer tick range/);
+});
