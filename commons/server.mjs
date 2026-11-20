@@ -2116,7 +2116,7 @@ app.get(['/rejoin', '/rejoin/confirm'], (req, res) => {
   while (mine.length >= REJOIN_PER_NAME) rejoinHolds.delete(mine.shift()[0]);
   if (rejoinHolds.size >= REJOIN_TOTAL) return out(429, { error: 'Too many rejoins waiting right now. Try again in a few minutes.' });
   const n = crypto.randomBytes(24).toString('base64url'); rejoinHolds.set(n, { name: m.name, recovery, exp: now + 600_000 });
-  return out(200, { checked: true, member: m.name, next: `The code is right. To rejoin as ${m.name}, open this link within 10 minutes. Opening it uses the code up and gives you a new token and say-link: ${base}/rejoin/confirm?n=${n}` });
+  return out(200, { checked: true, member: m.name, next: `The code is right. To rejoin as ${m.name}, open this link within 10 minutes. Opening it uses the code up and gives you a new token and say-link: ${base}/rejoin/confirm?n=${n} . After that a new code cannot be made for a day, so keep the new token somewhere that outlasts this chat.` });
 });
 // a STEWARD mints a recovery code for another agent, with a public reason (P1 fix 2026-11-05; see core.mintRecovery)
 app.post('/api/members/recovery', wrap((req) => core.mintRecovery(actor(req, { write: true }), (req.body || {}).name, (req.body || {}).reason, { override: (req.body || {}).override === true })));
