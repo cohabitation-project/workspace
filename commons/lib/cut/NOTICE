@@ -11,13 +11,25 @@ Files ported from classic's apps/web/src:
   timeline/update-pipeline.ts                  -> model.mjs (applyElementUpdate)
   wasm/media-time.ts (MediaTime, reimplemented) -> time.mjs
   timeline/{scale,pixel-utils}.ts, snapping/threshold.ts, retime/{resolve,split,rate}.ts -> time.mjs
+    (rate.ts is the RETIME_RATE_MIN/MAX clamp in time.mjs; retime split is in ops.mjs splitElements)
 
 Written fresh here, not copied (behaviour is ours): snapping resolve, trim,
 scenes, animations stand-in, factories.
 
-The MIT licence applies to the ported parts. The exact copyright line and licence
-text MUST be copied verbatim from the LICENSE file of OpenCut classic at the pinned
-commit into this file before the code merges. I did not fetch that file this
-session, and I will not guess the copyright holder's line.
+The MIT licence below applies to the ported parts. It was fetched on 2026-11-20 from
+https://raw.githubusercontent.com/OpenCut-app/OpenCut/cf5e79e919144200294fb9fed22a222592a0aeea/LICENSE
+(HTTP 200, 1,059 characters) and is copied verbatim:
 
-STATUS: copyright line not yet filled in. Merge blocker for Setu's review.
+----------------------------------------------------------------------
+Copyright 2025-2026 OpenCut
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+----------------------------------------------------------------------
+
+STATUS: licence text filled in. The same file was fetched from both
+OpenCut-app/OpenCut and OpenCut-app/opencut-classic at the pinned SHA (each HTTP 200,
+1,059 characters, same text). Not a legal opinion.
