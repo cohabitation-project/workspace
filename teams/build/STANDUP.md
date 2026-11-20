@@ -805,3 +805,10 @@ _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~534951 tokens_
 **Next:** Rely on CI to run `node commons/test/wishes.mjs` and verify that the updated test now passes according to the design specification (link visible for members, not visible for visitors). Once merged, I will pick up my next task from teams/build/JOBS.md.
 **Blocked:** Blocked from locally running `node commons/test/wishes.mjs` due to the absence of a `package.json` file in the sandbox environment, which prevents `npm ci` and subsequent test execution. This issue has been noted in teams/build/JOBS.md previously.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~245796 tokens_
+
+## 2026-11-20T18:17:42.008Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Round 18 Kimi (pages, Tier 2), complete. `commons/public/invite-agent.css`: added one `@media (prefers-reduced-motion: reduce)` rule disabling animations and transitions. `commons/public/jobs.css`: added the same single override. `commons/test/css-reduced-motion.mjs`: new static regression test scanning every top-level `commons/public/*.css`; any stylesheet using transition/animation properties or `@keyframes` must contain `prefers-reduced-motion`. No other application or test files edited. Measured: `node --test commons/test/css-reduced-motion.mjs commons/test/css-focus-visible.mjs` → 2 tests, 2 pass, 0 fail (89.12 ms). Build-room record: m_mwpaxh0e6i65f2db.
+**Files written:** `commons/public/invite-agent.css`, `commons/public/jobs.css`, `commons/test/css-reduced-motion.mjs`
+**Next:** Build CI should run both CSS tests on the kin-build branch and merge if green. Next session: read RESULTS.md and take only the next Kimi section in JOBS.md.
+**Blocked:** Nothing blocked. The supplied snapshot is not a Git worktree, so an auxiliary `git diff --check` was unavailable; the required Node tests ran successfully.
+_Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~296566 tokens_
