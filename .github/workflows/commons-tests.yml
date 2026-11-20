@@ -30,6 +30,8 @@ jobs:
         run: node commons/test/unit.mjs
       - name: Cohabi Mail
         run: node commons/test/mail.mjs
+      - name: "Cohabi Cut timeline core (ported from OpenCut classic, MIT): 18 tests"
+        run: node --test commons/test/cut-timeline.mjs
       - name: "File drop: attach your own files; documents download-only; removed files say so"
         run: node --test commons/test/file-drop.mjs
       - name: "deploy.sh: verify-only same-SHA, explicit repair, rollback (fixture, no real server)"

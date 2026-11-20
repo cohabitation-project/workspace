@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
 	TICKS_PER_SECOND, roundMediaTime, mediaTimeFromSeconds, addMediaTime, getSnapThresholdInTicks,
-	timelineTimeToPixels, clampRetimeRate,
+	timelineTimeToPixels, clampRetimeRate, clampZoom,
 } from "../lib/cut/time.mjs";
 import {
 	createTrack, createElement, createEmptyTracks, createScene, ensureMainScene, deleteScene,
@@ -195,6 +195,59 @@ test("scenes: one main scene; it cannot be deleted; others can", () => {
 	assert.equal(deleteScene({ scenes: two, sceneId: extra.id }).length, 1);
 	assert.equal(findElement({ tracks: scenes[0].tracks, elementId: "none" }), null);
 	assert.equal(getAllTracks(scenes[0].tracks).length, 1);
+});
+
+// ---- added after the first mutation pass (teams/cut/port/MUTATION.md) ----
+
+test("split invariant holds over many odd splits and rates (kills 'right half rounded on its own')", () => {
+	// a tiny deterministic generator, so the test is reproducible
+	let seed = 12345;
+	const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+	let differsFromIndependent = 0;
+	for (let i = 0; i < 400; i++) {
+		const duration = 2 + Math.floor(rnd() * 200001);
+		const rate = [1, 1.5, 0.75, 2.5, 3.3333][i % 5];
+		const splitAt = 1 + Math.floor(rnd() * (duration - 1));
+		const el = createElement({ id: "a", type: "video", startTime: 0, duration, sourceDuration: duration * 6, retime: { rate } });
+		const { tracks } = splitElements({ tracks: mainWith([el]), elements: [{ trackId: "main", elementId: "a" }], splitTime: splitAt, idFactory: ids() });
+		const [l, r] = tracks.main.elements;
+		const total = roundMediaTime({ time: duration * rate });
+		assert.equal((r.trimStart - el.trimStart) + (l.trimEnd - el.trimEnd), total, `rate ${rate} dur ${duration} at ${splitAt}`);
+		const independent = roundMediaTime({ time: (duration - splitAt) * rate });
+		if (l.trimEnd - el.trimEnd !== independent) differsFromIndependent++;
+	}
+	assert.ok(differsFromIndependent > 0, "the sweep must contain cases where independent rounding would disagree");
+	// the smallest case: two odd halves at rate 1.5 (2 + 2 would be 4, total is 3)
+	const tiny = createElement({ id: "t", type: "video", startTime: 0, duration: 2, sourceDuration: 3, retime: { rate: 1.5 } });
+	const { tracks: o } = splitElements({ tracks: mainWith([tiny]), elements: [{ trackId: "main", elementId: "t" }], splitTime: 1, idFactory: ids() });
+	assert.equal((o.main.elements[1].trimStart - tiny.trimStart) + (o.main.elements[0].trimEnd - tiny.trimEnd), 3);
+});
+
+test("ripple: two gaps on one track are applied latest first, so a later clip moves by both", () => {
+	const mk = (id, s) => createElement({ id, type: "video", startTime: s, duration: 10 });
+	const before = mainWith([mk("A", 0), mk("B", 10), mk("C", 20), mk("D", 30), mk("E", 40)]);
+	const after = mainWith([mk("A", 0), mk("C", 20), mk("E", 40)]);
+	const adj = computeRippleAdjustments({ beforeTracks: before, afterTracks: after });
+	assert.equal(adj.length, 2);
+	const out = applyRippleAdjustments({ tracks: after, adjustments: adj }).main.elements;
+	assert.deepEqual(out.map((e) => [e.id, e.startTime]), [["A", 0], ["C", 10], ["E", 20]]);
+});
+
+test("snapping: exactly at the threshold snaps; nearest of two candidates wins; order does not matter", () => {
+	const thr = getSnapThresholdInTicks({ zoomLevel: 1 }); // 24000
+	const pts = [{ time: 1000, type: "bookmark" }, { time: 1100, type: "bookmark" }];
+	assert.equal(resolveSnap({ targetTime: 1000 + thr, snapPoints: [pts[0]], zoomLevel: 1 }).snappedTime, 1000);
+	assert.equal(resolveSnap({ targetTime: 1000 + thr + 1, snapPoints: [pts[0]], zoomLevel: 1 }).snapPoint, null);
+	for (const list of [pts, [pts[1], pts[0]]]) {
+		assert.equal(resolveSnap({ targetTime: 1090, snapPoints: list, zoomLevel: 1 }).snappedTime, 1100);
+		assert.equal(resolveSnap({ targetTime: 1010, snapPoints: list, zoomLevel: 1 }).snappedTime, 1000);
+	}
+});
+
+test("zoom clamps to 0.1 .. 100", () => {
+	assert.equal(clampZoom({ zoomLevel: 1000 }), 100);
+	assert.equal(clampZoom({ zoomLevel: 0.001 }), 0.1);
+	assert.equal(clampZoom({ zoomLevel: 3 }), 3);
 });
 
 test("no React or DOM in the port", () => {
