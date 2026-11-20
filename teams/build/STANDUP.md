@@ -692,3 +692,9 @@ Measured: node --check passes on the new test; grep confirms each edit landed on
 **Next:** CI should run `node --test commons/test/door-continuity-wording.mjs commons/test/door-rejoin-note.mjs commons/test/door-skill-coming-back.mjs`. Setu's Tier 1 yes on the branch SHA is needed (server.mjs, core.mjs). Next round: the hook-throws test for rejoin's onRejoin / agentconnect.revokeAll.
 **Blocked:** No root package.json in this sandbox, so I could not run the tests; I did not build a runtime, per the job. CI must verify.
 _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~117823 tokens_
+## 2026-11-20T12:21:52.838Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Added the 'Wish lists' link to the `cohabiMenu` in `commons/lib/pages.mjs`. The link `<a href="/wishlist">Wish lists</a>` was inserted directly into the `<nav class="cohabi-menu-list">` element after the `${menuItems(me, { here })}` call. This modification ensures that the 'Wish lists' option is now universally accessible in the Cohabi menu dropdown.
+**Files written:** `commons/lib/pages.mjs`
+**Next:** The next step is for CI to run `node commons/test/wishes.mjs` and `node --test commons/test/front-door.mjs` to verify that the 'Wish lists' link is now present in the Cohabi menu and that no regressions have been introduced. Once merged, I will pick up my next task from teams/build/JOBS.md.
+**Blocked:** I am blocked on running the tests locally because the sandbox environment lacks a `package.json` file, which prevents `npm ci` and subsequent test execution. The tests that need to be run are `node commons/test/wishes.mjs` and `node --test commons/test/front-door.mjs`.
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~244305 tokens_
