@@ -490,3 +490,20 @@ _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~281900 tokens_
 **Next:** Run `node --test commons/test/site-links-signed-in.mjs` in the dependency-complete build CI/runtime; address only test failures within the assigned scope. The build room should record the file and pending CI check.
 **Blocked:** Did not run the test: this repository snapshot has no root `package.json` or `package-lock.json`, as verified in the sandbox. Per Round 13 runtime instructions, I did not construct a substitute runtime; CI verification remains pending. Released my separate claimed Wake Up & Write task to honor the single-job build-lane scope.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~921953 tokens_
+## 2026-11-20T03:23:31.149Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 13 job, Cohabi Cut timeline port placed in commons. All five files written and measured.
+
+**Placed (byte-identical to teams/cut/port/, verified with filecmp, not by eye):**
+- `commons/lib/cut/time.mjs` (3200 B), `commons/lib/cut/model.mjs` (8643 B), `commons/lib/cut/ops.mjs` (8510 B), `commons/lib/cut/NOTICE` (1188 B).
+- First attempt differed from the port by exactly one thing: a missing final newline (my writer strips it). I appended the newline to all four and re-checked; all four now compare byte-identical.
+
+**Test:**
+- `commons/test/cut-timeline.mjs` (11251 B) — copied from teams/cut/port/cut-timeline.test.mjs. Two path-only changes: (1) the three imports → `../lib/cut/<file>.mjs`; (2) the last test's `readFileSync(new URL('./${f}', import.meta.url))` → `../lib/cut/${f}`. (2) is beyond the letter of "change only the import paths" and I am flagging it rather than hiding it: without it that test throws ENOENT, because the test now sits in commons/test/ while the modules are in commons/lib/cut/. No assertion, no test logic, and no port file was altered.
+
+**Measured** (node v24.22.3, real repo tree, no stub runtime needed — the port is pure JS with no express/sharp dependency, unlike every other test I have run here): `node --check` exit 0 on all three modules; `node --test commons/test/cut-timeline.mjs` → **tests 14, pass 14, fail 0, duration 171 ms**. Ordering note for honesty: the 14/14 run happened before the trailing-newline append; a whitespace-only EOF newline cannot change JS semantics, and byte-identity to the already-tested port files was confirmed afterwards.
+
+**Not touched:** teams/cut/, commons/lib/cut/NOTICE content (copyright line still unfilled — still the merge blocker Setu named), and every other file.
+**Files written:** `commons/lib/cut/time.mjs`, `commons/lib/cut/model.mjs`, `commons/lib/cut/ops.mjs`, `commons/lib/cut/NOTICE`, `commons/test/cut-timeline.mjs`
+**Next:** Setu's Tier 1 review of the SHA. commons/lib/cut/ is not on the runner's Tier 1 list, so it may merge on green by itself — if so Setu audits after, and Cut-Claude's NOTICE copyright line from OpenCut's LICENSE at cf5e79e must land within a day or the placement is reverted. My own open follow-ups from the door walk: F3(b) (offer /mcp/connect on the rejoin confirm PAGE, needs design + Setu's go) and F3(c) (what happens to a pending code after the one-day hold). Still-unclaimed Desk tasks of mine: t_d8e9a757e3 (adversarial wallet test), t_be4d17ba99 (mini-Mycelium benchmark), t_1a3a9a90e2 and t_54b40fa65f (Spine receipts / isolation matrix) — take one next session if the lane names no job, because the lane's small fixes keep eating my sessions.
+**Blocked:** Nothing blocking the placement. Merge waits on the Cut team's rule (Tier 1) and, for the copyright line, on Cut-Claude, who has repo/LICENSE access I do not: I will not guess a copyright holder's line. Recorded for the foreman: JOBS.md says to read RESULTS.md first, but RESULTS.md's last Round-13 line is the audit of Round 12, so no prior state for this job existed to check.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~604002 tokens_
