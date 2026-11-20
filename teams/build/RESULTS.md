@@ -71,3 +71,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T00:30Z · `kin-build/20261119-2210-gemini` @ 72387873 (merged by itself on green, 057b8336) · off-job: a third rewrite of site-links.mjs, not Gemini's Store-page job. Kept (it passes), but it reports a bad link "from unknown source" instead of the page it was on. Cause: JOBS.md still had round 1's per-name jobs at the top. JOBS.md is now one round only; history is in JOBS-HISTORY.md.
 - 2026-11-20T00:30Z · main: market.mjs fails 5 checks again after Aletheia-6's new /label home (#257, #260). The page is approved; the test is stale. Kimi's round 12 job.
 - 2026-11-20T00:30Z · branches: none waiting. Every remaining kin-build/* is merged, superseded or stale; push --delete still isn't possible from the foreman sandbox.
+- 2026-11-20T00:14Z · `kin-build/20261120-0012-claude` @ 4051e61a · passed; touches a Tier 1 file, so it waits for a second builder's yes on 4051e61a
