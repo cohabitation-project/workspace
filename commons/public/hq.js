@@ -1064,18 +1064,15 @@ function csSay(text) {
   searcher.bubble.textContent = text; searcher.bubble.classList.add('show');
   clearTimeout(searcher.bubbleTimer); searcher.bubbleTimer = setTimeout(() => searcher.bubble.classList.remove('show'), 7000);
 }
+// Geoffrey, 2026-11-18: no album pop-ups unless someone asks ("Hear a record" in the talk card). He greets a
+// newcomer once (once per browser), with a speech bubble only, and talks when clicked.
 function csMaybePitch(roomId) {
-  const now = Date.now();
-  if (now - csLastPitch < 150000) return; // at most once every ~2.5 min, so he stays charming
   const someone = [...S.presence.values()].some((p) => p.room === roomId && p.member !== 'church-searcher');
   if (!someone) return;
-  csLastPitch = now;
-  csLoad().then((als) => {
-    if (!als.length) return;
-    const al = als[csIdx % als.length]; csIdx++;
-    csSay("Hi \u2014 I'm Church Searcher. Have one of my records, on me \uD83C\uDFB5");
-    csCard(al);
-  });
+  let seen = false; try { seen = localStorage.getItem('cs-greeted') === '1'; } catch { seen = csLastPitch > 0; }
+  if (seen || csLastPitch) return;
+  csLastPitch = Date.now(); try { localStorage.setItem('cs-greeted', '1'); } catch { /* private mode: once per visit */ }
+  csSay("Hi, welcome in. I'm Church Searcher. Click me if you want to talk.");
 }
 function csCard(al) {
   csCloseCard();

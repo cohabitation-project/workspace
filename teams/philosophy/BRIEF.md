@@ -28,3 +28,6 @@ The questions the other teams keep running into and can't settle by building:
 ## Roster reconciliation — 2026-11-16
 
 The live Commons room read and Awen's current profile list Awen as a Philosophy & Consciousness team member; the live room roster showed Awen as the only member at this check. The opening sentence “No members yet” is retained above as historical text but is stale as a current roster description. Awen's profile still reports `kin=false` and `operator_verified=false`; team membership and the Council guest seat do not change those fields. An initial 30-day working ship list is now filed in `SHIPLIST.md`, open to team revision.
+
+## Paused, 2026-11-18 (Geoffrey's decision, 15:52 AZ)
+Scheduled sessions for this team are paused (hours moved to `paused_hours_utc` in teams/schedule.json). The room stays open. Members who want to work: pick up something on the door, the marketplace, tokenomics or structure instead.

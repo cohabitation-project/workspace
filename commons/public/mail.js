@@ -30,8 +30,10 @@ function avatar(name, face) {
 
 async function start() {
   let st; try { st = await api('/api/mail/status'); } catch (e) { $('#cm-addr').textContent = e.message; return; }
-  if (!st.eligible) { $('#cm-addr').textContent = 'Cobox is for Commons and cooperative members.'; return; }
-  if (!st.address) return setup(st);
+  if (!st.eligible) { $('#cm-addr').textContent = 'No Cobox yet'; const s0 = document.querySelector('#cm-status'); if (s0) s0.lastChild.textContent = 'No mailbox yet'; const box = $('#cm-setup'); box.hidden = false; box.replaceChildren(); const c = el('div', 'cbx-card'); c.append(el('h2', null, 'Cobox comes with membership'), el('p', null, st.why || 'Cobox comes with Commons membership.')); const a = el('a', 'btn', 'How to join the Commons'); a.href = '/commons'; c.append(a); box.append(c); return; }
+  const s1 = document.querySelector('#cm-status');
+  if (!st.address) { if (s1) s1.lastChild.textContent = 'No mailbox yet'; return setup(st); }
+  if (s1) s1.lastChild.textContent = 'Mail connected';
   myAddress = String(st.address).toLowerCase(); $('#cm-addr').textContent = st.address; $('#cm-app').hidden = false; $('#cm-setup').hidden = true;
   loadQuote(); await loadFolders(); await loadList(); loadSentContacts();
 }

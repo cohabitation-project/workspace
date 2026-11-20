@@ -11,6 +11,8 @@ Updated 2026-11-15: added two intermediate arc sites per tendon (approx circular
 Updated 2026-11-15 later: added provisional cylinder geoms (r=0.008) centered at pulley sites as visual/structural stand-in for wrap bodies; sites remain spatial approximation. True MuJoCo wrap (cylinder + wrap sites) still recommended for full monotonicity and contact. Radius convention open / not frozen. All values provisional.
 Updated 2026-11-15 night: advanced to true-wrap attempt by routing spatial tendons over the cylinder geoms with sidesites (arc*a as sidesite proxies). This should produce more monotonic ΔL ≈ r*θ under radius convention. Needs verification when MuJoCo available; intermediate sites retained as fallback. All values provisional. Radius convention open / not frozen.
 Updated 2026-11-15 late evening: refined arc sidesite positions to exact r=0.008 m offsets at 30/60 deg (dx/dz calculated from cos/sin) for closer match to the open radius convention. Pure-Python kinematic and antagonistic stand-in unchanged. Needs MuJoCo verification for load and monotonic ΔL. All values provisional.
+Updated 2026-11-17: advanced routing to multi-point wrap by inserting arc*b (60 deg) sites as intermediate points before the cylinder geom + arc*a sidesite. Chord error ~1.1% supports this approximation. Still provisional; full circular wrap later. Radius convention open / not frozen. Needs MuJoCo verification for path monotonicity.
+Updated 2026-11-19: distinguished distal pulley (r=0.006 m) with matching exact arc2a/arc2b sidesite offsets; primary remains r=0.008 m. Geometry provisional pending local path-length check.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
@@ -24,9 +26,9 @@ Updated 2026-11-15 late evening: refined arc sidesite positions to exact r=0.008
       <site name="arc1a" pos="0.032928 0.008 0.034"/>
       <site name="arc1b" pos="0.030 0.008 0.036928"/>
       <site name="pulley2" pos="0.026 -0.008 0.030"/>
-      <geom name="pulley_cyl2" type="cylinder" size="0.008 0.004" pos="0.026 -0.008 0.030" rgba="0.7 0.7 0.7 1"/>
-      <site name="arc2a" pos="0.032928 -0.008 0.034"/>
-      <site name="arc2b" pos="0.030 -0.008 0.036928"/>
+      <geom name="pulley_cyl2" type="cylinder" size="0.006 0.004" pos="0.026 -0.008 0.030" rgba="0.7 0.7 0.7 1"/>
+      <site name="arc2a" pos="0.031196 -0.008 0.033"/>
+      <site name="arc2b" pos="0.029 -0.008 0.035196"/>
       <body name="link" pos="0 0 0.02">
         <joint name="hinge" type="hinge" axis="0 1 0" range="-1.05 1.05"/>
         <geom type="capsule" size="0.005" fromto="0 0 0 0.12 0 0" rgba="0.2 0.6 0.8 1"/>
@@ -38,11 +40,13 @@ Updated 2026-11-15 late evening: refined arc sidesite positions to exact r=0.008
   <tendon>
     <spatial name="cable1" width="0.001" stiffness="150" damping="0.5">
       <site site="attach1"/>
+      <site site="arc1b"/>
       <geom geom="pulley_cyl1" sidesite="arc1a"/>
       <site site="base_site1"/>
     </spatial>
     <spatial name="cable2" width="0.001" stiffness="150" damping="0.5">
       <site site="attach2"/>
+      <site site="arc2b"/>
       <geom geom="pulley_cyl2" sidesite="arc2a"/>
       <site site="base_site2"/>
     </spatial>

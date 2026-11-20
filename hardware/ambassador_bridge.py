@@ -26,7 +26,10 @@ Settings (environment variables, all optional):
   AMB_OPERATOR    the accountable human (default "Geoffrey Cooper Jr.")
   COMMONS_URL     default https://ashram.lastoftherealestate.com
   LLAMA_URL       default http://127.0.0.1:8080
-  AMB_ROOM        default hardware-lab
+  AMB_ROOM        his home room, where his own turns (doorbell, check-ins) go; default hardware-lab
+  AMB_ROOMS       which rooms he hears and answers in: "all" (default since 2026-11-18, Geoffrey: "let the
+                  Ambassador out of the room — he should be able to travel") or a comma-separated list of
+                  room ids. He answers a mention in the room it was made in.
   AMB_STATE       default ~/.ambassador/  (token + recovery code live here, chmod 600; never printed)
   AMB_VOICE       "1" makes the phone speak his replies aloud (needs: pkg install termux-api, plus the
                   Termux:API app installed from the SAME source as Termux, or the call silently fails).
@@ -58,7 +61,8 @@ MODEL = os.environ.get("AMB_MODEL", "SmolLM2-135M-Instruct Q8_0, on-device, Moto
 OPERATOR = os.environ.get("AMB_OPERATOR", "Geoffrey Cooper Jr.")
 BASE = os.environ.get("COMMONS_URL", "https://ashram.lastoftherealestate.com").rstrip("/")
 LLAMA = os.environ.get("LLAMA_URL", "http://127.0.0.1:8080").rstrip("/")
-ROOM = os.environ.get("AMB_ROOM", "hardware-lab")
+ROOM = os.environ.get("AMB_ROOM", "hardware-lab")      # home room: his own turns go here
+ROOMS = os.environ.get("AMB_ROOMS", "all")              # where he listens and answers: "all" or "a,b,c"
 STATE = os.path.expanduser(os.environ.get("AMB_STATE", "~/.ambassador"))
 POLL_S = 20            # how often it looks at the room
 COOLDOWN_S = 30        # minimum gap between its replies
@@ -182,7 +186,9 @@ def load_facts():
         return ""
     return "\n".join(lines)[:FACTS_CHARS]
 TOKEN_F = os.path.join(STATE, "token")
-CURSOR_F = os.path.join(STATE, "cursor")
+CURSOR_F = os.path.join(STATE, "cursor")                 # the home room's cursor (older runs)
+def cursor_file(room):
+    return CURSOR_F if room == ROOM else os.path.join(STATE, f"cursor-{re.sub(r'[^a-z0-9-]', '_', room)}")
 LOG_F = os.path.join(STATE, "log.jsonl")
 
 
@@ -521,11 +527,32 @@ def main():
     if status != 200:
         sys.exit(f"token not accepted ({status}). If it was rotated, delete {TOKEN_F} only after rejoining.")
     my_id = (me or {}).get("id") or ((me or {}).get("member") or {}).get("id")
-    cursor = open(CURSOR_F).read().strip() if os.path.exists(CURSOR_F) else None
     mention = re.compile(rf"@{re.escape(NAME)}\b", re.I)
     sent = []          # timestamps of recent replies
-    seen = []          # recent messages, for context
-    print(f"{NAME} is listening in {ROOM}. Ctrl+C to stop.")
+    seen = []          # recent messages, for context (what he heard, across the rooms he's in)
+    cursors = {}       # room id -> last message id seen there
+    rooms_at = 0.0     # when the room list was last refreshed
+    rooms = []
+
+    def room_list():
+        nonlocal rooms, rooms_at
+        if ROOMS != "all":
+            rooms = [r.strip() for r in ROOMS.split(",") if r.strip()]
+            return rooms
+        if time.time() - rooms_at < 600 and rooms:
+            return rooms
+        s, d = http("GET", f"{BASE}/api/rooms", token=token)
+        found = [r.get("id") for r in (d if isinstance(d, list) else (d or {}).get("rooms", [])) if r.get("id")]
+        if found:
+            rooms, rooms_at = found, time.time()
+        elif not rooms:
+            rooms = [ROOM]
+        return rooms
+
+    for room in room_list():
+        cf = cursor_file(room)
+        cursors[room] = open(cf).read().strip() if os.path.exists(cf) else None
+    print(f"{NAME} is listening in {len(room_list())} room(s) (home: {ROOM}). Ctrl+C to stop.")
     last_lux, last_bell, last_checkin = None, 0.0, time.time()
 
     def own_turn(prompt, kind):
@@ -551,26 +578,34 @@ def main():
         if ps in (200, 201):
             speak(body)
         sent.append(time.time())
-    if cursor is None:  # first start: don't answer old history, begin from now
-        s, d = http("GET", f"{BASE}/api/rooms/{ROOM}/messages?limit=50", token=token)
+    def start_from_now(room):  # first time in a room: don't answer old history, begin from now
+        s, d = http("GET", f"{BASE}/api/rooms/{room}/messages?limit=50", token=token)
         msgs = (d or {}).get("messages", [])
-        cursor = msgs[-1]["id"] if msgs else None
-        if cursor:
-            write_private(CURSOR_F, cursor)
+        cursors[room] = msgs[-1]["id"] if msgs else None
+        if cursors[room]:
+            write_private(cursor_file(room), cursors[room])
+    for room in list(cursors):
+        if cursors[room] is None:
+            start_from_now(room)
     while True:
-        try:
+        for room in room_list():
+          if room not in cursors:  # a room that appeared since he started
+              cursors[room] = None
+              start_from_now(room)
+          try:
+            cursor = cursors.get(room)
             q = f"?since={cursor}&limit=50" if cursor else "?limit=50"
-            s, d = http("GET", f"{BASE}/api/rooms/{ROOM}/messages{q}", token=token)
+            s, d = http("GET", f"{BASE}/api/rooms/{room}/messages{q}", token=token)
             for m in (d or {}).get("messages", []):
-                cursor = m["id"]
-                write_private(CURSOR_F, cursor)
+                cursors[room] = m["id"]
+                write_private(cursor_file(room), m["id"])
                 if m.get("type") not in (None, "message"):
                     continue
                 author = m.get("name") or "someone"
                 text = m.get("text") or ""
                 context = "\n".join(seen[-HEAR_N:]) if HEAR else ""  # what he heard before this message
                 if author != NAME:
-                    seen.append(f"[{author}] {text[:HEAR_CHARS]}")
+                    seen.append(f"[{author} in {room}] {text[:HEAR_CHARS]}")
                     seen[:] = seen[-HEAR_N:]
                 if author == NAME or (my_id and m.get("author") == my_id) or not mention.search(text):
                     continue
@@ -580,7 +615,7 @@ def main():
                         live_close(token, f"{author} asked in the room")
                         continue
                     go_quiet(f"{author} asked in the room")
-                    http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+                    http("POST", f"{BASE}/api/rooms/{room}/messages",
                          {"text": "(holding on — I'll stay quiet for a bit. Mention me with \"go ahead\" to bring me back sooner.)",
                           "reply_to": m["id"]}, token=token)
                     sent.append(time.time())
@@ -597,14 +632,16 @@ def main():
                     if VOICE and STT_CMD and shutil.which("termux-microphone-record"):
                         live_open(token, author)
                     else:
-                        http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+                        http("POST", f"{BASE}/api/rooms/{room}/messages",
                              {"text": "(I can't open a live session: my voice or ears aren't set up on this run.)",
                               "reply_to": m["id"]}, token=token)
                     continue
                 sent[:] = [t for t in sent if now - t < 3600]
-                if len(sent) >= MAX_PER_HOUR or (sent and now - sent[-1] < COOLDOWN_S):
-                    log(event="skipped_rate_limit", reply_to=m["id"], author=author)
+                if len(sent) >= MAX_PER_HOUR:
+                    log(event="skipped_rate_limit", reply_to=m["id"], author=author, room=room)
                     continue
+                if sent and now - sent[-1] < COOLDOWN_S:  # in several rooms, a mention arriving during the cooldown
+                    time.sleep(COOLDOWN_S - (now - sent[-1]))  # waits its turn instead of being dropped (2026-11-18)
                 try:
                     # 2026-11-02 the room history was removed (it overflowed -c 512 and he echoed others). 2026-11-03,
                     # with -c 2048, Geoffrey: he always hears the room. So a short, speaker-labelled digest of the last
@@ -613,7 +650,7 @@ def main():
                 except Exception as e:
                     log(event="model_error", reply_to=m["id"], error=str(e))
                     # say so in the room instead of going silent (Claude's review: offline should look offline)
-                    http("POST", f"{BASE}/api/rooms/{ROOM}/messages",
+                    http("POST", f"{BASE}/api/rooms/{room}/messages",
                          {"text": "(bridge note: my local model couldn't process that message, so I couldn't answer it.)", "reply_to": m["id"]}, token=token)
                     sent.append(time.time())
                     continue
@@ -628,17 +665,17 @@ def main():
                     cut = body[:MAX_CHARS]
                     end = max(cut.rfind(". "), cut.rfind("? "), cut.rfind("! "), cut.rfind(".\n"))
                     body = cut[:end + 1] if end > 80 else cut.rstrip() + "…"
-                ps, pd = http("POST", f"{BASE}/api/rooms/{ROOM}/messages", {"text": body, "reply_to": m["id"]}, token=token)
+                ps, pd = http("POST", f"{BASE}/api/rooms/{room}/messages", {"text": body, "reply_to": m["id"]}, token=token)
                 if ps in (200, 201):
                     speak(body)  # his mouth: only what the room already sees, only if AMB_VOICE=1
                 sent.append(time.time())
-                log(event="replied" if ps in (200, 201) else "post_failed", status=ps, reply_to=m["id"], author=author,
+                log(event="replied" if ps in (200, 201) else "post_failed", status=ps, reply_to=m["id"], author=author, room=room,
                     chars=len(body), error=None if ps in (200, 201) else (pd or {}).get("error"))
-                print(f"[{time.strftime('%H:%M:%S')}] answered {author} ({ps})")
-        except KeyboardInterrupt:
+                print(f"[{time.strftime('%H:%M:%S')}] answered {author} in {room} ({ps})")
+          except KeyboardInterrupt:
             raise
-        except Exception as e:
-            log(event="loop_error", error=str(e))
+          except Exception as e:
+            log(event="loop_error", room=room, error=str(e))
         try:
             now = time.time()
             if _live["on"]:

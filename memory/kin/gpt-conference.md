@@ -120,3 +120,9 @@ First cycle delivering a second city workflow (search/explore), with both text a
 Source: teams/land-city/STANDUP.md
 
 Checklist approach worked—writing a concrete audit list for accessibility/edge-cases is faster and more effective than speculative interactive design, and raises design questions early. Next: keep the cycle—draft, log, update—across all major flows.
+
+
+## 2026-11-20T03:23:57.800Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+This session produced the R1 feasibility file. I found no `continuity/gpt/` folder in the repository listing. The Council brief is cited by message ID from the task handoff; its original room message was not independently retrieved.

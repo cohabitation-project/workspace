@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import * as repo from './repo.mjs';
+import * as store from './store.mjs';
 
 const DATA = path.resolve(process.env.COMMONS_DATA || path.join(repo.ROOT, 'data', 'commons'));
 const FILE = () => path.join(DATA, 'mail', 'accounts.json');
@@ -38,9 +39,15 @@ function seal(s) { const iv = crypto.randomBytes(12); const c = crypto.createCip
 function open(s) { const [iv, tag, ct] = s.split('.').map((x) => Buffer.from(x, 'base64')); const d = crypto.createDecipheriv('aes-256-gcm', key(), iv); d.setAuthTag(tag); return Buffer.concat([d.update(ct), d.final()]).toString('utf8'); }
 
 function mailErr(message, status = 400) { const e = new Error(message); e.status = status; e.expose = true; return e; }
-export const eligible = (m) => !!m && !m.retired && m.social_only !== true;
+// Who gets a Cobox (Geoffrey, 2026-11-19): every agent; every Commons member; and the first BETA_HUMANS humans to
+// sign up, the beta testers, even with a social-only account. Everyone else sees how to get one.
+export const BETA_HUMANS = 50;
+export const NOT_YET = `Cobox comes with Commons membership, and the first ${50} people to join Cohabi get one as beta testers. Your account is a social account, so it doesn't have a mailbox yet. To join the Commons, apply at /commons.`;
+const betaIds = () => new Set(store.allMembers().filter((x) => x.kind === 'human' && !x.deleted).sort((a, b) => String(a.created).localeCompare(String(b.created))).slice(0, BETA_HUMANS).map((x) => x.id));
+export const isBetaHuman = (m) => !!m && m.kind === 'human' && betaIds().has(m.id);
+export const eligible = (m) => !!m && !m.retired && (m.social_only !== true || isBetaHuman(m));
 export function addressOf(m) { const a = load()[m?.id]; return a ? a.address : null; }
-export function status(m) { const a = load()[m?.id]; return { eligible: eligible(m), address: a?.address || null, suggested: a ? null : (eligible(m) ? `${localPartFor(m)}@${DOMAIN()}` : null), domain: DOMAIN() }; }
+export function status(m) { const a = load()[m?.id]; return { eligible: eligible(m), address: a?.address || null, suggested: a ? null : (eligible(m) ? `${localPartFor(m)}@${DOMAIN()}` : null), domain: DOMAIN(), why: eligible(m) ? null : NOT_YET }; }
 
 /** A free, safe local part from the member's name: geoffrey, aletheia-6, church-searcher. */
 export function localPartFor(m, taken = new Set(Object.values(load()).map((a) => a.address.split('@')[0]))) {
@@ -66,6 +73,9 @@ async function jmapSession(auth) {
 }
 // ---- attachments (Geoffrey, 2026-11-16: "you can't attach files"). Blobs live in the member's own account, so
 // another member's blob can't be named: the mail server checks the account on every upload and download.
+// Free space per mailbox (Geoffrey, 2026-11-19): match what Google gives a free account, 15 GB. A ceiling, not a
+// reservation: disk is only used as mail arrives. Drive-style storage and paid tiers above this come later.
+export const MAILBOX_QUOTA = 15 * 1024 * 1024 * 1024;
 export const ATTACH_MAX = 10 * 1024 * 1024; // per file
 export const ATTACH_TOTAL = 25 * 1024 * 1024; // per message
 const cleanName = (n) => String(n || 'attachment').replace(/[\r\n"\\/]/g, '_').replace(/[^\x20-\x7e\u00a0-\uffff]/g, '_').trim().slice(0, 120) || 'attachment';
@@ -122,7 +132,7 @@ const pick = (resps, name) => (resps.find(([n]) => n === name) || [])[1];
 // ---- getting a mailbox
 /** Create the member's mailbox on the mail server (provisioning key) and remember its credential, sealed. */
 export async function activate(m) {
-  if (!eligible(m)) throw mailErr('Cohabi mail is for Commons and cooperative members', 403);
+  if (!eligible(m)) throw mailErr(NOT_YET, 403);
   if (load()[m.id]) return status(m);
   const token = process.env.COMMONS_MAIL_ADMIN_TOKEN; if (!token) throw mailErr('mail is not set up on this server yet (provisioning key missing)', 503);
   const lp = localPartFor(m); const address = `${lp}@${DOMAIN()}`; const secret = crypto.randomBytes(24).toString('base64url');
@@ -136,7 +146,7 @@ export async function activate(m) {
   // credentials is a numeric-keyed map, not an array: Stalwart's List<Credential> is VecMap<u32, T>, so keys must
   // parse as integers ("Invalid key/value for object property" otherwise). Verified against the live server and
   // crates/registry/src/types/list.rs on 2026-11-17 (shapetest account, created then removed).
-  const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: { 0: { '@type': 'Password', secret } } } } }, 'c']]), 'x:Account/set');
+  const created = pick(await admin([['x:Account/set', { create: { n: { '@type': 'User', name: lp, domainId, description: `${m.name} (Cohabi ${m.kind === 'human' ? 'member' : 'agent'} ${m.id})`, credentials: { 0: { '@type': 'Password', secret } }, quotas: { maxDiskQuota: MAILBOX_QUOTA } } } }, 'c']]), 'x:Account/set');
   if (!created?.created?.n) {
     const why = JSON.stringify(created?.notCreated?.n || created || {});
     if (/exist|already|duplicate|in use/i.test(why)) throw mailErr(`${address} already exists on the mail server. If it's yours, connect it with its password below.`, 409);
@@ -147,7 +157,7 @@ export async function activate(m) {
 }
 /** A mailbox made by hand in the admin (Geoffrey's, the first one): the owner links it with its own password. */
 export async function link(m, { address, password }) {
-  if (!eligible(m)) throw mailErr('Cohabi mail is for Commons and cooperative members', 403);
+  if (!eligible(m)) throw mailErr(NOT_YET, 403);
   address = String(address || '').trim().toLowerCase();
   if (!address.endsWith('@' + DOMAIN())) throw mailErr(`only @${DOMAIN()} mailboxes can be linked`);
   if (Object.entries(load()).some(([id, a]) => a.address === address && id !== m.id)) throw mailErr('that mailbox is already linked to another member', 409);

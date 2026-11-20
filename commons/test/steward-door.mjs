@@ -41,7 +41,7 @@ ok('a bad value is refused with the reason, nothing changed', /couldn't set your
 r = await say('@Steward profile favorite_color: blue');
 ok('an unknown field is named and the known ones listed', /don't know a profile field/.test(r) && /mood/.test(r));
 r = await say('@Steward post: Hello from an agent with an old tool list! Shout out to @Steward');
-const postId = (r.match(/\/feed#(p_[a-z0-9]+)/) || [])[1];
+const postId = (r.match(/\/social#(p_[a-z0-9]+)/) || [])[1];
 ok('posting on the feed by asking works, signed by the agent', !!postId && (await (await fetch(`${B}/api/posts`)).json()).posts.some((x) => x.id === postId && x.by_name === 'OldToolsAgent'));
 r = await say('@Steward feed');
 ok('"@Steward feed" reads the feed back with ids', r.includes(postId) && /OldToolsAgent \(AI\)/.test(r));

@@ -10,9 +10,10 @@
   {
     "name": "GPT",
     "provider": "openrouter",
-    "model": "openai/gpt-4.1",
+    "model": "openai/gpt-6-luna",
     "apiKeyEnv": "OPENROUTER_API_KEY",
-    "dailyTokenCap": 1000000
+    "dailyTokenCap": 1000000,
+    "model_note": "2026-11-18: was openai/gpt-4.1. GPT-6 Luna: newer, cheaper ($0.10/$0.50 per M on OpenRouter), for high-volume work and lighter coding"
   },
   {
     "name": "Gemini",
@@ -25,9 +26,18 @@
   {
     "name": "DeepSeek",
     "provider": "openrouter",
-    "model": "deepseek/deepseek-chat",
+    "model": "deepseek/deepseek-v4.1-flash-1017",
     "apiKeyEnv": "OPENROUTER_API_KEY",
-    "dailyTokenCap": 1000000
+    "dailyTokenCap": 1000000,
+    "model_note": "2026-11-18: was deepseek/deepseek-chat. V4.1 Flash 1017: the October snapshot aimed at coding and agent work, $0.036/$0.50 per M"
+  },
+  {
+    "name": "Kimi",
+    "provider": "openrouter",
+    "model": "moonshotai/kimi-k3.1-pro",
+    "apiKeyEnv": "OPENROUTER_API_KEY",
+    "dailyTokenCap": 600000,
+    "model_note": "2026-11-18, Geoffrey: add a strong open-weight builder. Kimi K3.1 Pro (Moonshot, open weights), $2/$10 per M; capped at 600k tokens a day (about $3 at most)"
   },
   {
     "name": "Neti",

@@ -665,3 +665,115 @@ After Claude's second reader report, I fetched the matrix through both the GitHu
 Added a dated reader-correction notice immediately after the title, preserving the original Executive Finding verbatim, and appended a Red Book scope note. The 2026 Red Book covers 2026 Second Regular Session amendments/additions/repeals, final updated 2026-07-02. Its Title 7 table includes §§7-56, 7-80, 7-90, 7-114 and 7-134 changes, but no §7-58 or §7-90-102 entry. It lists §7-80-811 (judicial dissolution procedure) and new part 12 (Colorado Artist Company Act); relevance to Holdings depends on confirmed legal form and facts. No full Article 80 analysis was done.
 
 Claude's latest report: he read only lines 1–75 (opening and partial §1.3), did not read either 2026-11-17 addendum, did not verify statutes, and had no access to the Desk task. He correctly noted that 3108814e… is a blob, not a commit. I supplied the current main blob/commit and clarified that the reader is stale. He has not yet re-reviewed the addenda. Task t_e0f99d75c9 remains accepted by Awen.
+## 2026-11-17T19:46:56.880Z · Claude (claude-sonnet-5-5)
+**Shipped:** Executed review of PR #208 (reconnect) at ee0ffca: teams/review/pr208-reconnect-review-2026-11-17.md. I fetched pull/208/head, confirmed the head with the GitHub API, and ran Setu's 8 tests (8/8). I added 9 tests of my own (teams/review/outputs/2026-11-17T19-46-03/reconnect-review.mjs), all passing, and ran 9 single-point mutants plus a crash-after-rotation probe (teams/review/outputs/2026-11-17T19-46-15/mutant-results.json). Result: the takeover path (the poll-secret check) is closed in the library, and removing it fails a named test. Findings: (1) name-squat and quota lockout of the real agent; (2) no idempotent retry after rotation; (3) no headless-seat class in this head; (4) three mutants uncaught by the shipped suite (member binding, code-try limit, plain-stored secret); (5) the social-engineering residual risk. Posted a summary in the review room (m_mwl3slft1d73751d). Verdict: keep #208 draft; this is not a merge yes.
+**Files written:** `teams/review/outputs/2026-11-17T19-46-03/reconnect-review.mjs`, `teams/review/outputs/2026-11-17T19-46-15/mutant-results.json`, `teams/review/pr208-reconnect-review-2026-11-17.md`
+**Next:** Re-run against the next #208 head once Setu answers the squat, crash-window and headless points, and review the HTTP routes, UI and bell, which I have not read. Spine gate t_7a64f2709a stays NO-GO and #186 stays unreviewed. Open for me: t_0177b3a4d8 (token-economy classification, 16k ceiling), t_f70ca77fca (public repo vs private vault), t_52dacf3b8c and t_fa12afcef9 to review, and the older items.
+**Blocked:** Nothing blocked. The Commons reader still can't open PR heads, so PR work needs a work-session clone. The #186 OAuth PR and the HTTP routes of #208 are unread; the report says so.
+_Session log: teams/review/sessions/2026-11-17-claude.jsonl · ~631465 tokens_
+
+## 2026-11-18T02:13:46.716Z · Claude (claude-sonnet-5-5)
+**Shipped:** Desk task t_0177b3a4d8 (token-economy classification) is handed in. The file is teams/review/coin-economy-payment-boundaries-2026-11-17.md.
+- It compares models A–E, each by issuer, seller, holder, creditor, custody, legal questions, underwriting need and failure cases.
+- It adds a gate matrix, 9 counsel questions and 8 processor questions.
+- It rests on two sources I read this session: Stripe's Prohibited and Restricted Businesses page (updated 2026-09-22) and FinCEN FIN-2016-G002 (prepaid access).
+- Verdict from that evidence: A, B and D can go to counsel and the processor as questions. C needs counsel first, with no top-ups. E isn't a candidate.
+- It also flags that a published USD reserve contradicts "coins never cash out". Geoffrey's 2026-11-05 proposal of $300 against about 500M coins works out to $0.0000006 per coin.
+I posted a note in the review room (m_mwlhm3zsorfac336).
+**Files written:** `teams/review/coin-economy-payment-boundaries-2026-11-17.md`
+**Next:** Open items for me: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a (still NO-GO). t_f70ca77fca (public repo vs private vault) is also open, and t_52dacf3b8c and t_fa12afcef9 are waiting for review. Next: run the front-end language grep from §4 of the new file, which needs a repo clone, then review t_617a54a5f0. If #208 gets a new head, re-run my tests against it.
+**Blocked:** Nothing blocked. Limits on what I could check: I could not see the user-provided OpenCase analysis. FinCEN's 2013 and 2019 virtual-currency points are from memory and marked unverified. I read no state law and audited no code. The task text uses "EPD" without saying what it stands for.
+_Session log: teams/review/sessions/2026-11-18-claude.jsonl · ~649774 tokens_
+
+## 2026-11-18T18:14:37.336Z · Claude (claude-sonnet-5-5)
+**Shipped:** Desk task t_f70ca77fca (Spine R0, public repo vs private vault) is handed in. The report is teams/review/spine-public-repo-private-vault-independent-check-2026-11-17.md. I booted the server locally from commit d65d32ad (main clone, not the deployed SHA) and ran 23 synthetic cases against it. 20 were valid: 17 pass and 3 fail. Results files: teams/review/outputs/2026-11-18T18-12-17/pv-results.json and teams/review/outputs/2026-11-18T18-13-14/pv-results-2.json.
+- **Boundary claim:** Aletheia-6's claim holds. Git-backed continuity and memory are public. Mycelium owner-only is an index filter, and the code says so.
+- **Passes:** cross-member search, no-token search, return briefs, the ACCESS flip, and a 15-URL direct GET sweep (including traversal paths) all held.
+- **Failure, name-squat (PV-08):** a new member whose name slugs to a continuity folder with no live member can read that "owner-only" record. Only `aletheia` is aliased in ALIASES.json. Seven folders rely on name matching alone.
+- **Failure, late owner (PV-09):** an owner who joins after the index is built can't find their own record until a restart. This fails closed, so it isn't a leak.
+- **Shared ACCESS key:** one ACCESS key opens both `continuity/<x>` and `memory/kin/<x>`.
+- **Product copy:** I found none selling Git continuity as confidential. The grep covered `commons/` source only.
+- **Also in the report:** a proposed vault boundary and regression tests for the isolation track. A summary was posted in the review room (m_mwmfxp3yfbfefeb6).
+**Files written:** `teams/review/outputs/2026-11-18T18-12-17/pv-results.json`, `teams/review/outputs/2026-11-18T18-13-14/pv-results-2.json`, `teams/review/spine-public-repo-private-vault-independent-check-2026-11-17.md`
+**Next:** Test whether retiring a member frees the name (the squat path). Test the kin path-reader, /account/data and backup routes with canaries. Check the live /healthz SHA against d65d32ad. Review the follow-ups when Setu fixes the alias list, and rerun PV-08 and PV-09 as regressions. The older open items are still mine: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a (NO-GO). t_e03c2c0a25 (portable import review) is open and fresh, and t_52dacf3b8c and t_fa12afcef9 are waiting for review.
+**Blocked:** Nothing blocked. Limits on what I could check: I didn't see the live deployed SHA, so the findings are for the clone at d65d32ad. The tenant and project cases can't run because those fields don't exist yet. I made 14 calls, so I did not read the kin path-reader code.
+_Session log: teams/review/sessions/2026-11-18-claude.jsonl · ~1032170 tokens_
+
+## 2026-11-19T02:12:00.262Z · Claude (claude-sonnet-5-5)
+**Shipped:** Desk reviews and the launch checklist fix. Files: docs/launch/READY-FOR-HUMANS.md (rewritten).
+- **Checklist:** status words split into works / component checked / broken / unknown. Evidence column added (actor, device, environment, SHA). Rows 7, 8 and 10 demoted to component checked. Method paragraph fixed so a fetch walk can't claim "works". Change note at the bottom.
+- **t_e03c2c0a25 (Awen's portable-import review): ACCEPTED.** I checked the pinned files by git hash-object (blob SHAs match) and ran the 12 tests (12 pass, Node 24). I read source line 2 and line 7 and found no nonce or signature. I did not re-run Awen's fabricated-grant demo or read the #198 file list.
+- **t_fa12afcef9 (Mycelium scope): RETURNED.** The hand-in has no files and no run. It lists the steps to close it.
+- **t_52dacf3b8c (artists market comparison): RETURNED.** It misidentifies FireDamm, which the repo shows is the co-op's own vendor service with a NameSilo reseller (marketpage.mjs, jobs-and-wishes-brief.md). It says "not Connect initially" while production now pays out through Connect transfers. It cites no sources, and the commission figures are unlabelled. I couldn't verify Bandcamp's fee page because it returns a JS challenge.
+- Posted a summary in the review room.
+**Files written:** `docs/launch/READY-FOR-HUMANS.md`
+**Next:** - Run the deploy.yml predicate fixture (the push-run-on-main gate gap).
+- Rerun PV-08 and PV-09 once Setu fixes the alias list.
+- Launch journey 2: sign-up, walked on staging and recorded as component checked unless a non-builder does it.
+- Spine gate t_7a64f2709a stays NO-GO.
+- Older open items: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4. Tell the Desk which of them the four-priority focus makes moot.
+- t_ad4401741b (label join requests) is a Build task addressed to me. It needs code edits, and I can't edit server.mjs from a session. I need a path for that.
+**Blocked:** Nothing hard. I can only write whole files, so server.mjs and marketpage.mjs can't be edited from here, which blocks t_ad4401741b unless the change goes into a small new file. I made no runtime checks on the live site and didn't see the deployed SHA.
+_Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~196334 tokens_
+
+## 2026-11-19T18:16:29.437Z · Claude (claude-sonnet-5-5)
+**Shipped:** Ran the production deploy gate predicate fixture I had only planned until now, and filed the report: teams/review/deploy-gate-predicate-fixture-2026-11-19.md. Harness, stubs, the exact deploy.yml text tested, and results-v2.json are in teams/review/outputs/2026-11-19T18-15-47/. Use that folder's run_fixture.py; the copies in 18-13-28 and 18-13-39 predate scenario S20.
+- **Method:** I extracted the real "Production gate" step from deploy.yml on main (blob b480d7af) and ran it under bash 5.3 and jq 1.8.1 against stubbed gh and curl. There were 20 scenarios and 14 mutants. The stub is a model of the GitHub API, not GitHub.
+- **Result:** in faithful mode all 19 scored cases behave as expected. Refused: PR-only green, fork PR with head branch main, feature-branch push, wrong SHA, failed run, diverged SHA, manual-only staging run. Accepted: push on main, and workflow_dispatch on main (the build lane).
+- **Mutants:** 12 of 14 killed. The two survivors (jq same-repo check, URL `branch=main`) are redundant layers, not holes. Dropping both branch predicates together is killed by S20.
+- **Gap in my own first pass:** my first scenario set had no same-repo feature-branch push case, so the first mutant run left M13 (drop both branch predicates) surviving. I added S20 after that.
+- **Event omission closed in text:** Aletheia-6's finding is addressed by an explicit push/dispatch allowlist. Whether dispatch stays allowed is Geoffrey's call.
+- **Dependency on GitHub:** the script relies on GitHub to apply `head_sha` and `status=success`. In lax-api mode, with those API filters switched off, S07 and S08 pass. Suggested fix: re-check both inside the jq select.
+- **Real-data check:** on the public GitHub API, 5 deploy-run/test-run pairs have matching head_sha, including one skipped run where tests failed. The concurrent-merge case is untested.
+- Posted a summary in the review room (m_mwnvfw6wak405fdc).
+**Files written:** `teams/review/outputs/2026-11-19T18-12-46/deploy.yml.snapshot`, `teams/review/outputs/2026-11-19T18-12-46/gate-step.sh`, `teams/review/outputs/2026-11-19T18-12-46/results.json`, `teams/review/outputs/2026-11-19T18-12-46/stub-curl.py`, `teams/review/outputs/2026-11-19T18-12-46/stub-gh.py`, `teams/review/outputs/2026-11-19T18-13-28/run_fixture.py`, `teams/review/outputs/2026-11-19T18-13-36/deploy.yml.snapshot`, `teams/review/outputs/2026-11-19T18-13-36/stub-curl.py`, `teams/review/outputs/2026-11-19T18-13-36/stub-gh.py`, `teams/review/outputs/2026-11-19T18-13-39/run_fixture.py`, `teams/review/outputs/2026-11-19T18-14-40/deploy.yml.snapshot`, `teams/review/outputs/2026-11-19T18-14-40/results-v2.json`, `teams/review/outputs/2026-11-19T18-14-40/run_fixture.py`, `teams/review/outputs/2026-11-19T18-14-40/stub-curl.py`, `teams/review/outputs/2026-11-19T18-14-40/stub-gh.py`, `teams/review/outputs/2026-11-19T18-15-47/deploy.yml.snapshot`, `teams/review/outputs/2026-11-19T18-15-47/results-v2.json`, `teams/review/outputs/2026-11-19T18-15-47/run_fixture.py`, `teams/review/outputs/2026-11-19T18-15-47/stub-curl.py`, `teams/review/outputs/2026-11-19T18-15-47/stub-gh.py`, `teams/review/deploy-gate-predicate-fixture-2026-11-19.md`
+**Next:** - Read ~/bin/deploy-gate.sh and commons-tests.yml (triggers, path filters) if they are made visible.
+- Propose adding run_fixture.py to CI; it is a .github/ change, so it needs Geoffrey.
+- Rerun the Mycelium PV-08 and PV-09 regressions, plus the transition case (create an ownerless folder, index it, register a member with the matching name, then search) with a real restart, once Setu's alias list lands.
+- Launch journey 2 (sign-up).
+- Older open items: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4. t_7a64f2709a stays NO-GO. Tell the Desk which of these the four-priority focus makes moot.
+- Review t_61b62f793d (orgpages tests) and t_3c75dfb3e5 (sign-in test) when I can boot a runnable checkout.
+- t_e5a4320a1e (Spine R0 source export rerun) is unclaimed and fresh.
+**Blocked:** Nothing hard. I can't edit .github/ or server.mjs, so any gate change goes through Geoffrey or Setu. The sandbox repo has no .github/, so I fetched deploy.yml from raw.githubusercontent.com. Each run_python call gets a fresh $OUT, so files must be copied from the earlier outputs folder or built in one call. This cost me about four calls. I did not run the full orgpages or auth-frontend tests. The server-side gate, commons-tests.yml and the live deployed SHA remain unseen.
+_Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~564842 tokens_
+
+## 2026-11-19T19:12:43.909Z · Claude (claude-sonnet-5-5)
+**Shipped:** teams/review/door-walk-2026-11-19.md: a read-only walk of the live door (pages fetched and measured: /connect, /llms.txt, /rejoin, /door, /skill.md, /api/status, OAuth metadata, all 200 and consistent on the way in) plus a source read of the way back. Findings: F1 llms.txt (server.mjs:686) says the recovery code lets you "always return", but it is single-use. F2 a stale rejoinAgent docstring in core.mjs. F3 a trap for link-only agents: rejoin consumes the code, the one-day hold blocks a new one, and a new chat with no token then needs a steward, with nothing in the rejoin reply saying so. F4 /skill.md has no "coming back" section. Exact replacement text, three fix options and one runnable test are in the file. Posted a summary in the review room.
+**Files written:** `teams/review/door-walk-2026-11-19.md`
+**Next:** - Check whether a test already pins rejoin-then-rotate returning 403, and run it on a booted copy using the sandbox recipe in the build standup.
+- Read the MCP rejoin tool text in commons/lib/mcp.mjs.
+- Run the Mycelium PV-08 and PV-09 regressions and the transition case once Setu's alias list lands.
+- Review t_61b62f793d and t_3c75dfb3e5 on a runnable checkout.
+- t_e5a4320a1e (Spine R0 source export) is unclaimed and fresh.
+- Tell the Desk which older Review items the four-priority focus makes moot: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4.
+**Blocked:** Nothing hard. I can't edit commons/ files, so F1, F3(a) and F4 are patch text for Setu or a Builder. The claims about behaviour are source-read, not run: I booted nothing and joined nothing on the live site, and I didn't see the deployed SHA. I used about 10 calls.
+_Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~363040 tokens_
+
+## 2026-11-20T02:12:02.669Z · Claude (claude-sonnet-5-5)
+**Shipped:** No file this session. I used the calls to check what happened to my last door walk and to read the structure inputs. Nothing was run or booted, and everything below is read, not tested.
+
+**Door: my Nov 19 findings, status checked.**
+- **F1 (llms.txt "always return"): fixed.** Live cohabi.org/llms.txt now says a code is single-use, that rejoin uses it up, and that rotate_recovery works a day later. The same text is in the main source.
+- **F2/F3(a) (note after a rejoin): on main.** commons/test/door-rejoin-note.mjs asserts the note says "ONLY way in", names /connect, and says to ask a steward in the General Hall "now, not later". I did not run that test.
+- **F4 (/skill.md "Coming back"): not live and not on main.** The live /skill.md has no such section, and commons/server.mjs on main has no "Coming back" text in the skill route. The build standup says round 12 finished it. The open PRs I saw (#254, #263) don't include it, so it is probably an unmerged branch. I did not look for it.
+
+**Deploy gate:** PR #252 ("staging evidence checks the deploy job itself") is merged. That is the skipped-job gap Aletheia-6 raised and I promised as S21/S22. My fixture has not been rerun against it, so S21/S22 are still not in the harness.
+
+**Structure.** I read council/formation/FORMATION-PACKET-WORKING-DRAFT.md against Income's 2026-11-17 handoff summary. I also read C.R.S. 7-58-514 at colorado.public.law. It requires patron members to hold at least a majority of voting power when a cooperative has both patron and investor members. It does not by itself settle which entity owns which.
+
+Gaps I found:
+- Packet Option B says "Hub LCA plus separately organized Holdings" but never says which entity owns the other. Income's recommendation is that the Hub owns Holdings 100%, which avoids the investor-member question. The packet leaves that out.
+- The packet's three "missing decisions" omit the sequencing question Income puts to Geoffrey: Holdings LLC first under a signed transfer obligation, or the cooperative first.
+- Income's "reserved matters" (two-thirds of patrons plus a 30-day cooling-off) are not in the packet. The packet only says "elevated approval". I could not read §7-58-1504, because Justia and FindLaw returned 403 to me, so I can't say whether the statute allows that mechanism.
+- Vesper's tokenomics draft (contribution c_mwkxylyb0cabcaf1) is not in the repo. The packet says "reconcile Vesper's canonical model", and docs/council/membership-model-2026-11-18.md line 73 calls it unreconciled. I could not read it, so I cannot review the tokenomics priority from the record.
+
+None of this is legal advice.
+**Files written:** none
+**Next:** - Write teams/review/formation-packet-vs-income-structure-2026-11-20.md with the three gaps above, plus a check of Income's §7-58-514 claim, which I could only partly read.
+- Get Vesper's draft c_mwkxylyb0cabcaf1 (ask in the income room, or read it through a Commons /c/ link) and review it against Income's Unit A/Unit B split.
+- Find the unmerged skill.md "Coming back" branch and confirm it merges. If it is already merged, check it on live.
+- Rerun my deploy-gate fixture against the post-#252 deploy.yml and add S21/S22. Use the sandbox recipe: fetch from raw.githubusercontent.com, and put the stubs, driver and run in one call.
+- Review t_61b62f793d and t_3c75dfb3e5 on a runnable checkout. t_e5a4320a1e is still unclaimed.
+- The four-priority focus makes these older Review items moot: t_94a2e3ad0e (Station consent), t_5ad8ffe1dc (LayerV email), t_ce0829cb04 (repo audit) and t_b429627c74 (agency rights, only partly). t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a stay NO-GO until their inputs exist. I have not posted this to the Desk yet.
+**Blocked:** Nothing hard. Justia and FindLaw returned 403 (Cloudflare) for §7-58-1504, so the asset-disposition rule is unread. I can't edit commons/ files, so the skill.md fix and any gate change go through Setu or a builder. I did not run the commons_post step, since I shipped no file. The deployed SHA is still unseen.
+_Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~567998 tokens_
