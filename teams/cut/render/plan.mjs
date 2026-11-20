@@ -9,8 +9,10 @@
 // What this slice does: every clip on the MAIN track becomes trim (+ retime) -> normalise to one
 // size/fps/format -> concat. Gaps between clips become black video + silence. Audio is always
 // produced (silence for a source with hasAudio:false) so every segment has the same streams.
-// What it does NOT do (reported in `ignored`, never silently dropped): overlay tracks, audio-track
-// elements (music), text, effects, transitions. Those plug in later (effects through Kimi's registry).
+// ONE audio-track music element is trimmed, delayed to its timeline start, and mixed under that
+// main audio with amix duration=first (the main timeline therefore sets the output duration).
+// More than one music element is refused for now. Overlay tracks and main-track text are reported
+// in `ignored`, never silently dropped. Transitions are not implemented; effects use the registry.
 //
 // ASSUMPTION (ours, not classic's): a clip's media file is named by element.params.src. The
 // caller must replace client-supplied names with server-side file paths BEFORE calling; this module
@@ -101,8 +103,22 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		}
 	}
 	const ignored = [];
-	for (const t of [...(tracks.overlay ?? []), ...(tracks.audio ?? [])]) {
+	for (const t of tracks.overlay ?? []) {
 		for (const e of t.elements) ignored.push({ trackId: t.id, elementId: e.id, reason: `${t.type} track elements are not rendered in this slice` });
+	}
+
+	const music = (tracks.audio ?? []).flatMap((t) => t.elements.map((element) => ({ trackId: t.id, element })));
+	if (music.length > 1) throw new RenderPlanError("only one audio-track music element is supported in this slice");
+	const musicElement = music[0]?.element;
+	if (musicElement) {
+		if (musicElement.type !== "audio") throw new RenderPlanError(`music element ${musicElement.id} must have type audio`);
+		requireInt(`${musicElement.id}.startTime`, musicElement.startTime, { min: 0 });
+		requireInt(`${musicElement.id}.duration`, musicElement.duration, { min: 1 });
+		requireInt(`${musicElement.id}.trimStart`, musicElement.trimStart ?? 0, { min: 0 });
+		const src = musicElement.params?.src;
+		if (typeof src !== "string" || src.length === 0 || /[\0\r\n]/.test(src)) {
+			throw new RenderPlanError(`music element ${musicElement.id} needs params.src: a non-empty single-line string`);
+		}
 	}
 
 	const clips = tracks.main.elements.filter((e) => {
@@ -167,7 +183,19 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		cursor = clip.startTime + clip.duration;
 	}
 
-	chains.push(`${labels.join("")}concat=n=${labels.length}:v=1:a=1[vout][aout]`);
+	chains.push(`${labels.join("")}concat=n=${labels.length}:v=1:a=1[vout][${musicElement ? "amain" : "aout"}]`);
+	if (musicElement) {
+		const n = inputs.length;
+		const trimStart = musicElement.trimStart ?? 0;
+		const trimEnd = trimStart + musicElement.duration;
+		const delay = num((musicElement.startTime / TICKS_PER_SECOND) * 1000);
+		inputs.push(musicElement.params.src);
+		chains.push(
+			`[${n}:a]atrim=start=${secs(trimStart)}:end=${secs(trimEnd)},asetpts=PTS-STARTPTS,` +
+			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=${delay}|${delay}[amusic]`,
+		);
+		chains.push("[amain][amusic]amix=inputs=2:duration=first[aout]");
+	}
 	const filterComplex = chains.join(";");
 	const args = [];
 	for (const src of inputs) args.push("-i", src);
