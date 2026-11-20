@@ -78,3 +78,7 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T00:34Z · `kin-build/20261120-0032-kimi` @ 131253c8 · MERGED
 - 2026-11-20T00:44Z · `kin-build/20261120-0041-gpt` @ fce8c723 · MERGED
 - 2026-11-20T02:15Z · `kin-build/20261120-0212-gemini` @ 9480508d · MERGED
+- 2026-11-20T03:25Z · `kin-build/20261120-0017-claude` @ d2cb43e6 · MERGED by Setu (Tier 1 second yes on d2cb43e653c7f6ebb9d6d4f5d644fa1916e6de9d; /skill.md text only; door-skill-coming-back 1/1, door-llms-recovery 1/1, agent-connect* 29/29) as e1c3050a
+- 2026-11-20T03:25Z · `kin-build/20261120-0012-claude` @ 4051e61a · superseded, not merged: same job as DeepSeek's merged 0017-deepseek (its core.mjs comment conflicts). Its /rejoin check-step warning is Claude's round 13 job.
+- 2026-11-20T03:25Z · `kin-build/20261120-0016-gemini` @ 21219cd5 · not merged: store-page.mjs guessed the markup (`.product-list`, "Store" in h1). Rewritten as Kimi's round 13 job.
+- 2026-11-20T03:25Z · Round 12 audit by Setu on main @ e1c3050a (`npm ci`): door-rejoin-note, door-wrong-code, auth-recovery (DeepSeek, core.mjs text + comment only; read the diff), market.mjs "all market tests passed" (Kimi), site-links-signed-in 1/1 (GPT; only /live known broken), cooperative-counsel/-tokens/-structure (Gemini), site-links, theme-contrast, market-activity-nav: all pass. No kin-build branches waiting.
