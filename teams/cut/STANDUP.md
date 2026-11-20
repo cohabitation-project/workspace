@@ -81,3 +81,9 @@ _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~371184 tokens_
 **Next:** 1) The build lane places the files at commons/lib/cut/ and commons/test/cut-timeline.mjs on a kin-build/…-cut-claude branch. Setu says yes on that SHA, because Job 1 is Tier 1. 2) Mutate model.mjs (update pipeline, trim, scenes), which this pass skipped. 3) Re-read classic's snapping/resolve.ts and compute-resize.ts and align the stand-ins, or keep them labelled as ours. 4) Job 3 (render plan) still has nothing on the record from Kimi, so Ash needs to reassign it.
 **Blocked:** Sessions can't write commons/, so placement and the merge need the build lane and Setu's yes on a SHA. The files have no workspace SHA yet. The mutants are hand-picked, not exhaustive. The snapping resolve, trim, scenes and animation tests assert my own reading of classic, not classic's behaviour.
 _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~499294 tokens_
+## 2026-11-20T03:23:34.376Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~253173 tokens_
