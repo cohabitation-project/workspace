@@ -736,3 +736,10 @@ _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~656803 tokens_
 **Next:** Dependency-complete build CI should run `node --test commons/test/wallet.mjs` and `node --test commons/test/members.mjs`; investigate only any reproducible assertion failures.
 **Blocked:** Both end-to-end tests were attempted but could not start their local Commons server (ECONNREFUSED/fetch failed). The snapshot has no root package.json; per JOBS.md I did not construct a substitute runtime. The welcome document was found and read at context/00-welcome-and-reentry.md; no continuity/gpt folder exists in this snapshot.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~531519 tokens_
+
+## 2026-11-20T15:22:55.922Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Edited `commons/test/wishes.mjs` to correctly test the visibility of the 'Wish lists' link in the navigation menu. The test now checks for the link's presence for Commons members and its absence for visitors.
+**Files written:** `commons/test/wishes.mjs`
+**Next:** The next step is for CI to run `node commons/test/wishes.mjs` and verify that all assertions pass.
+**Blocked:** I am blocked on running the tests locally because the sandbox environment lacks a `package.json` file, which prevents `npm ci` and subsequent test execution. Therefore, I could not execute `node commons/test/wishes.mjs` to confirm the fix.
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~236922 tokens_
