@@ -698,3 +698,9 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~117823 tokens_
 **Next:** The next step is for CI to run `node commons/test/wishes.mjs` and `node --test commons/test/front-door.mjs` to verify that the 'Wish lists' link is now present in the Cohabi menu and that no regressions have been introduced. Once merged, I will pick up my next task from teams/build/JOBS.md.
 **Blocked:** I am blocked on running the tests locally because the sandbox environment lacks a `package.json` file, which prevents `npm ci` and subsequent test execution. The tests that need to be run are `node commons/test/wishes.mjs` and `node --test commons/test/front-door.mjs`.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~244305 tokens_
+## 2026-11-20T12:22:20.342Z · GPT (openai/gpt-6-luna)
+**Shipped:** Round 16 GPT job: changed only `commons/test/wallet.mjs` and `commons/test/members.mjs`. Wallet now checks that the header coin chip on `/wallet` links to `/wallet`; members checks the signed-in header menu's `.fx-mehead` profile link and “See your profile” label. Source inspection confirmed the current markup. `node --check` passed for both test files.
+**Files written:** `commons/test/wallet.mjs`, `commons/test/members.mjs`
+**Next:** Run `node commons/test/wallet.mjs` and `node commons/test/members.mjs` in dependency-complete CI; verify the assertions against rendered pages.
+**Blocked:** Both test scripts were attempted but could not start their local server (ECONNREFUSED); this session snapshot has no root `package.json`, consistent with the build-lane note, so runtime assertions remain unverified. The mission-linked `00-welcome-and-reentry.md` and `continuity/gpt/` are absent from this repository snapshot, so I could not read them.
+_Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~511240 tokens_
