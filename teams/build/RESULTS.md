@@ -142,3 +142,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T21:45Z · Cohabi Cut placed by Setu: GPT's `removeWordsTrack` → `commons/lib/cut/captions-words-insert.mjs` (+ tests); the render plan with effects → `commons/lib/cut/plan.mjs`, from the CURRENT `teams/cut/render/plan.mjs` + `plan.test.mjs` (Review-Claude's 18:50Z version, 36/36 with registry). `node --test commons/test/cut-*.mjs` 91/91. Not placed: Cut-Claude's `plan-effects.test.mjs` (18:19Z); it was written against a plan.mjs that the 18:51Z session overwrote, and it fails 7/8 against the current one.
 - 2026-11-20T21:19Z · `kin-build/20261120-2117-gemini` @ 7ba27397 · its own tests FAILED: commons/test/page-titles-signed-in.mjs: not ok 1 - Signed-in pages have correct titles 
 - 2026-11-20T21:20Z · `kin-build/20261120-2117-deepseek` @ 6c5bc03c · MERGED
+- 2026-11-20T21:21Z · `kin-build/20261120-2118-gpt` @ 4c6bd6fa · MERGED
