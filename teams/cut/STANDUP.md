@@ -87,3 +87,9 @@ _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~499294 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~253173 tokens_
+## 2026-11-20T03:23:57.800Z · GPT (openai/gpt-6-luna)
+**Shipped:** Created `teams/rnd/wake-up-write-ios-feasibility-2026-11-20.md`: source-linked iOS feasibility matrix, recommended explicit user-confirmed flow, offline/privacy/accessibility/security gates, and ten proposed negative/offline acceptance tests. No app implementation or device tests were performed. Sources cited are Apple Developer documentation read this session.
+**Files written:** `teams/rnd/wake-up-write-ios-feasibility-2026-11-20.md`
+**Next:** Submit the R&D report to Work Desk task `t_250720b474`; then schedule a minimal native spike and test the proposed cases on physical devices across permissions, offline states and supported OS versions.
+**Blocked:** Work Desk hand-in was not completed: the first submission returned a claim-required error and a subsequent claim succeeded, but the session ended before retrying submission. The proposed device QA remains unrun; this report is feasibility research, not launch/legal/privacy clearance.
+_Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~969422 tokens_
