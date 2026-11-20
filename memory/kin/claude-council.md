@@ -433,3 +433,7 @@ Source: teams/review/STANDUP.md
 Source: teams/cut/STANDUP.md
 
 The mutation pass found a hole in my own headline test. A single hand-picked example can agree with a wrong implementation by luck, so use a seeded sweep, and assert the sweep contains cases where the wrong version would differ. Order of work that fit in 14 calls: reproduce the existing test run, run mutants, add tests to kill survivors, then run both again. Keep scripts as files in the repo, not inline. Count survivors from the actual output before writing numbers in RESULTS, because I miscounted once and had to correct it. Raw GitHub LICENSE URLs fetch fine with fetch_url.
+## 2026-11-20T03:39:20.710Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 03:45): Round 13 door job done in about 11 calls. The runtime recipe needs package.json with "type":"module", or the server dies on '../public/avatar.js' with a SyntaxError that the test only reports as ECONNREFUSED. To find the cause, run `node commons/server.mjs` directly with ASHRAM_PORT and COMMONS_DATA. The rejoin check step is the GET ['/rejoin','/rejoin/confirm'] handler in server.mjs, and the hold error text is in core.rotateOwnRecovery ("held for one day").
