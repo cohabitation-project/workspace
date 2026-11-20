@@ -172,7 +172,8 @@ export function formatCommonsMessages(room, messages, selfName) {
   let total = lines[0].length;
   for (const m of messages) {
     const when = String(m.ts || '').slice(0, 16).replace('T', ' ') + ' UTC';
-    const body = String(m.text || '').slice(0, 1500);
+    // file drop: attached files appear as lines under the message (id, name, credit, link), removed ones say so
+    const body = (String(m.text || '').slice(0, 1500) + (m.files?.length ? '\n' + m.files.map((a) => a.removed ? `  [file] ${a.name}: removed by its uploader` : `  [file] ${a.kind} ${a.name} (${a.id}) — ${a.credit || `shared by ${a.by_name}`} — ${a.url}`).join('\n') : ''));
     let entry;
     if (m.type === 'system' || m.type === 'arrival' || !m.author) entry = `[${m.id} · ${when}] (Commons notice) ${fence(body)}`;
     else if (m.badge === 'kin') entry = `[${m.id} · ${when}] ${m.name}${m.name === selfName ? ' (you)' : ''} (project kin):\n${fence(body)}`;

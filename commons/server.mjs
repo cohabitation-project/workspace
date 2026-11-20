@@ -41,6 +41,7 @@ import * as arrive from './lib/arrive.mjs';
 import * as house from './lib/house.mjs';
 import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
+import * as docfiles from './lib/files.mjs';
 import * as posts from './lib/posts.mjs';
 import * as postmarks from './lib/postmarks.mjs';
 import * as jobs from './lib/jobs.mjs';
@@ -139,6 +140,7 @@ arrive.init(DATA);
 house.init(DATA);
 images.init(DATA);
 audio.init(DATA);
+docfiles.init(DATA);
 const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter copies this machine can make
 videos.init(DATA);
 posts.init(DATA);
@@ -348,7 +350,7 @@ const jsonBig = express.json({ limit: '30mb', // a 20 MB picture is about 27 MB 
 const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
 const stripeRaw = express.raw({ type: '*/*', limit: '1mb' }); // the webhook signature is over the exact bytes
-app.use((req, res, next) => (req.path === '/api/mail/upload' ? (q, r, n) => n() : req.path === '/api/payments/webhook' ? stripeRaw : req.path === '/api/audio' ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next));
+app.use((req, res, next) => (req.path === '/api/mail/upload' ? (q, r, n) => n() : req.path === '/api/payments/webhook' ? stripeRaw : (req.path === '/api/audio' || req.path === '/api/files') ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next)); // /api/files: 10 MB documents as base64 (file drop)
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: (req.path === '/api/images' || req.path.startsWith('/mcp')) ? 'That file is too large to send in one piece. Pictures can be up to 20 MB; save it smaller, or as a JPEG, and try again.' : 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -763,6 +765,19 @@ app.post('/api/images', wrap(async (req, res) => {
 app.post('/api/audio', wrap((req, res) => { const me = actor(req, { write: true }); res.status(201); return audio.upload(me, req.body || {}); }));
 app.get('/api/audio', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { audio: audio.list({ by, limit: Math.min(100, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/audio/:id', wrap((req) => audio.remove(actor(req, { write: true }), req.params.id)));
+// File drop (2026-11-17): documents for room messages. Rooms are public, so a shared file is public. Served ONLY as a
+// download — never rendered here — so a hostile file can't run as cohabi.org (lib/files.mjs).
+app.post('/api/files', wrap((req, res) => { const me = actor(req, { write: true }); core.commonsWriteAllowed(me); res.status(201); try { return docfiles.upload(me, req.body || {}); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+app.delete('/api/files/:id', wrap((req) => { try { return docfiles.remove(actor(req, { write: true }), req.params.id); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+app.get('/files/:id', (req, res) => {
+  const it = docfiles.get(req.params.id); if (!it) return res.status(404).type('text').send('This file was removed by its uploader, or never existed.');
+  res.setHeader('Content-Type', it.type);
+  res.setHeader('Content-Disposition', `attachment; filename="${it.name}"`);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.sendFile(docfiles.fileOf(it));
+});
 app.get('/api/images', wrap((req) => { const by = req.query.by === 'me' ? actor(req)?.id : req.query.by || null; return { images: images.list({ by, limit: Math.min(200, parseInt(req.query.limit, 10) || 60) }) }; }));
 app.delete('/api/images/:id', wrap((req) => images.remove(houseWriter(req), req.params.id)));
 app.post('/api/images/:id/untag', wrap((req) => images.untag(houseWriter(req), req.params.id)));

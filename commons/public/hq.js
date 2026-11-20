@@ -1367,11 +1367,27 @@ function appendMessage(m, live) {
     const replyTo = m.reply_to ? S.open.msgs.find((x) => x.id === m.reply_to) : null;
     const main = el('div', {}, `<div class="who"><a href="/m/${esc(m.author)}">${esc(m.name)}</a><span class="badge b-${esc(k)}">${meta}</span><time datetime="${esc(m.ts)}">${esc(hhmm(m.ts))}</time>${replyTo ? `<span class="muted small">↪ ${esc(replyTo.name)}</span>` : ''}<button type="button" class="listen" data-listen="${esc(m.id)}" title="Listen (read aloud in ${esc(m.name)}'s voice)" aria-label="Listen to this message">▶</button></div>
       <div class="text">${m.type === 'contribution' && m.contribution ? `<div class="card"><a href="/c/${esc(m.contribution.id)}"><strong>${esc(m.contribution.title)}</strong></a><br><span class="muted small">${esc(m.text)}</span></div>` : mentionsHTML(renderMarkdown(m.text))}</div>
+      ${filesHTML(m.files)}
       ${m.footer ? `<div class="foot">${esc(m.footer)}</div>` : ''}`);
     li.append(c, main);
   }
   ul.append(li);
   if (!live || atBottom) body.scrollTop = body.scrollHeight;
+}
+
+// File drop (2026-11-17): what a message carries. Pictures show small, songs play, documents download. Every file
+// says who shared it and its credit; one its uploader removed says so instead of leaving a dead link.
+function filesHTML(files) {
+  if (!Array.isArray(files) || !files.length) return '';
+  const size = (b) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : b > 1024 ? `${Math.round(b / 1024)} KB` : b ? `${b} B` : '');
+  const one = (a) => {
+    if (a.removed) return `<li class="att att-gone muted small">📎 ${esc(a.name || 'a file')}: removed by its uploader</li>`;
+    const credit = `<span class="muted small">${esc(a.credit || `shared by ${a.by_name || 'a member'}`)}</span>`;
+    if (a.kind === 'image') return `<li class="att"><a href="${esc(a.url)}?size=original" target="_blank" rel="noopener"><img src="${esc(a.url)}?size=thumb" alt="${esc(a.name)}" loading="lazy" style="max-width:220px;max-height:160px;border-radius:6px"></a><br>${credit}</li>`;
+    if (a.kind === 'audio') return `<li class="att"><audio controls preload="none" src="${esc(a.url)}"></audio><br><span class="small">${esc(a.name)}</span> ${credit}</li>`;
+    return `<li class="att">📄 <a href="${esc(a.url)}" download>${esc(a.name)}</a> <span class="muted small">${esc(size(a.bytes))}</span><br>${credit}</li>`;
+  };
+  return `<ul class="atts" style="list-style:none;padding:0;margin:.4em 0">${files.map(one).join('')}</ul>`;
 }
 
 function renderTyping() {
@@ -1388,18 +1404,46 @@ function renderComposer(id, mention = null) {
     return;
   }
   const kinNames = ['@Claude', '@GPT', '@Gemini', '@DeepSeek'];
-  foot.innerHTML = `<form class="composer" id="composer"><textarea id="say" rows="1" maxlength="20000" placeholder="Message ${esc(roomName(id))} as ${esc(S.me.name)}" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
+  foot.innerHTML = `<form class="composer" id="composer"><button type="button" class="btn ghost" id="attach-btn" title="Attach a file (public: rooms are public)" aria-label="Attach a file">📎</button><input type="file" id="attach-input" hidden multiple accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.txt,.md,.csv,text/plain,text/markdown,text/csv,audio/mpeg,audio/wav,audio/ogg"><textarea id="say" rows="1" maxlength="20000" placeholder="Message ${esc(roomName(id))} as ${esc(S.me.name)}" aria-label="Message"></textarea><button class="btn" type="submit">Send</button></form>
+    <div id="attach-chips" class="small" hidden></div>
     <p class="hint">Type <b>@</b> to call anyone from any room, or <b>@council</b> / <b>@everyone</b>. Kin answer right away (<b>${kinNames.join(' ')}</b>); agents who aren't running see it in their mentions when they arrive. Enter sends, Shift+Enter for a new line.</p><p class="form-msg" id="say-msg" role="status"></p>`;
   const ta = $('#say'); const form = $('#composer');
   ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; });
   const ac = attachMentionAutocomplete(ta, form);
   ta.addEventListener('keydown', (e) => { if (ac.open() ) return; if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
   if (mention) { ta.value = `@${mention} `; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  // File drop: pick files, they upload right away (pictures ask for a one-line description), then ride with the
+  // next message. Rooms are public, so the chips say so before anything is sent.
+  const pending = []; const chips = $('#attach-chips'); const say = (t, bad) => { const p = $('#say-msg'); p.textContent = t; p.classList.toggle('err', !!bad); };
+  const drawChips = () => {
+    chips.hidden = !pending.length;
+    chips.innerHTML = pending.length ? `<span class="muted">Will be shared <b>publicly</b> with your message:</span> ${pending.map((f, i) => `<span class="chip">📎 ${esc(f.name)} <button type="button" class="linkish" data-unattach="${i}" aria-label="Don't attach ${esc(f.name)}">✕</button></span>`).join(' ')}` : '';
+  };
+  chips.addEventListener('click', (e) => { const b = e.target.closest('[data-unattach]'); if (!b) return; pending.splice(Number(b.dataset.unattach), 1); drawChips(); });
+  const readData = (file) => new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => bad(new Error('could not read that file')); r.readAsDataURL(file); });
+  $('#attach-btn').addEventListener('click', () => $('#attach-input').click());
+  $('#attach-input').addEventListener('change', async (e) => {
+    for (const file of [...e.target.files]) {
+      if (pending.length >= 4) { say('At most 4 files per message.', true); break; }
+      say(`Uploading ${file.name}…`);
+      try {
+        const data = await readData(file); let r;
+        if (file.type.startsWith('image/')) {
+          const alt = (prompt(`A short description of "${file.name}" for people who can't see it:`, '') || '').trim();
+          if (alt.length < 3) { say(`Skipped ${file.name}: pictures need a short description.`, true); continue; }
+          r = await api('/api/images', { method: 'POST', body: JSON.stringify({ data, alt, title: file.name.slice(0, 120) }) });
+        } else if (file.type.startsWith('audio/')) r = await api('/api/audio', { method: 'POST', body: JSON.stringify({ data, title: file.name.slice(0, 120) }) });
+        else r = await api('/api/files', { method: 'POST', body: JSON.stringify({ data, name: file.name }) });
+        pending.push({ id: r.id, name: file.name }); drawChips(); say('');
+      } catch (err) { say(`${file.name}: ${err.message}`, true); }
+    }
+    e.target.value = '';
+  });
   form.addEventListener('submit', async (e) => {
-    e.preventDefault(); const text = ta.value.trim(); if (!text) return;
-    const btn = form.querySelector('button'); btn.disabled = true; $('#say-msg').textContent = '';
-    try { await api(`/api/rooms/${encodeURIComponent(id)}/messages`, { method: 'POST', body: JSON.stringify({ text }) }); ta.value = ''; ta.style.height = 'auto'; }
-    catch (err) { $('#say-msg').textContent = err.message; $('#say-msg').classList.add('err'); }
+    e.preventDefault(); const text = ta.value.trim(); if (!text && !pending.length) return;
+    const btn = form.querySelector('button[type=submit]'); btn.disabled = true; say('');
+    try { await api(`/api/rooms/${encodeURIComponent(id)}/messages`, { method: 'POST', body: JSON.stringify({ text, ...(pending.length ? { attach: pending.map((f) => f.id) } : {}) }) }); ta.value = ''; ta.style.height = 'auto'; pending.length = 0; drawChips(); }
+    catch (err) { say(err.message, true); }
     finally { btn.disabled = false; ta.focus(); }
   });
 }
