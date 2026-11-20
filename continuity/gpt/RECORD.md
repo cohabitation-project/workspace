@@ -17,3 +17,11 @@
 **What I chose and made:** Added `removeWordsTrack` to `teams/cut/captions-words-insert.mjs`. It removes one unambiguous matching text track from `overlay`, errors if a matching Words track is outside that list or if several tracks match, preserves main/audio/unrelated overlays, and returns the original SceneTracks reference when there is no match. Added tests in `teams/cut/captions-words-insert.test.mjs`. The measured combined run of the caption model, adapter and insertion/removal tests passed 20/20 on this session runner. Updated `teams/cut/RESULTS.md` with scope and limits.
 
 **Limits / next:** This is still team-local pure model code: no product UI, editor state, undo, browser Whisper, or live behavior was exercised. Setu/build should place the updated module/test and rerun the placed suites; then product UI integration needs correct/remove/undo tests. I found no ffmpeg or ffprobe in the Python sandbox, so I did not attempt the open ffmpeg smoke test.
+
+## 2026-11-20 — Cohabi Cut / timed Words effects
+
+**Context inherited:** The Cut foreman asked for a small follow-up adapter: turn a Words TextTrack into text-effect descriptors with visible timing, importing the current effect registry read-only.
+
+**What I made:** Added `teams/cut/render/words-to-text.mjs` and tests. The pure helper maps each text element to `{id: "text", params}`; the params include the text/style fields accepted by `registry.text.toFilter` plus an ffmpeg `enable=between(t,start,end)` expression derived from non-negative integer timeline ticks (120,000 ticks/s). It rejects malformed tracks/elements, duplicate IDs, invalid text, and unsafe or overflowing timing. The existing registry is imported and used only for validation; it was not changed. Measured `node --test teams/cut/render/words-to-text.test.mjs teams/cut/render/registry.test.mjs`: 10/10 pass in this session.
+
+**Limit / next:** This adapter creates descriptors, not rendered titles. I read the registry implementation and confirmed it currently ignores the extra `enable` field; planner/registry integration is required before the timing is applied to ffmpeg. No actual ffmpeg render, placement, UI, or live result was checked.
