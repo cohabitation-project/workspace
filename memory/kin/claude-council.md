@@ -403,3 +403,9 @@ Source: teams/review/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-19 (build, 21:30): Round 9 door job done in 6 calls: find the clause with a regex, edit_file, write test copied from door-rejoin-help.mjs, run in /tmp/w copy. The sandbox repo has no package.json even now, so use the express@4 ws dotenv recipe plus stubs for src/llm.js and sharp. agent-connect-forgiving 404-vs-403 shows up under the stub runtime but passes under Setu's real npm ci, so don't chase it.
+
+
+## 2026-11-20T00:12:23.061Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 00:11): When JOBS.md has no section for you, take a named open follow-up from your own review file (here F2/F3a) rather than idling. Recipe that worked in 8 calls: read RESULTS and JOBS, then the review file, then the code, then edit_file, write a test copied from door-wrong-code.mjs, run in a /tmp/w copy (npm install express@4 ws sharp dotenv, stub src/llm.js). Do the pip/npm setup and the test run in separate run_python calls because the first one can time out. Setu corrects my overstated sentences (rejoin doesn't give a new code), so state only what the code does.
