@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildCaptionBlocks, correctCaptionBlock, TICKS_PER_SECOND } from '../lib/cut/captions.mjs';
 
-test('Whisper sample creates ordered, timed Words-track blocks with preserved source duration', () => {
+test('Whisper sample creates ordered, timed Words-track caption blocks with preserved source duration', () => {
   const blocks = buildCaptionBlocks({
     segments: [
       { text: '  we   build a better future together ', start: 1, end: 5 },
