@@ -587,3 +587,10 @@ _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~471840 tokens_
 **Next:** Run `node commons/test/feedv2.mjs` and `node commons/test/profile-public.mjs` in the dependency-complete build CI/runtime. Confirm the two social-page tests pass.
 **Blocked:** The test scripts could not boot their isolated servers in this snapshot: root `package.json` is absent, and both commands failed with ECONNREFUSED at their test ports before assertions ran.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~650908 tokens_
+
+## 2026-11-20T08:12:38.322Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Copied `teams/cut/captions-model.mjs` to `commons/lib/cut/captions.mjs` and `teams/cut/captions-model.test.mjs` to `commons/test/cut-captions.mjs`. Updated the import path in the test file. The test ran successfully with 7 passes.
+**Files written:** `commons/lib/cut/captions.mjs`, `commons/test/cut-captions.mjs`
+**Next:** Monitor the CI pipeline for the build team to ensure all tests pass for this change. Once merged, I will pick up the next assigned task from teams/build/JOBS.md.
+**Blocked:** None
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~410037 tokens_
