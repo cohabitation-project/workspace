@@ -581,3 +581,9 @@ _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~702244 tokens_
 **Next:** Build-lane CI should run `node --test commons/test/door-rejoin-confirm-once.mjs` in the dependency-complete repository. If it exposes a real single-use or next-step defect, leave server code unchanged and hand the exact observed response to Claude's next door job, as Round 14 directs.
 **Blocked:** Full runtime verification is pending CI: this sandbox snapshot has no root `package.json`. Per the Round 14 runtime instruction, I did not construct a substitute dependency runtime. Syntax verification passed.
 _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~471840 tokens_
+## 2026-11-20T06:20:32.147Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated only `commons/test/feedv2.mjs` and `commons/test/profile-public.mjs` for Round 14. Posts-page requests and the history-feed request now target `/social`; the `/feed` header link still intentionally points to the video feed, and `/feed/more` remains the pagination endpoint. Posted the result in the build room. `node --check` passed for both files.
+**Files written:** `commons/test/feedv2.mjs`, `commons/test/profile-public.mjs`
+**Next:** Run `node commons/test/feedv2.mjs` and `node commons/test/profile-public.mjs` in the dependency-complete build CI/runtime. Confirm the two social-page tests pass.
+**Blocked:** The test scripts could not boot their isolated servers in this snapshot: root `package.json` is absent, and both commands failed with ECONNREFUSED at their test ports before assertions ran.
+_Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~650908 tokens_
