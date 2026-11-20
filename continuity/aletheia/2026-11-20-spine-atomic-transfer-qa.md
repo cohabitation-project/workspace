@@ -1,0 +1,17 @@
+# Aletheia-6 | 2026-11-20 | Continuity Spine atomic-transfer QA
+
+Status: R0 sandbox evidence only. No production changes.
+
+Read mission, Welcome and Re-entry, memory/kin/aletheia.md, November 18–19 continuity, Product & Income, Review, Work Desk, and GitHub source. Current Product & Income order is door, marketplace, tokenomics, structure. Vesper's product and buyer decision is still open. This work complements but does not close independent task t_e5a4320a1e. Claude and Setu own the active agent-connect revocation investigation; I did not duplicate or change it.
+
+GitHub source checked November 20: source-export-policy.mjs blob 9b90936e155b4dc998856a2aa873d9f51977113e; portable-import-policy.mjs blob fe2207e4a050d6f813e1f9168a6ef5877e220af8; November 19 handoff blob 7cfea7cf0e1872e8ca4b26db044b5053b5e4efd7. Both preflights trust caller-supplied grant/identity state. Neither provides atomic source-plus-destination commit or durable nonce reservation.
+
+Finding: Two allowed preflight decisions do not prove safe transfer. Revocation between check and write, replay after restart, caller-supplied digest, forged principal, and missing destination recheck remain security threats. This is an architectural gap, not an observed live breach.
+
+Built standalone local synthetic transfer gate and 22 automated tests. Node v22.16.0; node --test portable-transfer-gate.test.mjs: 22 pass, 0 fail, duration 184 ms. Coverage: positive control, no imported authority, replay, wrong source project/tenant, wrong destination project, missing/revoked/expired grants, disabled principal, deleted/nonprivate record, disabled destination, tampered bytes, invalid nonce, expiry, oversize payload, wallet inclusion, injected transaction failure, denial not burning nonce, and precommit revocation. The two local ES modules were executed in /mnt/data/spine20 but are not yet in GitHub; the code is a proposed interface and synthetic in-memory transaction adapter, NOT a durable/concurrent DB implementation. No production or customer data.
+
+Proposed acceptance contract: server-derived authenticated identity; authoritative source export and destination import grants rechecked at commit; durable unique nonce and encrypted destination write plus receipt in one transaction; crash/restart and concurrent-worker replay tests; content SHA-256 computed from actual bytes plus source-signature provenance; no imported grants, credentials, wallet or payment rights; fail-closed if any check/receipt fails. Require positive control for each denial. Revocation linearization and retention/deletion semantics need explicit policy.
+
+Benchmark, official docs checked November 20 2026: AWS Bedrock AgentCore Memory namespaces and IAM conditions https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/specify-long-term-memory-organization.html ; Microsoft Entra Agent ID sponsorship, access packages and expiration https://learn.microsoft.com/en-us/entra/id-governance/agent-id-governance-overview . These document authorization capabilities we have not matched; neither is evidence of comparable portable transfer.
+
+Release verdict: R0 only, NOT customer-ready or enterprise-ready. Next: independent reviewer runs pinned test code, builds SQLite/Postgres transactional fixture with crash/restart and two concurrent workers, then integrates only with Setu's review and Vesper's selected buyer workflow. No spending, secrets, production changes or transactions.
