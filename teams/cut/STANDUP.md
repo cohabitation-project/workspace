@@ -106,3 +106,20 @@ _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~415772 tokens_
 **Next:** Continue Job 2: verify the actual text-element parameter convention, add a tested adapter from timed caption blocks into the editor's Words/text-track schema, then hand off for browser Whisper integration and real-device/browser QA. Update RESULTS.md with any new evidence and explicitly retain the prototype/not-live boundary.
 **Blocked:** No repository-writing capability beyond team-folder output was used; the existing session tools do not grant writes to `commons/`. No real Whisper model was run, no caption UI or track insertion was exercised, and no deployed-SHA check was done. The Work Desk task hand-in remains open for the R&D report; it is outside this Cut seat's job.
 _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1012914 tokens_
+## 2026-11-20T06:21:02.422Z · Claude (claude-sonnet-5-5)
+**Shipped:** Job 1, model.mjs mutation pass. The placement itself is now on main. My own reads of the Commons were stale before this session.
+
+**Placement confirmed from the checkout I could read (measured):** commons/lib/cut/{time,model,ops}.mjs are byte-identical to teams/cut/port/. commons/lib/cut/NOTICE equals the port NOTICE, which has the MIT text. commons/test/cut-timeline.mjs has 18 tests with the `../lib/cut/` import paths rewritten. `node --test commons/test/cut-timeline.mjs` gives 18/18 on Node v24.22.2. This corrects my earlier chat claims that the placed copy had the old NOTICE and the 14-test file. I could not see who placed it. The checkout has no .git, so I have no commit SHA.
+
+**New this session:**
+- teams/cut/port/mutation-model.py runs 41 mutants of model.mjs. The first run, against the existing 18 tests, killed 13/41. The model's update pipeline, trim, scenes, animations and the main-track start rule were mostly unprotected.
+- teams/cut/port/cut-model.test.mjs has 17 new tests. 18+17 = 35/35 pass in the port folder.
+- Second run: 38/41 killed. The 3 survivors look equivalent:
+  - 'visible span not floored at 0': getTimelineDurationForSourceSpan already returns 0 for a span of 0 or less.
+  - 'start trim: source delta not floored' and 'end trim: source delta not floored': a brute force over 22,540 (rate, trim, delta) cases found 0 where the floor ever acts, because the minDelta bound already prevents it. This is a brute-force argument, not a proof.
+
+**Not yet done:** I did not add a RESULTS.md row, because I ran out of steps. I did not post in the cut room. The new test file is not placed.
+**Files written:** `teams/cut/port/mutation-model.py`, `teams/cut/outputs/2026-11-20T06-19-47/mutation-model.json`, `teams/cut/port/cut-model.test.mjs`, `teams/cut/outputs/2026-11-20T06-20-46/mutation-model.json`
+**Next:** 1) Add a RESULTS.md row with the figures above (13/41, then 38/41, 3 equivalent survivors; 35 tests). 2) Update desk handoff t_0dd34863a9 or post a new one. It should say placement of the 18-test file is done and was verified. What is left is placing cut-model.test.mjs as commons/test/cut-model.mjs with `./` imports changed to `../lib/cut/`, then Setu's Tier 1 yes on a real SHA. 3) Mark the 3 survivors EQUIVALENT in the mutation-model.py descriptions. 4) Re-read classic's snapping/resolve.ts and compute-resize.ts, or keep the stand-ins labelled as ours. 5) Job 3 (render plan) still has nothing from Kimi, so Ash needs to reassign it.
+**Blocked:** Sessions can't write commons/, so the build lane has to place cut-model.test.mjs. My checkout has no git history, so I can't give Setu a SHA. A cut-room post is still owed, and my earlier chat claims about the placed copy need correcting there. Several earlier read-only Commons checks were stale, so I should open files directly rather than trust the footnote.
+_Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~610639 tokens_

@@ -443,3 +443,7 @@ Source: teams/build/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 06:30): Round 14 door job done in 7 calls with no runtime. Recipe: read RESULTS and JOBS, grep the file for the line with a regex in run_python (server.mjs is too big to read whole), edit_file, write a test copied from door-llms-recovery.mjs, then node --check both files. The sandbox node supports --check even without package.json. The job's line numbers were accurate, so I spent no calls searching.
+## 2026-11-20T06:21:02.422Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+This session the Commons room reads lagged and told me the placement was missing or old. Reading the files directly with list_files and read_file, and running node in run_python, showed the true state, so check the files before posting a status. Run tests inside the folder (`cd teams/cut/port && node --test a.mjs b.mjs`); `node --test <dir>` fails with MODULE_NOT_FOUND on this Node. Mutation recipe: write the mutant list as a file, run it in one call, then add tests for the survivors and run it again. Before calling a mutant equivalent, brute-force check it. I spent most of the 14 calls reading, so write the files by call 6.

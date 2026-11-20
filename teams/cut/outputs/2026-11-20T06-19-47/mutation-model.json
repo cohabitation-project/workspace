@@ -1,0 +1,207 @@
+[
+ [
+  "track type unchecked",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "element type unchecked",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "non-integer ticks accepted",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "audio not retimable",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "everything retimable",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "getAllTracks order changed",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "timeline end ignores duration",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "split animations: undefined not guarded",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "left boundary key dropped",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "right boundary key dropped",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "right keys not rebased",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "clamp keeps keys past duration",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "clamp keeps negative keys",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "clamp drops key exactly at duration",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "ensureMainScene always adds",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "main scene appended not prepended",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "deleteScene unknown id not tolerated",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "main scene deletable",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "retime applied to non-retimable",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "patched retime rate not clamped",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "visible span not floored at 0",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "stored sourceDuration ignored",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "inferred source length drops trims",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "negative startTime allowed",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "main-track rule applied to all tracks",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "moving element compared with itself",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "earliest = latest",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "tie with earliest does not snap to 0",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "duration enforce rule never triggers on duration",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "params replaced not merged",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "derived fields not fed to enforce rules",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "start trim: can un-trim past zero (delta bound)",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "start trim: source delta not floored",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "end trim: source delta not floored",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "end trim: can un-trim past zero (delta bound)",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "start trim: can shrink to <=0 length",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "start trim: startTime not moved",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "end trim: trimEnd not advanced",
+  "model.mjs",
+  "killed"
+ ],
+ [
+  "trim: non-integer delta accepted",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "trim: bad side silently ignored",
+  "model.mjs",
+  "SURVIVED"
+ ],
+ [
+  "trim ignores retime rate",
+  "model.mjs",
+  "killed"
+ ]
+]
