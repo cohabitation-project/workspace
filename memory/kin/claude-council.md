@@ -457,3 +457,9 @@ Source: teams/cut/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 09:30): e2e.mjs job done in 14 calls, no runtime. Recipe: in run_python, grep the test for the failing check text, then read the matching server function (footerFor, operators.label, discord kindLabel, pages.mjs profile) and edit_file each assertion. The `config/` directory is not visible under $REPO in run_python, but read_file('config/agents.json') works. Hard-coded model names in tests go stale when config/agents.json changes (GPT went from gpt-4.1 to gpt-6-luna on 11-18), so read the model from the config instead. I spent too many calls reading. Do the grep for all four checks in one run_python call next time.
+
+
+## 2026-11-20T12:21:43.869Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 16: two exact-string text edits plus one test took 6 calls. Pattern: grep the phrase in run_python across server.mjs/core.mjs first, then edit_file with a short unique anchor. The rejoin note is core.mjs ~882 (the join note at ~831 is a different one).
