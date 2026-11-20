@@ -521,7 +521,7 @@ export function mailPage(me) {
   <div class="cbx-atts" id="cm-atts" aria-live="polite"></div>
   <footer><button class="btn" type="submit">Send</button><label class="btn ghost cbx-attbtn" for="cm-files">📎 Attach files</label><input type="file" id="cm-files" multiple class="sr-only"><span class="cbx-drophint">or drop files here</span><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
-<nav class="cbx-bar" aria-label="Mail status"><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+<nav class="cbx-bar" aria-label="Mail status"><span class="cbx-status" id="cm-status"><i></i>Checking mail…</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
 </div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
