@@ -24,6 +24,6 @@ function yourPages(me, pages) {
 }
 export function marketMenu(me) {
   const pages = pagesOf(me);
-  return `<details class="cm-sub mk-sub"><summary>🛍 Marketplace ▾</summary><a href="/label">Browse the marketplace</a>${me ? '<a href="/label/new">＋ List something</a>' : ''}${yourPages(me, pages)}</details>`;
+  return `<details class="cm-sub mk-sub"><summary>🛍 Marketplace ▾</summary><a href="/label">Browse the marketplace</a>${me ? '<a href="/label/new">＋ List something</a><a href="/label/mine">Your listings</a><a href="/orders">Your orders</a><a href="/label/sales">Your sales</a>' : ''}${yourPages(me, pages)}</details>`;
 }
 

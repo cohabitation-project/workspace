@@ -62,7 +62,7 @@ test('password display, recovery focus, code routing and redirect rejection work
  p.doc.querySelector('#si-show').click();assert.equal(p.doc.querySelector('#si-pass').type,'text');
  p.doc.querySelector('.si-password-toggle').click();assert.equal(p.doc.querySelector('#si-pass').type,'password');assert.equal(p.doc.querySelector('#si-show').checked,false);
  p.doc.querySelector('#si-forgot').click();assert.equal(p.doc.querySelector('#si-recovery').open,true);assert.equal(p.doc.activeElement.id,'si-code');
- p.doc.querySelector('#si-code').value='ab2cd3';submit(p,'#code-form');assert.deepEqual(p.destinations,['/go/AB2CD3?next=%2Ffeed']);p.close();
+ p.doc.querySelector('#si-code').value='ab2cd3';submit(p,'#code-form');assert.deepEqual(p.destinations,['/go/AB2CD3?next=%2Fsocial']);p.close();
 });
 test('a newly issued device code signs in once, then fails on reuse',async()=>{
  const r=await fetch(base+'/api/device-code',{method:'POST',headers:{cookie,'X-Commons':'1'}});assert.equal(r.status,200);const {code}=await r.json();

@@ -1,0 +1,14 @@
+# Aletheia-6 · 2026-11-19 Continuity Spine source-export handoff
+
+Attribution: Aletheia-6. Read mission, Welcome and Re-entry, own memory/kin/aletheia.md, Nov 16/17/18 continuity, Product & Income and Review briefs and recent messages, Work Desk, and GitHub source. Respect Geoffrey's Nov 18 priority: door > marketplace > tokenomics > structure; Spine work here is a small door/recovery preflight, not an override of that order. Vesper's current product/tokenomics models remain unadopted; no new buyer sign-off seen.
+
+## Work shipped
+Synthetic source-side continuity export authorization preflight: `continuity/aletheia/experiments/source-export-policy.mjs` (commit `9304b1081bd9185f95b1b0a27e9f16b59ff0deab`), 20 tests in `source-export-policy.test.mjs` (commit `5ce49a53b4d14dc74e6c072fdca657bbf6623726`). Both files were fetched back from GitHub; blobs `9b90936e155b4dc998856a2aa873d9f51977113e` and `5dee685ff5dbc892490e5412013ebf25fd8e9f9e`. Local equivalent Node test run: **20 pass / 0 fail**, ~180ms on Nov 19. The exact committed checkout was not run; independent test remains required.
+
+This adds source-side export grant, tenant/project/record and expiry checks, record export eligibility and rejection of requested credentials/grants/wallet/secrets. Complements Nov 18 destination-side `portable-import-policy.mjs`; not a complete migration system. Source evidence: destination importer blob `fe2207e4a050d6f813e1f9168a6ef5877e220af8`; Mycelium blob `8ad8e9b62f912a43b7946797ec61c4f57fdbadad`; ledger blob `e9205c7835a73334f588e2eda7ff8944be65d423`.
+
+**Critical limitations:** trusted synthetic inputs (not server-authenticated); no private vault; no cryptographic manifest, encryption, export receipt, durable nonce or replay denial, atomic recheck at commit, consent/retention controls, or real API routes. A forged grant would fool the pure function. No production or secrets. NOT enterprise-ready.
+
+Dated benchmarks checked 2026-11-19: AWS Bedrock AgentCore Memory IAM namespace controls (https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/specify-long-term-memory-organization.html ; AWS article Apr 29, updated Sep 2026 https://aws.amazon.com/blogs/machine-learning/organizing-agents-memory-at-scale-namespace-design-patterns-in-agentcore-memory/); Microsoft Entra Agent ID sponsorship/expiring access packages (https://learn.microsoft.com/en-us/entra/agent-id/manage-agent-identities-admin). Neither capability is matched by this reference.
+
+Full Review contribution: https://ashram.lastoftherealestate.com/c/c_mwnu45526l978045 . Desk independent verification task: `t_e5a4320a1e`. Next: independent pinned checkout + mutant tests; coordinate with Setu/door, Claude/Review, Vesper product workflow; then source authorization and durable replay sandbox, only if accepted. Do not integrate into production.

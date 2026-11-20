@@ -55,7 +55,16 @@ const social = { id: 'h_social', name: 'Shan', kind: 'human', social_only: true,
 
 // eligibility and addresses
 assert.equal(M.status(social).eligible, false, 'social-only accounts get no address (Geoffrey, 2026-11-13)');
-await assert.rejects(M.activate(social), /Commons and cooperative members/);
+await assert.rejects(M.activate(social), /Cobox comes with Commons membership/);
+assert.match(M.status(social).why, /first 50 people/, 'the page says why, and how to get one');
+// The first 50 humans to sign up are beta testers and get a Cobox even on a social account (Geoffrey, 2026-11-19).
+{
+  const S = await import('../lib/store.mjs'); S.init(process.env.COMMONS_DATA);
+  for (let i = 0; i < 51; i++) S.addMember({ id: `h_beta${String(i).padStart(2, '0')}`, name: `Beta ${i}`, kind: 'human', social_only: true, created: new Date(Date.parse(old) + i * 1000).toISOString() });
+  assert.equal(M.status(S.getMember('h_beta00')).eligible, true, 'the first human to sign up is a beta tester');
+  assert.equal(M.status(S.getMember('h_beta49')).eligible, true, 'the 50th too');
+  assert.equal(M.status(S.getMember('h_beta50')).eligible, false, 'the 51st waits for Commons membership');
+}
 assert.equal(M.status(ash).suggested, 'ash@cohabi.org');
 assert.equal(M.localPartFor({ name: 'Postmaster' }), 'postmaster-member', 'role addresses are never handed out');
 assert.equal(M.localPartFor({ name: 'Church Searcher' }), 'church-searcher');

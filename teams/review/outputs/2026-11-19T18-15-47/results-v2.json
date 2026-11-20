@@ -1,0 +1,171 @@
+{
+ "baseline": {
+  "faithful|S01 push/main green + staging live on sha": "PASS",
+  "faithful|S02 PR-only green (feature branch, pull_request)": "REFUSE",
+  "faithful|S03 fork PR whose head branch is named main": "REFUSE",
+  "faithful|S04 same-repo pull_request run, head branch main": "REFUSE",
+  "faithful|S05 workflow_dispatch green on main (build lane)": "PASS",
+  "faithful|S06 schedule event green on main": "REFUSE",
+  "faithful|S07 push green for a DIFFERENT sha only": "REFUSE",
+  "faithful|S08 push/main run, conclusion=failure": "REFUSE",
+  "faithful|S09 sha diverged from main": "REFUSE",
+  "faithful|S10 sha behind main (ancestor)": "REFUSE",
+  "faithful|S11 staging not live on sha, auto staging deploy run ok": "PASS",
+  "faithful|S12 staging not live, no deploy.yml workflow_run run": "REFUSE",
+  "faithful|S13 staging not live, only manual-dispatch staging run": "REFUSE",
+  "faithful|S14 healthz unreachable + no staged run": "REFUSE",
+  "faithful|S15 test-runs API error": "REFUSE",
+  "faithful|S16 abbreviated 7-char sha": "PASS",
+  "faithful|S17 unknown commit": "REFUSE",
+  "faithful|S18 empty sha": "REFUSE",
+  "faithful|S19 staged run conclusion=failure, live differs": "REFUSE",
+  "faithful|S20 same-repo PUSH green on a feature branch (sha later merged to main)": "REFUSE",
+  "lax-api|S01 push/main green + staging live on sha": "PASS",
+  "lax-api|S02 PR-only green (feature branch, pull_request)": "REFUSE",
+  "lax-api|S03 fork PR whose head branch is named main": "REFUSE",
+  "lax-api|S04 same-repo pull_request run, head branch main": "REFUSE",
+  "lax-api|S05 workflow_dispatch green on main (build lane)": "PASS",
+  "lax-api|S06 schedule event green on main": "REFUSE",
+  "lax-api|S07 push green for a DIFFERENT sha only": "PASS",
+  "lax-api|S08 push/main run, conclusion=failure": "PASS",
+  "lax-api|S09 sha diverged from main": "REFUSE",
+  "lax-api|S10 sha behind main (ancestor)": "REFUSE",
+  "lax-api|S11 staging not live on sha, auto staging deploy run ok": "PASS",
+  "lax-api|S12 staging not live, no deploy.yml workflow_run run": "REFUSE",
+  "lax-api|S13 staging not live, only manual-dispatch staging run": "REFUSE",
+  "lax-api|S14 healthz unreachable + no staged run": "REFUSE",
+  "lax-api|S15 test-runs API error": "REFUSE",
+  "lax-api|S16 abbreviated 7-char sha": "PASS",
+  "lax-api|S17 unknown commit": "REFUSE",
+  "lax-api|S18 empty sha": "REFUSE",
+  "lax-api|S19 staged run conclusion=failure, live differs": "REFUSE",
+  "lax-api|S20 same-repo PUSH green on a feature branch (sha later merged to main)": "REFUSE"
+ },
+ "mutants": [
+  [
+   "M1 drop jq head_branch",
+   true,
+   [
+    "lax-api:S20"
+   ]
+  ],
+  [
+   "M2 drop jq same-repo",
+   false,
+   []
+  ],
+  [
+   "M3 drop jq event allowlist",
+   true,
+   [
+    "faithful:S04",
+    "faithful:S06",
+    "lax-api:S04",
+    "lax-api:S06"
+   ]
+  ],
+  [
+   "M4 drop URL branch=main",
+   false,
+   []
+  ],
+  [
+   "M5 drop URL head_sha",
+   true,
+   [
+    "faithful:S07"
+   ]
+  ],
+  [
+   "M6 drop URL status=success",
+   true,
+   [
+    "faithful:S08"
+   ]
+  ],
+  [
+   "M7 threshold -ge 0",
+   true,
+   [
+    "faithful:S02",
+    "faithful:S03",
+    "faithful:S04",
+    "faithful:S06",
+    "faithful:S07",
+    "faithful:S08",
+    "faithful:S20",
+    "lax-api:S02",
+    "lax-api:S03",
+    "lax-api:S04",
+    "lax-api:S06",
+    "lax-api:S20"
+   ]
+  ],
+  [
+   "M8 drop ancestor check",
+   true,
+   [
+    "faithful:S09",
+    "lax-api:S09"
+   ]
+  ],
+  [
+   "M9 never refuse off-staging",
+   true,
+   [
+    "faithful:S12",
+    "faithful:S13",
+    "faithful:S14",
+    "faithful:S19",
+    "lax-api:S12",
+    "lax-api:S13",
+    "lax-api:S14",
+    "lax-api:S19"
+   ]
+  ],
+  [
+   "M10 staged lookup any event",
+   true,
+   [
+    "faithful:S13",
+    "lax-api:S13"
+   ]
+  ],
+  [
+   "M11 staged lookup failed ok",
+   true,
+   [
+    "faithful:S19",
+    "lax-api:S19"
+   ]
+  ],
+  [
+   "M12 drop dispatch from allowlist",
+   true,
+   [
+    "faithful:S05",
+    "lax-api:S05"
+   ]
+  ],
+  [
+   "M13 drop BOTH branch predicates (jq + URL)",
+   true,
+   [
+    "faithful:S20",
+    "lax-api:S20"
+   ]
+  ],
+  [
+   "M14 drop jq repo + jq event (fork/PR leak)",
+   true,
+   [
+    "faithful:S03",
+    "faithful:S04",
+    "faithful:S06",
+    "lax-api:S03",
+    "lax-api:S04",
+    "lax-api:S06"
+   ]
+  ]
+ ]
+}

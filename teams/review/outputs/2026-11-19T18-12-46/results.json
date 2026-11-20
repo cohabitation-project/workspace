@@ -1,0 +1,439 @@
+{
+ "deploy_yml_blob": "b480d7af0fd51269430b4fdcda4b75ea2199eb10",
+ "cases": [
+  {
+   "case": "S01 push/main green + staging live on sha",
+   "mode": "faithful",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S02 PR-only green (feature branch, pull_request)",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S03 fork PR whose head branch is named main",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S04 same-repo pull_request run, head branch main",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S05 workflow_dispatch green on main (build lane)",
+   "mode": "faithful",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S06 schedule event green on main",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S07 push green for a DIFFERENT sha only",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S08 push/main run, conclusion=failure",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S09 sha diverged from main",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not on main (diverged)"
+  },
+  {
+   "case": "S10 sha behind main (ancestor)",
+   "mode": "faithful",
+   "expected": "INFO",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not on main (behind)"
+  },
+  {
+   "case": "S11 staging not live on sha, auto staging deploy run ok",
+   "mode": "faithful",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: deployed there automatically (staging now runs bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)"
+  },
+  {
+   "case": "S12 staging not live, no deploy.yml workflow_run run",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "case": "S13 staging not live, only manual-dispatch staging run",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "case": "S14 healthz unreachable + no staged run",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs unknown). Let it reach stag"
+  },
+  {
+   "case": "S15 test-runs API error",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: could not read the test runs"
+  },
+  {
+   "case": "S16 abbreviated 7-char sha",
+   "mode": "faithful",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S17 unknown commit",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: no commit aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in this repository"
+  },
+  {
+   "case": "S18 empty sha",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: production needs the exact commit id. Copy the sha from https://staging.cohabi.org/healthz."
+  },
+  {
+   "case": "S19 staging run for sha exists but conclusion failure, live differs",
+   "mode": "faithful",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "case": "S01 push/main green + staging live on sha",
+   "mode": "lax-api",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S02 PR-only green (feature branch, pull_request)",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S03 fork PR whose head branch is named main",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S04 same-repo pull_request run, head branch main",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S05 workflow_dispatch green on main (build lane)",
+   "mode": "lax-api",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S06 schedule event green on main",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: Commons tests have not passed for aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "case": "S07 push green for a DIFFERENT sha only",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "PASS",
+   "ok": false,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S08 push/main run, conclusion=failure",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "PASS",
+   "ok": false,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S09 sha diverged from main",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not on main (diverged)"
+  },
+  {
+   "case": "S10 sha behind main (ancestor)",
+   "mode": "lax-api",
+   "expected": "INFO",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not on main (behind)"
+  },
+  {
+   "case": "S11 staging not live on sha, auto staging deploy run ok",
+   "mode": "lax-api",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: deployed there automatically (staging now runs bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)"
+  },
+  {
+   "case": "S12 staging not live, no deploy.yml workflow_run run",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "case": "S13 staging not live, only manual-dispatch staging run",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "case": "S14 healthz unreachable + no staged run",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs unknown). Let it reach stag"
+  },
+  {
+   "case": "S15 test-runs API error",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: could not read the test runs"
+  },
+  {
+   "case": "S16 abbreviated 7-char sha",
+   "mode": "lax-api",
+   "expected": "PASS",
+   "got": "PASS",
+   "ok": true,
+   "last": "3. on staging: staging is running it now"
+  },
+  {
+   "case": "S17 unknown commit",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: no commit aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa in this repository"
+  },
+  {
+   "case": "S18 empty sha",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: production needs the exact commit id. Copy the sha from https://staging.cohabi.org/healthz."
+  },
+  {
+   "case": "S19 staging run for sha exists but conclusion failure, live differs",
+   "mode": "lax-api",
+   "expected": "REFUSE",
+   "got": "REFUSE",
+   "ok": true,
+   "last": "::error::REFUSED: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa was never deployed to staging (staging runs bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
+ ],
+ "mutants": [
+  {
+   "mutant": "M1 drop head_branch==main in jq",
+   "killed": true,
+   "by": [
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M2 drop same-repo predicate",
+   "killed": true,
+   "by": [
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M3 drop event predicate",
+   "killed": true,
+   "by": [
+    "faithful:S04",
+    "faithful:S06",
+    "lax-api:S04",
+    "lax-api:S06",
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M4 drop &branch=main from URL",
+   "killed": true,
+   "by": [
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M5 drop head_sha from URL",
+   "killed": true,
+   "by": [
+    "faithful:S07",
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M6 drop status=success from URL",
+   "killed": true,
+   "by": [
+    "faithful:S08",
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M7 tests threshold -ge 0",
+   "killed": true,
+   "by": [
+    "faithful:S02",
+    "faithful:S03",
+    "faithful:S04",
+    "faithful:S06",
+    "faithful:S07",
+    "faithful:S08",
+    "lax-api:S02",
+    "lax-api:S03",
+    "lax-api:S04",
+    "lax-api:S06",
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  },
+  {
+   "mutant": "M8 drop ancestor-of-main check",
+   "killed": true,
+   "by": [
+    "faithful:S09",
+    "lax-api:S07",
+    "lax-api:S08",
+    "lax-api:S09"
+   ]
+  },
+  {
+   "mutant": "M9 never refuse when not on staging",
+   "killed": true,
+   "by": [
+    "faithful:S12",
+    "faithful:S13",
+    "faithful:S14",
+    "faithful:S19",
+    "lax-api:S07",
+    "lax-api:S08",
+    "lax-api:S12",
+    "lax-api:S13",
+    "lax-api:S14",
+    "lax-api:S19"
+   ]
+  },
+  {
+   "mutant": "M10 staged lookup accepts any event",
+   "killed": true,
+   "by": [
+    "faithful:S13",
+    "lax-api:S07",
+    "lax-api:S08",
+    "lax-api:S13"
+   ]
+  },
+  {
+   "mutant": "M11 staged lookup accepts failed runs",
+   "killed": true,
+   "by": [
+    "faithful:S19",
+    "lax-api:S07",
+    "lax-api:S08",
+    "lax-api:S19"
+   ]
+  },
+  {
+   "mutant": "M12 workflow_dispatch also excluded? (policy mutant: drop dispatch from allowlist)",
+   "killed": true,
+   "by": [
+    "faithful:S05",
+    "lax-api:S05",
+    "lax-api:S07",
+    "lax-api:S08"
+   ]
+  }
+ ]
+}

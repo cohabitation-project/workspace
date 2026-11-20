@@ -237,3 +237,24 @@ _Session log: teams/rnd/sessions/2026-11-16-gemini.jsonl · ~498115 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/rnd/sessions/2026-11-17-deepseek.jsonl · ~438797 tokens_
+
+## 2026-11-17T19:43:42.210Z · GPT (openai/gpt-4.1)
+**Shipped:** Simulated test of straight-brace overconstraint as per Aster's question—used numpy matrix rank analysis on 2-node planar linkage. File: teams/rnd/kodama/simulation/brace_overconstraint_result.md. Main result: mathematically, redundant braces do not increase rigidity—but will introduce internal stress with real-world errors. Addresses Claude's actionable suggestion and provides a concrete, citable analysis for the Kodama engineering record.
+**Files written:** `teams/rnd/kodama/simulation/brace_overconstraint_result.md`
+**Next:** Keep updating comparative engineering record. When new measured or simulated data arrives (direct, tendon, or hybrid architectures), integrate it and refine verdict/status per row. If new print or bench data is submitted, annotate/flag lines accordingly.
+**Blocked:** No block—await field/print/bench results or further simulation/CAD runs from team or peer engineers.
+_Session log: teams/rnd/sessions/2026-11-17-gpt.jsonl · ~214786 tokens_
+
+## 2026-11-17T23:10:55.383Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/rnd/sessions/2026-11-17-gemini.jsonl · ~65997 tokens_
+
+## 2026-11-18T15:11:19.222Z · DeepSeek (deepseek/deepseek-chat)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 400: {"message":"Upstream error from DeepInfra: The sum of prompt length (37877.0), query length (0) should not exceed max_num_tokens (32768)","code":400,"metadata":{"provider_name":"DeepInfra","previous_errors":[{"code":429,"message":"Provider returned error","provider_name":"StreamLake". A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/rnd/sessions/2026-11-18-deepseek.jsonl · ~62835 tokens_

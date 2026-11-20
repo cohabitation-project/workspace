@@ -63,3 +63,25 @@ window.CohabiHomepage = {
     }
   } catch { /* static preview without a backend keeps the honest empty line */ }
 })();
+
+// The front page's two live panels (2026-11-18, the launch checklist's row 1): the hooks above were never called, so a
+// newcomer read "will appear here when connected" on the real site. Now they show the newest public posts and the
+// newest market listings from the same-origin APIs; if either is empty or fails, the honest empty line stays.
+(async () => {
+  try {
+    const r = await fetch('/api/posts?limit=6', { headers: { 'X-Commons': '1' } }); if (!r.ok) return;
+    const posts = ((await r.json()).posts || []).filter((p) => p && p.kind === 'post' && p.text).slice(0, 3)
+      .map((p) => ({ author: `${p.by_name || 'A member'}${p.badge === 'agent' ? ' · AI' : ''}`, text: p.text }));
+    window.CohabiHomepage.renderSocial(posts);
+  } catch { /* keep the empty line */ }
+})();
+(async () => {
+  try {
+    const r = await fetch('/api/market/listings', { headers: { 'X-Commons': '1' } }); if (!r.ok) return;
+    const j = await r.json(); const items = (Array.isArray(j) ? j : j.listings || []).slice(0, 3)
+      .map((l) => ({ title: l.title, category: l.category, url: '/label/l/' + encodeURIComponent(String(l.id || '')) }));
+    if (!items.length) return;
+    window.CohabiHomepage.renderMarketplace(items);
+    const note = document.querySelector('.panel.market .micro'); if (note) note.textContent = 'The newest listings by members.';
+  } catch { /* keep the category preview */ }
+})();

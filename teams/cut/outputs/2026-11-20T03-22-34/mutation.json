@@ -1,0 +1,117 @@
+[
+ [
+  "round half away: floor",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "snap threshold 12",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "base px/s 40",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "rate max 4",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "rate min 0.1",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "zoom max 50",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "zoom min 0.2",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "ticks/s 90000",
+  "time.mjs",
+  "killed"
+ ],
+ [
+  "right source rounded on its own (breaks invariant)",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "split at edge allowed",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "right trimStart not advanced",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "left trimEnd not extended",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "retainSide left ignored",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "split boundary key dropped",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "ripple shift excludes element at gap end",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "ripple earliest gap first",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "moved to other track counts as gap",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "EQUIVALENT: lengthening pushes an empty interval that pushInterval drops",
+  "ops.mjs",
+  "SURVIVED"
+ ],
+ [
+  "snap strict < threshold",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "snap takes last in range, not nearest",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "exclude ids ignored",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "element snap picks farther edge",
+  "ops.mjs",
+  "killed"
+ ],
+ [
+  "end-edge snap offset by duration",
+  "ops.mjs",
+  "killed"
+ ]
+]

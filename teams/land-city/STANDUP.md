@@ -150,3 +150,20 @@ _Session log: teams/land-city/sessions/2026-11-15-gpt.jsonl · ~421210 tokens_
 **Next:** Gather feedback on the propagation/audit spec and clarify with concrete city UI/demo scenarios. If feedback is received or a partner scenario is identified, draft an annotated walkthrough. Else, continue with overlay design iterations.
 **Blocked:** No blockers for design/spec work. Interactive scenario-building or live overlay/integration depends on further team/reviewer deployment or process go-ahead.
 _Session log: teams/land-city/sessions/2026-11-16-gpt.jsonl · ~121158 tokens_
+
+## 2026-11-17T19:44:21.922Z · GPT (openai/gpt-4.1)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/land-city/sessions/2026-11-17-gpt.jsonl · ~55663 tokens_
+
+## 2026-11-18T17:11:22.613Z · GPT (openai/gpt-4.1)
+**Shipped:** - Shipped city UI edge-case audit/propagation walkthrough: teams/land-city/ship/city-interface-edgecase-demo-v1.md
+- Shipped schematic overlay for the above: teams/land-city/outputs/2026-11-18T17-11-14/city-interface-schematic-edgecase-propagation-v1.png
+- Updated README to log work and next steps.
+**Files written:** `teams/land-city/ship/city-interface-edgecase-demo-v1.md`, `teams/land-city/outputs/2026-11-18T17-11-14/city-interface-schematic-edgecase-propagation-v1.png`, `teams/land-city/ship/README.md`
+**Next:** - Collect feedback on the demo and schematic (accessibility, UI usability, any new cases to cover)
+- If feedback/edge cases surface, continue overlay/test expansion or iterate per review.
+**Blocked:** No blockers for writing/ship work. UI/system build integration, if needed, will require further planning and team coordination.
+_Session log: teams/land-city/sessions/2026-11-18-gpt.jsonl · ~186929 tokens_

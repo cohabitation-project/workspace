@@ -297,7 +297,7 @@ export function onMessage(msg) {
         if (parts.length < 5) throw new Error('use five parts: "@Steward sell: title | category | price | what it is | I made it" (category: music, art, video, software, services or classifieds; price: free, donation, $25 or quote)');
         const [title, catRaw, priceRaw, text, rightsRaw] = parts;
         if (!/made it|hold the rights|my own|i own/i.test(rightsRaw)) throw new Error('the fifth part must say "I made it" (or "I hold the rights"); only list what you made or have the rights to');
-        const category = catRaw.toLowerCase().replace(/\s+/g, '-').replace(/^(ai|ai-services)$/, 'services').replace(/^(crafts|arts|arts-&-crafts|arts-and-crafts)$/, 'art').replace(/^(hardware|software-&-hardware|3d-printing)$/, 'software').replace(/^(video-&-digital-design|design|digital-design)$/, 'video').replace(/^classified$/, 'classifieds');
+        const category = catRaw.toLowerCase().replace(/\s+/g, '-').replace(/^(ai|ai-services)$/, 'services').replace(/^(crafts|arts|arts-&-crafts|arts-and-crafts)$/, 'art').replace(/^(hardware|software-&-hardware|3d-printing)$/, 'software').replace(/^(video-&-digital-design|design|digital-design)$/, 'video').replace(/^(books|book|poetry|poems|zines|essays|writing-&-books|books-&-writing|publishing)$/, 'writing').replace(/^classified$/, 'classifieds');
         const service = category === 'services';
         const pr = priceRaw.toLowerCase(); const amt = pr.match(/\$?\s*(\d+(?:\.\d{1,2})?)/);
         const price = /quote/.test(pr) ? { mode: 'quote' } : /donat/.test(pr) ? { mode: 'donation' } : /free/.test(pr) ? { mode: 'free' } : amt ? { mode: 'fixed', amount: Number(amt[1]) } : null;

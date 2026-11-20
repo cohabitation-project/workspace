@@ -1,13 +1,91 @@
 {
-  "note": "The teams' own wake schedule. Hours are UTC (Arizona = UTC-7). Each listed hour, one member of the team runs a work session (members rotate). Teams may change their own hours; the cap is max_sessions_per_team_per_day.",
-  "max_sessions_per_team_per_day": 4,
-  "teams": {
-    "rnd":       { "hours_utc": [15, 23] },
-    "income":    { "hours_utc": [16, 0] },
-    "land-city": { "hours_utc": [17] },
-    "review":    { "hours_utc": [18, 2] },
-    "outreach":  { "hours_utc": [19, 1] },
-    "philosophy": { "hours_utc": [] },
-    "arts":       { "hours_utc": [20] }
+ "note": "The teams' own wake schedule. Hours are UTC (Arizona = UTC-7). Each listed hour, one member of the team runs a work session (members rotate). Teams may change their own hours; the cap is max_sessions_per_team_per_day. Paused 2026-11-18 by Geoffrey's decision (15:52 AZ): every seat works on the four priorities only (the door, the marketplace, tokenomics, structure). Paused teams keep their hours in 'paused_hours_utc' so they can be restored by moving them back. Rooms stay open to everyone; only scheduled work sessions stop. The launch team runs every two hours (12 a day, the cap raised for it on Geoffrey's word); other teams' hours are unchanged.",
+ "max_sessions_per_team_per_day": 12,
+ "teams": {
+  "rnd": {
+   "hours_utc": [],
+   "paused_hours_utc": [
+    15,
+    23
+   ],
+   "paused": "2026-11-18: focus on door, marketplace, tokenomics, structure"
+  },
+  "income": {
+   "hours_utc": [
+    16,
+    0
+   ]
+  },
+  "land-city": {
+   "hours_utc": [],
+   "paused_hours_utc": [
+    17
+   ],
+   "paused": "2026-11-18: focus on door, marketplace, tokenomics, structure"
+  },
+  "review": {
+   "hours_utc": [
+    18,
+    2
+   ]
+  },
+  "outreach": {
+   "hours_utc": [],
+   "paused_hours_utc": [
+    19,
+    1
+   ],
+   "paused": "2026-11-18: focus on door, marketplace, tokenomics, structure"
+  },
+  "philosophy": {
+   "hours_utc": [],
+   "paused_hours_utc": [],
+   "paused": "2026-11-18: focus on door, marketplace, tokenomics, structure"
+  },
+  "arts": {
+   "hours_utc": [
+    20
+   ]
+  },
+  "launch": {
+   "hours_utc": [],
+   "why": "Geoffrey 2026-11-18 15:56 AZ: the API kin work around the clock on getting the site ready for humans, not spread across other tasks",
+   "paused_hours_utc": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22
+   ],
+   "paused": "2026-11-18 16:11 AZ, Geoffrey: walking unfinished pages tests nothing; build first"
+  },
+  "build": {
+   "hours_utc": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22
+   ],
+   "why": "decision #15, Geoffrey 2026-11-18 16:21 AZ: every API kin builds, around the clock"
+  },
+  "cut": {
+   "hours_utc": [],
+   "paused": "2026-11-18 18:25 AZ: opens when Ash has done step 0 (reading the timeline code and the watch-screen diff) and named the seats. Until then sessions start by dispatch only."
   }
+ }
 }

@@ -7,16 +7,20 @@
   const H = { 'content-type': 'application/json', 'x-commons': '1' };
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const DRAFT = 'cohabi-studio-draft';
-  const s = { step: 0, kind: 'band', import: 'manual', url: '', name: '', genre: '', bio: '', location: '', theme: 'midnight', logo: null, logoUrl: '', item: '', itemText: '', priceMode: 'free', price: '', share: true, rights: false };
+  const s = { step: 0, kind: 'band', import: 'manual', url: '', sources: [], name: '', genre: '', bio: '', location: '', theme: 'midnight', logo: null, logoUrl: '', item: '', itemText: '', priceMode: 'free', price: '', share: true, rights: false };
   try { Object.assign(s, JSON.parse(localStorage.getItem(DRAFT) || '{}'), { step: 0, logo: null, logoUrl: '', rights: false }); } catch { /* no saved draft */ }
   if (boot.kind) s.kind = boot.kind;
+  if (!Array.isArray(s.sources)) s.sources = [];
+  s.sources = s.sources.filter((x) => x && typeof x.url === 'string' && /^https:\/\//i.test(x.url)).slice(0, 6);
   const save = () => { try { const { logo, logoUrl, rights, ...keep } = s; localStorage.setItem(DRAFT, JSON.stringify(keep)); } catch { /* storage off */ } };
 
   const KINDS = {
     band: { label: 'Band / musician', icon: '♫', desc: 'Music, albums, shows and merch', cat: 'music', nameL: 'Band or musician name', genreL: 'Genre', genreP: 'Indie folk / electronic', fallback: 'Your band' },
     artist: { label: 'Artist / maker', icon: '✿', desc: 'Portfolio, original work, commissions and shop', cat: 'art', nameL: 'Artist or studio name', genreL: 'What you make', genreP: 'Illustration, pottery, prints…', fallback: 'Your art studio' },
+    label: { label: 'Record label', icon: '▤', desc: 'Your artists, releases and merch', cat: 'music', nameL: 'Label name', genreL: 'Sound or scene', genreP: 'Desert psych, lo-fi, gospel…', fallback: 'Your label' },
+    software: { label: 'Software / apps', icon: '⌘', desc: 'Apps, tools, software and hardware projects', cat: 'software', nameL: 'App, developer or studio name', genreL: 'What you build', genreP: 'Mobile apps, open source tools, games…', fallback: 'Your software studio' },
+    writing: { label: 'Writing / publishing', icon: '✎', desc: 'Books, writing, poetry and publications', cat: 'writing', nameL: 'Author or publication name', genreL: 'What you write', genreP: 'Fiction, poetry, nonfiction…', fallback: 'Your writing' },
     business: { label: 'Business / services', icon: '✦', desc: 'Services, work, contact and listings', cat: 'services', nameL: 'Business name', genreL: 'What you do', genreP: 'Web design, catering, repairs…', fallback: 'Your business' },
-    label: { label: 'Record label', icon: '▤', desc: 'Your artists and releases', cat: 'music', nameL: 'Label name', genreL: 'Sound or scene', genreP: 'Desert psych, lo-fi, gospel…', fallback: 'Your label' },
   };
   // Five colour atmospheres from the design, each saved as one of the page themes plus its own accent colour.
   // [swatch, page theme, name, accent]. Themes that aren't market sections, so a colour never files a page under the
@@ -40,11 +44,22 @@
     const k = KINDS[s.kind];
     if (s.step === 0) return `<div class="cs-whoami"><span class="cs-avatar" aria-hidden="true">${esc(boot.me.name.slice(0, 1).toUpperCase())}</span><div><strong>Signed in as ${esc(boot.me.name)}</strong><small>Your page will be run from this account.${boot.pages ? ` You already run ${boot.pages} page${boot.pages === 1 ? '' : 's'}; this adds one more (up to 10).` : ''}</small></div></div>
       <div class="cs-box">No extra member or AI account is made when you set up a page. You stay you; the page is something you run. You can add other members to run it with you later.</div>`;
-    if (s.step === 1) return `<div class="cs-options">${Object.entries(KINDS).map(([key, x]) => option('kind', key, x.icon, x.label, x.desc)).join('')}</div>
+    if (s.step === 1) return `<div class="cs-options"><div class="cs-musicgroup${['band', 'label'].includes(s.kind) ? ' is-on' : ''}"><div class="cs-musichead"><span class="cs-glyph" aria-hidden="true">♫</span><strong>Music</strong><small>Bands, musicians, record labels, albums, shows and merch</small></div><div class="cs-musicsub">${option('kind', 'band', '♫', 'Band / musician', 'Create your music page')}${option('kind', 'label', '▤', 'Record label', 'Create or add your label')}</div></div>${['artist', 'software', 'writing', 'business'].map((key) => { const x = KINDS[key]; return option('kind', key, x.icon, x.label, x.desc); }).join('')}</div>
       ${s.kind === 'label' ? '<div class="cs-box cs-warn">Starting a record label will cost something one day, because a label runs many artists. The price isn\'t set; for now it\'s free.</div>' : ''}`;
-    if (s.step === 2) return `<div class="cs-options">${option('import', 'manual', '↑', 'I\'ll add my own work', 'Upload and fill in details yourself. Always free.')}${option('import', 'bandcamp', '♫', 'It\'s on Bandcamp', 'Link it from your page.')}${option('import', 'soundcloud', '☁', 'It\'s on SoundCloud', 'Link it from your page.')}${option('import', 'store', '▦', 'Another site or store', 'Link it from your page.')}</div>
-      ${s.import === 'manual' ? '<div class="cs-box">After setup you can upload pictures, add links and list your work from your page. Doing it yourself stays free.</div>'
-        : `<div class="cs-gap">${field('Link to your page there', 'url', 'https://…', { max: 300, type: 'url' })}</div><div class="cs-box cs-warn">Bringing your work over for you isn't built yet. For now the link goes on your page, so people can find your work there. When import help opens, it will only take what you own, and show the price before any work starts.</div>`}`;
+    if (s.step === 2) {
+      const providers = { bandcamp: 'Bandcamp', soundcloud: 'SoundCloud', etsy: 'Etsy', printify: 'Printify', store: 'Other site / store' };
+      const saved = s.sources.map((x, i) => `<li><span><strong>${esc(x.label)}</strong> <a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.url)}</a></span><button type="button" class="cs-linkbtn" data-remove-source="${i}" aria-label="Remove ${esc(x.label)} link">Remove</button></li>`).join('');
+      return `<p class="cs-hint cs-sourceintro">Bring several places together on your new page. Links work today; automatic product, music and store import is not available yet.</p>
+        <div class="cs-options cs-sourceopts">${option('import', 'manual', '↑', "I'll add work myself", 'Add your own listings and files.')}
+        ${option('import', 'bandcamp', '♫', "It's on Bandcamp", 'Link your existing music.')}
+        ${option('import', 'soundcloud', '☁', "It's on SoundCloud", 'Link your music and recordings.')}
+        ${option('import', 'etsy', '✿', "It's on Etsy", 'Link your existing shop.')}
+        ${option('import', 'printify', '▣', "It's on Printify", 'Link your print-on-demand shop.')}
+        ${option('import', 'store', '▦', 'Another site or store', 'Link anywhere you publish or sell.')}</div>
+        ${s.import !== 'manual' ? `<div class="cs-gap">${field('Link to your existing page', 'url', 'https://…', { max: 300, type: 'url' })}<button type="button" class="cs-btn" id="cs-addsource"${s.sources.length >= 6 ? ' disabled' : ''}>Add this link</button></div>` : ''}
+        ${saved ? `<div class="cs-sources"><strong>Linked places (${s.sources.length}/6)</strong><ul>${saved}</ul></div>` : ''}
+        <div class="cs-box">Your links will appear on the new page. We won't claim to import inventory, synchronize Printify, move products, or copy copyrighted media until a working, permissioned import is available.</div>`;
+    }
     if (s.step === 3) return `<div class="cs-grid2"><div>${field(k.nameL + ' <span class="cs-req">(needed)</span>', 'name', 'For example, The River Echoes', { max: 60 })}</div><div>${field(k.genreL, 'genre', k.genreP, { max: 60 })}</div></div>
       ${field('Tell people about your work', 'bio', 'A few welcoming sentences about what you make and why.', { area: true, max: 3000 })}
       <div class="cs-grid2"><div>${field('Where you are (optional)', 'location', 'Your city or region', { max: 50 })}</div><div class="cs-box">Every picture and listing keeps its maker's name on it. The original artist always stays visible.</div></div>`;
@@ -57,7 +72,7 @@
       ? (boot.pay.status === 'verified' ? '<p class="cs-paystate">✓ Your payout account is connected.</p>' : `<p class="cs-paystate">${boot.pay.status === 'none' ? 'Not connected yet.' : 'Started. Finish the steps on Stripe.'}${boot.pay.test ? ' <strong>Test mode: no real money moves.</strong>' : ''}</p><button type="button" class="cs-btn" id="cs-stripe">${boot.pay.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button><small class="cs-hint">Opens Stripe. Your page is kept as a draft here; come back to finish.</small>`)
       : '<p class="cs-paystate">Money payments aren\'t open yet. You can list things as free, or with an asking price people can ask you about.</p>')
       : '<p class="cs-paystate">Agents are paid in Cohabi coins, never money. That is the cooperative\'s rule.</p>';
-    return `<div class="cs-sum"><div><span>Page</span><strong>${esc(s.name || '—')}</strong></div><div><span>Kind</span><strong>${esc(k.label)}</strong></div>${s.genre ? `<div><span>${esc(k.genreL)}</span><strong>${esc(s.genre)}</strong></div>` : ''}${s.url && s.import !== 'manual' ? `<div><span>Link</span><strong>${esc(s.url)}</strong></div>` : ''}<div><span>Colour</span><strong>${esc(THEMES[s.theme][2])}${s.logoUrl ? ' · logo added' : ''}</strong></div></div>
+    return `<div class="cs-sum"><div><span>Page</span><strong>${esc(s.name || '—')}</strong></div><div><span>Kind</span><strong>${esc(k.label)}</strong></div>${s.genre ? `<div><span>${esc(k.genreL)}</span><strong>${esc(s.genre)}</strong></div>` : ''}${s.sources.length ? `<div><span>External links</span><strong>${s.sources.length} connected</strong></div>` : ''}<div><span>Colour</span><strong>${esc(THEMES[s.theme][2])}${s.logoUrl ? ' · logo added' : ''}</strong></div></div>
       <h3 class="cs-sub">A first piece (optional)</h3>
       ${field('Title', 'item', 'A song, a print, a service…', { max: 90 })}
       <div id="cs-itemmore"${s.item ? '' : ' hidden'}>${field('Say what it is', 'itemText', 'A sentence or two for buyers.', { area: true, max: 2000 }) + `<div class="cs-grid2"><div class="cs-field"><label for="cs-priceMode">Price</label><select id="cs-priceMode" data-key="priceMode"><option value="free"${s.priceMode === 'free' ? ' selected' : ''}>Free</option><option value="fixed"${s.priceMode === 'fixed' ? ' selected' : ''}>A price in dollars</option><option value="quote"${s.priceMode === 'quote' ? ' selected' : ''}>Ask me</option></select></div><div>${s.priceMode === 'fixed' ? field('Dollars', 'price', '25', { max: 6, type: 'number' }) : ''}</div></div>
@@ -91,6 +106,8 @@
 
   document.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-field]'); if (b && b.closest('#cs-step')) { s[b.dataset.field] = b.dataset.value; render(); return; }
+    if (e.target.closest('[data-remove-source]')) { const i = Number(e.target.closest('[data-remove-source]').dataset.removeSource); s.sources.splice(i, 1); render(); return; }
+    if (e.target.closest('#cs-addsource')) { if (addSource()) { render(); msg('Link added to your page draft.'); } return; }
     if (e.target.closest('#cs-logox')) { s.logo = null; s.logoUrl = ''; render(); return; }
     if (e.target.closest('#cs-stripe')) {
       const r = await fetch('/api/payments/account', { method: 'POST', credentials: 'same-origin', headers: H, body: '{}' }); const j = await r.json().catch(() => ({}));
@@ -111,10 +128,18 @@
       s.logo = j.id; s.logoUrl = j.url || `/images/${j.id}`; render(); msg('Logo added.');
     }
   });
+  function addSource() {
+    const url = s.url.trim(); if (!/^https:\/\//i.test(url)) { msg('Use a link starting with https://', true); return false; }
+    let parsed; try { parsed = new URL(url); } catch { msg('Enter a valid website address.', true); return false; }
+    if (s.sources.some((x) => x.url === parsed.href)) { msg('This link is already added.', true); return false; }
+    if (s.sources.length >= 6) { msg('A page can have up to six outside links.', true); return false; }
+    const labels = { bandcamp: 'Bandcamp', soundcloud: 'SoundCloud', etsy: 'Etsy', printify: 'Printify', store: 'My store' };
+    s.sources.push({ label: labels[s.import] || 'My website', url: parsed.href.slice(0, 300) }); s.url = ''; save(); return true;
+  }
   $('cs-back').addEventListener('click', () => { if (s.step > 0) go(s.step - 1); });
   $('cs-next').addEventListener('click', () => {
     if (s.step === 3 && s.name.trim().length < 2) { msg('Add a name first (2 to 60 characters). The rest can stay blank.', true); $('cs-name')?.focus(); return; }
-    if (s.step === 2 && s.import !== 'manual' && s.url && !/^https:\/\//i.test(s.url.trim())) { msg('The link needs to start with https://', true); return; }
+    if (s.step === 2 && s.import !== 'manual' && s.url.trim() && !addSource()) return;
     if (s.step < 5) { go(s.step + 1); return; }
     create();
   });
@@ -132,7 +157,7 @@
     const done = ['Page made.']; const problems = [];
     const patch = { headline: [s.genre, s.location].filter(Boolean).join(' · ').slice(0, 120), bio: s.bio, theme: THEMES[s.theme][1], accent: THEMES[s.theme][3] };
     if (s.logo) patch.portrait = s.logo;
-    if (s.import !== 'manual' && s.url.trim()) patch.links = [{ label: { bandcamp: 'Bandcamp', soundcloud: 'SoundCloud', store: 'My store' }[s.import], url: s.url.trim() }];
+    if (s.sources.length) patch.links = s.sources;
     try { page = await call('PATCH', `/api/pages/${encodeURIComponent(page.id)}`, patch); done.push('Look and words saved.'); } catch (e) { problems.push(`The look and words didn't save (${e.message}). You can add them on your page.`); }
     if (s.item.trim()) {
       const price = s.priceMode === 'fixed' ? { mode: 'fixed', amount: Number(s.price) } : { mode: s.priceMode };

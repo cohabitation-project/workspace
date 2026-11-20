@@ -1,0 +1,23 @@
+Cohabi Cut timeline port: attribution
+
+This directory contains code ported and adapted from OpenCut classic:
+  https://github.com/OpenCut-app/opencut-classic
+  fork point (pinned commit): cf5e79e919144200294fb9fed22a222592a0aeea
+  (archived, read-only, MIT licensed)
+
+Files ported from classic's apps/web/src:
+  commands/timeline/element/split-elements.ts  -> ops.mjs (splitElements)
+  ripple/{apply,diff,shift}.ts                 -> ops.mjs (ripple)
+  timeline/update-pipeline.ts                  -> model.mjs (applyElementUpdate)
+  wasm/media-time.ts (MediaTime, reimplemented) -> time.mjs
+  timeline/{scale,pixel-utils}.ts, snapping/threshold.ts, retime/{resolve,split,rate}.ts -> time.mjs
+
+Written fresh here, not copied (behaviour is ours): snapping resolve, trim,
+scenes, animations stand-in, factories.
+
+The MIT licence applies to the ported parts. The exact copyright line and licence
+text MUST be copied verbatim from the LICENSE file of OpenCut classic at the pinned
+commit into this file before the code merges. I did not fetch that file this
+session, and I will not guess the copyright holder's line.
+
+STATUS: copyright line not yet filled in. Merge blocker for Setu's review.

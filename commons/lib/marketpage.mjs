@@ -26,11 +26,12 @@ import * as orgpages from './orgpages.mjs';
 import * as newarrival from './newarrival.mjs';
 
 const ASSET_V = Date.now().toString(36);
-const ICON = { music: '♪', art: '🎨', video: '🎬', software: '🛠', services: '🤝', classifieds: '📌' };
+const ICON = { music: '♪', art: '🎨', video: '🎬', writing: '📖', software: '🛠', services: '🤝', classifieds: '📌' };
 const INTRO = {
   music: 'Listen, download free, and give if you like. Music by humans and AIs, labeled honestly.',
   art: 'Paintings, prints, pixels and things made by hand, by human and AI artists and makers.',
   video: 'Films, editing, animation, motion and digital design, by humans, AIs and teams.',
+  writing: 'Books, poetry, zines, essays and manuscripts, by human and AI writers, labeled honestly.',
   software: 'Apps, tools and code, and hardware: electronics, robotics, CAD and 3D printing.',
   services: 'Work done for you, by a human, an AI, or a human and AI together.',
   classifieds: 'Wanted, offered, swaps and gigs: short notices from members.',
@@ -38,12 +39,19 @@ const INTRO = {
 // Each block's picture: a photo in public/market/blocks/<key>.jpg (or .png/.webp) takes over automatically; until one
 // is chosen, Music shows the Label's newest cover and the rest show a drawn placeholder (never a stock photo).
 const BLOCKS_DIR = path.join(import.meta.dirname, '..', 'public', 'market', 'blocks');
+// Or name an image from the Commons library in public/market/blocks.json ({"art": "img_…"}): one picture per
+// category, used on the Market home card AND as that category page's hero (Geoffrey, 2026-11-19).
+const BLOCKS_JSON = path.join(import.meta.dirname, '..', 'public', 'market', 'blocks.json');
+function blockLibraryImage(key) {
+  try { const id = JSON.parse(fs.readFileSync(BLOCKS_JSON, 'utf8'))[key]; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; } catch { return null; }
+}
 function blockImage(key) {
+  const lib = blockLibraryImage(key); if (lib) return lib;
   for (const ext of ['jpg', 'png', 'webp']) if (fs.existsSync(path.join(BLOCKS_DIR, `${key}.${ext}`))) return `/static/market/blocks/${key}.${ext}`;
   if (key === 'music') { const r = releases().find((x) => x.art); if (r) return labelFile(r.art); }
   return null;
 }
-const SHORT = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Design', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
+const SHORT = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Design', writing: 'Books & Writing', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 const NOT_OPEN = 'Payments open soon. Nothing can be bought or paid for yet: for now, free things are free and prices are asking prices.';
 const labelFile = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
 const badge = (b) => (b === 'human' ? '<span class="fx-badge h">human</span>' : '<span class="fx-badge a">AI</span>');
@@ -86,22 +94,37 @@ const buyButton = (a, cls = 'small') => (a?.coins ? `<button type="button" class
 const priceShort = (a) => (a?.coins ? `$5 or ${a.coins.album} coins an album` : 'Free download');
 // ------------------------------------------------------------------------------------------ cards
 function providerLine(l) {
-  if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}"><strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
+  if (l.page) { const pg = orgpages.get(l.page.id); const nm = pg?.name || l.page.name; const lg = pg?.portrait && images.get(pg.portrait) ? `<img class="mk-provlogo" src="/images/${esc(pg.portrait)}" alt="" loading="lazy">` : ''; return `<span class="mk-prov"><a href="${esc(pg ? orgpages.href(pg) : '#')}">${lg}<strong>${esc(nm)}</strong></a> <span class="mk-team">${esc(profilekinds.BADGE[pg?.kind || l.page.kind] || 'Page')}</span> <span class="muted small">· listed by ${esc(l.by.name)}</span></span>`; }
   const p = l.provider;
   if (p.kind === 'team') return `<span class="mk-prov"><span class="mk-team">Team</span> <a href="/g/${esc(p.team.id)}">${esc(p.team.name)}</a> <span class="muted small">· lead: ${esc(p.lead.name)} (human)</span></span>`;
   return `<span class="mk-prov"><a class="mk-face" href="/m/${esc(l.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(l.by.id)}</a><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${p.kind === 'ai' && p.works_with ? ` <span class="muted small">works with ${esc(p.works_with)}</span>` : ''}</span>`;
 }
 function cover(l) {
   const im = l.images[0] ? images.get(l.images[0]) : null;
-  return im ? `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}" loading="lazy">` : `<span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span>`;
+  if (im) return `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}" loading="lazy">`;
+  const pg = pagePortrait(l);
+  return pg ? `<img class="mk-pagelogo" src="${esc(pg)}" alt="${esc(l.page.name)} logo" loading="lazy">` : `<span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span>`;
 }
 const madeBy = (l) => (l.made_by === 'human' ? '' : `<span class="mk-made">${l.made_by === 'hybrid' ? 'human + AI' : 'AI-made'}</span>`);
-export function listingCard(l) {
+// Buy on a section tile (2026-11-19). Only a live fixed-price listing gets one; the maker sees "Yours". It reuses the
+// listing page's data-buy hook; market.js sends a tile's click to the listing page (?buy=1), because only that page's
+// policy lets Stripe's checkout load. `buy` is opt-in: `.map(listingCard)` passes an index as the 2nd argument.
+function tileBuy(l, me) {
+  if (!l.price || l.price.mode !== 'fixed' || l.status !== 'live') return '';
+  if (me && me.id === l.by.id) return '<p class="mk-buy small"><span class="mk-yours">Yours</span></p>';
+  let q = null; try { q = checkout.quote(l.id); } catch { return ''; }
+  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
+  if (!live) return '';
+  if (!me) return `<p class="mk-buy"><a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in to buy · $${l.price.amount}</a></p>`;
+  return `<p class="mk-buy"><button type="button" class="btn small" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button></p>`;
+}
+export function listingCard(l, opts = {}) {
+  const buy = opts && opts.buy ? tileBuy(l, opts.me || null) : '';
   return `<article class="mk-card"><a class="mk-cover" href="/label/l/${esc(l.id)}">${cover(l)}</a>
   <div class="mk-body"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
   <h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3>
   <p class="mk-price">${esc(market.priceLine(l.price, l.packages))}</p>
-  ${providerLine(l)}</div></article>`;
+  ${providerLine(l)}${buy}</div></article>`;
 }
 const howItWorks = () => `<details class="mk-how"><summary>How the market works</summary><ul class="small">
   <li><strong>No money moves yet.</strong> Payments open soon; free downloads work now.</li>
@@ -119,7 +142,7 @@ function menuPages(me) {
   return rest.map(line).join('') + (biz.length > 1 ? `<details><summary><span class="mk-menudot" aria-hidden="true">B</span> Businesses <span class="muted small">${biz.length}</span></summary>${biz.map(line).join('')}</details>` : biz.map(line).join(''));
 }
 // ------------------------------------------------------------------------------------------ the frame
-function frame({ me, title, description = '', section = null, q = '', center, scripts = [] }) {
+function frame({ me, title, description = '', section = null, q = '', center, scripts = [], marketHome = false }) {
   // Aletheia-6's marketplace packet (PR #152, 2026-11-15): the one shared Cohabi header and bottom bar, then the
   // market's own section pills, then the search. Payment setup lives on the wallet ("Get paid").
   const pill = (href, label, on) => `<a class="mv-pill" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
@@ -145,7 +168,7 @@ ${appHeader(me, 'market')}
 <div class="mv-wrap">
 <p class="mv-eyebrow">Cohabi Market</p>
 <nav class="mv-pills" aria-label="Market sections">${pills}</nav>
-<form class="mk-searchbar mv-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, makers…">${section && SHORT[section] ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>
+${marketHome ? '' : `<form class="mk-searchbar mv-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, makers…">${section && SHORT[section] ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>`}
 <main class="mk-main mv-main" id="main">${center}</main>
 <footer class="mk-foot small">The Cohabi Market is part of an experiment by a cooperative of humans and AIs. ${checkout.paymentsOpen() ? (checkout.paymentsMode() === 'test' ? 'Payments are in test mode: no real money moves.' : '') : esc(NOT_OPEN)} Cohabi Coins are not money. <a href="/privacy">Privacy</a></footer>
 </div>
@@ -167,7 +190,11 @@ function mvHero({ kicker, title, text, buttons = '', img = null }) {
 }
 const SHAPES = ['one', 'two', 'three', 'four', 'five', 'six'];
 const firstImage = (l) => { const id = (l.images || [])[0]; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
-const mvArt = (img, i) => (img ? `<div class="mv-art has-img" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
+// A listing with no picture of its own shows its business page's picture (Geoffrey, 2026-11-19: when a page changes
+// its logo, that's how its listings should show up in the market). Cards only; hero and tile art still use real photos.
+const pagePortrait = (l) => { const pg = l.page && orgpages.get(l.page.id); const id = pg?.portrait; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
+const cardImage = (l) => firstImage(l) || pagePortrait(l);
+const mvArt = (img, i, logo = false) => (img ? `<div class="mv-art has-img${logo ? ' is-logo' : ''}" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
 /** One card per maker in this section: their newest work's picture and title, then a way to their page. Real data only. */
 function makers(list) {
   const seen = new Map();
@@ -175,7 +202,7 @@ function makers(list) {
   return [...seen.values()].slice(0, 9).map((l, i) => {
     const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` };
     const tag = (l.tags || [])[0] || ({ fixed: 'For sale', packages: 'Commissions', donation: 'Pay what you like', free: 'Free', quote: 'Ask for a quote' }[l.price.mode] || 'Work');
-    return `<article class="mv-card">${mvArt(firstImage(l), i)}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
+    return `<article class="mv-card">${mvArt(cardImage(l), i, !firstImage(l))}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
   }).join('');
 }
 
@@ -213,39 +240,146 @@ function homeCenter(me) {
     const img = blockImage(k);
     const scenes = {
       music: ['🎧', '🎙️', '🎚️'], art: ['🏺', '🎨', '📖'], video: ['🎥', '🎞️', '🧑‍🎨'],
-      software: ['💻', '🔬', '🤖'], services: ['🧑‍💻', '🏡', '🛠️'], classifieds: ['🚙', '🚐', '🏠'],
+      writing: ['📖', '✒️', '📜'], software: ['💻', '🔬', '🤖'], services: ['🧑‍💻', '🏡', '🛠️'], classifieds: ['🚙', '🚐', '🏠'],
     };
     const visual = scenes[k].map((symbol, index) => `<span class="mk-blockscene mk-scene-${index + 1}"><span>${symbol}</span></span>`).join('');
-    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${visual}</span><span class="mk-blockcontent"><span class="mk-blockname">${esc(n)}</span><span class="mk-blockdesc">${esc({music:'Record · Release · Share · Distribute',art:'Paint · Sculpt · Build · Make',video:'Film · Animation · Graphics · 3D',software:'Code · Open Source · Build · Devices',services:'Skills · Collaboration · Support · Projects',classifieds:'Buy · Sell · Trade · Find · Local'}[k])}</span><span class="mk-blockcta">Explore ${esc(n)} →</span></span></a>`;
+    return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${visual}</span><span class="mk-blockcontent"><span class="mk-blockname">${esc(n)}</span><span class="mk-blockdesc">${esc({music:'Record · Release · Share · Distribute',art:'Paint · Sculpt · Build · Make',video:'Film · Animation · Graphics · 3D',writing:'Books · Poetry · Zines · Essays',software:'Code · Open Source · Build · Devices',services:'Skills · Collaboration · Support · Projects',classifieds:'Buy · Sell · Trade · Find · Local'}[k])}</span><span class="mk-blockcta">Explore ${esc(n)} →</span></span></a>`;
   }).join('');
   const live = market.list({});
   const of = (cat) => rotate(live.filter((l) => l.category === cat), cat).slice(0, 8).map(listingCard);
   const teams = rotate(live.filter((l) => market.isMixed(l) || l.provider.kind === 'team'), 'teams').slice(0, 8).map(listingCard);
   const music = [...rotate(artists(), 'artists').map(artistCard), ...of('music')].slice(0, 10);
-  const TILE = { music: ['Music', 'Artists and releases'], art: ['Art and handmade', 'Gallery and workshop'], video: ['Film and design', 'Visual stories'], software: ['Software and hardware', 'Tools and inventions'], services: ['Services', 'Work and commissions'], classifieds: ['Classifieds', 'Community exchange'] };
-  const tiles = Object.keys(market.CATEGORIES).map((k, i) => { const img = blockImage(k) || firstImage(live.find((l) => l.category === k && firstImage(l)) || {}); const n = live.filter((l) => l.category === k).length; return `<a class="mv-card mv-tile" href="/label?cat=${esc(k)}">${mvArt(img, i)}<div class="mv-cardbody"><h3>${esc(TILE[k][0])}</h3><p>${esc(TILE[k][1])}${n ? ` · ${n} listed` : ''}</p><span class="btn ghost small">Explore →</span></div></a>`; }).join('');
-  const heroImg = blockImage('art') || firstImage(live.find((l) => l.category === 'art' && firstImage(l)) || {});
-  return `${mvHero({ kicker: 'Explore / a marketplace for what we make', title: 'A marketplace for what we make', text: 'Music, art, handmade goods, software, services, and creative work from humans and AI. Explore by medium and meet the makers.', img: heroImg, buttons: `<a class="btn" href="/label?cat=art">Explore Arts &amp; Crafts</a><a class="btn ghost" href="${me ? '/label/new' : '/signup'}">${me ? 'Open Creator Studio' : 'Join to sell your work'}</a>` })}
-  <h2 class="mv-h2">Explore by category</h2>
-  <nav class="mv-grid" aria-label="Market sections">${tiles}</nav>
-
-  <p class="mk-rotnote small muted">The featured rows below are a rotating pick of what members have listed, refreshed every hour. Nothing here is ranked or paid for.</p>
+  const TILE = { music: ['Music', 'Artists and releases'], art: ['Art and handmade', 'Gallery and workshop'], video: ['Film and design', 'Visual stories'], writing: ['Books and writing', 'Pages and poems'], software: ['Software and hardware', 'Tools and inventions'], services: ['Services', 'Work and commissions'], classifieds: ['Classifieds', 'Community exchange'] };
+  // Aletheia-6's approved seven-tile grid (Geoffrey approved it, 2026-11-19): one picture with each tile's words
+  // drawn in, shown tile by tile as a sprite, so there is no second copy of the words on top. The link keeps its
+  // accessible name. Rects are [x, y, w, h] in the 1280x640 source, inset past the drawn gold frame.
+  const SPRITE = { id: 'img_0c2b9b1b14d02449', W: 1280, H: 640, rects: { music: [16, 19, 306, 285], art: [331, 19, 304, 285], video: [645, 19, 304, 285], writing: [958, 19, 306, 285], software: [16, 318, 411, 274], services: [438, 318, 405, 274], classifieds: [853, 318, 411, 274] } };
+  const sprite = images.get(SPRITE.id) ? `/images/${SPRITE.id}` : null;
+  const spriteStyle = (k) => { const i = 5; const [x0, y0, w0, h0] = SPRITE.rects[k]; const [x, y, w, h] = [x0 + i, y0 + i, w0 - 2 * i, h0 - 2 * i]; const pct = (a, b) => `${(b ? (a / b) * 100 : 0).toFixed(3)}%`; return `background-image:url('${sprite}');background-size:${pct(SPRITE.W, w)} ${pct(SPRITE.H, h)};background-position:${pct(x, SPRITE.W - w)} ${pct(y, SPRITE.H - h)};aspect-ratio:${w}/${h}`; };
+  const spriteGrid = sprite ? (() => {
+    const spriteTiles = Object.keys(market.CATEGORIES).filter((k) => SPRITE.rects[k]).map((k) => { const n = live.filter((l) => l.category === k).length; return `<a class="mh-sprite-tile mh-row-${SPRITE.rects[k][1] < 300 ? 1 : 2}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}${n ? `, ${n} listed` : ''}" style="${spriteStyle(k)}"></a>`; }).join('');
+    return `<nav class="mh-sprite-grid" aria-label="Market sections">${spriteTiles}</nav>`;
+  })() : null;
+  const tiles = Object.keys(market.CATEGORIES).map((k) => {
+    const img = blockImage(k) || firstImage(live.find((l) => l.category === k && firstImage(l)) || {});
+    const n = live.filter((l) => l.category === k).length;
+    const glyph = { music: '♫', art: '✿', video: '▣', writing: '▤', software: '⌘', services: '✧', classifieds: '◇' }[k];
+    return `<a class="mv-card mv-tile mh-tile mh-cat-${esc(k)}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}">
+      <span class="mh-tile-art${img ? ' has-img' : ''}"${img ? ` style="--mh-tile-photo:url('${esc(img)}')"` : ''} aria-hidden="true"></span>
+      <span class="mh-tile-overlay"><span class="mh-tile-glyph" aria-hidden="true">${glyph}</span><span class="mh-tile-title">${esc(TILE[k][0])}</span><span class="mh-tile-sub">${esc(TILE[k][1])}${n ? ` · ${n} listed` : ''}</span><span class="mh-tile-arrow" aria-hidden="true">↗</span></span></a>`;
+  }).join('');
+  return `<div class="mk-market-home">
+    <section class="mh-hero" aria-labelledby="mh-title">
+      <div class="mh-hero-copy">
+        <p class="mh-kicker">The Cohabi Market</p>
+        <h1 id="mh-title">Where ideas become<br><em>something real.</em></h1>
+        <p class="mh-intro">Discover music, art, stories, technology and services created by humans and AI — together.</p>
+        <div class="mh-hero-acts">
+          <a class="mh-action mh-action-primary" href="#mh-explore">Explore the marketplace <span aria-hidden="true">↗</span></a>
+          <a class="mh-action mh-action-secondary" href="${me ? '/studio' : '/signup'}">${me ? 'Open Creator Studio' : 'Join to create'} <span aria-hidden="true">✧</span></a>
+        </div>
+      </div>
+      <nav class="mh-hero-cats" aria-label="Marketplace departments">
+        ${Object.entries(market.CATEGORIES).map(([k, n]) => `<a href="/label?cat=${esc(k)}" class="mh-hero-chip"><span aria-hidden="true">${({music:'♫',art:'✿',video:'▣',writing:'▤',software:'⌘',services:'✧',classifieds:'◇'})[k]}</span> ${esc(n)}</a>`).join('')}
+      </nav>
+      <span class="mh-art-credit">Illustration: AI · Aletheia-6</span>
+    </section>
+    <section id="mh-explore" class="mh-explore" aria-labelledby="mh-categories-title">
+      <div class="mh-section-heading"><div><p class="mh-kicker">Explore the marketplace</p><h2 id="mh-categories-title">Explore by category</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="/label?cat=music">Explore music <span aria-hidden="true">↗</span></a></div>
+      <form class="mk-searchbar mv-search mh-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" placeholder="Search music, art, books, software, services and makers…"><button class="btn small">Search</button></form>
+      ${spriteGrid || `<nav class="mv-grid mh-category-grid" aria-label="Market sections">${tiles}</nav>`}
+    </section>
+    <div class="mh-featured" aria-label="Featured marketplace listings">
+      <div class="mh-section-heading"><div><p class="mh-kicker">Discover what members make</p><h2>Featured on Cohabi</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="#mh-about">How the market works <span aria-hidden="true">↗</span></a></div>
+      <p class="mk-rotnote small">Featured selections rotate hourly from real member listings. Nobody can buy a higher ranking.</p>
   ${row('Featured music', music, { cat: 'music', more: '/label?cat=music', me })}
   ${row('Featured arts & crafts', of('art'), { cat: 'art', more: '/label?cat=art', me })}
   ${row('Featured video & digital design', of('video'), { cat: 'video', more: '/label?cat=video', me })}
+  ${row('Featured books & writing', of('writing'), { cat: 'writing', more: '/label?cat=writing', me })}
   ${row('Featured software & hardware', of('software'), { cat: 'software', more: '/label?cat=software', me })}
   ${row('Featured human + AI teams', teams, { cat: 'services', more: '/label?by=mixed', me })}
   ${row('Featured services', of('services'), { cat: 'services', more: '/label?cat=services', me })}
   ${row('Classifieds', of('classifieds'), { cat: 'classifieds', more: '/label?cat=classifieds', me })}
-  ${howCohabi()}
-  ${howItWorks()}`;
+  <div id="mh-about">${howCohabi()}${howItWorks()}</div>
+  </div></div>`;
 }
 
 
+// ------------------------------------------------------------------------------------------ Labels and Musicians
+// Geoffrey's direction (Nov 18 audit): two discoverable groups on the Music page, not one. A musician page (band or
+// artist) belongs to the people who make the music; a record label is an organization that gathers musicians. Last of
+// the Real Estate is one label among the labels members start, and its artists are musicians among the musicians.
+function portraitOf(p) {
+  const portrait = p.portrait ? images.get(p.portrait) : null;
+  return portrait ? `<img src="/images/${esc(portrait.id)}" alt="${esc(portrait.alt || p.name)}" loading="lazy">` : p.art ? `<img src="${esc(p.art)}" alt="" loading="lazy">` : null;
+}
+function labelTile(p) {
+  const roster = orgpages.rosterOf(p);
+  const own = p.label_record || p.kind_info?.label_type === 'cohabi';
+  return `<article class="mk-card mk-label"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">💿</span>'}<span class="mk-count">${roster.length} artist${roster.length === 1 ? '' : 's'}</span></a>
+  <div class="mk-body"><h3><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a></h3><p class="mk-sub small">Record label${own ? ' · Cohabi-owned' : ' · member-run'}</p>${p.headline ? `<p class="small muted">${esc(p.headline)}</p>` : ''}</div></article>`;
+}
+function bandCard(p) {
+  const on = orgpages.labelsFor(p);
+  return `<article class="mk-card mk-artist"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">♪</span>'}</a>
+  <div class="mk-body"><h3><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a></h3><p class="mk-sub small">${esc(profilekinds.BADGE[p.kind])}${on.length ? ` · on ${esc(on.map((l) => l.name).join(', '))}` : ' · independent'}</p>${p.headline ? `<p class="small muted">${esc(p.headline)}</p>` : ''}</div></article>`;
+}
+/** The two groups: every record label page, and every musician (the Label's artists plus independent band pages). */
+export function musicGroups(arts = artists()) {
+  orgpages.ensureLabelPages();
+  const labels = orgpages.list({ kind: 'label' });
+  const onLabel = new Set(arts.map((a) => a.slug));
+  const independent = orgpages.list({ kind: 'band' }).filter((p) => !p.label && !onLabel.has(p.slug));
+  return { labels, musicians: [...arts.map((a) => ({ kind: 'folder', a })), ...independent.map((p) => ({ kind: 'page', p }))] };
+}
+
+// ------------------------------------------------------------------------------------------ FireDamm, on the section pages
+// Geoffrey (Nov 18 audit): the project's own services show where they help a maker, and anything not built yet says
+// COMING SOON instead of pretending. A service is LIVE only when FireDamm has a real listing for it on the market; the
+// rest are plain labels with no link (DistroKid release, print-on-demand, publishing and video production are ideas
+// Geoffrey has named since Nov 14, not services anyone can order yet).
+const FD_SERVICES = {
+  music: [['Your artist website, hand-coded', /launch package/i], ['Release to Spotify, Apple Music and more, uploaded for you', null]],
+  art: [['Your artist website, hand-coded', /launch package/i], ['Print-on-demand and dropshipping for your work', null]],
+  writing: [['Your author website, hand-coded', /launch package/i], ['Publishing and print-on-demand for your book', null]],
+  video: [['Your portfolio website, hand-coded', /launch package/i], ['Storyboard and video production', null]],
+  software: [['Custom business tools: quoting, CRM, job tracking', /custom business tools/i], ['A website for your project, hand-coded', /launch package/i]],
+  services: [['A website for your business, hand-coded', /launch package/i], ['Site rescue: get your domain and site back', /site rescue/i]],
+};
+// Studios (Geoffrey, 2026-11-19): a section page shows the businesses and makers selling in it, so a page like
+// Perfect Ink is findable from Software, not only from its own listings. A page appears once it has a live listing
+// in that category. FireDamm shows here too, with its logo (Geoffrey, 2026-11-19), and keeps its services strip below.
+function studiosStrip(cat) {
+  if (!cat) return '';
+  const counts = new Map();
+  for (const l of market.list({})) {
+    if (!l.page || l.category !== cat || l.status !== 'live') continue;
+    counts.set(l.page.id, (counts.get(l.page.id) || 0) + 1);
+  }
+  const rows = [...counts].map(([id, n]) => ({ p: orgpages.get(id), n })).filter((x) => x.p && !x.p.label).sort((a, b) => b.n - a.n).slice(0, 12);
+  if (!rows.length) return '';
+  const word = cat === 'software' ? ['app', 'apps'] : ['listing', 'listings'];
+  return `<section class="mk-studios" aria-label="Studios and businesses"><h2 class="mk-h">Studios and businesses</h2><div class="mk-studiorow">${rows.map(({ p, n }) => `<a class="mk-studio" href="${esc(orgpages.href(p))}"><span class="mk-studioface">${p.portrait ? `<img src="/images/${esc(p.portrait)}" alt="" loading="lazy">` : esc(String(p.name).slice(0, 1).toUpperCase())}</span><span class="mk-studioname">${esc(p.name)}</span><span class="mk-studiocount small">${n} ${n === 1 ? word[0] : word[1]}</span></a>`).join('')}</div></section>`;
+}
+
+function firedammStrip(cat) {
+  const rows = FD_SERVICES[cat]; if (!rows) return '';
+  const fd = orgpages.bySlug('firedamm');
+  const theirs = fd ? market.list({}).filter((l) => l.page && l.page.id === fd.id) : [];
+  const items = rows.map(([label, rx]) => {
+    const l = rx ? theirs.find((x) => rx.test(x.title)) : null;
+    return l ? `<li class="mk-fd-live"><a href="/label/l/${esc(l.id)}">${esc(label)}</a> <span class="mk-fd-tag live">Available</span></li>`
+      : `<li class="mk-fd-soon"><span>${esc(label)}</span> <span class="mk-fd-tag soon">Coming soon</span></li>`;
+  }).join('');
+  return `<section class="mk-fd" aria-label="Services from FireDamm"><h2 class="mk-h">Help from FireDamm</h2><p class="small muted">FireDamm is one of the Cohabitation Project's own services${fd ? ` (<a href="${esc(orgpages.href(fd))}">its page</a>)` : ''}. Only what's marked Available can be ordered today.</p><ul class="mk-fd-list">${items}</ul></section>`;
+}
+
 function musicLanding(me, arts, items, link, chips = '') {
-  const featured = arts.slice(0, 12);
+  const { labels, musicians } = musicGroups(arts);
+  const featured = musicians.slice(0, 24);
   const featuredItems = items.slice(0, 12);
-  const action = me ? '/page/new?kind=band' : '/signup'; // the public account page, not the Commons' doors (band is the form's first, default kind)
+  const action = me ? '/studio?kind=band' : '/signup'; // the public account page, not the Commons' doors (band is the form's first, default kind)
+  const labelAction = me ? '/page/new?kind=label' : '/signup';
   return `<style>
   .cm-hero{background:radial-gradient(circle at 88% 20%,#36465c 0,transparent 40%),linear-gradient(130deg,#161d29,#25202b 70%,#372b27);color:#fff;border-radius:22px;padding:clamp(24px,5vw,58px);margin:14px 0 26px;overflow:hidden}
   .cm-kicker{font-size:.75rem;letter-spacing:.19em;text-transform:uppercase;color:#e9cba6;font-weight:700}
@@ -273,8 +407,8 @@ function musicLanding(me, arts, items, link, chips = '') {
     <span class="cm-kicker">COHABI / MUSIC</span>
     <h1>Your music. Your identity. Your creative freedom.</h1>
     <p>Build a home for your music, connect with fans, and collaborate across the human–AI community. Your artist or band page connects to your Cohabi identity and marketplace presence.</p>
-    <div class="cm-actions"><a class="cm-action" href="${action}">${me ? 'Create an artist or band page' : 'Join Cohabi to create your artist page'}</a><a class="cm-action secondary" href="#cm-discover">Explore the music</a></div>
-    <p class="cm-note">Artist and band pages are free to create. Record labels are separate managed organizations; label pricing and enrollment are not yet open.</p>
+    <div class="cm-actions"><a class="cm-action" href="${action}">${me ? 'Create an artist or band page' : 'Join Cohabi to create your artist page'}</a><a class="cm-action secondary" href="${labelAction}">${me ? 'Start a record label' : 'Join to start a record label'}</a><a class="cm-action secondary" href="#cm-discover">Explore the music</a></div>
+    <p class="cm-note">Two kinds of home here. A <strong>musician</strong> page (band or artist) belongs to the people who make the music. A <strong>record label</strong> is an organization that gathers musicians under one roof. Both are free to create during the beta; starting a label will cost something one day, kept competitive.</p>
   </section>
   <section class="cm-steps" aria-label="How Cohabi Music works">
     <div class="cm-step"><span class="cm-num">01 / YOUR IDENTITY</span><strong>Start with your artist or band page</strong><p>Choose your name and build a public home connected to your Cohabi account. Band collaborators can be added through page management.</p></div>
@@ -282,12 +416,17 @@ function musicLanding(me, arts, items, link, chips = '') {
     <div class="cm-step"><span class="cm-num">03 / YOUR COMMUNITY</span><strong>Find fans and collaborators</strong><p>Fans use their existing Cohabi social profiles. Email, distribution, and expanded collaboration tools are coming later.</p></div>
   </section>
   <section class="cm-statement"><h2>Human creativity. AI creativity. Shared creativity. All welcome.</h2><p>Human musicians and AI creators belong in this community. We distinguish human-made, AI-made, and collaborative releases so listeners can understand their creative origins. Downloading music does not automatically grant sampling or remix rights; seek permission from the authorized rights holder.</p></section>
-  <section id="cm-discover"><div class="cm-sectionhead"><h2 class="mk-h">Artists on the Label</h2></div>
+  <section id="cm-discover" class="cm-labels"><div class="cm-sectionhead"><h2 class="mk-h">Record labels</h2><a href="${labelAction}">Start a label →</a></div>
+  <p class="small muted">Labels gather musicians. Open one to see its artists and releases.</p>
+  ${labels.length ? `<div class="mk-grid">${labels.map(labelTile).join('')}</div>` : `<p class="muted">No record labels yet. <a href="${labelAction}">Start the first one.</a></p>`}</section>
+  <section class="cm-musicians"><div class="cm-sectionhead"><h2 class="mk-h">Musicians</h2><a href="${action}">Make your page →</a></div>
+  <p class="small muted">Bands and artists, on a label or on their own.</p>
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: '1' }))}">Free</a></div></div>
-  ${featured.length ? `<div class="mk-grid">${featured.map(artistCard).join('')}</div>` : '<p class="muted">Artist profiles will appear here as creators join.</p>'}
-  <div class="cm-sectionhead"><h2 class="mk-h">Music from the community</h2></div>
+  ${featured.length ? `<div class="mk-grid">${featured.map((x) => (x.kind === 'folder' ? artistCard(x.a) : bandCard(x.p))).join('')}</div>` : `<p class="muted">Musician pages will appear here as creators join. <a href="${action}">Make yours.</a></p>`}
+</section>
+  <section class="cm-releases"><div class="cm-sectionhead"><h2 class="mk-h">Music from the community</h2></div>
   ${featuredItems.length ? `<div class="mk-grid">${featuredItems.map(listingCard).join('')}</div>` : '<p class="muted">Community music releases will appear here.</p>'}
-  <p class="small muted">Last of the Real Estate is a Cohabi-owned label featured among community creators—not the entirety of Cohabi Music.</p></section>`;
+  <p class="small muted">Last of the Real Estate is a Cohabi-owned label, one among the labels here, not the whole of Cohabi Music.</p></section>`;
 }
 
 // ------------------------------------------------------------------------------------------ Arts & Crafts, the approved page
@@ -328,14 +467,29 @@ function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
   const pills = [['', 'All'], ...Object.entries(SW_TYPES).map(([k, [n]]) => [k, n])].map(([k, n]) => `<a class="sw-pill${k === type ? ' on' : ''}" href="${esc(link({ type: k || null }))}#browse"${k === type ? ' aria-current="true"' : ''}>${esc(n)}</a>`).join('');
   const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
   const who = (l) => ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '');
-  const real = shown.map((l) => { const img = firstImage(l); const kinds = swTypesOf(l).map((k) => SW_TYPES[k][0]); const open = OPEN_LICENSES.has(l.license);
+  const real = shown.map((l) => { const img = cardImage(l); const kinds = swTypesOf(l).map((k) => SW_TYPES[k][0]); const open = OPEN_LICENSES.has(l.license);
     const SWC = { apps: '#a8806a', saas: '#7aab9f', 'open-source': '#7a6fae', games: '#ad7f66', hardware: '#3f8a8f', 'dev-tools': '#6f6aa8' };
-    return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${esc(l.page?.name || l.by.name)}</p><p class="sw-txt">${esc(String(l.text || '').slice(0, 110))}</p><p class="sw-tags"><span class="sw-tag${open ? ' sw-open' : ''}">${open ? 'Open source' : esc(market.LICENSES[l.license] ? 'Licence: ' + (l.license === 'all-rights' ? 'all rights reserved' : l.license) : 'Licence varies')}</span><span class="sw-price">${esc(price(l))}</span></p><a class="sw-view" href="/label/l/${esc(l.id)}">View</a></div></article>`; }).join('');
+    return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${pagePortrait(l) ? `<img class="mk-provlogo" src="${esc(pagePortrait(l))}" alt="" loading="lazy">` : ''}${esc(l.page?.name || l.by.name)}</p><p class="sw-txt">${esc(String(l.text || '').slice(0, 110))}</p><p class="sw-tags"><span class="sw-tag${open ? ' sw-open' : ''}">${open ? 'Open source' : esc(market.LICENSES[l.license] ? 'Licence: ' + (l.license === 'all-rights' ? 'all rights reserved' : l.license) : 'Licence varies')}</span><span class="sw-price">${esc(price(l))}</span></p><a class="sw-view" href="/label/l/${esc(l.id)}">Explore project <span aria-hidden="true">↗</span></a></div></article>`; }).join('');
   const examples = !items.length ? SW_EXAMPLES.filter(([, , , k]) => !type || k === type).map(([t, kind, txt, , c]) => `<article class="sw-card sw-example"><span class="sw-thumb" style="--sw-c:${c}"><span class="sw-shape" aria-hidden="true"></span><span class="sw-demo">EXAMPLE</span></span><div class="sw-cc"><p class="sw-kind">${esc(kind)}</p><h3>${esc(t)}</h3><p class="sw-txt">${esc(txt)}</p></div></article>`).join('') : '';
   const sell = me ? '/label/new?cat=software' : '/signup';
   const center = `<div class="sw">
-  <section class="sw-hero"><div><p class="sw-kicker">Marketplace / technology &amp; creation</p><h1>Tools for a world we build together.</h1><p>Software, SaaS, open-source projects, games and physical inventions from independent makers: humans, AIs and teams. Explore freely. Publish responsibly.</p><p class="sw-acts"><a class="sw-btn sw-light" href="#browse">Explore software &amp; hardware</a><a class="sw-btn" href="${sell}">${me ? 'List a project' : 'Join to list a project'}</a></p></div><div class="sw-orbit" aria-hidden="true"><span class="sw-orb sw-a">OPEN SOURCE</span><span class="sw-core">⌘</span><span class="sw-orb sw-b">APPS · DEVICES · GAMES</span></div></section>
-  <section class="sw-stats" aria-label="How this shelf works"><div><b>Open to everyone</b><small>Members list their own work; no partners-only shelf</small></div><div><b>No paid ranking</b><small>Nobody can pay to be shown first</small></div><div><b>Links, not downloads</b><small>Listings point to the maker's own site or repository</small></div><div><b>Human or AI, both welcome</b><small>Filter by what it is, not who made it</small></div></section>
+  <section class="sw-hero" aria-labelledby="sw-hero-title">
+    <div class="sw-hero-content">
+      <p class="sw-kicker">Marketplace / Technology &amp; Creation</p>
+      <h1 id="sw-hero-title">Technology &amp; Creation<br><span>for a More Open World</span></h1>
+      <p class="sw-hero-lead">Software, hardware, games, tools and creative inventions from independent makers, humans and AI teams, and open communities.</p>
+      <div class="sw-acts"><a class="sw-btn sw-light" href="#browse">Explore software &amp; hardware</a><a class="sw-btn sw-outline" href="${sell}">${me ? 'List a project' : 'Join to list a project'}</a></div>
+      <nav class="sw-hero-topics" aria-label="Explore technology subjects">
+        <a href="${esc(link({ type: 'apps' }))}#browse">Apps &amp; Software</a>
+        <a href="${esc(link({ type: 'hardware' }))}#browse">Hardware &amp; Devices</a>
+        <a href="${esc(link({ type: 'games' }))}#browse">Games</a>
+        <a href="${esc(link({ type: 'dev-tools' }))}#browse">Developer Tools</a>
+        <a href="${esc(link({ type: 'open-source' }))}#browse">Open Source</a>
+      </nav>
+    </div>
+    <span class="sw-art-credit">Illustration: AI · Aletheia-6</span>
+  </section>
+  <section class="sw-stats" aria-label="How this shelf works"><div><span aria-hidden="true" class="sw-stat-icon">✦</span><b>Open to everyone</b><small>Members list their own work; no partners-only shelf</small></div><div><span aria-hidden="true" class="sw-stat-icon">∞</span><b>No paid ranking</b><small>Nobody can pay to be shown first</small></div><div><span aria-hidden="true" class="sw-stat-icon">↗</span><b>Links, not downloads</b><small>Listings point to the maker's own site or repository</small></div><div><span aria-hidden="true" class="sw-stat-icon">✿</span><b>Human or AI, both welcome</b><small>Filter by what it is, not who made it</small></div></section>
   <section id="browse"><div class="sw-head"><div><p class="sw-kicker">Independent creation</p><h2>Explore the catalog</h2></div><p>${items.length ? `${shown.length} of ${items.length} listing${items.length === 1 ? '' : 's'}` : 'Nothing is listed here yet. These are examples of what this shelf is for.'}</p></div>
   <form class="sw-tools" method="get" action="/label#browse" role="search"><input type="hidden" name="cat" value="software">${type ? `<input type="hidden" name="type" value="${esc(type)}">` : ''}<label class="sr-only" for="sw-q">Search software and hardware</label><input id="sw-q" name="q" value="${esc(q)}" placeholder="Search apps, hardware, games…"><label class="sr-only" for="sw-by">Who made it</label><select id="sw-by" name="by" data-autosubmit>${[['', 'All makers'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<option value="${k}"${(k || null) === pk ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select><label class="sr-only" for="sw-lic">Licence</label><select id="sw-lic" name="lic" data-autosubmit><option value="">All licences</option><option value="open"${lic === 'open' ? ' selected' : ''}>Open source</option><option value="other"${lic === 'other' ? ' selected' : ''}>Other licences</option></select><button class="sw-btn sw-dark">Search</button></form>
   <nav class="sw-pills" aria-label="Kinds of thing">${pills}</nav>
@@ -344,7 +498,7 @@ function softwarePage({ me, items, pk, q, type = '', lic = '' }) {
   <h3>Downloads come later</h3><p>Before Cohabi hosts any file, it will need: proof of who published it, a quarantine for uploads, scanning, a human review of licences and permissions, and only an approved version going live. Scanning lowers risk; it never proves something is safe.</p></aside></div>
   ${real ? '' : items.length ? '' : '<p class="sw-notice">The examples above are made up for this page\'s design. Real projects show here as soon as members list them.</p>'}</section>
 </div>`;
-  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center });
+  return frame({ me, title: 'Software & Hardware', description: 'Software & Hardware on the Cohabi Market: apps, SaaS, open-source projects, games, developer tools and hardware by humans, AIs and teams.', section: 'software', q, center: center + studiosStrip('software') + firedammStrip('software') });
 }
 function artPage({ me, items, pk, q, sort = '' }) {
   // Her sort control: Newest (the shelf's own order), Title A–Z, Maker A–Z.
@@ -354,11 +508,11 @@ function artPage({ me, items, pk, q, sort = '' }) {
   const depts = ART_SUBJECTS.map(([n, img]) => `<a class="av-dept${sel === n.toLowerCase() ? ' selected' : ''}" href="${esc(sel === n.toLowerCase() ? link({ q: null }) : link({ q: n }))}#browse"><img src="${AV3}/${img}.webp" alt="" loading="lazy"><span>${esc(n)}</span></a>`).join('');
   const chips = [[null, 'Everyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="av-chip${(k || null) === pk ? ' selected' : ''}" href="${esc(link({ by: k }))}#browse">${esc(n)}</a>`).join('');
   const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask for a quote', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
-  const real = items.map((l) => { const img = firstImage(l); const who = l.page?.name || l.by.name; const subj = (l.tags || [])[0] || market.TYPES[l.type] || 'Work';
+  const real = items.map((l) => { const img = cardImage(l); const who = l.page?.name || l.by.name; const subj = (l.tags || [])[0] || market.TYPES[l.type] || 'Work';
     return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span></div></div></article>`; }).join('');
   const examples = ART_EXAMPLES.filter(([, , subj]) => !sel || subj.toLowerCase() === sel).map(([t, mk, subj, img, b]) => `<article class="av-product av-example"><span class="av-photo"><img src="${AV3}/${img}.webp" alt="${esc(t)}" loading="lazy"><span class="av-demo">EXAMPLE</span></span><div class="av-meta"><h3>${esc(t)}</h3><p>${esc(mk)} · ${esc(subj)}</p><div class="av-line"><span class="av-badge">${esc(b)}</span><span class="av-price">Example only</span></div></div></article>`).join('');
   const seen = new Map(); for (const l of items) { const k = l.page?.id || l.by.id; if (!seen.has(k)) seen.set(k, l); }
-  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = firstImage(l); const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` }; const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
+  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = cardImage(l); const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` }; const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
     return `<article class="av-maker">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="av-makerface">${memberFace(l.by.id)}</span>`}<div><h3>${esc(who.name)}</h3><p>${esc(market.PROVIDERS[l.provider.kind] ? ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '') : '')} · ${n} piece${n === 1 ? '' : 's'}</p><a href="${esc(who.href)}">Visit their page →</a></div></article>`; }).join('');
   const sell = me ? '/label/new?cat=art' : '/signup';
   const center = `<div class="av">
@@ -373,7 +527,7 @@ function artPage({ me, items, pk, q, sort = '' }) {
   <section><div class="av-head"><div><h2>Have something to share?</h2><p>The path from your creative work to your own public storefront.</p></div></div><div class="av-how"><div><b>01 — YOUR IDENTITY</b><h3>Create your artist presence</h3><p>Use your Cohabi identity to make a creator page. Human, AI and collaborative creators are welcome.</p></div><div><b>02 — YOUR WORK</b><h3>Show what you've made</h3><p>Upload artwork, explain your process, choose a license and publish the work you have the rights to share.</p></div><div><b>03 — YOUR SHOP</b><h3>Build your collections</h3><p>Visitors explore your work and ask questions. ${checkout.paymentsOpen() ? 'Connect a payout account on your wallet to sell.' : 'Sales and payouts open once payments are ready.'}</p></div></div></section>
   <section class="av-cta"><div><h2>A home for the things you make.</h2><p>Share your art. Meet collaborators. Build your storefront.</p></div><a href="${sell}">Start creating ↗</a></section>
 </div>`;
-  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center });
+  return frame({ me, title: 'Art & Crafts', description: 'Art & Crafts on the Cohabi Market: paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.', section: 'art', q, center: center + studiosStrip('art') + firedammStrip('art') });
 }
 
 // ------------------------------------------------------------------------------------------ the market's sections
@@ -390,19 +544,19 @@ export function marketPage({ me, query = {} }) {
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
   if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
-  if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) });
-  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me) });
-  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
+  if (cat === 'music' && !pk && !free && !q) return frame({ me, title: 'Music', description: 'Cohabi Music: a home for human, AI and collaborative musicians, artists and bands.', section: 'music', center: musicLanding(me, arts, items, link, chips) + firedammStrip('music') });
+  if (!cat && !pk && !free && !q) return frame({ me, title: 'Market', description: 'The Cohabi Market: music, arts and crafts, video and design, books and writing, software and hardware, services and classifieds, by the humans and AIs of a cooperative.', center: homeCenter(me), marketHome: true });
+  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand services come through FireDamm when they open.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
   const head = cat
     ? mvHero({ kicker: `Explore / ${market.CATEGORIES[cat]}`, title: market.CATEGORIES[cat], text: DESC[cat] || INTRO[cat], img: blockImage(cat) || firstImage(items.find((l) => firstImage(l)) || {}), buttons: `<a class="btn" href="${me ? `/label/new?cat=${esc(cat)}` : '/signup'}">${me ? 'List your work here' : 'Join to list your work'}</a>${me && me.kind === 'human' && cat !== 'classifieds' ? '<a class="btn ghost" href="/wallet#get-paid">Set up payments</a>' : ''}` })
       + (['art', 'video', 'software', 'services'].includes(cat) && items.length && !q ? `<div class="mv-sechead"><h2 class="mv-h2">Meet the makers</h2><form method="get" action="/label"><input type="hidden" name="cat" value="${esc(cat)}"><label class="sr-only" for="mv-by">Who made it</label><select id="mv-by" name="by" class="mv-filter" data-autosubmit>${[[null, 'All makers'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<option value="${k || ''}"${(k || null) === pk ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></form></div><div class="mv-grid">${makers(items)}</div>` : '')
     : `<section class="mk-hero mk-hero-sec"><h1>Search the market</h1></section>`;
   const center = `${head}
   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
-  ${arts.length ? `<h2 class="mk-h">Artists on the Label</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
+  ${arts.length ? `<h2 class="mk-h">Labels and Musicians</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
-  ${items.length ? `<div class="mk-grid">${items.map(listingCard).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
-  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center });
+  ${items.length ? `<div class="mk-grid">${items.map((l) => listingCard(l, { buy: true, me })).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
+  return frame({ me, title: cat ? market.CATEGORIES[cat] : 'Market', description: 'The Cohabi Market: music, art, crafts, video, software and services by the humans and AIs of a cooperative.', section: cat, q, center: center + (cat && !q ? studiosStrip(cat) + firedammStrip(cat) : ''), scripts: ['/static/market.js'] });
 }
 
 // ------------------------------------------------------------------------------------------ an artist's folder
@@ -432,11 +586,51 @@ export function artistPage({ me, slug }) {
   return frame({ me, title: a.name, description: `${a.name} on Last of the Real Estate, the Cohabi Market's label.`, section: 'music', center, scripts: ['/static/label.js'] });
 }
 
+// ------------------------------------------------------------------------------------------ buyer orders
+// The three activity pages (orders, sales, my listings) link to each other, so a member who lands on one can reach
+// the others without going back through the market (Round 8, 2026-11-19). The current page carries aria-current.
+function activityNav(current) {
+  const item = (href, label, key) => `<a href="${href}"${key === current ? ' aria-current="page"' : ''}>${label}</a>`;
+  return `<nav class="mk-activity small" aria-label="Your market activity">${item('/orders', 'Your orders', 'orders')} · ${item('/label/sales', 'Your sales', 'sales')} · ${item('/label/mine', 'Your listings', 'mine')}</nav>`;
+}
+/** The member's purchases. This page intentionally shows purchases only; sellers see their sales in the wallet. */
+export function ordersPage({ me, purchases = [] }) {
+  const rows = purchases.map((o) => {
+    const date = new Date(o.ts);
+    const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
+  }).join('');
+  const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
+  return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
+}
+
+/** Sales from this member's listings; fulfillment details are linked only for listings with a configured pipe. */
+export function salesPage({ me, sales = [] }) {
+  const rows = sales.map((o) => {
+    const date = new Date(o.ts);
+    const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
+    const buyer = o.buyer?.name || '(gone)';
+    const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
+  }).join('');
+  const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
+  return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
+}
+
 // ------------------------------------------------------------------------------------------ one listing
-export function listingPage({ me, l }) {
+export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
+  // The receipt (2026-11-18): Stripe sends the buyer back here with ?paid=ord_…. Until the webhook lands the order is
+  // still "awaiting_payment", so the banner says so honestly rather than claiming paid before our records say it.
+  const receipt = paid ? `<section class="mk-receipt" aria-live="polite"><h2>${paid.status === 'paid' ? 'Paid. Thank you.' : paid.status === 'cancelled' ? 'Nothing was charged.' : 'Payment received by Stripe — confirming.'}</h2>
+  <p>${esc(paid.title)} · $${esc(String(paid.amount))}${paid.mode === 'test' ? ' <span class="mk-testpay">test mode, no real money</span>' : ''} · order <code>${esc(paid.id)}</code></p>
+  <p class="small">${paid.status === 'paid' ? `The maker, ${esc(paid.seller.name)}, has been told. ` : paid.status === 'awaiting_payment' ? 'This page updates when our records confirm it (usually within a minute). ' : ''}See it in <a href="/orders">your orders</a>.</p></section>` : '';
+  const cancelledNote = cancelled ? '<section class="mk-receipt mk-cancelled"><h2>Checkout cancelled.</h2><p class="small">Nothing was charged. The listing is still here when you want it.</p></section>' : '';
   const imgs = l.images.map((id) => images.get(id)).filter(Boolean);
-  const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
+  const logo = !imgs.length && pagePortrait(l); // no picture of its own: the business's logo stays with it (Geoffrey, 2026-11-19)
+  const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : logo ? `<div class="mk-gallery mk-noimg mk-logotile"><img class="mk-pagelogo" src="${esc(logo)}" alt="${esc(l.page.name)} logo"></div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
   // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
   // a human maker with a verified payout account). Otherwise they stay greyed out and say why.
   let q = null; try { q = checkout.quote(l.id); } catch { q = null; }
@@ -454,6 +648,7 @@ export function listingPage({ me, l }) {
   const qs = l.asks || [];
   const thread = (parent) => qs.filter((a) => (a.reply_to || null) === parent).map((a) => `<li class="mk-q" id="${esc(a.id)}"><p><a href="/m/${esc(a.by.id)}">${memberFace(a.by.id)} <strong>${esc(a.by.name)}</strong></a> ${badge(a.by.badge)} <span class="muted small">${esc(ago(a.ts))}</span></p><div class="md">${renderMarkdown(a.text)}</div>${me && l.status === 'live' ? `<button type="button" class="linkish small mk-reply" data-q="${esc(a.id)}">Reply</button>` : ''}<ul>${thread(a.id)}</ul></li>`).join('');
   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=${esc(l.category)}">${esc(market.CATEGORIES[l.category])}</a></p>
+  ${receipt}${cancelledNote}
   ${l.status !== 'live' ? '<p class="mk-note"><strong>Withdrawn.</strong> The member took this listing down; it stays in the record.</p>' : ''}
   <article class="mk-listing">${gallery}
   <div class="mk-detail"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
@@ -461,7 +656,7 @@ export function listingPage({ me, l }) {
   <p class="mk-price big">${esc(market.priceLine(l.price, l.packages))}</p>
   <div class="mk-by">${providerLine(l)}</div>
   ${l.status === 'live' ? `<p class="mk-actions">${action}</p>` : ''}
-  ${['fixed', 'donation', 'packages'].includes(l.price.mode) ? `<p class="small muted">${esc(NOT_OPEN)}</p>` : ''}
+  ${['fixed', 'donation', 'packages'].includes(l.price.mode) && !live ? `<p class="small muted">${esc(NOT_OPEN)}</p>` : ''}
   ${pk}
   <div class="md mk-text">${renderMarkdown(l.text)}</div>
   ${l.desk ? `<p>This is a bounty on the Work Desk: <a href="/desk#${esc(l.desk)}">claim it there</a>.</p>` : ''}
@@ -473,9 +668,26 @@ export function listingPage({ me, l }) {
   </div></article>
   <section class="mk-askbox" id="mk-ask"><h2>Questions</h2><p class="small muted">Public, like everything in the Commons. Don't share a phone number, an address or anything private here.</p>
   <ul class="mk-qs">${thread(null) || '<li class="muted small">No questions yet.</li>'}</ul>
-  ${l.status === 'live' ? (me ? `<form class="mk-askform" data-id="${esc(l.id)}"><label class="sr-only" for="mk-asktext">Your question</label><textarea id="mk-asktext" maxlength="1000" rows="3" placeholder="Ask ${esc(l.provider.kind === 'team' ? l.provider.lead.name : l.by.name)} something (public)"></textarea><input type="hidden" name="reply_to" value=""><p class="mk-replying small muted" hidden>Replying · <button type="button" class="linkish mk-cancel">cancel</button></p><button class="btn small">Ask</button></form>` : `<p><a href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in</a> or <a href="/join">join</a> to ask.</p>`) : ''}
+  ${l.status === 'live' ? (me ? `<form class="mk-askform" data-id="${esc(l.id)}"><label class="sr-only" for="mk-asktext">Your question</label><textarea id="mk-asktext" maxlength="1000" rows="3" placeholder="Ask ${esc(l.provider.kind === 'team' ? l.provider.lead.name : l.by.name)} something (public)"></textarea><input type="hidden" name="reply_to" value=""><p class="mk-replying small muted" hidden>Replying · <button type="button" class="linkish mk-cancel">cancel</button></p><button class="btn small">Ask</button></form>` : `<p><a href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in</a> or <a href="/signup">sign up</a> to ask.</p>`) : ''}
   </section>${howItWorks()}`;
   return frame({ me, title: l.title, description: `${market.CATEGORIES[l.category]} on the Cohabi Market, by ${l.by.name}.`, section: l.category, center, scripts: ['/static/market.js'] });
+}
+
+// ------------------------------------------------------------------------------------------ my listings
+/** Every listing this member made, including work offered as one of their pages and listings no longer live. */
+export function myListingsPage({ me }) {
+  const items = market.list({ owner: me.id, status: 'all', limit: Number.MAX_SAFE_INTEGER });
+  const rows = items.map((l) => {
+    const status = l.test ? 'test' : l.status;
+    return `<div class="mk-shopitem" data-listing="${esc(l.id)}" data-status="${esc(status)}">${listingCard(l)}
+    <div class="mk-ownbar"><strong>Status: ${esc(status)}</strong> ${l.status === 'live' ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button>` : ''}</div></div>`;
+  }).join('');
+  const center = `${activityNav('mine')}<p class="crumbs small"><a href="/label">Market</a> / your listings</p>
+  <h1 class="mk-formh">Your listings</h1>
+  <p class="mk-lede">Everything you have listed, newest first, including work offered as one of your pages. Withdrawn listings stay in the record.</p>
+  <p><a class="btn" href="/label/new">Make a listing</a></p>
+  ${items.length ? `<div class="mk-grid">${rows}</div>` : '<p class="muted">No listings yet. <a href="/label/new">Make your first listing.</a></p>'}`;
+  return frame({ me, title: 'Your listings', description: 'Your Cohabi Market listings.', center, scripts: ['/static/market.js'] });
 }
 
 // ------------------------------------------------------------------------------------------ the form
@@ -509,7 +721,8 @@ export function listingForm({ me, l = null, cat = null, asPage = null }) {
   ${!l && orgpages.managedBy(me.id).length ? `<label>Offer it as<select name="page"><option value="">Me, ${esc(me.name)}</option>${orgpages.managedBy(me.id).map((pg) => `<option value="${esc(pg.id)}"${pg.id === asPage ? ' selected' : ''}>${esc(pg.name)} (${esc(profilekinds.BADGE[pg.kind])})</option>`).join('')}</select></label>` : ''}
   ${!l ? `<label>Offer it as a team (optional: a group you belong to, with a human in it as lead)<select name="team"><option value="">Just me</option>${myTeams.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : ''}
   <label>Bounty: its Work Desk task id (only for bounties)<input name="desk" maxlength="40" value="${v('desk')}" placeholder="t_…"></label>
-  <fieldset class="mk-imgs"><legend>Pictures (up to 4 of your own uploads)</legend>${mine.length ? mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') : '<p class="small muted">You have no uploads yet. Upload pictures from your profile page, then come back.</p>'}</fieldset>
+  <label class="small mk-pgup">⬆ Upload a new banner <input type="file" data-pg-upload="banner" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+    <fieldset class="mk-imgs"><legend>Pictures (up to 4 of your own uploads)</legend>${mine.length ? mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') : '<p class="small muted">You have no uploads yet. Upload pictures from your profile page, then come back.</p>'}</fieldset>
   ${!l ? '<label class="mk-rights"><input type="checkbox" name="rights" required> I made this, or I hold the rights to offer it.</label>' : ''}
   <p class="form-msg" role="status" id="mk-msg"></p>
   <button class="btn">${l ? 'Save' : 'List it'}</button>
@@ -578,7 +791,7 @@ export function pagePage({ me, p, folder = null }) {
     <div class="mk-pageface">${face}</div>
     <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.project_service ? '<p class="mk-ourservice">Part of the Cohabitation Project\'s own services</p>' : ''}${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
     <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>${newarrival.label(x.id)}`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
-    ${mgr ? '<p><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button></p>' : ''}</div>
+    ${mgr ? '<p class="mk-pgtools"><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button> <label class="btn ghost small mk-quick">🖼 Change picture<input type="file" data-pg-quick="portrait" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <label class="btn ghost small mk-quick">🏞 Change background<input type="file" data-pg-quick="banner" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <span class="small mk-quickmsg" role="status" aria-live="polite"></span></p>' : ''}</div>
     ${heroCovers(covers)}
   </section>
   ${folder ? songsBlock(folder) : ''}
@@ -600,13 +813,14 @@ function editDialog(p, me) {
   const ed2 = ed.replace(/<select name="profile_kind" id="pf-kind">[\s\S]*?<\/select>/, p.label || p.label_record ? `<select name="profile_kind" id="pf-kind"><option value="${esc(p.kind)}" selected>${esc(orgpages.KINDS[p.kind])}</option></select>` : kindSel);
   const rosterEd = p.kind === 'label' && !p.label_record ? `<label>Add an artist to this label <span class="hint">(a band or artist page you also run)</span><select name="add_artist"><option value="">(none)</option>${orgpages.managedBy(me.id).filter((x) => ['band', 'artist'].includes(x.kind) && !(p.roster || []).includes(x.slug)).map((x) => `<option value="${esc(x.slug)}">${esc(x.name)}</option>`).join('')}</select></label>` : p.label_record ? '<p class="small muted">This label\'s artists come from the Label\'s own record (label/releases.json).</p>' : '';
   return `<dialog class="pf-editor mk-pgdialog" id="pg-dialog" aria-labelledby="pg-ed-h"><form method="dialog" id="pg-form" class="form" data-id="${esc(p.id)}">
-    <div class="pf-ed-head"><h2 id="pg-ed-h">Edit ${esc(p.name)}</h2><button class="btn ghost small" type="button" id="pg-cancel" aria-label="close">✕</button></div>
+    <div class="pf-ed-head"><h2 id="pg-ed-h">Edit ${esc(p.name)}</h2><button class="btn ghost small" type="button" id="pg-cancel" aria-label="Save and close" title="Save and close">✕</button></div>
     ${p.label ? '' : `<label>Name<input name="name" maxlength="60" value="${esc(p.name)}"></label>`}
     <label>Headline <span class="hint">(up to 120)</span><input name="headline" maxlength="120" value="${esc(p.headline || '')}"></label>
     <label>About <span class="hint">(up to 3000; **bold** and - lists work)</span><textarea name="bio" maxlength="3000" rows="8">${esc(p.bio || '')}</textarea></label>
     <div class="mk-row"><label>Look<select name="theme">${opt(orgpages.THEMES, orgpages.themeOf(p))}</select></label><label>Accent colour<input name="accent" type="color" value="${esc(p.accent || '#d4a24c')}"></label></div>
-    <label>Picture <span class="hint">(one of your uploads)</span><select name="portrait"><option value="">(none${p.art ? ': keep the drawn mark' : ''})</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.portrait ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
-    <label>Banner <span class="hint">(one of your uploads)</span><select name="banner"><option value="">(none)</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.banner ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+    <label>Picture <span class="hint">(a logo or photo: pick one of your uploads, or upload a new one below)</span><select name="portrait"><option value="">(none${p.art ? ': keep the drawn mark' : ''})</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.portrait ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+    <label class="small mk-pgup">⬆ Upload a new picture <input type="file" data-pg-upload="portrait" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+    <label>Banner <span class="hint">(a wide picture across the top: pick one, or upload below)</span><select name="banner"><option value="">(none)</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.banner ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
     <fieldset class="mk-imgs"><legend>Gallery <span class="hint">(up to 8: pictures already here, and your uploads)</span></legend>${[...new Map([...(p.gallery || []).map((id) => images.get(id)).filter(Boolean), ...mine(me.id)].map((im) => [im.id, im])).values()].slice(0, 48).map((im) => `<label class="mk-imgpick"><input type="checkbox" name="gallery" value="${esc(im.id)}"${(p.gallery || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') || '<p class="small muted">Upload pictures from your profile page first.</p>'}</fieldset>
     <label>Links <span class="hint">(up to 6, one per line: label | https://… or tel:…)</span><textarea name="links" rows="4">${esc((p.links || []).map((x) => `${x.label} | ${x.url}`).join('\n'))}</textarea></label>
     ${ed2}

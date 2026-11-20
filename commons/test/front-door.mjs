@@ -33,9 +33,14 @@ test('every script, stylesheet and image it loads is there', async () => {
 });
 
 test('its buttons lead to real pages', async () => {
-  for (const [from, to] of [['/social', '/feed'], ['/login', '/signin']]) {
-    const r = await fetch(B + from, { redirect: 'manual' }); assert.equal(r.status, 302, from); assert.equal(r.headers.get('location'), to);
-  }
+  // 2026-11-19: /social is the page's own address (200 to any fetch; a browser is offered /welcome first), and /feed
+  // is kept as the old address: the reel, with any query carried over to /social. /login still forwards to /signin.
+  const login = await fetch(B + '/login', { redirect: 'manual' });
+  assert.equal(login.status, 302, '/login'); assert.equal(login.headers.get('location'), '/signin');
+  const social = await fetch(B + '/social', { redirect: 'manual' }); assert.equal(social.status, 200, '/social is the Cohabi Social page');
+  const reel = await fetch(B + '/feed', { redirect: 'manual' }); assert.equal(reel.status, 200, '/feed is still served (the reel)');
+  const moved = await fetch(B + '/feed?x=1', { redirect: 'manual' });
+  assert.equal(moved.status, 301, '/feed?x=1'); assert.equal(moved.headers.get('location'), '/social?x=1');
   const links = [...new Set([...html.matchAll(/href="(\/[^"#]*)"/g)].map((m) => m[1]))].filter((u) => !u.startsWith('/homepage-preview/'));
   for (const u of links) assert.ok((await fetch(B + u)).status < 400, `${u} works`);
 });
@@ -182,20 +187,19 @@ test('the homepage never leads to Headquarters: Explore is a public hub, The Wor
 });
 
 test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep links behind it', async () => {
-  for (const [url, headers] of [['/library', COHABI], ['/petition', {}], ['/headquarters', {}]]) {
+  // 2026-11-19 (Geoffrey: profile pages and the 404 still had the old header): every page built by pages.layout now
+  // carries the same header as Social and the Marketplace (feedv2 appHeader), so there is one header, not two.
+  for (const [url, headers] of [['/library', COHABI], ['/m/nobody-here', {}]]) {
     const t = await (await fetch(B + url, { headers })).text();
-    const bar = t.slice(t.indexOf('<header class="topbar'), t.indexOf('</header>'));
-    assert.match(bar, /<details class="cohabi-menu"><summary class="brand"/, `${url}: the logo opens the one menu`);
-    const outside = bar.replace(/<details class="cohabi-menu">[\s\S]*<\/nav><\/details>/, '');
-    assert.match(bar, /href="\/commons">🏛 Cohabi Commons <small>You’re not a member/, `${url}: a visitor is told plainly and sent to the explainer (one menu everywhere, 2026-11-13)`);
-    for (const deep of ['/headquarters', '/tools', '/images', '/submit', '/store', '/desk', '/spend', '/feed', '/label', '/petition']) assert.ok(!outside.includes(`href="${deep}"`), `${url}: ${deep} is not in the bar itself`);
-    assert.match(bar, /href="\/feed">[^<]*Cohabi Social[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Cohabi Marketplace ▾<\/summary><a href="\/label">/, `${url}: Cohabi Social, then the Cohabi Marketplace dropdown (2026-11-13)`);
-    assert.match(outside, /href="\/signin"[^>]*>Sign in[\s\S]*href="\/signup"[^>]*>Sign up/, `${url}: a visitor sees Sign in and Sign up`);
+    assert.ok(!t.includes('<header class="topbar'), `${url}: the old header is gone`);
+    const bar = t.slice(t.indexOf('<header class="fx-top"'), t.indexOf('</header>'));
+    assert.match(bar, /<details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">/, `${url}: the logo opens the one menu`);
+    assert.match(bar, /href="\/signup"[^>]*>Sign up[\s\S]*href="\/signin[^"]*"[^>]*>Sign in/, `${url}: a visitor sees Sign up and Sign in`);
     for (const kept of ['/tools', '/images', '/submit', '/store']) assert.ok(t.includes(`href="${kept}"`), `${url}: ${kept} is still reachable from the page`);
   }
   // Social and the Marketplace keep their own designed headers: the logo leads home, "The Commons" opens the
   // explainer (never Headquarters), and a visitor is offered the public sign-up, not the Commons' doors.
-  for (const [url, cls] of [['/feed', 'fx-top'], ['/label', 'mk-top']]) {
+  for (const [url, cls] of [['/feed', 'fx-top'], ['/label', 'fx-top']]) { // both render feedv2's appHeader (marketpage.mjs: appHeader(me, 'market'))
     const t = await (await fetch(B + url, { headers: COHABI })).text();
     const bar = t.slice(t.indexOf(`<header class="${cls}"`), t.indexOf('</header>'));
     if (url === '/feed') {
@@ -205,8 +209,8 @@ test('the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep 
       const menu = bar.slice(bar.indexOf('<details class="fx-app-switch"'), bar.indexOf('</nav></details>'));
       assert.match(menu, /<summary class="fx-brand"/, '/feed: the logo is the menu button');
       assert.ok(!/class="fx-brand[^"]*" href=/.test(bar), '/feed: the logo is not a link');
-      assert.match(menu, /href="\/feed">[^<]*Cohabi Social<\/a>[\s\S]*Profile<\/a>[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Cohabi Marketplace ▾<\/summary><a href="\/label">[\s\S]*href="\/commons"/, '/feed: Cohabi Social, Profile, the Cohabi Marketplace dropdown, Cohabi Commons, in that order');
-      assert.match(menu, /You’re not a member of the Commons\. See what it takes to apply\./, '/feed: a non-member is told so');
+      assert.match(menu, /href="\/signin\?next=\/social">[^<]*Sign in<\/a>[\s\S]*href="\/social">[^<]*Cohabi Social<\/a>[\s\S]*<details class="cm-sub mk-sub"><summary>[^<]*Marketplace ▾<\/summary><a href="\/label">[\s\S]*<a class="fx-commons-info" href="\/commons">/, '/feed: a visitor gets Sign in, Cohabi Social, the Marketplace dropdown, then What the Commons is, in that order');
+      assert.match(menu, /not a member of the Commons yet\. See what it is and how to apply\./, '/feed: a non-member is told so');
     } else assert.match(bar, /<summary class="fx-brand[^"]*" aria-label="Cohabi menu"/, `${url}: the logo opens the same one menu (2026-11-13)`);
     assert.ok(!bar.includes('href="/headquarters"'), `${url}: no Headquarters in the public header`);
     assert.match(bar, /href="\/commons"/, `${url}: the Commons link opens the explainer`);

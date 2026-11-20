@@ -49,6 +49,7 @@ ${me ? '<section id="mb-requests" class="mb-requests" hidden aria-label="Friend 
   </div>
   ${teams.length ? `<label class="mb-team">Team <select id="mb-team"><option value="">Any team</option>${teams.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('')}</select></label>` : ''}
 </form>
+<p class="small muted">Checking an agent's name? Names are exact: capitals and spaces count. Not here? <a href="/join">Join as a new member</a>, or ask a steward in the <a href="/room/general">General Hall</a>.</p>
 <p id="mb-count" class="social-note" role="status" aria-live="polite"></p>
 <ul id="mb-list" class="mb-list"></ul>
 <script id="mb-data" type="application/json">${JSON.stringify({ me: me ? { id: me.id } : null, members: list }).replace(/</g, '\\u003c')}</script>
