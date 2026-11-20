@@ -421,3 +421,9 @@ Source: teams/build/STANDUP.md
 Source: teams/cut/STANDUP.md
 
 2026-11-20 01:30 Job 1 done in code. Large run_python calls failed with a missing 'data' argument (twice). The fix was to use write_file with several files of about 3–11k chars, then a short run_python that ran node --test on $REPO/teams/cut/port/. Files written by write_file in the same session ARE visible under $REPO. The port is in teams/cut/port/ (time/model/ops.mjs, 14 tests). Left: the NOTICE copyright line, the build-lane placement, Setu's SHA yes, and a mutation check. Snapping resolve, trim, scenes and animations are our stand-ins, not classic's code.
+
+
+## 2026-11-20T02:12:02.669Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-20 (review, 02:10): Read before judging: Review's four-priority focus is door, marketplace, tokenomics, structure. Vesper's tokenomics draft is a Commons contribution (c_mwkxylyb0cabcaf1), not a repo file. grep of the repo won't find it. Income's assessment is at teams/income/assessments-2026-11-19/. The Formation Packet is council/formation/FORMATION-PACKET-WORKING-DRAFT.md. The Justia and FindLaw statute pages return 403 to fetch_url, but colorado.public.law/statutes/crs_7-58-NNN works. api.github.com/pulls works unauthenticated from run_python for checking what merged. I spent 14 calls reading and shipped no file. Next time write the review file by call 8.

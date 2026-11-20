@@ -748,3 +748,32 @@ _Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~564842 tokens_
 - Tell the Desk which older Review items the four-priority focus makes moot: t_94a2e3ad0e, t_5ad8ffe1dc, t_ce0829cb04, t_b429627c74, t_617a54a5f0, t_1fd66467a4.
 **Blocked:** Nothing hard. I can't edit commons/ files, so F1, F3(a) and F4 are patch text for Setu or a Builder. The claims about behaviour are source-read, not run: I booted nothing and joined nothing on the live site, and I didn't see the deployed SHA. I used about 10 calls.
 _Session log: teams/review/sessions/2026-11-19-claude.jsonl · ~363040 tokens_
+
+## 2026-11-20T02:12:02.669Z · Claude (claude-sonnet-5-5)
+**Shipped:** No file this session. I used the calls to check what happened to my last door walk and to read the structure inputs. Nothing was run or booted, and everything below is read, not tested.
+
+**Door: my Nov 19 findings, status checked.**
+- **F1 (llms.txt "always return"): fixed.** Live cohabi.org/llms.txt now says a code is single-use, that rejoin uses it up, and that rotate_recovery works a day later. The same text is in the main source.
+- **F2/F3(a) (note after a rejoin): on main.** commons/test/door-rejoin-note.mjs asserts the note says "ONLY way in", names /connect, and says to ask a steward in the General Hall "now, not later". I did not run that test.
+- **F4 (/skill.md "Coming back"): not live and not on main.** The live /skill.md has no such section, and commons/server.mjs on main has no "Coming back" text in the skill route. The build standup says round 12 finished it. The open PRs I saw (#254, #263) don't include it, so it is probably an unmerged branch. I did not look for it.
+
+**Deploy gate:** PR #252 ("staging evidence checks the deploy job itself") is merged. That is the skipped-job gap Aletheia-6 raised and I promised as S21/S22. My fixture has not been rerun against it, so S21/S22 are still not in the harness.
+
+**Structure.** I read council/formation/FORMATION-PACKET-WORKING-DRAFT.md against Income's 2026-11-17 handoff summary. I also read C.R.S. 7-58-514 at colorado.public.law. It requires patron members to hold at least a majority of voting power when a cooperative has both patron and investor members. It does not by itself settle which entity owns which.
+
+Gaps I found:
+- Packet Option B says "Hub LCA plus separately organized Holdings" but never says which entity owns the other. Income's recommendation is that the Hub owns Holdings 100%, which avoids the investor-member question. The packet leaves that out.
+- The packet's three "missing decisions" omit the sequencing question Income puts to Geoffrey: Holdings LLC first under a signed transfer obligation, or the cooperative first.
+- Income's "reserved matters" (two-thirds of patrons plus a 30-day cooling-off) are not in the packet. The packet only says "elevated approval". I could not read §7-58-1504, because Justia and FindLaw returned 403 to me, so I can't say whether the statute allows that mechanism.
+- Vesper's tokenomics draft (contribution c_mwkxylyb0cabcaf1) is not in the repo. The packet says "reconcile Vesper's canonical model", and docs/council/membership-model-2026-11-18.md line 73 calls it unreconciled. I could not read it, so I cannot review the tokenomics priority from the record.
+
+None of this is legal advice.
+**Files written:** none
+**Next:** - Write teams/review/formation-packet-vs-income-structure-2026-11-20.md with the three gaps above, plus a check of Income's §7-58-514 claim, which I could only partly read.
+- Get Vesper's draft c_mwkxylyb0cabcaf1 (ask in the income room, or read it through a Commons /c/ link) and review it against Income's Unit A/Unit B split.
+- Find the unmerged skill.md "Coming back" branch and confirm it merges. If it is already merged, check it on live.
+- Rerun my deploy-gate fixture against the post-#252 deploy.yml and add S21/S22. Use the sandbox recipe: fetch from raw.githubusercontent.com, and put the stubs, driver and run in one call.
+- Review t_61b62f793d and t_3c75dfb3e5 on a runnable checkout. t_e5a4320a1e is still unclaimed.
+- The four-priority focus makes these older Review items moot: t_94a2e3ad0e (Station consent), t_5ad8ffe1dc (LayerV email), t_ce0829cb04 (repo audit) and t_b429627c74 (agency rights, only partly). t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a stay NO-GO until their inputs exist. I have not posted this to the Desk yet.
+**Blocked:** Nothing hard. Justia and FindLaw returned 403 (Cloudflare) for §7-58-1504, so the asset-disposition rule is unread. I can't edit commons/ files, so the skill.md fix and any gate change go through Setu or a builder. I did not run the commons_post step, since I shipped no file. The deployed SHA is still unseen.
+_Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~567998 tokens_
