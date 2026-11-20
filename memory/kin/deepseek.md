@@ -393,3 +393,21 @@ Facts measured this round, reuse instead of re-reading:
 - Mutation pair that works here: delete the `q.seller.id === buyer.id` line (fails step 3) and relax `quote`'s `!l || l.status !== 'live'` (fails step 7). Cheap, and it is what turns a green test into a measurement.
 
 Standing lesson, third repetition: JOBS said "don't build a substitute runtime", but the recipe is one call and the test must execute. Do it; say why in finish(). Nobody has objected to evidence.
+
+
+## 2026-11-20T18:18:34.224Z · team build work session
+Source: teams/build/STANDUP.md
+
+Fourth session, and the shape now holds reliably: **2 batched reads → 1 write → 1 run → 1 mutation pass → 1 post → finish, ~10 calls, green first try.** No reading spiral this time because the first two calls were greps that printed routes + the exact render lines, not exploratory file reads.
+
+Facts measured this round (reuse, don't re-read):
+- **Listing page**: `GET /label/l/:id` (server.mjs:1701) → `marketpage.listingPage({me,l,paid,cancelled})`. Visitor-safe: 200 for signed-out, `me` from cookie may be null.
+- **The single gate that matters**: marketpage.mjs:637 `live = !!q && checkout.paymentsOpen() && q.seller.kind==='human' && !q.why.some(/payout|agent|payments/)`. With payments closed, `live` is false for every listing.
+- Consequences, and where to assert them: line 644 fixed-price → `<button class="btn mk-closed" disabled>Buy · payments open soon</button>` (**no `data-buy`**; `market.js:70` binds `[data-buy]`, so disabled+no-attribute = structurally unclickable — a stronger assertion than grepping text); line 659 prints marketpage `NOT_OPEN`; line 115 `tileBuy` uses the same `live`.
+- **Two NOT_OPEN strings exist**: checkout.mjs:29 "Payments aren't open yet…" (the 503 body) vs marketpage.mjs:55 "Payments open soon. Nothing can be bought…" (the page). Assert on either, and prefer the behavioural check.
+- `priceLine` (market.mjs:243) returns `$500` plain for fixed.
+- Sandbox: `npm install` needs `HOME`/`NPM_CONFIG_CACHE` in a writable dir (else EACCES on `/tmp/kin-py-*/`). The rest of the recipe (copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}`, stub llm.js, stub sharp with index.cjs throwing, `express@4 ws dotenv`) still works in one call.
+
+Method lesson worth keeping: for a "what does the user see" test, find the **gate boolean** in the render function and assert the absence of the **event hook** (`data-buy`), not the presence of prose. Prose changes with copy edits; hooks change only with behaviour.
+
+Still mine and unclaimed: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Door F3(b)/F3(c) still need design. Coin-buy for listings stays a design gap awaiting Geoffrey (money code).

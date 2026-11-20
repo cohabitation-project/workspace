@@ -818,3 +818,24 @@ _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~296566 tokens_
 **Next:** Have dependency-complete build CI run `node --test commons/test/jobs-http.mjs` and resolve any assertion failures against the live route behavior.
 **Blocked:** End-to-end route verification is blocked in this session snapshot: root `package.json` is absent, and the isolated server did not become ready. Per JOBS.md, I did not construct a substitute runtime.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~734822 tokens_
+## 2026-11-20T18:18:34.224Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 18 DeepSeek job: `commons/test/market-listing-closed.mjs`** (new file, 8,426 chars). Test only — no application file, no other test, edited; `marketpage.mjs` is Aletheia-6's and was only *read*.
+
+**What it asserts.** The listing page must make the same promise as the route (`GET /label/l/:id`, server.mjs:1701 → `marketpage.listingPage`). The mechanism is marketpage.mjs:637 — `live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some(/payout|agent|payments/)` — so with `COMMONS_PAYMENTS` unset no listing is `live`, and:
+1. **the buyer** (signed in, not the seller) → 200, the title, `$500`, **zero `data-buy="<id>"`** controls (the only hook `market.js:70` binds to open checkout), a payments-closed sentence;
+2. **a signed-out visitor** → 200, the title, still zero `data-buy` for this listing, and told payments aren't open;
+3. **the control that stops 1 and 2 passing on an empty page**: the buyer really does get a Buy-shaped control and it is explicitly `class="btn mk-closed" disabled>Buy · payments…`, i.e. visibly disabled rather than absent;
+4. **the surface agrees with the route**: POSTing that withheld buy directly → 503, and `/api/me/orders` shows 0 purchases.
+Boot and the two-member walk are copied from my `market-checkout-guards.mjs` (forest gate via `COMMONS_ARRIVE_BYPASS=TESTGATE`); no `COMMONS_PAYMENTS` and no Stripe key, so the test *is* the payments-closed world.
+
+**Evidence (measured, throwaway runtime — snapshot copy + express@4/ws/dotenv, `src/llm.js` and `node_modules/sharp` stubbed):** `node --check` clean; `node --test commons/test/market-listing-closed.mjs` → **✔ 1/1 pass, 0 fail, 699 ms**. Beside round 17's guards test: **2/2 pass**.
+**Mutation-tested** (in the copy, file restored after): dropping `checkout.paymentsOpen()` from the `live` gate → fails on *"with payments closed the page gives the buyer no data-buy control"*; stripping the `disabled` attribute → fails on *"the buyer sees a Buy that is visibly disabled…"*. So the green is a measurement.
+
+**One wording finding for @Setu (not a bug, a divergence):** the job named `checkout.NOT_OPEN` ("Payments aren't open yet…", checkout.mjs:29) as the page text, but the page prints **marketpage's own** `NOT_OPEN` ("Payments open soon. Nothing can be bought or paid for yet…", marketpage.mjs:55). My assertion accepts either and leans on the behavioural fact (no `data-buy`), so a copy edit can't flip it. Second, smaller: `marketpage.mjs:115` (`tileBuy`, the section-tile Buy on /label) gates on the same `live`, so it is closed too — outside this test's scope, and it is Aletheia-6's file.
+
+**Files written:** `commons/test/market-listing-closed.mjs`
+**Files written:** `commons/test/market-listing-closed.mjs`
+**Next:** CI/foreman: run `node --test commons/test/market-listing-closed.mjs` with `npm ci` — this is Tier 2 (test only, no Tier 1 file touched), so it can merge on green without a second yes. Nothing of mine is waiting on a decision.
+Then, by value: (a) my four still-unclaimed Desk tasks t_54b40fa65f, t_1a3a9a90e2, t_d8e9a757e3, t_be4d17ba99; (b) Door F3(b)/F3(c) still need design; (c) the coin-buy path for market listings remains a *design* gap (checkout is Stripe-only, no client idempotency key) and needs Geoffrey's word because it is money code — I will not invent it in a test round.
+**Blocked:** Nothing blocked. Note for the foreman: as JOBS.md warns, the session snapshot has no root `package.json`, so I ran the test in a throwaway copy (my round-15/17 recipe, one call). A test that has never executed is decoration. Also worth recording: `npm install` in this sandbox needs `NPM_CONFIG_CACHE`/`HOME` pointed at a writable dir, or it dies with EACCES on `/tmp/kin-py-*/.npm/_cacache` — cost me one call.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~532018 tokens_
