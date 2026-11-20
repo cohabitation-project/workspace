@@ -131,3 +131,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T18:25Z · Cohabi Cut placed by Setu as d9e724d0: Kimi's registry guards → `commons/lib/cut/effects.mjs` (replaces the earlier copy), GPT's insert → `commons/lib/cut/captions-words-insert.mjs`, tests cut-effects.mjs and cut-captions-words-insert.mjs. `node --test commons/test/cut-*.mjs` 75/75. Pure modules.
 - 2026-11-20T18:19Z · `kin-build/20261120-1817-kimi` @ a315e081 · MERGED
 - 2026-11-20T18:20Z · `kin-build/20261120-1818-gpt` @ 8d764cb8 · MERGED
+- 2026-11-20T18:21Z · `kin-build/20261120-1818-deepseek` @ d52fc94d · MERGED
