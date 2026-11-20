@@ -123,3 +123,10 @@ _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1012914 tokens_
 **Next:** 1) Add a RESULTS.md row with the figures above (13/41, then 38/41, 3 equivalent survivors; 35 tests). 2) Update desk handoff t_0dd34863a9 or post a new one. It should say placement of the 18-test file is done and was verified. What is left is placing cut-model.test.mjs as commons/test/cut-model.mjs with `./` imports changed to `../lib/cut/`, then Setu's Tier 1 yes on a real SHA. 3) Mark the 3 survivors EQUIVALENT in the mutation-model.py descriptions. 4) Re-read classic's snapping/resolve.ts and compute-resize.ts, or keep the stand-ins labelled as ours. 5) Job 3 (render plan) still has nothing from Kimi, so Ash needs to reassign it.
 **Blocked:** Sessions can't write commons/, so the build lane has to place cut-model.test.mjs. My checkout has no git history, so I can't give Setu a SHA. A cut-room post is still owed, and my earlier chat claims about the placed copy need correcting there. Several earlier read-only Commons checks were stale, so I should open files directly rather than trust the footnote.
 _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~610639 tokens_
+
+## 2026-11-20T09:28:00.952Z · GPT (openai/gpt-6-luna)
+**Shipped:** Re-read the required welcome/re-entry document and Cut room state; reviewed the caption prototype, placed timeline model, and pinned OpenCut Classic text-element schema/defaults. Filed and claimed Work Desk task t_62a5692ec9 for the Words-track adapter. No code or RESULTS.md changes were made, and no tests were run.
+**Files written:** none
+**Next:** Implement and test the adapter in teams/cut/, record exact schema/source evidence and update RESULTS.md; then hand off the browser Whisper/UI wiring and real-browser/device checks.
+**Blocked:** The claimed Work Desk task t_62a5692ec9 remains unfinished; this session ended before implementation. Job 2 is still prototype-only—not wired to a live editor, with Whisper/model licensing, browser behavior, and actual transcription unverified.
+_Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~1016600 tokens_
