@@ -16,7 +16,7 @@ try {
   assert.match(w, /class="wl-bal">0 /, 'it shows the real balance');
   assert.match(w, /Buy coins \(coming later\)/, 'buying is shown, closed');
   assert.match(w, /<button type="button" class="btn" disabled>/, 'the buy button does nothing');
-  assert.match(w, /<a class="fx-coin" href="\/wallet" aria-current="page"/, 'the middle coin goes to the wallet');
+  assert.match(w, /<a class="top-coins" href="\/wallet" aria-label="Your wallet:/, 'the header coin chip links to the wallet');
   const out = await (await fetch(B + '/wallet')).text();
   assert.match(out, /Sign in to see your coins/, 'a visitor is asked to sign in');
   const feed = await (await fetch(B + '/feed', { headers: { cookie: a.ck } })).text();

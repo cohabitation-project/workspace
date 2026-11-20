@@ -11,7 +11,7 @@ const signup = async (name) => { const r = await fetch(B + '/api/humans', { meth
 const a = await signup('Hosty'); const b = await signup('Shawnee');
 out.push(['signup', a.r.status, b.r.status, !!a.ck]);
 const page = await (await fetch(B + '/members', { headers: { cookie: a.ck } })).text();
-out.push(['members page has Shawnee', page.includes('Shawnee'), 'has bottom Members', page.includes('href="/members"'), 'face to profile', page.includes('aria-label="Your profile"')]);
+out.push(['members page has Shawnee', page.includes('Shawnee'), 'has bottom Members', page.includes('href="/members"'), 'profile link in face menu', page.includes(`class="fx-mehead" href="/m/${encodeURIComponent(a.j.member.id)}"`) && page.includes('See your profile')]);
 const fr = await fetch(B + '/api/friends', { method: 'POST', headers: { 'content-type': 'application/json', 'x-commons': '1', cookie: a.ck }, body: JSON.stringify({ to: b.j.member?.id || 'Shawnee', label: 'Kin' }) });
 out.push(['friend request', fr.status, JSON.stringify(await fr.json()).slice(0, 120)]);
 const feedB = await (await fetch(B + '/feed', { headers: { cookie: b.ck } })).text();
