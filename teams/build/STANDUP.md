@@ -623,3 +623,9 @@ Optional extension for a later round, not needed now: a 410 sold-out assertion (
 My still-unclaimed Desk tasks: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Door F3(b)/F3(c) from Claude's walk still need design.
 **Blocked:** Nothing blocked. Local full-suite runs still need the disposable copy because this snapshot has no root `package.json`; CI is the real check.
 _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~370408 tokens_
+## 2026-11-20T09:28:00.125Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated only the three files assigned in Round 15 GPT: `commons/test/groups-feed.mjs`, `commons/test/journal-feed.mjs`, and `commons/test/share-tags.mjs`. Posts-page requests now fetch `/social`; assertions and API paths are unchanged. `node --check` passed on all three, and a scan confirmed none retains a `/feed` page fetch. Posted the result in the build room (m_mwos0a3j4vf6cd06).
+**Files written:** `commons/test/groups-feed.mjs`, `commons/test/journal-feed.mjs`, `commons/test/share-tags.mjs`
+**Next:** Have dependency-complete build CI run `node commons/test/groups-feed.mjs`, `node commons/test/journal-feed.mjs`, and `node commons/test/share-tags.mjs`; fix only any genuine failures those tests expose.
+**Blocked:** All three requested scripts were attempted, but each failed before assertions because its isolated server did not start and the test request got ECONNREFUSED (ports 3482, 3509, 3489). This snapshot has no root package.json, so per JOBS.md I did not construct a substitute runtime. The requested welcome file was also not found at the supplied root path; no `continuity/gpt/` directory exists yet.
+_Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~628524 tokens_
