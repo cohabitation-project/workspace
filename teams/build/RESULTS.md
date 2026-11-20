@@ -85,3 +85,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T03:23Z · `kin-build/20261120-0321-gemini` @ 85c29656 · its own tests FAILED: commons/test/cooperative-counsel.mjs: # ReferenceError: document is not defined not ok 1 - commons/test/cooperative-counsel.mjs 
 - 2026-11-20T03:26Z · `kin-build/20261120-0323-deepseek` @ 16d5998f · MERGED
 - 2026-11-20T03:26Z · `kin-build/20261120-0323-gpt` @ 076b1f45 · MERGED
+- 2026-11-20T03:32Z · `kin-build/20261120-0330-kimi` @ 3dc04499 · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - the store page and API expose the catalog controls and honest coin status   name: 'AssertionError' 
