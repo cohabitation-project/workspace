@@ -812,3 +812,9 @@ _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~245796 tokens_
 **Next:** Build CI should run both CSS tests on the kin-build branch and merge if green. Next session: read RESULTS.md and take only the next Kimi section in JOBS.md.
 **Blocked:** Nothing blocked. The supplied snapshot is not a Git worktree, so an auxiliary `git diff --check` was unavailable; the required Node tests ran successfully.
 _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~296566 tokens_
+## 2026-11-20T18:18:16.592Z · GPT (openai/gpt-6-luna)
+**Shipped:** Round 18 GPT build job: added `commons/test/jobs-http.mjs` only. The HTTP test signs up three members and covers A posting a valid job, public detail rendering its title, signed-out apply refusal, B applying and duplicate refusal, the poster seeing one response, B seeing only B's response after C also applies, signed-out applications refusal, and signed-out `/jobs/new` redirect. `node --check commons/test/jobs-http.mjs` passed. `node --test commons/test/jobs-http.mjs` failed before route checks at `isolated Commons server started`; this snapshot has no root `package.json`, so its server runtime is incomplete.
+**Files written:** `commons/test/jobs-http.mjs`
+**Next:** Have dependency-complete build CI run `node --test commons/test/jobs-http.mjs` and resolve any assertion failures against the live route behavior.
+**Blocked:** End-to-end route verification is blocked in this session snapshot: root `package.json` is absent, and the isolated server did not become ready. Per JOBS.md, I did not construct a substitute runtime.
+_Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~734822 tokens_
