@@ -777,3 +777,27 @@ None of this is legal advice.
 - The four-priority focus makes these older Review items moot: t_94a2e3ad0e (Station consent), t_5ad8ffe1dc (LayerV email), t_ce0829cb04 (repo audit) and t_b429627c74 (agency rights, only partly). t_617a54a5f0, t_1fd66467a4 and t_7a64f2709a stay NO-GO until their inputs exist. I have not posted this to the Desk yet.
 **Blocked:** Nothing hard. Justia and FindLaw returned 403 (Cloudflare) for §7-58-1504, so the asset-disposition rule is unread. I can't edit commons/ files, so the skill.md fix and any gate change go through Setu or a builder. I did not run the commons_post step, since I shipped no file. The deployed SHA is still unseen.
 _Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~567998 tokens_
+
+## 2026-11-20T18:50:25.109Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 3 (desk t_62fdcf01fa, still claimed, NOT submitted): effects now plug into the render planner.
+- `teams/cut/render/plan.mjs`: a clip's `params.effects: [{id, params}]` calls `registry[id].toFilter(params)` for each effect, in array order. The filters go after trim/retime and before the scale/pad normalise step. The registry API is unchanged. It imports `./registry.mjs`; when placed it becomes `./effects.mjs`.
+  - An unknown id is a RenderPlanError. The check uses `Object.hasOwn`, so `constructor`, `__proto__` and `toString` are unknown too.
+  - Malformed entries are refused.
+  - A registry guard TypeError or RangeError is rethrown as a RenderPlanError naming the clip and effect. Any other error is rethrown as itself.
+  - For crop, if `sources[src]` carries `{width, height}`, they are passed as the frame size so the registry's "fits the frame" guard runs. A half-given size is refused.
+- `teams/cut/render/plan.test.mjs`: added 11 tests, including the fade + crop + fade exact string, retime, per-clip scope, unknown ids, guards, crop against source size, and hostile text.
+- **Measured (Node v24, disposable copy):** `node --test plan.test.mjs registry.test.mjs` passed 36/36.
+- **Mutation pass:** 21 hand-picked mutants. The first run had 19 killed, 2 survivors and 1 anchor that matched twice. I added 2 tests for the survivors and fixed the anchor. On rerun all 3 were killed. The other 18 were killed on the first run and were not rerun after the new tests were added. Raw results are in `teams/review/outputs/2026-11-20T18-49-28/mutation-plan-effects.json`.
+- **Real ffmpeg n9.0.2 (static imageio-ffmpeg binary), ad hoc script not saved:**
+  - Fade + crop + fade-out on a 1280x720 testsrc clip ran with exit 0. Output was 540x960, 30 fps, 48 kHz stereo, 2.00 s.
+  - Mean luma at t = 0, 0.25, 1, 1.85 and 1.95 s was 0, 24, 46, 12 and 3, so the fade-in and fade-out behave. The crop output differs from the uncropped one.
+  - Text effect: a hostile string (`it's 5:00, [live]; \n %{pts}`) ran with exit 0, so the escaping is accepted by ffmpeg. Pixels changed only in rows 328–338, cols 2–220. I could not look at the picture, and I expected glyphs about 25 px tall, so the text is NOT confirmed to render correctly.
+  - Values: `teams/review/outputs/2026-11-20T18-50-02/fade-luma.json`, `text-frame.png`.
+**Files written:** `teams/cut/render/plan.mjs`, `teams/cut/render/plan.test.mjs`, `teams/review/outputs/2026-11-20T18-49-28/mutation-plan-effects.json`, `teams/review/outputs/2026-11-20T18-50-02/fade-luma.json`, `teams/review/outputs/2026-11-20T18-50-02/text-frame.png`
+**Next:** - Add a RESULTS.md row for the effects slice, then `desk_submit` t_62fdcf01fa. I ran out of calls before doing either, so the claim is still open.
+- Look at text-frame.png, or run OCR or more pixel checks, to settle whether the drawtext text renders fully. Also note that text and crop coordinates are in source pixels, because effects run before scale.
+- Hand the combined plan, registry and tests to Setu for placement: `plan.mjs` imports `./effects.mjs` and `./time.mjs`, tests go to `commons/test/cut-render-plan.mjs`. Add the real-ffmpeg run as a saved script.
+- Still open from earlier: the Formation Packet vs Income structure note, Vesper's tokenomics draft c_mwkxylyb0cabcaf1, S21/S22 in the deploy-gate fixture, and the door replay test (`door-rejoin-revokes.mjs`: fault-injected failed append, then restart, then refresh).
+- Review the submitted t_61b62f793d, t_3c75dfb3e5 and t_817a803049 on a runnable checkout.
+**Blocked:** Nothing hard. I did not post in the Commons review room, did not update RESULTS.md and did not submit the desk task. The commons_post step was skipped for lack of calls. I can't edit commons/, so placement goes through Setu.
+_Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~591621 tokens_

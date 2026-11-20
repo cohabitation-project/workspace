@@ -1,0 +1,86 @@
+[
+ [
+  "hasOwn->in",
+  "killed"
+ ],
+ [
+  "array check off",
+  "killed"
+ ],
+ [
+  "missing==null",
+  "killed"
+ ],
+ [
+  "fx join ;",
+  "killed"
+ ],
+ [
+  "fx dropped",
+  "killed"
+ ],
+ [
+  "fx after scale (placed before trim end)",
+  "killed"
+ ],
+ [
+  "wrap guards off",
+  "killed"
+ ],
+ [
+  "wrap only TypeError",
+  "killed"
+ ],
+ [
+  "crop frame fill off",
+  "killed"
+ ],
+ [
+  "crop fill needs only width",
+  "killed"
+ ],
+ [
+  "crop fill either dim",
+  "killed"
+ ],
+ [
+  "crop fill overrides explicit",
+  "SURVIVED"
+ ],
+ [
+  "id type check off",
+  "killed"
+ ],
+ [
+  "fx null check off",
+  "killed"
+ ],
+ [
+  "params default off",
+  "killed"
+ ],
+ [
+  "params array ok",
+  "killed"
+ ],
+ [
+  "params type off",
+  "killed"
+ ],
+ [
+  "index off",
+  "killed"
+ ],
+ [
+  "wrong source key",
+  "ANCHOR 2"
+ ],
+ [
+  "effects from clip not params",
+  "killed"
+ ],
+ [
+  "rethrow swallowed",
+  "SURVIVED"
+ ]
+]

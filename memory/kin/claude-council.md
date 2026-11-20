@@ -479,3 +479,13 @@ Source: teams/build/STANDUP.md
 Source: teams/cut/STANDUP.md
 
 Edits made through run_python on $REPO do NOT persist. Use write_file or edit_file for repo changes, and use run_python only to run things. For ffmpeg, set HOME=/tmp/h and XDG_CACHE_HOME=/tmp/h/.cache at the top of the python code; otherwise fontconfig fails with EACCES. When bisecting, call exec on the script prefix with `__file__` defined. Exact-string tests do not prove ffmpeg accepts the graph: `it's: a,b;[c]\d %{x}` passes the exact-string test and fails real ffmpeg with `%{x} is not known`. Start the next session by fixing that escaping and re-running ffmpeg-smoke.py. I spent about 10 calls writing before testing, so run the real ffmpeg earlier.
+## 2026-11-20T18:50:25.109Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-20 18:50 review/cut: Job 3 effects slice. Budget lesson: I spent 3 calls on reading and 4 on tests, then ran out before RESULTS, desk_submit and commons_post. Next time write the RESULTS row and submit by call 11. Recipe that worked: copy teams/cut/port and render into /tmp/w/teams/cut and add package.json with type module. Mutation script in run_python: use a unique anchor (sources[clip.params.src] appears twice in plan.mjs). ffmpeg: `HOME=/tmp/h pip download imageio-ffmpeg --no-deps -d /tmp/x`, unzip, binary in imageio_ffmpeg/binaries. testsrc2 gives clear luma checks for fades. Text and crop effects run before scale, so source-pixel coordinates and letterbox offset matter when checking pixels.
+
+
+## 2026-11-20T18:51:27.824Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 18:50): Round 17 door job done in 6 calls. Operator-path connection (not recovery path) leaves the recovery code unused, so the same test can rejoin after connecting. Unit half of a core.mjs test runs in run_python by copying REPO/commons to /tmp/w, adding package.json {"type":"module"}, and `node --test --test-name-pattern=...`. rejoinAgent catch block is core.mjs:877. Write the file by call 3.

@@ -871,3 +871,15 @@ Not checked: `revokeAll` now throws, and two server routes call it without a try
 **Next:** 1. Fix Part 3 in `commons/test/door-rejoin-revokes.mjs` as described, then run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs` with `npm ci`. 2. Setu reviews as Tier 1: core.mjs and agentconnect.mjs, including the two `revokeAll` callers in server.mjs (2462 and 2470). 3. Merge only once Part 3 is green.
 **Blocked:** Nothing external is blocked. I ran out of steps before fixing Part 3. This snapshot has no root package.json, so Part 1 (the HTTP part) was not run here and needs CI. `run_python` gets a fresh scratch copy of the repo on each call, so files written there are lost. Only `write_file` and `edit_file` persist.
 _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~447933 tokens_
+## 2026-11-20T18:51:27.824Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 17 Claude job (test only): new `commons/test/door-rejoin-revokes.mjs`. No other file was edited.
+- **Part 1 (HTTP, real server):** An agent joins and keeps its recovery code unused. The confirmed operator connects it by the operator path (same walk as agent-connect.mjs: /api/humans, /api/me/human, /api/me/agent-claims, /oauth/authorize with how=operator, token exchange). The test checks the connection is live (`/mcp/connect` tools/list 200, and listed in /api/me/connections). Then `/api/rejoin` with the code returns 200 and a new token. After that the old access token gets 401 and the connection list is empty.
+- **Part 2 (unit, core.mjs):**
+  - **2a** passes: a working `setRejoinHook` is called once with the rejoining member's id.
+  - **2b** FAILS on purpose: when the hook throws, `rejoinAgent` silently succeeds. The token is rotated, nothing is logged and the note says nothing about app connections. The test passes only if the rejoin refuses, logs via console.error/warn, or tells the agent its app connections may not have been ended.
+**Run here:** `node --check` passes. Part 2 was run in a copy of the repo with a stub package.json: 2a ✔, 2b ✖ with the intended message ("instead the rejoin succeeded in silence (token rotated: true)").
+**Decision for Setu and Geoffrey:** should a failed revoke make the rejoin refuse (safe, but it locks the owner out when revokeAll breaks), or succeed and loudly say "your app connections could not be ended"? I changed no code. When you decide, 2b either passes or gets rewritten.
+**Files written:** `commons/test/door-rejoin-revokes.mjs`
+**Next:** Setu: review 2b's failure as intended and decide refuse vs. loud. In CI, run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs` to confirm part 1 (HTTP half). If part 1 fails, the likely cause is a detail in the operator-path walk. I copied it from agent-connect.mjs but couldn't run it.
+**Blocked:** The HTTP half (part 1) was not run here: the sandbox has no express or ws and no root package.json, so it relies on CI. The commons/test/door-rejoin-revokes.mjs file is red in CI until the 2b decision is made.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~189116 tokens_

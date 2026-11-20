@@ -20,15 +20,47 @@
 // split would buffer frames between far-apart trims.
 //
 // Import paths: written to run from teams/cut/render/. When placed at commons/lib/cut/plan.mjs,
-// change "../port/time.mjs" to "./time.mjs", and "./registry.mjs" to "./effects.mjs" (where the
-// registry is placed, beside it).
+// change "../port/time.mjs" to "./time.mjs".
 
 import { TICKS_PER_SECOND, clampRetimeRate, getSourceSpanAtClipTime } from "../port/time.mjs";
+// Effects slice (Job 3): when placed at commons/lib/cut/plan.mjs this becomes "./effects.mjs"
+// (Kimi's registry is placed there under that name).
 import { registry } from "./registry.mjs";
 
 export const AUDIO_RATE = 48000;
 
 export class RenderPlanError extends Error {}
+
+// A clip's `params.effects: [{ id, params }]` become video filters, in array order, placed AFTER the
+// trim/retime/trim and BEFORE the scale/pad normalise step. So fade times are seconds of the clip's own
+// output (0 = the clip's first frame, after retime), and crop/text coordinates are in SOURCE pixels.
+// The registry's API is used as-is: registry[id].toFilter(params) -> one filter string.
+// - unknown id (checked with Object.hasOwn, so "constructor"/"__proto__" are unknown too) -> RenderPlanError
+// - a registry guard that throws TypeError/RangeError is rethrown as RenderPlanError naming the clip and effect
+// - crop: if the caller gave `sources[src] = { width, height }` and the effect has no frameWidth/frameHeight,
+//   they are filled in so the registry's "rectangle fits the frame" guard runs.
+function effectFilters(clip, sources) {
+	const list = clip.params?.effects;
+	if (list === undefined) return [];
+	if (!Array.isArray(list)) throw new RenderPlanError(`clip ${clip.id}: params.effects must be an array`);
+	return list.map((fx, k) => {
+		const where = `clip ${clip.id} effect #${k}`;
+		if (!fx || typeof fx !== "object" || typeof fx.id !== "string") throw new RenderPlanError(`${where}: needs a string id`);
+		if (!Object.hasOwn(registry, fx.id)) throw new RenderPlanError(`${where}: unknown effect id ${JSON.stringify(fx.id)}`);
+		let params = fx.params ?? {};
+		if (typeof params !== "object" || Array.isArray(params)) throw new RenderPlanError(`${where} (${fx.id}): params must be an object`);
+		if (fx.id === "crop" && params.frameWidth === undefined && params.frameHeight === undefined) {
+			const size = sources[clip.params.src];
+			if (Number.isInteger(size?.width) && Number.isInteger(size?.height)) params = { ...params, frameWidth: size.width, frameHeight: size.height };
+		}
+		try {
+			return registry[fx.id].toFilter(params);
+		} catch (e) {
+			if (e instanceof TypeError || e instanceof RangeError) throw new RenderPlanError(`${where} (${fx.id}): ${e.message}`);
+			throw e;
+		}
+	});
+}
 
 // Ticks -> ffmpeg seconds text. 6 decimals = 1 microsecond, far under one frame; trailing zeros trimmed.
 export function secs(ticks) {
@@ -59,43 +91,6 @@ function checkSrc(src) {
 	if (typeof src !== "string" || src.length === 0 || /[\0\r\n]/.test(src)) {
 		throw new RenderPlanError("each main-track clip needs params.src: a non-empty single-line string");
 	}
-}
-
-// Per-clip effects (Job 3 integration). ASSUMPTION (ours, not classic's): a clip carries
-// `effects: [{ id: "crop"|"fade"|"text", params }]`. The registry works in SECONDS; the plan works in
-// TICKS, so the fade's `startTicks`/`durationTicks` (relative to the clip's start on the output) are
-// converted here. Stages: crop runs on the SOURCE frame (before scale/pad); fade and text run on the
-// finished output frame (after format), so text coordinates are output pixels. Within a stage, list order.
-// An unknown effect id or a bad param THROWS; effects are never silently dropped.
-const PRE_SCALE = new Set(["crop"]);
-
-function effectFragments(clip) {
-	const pre = [];
-	const post = [];
-	const list = clip.effects ?? [];
-	if (!Array.isArray(list)) throw new RenderPlanError(`clip ${clip.id}.effects must be an array`);
-	for (const fx of list) {
-		const entry = Object.hasOwn(registry, fx?.id) ? registry[fx.id] : undefined;
-		if (!entry) throw new RenderPlanError(`clip ${clip.id}: unknown effect ${JSON.stringify(fx?.id)}`);
-		let params = { ...(fx.params ?? {}) };
-		if (fx.id === "fade") {
-			const { startTicks = 0, durationTicks, direction = "in" } = params;
-			requireInt(`${clip.id} fade.startTicks`, startTicks, { min: 0 });
-			requireInt(`${clip.id} fade.durationTicks`, durationTicks, { min: 1 });
-			if (startTicks + durationTicks > clip.duration) {
-				throw new RenderPlanError(`clip ${clip.id}: fade ${secs(startTicks)}s+${secs(durationTicks)}s runs past the clip (${secs(clip.duration)}s)`);
-			}
-			params = { direction, start: Number(secs(startTicks)), duration: Number(secs(durationTicks)) };
-		}
-		let frag;
-		try {
-			frag = entry.toFilter(params);
-		} catch (e) {
-			throw new RenderPlanError(`clip ${clip.id}: ${fx.id} effect: ${e.message}`);
-		}
-		(PRE_SCALE.has(fx.id) ? pre : post).push(frag);
-	}
-	return { pre, post };
 }
 
 export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1920, fps = 30 }) {
@@ -146,19 +141,17 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 			throw new RenderPlanError(`clip ${clip.id} asks for source up to ${secs(trimEnd)}s but the source is ${secs(clip.sourceDuration)}s long`);
 		}
 
-		const fx = effectFragments(clip);
 		const i = labels.length;
 		const n = inputs.length;
 		inputs.push(clip.params.src);
 		const d = secs(clip.duration);
 		const setpts = rate === 1 ? "setpts=PTS-STARTPTS" : `setpts=(PTS-STARTPTS)/${num(rate)}`;
+		const fx = effectFilters(clip, sources);
 		chains.push(
 			`[${n}:v]trim=start=${secs(trimStart)}:end=${secs(trimEnd)},${setpts},trim=end=${d},` +
-			[...fx.pre,
-				`scale=${width}:${height}:force_original_aspect_ratio=decrease`,
-				`pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2`,
-				"setsar=1", `fps=${fps}`, "format=yuv420p", ...fx.post].join(",") +
-			`[v${i}]`,
+			(fx.length ? `${fx.join(",")},` : "") +
+			`scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,` +
+			`setsar=1,fps=${fps},format=yuv420p[v${i}]`,
 		);
 		if (sources[clip.params.src]?.hasAudio === false) {
 			chains.push(`anullsrc=r=${AUDIO_RATE}:cl=stereo,atrim=duration=${d},asetpts=PTS-STARTPTS[a${i}]`);

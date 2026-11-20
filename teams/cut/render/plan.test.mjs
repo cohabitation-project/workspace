@@ -239,3 +239,128 @@ test("seeded sweep: random timelines always yield a closed label graph and the r
 	}
 	assert.ok(withGap > 10 && withRetime > 10, "sweep must exercise gaps and retime");
 });
+
+// ---- effects slice: params.effects -> registry filters, after trim/retime and before normalise ----
+
+function fxClip(effects, extra = {}, src = "/m/a.mp4", dur = 2 * T) {
+	return clip("a", src, 0, dur, { ...extra, params: { src, effects } });
+}
+
+test("fade in + crop + fade out on one clip: exact string, in array order, between trim and scale", () => {
+	const tracks = timeline(fxClip([
+		{ id: "fade", params: { direction: "in", start: 0, duration: 0.5 } },
+		{ id: "crop", params: { width: 640, height: 360, x: 10, y: 20 } },
+		{ id: "fade", params: { direction: "out", start: 1.5, duration: 0.5 } },
+	]));
+	const plan = buildRenderPlan({ tracks });
+	assert.equal(
+		plan.filterComplex.split(";")[0],
+		"[0:v]trim=start=0:end=2,setpts=PTS-STARTPTS,trim=end=2," +
+		"fade=t=in:st=0:d=0.5,crop=w=640:h=360:x=10:y=20,fade=t=out:st=1.5:d=0.5," +
+		`${NORM}[v0]`,
+	);
+	assertLabelsClosed(plan.filterComplex, 1);
+	assert.deepEqual(plan.ignored, []);
+});
+
+test("effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter", () => {
+	const tracks = timeline(
+		fxClip([{ id: "fade", params: { duration: 1 } }], {}, "/m/a.mp4", T),
+		clip("b", "/m/b.mp4", T, T),
+	);
+	const [v0, a0, v1] = buildRenderPlan({ tracks }).filterComplex.split(";");
+	assert.match(v0, /,trim=end=1,fade=t=in:st=0:d=1,scale=/);
+	assert.ok(!a0.includes("fade"));
+	assert.ok(!v1.includes("fade"));
+});
+
+test("effects with retime: the fade time is measured on the clip's output, after setpts", () => {
+	const tracks = timeline(fxClip([{ id: "fade", params: { direction: "out", start: 0.5, duration: 0.5 } }], { retime: { rate: 2 } }, "/m/a.mp4", T));
+	const fc = buildRenderPlan({ tracks }).filterComplex;
+	assert.match(fc, /trim=start=0:end=2,setpts=\(PTS-STARTPTS\)\/2,trim=end=1,fade=t=out:st=0\.5:d=0\.5,scale=/);
+});
+
+test("an empty or missing effects list changes nothing; an effect with no params uses the registry defaults", () => {
+	const plain = buildRenderPlan({ tracks: timeline(clip("a", "/m/a.mp4", 0, T)) }).filterComplex;
+	assert.equal(buildRenderPlan({ tracks: timeline(fxClip([], {}, "/m/a.mp4", T)) }).filterComplex, plain);
+	const dflt = buildRenderPlan({ tracks: timeline(fxClip([{ id: "fade" }], {}, "/m/a.mp4", T)) }).filterComplex;
+	assert.match(dflt, /trim=end=1,fade=t=in:st=0:d=1,scale=/);
+});
+
+test("a source size with only one dimension is ignored, not half-applied", () => {
+	const crop = [{ id: "crop", params: { width: 640, height: 360, x: 700, y: 0 } }];
+	assert.doesNotThrow(() => buildRenderPlan({ tracks: timeline(fxClip(crop)), sources: { "/m/a.mp4": { width: 1280 } } }));
+	assert.doesNotThrow(() => buildRenderPlan({ tracks: timeline(fxClip(crop)), sources: { "/m/a.mp4": { height: 720 } } }));
+});
+
+test("an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included)", () => {
+	const bad = (effects, re) => assert.throws(() => buildRenderPlan({ tracks: timeline(fxClip(effects)) }), (e) => e instanceof RenderPlanError && re.test(e.message));
+	bad([{ id: "sparkle" }], /clip a effect #0: unknown effect id "sparkle"/);
+	bad([{ id: "fade" }, { id: "blur" }], /effect #1: unknown effect id "blur"/);
+	bad([{ id: "constructor" }], /unknown effect id "constructor"/);
+	bad([{ id: "__proto__" }], /unknown effect id "__proto__"/);
+	bad([{ id: "toString" }], /unknown effect id "toString"/);
+});
+
+test("malformed effects entries are refused, not skipped", () => {
+	const bad = (effects, re) => assert.throws(() => buildRenderPlan({ tracks: timeline(fxClip(effects)) }), (e) => e instanceof RenderPlanError && re.test(e.message));
+	bad("fade", /must be an array/);
+	bad(null, /must be an array/);
+	bad({ id: "fade" }, /must be an array/);
+	bad([null], /needs a string id/);
+	bad([{ id: 5 }], /needs a string id/);
+	bad([{ params: {} }], /needs a string id/);
+	bad([{ id: "fade", params: [1] }], /params must be an object/);
+	bad([{ id: "fade", params: "x" }], /params must be an object/);
+});
+
+test("a registry guard failure comes out as a RenderPlanError that names the effect", () => {
+	const bad = (effects, opts, re) => assert.throws(() => buildRenderPlan({ tracks: timeline(fxClip(effects)), ...opts }), (e) => e instanceof RenderPlanError && re.test(e.message));
+	bad([{ id: "fade", params: { duration: 0 } }], {}, /effect #0 \(fade\).*duration/);
+	bad([{ id: "fade", params: { direction: "sideways" } }], {}, /\(fade\).*direction/);
+	bad([{ id: "crop", params: { width: 0 } }], {}, /\(crop\).*width/);
+	bad([{ id: "text", params: { text: "a\nb" } }], {}, /\(text\).*line breaks/);
+});
+
+test("crop is checked against the source size when the caller supplies it, and not when it doesn't", () => {
+	const crop = [{ id: "crop", params: { width: 640, height: 360, x: 700, y: 0 } }];
+	assert.throws(
+		() => buildRenderPlan({ tracks: timeline(fxClip(crop)), sources: { "/m/a.mp4": { width: 1280, height: 720 } } }),
+		(e) => e instanceof RenderPlanError && /exceeds frame 1280x720/.test(e.message),
+	);
+	assert.doesNotThrow(() => buildRenderPlan({ tracks: timeline(fxClip(crop)) })); // size unknown: no check (as the registry does)
+	assert.doesNotThrow(() => buildRenderPlan({
+		tracks: timeline(fxClip([{ id: "crop", params: { width: 640, height: 360, x: 640, y: 360 } }])),
+		sources: { "/m/a.mp4": { width: 1280, height: 720 } },
+	}));
+	// an explicit frame size in the effect wins over the source map
+	assert.doesNotThrow(() => buildRenderPlan({
+		tracks: timeline(fxClip([{ id: "crop", params: { width: 640, height: 360, x: 700, y: 0, frameWidth: 1920, frameHeight: 1080 } }])),
+		sources: { "/m/a.mp4": { width: 1280, height: 720 } },
+	}));
+});
+
+test("a half-given frame size in the effect still fails, even when the source map has a size", () => {
+	const sources = { "/m/a.mp4": { width: 1280, height: 720 } };
+	assert.throws(
+		() => buildRenderPlan({ tracks: timeline(fxClip([{ id: "crop", params: { width: 64, height: 36, frameWidth: 1280 } }])), sources }),
+		(e) => e instanceof RenderPlanError && /supplied together/.test(e.message),
+	);
+});
+
+test("an error that is not a registry guard (a bug) is rethrown as itself, not hidden", () => {
+	const params = { get text() { throw new Error("boom"); } };
+	assert.throws(
+		() => buildRenderPlan({ tracks: timeline(fxClip([{ id: "text", params }])) }),
+		(e) => !(e instanceof RenderPlanError) && e.message === "boom",
+	);
+});
+
+test("text effect: hostile text is escaped by the registry and stays inside one filter in one chain", () => {
+	const text = "it's 5:00, [live]; \\n %{pts}";
+	const fc = buildRenderPlan({ tracks: timeline(fxClip([{ id: "text", params: { text, x: 10, y: 20, fontSize: 40 } }])) }).filterComplex;
+	const v0 = fc.split(/(?<!\\);/)[0]; // split on ';' not preceded by a backslash
+	assert.ok(v0.endsWith("[v0]") && v0.includes("drawtext=text='it'\\''s 5\\:00\\, \\[live\\]\\; \\\\n %{pts}':x=10:y=20:fontsize=40:fontcolor=white:expansion=none,scale="), v0);
+	assert.equal(fc.split(/(?<!\\);/).length, 3); // video chain, audio chain, concat: the text did not add a chain
+});
+
