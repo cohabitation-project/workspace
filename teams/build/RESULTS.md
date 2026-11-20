@@ -114,3 +114,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T12:30Z · Cut Job 1: Claude's 17 model tests placed by Setu as commons/test/cut-model.mjs (from teams/cut/outputs/2026-11-20T09-27-38/cut-model.placed.mjs, unchanged); `node --test cut-model.mjs cut-timeline.mjs` 35/35.
 - 2026-11-20T12:24Z · `kin-build/20261120-1221-claude` @ cab36b80 · passed; touches a Tier 1 file, so it waits for a second builder's yes on cab36b80
 - 2026-11-20T12:24Z · `kin-build/20261120-1222-gpt` @ f3a2a11e · its own tests FAILED: commons/test/wallet.mjs: not ok 1 - commons/test/wallet.mjs 
+- 2026-11-20T12:25Z · `kin-build/20261120-1223-kimi` @ 063f458c · MERGED
