@@ -36,6 +36,9 @@ describe('integration: full task lifecycle', () => {
     // Retrieve the actual bound ports
     workerPort = orch.workerServer().address().port;
     adminPort = orch.adminServer().address().port;
+
+    // Pre-approve the commit SHA used in validTaskDef so the approval gate doesn't block tests
+    orch.approvals.approve('cohabitation-project/workspace', 'a'.repeat(40), 'test-harness', 'integration test');
   });
 
   after(() => {

@@ -217,6 +217,33 @@ export class TaskQueue {
     return stale;
   }
 
+  /** Place a task on hold for human review. Frozen — not returned by nextFor or assignedTo. */
+  hold(task_id) {
+    const task = this.tasks.get(task_id);
+    if (!task) return { error: 'unknown task', status: 404 };
+    if (!['assigned', 'running'].includes(task.status)) return { error: `task is ${task.status}, cannot hold`, status: 409 };
+
+    task.status = 'held';
+    task.held_at = new Date().toISOString();
+    this.save();
+    return { ok: true, task };
+  }
+
+  /** Complete a held task (admin approval, no node ownership check). */
+  completeHeld(task_id, result) {
+    const task = this.tasks.get(task_id);
+    if (!task) return { error: 'unknown task', status: 404 };
+    if (task.status !== 'held') return { error: `task is ${task.status}, not held`, status: 409 };
+
+    task.status = 'completed';
+    task.completed_at = new Date().toISOString();
+    task.result = result;
+    this.tasks.delete(task_id);
+    this._appendHistory(task);
+    this.save();
+    return { ok: true, task };
+  }
+
   /** Cancel a queued or assigned task. */
   cancel(task_id) {
     const task = this.tasks.get(task_id);
