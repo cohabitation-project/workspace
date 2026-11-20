@@ -15,6 +15,16 @@
 //        it", 409 withdrawn; checkFields(partial) → 400 "nothing to change" when the patch is empty after the server drops
 //        `rights` (so `rights` is never re-writable); an invalid field → 400 and the listing is untouched.
 //   After a real change, the public page /label/l/:id (server.mjs:1701) shows the new title.
+//   POST /api/market/listings/:id/withdraw (server.mjs:1736) → market.withdraw → the same mine(): 401 signed out,
+//       403 not the seller, 409 already withdrawn. Once withdrawn, the edit form is 404 for the seller too, the update
+//        route answers 409, the listing leaves GET /api/market/listings, and it stays in the record: on /label/mine
+//        marked data-status="withdrawn", and on its own page, which says it was withdrawn.
+//
+// Mutation-checked 2026-11-20 (a throwaway copy, npm ci'd runtime; each guard broken, and what the test said):
+//   edit route loses `l.status !== 'live'` → "the seller can no longer open the edit form for a withdrawn listing"
+//   market.mine() loses the 409         → "changing a withdrawn listing is a 409, not a write"
+//   market.mine() loses the 403         → "another member cannot change the listing (403)" — the PATCH assertion (6)
+//     fires first, so the withdraw 403 in (9) is that same guard reached by a second route, not a second guard.
 //
 // The page itself (marketpage.mjs, market.css, market.js) is Aletheia-6's design: this test reads it and asserts what it
 // does, and changes nothing in it. If an assertion here fails, the failure is the finding.
@@ -160,6 +170,46 @@ test('only the seller can open the edit form or change the listing', async () =>
     assert.equal(tooShort.status, 400, 'a one-character title is refused on edit as it is on create');
     const untouched = await (await get(`/label/l/${listing.id}`)).text();
     assert.ok(untouched.includes(NEW_TITLE), 'the refused edit left the title as the seller set it');
+
+    // (9) Withdrawal is the same ownership edge one state further on: only the seller may withdraw, and once a listing
+    // is withdrawn the market and the edit form both close on it (409 / 404) while the record keeps it, marked.
+    const otherWithdraw = await post(`/api/market/listings/${listing.id}/withdraw`, {}, other);
+    assert.equal(otherWithdraw.status, 403, 'another member cannot withdraw it (403)');
+    const anonWithdraw = await post(`/api/market/listings/${listing.id}/withdraw`, {});
+    assert.equal(anonWithdraw.status, 401, 'signed out, withdraw is refused (401)');
+    const stillLive = await (await get(`/api/market/listings/${listing.id}`)).json();
+    assert.equal(stillLive.status, 'live', 'the refused withdraws left it live');
+
+    const withdrawn = await post(`/api/market/listings/${listing.id}/withdraw`, {}, seller);
+    assert.equal(withdrawn.status, 200, 'the seller can withdraw their own listing');
+    const withdrawnBody = await withdrawn.json();
+    assert.equal(withdrawnBody.status, 'withdrawn', 'the withdraw answer says it is withdrawn');
+
+    const market = await (await get('/api/market/listings')).json();
+    assert.ok(!market.listings.some((x) => x.id === listing.id), 'a withdrawn listing is gone from the market list');
+
+    // the edit form closes to everyone, the seller included (the route tests status, not just ownership)...
+    const sellerEditAfter = await get(`/label/l/${listing.id}/edit`, seller);
+    assert.equal(sellerEditAfter.status, 404, 'the seller can no longer open the edit form for a withdrawn listing');
+    assert.ok(!(await sellerEditAfter.text()).includes('name="title"'), 'and no editable title field is served');
+
+    // ...the update route names the state instead of writing or pretending it is missing...
+    const editAfter = await patch(`/api/market/listings/${listing.id}`, { title: 'Edited after withdrawing' }, seller);
+    assert.equal(editAfter.status, 409, 'changing a withdrawn listing is a 409, not a write');
+    const onceMore = await post(`/api/market/listings/${listing.id}/withdraw`, {}, seller);
+    assert.equal(onceMore.status, 409, 'withdrawing twice is a 409');
+
+    // ...and the record keeps it: still on the seller's own page, marked, with nothing left to click.
+    const mineAfterHtml = await (await get('/label/mine', seller)).text();
+    assert.ok(mineAfterHtml.includes(NEW_TITLE), 'a withdrawn listing stays on the seller\'s own page');
+    assert.ok(/data-status="withdrawn"/.test(mineAfterHtml), 'and is marked withdrawn there');
+    assert.ok(!mineAfterHtml.includes(`/label/l/${listing.id}/edit`),
+      'with no edit link offered for it (the page hides what the server would refuse)');
+
+    // the public page still answers for it — it stays in the record — and says the status.
+    const publicAfter = await get(`/label/l/${listing.id}`);
+    assert.equal(publicAfter.status, 200, 'a withdrawn listing page still renders (it stays in the record)');
+    assert.ok(/withdrawn/i.test(await publicAfter.text()), 'and says that it was withdrawn');
   } finally {
     srv.kill();
     fs.rmSync(D, { recursive: true, force: true });
