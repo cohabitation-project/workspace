@@ -2427,7 +2427,17 @@ app.post('/oauth/authorize', oauthForm, (req, res) => {
   try {
     const out = agentconnect.decide(b, { human: me, ip: req.ip });
     console.log(`[commons] connect: decide request=${String(b.request || '').slice(0, 20)} how=${b.how} action=${b.action} result=${typeof out === 'string' ? 'denied' : `ok member=${out.member.id}`}`);
-    return res.redirect(303, typeof out === 'string' ? out : out.redirect);
+    const dest = typeof out === 'string' ? out : out.redirect;
+    // A real browser submitting this form (Sec-Fetch-Dest: document) gets a page that moves on by itself instead of a
+    // 303. Chrome applies form-action to EVERY redirect that follows a form post, not just the first: an app whose
+    // return address forwards again (Gemini's oauth-redirect.googleusercontent.com, 2026-11-20) was blocked on the
+    // second hop, so the log said result=ok and the app never got its code. A refresh from a page we served is a new
+    // navigation, which form-action does not police. API clients and tests still get the 303 they expect.
+    if (req.headers['sec-fetch-dest'] === 'document') {
+      res.setHeader('Cache-Control', 'no-store');
+      return res.type('html').send(pages.providerMessagePage(typeof out === 'string' ? 'Not connected' : 'Connected', typeof out === 'string' ? 'Returning you to your app.' : 'Approved. Returning you to your app now…', { refresh: dest, href: dest, link: 'Continue to your app' }));
+    }
+    return res.redirect(303, dest);
   } catch (e) {
     const status = e.status || 400;
     console.log(`[commons] connect: decide request=${String(b.request || '').slice(0, 20)} how=${b.how} action=${b.action} result=err:${status} ${JSON.stringify(String(e.message).slice(0, 120))}`);
