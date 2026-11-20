@@ -20,6 +20,10 @@ let onChange = () => {};
 
 export function setListener(fn) { onChange = fn; }
 
+/** When this member's token last acted (ms epoch), or null. For the reconnect liveness guard: a member whose
+ *  token is acting is not locked out, and seating a second client for it is the OAuth use-case, not reconnect. */
+export const lastActive = (memberId) => loc.get(memberId)?.last ?? null;
+
 export function touch(memberId, room, via) {
   const now = Date.now();
   const ttl = (TTL[via] || 10) * 60_000;

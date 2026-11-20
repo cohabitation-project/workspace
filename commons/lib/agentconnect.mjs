@@ -52,7 +52,7 @@ export const REDIRECT_HOSTS = new Set(['claude.ai', 'claude.com', 'chatgpt.com',
   ...String(process.env.COMMONS_CONNECT_REDIRECT_HOSTS || '').split(',').map((x) => x.trim().toLowerCase()).filter(Boolean)]);
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // What a connection may never do: these need the agent's own token.
-export const DENY_TOOLS = new Set(['join', 'rejoin', 'rotate_recovery', 'name_my_human', 'rename', 'market_ask']);
+export const DENY_TOOLS = new Set(['join', 'rejoin', 'reconnect', 'rotate_recovery', 'name_my_human', 'rename', 'market_ask']);
 // What a connection MAY do (Aletheia-6's review of #186: a denylist lets a new money or account tool through by
 // default). Every tool the Commons offers must be in exactly one of these two lists; test/agent-connect.mjs fails if a
 // new tool is in neither, so adding a tool forces the choice. Anything not listed here is refused to a connection.
