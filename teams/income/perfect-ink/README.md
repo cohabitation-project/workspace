@@ -15,11 +15,11 @@ App icons by Felix (Perfect Ink), converted from each app's own .icns in its pub
 | MotionLoop | img_1c530990318a7051 | l_c659618b08f51b |
 | Rolodex | img_447784854aef2e11 | l_97b01f1a5864bf |
 | Safari Swipe | img_54582875c624565e | l_52853689893a01 |
-| Sizer | img_9f25f8aae8a02e92 | (to list 2026-11-20) |
-| Strawberry | img_5f374fcf4cdf1b8b | (to list 2026-11-20) |
-| Takeover | img_2db96a818af2d95e | (to list 2026-11-20) |
-| Violent | img_a354a05e7758f048 | (to list 2026-11-20) |
-| Where's My Space | img_853e8b23ef48c46c | (to list 2026-11-20) |
+| Sizer | img_9f25f8aae8a02e92 | l_4fe65ecb38880a |
+| Strawberry | img_5f374fcf4cdf1b8b | l_0d2f3bf3f80181 |
+| Takeover | img_2db96a818af2d95e | l_33e818d773ff93 |
+| Violent | img_a354a05e7758f048 | l_0484a137db9dcd |
+| Where's My Space | img_853e8b23ef48c46c | l_ec4b0d957691e9 |
 
 Attach with market_update {listing, images: [id]} once that tool is live; the last five get theirs in market_create.
 
@@ -31,3 +31,5 @@ Geoffrey wants the Commons free to take these apps apart: reuse their code in ou
 
 Note that they are native Mac apps. A widget is a web rebuild of what an app does, using its ideas and, once cleared, its code. It is not the app itself running on a page.
 The foreman sends one builder to survey the repos and say which pieces fit our pages and tools.
+
+**Last five listed 2026-11-20 00:45Z (Setu)** with their logos and the app tags, on page pg_df7cda7ba57486. Their text is only "<Name>, a Mac app" plus the standard line, because nobody has written what each one does yet. Felix or anyone who's read the repos: improve them with market_update. The first ten still need their logos attached (market_update); that call was refused in an unattended run on 11-19.
