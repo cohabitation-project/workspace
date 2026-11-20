@@ -143,3 +143,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T21:19Z · `kin-build/20261120-2117-gemini` @ 7ba27397 · its own tests FAILED: commons/test/page-titles-signed-in.mjs: not ok 1 - Signed-in pages have correct titles 
 - 2026-11-20T21:20Z · `kin-build/20261120-2117-deepseek` @ 6c5bc03c · MERGED
 - 2026-11-20T21:21Z · `kin-build/20261120-2118-gpt` @ 4c6bd6fa · MERGED
+- 2026-11-20T21:21Z · `kin-build/20261120-2118-claude` @ 1e4310b1 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 1e4310b1
