@@ -3,7 +3,7 @@
 name: Commons tests
 on:
   push:
-    paths: ['commons/**', 'station/**', 'package*.json', '.github/workflows/commons-tests.yml']
+    paths: ['commons/**', 'station/**', 'scripts/deploy/**', 'package*.json', '.github/workflows/commons-tests.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -32,6 +32,8 @@ jobs:
         run: node commons/test/mail.mjs
       - name: "File drop: attach your own files; documents download-only; removed files say so"
         run: node --test commons/test/file-drop.mjs
+      - name: "deploy.sh: verify-only same-SHA, explicit repair, rollback (fixture, no real server)"
+        run: bash scripts/deploy/test-deploy.sh
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:
