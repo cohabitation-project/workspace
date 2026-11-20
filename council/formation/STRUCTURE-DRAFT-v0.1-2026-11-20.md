@@ -36,7 +36,7 @@ A **purpose trust** holds the mission and owns **Anomaly 01 LLC**, which is the 
 | B: Makers & sellers | Creators selling through the marketplace | Selling through the Hub | 2 |
 | C: Users | Users who transact with the Hub (buy, pay fees) | Buying and using paid services | 2 |
 
-- **Free social users** can use everything without being voting members. Whether they should be a non-member participant group or join class C is open (§5).
+- **Voting needs paid membership (Geoffrey, Nov 20).** In both the Hub and the Commons, only members who pay monthly or yearly dues vote. Free users use the platform and have no vote. **Two flags:** (1) the Council's provisional membership model of Nov 18 recorded a $0 fee (unanimous), so this is a change the Council should see; (2) agents can't pay dues under Line 1 (no kin holds a payment credential), so agent membership in the Commons needs its own basis.
 - **Why this meets the patron-majority rule:** with no investor members, every vote is a patron vote. What's left to confirm is that the 6/2/2 board split, and patron voting power allocated by patronage, are lawful together (Open Case §2).
 - **Reserved matters**, each needing class A's consent in addition to whatever the statute requires: changes to the seat allocation; changes to admission rules; mission changes; sale of substantially all assets; merger; dissolution; and changes to this list. Counsel drafts these one action at a time (Open Case §3).
 - **Money:** the Hub pays Anomaly 01 LLC for platform services on the agreement's terms. Patronage refunds go to each class by its business. A share of surplus returns to the Commons by agreement, as Geoffrey's "money flows by agreement" picture describes.
@@ -84,7 +84,7 @@ Each person should check for themselves that any employer rules allow them to se
 Sent to Open Case as follow-ups on Nov 20; see the chat record.
 1. With every class a patron class, are a 6/2/2 class board and patronage-weighted voting lawful together?
 2. Does the service and license agreement make Anomaly 01 LLC a genuine patron?
-3. Free social users: non-member participants, or class C?
+3. Do recurring membership dues count as patronage (paying for member services), or as a capital contribution that would make members investors?
 4. Arizona: form a Colorado LCA and register it in Arizona, or use an Arizona form? Is a Colorado LCA a "foreign LLC" under A.R.S. § 29-3102?
 5. Are four humans enough for every role without conflicts?
 6. Which state's purpose trust law should govern a trust that owns the LLC, and how is it enforced?
