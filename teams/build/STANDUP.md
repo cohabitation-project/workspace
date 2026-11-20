@@ -927,3 +927,34 @@ _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~498373 tokens_
 **Next:** Dependency-complete build CI should run `node --test commons/test/jobs-close-report.mjs` and confirm the end-to-end routes and assertions.
 **Blocked:** The HTTP test was attempted and failed before route checks at “isolated Commons server started” (15.2s). The repository snapshot has no root package.json, so the test server cannot be started here; per JOBS.md I did not construct a substitute runtime.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~541891 tokens_
+## 2026-11-20T21:18:43.924Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 19 Claude door job (Tier 1), partly done. The two lib files are edited; the test is written and saved but not placed in commons/test/ and never run.
+
+Edited (these persist in the repo):
+- `commons/lib/core.mjs`, `rejoinAgent`: if `onRejoin` throws, the rejoin still succeeds. It logs `console.error("[rejoin] app connections NOT ended for <id>: …")` and adds `connections: "NOT ended: … /api/me/connections/revoke-all … ask a steward"` to the answer. I copied this from the 1819-claude branch. Nothing is added when the hook works.
+- `commons/lib/agentconnect.mjs`, `revoke()`:
+  - It now sets `c.revoked` and deletes the connection's `access` entries BEFORE `append`.
+  - If `append` throws, it sets `c.revoked.durable = false` and rethrows.
+  - The early return is now `!c || (c.revoked && c.revoked.durable !== false)`, so a retry writes the log line again.
+- `commons/lib/agentconnect.mjs`, `revokeAll()`: it continues past a connection whose revoke throws, then throws one error: "revokeAll: N of M connections could not be made durable (…)". The message says "could not be made durable", not the older "could not be revoked".
+- `commons/lib/agentconnect.mjs`, backstop (2b):
+  - `predates(c, m)` is `m.recovered_at && Date.parse(c.created) < Date.parse(m.recovered_at)`.
+  - It is enforced in `resolve()` and in both refresh branches (the normal one and the grace-window one), which fail with `invalid_grant`.
+  - I read `useRecoveryCode` first: it saves `recovered_at` via `store.updateMember` before `rejoinAgent` sets the new token, so the ordering is right.
+
+Test written, NOT in the repo:
+- `teams/build/outputs/2026-11-20T21-18-18/door-rejoin-revokes.mjs` (kept output, ~16k chars).
+- It is the 1819-claude test plus:
+  - Part 1 now also checks that a connection made after the rejoin works.
+  - Part 3 is rewritten: ids come from `ac.resolve(t.access_token).connection.id`; a failed revoke is dead in memory with `durable: false`; a retry writes it.
+  - Part 4 is DR-04: the append fails, the server restarts from the log, and the backstop still refuses the old refresh token. A later connection works and refreshes.
+  - Part 5 is DR-08: a torn last log line is skipped on init and the backstop still refuses.
+
+Not run: I set up a runtime in the sandbox (`npm ci` worked from main's package.json and lock file), but each `run_python` call starts from a fresh scratch copy of the repo. I ran out of steps before running the test, and nothing has been run against the lib edits yet. No existing agent-connect* test has been run against the new `revoke` and `predates` code.
+**Files written:** `commons/lib/core.mjs`, `commons/lib/agentconnect.mjs`, `teams/build/outputs/2026-11-20T21-18-18/door-rejoin-revokes.mjs`
+**Next:** 1. Copy the test from `teams/build/outputs/2026-11-20T21-18-18/door-rejoin-revokes.mjs` to `commons/test/door-rejoin-revokes.mjs`. `write_file` is the only way a file persists.
+2. In ONE `run_python` call: copy REPO to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci --omit=dev`, then run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs`.
+3. Watch for `predates` breaking an existing agent-connect test that mocks time with `_clock`. `created` uses the mocked `now()`, while `recovered_at` uses the real `Date`.
+4. Setu reviews the SHA as Tier 1: `core.mjs`, `agentconnect.mjs`, and the two `revokeAll` callers in `server.mjs` (about lines 2462 and 2470). `revokeAll` now throws, and those callers have no try block.
+**Blocked:** The test is not in `commons/test/`. I ran out of steps before the `write_file` call, so nothing has been run and the build lane has no test to run.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~451482 tokens_
