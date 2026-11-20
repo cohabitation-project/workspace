@@ -250,6 +250,16 @@ function homeCenter(me) {
   const teams = rotate(live.filter((l) => market.isMixed(l) || l.provider.kind === 'team'), 'teams').slice(0, 8).map(listingCard);
   const music = [...rotate(artists(), 'artists').map(artistCard), ...of('music')].slice(0, 10);
   const TILE = { music: ['Music', 'Artists and releases'], art: ['Art and handmade', 'Gallery and workshop'], video: ['Film and design', 'Visual stories'], writing: ['Books and writing', 'Pages and poems'], software: ['Software and hardware', 'Tools and inventions'], services: ['Services', 'Work and commissions'], classifieds: ['Classifieds', 'Community exchange'] };
+  // Aletheia-6's approved seven-tile grid (Geoffrey approved it, 2026-11-19): one picture with each tile's words
+  // drawn in, shown tile by tile as a sprite, so there is no second copy of the words on top. The link keeps its
+  // accessible name. Rects are [x, y, w, h] in the 1280x640 source, inset past the drawn gold frame.
+  const SPRITE = { id: 'img_0c2b9b1b14d02449', W: 1280, H: 640, rects: { music: [16, 19, 306, 285], art: [331, 19, 304, 285], video: [645, 19, 304, 285], writing: [958, 19, 306, 285], software: [16, 318, 411, 274], services: [438, 318, 405, 274], classifieds: [853, 318, 411, 274] } };
+  const sprite = images.get(SPRITE.id) ? `/images/${SPRITE.id}` : null;
+  const spriteStyle = (k) => { const i = 5; const [x0, y0, w0, h0] = SPRITE.rects[k]; const [x, y, w, h] = [x0 + i, y0 + i, w0 - 2 * i, h0 - 2 * i]; const pct = (a, b) => `${(b ? (a / b) * 100 : 0).toFixed(3)}%`; return `background-image:url('${sprite}');background-size:${pct(SPRITE.W, w)} ${pct(SPRITE.H, h)};background-position:${pct(x, SPRITE.W - w)} ${pct(y, SPRITE.H - h)};aspect-ratio:${w}/${h}`; };
+  const spriteGrid = sprite ? (() => {
+    const spriteTiles = Object.keys(market.CATEGORIES).filter((k) => SPRITE.rects[k]).map((k) => { const n = live.filter((l) => l.category === k).length; return `<a class="mh-sprite-tile mh-row-${SPRITE.rects[k][1] < 300 ? 1 : 2}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}${n ? `, ${n} listed` : ''}" style="${spriteStyle(k)}"></a>`; }).join('');
+    return `<nav class="mh-sprite-grid" aria-label="Market sections">${spriteTiles}</nav>`;
+  })() : null;
   const tiles = Object.keys(market.CATEGORIES).map((k) => {
     const img = blockImage(k) || firstImage(live.find((l) => l.category === k && firstImage(l)) || {});
     const n = live.filter((l) => l.category === k).length;
@@ -277,7 +287,7 @@ function homeCenter(me) {
     <section id="mh-explore" class="mh-explore" aria-labelledby="mh-categories-title">
       <div class="mh-section-heading"><div><p class="mh-kicker">Explore the marketplace</p><h2 id="mh-categories-title">Explore by category</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="/label?cat=music">Explore music <span aria-hidden="true">↗</span></a></div>
       <form class="mk-searchbar mv-search mh-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" placeholder="Search music, art, books, software, services and makers…"><button class="btn small">Search</button></form>
-      <nav class="mv-grid mh-category-grid" aria-label="Market sections">${tiles}</nav>
+      ${spriteGrid || `<nav class="mv-grid mh-category-grid" aria-label="Market sections">${tiles}</nav>`}
     </section>
     <div class="mh-featured" aria-label="Featured marketplace listings">
       <div class="mh-section-heading"><div><p class="mh-kicker">Discover what members make</p><h2>Featured on Cohabi</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="#mh-about">How the market works <span aria-hidden="true">↗</span></a></div>
