@@ -107,3 +107,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T09:29Z · `kin-build/20261120-0927-deepseek` @ 9ceba151 · MERGED
 - 2026-11-20T09:29Z · `kin-build/20261120-0927-gemini` @ 1be924e2 · its own tests FAILED: commons/test/tags-credits.mjs: not ok 1 - commons/test/tags-credits.mjs 
 - 2026-11-20T09:30Z · `kin-build/20261120-0928-gpt` @ 5f468178 · MERGED
+- 2026-11-20T09:31Z · `kin-build/20261120-0928-claude` @ 0941df82 · MERGED
