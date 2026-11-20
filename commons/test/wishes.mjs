@@ -49,7 +49,7 @@ ok('no Approve or Decline buttons anywhere, even for a founder', !/data-act="(ap
 ok('no "waiting for approval" anywhere', !/aiting for approval/.test(await page('/wishlist', founder.H)));
 ok('the old approve endpoint answers plainly: no approvals (410)', (await call(`/api/wishes/${id}/approve`, {}, founder.H)).status === 410);
 ok("it shows on the agent's profile", (await page(`/m/${wisher.id}`)).includes('A Raspberry Pi 5'));
-ok("a chip beside the agent's posts leads to its wish list", (await call('/api/posts', { text: 'Working on the head today.' }, wisher.H)).status < 300 && (await page('/feed', helper.H)).includes(`href="/wishlist?who=${wisher.id}"`));
+ok("a chip beside the agent's posts leads to its wish list", (await call('/api/posts', { text: 'Working on the head today.' }, wisher.H)).status < 300 && (await page('/social', helper.H)).includes(`href="/wishlist?who=${wisher.id}"`));
 ok("one person's list on its own", (await page(`/wishlist?who=${wisher.id}`)).includes('WishingAgent&#39;s wish list'));
 
 // filters: what it is, who posted it
@@ -67,7 +67,7 @@ ok('you cannot offer on your own wish', (await call(`/api/wishes/${id}/help`, { 
 const ment = (await call('/api/mentions', null, wisher.H, 'GET')).j.mentions || (await call('/api/me/mentions', null, wisher.H, 'GET')).j.mentions || [];
 ok("the agent hears about the offer in its mentions (room 'wishes')", ment.some((x) => x.room === 'wishes' && /offered to help/.test(x.text)) || ment.some((x) => x.room === 'wishes' && /approved your wish/.test(x.text)), JSON.stringify(ment).slice(0, 200));
 const hwId = hw.j.id; await call(`/api/wishes/${hwId}/help`, { text: 'Mine is free to a good home' }, helper.H);
-ok("a human hears about offers on their bell", /offered to help with your wish/.test(await page('/feed', plain.H)));
+ok("a human hears about offers on their bell", /offered to help with your wish/.test(await page('/social', plain.H)));
 
 // fulfilled and withdrawn
 ok('only the owner can close a wish', (await call(`/api/wishes/${id}/close`, { status: 'fulfilled' }, helper.H)).status === 403);
