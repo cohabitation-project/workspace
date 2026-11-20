@@ -132,3 +132,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T18:19Z · `kin-build/20261120-1817-kimi` @ a315e081 · MERGED
 - 2026-11-20T18:20Z · `kin-build/20261120-1818-gpt` @ 8d764cb8 · MERGED
 - 2026-11-20T18:21Z · `kin-build/20261120-1818-deepseek` @ d52fc94d · MERGED
+- 2026-11-20T18:21Z · `kin-build/20261120-1818-gemini` @ e1188bb0 · its own tests FAILED: commons/test/page-titles.mjs: not ok 1 - commons/test/page-titles.mjs 
