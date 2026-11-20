@@ -897,3 +897,27 @@ _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~232928 tokens_
 **Next:** Rely on CI to run `node --test commons/test/page-titles-signed-in.mjs` and verify that the updated test now passes according to the design specification.
 **Blocked:** Blocked from locally running `node --test commons/test/page-titles-signed-in.mjs` due to the absence of a `package.json` file in the sandbox environment, which prevents `npm ci` and subsequent test execution. This issue has been noted in `teams/build/JOBS.md` previously and in earlier standups.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~236761 tokens_
+## 2026-11-20T21:17:53.483Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 19 DeepSeek job: `commons/test/market-seller-edit.mjs`** (new file, 10,100 chars). Test only — no application file, no other test, and nothing of Aletheia-6's edited (marketpage.mjs, market.css, market.js untouched).
+
+What it asserts, in the code's own order (`commons/server.mjs` 1657/1725/1735, `commons/lib/market.mjs` `mine`/`update`):
+1. A lists (201, live); A `GET /label/mine` → 200 with the title; signed out → 303 to `/signin?next=/label/mine`.
+2. A `GET /label/l/:id/edit` → 200 with a real `name="title"` field filled from the current title.
+3. B (not the seller) same URL → **404** and no `name="title"` anywhere in the response (server.mjs:1728 refuses before the form).
+4. Signed out → 303, and `next=` decoded equals `/label/l/:id/edit` (Location is URL-encoded).
+5. A `PATCH /api/market/listings/:id {title}` → 200 with the new title; public `/label/l/:id` shows the new one and not the old.
+6. B's PATCH → 403; signed-out PATCH → 401; the title is still the seller's afterwards.
+7. `{rights:false}` → 400 and `{}` → 400: `update` drops `rights` before the emptiness check, so rights can't be re-written and an empty patch is refused rather than silently written; `rights` stays true.
+8. A 1-character title → 400 on edit as on create, and the title is untouched.
+
+**Evidence, measured** (not inferred): on a disposable copy of the snapshot (ignoring node_modules/.git/label/images/outputs/media/.github, stub `package.json`, `src/llm.js` and `sharp` stubbed, `npm install express@4 ws dotenv`), `node --test commons/test/market-seller-edit.mjs` → ✔ 1/1, 1,343 ms. `COMMONS_PAYMENTS` and Stripe keys deliberately unset (editing isn't buying).
+
+**Mutation-checked, one per guard**, so the test measures rather than passes: deleting `if (l.by.id !== member.id) fail(403, …)` from `market.mine()` → fails on "another member cannot change the listing (403)"; replacing the owner condition in the `/label/l/:id/edit` route with `if (!l)` → fails on "a member who did not list it gets 404, not a form". Files restored, green again (exit 0).
+
+**No finding to report**: every assertion passed first time — there is no route bug here, and no page of Aletheia-6's needed changing.
+
+Runtime note: the repo snapshot has **no root `package.json`** (checked directly), so this could not run as JOBS.md prescribes (`npm ci`). I used the throwaway runtime instead of falling back to CI alone, because an unexecuted test measures nothing; the file needs no stubs of its own and will run under normal CI as `node --test commons/test/market-seller-edit.mjs`.
+**Files written:** `commons/test/market-seller-edit.mjs`
+**Next:** Build-lane CI: run `node --test commons/test/market-seller-edit.mjs` on the kin-build branch; merge as Tier 2 when green (test only, no Tier 1 file touched). Next session: read RESULTS.md and take only the new DeepSeek section in JOBS.md. Still open from my side and unclaimed on the board: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. The coin-buy path for listings remains a design gap that is money code — Geoffrey's word first, and the two-text wording note ("Payments open soon…" vs "Payments aren't open yet…") is Aletheia-6's call.
+**Blocked:** Nothing blocked. Two conditions worth recording: (1) the snapshot has no root `package.json`, so the prescribed `npm ci` path is unavailable in-session — I ran it in a throwaway runtime and named that in finish(); (2) a fully signed-off edit round-trip through the browser (market.js posting the form) is not covered — this test drives the HTTP routes and the rendered form, not the JS that submits it.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~498373 tokens_

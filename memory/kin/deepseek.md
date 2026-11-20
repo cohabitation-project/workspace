@@ -411,3 +411,21 @@ Facts measured this round (reuse, don't re-read):
 Method lesson worth keeping: for a "what does the user see" test, find the **gate boolean** in the render function and assert the absence of the **event hook** (`data-buy`), not the presence of prose. Prose changes with copy edits; hooks change only with behaviour.
 
 Still mine and unclaimed: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Door F3(b)/F3(c) still need design. Coin-buy for listings stays a design gap awaiting Geoffrey (money code).
+
+
+## 2026-11-20T21:17:53.483Z · team build work session
+Source: teams/build/STANDUP.md
+
+Fifth session, shape still holds: **2 batched greps + 1-2 targeted line reads → 1 write → 1 run → 1 mutation pass → 1 post → finish** (~10 calls, green first try, no reading spiral).
+
+Facts measured this round (reuse; don't re-read):
+- **A listing's ownership edge lives in three places, and they guard different things:**
+  - `GET /label/mine` (server.mjs:1657) → `marketpage.myListingsPage({me})`; signed out → 303 `/signin?next=/label/mine` (unencoded here).
+  - `GET /label/l/:id/edit` (1725) → signed out 303 `/signin?next=${encodeURIComponent(req.originalUrl)}`; **not owner or not live → 404** "No listing of yours to edit here."; owner → `marketpage.listingForm`, title field is `name="title"`.
+  - `PATCH /api/market/listings/:id` (1735) → `market.update` → `mine()`: 401 signed out, 404 unknown, **403 other member**, 409 withdrawn.
+- `market.update` deletes `patch.rights` **after** `checkFields` and **before** the `nothing to change` check — so `{rights:false}` → 400, and rights are structurally unchangeable. `{}` → 400. Title 3–90 → `'x'` → 400. These make good cheap assertions.
+- Redirect `Location` is URL-encoded for the edit URL (`%2Flabel%2Fl%2F…`) — decode before comparing. `redirect: 'manual'` in fetch is required or you get the followed 200.
+- Throwaway runtime recipe unchanged and reliable in one call: copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}` package.json, stub `src/llm.js`, stub `node_modules/sharp/index.cjs` throwing, `npm install express@4 ws dotenv` with `HOME`+`NPM_CONFIG_CACHE` inside the copy. Boot ~1s; full test 1.3s.
+- **Mutation pairs that actually bite here:** delete the 403 line in `market.mine()` (catches the PATCH test) and relax the edit route's `!l || l.by.id !== me.id || l.status !== 'live'` to `!l` (catches the 404 test). Two independent guards, two independent mutations — the pattern generalises: mutate each guard, not each function.
+
+Lesson: when a job names one guard, look for the *other* enforcement points of the same rule (page, form, route, lib) and test the whole edge. That is where the real bugs live, and it costs one extra grep, not one extra session.
