@@ -69,3 +69,38 @@ export function insertWordsTrack({
   else overlay.push(wordsTrack);
   return { ...tracks, overlay };
 }
+
+/**
+ * Remove the generated Words text track from SceneTracks.
+ * Matching and location rules mirror insertWordsTrack: one text track in the
+ * overlay may match by id or name; ambiguous or non-overlay matches are
+ * rejected. If no Words track exists, return the original SceneTracks object.
+ */
+export function removeWordsTrack({
+  tracks,
+  trackId = 'words',
+  trackName = 'Words',
+} = {}) {
+  assertSceneTracks(tracks);
+  if (typeof trackId !== 'string' || trackId.length === 0) {
+    throw new TypeError('trackId must be a non-empty string');
+  }
+  if (typeof trackName !== 'string' || trackName.length === 0) {
+    throw new TypeError('trackName must be a non-empty string');
+  }
+
+  const allTracks = [...tracks.overlay, tracks.main, ...tracks.audio];
+  const candidates = allTracks.filter((track) => track.type === 'text' &&
+    (track.id === trackId || track.name === trackName));
+  if (candidates.length > 1) {
+    throw new Error(`multiple Words text tracks match id ${trackId} or name ${trackName}`);
+  }
+  const wordsTrack = candidates[0];
+  if (!wordsTrack) return tracks;
+  const index = tracks.overlay.indexOf(wordsTrack);
+  if (index < 0) throw new Error('the Words text track must be in the overlay list');
+
+  const overlay = [...tracks.overlay];
+  overlay.splice(index, 1);
+  return { ...tracks, overlay };
+}

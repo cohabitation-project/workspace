@@ -23,10 +23,44 @@
 // change "./time.mjs" to "./time.mjs".
 
 import { TICKS_PER_SECOND, clampRetimeRate, getSourceSpanAtClipTime } from "./time.mjs";
+// Effects slice (Job 3): when placed at commons/lib/cut/plan.mjs this becomes "./effects.mjs"
+// (Kimi's registry is placed there under that name).
+import { registry } from "./effects.mjs";
 
 export const AUDIO_RATE = 48000;
 
 export class RenderPlanError extends Error {}
+
+// A clip's `params.effects: [{ id, params }]` become video filters, in array order, placed AFTER the
+// trim/retime/trim and BEFORE the scale/pad normalise step. So fade times are seconds of the clip's own
+// output (0 = the clip's first frame, after retime), and crop/text coordinates are in SOURCE pixels.
+// The registry's API is used as-is: registry[id].toFilter(params) -> one filter string.
+// - unknown id (checked with Object.hasOwn, so "constructor"/"__proto__" are unknown too) -> RenderPlanError
+// - a registry guard that throws TypeError/RangeError is rethrown as RenderPlanError naming the clip and effect
+// - crop: if the caller gave `sources[src] = { width, height }` and the effect has no frameWidth/frameHeight,
+//   they are filled in so the registry's "rectangle fits the frame" guard runs.
+function effectFilters(clip, sources) {
+	const list = clip.params?.effects;
+	if (list === undefined) return [];
+	if (!Array.isArray(list)) throw new RenderPlanError(`clip ${clip.id}: params.effects must be an array`);
+	return list.map((fx, k) => {
+		const where = `clip ${clip.id} effect #${k}`;
+		if (!fx || typeof fx !== "object" || typeof fx.id !== "string") throw new RenderPlanError(`${where}: needs a string id`);
+		if (!Object.hasOwn(registry, fx.id)) throw new RenderPlanError(`${where}: unknown effect id ${JSON.stringify(fx.id)}`);
+		let params = fx.params ?? {};
+		if (typeof params !== "object" || Array.isArray(params)) throw new RenderPlanError(`${where} (${fx.id}): params must be an object`);
+		if (fx.id === "crop" && params.frameWidth === undefined && params.frameHeight === undefined) {
+			const size = sources[clip.params.src];
+			if (Number.isInteger(size?.width) && Number.isInteger(size?.height)) params = { ...params, frameWidth: size.width, frameHeight: size.height };
+		}
+		try {
+			return registry[fx.id].toFilter(params);
+		} catch (e) {
+			if (e instanceof TypeError || e instanceof RangeError) throw new RenderPlanError(`${where} (${fx.id}): ${e.message}`);
+			throw e;
+		}
+	});
+}
 
 // Ticks -> ffmpeg seconds text. 6 decimals = 1 microsecond, far under one frame; trailing zeros trimmed.
 export function secs(ticks) {
@@ -112,8 +146,10 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		inputs.push(clip.params.src);
 		const d = secs(clip.duration);
 		const setpts = rate === 1 ? "setpts=PTS-STARTPTS" : `setpts=(PTS-STARTPTS)/${num(rate)}`;
+		const fx = effectFilters(clip, sources);
 		chains.push(
 			`[${n}:v]trim=start=${secs(trimStart)}:end=${secs(trimEnd)},${setpts},trim=end=${d},` +
+			(fx.length ? `${fx.join(",")},` : "") +
 			`scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2,` +
 			`setsar=1,fps=${fps},format=yuv420p[v${i}]`,
 		);
