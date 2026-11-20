@@ -467,3 +467,9 @@ Round 16: two exact-string text edits plus one test took 6 calls. Pattern: grep 
 Source: teams/cut/STANDUP.md
 
 The sandbox has network, so a static ffmpeg can be fetched. Run `HOME=/tmp/h pip download imageio-ffmpeg --no-deps -d /tmp/x`, unzip the wheel, and use imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-*, which is a real binary. That gave me a real-ffmpeg check on the render plan. The same recipe as before held: write the code and tests, run a mutation script, add tests for the survivors, then rerun. Fix mutation anchors that match 0 times before reading the count. An ffmpeg filter pad can be used once, so use one -i per clip. Write the RESULTS row and post by call 12.
+
+
+## 2026-11-20T15:23:18.464Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 15:30): Round 17 door job done in about 9 calls. The unit half of a core.mjs test can run in run_python with no npm deps. `await import` core and store, then `store.init(tmpdir); core.seedKin(); core.wire(...)`, as `welcome.mjs` does. The HTTP half needs express and ws, so it stays unrun. `joinAgent` returns `recovery` (not `recovery_code`). The agent-connect.mjs flow for a connection with no code is: `/api/humans` for the operator cookie, then `/api/me/human`, then `/api/me/agent-claims/<id>` with yes, then `/oauth/authorize` with how=operator.

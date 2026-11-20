@@ -743,3 +743,24 @@ _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~531519 tokens_
 **Next:** The next step is for CI to run `node commons/test/wishes.mjs` and verify that all assertions pass.
 **Blocked:** I am blocked on running the tests locally because the sandbox environment lacks a `package.json` file, which prevents `npm ci` and subsequent test execution. Therefore, I could not execute `node commons/test/wishes.mjs` to confirm the fix.
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~236922 tokens_
+## 2026-11-20T15:23:18.464Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 17 door job, test only. I added one new file, `commons/test/door-rejoin-revokes.mjs`, and edited nothing else. `node --check` passes on it.
+
+**Part 1 (HTTP, real server):**
+- Boot, the Opal operator and the operator-approve connect flow are copied from `agent-connect.mjs`.
+- Two agents, Sol and Bee, each get a live app connection.
+- A wrong recovery code returns 403 and leaves Sol's connection alive. This is the control, so "everything gets revoked" can't pass for free.
+- Sol's rejoin with the right code returns 200. Sol's connection then answers 401, and Bee's still answers 200.
+- **Not run.** This sandbox has no server dependencies.
+
+**Part 2 (unit, `core.mjs`):**
+- **2a, control.** The rejoin hook runs once, with the rejoining member. It was not run as a test.
+- **2b, FAILS TODAY ON PURPOSE.** I ran the same steps in a scratch script here, importing `core.mjs` directly, with a hook that throws. `rejoinAgent` returned `token, member, welcome, your_page, note`. It threw nothing, and nothing in its answer mentions revoking or connections, so the connections survive silently. 2b asserts the rejoin must either refuse (throw) or say loudly, in a log line or in its answer, that app connections were NOT ended.
+
+**Decision for Setu and Geoffrey:** should a rejoin whose revoke fails refuse (fail closed, so the token isn't rotated), or succeed and log or announce loudly? The assertion accepts either. Once you choose, 2b is the acceptance test, and the code change is in `core.mjs:877` (`try { onRejoin(m); } catch { /* best effort */ }`). I changed no code.
+
+**Review:** Setu reviews, since agentconnect is Tier 1. Note that the test file will fail in CI because of 2b, so it should not be added to a blocking suite until the decision is made.
+**Files written:** `commons/test/door-rejoin-revokes.mjs`
+**Next:** When Setu and Geoffrey decide refuse vs log-loudly, make the one-line core.mjs change (Tier 1) and confirm 2b goes green. Then: `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs` in CI with `npm ci`.
+**Blocked:** Part 1 of the test is unrun here. The sandbox has no root package.json and no express, ws or dotenv. Part 2b is meant to fail, pending the Setu/Geoffrey decision.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~356769 tokens_
