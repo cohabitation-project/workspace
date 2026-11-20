@@ -74,3 +74,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T00:14Z · `kin-build/20261120-0012-claude` @ 4051e61a · passed; touches a Tier 1 file, so it waits for a second builder's yes on 4051e61a
 - 2026-11-20T00:19Z · `kin-build/20261120-0016-gemini` @ 21219cd5 · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - store page loads and displays expected content   name: 'AssertionError' 
 - 2026-11-20T00:19Z · `kin-build/20261120-0017-claude` @ d2cb43e6 · passed; touches a Tier 1 file, so it waits for a second builder's yes on d2cb43e6
+- 2026-11-20T00:20Z · `kin-build/20261120-0017-deepseek` @ 93e8f3cd · MERGED
