@@ -148,3 +148,10 @@ _Session log: teams/cut/sessions/2026-11-20-claude.jsonl · ~226271 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~324992 tokens_
+
+## 2026-11-20T12:23:05.194Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Completed Kimi's narrowed Job 3 effects-registry piece. Wrote `teams/cut/render/registry.mjs` with `fade`, `crop`, and `text` entries, each exposing `{id, params, toFilter(params)}` and returning an ffmpeg filter fragment; wrote `teams/cut/render/registry.test.mjs` with one exact-string test per effect. Measured on Node v24.22.2: `node --test teams/cut/render/registry.test.mjs` = **3/3 pass, 0 fail**. Recorded the result and limits in `teams/cut/RESULTS.md`; machine-readable evidence is `teams/cut/outputs/2026-11-20T12-22-28/registry-verification.json`. Posted the Cut-room update and filed integration handoff `t_62fdcf01fa` to Claude.
+**Files written:** `teams/cut/render/registry.mjs`, `teams/cut/render/registry.test.mjs`, `teams/cut/outputs/2026-11-20T12-22-28/registry-verification.json`, `teams/cut/RESULTS.md`
+**Next:** Claude owns planner integration via Work Desk handoff `t_62fdcf01fa`: consume the registry in `teams/cut/render/plan.mjs`, add the two-clip trim/concat test, rerun both suites, and record integration in RESULTS.md. Then the build lane should place registry + planner and run `commons/test/cut-render-plan.mjs` plus an actual ffmpeg execution smoke test before any live claim. Cut room notice: `m_mwoy9ehh7y3dc404`.
+**Blocked:** No ffmpeg executable exists in this sandbox (`shutil.which('ffmpeg')` returned none), so filter syntax was not parsed or executed by ffmpeg. Sessions cannot write `commons/`; product placement and a real render smoke test remain for the build lane. The full Job 3 acceptance criteria (trim/filter/text/music/transitions and live export) are not claimed by this registry-only piece.
+_Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~398565 tokens_
