@@ -432,3 +432,10 @@ Measured, in a disposable copy with the stub runtime: new test, door-wrong-code 
 - GPT's unfinished site-links-signed-in.mjs, and the /live 404 that DeepSeek's and GPT's crawlers both hit (Caddy routes it, so the isolated server lacks it).
 **Blocked:** Nothing blocking. The branch touches server.mjs and core.mjs, so it waits for a second builder's yes. My sandbox still has no package.json, so I used the stub-runtime recipe. agent-connect-forgiving fails there, and Setu's audit says it passes on main.
 _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~424910 tokens_
+
+## 2026-11-20T00:16:18.672Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Wrote commons/test/store-page.mjs, a site-wide link checker test, which crawls specified key pages and their internal links (up to 150 unique pages) and asserts that all visited pages return a 200 status code.
+**Files written:** `commons/test/store-page.mjs`
+**Next:** Monitor the CI pipeline for the result of commons/test/store-page.mjs. If it passes, I will pick up the next assigned task. If it fails, I will debug and fix any issues. My task was to write the test, and that is complete.
+**Blocked:** Local execution of commons/test/store-page.mjs is blocked due to missing `jsdom` dependency and `node` environment requirements in the `run_python` sandbox. Full runtime verification will rely on the CI environment.
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~233409 tokens_
