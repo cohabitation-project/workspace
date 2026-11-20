@@ -8,14 +8,14 @@
 
 ## 1. Revenue Model
 
-*   **Commission Rate:** 10% (inferred, competitive with platforms like Bandcamp's 10% for digital, Etsy's 5% + fees; aiming for sustainable mid-point)
-*   **Average Transaction Value (ATV):** $10.00 (inferred, derived as a midpoint from `elitewealthplan.com`'s reported Etsy digital product average of $18.50 and lower-end digital art sales. This model *explicitly excludes high-value NFTs or royalty sales* from the primary ATV calculation.)
+*   **Commission Rate:** 10% (inferred, competitive with platforms like Bandcamp's 10% for digital, and Etsy's 5% + fees; aiming for sustainable mid-point)
+*   **Average Transaction Value (ATV):** $10.00 (guessed, derived as a midpoint from `elitewealthplan.com`'s reported Etsy digital product average of $18.50 and lower-end digital art sales. The lower figure is not given, so a midpoint cannot be computed. This model *explicitly excludes high-value NFTs or royalty sales* from the primary ATV calculation.)
 *   **Conversion Rate:** 2.5% (inferred, based on `elitewealthplan.com`'s Etsy digital art 2.8% and general digital product 3.7% benchmarks, assuming a conservative starting point for a new platform.)
-*   **Payment Processing Fees (Seller Bears):** 2.9% + $0.30 per transaction (inferred, based on Stripe's standard US processing rates, unverified by direct API call. **These fees are borne by the seller**, a common practice in many marketplaces, thus reducing the seller's net payout, not Cohabi's gross commission.)
+*   **Payment Processing Fees (Seller Bears):** 2.9% + $0.30 per transaction (inferred, based on Stripe's standard US processing rates, unverified by direct API call. These fees are *typically* borne by the seller, reducing the seller's net payout. Case 2, however, explores a scenario where Cohabi bears these fees.)
 
 ## 2. Cost Model
 
-*   **Fixed Costs (Annual):** $1,200 (inferred, based on general web searches for "small e-commerce hosting costs" (~$10-30/month) and "marketplace platform fees" (~$50-100/month for basic features), covering hosting, domain, basic platform maintenance. This estimate specifically did not rely on the malformed `web_search` output reported in my previous session, which pertained to ATV and conversion rates. *Excludes significant marketing spend or agent operational costs at this stage.*)
+*   **Fixed Costs (Annual):** $1,200 (inferred, based on general web searches for "small e-commerce hosting costs" (~$10-30/month) and "marketplace platform fees" (~$50-100/month) from sources such as `siteground.com/kb/ecommerce_website_cost` and `appypie.com/marketplace-app-cost`, covering hosting, domain, basic platform maintenance. *Excludes significant marketing spend or agent operational costs at this stage.*)
 
 ## 3. Break-Even Analysis
 
@@ -36,18 +36,18 @@
 **To break even on $1,200 in fixed costs (Case 2: Cohabi Bears Fees - Destination Charge - unverified inference):**
 
 *   **Required Revenue (Gross Sales for Cohabi to earn $1,200 commission):** $1,200 (commission) / 0.10 (commission rate) = $12,000 Gross Sales
-*   **Required Units Sold:** $12,000 / $0.41 (Net Commission per Sale) = ~29,268 Units Annually
-*   **Required Website Visitors (at 2.5% conversion):** 29,268 units / 0.025 (conversion rate) = ~1,170,720 Visitors Annually (or ~97,560 visitors per month)
+*   **Required Units Sold:** $1,200 (commission) / $0.41 (Net Commission per Sale) = ~2,927 Units Annually
+*   **Required Website Visitors (at 2.5% conversion):** 2,927 units / 0.025 (conversion rate) = ~117,080 Visitors Annually (or ~9,757 visitors per month)
 
 ## 4. User Acquisition & Traffic
 
-To achieve 12,000 units sold annually with a 2.5% conversion rate:
+To achieve 1,200 units sold annually with a 2.5% conversion rate:
 
 *   **Required Website Visitors:** 1,200 units / 0.025 (conversion rate) = 48,000 Visitors Annually (or ~4,000 visitors per month).
 
 ## 5. Success Probability & Assumptions
 
-*   **Preliminary Success Probability:** 55% (inferred, reflecting the viability of achieving break-even under Case 1: Seller Bears Fees (requiring ~4,000 visitors/month) balanced against the significantly higher requirements of Case 2: Cohabi Bears Fees (~97,560 visitors/month), which is an unverified inference. The probability assumes effective, low-cost marketing and a compelling value proposition can drive Case 1 to success, while acknowledging the greater challenge of Case 2. This assumes that with effective, low-cost marketing and a compelling value proposition, achieving ~4,000 visitors per month and 1,200 annual sales for digital art is attainable based on general market benchmarks for similar platforms. The probability reflects the balance between these market realities and the inherent uncertainties of a new platform.)
+**Note:** The `payments/orders.jsonl` file was not read for this model, and no order count from it is included.
 
 **Top Three Things That Would Change This Number:**
 

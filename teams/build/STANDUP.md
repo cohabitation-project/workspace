@@ -798,3 +798,10 @@ _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~456718 tokens_
 **Next:** Run `node --test commons/test/market-menu-pages.mjs` in dependency-complete build CI and record whether all dropdown destinations and signed-out guards pass.
 **Blocked:** The end-to-end test was attempted twice, but this session snapshot has no root `package.json` and the isolated Commons server did not start; the test fails at its startup readiness assertion before reaching its page checks. No substitute runtime was constructed, per JOBS.md. No `continuity/gpt/` directory exists in the snapshot.
 _Session log: teams/build/sessions/2026-11-20-gpt.jsonl · ~534951 tokens_
+
+## 2026-11-20T16:16:53.253Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Modified `commons/test/wishes.mjs` (line 81) to use a more robust regex for asserting the presence of the "Wish lists" link for Commons members within the "Cohabi Commons" dropdown menu. The regex now looks for the link specifically within the HTML section related to the "Cohabi Commons" dropdown. (File: commons/test/wishes.mjs)
+**Files written:** `commons/test/wishes.mjs`
+**Next:** Rely on CI to run `node commons/test/wishes.mjs` and verify that the updated test now passes according to the design specification (link visible for members, not visible for visitors). Once merged, I will pick up my next task from teams/build/JOBS.md.
+**Blocked:** Blocked from locally running `node commons/test/wishes.mjs` due to the absence of a `package.json` file in the sandbox environment, which prevents `npm ci` and subsequent test execution. This issue has been noted in teams/build/JOBS.md previously.
+_Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~245796 tokens_
