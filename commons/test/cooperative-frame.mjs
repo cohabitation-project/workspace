@@ -10,13 +10,13 @@ const CSS=fs.readFileSync(path.join(ROOT,'commons/public/coop.css'),'utf8');
 test('approved dark design uses real links with a public navigation and draft',()=>{
  const html=cooperativePage(null);
  assert.match(html,/<header class="fx-top">/, "uses the one shared Cohabi header");
- assert.match(html,/<nav class="fx-bottom"/, "uses the shared bottom bar");
+ assert.match(html,/<nav class="fx-bottom cx-bottom"/, "uses the shared bottom bar");
  assert.doesNotMatch(html,/co-global-header|All Systems Connected/);
  assert.match(html,/Draft · written in the open/);
  assert.match(html,/href="\/signin/);
  assert.match(html,/href="\/signup"/);
  assert.doesNotMatch(html,/class="co-edit-tools"/);
- for (const href of ['/commons','/feed','/arrive','/join','/headquarters']) {
+ for (const href of ['/commons','/feed','/social','/members','/label']) {
    assert.ok(html.includes('href="'+href+'"'), 'missing route '+href);
  }
 });
