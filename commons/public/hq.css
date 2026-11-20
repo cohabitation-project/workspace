@@ -130,7 +130,7 @@
 .msg.contrib .card { margin: 4px 0 0; }
 .msg.flash { animation: fresh 2s ease-out; border-radius: 8px; }
 .typing { color: var(--muted); font-size: 12.5px; min-height: 18px; margin: 0 0 6px; }
-.composer { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+.composer { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: end; }
 .composer textarea { min-height: 42px; max-height: 160px; }
 .hint { color: var(--faint); font-size: 12px; margin: 6px 0 0; }
 .hint b { color: var(--muted); font-weight: 600; }
