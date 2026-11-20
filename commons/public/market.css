@@ -1189,3 +1189,67 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-pgdialog input:focus-visible,.mk-pgdialog select:focus-visible,.mk-pgdialog textarea:focus-visible,.mk-pgdialog button:focus-visible{outline:3px solid #e6c37a;outline-offset:2px}
 .mk-pgdialog .form-msg{color:#f5dba6}
 @media(max-width:600px){.mk-pgdialog{max-width:calc(100vw - 12px);width:calc(100vw - 12px);max-height:96dvh;border-radius:14px}.mk-pgdialog #pg-form{padding-inline:14px}.mk-pgdialog .pf-ed-head{margin-inline:-14px;padding-inline:14px}.mk-pgdialog .pf-ed-foot{margin-inline:-14px;padding-inline:14px}}
+
+
+/* Aletheia-6, 2026-11-20: category-specific contrast repair. Shared Marketplace
+   plum headings work on cream, but disappear on Music's dark surface. The
+   hero remains its own ecosystem; only the shared text tokens are corrected.
+   Also prevent purple-on-dark headings on the other dark departments.
+   Check actual artist/label page variants before expanding selectors. */
+.mk-page.mv-page:is([data-mk="music"],[data-mk="video"],[data-mk="software"],[data-mk="midnight"]) {
+  --mv-plum: #f0c998;
+}
+.mk-page.mv-page:is([data-mk="music"],[data-mk="video"],[data-mk="software"],[data-mk="midnight"]) :is(.mv-kicker,.mv-eyebrow) {
+  color: #f0c998;
+}
+.mk-page[data-mk="music"] .cm-hero :is(h1,.cm-kicker,.cm-note,.cm-note strong) {
+  color: #f6f0e9;
+}
+.mk-page[data-mk="music"] .cm-hero .cm-kicker {
+  color: #f0c998;
+}
+
+/* Music ecosystem detail pass: readable label/artist navigation and a clearer
+   catalog rhythm without changing the approved marketplace shell or imagery.
+   All rules are restricted to Music pages. */
+.mk-page[data-mk="music"] :is(.cm-labels,.cm-musicians,.cm-releases) {
+  margin-block: clamp(26px,4vw,46px);
+}
+.mk-page[data-mk="music"] .cm-sectionhead {
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.mk-page[data-mk="music"] .cm-sectionhead .mk-h {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(24px,2.4vw,34px);
+  line-height: 1.18;
+}
+.mk-page[data-mk="music"] .cm-sectionhead > a {
+  color: #ffd4a1 !important;
+  text-underline-offset: 4px;
+}
+.mk-page[data-mk="music"] .cm-sectionhead > a:focus-visible {
+  outline: 3px solid #ffd4a1;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.mk-page[data-mk="music"] .cm-step {
+  background: #f6efe5;
+  border-color: #cdbda8;
+  box-shadow: 0 8px 22px #0000002a;
+}
+.mk-page[data-mk="music"] .cm-num { color: #775028; }
+.mk-page[data-mk="music"] .cm-hero .cm-note {
+  max-width: 690px;
+  border-top: 1px solid #ffffff32;
+  padding-top: 16px;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+.mk-page[data-mk="music"] .cm-hero .cm-note strong { color: #fff; }
+@media (max-width:650px) {
+  .mk-page[data-mk="music"] .cm-sectionhead { align-items: flex-start; }
+  .mk-page[data-mk="music"] .cm-sectionhead > a { min-height: 44px; display: inline-flex; align-items: center; }
+}
