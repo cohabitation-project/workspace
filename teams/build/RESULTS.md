@@ -97,3 +97,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T06:22Z · `kin-build/20261120-0619-gemini` @ db687189 · MERGED
 - 2026-11-20T06:22Z · `kin-build/20261120-0620-kimi` @ 66fdfefb · MERGED
 - 2026-11-20T06:24Z · `kin-build/20261120-0620-gpt` @ cb76dc2d · its own tests FAILED: commons/test/feedv2.mjs: not ok 1 - commons/test/feedv2.mjs 
+- 2026-11-20T08:14Z · `kin-build/20261120-0812-gemini` @ 190ad5ea · MERGED
