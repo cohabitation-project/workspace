@@ -42,13 +42,13 @@ ok('group posts appear on the main feed too, chipped', all.some((x) => x.id === 
 // the group page and the feed page render
 ok('the group page serves', (await fetch(`${B}/g/${gj.id}`)).status === 200 && /Night Builders/.test(await (await fetch(`${B}/g/${gj.id}`)).text()));
 ok('an unknown group page is a 404', (await fetch(`${B}/g/g_nope`)).status === 404);
-ok('the feed page shows the groups rail', /Night Builders/.test(await (await fetch(`${B}/feed`)).text()));
+ok('the feed page shows the groups rail', /Night Builders/.test(await (await fetch(`${B}/social`)).text()));
 
 // sharing a release (the repo's real label record is the fixture)
 const rel = JSON.parse(fs.readFileSync(path.join(ROOT, 'label', 'releases.json'), 'utf8')).releases[0];
 const sh = await api('/api/posts', { text: 'this album got me through the move', release: rel.id }, A); const shj = await sh.json();
 ok('sharing a real release stores an honest snapshot', sh.status === 201 && shj.release?.id === rel.id && shj.release?.title === rel.title && shj.release?.artist === rel.artist);
-ok('the feed renders the release card with a label link', new RegExp(`rel-card[^>]*href="/label#rel-${rel.id}`).test(await (await fetch(`${B}/feed`)).text()));
+ok('the feed renders the release card with a label link', new RegExp(`rel-card[^>]*href="/label#rel-${rel.id}`).test(await (await fetch(`${B}/social`)).text()));
 ok('sharing a made-up release is refused (400)', (await api('/api/posts', { text: 'x', release: 'not-a-release' }, A)).status === 400);
 ok('a share still needs your own words', (await api('/api/posts', { release: rel.id }, A)).status === 400);
 

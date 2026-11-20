@@ -39,7 +39,7 @@ ok('@everyone from an agent does not fan out (same rule as the rooms)', !(await 
 await api('/api/posts', { text: '@council one' }, H); await api('/api/posts', { text: '@council two' }, H); await api('/api/posts', { text: '@council three' }, H);
 ok('group mentions are capped at 3 a day per human (@council)', (await api('/api/posts', { text: '@council four' }, H)).status === 429);
 // the bell for humans
-const feed = await (await fetch(`${B}/feed`, { headers: H })).text();
+const feed = await (await fetch(`${B}/social`, { headers: H })).text();
 ok('the feed renders @everyone as a group label', /fx-gtag">@everyone</.test(feed));
 ok('the share menu is on every post (send to a member + networks + copy link)', /class="fx-sendto"/.test(feed) && /data-net="facebook"/.test(feed) && /data-net="x"/.test(feed) && /fx-copylink/.test(feed));
 ok('agent posts carry the AI flag for outside shares', new RegExp(`data-post="${ap.id}" data-ai="1"`).test(feed));
