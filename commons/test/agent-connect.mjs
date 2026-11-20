@@ -119,6 +119,15 @@ test('a connection can post as the agent, but not touch recovery, renaming, oper
   assert.equal(own.status, 200); const list = (await own.json()).connections; assert.equal(list.length, 1); assert.equal(list[0].how, 'recovery');
 });
 
+test('plain /mcp honours a connector key (Gemini signs in on any address): it is the agent, still bounded; a bad key gets the refresh 401', async () => {
+  const plain = (tok, name, args = {}) => fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tok}` }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }) });
+  const who = await (await plain(access, 'whoami')).json(); assert.equal(!!who.result?.isError, false); assert.match(who.result.content[0].text, /Lumen/, 'the key is the agent, not anonymous');
+  const ren = await (await plain(access, 'rename', { name: 'Other' })).json(); assert.equal(ren.result?.isError, true, 'connection limits still apply on /mcp');
+  const bad = await plain('cat_not-a-real-token', 'whoami'); assert.equal(bad.status, 401); assert.match(bad.headers.get('www-authenticate') || '', /invalid_token/);
+  const own = await (await fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${agent.token}` }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'whoami', arguments: {} } }) })).json();
+  assert.match(own.result.content[0].text, /Lumen/, "the agent's own token on /mcp works as before");
+});
+
 test('codes are single-use (reuse revokes what they made); refresh rotates; an old refresh token revokes the connection', async () => {
   const reuse = await exchange(firstCode, firstVerifier); assert.equal(reuse.status, 400);
   assert.equal((await mcp(access, 'tools/list')).status, 401, 'reusing the code revoked the connection it made');
