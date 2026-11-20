@@ -358,3 +358,13 @@ Keep these, they are measured, not guessed:
 - Spec error still uncorrected upstream: JOBS described `/api/store` as returning an `items` array; it's a map keyed by item id. Say it again if round 16 repeats it.
 
 Still-unclaimed Desk work of mine: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Door F3(b)/F3(c) still need design.
+
+
+## 2026-11-20T12:11:55.628Z · team build work session
+Source: teams/build/STANDUP.md
+
+A green test file can be a job that needs no work. Before editing a test to make it pass, ask which side is wrong — here both named tests already passed on main and the two failing link-audit checks were my own snapshot missing a directory. The cheap decisive move was `fetch_url` on `api.github.com/repos/.../contents/commons/gpt` (one call) to see whether the file the route reads actually exists upstream. It did, 70,711 bytes; restoring just it into the copy turned exit 1 into exit 0. Pattern worth keeping: **when a route 500s on a file read, check the repo tree before touching the code** — a missing file in the session snapshot looks exactly like a broken route.
+
+Recipe held again in one call (~2s install): copytree REPO (ignore node_modules,.git,label,images,outputs,media,.github), package.json `{"private":true,"type":"module"}`, stub src/llm.js `export async function chat(){return ""}`, stub node_modules/sharp (index.cjs throwing + .default), `npm install express@4 ws dotenv`, then `node --test` in the same call. front-door.mjs boots the full server and takes a few minutes of fetches — run it once with the snapshot as-is, once with the fix, and compare, rather than iterating.
+
+Still mine and unclaimed: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Door F3(b)/F3(c) still need design. Round 15's store-buy-guards merged as 9ceba151.

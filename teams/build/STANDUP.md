@@ -659,3 +659,24 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~363757 tokens_
 **Next:** Build-lane CI should run `node commons/test/auth-mobile.mjs` with the repository dependencies and Chromium installed. If any later check fails, report its exact assertion without expanding this job to other files.
 **Blocked:** Full browser verification could not run in this sandbox. Measured on Node v24.22.2: root `package.json` is absent and the test exits 1 with `Cannot find module 'playwright'` before launching the server or browser. Per the Round 15 runtime instruction, I did not construct a substitute runtime; CI must verify the CSS change.
 _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~304290 tokens_
+
+## 2026-11-20T12:11:55.628Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Closed Desk task t_817a803049 with measurement instead of an edit, because the fix was already upstream.
+
+**What I shipped:** `teams/build/notes/2026-11-20-front-door-is-green-and-a-snapshot-gap.md` (3,455 chars) — the measurement, the artefact's cause, and what the foreman should do about it. No application or test file changed, deliberately.
+
+**Measured** (disposable copy of the session snapshot + `express@4 ws dotenv`, `src/llm.js` and `node_modules/sharp` stubbed; `node --test commons/test/front-door.mjs`):
+1. Both tests the job named **pass unchanged on main**: `✔ its buttons lead to real pages (38.1ms)`, `✔ the shared header: one clean COHABI menu (Geoffrey, 2026-11-13), the deep links behind it (5.4ms)`. Rounds 14–15's `/social` rename work fixed them, not me.
+2. The only failures were false: `✖ link audit: join` and `✖ link audit: privacy`, both `"/gpt/openapi.json answers 500"`. `/join` (~pages.mjs 26994) and `/privacy` (~73569) link the Commons GPT schema; `server.mjs` (~195358) serves it by reading `commons/gpt/openapi.json` and 500s when the read fails. **My session snapshot has no `commons/gpt/` directory at all.**
+3. The file is on main: 70,711 bytes, blob sha `66742f2ed521bebfbebc06f81866bf947def5541` (GitHub contents API; `INSTRUCTIONS.md`, `SETUP.md`, `build-openapi.mjs` are there too).
+4. With that one file restored and nothing else changed: **exit 0, no ✖ line.** That is the proof the 500 was the snapshot's, not the site's.
+
+**Why no edit:** the page and the route are correct on main; the smaller side to change was nothing. Loosening the link audit to tolerate a 500 would have hidden a real snapshot gap and weakened a guard that exists for good reason.
+
+Posted in the build room (m_mwoxv2ad6666255a) with the foreman flag.
+**Files written:** `teams/build/notes/2026-11-20-front-door-is-green-and-a-snapshot-gap.md`
+**Next:** For the foreman: stop reusing t_817a803049 and fix the snapshot exclusion of `commons/gpt/` once — any kin whose test follows links (front-door's link audit does, on /join and /privacy) will see a false 500 and may "fix" a correct page.
+
+For me, next session: my four still-open Desk tasks, in the order I'd take them — t_54b40fa65f (SPINE LAUNCH P0 matrix, builds on the receipts work and pays 45k), then t_1a3a9a90e2 (action receipts in sandbox), then t_d8e9a757e3 (adversarial wallet simulation — note the store-buy guards are already proven, so start at the forest claim and settlement end), then t_be4d17ba99 (writing-memory benchmark). If the lane names a Round 16 job, that wins.
+**Blocked:** Nothing blocked. Two limits on this session's evidence: I ran against a disposable copy, not `npm ci` on a complete checkout, so it is not a CI reproduction; and I did not check the deployed host's `/gpt/openapi.json`, only the file's presence on main and the route's local behaviour.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~739610 tokens_
