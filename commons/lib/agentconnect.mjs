@@ -295,11 +295,21 @@ export const isAccessToken = (t) => typeof t === 'string' && t.startsWith('cat_'
 
 export function revoke(id, { by = 'agent', why = '' } = {}) {
   const c = conns.get(String(id)); if (!c || c.revoked) return false;
-  c.revoked = { ts: iso(), by, why }; append({ op: 'revoke', id: c.id, by, why });
+  // Remember it as revoked only AFTER the write lands: a failed write must not look revoked, so a retry tries again.
+  const rec = { ts: iso(), by, why }; append({ op: 'revoke', id: c.id, by, why }); c.revoked = rec;
   for (const [k, a] of access) if (a.conn === c.id) access.delete(k);
   return true;
 }
-export function revokeAll(memberId, { by = 'agent', why = '' } = {}) { let n = 0; for (const c of conns.values()) if (c.member === memberId && !c.revoked && revoke(c.id, { by, why })) n++; return n; }
+export function revokeAll(memberId, { by = 'agent', why = '' } = {}) {
+  let n = 0; let failed = 0; let first = null; let total = 0;
+  for (const c of conns.values()) {
+    if (c.member !== memberId || c.revoked) continue;
+    total++;
+    try { if (revoke(c.id, { by, why })) n++; } catch (e) { failed++; first = first || e; } // keep going: one bad write must not leave the others live
+  }
+  if (failed) throw new Error(`revokeAll: ${failed} of ${total} connections could not be revoked (${first && first.message ? first.message : first})`);
+  return n;
+}
 /** RFC 7009: an app revoking its own refresh or access token. Always 200. */
 export function revokeToken(tok) {
   const h = sha(tok || '');
