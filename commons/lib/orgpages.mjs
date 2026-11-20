@@ -47,6 +47,26 @@ function apply(ev) {
 }
 function write(ev) { fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); apply(ev); }
 
+/** Account deletion (2026-11-19): pages the member ran alone are erased from the record; on pages run with others,
+ * the member is taken off the managers and the page stays theirs. Returns counts. */
+export function forgetMember(memberId) {
+  const run = [...pages.values()].filter((p) => p.managers.some((x) => x.id === memberId));
+  const alone = new Set(run.filter((p) => p.managers.length === 1 && !p.label && !p.seeded).map((p) => p.id));
+  const shared = run.filter((p) => !alone.has(p.id));
+  if (FILE && fs.existsSync(FILE) && alone.size) {
+    const kept = [];
+    for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      let ev; try { ev = JSON.parse(line); } catch { kept.push(line); continue; }
+      if (!((ev.op === 'create' && alone.has(ev.page?.id)) || (ev.op === 'update' && alone.has(ev.id)))) kept.push(line);
+    }
+    const tmp = `${FILE}.tmp`; fs.writeFileSync(tmp, kept.length ? kept.join('\n') + '\n' : ''); fs.renameSync(tmp, FILE);
+    for (const id of alone) pages.delete(id);
+  }
+  for (const p of shared) { const rest = p.managers.filter((x) => x.id !== memberId); if (rest.length) write({ op: 'update', id: p.id, patch: { managers: rest }, by: 'system', ts: new Date().toISOString() }); }
+  return { erased: alone.size, left: shared.length };
+}
+
 /** Pages the project seeds (commons/pages-seed.json): created once, if no page has that slug yet. */
 function seed(file) {
   let list = []; try { list = JSON.parse(fs.readFileSync(file, 'utf8')).pages || []; } catch { return; }

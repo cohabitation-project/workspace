@@ -164,6 +164,7 @@ socialshare.init(DATA);
 pages.setStorefront(marketpage.storefront);
 orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q) || null, imageOwned: (m, id) => images.ownedBy(m, id), labelOwners: () => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')).artists || {}; } catch { return {}; } }, labelFolders: () => marketpage.artists() });
 orgpages.init(DATA, { seedFile: process.env.COMMONS_PAGES_SEED || path.join(import.meta.dirname, 'pages-seed.json') });
+try { const n = mydata.finishDeletions(); if (n) console.log(`[commons] privacy: erased listings/pages of ${n} earlier deleted account(s)`); } catch (e) { console.error('[commons] privacy: finishDeletions failed', e.message); }
 market.setHooks({ page: (m, id) => { const pg = orgpages.get(id); if (!pg) throw new core.CommonsError(400, 'no such page'); if (!orgpages.isManager(pg, m.id)) throw new core.CommonsError(403, 'you can only list as a page you run'); return { id: pg.id, slug: pg.slug, name: pg.name, kind: pg.kind }; } });
 pages.setPagesCard(marketpage.pagesCard);
 // Wish lists (Geoffrey, 2026-11-07). Founders by member id in config/founders.json (read on each use, so editing
