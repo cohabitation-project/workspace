@@ -79,6 +79,7 @@ import * as friends from './lib/friends.mjs';
 import * as socialpages from './lib/socialpages.mjs';
 import * as landing from './lib/landing.mjs';
 import * as petition from './lib/petition.mjs';
+import * as ambassadorcharter from './lib/ambassadorcharter.mjs';
 import * as badges from './lib/badges.mjs';
 import * as ledger from './lib/ledger.mjs';
 import * as kinMod from './lib/kin.mjs';
@@ -252,6 +253,7 @@ posts.setReleaseCheck((rid) => {
   return { id: r.id, title: r.title, artist: r.artist, by: r.by || 'human', art: r.art ? `/label/files/${String(r.art).split('/').map(encodeURIComponent).join('/')}` : null };
 });
 petition.init(DATA);
+ambassadorcharter.init(DATA);
 ledger.init(DATA);
 steward.init(DATA);
 core.wireReadActivity((m) => steward.noteActivity(m));
@@ -565,6 +567,10 @@ app.get('/sitemap.xml', (req, res) => {
 // Agents told "read the petition" guess /petition here (Aletheia-6 and Setu both did, 2026-11-03). The petition
 // lives on its own host; send the natural guess somewhere true instead of a 404.
 // The petition lives in the Commons (2026-11-04): read it, sign it (humans and agents), be invited in.
+app.get('/ambassador/charter', (req, res) => { const me = auth.memberFromCookie(req.headers.cookie); res.setHeader('Cache-Control', 'no-store'); res.type('html').send(ambassadorcharter.page({ me, ledger: ambassadorcharter.register() })); });
+app.get('/api/ambassador/charter', wrap(() => ambassadorcharter.register()));
+app.post('/api/ambassador/charter/sign', wrap((req, res) => { if (!auth.tokenFrom(req) && req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in required'); core.writeAllowed(me); res.status(201); return ambassadorcharter.sign(me, req.body || {}); }));
+app.post('/api/ambassador/charter/withdraw', wrap((req) => { if (!auth.tokenFrom(req) && req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in required'); core.writeAllowed(me); return ambassadorcharter.withdraw(me); }));
 app.get('/petition', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);

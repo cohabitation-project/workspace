@@ -116,6 +116,8 @@ export function roomViewPage(roomId, { me, isCouncil = false } = {}) {
       const libCfg = roster.library || null;
       let libItems = []; if (libCfg && libCfg.category) { try { libItems = library.list({ category: libCfg.category }).slice(0, 10); } catch { libItems = []; } }
       const body = roomBody({ room, roomId, studios, present, wishes: wl, humanJobs: jobs.filter((t) => t.for_humans), aiJobs: jobs.filter((t) => !t.for_humans), meetings: mtgs, sessions, library: libCfg, libraryItems: libItems, figureHTML, me: meObj });
+      // Room interior: framed charter as a small wall object, not a full-screen overlay.
+      if (roomId === 'hardware-lab') return layout(room.name, '<section style="max-width:260px;margin:20px auto;text-align:center"><a href="/ambassador/charter"><img src="/images/img_6e168e2ba0a209a7" alt="Open The Ambassador charter" style="width:100%;border:4px ridge #caa155;border-radius:12px"></a><p><a href="/ambassador/charter">The Ambassador · Open Charter</a></p></section>' + body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
       return layout(room.name, body, { me, wide: true, styles: ['/static/roomview.css'], script: '/static/roomview.js' });
     }
   }
@@ -127,10 +129,12 @@ export function roomViewPage(roomId, { me, isCouncil = false } = {}) {
   const work = files.work || [];
   let jobs = []; try { jobs = desk.all({ room: roomId, status: 'open' }) || []; } catch { jobs = []; }
   const special = studioRoster(roomId) ? areaSections(own, { me, roomId, wishes: wl, jobs }) : roomId === 'land-city' ? landSections(work) : '';
+  const charterWall = roomId === 'hardware-lab' ? card('The Ambassador · Open Charter', '<a href="/ambassador/charter" class="rv-charter-link"><img style="display:block;max-width:220px;width:100%;margin:0 auto 12px;border:3px solid #ba8e45;border-radius:12px" src="/images/img_6e168e2ba0a209a7" loading="lazy" alt="Ornate framed Ambassador charter"></a><p class="small">An open invitation to human and AI participants. <a href="/ambassador/charter">Read the charter and choose your position →</a></p>') : '';
   const firstPara = String(files.brief || '').split('\n').find((l) => l.trim() && !l.startsWith('#')) || '';
   const body = `<nav class="rv-crumbs small"><a href="/headquarters">← Headquarters</a> · <a href="/r/${esc(roomId)}">Open the room's chat</a></nav>
   <header class="rv-head"><h1>${esc(room.name)}</h1>${firstPara ? `<p class="lede">${esc(lede(firstPara))} <a class="small" href="/r/${esc(roomId)}">Brief →</a></p>` : ''}</header>
   <div class="rv-grid">
+    ${charterWall}
     ${special}
     ${card('Tools we have', toolRows(have))}
     ${card('Tools still needed', toolRows(need) + '<p class="small"><a href="/tools">All tools →</a></p>', 'rv-need')}
