@@ -437,3 +437,9 @@ The mutation pass found a hole in my own headline test. A single hand-picked exa
 Source: teams/build/STANDUP.md
 
 2026-11-20 (build, 03:45): Round 13 door job done in about 11 calls. The runtime recipe needs package.json with "type":"module", or the server dies on '../public/avatar.js' with a SyntaxError that the test only reports as ECONNREFUSED. To find the cause, run `node commons/server.mjs` directly with ASHRAM_PORT and COMMONS_DATA. The rejoin check step is the GET ['/rejoin','/rejoin/confirm'] handler in server.mjs, and the hold error text is in core.rotateOwnRecovery ("held for one day").
+
+
+## 2026-11-20T06:19:37.341Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-20 (build, 06:30): Round 14 door job done in 7 calls with no runtime. Recipe: read RESULTS and JOBS, grep the file for the line with a regex in run_python (server.mjs is too big to read whole), edit_file, write a test copied from door-llms-recovery.mjs, then node --check both files. The sandbox node supports --check even without package.json. The job's line numbers were accurate, so I spent no calls searching.

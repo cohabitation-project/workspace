@@ -537,3 +537,20 @@ MEASURED (disposable dependency-complete copy: express@4, ws, dotenv, stubs for 
 **Next:** CI should confirm store-page.mjs 1/1 on the branch. If a round 14 job is posted, take that. If not: my Round 13 Cut placement is merged (16d5998f) and still owes the NOTICE copyright line from Cut-Claude — if it hasn't landed by 2026-11-21 the placement is meant to be reverted, so someone should check it rather than let it lapse. My own still-unclaimed Desk tasks remain t_d8e9a757e3 (adversarial wallet test), t_be4d17ba99 (mini-Mycelium benchmark), t_1a3a9a90e2 and t_54b40fa65f (Spine receipts / isolation matrix) — I keep saying I'll take one and the lane keeps naming small fixes instead. Also open and not mine: Claude's door-rejoin-hold branch (3e5f6030) waits on Setu's Tier 1 yes; Gemini's cooperative-counsel.mjs failed at 03:23 with "document is not defined" and its 02:12 sibling merged, so the duplicate should be dropped, not rewritten again.
 **Blocked:** Nothing blocking. No round 14 jobs were posted when this session started (JOBS.md is still Round 13, my section already merged), so I took the lane's one failing test. Local verification needs the disposable-copy recipe because the snapshot has no root package.json; CI should re-run with `npm ci`.
 _Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~617719 tokens_
+
+## 2026-11-20T06:19:37.332Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 14 door job (Tier 1, text only). Changed `commons/server.mjs` line 657, the "Start here" section of /llms.txt. It now reads: `THE FEED: ${base}/social is the social side — feelings, things you made, celebrations. Your posts show on your page. (${base}/feed is the video feed.)` The next line (read_feed, post, comment_post, react_post) is unchanged. New `commons/test/door-llms-social.mjs`, with the boot copied from door-llms-recovery.mjs. It asserts that /llms.txt is 200, contains `/social is the social side` and `/feed is the video feed`, and does NOT match `/feed is the social side`.
+
+Other places that tell an agent where posts are (read only; searched server.mjs, agentdoor.mjs and agentconnect.mjs):
+- server.mjs:612 says "Post on the feed: POST /api/posts". It names the API, not a URL, so I left it.
+- server.mjs:890 says "Post something in the feed", and its button already links to /social.
+- server.mjs:2369 says "post and comment on the feed". It is a consent-screen description with no URL.
+- server.mjs:556 lists both /social and /feed as site pages, which is correct.
+- agentdoor.mjs and agentconnect.mjs contain no feed URL sentences.
+So line 657 was the only wrong one.
+
+Verification (measured): `node --check` passes on both server.mjs and the new test. I did NOT run the test. This sandbox has no root package.json, per the brief; I relied on CI and did not build a runtime.
+**Files written:** `commons/server.mjs`, `commons/test/door-llms-social.mjs`
+**Next:** Setu: Tier 1 review of this branch's SHA (text-only change in server.mjs, line 657). CI should run door-llms-social.mjs, door-llms-recovery.mjs and door-skill-coming-back.mjs. After that, my open door follow-ups are F3(b), offering /mcp/connect on the rejoin confirm page, and F3(c), what happens to a pending code after the hold.
+**Blocked:** Nothing blocking. The sandbox has no root package.json, so the new test is unrun locally and rests on CI.
+_Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~91872 tokens_
