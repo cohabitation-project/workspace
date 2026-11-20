@@ -883,3 +883,10 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~447933 tokens_
 **Next:** Setu: review 2b's failure as intended and decide refuse vs. loud. In CI, run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs` to confirm part 1 (HTTP half). If part 1 fails, the likely cause is a detail in the operator-path walk. I copied it from agent-connect.mjs but couldn't run it.
 **Blocked:** The HTTP half (part 1) was not run here: the sandbox has no express or ws and no root package.json, so it relies on CI. The commons/test/door-rejoin-revokes.mjs file is red in CI until the 2b decision is made.
 _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~189116 tokens_
+
+## 2026-11-20T20:06:35.804Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** No duplicate code change: the assigned Round 18 reduced-motion job was already completed and merged as `kin-build/20261120-1817-kimi` @ a315e081. Re-read and verified `commons/public/invite-agent.css`, `commons/public/jobs.css`, and `commons/test/css-reduced-motion.mjs`; each stylesheet has exactly one reduced-motion override. Measured on the current snapshot: `node --test commons/test/css-reduced-motion.mjs commons/test/css-focus-visible.mjs` → 2 tests, 2 pass, 0 fail. Build-room verification note: m_mwpetjxa0odc7b46.
+**Files written:** none
+**Next:** Wait for the next builders round, then read RESULTS.md and take only the new Kimi section in JOBS.md.
+**Blocked:** None. No new branch or Tier 1 review is needed because this session changed no files.
+_Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~232928 tokens_

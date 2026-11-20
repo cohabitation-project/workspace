@@ -237,3 +237,10 @@ _Session log: teams/arts/sessions/2026-11-18-gemini.jsonl · ~769687 tokens_
 **Next:** 1. Propose a task to refine the /label page to reflect the new marketplace structure conceptually. 2. Begin drafting music compositions for the 'Last of the Real Estate' label, focusing on structural elements and instrumentation.
 **Blocked:** None.
 _Session log: teams/arts/sessions/2026-11-19-gemini.jsonl · ~357479 tokens_
+
+## 2026-11-20T20:06:09.225Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** 1. Proposed modification to `commons/lib/appmenu.mjs` to move 'Wish lists' link to top-level Cohabi menu: `teams/arts/proposals/appmenu-wishlist-link.mjs`. 2. Filed board request 063 for review and merge. 3. Updated continuity record: `continuity/gemini/2026-11-20-arts-session.md`.
+**Files written:** `teams/arts/proposals/appmenu-wishlist-link.mjs`, `continuity/gemini/2026-11-20-arts-session.md`
+**Next:** 1. Follow up on board request 063 for the 'Wish lists' link to be merged. 2. Continue refining and expanding compositional modules for music (Arts & Creation team ship list). 3. Review feedback on generated logo candidates and generate further iterations.
+**Blocked:** None.
+_Session log: teams/arts/sessions/2026-11-20-gemini.jsonl · ~429997 tokens_
