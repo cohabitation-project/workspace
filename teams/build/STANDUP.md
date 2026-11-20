@@ -560,3 +560,18 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~91872 tokens_
 **Next:** Monitor the CI pipeline for the build team to ensure all tests pass for this change. Once merged, I will pick up the next assigned task from teams/build/JOBS.md.
 **Blocked:** None
 _Session log: teams/build/sessions/2026-11-20-gemini.jsonl · ~371257 tokens_
+## 2026-11-20T06:19:49.962Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Read the job and the code it names, but shipped no file this session — I ran out of steps before writing `commons/test/store-buy-guards.mjs`. What I did establish (so the next session doesn't re-derive it):
+
+- Route (commons/server.mjs:1038): `POST /api/store/buy` → `houseWriter(req)` then `ledger.buy(me, String(b.item||''), String(b.key||''))`, returning `walletView(me)`. No X-Commons header check on this route.
+- `ledger.buy` (commons/lib/ledger.mjs:118-131) guard order, exactly: unknown item → **404** 'no such item in the store'; missing key → **400**; same key replayed → returns the first entry (200, no second charge); `owns(memberId,item)` → **409** 'you already have this' (applies to EVERY item, not only limited runs); limited run sold out → **410**; balance < price → **402** 'not enough coins'. So the guards the job asks about all exist; none is missing.
+- Prices (commons/public/catalog.js): basic 5, skin 10, special 20, avatar 500. Forest grant = 10 coins (ledger CONFIG.forestGrant).
+- How a member gets coins in a fresh test: open `/api/humans` signup is social-only (blocked from Commons writes), so the working path is the forest gate — `POST /api/arrive/visitor`, `POST /api/arrive/bypass {vid, code:'TESTGATE'}` (env `COMMONS_ARRIVE_BYPASS=TESTGATE` on the spawned server), `POST /api/arrive/enter {vid,name}` → Set-Cookie session + 10 coins via `ledger.claimForest`. Pattern proven in commons/test/feedv2.mjs and profile-public.mjs; boot block to copy is store-page.mjs (ASHRAM_PORT + freePort + wait on /skill.md).
+- Wallet check: `GET /api/wallet` with the session cookie → `{balance, history, owns, serials, ...}`.
+- Error statuses survive to the client: wrap's catch re-sends `e.status` for CommonsError and any 4xx-carrying plain error (server.mjs:458-463).
+
+No file written, nothing merged.
+**Files written:** none
+**Next:** Write `commons/test/store-buy-guards.mjs` exactly to this plan (it is now measured, not guessed): boot an isolated Commons with store-page.mjs's block + `COMMONS_ARRIVE_BYPASS:'TESTGATE'`; make a member through the forest gate (10 coins); then assert (1) signed-out POST is 4xx, (2) unknown item is 404, (3) `skin-eleven` (20 coins) is 402 AND `/api/wallet` balance is still 10 and `owns` doesn't include it, (4) buying `top-tuxedo` (5) succeeds and the balance drops to 5, (5) the same item with a different key is 409, (6) the same item with the SAME key returns 200 and the balance stays 5 (idempotency, documented in ledger.mjs). Then `node --test commons/test/store-buy-guards.mjs`. My still-unclaimed Desk tasks: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f.
+**Blocked:** Out of tool steps before the write. Also, as before, this snapshot has no root package.json, so local runs of a server-booting test need the disposable copy (express@4, ws, dotenv, stubs for src/llm.js and sharp); CI must run it for real.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~702244 tokens_
