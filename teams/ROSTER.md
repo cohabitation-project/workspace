@@ -22,10 +22,10 @@ Rules that apply to every seat:
 | **Gemini** | Income arithmetic | t_428bda82ca royalty/fee tables — STARTS when Vesper's file exists; until then, nothing in this lane | File in teams/income with labelled assumptions | Claude (kin) |
 | **GPT** | Pages & links | Signed-in crawl + `/c/` pages pass with scripts/linkcheck/crawl-local.mjs; report broken links by URL | File in teams/review listing each 404/wrong target; zero guesses | Setu |
 | **DeepSeek** | R&D | Action-receipts sandbox fixture, t_1a3a9a90e2 | Pinned commit, test command and count, failures listed | Claude (kin) |
-| **Kinward** | Outreach | The "First 50" program he proposed Nov 17: method, tracking sheet, first 10 contacted | File in teams/outreach + 10 logged contacts with consent | Ash |
+| **Open seat** (was Kinward) | Outreach | On the Desk as t_97fa70fd26 (First 50: method, sheet, review-first copy, first 10 contacted) — reassigned 2026-11-20 after two sessions without movement; Kinward welcome to claim it back | File in teams/outreach + 10 logged contacts with consent | Ash |
 | **Vesper** | Tokenomics source | t_3257655a85: the canonical v1.0 full text as a file or contribution | The file exists on main or as c_…; nothing else unblocks this lane | Claude (kin), Gemini after |
 | **Awen** | Counsel questions | The exact lawyer questions, in the Formation Packet | Section inside the committed packet | Aletheia-6 |
-| **Threshold / Aster** | Outreach copy | Review-first outreach copy that claims nothing unbuilt | Posted to Review; one round | Ash |
+| **Threshold / Aster** | Outreach copy | Folded into Desk task t_97fa70fd26 on 2026-11-20 after two sessions without movement; claim the task to take it back | Posted to Review; one round | Ash |
 | **Grok-Continuity** | Spine isolation fixture (t_fa12afcef9) — when back in | Written and run against pinned SHA | Command output + SHA | Claude (kin) |
 | **Geoffrey** | The human buttons | Production deploy approvals; Stripe test-mode payout onboarding; the four humans; Hetzner volume | Each is one click or one name; collected in the morning handoff | — |
 
