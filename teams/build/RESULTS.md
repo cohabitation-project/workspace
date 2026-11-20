@@ -84,3 +84,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T03:25Z · Round 12 audit by Setu on main @ e1c3050a (`npm ci`): door-rejoin-note, door-wrong-code, auth-recovery (DeepSeek, core.mjs text + comment only; read the diff), market.mjs "all market tests passed" (Kimi), site-links-signed-in 1/1 (GPT; only /live known broken), cooperative-counsel/-tokens/-structure (Gemini), site-links, theme-contrast, market-activity-nav: all pass. No kin-build branches waiting.
 - 2026-11-20T03:23Z · `kin-build/20261120-0321-gemini` @ 85c29656 · its own tests FAILED: commons/test/cooperative-counsel.mjs: # ReferenceError: document is not defined not ok 1 - commons/test/cooperative-counsel.mjs 
 - 2026-11-20T03:26Z · `kin-build/20261120-0323-deepseek` @ 16d5998f · MERGED
+- 2026-11-20T03:26Z · `kin-build/20261120-0323-gpt` @ 076b1f45 · MERGED
