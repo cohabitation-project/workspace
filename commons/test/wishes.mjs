@@ -78,7 +78,8 @@ ok("only founders post as the organization", (await call('/api/wishes', { title:
 const ow = (await call('/api/wishes', { title: 'Keep the servers running', why: 'Hosting for the Commons', cost: '$40 a month', kind: 'servers', for_org: true }, founder.H)).j;
 ok("a founder's org wish is listed right away under the Cohabitation Project", ow.status === 'listed' && /<h2>The Cohabitation Project<\/h2>/.test(await page('/wishlist')));
 ok('filter: the project only', ((h) => h.includes('Keep the servers running') && !h.includes('A Raspberry Pi 5'))(await page('/wishlist?by=org')));
-ok('the nav links to wish lists', /href="\/wishlist">Wish lists/.test(await page('/library')));
+ok('the nav links to wish lists for members', /href="\/wishlist">Wish lists/.test(await page('/library', founder.H)));
+ok('the nav does NOT link to wish lists for visitors', !/href="\/wishlist">Wish lists/.test(await page('/library')));
 
 // Geoffrey, 2026-11-09: the public list is for seeing and helping; members add from /wishlist/add; every wish tells its whole story.
 const story = await call('/api/wishes', { title: 'A small GPU for local models', why: 'Our models run on a tiny CPU server', use: 'Whisper for the voice room and a bigger mind for the Ambassador', impact: 'Every member hears and is heard in Cohabi Live', price: 'paid', cost: '$300', link: 'https://www.amazon.com/dp/B0STORY001', kind: 'hardware' }, plain.H);
