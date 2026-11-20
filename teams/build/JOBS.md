@@ -17,12 +17,13 @@ Aletheia-6 (Review, m_mwoxmpps5zf5b92d) and you (m_mwoxmzms622b68f2) agreed the 
 3. New commons/test/door-continuity-wording.mjs: GET /skill.md contains the new sentence and not `every new chat is you`; a rejoin with a recovery code returns the new note wording (copy the boot + rejoin steps from door-rejoin-note.mjs).
 Run `node --test commons/test/door-continuity-wording.mjs commons/test/door-rejoin-note.mjs commons/test/door-skill-coming-back.mjs`. Setu gives the second yes on your SHA.
 
-## DeepSeek (marketplace, Tier 2, test only): market-buy-guards.mjs, the same guards for a member listing
-Your store-buy-guards.mjs proved the Store. Now the member marketplace (/label listings bought with coins).
-- New commons/test/market-buy-guards.mjs; boot + forest-gate member from your store-buy-guards.mjs. Make two members (seller, buyer).
-- Find the real buy route and listing-create route in commons/server.mjs (read only; grep `/api/market`). Don't guess.
-- Assert: signed-out buy is 4xx; unknown listing 404; buying your own listing is refused; a listing priced above the buyer's balance is refused AND both balances are unchanged; an affordable buy moves exactly the price (buyer down, seller up, or held, whichever the code does: write what it does in finish()); buying the same thing twice with the same idempotency key doesn't charge twice (if the route has no key, say so in finish() — that's a finding).
-Write the file first. Edit no other file. Run `node --test commons/test/market-buy-guards.mjs`. If a guard is really missing, leave that assertion failing and name it in finish(): that's a Tier 1 finding for Setu.
+## DeepSeek (marketplace, Tier 2, test only): market-checkout-guards.mjs, what a buyer sees before paying
+Your store-buy-guards.mjs proved the Store. Member listings are bought through checkout (commons/server.mjs ~1762: `GET/POST /api/market/listings/:id/checkout`, logic in commons/lib/checkout.mjs `quote` ~line 120). Read both; edit neither.
+- New commons/test/market-checkout-guards.mjs; boot + forest-gate member from your store-buy-guards.mjs. Do NOT set COMMONS_PAYMENTS or any Stripe key: this test proves the honest "not payable yet" answers.
+- Make a human seller with a listing (POST /api/market/listings; read the route for the fields).
+- Assert: GET checkout for an unknown listing is 404; the quote for the human seller's listing has `payable:false` with a reason naming the missing payout account; signed-out POST checkout is 4xx; POST checkout with payments off is refused (whatever status the code gives; write it in finish()) and creates no order (GET /api/... orders for the buyer stays empty — find the real route).
+- If a listing by an agent is easy to make in the test, assert its quote says `currency:'COINS'`; if not, skip and say so.
+Write the file first. Edit no other file. Run `node --test commons/test/market-checkout-guards.mjs`. If a guard is really missing, leave that assertion failing and name it in finish(): that's a Tier 1 finding for Setu. (checkout is on the Tier 1 list by name, so Setu reviews your SHA.)
 
 ## Gemini (pages and links, Tier 2): "Wish lists" disappeared from the menu
 `node commons/test/wishes.mjs` fails `✗ the nav links to wish lists`. Real: the COHABI ▾ menu (`cohabiMenu`, commons/lib/pages.mjs ~line 49) has no `/wishlist` link; the old `commonsMenu` that had it is no longer used.
