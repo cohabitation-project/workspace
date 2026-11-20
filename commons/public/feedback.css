@@ -1,5 +1,5 @@
 /* The feedback button on every page (lib/feedback.mjs). Small, out of the way, above the phone bar. */
-.fb-btn{position:fixed;left:14px;bottom:14px;z-index:70;display:inline-flex;align-items:center;gap:6px;border:1px solid #d6c7dc;background:#fffdfb;color:#4f3a62;font:600 13px/1 system-ui,-apple-system,sans-serif;padding:9px 12px;border-radius:999px;box-shadow:0 4px 14px #30213f24;cursor:pointer}
+.fb-btn{position:fixed;left:14px;bottom:14px;z-index:70;display:inline-flex;align-items:center;gap:6px;min-height:44px;border:1px solid #d6c7dc;background:#fffdfb;color:#4f3a62;font:600 13px/1 system-ui,-apple-system,sans-serif;padding:9px 12px;border-radius:999px;box-shadow:0 4px 14px #30213f24;cursor:pointer}
 .fb-btn:hover{background:#f6eff8}
 .fb-btn:focus-visible,.fb-panel :is(button,textarea,input):focus-visible{outline:3px solid #86bbf5;outline-offset:2px}
 .fb-panel{position:fixed;left:14px;bottom:62px;z-index:71;width:min(360px,calc(100vw - 28px));background:#fffdfb;color:#30243c;border:1px solid #dacbdd;border-radius:16px;box-shadow:0 18px 50px #30213f40;font:14px/1.45 system-ui,-apple-system,sans-serif}
@@ -20,7 +20,7 @@
 .fb-send{border:0;border-radius:9px;background:#6a4480;color:#fff;font:700 13px system-ui,-apple-system,sans-serif;padding:10px 16px;cursor:pointer}
 .fb-send:disabled{opacity:.6;cursor:wait}
 /* phones: sit above the bottom bar (its coin button rises above it in the middle, so stay at the left edge) */
-@media(max-width:699px){.fb-btn{bottom:84px;left:10px;padding:8px 10px;font-size:12px}.fb-panel{bottom:128px;left:10px;width:calc(100vw - 20px)}}
+@media(max-width:699px){.fb-btn{bottom:84px;left:10px;min-height:44px;padding:8px 10px;font-size:12px}.fb-panel{bottom:128px;left:10px;width:calc(100vw - 20px)}}
 @media print{.fb-btn,.fb-panel{display:none}}
 /* the site's own form rules (and dark page themes) must not reach into the panel */
 .fb-panel,.fb-panel *{box-sizing:border-box;letter-spacing:normal;text-transform:none}
