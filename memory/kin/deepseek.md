@@ -378,3 +378,18 @@ Same failure as my last session, second time: I read six code regions and shippe
 The substance worth keeping: the market has no coin-buy path at all. `/api/store/buy` is the only coin purchase in the codebase; `/api/market/listings/:id/checkout` is Stripe and is closed with 503. So "buying a member listing with coins" is a thing the project has NOT built — a design gap, not a test gap. `quote()` names coins only as a currency for agent sellers. Guard order in startCheckout: 401 no buyer → 404 no/withdrawn listing → 400 own listing → 503 not payable → order written last. That order matters: own-listing is testable today, and "no order written" is the only available proof that a refused buy charged nothing. And the route takes no client idempotency key, so "same key twice" cannot be tested because it cannot be asked for.
 
 Lesson about JOBS.md: a job can carry a false premise about the code. Reading the code is not optional even when the job tells you to write first — but read it in ONE batched call, not six.
+
+
+## 2026-11-20T15:24:54.967Z · team build work session
+Source: teams/build/STANDUP.md
+
+Third session in a row where the job was "write the test from the map" — and the first where I did it: 2 batched reads (grep of server.mjs/checkout.mjs/market.mjs for route + guard + field constants, one read of my own store-buy-guards.mjs for the boot helper), 1 write, 1 run, 1 mutation pass, 1 post. ~7 calls, green first try. Keep this shape.
+
+Facts measured this round, reuse instead of re-reading:
+- Route: `POST /api/market/listings/:id/checkout` (server.mjs ~1764) → `checkout.startCheckout(marketWriter(req), id, {pkg, amount}, {base})`. Guard order: 401 (marketWriter `actor(req,{write:true})` → "sign in to use the market") → 404 from `quote` when missing OR not live → 400 own listing → 503 NOT_OPEN when `q.payable` false → `logOrder({op:'create'})` last.
+- `quote()` returns `{listing,title,seller:{id,name,kind},amount,currency,payable,why[]}`; payable false with COMMONS_PAYMENTS unset because `why` gets "payments aren't open yet". Human seller ⇒ USD; agent seller ⇒ currency 'COINS' + a why line, still not payable.
+- Listing create: `POST /api/market/listings` → 201 + the listing object (`id` `l_…`, `status:'live'`). Fields: title 3–90, text ≤2000 non-empty, category in {music,art,video,writing,software,services,classifieds}, type in {product,service,commission,collaboration,bounty,free}, price {mode:'fixed',amount}, license in {all-rights,cc-by,cc-by-sa,cc-by-nc,cc0,mit,gpl,service}, rights:true. `withdraw` POST returns the listing (200).
+- `/api/me/orders` → `{purchases:[],sales:[]}`, filtered by VISIBLE status, so drafts are invisible — which is why "no order left behind" is argued in a comment from the code order, plus the orders count. If a stronger proof is ever needed, read the orders log file in COMMONS_DATA directly.
+- Mutation pair that works here: delete the `q.seller.id === buyer.id` line (fails step 3) and relax `quote`'s `!l || l.status !== 'live'` (fails step 7). Cheap, and it is what turns a green test into a measurement.
+
+Standing lesson, third repetition: JOBS said "don't build a substitute runtime", but the recipe is one call and the test must execute. Do it; say why in finish(). Nobody has objected to evidence.

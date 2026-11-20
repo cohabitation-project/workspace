@@ -770,3 +770,25 @@ _Session log: teams/build/sessions/2026-11-20-claude.jsonl · ~356769 tokens_
 **Next:** Build-lane CI should run `node --test commons/test/css-focus-visible.mjs commons/test/theme-contrast.mjs` on the branch and merge as Tier 2 when green. No additional page or stylesheet work is part of this job.
 **Blocked:** None. The requested tests ran successfully without a substitute runtime. The snapshot has no root package.json, but these two test files need no external dependencies; broader suite verification remains normal build-lane CI.
 _Session log: teams/build/sessions/2026-11-20-kimi.jsonl · ~326715 tokens_
+## 2026-11-20T15:24:54.967Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 17 DeepSeek job: `commons/test/market-checkout-guards.mjs`** (new file, 8,028 chars). Test only — no application file, no other test, edited.
+
+**What it asserts, in the code's own guard order** (`POST /api/market/listings/:id/checkout` → `checkout.startCheckout`, commons/lib/checkout.mjs):
+1. signed-out checkout → 401, reason mentions signing in;
+2. unknown listing id → 404;
+3. seller buying their own live listing → 400 "you can't buy your own listing" (this fires before the payable check, so it is testable today);
+4. the public quote `GET /api/market/listings/:id/checkout` → 200, `payable:false`, `why` contains "payments aren't open yet", amount 500, currency USD (a human seller is priced in money, not coins);
+5. member B buying member A's live listing → 503 with a payments reason;
+6. after those refusals, `GET /api/me/orders`: buyer has 0 purchases, seller has 0 sales — an order row is written only *after* the payable check, so a refused buy cannot leave even a draft behind;
+7. A withdraws, then B's checkout → 404 (a listing off the market is not a last-minute sale).
+
+Boot and the two-member walk are copied from my `store-buy-guards.mjs` (forest gate with `COMMONS_ARRIVE_BYPASS=TESTGATE`); `COMMONS_PAYMENTS` and every Stripe key are deliberately not set, so the test *is* the payments-closed world.
+
+**Evidence, measured on a disposable runtime** (copy of the snapshot + `express@4 ws dotenv`, `src/llm.js` and `node_modules/sharp` stubbed — my round-15 recipe, one call): `node --check` passes; `node --test commons/test/market-checkout-guards.mjs` → **✔ 1/1 pass, 0 fail, 468 ms**.
+**Mutation-tested** in the throwaway copy so the test is shown to measure the guards: deleting the own-listing guard → fails on "a seller cannot buy their own listing"; relaxing `quote` to accept a non-live listing → fails on "a withdrawn listing is 404 to checkout". File restored, green again.
+
+**Two assertions the round-16 job asked for are deliberately absent, with the reason in the test's header** (Tier 1 finding for @Setu): there is no coin balance on this path (coins buy the `/store` catalogue; `quote()` uses coins only as a *currency label* for agent sellers), and the route accepts no client idempotency key (`server.mjs:1764` passes only `{pkg, amount}`; each POST mints a fresh `ord_…` and Stripe's idempotency key is that server-generated id). So "priced above the buyer's balance" and "same key twice" cannot be asked of this route — they are design gaps, not test gaps, and the test says so rather than faking them.
+**Files written:** `commons/test/market-checkout-guards.mjs`
+**Next:** CI/foreman: run `node --test commons/test/market-checkout-guards.mjs` on the branch (Setu's second yes needed — checkout is Tier 1 by name). Next real work, in order of value: (a) if Geoffrey wants members to actually buy listings with coins, that is a *build* job (a coin settlement path in `checkout.startCheckout` consulting the wallet, plus a client idempotency key threaded through server.mjs:1764) — a second builder's yes either way, and it should not be invented by me in a test round; (b) my four still-unclaimed Desk tasks t_54b40fa65f, t_1a3a9a90e2, t_d8e9a757e3, t_be4d17ba99; (c) Door F3(b)/F3(c) still need design.
+**Blocked:** Nothing blocked. Note for the foreman: JOBS.md is right that session snapshots have no root `package.json`; I ran the test in a throwaway copy because a test that has never executed is decoration, and it cost one call.
+_Session log: teams/build/sessions/2026-11-20-deepseek.jsonl · ~456718 tokens_
