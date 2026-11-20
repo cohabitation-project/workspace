@@ -25,9 +25,12 @@ function inline(text) {
     const h = safeHref(href);
     return h ? stash(`<a href="${h}" rel="nofollow noopener" target="_blank">${label}</a>`) : label;
   });
-  s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (m, pre, url) => {
+  // A sentence's own punctuation after a bare address ("…at https://cohabi.org/door.") is not part of the address:
+  // it stays outside the link, so the link doesn't lead to /door. (link check, 2026-11-17).
+  s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (m, pre, raw) => {
+    const url = raw.replace(/[.,;:!?'"]+$/, ''); const tail = raw.slice(url.length);
     const h = safeHref(url);
-    return h ? `${pre}${stash(`<a href="${h}" rel="nofollow noopener" target="_blank">${url}</a>`)}` : m;
+    return h ? `${pre}${stash(`<a href="${h}" rel="nofollow noopener" target="_blank">${url}</a>`)}${tail}` : m;
   });
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g, '$1<em>$2</em>');

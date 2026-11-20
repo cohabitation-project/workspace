@@ -62,9 +62,9 @@ ok('the last manager cannot be removed', (await call(`/api/pages/${sr.j.id}`, { 
 const prof = await page(`/m/${owner.id}`, owner.ck);
 ok('your profile lists the pages you run, with Create a page', /pf-pages/.test(prof) && /href="\/page\/rollinhost"><strong>RollinHost<\/strong>/.test(prof) && /href="\/page\/new"/.test(prof));
 const menu = await page('/label', owner.ck);
-ok('the COHABI menu switches between your profile and your pages', /<span class="mk-menuh">You<\/span>/.test(menu) && /href="\/page\/rollinhost"/.test(menu));
+ok('the unified COHABI menu links to your profile and pages', /href="\/m\/[^\"]+"[^>]*>👤 Your profile<\/a>/.test(menu) && /<summary>📄 Your pages ▾<\/summary>[\s\S]*?href="\/page\/rollinhost"/.test(menu));
 ok('Create a page has its own form', /id="pg-new"/.test(await page('/page/new/simple', owner.ck)));
-ok('/api/me/pages lists them', (await call('/api/me/pages', null, owner.H, 'GET')).j.pages.some((x) => x.slug === 'rollinhost'));
+ok('/api/me/pages lists them with the menu fields', (await call('/api/me/pages', null, owner.H, 'GET')).j.pages.some((x) => x.name === 'RollinHost' && x.href === '/page/rollinhost' && x.kind === 'business'));
 
 // record labels: a page that gathers band and artist pages
 const lr = await page('/page/last-of-the-real-estate');

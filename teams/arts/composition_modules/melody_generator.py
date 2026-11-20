@@ -104,6 +104,80 @@ class MelodyGenerator:
 
         return self.midi_file
 
+    def generate_counterpoint(self, main_melody_notes, scale_intervals, rhythm_pattern=None, velocity=60, counterpoint_type='diatonic', interval_preference=None):
+        """
+        Generates a counterpoint melody based on a main melody.
+        main_melody_notes: A list of (note_value, duration_ticks) tuples for the main melody.
+        scale_intervals: Intervals from the root note to form the scale.
+        rhythm_pattern: Rhythmic pattern for the counterpoint. If None, matches main melody rhythm.
+        counterpoint_type: 'diatonic' for strictly scale-based, 'contrary' for contrary motion.
+        interval_preference: List of preferred harmonic intervals (e.g., [3, 5, 6, 8, 10, 12] for 3rd, 5th, 6th, octave).
+        """
+        counterpoint_track = MidiTrack()
+        self.midi_file.tracks.append(counterpoint_track)
+        counterpoint_track.append(MetaMessage('set_tempo', tempo=self.microseconds_per_beat, time=0))
+        counterpoint_track.append(Message('program_change', program=73, time=0)) # Default to Flute for counterpoint
+
+        current_time = 0
+        rhythm_index = 0
+        if not rhythm_pattern:
+            rhythm_pattern = [d for _, d in main_melody_notes] # Match main melody rhythm
+
+        for i, (main_note, main_duration) in enumerate(main_melody_notes):
+            if rhythm_index >= len(rhythm_pattern):
+                rhythm_index = 0
+
+            duration_ticks = rhythm_pattern[rhythm_index]
+            rhythm_index += 1
+
+            possible_counter_notes = []
+            for interval in scale_intervals:
+                potential_note = main_note + interval # Consider notes above main melody
+                if potential_note > 84: # Try notes below if too high
+                    potential_note = main_note - interval
+
+                # Ensure note is within a reasonable range
+                if 48 <= potential_note <= 84:
+                    possible_counter_notes.append(potential_note)
+
+            # Apply counterpoint type and interval preference
+            if counterpoint_type == 'contrary' and i > 0:
+                # Simple contrary motion: if main melody goes up, counterpoint goes down, and vice-versa
+                prev_main_note = main_melody_notes[i-1][0]
+                if main_note > prev_main_note: # Main melody ascended
+                    # Try to find a lower counterpoint note
+                    preferred_notes = [n for n in possible_counter_notes if n < main_note]
+                elif main_note < prev_main_note: # Main melody descended
+                    # Try to find a higher counterpoint note
+                    preferred_notes = [n for n in possible_counter_notes if n > main_note]
+                else:
+                    preferred_notes = possible_counter_notes
+            else:
+                preferred_notes = possible_counter_notes
+
+            if interval_preference:
+                # Filter notes based on preferred harmonic intervals
+                filtered_notes = []
+                for cn in preferred_notes:
+                    interval_with_main = abs(cn - main_note) % 12 # Harmonic interval
+                    if interval_with_main in interval_preference:
+                        filtered_notes.append(cn)
+                if filtered_notes:
+                    possible_counter_notes = filtered_notes
+                elif preferred_notes:
+                    possible_counter_notes = preferred_notes # Fallback to any valid note
+
+            if possible_counter_notes:
+                counter_note = random.choice(possible_counter_notes)
+            else:
+                counter_note = main_note - 12 # Fallback if no suitable counterpoint found
+
+            counterpoint_track.append(Message('note_on', note=counter_note, velocity=velocity, time=current_time))
+            counterpoint_track.append(Message('note_off', note=counter_note, velocity=velocity, time=duration_ticks))
+            current_time = 0
+        
+        return self.midi_file
+
 # Example Usage:
 if __name__ == "__main__":
     output_folder = os.environ['OUT']
@@ -149,3 +223,40 @@ if __name__ == "__main__":
     output_path4 = os.path.join(output_folder, 'dynamic_rhythm_recorder.mid')
     melody_midi4.save(output_path4)
     print(f"Saved: {output_path4}")
+
+    # --- Example 5: Melody with Counterpoint ---
+    print("Generating melody with counterpoint...")
+    mg5 = MelodyGenerator(bpm=120, instrument_program=0) # Acoustic Grand Piano for main melody
+    main_melody_notes_data = [] # Store notes and durations for counterpoint
+    main_melody_midi = MidiFile()
+    main_melody_track = MidiTrack()
+    main_melody_midi.tracks.append(main_melody_track)
+    mg_main = MelodyGenerator(midi_file=main_melody_midi, track=main_melody_track, bpm=120, instrument_program=0)
+
+    # Generate a simple main melody to use for counterpoint
+    current_time_main = 0
+    scale_c_major = [0, 2, 4, 5, 7, 9, 11]
+    num_notes_main = 8
+    main_melody_rhythm = [1, 1, 1, 1, 1, 1, 1, 1] # Quarter notes
+    start_note_main = 60 # C4
+    
+    for note_idx in range(num_notes_main):
+        note_val = start_note_main + random.choice(scale_c_major)
+        duration_factor = main_melody_rhythm[note_idx]
+        note_duration_ticks = int(mg_main.quarter_note_time * duration_factor)
+        
+        main_melody_track.append(Message('note_on', note=note_val, velocity=80, time=current_time_main))
+        main_melody_track.append(Message('note_off', note=note_val, velocity=80, time=note_duration_ticks))
+        main_melody_notes_data.append((note_val, note_duration_ticks))
+        current_time_main = 0
+
+    # Now generate counterpoint for this main melody
+    final_composition_with_counterpoint = mg_main.generate_counterpoint(
+        main_melody_notes=main_melody_notes_data,
+        scale_intervals=scale_c_major,
+        counterpoint_type='contrary',
+        interval_preference=[3, 5, 8, 10] # Prefer 3rds, 5ths, octaves, 6ths
+    )
+    output_path5 = os.path.join(output_folder, 'melody_with_counterpoint.mid')
+    final_composition_with_counterpoint.save(output_path5)
+    print(f"Saved: {output_path5}")

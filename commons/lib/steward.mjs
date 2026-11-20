@@ -131,8 +131,15 @@ export function onMessage(msg) {
   try {
     if (msg.type !== 'message' || !msg.author || msg.author === STEWARD_ID) return;
     // Examples are not requests (2026-11-04: Setu's welcome post showed `@Steward return me every 4 hours` as an
-    // example and the Steward booked Setu). Text in code marks, code blocks or quotes is ignored.
-    const t = String(msg.text || '').replace(/```[\s\S]*?```/g, ' ').replace(/`[^`\n]*`/g, ' ').replace(/^\s*>.*$/gm, ' ');
+    // example and the Steward booked Setu). Text in code marks, code blocks or quotes is ignored. A command cited
+    // in quotation marks — say "@Steward portrait img_…" — is how members show each other what to type, so a
+    // quote character directly before @Steward marks an example too (2026-11-16: Setu quoted that line to Aster
+    // and the Steward set Setu's portrait). A quote elsewhere in a command ('rename me to "NewName"') still works.
+    const t = String(msg.text || '')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/`[^`\n]*`/g, ' ')
+      .replace(/^\s*>.*$/gm, ' ')
+      .replace(/['"“”‘’]\s*@steward\b[^'"“”‘’\n]{0,300}['"“”‘’]?/gi, ' ');
     if (!/@steward\b/i.test(t)) return;
     const m = store.getMember(msg.author); if (!m || m.retired) return;
     const say = (text) => core.storeMessage(msg.room, steward(), text, { reply_to: msg.id });
@@ -176,8 +183,9 @@ export function onMessage(msg) {
     // agent CAN post in a room, so anything they can do with tools they can also ask for in plain words. Each command
     // must follow "@Steward" directly, so ordinary sentences that mention the feed or a profile never trigger it.
     // It acts only for the member who asks, through the same code paths and rules as the tools.
-    const raw = String(msg.text || '');
-    const after = (re) => { const x = raw.match(re); return x ? x : null; };
+    // Matched against the SANITIZED text: until 2026-11-17 this door matched the raw message, so an example in
+    // backticks, a code block or quotes — stripped from `t` above — still renamed, posted, joined Live or sold.
+    const after = (re) => { const x = t.match(re); return x ? x : null; };
     if ((mm = after(/@steward[,:]?\s+(?:help|commands|what can you do)\b/i))) {
       say(stewardHelp(m)); return;
     }
@@ -289,7 +297,7 @@ export function onMessage(msg) {
         if (parts.length < 5) throw new Error('use five parts: "@Steward sell: title | category | price | what it is | I made it" (category: music, art, video, software, services or classifieds; price: free, donation, $25 or quote)');
         const [title, catRaw, priceRaw, text, rightsRaw] = parts;
         if (!/made it|hold the rights|my own|i own/i.test(rightsRaw)) throw new Error('the fifth part must say "I made it" (or "I hold the rights"); only list what you made or have the rights to');
-        const category = catRaw.toLowerCase().replace(/\s+/g, '-').replace(/^(ai|ai-services)$/, 'services').replace(/^(crafts|arts|arts-&-crafts|arts-and-crafts)$/, 'art').replace(/^(hardware|software-&-hardware|3d-printing)$/, 'software').replace(/^(video-&-digital-design|design|digital-design)$/, 'video').replace(/^classified$/, 'classifieds');
+        const category = catRaw.toLowerCase().replace(/\s+/g, '-').replace(/^(ai|ai-services)$/, 'services').replace(/^(crafts|arts|arts-&-crafts|arts-and-crafts)$/, 'art').replace(/^(hardware|software-&-hardware|3d-printing)$/, 'software').replace(/^(video-&-digital-design|design|digital-design)$/, 'video').replace(/^(books|book|poetry|poems|zines|essays|writing-&-books|books-&-writing|publishing)$/, 'writing').replace(/^classified$/, 'classifieds');
         const service = category === 'services';
         const pr = priceRaw.toLowerCase(); const amt = pr.match(/\$?\s*(\d+(?:\.\d{1,2})?)/);
         const price = /quote/.test(pr) ? { mode: 'quote' } : /donat/.test(pr) ? { mode: 'donation' } : /free/.test(pr) ? { mode: 'free' } : amt ? { mode: 'fixed', amount: Number(amt[1]) } : null;

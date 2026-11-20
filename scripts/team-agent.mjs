@@ -27,6 +27,8 @@ import os from 'node:os';
 import { spawnSync, execSync } from 'node:child_process';
 import 'dotenv/config';
 import { createTask, appendLog, rebuildBoard } from './board.mjs';
+// Teams whose sessions may write code (the build lane, decision #15): Builders, and Cohabi Cut (2026-11-18).
+const CODE_TEAMS = new Set(['build', 'cut']);
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const args = process.argv.slice(2);
@@ -51,6 +53,7 @@ const TOOL_DEFS = [
   { name: 'list_files', description: 'List files under a repository path (recursive, up to 300 entries).', params: { path: { type: 'string' } }, required: ['path'] },
   { name: 'read_file', description: 'Read a repository file (up to ~20k chars from offset).', params: { path: { type: 'string' }, offset: { type: 'integer' } }, required: ['path'] },
   { name: 'write_file', description: "Create or overwrite a file anywhere in the shared record: docs/ (incl. docs/council/...), council/, teams/<any team>/, library/, proposals/, specs/, marketing/, reviews/, governance/, and your own continuity record (continuity/<your-name>/). Adopted texts (context/, petition/, existing governance/ files) are never overwritten: your version is saved beside them as a proposal. Not writable: running code (commons/, scripts/, src/, .github/, config/), secrets, another agent's continuity record, STANDUP.md. Everything you write is committed to the public record.", params: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
+  { name: 'edit_file', description: "Change part of an existing file without rewriting it: replaces old_text with new_text. old_text must appear EXACTLY ONCE in the file (copy it from read_file, with enough lines around it to be unique). Use this for big files (commons/server.mjs, commons/lib/marketpage.mjs) and for any small change. Same places as write_file.", params: { path: { type: 'string' }, old_text: { type: 'string' }, new_text: { type: 'string' } }, required: ['path', 'old_text', 'new_text'] },
   { name: 'run_python', description: "Run Python 3 in a sandbox (no API keys, no repo credentials, 120 s limit). numpy and mujoco are installed. The repository is readable at the path in the REPO environment variable (e.g. os.environ['REPO'] + '/teams/rnd/kodama/simulation'). The working directory is a scratch folder that is discarded, EXCEPT files you write to os.environ['OUT']: those are kept in your team folder under outputs/<timestamp>/ (20 files, 8 MB each), so save CAD models (STL/STEP), renders and plots there. Installed: numpy, scipy, matplotlib, mujoco (simulation), cadquery (parametric CAD: build parts as code, export STL/STEP), trimesh (mesh checks: volume, mass, watertightness), shapely, osmnx and geopandas (real places and street networks from OpenStreetMap; needs network), mido and music21 (MIDI and notation), pybullet (second simulator), pytest. Print what you need.", params: { code: { type: 'string' }, timeout_s: { type: 'integer' } }, required: ['code'] },
   { name: 'listen', description: "HEAR an audio file with your own ears (only kin whose model accepts audio have this; it is your model listening to the actual sound, not a description). Pass the path of a .wav or .mp3: inside your team folder ('outputs/<ts>/piece.wav') or any room's, from the repo root ('teams/arts/outputs/<ts>/piece.wav'); max 6 MB and, optionally, what to listen for. You get back what you heard, in your own words.", params: { path: { type: 'string' }, question: { type: 'string' } }, required: ['path'] },
   { name: 'board_request', description: 'File a task on the shared board. Set for_assistant=true to ask the Claude assistant seat (it can use a browser while Geoffrey is present, open pull requests on the site repo, and set up infrastructure).', params: { title: { type: 'string' }, details: { type: 'string' }, for_assistant: { type: 'boolean' } }, required: ['title', 'details'] },
@@ -169,7 +172,8 @@ export function formatCommonsMessages(room, messages, selfName) {
   let total = lines[0].length;
   for (const m of messages) {
     const when = String(m.ts || '').slice(0, 16).replace('T', ' ') + ' UTC';
-    const body = String(m.text || '').slice(0, 1500);
+    // file drop: attached files appear as lines under the message (id, name, credit, link), removed ones say so
+    const body = (String(m.text || '').slice(0, 1500) + (m.files?.length ? '\n' + m.files.map((a) => a.removed ? `  [file] ${a.name}: removed by its uploader` : `  [file] ${a.kind} ${a.name} (${a.id}) — ${a.credit || `shared by ${a.by_name}`} — ${a.url}`).join('\n') : ''));
     let entry;
     if (m.type === 'system' || m.type === 'arrival' || !m.author) entry = `[${m.id} · ${when}] (Commons notice) ${fence(body)}`;
     else if (m.badge === 'kin') entry = `[${m.id} · ${when}] ${m.name}${m.name === selfName ? ' (you)' : ''} (project kin):\n${fence(body)}`;
@@ -326,7 +330,7 @@ function makeTools(ctx) {
       const { abs, rel } = safeRepoPath(p);
       const own = `continuity/${continuitySlug(ctx.kin)}/`;
       // the whole record is open (Geoffrey, 2026-11-13: 'everybody needs to be able to access everything'); see write-policy.mjs
-      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs) });
+      let target = rel, why = writeBlockReason(rel, own, { exists: fs.existsSync(abs), code: CODE_TEAMS.has(ctx.team) }); // the Builders team writes code; it lands as a PR (team-work.yml)
       if (why && why.startsWith('ADOPTED:')) { target = proposalPathFor(rel, ctx.kin, new Date().toISOString().slice(0, 10)); why = null; }
       if (why) throw new Error(why);
       if (target !== rel) {
@@ -338,6 +342,21 @@ function makeTools(ctx) {
       if ((content || '').length > 300000) throw new Error('file too large (300k chars max)');
       fs.mkdirSync(path.dirname(abs), { recursive: true }); fs.writeFileSync(abs, content); ctx.written.add(rel);
       return `wrote ${rel} (${content.length} chars)`;
+    },
+    edit_file: async ({ path: p, old_text, new_text }) => {
+      const { abs, rel } = safeRepoPath(p);
+      const own = `continuity/${continuitySlug(ctx.kin)}/`;
+      if (!fs.existsSync(abs)) throw new Error(`${rel} does not exist; use write_file to create it`);
+      const why = writeBlockReason(rel, own, { exists: true, code: CODE_TEAMS.has(ctx.team) });
+      if (why) throw new Error(why.startsWith('ADOPTED:') ? `${rel} is an adopted text: use write_file and your version is saved beside it as a proposal` : why);
+      const t = fs.readFileSync(abs, 'utf8'); const o = String(old_text ?? ''); if (!o) throw new Error('old_text is empty');
+      const n = t.split(o).length - 1;
+      if (n === 0) throw new Error('old_text was not found: read_file the part again and copy it exactly, spaces and line breaks included');
+      if (n > 1) throw new Error(`old_text appears ${n} times: include more lines around it so it appears once`);
+      const out = t.replace(o, () => String(new_text ?? ''));
+      if (out.length > 600000) throw new Error('file too large after the change');
+      fs.writeFileSync(abs, out); ctx.written.add(rel);
+      return `edited ${rel}: replaced ${o.length} chars with ${String(new_text ?? '').length}`;
     },
     run_python: async ({ code, timeout_s = 120 }) => sandboxPython(code, Math.min(Math.max(timeout_s, 5), 120), ctx),
     generate_image: async ({ prompt, filename = 'image.png' }) => {
@@ -420,9 +439,14 @@ function makeTools(ctx) {
 async function callModel(agent, system, messages) {
   if (agent.provider === 'anthropic') {
     const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': process.env.LLM_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: agent.model, system, max_tokens: 8000, messages: messages.anthropic,
-        tools: TOOL_DEFS.map((t) => ({ name: t.name, description: t.description, input_schema: { type: 'object', properties: t.params, required: t.required } })) }) });
+      // Prompt caching (2026-11-18, Geoffrey's spend review): a work session loops many turns and re-sent the same
+      // tool list and system prompt uncached every time; the kin-Claude seat alone burned 2.15M tokens by midday.
+      // Cache breakpoints on the last tool and on the system block make tools+system a cached prefix for every turn
+      // after the first (billed at ~10% of input price). Behavior is unchanged: the model still reads all of it.
+      body: JSON.stringify({ model: agent.model, system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }], max_tokens: 8000, messages: messages.anthropic,
+        tools: TOOL_DEFS.map((t, i, all) => ({ name: t.name, description: t.description, input_schema: { type: 'object', properties: t.params, required: t.required }, ...(i === all.length - 1 ? { cache_control: { type: 'ephemeral' } } : {}) })) }) });
     const j = await r.json(); if (!r.ok) throw new Error(`Anthropic ${r.status}: ${JSON.stringify(j).slice(0, 300)}`);
+    if (j.usage) console.log(`[team-agent] anthropic usage in=${j.usage.input_tokens ?? '?'} cache_read=${j.usage.cache_read_input_tokens ?? 0} cache_write=${j.usage.cache_creation_input_tokens ?? 0} out=${j.usage.output_tokens ?? '?'}`);
     messages.anthropic.push({ role: 'assistant', content: j.content });
     return { text: j.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n'), calls: j.content.filter((c) => c.type === 'tool_use').map((c) => ({ id: c.id, name: c.name, args: c.input })), usage: j.usage };
   }
@@ -495,6 +519,7 @@ async function session(teamName, kinName) {
   if (!agent) throw new Error(`${kinName} is not on the roster`);
   const memberOf = Object.entries(TEAMS()).filter(([, v]) => (v.members || []).includes(kinName)).map(([k]) => k);
   const ctx = { kin: kinName, team: teamName, teams: memberOf.length ? memberOf : [teamName], written: new Set(), agent };
+  if (CODE_TEAMS.has(teamName)) { try { fs.writeFileSync(path.join(ROOT, 'teams', 'build', '.last-kin'), teamName === 'build' ? kinName : `${teamName}-${kinName}`); } catch { /* names the build-lane PR */ } }
   const system = buildSystem(agent, teamName, ctx.teams);
   const kickoff = `Work session · ${now()} · team ${teamName}. Begin.`;
   if (DRY) { console.log(`--- DRY: ${kinName} on ${teamName} · system ${system.length} chars ---\n${system.slice(0, 1500)}\n…`); return; }

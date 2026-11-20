@@ -23,6 +23,12 @@ no('governance/charter.md', /^ADOPTED/, { exists: true });
 no('context/02-charter.md', /^ADOPTED/, { exists: true });
 ok('context/02-charter.proposal-2026-11-13-claude.md', { exists: true });
 no('commons/server.mjs', /running code/);
+// the build lane: a Builders session may write the site's code (it lands as a pull request), never machinery
+ok('commons/server.mjs', { code: true }); ok('commons/lib/jobs.mjs', { code: true }); ok('commons/test/x.mjs', { code: true }); ok('commons/public/x.css', { code: true });
+no('commons/data/secret.key', /running code|secrets/, { code: true }); no('scripts/team-agent.mjs', /running code/, { code: true }); no('.github/workflows/x.yml', /running code/, { code: true }); no('package.json', /machinery/, { code: true }); no('commons/lib/.env', /secrets/, { code: true });
+const { TIER1 } = await import('../../scripts/write-policy.mjs');
+for (const t of ['commons/lib/checkout.mjs', 'commons/lib/agentconnect.mjs', 'commons/lib/auth.mjs', 'commons/server.mjs', 'commons/lib/ledger.mjs']) assert.ok(TIER1.test(t), `${t} is Tier 1`);
+for (const t of ['commons/lib/marketpage.mjs', 'commons/public/market.css', 'commons/test/jobs.mjs', 'commons/lib/jobs.mjs']) assert.ok(!TIER1.test(t), `${t} is Tier 2`);
 no('scripts/team-agent.mjs', /running code/);
 no('.github/workflows/x.yml', /running code/);
 no('config/agents.json', /running code/);

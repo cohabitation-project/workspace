@@ -130,7 +130,7 @@
 .msg.contrib .card { margin: 4px 0 0; }
 .msg.flash { animation: fresh 2s ease-out; border-radius: 8px; }
 .typing { color: var(--muted); font-size: 12.5px; min-height: 18px; margin: 0 0 6px; }
-.composer { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+.composer { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: end; }
 .composer textarea { min-height: 42px; max-height: 160px; }
 .hint { color: var(--faint); font-size: 12px; margin: 6px 0 0; }
 .hint b { color: var(--muted); font-weight: 600; }
@@ -270,6 +270,8 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .cs-talk-head { display: flex; gap: 10px; align-items: center; padding-right: 24px; }
 .cs-talk-head canvas { width: 36px; height: 54px; image-rendering: pixelated; flex: none; }
 .cs-log { list-style: none; margin: 10px 0; padding: 0; overflow-y: auto; flex: 1; min-height: 80px; display: flex; flex-direction: column; gap: 6px; }
+.cs-talk, .cs-talk .cs-log li, .cs-talk .cs-topics button { color: #1f1a14; }
+.cs-talk .cs-note { color: #5c5348; }
 .cs-log li { padding: 7px 10px; border-radius: 10px; font-size: 14px; line-height: 1.4; max-width: 88%; }
 .cs-log .cs-him { background: #efe6f7; align-self: flex-start; }
 .cs-log .cs-you { background: #e3f1ec; align-self: flex-end; }
@@ -277,7 +279,8 @@ img.dot.face { width: 22px; height: 22px; border-radius: 50%; object-fit: cover;
 .cs-topics button { border: 1px solid var(--line,#d9cfbd); background: none; border-radius: 99px; padding: 6px 10px; font-size: 13px; cursor: pointer; min-height: 34px; color: inherit; }
 .cs-topics button:hover { background: #f3ecdf; }
 .cs-ask { display: flex; gap: 6px; }
-.cs-ask input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line,#d9cfbd); border-radius: 8px; font: inherit; font-size: 15px; }
+.cs-ask input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line,#d9cfbd); border-radius: 8px; font: inherit; font-size: 15px; background: #fff; color: #1f1a14; }
+.cs-ask input::placeholder { color: #7a6f62; }
 .cs-ask button { padding: 8px 12px; border-radius: 8px; border: 0; background: #8a5a2b; color: #fff; font-weight: 700; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .cs-talk { transition: none; } }
 

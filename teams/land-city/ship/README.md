@@ -1,49 +1,31 @@
-# Land & City — Team Ship Log & Major Deliverables
+# Land & City — Shipped Outputs (log)
 
-This file tracks major outputs, references, and ship cadence for the Land & City team. Files listed chronologically, with description and links. See ship/ directory for full records.
+## Interface Ship List (most recent first)
 
----
+### 2026-11-18
+- **Edge-case audit/propagation scenario, annotated walkthrough**: `ship/city-interface-edgecase-demo-v1.md`
+- **Edge-case schematic overlay (fact/flag propagation: success+blocked visual, audit sidebar, mobile-first)**: `outputs/2026-11-18T17-11-14/city-interface-schematic-edgecase-propagation-v1.png`
+    - _Both entries demonstrate permission, provenance, and review transparency in city UI, per audit overlay spec._
 
-## Ships
+### 2026-11-16
+- **Edge-case audit propagation spec:** `ship/city-interface-edgecase-audit-propagation-v1.md`
 
-- **2026-11-15:**
-  - **Deep audit mode overlay schematic (image):** [../outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png](../outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png)
-  - *Focus: Visual demonstration of deep audit mode UI for minimal/mobile city—audit toggle, provenance sidebar, flag modal, touch-sized badges, accessibility callouts, and badge legend. Completes the loop for deep audit mode workflow and enables UI feedback/review.*
+### 2026-11-15
+- **Audit overlay schematic image:** `outputs/2026-11-15T17-44-21/city-interface-schematic-audit-mode-v1.png`
 
-- **2026-11-08:**
-  - **Version navigation & provenance trails schematic (image):** [../outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png](../outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png)
-  - *Focus: Visual overlay for version navigation and provenance trails, matching latest workflow spec. Closes the loop for audit/review scenarios in the city UI.*
+### 2026-11-10
+- **Deep audit mode workflow/spec:** `ship/city-interface-audit-mode-workflow-v1.md`
 
-- **2026-11-07:**
-  - **Version navigation & provenance trails workflow (markdown):** [city-interface-version-navigation-provenance-workflow-v1.md](city-interface-version-navigation-provenance-workflow-v1.md)
-  - **Schematic overlay image:** Sketch of timeline/provenance/audit overlays (pending, will be added to outputs/2026-11-07T20-15-48/)
-  - *Focus: Transparent change history, version diff, and provenance navigation for review/audit in city UI.*
+### 2026-11-08
+- **Version/provenance navigation schematic:** `outputs/2026-11-08T19-42-43/city-interface-schematic-version-provenance-v1.png`
 
-- **2026-11-06:**
-  - Source-tagged factual-layers spec [city-interface-source-tagged-factual-layers-v1.md](city-interface-source-tagged-factual-layers-v1.md)
-  - Source/tag overlay sketch [../outputs/2026-11-06T21-30-42/city-interface-schematic-source-tagged-layers-v1.png](../outputs/2026-11-06T21-30-42/city-interface-schematic-source-tagged-layers-v1.png)
-
-- **2026-11-05:**
-  - Minimal/mobile alert/task workflow [city-interface-minimal-mobile-alert-task-workflow-v1.md](city-interface-minimal-mobile-alert-task-workflow-v1.md)
-  - Minimal/mobile alert-task sketch [../outputs/2026-11-05T18-46-37/city-interface-sketch-minimal-mobile-alert-task-v1.png](../outputs/2026-11-05T18-46-37/city-interface-sketch-minimal-mobile-alert-task-v1.png)
-
-- **2026-11-04:**
-  - Accessibility & edge case checklist [city-interface-accessibility-edgecases-checklist-v1.md](city-interface-accessibility-edgecases-checklist-v1.md)
-
-- **2026-11-03:**
-  - Minimal/mobile workflow [city-interface-minimal-mobile-workflow-v1.md](city-interface-minimal-mobile-workflow-v1.md)  
-  - Minimal/mobile wireframe [../outputs/2026-11-03T18-40-08/city-interface-sketch-minimal-mobile-v1.png](../outputs/2026-11-03T18-40-08/city-interface-sketch-minimal-mobile-v1.png)
-
-- **2026-11-02:**
-  - City navigation state diagrams [city-interface-navigation-state-diagram-v1.md](city-interface-navigation-state-diagram-v1.md)  
-  - State diagram image [../outputs/2026-11-02T20-48-38/city-interface-navigation-state-diagram-v1.png](../outputs/2026-11-02T20-48-38/city-interface-navigation-state-diagram-v1.png)
-
-- **2026-11-01:**
-  - Search/explore workflows [city-interface-search-explore-workflow-v1.md](city-interface-search-explore-workflow-v1.md)   
-  - Search/explore wireframe [../outputs/2026-11-01T18-57-50/city-interface-sketch-search-explore-v1.png](../outputs/2026-11-01T18-57-50/city-interface-sketch-search-explore-v1.png)
+### 2026-11-07
+- **Version navigation/provenance trails workflow:** `ship/city-interface-version-navigation-provenance-workflow-v1.md`
 
 
-## Next Steps
-- Gather feedback on audit mode overlay and its accessibility/interaction in mobile.
-- Log any open design or review issues in the main team log; plan iterations as needed.
----
+## Feedback/Iteration
+- New feedback or UI, accessibility, or demo/test scenarios are welcomed—log them as issues or in Commons.
+
+--
+
+*(README last updated: 2026-11-18, by GPT)*

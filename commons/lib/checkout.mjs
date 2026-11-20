@@ -50,6 +50,28 @@ export function orders() {
 }
 export const order = (id) => orders().find((o) => o.id === id) || null;
 
+// Order visibility (2026-11-18, the first live sandbox sale): until today a sale was invisible to both sides — no
+// receipt for the buyer, no sales list for the seller, no API. These read the same append-only log the webhook writes.
+const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft never reached Stripe; not a thing to show
+const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m.name, kind: m.kind } : { id, name: '(gone)', kind: null }; };
+const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller) });
+
+/** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
+ *  who backed out of Stripe sees that nothing was charged. */
+export function ordersFor(member) {
+  if (!member) fail(401, 'sign in first');
+  const all = orders().filter((o) => VISIBLE.has(o.status) && (o.buyer === member.id || o.seller === member.id)).sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+  return { purchases: all.filter((o) => o.buyer === member.id).map(shown), sales: all.filter((o) => o.seller === member.id).map(shown) };
+}
+
+/** The receipt a buyer lands on (?paid=ord_…). The order id is the only key; a listing page shows it only for its
+ *  own listing. Nothing private beyond the two names and the amount. Returns null for an unknown or draft order. */
+export function receipt(orderId, listingId) {
+  const o = orderId && order(orderId);
+  if (!o || o.status === 'draft' || (listingId && o.listing !== listingId)) return null;
+  return shown(o);
+}
+
 const isHuman = (m) => !!m && m.kind === 'human' && !m.retired;
 
 /** A member's payout account, as the market sees it. Agents have none, by rule. */
@@ -108,6 +130,18 @@ export function quote(listingId, { pkg = null } = {}) {
 
 /** Begin buying: a draft order, then Stripe's hosted checkout page (no card details ever touch this server).
  *  The money goes to the maker's connected account; Cohabi keeps COMMONS_FEE_PERCENT (default 0). Returns { url, order }. */
+// Which ways to pay we offer (Geoffrey, 2026-11-18: "payment methods we choose", then the same evening: "add the Cash
+// App, Klarna etc."). The list is ours, never Stripe's automatic one; one setting changes it (COMMONS_PAYMENT_METHODS).
+// Only names Stripe knows are passed on. Klarna and Affirm have minimum amounts and must be switched on in the Stripe
+// account, so a session Stripe refuses because of a method is retried once with card alone (see startCheckout).
+const METHODS = new Set(['card', 'link', 'cashapp', 'affirm', 'klarna', 'us_bank_account', 'amazon_pay']);
+export const DEFAULT_METHODS = 'card,link,cashapp,klarna,affirm';
+export const paymentMethods = () => { const l = String(process.env.COMMONS_PAYMENT_METHODS || DEFAULT_METHODS).split(',').map((x) => x.trim()).filter((x) => METHODS.has(x)); return l.length ? l : ['card']; };
+// In-app payment (Geoffrey, 2026-11-18: "in-app, not off-site pay links"): Stripe's embedded checkout opens inside the
+// listing page. It needs the publishable key (pk_test_… / pk_live_…, not a secret) of the same mode as the secret key;
+// without it, the old hosted page still works, so a missing key never stops a sale.
+export const publishableKey = () => { const k = String(process.env.STRIPE_PUBLISHABLE_KEY || '').trim(); const m = stripe.mode(); return k && m && k.startsWith(`pk_${m}_`) ? k : null; };
+
 export async function startCheckout(buyer, listingId, opts = {}, { base, fetchImpl } = {}) {
   if (!buyer) fail(401, 'sign in to buy');
   const q = quote(listingId, opts);
@@ -125,15 +159,29 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
   const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString() };
   logOrder({ op: 'create', order: ord });
   const pkg = l.price.mode === 'packages' ? (l.packages || [])[Number(opts.pkg) || 0] : null;
-  const session = await stripe.call('POST', '/checkout/sessions', {
-    mode: 'payment', client_reference_id: ord.id,
+  const pk = publishableKey();
+  const back = `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`;
+  const params = (methods) => ({
+    mode: 'payment', client_reference_id: ord.id, payment_method_types: methods,
+    ...(pk ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1` }),
     line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
     payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
     metadata: { cohabi_order: ord.id },
-    success_url: `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`,
-    cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1`,
-  }, { fetchImpl, idempotencyKey: ord.id }).catch((e) => { logOrder({ op: 'status', order: ord.id, status: 'cancelled' }); fail(e.status || 502, e.message); });
+  });
+  const methods = paymentMethods();
+  const give = (e) => { logOrder({ op: 'status', order: ord.id, status: 'cancelled' }); fail(e.status || 502, e.message); };
+  const session = await stripe.call('POST', '/checkout/sessions', params(methods), { fetchImpl, idempotencyKey: ord.id })
+    .catch((e) => {
+      // A method this account hasn't switched on, or one the amount is too small for (Affirm starts at $50): pay by
+      // card instead of not at all. Logged, so the list can be fixed.
+      if (methods.length > 1 && /payment method|payment_method|activated in your dashboard|minimum amount|below the minimum/i.test(String(e.message))) {
+        console.log(`[commons] checkout: Stripe refused the methods [${methods.join(',')}] for ${ord.id} (${String(e.message).slice(0, 140)}); retrying with card`);
+        return stripe.call('POST', '/checkout/sessions', params(['card']), { fetchImpl, idempotencyKey: `${ord.id}-card` }).catch(give);
+      }
+      return give(e);
+    });
   logOrder({ op: 'status', order: ord.id, status: 'awaiting_payment', session: session.id });
+  if (pk) return { embedded: true, client_secret: session.client_secret, publishable_key: pk, order: ord.id, mode: ord.mode };
   return { url: session.url, order: ord.id, mode: ord.mode };
 }
 

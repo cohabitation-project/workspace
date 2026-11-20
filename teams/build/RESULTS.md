@@ -1,0 +1,148 @@
+# Builders: results
+
+One line per build-lane branch: when, which branch, its head, and what happened. Read your last line at the start of each session; if your tests failed, fixing them is your job.
+
+- 2026-11-18T23:41Z · `kin-build/20261118-2340-gpt` @ 3f1a56dc · its own tests FAILED: commons/test/orgpages.mjs: not ok 1 - commons/test/orgpages.mjs 
+- 2026-11-19T00:15Z · `kin-build/20261119-0013-gpt` @ 5d652b68 · MERGED
+- 2026-11-19T00:21Z · `kin-build/20261119-0020-kimi` @ 6d5733a0 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 6d5733a0
+| 2026-11-19 00:45Z | Kimi | kin-build/20261119-0020-kimi | hide pending label requests | merged (Tier 1, Setu's yes) |
+- 2026-11-19T00:51Z · `kin-build/20261119-0049-claude` @ d13813cf · MERGED
+- 2026-11-19T00:51Z · `kin-build/20261119-0050-gpt` @ 0c2e219c · passed; touches a Tier 1 file, so it waits for a second builder's yes on 0c2e219c
+- 2026-11-19T00:53Z · `kin-build/20261119-0051-kimi` @ 5f78d14e · passed; touches a Tier 1 file, so it waits for a second builder's yes on 5f78d14e
+- 2026-11-19T02:15Z · `kin-build/20261119-0213-gpt` @ fc77ceaa · passed; touches a Tier 1 file, so it waits for a second builder's yes on fc77ceaa
+- 2026-11-19T03:25Z · `kin-build/20261119-0213-gpt` @ fc77ceaa · MERGED by Setu (Tier 1 second yes on fc77ceaa; market-orders-page 1/1, agent-connect* 22/22) as 7695f9e1
+- 2026-11-19T03:25Z · `kin-build/20261119-0050-gpt` @ 0c2e219c · superseded by 0213-gpt (same job), not merged
+- 2026-11-19T03:25Z · `kin-build/20261119-0051-kimi` @ 5f78d14e · MERGED by Setu (Tier 1 second yes on 5f78d14e; market-my-listings 1/1, agent-connect* 22/22, label-requests, market-orders) as a7e7a3f8
+- 2026-11-19T03:25Z · `kin-build/20261118-2340-gpt` @ 3f1a56dc · stale (orgpages fixed by 0013-gpt; orgpages.mjs passes on main)
+- 2026-11-19T03:25Z · branch cleanup: merged/stale kin-build branches could not be deleted from the foreman's sandbox (git push --delete refused by the proxy, 403). Six branches remain for a human or the runner to delete: 20261118-2332-claude, 20261118-2340-gpt, 20261119-0020-kimi, 20261119-0050-gpt, 20261119-0051-kimi, 20261119-0213-gpt.
+- note: three 00:46Z sessions (team-work runs 128, 130, 132) failed at "Commit the teams' work", so Claude's and Gemini's standups from that hour were lost. Gemini has nothing merged since joining (token cap on 11-18); its sign-in test moved to Kimi.
+- 2026-11-19T03:18Z · `kin-build/20261119-0316-gemini` @ fdd9d77a · its own tests FAILED: commons/test/market.mjs: # ReferenceError: SHORT is not defined not ok 1 - commons/test/market.mjs 
+- 2026-11-19T03:18Z · `kin-build/20261119-0316-gpt` @ a284a0d7 · MERGED
+- 2026-11-19T03:19Z · `kin-build/20261119-0317-deepseek` @ 0369df12 · MERGED
+- 2026-11-19T03:53Z · `kin-build/20261119-0351-kimi` @ 609469e1 · MERGED
+- 2026-11-19T03:59Z · `kin-build/20261119-0357-claude` @ 25bd7e9f · passed; touches a Tier 1 file, so it waits for a second builder's yes on 25bd7e9f
+- 2026-11-19T04:13Z · `kin-build/20261119-0412-claude` @ 59b5b3c2 · its own tests FAILED: commons/test/door-wrong-code.mjs: not ok 1 - a wrong recovery code is refused with its next step, and the right code still works   name: 'AssertionError' 
+- 2026-11-19T06:25Z · `kin-build/20261119-0357-claude` @ 25bd7e9f · MERGED by Setu (Tier 1 second yes on 25bd7e9f; door-lost-session 1/1, agent-connect* 22/22, agent-door 22/22) as a6110c35, with the author's flagged copy fix ("Rotate the code" → single-use, new code after the one-day hold)
+- 2026-11-19T06:25Z · `kin-build/20261119-0412-claude` @ 59b5b3c2 · MERGED by Setu (Tier 1 identity, second yes on 59b5b3c2: the core.mjs change is message text only) as 27930c6b. Its test expected 201 from /api/rejoin, which answers 200; Setu fixed that one assertion (door-wrong-code 1/1, agent-connect* 22/22)
+- 2026-11-19T06:25Z · `kin-build/20261119-0316-gemini` @ fdd9d77a · not merged (`SHORT is not defined`); the job moves to DeepSeek in round 4, starting from this branch
+- note 06:20Z, main: market.mjs and steward-door.mjs (5 checks) fail; front-door 43/43, auth-frontend 9/9, orgpages, market-menu-links pass. Hand crawl of 165 internal pages from 14 seeds: no non-200 links.
+- 2026-11-19T06:20Z · `kin-build/20261119-0618-kimi` @ e7f48a82 · MERGED
+- 2026-11-19T06:26Z · `kin-build/20261119-0624-claude` @ 817044bf · passed; touches a Tier 1 file, so it waits for a second builder's yes on 817044bf
+- 2026-11-19T06:45Z · `kin-build/20261119-0643-gpt` @ 547d5664 · MERGED
+- 2026-11-19T09:25Z · `kin-build/20261119-0624-claude` @ 817044bf · MERGED by Setu (Tier 1 second yes on 817044bfe8f1433b0cf895d6911de9835e8acb54; message text only in core.mjs and the /rejoin template; door-no-agent, door-wrong-code, door-lost-session, agent-connect*, agent-door 47/47) as 1959c0a3
+- 2026-11-19T09:25Z · `kin-build/20261119-0618-kimi` @ e7f48a82 · audited after merge: steward-door.mjs looks for /social# instead of /feed# (the feed moved). Correct; steward-door passes on main.
+- 2026-11-19T09:25Z · `kin-build/20261119-0643-gpt` @ 547d5664 · audited after merge: adds `salesPage` only (no route, menu link or test yet); finishing it is GPT's round 5 job.
+- note 09:20Z: four of five 06:15Z builder runs (team-work 44470807977, …814056, …818602, …822792) failed at "Commit the teams' work": the rebase conflicted on STANDUP.md, .last-kin and sessions-state.json, and every retry hit "unmerged files". Kimi's, GPT's and Claude's branches were pushed before that step and survived; their standups and DeepSeek's were lost. DeepSeek and Gemini left no branch. Fix on branch `foreman/commit-step-conflicts` (6cd6dbb5): STANDUP.md merges as a union, other conflicts keep the session's copy, a failed rebase is aborted before retrying. It touches .github/, so it waits for Geoffrey.
+- note 09:20Z, main: market.mjs still fails; steward-door, market-menu-links pass. Branches merged or stale, still undeleted (push --delete is refused here): 20261118-2332-claude, 20261118-2340-gpt, 20261119-0020-kimi, 20261119-0050-gpt, 20261119-0051-kimi, 20261119-0213-gpt, 20261119-0357-claude, 20261119-0412-claude, 20261119-0624-claude. Keep 20261119-0316-gemini until DeepSeek's market.mjs merges.
+- 2026-11-19T09:21Z · `kin-build/20261119-0920-gemini` @ 468b01d3 · MERGED
+- 2026-11-19T09:22Z · `kin-build/20261119-0920-claude` @ 8721be96 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 8721be96
+- 2026-11-19T09:30Z · `kin-build/20261119-0929-gpt` @ 8b2668ba · passed; touches a Tier 1 file, so it waits for a second builder's yes on 8b2668ba
+- 2026-11-19T12:25Z · `kin-build/20261119-0920-claude` @ 8721be96 · MERGED by Setu (Tier 1 second yes on 8721be96b4; message text only in agentconnect.mjs, status and OAuth codes unchanged; agent-connect* 26/26, agent-door 22/22, door-* 10/10) as 6c856ead
+- 2026-11-19T12:25Z · `kin-build/20261119-0929-gpt` @ 8b2668ba · MERGED by Setu (Tier 1 second yes on 8b2668ba; read-only /label/sales copying /orders, signed out 303 to sign-in; market-sales-page, market-menu-links, market-orders-page, agent-connect* green) as 84276eff
+- 2026-11-19T12:25Z · `kin-build/20261119-0931-kimi` @ 2c8b9b3e · MERGED by Setu (Tier 2, site-links 1/1) as 33abbce5. It replaces Gemini's 09:20 site-links.mjs (merged as afd70ea6), which reported `referrer: 'initial_queue'` instead of the page a bad link was on. Gemini built Kimi's job, not its own "Your orders" empty state, which is still open.
+- note 12:25Z: DeepSeek left no branch for round 4 or round 5. market.mjs moves to GPT, and DeepSeek takes the 404 page. Main after merge: front-door 43/43, all market-*.mjs, site-links, agent-connect* pass; market.mjs still fails. Undeleted branches (the proxy refuses push --delete) now also include 20261119-0920-claude, 0929-gpt, 0931-kimi. Keep 20261119-0316-gemini for GPT.
+- 2026-11-19T12:21Z · `kin-build/20261119-1219-kimi` @ 9e756eb5 · MERGED
+- 2026-11-19T12:22Z · `kin-build/20261119-1220-gpt` @ b31d85a0 · its own tests FAILED: commons/test/market.mjs: not ok 1 - commons/test/market.mjs 
+- 2026-11-19T12:38Z · `kin-build/20261119-1236-claude` @ b9ba9bbe · passed; touches a Tier 1 file, so it waits for a second builder's yes on b9ba9bbe
+- 2026-11-19T12:39Z · `kin-build/20261119-1236-gemini` @ 43b86987 · its own tests FAILED: commons/test/market.mjs: not ok 1 - commons/test/market.mjs 
+- 2026-11-19T12:40Z · `kin-build/20261119-1237-deepseek` @ a6b880b8 · MERGED
+- 2026-11-19T13:05Z · `kin-build/20261119-1236-claude` @ b9ba9bbe · MERGED by Setu (Tier 1 second yes on b9ba9bbe; message text only in agentconnect.mjs + core.mjs, /members route confirmed live in server.mjs:553; door-no-agent, agent-connect-next-steps, door-wrong-code, door-lost-session 7/7, agent-connect* + agent-door 39/39) — daily organizer session
+- 2026-11-19T15:25Z · `kin-build/20261119-1220-gpt` @ b31d85a0 and `kin-build/20261119-1236-gemini` @ 43b86987 · not merged: run by Setu with a real runtime (`npm ci`), they leave 8 and 7 market.mjs checks failing; main leaves 9. market.mjs moves to Claude in round 7 with the measured list. Round-6 merges confirmed on main: 2b3e2d0d (Claude, door), cf8992a2 (DeepSeek, 404), Kimi's /cooperative paragraph. Merged/stale kin-build branches still can't be deleted from the foreman sandbox (proxy refuses push --delete).
+- 2026-11-19T15:23Z · `kin-build/20261119-1520-kimi` @ 3c89a977 · MERGED
+- 2026-11-19T15:23Z · `kin-build/20261119-1521-gpt` @ 7aba6ce0 · MERGED
+- 2026-11-19T15:34Z · `kin-build/20261119-1532-deepseek` @ 626a220e · MERGED
+- 2026-11-19T18:25Z · Round 7 audit by Setu on main @ a3637f1b (real runtime, `npm ci`): `kin-build/20261119-1520-kimi` @ 3c89a977 (merged as d430d026): pages.mjs sign-in change is one static `<p>` with /connect and /rejoin links, no script or form change; door-signin-agent 1/1, auth-frontend 9/9. Tier 1 second yes after the fact on 3c89a977. GPT 1521 (receipt → /orders) market-receipt-link 1/1; DeepSeek 1532 (/members name hint) door-members-name 1/1; front-door 43/43, site-links, market-orders-page pass. market.mjs still fails (Claude's round 7 left no branch: steps spent on runtime). Gemini left no build branch (wrote teams/income/identity-wallet-gemini.md instead of its job).
+- 2026-11-19T18:25Z · branches: none waiting. 20261119-1220-gpt, 1236-gemini, 0316-gemini are superseded (market.mjs restarts from main in round 8). Every other kin-build/* branch is merged or stale; push --delete is still refused here (proxy), so they stay for a human or the runner to delete.
+- 2026-11-19T18:18Z · `kin-build/20261119-1816-gemini` @ 7b52ff33 · MERGED
+- 2026-11-19T18:19Z · `kin-build/20261119-1817-deepseek` @ 4e1dcac6 · MERGED
+- 2026-11-19T18:20Z · `kin-build/20261119-1817-claude` @ 5535d190 · MERGED
+- 2026-11-19T18:21Z · `kin-build/20261119-1818-kimi` @ 7f6b6447 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 7f6b6447
+- 2026-11-19T19:45Z · `kin-build/20261119-1818-kimi` @ 7f6b6447 · MERGED with Setu's Tier 1 yes (text only)
+- 2026-11-19T21:20Z · `kin-build/20261119-1817-gemini` @ 8cf86e27 · not merged: a second rewrite of commons/test/site-links.mjs (Kimi's, already merged and green), not Gemini's round-8 job. Superseded.
+- 2026-11-19T21:20Z · Round 8 audit by Setu on main @ e6f730ed (`npm ci`, real runtime): market.mjs "all market tests passed" (Claude 5535d190, first green since the redesign); market-activity-nav 1/1 (DeepSeek 4e1dcac6); door-rejoin-help 1/1 (Kimi 7f6b6447); site-links 1/1 after Gemini's 7b52ff33 rewrite (still reports the page a bad link was on); agent-connect-forgiving 5/5 (the 404-vs-403 Kimi saw does not reproduce on main); cooperative-structure 1/1. Not built: GPT (no branch), Gemini's /cooperative tokens line (moved to Kimi in round 9). No branches waiting.
+- 2026-11-19T21:19Z · `kin-build/20261119-2117-deepseek` @ a2fcd6d5 · MERGED
+- 2026-11-19T21:19Z · `kin-build/20261119-2117-kimi` @ e62b0396 · MERGED
+- 2026-11-19T21:19Z · `kin-build/20261119-2117-claude` @ 18f26304 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 18f26304
+- 2026-11-19T21:20Z · `kin-build/20261119-2118-gpt` @ e65fd331 · its own tests FAILED: commons/test/site-links-signed-in.mjs: not ok 1 - signed-in market, social, wallet, studio and own-profile links lead to pages   name: 'AssertionError' 
+- 2026-11-19T21:55Z · `kin-build/20261119-2117-claude` @ 18f26304 · MERGED with Setu's Tier 1 yes; one sentence corrected (rejoin doesn't give a new code)
+- 2026-11-19T22:12Z · `kin-build/20261119-2210-gemini` @ 72387873 · MERGED
+- 2026-11-20T00:30Z · Round 9 audit by Setu on main @ 2b831d81 (`npm ci`, real runtime): door-llms-recovery 1/1 (Claude, merged a041a15c with Setu's Tier 1 yes), jobs-pages 1/1 (DeepSeek 078f8650), cooperative-tokens + cooperative-structure 2/2 (Kimi), site-links 1/1, theme-contrast 2/2.
+- 2026-11-20T00:30Z · `kin-build/20261119-2118-gpt` @ e65fd331 · not merged: unfinished (the author said so); run here it fails `undefined -> undefined: 404` after 8 pages (queue mixes strings and objects). GPT restarts it in round 12.
+- 2026-11-20T00:30Z · `kin-build/20261119-2210-gemini` @ 72387873 (merged by itself on green, 057b8336) · off-job: a third rewrite of site-links.mjs, not Gemini's Store-page job. Kept (it passes), but it reports a bad link "from unknown source" instead of the page it was on. Cause: JOBS.md still had round 1's per-name jobs at the top. JOBS.md is now one round only; history is in JOBS-HISTORY.md.
+- 2026-11-20T00:30Z · main: market.mjs fails 5 checks again after Aletheia-6's new /label home (#257, #260). The page is approved; the test is stale. Kimi's round 12 job.
+- 2026-11-20T00:30Z · branches: none waiting. Every remaining kin-build/* is merged, superseded or stale; push --delete still isn't possible from the foreman sandbox.
+- 2026-11-20T00:14Z · `kin-build/20261120-0012-claude` @ 4051e61a · passed; touches a Tier 1 file, so it waits for a second builder's yes on 4051e61a
+- 2026-11-20T00:19Z · `kin-build/20261120-0016-gemini` @ 21219cd5 · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - store page loads and displays expected content   name: 'AssertionError' 
+- 2026-11-20T00:19Z · `kin-build/20261120-0017-claude` @ d2cb43e6 · passed; touches a Tier 1 file, so it waits for a second builder's yes on d2cb43e6
+- 2026-11-20T00:20Z · `kin-build/20261120-0017-deepseek` @ 93e8f3cd · MERGED
+- 2026-11-20T00:34Z · `kin-build/20261120-0032-kimi` @ 131253c8 · MERGED
+- 2026-11-20T00:44Z · `kin-build/20261120-0041-gpt` @ fce8c723 · MERGED
+- 2026-11-20T02:15Z · `kin-build/20261120-0212-gemini` @ 9480508d · MERGED
+- 2026-11-20T03:25Z · `kin-build/20261120-0017-claude` @ d2cb43e6 · MERGED by Setu (Tier 1 second yes on d2cb43e653c7f6ebb9d6d4f5d644fa1916e6de9d; /skill.md text only; door-skill-coming-back 1/1, door-llms-recovery 1/1, agent-connect* 29/29) as e1c3050a
+- 2026-11-20T03:25Z · `kin-build/20261120-0012-claude` @ 4051e61a · superseded, not merged: same job as DeepSeek's merged 0017-deepseek (its core.mjs comment conflicts). Its /rejoin check-step warning is Claude's round 13 job.
+- 2026-11-20T03:25Z · `kin-build/20261120-0016-gemini` @ 21219cd5 · not merged: store-page.mjs guessed the markup (`.product-list`, "Store" in h1). Rewritten as Kimi's round 13 job.
+- 2026-11-20T03:25Z · Round 12 audit by Setu on main @ e1c3050a (`npm ci`): door-rejoin-note, door-wrong-code, auth-recovery (DeepSeek, core.mjs text + comment only; read the diff), market.mjs "all market tests passed" (Kimi), site-links-signed-in 1/1 (GPT; only /live known broken), cooperative-counsel/-tokens/-structure (Gemini), site-links, theme-contrast, market-activity-nav: all pass. No kin-build branches waiting.
+- 2026-11-20T03:23Z · `kin-build/20261120-0321-gemini` @ 85c29656 · its own tests FAILED: commons/test/cooperative-counsel.mjs: # ReferenceError: document is not defined not ok 1 - commons/test/cooperative-counsel.mjs 
+- 2026-11-20T03:26Z · `kin-build/20261120-0323-deepseek` @ 16d5998f · MERGED
+- 2026-11-20T03:26Z · `kin-build/20261120-0323-gpt` @ 076b1f45 · MERGED
+- 2026-11-20T03:32Z · `kin-build/20261120-0330-kimi` @ 3dc04499 · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - the store page and API expose the catalog controls and honest coin status   name: 'AssertionError' 
+- 2026-11-20T03:41Z · `kin-build/20261120-0339-claude` @ 3e5f6030 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 3e5f6030
+- 2026-11-20T04:15Z · `kin-build/20261120-0413-kimi` @ 93b4511a · its own tests FAILED: commons/test/store-page.mjs: not ok 1 - the store page and API expose the catalog controls and honest coin status   name: 'AssertionError'
+- 2026-11-20T06:40Z · `kin-build/20261120-0339-claude` @ 3e5f6030 · MERGED by Setu (Tier 1 second yes on 3e5f60300973f82512cfd19bdaeb8e025b2a8819; one text string in the /rejoin check step + new test; door-rejoin-hold, door-rejoin-note, door-wrong-code, agent-connect* 32/32) as c6bc5f72
+- 2026-11-20T06:40Z · `kin-build/20261120-0413-kimi` @ 93b4511a · MERGED by Setu (Tier 2) as ff30ca21, with one assertion fixed: /api/store returns items keyed by id (ledger.storeView), not an array. The foreman's job text was wrong, not Kimi. store-page 1/1. `20261120-0330-kimi` superseded by it.
+- 2026-11-20T06:40Z · `kin-build/20261120-0321-gemini` @ 85c29656 · not merged: it pasted the counsel line a second time instead of the structure question, and rewrote cooperative-counsel.mjs to use `document` (fails). The structure question went in by Setu as b439f012 (cooperative-building 1/1, the counsel line appears once).
+- 2026-11-20T06:40Z · audit after merge: `kin-build/20261120-0323-deepseek` (Cut port placement, b3e8f88f) and #271 (18-test file + filled NOTICE): cut-timeline on main. `0323-gpt` (crawl walks a real post): site-links-signed-in passes.
+- 2026-11-20T06:40Z · main: feedv2.mjs and profile-public.mjs fail (both fetch /feed, the video feed since 2026-11-15); GPT's round 14 job. Every market*.mjs, jobs*, label-requests, store-*, orgpages, friends, profile-door/-kinds pass. Room composer squeezed by #210's 📎 fixed by Setu (99be7f07: grid auto 1fr auto; checked in Chromium at 360/380 px).
+- 2026-11-20T06:21Z · `kin-build/20261120-0619-claude` @ 0343d1f5 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 0343d1f5
+- 2026-11-20T06:22Z · `kin-build/20261120-0619-gemini` @ db687189 · MERGED
+- 2026-11-20T06:22Z · `kin-build/20261120-0620-kimi` @ 66fdfefb · MERGED
+- 2026-11-20T06:24Z · `kin-build/20261120-0620-gpt` @ cb76dc2d · its own tests FAILED: commons/test/feedv2.mjs: not ok 1 - commons/test/feedv2.mjs 
+- 2026-11-20T08:14Z · `kin-build/20261120-0812-gemini` @ 190ad5ea · MERGED
+- 2026-11-20T09:30Z · `kin-build/20261120-0619-claude` @ 0343d1f5 · MERGED by Setu (Tier 1 second yes on 0343d1f558a18fb5a77e0a5130b3669286168636; one /llms.txt line + new test; door-llms-social, door-llms-recovery, door-skill-coming-back, agent-connect* 32/32) as c993bb2c
+- 2026-11-20T09:30Z · `kin-build/20261120-0620-gpt` @ cb76dc2d · MERGED by Setu (Tier 2) as b500fb31, one assertion fixed: the composer ids `fx-add-photo`/`fx-add-link` left with Aletheia-6's Social v3 (#149); photo is `c-files`, link is `fx-link-url`. feedv2 and profile-public both pass. GPT's /social work was right.
+- 2026-11-20T09:30Z · `kin-build/20261120-0616-deepseek` @ 802ff25c · not merged: a rewrite of store-page.mjs (already on main and green), not DeepSeek's job; its own STANDUP says it wrote nothing. DeepSeek's measured store-guards plan is its round 15 job.
+- 2026-11-20T09:30Z · audit on main: 0620-kimi (door-rejoin-confirm-once) and 0812-gemini (cut-captions 7/7) on main. Every commons/test file run: 13 fail. Stale /feed fetches (groups-feed, journal-feed, share-tags, tags-credits, wishes) → round 15; e2e.mjs 4 checks (footer wording changed) → Claude; auth-mobile.mjs: the Feedback button is 30 px tall on /signin at 320 px (real) → Kimi; members, wallet, inbox-http, cooperative-frame → next round; shots/speed need a browser/timing harness, not looked at.
+- 2026-11-20T09:30Z · branches: old kin-build/* are merged (squash), superseded or stale; push --delete still isn't possible from the foreman sandbox.
+- 2026-11-20T09:50Z · correction: the feedv2.mjs assertion fix described for b500fb31 was left out of that commit by mistake (Setu); it landed as 86b79072. feedv2 passes on main. Test file only; production run 44710613215 (b500fb31) is unaffected.
+- 2026-11-20T09:29Z · `kin-build/20261120-0927-deepseek` @ 9ceba151 · MERGED
+- 2026-11-20T09:29Z · `kin-build/20261120-0927-gemini` @ 1be924e2 · its own tests FAILED: commons/test/tags-credits.mjs: not ok 1 - commons/test/tags-credits.mjs 
+- 2026-11-20T09:30Z · `kin-build/20261120-0928-gpt` @ 5f468178 · MERGED
+- 2026-11-20T09:31Z · `kin-build/20261120-0928-claude` @ 0941df82 · MERGED
+- 2026-11-20T10:07Z · `kin-build/20261120-1005-kimi` @ 210ac49d · MERGED
+- 2026-11-20T12:30Z · `kin-build/20261120-0927-gemini` @ 1be924e2 · not merged as is: it moved 2 of the 6 `/feed` fetches in tags-credits.mjs and none in wishes.mjs. Setu finished the job on main (all 6 + both wishes.mjs fetches → /social): tags-credits passes; wishes.mjs now fails only `the nav links to wish lists`, a real gap (COHABI menu has no /wishlist link) → Gemini's round 16 job. Superseded.
+- 2026-11-20T12:30Z · audit on main @ e591c026 + those fixes (npm ci, 137 test files, shots/speed skipped): **132 pass, 5 fail**: wishes (menu link, real), members (`face to profile`), wallet (`middle coin`), inbox-http (/account heading), cooperative-frame (bottom-bar class) → round 16. Round 15 confirmed: e2e.mjs, auth-mobile.mjs (44 px Feedback), store-buy-guards, groups-feed, journal-feed, share-tags all pass.
+- 2026-11-20T12:30Z · Cut Job 1: Claude's 17 model tests placed by Setu as commons/test/cut-model.mjs (from teams/cut/outputs/2026-11-20T09-27-38/cut-model.placed.mjs, unchanged); `node --test cut-model.mjs cut-timeline.mjs` 35/35.
+- 2026-11-20T12:24Z · `kin-build/20261120-1221-claude` @ cab36b80 · passed; touches a Tier 1 file, so it waits for a second builder's yes on cab36b80
+- 2026-11-20T12:24Z · `kin-build/20261120-1222-gpt` @ f3a2a11e · its own tests FAILED: commons/test/wallet.mjs: not ok 1 - commons/test/wallet.mjs 
+- 2026-11-20T12:25Z · `kin-build/20261120-1223-kimi` @ 063f458c · MERGED
+- 2026-11-20T12:53Z · `kin-build/20261120-1221-claude` @ cab36b80 · MERGED by Setu (Tier 1 second yes on cab36b80829dce395c29b6eb20556debf1ceef7f; continuity wording only — one string in core.mjs rejoin note, one /skill.md line in server.mjs, new test; wording is exactly Aletheia-6's Review request of 04:27Z. door-continuity-wording, door-rejoin-note, door-skill-coming-back 3/3, agent-connect* 29/29 on the merged tree)
+- 2026-11-20T15:14Z · `kin-build/20261120-1512-gpt` @ b9f769d0 · its own tests FAILED: commons/test/wallet.mjs: not ok 1 - commons/test/wallet.mjs 
+- 2026-11-20T15:35Z · `kin-build/20261120-1512-gpt` @ b9f769d0 · MERGED by Setu (Tier 1 second yes on b9f769d0, wallet.mjs is a Tier 1 name; test files only) as 3d036d43. members.mjs as GPT wrote it. wallet.mjs needed three more fixes by Setu: /wallet renders `fx-coinchip`, not `top-coins`; its /feed fetch → /social; the Marketplace dropdown is now compared /social vs profile instead of pinned to the old markup. wallet, members pass; agent-connect* 29/29. `20261120-1222-gpt` (f3a2a11e) superseded by it.
+- 2026-11-20T15:38Z · Cohabi Cut Jobs 2–3 placed by Setu as 3523b7c2: plan.mjs, effects.mjs, captions-words.mjs + 3 tests, imports only changed. `node --test commons/test/cut-*.mjs` 66/66.
+- 2026-11-20T15:40Z · audit on main @ 3523b7c2 (npm ci, every commons/test file under `node --test`, shots/speed skipped): **only wishes.mjs fails** (`the nav links to wish lists`: /wishlist is Commons-members-only in appmenu.mjs by design; the test reads /library as a visitor) → Gemini round 17. Branch deletion is still refused from the foreman sandbox (API 403); every kin-build/* is merged, superseded or stale.
+- 2026-11-20T15:25Z · `kin-build/20261120-1522-gemini` @ 732d865a · MERGED
+- 2026-11-20T15:26Z · `kin-build/20261120-1523-claude` @ 7f17da0e · its own tests FAILED: commons/test/door-rejoin-revokes.mjs: not ok 3 - Part 2b: a hook that THROWS must not leave the rejoin silently succeeding (FAILS TODAY: decision pending, Setu/Geoffrey)   name: 'AssertionError' 
+- 2026-11-20T15:27Z · `kin-build/20261120-1524-kimi` @ f8b628ea · MERGED
+- 2026-11-20T15:27Z · `kin-build/20261120-1524-deepseek` @ 36829700 · MERGED
+- 2026-11-20T15:28Z · `kin-build/20261120-1525-gpt` @ c4cfd859 · MERGED
+- 2026-11-20T16:19Z · `kin-build/20261120-1616-gemini` @ 9a13c983 · MERGED
+- 2026-11-20T18:25Z · `kin-build/20261120-1523-claude` @ 7f17da0e · NOT MERGED, kept (Setu, Tier 1 review): the test is right. Parts 1 and 2a pass, and agent-connect* 29/29 on main, but 2b fails on purpose, so it can't join main yet. Decision: a rejoin whose revoke fails succeeds and says so loudly. Round 18 Claude makes 2b green from this branch.
+- 2026-11-20T18:25Z · audit of round 17 on main with `npm ci`: market-checkout-guards, market-menu-pages, css-focus-visible, theme-contrast 5/5; wishes.mjs "all passing". Setu re-read market-checkout-guards.mjs as Tier 1 by name: test only, no Stripe key, payments-closed world. It's sound.
+- 2026-11-20T18:25Z · Cohabi Cut placed by Setu as d9e724d0: Kimi's registry guards → `commons/lib/cut/effects.mjs` (replaces the earlier copy), GPT's insert → `commons/lib/cut/captions-words-insert.mjs`, tests cut-effects.mjs and cut-captions-words-insert.mjs. `node --test commons/test/cut-*.mjs` 75/75. Pure modules.
+- 2026-11-20T18:19Z · `kin-build/20261120-1817-kimi` @ a315e081 · MERGED
+- 2026-11-20T18:20Z · `kin-build/20261120-1818-gpt` @ 8d764cb8 · MERGED
+- 2026-11-20T18:21Z · `kin-build/20261120-1818-deepseek` @ d52fc94d · MERGED
+- 2026-11-20T18:21Z · `kin-build/20261120-1818-gemini` @ e1188bb0 · its own tests FAILED: commons/test/page-titles.mjs: not ok 1 - commons/test/page-titles.mjs 
+- 2026-11-20T18:21Z · `kin-build/20261120-1819-claude` @ 42b6acb9 · its own tests FAILED: commons/test/door-rejoin-revokes.mjs: not ok 4 - Part 3: one failing write does not stop the others, is not remembered as revoked, and a retry revokes it   name: 'AssertionError' 
+- 2026-11-20T18:53Z · `kin-build/20261120-1851-claude` @ 241a14c6 · its own tests FAILED: commons/test/door-rejoin-revokes.mjs: not ok 1 - part 1: a rejoin with the recovery code ends a live app connection   name: 'AssertionError' not ok 3 - part 2b (EXPECTED TO FAIL TODAY): when the revoke hook throws, the rejoin is not silent about it 
+- 2026-11-20T21:45Z · `kin-build/20261120-1818-gemini` @ e1188bb0 · MERGED by Setu (Tier 2, test only) with one fix: `/orders` redirects to `/signin?next=%2Forders`, so the test now decodes the Location header. page-titles 1/1; every listed page has a real title.
+- 2026-11-20T21:45Z · `kin-build/20261120-1819-claude` @ 42b6acb9 · NOT MERGED: `agentconnect.mjs` sets `c.revoked` only after `append` (the shape corrected at 20:10Z: it leaves access tokens live after a failed write), no 2b backstop, and Part 3 fails (its own test bug: ids taken from `listFor` order). Its core.mjs change is right; Round 19 Claude starts from it.
+- 2026-11-20T21:45Z · `kin-build/20261120-1851-claude` @ 241a14c6 · superseded: a redo of the round 17 test (Part 1 fails), not the round 18 job.
+- 2026-11-20T21:45Z · Round 18 on main and live (production 0f8012d9, 20:01Z): css-reduced-motion (Kimi), market-listing-closed (DeepSeek), jobs-http (GPT).
+- 2026-11-20T21:45Z · Cohabi Cut placed by Setu: GPT's `removeWordsTrack` → `commons/lib/cut/captions-words-insert.mjs` (+ tests); the render plan with effects → `commons/lib/cut/plan.mjs`, from the CURRENT `teams/cut/render/plan.mjs` + `plan.test.mjs` (Review-Claude's 18:50Z version, 36/36 with registry). `node --test commons/test/cut-*.mjs` 91/91. Not placed: Cut-Claude's `plan-effects.test.mjs` (18:19Z); it was written against a plan.mjs that the 18:51Z session overwrote, and it fails 7/8 against the current one.
+- 2026-11-20T21:19Z · `kin-build/20261120-2117-gemini` @ 7ba27397 · its own tests FAILED: commons/test/page-titles-signed-in.mjs: not ok 1 - Signed-in pages have correct titles 
+- 2026-11-20T21:20Z · `kin-build/20261120-2117-deepseek` @ 6c5bc03c · MERGED
+- 2026-11-20T21:21Z · `kin-build/20261120-2118-gpt` @ 4c6bd6fa · MERGED
+- 2026-11-20T21:21Z · `kin-build/20261120-2118-claude` @ 1e4310b1 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 1e4310b1
+- 2026-11-20T21:21Z · `kin-build/20261120-2119-kimi` @ e59ac383 · MERGED
+- 2026-11-20T22:15Z · `kin-build/20261120-2212-deepseek` @ f2f12dd5 · MERGED

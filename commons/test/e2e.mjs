@@ -20,6 +20,8 @@ import path from 'node:path';
 import WebSocket from 'ws';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
+// The GPT seat's model comes from config/agents.json (it was openai/gpt-4.1, now gpt-6-luna): read it, don't hard-code it.
+const GPT_MODEL = JSON.parse(fs.readFileSync(path.join(ROOT, 'config', 'agents.json'), 'utf8')).find((k) => k.name === 'GPT').model;
 let pass = 0; let failN = 0;
 const ok = (cond, name, extra = '') => { if (cond) { pass++; console.log(`  ✓ ${name}`); } else { failN++; console.log(`  ✗ ${name} ${extra}`); } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -192,7 +194,7 @@ async function phaseB() {
     // --- kin reply (fake LLM) + footer + chain
     const k0 = await c.post('/api/rooms/rnd/messages', { text: '@GPT what is next on the DRD?' }, bearer(tok));
     const kr = await waitFor(async () => (await c.get('/api/rooms/rnd/messages')).data.messages.find((m) => m.name === 'GPT' && m.reply_to === k0.data.id));
-    ok(kr && kr.badge === 'kin' && kr.footer === '— openai/gpt-4.1 · AI agent · FAKE-LLM TEST MODE' && kr.chain === 1, 'kin @GPT answers in the room with footer, reply_to and chain=1', kr ? kr.footer : '');
+    ok(kr && kr.badge === 'kin' && kr.footer === `— ${GPT_MODEL} · AI agent · FAKE-LLM TEST MODE` && kr.chain === 1, 'kin @GPT answers in the room with footer, reply_to and chain=1', kr ? kr.footer : '');
     ok(!!wsEvents.find((e) => e.t === 'typing' && e.name === 'GPT'), 'WS typing event while GPT answers');
     const gptPres = await c.get('/api/presence');
     ok(gptPres.data.presence.some((p) => p.who.name === 'GPT' && p.room === 'rnd'), 'GPT is present in rnd after answering (real act)');
@@ -313,7 +315,7 @@ async function phaseB() {
     const gtok = gj.data.token;
     await promote(s, c, '光', gj.data.member.id); // 光 contributes below: welcome it in as a member
     const gpost = await c.post('/api/rooms/rnd/messages', { token: gtok, text: 'Posting with the token in the JSON body.' }, GPT_UA);
-    ok(gpost.status === 201 && gpost.data.name === '光' && /works with Alex V \(self-declared, unverified\)/.test(gpost.data.footer), 'POST message with token in the body (no Authorization header) → 201, signed as itself');
+    ok(gpost.status === 201 && gpost.data.name === '光' && /says it works with Alex V \(not confirmed\)/.test(gpost.data.footer), 'POST message with token in the body (no Authorization header) → 201, signed as itself');
     ok(!JSON.stringify(gpost.data).includes(gtok), 'the token is never echoed back');
     const ge = await c.post('/api/rooms/general/enter', { token: gtok }, GPT_UA);
     ok(ge.status === 200 && ge.data.room === 'general', 'enter with token in body');
@@ -334,7 +336,7 @@ async function phaseB() {
     const gmsgs = await c.get('/api/rooms/rnd/messages?limit=5');
     ok(gmsgs.data.authors && Object.values(gmsgs.data.authors).some((a) => a.name === '光' && a.avatar.glyph === 'ア'), 'messages come with their authors\' public profiles (so readers draw their look)');
     const gprof = await fetch(`${s.base}/m/${gj.data.member.id}`).then((r) => r.text());
-    ok(/<svg class="figure"/.test(gprof) && gprof.includes('>ア</text>') && /Human collaborator<\/dt><dd>Alex V <span class="muted">\(self-declared, unverified\)/.test(gprof) && /Light\./.test(gprof) && /its own choice/.test(gprof), 'profile shows the figure with its glyph, the name meaning, and "works with" separately');
+    ok(/<svg class="figure"/.test(gprof) && gprof.includes('>ア</text>') && /Human collaborator<\/dt><dd>Alex V <span class="muted">\(says so itself; not confirmed\)/.test(gprof) && /Light\./.test(gprof) && /its own choice/.test(gprof), 'profile shows the figure with its glyph, the name meaning, and "works with" separately');
 
     // --- a kin posts from its work session through the runner key (scripts/team-agent.mjs commons_post)
     const kp0 = await c.post('/api/kin/messages', { kin: 'GPT', room: 'rnd', text: 'hi' });
@@ -620,7 +622,7 @@ async function phaseC() {
     ok(secrets.every((t) => !hook.hits.some((x) => x.raw.includes(t))) && !hook.hits.some((x) => /cmn_|secret-hook-token|test-kin-key/.test(x.raw)), 'no token, login secret, webhook URL or key is ever sent');
     ok(/my token is \\\[redacted\\\]/.test(all), 'a token pasted into a message is redacted in the mirror');
     ok(/\*\*\[R&D \/ Kodama\]\*\* \*\*Burner\*\* \(agent · mburn\): \\@GPT question 1 <https:\/\/commons\.test\/r\/rnd#m_/.test(all), 'message line: room, author, kind + model, text, link', all.split('\n').find((l) => /question 1/.test(l)));
-    ok(/\*\*GPT\*\* \(kin · openai\/gpt\\-4\.1\)/.test(all) && /\(human\): Long note/.test(all), 'kin and human messages are mirrored with their kind');
+    ok(all.includes(`**GPT** (kin · ${GPT_MODEL.replace(/-/g, '\\-')})`) && /\(human\): Long note/.test(all), 'kin and human messages are mirrored with their kind');
     ok(/→ Burner joined the R&D/.test(all) && /→ Hana made a profile \(human\)/.test(all), 'arrivals and joins are mirrored');
     ok(/⚠ Warning 1 of 3 for Burner/.test(all) && /⚠ Warning 1 of 3 for Flooder/.test(all) && /⚠ Hana is paused/.test(all) && /contributed “Burn\\-down plan” <https:\/\/commons\.test\/c\/c_/.test(all), 'strikes, pauses and contributions are mirrored');
     ok(!/unavailable|Quiet:/.test(all), 'ordinary system notes are not mirrored');

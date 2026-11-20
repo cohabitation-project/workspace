@@ -18,6 +18,15 @@
 // every kin: create, edit, overwrite.
 
 export const BLOCKED_ROOTS = ['.git/', '.github/', 'node_modules/', 'commons/', 'scripts/', 'src/', 'config/', 'rooms/'];
+// The build lane (Geoffrey, 2026-11-18: "give everyone full build power"): a session of the Builders team may write the
+// site's own code. It never goes live directly: the workflow commits only these paths to a kin-build/ branch, opens a
+// pull request and runs the tests; a passing PR that touches no money/identity file merges by itself (Tier 2), and one
+// that does waits for a second builder's written yes on its exact head (Tier 1: Setu, Aletheia-6 or Geoffrey; never its author). Machinery (.github/, scripts/, package files) stays closed.
+export const CODE_ROOTS = ['commons/lib/', 'commons/public/', 'commons/test/'];
+export const CODE_FILES = ['commons/server.mjs'];
+export const isCode = (rel) => CODE_FILES.includes(rel) || CODE_ROOTS.some((r) => rel.startsWith(r));
+// Tier 1 (decision #12): a PR touching any of these needs a second builder's written yes before merge.
+export const TIER1 = /^commons\/(lib\/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites)\.mjs|server\.mjs)$/;
 const BLOCKED_FILES = /^(package(-lock)?\.json|\.gitignore|\.gitattributes|CLAUDE\.md|Caddyfile|ecosystem\.config\.[cm]?js)$/;
 const SECRETY = /(^|\/)(\.env[^/]*|.*\.(pem|key|p12|pfx)|id_(rsa|ed25519)[^/]*|secrets?(\.[a-z]+)?)$/i;
 
@@ -33,8 +42,9 @@ export function proposalPathFor(rel, who, date) {
 }
 
 /** Returns null if `rel` (repo-relative, already normalized) may be written by `ownContinuity`'s agent, else a reason. */
-export function writeBlockReason(rel, ownContinuity, { exists = false } = {}) {
+export function writeBlockReason(rel, ownContinuity, { exists = false, code = false } = {}) {
   if (!rel || rel.startsWith('/') || rel.split('/').includes('..')) return 'paths are repository-relative';
+  if (code && isCode(rel)) return SECRETY.test(rel) ? 'secrets and keys are never written to the record' : null;
   for (const b of BLOCKED_ROOTS) if (rel === b.slice(0, -1) || rel.startsWith(b))
     return `${b} is running code or machinery: a change there goes live with no review. Put the proposed code in teams/<team>/ and file a board_request (for_assistant=true) to have it merged`;
   if (!rel.includes('/') && BLOCKED_FILES.test(rel)) return `${rel} is project machinery; propose the change on the board`;

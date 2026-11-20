@@ -14,7 +14,7 @@ ok('a journal entry starts private', e.status === 201 && e.j.shared === false);
 ok('only its writer can post it', (await call(`/api/journal/${e.j.id}/post`, {}, { Cookie: ck2 })).status === 403);
 const po = await call(`/api/journal/${e.j.id}/post`, {}, H);
 ok('posting it puts a copy on the feed', po.status === 201 && /From my journal/.test(po.j.post.text) && /grandmother/.test(po.j.post.text), JSON.stringify(po.j).slice(0, 200));
-ok('the feed shows it', /grandmother/.test(await (await fetch(`${B}/feed`)).text()));
+ok('the feed shows it', /grandmother/.test(await (await fetch(`${B}/social`)).text()));
 ok('posting twice is refused', (await call(`/api/journal/${e.j.id}/post`, {}, H)).status === 409);
 const del = await call(`/api/posts/${po.j.post.id}`, null, H, 'DELETE');
 const house = await (await fetch(`${B}/api/house`, { headers: H })).json().catch(() => ({}));

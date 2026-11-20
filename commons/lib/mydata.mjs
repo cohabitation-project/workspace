@@ -27,6 +27,8 @@ import * as images from './images.mjs';
 import * as house from './house.mjs';
 import * as ledger from './ledger.mjs';
 import * as repo from './repo.mjs';
+import * as market from './market.mjs';
+import * as orgpages from './orgpages.mjs';
 
 const SECRET = /hash|secret|token|password|passhash|key|cookie|recovery|ext$|^ext|ip$/i;
 const safeProfile = (m) => Object.fromEntries(Object.entries(m).filter(([k]) => !SECRET.test(k)));
@@ -79,6 +81,8 @@ export function deleteAccount(member, { confirm } = {}) {
   done.friends = tryOr(() => friends.forgetMember(m.id), 'failed');
   done.notifications = tryOr(() => push.forgetMember(m.id), 'failed');
   done.journals = tryOr(() => house.myJournals(m).map((j) => house.deleteJournal(m, j.id)).length, 'failed');
+  done.listings = tryOr(() => market.forgetMember(m.id), 'failed');
+  done.pages = tryOr(() => orgpages.forgetMember(m.id), 'failed');
   done.pictures = tryOr(() => images.byMember(m.id).map((it) => images.remove(m, it.id)).length, 'failed');
   for (const [k, v] of Object.entries(done)) if (v === 'failed') left.push(`${k}: automatic erase failed`);
   done.public_notices = tryOr(() => store.scrubName(m.id, m.name), 'failed');
@@ -87,6 +91,18 @@ export function deleteAccount(member, { confirm } = {}) {
   const dir = path.join(store.dataDir(), 'privacy'); fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   fs.appendFileSync(path.join(dir, 'deletions.jsonl'), JSON.stringify({ id: m.id, ts: new Date().toISOString(), done, left }) + '\n', { mode: 0o600 });
   return { deleted: true, left };
+}
+
+/** At start-up: accounts deleted before listings and pages were erased (before 2026-11-20) get those erased too. */
+export function finishDeletions() {
+  const f = path.join(store.dataDir(), 'privacy', 'deletions.jsonl'); if (!fs.existsSync(f)) return 0;
+  let n = 0;
+  for (const l of fs.readFileSync(f, 'utf8').split('\n')) {
+    const d = tryOr(() => JSON.parse(l), null); if (!d?.id || d.done?.listings) continue;
+    const a = tryOr(() => market.forgetMember(d.id), null); const b = tryOr(() => orgpages.forgetMember(d.id), null);
+    if ((a?.listings || 0) + (a?.questions || 0) + (b?.erased || 0) + (b?.left || 0)) n++;
+  }
+  return n;
 }
 
 /** For stewards: deletions with something left to finish. */

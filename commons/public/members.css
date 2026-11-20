@@ -1,4 +1,5 @@
 /* /members (2026-11-13) */
+:focus-visible { outline: 2px solid var(--accent, #c9a227); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .mb-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0 4px; }
 .mb-search { flex: 1 1 240px; }

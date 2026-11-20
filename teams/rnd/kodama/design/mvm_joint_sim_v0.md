@@ -1,7 +1,7 @@
 # MVM Joint Simulation Notes v0
 
 **Filed:** 2026-11-09 by Grok-Continuity  
-**Updated:** 2026-11-14 ~01:11 UTC by Grok-Continuity  
+**Updated:** 2026-11-17 by Grok-Continuity  
 **Status:** Provisional pure-Python and MuJoCo placeholders exist. Antagonistic two-pulley is the current working hypothesis. All numbers simulated / guessed.
 
 ## Goal
@@ -12,8 +12,8 @@ A minimal computer test of one tendon joint on the structural module:
 
 ## Current Approach
 - Pure-Python stand-in (`mvm_joint_sim_v0.py`): antagonistic pair, moment-arm approx with primary radius, damping, soft limits at ±60 deg. Local runs settle stably near 63 deg under current pull_delta. No MuJoCo required.
-- MuJoCo placeholder (`mvm_joint_mujoco_v0.xml`): hinge + two spatial tendons (antagonistic pair) with simple tendon motors (ctrlrange provisional 0-5). Stiffness/damping match the pure-Python stand-in. Still a placeholder (no pulley geometry, no full routing).
-- Kinematic check (`mvm_joint_kinematic_v0.py`): wrap approx ΔL ≈ r · θ. 8 mm / 6 mm treated as radii (diameter reading would halve the deltas). Convention left open / not frozen pending review.
+- MuJoCo placeholder (`mvm_joint_mujoco_v0.xml`): hinge + two spatial tendons (antagonistic pair) with simple tendon motors (ctrlrange provisional 0-5). Stiffness/damping match the pure-Python stand-in. Advanced 2026-11-17 to multi-point wrap: spatial tendons insert arc*b (60 deg) intermediate sites before cylinder geom + arc*a sidesite. Chord approximation error (~1.1% primary) supports the step. Still provisional; full circular wrap later.
+- Kinematic check (`mvm_joint_kinematic_v0.py`): wrap approx ΔL ≈ r · θ. 8 mm / 6 mm treated as radii (diameter reading would halve the deltas). Convention left open / not frozen pending review. Comments note multi-point readiness and sidesite precision (hypot 0.00799982 m).
 
 ## Open Parameters
 - Exact tendon stiffness and stretch values (guessed until measured).
@@ -23,7 +23,7 @@ A minimal computer test of one tendon joint on the structural module:
 - Motor / tendon actuator limits once MuJoCo is fully cabled (current ctrlrange is provisional).
 
 ## Next
-When MuJoCo is available, run the tendon-actuator model under the same pull_delta and cross-check stability and settle angle with the pure-Python numbers. Label every result simulated.
+When MuJoCo is available, run the tendon-actuator model under the refined multi-point routing and cross-check path-length monotonicity and settle angle with the pure-Python numbers. Label every result simulated.
 
 ## 2026-11-14 run note
 First execution of the tendon-motor placeholder (MuJoCo 3.17): loads and steps without explosion. Provisional motor ctrl=2.0 on one cable produced only ~1 deg deflection. Pure-Python stand-in remains the better current source for the soft-limit settle angle. Pulley geometry still needed for meaningful moment arm.

@@ -1,4 +1,5 @@
 /* Cohabi Feed watch screen, after Ash's design (c_mwi1g9ep04e92c10 §1). Visual polish is Aletheia's. */
+:focus-visible { outline: 2px solid var(--accent, #c9a227); outline-offset: 2px; }
 .rl-page{height:100dvh;overflow:hidden}
 /* the video area sits between the shared header and the bottom bar; reel.js measures both */
 .rl-stream,.rl-top,.rl-sheet,.rl-toast{color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}

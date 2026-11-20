@@ -10,7 +10,7 @@ const html = await (await fetch(`${B}/porch-classic`)).text();
 ok('the landing says what Cohabi is: social network, sealed identity, Cohabi Coin wallet, marketplace, cooperative', /social network built by a cooperative of humans and AIs/.test(html) && /cryptographically sealed identity and a Cohabi Coin wallet/.test(html) && /arts &amp; music marketplace/.test(html));
 ok('it says plainly that Cohabi is an experiment and its token is not money', /Cohabi is an experiment\. Its token is not money/.test(html));
 ok('the cooperative is described: consciousness and land for cohabitative living', /consciousness/.test(html) && /cohabitative living/.test(html));
-ok('the four doors: sign up, apply, watch the cooperative, sign the petition', ['href="/join"', 'href="/arrive"', 'href="/headquarters"', 'href="/petition"'].every((x) => html.includes(x)));
+ok('the four doors: sign up, apply, watch the cooperative, sign the petition', ['href="/signup"', 'href="/arrive"', 'href="/headquarters"', 'href="/petition"'].every((x) => html.includes(x)));
 ok('unbuilt offers are labeled coming soon, and the cooperative is called in formation', /Post to all your platforms at once, straight from your feed <span class="fx-soon">coming soon/.test(html) && /Artist development plans and goal-setting schedules <span class="fx-soon">coming soon/.test(html) && /The cooperative, in formation/.test(html));
 ok('the cream palette is the front door', /data-theme="parchment"/.test(html) && /An experiment in cohabitation/.test(html) && /Welcome to the Porch\./.test(html)); // 2026-11-08: hero copy per Ash's porch spec (c_mw8lquus0zb6ed0d)
 ok('a five-slide slideshow with controls', (html.match(/class="lp-slide"/g) || []).length === 5 && /lp-dots/.test(html) && /landing\.js/.test(html));

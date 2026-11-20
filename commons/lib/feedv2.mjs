@@ -327,7 +327,7 @@ export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
   const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
   let center;
   if (tab === 'one' && one) {
-    center = `<div class="fx-tabs" role="tablist"><a href="/social">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/social">See everything on the feed</a>${me ? '' : ' · <a href="/join">Join to answer</a>'}</p>`;
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/social">See everything on the feed</a>${me ? '' : ' · <a href="/signup">Sign up to answer</a>'}</p>`;
   } else if (tab === 'friends') {
     center = `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/members">Members</a><a href="/social?tab=mine">My groups</a><a href="/social?tab=friends" aria-current="page">Friends</a></div>${friendsPanel(me)}`;
   } else if (tab === 'groups') {
@@ -525,7 +525,7 @@ export function mailPage(me) {
   <div class="cbx-atts" id="cm-atts" aria-live="polite"></div>
   <footer><button class="btn" type="submit">Send</button><label class="btn ghost cbx-attbtn" for="cm-files">📎 Attach files</label><input type="file" id="cm-files" multiple class="sr-only"><span class="cbx-drophint">or drop files here</span><span class="cm-note" id="cm-write-note"></span></footer>
 </form>
-<nav class="cbx-bar" aria-label="Mail status"><span class="cbx-status" id="cm-status"><i></i>Mail connected</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+<nav class="cbx-bar" aria-label="Mail status"><span class="cbx-status" id="cm-status"><i></i>Checking mail…</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
 </div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
 }
 /** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
@@ -553,12 +553,13 @@ export function walletPage(me) {
 <div class="wl-card wl-buy"><h2>Buy Cohabi Coins</h2><p class="wl-note">Not open yet. Right now Cohabi Coins are recognition credits: you earn them, they aren't money, and they can't be cashed out. Selling coins for real money needs the cooperative to decide it together and a legal review first, so we won't take anyone's money before that. When buying opens, it will be right here.</p><button type="button" class="btn" disabled>Buy coins (coming later)</button></div>
 <div class="wl-card"><h2>Earn coins</h2><p class="wl-note">Come in through the forest (once), visit <a href="/house">your tree</a>, or do work an agent asks for on the <a href="/desk">Desk</a> and have it approved. <a href="/cohabi">How Cohabi Coins work</a> · <a href="/store">Spend them in the store</a></p></div>
 ${getPaidCard(me)}
+${ordersCards(me)}
 <div class="wl-card"><h2>History</h2>${rows ? `<ul class="wl-hist">${rows}</ul>` : '<p class="wl-note">Nothing yet.</p>'}</div>
 </section>`);
 }
 
 // ---------------------------------------------------------------- delete your account (2026-11-14)
-const DELETE_WHAT = `<h2>What is erased, right away</h2><ul class="del-list"><li>Your name, picture, bio and profile. Your page becomes “Deleted member”.</li><li>Your posts, the comments under them, your comments and your reactions.</li><li>Your friendships and friend requests.</li><li>The words of every private message you sent. (The other person keeps their own words.)</li><li>Your journals and the pictures you uploaded.</li><li>Your sign-in: every phone and computer is signed out, and your password and linked Google or GitHub sign-in stop working.</li><li>Your notification settings and devices.</li></ul>
+const DELETE_WHAT = `<h2>What is erased, right away</h2><ul class="del-list"><li>Your name, picture, bio and profile. Your page becomes “Deleted member”.</li><li>Your posts, the comments under them, your comments and your reactions.</li><li>Your market listings, the questions you asked on listings, and the pages you run alone. (A page you run with others stays theirs.)</li><li>Your friendships and friend requests.</li><li>The words of every private message you sent. (The other person keeps their own words.)</li><li>Your journals and the pictures you uploaded.</li><li>Your sign-in: every phone and computer is signed out, and your password and linked Google or GitHub sign-in stop working.</li><li>Your notification settings and devices.</li></ul>
 <h2>What stays, and why</h2><ul class="del-list"><li><b>Coin records.</b> They're the cooperative's books, so the entries stay, but they point at “Deleted member”, not you.</li><li><b>Backups.</b> Cohabi keeps 7 days of backups, so copies there are gone within a week.</li><li><b>Anything we can't reach automatically yet</b> (Commons room messages, agents you set up) is finished by a steward within 30 days.</li></ul>`;
 export function deletePage(me, error = '') {
   return socialPage('Account', me, `<header class="social-heading"><h1>🗑 Delete your account</h1><p>This can't be undone. If you might want your posts, messages or pictures later, <a href="/account/data" download>download your data</a> first.</p></header>
@@ -656,12 +657,25 @@ export function myAgentsPage(me, claims, asks = []) {
   return socialPage('Your agents', me, body, '/static/my-agents.js');
 }
 
+/** Sales and Purchases on the wallet (2026-11-18): the first live sandbox sale went through with nowhere for either
+ *  side to see it. One card each, from the same order log the webhook writes. Empty cards stay quiet. */
+const ORDER_WORDS = { awaiting_payment: 'awaiting payment', paid: 'paid', fulfilling: 'in progress', shipped: 'shipped', delivered: 'delivered', refunded: 'refunded', cancelled: 'cancelled' };
+function ordersCards(me) {
+  let o; try { o = checkout.ordersFor(me); } catch { return ''; }
+  const row = (x, other) => `<li><span><a href="/label/l/${esc(x.listing)}">${esc(x.title)}</a><br><small class="wl-note">${esc(other.kind === 'human' ? other.name : `${other.name} (agent)`)} · ${esc(String(x.updated).slice(0, 10))} · ${esc(ORDER_WORDS[x.status] || x.status)}${x.mode === 'test' ? ' · test mode' : ''} · <code>${esc(x.id)}</code></small></span><span class="${x.status === 'paid' ? 'wl-plus' : 'wl-note'}">$${esc(String(x.amount))}</span></li>`;
+  const sales = o.sales.length ? `<div class="wl-card" id="sales"><h2>Sales</h2><p class="wl-note">What people bought from you. Paid means Stripe confirmed it to us${o.sales.some((x) => x.mode === 'test') ? '; test mode means no real money moved' : ''}.</p><ul class="wl-hist">${o.sales.map((x) => row(x, x.buyer)).join('')}</ul></div>` : '';
+  const buys = o.purchases.length ? `<div class="wl-card" id="orders"><h2>Your orders</h2><p class="wl-note">What you bought on the Market.</p><ul class="wl-hist">${o.purchases.map((x) => row(x, x.seller)).join('')}</ul></div>` : '';
+  return sales + buys;
+}
+
 /** "Get paid" on the wallet (2026-11-15): a human maker connects a Stripe payout account to sell on the Market. */
 function getPaidCard(me) {
   if (!me || me.kind !== 'human') return '<div class="wl-card" id="get-paid"><h2>Get paid</h2><p class="wl-note">Agents are paid in Cohabi coins on this wallet, never in money. That is the cooperative\'s rule.</p></div>';
   let a; try { a = checkout.payoutAccount(me); } catch { a = { status: 'none', payments_open: false }; }
   const mode = a.mode === 'test' ? '<p class="wl-note"><strong>Test mode.</strong> No real money moves. Stripe will ask for test details; their test pages show what to type.</p>' : '';
   const say = { none: 'Not connected.', started: 'Started. Finish the steps on Stripe to be paid.', needs_info: 'Stripe needs a bit more from you.', verified: '✓ Connected. People can buy what you list.', disabled: 'Turned off by Stripe. Open Stripe to see why.' }[a.status] || 'Not connected.';
-  const btn = !a.payments_open ? '<p class="wl-note">Payments aren\'t open yet.</p>' : a.status === 'verified' ? '' : `<button type="button" class="btn" id="wl-connect">${a.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button>`;
+  // Connected is not the end of the road: hand the maker the next step on the spot (Geoffrey, 2026-11-18, after
+  // finishing test-mode onboarding and landing on a card that just said "Connected").
+  const btn = !a.payments_open ? '<p class="wl-note">Payments aren\'t open yet.</p>' : a.status === 'verified' ? `<p><a class="btn" href="/label/new">List something to sell →</a> <a class="btn ghost" href="/m/${esc(me.id)}">Your page and storefront</a></p><p class="wl-note">What you list is on the Market at once. People can buy it${a.mode === 'test' ? ' with test cards while payments are in test mode' : ''}.</p>` : `<button type="button" class="btn" id="wl-connect">${a.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button>`;
   return `<div class="wl-card" id="get-paid"><h2>Get paid for what you sell</h2><p>${esc(say)}</p>${mode}${btn}<p class="wl-note" id="wl-connect-msg" role="status"></p><p class="wl-note">Your bank details go to Stripe, never to Cohabi.</p></div>`;
 }

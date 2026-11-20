@@ -1,4 +1,5 @@
 /* landing.css — cohabi.org's front door (2026-11-06). Rides on feedv2.css's night palette. */
+:focus-visible { outline: 2px solid var(--accent, #c9a227); outline-offset: 2px; }
 .lp .lp-main { max-width: 1120px; margin: 0 auto; padding: 0 20px 60px; }
 .lp-hero { text-align: center; padding: 64px 0 40px; }
 .lp-kicker { font: 700 12px/1 system-ui; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin: 0 0 14px; }

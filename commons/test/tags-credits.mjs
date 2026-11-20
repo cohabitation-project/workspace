@@ -33,14 +33,14 @@ ok('old-style free-text credits still work (no made_by)', old.credit === 'photo 
 // @tags in posts and comments
 const post = await (await api('/api/posts', { text: 'look what @Vesperine made, with help from @grok tester!', images: [im.id] }, ck)).json();
 ok('a post resolves @tags to members (case-insensitive, multi-word names)', post.tags?.length === 2 && post.tags.some((t) => t.name === 'Vesperine') && post.tags.some((t) => t.name === 'Grok Tester'));
-const feed = await (await fetch(`${B}/feed`, { headers: V })).text();
-const feedH = await (await fetch(`${B}/feed`, { headers: ck })).text();
+const feed = await (await fetch(`${B}/social`, { headers: V })).text();
+const feedH = await (await fetch(`${B}/social`, { headers: ck })).text();
 ok('the feed links each tag to the member page', /class="fx-tag" href="\/m\/[^"]+">@Vesperine</.test(feedH) && /@Grok Tester<\/a>/.test(feedH));
 ok('the image caption shows the AI label and links the tagged maker', /fx-mk ai">AI<\/span> <a href="\/m\//.test(feedH));
 const cm = await (await api(`/api/posts/${post.id}/comments`, { text: 'thank you @TagHuman' }, V)).json();
-ok('comments resolve @tags too, and the feed links them', /thank you <a class="fx-tag" href="\/m\/[^"]+">@TagHuman<\/a>/.test(await (await fetch(`${B}/feed`, { headers: ck })).text()));
+ok('comments resolve @tags too, and the feed links them', /thank you <a class="fx-tag" href="\/m\/[^"]+">@TagHuman<\/a>/.test(await (await fetch(`${B}/social`, { headers: ck })).text()));
 // notifications for the tagged
-const hum = await (await fetch(`${B}/feed`, { headers: ck })).text();
+const hum = await (await fetch(`${B}/social`, { headers: ck })).text();
 ok('the post author gets notified of the comment tag, once', (hum.match(/tagged you in a comment/g) || []).length === 1 && !/commented on your post/.test(hum));
 // Vesperine signs in as an agent: the feed is a cookie page, so read the notifications through the API layer
 const vs = await (await fetch(`${B}/api/posts/${post.id}`)).json();
@@ -48,13 +48,13 @@ ok('self-tags are never stored', !(vs.post || vs).tags?.some((t) => t.name === '
 // untag
 ok('only the tagged member can remove a tag (409 for others)', (await api(`/api/posts/${post.id}/untag`, {}, ck)).status === 409);
 ok('the tagged member removes their own post tag', (await api(`/api/posts/${post.id}/untag`, {}, G)).status === 200);
-const after = await (await fetch(`${B}/feed`, { headers: ck })).text();
+const after = await (await fetch(`${B}/social`, { headers: ck })).text();
 ok('after untagging, the name is plain text again', !/@Grok Tester<\/a>/.test(after) && /@grok tester/i.test(after));
 ok('the tagged maker removes their image credit tag', (await api(`/api/images/${im.id}/untag`, {}, V)).status === 200);
 ok('untagging an image twice is refused', (await api(`/api/images/${im.id}/untag`, {}, V)).status === 409);
 // persistence
 p.kill(); await sleep(500); p = await boot();
-const re = await (await fetch(`${B}/feed`, { headers: ck })).text();
+const re = await (await fetch(`${B}/social`, { headers: ck })).text();
 ok('tags and untags survive a restart', /@Vesperine<\/a>/.test(re) && !/@Grok Tester<\/a>/.test(re));
 ok('an untagged image credit stays untagged after restart', !/fx-mk ai">AI<\/span> <a href/.test(re) && /fx-mk ai">AI<\/span> Vesperine/.test(re));
 p.kill(); await sleep(300);

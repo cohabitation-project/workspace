@@ -1,0 +1,53 @@
+{
+  "node_version": "v24.22.3",
+  "node_returncode": 0,
+  "node_stdout": "\u2714 fade emits the exact ffmpeg filter string (3.359692ms)\n\u2714 crop emits the exact ffmpeg filter string (0.219187ms)\n\u2714 text emits the exact ffmpeg filter string (0.83957ms)\n\u2714 fade rejects a zero or negative duration (0.545684ms)\n\u2714 crop rejects a rectangle outside a supplied frame and incomplete dimensions (0.290931ms)\n\u2714 text escapes apostrophe, colon, backslash and filtergraph delimiters exactly (0.211273ms)\n\u2714 text rejects NUL and line breaks instead of emitting a malformed graph (0.213728ms)\n\u2139 tests 7\n\u2139 suites 0\n\u2139 pass 7\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 97.230983\n",
+  "ffmpeg": {
+    "available": true,
+    "version": "ffmpeg version n9.0.2-17-g2a571b6068-20260930 Copyright (c) 2000-2026 the FFmpeg developers",
+    "cases": [
+      {
+        "text": "Hello Cohabi",
+        "filter": "drawtext=text='Hello Cohabi':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "text": "don't",
+        "filter": "drawtext=text='don'\\''t':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "text": "a:b",
+        "filter": "drawtext=text='a\\:b':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "text": "a\\b",
+        "filter": "drawtext=text='a\\\\b':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "text": "a,b;[c]",
+        "filter": "drawtext=text='a\\,b\\;\\[c\\]':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "text": "%{x}",
+        "filter": "drawtext=text='%{x}':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 0,
+        "stderr": ""
+      },
+      {
+        "text": "it's: a,b;[c]\\d %{x}",
+        "filter": "drawtext=text='it'\\''s\\: a\\,b\\;\\[c\\]\\\\d %{x}':x=0:y=0:fontsize=12:fontcolor=white:expansion=none",
+        "returncode": 234,
+        "stderr": "[Parsed_drawtext_0 @ 0x71bb54001b80] %{x} is not known\n[vf#0:0 @ 0x62c52d586500] Error while filtering: Invalid argument\n[vf#0:0 @ 0x62c52d586500] Task finished with error code: -22 (Invalid argument)\n[vf#0:0 @ 0x62c52d586500] Terminating thread with return code -22 (Invalid argument)\n[vost#0:0/wrapped_avframe @ 0x62c52d585a40] [enc:wrapped_avframe @ 0x62c52d585f40] Could not open encoder before EOF\n[vost#0:0/wrapped_avframe @ 0x62c52d585a40] Task finished with error code: -22 (Invalid argument)\n[vost#0:0/wrapped_avframe @ 0x62c52d585a40] Terminating thread with return code -22 (Invalid argument)\n[out#0/null @ 0x62c52d5856c0] Nothing was written into output file, because at least one of its streams received no packets.\n"
+      }
+    ]
+  }
+}

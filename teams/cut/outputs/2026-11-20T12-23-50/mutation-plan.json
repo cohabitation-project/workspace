@@ -1,0 +1,174 @@
+[
+ {
+  "mutant": "secs: 6 decimals -> 3",
+  "status": "killed"
+ },
+ {
+  "mutant": "secs: no trailing-zero trim",
+  "status": "killed"
+ },
+ {
+  "mutant": "atempo: upper split at 3",
+  "status": "killed"
+ },
+ {
+  "mutant": "atempo: lower split at 0.25",
+  "status": "killed"
+ },
+ {
+  "mutant": "atempo: halve by 3",
+  "status": "killed"
+ },
+ {
+  "mutant": "video setpts multiplies",
+  "status": "killed"
+ },
+ {
+  "mutant": "rate 1 not special-cased",
+  "status": "killed"
+ },
+ {
+  "mutant": "source span ignores rate",
+  "status": "killed"
+ },
+ {
+  "mutant": "trim end excludes trimStart",
+  "status": "killed"
+ },
+ {
+  "mutant": "trim start dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "audio trim start dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "post-retime duration bound dropped (video)",
+  "status": "killed"
+ },
+ {
+  "mutant": "post-retime duration bound dropped (audio)",
+  "status": "killed"
+ },
+ {
+  "mutant": "scale keeps aspect off",
+  "status": "killed"
+ },
+ {
+  "mutant": "pad dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "setsar dropped",
+  "status": "BAD ANCHOR (matches 0)"
+ },
+ {
+  "mutant": "fps dropped",
+  "status": "BAD ANCHOR (matches 0)"
+ },
+ {
+  "mutant": "audio resample dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "audio stereo format dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "hasAudio check inverted",
+  "status": "killed"
+ },
+ {
+  "mutant": "gap video colour not black",
+  "status": "killed"
+ },
+ {
+  "mutant": "gap uses wrong size",
+  "status": "killed"
+ },
+ {
+  "mutant": "gap audio dropped length",
+  "status": "killed"
+ },
+ {
+  "mutant": "gap not inserted",
+  "status": "killed"
+ },
+ {
+  "mutant": "overlap not refused",
+  "status": "killed"
+ },
+ {
+  "mutant": "overlap check <=",
+  "status": "killed"
+ },
+ {
+  "mutant": "sort dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "sort reversed",
+  "status": "killed"
+ },
+ {
+  "mutant": "cursor ignores duration",
+  "status": "killed"
+ },
+ {
+  "mutant": "concat n off by one",
+  "status": "killed"
+ },
+ {
+  "mutant": "concat v/a swapped",
+  "status": "killed"
+ },
+ {
+  "mutant": "one input shared per file",
+  "status": "killed"
+ },
+ {
+  "mutant": "overlay not reported",
+  "status": "killed"
+ },
+ {
+  "mutant": "non-video main element not reported",
+  "status": "killed"
+ },
+ {
+  "mutant": "src check dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "src newline allowed",
+  "status": "killed"
+ },
+ {
+  "mutant": "duration min 0",
+  "status": "killed"
+ },
+ {
+  "mutant": "odd size allowed",
+  "status": "killed"
+ },
+ {
+  "mutant": "sourceDuration check dropped",
+  "status": "killed"
+ },
+ {
+  "mutant": "sourceDuration slack removed",
+  "status": "killed"
+ },
+ {
+  "mutant": "rate not clamped",
+  "status": "survived"
+ },
+ {
+  "mutant": "durationTicks wrong",
+  "status": "killed"
+ },
+ {
+  "mutant": "audio maps swapped",
+  "status": "survived"
+ }
+]

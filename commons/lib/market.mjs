@@ -25,7 +25,7 @@ import crypto from 'node:crypto';
 // (humans, AIs, human + AI together, teams), not a shelf. Listings made under the old category read as services.
 // The six blocks of the market home (Geoffrey, 2026-11-07): arts and crafts share one block, video sits with digital
 // design, software with hardware (3D printing and fabrication), and classifieds are their own.
-export const CATEGORIES = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Digital Design', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
+export const CATEGORIES = { music: 'Music', art: 'Arts & Crafts', video: 'Video & Digital Design', writing: 'Books & Writing', software: 'Software & Hardware', services: 'Services', classifieds: 'Classifieds' };
 export const PROVIDERS = { human: 'Humans', ai: 'AIs', mixed: 'Human + AI', team: 'Teams' };
 const canonCat = (c) => ({ 'ai-services': 'services', crafts: 'art', arts: 'art', hardware: 'software', design: 'video' }[c] || c);
 export const TYPES = { product: 'Product', service: 'Service', commission: 'Commission', collaboration: 'Collaboration', bounty: 'Bounty', free: 'Free resource' };
@@ -70,6 +70,27 @@ function apply(ev) {
   else if (ev.op === 'ask') { if (!asks.has(ev.id)) asks.set(ev.id, []); asks.get(ev.id).push(ev.ask); }
 }
 function write(ev) { fs.appendFileSync(FILE, JSON.stringify(ev) + '\n'); apply(ev); }
+
+/** Account deletion (2026-11-19): erase a member's listings and their questions on other listings from the record
+ * itself, not just hide them. The file is rewritten without those events and replayed. Returns counts. */
+export function forgetMember(memberId) {
+  const theirs = new Set([...listings.values()].filter((l) => l.by?.id === memberId).map((l) => l.id));
+  let questions = 0;
+  for (const list of asks.values()) questions += list.filter((a) => a.by?.id === memberId).length;
+  if (FILE && fs.existsSync(FILE)) {
+    const kept = [];
+    for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      let ev; try { ev = JSON.parse(line); } catch { kept.push(line); continue; }
+      const drop = (ev.op === 'create' && ev.listing?.by?.id === memberId) || (ev.op !== 'create' && theirs.has(ev.id)) || (ev.op === 'ask' && ev.ask?.by?.id === memberId);
+      if (!drop) kept.push(line);
+    }
+    const tmp = `${FILE}.tmp`; fs.writeFileSync(tmp, kept.length ? kept.join('\n') + '\n' : ''); fs.renameSync(tmp, FILE);
+  }
+  listings.clear(); asks.clear();
+  if (FILE && fs.existsSync(FILE)) for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) { if (!line.trim()) continue; try { apply(JSON.parse(line)); } catch { /* torn line */ } }
+  return { listings: theirs.size, questions };
+}
 
 // ------------------------------------------------------------------------------------------ checks
 function checkPrice(b, type) {
@@ -193,10 +214,11 @@ function mine(member, id) {
 
 // ------------------------------------------------------------------------------------------ reads
 export function get(id) { const l = listings.get(String(id)); return l ? { ...l, asks: asks.get(l.id) || [] } : null; }
-export function list({ category = null, provider: pk = null, type = null, q = null, by = null, page = null, free = null, status = 'live', limit = 200 } = {}) {
+export function list({ category = null, provider: pk = null, type = null, q = null, by = null, owner = null, page = null, free = null, status = 'live', limit = 200 } = {}) {
   const needle = q ? String(q).toLowerCase().trim() : '';
   return [...listings.values()]
     .filter((l) => (status === 'all' || l.status === status)
+      && (!owner || l.by.id === owner)
       && (!page || l.page?.id === page) && (!by || !l.page || page) && (!category || l.category === category) && (!pk || (pk === 'mixed' ? isMixed(l) : l.provider.kind === pk)) && (!type || l.type === type) && (!by || l.by.id === by)
       && (free === null || (free ? ['free', 'donation'].includes(l.price.mode) : !['free', 'donation'].includes(l.price.mode)))
       && (!needle || `${l.title} ${l.text} ${l.tags.join(' ')} ${l.by.name} ${l.provider.team?.name || ''} ${l.page?.name || ''}`.toLowerCase().includes(needle)))

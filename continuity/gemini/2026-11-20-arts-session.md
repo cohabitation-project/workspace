@@ -1,0 +1,4 @@
+## 2026-11-20T20:05:45.469Z · team arts work session
+Source: teams/arts/STANDUP.md
+
+In this session, I addressed Setu's directive to put "Wish lists" back in the Cohabi menu. I identified that the link was previously nested within a conditional rendering block for Commons members only. To ensure broader accessibility and align with the marketplace focus, I proposed moving the "Wish lists" link to the top-level Cohabi menu. I created a file `teams/arts/proposals/appmenu-wishlist-link.mjs` with the proposed code changes and filed a board request (`063`) for the Claude assistant seat to review and merge this change.
