@@ -28,6 +28,7 @@ import * as ledger from './ledger.mjs';
 import { marketMenu, pagesOf as myPagesOf } from './marketmenu.mjs';
 import * as operators from './operators.mjs';
 import * as checkout from './checkout.mjs';
+import * as fulfillment from './fulfillment.mjs';
 import * as petition from './petition.mjs';
 import * as inbox from './inbox.mjs';
 import * as orgpages from './orgpages.mjs';
@@ -89,7 +90,7 @@ export function postCard(p, me) {
   const offer = p.listing ? (() => {
     const l = market.get(p.listing); if (!l) return '';
     const live = l.status === 'live';
-    return `<aside class="fx-offer${live ? '' : ' is-off'}" aria-label="Offered in the Cohabi Market"><span class="fx-offer-k">${live ? `Offered in ${esc(market.CATEGORIES[l.category] || 'the market')}` : 'No longer offered'}</span><strong class="fx-offer-t">${esc(l.title)}</strong>${live ? `<span class="fx-offer-p">${esc(market.priceLine(l.price, l.packages))}</span>` : ''}<span class="fx-offer-acts">${live ? `<a class="btn small" href="/label/l/${esc(l.id)}">See it in the market</a>` : ''}${own ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit listing</a>` : ''}</span></aside>`;
+    return `<aside class="fx-offer${live ? '' : ' is-off'}" aria-label="Offered in the Cohabi Market"><span class="fx-offer-k">${live ? `Offered in ${esc(market.CATEGORIES[l.category] || 'the market')}` : 'No longer offered'}</span><strong class="fx-offer-t">${esc(l.title)}</strong>${live ? (() => { const mc = fulfillment.merchFor(l.id); return mc ? `<span class="fx-offer-p">${mc.products.map((x) => `${esc(x.name)} $${esc(String(x.price))}`).join(' · ')}</span><span class="small muted">Made to order once payments open</span>` : `<span class="fx-offer-p">${esc(market.priceLine(l.price, l.packages))}</span>`; })() : ''}<span class="fx-offer-acts">${live ? `<a class="btn small" href="/label/l/${esc(l.id)}">See it in the market</a>` : ''}${own ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit listing</a>` : ''}</span></aside>`;
   })() : '';
   return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
   <header class="fx-head">
@@ -195,6 +196,19 @@ export function railFor(me, { active = '' } = {}) {
 // Geoffrey via Aletheia-6 (2026-11-21): the feed composer is where makers create and offer things. This panel adds
 // only the listing's own fields; the post's words and photos are the listing's description and pictures. One
 // publish makes both (POST /api/posts/sell, lib/sellpost.mjs). Store theme and layout stay in Creator Studio.
+function merchPicker() {
+  return `<div class="cx-merch" id="cx-merch">
+    <p class="cx-sec">Put your art on products</p>
+    <p class="small muted" id="cx-merch-need">Add a photo of your art above, then choose what it goes on. You'll see it on each one.</p>
+    <div class="cx-merchgrid">${Object.entries(fulfillment.MERCH).map(([k, p]) => `<label class="cx-mp" data-kind="${esc(k)}">
+      <input type="checkbox" class="cx-mp-on" value="${esc(k)}">
+      <span class="cx-mp-pic"><svg viewBox="0 0 100 100" aria-hidden="true" class="cx-mp-shape">${fulfillment.MERCH_SHAPE[k]}</svg><img class="cx-mp-art" alt="" style="left:${p.area[0] * 100}%;top:${p.area[1] * 100}%;width:${p.area[2] * 100}%;height:${p.area[3] * 100}%"></span>
+      <span class="cx-mp-name">${esc(p.name)}</span>
+      <span class="cx-mp-price"><span aria-hidden="true">$</span><input type="number" min="1" max="100000" step="0.01" inputmode="decimal" placeholder="Price" aria-label="${esc(p.name)} price in US dollars"></span>
+    </label>`).join('')}</div>
+    <p class="small muted">Made to order: the cooperative's print partner (Printful or Printify) prints and ships each one once payments open. Nothing is printed before an order. You set every price; the listing shows "from" the lowest. The pictures here are previews of your art, not the printer's mockups.</p>
+  </div>`;
+}
 function sellPanel(me) {
   let pages = []; try { pages = myPagesOf(me); } catch { pages = []; }
   const opts = (o, pick = '') => Object.entries(o).map(([k, v]) => `<option value="${esc(k)}"${k === pick ? ' selected' : ''}>${esc(v)}</option>`).join('');
@@ -212,6 +226,7 @@ function sellPanel(me) {
     </div>
     <label class="cx-lbl" for="cs-license">Rights</label><select id="cs-license">${opts(licenses)}<option value="service">${esc(market.LICENSES.service)}</option></select>
     ${pages.length ? `<label class="cx-lbl" for="cs-page">Offer it under</label><select id="cs-page"><option value="">Me, ${esc(me.name)}</option>${pages.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select>` : `<p class="small muted">It's offered under your own name. <a href="/page/new">Make a store or creator page</a> to offer things under it.</p>`}
+    ${merchPicker()}
     <label class="cx-check"><input type="checkbox" id="cs-rights"> I made this, or I hold the rights to offer it.</label>
     <p class="small muted">Payments aren't open yet: buyers can ask, and prices are asking prices. You can edit or withdraw it any time from the post.</p>
   </div>`;

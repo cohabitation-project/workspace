@@ -13,11 +13,12 @@
 // withdrawn, so there is never a live store item with no post.
 import * as market from './market.mjs';
 import * as posts from './posts.mjs';
+import * as fulfillment from './fulfillment.mjs';
 
 const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
 const KEY = /^[A-Za-z0-9_-]{8,64}$/;
 
-export function sellFromFeed(member, { key, post = {}, listing = {} } = {}) {
+export function sellFromFeed(member, { key, post = {}, listing = {}, merch = null } = {}) {
   if (!member) fail(401, 'sign in to sell or offer something');
   if (!KEY.test(String(key || ''))) fail(400, 'key: the composer sends a one-time key (8 to 64 letters, digits, - or _)');
   const text = String(post.text ?? listing.text ?? '').trim();
@@ -25,9 +26,13 @@ export function sellFromFeed(member, { key, post = {}, listing = {} } = {}) {
   // 1. a retry: both halves already made → the same answer again
   let l = market.byOrigin(member.id, key);
   const existing = posts.bySellKey(member.id, key);
-  if (l && existing) return { listing: l, post: existing, repeated: true };
+  if (l && existing) return { listing: l, post: existing, merch: fulfillment.merchFor(l.id), repeated: true };
   if (existing && !l) fail(409, 'this key already made a post without its listing; start a new post');
   if (l && l.status !== 'live') fail(409, 'this listing was taken down after a failed post; start a new post (the composer makes a new key)');
+  // Art on products (Geoffrey, 2026-11-21): checked now, saved with the listing once it exists. The listing's price
+  // is the lowest product price ("from"), and each product keeps its own price.
+  const m = merch ? fulfillment.checkMerch(merch, images) : null;
+  if (m) { listing = { ...listing, type: 'product', price: { mode: 'fixed', amount: Math.min(...m.products.map((x) => x.price)) } }; }
   // 2. check the post before anything is written (its words, images, group, daily limit)
   const postArgs = { text: text || String(listing.title || ''), images, kind: post.kind || 'post', group: post.group || null, topic: post.topic || null };
   if (!existing) posts.create(member, { ...postArgs, dry_run: true });
@@ -36,7 +41,8 @@ export function sellFromFeed(member, { key, post = {}, listing = {} } = {}) {
   // 4. the post that carries it
   try {
     const p = existing || posts.create(member, { ...postArgs, listing: l.id, sell_key: key });
-    return { listing: market.get(l.id), post: p, repeated: false };
+    const saved = m ? fulfillment.setMerch(member, l.id, m) : null;
+    return { listing: market.get(l.id), post: p, ...(saved ? { merch: saved } : {}), repeated: false };
   } catch (e) {
     // the post could not be written: take the new listing back down so no store item stands without its post
     try { if (market.get(l.id)?.status === 'live') market.withdraw(member, l.id); } catch { /* reported below */ }

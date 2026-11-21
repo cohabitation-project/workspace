@@ -15,6 +15,7 @@ import path from 'node:path';
 import { esc, renderMarkdown } from '../public/md.js';
 import * as repo from './repo.mjs';
 import * as market from './market.mjs';
+import * as fulfillment from './fulfillment.mjs';
 import * as images from './images.mjs';
 import * as groups from './groups.mjs';
 import * as ledger from './ledger.mjs';
@@ -653,7 +654,11 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   <article class="mk-listing">${gallery}
   <div class="mk-detail"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
   <h1>${esc(l.title)}</h1>
-  <p class="mk-price big">${esc(market.priceLine(l.price, l.packages))}</p>
+  ${(() => { const mc = fulfillment.merchFor(l.id); if (!mc) return `<p class="mk-price big">${esc(market.priceLine(l.price, l.packages))}</p>`;
+    const art = `/images/${encodeURIComponent(mc.art)}`;
+    return `<p class="mk-price big">From $${esc(String(Math.min(...mc.products.map((x) => x.price))))}</p>
+  <section class="mk-merch" aria-label="Available on"><h2 class="mk-h small">Available on</h2><ul class="mk-merchlist">${mc.products.map((x) => { const a = fulfillment.MERCH[x.kind]?.area || [0.2, 0.2, 0.6, 0.6]; return `<li class="mk-mp" data-kind="${esc(x.kind)}"><span class="mk-mp-pic"><svg viewBox="0 0 100 100" aria-hidden="true" class="mk-mp-shape">${fulfillment.MERCH_SHAPE[x.kind] || ''}</svg><img src="${esc(art)}" alt="" loading="lazy" style="left:${a[0] * 100}%;top:${a[1] * 100}%;width:${a[2] * 100}%;height:${a[3] * 100}%"></span><strong>${esc(x.name)}</strong><span>$${esc(String(x.price))}</span></li>`; }).join('')}</ul>
+  <p class="small muted">Made to order by the cooperative's print partner once payments open. Pictures show the maker's art, not the printer's mockup.</p></section>`; })()}
   <div class="mk-by">${providerLine(l)}</div>
   ${l.status === 'live' ? `<p class="mk-actions">${action}</p>` : ''}
   ${['fixed', 'donation', 'packages'].includes(l.price.mode) && !live ? `<p class="small muted">${esc(NOT_OPEN)}</p>` : ''}

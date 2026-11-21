@@ -1189,3 +1189,12 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-pgdialog input:focus-visible,.mk-pgdialog select:focus-visible,.mk-pgdialog textarea:focus-visible,.mk-pgdialog button:focus-visible{outline:3px solid #e6c37a;outline-offset:2px}
 .mk-pgdialog .form-msg{color:#f5dba6}
 @media(max-width:600px){.mk-pgdialog{max-width:calc(100vw - 12px);width:calc(100vw - 12px);max-height:96dvh;border-radius:14px}.mk-pgdialog #pg-form{padding-inline:14px}.mk-pgdialog .pf-ed-head{margin-inline:-14px;padding-inline:14px}.mk-pgdialog .pf-ed-foot{margin-inline:-14px;padding-inline:14px}}
+
+/* Art on products on the listing page (fulfillment.MERCH, 2026-11-21) */
+.mk-merch{margin:14px 0}
+.mk-merchlist{list-style:none;margin:8px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.mk-mp{display:grid;gap:3px;padding:8px;border:1px solid var(--line,#d9d2c6);border-radius:12px;background:var(--card,#fff);font-size:14px}
+.mk-mp-pic{position:relative;display:block;aspect-ratio:1;border-radius:8px;background:#f1ece4;overflow:hidden}
+.mk-mp-pic img{position:absolute;object-fit:cover;border-radius:2px}
+.mk-mp[data-kind=sticker] img{border-radius:50%}
+.mk-mp-shape{position:absolute;inset:6%;width:88%;height:88%;fill:#fbfaf7;stroke:#cfc6b8;stroke-width:1.2}

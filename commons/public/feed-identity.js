@@ -39,6 +39,10 @@ if (composer && scrim) {
     mockText.classList.toggle('cx-empty', !text.value.trim());
     const thumbs = [...composer.querySelectorAll('#c-pics img, #c-vid img.cx-vthumb')].map((img) => img.src).filter(Boolean).slice(0, 4);
     mockMedia.innerHTML = ''; mockMedia.dataset.n = String(thumbs.length);
+    // Sell / Offer: the maker's first photo is the art shown on each product (lib/feedv2.mjs merchPicker)
+    const art = composer.querySelector('#c-pics img')?.src || '';
+    composer.querySelectorAll('.cx-mp-art').forEach((im) => { if (art) im.src = art; else im.removeAttribute('src'); });
+    composer.querySelector('#cx-merch')?.classList.toggle('has-art', !!art);
     for (const src of thumbs) { const im = document.createElement('img'); im.alt = ''; im.src = src; mockMedia.append(im); }
   };
   text.addEventListener('input', paint);

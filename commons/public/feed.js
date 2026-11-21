@@ -81,6 +81,13 @@ if (form) {
     e.preventDefault(); if (posting) return; msg.textContent = '';
     const text = $('#c-text').value.trim();
     let sell = null;
+    if (sellMode()) {
+      const picked = [...form.querySelectorAll('.cx-mp')].filter((c) => c.querySelector('.cx-mp-on').checked);
+      if (picked.length && !files.length) { msg.textContent = 'Add a photo of your art to put it on products.'; return; }
+      const noPrice = picked.find((c) => !(Number(c.querySelector('.cx-mp-price input').value) >= 1));
+      if (noPrice) { msg.textContent = `Set a price for the ${noPrice.querySelector('.cx-mp-name').textContent} (at least $1).`; return; }
+      if (picked.length) { const amt = $('#cs-amount'); const m = $('#cs-mode'); if (m) m.value = 'fixed'; if (amt && !(Number(amt.value) >= 1)) amt.value = String(Math.min(...picked.map((c) => Number(c.querySelector('.cx-mp-price input').value)))); }
+    }
     if (sellMode()) { try { sell = sellFields(); } catch (err) { msg.textContent = err.message; return; } if (!text) { msg.textContent = 'Describe what you are offering in the post (it becomes the listing description).'; return; } }
     if (!text && !files.length && !video) { msg.textContent = 'Write something, or add an image or a video.'; return; }
     posting = true; form.setAttribute('aria-busy', 'true');
@@ -103,7 +110,9 @@ if (form) {
       const release = $('#c-release')?.value || null;
       if (sell) {
         msg.textContent = 'publishing to the market and your feed…';
-        const send = () => fetch('/api/posts/sell', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ key: sellKey, post: { text, images: ids, kind: $('#c-kind').value }, listing: { ...sell, text } }) });
+        const picked = [...form.querySelectorAll('.cx-mp')].filter((c) => c.querySelector('.cx-mp-on').checked).map((c) => ({ kind: c.dataset.kind, price: Number(c.querySelector('.cx-mp-price input').value) }));
+        const merch = picked.length ? { art: ids[0], products: picked } : null;
+        const send = () => fetch('/api/posts/sell', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ key: sellKey, post: { text, images: ids, kind: $('#c-kind').value }, listing: { ...sell, text }, ...(merch ? { merch } : {}) }) });
         let sr = null; for (let i = 0; i < 3 && !sr; i++) sr = await send().catch(() => null);
         if (!sr) { msg.textContent = 'The connection dropped. Press Publish again: it will not be listed twice.'; return; }
         const sj = await sr.json().catch(() => ({}));

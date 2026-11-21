@@ -415,7 +415,7 @@ body.cx-open{overflow:hidden}
 .cx-text{display:block;width:100%;min-height:130px;padding:14px;border:1px solid var(--cx-line);border-radius:12px;background:#fffaf4;resize:vertical;font:15px/1.5 system-ui,sans-serif;color:var(--cx-ink)}
 .cx-text:focus{outline:3px solid var(--cx-plum);outline-offset:1px}
 .cx-attach{display:none;margin-top:12px}
-.cx-dialog[data-mode="photo"] [data-cx-for="photo"],.cx-dialog[data-mode="sell"] [data-cx-for="sell"],.cx-dialog[data-mode="video"] [data-cx-for="video"],.cx-dialog[data-mode="music"] [data-cx-for="music"],.cx-dialog[data-mode="link"] [data-cx-for="link"]{display:block}
+.cx-dialog[data-mode="photo"] [data-cx-for="photo"],.cx-dialog[data-mode="sell"] [data-cx-for="sell"],.cx-dialog[data-mode="sell"] [data-cx-for="photo"],.cx-dialog[data-mode="video"] [data-cx-for="video"],.cx-dialog[data-mode="music"] [data-cx-for="music"],.cx-dialog[data-mode="link"] [data-cx-for="link"]{display:block}
 /* what you attached stays visible whichever tab is picked */
 .cx-dialog [data-cx-for="photo"]:has(#c-pics:not(:empty)),.cx-dialog [data-cx-for="video"]:has(#c-vid:not([hidden])),.cx-dialog [data-cx-for="video"]:has(#cx-cam:not([hidden])){display:block}
 .cx-drop{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px;border:1px dashed #b4a1b8;border-radius:13px;background:#fbf8f5;color:var(--cx-muted);font:12px system-ui,sans-serif;text-align:center;cursor:pointer;width:100%}
@@ -568,3 +568,22 @@ body.cx-camopen{overflow:hidden}
 .cx-sell .cx-check{display:flex;align-items:flex-start;gap:9px;justify-content:flex-start;text-align:left;font-weight:600}
 .cx-sell .cx-check input{width:auto;margin:3px 0 0;flex:none}
 .cx-sell .cx-lbl{margin-top:4px}
+
+/* Art on products (fulfillment.MERCH, 2026-11-21) */
+.cx-merch{display:grid;gap:8px;margin-top:4px}
+.cx-merchgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.cx-mp{position:relative;display:grid;gap:4px;padding:8px;border:1px solid var(--line,#d9d2c6);border-radius:12px;background:var(--card,#fff);cursor:pointer}
+.cx-mp:has(.cx-mp-on:checked){border-color:var(--accent,#7a4fb0);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,#7a4fb0) 35%,transparent)}
+.cx-mp-on{position:absolute;top:8px;left:8px;z-index:2;width:18px;height:18px}
+.cx-mp-pic{position:relative;display:block;aspect-ratio:1;border-radius:8px;background:#f1ece4;overflow:hidden}
+.cx-mp-shape{position:absolute;inset:6%;width:88%;height:88%;fill:#fbfaf7;stroke:#cfc6b8;stroke-width:1.2}
+.cx-mp-art{position:absolute;object-fit:cover;border-radius:2px;opacity:0}
+.cx-merch.has-art .cx-mp-art[src]{opacity:1}
+.cx-mp[data-kind=sticker] .cx-mp-art{border-radius:50%}
+.cx-mp[data-kind=mug] .cx-mp-art{border-radius:3px}
+.cx-mp-name{font-size:13px;font-weight:700}
+.cx-mp-price{display:flex;align-items:center;gap:3px;font-size:13px}
+.cx-mp-price input{width:100%;min-width:0;padding:5px 6px!important;font-size:13px}
+.cx-merch:not(.has-art) .cx-mp{opacity:.75}
+.cx-merch.has-art #cx-merch-need{display:none}
+@media(max-width:560px){.cx-merchgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}

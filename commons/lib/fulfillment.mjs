@@ -36,6 +36,7 @@ export function init(dataDir) {
   DIR = path.join(dataDir, 'fulfillment'); fs.mkdirSync(DIR, { recursive: true, mode: 0o700 });
   try { links = JSON.parse(fs.readFileSync(linksFile(), 'utf8')) || {}; } catch { links = {}; }
   try { releases = JSON.parse(fs.readFileSync(releasesFile(), 'utf8')) || {}; } catch { releases = {}; }
+  try { merch = JSON.parse(fs.readFileSync(merchFile(), 'utf8')) || {}; } catch { merch = {}; }
 }
 
 /** Which pipes are connected. Says only configured or not: never a key. */
@@ -63,6 +64,56 @@ export function link(member, listingId, { provider, product_id, variant_ids = []
   links[l.id] = { provider, product_id: id, variant_ids: vids, sku: String(sku || '').slice(0, 120), by: member.id, ts: new Date().toISOString() };
   save(linksFile(), links); return { listing: l.id, ...links[l.id], connected: status()[provider].connected };
 }
+// ------------------------------------------------------------------------------------------ art on products
+// Geoffrey, 2026-11-21: "if somebody wants to make a t-shirt design or a coffee cup or just list their art, then have
+// a list of what it can be put onto. Not just a simple form." A maker picks products in the feed composer, sees their
+// own art on each, and sets each price. The choices are kept here with the listing; the cooperative's print partner
+// (Printful or Printify) makes and ships each order once payments are open. Nothing is printed or sent before that,
+// and no base cost is invented here: the maker sets the price.
+export const MERCH = {
+  tshirt: { name: 'T-shirt', area: [0.33, 0.27, 0.34, 0.36] },
+  hoodie: { name: 'Hoodie', area: [0.34, 0.33, 0.32, 0.3] },
+  mug: { name: 'Mug', area: [0.24, 0.3, 0.38, 0.42] },
+  poster: { name: 'Poster', area: [0.2, 0.12, 0.6, 0.76] },
+  canvas: { name: 'Canvas print', area: [0.16, 0.16, 0.68, 0.68] },
+  tote: { name: 'Tote bag', area: [0.3, 0.42, 0.4, 0.4] },
+  sticker: { name: 'Sticker', area: [0.22, 0.22, 0.56, 0.56] },
+  phonecase: { name: 'Phone case', area: [0.33, 0.12, 0.34, 0.76] },
+};
+/** Simple product outlines (our own drawing, 100x100) the maker's art is previewed on. */
+export const MERCH_SHAPE = {
+  tshirt: '<path d="M30 8 18 14 6 28l11 9 6-6v61h54V31l6 6 11-9-12-14-12-6c-3 7-10 11-18 11S33 15 30 8z"/>',
+  hoodie: '<path d="M34 6c4-3 28-3 32 0l4 9 12 7 12 20-10 6-5-8v62H21V40l-5 8-10-6 12-20 12-7z"/><path d="M38 8c2 9 22 9 24 0" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>',
+  mug: '<rect x="14" y="20" width="56" height="66" rx="6"/><path d="M70 34h8a11 11 0 0 1 0 22h-8v-8h7a3 3 0 0 0 0-6h-7z"/>',
+  poster: '<rect x="16" y="8" width="68" height="84" rx="2"/>',
+  canvas: '<rect x="12" y="12" width="76" height="76" rx="2"/><path d="M12 12l6 6v64l-6 6" fill="rgba(0,0,0,.12)"/>',
+  tote: '<path d="M38 30v-8a12 12 0 0 1 24 0v8h-5v-8a7 7 0 0 0-14 0v8z"/><rect x="22" y="30" width="56" height="62" rx="3"/>',
+  sticker: '<circle cx="50" cy="50" r="38"/>',
+  phonecase: '<rect x="30" y="8" width="40" height="84" rx="9"/>',
+};
+let merch = {};
+const merchFile = () => path.join(DIR, 'merch.json');
+/** Check a maker's product choices without writing anything (lib/sellpost.mjs checks before it publishes). */
+export function checkMerch({ art, products } = {}, imageIds = []) {
+  const a = String(art || ''); if (!a || !imageIds.includes(a)) fail(400, 'merch: choose which of your post\'s photos is the art to print');
+  const list = Array.isArray(products) ? products : [];
+  if (!list.length || list.length > Object.keys(MERCH).length) fail(400, `merch: choose one to ${Object.keys(MERCH).length} products`);
+  const seen = new Set();
+  return { art: a, products: list.map((x, i) => {
+    const kind = String(x?.kind || ''); if (!MERCH[kind]) fail(400, `merch product ${i + 1}: one of ${Object.keys(MERCH).join(', ')}`);
+    if (seen.has(kind)) fail(400, `merch: ${MERCH[kind].name} is chosen twice`); seen.add(kind);
+    const price = Math.round(Number(x?.price) * 100) / 100; if (!Number.isFinite(price) || price < 1 || price > 100000) fail(400, `merch: ${MERCH[kind].name} needs a price from $1 to $100000`);
+    return { kind, name: MERCH[kind].name, price };
+  }) };
+}
+export function setMerch(member, listingId, choice) {
+  const l = ownerOf(member, listingId);
+  const m = checkMerch(choice, (l.images || []).map((i) => i.id || i));
+  merch[l.id] = { ...m, by: member.id, ts: new Date().toISOString(), status: 'requested' };
+  save(merchFile(), merch); return { listing: l.id, ...merch[l.id] };
+}
+export const merchFor = (listingId) => merch[listingId] || null;
+
 export function unlink(member, listingId) { const l = ownerOf(member, listingId); delete links[l.id]; save(linksFile(), links); return { listing: l.id, linked: false }; }
 export const linkFor = (listingId) => links[listingId] || null;
 

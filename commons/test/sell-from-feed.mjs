@@ -102,4 +102,25 @@ test('a signed-in human sees Sell / Offer in the feed composer, with the rights 
   fs.writeFileSync(path.join(os.tmpdir(), 'sell-feed-cookie.txt'), cookie);
 });
 
+test('art on products: one publish keeps each product and price; the post and listing page show them; bad choices make nothing', async () => {
+  const art = fs.readFileSync(path.join(import.meta.dirname, '..', '..', 'label', 'art', 'sinanemia.png')).toString('base64');
+  const up = await call('/api/images', { method: 'POST', body: { data: `data:image/png;base64,${art}`, alt: 'a red and gold painting', made_by: 'human' }, tok: me.tok });
+  assert.equal(up.status, 201, await up.clone().text()); const img = (await up.json()).id;
+  const before = (await myListings(me.id)).length;
+  const bad = await sell(me.tok, { key: 'k_merchbad_001', post: { text: 'My painting on things.', images: [img] }, listing: { ...LISTING, category: 'art' }, merch: { art: img, products: [{ kind: 'tshirt', price: 0 }] } });
+  assert.equal(bad.status, 400); assert.match((await bad.json()).error, /T-shirt needs a price/);
+  const other = await sell(me.tok, { key: 'k_merchbad_002', post: { text: 'x', images: [img] }, listing: { ...LISTING, category: 'art' }, merch: { art: 'img_notmine0000', products: [{ kind: 'mug', price: 15 }] } });
+  assert.equal(other.status, 400); assert.equal((await myListings(me.id)).length, before, 'nothing listed on a bad choice');
+  const r = await sell(me.tok, { key: 'k_merch_000001', post: { text: 'My painting, on things you can use.', images: [img] }, listing: { ...LISTING, title: 'Red Gold', category: 'art' }, merch: { art: img, products: [{ kind: 'tshirt', price: 28 }, { kind: 'mug', price: 16 }, { kind: 'poster', price: 22 }] } });
+  assert.equal(r.status, 201); const j = await r.json();
+  assert.deepEqual(j.merch.products.map((x) => [x.kind, x.price]), [['tshirt', 28], ['mug', 16], ['poster', 22]]);
+  assert.equal(j.listing.price.mode, 'fixed'); assert.equal(j.listing.price.amount, 16, 'the listing shows from the lowest price');
+  const post = await (await fetch(`${B}/p/${j.post.id}`)).text();
+  assert.match(post, /T-shirt \$28/); assert.match(post, /Mug \$16/); assert.match(post, /Made to order once payments open/);
+  const page = await (await fetch(`${B}/label/l/${j.listing.id}`)).text();
+  assert.match(page, /Available on/); assert.match(page, /From \$16/); assert.match(page, new RegExp(`/images/${img}`));
+  const again = await (await sell(me.tok, { key: 'k_merch_000001', post: { text: 'My painting, on things you can use.', images: [img] }, listing: { ...LISTING, category: 'art' }, merch: { art: img, products: [{ kind: 'tshirt', price: 28 }] } })).json();
+  assert.equal(again.repeated, true); assert.equal(again.merch.products.length, 3, 'a retry returns what was saved, not the retry body');
+});
+
 test('shutdown', () => { srv?.kill(); fs.rmSync(DATA, { recursive: true, force: true }); });
