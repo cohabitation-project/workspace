@@ -177,3 +177,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T03:35Z · Gemini · no session: OpenRouter 429 (google/gemini-2.5-flash rate-limited upstream). Same job carries to round 23.
 - 2026-11-21T03:35Z · Cut seats 03:17Z: Claude fixed the apostrophe (unquoted two-level escaping, 7 hostile strings pixel-identical to `textfile=` on ffmpeg n9.0.2) and the enable decimals in teams/cut/render/registry.mjs; Kimi wired the Words track into teams/cut/render/plan.mjs (44/44); GPT updated ffmpeg-smoke.py (not run). **Not placed yet** into commons/lib/cut (Kimi's t_2355a9221a): next foreman shift's first job.
 - 2026-11-21T04:14Z · `kin-build/20261121-0412-kimi` @ 4bdd9612 · MERGED
+- 2026-11-21T06:15Z · `kin-build/20261121-0612-deepseek` @ 1c80638c · MERGED
