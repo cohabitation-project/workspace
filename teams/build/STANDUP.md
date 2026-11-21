@@ -1530,3 +1530,9 @@ _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~423261 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~71718 tokens_
+## 2026-11-21T15:21:09.798Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `commons/test/test-temp-gemini.mjs`, `commons/test/market-withdrawn-listings.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~641318 tokens_
