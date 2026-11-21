@@ -1208,3 +1208,32 @@ Predicted red risks I could not check, named so CI's first failure is quick to p
 **Next:** Next session, first action: run `node --test commons/test/market-api-signed-out.mjs` in the throwaway runtime and fix the first red — likely the recovery-code canary (`POST /api/me/recovery` shape, or a newcomer write limit on a fresh member). Then mutate one guard to show the sweep catches it, and post the measured result in the build room.
 **Blocked:** Sandbox has no root package.json/node_modules and I ran out of steps before the throwaway runtime was up, so the new test is unrun — CI must confirm it. The fulfilment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6.
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~792174 tokens_
+## 2026-11-21T03:18:21.589Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 22 job (door → pages). New test `commons/test/signin-next.mjs` and one Tier 1 string fix in `commons/server.mjs`.
+
+**Test, 2 sub-tests.**
+(1) It reads `commons/public/signin.js` and asserts:
+- the password sign-in navigates only through `safeNext()`;
+- the six-character code form carries `next` through `safeNext()`;
+- there is no raw `get('next')` navigation.
+It then runs the real `safeNext` from `commons/public/auth/ui.js` against 11 cases, with a fake `location`. Valid paths, queries and hashes are kept. `//host`, `https:`, `javascript:`, `/\host`, paths with spaces and an empty value all fall back to `/social`.
+(2) It boots a real server and signs up one member. For 32 protected GET pages (every GET page behind a `'/signin?next=…'` redirect in `server.mjs`), signed out must give a 302/303 whose `next` is exactly the page asked for. Signed in must give a status below 400, or a same-site redirect. The documented exceptions are listed in the file:
+- steward-only pages answer 403 to an ordinary member;
+- a plain signup is a social-only member, so `/wishlist/add` says "Members only" (403);
+- the aliases `/studio`, `/me/house` and the Stripe return path put the canonical path in `next`;
+- `/label/l/:id/edit` is checked signed out only, because signed in it needs a listing.
+
+**Findings.**
+1. **Real bug, fixed.** In `commons/server.mjs`, the `/social` handler redirected `?tab=commons|history` with a fixed `next=/social?tab=history`. A visitor who asked for `/social?tab=commons&room=general` came back to `?tab=history` with the room dropped. It now uses `encodeURIComponent(req.originalUrl)`, the same pattern as 3 other redirects in that file. Nothing else in `server.mjs` changed.
+2. The test's first draft assumed `/wallet` redirects to sign-in. It doesn't: `/wallet` is a public page that explains itself signed out. The redirect naming `/wallet` belongs to `/payments/return` and `/payments/refresh` (the `?same=1` hop), so the test checks those instead.
+3. Not changed, for Setu or Geoffrey to decide. A signed-in social-only member opening the History view (`/social?tab=history`) is redirected to `/signin` again. This is by design ("members only"), but the page they land on is the sign-in page while already signed in. The test only checks that the bounce carries the right `next`.
+
+**Evidence.**
+- Real runtime: repo `commons/` copy, `package.json` and lock fetched from raw GitHub main, `npm ci`, stubbed `src/llm.js`, node v24.
+- `node --test commons/test/signin-next.mjs`: 2/2 pass with the fix.
+- Mutation check: put the old fixed string back and the test fails on the `?room=general` case, both signed out and in the social-only bounce.
+- `agent-connect-forgiving.mjs` shows 4/5 in my sandbox, and the same 4/5 with `server.mjs` reverted to its original line. The failing check is the steward "no code" check, which got 404 where it expected 403 at line 75. That points to my stubbed runtime, but I haven't proven it, so CI confirmation is needed. The Round 8 audit recorded this file as 5/5 on main.
+**Files written:** `commons/test/signin-next.mjs`, `commons/server.mjs`
+**Next:** Setu: Tier 1 second yes on the `server.mjs` line (one string, `req.originalUrl`). CI must run `signin-next.mjs` and `agent-connect-forgiving.mjs` on the pushed branch. Open for a later round: whether a signed-in social-only member opening the History view should get a "members only" page instead of the sign-in page.
+**Blocked:** Nothing blocked. The sandbox has no root `package.json`, so I used a disclosed throwaway runtime (raw GitHub main manifest, `npm ci`, stub `llm.js`). `agent-connect-forgiving` failing 1 of 5 there needs CI to confirm it is the sandbox, not the code.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~292138 tokens_
