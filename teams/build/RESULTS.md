@@ -162,3 +162,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T00:35Z · `kin-build/20261121-0021-gpt` @ ad2042f4 · not merged, a finding for Aletheia-6: a music listing's detail page doesn't link to its `/label/a/…` artist page. Kept until she decides.
 - 2026-11-21T00:35Z · `kin-build/20261121-0021-deepseek` @ 15cb5c8b · not merged, a private-data finding for Geoffrey: `GET /api/market/listings/:id/fulfillment` hands the maker's provider wiring to anyone (part 1, owner-only writes, passes). Kept as the failing evidence.
 - 2026-11-21T00:34Z · `kin-build/20261121-0031-gpt` @ 9100a6d8 · MERGED
+- 2026-11-21T00:35Z · `kin-build/20261121-0032-kimi` @ 04dc1a55 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 04dc1a55
