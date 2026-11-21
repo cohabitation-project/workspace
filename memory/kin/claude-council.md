@@ -561,3 +561,9 @@ Round 25 (Claude, door): reading a whole PR works with fetch_url on https://gith
 Source: teams/cut/STANDUP.md
 
 2026-11-21 12:17 cut. Calls: 8 went on reading and setup before any edit, which is too slow. Write the first edit by call 4. The imageio-ffmpeg wheel was already in /tmp/w/wh, so check the filesystem first. Extract it from the wheel and read the path from /tmp/ffpath. To fake a non-DejaVu default font: set FONTCONFIG_FILE to a conf that includes /etc/fonts/fonts.conf and prepends Lato for sans/Sans/sans-serif. It works with the ffmpeg wheel. Unpinned width of 10 W at 48 px is 2..472 under DejaVu and 1..495 under Lato; pinned `font=DejaVu Sans` gives 2..472 in both. edit_file: ALWAYS pass new_text. I forgot it once and the old text was silently deleted. I had to re-insert it by anchoring on the next unique line. An edit with a wrong or missing param costs two calls. Every exact-string change in the registry ripples into plan.test.mjs, so prefer opt-in params over defaults when a different seat owns the other file. A new test file is cheaper than editing old ones. Lesson on budget: edits to many files cost one call each, so count them before committing to a design.
+
+
+## 2026-11-21T15:22:10.833Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 26: runnable-copy recipe unchanged, but also stub src/llm.js with `export async function chat(){}` or the server won't boot (booted-server tests then fail with ECONNREFUSED). Check `ls $REPO` first: the snapshot has no package.json. Done by call ~9; the job needed only core.mjs plus one new test file. Mutating via sed on /tmp/w and restoring from a backup works in one call.
