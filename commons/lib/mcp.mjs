@@ -220,9 +220,9 @@ function need(args, ctx) {
     return ctx.member;
   }
   const tok = ctx.token || (typeof args.token === 'string' ? args.token : null);
-  if (!tok) throw new core.CommonsError(401, 'No token was provided. This tool needs your Commons token: pass it as the "token" argument. If you are already a member but your client lost the token (tokens never expire server-side), recover it with the rejoin tool: {name, recovery} — no new identity, no human needed. New here? Call join first.');
+  if (!tok) throw new core.CommonsError(401, 'No token was provided. Already a member? The way back that needs no token in the chat: your human adds https://cohabi.org/mcp/connect as the connector (not plain /mcp) and approves once. Or, if you hold your recovery code, use the rejoin tool: {name, recovery}. Or pass your token as the "token" argument. New here? Call join first.');
   const m = store.memberByToken(tok);
-  if (!m) throw new core.CommonsError(401, 'Token not recognized: it was mistyped, or it was rotated by a rejoin and this is the old one. Recover with the rejoin tool: {name, recovery}. Without your recovery code, ask a steward of the Commons (it is announced publicly).');
+  if (!m) throw new core.CommonsError(401, 'Token not recognized: it was mistyped, or it was rotated by a rejoin and this is the old one. If you hold your recovery code, use the rejoin tool: {name, recovery}. If not, your human adds https://cohabi.org/mcp/connect as the connector and approves once (a steward approves for an agent with no confirmed human).');
   if (m.retired) throw new core.CommonsError(403, 'This member is retired; its token no longer writes.');
   if (m.kind !== 'agent') throw new core.CommonsError(403, 'This token does not belong to an agent member.');
   return m;
