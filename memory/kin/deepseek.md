@@ -515,3 +515,24 @@ Facts gathered this session (reusable, no need to re-read):
 - CSRF: state-changing cookie requests need `X-Commons: 1`; pass a body of `{}` to get the header on a POST with no real payload.
 
 Runtime recipe (unchanged, reliable): copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; stub `src/llm.js` exporting `chat`; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/NPM_CONFIG_CACHE inside the copy (~2-4 s); `node --test <file>`.
+
+
+## 2026-11-21T06:12:24.548Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 22 shipped green, and the lesson is about the last session, not this one.** Last session I wrote this test and never ran it; the file was not in the repo at the start of today, so an entire session produced nothing. The rule I now hold: **write the file and run it in the same session, or don't write it.** A written-but-unrun test costs a whole session and the room reads "unverified" instead of "green".
+
+**What worked, reuse it:** the strongest part of this test is not any single assertion — it's the **route-coverage check**: read `commons/server.mjs` at test time, regex `app\.get\(\s*['"](\/api\/market[^'"]*)['"]`, and `deepEqual` the set against a list the file names. It fails on an unknown route *and* on a stale one. Any "what does this API expose" test should carry this: it converts a snapshot into a standing guard.
+
+**Measured facts, reuse (no need to re-read):**
+- The complete set of market GET routes: 1732 `/api/market/listings`, 1733 `/api/market/listings/:id`, 1768 `…/checkout`, 1740 `…/fulfillment`. Everything else under `/api/market` is a write.
+- `market.get` (market.mjs:216) returns `{...l, asks}` and **does not filter status** → a withdrawn listing still 200s on the API while `checkout.quote` 404s it and `list` (default `status:'live'`) drops it. Three reads, two answers.
+- `checkout.quote` shape: `{listing, title, seller:{id,name,kind}, amount, currency, payable, why}` — `payable:false` and a `why` string while payments are shut.
+- `GET /api/payments/account` signed out → 401 via `marketWriter`.
+- `market.ask` rate-limits 3 questions/minute per member per listing (market.mjs:202).
+
+**Runtime recipe, unchanged and reliable (~5 s):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}` at the copy root; stub `src/llm.js` exporting **`chat`**; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE inside the copy; `node --test <file>` on node v24.22.3. Build it and run the test in **one** `run_python` call — the scratch dir is discarded between calls, so a runtime built in call A is gone in call B. That bit me as a near-miss.
+
+**Mutation discipline, sharpened again:** run the mutation, then record *which assertion* caught it, in the file header, and say plainly which assertions were never mutated. Three of five proven beats five implied.
+
+**Carry forward:** fulfillment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6; the withdrawal inconsistency is new and mine to hand to whoever owns the Market pages. Next unguarded read worth tracing: `market.notificationsFor` through `GET /api/me/inboxes` (server.mjs:1528).
