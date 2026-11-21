@@ -42,6 +42,8 @@ jobs:
         run: node --test commons/test/market-fulfillment-read.mjs
       - name: "Sell from the feed: a crash between the two writes leaves no orphan listing"
         run: node --test commons/test/sell-orphan-repair.mjs
+      - name: "Cohabi is for people 13 and older: every sign-up asks, the terms say so"
+        run: node --test commons/test/age-13.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:
