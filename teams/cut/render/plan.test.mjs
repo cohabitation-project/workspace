@@ -196,6 +196,31 @@ test("one music element: exact trim + delay + amix plan; a second is refused", (
 	assert.throws(() => buildRenderPlan({ tracks }), (e) => e instanceof RenderPlanError && /only one audio-track music element/.test(e.message));
 });
 
+test("music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused", () => {
+	const makeTracks = (volume, include = true) => {
+		const tracks = timeline(clip("a", "/m/a.mp4", 0, T));
+		const music = createTrack({ type: "audio", name: "music", id: "au1" });
+		music.elements.push(createElement({
+			id: "m", type: "audio", startTime: 0, duration: T, trimStart: 0,
+			params: { src: "/m/song.mp3", ...(include ? { volume } : {}) },
+		}));
+		tracks.audio.push(music);
+		return tracks;
+	};
+	const musicChain = (volume, include = true) => buildRenderPlan({ tracks: makeTracks(volume, include) }).filterComplex.split(";").at(-2);
+	const unchanged = "[1:a]atrim=start=0:end=1,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=0|0[amusic]";
+	assert.equal(musicChain(0.5), unchanged.replace(",adelay=", ",volume=0.5,adelay="));
+	assert.equal(musicChain(1), unchanged);
+	assert.equal(musicChain(undefined, false), unchanged);
+	for (const volume of [3, -0.01, NaN, Infinity, "0.5", null]) {
+		assert.throws(
+			() => buildRenderPlan({ tracks: makeTracks(volume) }),
+			(e) => e instanceof RenderPlanError && /params\.volume/.test(e.message),
+			`volume ${String(volume)} must be refused`,
+		);
+	}
+});
+
 test("overlay Words track: exact timed drawtext chain after concat, not ignored", () => {
 	const tracks = timeline(clip("a", "/m/a.mp4", 0, 2 * T));
 	const words = createTrack({ type: "text", name: "Words", id: "words" });
