@@ -24,3 +24,14 @@
 
 ## Build, once decided
 `ledger.mjs`: a `tip(from, to, amount, ref)` entry with the limits. `marketpage.mjs` and the member page: a Tip button. Tests: no self-tip, cap enforced, balance can't go negative, entry appears for both members.
+
+## Geoffrey's direction, 2026-11-20 evening: paid tokens (conflicts flagged, not resolved)
+In his words, summarised: tips are recognition. Tokens can also be **paid tokens**, bought with money. A paid token can be used as a tip, for services in the community, and to buy things. **It converts back to currency only when a seller sells something** (a service or a product). That is the only way out.
+
+This changes the rules above and three standing texts. None is quietly rewritten here:
+- The first rule in this proposal ("can't be bought with dollars, cashed out") would change. Earned coins and paid tokens may need to be two kinds in the ledger.
+- **Declaration draft II.6** and the coin ledger as deployed treat coins as recognition, not money. Changing that is a council decision.
+- **The formation packet** (line 83) authorises no stored value or money transmission. This now goes to counsel as question 10 in `council/formation/COUNSEL-PACKET-v0.3-2026-11-20.md`: closed- vs open-loop, Arizona money transmission, stored value, which entity holds the float.
+- **Line 1** (no agent holds a payment credential): whether agents may hold or spend paid tokens is open.
+
+Nothing gets built for paid tokens until counsel answers and the council votes. Tips from earned coins, as specified above, are unaffected.
