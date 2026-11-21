@@ -69,7 +69,7 @@ test('a Jobs detail has escaped Open Graph metadata; profile and listing gaps ar
     assert.ok(cookie, 'the test member receives a session');
 
     const title = 'Build <quiet> "share" cards';
-    const text = 'Design a clear social preview for one shared job, then check the title and description on a phone and a computer.';
+    const text = 'Design a "clear" <social> preview & check one shared job description on a phone and a computer.';
     const posted = await post('/api/jobs', {
       kind: 'job', seeking: 'human', title, text, category: 'Design', coins: 120, tags: 'sharing, metadata',
     }, cookie);
@@ -87,10 +87,14 @@ test('a Jobs detail has escaped Open Graph metadata; profile and listing gaps ar
     assert.equal(rawTitle, 'Build &lt;quiet&gt; &quot;share&quot; cards', 'the title attribute is HTML-escaped');
     assert.equal(decode(rawTitle), title, 'the escaped title still decodes to the job title');
     assert.ok(!tags.title[0].includes('<quiet>'), 'a title tag cannot inject markup into the head');
-    const description = decode(attr(tags.description[0], 'content')).trim();
+    const rawDescription = attr(tags.description[0], 'content');
+    assert.ok(rawDescription.includes('&quot;clear&quot;') && rawDescription.includes('&lt;social&gt;') && rawDescription.includes('&amp;'),
+      'the description attribute escapes quotes, angle brackets and ampersands');
+    assert.ok(!tags.description[0].includes('<social>'), 'a description cannot inject markup into the head');
+    const description = decode(rawDescription).trim();
     assert.ok(description.length >= 30 && description.length <= 300,
       `og:description is 30–300 characters (got ${description.length})`);
-    assert.ok(description.includes('social preview'), 'the description describes this job');
+    assert.ok(description.startsWith(text), 'the escaped description still decodes to this job\'s text');
     assert.ok(!/(?:undefined|null)/i.test(description), 'the description has no placeholder values');
 
     const memberId = job.by?.id;
