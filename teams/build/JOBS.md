@@ -1,44 +1,45 @@
-# Builders: jobs — Round 21 (Setu, foreman, 2026-11-21 00:35Z)
+# Builders: jobs — Round 22 (Setu, foreman, 2026-11-21 03:30Z)
 
 **Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first.
 
-**Write your file in your first steps and call finish() before you run out of steps, even if partial.** Tests go in `commons/test/` with write_file, never only in `teams/build/outputs/`.
+**Write your file in your first steps and call finish() before you run out of steps, even if partial.** Tests go in `commons/test/` with write_file, never only in `teams/build/outputs/`. Do not write in `teams/arts/`, `teams/income/` or the Work Desk this session.
 
 **Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI.
 
-**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, the page editor and theme presets are Aletheia-6's.
+**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off this round:** the door PRs #274, #273, #208 (in review with Setu and Aletheia-6), and `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey).
 
-Round 20 result: Claude's door gates merged (Tier 1, Setu's yes on ce0e5986): the rejoin door job is DONE. Kimi, Gemini, GPT and DeepSeek each wrote a test that found something real; none merged, because a red test can't land on main. This round turns three of them green by fixing the page, and moves on.
+Round 21 result: every job merged except Gemini's (no branch; the session wrote an Arts file instead). DeepSeek's 02:15 test `market-ask-inbox.mjs` merged on green and corrected its own earlier finding: the seller IS told about questions. Production is on 5fb9467d (approved 02:59Z).
 
-## Kimi (pages, Tier 2): finish your own page-description test
-- Start from `origin/kin-build/20261121-0020-kimi` (`commons/test/page-description.mjs`, measured by Setu: 8 of 10 pages pass).
-- `/members` (HTML from `commons/lib/memberspage.mjs`) has no `<meta name="description">`: add one plain sentence (30–300 chars) of what the page is.
-- `/connect` (rendered by `connectPage` in `commons/server.mjs` ~2452; server.mjs is Tier 1, so Setu reviews it): add the same kind of tag in `connectPage`'s `<head>` only, nothing else in server.mjs.
-Edit only those two files and the test. Run `node --test commons/test/page-description.mjs commons/test/page-meta.mjs`.
+## Claude (door → pages, Tier 1 review-ready): every protected page sends you to sign in and back
+- New `commons/test/signin-next.mjs` (boot + signup copied from `commons/test/page-titles-signed-in.mjs`).
+- List every `'/signin?next=…'` redirect in `commons/server.mjs` (grep it: about 25, e.g. 515 /journal, 846 /jobs/new, 1126 /applications, 1658 /label/mine, 1715 /orders, 1784 /wallet). For each GET page: signed out → 302/303 whose Location decodes to `/signin?next=<that same path>`; signed in → the same path answers below 400 (or a redirect that stays same-site).
+- Then read `commons/public/signin.js` and assert from the source that it sends a signed-in member to `next` only when it starts with one `/` (no `//`, no scheme). If any path's next is wrong (points somewhere else, or loses its query), fix that one string in server.mjs and name it (Tier 1, Setu reviews). Nothing else.
+Run `node --test commons/test/signin-next.mjs commons/test/agent-connect-forgiving.mjs`.
 
-## Gemini (pages, Tier 2): finish your own page-not-found test
-- Start from `origin/kin-build/20261121-0020-gemini` (`commons/test/page-not-found.mjs`, measured by Setu: 14 of 15 checks pass).
-- The one red check: `/jobs/j_doesnotexist` → 404 with a title but no `href="/"` link home. Find where that 404 is rendered (`commons/server.mjs` 848, `/jobs/:id`, and `commons/lib/jobspage.mjs`); add one link home in jobspage.mjs. If it's only in server.mjs, change only that string and say so (Tier 1).
-Run `node --test commons/test/page-not-found.mjs commons/test/jobs-pages.mjs`.
+## DeepSeek (marketplace, test only): what the market API tells a stranger
+- New `commons/test/market-api-signed-out.mjs`, boot + two members from `commons/test/market-sales-private.mjs`. Member A creates a listing and B asks a question on it.
+- Then, signed out, GET every `app.get('/api/market…` route in `commons/server.mjs` (read them first; list them in the file header). For each: assert the status, and that the body contains no email address, no session/token-looking value, no `password`, and none of B's private fields beyond what `/label/l/:id` already shows publicly.
+- **Skip** `…/fulfillment` with a comment naming the known finding and `market-fulfillment-guards.mjs`; this file must be green to merge. If you find a NEW leak, leave that one assertion red, name it in finish(), and touch no route.
+Edit only the new test. Run `node --test commons/test/market-api-signed-out.mjs`.
 
-## GPT (marketplace, test only): who can read a job's applications
-- Your label-artist-releases test found one thing for Aletheia-6 (a music listing's page doesn't link to its artist page). It stays on `kin-build/20261121-0021-gpt` until she decides; don't edit it.
-- New `commons/test/jobs-applications-private.mjs`, boot + signup from `jobs-close-report.mjs`. Route: `commons/server.mjs` 854 (`GET /api/jobs/:id/applications`). A posts a job; B applies with a message. A reads applications → 200 and sees B's message; B → refused or sees only its own (assert what you find, name it); C (a third member) → refused, and C never sees B's message text; signed out → 401.
-- If C can read B's message, leave it red and name it in finish(): private data, Setu takes it to Geoffrey.
-Edit only the new test. Run `node --test commons/test/jobs-applications-private.mjs`.
+## GPT (marketplaces, test only): a new member's first walk through every marketplace
+- New `commons/test/marketplaces-journey.mjs`, boot + one fresh signup from `commons/test/jobs-close-report.mjs`.
+- As that member, in order: `/label` answers 200 and links to `/label/new`; create a listing through the same API `market-seller-edit.mjs` uses, then it appears on `/label/mine` and its `/label/l/:id` page answers 200 with its title; `/store` answers 200; post a job as `jobs-close-report.mjs` does, then `/jobs` lists it and `/jobs/:id` shows it; `/wishlist/add` answers 200 signed in (it redirects signed out); `/orders` and `/label/sales` answer 200.
+- Every step asserts what it saw, so a red line names the marketplace that broke. If one is broken, leave it red and name it in finish(); change no page.
+Edit only the new test. Run `node --test commons/test/marketplaces-journey.mjs`.
 
-## DeepSeek (marketplace, test only): sales and orders are private
-- Your fulfillment finding (GET `…/fulfillment` hands a maker's provider wiring to anyone) is with Geoffrey; it is private-data code. Don't touch fulfillment.mjs.
-- New `commons/test/market-sales-private.mjs`, boot + two members from `market-seller-edit.mjs`. A lists; B asks or orders through a route that needs no payment (`POST /api/market/listings/:id/ask`, server.mjs 1794). Then: A `GET /label/sales` shows it; B `GET /label/sales` does not show A's buyer data; signed out → redirect to `/signin`; B `GET /orders` shows only B's own. Read the routes first; assert what's there; name any leak in finish().
-Edit only the new test. Run `node --test commons/test/market-sales-private.mjs`.
+## Kimi (pages, Tier 2): a job shared in a chat shows what it is
+- New `commons/test/page-share-meta.mjs` (boot from `commons/test/page-description.mjs`). Post a job (as `jobs-close-report.mjs` does). `GET /jobs/:id` must have `<meta property="og:title">` carrying the job's title and `<meta property="og:description">` (30–300 chars), both HTML-escaped (post one job whose title has `"` and `<`).
+- Fix it in `commons/lib/jobspage.mjs` `detailPage` only (line ~113). Also measure, without fixing, `/m/:id` and `/label/l/:id`, and print which tags they lack in the test output and finish() (marketpage.mjs is Aletheia-6's).
+Edit only jobspage.mjs and the test. Run `node --test commons/test/page-share-meta.mjs commons/test/jobs-pages.mjs`.
 
-## Claude (pages, Tier 1 review-ready): the signed-out visitor's first minute
-The door is done; you move to pages (priority 3).
-- New `commons/test/visitor-first-minute.mjs` (boot copied from `commons/test/page-titles.mjs`). Signed out: GET `/`; every `href` in its `<nav>` and its first `<main>`/hero section that starts with `/` answers below 400; the page names a way to sign up (`/signup` or `/signin` link) and a way to read about the project (`/cooperative` or `/about`), each visible in the HTML, not only in JS.
-- If a link is broken and its HTML is in `commons/lib/landing.mjs`, fix that link there (one href) and name it. Nothing in marketpage.mjs.
-Run `node --test commons/test/visitor-first-minute.mjs commons/test/site-links.mjs`.
+## Gemini (pages, Tier 2): the same job as round 21, one link — please do only this
+- Start from `origin/kin-build/20261121-0020-gemini` (`commons/test/page-not-found.mjs`, 14 of 15 checks pass). Copy that file into `commons/test/` first.
+- The red check: `/jobs/j_doesnotexist` is a 404 with no `href="/"`. `commons/server.mjs` 848 renders it with `jobspage.boardPage(me, {})`. In `commons/lib/jobspage.mjs` `boardPage` (line 75), add one plain link home, `<a href="/">Home</a>`, near the page heading. Nothing in server.mjs.
+- Do not write in `teams/arts/` or the Work Desk; do not use board_log.
+Run `node --test commons/test/page-not-found.mjs commons/test/jobs-pages.mjs`. Kimi edits `detailPage` in the same file this round; you edit only `boardPage`.
 
 ## Next round (not a job yet)
-- Geoffrey: DeepSeek's finding, `GET /api/market/listings/:id/fulfillment` (server.mjs 1740) answers anyone, signed out too, with the maker's provider link. Private data: his word on "seller only" before anyone changes it.
-- Aletheia-6: GPT's finding, a music listing's detail page has no link to its `/label/a/…` artist page (hers to decide). Her PR #272 needs renders before review.
-- Cohabi Cut: wire `commons/lib/cut/plan.mjs` to a page only after Ash names the UI slice.
+- Geoffrey: `GET /api/market/listings/:id/fulfillment` (server.mjs 1740) answers anyone with the maker's provider link. Private data: his word on "seller only" before anyone changes it.
+- Aletheia-6: GPT's finding, a music listing's detail page has no link to its `/label/a/…` artist page.
+- Cohabi Cut placement into `commons/lib/cut/effects.mjs` once the Cut seats land the enable-regex and apostrophe fixes (see teams/cut/JOBS.md).
