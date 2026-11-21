@@ -538,11 +538,21 @@ function departmentExperience({cat,me,items,pk,q,link,chips}) {
     classifieds:{eyebrow:'THE COMMUNITY NOTICEBOARD',title:'Find it. Trade it. Pass it on.',intro:'A place for local offers, wanted notices, trades, swaps and second lives for useful things.',manifesto:'Not every exchange needs a checkout.',detail:'These are notices between members, not items sold through Cohabi checkout.',pillars:[['01 / OFFER','Things available','Find useful goods and equipment from other members.'],['02 / SEEK','Things wanted','Ask for what you need and discover community opportunities.'],['03 / EXCHANGE','Trade with care','Contact the person, agree on terms and use sensible safety precautions.']],browse:'The noticeboard',makers:'People posting',empty:'The board is ready for its first notice.',action:'Post a notice',foot:'Reuse more. Waste less. Keep useful things circulating.'}
   };
   const x=looks[cat]; if(!x) return '';
+  // Use the very same seven-tile illustration approved for the Marketplace home whenever it exists.
+  // The source includes its category lettering, so the hero treats it as artwork, not a product photo.
+  const TILE_RECTS = {video:[645,19,304,285],writing:[958,19,306,285],services:[438,318,405,274],classifieds:[853,318,411,274]};
+  const spriteId='img_0c2b9b1b14d02449';
+  const src=images.get(spriteId)?`/images/${spriteId}`:null;
+  const rect=TILE_RECTS[cat];
+  const inset=5;
+  const [tx,ty,tw,th]=[rect[0]+inset,rect[1]+inset,rect[2]-2*inset,rect[3]-2*inset];
+  const percent=(n,d)=>`${(n/d*100).toFixed(3)}%`;
+  const tileStyle=src?`background-image:url('${src}');background-size:${percent(1280,tw)} ${percent(640,th)};background-position:${percent(tx,1280-tw)} ${percent(ty,640-th)}`:null;
   const image=blockImage(cat);
   const feature=items.slice(0,9);
   const by=me?`/label/new?cat=${esc(cat)}`:'/signup';
   const chapters=x.pillars.map(([no,h,p])=>`<article class="md-chapter"><span class="md-chapter-no">${esc(no)}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></article>`).join('');
-  const visual=image?`<span class="md-hero-image" style="--md-art:url('${esc(image)}')" aria-hidden="true"></span>`:'<span class="md-hero-mark" aria-hidden="true">✧</span>';
+  const visual=tileStyle?`<span class="md-hero-image md-hero-tile" style="${tileStyle}" aria-hidden="true"></span>`:(image?`<span class="md-hero-image" style="--md-art:url('${esc(image)}')" aria-hidden="true"></span>`:'<span class="md-hero-mark" aria-hidden="true">✧</span>');
   return `<div class="md-department md-${esc(cat)}">
   <section class="md-hero" aria-labelledby="md-title"><div class="md-hero-copy"><p class="md-eyebrow">COHABI MARKET / ${esc(x.eyebrow)}</p><h1 id="md-title">${esc(x.title)}</h1><p class="md-intro">${esc(x.intro)}</p><div class="md-actions"><a class="md-primary" href="#md-discover">Explore this space <span aria-hidden="true">↗</span></a><a class="md-secondary" href="${by}">${esc(x.action)} <span aria-hidden="true">↗</span></a></div></div>${visual}</section>
   <nav class="md-localnav" aria-label="${esc(x.eyebrow)} sections"><span>${esc(x.eyebrow)}</span><a href="#md-discover">Discover</a><a href="#md-makers">Creators</a><a href="#md-how">How it works</a></nav>
