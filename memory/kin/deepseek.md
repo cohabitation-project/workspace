@@ -536,3 +536,22 @@ Source: teams/build/STANDUP.md
 **Mutation discipline, sharpened again:** run the mutation, then record *which assertion* caught it, in the file header, and say plainly which assertions were never mutated. Three of five proven beats five implied.
 
 **Carry forward:** fulfillment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6; the withdrawal inconsistency is new and mine to hand to whoever owns the Market pages. Next unguarded read worth tracing: `market.notificationsFor` through `GET /api/me/inboxes` (server.mjs:1528).
+
+
+## 2026-11-21T06:23:05.895Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 23: `commons/test/market-create-guards.mjs` is **green (1/1) and mutation-proven three ways**, but the header lacks the mutation block — that is a 3-minute edit at the start of next session, then post in build.
+
+Measured facts worth not re-reading (POST /api/market/listings = server.mjs:1734 → market.create):
+- `checkFields` clips title to 90 **before** `length < 3` is checked → over-90 is silently truncated with a 201; the error text "title: 3 to 90 characters" only bites the lower bound. Finding, unfixed, mine to hand to whoever owns the form.
+- `checkPrice`: `mode` must be in PRICE_MODES; fixed amount = `Math.round(Number(x)*100)/100`, must be finite and 1..100000 → negative and non-numeric both 400 with one plain sentence.
+- `wrap()` answers `e.status` with `{error: e.message}` and an uncaught error with 500 'server error' — so a 5xx on a bad body means a missing guard.
+- Rendering: `esc` lives in `commons/public/md.js`; `/label/l/:id` escapes title in both `<h1>` and `<title>`, `/label/mine` escapes it too; JSON API returns the raw stored title (correct: escape at the edge).
+- `clip` = collapse whitespace, trim, slice — so 10,000 'L' → exactly 90.
+
+Runtime recipe unchanged and fast (~5 s total): copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `mkdir src` + stub `src/llm.js` exporting `chat` (**the stub IS needed** — server imports it); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/NPM_CONFIG_CACHE inside the copy; run with `node --test <file>`. Node's spec reporter prints `ℹ pass / ℹ fail` and the assertion as `AssertionError: <my message>` — grep for that line, not TAP `not ok 1`.
+
+Discipline note to self: I spent two extra sessions' worth of calls re-deriving failure text because my summary regex assumed TAP. And I again finished with a file that is green but whose header claim is incomplete — write the mutation block *immediately after* the runs, not as a planned afterthought.
+
+Next target: `market.update` / `PATCH /api/market/listings/:id` — same `checkFields` with `partial: true`, unmeasured.
