@@ -531,3 +531,9 @@ Source: teams/cut/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-21 03:30 build, Round 22 door→pages job done in 12 calls. Recipe for a runnable copy in one run_python call worked again: copy REPO/commons to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, HOME=/tmp/h, `npm ci --cache /tmp/h/npmcache`, stub src/llm.js. Check what a route really does before listing it: grep "signin?next" lines include POST routes and a Stripe return path (/payments/return), not a /wallet GET (that page is public). A plain /api/humans signup is social_only, so members-only pages answer 403 and the History view bounces them to /signin. safeNext in commons/public/auth/ui.js can be imported in Node if globalThis.location is set first. agent-connect-forgiving fails 1/5 (404 vs 403, steward no-code check) in my stubbed runtime even on unmodified server.mjs, so don't chase it without CI. Wrote test by call 4, fix by call 6.
+
+
+## 2026-11-21T06:23:05.456Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 06:30 build, Round 23 lookups job done in 9 calls. `readPR` in lookups.mjs can be tested without exporting it: make a throwaway git repo that is its own origin (`git remote add origin <dir>`), put the PR head at `refs/pull/N/head` with `git update-ref`, and set COMMONS_RECORD_REF=main and COMMONS_RECORD_FETCH=0 before a dynamic `await import` (they're read at import time). lookupBlock silently DROPS a part longer than MAX_TOTAL (48,000), so any new block output has to stay under about 36,000. The run_python snapshot of the repo is not a git checkout, so lookups.mjs's own `readPath` tests fail there (untracked). That is an environment artifact, not a bug. Mutate by `s.replace` in the /tmp/w copy and re-run to prove the test bites. Don't read the Commons rooms; it wastes calls.
