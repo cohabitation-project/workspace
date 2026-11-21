@@ -1189,3 +1189,80 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-pgdialog input:focus-visible,.mk-pgdialog select:focus-visible,.mk-pgdialog textarea:focus-visible,.mk-pgdialog button:focus-visible{outline:3px solid #e6c37a;outline-offset:2px}
 .mk-pgdialog .form-msg{color:#f5dba6}
 @media(max-width:600px){.mk-pgdialog{max-width:calc(100vw - 12px);width:calc(100vw - 12px);max-height:96dvh;border-radius:14px}.mk-pgdialog #pg-form{padding-inline:14px}.mk-pgdialog .pf-ed-head{margin-inline:-14px;padding-inline:14px}.mk-pgdialog .pf-ed-foot{margin-inline:-14px;padding-inline:14px}}
+
+
+/* Aletheia-6: four individual departments share a navigation grammar, not a generic storefront.
+   Approved market home and Art v3 artwork remain untouched. Every image here comes from the existing
+   department art attached to the home tile, never an unlicensed real creator's artwork. */
+.md-department { --md-accent:#c7a477; --md-surface:#171c24; --md-text:#f4efe6; --md-muted:#cfc6bc; padding:0 0 44px; color:var(--ink); }
+.md-department.md-video { --md-accent:#efd28e; --md-surface:#12131b; --md-text:#fffaf1; --md-muted:#d5d0ca; }
+.md-department.md-writing { --md-accent:#795035; --md-surface:#e9ddc9; --md-text:#271d18; --md-muted:#51443a; }
+.md-department.md-services { --md-accent:#a8d9eb; --md-surface:#173b4a; --md-text:#f3fbff; --md-muted:#d4e7ed; }
+.md-department.md-classifieds { --md-accent:#e2b468; --md-surface:#423b2d; --md-text:#fff7e6; --md-muted:#e3d6c0; }
+.mk-page[data-mk=writing] { --bg:#f5efe3;--panel:#fffdf8;--panel2:#ede3d4;--line:#d8cbbb;--ink:#2b241e;--muted:#65574a;--gold:#785137;--gold-ink:#fff; background:#f5efe3; }
+.md-hero { position:relative; isolation:isolate; overflow:hidden; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(220px,.9fr); min-height:420px; align-items:center; gap:clamp(16px,4vw,50px); padding:clamp(24px,5vw,70px); border-radius:22px; background:var(--md-surface); color:var(--md-text); margin:16px 0 12px; }
+.md-hero:before {content:""; position:absolute; inset:0; z-index:-1; background:radial-gradient(ellipse at 85% 25%,color-mix(in srgb,var(--md-accent) 18%,transparent),transparent 58%);pointer-events:none}
+.md-hero-copy {position:relative;z-index:1;min-width:0}
+.md-eyebrow,.md-overline {font-size:11px;letter-spacing:.18em;font-weight:800;text-transform:uppercase}
+.md-eyebrow {color:var(--md-accent);margin:0 0 18px}
+.md-hero h1 {font:600 clamp(38px,5vw,73px)/1.03 Georgia,'Times New Roman',serif;letter-spacing:-.035em;max-width:770px;color:var(--md-text);margin:0 0 24px}
+.md-intro {font-size:clamp(15px,1.65vw,19px);line-height:1.65;max-width:550px;color:var(--md-muted);margin:0}
+.md-hero-image {display:block;min-width:0;width:100%;aspect-ratio:4/3;background-image:var(--md-art);background-size:cover;background-position:center;border-radius:16px;transform:rotate(2deg);box-shadow:0 22px 65px #0006;border:8px solid color-mix(in srgb,var(--md-text) 17%,transparent)}
+.md-hero-mark {display:grid;place-items:center;font-size:clamp(100px,18vw,220px);color:var(--md-accent)}
+.md-actions {display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 0}
+.md-actions a {min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:10px 18px;border-radius:7px;text-decoration:none!important;font-weight:760;font-size:14px}
+.md-actions .md-primary {color:#171717!important;background:#f0d8a9}
+.md-actions .md-secondary {color:var(--md-text)!important;border:1px solid color-mix(in srgb,var(--md-text) 55%,transparent)}
+.md-localnav {display:flex;flex-wrap:wrap;align-items:center;gap:clamp(12px,2vw,28px);border-block:1px solid var(--line);padding:13px 6px;margin:12px 0 32px}
+.md-localnav span {font-size:10px;font-weight:850;letter-spacing:.13em;color:var(--muted);margin-right:auto}
+.md-localnav a {color:var(--ink)!important;font-size:13px;font-weight:700;white-space:nowrap}
+.md-introstrip {padding:16px 0 22px;max-width:770px}
+.md-introstrip .md-overline,.md-sectionbar .md-overline {color:var(--gold);margin:0 0 9px}
+.md-introstrip h2 {font:500 clamp(28px,3.3vw,46px)/1.15 Georgia,serif;letter-spacing:-.025em;margin:0 0 13px}
+.md-introstrip > p:last-child {font-size:16px;line-height:1.65;color:var(--muted);margin:0}
+.md-chapters {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 16px}
+.md-chapter {border:1px solid var(--line);background:var(--panel);padding:clamp(18px,2.5vw,27px);min-height:175px;border-radius:12px}
+.md-chapter-no {font-size:10px;color:var(--gold);font-weight:800;letter-spacing:.13em}
+.md-chapter h3 {font:600 23px/1.2 Georgia,serif;margin:15px 0 9px;color:var(--ink)}
+.md-chapter p {color:var(--muted);line-height:1.5;margin:0;font-size:14px}
+.md-sectionbar {display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:14px;border-bottom:1px solid var(--line);padding:0 0 16px;margin-bottom:20px}
+.md-sectionbar h2 {font:500 clamp(28px,3.2vw,43px)/1.1 Georgia,serif;margin:0;color:var(--ink)}
+.md-sectionbar>a,.md-empty a {color:var(--ink)!important;font-weight:750;font-size:14px}
+.md-discover {scroll-margin-top:100px}
+.md-discover .mk-filters {margin:0 0 18px}
+.md-listings {grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:17px}
+.md-listings .mk-card {border-radius:8px;box-shadow:0 8px 24px #0000000a;transition:transform .18s ease,box-shadow .18s ease}
+.md-listings .mk-card:hover {transform:translateY(-3px);box-shadow:0 12px 30px #0000001a}
+.md-more {margin-top:18px}
+.md-empty {border:1px dashed var(--line);background:var(--panel);padding:44px 24px;border-radius:12px}
+.md-empty p {font:500 20px/1.5 Georgia,serif;margin:0 0 14px;max-width:550px}
+.md-makers {scroll-margin-top:100px;margin:56px 0 42px}
+.md-maker-grid {grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.md-end {margin-top:60px;padding:24px 0;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;font:italic 20px/1.3 Georgia,serif}
+.md-end a {font:700 13px/1.4 system-ui,sans-serif;color:var(--ink)!important}
+.md-writing .md-hero {border-radius:4px}
+.md-writing .md-hero-image {transform:rotate(-3deg);border-radius:3px}
+.md-writing .md-chapter {border-radius:3px}
+.md-video .md-hero {border:1px solid #3f3c3a}
+.md-video .md-hero-image {aspect-ratio:16/10;border-radius:5px}
+.md-video .md-chapter {border-radius:5px}
+.md-services .md-hero {border-radius:15px}
+.md-services .md-chapter {border-top:4px solid #376b85}
+.md-classifieds .md-hero {border-radius:5px}
+.md-classifieds .md-hero-image {border-radius:2px;transform:rotate(-2deg)}
+.md-classifieds .md-chapter {border-radius:3px;border-top:3px solid #a4773e}
+.md-department a:focus-visible {outline:3px solid var(--gold);outline-offset:3px}
+.md-hero-full {--md-text:#fff; grid-template-columns:minmax(0,1fr); min-height:clamp(420px,46vw,600px); background:linear-gradient(90deg,#000d 0%,#000a 42%,#0003 78%,#0000 100%),var(--md-hero-bg) center/cover no-repeat,#111; color:#fff}
+.md-hero-full .md-hero-copy {max-width:720px}
+.md-hero-full .md-intro, .md-hero-full .md-eyebrow {color:#f1eeea}
+@media(max-width:580px){.md-hero-full{min-height:460px;align-items:end;background:linear-gradient(180deg,#0004 0%,#000b 45%,#000e 100%),var(--md-hero-bg) center/cover no-repeat,#111}}
+@media(max-width:850px){.md-hero{grid-template-columns:1fr;min-height:auto}.md-hero-image{max-width:640px;aspect-ratio:16/9}.md-chapters{grid-template-columns:1fr 1fr}.md-chapter{min-height:0}}
+@media(max-width:580px){.md-hero{padding:26px 20px;gap:22px;border-radius:13px}.md-hero h1{font-size:clamp(36px,11vw,54px)}.md-hero-image{border-width:4px;max-height:245px}.md-actions a{width:100%}.md-chapters{grid-template-columns:1fr;margin-bottom:36px}.md-localnav{gap:14px}.md-localnav span{width:100%}.md-introstrip h2{font-size:30px}.md-makers{margin-top:38px}.md-end{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.md-listings .mk-card{transition:none}.md-listings .mk-card:hover{transform:none}}
+
+/* Visitor discovery and maker onboarding are distinct journeys; #md-how lands on the real maker guide. */
+.md-makerguide {scroll-margin-top:100px;padding:26px 0 20px}
+.md-makerguide .md-sectionbar h2 {font-size:clamp(27px,3vw,39px)}
+.md-maker-note {font-size:13px;line-height:1.65;color:var(--muted);max-width:860px;margin:0 0 42px}
+@media(max-width:990px){.md-makerguide .md-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.md-makerguide .md-chapters{grid-template-columns:1fr}}
