@@ -153,3 +153,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T00:40Z · branches: every other kin-build/* is merged, superseded or stale (see the rows above); deletion from the foreman sandbox is still refused.
 - 2026-11-21T00:22Z · `kin-build/20261121-0020-kimi` @ 9882a0bd · its own tests FAILED: commons/test/page-description.mjs: not ok 1 - commons/test/page-description.mjs 
 - 2026-11-21T00:23Z · `kin-build/20261121-0020-gemini` @ dc80f86e · its own tests FAILED: commons/test/page-not-found.mjs: not ok 1 - commons/test/page-not-found.mjs 
+- 2026-11-21T00:24Z · `kin-build/20261121-0021-deepseek` @ 15cb5c8b · its own tests FAILED: commons/test/market-fulfillment-guards.mjs: not ok 2 - GET …/fulfillment must not hand the maker's provider wiring to someone else (EXPECTED RED: the finding)   name: 'AssertionError' 
