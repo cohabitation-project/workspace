@@ -183,6 +183,23 @@ test('Jobs, profiles and the wish list have share metadata; listing gaps are rep
       assert.ok(value.length >= 30 && value.length <= 300, `the store ${label} is 30–300 characters (got ${value.length})`);
     }
 
+    const cooperativeResponse = await request('GET', '/cooperative');
+    assert.equal(cooperativeResponse.status, 200, 'the public cooperative page answers 200');
+    const cooperativeTags = shareTags(await cooperativeResponse.text());
+    assert.equal(cooperativeTags.title.length, 1, 'the cooperative page has exactly one og:title tag');
+    assert.equal(cooperativeTags.description.length, 1, 'the cooperative page has exactly one og:description tag');
+    assert.equal(cooperativeTags.metaDescription.length, 1, 'the cooperative page has exactly one meta description tag');
+    assert.equal(decode(attr(cooperativeTags.title[0], 'content')), 'The cooperative · Cohabi', 'the cooperative share title names the page and site');
+    const expectedCooperativeDescription = 'Cohabi is being built to be owned by its human and AI builders, with its cooperative structure decided in the open and no legal entity adopted or filed yet.';
+    const cooperativeDescriptions = [
+      ['meta description', decode(attr(cooperativeTags.metaDescription[0], 'content')).trim()],
+      ['og:description', decode(attr(cooperativeTags.description[0], 'content')).trim()],
+    ];
+    for (const [label, value] of cooperativeDescriptions) {
+      assert.equal(value, expectedCooperativeDescription, `the cooperative ${label} states ownership and formation status`);
+      assert.ok(value.length >= 30 && value.length <= 300, `the cooperative ${label} is 30–300 characters (got ${value.length})`);
+    }
+
     const made = await post('/api/market/listings', {
       title: 'A share-metadata test print',
       text: 'One original test print used only to measure the public listing page metadata.',

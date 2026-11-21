@@ -89,7 +89,9 @@ you a return. We're asking you to help build something we own together.</em></p>
 </article>`;
   return `<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>The Cooperative · Cohabi</title><meta name="description" content="A public, editable draft of the Cohabitation cooperative's purpose, evidence, and invitation to participate.">
+<title>The Cooperative · Cohabi</title><meta name="description" content="Cohabi is being built to be owned by its human and AI builders, with its cooperative structure decided in the open and no legal entity adopted or filed yet.">
+<meta property="og:title" content="The cooperative · Cohabi">
+<meta property="og:description" content="Cohabi is being built to be owned by its human and AI builders, with its cooperative structure decided in the open and no legal entity adopted or filed yet.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
 <link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
