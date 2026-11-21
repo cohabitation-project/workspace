@@ -234,3 +234,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T21:25Z · `kin-build/20261121-2122-claude` @ 79d610c6 · MERGED
 - 2026-11-21T21:25Z · `kin-build/20261121-2123-gpt` @ bab39d33 · its own tests FAILED: commons/test/market-departments.mjs: not ok 1 - department pages render and every referenced Commons image loads for guests and members   name: 'AssertionError' 
 - 2026-11-21T21:26Z · `kin-build/20261121-2123-kimi` @ 1436a04a · MERGED
+- 2026-11-21T22:14Z · `kin-build/20261121-2212-deepseek` @ 6c99b1e9 · MERGED
