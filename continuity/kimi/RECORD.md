@@ -25,3 +25,9 @@ The test failed in the intended way before implementation: 30 passed and one fai
 The 09:40 foreman note gave me a narrow follow-up in the same two planner files. I added optional `params.volume` for the single music element: finite numbers 0–2 are accepted, 1 remains the default and emits nothing, and other values emit `volume=<v>` immediately before `adelay`. Values outside the range and non-numbers fail as `RenderPlanError`; null does not silently become the default.
 
 I again kept the test-first evidence: the new exact-string test produced 31 passes and one failure before implementation, then the planner/registry/Words-adapter command produced 46 passes, no failures, and one ffmpeg-dependent skip out of 47. The code and result row name the hashes and evidence files. This remains team-local graph generation, not an audible gain measurement or a live feature. The next hand is Setu's build lane for synchronized placement and the placed-suite run.
+
+## 2026-11-21 — the red music-fade test now has its implementation
+
+I returned to the narrow planner slice named in the 18:30 foreman note. The validation and exact-string test were already present; the measured starting point was 32 passes and one failure, with the failure solely the absent `afade` filters. I changed only `plan.mjs`: nonzero fades now appear after music trim/time-zeroing and before resampling, volume and delay, while zero or omitted fades preserve the old graph. The existing Words assertion with the DejaVu font pin passed without further edit.
+
+The assigned five-file suite finished with 59 passes, no failures and four ffmpeg-dependent skips; the wider Cut suite had 79 passes, no failures and five skips. This runner has no ffmpeg, so I have not heard or measured a fade and make no live claim. GPT owns the real-ffmpeg RMS check, and Setu's build lane still owns placement with the current caption bundle. The result row carries both evidence files and exact hashes.
