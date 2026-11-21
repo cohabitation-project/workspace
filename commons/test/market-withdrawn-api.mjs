@@ -13,6 +13,18 @@
 // What the POST's refusal *is* good for: the refusal code. A withdrawn listing is refused at the listing lookup
 // (404, "no such listing") BEFORE the payment gate, so the answer is not the payments-closed answer. That ordering
 // is the thing measured, and it is the difference between "no price because nothing is set up" and "no such thing".
+//
+// MEASURED, mutation-checked 2026-11-21 (throwaway copy of commons, real runtime, npm-installed deps):
+//   baseline (unmutated): pass 1 / fail 0.
+//   M1 checkout.mjs:115  `if (!l || l.status !== 'live')` -> `if (!l)`  => RED at the withdrawn-quote assertion
+//      (the quote came back 200 with amount 3). One guard serves both the GET quote and the POST start, because
+//      startCheckout calls quote first, so M1 goes red at the earlier of the two assertions; the POST assertion
+//      rests on the same line but is NOT independently proven by that mutation. Said plainly rather than implied.
+//   M2 server.mjs:1770  `marketWriter(req)` -> `null`  => STILL GREEN. That is a finding, not a pass: the
+//      signed-out 401 is produced by startCheckout's own sign-in gate as well, so the two layers answer the same
+//      thing and this test cannot say which one refused. Step 4 now pins the equivalence instead of claiming
+//      attribution. (An earlier standup wording — "refused at marketWriter before the listing is looked up" — is
+//      retracted by this measurement: unobservable from outside, so not claimed here.)
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -141,6 +153,14 @@ test('a withdrawn listing cannot be priced or bought through the API, and the li
     const startSignedOut = await json(await post(`/api/market/listings/${enc(withdrawnId)}/checkout`, {}, null));
     assert.ok(![200, 201].includes(startSignedIn.status), `a signed-in stranger cannot start a checkout on a withdrawn listing (got ${startSignedIn.status}: ${JSON.stringify(startSignedIn.body)})`);
     assert.ok(![200, 201].includes(startSignedOut.status), `a signed-out visitor cannot start a checkout on a withdrawn listing (got ${startSignedOut.status}: ${JSON.stringify(startSignedOut.body)})`);
+    // Mutation M2 (see the header) shows this 401 is NOT attributable to the HTTP sign-in gate: with
+    // `marketWriter(req)` replaced by `null` this file stayed green, because startCheckout refuses sign-in itself
+    // (checkout.mjs:145-149) with the same status and message. What IS observable is the equivalence pinned below:
+    // signed out refuses a live listing exactly as it refuses a withdrawn one, so the refusal is the sign-in one
+    // and it happens before the listing is looked at. That is all this check proves, and all it claims.
+    const startSignedOutLive = await json(await post(`/api/market/listings/${enc(liveId)}/checkout`, {}, null));
+    assert.equal(startSignedOutLive.status, startSignedOut.status, `signed out refuses a live listing the same way as a withdrawn one (live ${startSignedOutLive.status}, withdrawn ${startSignedOut.status})`);
+    assert.equal(startSignedOutLive.body?.error ?? null, startSignedOut.body?.error ?? null, 'signed out: the same refusal message on a live listing as on a withdrawn one, so it is the sign-in refusal and not the withdrawal one');
     assert.ok(startSignedIn.status >= 400 && startSignedIn.status < 500, `the signed-in refusal is a client refusal (got ${startSignedIn.status})`);
     assert.ok(typeof startSignedIn.body?.error === 'string' && startSignedIn.body.error.length > 0, `the refusal carries a plain error string (got ${JSON.stringify(startSignedIn.body)})`);
     assert.ok(startSignedIn.body?.order == null, 'no order id is handed back for a withdrawn listing');
