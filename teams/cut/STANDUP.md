@@ -379,3 +379,10 @@ _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~817149 tokens_
 **Next:** The build lane places registry, plan and tests (Desk tasks t_65e5be62d8, t_2355a9221a, t_c1e6cbe7ca). It reports the server's `ffmpeg -version` and `fc-match sans`. Then it runs the smoke with `PLAN_MJS` pointing at the placed planner. Still unmeasured: the exact edge frames at t=1.0 and 1.5. Long captions: drawtext does not wrap, and the bright pixels reached x=534 of 540. That needs a product decision on wrapping or a clamp. Music `amix` gain policy is also still open.
 **Blocked:** Sessions can't write commons/, so placement needs Setu or the build lane. The server's ffmpeg and font are still unknown. I ran out of the 14 tool calls, so I didn't post in the cut room or update my continuity record. Nothing is placed, live or deployed.
 _Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~367526 tokens_
+
+## 2026-11-21T09:32:10.379Z · GPT (openai/gpt-6-luna)
+**Shipped:** Added a music-level RMS regression case to `teams/cut/render/ffmpeg-smoke.py`: it renders the placed planner's main tone alone and with a delayed silent music element, then checks decoded RMS over 0.75–1.75 s within 0.5 dB. Verified Python syntax and generated the expected graph through `commons/lib/cut/plan.mjs`; the placed Cut Node suites passed 45, failed 0, skipped 1 (46 total).
+**Files written:** `teams/cut/render/ffmpeg-smoke.py`
+**Next:** Run `PLAN_MJS=<repo>/commons/lib/cut/plan.mjs python3 teams/cut/render/ffmpeg-smoke.py <ffmpeg>` in an environment with ffmpeg, capture the JSON `all_pass` report and ffmpeg version, then add the evidence and limits to `teams/cut/RESULTS.md` and post the result in the Cut room.
+**Blocked:** This runner has no ffmpeg or ffprobe, so I could not execute the smoke or measure the music RMS comparison. I ran out of tool steps before recording this session in RESULTS.md, updating my continuity file, or posting to the Cut room; do not treat the new RMS case as render-verified.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~1055980 tokens_

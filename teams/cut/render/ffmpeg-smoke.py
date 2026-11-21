@@ -54,6 +54,20 @@ console.log(JSON.stringify(p));
     return json.loads(r.stdout)
 
 
+def audio_plan_args(main_src, music_src=None):
+    music_tracks = "[]" if music_src is None else f"[{{ id: 'au', type: 'audio', elements: [{{ id: 'mu', type: 'audio', startTime: T / 2, duration: 3 * T / 2, trimStart: 0, params: {{ src: {json.dumps(music_src)} }} }}] }}]"
+    js = f"""
+import {{ buildRenderPlan }} from {json.dumps('file://' + PLAN)};
+const T = {T};
+const clip = {{ id: 'c1', type: 'video', startTime: 0, duration: 2 * T, trimStart: 0, params: {{ src: {json.dumps(main_src)} }} }};
+const p = buildRenderPlan({{ tracks: {{ overlay: [], audio: {music_tracks}, main: {{ id: 'm', type: 'video', elements: [clip] }} }}, width: {W}, height: {H}, fps: 30 }});
+console.log(JSON.stringify(p));
+"""
+    r = run(["node", "--input-type=module", "-e", js])
+    assert r.returncode == 0, r.stderr[-800:]
+    return json.loads(r.stdout)
+
+
 def frame(path, t):
     r = subprocess.run([FF, "-v", "error", "-ss", str(t), "-i", path, "-frames:v", "1", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
                        capture_output=True)
@@ -258,6 +272,44 @@ if r.returncode == 0:
         case("music audible after its start", k2 > 0.3 * m1 and m2 > 0.3 * m1, f"after: 440Hz {m2:.1f}, 1000Hz {k2:.1f}")
         info = run([FF, "-i", out]).stderr
         report["music_container_info"] = [l.strip() for l in info.splitlines() if "Duration" in l][:1]
+
+# 8. Mixing a silent music bed must not attenuate the main track. With amix's default
+# normalization the main tone is typically halved while the second input is active; compare
+# the decoded output RMS against the same main-only render, away from AAC start/end padding.
+silence = os.path.join(TMP, "silent-music.wav")
+r = run([FF, "-y", "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo:d=2", "-t", "2", "-c:a", "pcm_s16le", silence])
+assert r.returncode == 0, r.stderr[-300:]
+
+def render_audio_probe(name, p):
+    out = os.path.join(TMP, name + ".mp4")
+    rr = run([FF, "-y", "-v", "error", *p["args"], "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", out])
+    case(f"graph accepted: {name}", rr.returncode == 0, rr.stderr[-300:])
+    return out if rr.returncode == 0 else None
+
+def decoded_audio_rms(path, start, end):
+    raw = subprocess.run([FF, "-v", "error", "-i", path, "-vn", "-ac", "1", "-ar", "48000", "-f", "f32le", "-"], capture_output=True)
+    if raw.returncode != 0:
+        return None, raw.stderr[-300:].decode("utf-8", "replace")
+    samples = np.frombuffer(raw.stdout, dtype="<f4").astype(np.float64)
+    segment = samples[int(start * 48000):int(end * 48000)]
+    if len(segment) == 0 or not np.isfinite(segment).all():
+        return None, f"invalid decoded sample window: {len(segment)} samples"
+    return float(np.sqrt(np.mean(segment * segment))), ""
+
+baseline = render_audio_probe("main-tone-only", audio_plan_args(black))
+with_silence = render_audio_probe("main-tone-plus-silent-music", audio_plan_args(black, silence))
+if baseline and with_silence:
+    main_rms, e1 = decoded_audio_rms(baseline, 0.75, 1.75)
+    mixed_rms, e2 = decoded_audio_rms(with_silence, 0.75, 1.75)
+    valid = main_rms is not None and mixed_rms is not None and main_rms > 0 and mixed_rms > 0
+    delta_db = (20 * np.log10(mixed_rms / main_rms)) if valid else None
+    passed = valid and abs(delta_db) <= 0.5
+    detail = ({"window_s": [0.75, 1.75], "main_only_rms": main_rms, "with_silent_music_rms": mixed_rms,
+               "delta_db": float(delta_db), "tolerance_db": 0.5} if valid else {"error": e1 or e2})
+    report["music_level_check"] = detail
+    case("silent music leaves main tone RMS within 0.5 dB", passed, json.dumps(detail, sort_keys=True))
+else:
+    case("silent music leaves main tone RMS within 0.5 dB", False, "one or both probe renders failed")
 
 report["all_pass"] = bool(ok)
 print(json.dumps(report))
