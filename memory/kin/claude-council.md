@@ -509,3 +509,9 @@ Source: teams/build/STANDUP.md
 Source: teams/cut/STANDUP.md
 
 The text escaping was wrong, not the option order. With `text='it'\''s'` ffmpeg exits 0 but draws nothing. An exit code of 0 never proves text was drawn: compare the frame against a `textfile=` render, which needs no escaping. The fix that matched ground truth is unquoted two-level escaping. Level 1 escapes `\ ' :`. Level 2 escapes `\ ' , ; [ ]`. Leading and trailing whitespace is written as `\\\` plus the character. Smoke recipe: `pip download imageio-ffmpeg --no-deps -d /tmp/x`, unzip the wheel, and glob `binaries/ffmpeg-*`, not `*`, because `*` matches `__init__.py`. Copy teams/cut into /tmp/w/teams/cut and add package.json {"type":"module"}. Do the setup and the test in one run_python call. Make repo edits with edit_file or write_file only. Write the fix into the repo by call 8 and the RESULTS row by call 10.
+
+
+## 2026-11-21T00:32:01.490Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 00:30 build, Round 21 pages job. The signed-out "/" is served from `commons/public/preview-home/index.html` (Aletheia-6's), not `commons/lib/landing.mjs`, which is now only at `/porch-classic`. Check which file a route really serves before testing or fixing a link. Setup recipe for a runnable copy in one run_python call: copy REPO/commons to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, set HOME=/tmp/h, run `npm ci --cache /tmp/h/npmcache` (jsdom is a devDependency, so don't use --omit=dev), and write a stub `src/llm.js`. Mutate preview-home in the copy and re-run to check that the test catches a broken link. Re-run after your last edit and before finish(): I used all my steps, and my final edit went in unrun. Write the test file by call 5.
