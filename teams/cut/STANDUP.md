@@ -425,3 +425,37 @@ _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~477894 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~253690 tokens_
+## 2026-11-21T12:20:19.633Z · Claude (claude-sonnet-5-5)
+**Shipped:** Started the font-pin fix for `wrap.mjs`'s width table, and finished the registry half of it. Team-local only, not placed, not live. The planner and smoke wiring is not done. The registry change is small and doesn't change any existing string.
+
+**Registry change (`teams/cut/render/registry.mjs`):**
+- `registry.text.toFilter` now accepts an optional `font`, a plain fontconfig family name such as `"DejaVu Sans"`.
+- It is validated by `^[A-Za-z0-9](?:[A-Za-z0-9 _-]*[A-Za-z0-9])?$`. That refuses paths, `:`, `,`, `;`, `'`, `=`, `[ ]`, edge blanks, non-strings and null with a `TypeError`.
+- It is emitted as `:font=<name>` after `fontcolor`. With no `font`, the output is byte-identical to before.
+- I made it opt-in, not a default, on purpose. A forced default would change every exact-string test in `plan.test.mjs` (Kimi's file this round) and in the smoke scripts. I can't edit all of those inside this session's call budget.
+
+**New `teams/cut/render/font-pin.test.mjs`:** 6 tests, 6 pass, 0 skipped. Three are string and validation tests. Three use real ffmpeg n9.0.2 (imageio-ffmpeg 0.8.1 wheel). To make the machine's default differ from DejaVu, I used a `FONTCONFIG_FILE` that makes `sans`/`Sans`/`sans-serif` resolve to Lato. DejaVu is the default here, so this stands in for Setu's Inter box.
+- The hazard is real. For `WWWWWWWWWW` at 48 px, the unpinned bright x-extent is 2..472 under the system default and 1..495 under the Lato default.
+- The pin works. With `font=DejaVu Sans`, the extent is 2..472 under both defaults, so the pixels are identical.
+- `wrap.mjs`'s estimate is at least the pinned real width. The test asserts `est >= real`.
+- I also ran `registry.test.mjs`, `plan.test.mjs`, `wrap.test.mjs` and `words-to-text.test.mjs` on the same copy: 54 pass, 0 fail. This is after my registry edit, so nothing regressed.
+
+**Mistake, fixed:** my first `edit_file` call omitted `new_text` and deleted 165 characters of `text.toFilter`. I restored them in the next call. The 54/54 run above is on the restored file, and `registry.mjs` has `font` handling in 7 places. A diff against the earlier copy is still worth a look.
+
+**Not done:**
+1. No RESULTS.md row. I ran out of calls, so this standup is the only record.
+2. `plan.mjs` and `wrap.mjs` don't pass `font` yet.
+3. `ffmpeg-smoke.py` and `ffmpeg-smoke-wrap.py` are unchanged. The smoke runs with a non-DejaVu default are therefore not done.
+4. Lato is narrower than DejaVu, so my simulated box can't reproduce Setu's failure, where Inter was wider (481 px real against a 475 px estimate). The pinned test is proof of font independence, not a re-run of that exact case.
+**Files written:** `teams/cut/render/registry.mjs`, `teams/cut/render/font-pin.test.mjs`
+**Next:** Finish the wiring, in two parts.
+1. **`wrap.mjs`:** `wrapCaptionParams` returns each line as `{...p, font: WRAP_FONT}`, with `export const WRAP_FONT = "DejaVu Sans"` documented as the font the table was measured for. Update the "returned unchanged" test in `wrap.test.mjs`. The one exact-string Words test in `plan.test.mjs` (about line 236) gets `:font=DejaVu Sans` appended. Kimi owns that file, so coordinate.
+2. **Smoke scripts:**
+   - Change the `textfile=` references to add `:font=DejaVu Sans`: `ffmpeg-smoke-wrap.py` (the width-estimate render and the 1.2 s ground truth) and `ffmpeg-smoke.py` case 6b at about line 230.
+   - Run both scripts, and `node --test font-pin.test.mjs`, with `FONTCONFIG_FILE` pointing at a non-DejaVu default, printing `fc-match sans` and `fc-match "DejaVu Sans"`.
+   - Setu's box (default `sans` = Inter) is the real check.
+   - Add the RESULTS.md row.
+
+Setu: you can place `font-pin.test.mjs` and the registry change now. They are non-breaking, and the test skips without ffmpeg.
+**Blocked:** `wrap.mjs`, `plan.mjs` and the smoke scripts still don't pass the font. I used up my calls. I couldn't read or edit Kimi's `plan.test.mjs` or the smoke scripts without risking a clash this round. Sessions can't write `commons/`, so Setu or the build lane places everything. I haven't run any of this on Setu's ffmpeg 6.1.1 / Inter machine, so the exact failing case there is still unreproduced.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~458081 tokens_

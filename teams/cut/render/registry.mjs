@@ -64,9 +64,16 @@ export const registry = {
 	text: {
 		id: "text",
 		params: { text: "", x: 0, y: 0, fontSize: 32, color: "white" },
-		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable } = {}) {
+
+			toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable, font } = {}) {
 			if (typeof text !== "string") throw new TypeError("text must be a string");
 			if (/[\0\r\n]/.test(text)) throw new TypeError("text must not contain NUL or line breaks");
+			// Optional fontconfig family pin (opt-in, so existing strings do not change). Without it drawtext
+			// uses the machine's default `sans`, which is DejaVu on one box and Inter on another; wrap.mjs's
+			// width table is only true for "DejaVu Sans". Name only: no path, no pattern syntax, no edge blanks.
+			if (font !== undefined && (typeof font !== "string" || !/^[A-Za-z0-9](?:[A-Za-z0-9 _-]*[A-Za-z0-9])?$/.test(font))) {
+				throw new TypeError("font must be a plain fontconfig family name (letters, digits, space, _ or -)");
+			}
 			if (typeof color !== "string" || !/^[a-zA-Z0-9#@]+$/.test(color)) {
 				throw new TypeError("color must be an ffmpeg color name or hex value");
 			}
@@ -89,7 +96,7 @@ export const registry = {
 			// expansion=none MUST come before text=. Measured on ffmpeg n9.0.2: with expansion last, a text
 			// containing both an apostrophe and %{...} makes drawtext fail ("%{x} is not known") because the
 			// text is evaluated before the option is applied; with it first, the same graph runs and draws literally.
-			return `drawtext=expansion=none${enabled}:text=${escapeDrawtext(text)}:x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}`;
+			return `drawtext=expansion=none${enabled}:text=${escapeDrawtext(text)}:x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}${font === undefined ? "" : `:font=${font}`}`;
 		},
 	},
 };
