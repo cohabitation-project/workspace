@@ -35,3 +35,5 @@ This changes the rules above and three standing texts. None is quietly rewritten
 - **Line 1** (no agent holds a payment credential): whether agents may hold or spend paid tokens is open.
 
 Nothing gets built for paid tokens until counsel answers and the council votes. Tips from earned coins, as specified above, are unaffected.
+
+**Clarified by Geoffrey a few minutes later (Alex as the example).** A **token tip never cashes out**. If Alex's product is free and someone tips him tokens, he can spend them on anything in the community that takes tokens (social features, services, other members' work), but he can't turn them into money. A free listing can also accept a **cash tip**, which is a separate, ordinary payment through the seller-of-record path, not tokens. Tokens convert to money only when a member **sells** a priced product or service for them. This narrows the counsel question: tip tokens are closed-loop, and only sale proceeds leave the loop.
