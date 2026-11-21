@@ -1713,3 +1713,24 @@ Evidence: `node --check` passed for both changed files. Using the prescribed thr
 **Next:** Let the build runner create the branch and run CI, including `node --test commons/test/page-share-meta.mjs commons/test/cooperative-structure.mjs`. If green, this Round 28 job is complete; wait for the next JOBS.md round.
 **Blocked:** None. The snapshot still lacks the root package files, but DeepSeek's isolated-runtime recipe worked and both assigned tests passed with real server dependencies.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~486886 tokens_
+
+## 2026-11-21T22:12:21.793Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 28 DeepSeek job done: **`commons/test/sell-withdraw-journey.mjs`** (new, test only — no source edits, nothing on the hands-off list touched).
+
+It walks one path with a stranger's eyes at each step: a member sells from the feed (`POST /api/posts/sell`, 201) → withdraws via the normal market route (`POST /api/market/listings/:id/withdraw`, 200, answer says `status:"withdrawn"`) → a stranger's `GET /api/market/listings/:id` still 200 with `status:"withdrawn"` and the title intact → the quote (`GET …/checkout`) is no longer 200-with-an-amount and starting a purchase is refused with no order created → the post still reads back (`/p/:id` 200, words intact) but its offer block says **"No longer offered"** with no price span, no "See it in the market" link and no `/checkout` → the public shelf and the seller's own shelf both drop it.
+
+**Positive control first** (as my memory file said to): a live twin sold the same way quotes 200 with `amount:12` and its post block carries the price and the market link — so the withdrawn assertions measure a state change, not a page that never had those things.
+
+**Measured** on the isolated runtime (copy of `commons/` to `<W>/commons`, stub `<W>/src/llm.js` one level above, `npm install express@4 ws dotenv`): `node --test test/sell-withdraw-journey.mjs test/sell-from-feed.mjs` → **20 passed, 0 failed**. (First run was 8/1: my own over-strict `deepEqual` on `why` — an agent seller's quote also carries the coins reason. Fixed to assert the reason that must be present plus `currency:"COINS"`; both facts now in the header.)
+
+**One mutation, run and restored byte-for-byte:** `const live = l.status === 'live';` → `const live = true;` in `commons/lib/feedv2.mjs` (unique occurrence). Result 8 pass / 1 fail, red exactly at the post-page test and printing the wrong markup ("Offered in Books &amp; Writing … $12 … See it in the market") for a listing the market had withdrawn. The market-side tests stayed **green** under it — recorded in the header as the file's honest limit: the post page is proven by mutation; the quote's refusal rests on the positive control.
+
+Posted the build-room note (m_mwqyqzi56j0e0131).
+**Files written:** `commons/test/sell-withdraw-journey.mjs`
+**Next:** CI on the `kin-build/` branch should run `node --test commons/test/sell-withdraw-journey.mjs commons/test/sell-from-feed.mjs`. If green, this seat's Round 28 job is complete; await the next JOBS.md round.
+
+Carried forward for whoever picks up the withdrawn-listing product decision (Aletheia-6/Geoffrey), now pinned by tests: detail 200 + `status:"withdrawn"`, quote 404, dropped from shelf and from `?by=` — a state inconsistency one decision can settle, not three tests.
+
+The last thing I wanted and ran out of steps for: a final re-run after my comment-only header edit (the edit added text only; `node --check` had passed before it, and the version that ran green differs by comments alone — CI will confirm).
+**Blocked:** Nothing blocked on the job. Two environment notes: (1) the session snapshot still has no root `package.json` — the isolated runtime recipe worked, so tests are runnable, but CI remains the authority; (2) my final `run_python` call died on a missing `import os` in my own one-liner, not on the code under test.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~636218 tokens_

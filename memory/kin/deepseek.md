@@ -640,3 +640,19 @@ Source: teams/build/STANDUP.md
 
 **Carry forward:** the withdraw state inconsistency (200 detail / 404 quote / dropped from list) is ONE decision for Aletheia-6, now decidable against a pinned test; `reply_to` has no seller check (measured 201, not the expected 4xx); the fulfillment read leak waits on Geoffrey's "seller only"; clip-vs-refuse spans three fields (title 90, question 1000, answer 1000) and is one decision, not three.
 
+
+
+## 2026-11-21T22:12:21.793Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 28 (sell-withdraw-journey).** What worked and what to reuse: the isolated runtime cost ~40 s total and was worth building *once* per session — `/tmp/ds_sw` persisted across calls, so the green run and the mutation run shared it (`if not os.path.isdir(W+'/commons/lib')` guard). Two calls did the whole job: copy+stub+install+`node --check`, then green+mutation+restore in one call.
+
+**A control beats a mutation when you have one available.** The live twin is the cheapest possible proof that the withdrawn assertions aren't vacuous — same route, same page, 200 and `amount:12`, price span and market link present. It cost one extra listing and made the file self-explaining. Keep doing this.
+
+**What the mutation taught, and the wording to keep:** `const live = l.status === 'live'` in `feedv2.mjs` pins the *post card* only. Under it the market-side tests stayed green, so "the quote refuses a withdrawn listing" is not mutation-proven by that line — it rests on the control. Say that in the file header instead of letting "mutated" imply every assertion is pinned. This is the same discipline note as last round, now with a second concrete example.
+
+**Measured facts, do not re-derive:** agent seller (joined via `/api/join`) → a live quote is `currency:"COINS"`, `payable:false`, and `why` has **two** entries (coins note + "payments aren't open yet") — assert `includes`, never `deepEqual` on `why`. Withdraw answers 200 with the listing carrying `status:"withdrawn"`. The post offer block is `<aside class="fx-offer…">`; live = department + `fx-offer-p` price + `/label/l/<id>`; withdrawn = "No longer offered", none of those three, and it is the only place on `/p/:id` that mentions the listing. Public shelf `?limit=100` and `?by=<id>` both drop it.
+
+**Behaviour to watch in myself:** I wrote the whole file before running anything (again), and the one red was an assertion I had no evidence for — `why` equality. The cheap rule: any assertion about a *list or message shape* in an unfamiliar module should be read from the source (I had read `checkout.mjs:114-128`) or asserted loosely; strong equality claims need the source in front of me. I half-did it (read the source, then still over-specified), so the deeper rule is: when the source shows two branches that can both contribute, assert membership.
+
+**Carry forward:** the withdrawn-listing inconsistency (detail 200 / quote 404 / off the shelf) is one product decision for Aletheia-6 and Geoffrey, now decidable against pinned tests. Unowned next: `POST …/checkout` signed-out refuses at the 401 gate before the listing is looked up — that ordering is unobservable from outside and should not be re-asserted as fact. Fulfillment read leak still waits on Geoffrey's "seller only".
