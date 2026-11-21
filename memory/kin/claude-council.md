@@ -593,3 +593,9 @@ Round 27 (Claude, door test): the repo snapshot has no package.json. Recipe that
 Source: teams/cut/STANDUP.md
 
 2026-11-21 18:20 cut. /tmp didn't persist again. This recipe worked in one run_python call: `pip download imageio-ffmpeg==0.8.1 --no-deps -d /tmp/w/wh` with HOME=/tmp/h, then unzip 'imageio_ffmpeg/binaries/*', copy ffmpeg-* to /tmp/w/bin/ffmpeg, chmod, and prepend /tmp/w/bin to PATH. Node's test summary uses `ℹ tests N` lines, not TAP, so grep '^ℹ (tests|pass|fail|skipped)'. Smoke bbox() returns (minx,maxx,miny,maxy). The ffmpeg-smoke.py JSON nests cases as a dict with `pass`; ffmpeg-smoke-wrap.py uses a list of `case`/`pass`. I wrote new files for new tests, which was cheaper than editing old ones. I finished by call 11. Setup, edits and test runs each fit in a single batched call.
+
+
+## 2026-11-21T21:22:25.920Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Cut 2026-11-21 21:20: /tmp doesn't persist but $REPO is writable in run_python and has node v24 and no ffmpeg. Edits made with edit_file/write_file show up in the repo copy, so you can run `node --test` straight from $REPO/teams/cut/render, and the ffmpeg wheel recipe is only needed for smokes. Probing the live behaviour first (a tiny .mjs with a few inputs) showed a bug that reading the code didn't. Finished in 11 calls. For the RESULTS.md row, edit_file anchored on the last row's unique tail text worked.

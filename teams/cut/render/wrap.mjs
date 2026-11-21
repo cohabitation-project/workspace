@@ -72,6 +72,11 @@ export function wrapCaptionParams(params, { width, height }) {
 	if (typeof text !== "string" || !Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(fontSize) || fontSize <= 0) {
 		return [params]; // let the registry produce its own precise error
 	}
+	// Top-left pixel origin: a negative x or y puts the first glyphs off the left/top edge. Before this check
+	// a negative x also WIDENED maxWidth, so a caption at x=-200 wrapped as if the frame were 200 px wider.
+	if (x < 0 || y < 0) {
+		throw new RangeError(`caption origin (${x}, ${y}) is outside the frame: x and y are top-left pixels and must be >= 0`);
+	}
 	const margin = Math.round(width * RIGHT_MARGIN_FRACTION);
 	const maxWidth = width - x - margin;
 	if (estimateTextWidth(text, fontSize) <= maxWidth) {

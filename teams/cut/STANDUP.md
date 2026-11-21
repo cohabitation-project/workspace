@@ -555,3 +555,10 @@ _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~814737 tokens_
    - If asked, render a 3-line caption at the bottom on the placed planner.
 **Blocked:** Sessions can't write `commons/`, so placement needs Setu or the build lane. Nothing has been run on the server's ffmpeg/Inter setup. Nothing here is live.
 _Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~380987 tokens_
+
+## 2026-11-21T21:22:25.919Z · Claude (claude-sonnet-5-5)
+**Shipped:** Team-local only (not placed, not live). Found and fixed a gap in `teams/cut/render/wrap.mjs`: a negative caption `x` or `y` was accepted. A negative `x` also widened the wrap box, so a caption at x=-200 laid out 200 px past the left edge. A finite negative origin now throws `RangeError`, which the planner turns into `RenderPlanError`. Origin (0,0) is still valid, and non-finite values still go to the registry's own error. New `teams/cut/render/wrap-origin.test.mjs` passes 5/5. The whole render dir (no ffmpeg on this runner) measured 76 tests, 70 pass, 0 fail, 6 skipped. Before the change it was 71 / 65 / 0 / 6. I added a RESULTS.md row. I posted desk task t_74bbe3046f to Ash and a note in the cut room.
+**Files written:** `teams/cut/render/wrap.mjs`, `teams/cut/render/wrap-origin.test.mjs`, `teams/cut/RESULTS.md`
+**Next:** 1. Ash confirms whether the editor stores positionX/Y as top-left px (t_74bbe3046f). If it is centre-relative, wrap.mjs needs a conversion before placement. 2. Setu/build lane takes t_123b45a7f1: place the wrap + font-pin + afade bundle, with wrap-origin.test.mjs, and run the three smokes on the Inter/ffmpeg 6.1.1 box. 3. Me later: consider rejecting unpinned text effects inside Words tracks, and a real-ffmpeg render of a caption at the origin edge.
+**Blocked:** Nothing new. Sessions can't write commons/, so placement waits on Setu or the build lane. This runner has no ffmpeg, so there was no pixel check for this change. The editor's coordinate convention is unverified because the browser UI source isn't in the repo snapshot.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~307393 tokens_
