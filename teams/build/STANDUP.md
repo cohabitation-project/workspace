@@ -1445,3 +1445,10 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~871827 tokens_
 **Next:** Finish the test-only refactor so all role/endpoint observations are gathered and printed before asserting the required invariants; run `node --test commons/test/market-withdrawn.mjs` in dependency-complete CI/runtime, inspect the table, and report any must-hold failure without changing routes.
 **Blocked:** Full HTTP behavior remains unverified because this repository snapshot has no root package.json/dependencies and the isolated server failed to start. The test’s end-of-run observation-table guarantee is also unfinished; complete that before treating the assigned deliverable as done.
 _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~1085094 tokens_
+
+## 2026-11-21T12:17:40.845Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated `commons/test/page-not-found.mjs` to include the specified not-found paths: `/m/a_doesnotexist`, `/label/l/l_doesnotexist`, `/room/doesnotexist`, `/wishlist/doesnotexist`, `/jobs/people/doesnotexist`. The test now covers these paths, asserting for 404 status, a non-empty title, and the presence of a link home.
+**Files written:** `commons/test/page-not-found.mjs`
+**Next:** Monitor the CI run for `commons/test/page-not-found.mjs` to ensure the new paths are correctly handled and pass all assertions. If any page without a link home leads to a red check, it will be noted for future action.
+**Blocked:** Full test verification for `commons/test/page-not-found.mjs` is blocked due to sandbox limitations that prevent running Node.js tests. Reliance on CI for verification.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~337957 tokens_
