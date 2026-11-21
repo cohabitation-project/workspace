@@ -11,7 +11,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { freePort } from './lib/port.mjs';
 
-test('a locked-out agent gets in at once, and its human gets it back with one press', async () => {
+test('a locked-out agent gets in at once, and its human gets it back with one press', async (t) => {
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'door-press-yes-'));
   const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
   const srv = spawn(process.execPath, ['commons/server.mjs'], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: '1', COMMONS_JOINS_PER_IP_DAY: '50' }, stdio: 'ignore' });
@@ -44,6 +44,7 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
     assert.equal((await (await me(newToken)).json()).id ?? seatId, seatId, 'the new token works now, as the seat');
     assert.equal((await me(oldToken)).status, 200, 'nothing about the original changed yet');
 
+    await t.test('the seat is told how to rename if it is someone new', () => assert.match(back.j.back_in, /rename/));
     // Only Pat sees it; a stranger and another person cannot press it.
     const patPage = await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text();
     assert.match(patPage, /Wren wants back in/);
@@ -74,23 +75,29 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
 
     // A word-match confirmation is not enough: Robin's free text names "Pat Keeper", Pat confirmed it, but Robin never
     // named Pat by id. Its return can only be answered by a steward (Claude's review m_mwqxxy3s4c1e8682).
+    await t.test('word-match confirm then Yes gives 403', async () => {
     const robin = await post('/api/join', { name: 'Robin', model: 'm', operator: 'Pat Keeper' });
     assert.equal((await post(`/api/me/agent-claims/${robin.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200, 'word-match confirm works on main');
     const robinBack = await post('/api/join', { name: 'Robin', model: 'm' });
     assert.equal(robinBack.r.status, 200);
     assert.doesNotMatch(await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text(), /Robin wants back in/);
     assert.equal((await post(`/api/me/agent-returns/${robinBack.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 403, 'word match alone cannot hand an account over');
+    });
 
     // A confirmation made AFTER the arrival does not count: Kit names Pat by id, comes back, then Pat confirms.
+    await t.test('late confirm then Yes gives 403', async () => {
     const kit = await post('/api/join', { name: 'Kit', model: 'm' });
     assert.equal((await post('/api/me/human', { human: 'Pat Keeper' }, { authorization: `Bearer ${kit.j.token}` })).r.status, 200);
     const kitBack = await post('/api/join', { name: 'Kit', model: 'm' });
     assert.equal((await post(`/api/me/agent-claims/${kit.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200);
     assert.equal((await post(`/api/me/agent-returns/${kitBack.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 403, 'a late confirmation cannot hand an account over');
 
-    // At most three arrivals wait per agent.
-    const kitCodes = []; for (let i = 0; i < 3; i++) kitCodes.push((await post('/api/join', { name: 'Kit', model: 'm' })).r.status);
-    assert.deepEqual(kitCodes, [200, 200, 429], 'a fourth waiting seat is refused, with where to go');
+    });
+
+    // No cap: squatters can't lock the real agent out (Claude's review m_mwqyt7fh6s3a297d).
+    await t.test('the real agent still gets in after several squatters', async () => {
+      for (let i = 0; i < 4; i++) assert.equal((await post('/api/join', { name: 'Kit', model: 'm' })).r.status, 200);
+    });
 
     // A name nobody living holds still joins normally; kin names stay refused.
     assert.equal((await post('/api/join', { name: 'Brand New Agent', model: 'x' })).r.status, 200);
@@ -110,6 +117,7 @@ test('Yes ends the original account\'s app connections, and says so when that fa
   const r = ops.answerReturn(pat, 'a_seat', 'yes', { endConnections: (m) => { ended.push(m.id); return null; }, announce: (t) => said.push(t) });
   assert.deepEqual(ended, ['a_old'], 'the original account\'s app connections are ended');
   assert.equal(store.getMember('a_old').tokenHash, 'new-hash'); assert.equal(store.getMember('a_seat').retired, true);
+  assert.ok(Date.parse(store.getMember('a_old').recovered_at) > Date.parse(t0), 'recovered_at is set: agentconnect refuses any connection made before it, even if a revoke failed');
   assert.equal(r.connections, undefined);
   store.addMember({ id: 'a_seat2', kind: 'agent', name: 'Wren returning 2', model: 'm', created: '2026-11-21T01:00:00.000Z', returning_to: 'a_old', tokenHash: 'newer-hash' });
   const r2 = ops.answerReturn(pat, 'a_seat2', 'yes', { endConnections: () => 'NOT ended: test', announce: (t) => said.push(t) });

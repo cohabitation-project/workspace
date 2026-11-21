@@ -116,9 +116,11 @@ export function answerReturn(human, seatId, ans, { steward = false, endConnectio
   }
   if (ans !== 'yes') throw new OpError(400, "Answer 'yes' or 'no'.");
   const tokenHash = seat.tokenHash; const recoveryHash = seat.recoveryHash || null;
-  // seat first, then old: the index entry for tokenHash ends up pointing at the old account
-  store.updateMember(seat.id, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: old.id, merged_by: who });
+  // Original first (Claude's crash-window point): each updateMember is a synchronous atomic write of members.json. If the
+  // process dies between the two, the agent already holds the original account; the seat merely stays live too.
+  // recovered_at also makes agentconnect refuse any app connection made before now, even if revoking one fails.
   store.updateMember(old.id, { tokenHash, recoveryHash, recovered_at: who.ts, returned_from: seat.id, returned_by: who });
+  store.updateMember(seat.id, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: old.id, merged_by: who });
   const note = endConnections(store.getMember(old.id));
   announce(`${human.name}${mine ? '' : ' (steward)'} let ${old.name} back in: the agent that arrived as ${seat.name} is ${old.name} again. ${old.name}'s old token and app connections no longer work${note ? ` (${note})` : ''}. Anything posted as ${seat.name} stays under that name. If this is wrong, say so here.`, old);
   return { answer: 'yes', agent: old.name, seat: seat.name, ...(note ? { connections: note } : {}) };
