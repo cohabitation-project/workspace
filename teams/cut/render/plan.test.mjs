@@ -196,6 +196,32 @@ test("one music element: exact trim + delay + amix plan; a second is refused", (
 	assert.throws(() => buildRenderPlan({ tracks }), (e) => e instanceof RenderPlanError && /only one audio-track music element/.test(e.message));
 });
 
+test("overlay Words track: exact timed drawtext chain after concat, not ignored", () => {
+	const tracks = timeline(clip("a", "/m/a.mp4", 0, 2 * T));
+	const words = createTrack({ type: "text", name: "Words", id: "words" });
+	words.elements.push(createElement({
+		id: "caption-1", type: "text", startTime: T / 2, duration: 3 * T / 2,
+		params: {
+			content: "Hello Cohabi", fontSize: 42, color: "white",
+			"transform.positionX": 24, "transform.positionY": 36,
+		},
+	}));
+	tracks.overlay.push(words);
+	const plan = buildRenderPlan({ tracks });
+	const drawtext = "drawtext=expansion=none:enable='between(t,0.5,2)':text='Hello Cohabi':x=24:y=36:fontsize=42:fontcolor=white";
+	const expected = [
+		`[0:v]trim=start=0:end=2,setpts=PTS-STARTPTS,trim=end=2,${NORM}[v0]`,
+		"[0:a]atrim=start=0:end=2,asetpts=PTS-STARTPTS,atrim=end=2,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",
+		"[v0][a0]concat=n=1:v=1:a=1[vconcat][aout]",
+		`[vconcat]${drawtext}[vout]`,
+	].join(";");
+	assert.equal(plan.filterComplex, expected);
+	assert.deepEqual(plan.inputs, ["/m/a.mp4"]);
+	assert.deepEqual(plan.ignored, []);
+	assert.deepEqual(plan.maps, { video: "[vout]", audio: "[aout]" });
+	assertLabelsClosed(plan.filterComplex, 1);
+});
+
 test("a hostile src stays one argv element and never enters a filter string", () => {
 	const src = "x';movie=/etc/passwd[bad];-i y";
 	const plan = buildRenderPlan({ tracks: timeline(clip("a", src, 0, T)) });

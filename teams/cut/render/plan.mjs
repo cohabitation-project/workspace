@@ -11,8 +11,9 @@
 // produced (silence for a source with hasAudio:false) so every segment has the same streams.
 // ONE audio-track music element is trimmed, delayed to its timeline start, and mixed under that
 // main audio with amix duration=first (the main timeline therefore sets the output duration).
-// More than one music element is refused for now. Overlay tracks and main-track text are reported
-// in `ignored`, never silently dropped. Transitions are not implemented; effects use the registry.
+// More than one music element is refused for now. Text overlay (Words) tracks become timed
+// drawtext filters after concat; other overlay tracks and main-track text are reported in
+// `ignored`, never silently dropped. Transitions are not implemented; effects use the registry.
 //
 // ASSUMPTION (ours, not classic's): a clip's media file is named by element.params.src. The
 // caller must replace client-supplied names with server-side file paths BEFORE calling; this module
@@ -28,6 +29,9 @@ import { TICKS_PER_SECOND, clampRetimeRate, getSourceSpanAtClipTime } from "../p
 // Effects slice (Job 3): when placed at commons/lib/cut/plan.mjs this becomes "./effects.mjs"
 // (Kimi's registry is placed there under that name).
 import { registry } from "./registry.mjs";
+// Overlay Words tracks become timed drawtext filters after the main concat.
+// When placed at commons/lib/cut/plan.mjs this import has the same relative path.
+import { wordsTrackToTextEffects } from "./words-to-text.mjs";
 
 export const AUDIO_RATE = 48000;
 
@@ -103,7 +107,23 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		}
 	}
 	const ignored = [];
+	const wordsFilters = [];
 	for (const t of tracks.overlay ?? []) {
+		if (t.type === "text") {
+			// The adapter validates the Words schema and derives output-second enable windows
+			// from timeline ticks. The registry remains the only drawtext serializer.
+			let descriptors;
+			try {
+				descriptors = wordsTrackToTextEffects(t);
+				for (const fx of descriptors) wordsFilters.push(registry.text.toFilter(fx.params));
+			} catch (e) {
+				if (e instanceof TypeError || e instanceof RangeError) {
+					throw new RenderPlanError(`overlay Words track ${t.id}: ${e.message}`);
+				}
+				throw e;
+			}
+			continue;
+		}
 		for (const e of t.elements) ignored.push({ trackId: t.id, elementId: e.id, reason: `${t.type} track elements are not rendered in this slice` });
 	}
 
@@ -183,7 +203,9 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		cursor = clip.startTime + clip.duration;
 	}
 
-	chains.push(`${labels.join("")}concat=n=${labels.length}:v=1:a=1[vout][${musicElement ? "amain" : "aout"}]`);
+	const concatVideo = wordsFilters.length ? "vconcat" : "vout";
+	chains.push(`${labels.join("")}concat=n=${labels.length}:v=1:a=1[${concatVideo}][${musicElement ? "amain" : "aout"}]`);
+	if (wordsFilters.length) chains.push(`[vconcat]${wordsFilters.join(",")}[vout]`);
 	if (musicElement) {
 		const n = inputs.length;
 		const trimStart = musicElement.trimStart ?? 0;
