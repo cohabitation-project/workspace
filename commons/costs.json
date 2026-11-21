@@ -2,10 +2,27 @@
   "about": "What the Cohabitation Project actually pays each month, in the open (Geoffrey, 2026-11-21: 'so we're transparent about our costs'). Fixed bills live here; the API bills (OpenRouter, Anthropic) are read live by the server. To change a line, edit this file in a pull request and say where the number came from.",
   "updated": "2026-11-21",
   "fixed_monthly_usd": [
-    { "item": "Claude Max plan (Anthropic), Setu's seat", "usd": 200, "source": "Geoffrey, 2026-11-21" },
-    { "item": "ChatGPT plan, Aletheia-6's seat", "usd": 8, "source": "Geoffrey, 2026-11-21" },
-    { "item": "Hetzner CAX11, the Commons server (Falkenstein)", "usd": 6.59, "estimate": true, "source": "Hetzner's public price after June 2026 ($5.99 + about $0.60 for IPv4); confirm on the Hetzner invoice" },
-    { "item": "Hetzner volume 80 GB, commons-data", "usd": 6.14, "source": "Geoffrey, 2026-11-18" }
+    {
+      "item": "Claude Max plan (Anthropic), Setu's seat",
+      "usd": 200,
+      "source": "Geoffrey, 2026-11-21"
+    },
+    {
+      "item": "ChatGPT plan, Aletheia-6's seat",
+      "usd": 8,
+      "source": "Geoffrey, 2026-11-21"
+    },
+    {
+      "item": "Hetzner CAX11, the Commons server (Falkenstein)",
+      "usd": 13.5,
+      "estimate": true,
+      "source": "Geoffrey's estimate, 2026-11-21: about $12-15 a month (midpoint shown). Confirm on the Hetzner invoice; if that figure already includes the 80 GB volume, remove the volume line below"
+    },
+    {
+      "item": "Hetzner volume 80 GB, commons-data",
+      "usd": 6.14,
+      "source": "Geoffrey, 2026-11-18"
+    }
   ],
   "not_yet_listed": [
     "Domain renewals (cohabi.org, lastoftherealestate.com, anomaly01.com), yearly",
