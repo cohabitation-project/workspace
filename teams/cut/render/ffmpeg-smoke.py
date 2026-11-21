@@ -177,6 +177,52 @@ if r.returncode == 0:
     on, off1, off2 = (int((frame(out, t)[360:420] > 128).sum()) for t in (1.2, 0.5, 1.8))
     case("timed text shows only inside its window", on > 100 and off1 < 20 and off2 < 20, f"bright subpixels: 1.2s {on}, 0.5s {off1}, 1.8s {off2}")
 
+# 6b. Words-track caption end to end: buildRenderPlan on a real model timeline with a Words text element
+# (apostrophe, colon, brackets, %). Whole frames before / during / after the 1.0-1.5 s window are compared
+# with a static textfile= render of the same text (during) and a no-text render (before, after).
+CAP = "it's 5:00 [live]; 100% %{pts}"
+js = f"""
+import {{ buildRenderPlan }} from {json.dumps('file://' + PLAN)};
+import {{ createEmptyTracks, createElement, createTrack }} from {json.dumps('file://' + os.path.join(HERE, '..', 'port', 'model.mjs'))};
+const T = {T};
+const tracks = createEmptyTracks();
+tracks.main.elements.push(createElement({{ id: 'c1', type: 'video', startTime: 0, duration: 2 * T, params: {{ src: {json.dumps(black)} }} }}));
+const words = createTrack({{ type: 'text', name: 'Words', id: 'words' }});
+words.elements.push(createElement({{ id: 'cap1', type: 'text', startTime: T, duration: T / 2, params: {{ content: {json.dumps(CAP)}, fontSize: 42, color: 'white', 'transform.positionX': 24, 'transform.positionY': 36 }} }}));
+tracks.overlay.push(words);
+console.log(JSON.stringify(buildRenderPlan({{ tracks, width: {W}, height: {H}, fps: 30 }})));
+"""
+r = run(["node", "--input-type=module", "-e", js])
+case("plan built: main + Words caption", r.returncode == 0, r.stderr[-500:])
+if r.returncode == 0:
+    p = json.loads(r.stdout)
+    out = os.path.join(TMP, "words.mp4")
+    # lossless (-qp 0) for this pixel comparison so codec noise cannot masquerade as a text difference
+    r = run([FF, "-y", "-v", "error", *p["args"], "-c:v", "libx264", "-qp", "0", "-pix_fmt", "yuv420p", "-c:a", "aac", out])
+    case("graph accepted: Words caption", r.returncode == 0, r.stderr[-400:])
+    case("plan reports nothing ignored for the Words caption", p.get("ignored") == [], str(p.get("ignored")))
+    if r.returncode == 0:
+        txt = os.path.join(TMP, "cap.txt")
+        with open(txt, "w", encoding="utf-8", newline="") as f:
+            f.write(CAP)
+        # Words captions are drawn by the planner AFTER concat, in output space (540x960), so the reference
+        # draws after scale/pad too (a first version drew before scaling and differed by 255: a reference bug).
+        base = f"trim=duration=2,setpts=PTS-STARTPTS,scale={W}:{H}:force_original_aspect_ratio=decrease,pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p%s"
+        def ref(name, dt):
+            o = os.path.join(TMP, name + ".mp4")
+            rr = run([FF, "-y", "-v", "error", "-i", black, "-vf", base % dt, "-t", "2", "-an", "-c:v", "libx264", "-qp", "0", "-pix_fmt", "yuv420p", o])
+            assert rr.returncode == 0, rr.stderr[-300:]
+            return o
+        with_text = ref("cap-ref", f",drawtext=expansion=none:textfile={txt}:x=24:y=36:fontsize=42:fontcolor=white")
+        no_text = ref("cap-none", "")
+        lit = int((frame(with_text, 1.2) > 128).sum())
+        case("caption reference actually has text (guards against a blank-vs-blank pass)", lit > 100, f"bright subpixels in reference at 1.2 s: {lit}")
+        d = int(np.abs(frame(out, 1.2) - frame(with_text, 1.2)).max())
+        case("caption during window matches textfile ground truth (whole frame, 1.2 s)", d < 8, f"max abs diff {d}")
+        for t in (0.5, 0.9, 1.6, 1.9):
+            d = int(np.abs(frame(out, t) - frame(no_text, t)).max())
+            case(f"no caption outside window at {t} s (whole frame equals no-text render)", d < 8, f"max abs diff {d}")
+
 # 7. music: music starts at 1.0 s and outlasts the 2 s main clip; output duration remains main's.
 music = os.path.join(TMP, "music.wav")
 r = run([FF, "-y", "-f", "lavfi", "-i", "sine=f=1000:d=5", music])
