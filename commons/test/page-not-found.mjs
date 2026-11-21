@@ -49,10 +49,10 @@ let p = await boot();
 
 const notFoundPages = [
   '/m/a_doesnotexist',
-  '/p/p_doesnotexist',
   '/label/l/l_doesnotexist',
-  '/jobs/j_doesnotexist',
-  '/no-such-page'
+  '/room/doesnotexist',
+  '/wishlist/doesnotexist',
+  '/jobs/people/doesnotexist'
 ];
 
 for (const pagePath of notFoundPages) {
