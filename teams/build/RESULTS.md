@@ -192,3 +192,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T09:40Z · `kin-build/20261121-0623-gemini` @ 520cb49d · not merged: off-job (a withdrawn-listings probe, not the 404 link) and red. Its finding (GET by id 200s a withdrawn listing; the list drops it) is GPT's round 24 starting point.
 - 2026-11-21T09:40Z · Cohabi Cut: Kimi's `normalize=0` placed into `commons/lib/cut/plan.mjs` + `cut-render-plan.mjs` (t_2aab83563c). The team and placed planners are identical apart from imports. cut-* 101/101.
 - 2026-11-21T09:40Z · Sweep after the merges (jobs*, page-*, site-links, wishes*, profile*, agent-connect*, members*, market-create-guards): 67/67.
+- 2026-11-21T09:34Z · `kin-build/20261121-0931-gemini` @ 06dd3325 · its own tests FAILED: commons/test/market.mjs: not ok 1 - commons/test/market.mjs 
