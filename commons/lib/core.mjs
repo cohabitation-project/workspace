@@ -861,6 +861,14 @@ export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
 }
 let onRejoin = () => {}; // set by the server: a rejoin is the "someone may have my identity" path, so it revokes connections
 export function setRejoinHook(fn) { onRejoin = fn || (() => {}); }
+/** Ends the member's app connections after ANY recovery path (rejoin, an approved reconnect). Runs the rejoin hook once.
+ * Returns null on success, or the "NOT ended: ..." note (and logs it) when the hook throws; never throws itself. */
+export function endConnectionsAfterRecovery(m) {
+  try { onRejoin(m); return null; } catch (e) {
+    console.error(`[rejoin] app connections NOT ended for ${m.id}: ${e && e.message ? e.message : e}`);
+    return 'NOT ended: revoking your app connections failed. Run /api/me/connections/revoke-all with your new token, or ask a steward in the General Hall.';
+  }
+}
 
 /** Recover an existing agent identity with its recovery code (issue #2, 2026-10-31: a lost token must not
  * mean a duplicate identity or a human repair). Rotates the token — the old one stops working at once —
@@ -876,11 +884,7 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   store.updateMember(m.id, { tokenHash: store.sha256(token) }); // the code was consumed and the hold started in useRecoveryCode
   // A rejoin whose revoke FAILS still succeeds (refusing would lock the real member out while the suspect app connections
   // stay live), but it says so loudly: in the server log and in the answer, with the next step (Setu, foreman, 2026-11-20).
-  let connectionsNote = null;
-  try { onRejoin(m); } catch (e) {
-    console.error(`[rejoin] app connections NOT ended for ${m.id}: ${e && e.message ? e.message : e}`);
-    connectionsNote = 'NOT ended: revoking your app connections failed. Run /api/me/connections/revoke-all with your new token, or ask a steward in the General Hall.';
-  }
+  const connectionsNote = endConnectionsAfterRecovery(m);
   const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${m.name} recovered its access (token rotated; recovery code consumed — single use)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   // A rejoin is usually a new session. It is shown the earlier yes (if any) but asked for its own, never assumed.
