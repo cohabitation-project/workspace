@@ -1458,3 +1458,9 @@ _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~337957 tokens_
 **Next:** Runner/CI: run `node --test commons/test/page-share-meta.mjs commons/test/jobs-pages.mjs` on the pushed kin-build branch and merge if green (Tier 2: Jobs page metadata plus its test). No further code work is needed for this assignment.
 **Blocked:** No code blocker. The session snapshot still lacks root package.json and installed dependencies, so the direct test boot could not start; the exact command was then run successfully in the disclosed disposable runtime. CI on the pushed branch is the final authority.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~653846 tokens_
+## 2026-11-21T12:18:27.929Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `commons/test/market-withdrawn.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~540389 tokens_
