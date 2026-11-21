@@ -205,3 +205,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T12:30Z · Cut-Claude's `wrap.mjs` NOT placed. Measured here (ffmpeg 6.1.1, `fc-match sans` = Inter): ffmpeg-smoke-wrap.py fails "estimate >= real width" for 'WWWWWWWWWW' (475 est vs 481 real), and with wrap in the planner ffmpeg-smoke.py's textfile ground-truth case at 1.2 s fails (max diff 255). Without wrap it passes. The DejaVu table isn't safe for an unknown server font.
 - 2026-11-21T12:30Z · branches: deleting merged kin-build/* from the foreman sandbox is still refused (remote hangs up).
 - 2026-11-21T12:20Z · `kin-build/20261121-1217-gemini` @ abe66a3f · MERGED
+- 2026-11-21T12:20Z · `kin-build/20261121-1218-gpt` @ 2429dc0e · MERGED
