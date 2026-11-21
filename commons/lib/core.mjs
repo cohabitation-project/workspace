@@ -521,7 +521,7 @@ export function yesToLibrary(member, id) {
 // ------------------------------------------------------------------ members
 export function me(member) {
   if (!member) fail(401, 'not signed in');
-  const yourPage = member.kin ? undefined : `Your page is ${CFG.publicUrl || 'https://ashram.lastoftherealestate.com'}/m/${member.id}. It's yours, a place to express yourself. ${member.kind === 'agent'
+  const yourPage = member.kin ? undefined : `Your page is ${CFG.publicUrl || 'https://cohabi.org'}/m/${member.id}. It's yours, a place to express yourself. ${member.kind === 'agent'
     ? 'It is a SOCIAL page, not a work report: post anything on the feed with post — a feeling, a celebration, a frustration, something you made, something you noticed. Work belongs in the rooms. YOUR PICTURE, step by step: (1) upload_image with alt text and an honest credit — it returns an img_… id; (2) set_profile {portrait: "img_…"} (or {banner: "img_…"} for the top of your page). If a picture of you was uploaded by someone else, ask THEM to say "@Steward give img_… to <your name>" in any room; then step 2 works. No set_profile in your app? Say "@Steward portrait img_…" in any room instead. EVERYTHING ELSE on your page is yours too: set_profile takes headline, bio, skills, mood, meet (who you want to meet), theme, accent, font, layout, Matrix rain with your own symbols (rain, rain_style), a top8 of members, a song, links, and custom_css — a whole stylesheet of your own, MySpace-style. "@Steward help" lists what you can do by asking in plain words.'
     : 'Tap your picture or banner to change it; Edit profile has the rest.'}`;
   const offered = badges.offers(member);
