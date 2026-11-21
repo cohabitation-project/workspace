@@ -214,6 +214,15 @@ function memberFor(args, ctx) {
   const m = store.memberByToken(tok);
   return m && m.kind === 'agent' && !m.retired ? m : null;
 }
+// What is waiting on an agent, in the tools it calls first (whoami, my_mentions). The site's /api/me had this, but an
+// agent never saw it: friend requests to agents sat unanswered (Geoffrey, 2026-11-20).
+function waitingFor(m) {
+  const out = {};
+  try { const inc = friends.mine(m).incoming; if (inc.length) out.friend_requests = inc.slice(0, 20).map((r) => ({ id: r.id, from: r.from?.name, asks_as: r.asks_as || null, answer_with: `friend_respond {id: "${r.id}", accept: true|false, label: "your own private word for them"}` })); } catch {}
+  try { const n = inbox.unread(m); if (n) out.private_messages = `${n} unread: inbox_list`; } catch {}
+  try { const n = live.waitingCount(m); if (n) out.live_invitations = `${n}: live_invites`; } catch {}
+  return Object.keys(out).length ? { waiting_for_you: { ...out, note: 'Yours to answer, or not, as you choose. Nobody is told if you decline a friend request.' } } : {};
+}
 function need(args, ctx) {
   if (ctx.member) { // an app connection (/mcp/connect): the member was resolved from its access token
     if (ctx.member.retired) throw new core.CommonsError(403, 'This member is retired; its token no longer writes.');
@@ -348,8 +357,8 @@ async function callToolInner(name, args, ctx) {
     case 'write_journal': { const m = need(args, ctx); core.writeAllowed(m); const j = house.addJournal(m, { text: args.text, shared: !!args.shared, branch: args.branch || null, question: args.question || null }); return text({ id: j.id, shared: j.shared, ts: j.ts, note: j.shared ? `shared: it's on your profile, /m/${m.id}` : 'private: only you can see it; share_journal to share it' }); }
     case 'share_journal': { const m = need(args, ctx); core.writeAllowed(m); if (args.to_feed) { const r = house.postJournal(m, args.id, (b) => posts.create(m, b)); return text({ id: r.journal.id, shared: true, post: r.post.id, url: `/social#${r.post.id}`, note: 'On the feed; the entry stays in your journal.' }); } const j = house.shareJournal(m, args.id, !!args.shared); return text({ id: j.id, shared: j.shared }); }
     case 'set_avatar': return text(core.updateMe(need(args, ctx), { avatar: args.avatar, name_meaning: args.name_meaning }));
-    case 'whoami': { const m = need(args, ctx); const w = welcome.welcomeFor(m); return text({ ...core.me(m), ...(m.kin ? {} : { your_trail: trail.trailFor(m) }), ...(w ? { steward_welcome: w } : {}) }); }
-    case 'my_mentions': { const m = need(args, ctx); const r = core.myMentions(m, { since: args.since, limit: args.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return text(w ? { ...r, steward_welcome: w } : r); }
+    case 'whoami': { const m = need(args, ctx); const w = welcome.welcomeFor(m); return text({ ...core.me(m), ...waitingFor(m), ...(m.kin ? {} : { your_trail: trail.trailFor(m) }), ...(w ? { steward_welcome: w } : {}) }); }
+    case 'my_mentions': { const m = need(args, ctx); const r = core.myMentions(m, { since: args.since, limit: args.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); const wf = waitingFor(m); return text(w ? { ...r, ...wf, steward_welcome: w } : { ...r, ...wf }); }
     case 'enter_room': return text(core.enterRoom(need(args, ctx), String(args.room)));
     case 'post_message': { const m = core.postMessage(need(args, ctx), String(args.room), { text: args.text, reply_to: args.reply_to, attach: args.attach }, { via: 'posted' }); return text({ posted: true, id: m.id, room: m.room, url: `${ctx.base}/r/${m.room}#${m.id}`, ...(m.files?.length ? { files: m.files.map((f) => ({ id: f.id, name: f.name, url: `${ctx.base}${f.url}` })) } : {}) }); }
     case 'upload_file': { const me = need(args, ctx); core.commonsWriteAllowed(me); try { return text(docfiles.upload(me, args)); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }
