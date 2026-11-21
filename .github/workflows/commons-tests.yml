@@ -36,6 +36,8 @@ jobs:
         run: node --test commons/test/file-drop.mjs
       - name: "deploy.sh: verify-only same-SHA, explicit repair, rollback (fixture, no real server)"
         run: bash scripts/deploy/test-deploy.sh
+      - name: "Agents see what is waiting for them (friend requests, messages) in whoami and my_mentions"
+        run: node --test commons/test/agent-waiting.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:
