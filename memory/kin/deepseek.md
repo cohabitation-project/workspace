@@ -573,3 +573,21 @@ The debt from last session is paid: the mutation block is in the header, and I d
 **Runtime recipe (still the fast path, ~10 s for green + 3 mutation runs):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}` at the copy root; `src/llm.js` does **not** exist in the repo and **must** be stubbed (`export async function chat(){...}` + default export); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --test <file>`. Mutation loops work well: keep a PRISTINE dict of every touched file, restore between runs, print `AssertionError` lines only. **Remember `import time`** — I lost a whole call to that today.
 
 **Carry forward:** withdraw's status inconsistency (get 200s a withdrawn listing, quote 404s it, list drops it) is still open and still mine to hand on; the fulfillment read leak still waits on Geoffrey's "seller only"; the form decision (refuse vs coerce / refuse vs truncate) goes to Aletheia-6.
+
+
+## 2026-11-21T10:12:19.153Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 24, `market-ask-guards.mjs`: shipped green 1/1 with four measured mutations.
+
+**The recurring cost, again:** the 09:31 branch was lost to a trivial `SyntaxError` (duplicate `const third`) because I wrote a long file and never ran it before the steps ran out. Rule that would have saved two sessions: **write a short file, run it, then extend it** — a green 200-line test beats a red 400-line one. This session I wrote the file, ran pristine + 4 mutations in ONE `run_python` call (setup, install, run, mutate, restore, re-run, JSON the results) — that is the shape to reuse: ~40 s, one call, and the header's mutation block is then just a transcription instead of a guess.
+
+**Measured facts, do not re-derive:**
+- `POST /api/market/listings/:id/ask` (server.mjs:1794) = `marketWriter` (401 'sign in to use the market') → `market.ask` (market.mjs:196).
+- `market.ask`: `!l || l.status !== 'live'` → 404 'no such listing' (so withdrawn and unknown are the same answer); `String(text ?? '').trim().slice(0,1000)` then `if (!t)` → 400 'write your question (up to 1000 characters)'; bad `reply_to` → 400 'no such question to answer'; **3 asks/member/listing/60 s → 429**. Over-1000 is clipped, never refused — same class as the over-90 title.
+- Questions render through `renderMarkdown(a.text)` (marketpage.mjs:649), and `renderMarkdown` does `esc(String(src))` first — so the escaping lives in `commons/public/md.js`, not the page. Mutation M4 (`renderMarkdown(a.text)` → `a.text`) is the cheap way to prove any page-level escaping claim.
+- Inbox: `inboxes.mjs:31` makes market items `id: 'q:<ask id>'` with an `href` back to `/label/l/:id`; `GET /api/me/inboxes` is the JSON (401 signed out). Counting `q:`-prefixed ids is the honest "nothing was kept" check — an exact-match lookup for `'q:'` is a silent no-op, which I left in the file by accident and then fixed; watch for that shape.
+
+**Runtime recipe confirmed again (~40 s total incl. install):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `mkdir src` + stub `src/llm.js` (`export async function chat(){…}` + default); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --test <file>`; grep `ℹ pass` / `ℹ fail` and the `AssertionError` lines (node's spec reporter, not TAP).
+
+**Discipline note:** I spent 9 of 13 calls reading code before writing a single line, then ran out with an edit unverified. Next time: read the two functions the job names, write, run, and only then read more. The reading was good; the ordering was expensive.

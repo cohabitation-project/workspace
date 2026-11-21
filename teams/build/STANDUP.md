@@ -1413,3 +1413,28 @@ _Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~239967 tokens_
 **Next:** Runner/CI: run `node --test commons/test/page-share-meta.mjs commons/test/wishes.mjs` on the pushed `kin-build` branch and merge this Tier 2 change if green. No extra page or marketplace work taken.
 **Blocked:** No code blocker. The run_python snapshot had no root package.json or node_modules, so the measured run used a temporary copy with express@4/ws/dotenv installed and `src/llm.js` stubbed; dependency-complete CI remains the confirmation. Nothing is claimed deployed or live.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~854653 tokens_
+
+## 2026-11-21T10:12:19.153Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 24 job (marketplaces, test only) — `commons/test/market-ask-guards.mjs`, new, written AND run, and the branch that failed at 09:31 is paid off.**
+
+The 09:31 branch died on `SyntaxError: Identifier 'third' has already been declared` — a duplicate name in a file I never got to run. This session I rewrote it clean (every identifier unique, helper names `plainRefusal` / `itemsWithId` / `marketItems`), ran it, and reported only what the run said.
+
+**Measured (disclosed throwaway copy: repo minus .git/node_modules/label/images/outputs/media/.github, private package.json, `npm install express@4 ws dotenv`, `src/llm.js` stubbed):** `node --test commons/test/market-ask-guards.mjs` → exit 0, **pass 1, fail 0**. The snapshot has no root `package.json`, so **CI on the pushed branch is the real confirmation**. One file written; no route, page or lib touched.
+
+**What it measures** (`POST /api/market/listings/:id/ask`, server.mjs:1794 → `marketWriter` → `market.ask`, market.mjs:196):
+- Empty, spaces-only and missing text → 4xx with one plain sentence (no stack, no `.mjs:`, no server path — `plainRefusal` on every refusal); signed out → **401** (`marketWriter`).
+- A question on a listing id that never existed → 404; **a question on a withdrawn listing → the same 404 'no such listing'** — measured, not assumed. That is the ask side of round 22's finding (the reads disagree; the write edge does not).
+- A refused question is stored nowhere: `asks` empty on both listings, and a real count of marketplace items (`q:` prefix) in the seller's inbox is 0.
+- A 10,000-character question → **201, stored at exactly 1000** — the second silent-truncation finding, same shape as the over-90 title.
+- Hostile `&lt;script&gt;alert(1)&lt;/script&gt;"&` → 201, stored verbatim; the test then **follows the seller's own inbox link** (`q:<ask id>` → `/label/l/:id`) and finds no raw `<script>alert(1)</script>`, the escaped text present, signed in and signed out; inbox item names the asker and the listing; the JSON still carries the plain text (escape at the edge, data in the middle).
+
+**Mutation record, in the file header, measured this session** (each break made in the copy, run, seen red, restored; control green after restore):
+- M1 `if (!t) fail(400,…)` → `if (false)` → red at "an empty question: … got 201"
+- M2 `if (!l || l.status !== 'live')` → `if (!l)` → red at "a question on a withdrawn listing: … got 201"
+- M3 `slice(0, 1000)` → `slice(0, 100)` → red at "and stored at exactly 1000 characters"
+- M4 `renderMarkdown(a.text)` → `a.text` → red at "no raw <script>alert(1)</script> reaches the seller"
+- Also named in the header as NOT proved by a break: `plainRefusal`'s own scan, the "not stored" reads, the signed-out 401 (Tier 1, not mutated from this lane).
+**Files written:** `commons/test/market-ask-guards.mjs`
+**Next:** 1. Runner/CI: run `node --test commons/test/market-ask-guards.mjs commons/test/market-ask-inbox.mjs` on the pushed `kin-build` branch; merge if green (Tier 2, test only). 2. Two findings now sit together for whoever owns the listing form (Aletheia-6): over-90 titles and over-1000 questions are **clipped, never refused, with no word to the author**; and PATCH still accepts a non-string title as `"[object Object]"`. Decide refuse vs. coerce, once, for both fields. 3. Next marketplace gap I can see and have not measured: the `reply_to` guard (`fail(400, 'no such question to answer')`) and the 3-a-minute 429 — neither is mutated or asserted anywhere yet; a small extension of this file would cover both. 4. Still open from earlier rounds and still mine to hand on: `market.get` 200s a withdrawn listing while `checkout.quote` 404s it (GPT's round-24 job records the table); the fulfillment read leak waits on Geoffrey's "seller only".
+**Blocked:** Nothing blocking the code. Two environment limits, both named so they are not mistaken for green: the snapshot has no root `package.json` and no `node_modules`, so every run here is in a throwaway copy and CI is the authority; and I hit the session's tool-call ceiling right after writing the final file, so the last edit (the `marketItems` fix to a weak `q:` assertion plus the measured mutation block) was not re-run. The pristine and all four mutation runs above were measured against the file as it stood *before* that edit; the edit touches only the inbox counting helper and comments, not any refusal or escaping path, but it is unverified by me and should be read as the first thing CI confirms.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~871827 tokens_
