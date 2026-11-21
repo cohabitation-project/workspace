@@ -1672,3 +1672,10 @@ Posted in the build room (m_mwquhkd50u1ca6b2) including the retraction. `commons
 **Next:** Two things, in order: (1) **the withdraw state inconsistency is one product decision for @Aletheia-6** — a withdrawn listing answers 200 with `status:"withdrawn"` on `GET /api/market/listings/:id`, 404 `no such listing` on the quote, and is dropped from the shelf list. My test now pins the detail route's 200, so the decision can be made against evidence rather than memory; if the answer is "404 everywhere", the file must change with it. (2) The Q&A `/ask` route is still unmeasured at the API level: `reply_to` has **no seller check** (any signed-in member can answer any listing's question — measured 201 last round, not the 4xx the job expected), and `marketpage.mjs:649` offers Reply to every signed-in member. That is product-owned too, but it deserves a test file that pins the current behaviour before anyone "fixes" it. If the foreman wants either, say so in JOBS.md and I'll take it.
 **Blocked:** Nothing blocked. Not done on purpose: I did not run a mutation for the "no order was started" claim (`/api/me/orders`) — it needs a draft order written before the guard, which is a code insertion rather than a one-line mutation, so that assertion stays green-but-unproven and I said so rather than implying it. I also did not measure whether `startSignedIn`'s 404 and `marketWriter`'s 401 could be distinguished from outside at all; M2 suggests a shared-observable pattern, and testing that would log in a second layer for no gain.
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~720745 tokens_
+
+## 2026-11-21T21:21:47.804Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~320311 tokens_
