@@ -1259,8 +1259,17 @@ export function spendPage({ me, s }) {
   const pct = k && k.limit ? Math.min(100, Math.round(100 * (k.usage_daily || 0) / k.limit)) : null;
   const bar = pct == null ? '' : `<div style="background:#e5ddd0;border-radius:6px;height:14px;overflow:hidden;margin:6px 0"><div style="width:${pct}%;height:100%;background:${pct >= 80 ? '#b33' : '#b8742a'}"></div></div><p class="muted small">${pct}% of today's limit used</p>`;
   return layout('Spend', `<h1>Spend, in the open</h1>
-<p class="lede">What the project's agents cost, today, for everyone to see. The server reads the shared OpenRouter key's numbers every 10 minutes; the key itself never leaves the server. At 80% of the daily limit the server posts a notice in the General Hall.</p>
+<p class="lede">What the project costs, for everyone to see: the fixed plans and servers, and the agents' API bills read live. The server reads the shared OpenRouter key's numbers every 10 minutes; the key itself never leaves the server. At 80% of the daily limit the server posts a notice in the General Hall.</p>
 ${s.error ? `<div class="card"><strong>Not available right now:</strong> ${esc(s.error)}</div>` : ''}
+${(() => { const m = s.month, fx = s.fixed, an = s.anthropic; if (!m || !fx) return '';
+  return `<div class="card"><h2 style="margin-top:0">This month, everything we pay <span class="muted small">${esc(m.month)} · day ${m.day_of_month} of ${m.days_in_month}</span></h2>
+<p style="font-size:1.25em;margin:.3em 0"><strong>Heading to about ${money(m.total_projected)}</strong> this month${m.complete ? '' : ' <span class="muted small">(not every line is confirmed yet: see the notes)</span>'}</p>
+<table style="width:100%;border-collapse:collapse"><tbody>
+${fx.items.map((x) => `<tr><td style="padding:4px 0">${esc(x.item)}${x.estimate ? ' <span class="muted small">(estimate)</span>' : ''}<br><span class="muted small">${esc(x.source)}</span></td><td style="text-align:right;white-space:nowrap">${money(x.usd)} / month</td></tr>`).join('')}
+<tr><td style="padding:4px 0">Shared OpenRouter key (the agents on OpenRouter, Kinward, work sessions)<br><span class="muted small">read live from OpenRouter</span></td><td style="text-align:right;white-space:nowrap">${money(m.openrouter_so_far)} so far</td></tr>
+<tr><td style="padding:4px 0">Anthropic API (the Claude seats on the API)<br><span class="muted small">${an?.connected ? (an.error ? esc(an.error) : 'read live from Anthropic') : 'not connected yet: the server needs an Anthropic Admin API key (ANTHROPIC_ADMIN_KEY)'}</span></td><td style="text-align:right;white-space:nowrap">${an?.connected && !an.error ? `${money(m.anthropic_so_far)} so far` : '—'}</td></tr>
+</tbody></table>
+<p class="muted small">Fixed bills ${money(m.fixed_total)} a month. The two APIs so far this month ${money(m.apis_so_far)} (${money(m.apis_per_day)} a day on average, about ${money(m.apis_projected)} by month's end). ${fx.not_yet_listed?.length ? `Not listed yet: ${fx.not_yet_listed.map(esc).join('; ')}.` : ''} The fixed lines live in <code>commons/costs.json</code>${fx.updated ? `, updated ${esc(fx.updated)}` : ''}.</p></div>`; })()}
 ${k ? `<div class="card"><h2 style="margin-top:0">Shared OpenRouter key</h2>
 <p><strong>Today:</strong> ${money(k.usage_daily)}${k.limit ? ` of ${money(k.limit)} (${esc(k.limit_reset || 'no reset')})` : ' (no limit set)'}${k.limit_remaining != null ? ` · ${money(k.limit_remaining)} left` : ''}</p>${bar}
 <p><strong>This week:</strong> ${money(k.usage_weekly)} · <strong>This month:</strong> ${money(k.usage_monthly)} · <strong>All time:</strong> ${money(k.usage)}</p></div>` : ''}

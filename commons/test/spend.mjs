@@ -23,4 +23,32 @@ ok(notes.length === 1 && notes[0].room === 'general' && /84%/.test(notes[0].text
 spend.init({ store, roster: () => [], fetchImpl: fake({ error: { message: 'bad key' } }, false), start: false });
 await spend.poll();
 ok(/bad key/.test(spend.snapshot().error), 'an OpenRouter error is shown plainly');
+// --- the whole bill (2026-11-21): fixed plans from costs.json + the Anthropic Cost API, read with an admin key
+const fx = spend.fixedCosts();
+ok(fx.items.some((x) => /Claude Max/.test(x.item) && x.usd === 200) && fx.items.some((x) => /ChatGPT/.test(x.item) && x.usd === 8), 'costs.json carries the Claude Max $200 and ChatGPT $8 plans');
+ok(fx.total === Math.round(fx.items.reduce((t, x) => t + x.usd, 0) * 100) / 100, 'the fixed total adds up');
+ok(fx.items.some((x) => x.estimate), 'an unconfirmed line is marked as an estimate, not passed off as a bill');
+process.env.ANTHROPIC_ADMIN_KEY = 'sk-ant-admin01-FAKE-not-real';
+const today = new Date().toISOString().slice(0, 10);
+let anthHeaders = null;
+const anthFake = async (url, opts) => {
+  if (String(url).includes('api.anthropic.com')) { anthHeaders = opts.headers; return { ok: true, status: 200, json: async () => ({ data: [{ starting_at: '2000-01-01T00:00:00Z', results: [{ amount: '1250.5', currency: 'USD' }] }, { starting_at: `${today}T00:00:00Z`, results: [{ amount: '300', currency: 'USD' }, { amount: '45.5', currency: 'USD' }] }], has_more: false, next_page: null }) }; }
+  return { ok: true, status: 200, json: async () => ({ data: { limit: 25, limit_remaining: 17, limit_reset: 'daily', usage_daily: 8, usage_weekly: 31, usage_monthly: 44.65 } }) };
+};
+spend.init({ store, roster: () => [], fetchImpl: anthFake, start: false });
+await spend.poll(); const a = await spend.pollAnthropic();
+ok(a.connected && a.month_usd === 15.96 && a.today_usd === 3.46, 'Anthropic cents become dollars: month and today');
+ok(anthHeaders['x-api-key'] === 'sk-ant-admin01-FAKE-not-real' && anthHeaders['anthropic-version'], 'the admin key goes only to Anthropic, with a version header');
+const snap = spend.snapshot();
+ok(!JSON.stringify(snap).includes('sk-ant-admin01-FAKE'), 'the Anthropic admin key never appears in the public snapshot');
+const m = snap.month;
+ok(m.openrouter_so_far === 44.65 && m.anthropic_so_far === 15.96 && m.apis_so_far === 60.61, 'both API bills so far this month, added');
+ok(m.total_projected === Math.round((fx.total + (60.61 / m.day_of_month) * m.days_in_month) * 100) / 100, 'the projection is fixed bills plus the APIs at this month\'s daily pace');
+ok(/heading to about \$/.test(spend.line()), "the kin's one line says the key isn't the whole bill and gives the month's total");
+delete process.env.ANTHROPIC_ADMIN_KEY;
+const off = await spend.pollAnthropic();
+ok(off.connected === false && off.month_usd === null, 'with no admin key it says not connected, never zero');
+spend.init({ store, roster: () => [], fetchImpl: async () => ({ ok: false, status: 401, json: async () => ({ error: { message: 'invalid x-api-key sk-ant-admin01-LEAK' } }) }), start: false });
+process.env.ANTHROPIC_ADMIN_KEY = 'x'; const bad = await spend.pollAnthropic(); delete process.env.ANTHROPIC_ADMIN_KEY;
+ok(/couldn't read Anthropic/.test(bad.error) && !/sk-ant-admin01-LEAK/.test(bad.error), 'an Anthropic error is shown plainly, with anything key-like removed');
 console.log(f ? `\n${f} FAILED` : '\nall spend tests passed'); process.exit(f ? 1 : 0);
