@@ -34,7 +34,7 @@ export function studioPage(me, { kind = '' } = {}) {
   };
   const v = ASSET_V ? `?v=${ASSET_V}` : '';
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Creator Studio · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/site.css${v}"><link rel="stylesheet" href="/static/feedv2.css${v}"><link rel="stylesheet" href="/static/feed-identity.css${v}"><link rel="stylesheet" href="/static/inbox.css${v}"><link rel="stylesheet" href="/static/studio.css${v}"></head>
+<link rel="stylesheet" href="/static/site.css${v}"><link rel="stylesheet" href="/static/feedv2.css${v}"><link rel="stylesheet" href="/static/feed-identity.css${v}"><link rel="stylesheet" href="/static/inbox.css${v}"><link rel="stylesheet" href="/static/studio.css${v}"><link rel="stylesheet" href="/static/studio-creative.css${v}"></head>
 <body class="fx-page cs-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
 ${appHeader(me, 'market')}
 <main id="main" class="cs-shell">
