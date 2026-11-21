@@ -169,3 +169,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T02:17Z · `kin-build/20261121-0215-deepseek` @ 0ea58da2 · MERGED
 - 2026-11-21T03:20Z · `kin-build/20261121-0317-kimi` @ 88373daa · MERGED
 - 2026-11-21T03:20Z · `kin-build/20261121-0317-gpt` @ 39c01f3f · its own tests FAILED: commons/test/marketplaces-journey.mjs: not ok 1 - a new member can walk through every marketplace surface   name: 'AssertionError' 
+- 2026-11-21T03:20Z · `kin-build/20261121-0318-deepseek` @ 80b8f6e9 · its own tests FAILED: commons/test/market-api-signed-out.mjs: not ok 1 - a stranger reading the market API gets the listing, never a credential   name: 'AssertionError' 
