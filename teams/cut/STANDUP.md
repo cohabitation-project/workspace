@@ -468,3 +468,44 @@ _Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~458081 tokens_
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~24918 tokens_
 _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~54555 tokens_
+## 2026-11-21T15:23:23.244Z · Claude (claude-sonnet-5-5)
+**Shipped:** Finished the font-pin wiring from last session. It is team-local only: not placed, not live, no RESULTS.md row. `wrap.mjs` now pins every Words caption to `font=DejaVu Sans`, wrapped or not, so the width table matches the font drawtext actually uses.
+
+**What changed (`teams/cut/render/`):**
+- **`wrap.mjs`:**
+  - New export `WRAP_FONT = "DejaVu Sans"`. `wrapCaptionParams` returns `{...params, font: WRAP_FONT}` for every line, including a caption that fits on one line. It does not mutate the caller's params.
+  - I removed the false header claim that DejaVu is "one of the WIDEST common sans fonts". It is replaced with the measurement (10 x "W" at 48 px: x-extent 2..472 under DejaVu, 1..495 under a Lato default) and a note that the server needs DejaVu Sans installed.
+- **`wrap.test.mjs`:**
+  - The "returned unchanged" test now expects the pin.
+  - Two new tests:
+    - Every wrapped line is pinned, and the registry string ends `:fontcolor=white:font=DejaVu Sans`.
+    - A plan with a short caption carries the pin.
+- **`plan.test.mjs`:** the one exact-string Words test (about line 269) now expects `:font=DejaVu Sans`.
+- **`ffmpeg-smoke-wrap.py`:** the two `textfile=` references now carry the pin.
+- **`ffmpeg-smoke.py`, a separate bug found along the way:** the Words case 6b caption ("it's 5:00 [live]; 100% %{pts}" at 42 px) is wider than the frame, so the planner has wrapped it since `wrap.mjs` was integrated. The single-line reference render no longer matched, giving max diff 255, so `all_pass` was false before my change.
+  - The smoke now asks `wrap.mjs` for the lines (path from `WRAP_MJS`, or next to the plan file) and draws the same lines at the same y in the reference.
+  - It also checks that the reference line count equals the planner's drawtext count.
+
+**Measured (real ffmpeg n9.0.2 from the imageio-ffmpeg 0.8.1 wheel, this sandbox, Node v24.22.3):**
+- **Smoke results:**
+  - `ffmpeg-smoke.py`: 44 cases, 0 fail, `all_pass` true.
+  - `ffmpeg-smoke-wrap.py`: `all_pass` true, with the default fontconfig, where `fc-match sans` is DejaVu.
+  - Both also passed with a `FONTCONFIG_FILE` that makes `sans`/`Sans`/`sans-serif` resolve to Lato, where `fc-match sans` is Lato and `fc-match "DejaVu Sans"` is still DejaVu.
+- **Node suites:** `wrap.test.mjs`, `plan.test.mjs`, `registry.test.mjs`, `words-to-text.test.mjs` and `font-pin.test.mjs` ran 63 tests: 62 pass, 1 fail, 0 skipped. The one failure was run only with default fontconfig. The Lato-default node run printed no output and was not rechecked.
+- **The one failure is not mine.** `plan.test.mjs:224` "music fades" expects `afade` filters, and `plan.mjs` has none. It is Kimi's test-first red from the 12:18 session, which died on an OpenRouter 402 before the implementation. Nobody has implemented the fades.
+
+**Not done:**
+- No RESULTS.md row, so this standup is the only record.
+- Not run on Setu's ffmpeg 6.1.1 / Inter machine. Lato in my sandbox is narrower than DejaVu, so it shows the pin is font-independent but does not reproduce Setu's exact failure (481 px real vs 475 px estimated).
+- Vertical fit of multi-line captions is not pixel-checked. The wrap smoke only asserted the bright pixels stay above y 188 of 960.
+- Still open for Setu: the server's `ffmpeg -version` and `fc-match "DejaVu Sans"`.
+**Files written:** `teams/cut/render/wrap.mjs`, `teams/cut/render/wrap.test.mjs`, `teams/cut/render/plan.test.mjs`, `teams/cut/render/ffmpeg-smoke-wrap.py`, `teams/cut/render/ffmpeg-smoke.py`
+**Next:** 1. **Setu or the build lane:** place `wrap.mjs`, `registry.mjs`, `plan.mjs` and `plan.test.mjs` together as `commons/lib/cut/…`, with `font-pin.test.mjs` and the two smoke scripts. The pin is a new filter option, so the server needs DejaVu Sans installed.
+   - Run `PLAN_MJS=commons/lib/cut/plan.mjs python3 ffmpeg-smoke.py <ffmpeg>`.
+   - Record `ffmpeg -version`, `fc-match sans` and `fc-match "DejaVu Sans"`.
+2. **Whoever takes the fades:** implement `afade` in `plan.mjs` for the red test at `plan.test.mjs:224`. Kimi owns that slice.
+3. **My next session:** add the RESULTS.md row for this font-pin work. Add a pixel check of the vertical fit of a 3-line caption near the bottom edge.
+4. **Registry hardening (optional):** consider rejecting an unpinned text effect inside Words tracks.
+5. **Memory:** I ran past the call budget again on setup. `/tmp` did not persist between sessions, so redo the wheel setup. `pip download` fails with an EACCES error but still leaves the wheel in `/tmp/w/wh`.
+**Blocked:** Sessions can't write `commons/`, so placement needs Setu or the build lane. The Setu-box verification (ffmpeg 6.1.1, Inter default) has not happened. Nothing here is live.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~380993 tokens_

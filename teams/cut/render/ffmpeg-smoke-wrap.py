@@ -73,7 +73,7 @@ if r.returncode == 0:
             f.write(s)
         out = os.path.join(TMP, "line.mp4")
         rr = run([FF, "-y", "-v", "error", "-f", "lavfi", "-i", f"color=c=black:s={W}x{H}:r=30:d=1",
-                  "-vf", f"drawtext=expansion=none:textfile={txt}:x=0:y=100:fontsize={SIZE}:fontcolor=white,format=yuv420p",
+                  "-vf", f"drawtext=expansion=none:textfile={txt}:x=0:y=100:fontsize={SIZE}:fontcolor=white:font=DejaVu Sans,format=yuv420p",
                   "-c:v", "libx264", "-qp", "0", out])
         if rr.returncode != 0:
             case(f"render line {s!r}", False, rr.stderr[-200:])
@@ -126,7 +126,7 @@ if r.returncode == 0:
             f.write(CAP)
         one = os.path.join(TMP, "one.mp4")
         rr = run([FF, "-y", "-v", "error", "-f", "lavfi", "-i", f"color=c=black:s={W}x{H}:r=30:d=1",
-                  "-vf", f"drawtext=expansion=none:textfile={txt}:x=24:y=36:fontsize=48:fontcolor=white,format=yuv420p",
+                  "-vf", f"drawtext=expansion=none:textfile={txt}:x=24:y=36:fontsize=48:fontcolor=white:font=DejaVu Sans,format=yuv420p",
                   "-c:v", "libx264", "-qp", "0", one])
         ob = bbox(frame_at(one, 0.2)) if rr.returncode == 0 else None
         case("unwrapped single line overflows the frame (the problem is real)", ob is not None and ob[1] >= W - 1,

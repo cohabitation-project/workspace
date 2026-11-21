@@ -266,7 +266,7 @@ test("overlay Words track: exact timed drawtext chain after concat, not ignored"
 	}));
 	tracks.overlay.push(words);
 	const plan = buildRenderPlan({ tracks });
-	const drawtext = "drawtext=expansion=none:enable='between(t,0.5,2)':text=Hello Cohabi:x=24:y=36:fontsize=42:fontcolor=white";
+	const drawtext = "drawtext=expansion=none:enable='between(t,0.5,2)':text=Hello Cohabi:x=24:y=36:fontsize=42:fontcolor=white:font=DejaVu Sans";
 	const expected = [
 		`[0:v]trim=start=0:end=2,setpts=PTS-STARTPTS,trim=end=2,${NORM}[v0]`,
 		"[0:a]atrim=start=0:end=2,asetpts=PTS-STARTPTS,atrim=end=2,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",

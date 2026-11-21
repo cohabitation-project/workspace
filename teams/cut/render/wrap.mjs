@@ -4,10 +4,17 @@
 // the only drawtext serializer and never has to accept a line break inside a value.
 //
 // Width estimate: advance widths of DejaVu Sans (units per 1000 em, ASCII 0x20..0x7e, measured with
-// PIL ImageFont.getlength at size 1000 on 2026-11-21). DejaVu is one of the WIDEST common sans fonts,
-// so for the server's unknown `sans` this errs toward wrapping early, not toward overflow. Characters
-// outside ASCII are assumed 1.0 em (as wide as a CJK glyph). The estimate was checked against real
-// drawtext pixel bounds in teams/cut/render/ffmpeg-smoke.py (case 6c) and a test here.
+// PIL ImageFont.getlength at size 1000 on 2026-11-21). The table fits ONLY DejaVu Sans. An earlier
+// version of this comment claimed DejaVu is among the widest sans fonts so an unknown `sans` would err
+// toward early wrapping; that was FALSE (measured 2026-11-21, 10 x "W" at 48 px: bright x-extent 2..472
+// under DejaVu but 1..495 under a Lato default). So every caption this module returns is PINNED to
+// WRAP_FONT (`font=DejaVu Sans`), wrapped or not: the font drawtext uses is then the one measured here,
+// whatever the server's fontconfig default is. Characters outside ASCII are assumed 1.0 em (as wide
+// as a CJK glyph). The estimate was checked against real drawtext pixel bounds in
+// teams/cut/render/ffmpeg-smoke-wrap.py and a test here. The server must have DejaVu Sans installed;
+// if fontconfig substitutes another face, the width guarantee is gone (check `fc-match "DejaVu Sans"`).
+
+export const WRAP_FONT = "DejaVu Sans";
 
 export const DEJAVU_ADVANCE = [
 	318, 401, 460, 838, 636, 950, 780, 275, 390, 390, 500, 838, 318, 361, 318, 337, 636, 636, 636, 636,
@@ -57,7 +64,8 @@ export function wrapLines(text, fontSize, maxWidth) {
 
 /**
  * Turn one text-effect params object into one params object per wrapped line.
- * A caption that fits is returned unchanged. Throws RangeError when it cannot fit the frame.
+ * Every returned object carries `font: WRAP_FONT` (see header), including a caption that fits on one line.
+ * Throws RangeError when it cannot fit the frame.
  */
 export function wrapCaptionParams(params, { width, height }) {
 	const { text, x = 0, y = 0, fontSize = 32 } = params;
@@ -66,7 +74,7 @@ export function wrapCaptionParams(params, { width, height }) {
 	}
 	const margin = Math.round(width * RIGHT_MARGIN_FRACTION);
 	const maxWidth = width - x - margin;
-	if (estimateTextWidth(text, fontSize) <= maxWidth) return [params];
+	if (estimateTextWidth(text, fontSize) <= maxWidth) return [{ ...params, font: WRAP_FONT }];
 	if (maxWidth < fontSize) {
 		throw new RangeError(`caption at x=${x} leaves ${maxWidth}px of a ${width}px frame, less than one ${fontSize}px glyph`);
 	}
@@ -76,5 +84,5 @@ export function wrapCaptionParams(params, { width, height }) {
 	if (bottom > height) {
 		throw new RangeError(`caption needs ${lines.length} lines (bottom edge ${bottom}px) but the frame is ${height}px tall`);
 	}
-	return lines.map((line, i) => ({ ...params, text: line, y: y + i * lineHeight }));
+	return lines.map((line, i) => ({ ...params, text: line, y: y + i * lineHeight, font: WRAP_FONT }));
 }

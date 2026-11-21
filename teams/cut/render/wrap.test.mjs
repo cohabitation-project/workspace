@@ -2,7 +2,8 @@
 // Real-pixel evidence (estimate vs drawtext, end to end) lives in ffmpeg-smoke-wrap.py.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { estimateTextWidth, wrapLines, wrapCaptionParams, DEJAVU_ADVANCE } from "./wrap.mjs";
+import { estimateTextWidth, wrapLines, wrapCaptionParams, DEJAVU_ADVANCE, WRAP_FONT } from "./wrap.mjs";
+import { registry } from "./registry.mjs";
 import { buildRenderPlan, RenderPlanError } from "./plan.mjs";
 import { createEmptyTracks, createElement, createTrack } from "../port/model.mjs";
 
@@ -15,10 +16,34 @@ test("the width table covers ASCII 0x20..0x7e and widths scale with font size", 
 	assert.equal(estimateTextWidth("\u4e2d", 10), 10); // non-ASCII counts as a full em
 });
 
-test("a caption that fits is returned unchanged, edge blanks and all", () => {
+test("a caption that fits is one line, text unchanged (edge blanks and all), but still font-pinned", () => {
 	assert.deepEqual(wrapLines("  hi  ", 20, 500), ["  hi  "]);
 	const params = { text: "Hello", x: 10, y: 20, fontSize: 32 };
-	assert.deepEqual(wrapCaptionParams(params, { width: 540, height: 960 }), [params]);
+	assert.deepEqual(wrapCaptionParams(params, { width: 540, height: 960 }), [{ ...params, font: WRAP_FONT }]);
+	assert.equal(WRAP_FONT, "DejaVu Sans");
+	assert.equal(params.font, undefined, "the caller's params object is not mutated");
+});
+
+test("every wrapped line is font-pinned and the pinned plan string ends with :font=DejaVu Sans", () => {
+	const out = wrapCaptionParams({ text: "Absolutely nothing about this sentence fits one line", x: 24, y: 36, fontSize: 48, color: "white" }, { width: 540, height: 960 });
+	assert.ok(out.length >= 2);
+	for (const p of out) {
+		assert.equal(p.font, WRAP_FONT);
+		assert.ok(registry.text.toFilter(p).endsWith(":fontcolor=white:font=DejaVu Sans"));
+	}
+});
+
+test("the width table's own font is not the machine default: a plan without the pin would be unsafe", () => {
+	// every Words drawtext in a plan carries the pin, wrapped or not
+	const tracks = createEmptyTracks();
+	tracks.main.elements.push(createElement({ id: "c1", type: "video", startTime: 0, duration: 2 * T, params: { src: "a.mp4" } }));
+	const words = createTrack({ type: "text", name: "Words", id: "words" });
+	words.elements.push(createElement({ id: "cap1", type: "text", startTime: 0, duration: T, params: { content: "Hi", fontSize: 42, color: "white", "transform.positionX": 24, "transform.positionY": 36 } }));
+	tracks.overlay.push(words);
+	const plan = buildRenderPlan({ tracks, width: 540, height: 960, fps: 30 });
+	const draws = plan.filterComplex.match(/drawtext=[^\[\],;]*(?:\\.[^\[\],;]*)*/g) ?? [];
+	assert.equal(draws.length, 1);
+	assert.ok(plan.filterComplex.includes(":font=DejaVu Sans"), plan.filterComplex);
 });
 
 test("wrapping is greedy, every line fits, and no word is lost or reordered", () => {

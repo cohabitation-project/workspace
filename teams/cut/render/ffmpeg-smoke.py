@@ -195,6 +195,7 @@ if r.returncode == 0:
 # (apostrophe, colon, brackets, %). Whole frames before / during / after the 1.0-1.5 s window are compared
 # with a static textfile= render of the same text (during) and a no-text render (before, after).
 CAP = "it's 5:00 [live]; 100% %{pts}"
+WRAPF = os.environ.get("WRAP_MJS", os.path.join(os.path.dirname(PLAN), "wrap.mjs"))
 js = f"""
 import {{ buildRenderPlan }} from {json.dumps('file://' + PLAN)};
 import {{ createEmptyTracks, createElement, createTrack }} from {json.dumps('file://' + os.path.join(HERE, '..', 'port', 'model.mjs'))};
@@ -204,7 +205,14 @@ tracks.main.elements.push(createElement({{ id: 'c1', type: 'video', startTime: 0
 const words = createTrack({{ type: 'text', name: 'Words', id: 'words' }});
 words.elements.push(createElement({{ id: 'cap1', type: 'text', startTime: T, duration: T / 2, params: {{ content: {json.dumps(CAP)}, fontSize: 42, color: 'white', 'transform.positionX': 24, 'transform.positionY': 36 }} }}));
 tracks.overlay.push(words);
-console.log(JSON.stringify(buildRenderPlan({{ tracks, width: {W}, height: {H}, fps: 30 }})));
+// This caption is wider than the frame at 42 px, so the planner WRAPS it into one drawtext per line
+// (wrap.mjs). The reference must draw the same lines at the same y, or it compares one line to three.
+let lines;
+try {{
+  const w = await import({json.dumps('file://' + WRAPF)});
+  lines = w.wrapCaptionParams({{ text: {json.dumps(CAP)}, x: 24, y: 36, fontSize: 42 }}, {{ width: {W}, height: {H} }}).map((p) => ({{ text: p.text, y: p.y }}));
+}} catch (e) {{ lines = [{{ text: {json.dumps(CAP)}, y: 36 }}]; }}
+console.log(JSON.stringify({{ ...buildRenderPlan({{ tracks, width: {W}, height: {H}, fps: 30 }}), refLines: lines }}));
 """
 r = run(["node", "--input-type=module", "-e", js])
 case("plan built: main + Words caption", r.returncode == 0, r.stderr[-500:])
@@ -216,9 +224,13 @@ if r.returncode == 0:
     case("graph accepted: Words caption", r.returncode == 0, r.stderr[-400:])
     case("plan reports nothing ignored for the Words caption", p.get("ignored") == [], str(p.get("ignored")))
     if r.returncode == 0:
-        txt = os.path.join(TMP, "cap.txt")
-        with open(txt, "w", encoding="utf-8", newline="") as f:
-            f.write(CAP)
+        ref_lines = p.get("refLines") or [{"text": CAP, "y": 36}]
+        ref_txts = []
+        for li, ln in enumerate(ref_lines):
+            lp = os.path.join(TMP, f"cap{li}.txt")
+            with open(lp, "w", encoding="utf-8", newline="") as f:
+                f.write(ln["text"])
+            ref_txts.append((lp, ln["y"]))
         # Words captions are drawn by the planner AFTER concat, in output space (540x960), so the reference
         # draws after scale/pad too (a first version drew before scaling and differed by 255: a reference bug).
         base = f"trim=duration=2,setpts=PTS-STARTPTS,scale={W}:{H}:force_original_aspect_ratio=decrease,pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p%s"
@@ -227,7 +239,8 @@ if r.returncode == 0:
             rr = run([FF, "-y", "-v", "error", "-i", black, "-vf", base % dt, "-t", "2", "-an", "-c:v", "libx264", "-qp", "0", "-pix_fmt", "yuv420p", o])
             assert rr.returncode == 0, rr.stderr[-300:]
             return o
-        with_text = ref("cap-ref", f",drawtext=expansion=none:textfile={txt}:x=24:y=36:fontsize=42:fontcolor=white")
+        with_text = ref("cap-ref", "".join(f",drawtext=expansion=none:textfile={lp}:x=24:y={ly}:fontsize=42:fontcolor=white:font=DejaVu Sans" for lp, ly in ref_txts))
+        case("reference drew the wrapped lines the planner drew", len(ref_txts) == p["filterComplex"].count("drawtext="), f"{len(ref_txts)} reference lines vs {p['filterComplex'].count('drawtext=')} planner drawtexts")
         no_text = ref("cap-none", "")
         lit = int((frame(with_text, 1.2) > 128).sum())
         case("caption reference actually has text (guards against a blank-vs-blank pass)", lit > 100, f"bright subpixels in reference at 1.2 s: {lit}")
