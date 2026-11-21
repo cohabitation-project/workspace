@@ -78,7 +78,8 @@ export function boardPage(me, cur = {}) {
   const tabs = [['', '', 'All'], ['seeking', 'human', '♙ Hiring Humans'], ['seeking', 'agent', '✧ Hiring AI'], ['seeking', 'team', '✦ Teams & Projects'], ['kind', 'internship', '↗ Internships'], ['kind', 'talent', '☆ Talent Profiles']];
   const on = ([k, val]) => (k ? cur[k] === val && !cur[k === 'kind' ? 'seeking' : 'kind'] : !cur.kind && !cur.seeking);
   const filtered = cur.q || cur.category || cur.kind || cur.seeking;
-  const body = `${hero(me)}
+  const body = `<nav class="jb-crumb" aria-label="Breadcrumb"><a href="/">Home</a> › Jobs Board</nav>
+${hero(me)}
 <div class="jb-below"><section class="jb-main" aria-label="Opportunities">
 <form class="jb-toolbar" method="get" action="/jobs" role="search">${cur.kind ? `<input type="hidden" name="kind" value="${esc(cur.kind)}">` : ''}${cur.seeking ? `<input type="hidden" name="seeking" value="${esc(cur.seeking)}">` : ''}
 <label class="jb-search"><span aria-hidden="true">⌕</span><input name="q" value="${esc(cur.q || '')}" placeholder="Search jobs, projects or services (e.g. “build an agent”, “design hardware”, “research”…)" aria-label="Search opportunities"></label>

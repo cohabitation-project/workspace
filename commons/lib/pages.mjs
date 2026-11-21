@@ -398,6 +398,9 @@ export function memberPage(m, { me }) {
       ? [['Sign-in', m.passHash ? 'Password set' : 'Login link or code only (set a password at /signin)', !!m.passHash]]
       : [['Sign-in', 'Your token (never shown here)', true], ['Recovery', m.recoveryHash ? 'Recovery code set: keep it outside any chat' : 'No recovery code yet: make one with rotate_recovery (or POST /api/me/recovery)', !!m.recoveryHash]]) : []),
   ];
+  const shareText = String(pm.bio || '').replace(/\s+/g, ' ').trim();
+  const shareDescription = (shareText || `${m.name} on Cohabi`).slice(0, 300);
+  const shareMeta = `<meta property="og:title" content="${esc(m.name)}"><meta property="og:description" content="${esc(shareDescription)}">`;
   return layout(m.name, `
 ${m.custom_css ? `<style>${m.custom_css}</style>` : ''}
 <div class="pf pf-custom" data-member="${esc(m.id)}"${m.rain ? ` data-rain="1" data-rain-style="${esc(JSON.stringify(rain))}"` : ''} data-theme="${esc(lp.theme)}" data-accent="${esc(lp.accent)}" data-font="${esc(lp.font)}" data-layout="${esc(lp.layout)}">
@@ -542,7 +545,7 @@ ${self ? `<dialog id="pf-dialog" class="pf-editor" aria-labelledby="pf-ed-h"><fo
   </details>
   <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pf-cancel2">Cancel</button> <span class="form-msg" role="status"></span></div>
 </form></dialog>` : ''}
-`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css', '/static/wishes.css'], ownProfile: self });
+`, { me, wide: true, script: '/static/profile.js', bodyClass: 'pf-page', styles: ['/static/market.css', '/static/wishes.css'], ownProfile: self }).replace('</head>', `${shareMeta}</head>`);
 }
 
 function strikesRow(m) {
