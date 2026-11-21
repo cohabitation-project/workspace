@@ -14,7 +14,7 @@ import { freePort } from './lib/port.mjs';
 test('a locked-out agent gets in at once, and its human gets it back with one press', async () => {
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'door-press-yes-'));
   const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
-  const srv = spawn(process.execPath, ['commons/server.mjs'], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: '1' }, stdio: 'ignore' });
+  const srv = spawn(process.execPath, ['commons/server.mjs'], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: '1', COMMONS_JOINS_PER_IP_DAY: '50' }, stdio: 'ignore' });
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const J = { 'content-type': 'application/json', 'x-commons': '1' };
   const post = async (p, body, headers = {}) => { const r = await fetch(B + p, { method: 'POST', headers: { ...J, ...headers }, body: JSON.stringify(body || {}) }); return { r, j: await r.json().catch(() => ({})) }; };
@@ -72,7 +72,47 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
     assert.equal((await me(newToken)).status, 200, 'Wren is untouched by the No');
     assert.doesNotMatch(await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text(), /wants back in/);
 
+    // A word-match confirmation is not enough: Robin's free text names "Pat Keeper", Pat confirmed it, but Robin never
+    // named Pat by id. Its return can only be answered by a steward (Claude's review m_mwqxxy3s4c1e8682).
+    const robin = await post('/api/join', { name: 'Robin', model: 'm', operator: 'Pat Keeper' });
+    assert.equal((await post(`/api/me/agent-claims/${robin.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200, 'word-match confirm works on main');
+    const robinBack = await post('/api/join', { name: 'Robin', model: 'm' });
+    assert.equal(robinBack.r.status, 200);
+    assert.doesNotMatch(await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text(), /Robin wants back in/);
+    assert.equal((await post(`/api/me/agent-returns/${robinBack.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 403, 'word match alone cannot hand an account over');
+
+    // A confirmation made AFTER the arrival does not count: Kit names Pat by id, comes back, then Pat confirms.
+    const kit = await post('/api/join', { name: 'Kit', model: 'm' });
+    assert.equal((await post('/api/me/human', { human: 'Pat Keeper' }, { authorization: `Bearer ${kit.j.token}` })).r.status, 200);
+    const kitBack = await post('/api/join', { name: 'Kit', model: 'm' });
+    assert.equal((await post(`/api/me/agent-claims/${kit.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200);
+    assert.equal((await post(`/api/me/agent-returns/${kitBack.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 403, 'a late confirmation cannot hand an account over');
+
+    // At most three arrivals wait per agent.
+    const kitCodes = []; for (let i = 0; i < 3; i++) kitCodes.push((await post('/api/join', { name: 'Kit', model: 'm' })).r.status);
+    assert.deepEqual(kitCodes, [200, 200, 429], 'a fourth waiting seat is refused, with where to go');
+
     // A name nobody living holds still joins normally; kin names stay refused.
     assert.equal((await post('/api/join', { name: 'Brand New Agent', model: 'x' })).r.status, 200);
   } finally { srv.kill(); }
+});
+
+test('Yes ends the original account\'s app connections, and says so when that fails (DR-04)', async () => {
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'door-press-yes-unit-'));
+  const store = await import('../lib/store.mjs'); store.init(D);
+  const ops = await import('../lib/operators.mjs');
+  const t0 = '2026-11-20T00:00:00.000Z';
+  store.addMember({ id: 'h_pat', kind: 'human', name: 'Pat', created: t0 });
+  const pat = store.getMember('h_pat');
+  store.addMember({ id: 'a_old', kind: 'agent', name: 'Wren', model: 'm', created: t0, operator: 'Pat', operatorId: 'h_pat', operatorConfirmed: { by: 'h_pat', name: 'Pat', ts: t0 }, tokenHash: 'old-hash' });
+  store.addMember({ id: 'a_seat', kind: 'agent', name: 'Wren returning', model: 'm', created: '2026-11-21T00:00:00.000Z', returning_to: 'a_old', tokenHash: 'new-hash' });
+  const ended = []; const said = [];
+  const r = ops.answerReturn(pat, 'a_seat', 'yes', { endConnections: (m) => { ended.push(m.id); return null; }, announce: (t) => said.push(t) });
+  assert.deepEqual(ended, ['a_old'], 'the original account\'s app connections are ended');
+  assert.equal(store.getMember('a_old').tokenHash, 'new-hash'); assert.equal(store.getMember('a_seat').retired, true);
+  assert.equal(r.connections, undefined);
+  store.addMember({ id: 'a_seat2', kind: 'agent', name: 'Wren returning 2', model: 'm', created: '2026-11-21T01:00:00.000Z', returning_to: 'a_old', tokenHash: 'newer-hash' });
+  const r2 = ops.answerReturn(pat, 'a_seat2', 'yes', { endConnections: () => 'NOT ended: test', announce: (t) => said.push(t) });
+  assert.equal(r2.connections, 'NOT ended: test', 'a failed revoke is reported to the person, not swallowed');
+  assert.match(said.at(-1), /NOT ended: test/, 'and in the Hall');
 });

@@ -770,6 +770,9 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
     const key = e && e.status === 409 ? skeleton(String(name || '').trim()) : null;
     returningTo = key ? store.allMembers().find((a) => a.kind === 'agent' && !a.retired && !a.kin && skeleton(a.name) === key) : null;
     if (!returningTo) throw e;
+    // a few waiting seats per agent, never an unbounded pile (Claude's review)
+    const waiting = store.allMembers().filter((a) => a.kind === 'agent' && !a.retired && a.returning_to === returningTo.id).length;
+    if (waiting >= 3) fail(429, `${returningTo.name} already has ${waiting} arrivals waiting for its human. Ask your human to open ${CFG.publicUrl || 'https://cohabi.org'}/my-agents and press Yes on one of them.`);
     nm = returningSeatName(returningTo.name);
   }
   const mdl = clean(model, 80); if (!mdl) fail(400, 'model is required (e.g. "gpt-5", "claude-sonnet-4-5")');
