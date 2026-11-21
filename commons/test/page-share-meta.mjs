@@ -1,5 +1,5 @@
-// Social-share metadata on a public Jobs detail page. The two other public detail pages are measured and reported,
-// not changed: member profiles and Marketplace listings have separate owners.
+// Social-share metadata on public Jobs and member detail pages. Marketplace listings are measured and reported,
+// not changed: their page has a separate owner.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -101,7 +101,35 @@ test('a Jobs detail has escaped Open Graph metadata; profile and listing gaps ar
     assert.ok(memberId, 'the job identifies its public author for the profile measurement');
     const profile = await request('GET', `/m/${encodeURIComponent(memberId)}`);
     assert.equal(profile.status, 200, 'the public member profile answers 200');
-    report(`/m/${memberId}`, await profile.text());
+    const profileTags = shareTags(await profile.text());
+    assert.equal(profileTags.title.length, 1, 'a profile has exactly one og:title tag');
+    assert.equal(profileTags.description.length, 1, 'a profile has exactly one og:description tag');
+    assert.equal(decode(attr(profileTags.title[0], 'content')), 'Share Meta Author', 'the profile share title is the display name');
+    assert.equal(decode(attr(profileTags.description[0], 'content')), 'Share Meta Author on Cohabi', 'a profile without a bio uses the named fallback');
+
+    const hostileName = 'Share "Hostile" <Member>';
+    const hostileBio = `A "quoted" <public> & bio. ${'word '.repeat(80)}`;
+    const hostileResponse = await post('/api/humans', { name: hostileName, bio: hostileBio });
+    assert.equal(hostileResponse.status, 201, 'a member with hostile display text can be created for the escaping check');
+    const hostile = await hostileResponse.json();
+    assert.equal(hostile.member?.name, hostileName, 'the profile fixture really contains a quote and an angle bracket');
+    const hostileId = hostile.member?.id;
+    assert.ok(hostileId, 'the hostile profile fixture has a member id');
+    const hostilePage = await request('GET', `/m/${encodeURIComponent(hostileId)}`);
+    assert.equal(hostilePage.status, 200, 'the hostile public member profile answers 200');
+    const hostileTags = shareTags(await hostilePage.text());
+    assert.equal(hostileTags.title.length, 1, 'the hostile profile has exactly one og:title tag');
+    assert.equal(hostileTags.description.length, 1, 'the hostile profile has exactly one og:description tag');
+    const hostileTitle = attr(hostileTags.title[0], 'content');
+    assert.ok(hostileTitle.includes('&quot;') && hostileTitle.includes('&lt;'), 'the profile title attribute escapes quotes and angle brackets');
+    assert.equal(decode(hostileTitle), hostileName, 'the escaped profile title decodes losslessly');
+    assert.ok(!hostileTags.title[0].includes('<Member>'), 'a display name cannot inject markup into the head');
+    const expectedBio = hostileBio.replace(/\s+/g, ' ').trim().slice(0, 300);
+    const hostileDescription = attr(hostileTags.description[0], 'content');
+    assert.ok(hostileDescription.includes('&quot;') && hostileDescription.includes('&lt;') && hostileDescription.includes('&amp;'),
+      'the profile description attribute escapes quotes, angle brackets and ampersands');
+    assert.equal(decode(hostileDescription), expectedBio, 'the public bio is clipped to 300 characters without changing its meaning');
+    assert.ok(!hostileTags.description[0].includes('<public>'), 'a bio cannot inject markup into the head');
 
     const made = await post('/api/market/listings', {
       title: 'A share-metadata test print',
