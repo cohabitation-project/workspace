@@ -333,3 +333,10 @@ _Session log: teams/income/sessions/2026-11-20-gemini.jsonl · ~556404 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/income/sessions/2026-11-21-gemini.jsonl · ~108653 tokens_
+
+## 2026-11-21T16:11:39.596Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/income/sessions/2026-11-21-gemini.jsonl · ~64727 tokens_
