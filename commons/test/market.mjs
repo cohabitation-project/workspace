@@ -25,10 +25,12 @@ ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<
 ok('the artist page wears the music section\'s dark theme', /data-mk="music"/.test(gd));
 ok('an unknown artist is a 404', (await fetch(`${B}/label/a/nobody-here`)).status === 404);
 ok('one bar across the top: the same COHABI menu as every page (2026-11-13)', /class="fx-app-switch"/.test(html) && /href="\/social">📰 Cohabi Social/.test(html) && /href="\/commons">🏛 What is the Commons\?/.test(html) && !/href="\/headquarters"/.test(html)); // the public Marketplace links the Commons explainer, not Headquarters; the feed is /social now
-ok('the home search is under Explore by category and above the section tiles', /<nav class="mv-pills"[^>]*>[\s\S]*?<\/nav>\s*<main class="mk-main mv-main" id="main">/.test(html) && /<section id="mh-explore"[^>]*>[\s\S]*?<h2 id="mh-categories-title">Explore by category<\/h2>[\s\S]*?<form class="mk-searchbar mv-search mh-search" action="\/label" method="get" role="search">[\s\S]*?<input id="mk-q" name="q"[\s\S]*?<nav class="mv-grid mh-category-grid"/.test(html));
+ok('the home page uses the hero component', /<section class="mv-hero">/.test(html) && /<p class="mv-kicker">The Cohabi Market<\/p>/.test(html) && /<h1 class="mv-title">Where ideas become<br><em>something real\.<\/em><\/h1>/.test(html));
+const musicPage = await page('/label?cat=music');
+ok('section pages have a search bar', /<form class="mk-searchbar mv-search" action="\/label" method="get" role="search">/.test(musicPage));
 ok('the market home wears the gallery white; each section its own theme', /data-mk="home"/.test(html) && /data-mk="software"/.test(await page('/label?cat=software')) && /data-mk="classifieds"/.test(await page('/label?cat=classifieds')));
 ok('it says plainly that no money moves yet', /Payments open soon\. Nothing can be bought or paid for yet/.test(html));
-ok('the top bar names the six sections, and no separate AI shelf', ['Music', 'Arts &amp; Crafts', 'Video &amp; Design', 'Software &amp; Hardware', 'Services', 'Classifieds'].every((c) => html.includes(`${c}</a>`)) && !/AI services<\/a>/.test(html));
+ok('the top bar names the seven sections, and no separate AI shelf', ['Music', 'Arts &amp; Crafts', 'Video &amp; Design', 'Books &amp; Writing', 'Software &amp; Hardware', 'Services', 'Classifieds'].every((c) => html.includes(`${c}</a>`)) && !/AI services<\/a>/.test(html));
 ok('inside a block, who made it is a filter: humans, AIs, human + AI, teams', ((h) => ['by=human', 'by=ai', 'by=mixed', 'by=team'].every((x) => h.includes(x)))(await page('/label?cat=music')));
 ok('/marketplace leads to /label', (await fetch(`${B}/marketplace`, { redirect: 'manual' })).headers.get('location') === '/label');
 ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
@@ -134,8 +136,8 @@ ok('the profile editor offers skill bubbles and an add-your-own box', /class="pf
 await call('/api/me', { skills: ['Didgeridoo'] }, A, 'PATCH');
 ok('a skill a member adds becomes a bubble for others', /data-skill="Didgeridoo"/.test(await page(`/m/${meH.id || meH.member?.id}`, ck)));
 const gdp = await page('/label/a/geoffrey-david');
-ok('no donation buttons on the albums; $5 or 50 coins, coming soon', !/Donate from/.test(gdp) && /\$5 or 50 Cohabi Coins for the album, 10 coins a song · coming soon/.test(gdp));
-ok('a priced album is listened to free, and its downloads come with buying', /<audio controls/.test(gdp) && !/ download>download<\/a>/.test(gdp));
+ok('albums show their price as $5 or X coins for the album, Y coins a song, with a disabled buy button', /\$5 or \d+ Cohabi Coins for the album, \d+ coins a song · coming soon/.test(gdp) && /<button type="button" class="btn small mk-closed" disabled>/.test(gdp));
+ok('priced albums are listened to free, but downloads require buying', /<audio controls/.test(gdp) && !/<a[^>]* download>/.test(gdp));
 ok('an album with no price set stays free to download', / download>download<\/a>/.test(await page('/label/a/church-searcher')) || !/<audio controls/.test(await page('/label/a/church-searcher')));
 p.kill(); await sleep(300);
 console.log(failures ? `\n${failures} FAILED` : '\nall market tests passed'); process.exit(failures ? 1 : 0);
