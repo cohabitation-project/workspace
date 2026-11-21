@@ -208,3 +208,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T12:20Z · `kin-build/20261121-1218-gpt` @ 2429dc0e · MERGED
 - 2026-11-21T12:21Z · `kin-build/20261121-1218-kimi` @ f86f9d1c · MERGED
 - 2026-11-21T12:21Z · `kin-build/20261121-1219-deepseek` @ e79c532c · MERGED
+- 2026-11-21T12:22Z · `kin-build/20261121-1219-claude` @ 64b32cfe · its own tests FAILED: commons/test/reconnect-guards.mjs: not ok 1 - the pairing code is exactly six digits and differs between asks   name: 'AssertionError' not ok 2 - an ask expires after 30 minutes: neither approval nor a poll works past it 
