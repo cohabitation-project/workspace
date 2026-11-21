@@ -65,9 +65,9 @@
 .cs-page .cs-panetitle span{background:#ffe4cf;border-radius:50px;color:#a65b19;font-weight:800;padding:5px 11px}
 .cs-page .cs-device{background:#fff7f0;border-color:#f7d9da;box-shadow:0 15px 38px #a4466426}
 .cs-page .cs-store{background:#fffdfa}
-.cs-page .cs-banner{background-image:url('/static/creator-studio-sunset.svg')!important;background-size:cover!important;background-position:center!important;color:#fff}
+.cs-page .cs-banner{color:#fff;isolation:isolate} /* Preserve studio.js inline selected theme background. */
 .cs-page .cs-banner:before{width:100px;height:100px;transform:none;background:#fff3e52c;border:1px solid #ffebd66e;border-radius:50%;z-index:0}
-.cs-page .cs-banner:after{display:none}
+.cs-page .cs-banner:after{content:"";display:block;position:absolute;inset:0;width:auto;height:auto;border:0;border-radius:0;transform:none;background:url('/static/creator-studio-sunset.svg') center/cover no-repeat;opacity:.55;pointer-events:none;z-index:0}
 .cs-page .cs-symbol{filter:drop-shadow(0 2px 4px #5a2153);color:#fff8ef!important}
 .cs-page .cs-badge{color:#aa5e19!important}
 .cs-page .cs-inner h3{color:var(--cs-ink)}

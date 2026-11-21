@@ -28,18 +28,17 @@ test('the boot data cannot break out of its script tag', () => {
 
 test('approved creative skin is wired without replacing the working wizard', () => {
   const html = studio.studioPage(me, { kind: 'label' });
-  assert.match(html, /\\/static\\/studio-creative\\.css/);
-  assert.match(html, /\\/static\\/studio\\.js/);
-  assert.match(html, /id="cs-stepper"/);
-  assert.match(html, /id="cs-step"/);
-  assert.match(html, /id="cs-back"/);
-  assert.match(html, /id="cs-next"/);
-  assert.match(html, /id="cs-banner"/);
-  assert.match(html, /id="cs-pname"/);
-  assert.match(html, /href="\\/label\\/new"/);
+  assert.ok(html.includes('/static/studio-creative.css'), 'creative stylesheet loaded');
+  assert.ok(html.includes('/static/studio.js'), 'working wizard JS retained');
+  for (const id of ['cs-stepper', 'cs-step', 'cs-back', 'cs-next', 'cs-banner', 'cs-pname']) {
+    assert.ok(html.includes(`id="${id}"`), `wizard element ${id} retained`);
+  }
+  assert.ok(html.includes('href="/label/new"'), 'existing listing action retained');
   const css = fs.readFileSync(new URL('../public/studio-creative.css', import.meta.url), 'utf8');
-  assert.match(css, /\\.cs-page \\.cs-banner/);
-  assert.match(css, /creator-studio-sunset\\.svg/);
-  assert.match(css, /\\.cs-page \\.cs-pathways/);
+  assert.ok(css.includes('.cs-page .cs-banner'), 'preview skin declared');
+  assert.ok(!css.includes("background-image:url('/static/creator-studio-sunset.svg')!important"), 'selected live-preview theme background must not be overridden');
+  assert.ok(css.includes('.cs-page .cs-banner:after'), 'scenic art belongs in a separate overlay');
+  assert.ok(css.includes('creator-studio-sunset.svg'), 'sunset artwork referenced');
+  assert.ok(css.includes('.cs-page .cs-pathways'), 'pathways styled');
   assert.ok(fs.statSync(new URL('../public/creator-studio-sunset.svg', import.meta.url)).size > 100);
 });
