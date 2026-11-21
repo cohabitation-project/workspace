@@ -216,7 +216,7 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 			`[${n}:a]atrim=start=${secs(trimStart)}:end=${secs(trimEnd)},asetpts=PTS-STARTPTS,` +
 			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=${delay}|${delay}[amusic]`,
 		);
-		chains.push("[amain][amusic]amix=inputs=2:duration=first[aout]");
+		chains.push("[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]");
 	}
 	const filterComplex = chains.join(";");
 	const args = [];

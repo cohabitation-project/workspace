@@ -184,7 +184,7 @@ test("one music element: exact trim + delay + amix plan; a second is refused", (
 		"[0:a]atrim=start=0:end=2,asetpts=PTS-STARTPTS,atrim=end=2,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",
 		"[v0][a0]concat=n=1:v=1:a=1[vout][amain]",
 		"[1:a]atrim=start=2:end=3,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=500|500[amusic]",
-		"[amain][amusic]amix=inputs=2:duration=first[aout]",
+		"[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]",
 	].join(";");
 	assert.equal(plan.filterComplex, expected);
 	assertLabelsClosed(plan.filterComplex, 2);

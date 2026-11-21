@@ -1,0 +1,27 @@
+{
+  "command": "node --test plan.test.mjs registry.test.mjs words-to-text.test.mjs",
+  "cwd": "teams/cut/render",
+  "returncode": 0,
+  "summary": {
+    "tests": 46,
+    "pass": 45,
+    "fail": 0,
+    "skipped": 1
+  },
+  "skip": "registry real-ffmpeg textfile= comparison: no ffmpeg executable on this runner",
+  "sha256": {
+    "plan.mjs": "20eb789a0731cb9fbe2d1425bd1bd3e91562e53f4daa4c58c4d2ff49111254e7",
+    "plan.test.mjs": "147f63807fb7a55ea7f6f7e641561ad451e77ae8c79c8a63031c389de57b721a"
+  },
+  "ffmpeg_available": null,
+  "audio_render_run": false,
+  "test_first": {
+    "command": "node --test plan.test.mjs",
+    "returncode": 1,
+    "tests": 31,
+    "pass": 30,
+    "fail": 1,
+    "reason": "exact music assertion required normalize=0 before planner implementation"
+  },
+  "output": "\u2714 two-clip sample: exact trim + concat plan (12.76145ms)\n\u2714 retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo (0.808139ms)\n\u2714 retime with a trim: source window starts at trimStart and is duration*rate long (0.422945ms)\n\u2714 a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree) (0.487657ms)\n\u2714 plan.maps names the concat outputs, video first (0.478049ms)\n\u2714 atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5) (5.151073ms)\n\u2714 gap between clips becomes black video + silence of the gap length (0.802759ms)\n\u2714 a gap before the first clip is filled too (0.39904ms)\n\u2714 clips are placed by startTime, not by array order (0.365748ms)\n\u2714 a source with hasAudio:false gets silence, and no [n:a] pad is read (0.671031ms)\n\u2714 the same file used twice gets two inputs, so no pad is reused (0.326134ms)\n\u2714 nothing silently dropped: overlay and main-track text elements are reported in `ignored` (0.439236ms)\n\u2714 one music element: exact trim + delay + amix plan; a second is refused (0.895824ms)\n\u2714 overlay Words track: exact timed drawtext chain after concat, not ignored (1.237546ms)\n\u2714 a hostile src stays one argv element and never enters a filter string (0.212149ms)\n\u2714 refuses what it cannot plan, with a RenderPlanError (0.748467ms)\n\u2714 an element asking for slightly past the source end by rounding is allowed (0.273965ms)\n\u2714 secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep) (1.577035ms)\n\u2714 seeded sweep: random timelines always yield a closed label graph and the right total length (6.399751ms)\n\u2714 fade in + crop + fade out on one clip: exact string, in array order, between trim and scale (0.756332ms)\n\u2714 effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter (0.190699ms)\n\u2714 effects with retime: the fade time is measured on the clip's output, after setpts (0.157175ms)\n\u2714 an empty or missing effects list changes nothing; an effect with no params uses the registry defaults (0.184386ms)\n\u2714 a source size with only one dimension is ignored, not half-applied (0.216086ms)\n\u2714 an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included) (0.407276ms)\n\u2714 malformed effects entries are refused, not skipped (0.546087ms)\n\u2714 a registry guard failure comes out as a RenderPlanError that names the effect (0.48407ms)\n\u2714 crop is checked against the source size when the caller supplies it, and not when it doesn't (0.385835ms)\n\u2714 a half-given frame size in the effect still fails, even when the source map has a size (0.194926ms)\n\u2714 an error that is not a registry guard (a bug) is rethrown as itself, not hidden (0.193563ms)\n\u2714 text effect: hostile text is escaped by the registry and stays inside one filter in one chain (0.261322ms)\n\u2714 fade emits the exact ffmpeg filter string (1.445157ms)\n\u2714 crop emits the exact ffmpeg filter string (0.307979ms)\n\u2714 text emits the exact ffmpeg filter string (0.449275ms)\n\u2714 fade rejects a zero or negative duration (0.551838ms)\n\u2714 crop rejects a rectangle outside a supplied frame and incomplete dimensions (0.360528ms)\n\u2714 text escapes apostrophe, colon, backslash and filtergraph delimiters exactly (0.222148ms)\n\u2714 text uses unquoted two-level escaping: lone apostrophe, colon, edge whitespace, trailing backslash (0.467809ms)\n\ufe63 text: real ffmpeg draws hostile strings identically to a textfile= render (skipped if no ffmpeg) (0.107522ms) # SKIP\n\u2714 text puts expansion=none before text= (real ffmpeg rejects the reverse for apostrophe + %{x}) (0.323458ms)\n\u2714 text accepts only a finite decimal between(t,start,end) and emits it before text (0.685048ms)\n\u2714 text rejects arbitrary, malformed, negative, non-finite, and empty enable expressions (0.308129ms)\n\u2714 text rejects NUL and line breaks instead of emitting a malformed graph (0.188364ms)\n\u2714 maps Words text elements to text effects with tick-derived on-screen enable times (3.386837ms)\n\u2714 empty Words track maps to no effects; Unicode and punctuation remain data (0.456599ms)\n\u2714 rejects invalid track, element schema, duplicate IDs, content and timing (3.272221ms)\n\u2139 tests 46\n\u2139 suites 0\n\u2139 pass 45\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 1\n\u2139 todo 0\n\u2139 duration_ms 135.318488\n"
+}
