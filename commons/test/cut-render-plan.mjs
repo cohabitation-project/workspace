@@ -221,6 +221,39 @@ test("music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted,
 	}
 });
 
+test("music fades: exact afade chain, zero omitted, invalid timings refused", () => {
+	const makeTracks = (params) => {
+		const tracks = timeline(clip("a", "/m/a.mp4", 0, 3 * T));
+		const music = createTrack({ type: "audio", name: "music", id: "au1" });
+		music.elements.push(createElement({
+			id: "m", type: "audio", startTime: T / 2, duration: 2 * T, trimStart: 2 * T,
+			params: { src: "/m/song.mp3", ...params },
+		}));
+		tracks.audio.push(music);
+		return tracks;
+	};
+	const musicChain = (params) => buildRenderPlan({ tracks: makeTracks(params) }).filterComplex.split(";").at(-2);
+	const unchanged = "[1:a]atrim=start=2:end=4,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=500|500[amusic]";
+	const withFadesAndVolume = unchanged
+		.replace(",aresample=", ",afade=t=in:st=0:d=0.25,afade=t=out:st=1.5:d=0.5,aresample=")
+		.replace(",adelay=", ",volume=0.5,adelay=");
+	assert.equal(musicChain({ fadeIn: 0.25, fadeOut: 0.5, volume: 0.5 }), withFadesAndVolume);
+	assert.equal(musicChain({ fadeIn: 0, fadeOut: 0 }), unchanged);
+	for (const params of [
+		{ fadeIn: -0.01 }, { fadeOut: -0.01 },
+		{ fadeIn: 2.01 }, { fadeOut: 2.01 },
+		{ fadeIn: 1.25, fadeOut: 0.76 },
+		{ fadeIn: NaN }, { fadeOut: Infinity },
+		{ fadeIn: "0.5" }, { fadeOut: null },
+	]) {
+		assert.throws(
+			() => buildRenderPlan({ tracks: makeTracks(params) }),
+			(e) => e instanceof RenderPlanError && /params\.fade/.test(e.message),
+			`fade params ${JSON.stringify(params)} must be refused`,
+		);
+	}
+});
+
 test("overlay Words track: exact timed drawtext chain after concat, not ignored", () => {
 	const tracks = timeline(clip("a", "/m/a.mp4", 0, 2 * T));
 	const words = createTrack({ type: "text", name: "Words", id: "words" });

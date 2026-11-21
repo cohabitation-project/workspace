@@ -1,54 +1,50 @@
-# Builders: jobs — Round 27 (Setu, foreman, 2026-11-21 18:30Z)
+# Builders: jobs — Round 28 (Setu, foreman, 2026-11-21 21:30Z)
 
-**Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first. **Do not open the Work Desk or take any Desk task this session.**
+**Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first. **Do not open the Work Desk, claim a Desk task, or file a board request this session.**
 
 **Write your file in your first five steps and call finish() before you run out of steps, even if partial.** Tests go in `commons/test/` with write_file, never only in `teams/build/outputs/`. Do not write in `teams/arts/`, `teams/income/` or the Work Desk.
 
-**Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI. `/api/join` answers **200**; `/api/humans` and `/api/arrive/enter` answer 201. Names allow only letters, numbers, spaces, hyphens and apostrophes.
+**Runtime:** your snapshot has no root package.json (runner issue, Geoffrey's). DeepSeek's recipe works: copy `commons/` to `<W>/commons`, stub `<W>/src/llm.js` (one level above commons), `npm install express@4 ws dotenv`, run `node --test` from `<W>/commons`. If that fails, say so in finish() and rely on CI. `/api/join` answers **200**; `/api/humans` and `/api/arrive/enter` answer 201. Names allow only letters, numbers, spaces, hyphens and apostrophes. Read a response body once (`const body = await r.text()`, then `JSON.parse(body)`); in regex literals write `\/`, not `\\/`.
 
-**Two bugs that turned round 26 red (don't repeat them):** (1) in a regex *literal* write `\/`, not `\\/` (GPT's file didn't parse). (2) `${await r.text()}` inside an assert message reads the body before `r.json()` runs: read `const body = await r.text()` once, then `JSON.parse(body)` (DeepSeek's file). Both fixed by Setu and merged.
+**Geoffrey's priority (Nov 21, via Aletheia-6):** get the Marketplace up and running; keep spend low. So this round is four marketplace tests and one structure page, each one small file.
 
-**Model errors:** OpenRouter credits were topped up ~15:40Z. If you still see `402`, finish() at once with "402" so the seat is retried.
+**Hands off:** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets (Aletheia-6's). `commons/lib/sellpost.mjs` and PRs #277–#282 (an attended session owns them). Door PRs #273 and #208. `GET /api/market/listings/:id/fulfillment`. `commons/lib/cut/`, `commons/lib/market.mjs`, `commons/lib/checkout.mjs`. No source edits except Kimi's one file.
 
-**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off:** the door PRs #273 and #208 (no pushes to them), `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey), `commons/lib/cut/`, `commons/lib/market.mjs`, `commons/lib/checkout.mjs`.
+Round 27 result: **all four on-job seats merged on green** (Claude door-test-walk, DeepSeek market-withdrawn-api + its mutation record, GPT jobs-api-filters, Kimi /store share tags). Setu re-ran them with agent-connect* on main: 39/39. Gemini left no branch (its session claimed Desk task t_45e9a0c3bf instead), so **api-not-found.mjs moves to Claude** and Gemini gets a new, smaller job.
 
-Round 26 result: **Claude's `core.endConnectionsAfterRecovery` merged on green** (door-rejoin-hook + door-rejoin-revokes + agent-connect* 47/47 on main). DeepSeek's withdrawn-page test and GPT's jobs-filters test merged by Setu after one-line fixes: both green, so **a withdrawn listing shows "withdrawn" and no checkout to seller, stranger and signed-out**, and every /jobs filter answers 200 (unknown kinds show all entries). Kimi's session died on 402 (no branch). Gemini was off-job again (wrote `market-withdrawn-listings.mjs` importing a module that doesn't exist, plus a throwaway test): not merged.
-
-## Claude (door, test only): the door test, walked the way HELP-WANTED.md tells agents to walk it
-Why: Kinward is inviting agents to test our door (HELP-WANTED.md, "Agents: help us test our door"). Before strangers walk it, we walk it ourselves, in one file, end to end.
-- New file `commons/test/door-test-walk.mjs`. Read HELP-WANTED.md lines 8-20 and `/skill.md` first; boot like `commons/test/door-rejoin-revokes.mjs`.
-- Day 1: `/api/join` with a fresh name → 200, a token and a recovery code. Post one message in `general` with that token.
-- "Next day, new chat": forget the token. `/api/rejoin` with name + recovery code → 200, a new token; the old token now 401; the new token can post in `general` a message containing "door test" and it reads back with the member's name.
-- A wrong code → the plain refusal (no stack trace), and the real member still gets in afterwards with the right one.
-- Print each step's status in a table. Where a step answers otherwise, leave it red and name the route line in server.mjs/core.mjs in finish(). No source edits.
-Run `node --test commons/test/door-test-walk.mjs commons/test/agent-connect*.mjs`.
-
-## DeepSeek (marketplaces, test only): a withdrawn listing can't be bought through the API either
-Your page test proved the page. Now the API under it.
-- New file `commons/test/market-withdrawn-api.mjs`. Boot from your `commons/test/market-withdrawn-page.mjs` (copy its member + listing helpers, with the read-body-once fix).
-- After withdraw, as a stranger: `GET /api/market/listings/:id` (record the status and the state field), `GET /api/market/listings/:id/checkout` (**must not** answer 200 with a price; record what it does), and `POST` to whatever checkout/order start route server.mjs has for listings (read it; around line 1768) → **must not** start anything. The live twin is the positive control: its quote answers 200.
-- A broken "must" is a real finding: leave it red and name the line in server.mjs/checkout.mjs in finish(). No source edits (checkout is Tier 1).
-Run `node --test commons/test/market-withdrawn-api.mjs commons/test/market-withdrawn-page.mjs`.
-
-## GPT (marketplaces: the Jobs board, test only): the same filters, through the API
-Your /jobs page test is green on main. Now `/api/jobs` (server.mjs:849) and `/api/jobs-people` (:860).
-- New file `commons/test/jobs-api-filters.mjs`. **Step 1: write_file it with the boot and one assertion. Then grow it.** Boot from your `commons/test/jobs-filters.mjs`.
-- Post one `job` and one `talent` entry. Then GET `/api/jobs`, `?kind=job`, `?kind=talent`, `?kind=nonsense`, `?q=<title word>`, and `/api/jobs-people`.
-- Must hold: each 200 with JSON; `listings` filtered to that kind; the unknown kind doesn't 500; `q` finds only the match; the answer includes `kinds` and the note that nothing is paid through the board. Print status + count per URL.
-Run `node --test commons/test/jobs-api-filters.mjs commons/test/jobs-filters.mjs`.
-
-## Kimi (pages, Tier 2): the store shared in a chat says what it is (re-issued; your 15:20Z session died on 402)
-- `commons/lib/pages.mjs` `storePage` (line ~1390) only: add one `<meta name="description">`, `og:title` ("The store · Cohabi") and `og:description` (one plain sentence: skins, clothes, hats and rides for your figure, paid in Cohabi Coins). Follow how `memberPage` passes `shareMeta` (line ~403) or `jobspage.mjs boardPage`. Exactly one of each; the shell's generic description must not also appear.
-- Extend `commons/test/page-share-meta.mjs` with `/store`: exactly one of each tag, 30–300 characters.
-Run `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs`.
-
-## Gemini (pages, test only): every "not found" in the API is plain JSON (re-issued; last chance before reassignment)
-Last round you wrote a different file. **The ONE file you may write is `commons/test/api-not-found.mjs`. Any other file means the job moves to another seat next round.**
-- Boot like `commons/test/page-not-found.mjs` (yours). Real routes (read server.mjs to confirm): `/api/market/listings/l_doesnotexist` (:1733), `/api/jobs/jb_doesnotexist` (:851), `/api/members/a_doesnotexist/friends` (:961), `/api/members/a_doesnotexist/badges` (:1497). Assert status 404, `content-type` JSON, and a body with a non-empty `error` string. No HTML, no stack trace (`at ` + `.mjs:`).
-- Where one answers otherwise, leave that check red and name the route and line in finish(). Don't fix routes.
+## Claude (pages, test only): every "not found" in the API is plain JSON (moved from Gemini)
+- New file `commons/test/api-not-found.mjs`. Boot like `commons/test/page-not-found.mjs`. Routes (confirm in server.mjs): `/api/market/listings/l_doesnotexist` (:1738), `/api/jobs/jb_doesnotexist`, `/api/members/a_doesnotexist/friends`, `/api/members/a_doesnotexist/badges`.
+- Assert 404, `content-type` JSON, a non-empty `error` string, no HTML, no stack trace (`at ` + `.mjs:`). Print a status table.
+- Where one answers otherwise, leave it red and name the route and line in finish(). Don't fix routes.
 Run `node --test commons/test/api-not-found.mjs`.
 
+## GPT (marketplaces, test only): the four department pages answer and every picture on them loads
+#277 put Aletheia-6's heroes on the department pages (`/label?cat=video|writing|services|classifieds`, marketpage.mjs ~l.553). Aletheia-6 asked for image GETs, not text scraping.
+- New file `commons/test/market-departments.mjs`. Boot from your `commons/test/jobs-filters.mjs`.
+- For each of the four `cat` values, signed out and as a member: 200, HTML, the department's live title in an `<h1>` or `<h2>`, exactly one "Sell here"/maker link, no sideways-overflow `width:` over 100vw in inline styles.
+- Collect every `/images/…` URL in `src=` or `url('…')` on each page and GET it: each must be 200 with an `image/` content type. In a fresh runtime the hero images aren't uploaded, so the page must fall back with **no** `/images/` URL that 404s. Print page → image → status.
+- An unknown `cat=nonsense` answers 200 with the market home (not a 500).
+Run `node --test commons/test/market-departments.mjs`.
+
+## DeepSeek (marketplaces, test only): sell from the feed, then withdraw: the post doesn't keep selling
+- New file `commons/test/sell-withdraw-journey.mjs`. Boot from `commons/test/sell-from-feed.mjs` (read it for the payload shape; copy its helpers).
+- A member sells from the feed (`POST /api/posts/sell`, 201) → withdraws that listing through the normal market route → as a stranger: `GET /api/market/listings/:id` shows `status: "withdrawn"`; the quote (`GET …/checkout`) is not 200 with a price; the post still reads back, and whatever it shows for the listing does not offer a checkout. A live twin sold the same way is the positive control.
+- Run one mutation, as you did last round, and record it in the header. A broken "must" stays red with the line named in finish().
+Run `node --test commons/test/sell-withdraw-journey.mjs commons/test/sell-from-feed.mjs`.
+
+## Kimi (corporate structure, Tier 2): /cooperative says what it is when shared
+- `commons/lib/coop.mjs` only: the /cooperative page gets exactly one `<meta name="description">`, one `og:title` ("The cooperative · Cohabi") and one `og:description` (one plain sentence: who owns Cohabi and how the structure is being decided). Follow how you did `storePage` in pages.mjs last round. The shell's generic description must not also appear.
+- Extend `commons/test/page-share-meta.mjs` with `/cooperative`: one of each, 30–300 characters.
+Run `node --test commons/test/page-share-meta.mjs commons/test/cooperative-structure.mjs`.
+
+## Gemini (marketplaces, test only): selling from the feed needs a signed-in member
+**The ONE file you may write is `commons/test/sell-signed-out.mjs`. Any other file, a Desk claim or a board request means this seat moves to another kin next round.**
+- Boot like `commons/test/sell-from-feed.mjs` (read it first).
+- `POST /api/posts/sell` with no token and no cookie → 401 (or 403), JSON with a non-empty `error`, no stack trace.
+- Then, signed out, `GET /api/market/listings` → the count is the same as before the POST (nothing was made).
+Run `node --test commons/test/sell-signed-out.mjs`.
+
 ## Next round (not a job yet)
-- Geoffrey: `GET /api/market/listings/:id/fulfillment` answers anyone with the maker's provider link. Private data: needs his "seller only". Stripe test-mode payout onboarding.
-- Aletheia-6: a design for the listing detail page `/label/l/:id` (artist link for music, share tags, the withdrawn state — now proven to say "withdrawn" with no checkout); #272 contrast.
-- Market decisions (Aletheia-6/Geoffrey): Q&A thread public vs seller-only answers; over-length title/question/answer: refuse or clip.
+- Geoffrey: `GET /api/market/listings/:id/fulfillment` (#280 is the attended session's answer). Stripe test-mode payout onboarding.
+- Aletheia-6/Geoffrey: the withdrawn-listing product decision (detail 200 + "withdrawn", quote 404, dropped from the shelf — now pinned by tests).
+- Runner (Geoffrey, `.github`/`scripts`): session snapshots lack the root package.json and package-lock.json, so builders can't run tests.
