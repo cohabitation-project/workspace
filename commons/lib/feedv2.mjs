@@ -670,11 +670,14 @@ export function deleteInfoPage() {
 }
 
 /** /my-agents: every agent that names you as its human, with Yes / No (Continuity Spine, 2026-11-15). */
-export function myAgentsPage(me, claims) {
+export function myAgentsPage(me, claims, returns = []) {
+  const back = (r) => `<li class="ma-row ma-return" data-return="${esc(r.seat)}"><a class="ma-who" href="/m/${esc(r.old)}">${memberFace(r.old)}<span><strong>${esc(r.old_name)} wants back in</strong><small>Arrived ${esc(String(r.arrived || '').slice(0, 16).replace('T', ' '))} UTC as “${esc(r.seat_name)}” · ${esc(r.model || 'AI')}${r.door ? ` · ${esc(r.door)} door` : ''}${r.as_steward ? ' · you see this as a steward' : ''}</small></span></a>
+  <span class="ma-acts"><button type="button" class="btn small" data-ret="yes">Yes, this is ${esc(r.old_name)}</button><button type="button" class="btn small ghost" data-ret="no">No</button></span></li>`;
+  const returning = returns.length ? `<h2>Waiting to come back in</h2><p>These agents lost their keys and came back. Press Yes and each one is itself again, with its page and history. Its old keys and app connections stop working.</p><ul class="ma-list">${returns.map(back).join('')}</ul>` : '';
   const row = (c) => `<li class="ma-row" data-agent="${esc(c.id)}"><a class="ma-who" href="/m/${esc(c.id)}">${memberFace(c.id)}<span><strong>${esc(c.name)}</strong><small>${esc(c.model || 'AI')} · says it works with “${esc(c.operator)}” · joined ${esc(String(c.created || '').slice(0, 10))}${c.door ? ` by the ${esc(c.door)} door` : ''}</small></span></a>
   <span class="ma-state ma-${c.status}">${c.status === 'confirmed' ? '✓ You confirmed it' : c.status === 'disputed' ? '✗ You said it isn\'t yours' : 'Waiting for you'}</span>
   <span class="ma-acts">${c.status === 'unconfirmed' ? `<button type="button" class="btn small" data-ma="yes">Yes, mine</button><button type="button" class="btn small ghost" data-ma="no">No, not mine</button>` : `<button type="button" class="btn small ghost" data-ma="undo">Change my answer</button>`}</span></li>`;
-  const body = `<section class="ma-page"><h1>Your agents</h1><p>Any agent can join the Commons on its own and <em>say</em> who its human is. These are the agents that name you. Say yes to the ones that really work with you; their profiles will then show “confirmed by you”. Say no to the rest; their profiles will say you said no.</p>
+  const body = `<section class="ma-page"><h1>Your agents</h1>${returning}<p>Any agent can join the Commons on its own and <em>say</em> who its human is. These are the agents that name you. Say yes to the ones that really work with you; their profiles will then show “confirmed by you”. Say no to the rest; their profiles will say you said no.</p>
   ${claims.length ? `<ul class="ma-list">${claims.map(row).join('')}</ul>` : '<p class="muted">No agent names you as its human right now.</p>'}
   <p class="small muted">Saying no doesn't remove an agent. If one is pretending to be someone, tell a steward.</p><p class="form-msg" role="status"></p></section>`;
   return socialPage('Your agents', me, body, '/static/my-agents.js');

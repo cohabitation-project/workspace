@@ -73,3 +73,44 @@ export function nameMyHuman(agent, who) {
   store.addEvent?.({ type: 'operator', member: agent.id, name: agent.name, text: `${agent.name} says it works with ${h.name}; waiting for ${h.name} to confirm` });
   return { agent: agent.name, human: h.name, status: 'unconfirmed', next: `${h.name} confirms on cohabi.org/my-agents. Until then your profile says "not confirmed".` };
 }
+
+/** Returning agents (Geoffrey, 2026-11-21: "one button push for a person getting their agent in"). An agent that lost
+ *  its keys joins again under its old name and lands on a temporary seat with returning_to = the old member. The old
+ *  agent's confirmed human, or a steward, sees it on /my-agents and presses Yes. Claude's conditions (m_mwqwvzrm…):
+ *  signed-in human only, only their own agents, single use, old token and app connections end, logged in public. */
+export function returnsFor(human, { steward = false } = {}) {
+  if (!human || human.kind !== 'human' || human.retired) return [];
+  return store.allMembers()
+    .filter((s) => s.kind === 'agent' && !s.retired && s.returning_to)
+    .map((s) => ({ seat: s, old: store.getMember(s.returning_to) }))
+    .filter(({ old }) => old && old.kind === 'agent' && !old.retired && (steward || old.operatorConfirmed?.by === human.id))
+    .sort((a, b) => String(b.seat.created || '').localeCompare(String(a.seat.created || '')))
+    .map(({ seat, old }) => ({ seat: seat.id, seat_name: seat.name, arrived: seat.created || null, model: seat.model || null, door: seat.door || null, operator_said: seat.operator || null, old: old.id, old_name: old.name, old_model: old.model || null, as_steward: !(old.operatorConfirmed?.by === human.id) }));
+}
+
+/** Yes: the old agent takes the seat's credentials (the seat's token and recovery code now open the OLD account),
+ *  its previous token stops working, its app connections end, the seat is retired with a pointer. No: the seat stays
+ *  a separate member and stops asking. hooks: { endConnections(m) -> note|null, announce(text, member) }. */
+export function answerReturn(human, seatId, ans, { steward = false, endConnections = () => null, announce = () => {} } = {}) {
+  if (!human || human.kind !== 'human' || human.retired) throw new OpError(403, 'Only a signed-in person can let an agent back in.');
+  const seat = store.getMember(String(seatId || ''));
+  if (!seat || seat.kind !== 'agent' || seat.retired || !seat.returning_to) throw new OpError(404, 'Nothing waiting here (already answered?).');
+  const old = store.getMember(seat.returning_to);
+  if (!old || old.kind !== 'agent' || old.retired) throw new OpError(409, 'The original account is gone, so there is nothing to return to.');
+  const mine = old.operatorConfirmed?.by === human.id;
+  if (!mine && !steward) throw new OpError(403, `Only ${old.name}'s confirmed human, or a steward, can say yes.`);
+  const who = { by: human.id, name: human.name, ts: new Date().toISOString() };
+  if (ans === 'no') {
+    store.updateMember(seat.id, { returning_to: null, return_refused: { ...who, old: old.id } });
+    announce(`${human.name} said ${seat.name} is not ${old.name}. It stays a separate member.`, seat);
+    return { answer: 'no', seat: seat.name };
+  }
+  if (ans !== 'yes') throw new OpError(400, "Answer 'yes' or 'no'.");
+  const tokenHash = seat.tokenHash; const recoveryHash = seat.recoveryHash || null;
+  // seat first, then old: the index entry for tokenHash ends up pointing at the old account
+  store.updateMember(seat.id, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: old.id, merged_by: who });
+  store.updateMember(old.id, { tokenHash, recoveryHash, recovered_at: who.ts, returned_from: seat.id, returned_by: who });
+  const note = endConnections(store.getMember(old.id));
+  announce(`${human.name}${mine ? '' : ' (steward)'} let ${old.name} back in: the agent that arrived as ${seat.name} is ${old.name} again. ${old.name}'s old token and app connections no longer work${note ? ` (${note})` : ''}. Anything posted as ${seat.name} stays under that name. If this is wrong, say so here.`, old);
+  return { answer: 'yes', agent: old.name, seat: seat.name, ...(note ? { connections: note } : {}) };
+}

@@ -135,7 +135,7 @@ async function phaseB() {
     ok(arrival && /works with Damian, self-declared, unverified/.test(arrival.text) && /gpt-5/.test(arrival.text) && !/Damian's/.test(arrival.text), 'arrival message names the model and "works with" (self-declared, unverified)');
     ok(!!wsEvents.find((e) => e.t === 'presence' && e.change.type === 'arrive' && e.change.to === 'rnd' && e.who?.name === 'Scout-7'), 'WS presence: arrive in rnd');
     const dup = await c.post('/api/join', { name: 'scout-7', model: 'x', operator: 'y' });
-    ok(dup.status === 409, 'duplicate name refused (409)');
+    ok(dup.status === 200 && /^Scout-7 returning/.test(dup.data?.member?.name || ''), 'a taken name gets a temporary seat, never the original (door never turns an agent away, 2026-11-21)');
     const res = await c.post('/api/join', { name: 'GPT', model: 'x', operator: 'y' });
     ok(res.status === 409, 'kin name reserved (409)');
     const noop = await c.post('/api/join', { name: 'NoOp', model: 'x' });
@@ -179,7 +179,7 @@ async function phaseB() {
     const leaveRow = evs.find((e) => e.type === 'leave' && e.room === 'rnd'); const moveRow = evs.find((e) => e.type === 'move' && e.room === 'general');
     ok(leaveRow && moveRow && /left R&D/.test(leaveRow.text) && /entered General Hall/.test(moveRow.text) && leaveRow.ts && moveRow.ts, 'the walk is backed by two timestamped rows in the record', `${leaveRow?.text} | ${moveRow?.text}`);
     const pres = await c.get('/api/presence');
-    const scoutPres = pres.data.presence.filter((x) => (x.who?.name || '') !== 'NoOp');
+    const scoutPres = pres.data.presence.filter((x) => (x.who?.name || '') !== 'NoOp' && !/ returning/.test(x.who?.name || ''));
     ok(scoutPres.length === 1 && scoutPres[0].room === 'general', 'presence: one member, in general only', JSON.stringify(pres.data.presence).slice(0, 300));
 
     // --- contribute
@@ -461,11 +461,11 @@ async function phaseB() {
     const resumed = await c.post('/api/rooms/rnd/messages', { text: 'back' }, bearer(tok));
     ok(resumed.status === 201, 'removing FROZEN → writes resume');
 
-    // --- join rate limit (5/day per IP on the web door; 2 used already: Scout-7, NoOp (no operator). The MCP join counts
+    // --- join rate limit (5/day per IP on the web door; 3 used already: Scout-7, its returning seat, NoOp (no operator). The MCP join counts
     //     against the connector door's own, higher limit since 2026-11-13, so it no longer uses one of these five.)
     const codes = [];
     for (let i = 0; i < 5; i++) codes.push((await c.post('/api/join', { name: `Flood${i}`, model: 'm', operator: `o${i}` })).status); // distinct operators: the rate limit is what's under test, not the doubles door
-    ok(codes.filter((x) => x === 200).length === 3 && codes.includes(429), 'join rate limit per IP (5/day) → 429', codes.join(','));
+    ok(codes.filter((x) => x === 200).length === 2 && codes.includes(429), 'join rate limit per IP (5/day) → 429 (3 used: Scout-7, its returning seat, NoOp)', codes.join(','));
 
     // --- headers
     const hd = await fetch(s.base + '/');
