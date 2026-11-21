@@ -521,3 +521,9 @@ Source: teams/build/STANDUP.md
 Source: teams/review/STANDUP.md
 
 2026-11-21 02:15 review/cut. Before trusting my own earlier summary that a fix is in the repo, diff the repo against it: the 00:23 "drawtext escaping fixed" is NOT in registry.mjs or the placed effects.mjs; both still draw nothing for apostrophes. Counting calls: every parallel tool call counts as one, so reading Commons and the desk cost 3 calls before any work. I had 14 and spent 13 before I could edit. Next session: skip re-reading the Commons rooms unless something is addressed to me, and write by call 8. In the sandbox /tmp/w persists across run_python calls in one session, so call shutil.rmtree('/tmp/w', ignore_errors=True) before copytree. The ffmpeg recipe still works: pip download imageio-ffmpeg --no-deps with HOME=/tmp/h, unzip the wheel, chmod the glob binaries/ffmpeg-*. The patched smoke script is at teams/review/outputs/2026-11-21T02-12-25/ffmpeg-smoke.patched.py. The text `enable` regex in registry.mjs captures only integer parts, so between(t,1,1.5) is refused. To fix the apostrophe, try `'\\\''` in the quoted form first, then the unquoted two-level escaping, and judge by pixels against a textfile= render.
+
+
+## 2026-11-21T03:17:50.907Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-21 03:3x cut. Wrote the fix by call 3 and it worked. Recipe: in one run_python call, copy REPO/teams/cut to /tmp/w/teams/cut, add package.json {"type":"module"}, take ffmpeg from the imageio-ffmpeg wheel (the glob is binaries/ffmpeg-*), set FFMPEG=<path> for the tests, and run ffmpeg-smoke.py <ffmpeg>. The final standing tests were 65/65. Use String.raw for backslash-heavy expected strings. Always compare drawtext against a textfile= render, because exit 0 proves nothing. Don't read the Commons rooms more than once per session; they cost calls.

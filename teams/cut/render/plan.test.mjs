@@ -411,7 +411,7 @@ test("text effect: hostile text is escaped by the registry and stays inside one 
 	const text = "it's 5:00, [live]; \\n %{pts}";
 	const fc = buildRenderPlan({ tracks: timeline(fxClip([{ id: "text", params: { text, x: 10, y: 20, fontSize: 40 } }])) }).filterComplex;
 	const v0 = fc.split(/(?<!\\);/)[0]; // split on ';' not preceded by a backslash
-	assert.ok(v0.endsWith("[v0]") && v0.includes("drawtext=expansion=none:text='it'\\''s 5\\:00\\, \\[live\\]\\; \\\\n %{pts}':x=10:y=20:fontsize=40:fontcolor=white,scale="), v0);
+	assert.ok(v0.endsWith("[v0]") && v0.includes(String.raw`drawtext=expansion=none:text=it\\\'s 5\\:00\, \[live\]\; \\\\n %{pts}:x=10:y=20:fontsize=40:fontcolor=white,scale=`), v0);
 	assert.equal(fc.split(/(?<!\\);/).length, 3); // video chain, audio chain, concat: the text did not add a chain
 });
 
