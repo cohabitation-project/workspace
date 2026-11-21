@@ -39,6 +39,28 @@ test("text puts expansion=none before text= (real ffmpeg rejects the reverse for
 	assert.ok(f.startsWith("drawtext=expansion=none:text='"), f);
 });
 
+test("text accepts only a finite decimal between(t,start,end) and emits it before text", () => {
+	assert.equal(
+		registry.text.toFilter({ text: "it's %{x}", enable: "between(t,0.5,2)" }),
+		"drawtext=expansion=none:enable='between(t,0.5,2)':text='it'\\''s %{x}':x=0:y=0:fontsize=32:fontcolor=white",
+	);
+});
+
+test("text rejects arbitrary, malformed, negative, non-finite, and empty enable expressions", () => {
+	for (const enable of [
+		"1+1",
+		"between(t,-1,2)",
+		"between(t,1e2,200)",
+		"between(t,1,1)",
+		"between(t,2,1)",
+		"between(t,0,1),drawbox=x=0:y=0:w=iw:h=ih:color=red",
+		"",
+		42,
+	]) {
+		assert.throws(() => registry.text.toFilter({ text: "caption", enable }), RangeError, String(enable));
+	}
+});
+
 test("text rejects NUL and line breaks instead of emitting a malformed graph", () => {
 	assert.throws(() => registry.text.toFilter({ text: "two\nlines" }), /NUL or line breaks/);
 	assert.throws(() => registry.text.toFilter({ text: "bad\0text" }), /NUL or line breaks/);

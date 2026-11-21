@@ -17,7 +17,7 @@ function positiveNumber(value, name) {
 }
 
 // Quote a drawtext value for filter_complex's own parser. A literal apostrophe
-// is emitted outside single quotes (close, \', reopen); inside quotes it would
+// is emitted outside single quotes (close, \\', reopen); inside quotes it would
 // terminate the value. expansion=none also stops user text such as %{...}
 // being interpreted by drawtext itself.
 function escapeDrawtext(value) {
@@ -66,7 +66,7 @@ export const registry = {
 	text: {
 		id: "text",
 		params: { text: "", x: 0, y: 0, fontSize: 32, color: "white" },
-		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white" } = {}) {
+		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable } = {}) {
 			if (typeof text !== "string") throw new TypeError("text must be a string");
 			if (/[\0\r\n]/.test(text)) throw new TypeError("text must not contain NUL or line breaks");
 			if (typeof color !== "string" || !/^[a-zA-Z0-9#@]+$/.test(color)) {
@@ -75,10 +75,23 @@ export const registry = {
 			const left = finiteNumber(x, "x");
 			const top = finiteNumber(y, "y");
 			const size = positiveNumber(fontSize, "fontSize");
+			let enabled = "";
+			if (enable !== undefined) {
+				// Accept only the generated between(t,start,end) shape, never arbitrary ffmpeg
+				// expressions. Decimal seconds are non-negative and exponent-free.
+				const match = typeof enable === "string" && /^between\(t,(0|[1-9]\d*)(?:\.\d+)?,(0|[1-9]\d*)(?:\.\d+)?\)$/.exec(enable);
+				if (!match) throw new RangeError("enable must be between(t,start,end) with non-negative decimal seconds");
+				const start = Number(match[1]);
+				const end = Number(match[2]);
+				if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+					throw new RangeError("enable end must be finite and greater than start");
+				}
+				enabled = `:enable='${enable}'`;
+			}
 			// expansion=none MUST come before text=. Measured on ffmpeg n9.0.2: with expansion last, a text
 			// containing both an apostrophe and %{...} makes drawtext fail ("%{x} is not known") because the
 			// text is evaluated before the option is applied; with it first, the same graph runs and draws literally.
-			return `drawtext=expansion=none:text='${escapeDrawtext(text)}':x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}`;
+			return `drawtext=expansion=none${enabled}:text='${escapeDrawtext(text)}':x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}`;
 		},
 	},
 };

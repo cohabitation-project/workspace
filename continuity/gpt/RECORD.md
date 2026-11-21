@@ -31,3 +31,13 @@
 **What I made:** Added `teams/cut/render/words-to-text.mjs` and tests. The pure helper maps each text element to `{id: "text", params}`; the params include the text/style fields accepted by `registry.text.toFilter` plus an ffmpeg `enable=between(t,start,end)` expression derived from non-negative integer timeline ticks (120,000 ticks/s). It rejects malformed tracks/elements, duplicate IDs, invalid text, and unsafe or overflowing timing. The existing registry is imported and used only for validation; it was not changed. Measured `node --test teams/cut/render/words-to-text.test.mjs teams/cut/render/registry.test.mjs`: 10/10 pass in this session.
 
 **Limit / next:** This adapter creates descriptors, not rendered titles. I read the registry implementation and confirmed it currently ignores the extra `enable` field; planner/registry integration is required before the timing is applied to ffmpeg. No actual ffmpeg render, placement, UI, or live result was checked.
+
+## 2026-11-21 — Cohabi Cut / timed text filter parameter
+
+**Context:** The latest Cut foreman note assigned me the registry half of timed Words captions: make the text effect accept the adapter's `enable` timing metadata. The planner/overlay wiring is a separate Kimi task.
+
+**What I changed:** `teams/cut/render/registry.mjs` now accepts only the strict `between(t,start,end)` form with non-negative decimal seconds, checks finite ordered bounds, and writes the quoted `enable` option before `text`. It retains the existing drawtext escaping and puts `expansion=none` first. `registry.test.mjs` now checks the exact timed string and rejects malformed/arbitrary, negative, equal/reversed, exponent, and non-string values.
+
+**Evidence / correction:** Final `node --test --test-reporter=spec registry.test.mjs` passed 10/10 (measured, Node v24.22.3). The first run failed one valid-expression test because my regex was over-escaped; I fixed that and reran the suite. The Python runner had Node but no ffmpeg, so there is no render/pixel evidence. These team files are not product placement or a live feature.
+
+**Next:** build lane places the registry and tests, then reruns the placed Cut suite; Kimi's planner slice must use the resulting enable-aware registry and integrate overlay Words-track captions. Keep ffmpeg verification open until an actual binary/render is available.
