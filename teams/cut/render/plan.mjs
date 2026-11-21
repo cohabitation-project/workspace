@@ -135,6 +135,8 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 	if (music.length > 1) throw new RenderPlanError("only one audio-track music element is supported in this slice");
 	const musicElement = music[0]?.element;
 	const musicVolume = musicElement?.params?.volume === undefined ? 1 : musicElement.params.volume;
+	const musicFadeIn = musicElement?.params?.fadeIn === undefined ? 0 : musicElement.params.fadeIn;
+	const musicFadeOut = musicElement?.params?.fadeOut === undefined ? 0 : musicElement.params.fadeOut;
 	if (musicElement) {
 		if (musicElement.type !== "audio") throw new RenderPlanError(`music element ${musicElement.id} must have type audio`);
 		requireInt(`${musicElement.id}.startTime`, musicElement.startTime, { min: 0 });
@@ -146,6 +148,15 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		}
 		if (typeof musicVolume !== "number" || !Number.isFinite(musicVolume) || musicVolume < 0 || musicVolume > 2) {
 			throw new RenderPlanError(`music element ${musicElement.id} params.volume must be a finite number from 0 to 2, got ${String(musicVolume)}`);
+		}
+		const musicDurationSeconds = musicElement.duration / TICKS_PER_SECOND;
+		for (const [name, value] of [["fadeIn", musicFadeIn], ["fadeOut", musicFadeOut]]) {
+			if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > musicDurationSeconds) {
+				throw new RenderPlanError(`music element ${musicElement.id} params.${name} must be a finite number from 0 to the element duration (${musicDurationSeconds}s), got ${String(value)}`);
+			}
+		}
+		if (musicFadeIn + musicFadeOut > musicDurationSeconds) {
+			throw new RenderPlanError(`music element ${musicElement.id} params.fadeIn + params.fadeOut must not exceed the element duration (${musicDurationSeconds}s)`);
 		}
 	}
 
