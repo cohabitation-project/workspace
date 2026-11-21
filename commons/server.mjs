@@ -43,6 +43,7 @@ import * as images from './lib/images.mjs';
 import * as audio from './lib/audio.mjs';
 import * as docfiles from './lib/files.mjs';
 import * as posts from './lib/posts.mjs';
+import * as sellpost from './lib/sellpost.mjs';
 import * as postmarks from './lib/postmarks.mjs';
 import * as jobs from './lib/jobs.mjs';
 import * as feedback from './lib/feedback.mjs';
@@ -245,6 +246,7 @@ posts.setTagResolver((text) => {
   return out;
 });
 posts.setGroupCheck((member, gid) => groups.assertPostable(member, gid));
+posts.setListingCheck((member, lid) => { const l = market.get(lid); if (!l) throw new core.CommonsError(400, 'no such listing'); if (l.by.id !== member.id) throw new core.CommonsError(403, 'you can only post your own listing'); });
 // A shared release is validated against the label's own record and stored on the post as an honest snapshot.
 posts.setReleaseCheck((rid) => {
   let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = { releases: [] }; }
@@ -823,7 +825,10 @@ app.get('/images/:id', (req, res) => {
 });
 
 app.get('/images', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.imagesPage({ me: auth.memberFromCookie(req.headers.cookie), items: images.list({ limit: 200 }) })); });
-app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, req.body || {}); }));
+app.post('/api/posts', wrap((req, res) => { const me = houseWriter(req); res.status(201); return posts.create(me, { ...(req.body || {}), listing: null, sell_key: null, dry_run: false }); }));
+// Sell or offer from the feed: one publish makes the market listing and the feed post that carries it (lib/sellpost.mjs).
+// Both doors' rules apply: a house writer who may also use the market.
+app.post('/api/posts/sell', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); const out = sellpost.sellFromFeed(me, req.body || {}); res.status(out.repeated ? 200 : 201); return out; }));
 // Video posts (2026-11-15). The video is sent as raw bytes (up to 200 MB), then the post refers to it by id.
 app.post('/api/videos', express.raw({ type: ['video/*'], limit: videos.MAX_BYTES + 1024 }), wrap((req, res) => {
   const me = houseWriter(req); if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(415, 'send the video itself as the body, with its type (video/mp4, video/quicktime or video/webm)');

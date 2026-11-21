@@ -61,9 +61,27 @@ if (form) {
     x.onerror = () => no(new Error('the video upload was cut off. Check your connection and try again.'));
     x.send(f);
   });
+  // Sell / Offer (lib/sellpost.mjs): one key per thing being offered, kept across retries so a dropped connection
+  // can't make it twice; a new key only after the server says this attempt is finished or refused.
+  const newKey = () => { const a = new Uint8Array(12); crypto.getRandomValues(a); return 's' + [...a].map((x) => x.toString(16).padStart(2, '0')).join(''); };
+  let sellKey = newKey();
+  const sellMode = () => form.dataset.mode === 'sell';
+  const amountRow = form.querySelector('.cx-amount');
+  const syncAmount = () => { if (amountRow) amountRow.hidden = $('#cs-mode')?.value !== 'fixed'; };
+  $('#cs-mode')?.addEventListener('change', syncAmount); syncAmount();
+  const sellFields = () => {
+    const title = $('#cs-title').value.trim(); const mode = $('#cs-mode').value; const type = $('#cs-type').value;
+    if (title.length < 3) throw new Error('Give it a name (3 to 90 characters).');
+    if (!$('#cs-rights').checked) throw new Error('Tick the box if you made this or hold the rights to offer it.');
+    const price = mode === 'fixed' ? { mode, amount: Number($('#cs-amount').value) } : { mode };
+    if (mode === 'fixed' && !(price.amount >= 1)) throw new Error('Set a price of at least $1, or choose Free or Ask for a quote.');
+    return { title, category: $('#cs-cat').value, type, price, license: $('#cs-license').value, rights: true, ...($('#cs-page')?.value ? { page: $('#cs-page').value } : {}) };
+  };
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); if (posting) return; msg.textContent = '';
     const text = $('#c-text').value.trim();
+    let sell = null;
+    if (sellMode()) { try { sell = sellFields(); } catch (err) { msg.textContent = err.message; return; } if (!text) { msg.textContent = 'Describe what you are offering in the post (it becomes the listing description).'; return; } }
     if (!text && !files.length && !video) { msg.textContent = 'Write something, or add an image or a video.'; return; }
     posting = true; form.setAttribute('aria-busy', 'true');
     const controls = [...form.querySelectorAll('button,input,textarea,select')].map((el) => [el, el.disabled]);
@@ -83,6 +101,16 @@ if (form) {
       msg.textContent = 'posting…';
       const group = form.dataset.group || null;
       const release = $('#c-release')?.value || null;
+      if (sell) {
+        msg.textContent = 'publishing to the market and your feed…';
+        const send = () => fetch('/api/posts/sell', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ key: sellKey, post: { text, images: ids, kind: $('#c-kind').value }, listing: { ...sell, text } }) });
+        let sr = null; for (let i = 0; i < 3 && !sr; i++) sr = await send().catch(() => null);
+        if (!sr) { msg.textContent = 'The connection dropped. Press Publish again: it will not be listed twice.'; return; }
+        const sj = await sr.json().catch(() => ({}));
+        if (!sr.ok) { if (sr.status !== 429 && sr.status < 500) sellKey = newKey(); msg.textContent = sj.error || `could not publish (${sr.status})`; return; }
+        sellKey = newKey();
+        location.href = `/social#${sj.post.id}`; location.reload(); return;
+      }
       const r = await fetch('/api/posts', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ text, images: ids, kind: $('#c-kind').value, ...(vid ? { video: vid } : {}), ...($('#c-topic')?.value ? { topic: $('#c-topic').value } : {}), ...(group ? { group } : {}), ...(release ? { release } : {}) }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) { msg.textContent = j.error || `could not post (${r.status})`; return; }
       if (!group && $('#c-cohabi')?.checked) { // 📣 also out on Cohabi's X, Bluesky & Facebook (lib/socialshare.mjs)

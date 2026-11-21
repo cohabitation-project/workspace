@@ -9,6 +9,8 @@ if (composer && scrim) {
   const setMode = (mode) => {
     composer.dataset.mode = mode;
     composer.querySelectorAll('[data-cx-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.cxMode === mode)));
+    const go = composer.querySelector('.cx-post'); if (go) go.textContent = mode === 'sell' ? 'Publish →' : 'Post →';
+    const h = byId('cx-title'); if (h) h.textContent = mode === 'sell' ? 'Sell or offer something' : 'Create post';
   };
   const open = (mode = 'post', from = null) => {
     opener = from || document.activeElement; setMode(mode); scrim.hidden = false; document.body.classList.add('cx-open');

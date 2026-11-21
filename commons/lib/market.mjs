@@ -176,9 +176,16 @@ export function create(member, b = {}) {
     provider: provider(member, b.team), page: b.page ? hooks.page(member, String(b.page)) : null, status: 'live', ts: new Date().toISOString(),
     title: f.title, text: f.text, category: f.category, type: f.type, price: f.price, packages: f.packages, license: f.license, rights: true,
     tags: f.tags || [], link: f.link ?? null, images: f.images || [], made_by: f.made_by, desk: f.desk ?? null,
+    ...(b.origin && b.origin.kind === 'feed' && b.origin.key ? { origin: { kind: 'feed', key: clip(b.origin.key, 64) } } : {}),
   };
   write({ op: 'create', listing, ts: listing.ts });
   return listing;
+}
+/** A listing made from the feed composer, by its maker and the composer's one-time key (lib/sellpost.mjs). */
+export function byOrigin(memberId, key) {
+  const k = clip(key, 64); if (!k) return null;
+  for (const l of listings.values()) if (l.by.id === memberId && l.origin?.key === k) return get(l.id);
+  return null;
 }
 export function update(member, id, b = {}) {
   const l = mine(member, id);

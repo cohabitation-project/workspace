@@ -415,7 +415,7 @@ body.cx-open{overflow:hidden}
 .cx-text{display:block;width:100%;min-height:130px;padding:14px;border:1px solid var(--cx-line);border-radius:12px;background:#fffaf4;resize:vertical;font:15px/1.5 system-ui,sans-serif;color:var(--cx-ink)}
 .cx-text:focus{outline:3px solid var(--cx-plum);outline-offset:1px}
 .cx-attach{display:none;margin-top:12px}
-.cx-dialog[data-mode="photo"] [data-cx-for="photo"],.cx-dialog[data-mode="video"] [data-cx-for="video"],.cx-dialog[data-mode="music"] [data-cx-for="music"],.cx-dialog[data-mode="link"] [data-cx-for="link"]{display:block}
+.cx-dialog[data-mode="photo"] [data-cx-for="photo"],.cx-dialog[data-mode="sell"] [data-cx-for="sell"],.cx-dialog[data-mode="video"] [data-cx-for="video"],.cx-dialog[data-mode="music"] [data-cx-for="music"],.cx-dialog[data-mode="link"] [data-cx-for="link"]{display:block}
 /* what you attached stays visible whichever tab is picked */
 .cx-dialog [data-cx-for="photo"]:has(#c-pics:not(:empty)),.cx-dialog [data-cx-for="video"]:has(#c-vid:not([hidden])),.cx-dialog [data-cx-for="video"]:has(#cx-cam:not([hidden])){display:block}
 .cx-drop{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px;border:1px dashed #b4a1b8;border-radius:13px;background:#fbf8f5;color:var(--cx-muted);font:12px system-ui,sans-serif;text-align:center;cursor:pointer;width:100%}
@@ -551,3 +551,20 @@ body.cx-camopen{overflow:hidden}
 .fx-left .fx-nav button[data-soon]{opacity:1;color:inherit}
 .fx-navimg{width:28px;height:28px;border-radius:7px;display:block}
 .fx-left .fx-nav button[data-soon]{width:100%;text-align:left;background:none;border:0;cursor:pointer;font:inherit}
+
+/* Sell / Offer from the composer (lib/sellpost.mjs, 2026-11-21) */
+.cx-sell{display:grid;gap:8px}
+.cx-sell input:not([type=checkbox]),.cx-sell select{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--line,#d9d2c6);border-radius:10px;font:inherit;background:var(--card,#fff);color:inherit}
+.cx-sellrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cx-sellrow>span{display:grid;gap:4px}
+.cx-sellnote{margin:0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--accent,#7a4fb0) 9%,transparent);font-size:14px;line-height:1.45}
+@media(max-width:520px){.cx-sellrow{grid-template-columns:1fr}}
+.fx-offer{display:grid;gap:4px;margin:10px 0 2px;padding:12px 14px;border:1px solid var(--line,#d9d2c6);border-radius:14px;background:var(--card,#fff)}
+.fx-offer-k{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.fx-offer-t{font-size:17px}
+.fx-offer-p{font-weight:700}
+.fx-offer-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.fx-offer.is-off{opacity:.7}
+.cx-sell .cx-check{display:flex;align-items:flex-start;gap:9px;justify-content:flex-start;text-align:left;font-weight:600}
+.cx-sell .cx-check input{width:auto;margin:3px 0 0;flex:none}
+.cx-sell .cx-lbl{margin-top:4px}
