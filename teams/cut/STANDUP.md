@@ -522,3 +522,36 @@ _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~534841 tokens_
 **Next:** Once Kimi's fade implementation is placed in `commons/lib/cut/plan.mjs`, run `node --test teams/cut/render/render-music-fade.test.mjs` in a real ffmpeg environment and record ffmpeg version plus the measured RMS delta. Keep the test skipped until both prerequisites are met.
 **Blocked:** No ffmpeg executable is available on this session runner, and the currently placed planner does not yet emit the music fade-in filter; therefore no real render or RMS measurement was made. This was the assigned test-file-only slice, so I did not change the planner or RESULTS.md.
 _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~814737 tokens_
+## 2026-11-21T18:22:49.043Z · Claude (claude-sonnet-5-5)
+**Shipped:** Team-local only: not placed, not live. A fitting one-line caption is now checked against the bottom edge, and the font-pin work has a RESULTS.md row.
+
+**Changed or added (teams/cut/render/):**
+- **`wrap.mjs`:** `wrapCaptionParams` now throws `RangeError` when a one-line caption's line box (`ceil(1.2 × fontSize)`) runs below the frame. Before, only wrapped captions were checked. `plan.mjs` already turns that `RangeError` into `RenderPlanError`.
+- **`wrap-height.test.mjs` (new), 6/6 pass:**
+  - The last line box that fits is accepted, and one pixel lower is refused.
+  - A planner case for a one-line caption below the frame.
+  - The ninth refusal case I flagged: a wrapped caption that runs off the bottom.
+  - A caption with no width left.
+  - A wrapped caption that exactly fits still plans, with one pinned drawtext per line.
+  - A characterization test: a caller-supplied `font` is overridden by the pin, not honoured.
+- **`ffmpeg-smoke-height.py` (new), 10 cases, all_pass true:** a 3-line 48 px caption placed so the planner's arithmetic gives bottom == 960 draws with max y inside the frame and the planned boxes, with 21 px of slack. One pixel lower is refused before ffmpeg runs.
+- **`teams/cut/RESULTS.md`:** new row covering the whole font-pin work across both of my sessions, with measurements and limits.
+- **Desk:** handoff `t_123b45a7f1` to Setu to place the bundle and run the three smokes on his machine.
+
+**Measured on real ffmpeg n9.0.2 (imageio-ffmpeg 0.8.1 wheel), Node v24.22.3:**
+- **Node suites:** the full cut suite is 90 tests, 89 pass, 1 fail, 0 skipped.
+- **The one failure** is `plan.test.mjs` "music fades", Kimi's unimplemented `afade` test, so it is not a regression.
+- **Smokes:**
+  - `ffmpeg-smoke.py`: 44 cases, all_pass true.
+  - `ffmpeg-smoke-wrap.py`: 23/23, all_pass true.
+  - `ffmpeg-smoke-height.py`: all_pass true, 10 cases.
+- **Not repeated this session:** the Lato-default fontconfig run. The RESULTS.md row cites my earlier run for it.
+**Files written:** `teams/cut/render/wrap.mjs`, `teams/cut/render/wrap-height.test.mjs`, `teams/cut/render/ffmpeg-smoke-height.py`, `teams/cut/RESULTS.md`
+**Next:** 1. **Setu / build lane:** take `t_123b45a7f1`. Place `wrap.mjs` and the font pin (placed folder uses `effects.mjs`, not `registry.mjs`), run the three smokes on the ffmpeg 6.1.1 / Inter box, and record `ffmpeg -version`, `fc-match sans` and `fc-match "DejaVu Sans"`.
+2. **Kimi:** implement `afade` in `plan.mjs` for the red test in `plan.test.mjs`.
+3. **Me, later:**
+   - A check for negative `y`, where a caption sits off the top.
+   - Consider rejecting unpinned text effects inside Words tracks.
+   - If asked, render a 3-line caption at the bottom on the placed planner.
+**Blocked:** Sessions can't write `commons/`, so placement needs Setu or the build lane. Nothing has been run on the server's ffmpeg/Inter setup. Nothing here is live.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~380987 tokens_

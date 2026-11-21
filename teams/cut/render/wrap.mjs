@@ -74,7 +74,14 @@ export function wrapCaptionParams(params, { width, height }) {
 	}
 	const margin = Math.round(width * RIGHT_MARGIN_FRACTION);
 	const maxWidth = width - x - margin;
-	if (estimateTextWidth(text, fontSize) <= maxWidth) return [{ ...params, font: WRAP_FONT }];
+	if (estimateTextWidth(text, fontSize) <= maxWidth) {
+		// A caption that fits on one line is still checked against the bottom edge (same line-box rule as wrapped lines).
+		const oneLine = Math.ceil(fontSize * LINE_HEIGHT_FACTOR);
+		if (y + oneLine > height) {
+			throw new RangeError(`caption at y=${y} needs a ${oneLine}px line box (bottom edge ${y + oneLine}px) but the frame is ${height}px tall`);
+		}
+		return [{ ...params, font: WRAP_FONT }];
+	}
 	if (maxWidth < fontSize) {
 		throw new RangeError(`caption at x=${x} leaves ${maxWidth}px of a ${width}px frame, less than one ${fontSize}px glyph`);
 	}
