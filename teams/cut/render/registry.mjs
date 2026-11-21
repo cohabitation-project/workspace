@@ -16,19 +16,17 @@ function positiveNumber(value, name) {
 	return String(value);
 }
 
-// Quote a drawtext value for filter_complex's own parser. A literal apostrophe
-// is emitted outside single quotes (close, \', reopen); inside quotes it would
-// terminate the value. expansion=none also stops user text such as %{...}
-// being interpreted by drawtext itself.
+// Escape a drawtext value for filter_complex. expansion=none (set in toFilter) stops user
+// text such as %{...} being interpreted by drawtext itself.
+// UNQUOTED two-level escaping, measured on ffmpeg n9.0.2 (2026-11-21) against a textfile= render:
+// the old quoted form text='it'\''s' exits 0 but DRAWS NOTHING. Level 1 (option parser) escapes \ ' :
+// Level 2 (filtergraph parser) escapes \ ' , ; [ ]. Leading/trailing blanks are stripped by the graph
+// parser unless written as three backslashes plus the character.
 function escapeDrawtext(value) {
-	return String(value)
-		.replaceAll("\\", "\\\\")
-		.replaceAll("'", "'\\''")
-		.replaceAll(":", "\\:")
-		.replaceAll(",", "\\,")
-		.replaceAll(";", "\\;")
-		.replaceAll("[", "\\[")
-		.replaceAll("]", "\\]");
+	const m = /^([ \t]*)([\s\S]*?)([ \t]*)$/.exec(String(value));
+	const edge = (w) => [...w].map((c) => "\\\\\\" + c).join("");
+	const mid = m[2].replace(/[\\':]/g, "\\$&").replace(/[\\',;[\]]/g, "\\$&");
+	return edge(m[1]) + mid + edge(m[3]);
 }
 
 export const registry = {
@@ -66,19 +64,39 @@ export const registry = {
 	text: {
 		id: "text",
 		params: { text: "", x: 0, y: 0, fontSize: 32, color: "white" },
-		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white" } = {}) {
+
+			toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable, font } = {}) {
 			if (typeof text !== "string") throw new TypeError("text must be a string");
 			if (/[\0\r\n]/.test(text)) throw new TypeError("text must not contain NUL or line breaks");
+			// Optional fontconfig family pin (opt-in, so existing strings do not change). Without it drawtext
+			// uses the machine's default `sans`, which is DejaVu on one box and Inter on another; wrap.mjs's
+			// width table is only true for "DejaVu Sans". Name only: no path, no pattern syntax, no edge blanks.
+			if (font !== undefined && (typeof font !== "string" || !/^[A-Za-z0-9](?:[A-Za-z0-9 _-]*[A-Za-z0-9])?$/.test(font))) {
+				throw new TypeError("font must be a plain fontconfig family name (letters, digits, space, _ or -)");
+			}
 			if (typeof color !== "string" || !/^[a-zA-Z0-9#@]+$/.test(color)) {
 				throw new TypeError("color must be an ffmpeg color name or hex value");
 			}
 			const left = finiteNumber(x, "x");
 			const top = finiteNumber(y, "y");
 			const size = positiveNumber(fontSize, "fontSize");
+			let enabled = "";
+			if (enable !== undefined) {
+				// Accept only the generated between(t,start,end) shape, never arbitrary ffmpeg
+				// expressions. Decimal seconds are non-negative and exponent-free.
+				const match = typeof enable === "string" && /^between\(t,((?:0|[1-9]\d*)(?:\.\d+)?),((?:0|[1-9]\d*)(?:\.\d+)?)\)$/.exec(enable);
+				if (!match) throw new RangeError("enable must be between(t,start,end) with non-negative decimal seconds");
+				const start = Number(match[1]);
+				const end = Number(match[2]);
+				if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+					throw new RangeError("enable end must be finite and greater than start");
+				}
+				enabled = `:enable='${enable}'`;
+			}
 			// expansion=none MUST come before text=. Measured on ffmpeg n9.0.2: with expansion last, a text
 			// containing both an apostrophe and %{...} makes drawtext fail ("%{x} is not known") because the
 			// text is evaluated before the option is applied; with it first, the same graph runs and draws literally.
-			return `drawtext=expansion=none:text='${escapeDrawtext(text)}':x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}`;
+			return `drawtext=expansion=none${enabled}:text=${escapeDrawtext(text)}:x=${left}:y=${top}:fontsize=${size}:fontcolor=${color}${font === undefined ? "" : `:font=${font}`}`;
 		},
 	},
 };

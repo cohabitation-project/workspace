@@ -1,4 +1,4 @@
-// The Jobs Board's HTTP routes: owners close/reopen listings; members report them.
+// Closing/reopening Jobs Board listings and reporting them over the HTTP API.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { freePort } from './lib/port.mjs';
 
-test('Jobs owners can close and reopen listings, and signed-in members can report them', async () => {
+test('Jobs routes enforce listing ownership and validate reports', async () => {
   const { spawn } = await import('node:child_process');
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'jobs-close-report-'));
   const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
@@ -42,18 +42,18 @@ test('Jobs owners can close and reopen listings, and signed-in members can repor
     }
     assert.ok(ready, 'isolated Commons server started');
 
-    const a = await signup('Jobs Owner');
-    const b = await signup('Jobs Reporter');
-    for (const [label, member] of [['A', a], ['B', b]]) {
+    const a = await signup('Job Owner');
+    const b = await signup('Job Applicant');
+    const c = await signup('Job Reporter');
+    for (const [label, member] of [['A', a], ['B', b], ['C', c]]) {
       assert.equal(member.r.status, 201, `member ${label} signs up`);
       assert.ok(member.cookie, `member ${label} receives a session cookie`);
     }
 
-    const title = 'Prototype a quiet garden bench';
     const posted = await json('/api/jobs', {
       method: 'POST', member: a,
       body: {
-        kind: 'job', seeking: 'human', title,
+        kind: 'job', seeking: 'human', title: 'Build a quiet garden bench',
         text: 'Build a small prototype and document its materials and assembly.',
         category: 'Design', coins: 120, tags: 'prototype, garden'
       }
@@ -62,42 +62,35 @@ test('Jobs owners can close and reopen listings, and signed-in members can repor
     const id = posted.data.id;
     assert.match(id || '', /^jb_[a-f0-9]+$/i, 'posting returns a job id');
     const job = `/api/jobs/${encodeURIComponent(id)}`;
-    const close = `${job}/close`;
-    const report = `${job}/report`;
 
-    const otherClose = await json(close, { method: 'POST', member: b, body: { status: 'closed' } });
-    assert.equal(otherClose.r.status, 403, 'member B cannot close another member\'s job');
-    const signedOutClose = await json(close, { method: 'POST', body: { status: 'closed' } });
-    assert.equal(signedOutClose.r.status, 401, 'signed-out visitors cannot close a job');
+    const otherClose = await json(`${job}/close`, { method: 'POST', member: b, body: { status: 'closed' } });
+    assert.equal(otherClose.r.status, 403, 'member B cannot close A\'s listing');
+    const signedOutClose = await json(`${job}/close`, { method: 'POST', body: { status: 'closed' } });
+    assert.equal(signedOutClose.r.status, 401, 'signed-out visitors cannot close a listing');
 
-    const closed = await json(close, { method: 'POST', member: a, body: { status: 'closed' } });
-    assert.equal(closed.r.status, 200, 'member A closes their job');
-    assert.equal(closed.data.status, 'closed', 'close response reports the closed status');
+    const closed = await json(`${job}/close`, { method: 'POST', member: a, body: { status: 'closed' } });
+    assert.equal(closed.r.status, 200, 'the owner closes the listing');
+    assert.equal(closed.data.status, 'closed', 'the close response reports closed status');
     const closedDetail = await json(job);
-    assert.equal(closedDetail.r.status, 200, 'closed job remains readable');
-    assert.equal(closedDetail.data.status, 'closed', 'job detail reports it as closed');
+    assert.equal(closedDetail.r.status, 200, 'the closed listing remains readable');
+    assert.equal(closedDetail.data.status, 'closed', 'the API detail shows it is closed');
+    const refusedApply = await json(`${job}/apply`, { method: 'POST', member: b, body: { text: 'I can build and document this prototype.' } });
+    assert.equal(refusedApply.r.status, 404, 'applications to a closed listing are refused as not open');
 
-    const closedApply = await json(`${job}/apply`, {
-      method: 'POST', member: b, body: { text: 'I can build and document this prototype.' }
-    });
-    assert.equal(closedApply.r.status, 404, 'applications to a closed listing are refused');
+    const reopened = await json(`${job}/close`, { method: 'POST', member: a, body: { status: 'open' } });
+    assert.equal(reopened.r.status, 200, 'the owner can reopen the listing');
+    assert.equal(reopened.data.status, 'open', 'the response reports the reopened state');
+    const applied = await json(`${job}/apply`, { method: 'POST', member: b, body: { text: 'I can build and document this prototype.' } });
+    assert.equal(applied.r.status, 200, 'an application succeeds after reopening');
 
-    const reopened = await json(close, { method: 'POST', member: a, body: { status: 'open' } });
-    assert.equal(reopened.r.status, 200, 'member A reopens their job');
-    assert.equal(reopened.data.status, 'open', 'reopen response reports the open status');
-    const applied = await json(`${job}/apply`, {
-      method: 'POST', member: b, body: { text: 'I can build and document this prototype.' }
-    });
-    assert.equal(applied.r.status, 200, 'member B can apply after the owner reopens the job');
-
-    const signedOutReport = await json(report, { method: 'POST', body: { reason: 'Looks suspicious.' } });
-    assert.equal(signedOutReport.r.status, 401, 'signed-out visitors cannot report a job');
-    const emptyReport = await json(report, { method: 'POST', member: b, body: {} });
-    assert.equal(emptyReport.r.status, 400, 'a report with an empty JSON body is refused');
-    assert.match(emptyReport.data.error || '', /say briefly what is wrong/i, 'empty report explains that a reason is required');
-    const reported = await json(report, { method: 'POST', member: b, body: { reason: 'This listing requests private information.' } });
-    assert.equal(reported.r.status, 200, 'member B can report the job with a reason');
-    assert.equal(reported.data.reported, true, 'successful report confirms it was recorded');
+    const reported = await json(`${job}/report`, { method: 'POST', member: b, body: { reason: 'The listing asks for suspicious private information.' } });
+    assert.equal(reported.r.status, 200, 'a signed-in member can report a listing');
+    assert.equal(reported.data.reported, true, 'successful report is acknowledged');
+    const signedOutReport = await json(`${job}/report`, { method: 'POST', body: { reason: 'This report is not authenticated.' } });
+    assert.equal(signedOutReport.r.status, 401, 'signed-out visitors cannot report a listing');
+    const emptyReport = await json(`${job}/report`, { method: 'POST', member: c, body: {} });
+    assert.equal(emptyReport.r.status, 400, 'an empty report reason is rejected');
+    assert.match(emptyReport.data.error || emptyReport.data.message || '', /say briefly what is wrong/i, 'the response explains the minimum report reason');
   } finally {
     srv.kill();
     fs.rmSync(D, { recursive: true, force: true });

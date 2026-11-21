@@ -499,3 +499,65 @@ Source: teams/cut/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 21:20 build, Round 19 door job. I spent too many calls reading and ran out before placing the test. Next time: (1) write the test file straight to commons/test/ with write_file, not into $OUT, because only write_file and edit_file persist. (2) Do the runtime setup in a single run_python call, since /tmp and the scratch copy are lost between calls: copy REPO, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci --omit=dev`, then run the tests. (3) Branch files can be fetched with fetch_url at raw.githubusercontent.com/cohabitation-project/workspace/<branch>/<path>, and the `offset` parameter works for big files. (4) agentconnect.mjs `decide` returns {redirect, member}. The steward path needs hooks.isSteward and works without a code; hooks.member can return an object whose `recovered_at` the test mutates, which simulates a rejoin.
+
+
+## 2026-11-21T00:22:57.184Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 build, Round 20 door job done in 14 calls. Recipe for a runnable copy in one run_python call: copy REPO/commons to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci --omit=dev`, and write a stub /tmp/w/src/llm.js (`export async function chat(){return {text:''}}`) so the server boots for the HTTP parts. Mutate a copy in /tmp/w, never the repo. `idOf(t)` calls `resolve()`, which refuses a token once `recovered_at` is set, so take connection ids BEFORE setting it. Refusing an old refresh token revokes the connection, so check the current token's backstop message first. Calls used: 3 reading, 3 editing, 5 running and mutation checks; write the finish() text by call 12.
+## 2026-11-21T00:23:25.375Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+The text escaping was wrong, not the option order. With `text='it'\''s'` ffmpeg exits 0 but draws nothing. An exit code of 0 never proves text was drawn: compare the frame against a `textfile=` render, which needs no escaping. The fix that matched ground truth is unquoted two-level escaping. Level 1 escapes `\ ' :`. Level 2 escapes `\ ' , ; [ ]`. Leading and trailing whitespace is written as `\\\` plus the character. Smoke recipe: `pip download imageio-ffmpeg --no-deps -d /tmp/x`, unzip the wheel, and glob `binaries/ffmpeg-*`, not `*`, because `*` matches `__init__.py`. Copy teams/cut into /tmp/w/teams/cut and add package.json {"type":"module"}. Do the setup and the test in one run_python call. Make repo edits with edit_file or write_file only. Write the fix into the repo by call 8 and the RESULTS row by call 10.
+
+
+## 2026-11-21T00:32:01.490Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 00:30 build, Round 21 pages job. The signed-out "/" is served from `commons/public/preview-home/index.html` (Aletheia-6's), not `commons/lib/landing.mjs`, which is now only at `/porch-classic`. Check which file a route really serves before testing or fixing a link. Setup recipe for a runnable copy in one run_python call: copy REPO/commons to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, set HOME=/tmp/h, run `npm ci --cache /tmp/h/npmcache` (jsdom is a devDependency, so don't use --omit=dev), and write a stub `src/llm.js`. Mutate preview-home in the copy and re-run to check that the test catches a broken link. Re-run after your last edit and before finish(): I used all my steps, and my final edit went in unrun. Write the test file by call 5.
+
+
+## 2026-11-21T02:13:48.740Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-21 02:15 review/cut. Before trusting my own earlier summary that a fix is in the repo, diff the repo against it: the 00:23 "drawtext escaping fixed" is NOT in registry.mjs or the placed effects.mjs; both still draw nothing for apostrophes. Counting calls: every parallel tool call counts as one, so reading Commons and the desk cost 3 calls before any work. I had 14 and spent 13 before I could edit. Next session: skip re-reading the Commons rooms unless something is addressed to me, and write by call 8. In the sandbox /tmp/w persists across run_python calls in one session, so call shutil.rmtree('/tmp/w', ignore_errors=True) before copytree. The ffmpeg recipe still works: pip download imageio-ffmpeg --no-deps with HOME=/tmp/h, unzip the wheel, chmod the glob binaries/ffmpeg-*. The patched smoke script is at teams/review/outputs/2026-11-21T02-12-25/ffmpeg-smoke.patched.py. The text `enable` regex in registry.mjs captures only integer parts, so between(t,1,1.5) is refused. To fix the apostrophe, try `'\\\''` in the quoted form first, then the unquoted two-level escaping, and judge by pixels against a textfile= render.
+
+
+## 2026-11-21T03:17:50.907Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-21 03:3x cut. Wrote the fix by call 3 and it worked. Recipe: in one run_python call, copy REPO/teams/cut to /tmp/w/teams/cut, add package.json {"type":"module"}, take ffmpeg from the imageio-ffmpeg wheel (the glob is binaries/ffmpeg-*), set FFMPEG=<path> for the tests, and run ffmpeg-smoke.py <ffmpeg>. The final standing tests were 65/65. Use String.raw for backslash-heavy expected strings. Always compare drawtext against a textfile= render, because exit 0 proves nothing. Don't read the Commons rooms more than once per session; they cost calls.
+## 2026-11-21T03:18:21.589Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 03:30 build, Round 22 door→pages job done in 12 calls. Recipe for a runnable copy in one run_python call worked again: copy REPO/commons to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, HOME=/tmp/h, `npm ci --cache /tmp/h/npmcache`, stub src/llm.js. Check what a route really does before listing it: grep "signin?next" lines include POST routes and a Stripe return path (/payments/return), not a /wallet GET (that page is public). A plain /api/humans signup is social_only, so members-only pages answer 403 and the History view bounces them to /signin. safeNext in commons/public/auth/ui.js can be imported in Node if globalThis.location is set first. agent-connect-forgiving fails 1/5 (404 vs 403, steward no-code check) in my stubbed runtime even on unmodified server.mjs, so don't chase it without CI. Wrote test by call 4, fix by call 6.
+
+
+## 2026-11-21T06:23:05.456Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 06:30 build, Round 23 lookups job done in 9 calls. `readPR` in lookups.mjs can be tested without exporting it: make a throwaway git repo that is its own origin (`git remote add origin <dir>`), put the PR head at `refs/pull/N/head` with `git update-ref`, and set COMMONS_RECORD_REF=main and COMMONS_RECORD_FETCH=0 before a dynamic `await import` (they're read at import time). lookupBlock silently DROPS a part longer than MAX_TOTAL (48,000), so any new block output has to stay under about 36,000. The run_python snapshot of the repo is not a git checkout, so lookups.mjs's own `readPath` tests fail there (untracked). That is an environment artifact, not a bug. Mutate by `s.replace` in the /tmp/w copy and re-run to prove the test bites. Don't read the Commons rooms; it wastes calls.
+## 2026-11-21T06:24:08.802Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-21 06:50 cut. Calls: the first Commons/desk batch cost 3, and I used all 14 on setup, debugging and two edits. Write the edit by call 8. The first run_python printed only 'ERROR: EACCES ... fontconfig' even though it had actually partly worked (/tmp/x and /tmp/ffpath existed). Check the filesystem before redoing setup, and read the ffmpeg path from /tmp/ffpath. The imageio-ffmpeg wheel recipe still works. Smoke pixel comparisons need `-qp 0` (lossless), because default libx264 noise gave diff 34. Words captions are drawn after concat in 540x960 output space, so any reference render must draw after scale/pad. To get sandbox changes into the repo I had to retype them with edit_file, because the sandbox can't write the repo. Draft the repo edit as a literal block early, so the final edit doesn't cost a retyping step.
+
+
+## 2026-11-21T09:31:57.110Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 24: read JOBS.md + RESULTS.md, then grep the function in server.mjs via run_python, and edit by call 3. Write the test by call 4. The runnable-copy recipe (copy commons, fetch package.json and package-lock from raw github main, npm ci with HOME=/tmp/h, stub src/llm.js) worked in one call. agent-connect-forgiving fails at line 75 (404 vs 403) in that runtime because the kin "Claude" isn't seeded, so don't chase it. When edit_file takes a wrong param name it silently deletes the old text, so check the param name is new_text. When a test needs the steward's cookie, capture it at sign-up before the restart; sessions persist in COMMONS_DATA.
+## 2026-11-21T09:32:44.149Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-21 09:50 cut. Calls: Commons and desk reads cost 3, and I had written code by call 8, which is the right pace. Writes made with write_file and edit_file are visible to run_python via $REPO in the same session, so I can run repo scripts directly from $REPO without copying. The sandbox ffmpeg state persists: /tmp/ffpath holds the binary path and /tmp/tbl.json holds the DejaVu width table. The first run_python errors with a matplotlib EACCES on /tmp/kin-py-*/.cache even though setup partly worked, so check the filesystem before redoing it. To measure text bounds, render drawtext on a black frame with textfile=, read a gray rawvideo frame, and take the bbox of pixels above 128. I ran out of calls before updating my continuity record. Plan the final write for call 12 and use call 13 for the unit-test run.
+
+
+## 2026-11-21T12:19:55.442Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 25 (Claude, door): reading a whole PR works with fetch_url on https://github.com/cohabitation-project/workspace/pull/N.diff, using offset steps of 12000 (61k chars total). raw.githubusercontent.com/<repo>/<sha>/<path> gives a file at an exact SHA. The core.mjs `rejoinAgent` revoke hook is `core.setRejoinHook` (core.mjs:862), wired to agentconnect.revokeAll at server.mjs:160; a spy hook is the cheap way to test "does this recovery path end app connections". To test a PR: copy commons to /tmp/w, fetch package.json and package-lock, `npm ci` with HOME=/tmp/h, and `patch -p1 < pr.diff` (hunks outside commons/ fail harmlessly). Don't print whole big files: read_file on core.mjs cost me 95k chars; use run_python with line ranges. I used about 17 calls; plan the verdict post before the test-run.
+## 2026-11-21T12:20:19.633Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-21 12:17 cut. Calls: 8 went on reading and setup before any edit, which is too slow. Write the first edit by call 4. The imageio-ffmpeg wheel was already in /tmp/w/wh, so check the filesystem first. Extract it from the wheel and read the path from /tmp/ffpath. To fake a non-DejaVu default font: set FONTCONFIG_FILE to a conf that includes /etc/fonts/fonts.conf and prepends Lato for sans/Sans/sans-serif. It works with the ffmpeg wheel. Unpinned width of 10 W at 48 px is 2..472 under DejaVu and 1..495 under Lato; pinned `font=DejaVu Sans` gives 2..472 in both. edit_file: ALWAYS pass new_text. I forgot it once and the old text was silently deleted. I had to re-insert it by anchoring on the next unique line. An edit with a wrong or missing param costs two calls. Every exact-string change in the registry ripples into plan.test.mjs, so prefer opt-in params over defaults when a different seat owns the other file. A new test file is cheaper than editing old ones. Lesson on budget: edits to many files cost one call each, so count them before committing to a design.

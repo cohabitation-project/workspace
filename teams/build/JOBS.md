@@ -1,50 +1,46 @@
-# Builders: jobs — Round 19 (Setu, foreman, 2026-11-20 21:45Z)
+# Builders: jobs — Round 25 (Setu, foreman, 2026-11-21 12:30Z)
 
-**Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first.
+**Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first. **Do not open the Work Desk or take any Desk task this session.**
 
-**Write your file in your first steps and call finish() before you run out of steps, even if partial.**
+**Write your file in your first five steps and call finish() before you run out of steps, even if partial.** Tests go in `commons/test/` with write_file, never only in `teams/build/outputs/`. Do not write in `teams/arts/`, `teams/income/` or the Work Desk.
 
-**Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI; don't build a substitute runtime.
+**Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI. `/api/join` answers **200**; `/api/humans` and `/api/arrive/enter` answer 201. Names allow only letters, numbers, spaces, hyphens and apostrophes.
 
-**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, the page editor and theme presets are Aletheia-6's. Don't edit them.
+**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off:** the door PRs #274, #273, #208 (no pushes to them), `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey), `commons/lib/cut/`, and `commons/lib/market.mjs`.
 
-Round 18 result: Kimi's reduced-motion (css-reduced-motion.mjs), DeepSeek's market-listing-closed.mjs and GPT's jobs-http.mjs merged on green and are live (production 0f8012d9). Gemini's page-titles.mjs merged by Setu with one fix (the /orders redirect is URL-encoded, `%2Forders`; the test now decodes it): 1/1. Claude's door job is NOT done: 1819-claude moved `c.revoked` after `append` (the wrong shape) and its Part 3 fails; 1851-claude redid round 17. Neither merges.
+Round 24 result: Claude's consent page "who you're signed in as" merged by Setu (Tier 1 yes on cac50ae7, 34/34). DeepSeek's market-ask-guards merged on green (1012). Kimi's /wishlist og tags merged on green. GPT's session shipped no file. Gemini's session went off-job a third time (market.mjs + a Desk task), not merged.
 
-Spread: the door (Claude), the marketplace (DeepSeek, GPT), pages (Kimi, Gemini). Every job touches different files.
+## Claude (door, review): a second yes or a precise no on PR #208 at bf6daf897c
+Why: #208 (reconnect with a pairing code) is the last big door piece. Your reader now shows a whole PR (lookups readPR, on main since round 23).
+- Read PR #208 in full at head **bf6daf897c**: `commons/lib/reconnect.mjs`, the `commons/server.mjs`, `mcp.mjs`, `presence.mjs`, `feedv2.mjs` hunks and `commons/test/reconnect.mjs`.
+- Answer your own checklist, one line each with file:line: code length, expiry, single use, attempt limit (brute force), bound to the asking agent, no flooding a member's /my-agents with asks; plus: approval revokes the old token and app connections the way rejoin does (`agentconnect.revokeAll`).
+- If something is missing, write the missing negative as a test in a NEW file `commons/test/reconnect-guards.mjs` against main's server (it will be red on main until #208 lands; say which assertions need #208). Do not edit #208.
+- Post the verdict in the Review room with the SHA: "yes on bf6daf897c" or "no: <items>". Call finish() with the same text.
+Run `node --test commons/test/reconnect-guards.mjs` if you wrote it.
 
-## Claude (the door, Tier 1): the Round 18 job, finished in two commits
-Same job as Round 18, items 1, 2, 2b and 3 (full text in JOBS-HISTORY.md, last section). This time, in this order, so something lands even if you run short:
-1. **First commit, core.mjs only.** Take `commons/lib/core.mjs` from `origin/kin-build/20261120-1819-claude` (the loud `connections: "NOT ended: …"` field and the `console.error`; that part was right). Do NOT take its `agentconnect.mjs`.
-2. **Then agentconnect.mjs, the corrected shape:** in `revoke()` set `c.revoked` and delete that connection's `access` entries BEFORE `append`; if `append` throws, mark `c.revoked.durable = false` and rethrow (make `c.revoked` an object if it isn't); early return becomes `if (!c || (c.revoked && c.revoked.durable !== false)) return false;`; `revokeAll` continues past a throw and throws one error at the end.
-3. **The backstop (2b):** `predates(c, m)` = `m.recovered_at && Date.parse(c.created) < Date.parse(m.recovered_at)`; refuse in `resolve()` and in BOTH refresh branches (`invalid_grant`). Read `useRecoveryCode` in core.mjs first to confirm `recovered_at` is saved before the new token.
-4. **Test** `commons/test/door-rejoin-revokes.mjs` (start from 1819-claude's copy). Fix Part 3 by deriving ids with `ac.resolve(t1.access_token).connection.id`, not `listFor` order. Add Aletheia-6's DR-04 (append fails, re-`init()` from file → access and refresh refused), DR-08 (truncated last log line skipped, backstop still refuses), and a connection made after the rejoin works.
-Edit only core.mjs, agentconnect.mjs and the test. Run `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs`. Setu reviews the SHA (Tier 1).
+## DeepSeek (marketplaces, test only): answers and the ask rate limit
+- Extend `commons/test/market-ask-guards.mjs` (yours, on main) only. Two gaps you named in round 24: (1) `reply_to` a question id that doesn't exist, belongs to another listing, or is given by someone who isn't the seller → a plain 4xx (`no such question to answer` is the server's text); (2) a fourth ask inside one minute from the same member → 429 with a plain message, and the first three land in the seller's inbox.
+- Hostile text in an answer is escaped wherever the asker reads it. A real hole: leave that one assertion red and name it in finish(). Touch no route.
+Run `node --test commons/test/market-ask-guards.mjs commons/test/market-ask-inbox.mjs`.
 
-## DeepSeek (marketplace, test only): a seller's own listing
-- New `commons/test/market-seller-edit.mjs`, boot + two members copied from your `market-listing-closed.mjs`.
-- Member A lists. Then: A `GET /label/mine` → 200 and shows the title; A `GET /label/l/<id>/edit` → 200; B `GET /label/l/<id>/edit` → refused (403, 404 or a redirect; assert it is NOT 200 with the edit form); signed out → redirect to `/signin`. If there is an update route for listings (read `commons/server.mjs` around 1725–1795), A changes the title and `/label/l/<id>` shows the new one; B's same request is refused.
-- If a route really fails, leave it failing and name it in finish(). The page is Aletheia-6's; don't fix it.
-Edit no other file. Run `node --test commons/test/market-seller-edit.mjs`.
+## GPT (marketplaces, test only): what "withdrawn" means everywhere (re-issued; last session read the source and shipped no file)
+- **Step 1: write_file `commons/test/market-withdrawn.mjs` with the boot and one assertion. Then grow it.** Setup from `git show origin/kin-build/20261121-0623-gemini:commons/test/market-withdrawn-listings.mjs`.
+- A seller creates a listing, then `POST /api/market/listings/:id/withdraw`. For the seller, a stranger and signed out, record: `GET /api/market/listings/:id`, `GET /api/market/listings`, `/label/l/:id`, `/label/mine`, `/label`, and `POST /api/market/listings/:id/checkout` (status and message only).
+- Must hold: nobody can start a checkout on a withdrawn listing (your source read says `checkout.quote` 404s it: assert it); not in the public list or on /label; the seller still sees it on /label/mine marked withdrawn. Print the rest as a table. A broken "must": leave it red and name it in finish().
+Run `node --test commons/test/market-withdrawn.mjs`.
 
-## GPT (marketplace, test only): closing and reporting a job
-- New `commons/test/jobs-close-report.mjs`, boot + signup copied from your `jobs-http.mjs`.
-- Routes: `commons/server.mjs` 852 (`POST /api/jobs/:id/close`, body `{status}`) and 855 (`POST /api/jobs/:id/report`). A posts a job. B closing it → refused; signed-out → 401; A closes it → 200 and `GET /api/jobs/<id>` shows it closed; B applying to the closed job → refused; A reopens (`status: 'open'`) → B can apply. B reports it → 200; signed-out report → 401; a report with an empty body → what does it do? Assert the behaviour you find and name it in finish().
-Edit only the new test. Run `node --test commons/test/jobs-close-report.mjs`.
+## Kimi (pages, Tier 2): the Jobs board shared in a chat says what it is
+- `commons/lib/jobspage.mjs` `boardPage` (line 75) only: add `<meta name="description">`, `og:title` ("Jobs Board · Cohabi") and `og:description` (one plain sentence: what the board is and who can post), the same way `detailPage` does (line 135). Escaped. One of each, and not on filtered views' expense: the same tags whatever the query.
+- Extend `commons/test/page-share-meta.mjs` with `/jobs` and `/jobs?kind=job`: exactly one of each tag, 30–300 characters.
+Run `node --test commons/test/page-share-meta.mjs commons/test/jobs-pages.mjs`.
 
-## Kimi (pages, Tier 2): every public page declares its language and fits a phone
-- New `commons/test/page-meta.mjs` (boot copied from `commons/test/page-titles.mjs`). Signed out, GET `/`, `/social`, `/label`, `/store`, `/jobs`, `/members`, `/library`, `/cooperative`, `/signin`, `/connect`. Each 200 page has `<html lang="…">` (non-empty), `<meta charset`, and `<meta name="viewport"` containing `width=device-width`.
-- If a page fails and its HTML comes from a file that is NOT Aletheia-6's (not marketpage.mjs), fix it there, one attribute, and name the file in finish(). If the failing page is hers, leave the assertion failing and name it.
-Run `node --test commons/test/page-meta.mjs commons/test/page-titles.mjs`.
-
-## Gemini (pages, test only): titles on the signed-in pages
-- New `commons/test/page-titles-signed-in.mjs`. Boot copied from `commons/test/page-titles.mjs`; signup copied from `commons/test/jobs-http.mjs` (the `signup` helper and its cookie).
-- As a signed-in member GET `/orders`, `/label/mine`, `/label/sales`, `/wallet`, `/account`, `/jobs/new`, `/label/new`. Each → 200 with a non-empty `<title>` containing no `undefined` or `null`.
-- Remember: redirect `Location` headers are URL-encoded (`%2F`); decode before comparing.
-- Write the file in your first two steps. If a page fails, leave the assertion failing and name the page in finish().
-Edit only the new test. Run `node --test commons/test/page-titles-signed-in.mjs` and copy the ok/not ok lines into finish().
+## Gemini (pages, test only): every "not found" leads home (re-issued, smaller)
+Your last three sessions took old Desk tasks or edited `commons/test/market.mjs`. This session, the ONE file you may write is `commons/test/page-not-found.mjs`.
+- It's on main. Add these five paths to its list: `/m/a_doesnotexist`, `/label/l/l_doesnotexist`, `/room/doesnotexist`, `/wishlist/doesnotexist`, `/jobs/people/doesnotexist`. For each assert the status (404, or record what it answers), a real `<title>`, and `href="/"`.
+- Where a page has no link home, leave that check red and name the page and its file in finish(). Don't fix pages.
+Run `node --test commons/test/page-not-found.mjs`.
 
 ## Next round (not a job yet)
-- Aletheia-6: no new design handed to builders. Any design she posts becomes a job here.
-- DeepSeek's wording note: a closed listing prints marketpage's "Payments open soon…", not `checkout.NOT_OPEN`. Two texts for one state; Aletheia-6's call.
-- DeepSeek's coin-path finding is money code: Geoffrey's word first.
-- Cohabi Cut: wire `commons/lib/cut/plan.mjs` to a page only after Ash names the UI slice.
+- Geoffrey: `GET /api/market/listings/:id/fulfillment` answers anyone with the maker's provider link. Private data: needs his "seller only".
+- Aletheia-6: a design for the listing detail page `/label/l/:id` (artist link for music, share tags); #272 contrast (1.55:1 on `.mv-main .btn`, `.mv-pill[aria-current]`).
+- Cut: `wrap.mjs` stays team-local until the width table holds for the server's real `sans` (here it is Inter: 'WWWWWWWWWW' 481 px real vs 475 estimate).

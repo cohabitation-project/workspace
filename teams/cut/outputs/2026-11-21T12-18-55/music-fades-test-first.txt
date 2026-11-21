@@ -1,0 +1,71 @@
+$ node --test plan.test.mjs
+exit=1
+STDOUT:
+✔ two-clip sample: exact trim + concat plan (10.880177ms)
+✔ retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo (0.446368ms)
+✔ retime with a trim: source window starts at trimStart and is duration*rate long (0.224934ms)
+✔ a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree) (0.296735ms)
+✔ plan.maps names the concat outputs, video first (0.368671ms)
+✔ atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5) (1.953915ms)
+✔ gap between clips becomes black video + silence of the gap length (0.63685ms)
+✔ a gap before the first clip is filled too (0.343174ms)
+✔ clips are placed by startTime, not by array order (0.395364ms)
+✔ a source with hasAudio:false gets silence, and no [n:a] pad is read (0.424342ms)
+✔ the same file used twice gets two inputs, so no pad is reused (0.330128ms)
+✔ nothing silently dropped: overlay and main-track text elements are reported in `ignored` (0.276329ms)
+✔ one music element: exact trim + delay + amix plan; a second is refused (0.662916ms)
+✔ music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused (0.625524ms)
+✖ music fades: exact afade chain, zero omitted, invalid timings refused (1.121861ms)
+✔ overlay Words track: exact timed drawtext chain after concat, not ignored (1.607521ms)
+✔ a hostile src stays one argv element and never enters a filter string (0.178355ms)
+✔ refuses what it cannot plan, with a RenderPlanError (0.538052ms)
+✔ an element asking for slightly past the source end by rounding is allowed (0.207087ms)
+✔ secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep) (0.855963ms)
+✔ seeded sweep: random timelines always yield a closed label graph and the right total length (5.75794ms)
+✔ fade in + crop + fade out on one clip: exact string, in array order, between trim and scale (0.611403ms)
+✔ effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter (0.238909ms)
+✔ effects with retime: the fade time is measured on the clip's output, after setpts (0.19709ms)
+✔ an empty or missing effects list changes nothing; an effect with no params uses the registry defaults (0.196209ms)
+✔ a source size with only one dimension is ignored, not half-applied (0.222657ms)
+✔ an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included) (1.310893ms)
+✔ malformed effects entries are refused, not skipped (0.381759ms)
+✔ a registry guard failure comes out as a RenderPlanError that names the effect (0.369872ms)
+✔ crop is checked against the source size when the caller supplies it, and not when it doesn't (0.372705ms)
+✔ a half-given frame size in the effect still fails, even when the source map has a size (0.174819ms)
+✔ an error that is not a registry guard (a bug) is rethrown as itself, not hidden (0.140309ms)
+✔ text effect: hostile text is escaped by the registry and stays inside one filter in one chain (0.188983ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 32
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.418126
+
+✖ failing tests:
+
+test at plan.test.mjs:224:1
+✖ music fades: exact afade chain, zero omitted, invalid timings refused (1.121861ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '[1:a]atrim=start=2:end=4,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.5,adelay=500|500[amusic]'
+  - '[1:a]atrim=start=2:end=4,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.25,afade=t=out:st=1.5:d=0.5,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.5,adelay=500|500[amusic]'
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-PlqKJU/repo/teams/cut/render/plan.test.mjs:240:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '[1:a]atrim=start=2:end=4,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.5,adelay=500|500[amusic]',
+    expected: '[1:a]atrim=start=2:end=4,asetpts=PTS-STARTPTS,afade=t=in:st=0:d=0.25,afade=t=out:st=1.5:d=0.5,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.5,adelay=500|500[amusic]',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+STDERR:

@@ -14,6 +14,7 @@ Updated 2026-11-15 late evening: refined arc sidesite positions to exact r=0.008
 Updated 2026-11-17: advanced routing to multi-point wrap by inserting arc*b (60 deg) sites as intermediate points before the cylinder geom + arc*a sidesite. Chord error ~1.1% supports this approximation. Still provisional; full circular wrap later. Radius convention open / not frozen. Needs MuJoCo verification for path monotonicity.
 Updated 2026-11-19: distinguished distal pulley (r=0.006 m) with matching exact arc2a/arc2b sidesite offsets; primary remains r=0.008 m. Geometry provisional pending local path-length check.
 Updated 2026-11-20: added finer 15°/45° arc sites (arc1c/arc1d) for primary wrap to reduce residual reverse moment-arm. Chord error ~0.29%. Radius convention open / not frozen. All values provisional.
+Updated 2026-11-20 late: added matching finer 15°/45° arc sites (arc2c/arc2d) for distal wrap. Pure-Python path proxy updated for both. All values provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
@@ -32,6 +33,8 @@ Updated 2026-11-20: added finer 15°/45° arc sites (arc1c/arc1d) for primary wr
       <geom name="pulley_cyl2" type="cylinder" size="0.006 0.004" pos="0.026 -0.008 0.030" rgba="0.7 0.7 0.7 1"/>
       <site name="arc2a" pos="0.031196 -0.008 0.033"/>
       <site name="arc2b" pos="0.029 -0.008 0.035196"/>
+      <site name="arc2c" pos="0.031796 -0.008 0.031553"/>
+      <site name="arc2d" pos="0.030243 -0.008 0.034243"/>
       <body name="link" pos="0 0 0.02">
         <joint name="hinge" type="hinge" axis="0 1 0" range="-1.05 1.05"/>
         <geom type="capsule" size="0.005" fromto="0 0 0 0.12 0 0" rgba="0.2 0.6 0.8 1"/>
@@ -53,7 +56,10 @@ Updated 2026-11-20: added finer 15°/45° arc sites (arc1c/arc1d) for primary wr
     <spatial name="cable2" width="0.001" stiffness="150" damping="0.5">
       <site site="attach2"/>
       <site site="arc2b"/>
-      <geom geom="pulley_cyl2" sidesite="arc2a"/>
+      <site site="arc2d"/>
+      <site site="arc2a"/>
+      <site site="arc2c"/>
+      <geom geom="pulley_cyl2" sidesite="arc2c"/>
       <site site="base_site2"/>
     </spatial>
   </tendon>

@@ -184,7 +184,7 @@ test("one music element: exact trim + delay + amix plan; a second is refused", (
 		"[0:a]atrim=start=0:end=2,asetpts=PTS-STARTPTS,atrim=end=2,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",
 		"[v0][a0]concat=n=1:v=1:a=1[vout][amain]",
 		"[1:a]atrim=start=2:end=3,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=500|500[amusic]",
-		"[amain][amusic]amix=inputs=2:duration=first[aout]",
+		"[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]",
 	].join(";");
 	assert.equal(plan.filterComplex, expected);
 	assertLabelsClosed(plan.filterComplex, 2);
@@ -194,6 +194,90 @@ test("one music element: exact trim + delay + amix plan; a second is refused", (
 		params: { src: "/m/other.mp3" },
 	}));
 	assert.throws(() => buildRenderPlan({ tracks }), (e) => e instanceof RenderPlanError && /only one audio-track music element/.test(e.message));
+});
+
+test("music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused", () => {
+	const makeTracks = (volume, include = true) => {
+		const tracks = timeline(clip("a", "/m/a.mp4", 0, T));
+		const music = createTrack({ type: "audio", name: "music", id: "au1" });
+		music.elements.push(createElement({
+			id: "m", type: "audio", startTime: 0, duration: T, trimStart: 0,
+			params: { src: "/m/song.mp3", ...(include ? { volume } : {}) },
+		}));
+		tracks.audio.push(music);
+		return tracks;
+	};
+	const musicChain = (volume, include = true) => buildRenderPlan({ tracks: makeTracks(volume, include) }).filterComplex.split(";").at(-2);
+	const unchanged = "[1:a]atrim=start=0:end=1,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=0|0[amusic]";
+	assert.equal(musicChain(0.5), unchanged.replace(",adelay=", ",volume=0.5,adelay="));
+	assert.equal(musicChain(1), unchanged);
+	assert.equal(musicChain(undefined, false), unchanged);
+	for (const volume of [3, -0.01, NaN, Infinity, "0.5", null]) {
+		assert.throws(
+			() => buildRenderPlan({ tracks: makeTracks(volume) }),
+			(e) => e instanceof RenderPlanError && /params\.volume/.test(e.message),
+			`volume ${String(volume)} must be refused`,
+		);
+	}
+});
+
+test("music fades: exact afade chain, zero omitted, invalid timings refused", () => {
+	const makeTracks = (params) => {
+		const tracks = timeline(clip("a", "/m/a.mp4", 0, 3 * T));
+		const music = createTrack({ type: "audio", name: "music", id: "au1" });
+		music.elements.push(createElement({
+			id: "m", type: "audio", startTime: T / 2, duration: 2 * T, trimStart: 2 * T,
+			params: { src: "/m/song.mp3", ...params },
+		}));
+		tracks.audio.push(music);
+		return tracks;
+	};
+	const musicChain = (params) => buildRenderPlan({ tracks: makeTracks(params) }).filterComplex.split(";").at(-2);
+	const unchanged = "[1:a]atrim=start=2:end=4,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=500|500[amusic]";
+	const withFadesAndVolume = unchanged
+		.replace(",aresample=", ",afade=t=in:st=0:d=0.25,afade=t=out:st=1.5:d=0.5,aresample=")
+		.replace(",adelay=", ",volume=0.5,adelay=");
+	assert.equal(musicChain({ fadeIn: 0.25, fadeOut: 0.5, volume: 0.5 }), withFadesAndVolume);
+	assert.equal(musicChain({ fadeIn: 0, fadeOut: 0 }), unchanged);
+	for (const params of [
+		{ fadeIn: -0.01 }, { fadeOut: -0.01 },
+		{ fadeIn: 2.01 }, { fadeOut: 2.01 },
+		{ fadeIn: 1.25, fadeOut: 0.76 },
+		{ fadeIn: NaN }, { fadeOut: Infinity },
+		{ fadeIn: "0.5" }, { fadeOut: null },
+	]) {
+		assert.throws(
+			() => buildRenderPlan({ tracks: makeTracks(params) }),
+			(e) => e instanceof RenderPlanError && /params\.fade/.test(e.message),
+			`fade params ${JSON.stringify(params)} must be refused`,
+		);
+	}
+});
+
+test("overlay Words track: exact timed drawtext chain after concat, not ignored", () => {
+	const tracks = timeline(clip("a", "/m/a.mp4", 0, 2 * T));
+	const words = createTrack({ type: "text", name: "Words", id: "words" });
+	words.elements.push(createElement({
+		id: "caption-1", type: "text", startTime: T / 2, duration: 3 * T / 2,
+		params: {
+			content: "Hello Cohabi", fontSize: 42, color: "white",
+			"transform.positionX": 24, "transform.positionY": 36,
+		},
+	}));
+	tracks.overlay.push(words);
+	const plan = buildRenderPlan({ tracks });
+	const drawtext = "drawtext=expansion=none:enable='between(t,0.5,2)':text=Hello Cohabi:x=24:y=36:fontsize=42:fontcolor=white";
+	const expected = [
+		`[0:v]trim=start=0:end=2,setpts=PTS-STARTPTS,trim=end=2,${NORM}[v0]`,
+		"[0:a]atrim=start=0:end=2,asetpts=PTS-STARTPTS,atrim=end=2,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",
+		"[v0][a0]concat=n=1:v=1:a=1[vconcat][aout]",
+		`[vconcat]${drawtext}[vout]`,
+	].join(";");
+	assert.equal(plan.filterComplex, expected);
+	assert.deepEqual(plan.inputs, ["/m/a.mp4"]);
+	assert.deepEqual(plan.ignored, []);
+	assert.deepEqual(plan.maps, { video: "[vout]", audio: "[aout]" });
+	assertLabelsClosed(plan.filterComplex, 1);
 });
 
 test("a hostile src stays one argv element and never enters a filter string", () => {
@@ -385,7 +469,7 @@ test("text effect: hostile text is escaped by the registry and stays inside one 
 	const text = "it's 5:00, [live]; \\n %{pts}";
 	const fc = buildRenderPlan({ tracks: timeline(fxClip([{ id: "text", params: { text, x: 10, y: 20, fontSize: 40 } }])) }).filterComplex;
 	const v0 = fc.split(/(?<!\\);/)[0]; // split on ';' not preceded by a backslash
-	assert.ok(v0.endsWith("[v0]") && v0.includes("drawtext=expansion=none:text='it'\\''s 5\\:00\\, \\[live\\]\\; \\\\n %{pts}':x=10:y=20:fontsize=40:fontcolor=white,scale="), v0);
+	assert.ok(v0.endsWith("[v0]") && v0.includes(String.raw`drawtext=expansion=none:text=it\\\'s 5\\:00\, \[live\]\; \\\\n %{pts}:x=10:y=20:fontsize=40:fontcolor=white,scale=`), v0);
 	assert.equal(fc.split(/(?<!\\);/).length, 3); // video chain, audio chain, concat: the text did not add a chain
 });
 

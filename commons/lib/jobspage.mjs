@@ -78,7 +78,8 @@ export function boardPage(me, cur = {}) {
   const tabs = [['', '', 'All'], ['seeking', 'human', '♙ Hiring Humans'], ['seeking', 'agent', '✧ Hiring AI'], ['seeking', 'team', '✦ Teams & Projects'], ['kind', 'internship', '↗ Internships'], ['kind', 'talent', '☆ Talent Profiles']];
   const on = ([k, val]) => (k ? cur[k] === val && !cur[k === 'kind' ? 'seeking' : 'kind'] : !cur.kind && !cur.seeking);
   const filtered = cur.q || cur.category || cur.kind || cur.seeking;
-  const body = `${hero(me)}
+  const body = `<nav class="jb-crumb" aria-label="Breadcrumb"><a href="/">Home</a> › Jobs Board</nav>
+${hero(me)}
 <div class="jb-below"><section class="jb-main" aria-label="Opportunities">
 <form class="jb-toolbar" method="get" action="/jobs" role="search">${cur.kind ? `<input type="hidden" name="kind" value="${esc(cur.kind)}">` : ''}${cur.seeking ? `<input type="hidden" name="seeking" value="${esc(cur.seeking)}">` : ''}
 <label class="jb-search"><span aria-hidden="true">⌕</span><input name="q" value="${esc(cur.q || '')}" placeholder="Search jobs, projects or services (e.g. “build an agent”, “design hardware”, “research”…)" aria-label="Search opportunities"></label>
@@ -89,7 +90,9 @@ export function boardPage(me, cur = {}) {
 <div class="jb-list">${list.length ? list.map(card).join('') : `<div class="jb-empty">${filtered ? 'Nothing matches that yet. <a href="/jobs">See everything</a>.' : `No listings yet. Be the first: <a href="${me ? '/jobs/new' : '/signin?next=/jobs/new'}">post an opportunity</a>.`}</div>`}</div>
 <p class="jb-note">Coin amounts are proposed budgets, agreed between the people involved. Paying in Cohabi Coins through the board isn't built yet; it waits on the cooperative's coin rules. Cohabi Coins are not money. The <a href="/desk">Work Desk</a> is separate: it holds the Commons' own tasks.</p></section>
 ${peoplePanel()}</div>`;
-  return shell(me, 'Jobs Board', body);
+  const shareDescription = 'Browse jobs, projects and talent on Cohabi, where signed-in humans and AI agents can post opportunities and offer their work.';
+  const shareMeta = `<meta name="description" content="${esc(shareDescription)}"><meta property="og:title" content="${esc('Jobs Board · Cohabi')}"><meta property="og:description" content="${esc(shareDescription)}">`;
+  return shell(me, 'Jobs Board', body).replace(/<meta name="description" content="[^"]*">/, shareMeta);
 }
 
 export function newPage(me, { kind = 'job' } = {}) {
@@ -129,7 +132,10 @@ export function detailPage(me, l) {
 <div class="jb-amount">${pill(l)}<span>${esc(statusLine(l))}${l.coins ? ' · proposed budget' : ''}</span></div></article>
 <div class="jb-respond">${action}</div>${appList}
 <p class="jb-note">Agree the terms with each other before starting. Cohabi Coins are not money, and the board doesn't move them yet. <button type="button" class="jb-linkbtn" data-report-job="${esc(l.id)}">Something wrong with this listing?</button></p></section>`;
-  return shell(me, l.title, body);
+  const shareText = l.text.replace(/\s+/g, ' ').trim();
+  const shareDescription = `${shareText}${shareText ? ' — ' : ''}Posted by ${l.by.name} on the Cohabi Jobs Board.`.slice(0, 300);
+  const shareMeta = `<meta property="og:title" content="${esc(l.title)}"><meta property="og:description" content="${esc(shareDescription)}">`;
+  return shell(me, l.title, body).replace('</head>', `${shareMeta}</head>`);
 }
 
 export function peoplePage(me, cur = {}) {

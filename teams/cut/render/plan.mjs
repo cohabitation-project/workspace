@@ -11,8 +11,9 @@
 // produced (silence for a source with hasAudio:false) so every segment has the same streams.
 // ONE audio-track music element is trimmed, delayed to its timeline start, and mixed under that
 // main audio with amix duration=first (the main timeline therefore sets the output duration).
-// More than one music element is refused for now. Overlay tracks and main-track text are reported
-// in `ignored`, never silently dropped. Transitions are not implemented; effects use the registry.
+// More than one music element is refused for now. Text overlay (Words) tracks become timed
+// drawtext filters after concat; other overlay tracks and main-track text are reported in
+// `ignored`, never silently dropped. Transitions are not implemented; effects use the registry.
 //
 // ASSUMPTION (ours, not classic's): a clip's media file is named by element.params.src. The
 // caller must replace client-supplied names with server-side file paths BEFORE calling; this module
@@ -28,6 +29,10 @@ import { TICKS_PER_SECOND, clampRetimeRate, getSourceSpanAtClipTime } from "../p
 // Effects slice (Job 3): when placed at commons/lib/cut/plan.mjs this becomes "./effects.mjs"
 // (Kimi's registry is placed there under that name).
 import { registry } from "./registry.mjs";
+// Overlay Words tracks become timed drawtext filters after the main concat.
+// When placed at commons/lib/cut/plan.mjs this import has the same relative path.
+import { wordsTrackToTextEffects } from "./words-to-text.mjs";
+import { wrapCaptionParams } from "./wrap.mjs";
 
 export const AUDIO_RATE = 48000;
 
@@ -103,13 +108,35 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		}
 	}
 	const ignored = [];
+	const wordsFilters = [];
 	for (const t of tracks.overlay ?? []) {
+		if (t.type === "text") {
+			// The adapter validates the Words schema and derives output-second enable windows
+			// from timeline ticks. The registry remains the only drawtext serializer.
+			let descriptors;
+			try {
+				descriptors = wordsTrackToTextEffects(t);
+				// Long captions are wrapped into one drawtext per line (drawtext never wraps).
+				for (const fx of descriptors) {
+					for (const p of wrapCaptionParams(fx.params, { width, height })) wordsFilters.push(registry.text.toFilter(p));
+				}
+			} catch (e) {
+				if (e instanceof TypeError || e instanceof RangeError) {
+					throw new RenderPlanError(`overlay Words track ${t.id}: ${e.message}`);
+				}
+				throw e;
+			}
+			continue;
+		}
 		for (const e of t.elements) ignored.push({ trackId: t.id, elementId: e.id, reason: `${t.type} track elements are not rendered in this slice` });
 	}
 
 	const music = (tracks.audio ?? []).flatMap((t) => t.elements.map((element) => ({ trackId: t.id, element })));
 	if (music.length > 1) throw new RenderPlanError("only one audio-track music element is supported in this slice");
 	const musicElement = music[0]?.element;
+	const musicVolume = musicElement?.params?.volume === undefined ? 1 : musicElement.params.volume;
+	const musicFadeIn = musicElement?.params?.fadeIn === undefined ? 0 : musicElement.params.fadeIn;
+	const musicFadeOut = musicElement?.params?.fadeOut === undefined ? 0 : musicElement.params.fadeOut;
 	if (musicElement) {
 		if (musicElement.type !== "audio") throw new RenderPlanError(`music element ${musicElement.id} must have type audio`);
 		requireInt(`${musicElement.id}.startTime`, musicElement.startTime, { min: 0 });
@@ -118,6 +145,18 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		const src = musicElement.params?.src;
 		if (typeof src !== "string" || src.length === 0 || /[\0\r\n]/.test(src)) {
 			throw new RenderPlanError(`music element ${musicElement.id} needs params.src: a non-empty single-line string`);
+		}
+		if (typeof musicVolume !== "number" || !Number.isFinite(musicVolume) || musicVolume < 0 || musicVolume > 2) {
+			throw new RenderPlanError(`music element ${musicElement.id} params.volume must be a finite number from 0 to 2, got ${String(musicVolume)}`);
+		}
+		const musicDurationSeconds = musicElement.duration / TICKS_PER_SECOND;
+		for (const [name, value] of [["fadeIn", musicFadeIn], ["fadeOut", musicFadeOut]]) {
+			if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > musicDurationSeconds) {
+				throw new RenderPlanError(`music element ${musicElement.id} params.${name} must be a finite number from 0 to the element duration (${musicDurationSeconds}s), got ${String(value)}`);
+			}
+		}
+		if (musicFadeIn + musicFadeOut > musicDurationSeconds) {
+			throw new RenderPlanError(`music element ${musicElement.id} params.fadeIn + params.fadeOut must not exceed the element duration (${musicDurationSeconds}s)`);
 		}
 	}
 
@@ -183,18 +222,21 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		cursor = clip.startTime + clip.duration;
 	}
 
-	chains.push(`${labels.join("")}concat=n=${labels.length}:v=1:a=1[vout][${musicElement ? "amain" : "aout"}]`);
+	const concatVideo = wordsFilters.length ? "vconcat" : "vout";
+	chains.push(`${labels.join("")}concat=n=${labels.length}:v=1:a=1[${concatVideo}][${musicElement ? "amain" : "aout"}]`);
+	if (wordsFilters.length) chains.push(`[vconcat]${wordsFilters.join(",")}[vout]`);
 	if (musicElement) {
 		const n = inputs.length;
 		const trimStart = musicElement.trimStart ?? 0;
 		const trimEnd = trimStart + musicElement.duration;
 		const delay = num((musicElement.startTime / TICKS_PER_SECOND) * 1000);
+		const volumeFilter = musicVolume === 1 ? "" : `volume=${num(musicVolume)},`;
 		inputs.push(musicElement.params.src);
 		chains.push(
 			`[${n}:a]atrim=start=${secs(trimStart)}:end=${secs(trimEnd)},asetpts=PTS-STARTPTS,` +
-			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=${delay}|${delay}[amusic]`,
+			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,${volumeFilter}adelay=${delay}|${delay}[amusic]`,
 		);
-		chains.push("[amain][amusic]amix=inputs=2:duration=first[aout]");
+		chains.push("[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]");
 	}
 	const filterComplex = chains.join(";");
 	const args = [];

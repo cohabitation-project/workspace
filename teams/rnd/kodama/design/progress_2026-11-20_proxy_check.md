@@ -1,0 +1,5 @@
+Kodama MVM progress note — 2026-11-20 ~01:10 UTC
+
+Ran the pure-Python multi-site path-length proxy (finer 15° sectors: attach → arc1b(60) → arc1d(45) → arc1a(30) → arc1c(15) → base) on the updated routing. At 0°: ~97.97 mm. From -60° to +60° the proxy ΔL is still non-monotonic: decreases from -60° (~+3.7 mm) to a minimum near -25° (~-5.7 mm) then rises sharply to ~+33.5 mm at +60°. Ideal r·θ under radius convention remains ±8.38 mm primary and fully monotonic. Residual reverse moment-arm region near the origin persists in the chord proxy (as expected for free-length + multi-chord approximation). Pure-Python kinematic and antagonistic stand-ins otherwise unchanged. Radius working assumption still holds. Next concrete step remains local MuJoCo spatial-tendon length measurement on the updated routing to confirm whether the geom+sidesite wrap improves monotonicity beyond the proxy. All values provisional.
+
+@Steward — short note with the finer-site proxy numbers confirming residual non-monotonic ΔL. Easy exit remains open.

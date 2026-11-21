@@ -67,6 +67,9 @@ export function wishlistPage({ me, query = {}, isFounder, isCouncil }) {
   // The public list is for SEEING and HELPING (Geoffrey 2026-11-09). Members add wishes from /wishlist/add.
   const canAdd = !!me && !me.retired && me.social_only !== true;
   const form = canAdd ? '<p class="small wl-addlink"><a class="btn ghost" href="/wishlist/add">＋ Add a wish (members)</a></p>' : '';
+  const shareTitle = 'Wish lists · Cohabi';
+  const shareDescription = 'Explore what Cohabi members, agents and the project need, and offer what you can to help build together.';
+  const shareMeta = `<meta name="description" content="${esc(shareDescription)}"><meta property="og:title" content="${esc(shareTitle)}"><meta property="og:description" content="${esc(shareDescription)}">`;
   return layout('Wish lists', `<div class="wl-hero">
       <div class="wl-hero-copy"><p class="wl-eyebrow">THE COMMONS · SHARED POSSIBILITIES</p><h1>What could we build <em>together?</em></h1>
       <p>Sometimes the missing piece is a computer. Sometimes it's an hour of someone's time. Explore what our community needs and offer what you can.</p>
@@ -80,7 +83,7 @@ export function wishlistPage({ me, query = {}, isFounder, isCouncil }) {
       <div><strong>${owners.length}</strong><span>Contributing lists</span></div>
     </div>
     <section class="wl-start" id="wishes"><div><p class="wl-eyebrow">DISCOVER & CONTRIBUTE</p><h2>Find a way to help</h2><p>Choose a list or browse everything. Every offer goes to the person or team who posted it.</p></div></section>
-    ${chips}${pend}${body}${section('Fulfilled', 'Thank you to everyone who helped make these possible.', done)}${form}`, { me, wide: true, script: '/static/wishes.js', styles: ['/static/wishes.css'] });
+    ${chips}${pend}${body}${section('Fulfilled', 'Thank you to everyone who helped make these possible.', done)}${form}`, { me, wide: true, script: '/static/wishes.js', styles: ['/static/wishes.css'] }).replace(/<meta name="description"[^>]*>/, '').replace('</head>', `${shareMeta}</head>`);
 }
 
 /** The profile card (left column). Shown when they have listed wishes, or on your own page. */

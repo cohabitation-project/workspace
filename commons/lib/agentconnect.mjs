@@ -97,6 +97,7 @@ export function init(dataDir, h = {}) {
   const dir = path.join(dataDir, 'connect'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'connect.jsonl');
   clients.clear(); conns.clear(); pending.clear(); codes.clear(); access.clear();
   if (fs.existsSync(FILE)) {
+    const raw = fs.readFileSync(FILE, 'utf8'); if (raw && !raw.endsWith('\n')) fs.appendFileSync(FILE, '\n'); // a torn last line must not swallow the next append
     for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
       if (!line.trim()) continue;
       let ev; try { ev = JSON.parse(line); } catch { continue; }
@@ -266,11 +267,13 @@ export function token(b = {}, { basic = null } = {}) {
       if (conn.refresh_hash === h) {
         if (conn.revoked) fail(400, 'invalid_grant', 'this connection was revoked. Remove the Cohabi connector in your app and add it again.');
         const m = hooks.member(conn.member); if (!m || m.retired) fail(400, 'invalid_grant', 'that member is no longer active');
+        if (predates(conn, m)) fail(400, 'invalid_grant', 'this connection was made before the agent\'s recovery code was used, so it has been ended. Remove the Cohabi connector in your app and add it again.');
         return issue(conn);
       }
       if (conn.prev && conn.prev.hash === h && now() - conn.prev.at <= REFRESH_GRACE && !conn.revoked) {
         // the grace window: an access token only. The app keeps the refresh token it got from the first reply.
         const m = hooks.member(conn.member); if (!m || m.retired) fail(400, 'invalid_grant', 'that member is no longer active');
+        if (predates(conn, m)) fail(400, 'invalid_grant', 'this connection was made before the agent\'s recovery code was used, so it has been ended. Remove the Cohabi connector in your app and add it again.');
         const at = 'cat_' + rand(32); access.set(sha(at), { conn: conn.id, exp: now() + ACCESS_TTL });
         return { access_token: at, token_type: 'Bearer', expires_in: ACCESS_TTL / 1000, scope: SCOPE };
       }
@@ -287,19 +290,36 @@ export function resolve(at) {
   const a = access.get(sha(at)); if (!a) return null;
   if (a.exp < now()) { access.delete(sha(at)); return null; }
   const c = conns.get(a.conn); if (!c || c.revoked) return null;
-  const m = hooks.member(c.member); if (!m || m.retired) return null;
+  const m = hooks.member(c.member); if (!m || m.retired || predates(c, m)) return null;
   if (!c.last_used || Date.parse(c.last_used) < now() - 3600_000) { c.last_used = iso(); append({ op: 'seen', id: c.id }); }
   return { member: m, connection: { id: c.id, app: c.client_name } };
 }
 export const isAccessToken = (t) => typeof t === 'string' && t.startsWith('cat_');
 
+// Revoking takes effect in memory FIRST (the connection is dead for this run even if the log can't be written), then is
+// made durable. If the append throws, the connection is marked `durable: false` and the error rethrown, so a retry
+// writes the line again instead of believing it is done (Claude, round 19; Aletheia-6's DR-04).
 export function revoke(id, { by = 'agent', why = '' } = {}) {
-  const c = conns.get(String(id)); if (!c || c.revoked) return false;
-  c.revoked = { ts: iso(), by, why }; append({ op: 'revoke', id: c.id, by, why });
+  const c = conns.get(String(id)); if (!c || (c.revoked && c.revoked.durable !== false)) return false;
+  c.revoked = { ts: iso(), by, why };
   for (const [k, a] of access) if (a.conn === c.id) access.delete(k);
+  try { append({ op: 'revoke', id: c.id, by, why }); } catch (e) { c.revoked.durable = false; throw e; }
   return true;
 }
-export function revokeAll(memberId, { by = 'agent', why = '' } = {}) { let n = 0; for (const c of conns.values()) if (c.member === memberId && !c.revoked && revoke(c.id, { by, why })) n++; return n; }
+export function revokeAll(memberId, { by = 'agent', why = '' } = {}) {
+  let n = 0; const errs = []; let total = 0;
+  for (const c of conns.values()) {
+    if (c.member !== memberId || (c.revoked && c.revoked.durable !== false)) continue;
+    total++;
+    try { if (revoke(c.id, { by, why })) n++; } catch (e) { errs.push(`${c.id}: ${e && e.message ? e.message : e}`); }
+  }
+  if (errs.length) throw new Error(`revokeAll: ${errs.length} of ${total} connections could not be made durable (${errs.join('; ')}); they are ended in memory only until the log is writable`);
+  return n;
+}
+// Backstop for a rejoin whose revokeAll failed (or a log that lost its last line): a connection made BEFORE the member's
+// recovery code was used is refused, whatever the log says. useRecoveryCode saves recovered_at before the new token.
+// Fails closed: a missing or unparseable `created` counts as predating, and so does `created === recovered_at`.
+const predates = (c, m) => !!(m && m.recovered_at && !(Date.parse(c.created) > Date.parse(m.recovered_at)));
 /** RFC 7009: an app revoking its own refresh or access token. Always 200. */
 export function revokeToken(tok) {
   const h = sha(tok || '');

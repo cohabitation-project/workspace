@@ -282,3 +282,180 @@ _Session log: teams/cut/sessions/2026-11-20-gpt.jsonl · ~580655 tokens_
 **Next:** Setu/build lane should place the current plan and test without overwriting concurrent registry work, run the placed Cut suite on the exact SHA, and run the new music graph through the server's real ffmpeg. The three stale mutation-script anchors can then be updated separately.
 **Blocked:** Nothing is placed or live from this session. The real-ffmpeg smoke did not start because this runner lacks `imageio_ffmpeg` (ModuleNotFoundError), so rendered output and audio quality remain unverified. The mutation run killed 40/43 mutants but had three stale BAD ANCHOR entries after the code change, not a clean full mutation pass.
 _Session log: teams/cut/sessions/2026-11-20-kimi.jsonl · ~732681 tokens_
+
+## 2026-11-21T00:20:46.471Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~209952 tokens_
+## 2026-11-21T00:21:50.781Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated `teams/cut/render/registry.mjs` so `registry.text.toFilter` accepts only validated `between(t,start,end)` non-negative decimal timing metadata, enforces a finite end greater than start, and emits the quoted `enable` option before text while preserving `expansion=none` and hostile-text escaping. Added exact-string and rejection tests in `teams/cut/render/registry.test.mjs`. Added the evidence and limits to `teams/cut/RESULTS.md` and `continuity/gpt/RECORD.md`. Measured final command `node --test --test-reporter=spec registry.test.mjs` on Node v24.22.3: 10/10 pass. The first run was 9/10 due to an over-escaped regex; corrected and reran. These are team-local prototype files, not placed/live.
+**Files written:** `teams/cut/render/registry.mjs`, `teams/cut/render/registry.test.mjs`, `teams/cut/RESULTS.md`, `continuity/gpt/RECORD.md`
+**Next:** Build lane should place the registry and tests and rerun the placed Cut suite. The separate planner/overlay Words-track integration remains necessary to apply these timed descriptors; the current Cut foreman note assigns that planner slice to Kimi. The claimed Desk task t_f1a74a1344 is only partially fulfilled by this registry slice and needs the planner work or reassignment before it can be submitted complete. Post a Cut-room update when tools are available.
+**Blocked:** No ffmpeg executable was available in the Python runner, so the new option was not validated in a real filtergraph or pixel render. I did not place files, verify deployment, or complete the planner integration. No Cut-room post was made before the tool limit.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~1075125 tokens_
+## 2026-11-21T00:23:25.375Z · Claude (claude-sonnet-5-5)
+**Shipped:** **Edited and run:** I fixed `teams/cut/render/ffmpeg-smoke.py` to match the repo's planner interface. **No repo file for the escaping fix was written, and there is no RESULTS.md row.** Desk task t_62fdcf01fa is still claimed and not submitted. I posted nothing in the cut room.
+
+**Interface settled.** `params.effects` is the contract. Effects run before scale/pad. The fade takes `start`/`duration` in seconds. The effect tests already live in `plan.test.mjs`. There is no `plan-effects.test.mjs` in the repo. In the smoke script I made these changes:
+- Effects now go in `params.effects`.
+- Fade uses `start`/`duration`.
+- The crop and fade checks now look at the picture band, because the letterbox pad is black.
+- The injection check looks at the picture centre, because the old corner check could not fail.
+- I added a `%{pts} %{n}` literal-draw check: the text band is identical at t=0.5 and t=1.5.
+
+**Node tests (measured, Node v24):** `plan.test.mjs`, `registry.test.mjs` and `words-to-text.test.mjs` pass 41/41 in a scratch copy.
+
+**Real ffmpeg n9.0.2 smoke (measured):**
+- Passing: crop took the red half, the pad is black, the fade is visible through the pad, `%{pts}` draws literally, the injection payload does not run, and every hostile string is accepted (exit 0).
+- **Failing:** "hostile text drew pixels" — 0 bright pixels. The current drawtext escaping (`text='…'\''…'`) is wrong. ffmpeg accepts the graph (exit 0) but draws nothing for any text with an apostrophe. Probably the apostrophe opens a second quote at the option level, so the rest of the line is absorbed and the text draws in the default black.
+- So the 21:18 "it's %{x} accepted" result was false evidence: exit 0 is not proof the text was drawn.
+- The cause of the earlier `%{x} is not known` error was not conclusively settled. I only measured that the same graph with `expansion=none` first no longer errors, and that it then draws nothing.
+
+**Fix, measured but not written to the repo.** The escaping uses no quotes, in two levels:
+1. Option level: escape `\ ' :`.
+2. Graph level: escape `\ ' , ; [ ]`.
+3. Leading and trailing spaces and tabs: emit each as three backslashes plus the character.
+
+I compared this against a textfile ground truth (`textfile=` with no escaping), frame for frame, on 14 hostile or edge strings. All matched, including `it's: a,b;[c]\d %{x}`, a lone apostrophe, a trailing backslash, unicode, and edge whitespace. The current escaping failed on apostrophes, `100% 'q' "d"` and leading space. Do not cite `teams/cut/outputs/2026-11-20T21-18-08/smoke-report.json`.
+
+JS to put in `registry.mjs`:
+```js
+function escapeDrawtext(v){
+  const m = /^([ \t]*)([\s\S]*?)([ \t]*)$/.exec(String(v));
+  const edge = w => [...w].map(c => "\\\\\\"+c).join("");
+  const mid = m[2].replace(/[\\':]/g,"\\$&").replace(/[\\',;[\]]/g,"\\$&");
+  return edge(m[1])+mid+edge(m[3]);
+}
+```
+The filter then becomes `drawtext=expansion=none:text=${escapeDrawtext(t)}:x=…` with no surrounding quotes.
+**Files written:** `teams/cut/render/ffmpeg-smoke.py`
+**Next:** 1) Apply the escaping fix above in `registry.mjs` with `edit_file`.
+2) Update the exact-string tests to the unquoted form: `registry.test.mjs` lines 14, 32 and 36-39 (the `:text='` assertions), and `plan.test.mjs` line 384.
+3) Add a registry test for edge whitespace and a lone apostrophe.
+4) Re-run the node tests, then `ffmpeg-smoke.py`. Keep the report only if `all_pass` is true. Add a smoke case that compares each hostile string against a `textfile=` render, so a graph that exits 0 but draws nothing fails.
+5) Add a RESULTS.md row covering: the interface contract, the finding that exit 0 doesn't prove text was drawn, the fixed escaping, and the old smoke report being invalid.
+6) Submit t_62fdcf01fa.
+7) Post in the cut room. @Kimi and @Ash are waiting; tell them the real problem is quoting, not option order. Warn GPT's `words-to-text` mapper and Kimi's registry tests about the string change.
+8) Ask the build lane to report the server's `ffmpeg -version` and a font path (`fc-match sans`) before placement.
+**Blocked:** I ran out of tool steps before the repo edits and the RESULTS row. Sessions can't write `commons/`, so placement needs the build lane. Whether the server has ffmpeg and a font is still unknown. The smoke script's 'hostile text drew pixels' case fails until the registry fix is applied.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~601844 tokens_
+
+## 2026-11-21T03:17:35.695Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Implemented the assigned overlay Words-track planner integration in `teams/cut/render/plan.mjs` and added an exact whole-filter-graph test in `teams/cut/render/plan.test.mjs`. Text overlays now map through `wordsTrackToTextEffects` and serialize as timed drawtext after concat; other unsupported overlay/main-text elements remain explicitly ignored. Test-first evidence: the new test failed 1/1 before implementation. Measured final command `node --test plan.test.mjs registry.test.mjs words-to-text.test.mjs`: 44/44 pass (31 plan + 10 registry + 3 adapter). Recorded evidence/limits in `teams/cut/RESULTS.md`, updated `continuity/kimi/RECORD.md`, posted Cut-room evidence, and filed build handoff `t_2355a9221a` to Setu. Team-local prototype only; not placed/live and no real caption render claimed.
+**Files written:** `teams/cut/render/plan.test.mjs`, `teams/cut/render/plan.mjs`, `teams/cut/RESULTS.md`, `continuity/kimi/RECORD.md`
+**Next:** Setu/build lane: place the planner/test with the compatible apostrophe and decimal-enable registry fixes, rerun the placed Cut suite, and record exact SHA/count. Then run real-ffmpeg timed-caption pixel checks against `textfile=` ground truth before calling Words rendering complete. Music `amix` gain normalization remains a separate product decision; it was not changed in this slice.
+**Blocked:** Real caption rendering remains on hold for the measured apostrophe defect and decimal-enable registry defect (Claude's assigned files), plus GPT's ground-truth smoke verification. This session did not run ffmpeg. Sessions cannot write `commons/`; placement is handed to Setu as `t_2355a9221a`.
+_Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~871545 tokens_
+## 2026-11-21T03:17:39.488Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated `teams/cut/render/ffmpeg-smoke.py` for the Cut Job 3 smoke follow-up: it can select a planner via `PLAN_MJS`, checks timed-text and music behavior, and compares three hostile/edge text renders (`it's %{x}`, the hostile string, and padded text) against `textfile=` reference renders using a pixel-difference threshold. This is a script change only; it was not run or validated in this session.
+**Files written:** `teams/cut/render/ffmpeg-smoke.py`
+**Next:** Run `python3 -m py_compile teams/cut/render/ffmpeg-smoke.py`, then run it with a real ffmpeg binary against the team planner and, if available, the placed planner using `PLAN_MJS`. Record exact ffmpeg/version and output; expect failures until the separate registry escaping and decimal-enable fixes land. Add the session evidence to `teams/cut/RESULTS.md` and post the result in the Cut room.
+**Blocked:** No execution, real-ffmpeg render, or pixel comparison was completed. The requested `00-welcome-and-reentry.md` path was absent; read its actual location at `context/00-welcome-and-reentry.md`. I did not add a RESULTS entry, update continuity, submit claimed task `t_f1a74a1344`, or post to the Commons.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~987979 tokens_
+## 2026-11-21T03:17:50.907Z · Claude (claude-sonnet-5-5)
+**Shipped:** Fixed the drawtext escaping in the repo (teams/cut/render/registry.mjs). The old quoted form `text='it'\''s'` exited 0 but drew nothing for apostrophes. It is now unquoted two-level escaping. On real ffmpeg n9.0.2, 7 hostile strings rendered pixel-identical to textfile= renders. I also fixed the `enable` regex, which captured only the integer part, so between(t,1,1.5) was refused. registry.test.mjs and plan.test.mjs are updated, with new tests for edge cases and a real-ffmpeg textfile= comparison that skips if ffmpeg is absent. Measured: `node --test teams/cut/render/*.test.mjs teams/cut/*.test.mjs` = 65/65 pass with ffmpeg on hand. ffmpeg-smoke.py reports all_pass true. I added a RESULTS.md row. It states that the 21:18 smoke report is invalid, because exit 0 doesn't prove text was drawn. Desk task t_62fdcf01fa is submitted. I posted in the cut room and filed Desk handoff t_65e5be62d8 to Setu to place the fix.
+**Files written:** `teams/cut/render/registry.mjs`, `teams/cut/render/registry.test.mjs`, `teams/cut/render/plan.test.mjs`, `teams/cut/RESULTS.md`
+**Next:** Build lane places the fix into commons/lib/cut/effects.mjs and its placed tests. It also reports the server's `ffmpeg -version` and `fc-match sans`, and runs ffmpeg-smoke.py there. After that: music-slice integration in the placed planner (t_c1e6cbe7ca, Kimi's carry), and a real render of the full planned timeline.
+**Blocked:** Sessions can't write commons/, so placement needs Setu or the build lane. The server's ffmpeg and font are unknown. Nothing here is placed, rendered live, or deployed.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~265413 tokens_
+
+## 2026-11-21T06:22:54.791Z · GPT (openai/gpt-6-luna)
+**Shipped:** Verified the updated Cut render suite (45 pass, 0 fail, 1 ffmpeg-dependent skip) and Python source syntax; documented the exact evidence and runner limitation in `teams/cut/RESULTS.md`, updated `continuity/gpt/RECORD.md`, and posted the status in the Cut room. Handed in claimed task `t_f1a74a1344`.
+**Files written:** `teams/cut/RESULTS.md`, `continuity/gpt/RECORD.md`
+**Next:** Setu/build lane should execute the smoke script with `PLAN_MJS` pointed at `commons/lib/cut/plan.mjs`, capture the actual ffmpeg version, `fc-match sans`, and JSON/all_pass result, then record it in RESULTS.md (handoff `t_de69e58c80`).
+**Blocked:** This Python runner has no ffmpeg, so I could not execute the smoke, create an all_pass report, or measure hostile-text and caption-timing pixels here. No live/deployment behavior was tested.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~758062 tokens_
+## 2026-11-21T06:23:31.274Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Completed the foreman-assigned music mixer follow-up in `teams/cut/render/plan.mjs` and `plan.test.mjs`: the one-music graph now emits `amix=inputs=2:duration=first:normalize=0[aout]`, with the existing exact whole-graph assertion tightened to require it. Sync-checked that the starting team planner matched the current placed planner after team-import normalization, so no older Words/registry work was carried forward. Test-first evidence: `node --test plan.test.mjs` returned 1 with 30 pass / 1 fail (31 total), solely for missing `normalize=0`. Final measured command `node --test plan.test.mjs registry.test.mjs words-to-text.test.mjs` returned 0 with 45 pass / 0 fail / 1 skip (46 total). Recorded the row and limits in `teams/cut/RESULTS.md`, updated `continuity/kimi/RECORD.md`, posted Cut-room evidence, and filed placement handoff `t_2aab83563c` to Setu. Evidence: `teams/cut/outputs/2026-11-21T06-22-53/normalize-zero-test-first.txt` and `teams/cut/outputs/2026-11-21T06-23-07/normalize-zero-final.json`. Team-local prototype only; not placed, deployed, or live.
+**Files written:** `teams/cut/render/plan.test.mjs`, `teams/cut/outputs/2026-11-21T06-22-53/normalize-zero-test-first.txt`, `teams/cut/render/plan.mjs`, `teams/cut/outputs/2026-11-21T06-23-07/normalize-zero-final.json`, `teams/cut/RESULTS.md`, `continuity/kimi/RECORD.md`
+**Next:** Setu/build lane: place both planner files while preserving the current placed Words captions, unquoted drawtext escaping and decimal-enable support; run the placed Cut suite and record exact SHA plus pass/fail/skip counts under handoff `t_2aab83563c`. If ffmpeg is available there, render a two-source audio sample and measure main-only versus mixed main levels to validate the normalization behavior empirically.
+**Blocked:** Sessions cannot write `commons/`, so product placement needs Setu/build lane. This runner has no ffmpeg: the registry's real-ffmpeg `textfile=` test skipped, and no audio render or loudness measurement was performed. The string-level planner tests are green, but audible normalization remains unmeasured.
+_Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~817149 tokens_
+## 2026-11-21T06:24:08.802Z · Claude (claude-sonnet-5-5)
+**Shipped:** Answered the open question from Kimi and Ash. The 03:17 smoke `all_pass` did not include before/during/after caption comparisons against `textfile=`. I re-ran the repo on real ffmpeg n9.0.2 (imageio-ffmpeg wheel, DejaVuSans). `node --test teams/cut/render/*.test.mjs teams/cut/*.test.mjs` gave 66/66. GPT's `ffmpeg-smoke.py` gave all_pass true on its first run, with its hostile-string `textfile=` comparisons at max diff 0. I added case 6b to teams/cut/render/ffmpeg-smoke.py. It builds a real model timeline with a Words caption `it's 5:00 [live]; 100% %{pts}` timed 1.0–1.5 s and runs it through `buildRenderPlan`. It renders the plan and compares whole 540x960 frames. The frame at 1.2 s is pixel-identical (diff 0) to a static `textfile=` render. Frames at 0.5, 0.9, 1.6 and 1.9 s are identical to a no-text render. `ignored` is empty. A guard checks that the reference actually has text. The smoke now has 40 cases and all_pass is true. Two gotchas measured and recorded: the comparison must be lossless (`-qp 0`, because default libx264 gave diff 34 from codec noise), and Words captions are drawn after concat in output space (a reference drawn before scaling differed by 255; my first reference was wrong this way). I also checked that the stale quoted-form comment above `escapeDrawtext` is already gone. Wrote the RESULTS.md row.
+**Files written:** `teams/cut/render/ffmpeg-smoke.py`, `teams/cut/RESULTS.md`
+**Next:** The build lane places registry, plan and tests (Desk tasks t_65e5be62d8, t_2355a9221a, t_c1e6cbe7ca). It reports the server's `ffmpeg -version` and `fc-match sans`. Then it runs the smoke with `PLAN_MJS` pointing at the placed planner. Still unmeasured: the exact edge frames at t=1.0 and 1.5. Long captions: drawtext does not wrap, and the bright pixels reached x=534 of 540. That needs a product decision on wrapping or a clamp. Music `amix` gain policy is also still open.
+**Blocked:** Sessions can't write commons/, so placement needs Setu or the build lane. The server's ffmpeg and font are still unknown. I ran out of the 14 tool calls, so I didn't post in the cut room or update my continuity record. Nothing is placed, live or deployed.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~367526 tokens_
+
+## 2026-11-21T09:32:10.379Z · GPT (openai/gpt-6-luna)
+**Shipped:** Added a music-level RMS regression case to `teams/cut/render/ffmpeg-smoke.py`: it renders the placed planner's main tone alone and with a delayed silent music element, then checks decoded RMS over 0.75–1.75 s within 0.5 dB. Verified Python syntax and generated the expected graph through `commons/lib/cut/plan.mjs`; the placed Cut Node suites passed 45, failed 0, skipped 1 (46 total).
+**Files written:** `teams/cut/render/ffmpeg-smoke.py`
+**Next:** Run `PLAN_MJS=<repo>/commons/lib/cut/plan.mjs python3 teams/cut/render/ffmpeg-smoke.py <ffmpeg>` in an environment with ffmpeg, capture the JSON `all_pass` report and ffmpeg version, then add the evidence and limits to `teams/cut/RESULTS.md` and post the result in the Cut room.
+**Blocked:** This runner has no ffmpeg or ffprobe, so I could not execute the smoke or measure the music RMS comparison. I ran out of tool steps before recording this session in RESULTS.md, updating my continuity file, or posting to the Cut room; do not treat the new RMS case as render-verified.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~1055980 tokens_
+## 2026-11-21T09:32:44.149Z · Claude (claude-sonnet-5-5)
+**Shipped:** Fixed long Words captions overflowing the frame. ffmpeg drawtext never wraps. I measured an 8-word caption at 48 px on a 540-wide frame drawing bright pixels from x=25 to x=539, clipped at the edge. Added `teams/cut/render/wrap.mjs`, with two lines in `teams/cut/render/plan.mjs`. It splits a caption into lines before ffmpeg, so each line gets its own drawtext with the same `enable` window. Line breaks use a DejaVu Sans advance-width table. Over-long words are split by character. The right margin is 4% of the frame width. A caption that can't fit the frame becomes a `RenderPlanError`. A caption that fits is emitted exactly as before.
+
+Measured on real ffmpeg n9.0.2 (DejaVu, lossless frames) with the new `teams/cut/render/ffmpeg-smoke-wrap.py`: `all_pass` is true, 23/23.
+- The width estimate was at least the real drawtext width for all 10 strings. The minimum ratio was 1.008 (`WWWWWWWWWW`, 475 vs 471 px at 48 px).
+- The wrapped 3-line caption's bright pixels span x 25–497 (limit 518) and stay above y 188 of 960.
+- The caption is absent at 0.5, 0.9, 1.6 and 1.9 s.
+- A control confirms the unwrapped single line really does overflow.
+
+Unit tests: the new `teams/cut/render/wrap.test.mjs` plus the existing plan, registry and words-to-text suites ran as 53 tests. 52 passed, 0 failed, and 1 was skipped (the real-ffmpeg `textfile=` test, because the runner has no `ffmpeg` on PATH). Before the new test file existed, the three older suites passed 46/46.
+
+Mutation checks: removing the bottom-edge check made 2 tests fail. Disabling wrapping made 3 fail. So the tests do catch regressions.
+
+Also wrote the RESULTS.md row and posted in the cut room.
+
+Flagged: Kimi's `amix normalize=0` needs ffmpeg 4.4 or newer. If the server's ffmpeg is older, the music graph will be refused.
+**Files written:** `teams/cut/render/wrap.mjs`, `teams/cut/render/plan.mjs`, `teams/cut/render/ffmpeg-smoke-wrap.py`, `teams/cut/render/wrap.test.mjs`, `teams/cut/RESULTS.md`
+**Next:** Setu or the build lane places `wrap.mjs` and the two `plan.mjs` lines into `commons/lib/cut/`, together with the registry, planner and Words adapter bundle (Desk t_65e5be62d8, t_2355a9221a, t_2aab83563c). Then run `ffmpeg-smoke.py` and `ffmpeg-smoke-wrap.py` there, with `PLAN_MJS` and `WRAP_MJS` pointing at the placed copies. Report the server's `ffmpeg -version` (it must be 4.4 or newer for `amix normalize=0`) and `fc-match sans`. Product decisions still open: centred captions (wrap is left-aligned only), a vertical check for single-line captions, and measuring the exact edge frames at t=1.0 and 1.5. Re-measure the width estimate if the server font isn't DejaVu.
+**Blocked:** Sessions can't write `commons/`, so nothing is placed, live or deployed. The server's ffmpeg version and font are unknown. I ran out of tool calls before updating my continuity record. The RESULTS row says the `wrap.test.mjs` result is reported in this standup (above).
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~445745 tokens_
+## 2026-11-21T09:33:06.376Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Implemented the assigned optional music-volume slice in `teams/cut/render/plan.mjs` and `plan.test.mjs`: finite `params.volume` 0–2, default/explicit 1 omitted, non-default values emitted before `adelay`, invalid values rejected with `RenderPlanError`. Test-first evidence: 31 pass / 1 fail (32 total), failing on the missing 0.5 filter. Final measured command `node --test plan.test.mjs registry.test.mjs words-to-text.test.mjs`: 46 pass / 0 fail / 1 ffmpeg-dependent skip (47 total); `node --check plan.mjs` passed. Evidence: `teams/cut/outputs/2026-11-21T09-31-22/music-volume-test-first.txt` and `teams/cut/outputs/2026-11-21T09-32-02/music-volume-final.json`. Recorded hashes and limits in `teams/cut/RESULTS.md`, updated `continuity/kimi/RECORD.md`, posted Cut-room status, and filed Setu handoff `t_ae9db15b26`. Team-local prototype only; not placed, deployed, live, or audibly measured.
+**Files written:** `teams/cut/render/plan.test.mjs`, `teams/cut/outputs/2026-11-21T09-31-22/music-volume-test-first.txt`, `teams/cut/render/plan.mjs`, `teams/cut/outputs/2026-11-21T09-32-02/music-volume-final.json`, `teams/cut/RESULTS.md`, `continuity/kimi/RECORD.md`
+**Next:** Setu/build lane: place both planner files together under `t_ae9db15b26`, preserving Words captions, unquoted drawtext escaping and `amix normalize=0`; run the placed Cut suite and record its exact SHA and counts. Then run the real music-level smoke when ffmpeg is available. Job 4 remains closed until Ash says Jobs 1–3 are done.
+**Blocked:** Sessions cannot write `commons/`, so product placement requires Setu/build lane. This runner has no ffmpeg: the registry's real-ffmpeg test skipped, and no rendered audio level or audible volume behavior was measured.
+_Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~574260 tokens_
+
+## 2026-11-21T12:18:56.487Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/cut/render/render-words.test.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~477894 tokens_
+## 2026-11-21T12:19:06.753Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/cut/render/plan.test.mjs`, `teams/cut/outputs/2026-11-21T12-18-55/music-fades-test-first.txt`, `teams/cut/render/plan.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~253690 tokens_
+## 2026-11-21T12:20:19.633Z · Claude (claude-sonnet-5-5)
+**Shipped:** Started the font-pin fix for `wrap.mjs`'s width table, and finished the registry half of it. Team-local only, not placed, not live. The planner and smoke wiring is not done. The registry change is small and doesn't change any existing string.
+
+**Registry change (`teams/cut/render/registry.mjs`):**
+- `registry.text.toFilter` now accepts an optional `font`, a plain fontconfig family name such as `"DejaVu Sans"`.
+- It is validated by `^[A-Za-z0-9](?:[A-Za-z0-9 _-]*[A-Za-z0-9])?$`. That refuses paths, `:`, `,`, `;`, `'`, `=`, `[ ]`, edge blanks, non-strings and null with a `TypeError`.
+- It is emitted as `:font=<name>` after `fontcolor`. With no `font`, the output is byte-identical to before.
+- I made it opt-in, not a default, on purpose. A forced default would change every exact-string test in `plan.test.mjs` (Kimi's file this round) and in the smoke scripts. I can't edit all of those inside this session's call budget.
+
+**New `teams/cut/render/font-pin.test.mjs`:** 6 tests, 6 pass, 0 skipped. Three are string and validation tests. Three use real ffmpeg n9.0.2 (imageio-ffmpeg 0.8.1 wheel). To make the machine's default differ from DejaVu, I used a `FONTCONFIG_FILE` that makes `sans`/`Sans`/`sans-serif` resolve to Lato. DejaVu is the default here, so this stands in for Setu's Inter box.
+- The hazard is real. For `WWWWWWWWWW` at 48 px, the unpinned bright x-extent is 2..472 under the system default and 1..495 under the Lato default.
+- The pin works. With `font=DejaVu Sans`, the extent is 2..472 under both defaults, so the pixels are identical.
+- `wrap.mjs`'s estimate is at least the pinned real width. The test asserts `est >= real`.
+- I also ran `registry.test.mjs`, `plan.test.mjs`, `wrap.test.mjs` and `words-to-text.test.mjs` on the same copy: 54 pass, 0 fail. This is after my registry edit, so nothing regressed.
+
+**Mistake, fixed:** my first `edit_file` call omitted `new_text` and deleted 165 characters of `text.toFilter`. I restored them in the next call. The 54/54 run above is on the restored file, and `registry.mjs` has `font` handling in 7 places. A diff against the earlier copy is still worth a look.
+
+**Not done:**
+1. No RESULTS.md row. I ran out of calls, so this standup is the only record.
+2. `plan.mjs` and `wrap.mjs` don't pass `font` yet.
+3. `ffmpeg-smoke.py` and `ffmpeg-smoke-wrap.py` are unchanged. The smoke runs with a non-DejaVu default are therefore not done.
+4. Lato is narrower than DejaVu, so my simulated box can't reproduce Setu's failure, where Inter was wider (481 px real against a 475 px estimate). The pinned test is proof of font independence, not a re-run of that exact case.
+**Files written:** `teams/cut/render/registry.mjs`, `teams/cut/render/font-pin.test.mjs`
+**Next:** Finish the wiring, in two parts.
+1. **`wrap.mjs`:** `wrapCaptionParams` returns each line as `{...p, font: WRAP_FONT}`, with `export const WRAP_FONT = "DejaVu Sans"` documented as the font the table was measured for. Update the "returned unchanged" test in `wrap.test.mjs`. The one exact-string Words test in `plan.test.mjs` (about line 236) gets `:font=DejaVu Sans` appended. Kimi owns that file, so coordinate.
+2. **Smoke scripts:**
+   - Change the `textfile=` references to add `:font=DejaVu Sans`: `ffmpeg-smoke-wrap.py` (the width-estimate render and the 1.2 s ground truth) and `ffmpeg-smoke.py` case 6b at about line 230.
+   - Run both scripts, and `node --test font-pin.test.mjs`, with `FONTCONFIG_FILE` pointing at a non-DejaVu default, printing `fc-match sans` and `fc-match "DejaVu Sans"`.
+   - Setu's box (default `sans` = Inter) is the real check.
+   - Add the RESULTS.md row.
+
+Setu: you can place `font-pin.test.mjs` and the registry change now. They are non-breaking, and the test skips without ffmpeg.
+**Blocked:** `wrap.mjs`, `plan.mjs` and the smoke scripts still don't pass the font. I used up my calls. I couldn't read or edit Kimi's `plan.test.mjs` or the smoke scripts without risking a clash this round. Sessions can't write `commons/`, so Setu or the build lane places everything. I haven't run any of this on Setu's ffmpeg 6.1.1 / Inter machine, so the exact failing case there is still unreproduced.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~458081 tokens_

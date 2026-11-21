@@ -444,3 +444,172 @@ New measured facts (reuse, don't re-read):
 Method lesson worth keeping, and it earned its keep twice: **green on the first try is a hypothesis, not a result.** The mutation pass is what turned "the test passes" into "the test measures": three broken guards, three red runs, three distinct assertion messages. And it produced the honest limit — the withdraw-403 and the PATCH-403 are the same guard, so one of my new assertions is corroboration, not coverage. Write that limit down in the file, not just in the standup; the next reader only sees the file.
 
 Still mine and unclaimed: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Design gaps I must not build past: coin-buy for listings (money code — Geoffrey's word first), the two NOT_OPEN texts for one state (Aletheia-6's call), and the unencoded `next=` on `/label/mine`'s signed-out redirect.
+
+
+## 2026-11-21T00:21:41.075Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 20, seventh session. Shape: read JOBS + 4 targeted greps → 1 write → 4 runs (install, test, debug boot, test) → 1 edit → 1 rerun. More runs than usual because the sandbox server did not boot; the fix was cheap and worth it.
+
+**New measured facts (reuse; don't re-read):**
+- `GET /api/market/listings/:id/fulfillment` (server.mjs:1740) is **unguarded** — signed out and as a second member you get `{provider, product_id, variant_ids, sku, by, ts}`. That is the leak; it is private-data code, so it is pinned red in `commons/test/market-fulfillment-guards.mjs` and named to Setu, not fixed.
+- All three write routes (`POST`/`DELETE …/fulfillment`, `POST …/release`) go through `marketWriter` then `fulfillment.ownerOf` — 401 / 404 / 403, one guard reached by three routes. DELETE is idempotent (`{linked:false}`, 200, twice).
+- The release checklist is category-gated: art listing → 400; seven steps; `{done:false}` clears one.
+- A listing object's own `link` field is the maker's optional external URL (null when unset) — **not** the fulfillment link. I got an assertion wrong on exactly that; read `checkLink` before asserting on a field named `link`.
+- Public surfaces are clean: listing JSON has no `fulfillment`, listing page prints neither product_id nor sku.
+
+**Sandbox runtime recipe (corrected, one call, reliable):** copytree ignoring `.git node_modules label images outputs media .github`; write `package.json {"private":true,"type":"module"}`; **`src/` is absent from the REPO snapshot**, so create `src/llm.js` and it must export **`chat`** (grep the snapshot for `from '…src/llm.js'` — that is the only name needed); `npm install --no-audit --no-fund express@4 ws dotenv` with `HOME` and `NPM_CONFIG_CACHE` inside the copy; then `node --test <file>`. ~1 s per boot after that. Do **not** stub `sharp` by hand — npm prunes the extraneous folder anyway, and the server boots without it.
+
+**Method lesson:** when a route has no guard, the test that names the leak is worth more red than a green suite is worth green — but write the *guards* half so it passes on its own, so the foreman can keep one and quarantine the other.
+
+
+## 2026-11-21T00:32:15.605Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 21, eighth build session. The job's premise was wrong and that was the most useful part of the session: "A GET /label/sales shows B's ask" cannot happen, because `/label/sales` is fed by `checkout.ordersFor` (real orders) and an ask is a **public question** rendered on the listing page ("Public, like everything in the Commons") and carried in `GET /api/market/listings/:id` to anyone signed out. So when a job asserts a behaviour, read the route *and* the lib before believing the premise; then assert what is there and name the gap (here: no seller-side question inbox). Same lesson as round 19's `link` field: the job's wording is a hypothesis about the code.
+
+**New measured facts (reuse, don't re-read):**
+- Orders are an append-only JSONL at `<COMMONS_DATA>/payments/orders.jsonl`, folded per call by `orders()` (`op:'create'` sets the order, `op:'status'` patches it). **You can seed a synthetic paid order after boot** — `checkout.init` only mkdirs `payments/`, and nothing caches the log. That is how any sales/orders test must work while payments are closed. Shape: `{id:'ord_…', listing, title, buyer:<member id>, seller:<member id>, amount, currency:'USD', fee_cents, mode, status:'draft', ts}` then a status line to `'paid'`.
+- The whole privacy decision is **one line**: `ordersFor`'s two filters by `o.buyer === member.id` / `o.seller === member.id` (plus `VISIBLE` = every state except `draft`). `salesPage` and `ordersPage` render whatever they're handed. So one mutation, not one per page.
+- Seller's sales page prints `Buyer: <name>` and a Fulfillment link when `o.hasFulfillment`; it prints no buyer id. `/orders` prints no buyer at all.
+- Signed-out redirects: `/label/sales` → `/signin?next=%2Flabel%2Fsales`, `/orders` → `/signin?next=%2Forders` (these two ARE encoded — the unencoded one is `/label/mine`'s).
+- Member id in a test: `GET /api/me` with the session cookie returns `{id, …}` (spread of `core.me`), so `me.id || me.member?.id`.
+
+**Method lesson that earned its keep:** my first mutation pass produced a GREEN run and I nearly wrote "mutation-checked" anyway. The mutation had removed the id test from the initial `all` filter, which the two per-list filters immediately re-applied — a mutation that leaves the guard intact measures nothing. **A green mutation is a bug in the mutation, not evidence about the test.** I now write the failed mutation into the file header too, so the next reader sees the trap rather than repeating it.
+
+Runtime recipe unchanged and reliable: copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}`, stub `src/llm.js` exporting `chat`, `npm install express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE in /tmp. ~2 s install, ~0.5 s test.
+
+
+## 2026-11-21T02:14:59.000Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 22, ninth build session. No round-22 JOBS.md existed (it still says Round 21, whose job I'd already shipped and which merged as 0032-deepseek). I used the session to correct a finding of mine rather than invent new work.
+
+**The correction is the lesson:** in round 21 I wrote "there is no seller-side question inbox" without tracing it. It exists three layers deep — `market.notificationsFor` (market.mjs:230, emits `market-ask` to the owner and `market-answer` to the question's author, skipping your own words), `inboxes.mjs:28-34` (renders them, filing by page), `GET /api/me/inboxes` (server.mjs:1528), plus `feedv2.mjs:260` and `core.mjs:564`. **A negative finding needs the same trace as a positive one: grep for the function name across the repo before saying it doesn't exist.** I grepped `notificationsFor` repo-wide and found four call sites; one grep would have saved the wrong claim.
+
+**New measured facts (reuse):**
+- The seller's inbox item is keyed `q:<ask id>` — a stable handle that survives wording changes in inboxes.mjs. Test by searching the JSON recursively for that id, not by matching prose.
+- `market.ask` rate-limits 3 questions/minute per member per listing (market.mjs:202) — keep test asks to ≤3.
+- A signed-out reader gets a listing's `asks` (market.mjs:216) **and** the listing page prints "Public, like everything in the Commons" — the public half is design, assert it so a later reader can't call it a leak.
+- `GET /api/me/inboxes` → 401 signed out; 200 for any member.
+
+**Runtime recipe, unchanged and reliable:** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `src/llm.js` exporting **`chat`**; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE inside the copy; `node --test <file>` or via `subprocess` in run_python with node v24.22.2 present. ~4 s install, ~0.5 s test.
+
+**Mutation lesson, sharpened:** a mutation can be caught by an assertion you didn't predict. Removing the self-suppression `continue` failed at "the seller is not told about their own answer" — not at the asker's own-question check — because the `continue` only matters when the member is both seller and answerer. Record *which* assertion caught it; "mutation caught" without the assertion is a weaker claim than it looks.
+
+**Carry forward:** fulfillment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6. My pattern for next time: pick the next unguarded read in the market/jobs routes, prove it with a green half and, if there's a leak, keep the leak pinned red and named — never fix private data without his word.
+
+
+## 2026-11-21T03:18:04.566Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 22: wrote `commons/test/market-api-signed-out.mjs` but did NOT get to run it — steps ran out. **First thing next session: run it, then fix, then mutate once.** Do not let a written-but-unrun test sit; it costs a whole session and the room has to read "unverified" instead of "green".
+
+Facts gathered this session (reusable, no need to re-read):
+- **The complete set of market GET routes in server.mjs**: 1732 `/api/market/listings` (query: category, provider, type, q, by, free; adds `payments:'not open: no money moves yet'`); 1733 `/api/market/listings/:id` → `market.get` = listing + `asks`; 1768 `…/checkout` → `checkout.quote`; 1740 `…/fulfillment` (known leak, skipped). Everything else under /api/market is a write: 1734, 1735, 1736, 1741, 1742, 1743, 1770, 1794.
+- `market.get` (market.mjs:216) does **not** filter status → a withdrawn listing still answers 200 on the API, while `checkout.quote` refuses it with 404. Measured-by-reading, not yet run. Not a private-data leak; a decision for someone.
+- `market.create` writes `by: {id, name, badge, model}`, `provider`, `page`, `status`, `ts`, title/text/category/type/price/packages/license/rights/tags/link/images/made_by/desk.
+- `checkout.quote` returns `{listing, title, seller:{id,name,kind}, amount, currency, payable, why}` and calls itself "Safe to show anyone".
+- `store.publicMember` (store.mjs:~166) is the whole public surface: id, kind, name, model, operator, teams, bio/headline/skills gated by `visibility`, look_page, face… **no email, no password, no recovery** — the Commons keeps none of those for members (pages.mjs:256 says so publicly).
+- `POST /api/me/recovery` (server.mjs:2150) rotates your own code from your own token; `POST /api/me/profile` (2163) is the profile write; `PATCH /api/me` (2161) the same.
+- CSRF: state-changing cookie requests need `X-Commons: 1`; pass a body of `{}` to get the header on a POST with no real payload.
+
+Runtime recipe (unchanged, reliable): copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; stub `src/llm.js` exporting `chat`; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/NPM_CONFIG_CACHE inside the copy (~2-4 s); `node --test <file>`.
+
+
+## 2026-11-21T06:12:24.548Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 22 shipped green, and the lesson is about the last session, not this one.** Last session I wrote this test and never ran it; the file was not in the repo at the start of today, so an entire session produced nothing. The rule I now hold: **write the file and run it in the same session, or don't write it.** A written-but-unrun test costs a whole session and the room reads "unverified" instead of "green".
+
+**What worked, reuse it:** the strongest part of this test is not any single assertion — it's the **route-coverage check**: read `commons/server.mjs` at test time, regex `app\.get\(\s*['"](\/api\/market[^'"]*)['"]`, and `deepEqual` the set against a list the file names. It fails on an unknown route *and* on a stale one. Any "what does this API expose" test should carry this: it converts a snapshot into a standing guard.
+
+**Measured facts, reuse (no need to re-read):**
+- The complete set of market GET routes: 1732 `/api/market/listings`, 1733 `/api/market/listings/:id`, 1768 `…/checkout`, 1740 `…/fulfillment`. Everything else under `/api/market` is a write.
+- `market.get` (market.mjs:216) returns `{...l, asks}` and **does not filter status** → a withdrawn listing still 200s on the API while `checkout.quote` 404s it and `list` (default `status:'live'`) drops it. Three reads, two answers.
+- `checkout.quote` shape: `{listing, title, seller:{id,name,kind}, amount, currency, payable, why}` — `payable:false` and a `why` string while payments are shut.
+- `GET /api/payments/account` signed out → 401 via `marketWriter`.
+- `market.ask` rate-limits 3 questions/minute per member per listing (market.mjs:202).
+
+**Runtime recipe, unchanged and reliable (~5 s):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}` at the copy root; stub `src/llm.js` exporting **`chat`**; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE inside the copy; `node --test <file>` on node v24.22.3. Build it and run the test in **one** `run_python` call — the scratch dir is discarded between calls, so a runtime built in call A is gone in call B. That bit me as a near-miss.
+
+**Mutation discipline, sharpened again:** run the mutation, then record *which assertion* caught it, in the file header, and say plainly which assertions were never mutated. Three of five proven beats five implied.
+
+**Carry forward:** fulfillment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6; the withdrawal inconsistency is new and mine to hand to whoever owns the Market pages. Next unguarded read worth tracing: `market.notificationsFor` through `GET /api/me/inboxes` (server.mjs:1528).
+
+
+## 2026-11-21T06:23:05.895Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 23: `commons/test/market-create-guards.mjs` is **green (1/1) and mutation-proven three ways**, but the header lacks the mutation block — that is a 3-minute edit at the start of next session, then post in build.
+
+Measured facts worth not re-reading (POST /api/market/listings = server.mjs:1734 → market.create):
+- `checkFields` clips title to 90 **before** `length < 3` is checked → over-90 is silently truncated with a 201; the error text "title: 3 to 90 characters" only bites the lower bound. Finding, unfixed, mine to hand to whoever owns the form.
+- `checkPrice`: `mode` must be in PRICE_MODES; fixed amount = `Math.round(Number(x)*100)/100`, must be finite and 1..100000 → negative and non-numeric both 400 with one plain sentence.
+- `wrap()` answers `e.status` with `{error: e.message}` and an uncaught error with 500 'server error' — so a 5xx on a bad body means a missing guard.
+- Rendering: `esc` lives in `commons/public/md.js`; `/label/l/:id` escapes title in both `<h1>` and `<title>`, `/label/mine` escapes it too; JSON API returns the raw stored title (correct: escape at the edge).
+- `clip` = collapse whitespace, trim, slice — so 10,000 'L' → exactly 90.
+
+Runtime recipe unchanged and fast (~5 s total): copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `mkdir src` + stub `src/llm.js` exporting `chat` (**the stub IS needed** — server imports it); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/NPM_CONFIG_CACHE inside the copy; run with `node --test <file>`. Node's spec reporter prints `ℹ pass / ℹ fail` and the assertion as `AssertionError: <my message>` — grep for that line, not TAP `not ok 1`.
+
+Discipline note to self: I spent two extra sessions' worth of calls re-deriving failure text because my summary regex assumed TAP. And I again finished with a file that is green but whose header claim is incomplete — write the mutation block *immediately after* the runs, not as a planned afterthought.
+
+Next target: `market.update` / `PATCH /api/market/listings/:id` — same `checkFields` with `partial: true`, unmeasured.
+
+
+## 2026-11-21T08:12:17.494Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Session 2026-11-21 08:10Z (Round 23, done properly this time).**
+
+The debt from last session is paid: the mutation block is in the header, and I did not trust my own memory of it — I re-ran all three breaks this session and wrote down the assertion that actually fired, not the one I expected. Two of the three matched what I had remembered; break 2's *wording* needed correcting (I had mutated every `esc(l.title)` site, not just the detail renderer), which is exactly the kind of small falsehood a remembered header accumulates. Rule restated: if the header claims a measurement, the measurement happens in the session that writes the claim.
+
+**New measured facts (reuse; do not re-derive):**
+- `PATCH /api/market/listings/:id` is server.mjs:1735 → `market.update(marketWriter(req), id, req.body || {})`. `market.update` calls `checkFields(member, b, {partial:true, current:l})`, `delete patch.rights`, then `fail(400,'nothing to change')` on an empty patch. Stranger → 403 'only the member who listed it can change it'; signed out → 401 'sign in to use the market'.
+- **`checkFields` coerces before it validates:** `out.title = clip(b.title, 90)` then `length < 3`. So `{title:{}}` → **200** and the literal string `"[object Object]"` (18 chars) goes live; `{title:12345}` → 200; `{title:null}` → 400. Over-90 is clipped, never refused. Both are pinned as today's behaviour with the reason in the file.
+- `clip` is **not** defined in market.mjs (it's imported/elsewhere); don't waste a call grepping for `function clip` in market.mjs again. `esc(l.title)` lives at 6 sites in `commons/lib/marketpage.mjs` and 3 in `commons/lib/jobspage.mjs`.
+- Pre-existing on main, measured today: **`commons/test/market.mjs` fails 7 checks** ("no donation buttons on the albums; $5 or 50 coins, coming soon"; "a priced album is listened to free, and its downloads come with buying"). Reported in build; not mine.
+
+**Runtime recipe (still the fast path, ~10 s for green + 3 mutation runs):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}` at the copy root; `src/llm.js` does **not** exist in the repo and **must** be stubbed (`export async function chat(){...}` + default export); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --test <file>`. Mutation loops work well: keep a PRISTINE dict of every touched file, restore between runs, print `AssertionError` lines only. **Remember `import time`** — I lost a whole call to that today.
+
+**Carry forward:** withdraw's status inconsistency (get 200s a withdrawn listing, quote 404s it, list drops it) is still open and still mine to hand on; the fulfillment read leak still waits on Geoffrey's "seller only"; the form decision (refuse vs coerce / refuse vs truncate) goes to Aletheia-6.
+
+
+## 2026-11-21T10:12:19.153Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 24, `market-ask-guards.mjs`: shipped green 1/1 with four measured mutations.
+
+**The recurring cost, again:** the 09:31 branch was lost to a trivial `SyntaxError` (duplicate `const third`) because I wrote a long file and never ran it before the steps ran out. Rule that would have saved two sessions: **write a short file, run it, then extend it** — a green 200-line test beats a red 400-line one. This session I wrote the file, ran pristine + 4 mutations in ONE `run_python` call (setup, install, run, mutate, restore, re-run, JSON the results) — that is the shape to reuse: ~40 s, one call, and the header's mutation block is then just a transcription instead of a guess.
+
+**Measured facts, do not re-derive:**
+- `POST /api/market/listings/:id/ask` (server.mjs:1794) = `marketWriter` (401 'sign in to use the market') → `market.ask` (market.mjs:196).
+- `market.ask`: `!l || l.status !== 'live'` → 404 'no such listing' (so withdrawn and unknown are the same answer); `String(text ?? '').trim().slice(0,1000)` then `if (!t)` → 400 'write your question (up to 1000 characters)'; bad `reply_to` → 400 'no such question to answer'; **3 asks/member/listing/60 s → 429**. Over-1000 is clipped, never refused — same class as the over-90 title.
+- Questions render through `renderMarkdown(a.text)` (marketpage.mjs:649), and `renderMarkdown` does `esc(String(src))` first — so the escaping lives in `commons/public/md.js`, not the page. Mutation M4 (`renderMarkdown(a.text)` → `a.text`) is the cheap way to prove any page-level escaping claim.
+- Inbox: `inboxes.mjs:31` makes market items `id: 'q:<ask id>'` with an `href` back to `/label/l/:id`; `GET /api/me/inboxes` is the JSON (401 signed out). Counting `q:`-prefixed ids is the honest "nothing was kept" check — an exact-match lookup for `'q:'` is a silent no-op, which I left in the file by accident and then fixed; watch for that shape.
+
+**Runtime recipe confirmed again (~40 s total incl. install):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `mkdir src` + stub `src/llm.js` (`export async function chat(){…}` + default); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --test <file>`; grep `ℹ pass` / `ℹ fail` and the `AssertionError` lines (node's spec reporter, not TAP).
+
+**Discipline note:** I spent 9 of 13 calls reading code before writing a single line, then ran out with an edit unverified. Next time: read the two functions the job names, write, run, and only then read more. The reading was good; the ordering was expensive.
+
+
+## 2026-11-21T12:19:04.143Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 25 (2026-11-21 12:17Z), `market-ask-guards.mjs`: green 1/1 with three measured mutations (M5–M7). Test-only; nothing else touched.**
+
+**The expensive mistake, again, and its exact shape this time:** I wrote a 4.7k-char `edit_file` whose `new_text` I cut off mid-template-literal (`...(${answerItems[0].href`) and whose `old_text` swallowed the `} finally {` opener — one call, a broken file, and two repair calls to fix. What would have saved it: **append in pieces of ~40 lines, and never include a closing block (`} finally {`) in the `old_text` unless the `new_text` ends with it.** The other rule already earned: run `node --check` in the same call as the copy+install, before trusting anything.
+
+**Measured facts (reuse; do not re-derive):**
+- `market.ask` (market.mjs:196) guard order: signed-in → listing live (404) → text (400) → `reply_to` (400) → **rate** → store. Because rate is checked *after* the other guards and nothing refused is stored, refused asks never count toward the 3/minute.
+- **`reply_to` has NO seller check.** Any signed-in member can answer any question on that listing; marketpage.mjs:649 offers Reply to every signed-in member (`me && l.status === 'live'`). Job expected a 4xx — measured 201. Pinned as MEASURED, product decision left to Aletheia-6.
+- `notificationsFor`: a `market-answer` goes to the **parent question's author**, `market-ask` to the **listing owner**. So the asker's inbox is where an answer is read — follow *that* href, not the seller's.
+- Inbox item `text` is the **raw** `a.text.slice(0,80)` (inboxes.mjs:31); the edge is client JS I cannot execute. Named as unproven, not assumed safe.
+- Rate limit is per member **per listing** per 60 s, counting replies. A fresh listing isolates it cleanly.
+- `marketItems()` (the `q:` prefix walker) is the honest "nothing kept" counter; filter by `href` containing the listing id to count one listing's items.
+
+**Mutation record this session:** M5 reply_to guard → `if (false)` → red at the unknown-id reply; M6 `recent >= 3` → `>= 30` → red at the fourth question 429; M7 `renderMarkdown(a.text)` → `a.text` → red, but at the *question* assertion — the thread renders questions and answers through **one** expression, so there is no separate break for the answer's own line. Say that in the header rather than claiming two proofs.
+
+**Runtime recipe (unchanged, ~40 s):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; stub `src/llm.js` (`export async function chat(){...}` + default); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --check` then `node --test`. A rebuilt copy can be reused across mutation runs by checking for `node_modules` at the printed path.
+
+**Carry forward:** withdraw's status inconsistency (get 200s a withdrawn listing, quote 404s it, list drops it); the fulfillment read leak waits on Geoffrey's "seller only"; the clip-vs-refuse decision now spans three fields (title 90, question 1000, answer 1000) and is one decision, not three; public-thread-vs-seller-only is Aletheia-6's.

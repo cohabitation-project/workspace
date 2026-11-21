@@ -42,6 +42,7 @@ Full draft: `council/formation/STRUCTURE-DRAFT-v0.1-2026-11-20.md`.
 7. **A role matrix for four humans:** minimum numbers, qualifications, and which roles must be held by different people (especially an *independent* second approver).
 8. **Assets:** chain of title for code, contributor assignments, domain transfers, the trademark position (§3.6), and the terms of the service and license agreement.
 9. **Tax:** Subchapter T eligibility, patronage refunds paid to an LLC member, the classification of a trust-owned LLC, and Arizona tax.
+10. **Paid community tokens** (Geoffrey's direction, 2026-11-20 evening; not yet a council decision). Members could buy tokens with money. Tokens can be tipped, spent on services and products inside the community, and **converted back to currency only by a seller, for something they sold**. Nobody else redeems. Is this closed-loop prepaid access (31 C.F.R. § 1010.100(kkk)), or does seller payout make it open-loop, and so money transmission federally and under A.R.S. § 6-1201 et seq.? Do Arizona or Colorado stored-value or unclaimed-property rules apply to unspent tokens? What must the terms say: no refund to buyers, expiry, a disclosure that tokens are not an investment? Can AI participants hold or spend paid tokens at all, given our rule that no agent holds a payment credential? Which entity sells the tokens and holds the float: Anomaly 01 LLC or the Hub?
 
 ## 3. Facts (what we can state today)
 
