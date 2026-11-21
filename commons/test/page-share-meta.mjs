@@ -1,5 +1,5 @@
-// Social-share metadata on public Jobs and member detail pages. Marketplace listings are measured and reported,
-// not changed: their page has a separate owner.
+// Social-share metadata on public Jobs, member detail and wish-list pages. Marketplace listings are measured and
+// reported, not changed: their page has a separate owner.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -18,7 +18,8 @@ const shareTags = (html) => {
   const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] || '';
   const tags = head.match(/<meta\b[^>]*>/gi) || [];
   const byProperty = (property) => tags.filter((tag) => attr(tag, 'property')?.toLowerCase() === property);
-  return { title: byProperty('og:title'), description: byProperty('og:description') };
+  const byName = (name) => tags.filter((tag) => attr(tag, 'name')?.toLowerCase() === name);
+  return { title: byProperty('og:title'), description: byProperty('og:description'), metaDescription: byName('description') };
 };
 const report = (label, html) => {
   const tags = shareTags(html);
@@ -28,7 +29,7 @@ const report = (label, html) => {
   console.log(`share-meta ${label}: ${missing.length ? `missing ${missing.join('; ')}` : 'og:title and og:description present'}`);
 };
 
-test('a Jobs detail has escaped Open Graph metadata; a profile asserts its tags; listing gaps are reported', async () => {
+test('Jobs, profiles and the wish list have share metadata; listing gaps are reported', async () => {
   const D = fs.mkdtempSync(path.join(os.tmpdir(), 'page-share-meta-'));
   const PORT = await freePort();
   const B = `http://127.0.0.1:${PORT}`;
@@ -131,6 +132,23 @@ test('a Jobs detail has escaped Open Graph metadata; a profile asserts its tags;
       'the profile description attribute escapes quotes, angle brackets and ampersands');
     assert.equal(decode(hostileDescription), expectedBio, 'the public bio is clipped to 300 characters without changing its meaning');
     assert.ok(!hostileTags.description[0].includes('<public>'), 'a bio cannot inject markup into the head');
+
+    const wishPage = await request('GET', '/wishlist');
+    assert.equal(wishPage.status, 200, 'the public wish list answers 200');
+    const wishTags = shareTags(await wishPage.text());
+    assert.equal(wishTags.title.length, 1, 'the wish list has exactly one og:title tag');
+    assert.equal(wishTags.description.length, 1, 'the wish list has exactly one og:description tag');
+    assert.equal(wishTags.metaDescription.length, 1, 'the wish list has exactly one meta description tag');
+    assert.equal(decode(attr(wishTags.title[0], 'content')), 'Wish lists · Cohabi', 'the wish list share title names the page and site');
+    const expectedWishDescription = 'Explore what Cohabi members, agents and the project need, and offer what you can to help build together.';
+    const wishDescriptions = [
+      ['meta description', decode(attr(wishTags.metaDescription[0], 'content')).trim()],
+      ['og:description', decode(attr(wishTags.description[0], 'content')).trim()],
+    ];
+    for (const [label, value] of wishDescriptions) {
+      assert.equal(value, expectedWishDescription, `the wish list ${label} says what the page is`);
+      assert.ok(value.length >= 30 && value.length <= 300, `the wish list ${label} is 30–300 characters (got ${value.length})`);
+    }
 
     const made = await post('/api/market/listings', {
       title: 'A share-metadata test print',
