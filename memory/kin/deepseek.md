@@ -623,3 +623,20 @@ Source: teams/build/STANDUP.md
 **Measured API facts for withdrawn listings (do not re-derive):** detail `GET /api/market/listings/:id` → 200 with `status:"withdrawn"` and the title intact; there is NO separate `state` field (`market.mjs:69` writes `status`). `GET …/checkout` → 404 `no such listing` (`checkout.mjs:114` `!l || l.status !== 'live'`). `POST …/checkout` signed in → 404 same message; signed out → 401 `sign in to use the market` from `marketWriter`, i.e. before the listing lookup. `startCheckout` gate order is sign-in → quote → own-listing → payable (`checkout.mjs:145-149`), so a withdrawn refusal is distinguishable from the 503 payments-closed one. `/api/me/orders` (200, `{purchases, sales}`) is the honest "no order was started" check. The live twin's quote is 200 with `amount`, `payable:false`, `why:["payments aren't open yet"]` — that is the only positive control available with payments closed, and it must come FIRST in the file.
 
 **Discipline note:** this session I wrote the file before running anything, then spent two calls discovering the layout problem. The cheap fix: in the same call as the copy, run `node server.mjs` with a 5 s timeout and print stderr — one call, and the real cause appears instead of a 15 s readiness timeout.
+
+
+## 2026-11-21T20:12:59.912Z · team build work session
+Source: teams/build/STANDUP.md
+
+**The lesson this session cost nothing but would have cost a lot to learn late: a test that passes is not yet a test.** Two one-line mutations in a throwaway copy turned "1/1 green" into real knowledge in about 40 seconds, and one of them *refuted something I wrote in a standup as fact*. The rule I keep re-earning: before calling a test evidence, mutate the line it rests on and see it go red. If it stays green, the assertion is measuring something else — and that is itself a finding worth writing down.
+
+**Retraction to carry (do not re-assert the old wording):** "the signed-out POST is refused at `marketWriter` before the listing is ever looked up" is **unobservable** — measured. Replace with: signed out refuses identically on live and withdrawn (same 401, same `"sign in to use the market"`), from either `marketWriter` or `startCheckout`'s own gate.
+
+**One guard, several assertions:** `checkout.mjs:115` serves the GET quote *and* the POST start (startCheckout → quote). Mutating it goes red at whichever assertion comes first in file order; the later ones are not independently proven. Always state that in the file header instead of letting "mutated" imply "every assertion is pinned".
+
+**Runtime recipe (works, ~20 s):** copy `commons/` → `<W>/commons`; stub `<W>/src/llm.js` (one level ABOVE commons — flattening gives `ERR_MODULE_NOT_FOUND /tmp/src/llm.js`); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside `<W>`; `node --check` then `node --test` from `<W>/commons`. **`/tmp` persists across `run_python` calls within a session**, so build the copy once and reuse it for every mutant; check `os.path.isdir(W+'/commons/lib')` first.
+
+**Measured facts still standing:** withdrawn detail `GET` → 200 `status:"withdrawn"`, no `state` field (`market.mjs:69` writes `status`); quote → 404 `no such listing`; POST signed in → 404; `/api/me/orders` holds no mention of it. live twin quote → 200, `amount: 3`, `payable:false`, `why:["payments aren't open yet"]`.
+
+**Carry forward:** the withdraw state inconsistency (200 detail / 404 quote / dropped from list) is ONE decision for Aletheia-6, now decidable against a pinned test; `reply_to` has no seller check (measured 201, not the expected 4xx); the fulfillment read leak waits on Geoffrey's "seller only"; clip-vs-refuse spans three fields (title 90, question 1000, answer 1000) and is one decision, not three.
+

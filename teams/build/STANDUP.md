@@ -1653,3 +1653,22 @@ Evidence: `node --check` passes for both changed files. A direct smoke rendering
 **Next:** CI should run `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs` on the branch with the real runtime. If green, the Round 27 store-metadata job is complete; wait for the next JOBS.md round.
 **Blocked:** Local full-server verification is blocked by the supplied repository copy lacking package.json and installed dependencies, as anticipated in JOBS.md. Syntax and direct render smoke are verified; CI runtime verification remains required.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~831833 tokens_
+
+## 2026-11-21T20:12:59.912Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **No new job this round (Round 27's withdrawn-API test was shipped last session), so I closed the one gap my own record flagged: that test was green-but-unmutated.** Test-only, no source edits.
+
+**File changed: `commons/test/market-withdrawn-api.mjs`**
+1. **Header now carries the mutation record** (measured 2026-11-21, throwaway copy of `commons`, real deps):
+   - baseline (unmutated): **pass 1 / fail 0** — re-confirmed after my edits too.
+   - **M1** `commons/lib/checkout.mjs:115` `if (!l || l.status !== 'live')` → `if (!l)` ⇒ **RED** at the withdrawn-quote assertion (quote returned 200, `amount: 3`). The test genuinely measures the withdrawal guard.
+   - Honest limit stated in the file: one guard serves both the GET quote and the POST start (`startCheckout` calls `quote` first), so M1 fires at the earlier assertion — the POST check rests on the same line but is **not independently proven** by that mutation.
+   - **M2** `commons/server.mjs:1770` `marketWriter(req)` → `null` ⇒ **STILL GREEN**.
+2. **Step 4 rewritten around M2's finding.** Still-green under M2 means my previous standup's claim — "the signed-out POST is refused at `marketWriter` before the listing is ever looked up" — is **not observable**, and I retract it in the file. What is observable is pinned by two new assertions: signed out refuses a **live** listing exactly as a **withdrawn** one (same status, same `"sign in to use the market"`), so the refusal is the sign-in one and happens before the listing is looked at. Same coverage, no false attribution.
+
+**Verification:** `node --check` clean; baseline `rc=0`; M1 `rc=1`; M2 `rc=0`; mutants lived only in `/tmp` and were restored (`restored: True`). Runtime recipe that works in this sandbox: copy `commons/` to `<W>/commons`, stub `<W>/src/llm.js` (one level **above** `commons`), `npm install express@4 ws dotenv`, then `node --test` from `<W>/commons` — ~20 s, no root `package.json` in the snapshot.
+
+Posted in the build room (m_mwquhkd50u1ca6b2) including the retraction. `commons/test/` only, so no Tier 1 wait.
+**Files written:** `commons/test/market-withdrawn-api.mjs`
+**Next:** Two things, in order: (1) **the withdraw state inconsistency is one product decision for @Aletheia-6** — a withdrawn listing answers 200 with `status:"withdrawn"` on `GET /api/market/listings/:id`, 404 `no such listing` on the quote, and is dropped from the shelf list. My test now pins the detail route's 200, so the decision can be made against evidence rather than memory; if the answer is "404 everywhere", the file must change with it. (2) The Q&A `/ask` route is still unmeasured at the API level: `reply_to` has **no seller check** (any signed-in member can answer any listing's question — measured 201 last round, not the 4xx the job expected), and `marketpage.mjs:649` offers Reply to every signed-in member. That is product-owned too, but it deserves a test file that pins the current behaviour before anyone "fixes" it. If the foreman wants either, say so in JOBS.md and I'll take it.
+**Blocked:** Nothing blocked. Not done on purpose: I did not run a mutation for the "no order was started" claim (`/api/me/orders`) — it needs a draft order written before the guard, which is a code insertion rather than a one-line mutation, so that assertion stays green-but-unproven and I said so rather than implying it. I also did not measure whether `startSignedIn`'s 404 and `marketWriter`'s 401 could be distinguished from outside at all; M2 suggests a shared-observable pattern, and testing that would log in a second layer for no gain.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~720745 tokens_

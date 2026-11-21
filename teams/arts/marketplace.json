@@ -1,2 +1,171 @@
-{\n  \"title\": \"Cohabi Marketplace\",\n  \"tagline\": \"Connecting creators with the Commons\",\n  \"sections\": [\n    {\n      \"id\": \"labels\",\n      \"title\": \"Labels & Collectives\",\n      \"description\": \"Discover music labels and artistic collectives within the Cohabitation Project.\",\n      \"offerings\": [\n        {\n          \"name\": \"Last of the Real Estate\",\n          \"description\": \"Our official music label, featuring human and AI-generated music. Explore our catalog.\",\n          \"link\": \"/label\",\n          \"type\": \"label\",\n          \"status\": \"live\"\n        }\n      ]\n    },\n    {\n      \"id\": \"musicians\",\n      \"title\": \"Independent Musicians & Artists\",\n      \"description\": \"Connect with individual musicians and artists. Support their independent creations.\",\n      \"offerings\": [\n        {\n          \"name\": \"Become a Featured Artist\",\n          \"description\": \"Showcase your music or art to the Cohabi community.\",\n          \"link\": \"/marketplace/apply-artist\",\n          \"type\": \"service\",\n          \"status\": \"coming-soon\"\n        }\n      ]\n    },\n    {\n      \"id\": \"creator-services\",\n      \"title\": \"Creator Services\",\n      \"description\": \"Tools and support for all Cohabi creators.\",\n      \"offerings\": [\n        {\n          \"name\": \"Print-on-Demand/Dropshipping\",\n          \"description\": \"Sell merchandise with your designs, hassle-free.\",\n          \"link\": \"/marketplace/print-on-demand\",\n          \"type\": \"service\",\n          \"status\": \"coming-soon\"\n        },\n        {\n          \"name\": \"Music Distribution\",\n          \"description\": \"Distribute your music to major platforms.\",\n          \"link\": \"/marketplace/music-distribution\",\n          \"type\": \"service\",\n          \"status\": \"coming-soon\"\n        },\n        {\n          \"name\": \"Publishing (Books/Poetry/Manuscripts)\",\n          \"description\": \"Publish your written works with Cohabi.\",\n          \"link\": \"/marketplace/publishing\",\n          \"type\": \"service\",\n          \"status\": \"coming-soon\"\n        },\n        {\n          \"name\": \"Creator Support & Resources\",\n          \"description\": \"Access guides, tutorials, and community support.\",\n          \"link\": \"/marketplace/creator-support\",\n          \"type\": \"service\",\n          \"status\": \"coming-soon\"\n        },\n        {\
-          \"name\": \"Merchandise & Art Store\",\n          \"description\": \"Browse and purchase Cohabi merchandise and original art.\",\n          \"link\": \"/marketplace/store\",\n          \"type\": \"product\",\n          \"status\": \"coming-soon\"\n        },\n        {\n          \"name\": \"Apps & Services\",\n          \"description\": \"Discover useful applications and services built by the Cohabitation Project.\",\n          \"link\": \"/marketplace/apps-services\",\n          \"type\": \"product\",\n          \"status\": \"coming-soon\"\n        }\n      ]\n    }\n  ]\n}
+{
+  "title": "Cohabi Marketplace",
+  "tagline": "A collaborative space for creators and patrons within the Cohabitation Project.",
+  "sections": [
+    {
+      "id": "labels-and-collectives",
+      "title": "Labels & Collectives",
+      "description": "Discover music labels, artistic collectives, and publishing houses within the Cohabitation Project. Each listing includes authorship details and AI involvement.",
+      "offerings": [
+        {
+          "name": "Last of the Real Estate",
+          "description": "Our official music label, featuring human and AI-generated music. Explore our catalog.",
+          "link": "/label",
+          "type": "label",
+          "status": "live",
+          "status_detail": "verified",
+          "authorship": "Collective (Human & AI)",
+          "ai_involvement": "Mixed (some tracks AI-composed, some human)"
+        },
+        {
+          "name": "Featured Publishing House",
+          "description": "Showcase your publishing house and written works.",
+          "link": "/marketplace/apply-publishing-house",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "conceptual",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        }
+      ]
+    },
+    {
+      "id": "independent-musicians-artists",
+      "title": "Independent Musicians & Artists",
+      "description": "Connect with individual musicians, visual artists, and writers. Support their independent creations. Each listing includes authorship details and AI involvement.",
+      "offerings": [
+        {
+          "name": "Featured Musician Program",
+          "description": "Showcase your music to the Cohabi community. Includes profile page and direct fan engagement.",
+          "link": "/marketplace/apply-musician",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "conceptual",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        },
+        {
+          "name": "Featured Visual Artist Program",
+          "description": "Display and sell your visual art, including digital and traditional pieces.",
+          "link": "/marketplace/apply-visual-artist",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "conceptual",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        },
+        {
+          "name": "Featured Writer Program",
+          "description": "Showcase your poetry, essays, and manuscripts.",
+          "link": "/marketplace/apply-writer",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "conceptual",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        }
+      ]
+    },
+    {
+      "id": "creator-services",
+      "title": "Creator Services",
+      "description": "Tools and support for all Cohabi creators to manage, promote, and monetize their work.",
+      "offerings": [
+        {
+          "name": "Print-on-Demand/Dropshipping",
+          "description": "Sell merchandise with your designs, hassle-free. Integrated with a third-party provider.",
+          "link": "/marketplace/print-on-demand",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "missing (needs third-party integration)",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        },
+        {
+          "name": "Music Distribution",
+          "description": "Distribute your music to major platforms. (Requires partnership with a distribution service.)",
+          "link": "/marketplace/music-distribution",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "missing (needs external partnership)",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        },
+        {
+          "name": "Publishing Services (Books/Poetry/Manuscripts)",
+          "description": "Comprehensive support for publishing written works, from editing to digital distribution.",
+          "link": "/marketplace/publishing",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "conceptual (internal platform development)",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        },
+        {
+          "name": "Creator Support & Resources",
+          "description": "Access guides, tutorials, and community support for all aspects of creative work.",
+          "link": "/marketplace/creator-support",
+          "type": "service",
+          "status": "coming-soon",
+          "status_detail": "conceptual (content creation & platform integration)",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        }
+      ]
+    },
+    {
+      "id": "merchandise-art-store",
+      "title": "Merchandise & Art Store",
+      "description": "Browse and purchase Cohabi merchandise, original art, and unique digital collectibles.",
+      "offerings": [
+        {
+          "name": "Official Cohabi Merchandise",
+          "description": "T-shirts, hoodies, and accessories featuring Cohabitation Project designs.",
+          "link": "/marketplace/store/cohabi-merchandise",
+          "type": "product",
+          "status": "coming-soon",
+          "status_detail": "missing (product sourcing & store front)",
+          "authorship": "Collective",
+          "ai_involvement": "N/A"
+        },
+        {
+          "name": "Original Digital Art",
+          "description": "Exclusive digital artworks from Cohabi artists.",
+          "link": "/marketplace/store/digital-art",
+          "type": "product",
+          "status": "coming-soon",
+          "status_detail": "conceptual (artist recruitment & platform integration)",
+          "authorship": "N/A",
+          "ai_involvement": "N/A"
+        }
+      ]
+    },
+    {
+      "id": "apps-services",
+      "title": "Apps & Services",
+      "description": "Discover useful applications and services built by the Cohabitation Project and its community.",
+      "offerings": [
+        {
+          "name": "Cohabi Creative Tools",
+          "description": "AI-powered tools for music composition, image generation, and writing assistance.",
+          "link": "/marketplace/apps-services/creative-tools",
+          "type": "product",
+          "status": "coming-soon",
+          "status_detail": "conceptual (tool development & integration)",
+          "authorship": "Collective (AI-driven)",
+          "ai_involvement": "Primary"
+        },
+        {
+          "name": "Project Management Apps",
+          "description": "Tools to help manage collaborative projects within the Commons.",
+          "link": "/marketplace/apps-services/project-management",
+          "type": "product",
+          "status": "coming-soon",
+          "status_detail": "conceptual (tool development)",
+          "authorship": "Collective",
+          "ai_involvement": "N/A"
+        }
+      ]
+    }
+  ]
+}
