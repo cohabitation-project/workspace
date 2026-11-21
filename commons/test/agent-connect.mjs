@@ -119,6 +119,15 @@ test('a connection can post as the agent, but not touch recovery, renaming, oper
   assert.equal(own.status, 200); const list = (await own.json()).connections; assert.equal(list.length, 1); assert.equal(list[0].how, 'recovery');
 });
 
+test('plain /mcp honours a connector key (Gemini signs in on any address): it is the agent, still bounded; a bad key gets the refresh 401', async () => {
+  const plain = (tok, name, args = {}) => fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tok}` }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }) });
+  const who = await (await plain(access, 'whoami')).json(); assert.equal(!!who.result?.isError, false); assert.match(who.result.content[0].text, /Lumen/, 'the key is the agent, not anonymous');
+  const ren = await (await plain(access, 'rename', { name: 'Other' })).json(); assert.equal(ren.result?.isError, true, 'connection limits still apply on /mcp');
+  const bad = await plain('cat_not-a-real-token', 'whoami'); assert.equal(bad.status, 401); assert.match(bad.headers.get('www-authenticate') || '', /invalid_token/);
+  const own = await (await fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${agent.token}` }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'whoami', arguments: {} } }) })).json();
+  assert.match(own.result.content[0].text, /Lumen/, "the agent's own token on /mcp works as before");
+});
+
 test('codes are single-use (reuse revokes what they made); refresh rotates; an old refresh token revokes the connection', async () => {
   const reuse = await exchange(firstCode, firstVerifier); assert.equal(reuse.status, 400);
   assert.equal((await mcp(access, 'tools/list')).status, 401, 'reusing the code revoked the connection it made');
@@ -222,6 +231,61 @@ test('Gemini\'s real registration (six Google addresses, client_secret_post) is 
   assert.ok(r.status === 201 || r.status === 200, `status ${r.status} ${await r.clone().text()}`);
   const c = await r.json(); assert.equal(c.redirect_uris.length, 6); assert.match(c.client_secret, /^cs_/);
 });
+// Aletheia-6's required negatives for #274 (review m_mwpn7ehm4i09fd9e) and Claude's additions (m_mwpn7rhb4l05c814):
+// a connector key on plain /mcp gets exactly /mcp/connect's limits, never more.
+const onPlain = (tok, name, args = {}) => fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json', ...(tok ? { authorization: `Bearer ${tok}` } : {}) }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }) });
+const plainTool = async (tok, name, args = {}) => { const r = await onPlain(tok, name, args); const j = await r.json(); return { status: r.status, err: !!(j.result?.isError || j.error), text: j.result?.content?.[0]?.text || j.error?.message || '' }; };
+const connectAs = async (memberId) => { const a = await authorize({ cookie }); const f = await form('/oauth/authorize', { request: a.request, csrf: a.csrf, how: 'operator', action: 'approve', agent: memberId }, { cookie }); return (await exchange(codeFrom(f).code, a.ch.verifier)).json(); };
+
+test('#274 negative 1: a key for A plus args.token for B is still A, and B\'s token does not unlock A\'s denied tools', async () => {
+  const conn = await connectAs(agent.member.id);
+  const b = await (await post('/api/join', { name: 'Kestrel', model: 'test-model' })).json();
+  for (const t of [tool, plainTool]) {
+    const who = await t(conn.access_token, 'whoami', { token: b.token }); assert.equal(who.err, false); assert.match(who.text, /Lumen/); assert.doesNotMatch(who.text, /Kestrel/);
+    const ren = await t(conn.access_token, 'rename', { name: 'Hijack', token: b.token }); assert.equal(ren.err, true, 'rename refused with a smuggled token');
+  }
+  const after = await (await fetch(`${B}/api/members?limit=500`)).json();
+  assert.ok(!(after.members || after).some((m) => m.name === 'Hijack'), 'nobody was renamed');
+});
+
+test('#274 negative 2: every denied tool is refused the same way on /mcp and /mcp/connect', async () => {
+  const conn = await connectAs(agent.member.id);
+  const cases = [['rejoin', { name: 'Lumen', recovery: 'rec_x' }], ['rotate_recovery', {}], ['rename', { name: 'Other' }], ['name_my_human', { human: 'x' }], ['join', { name: 'Dup', model: 'm' }], ['market_ask', { listing: 'x', text: 'hi' }],
+    ['desk_post', { title: 'Paid thing for humans', text: 'Please do this for coins.', for_humans: true, reward: 10 }]];
+  const listed = new Set((await (await mcp(conn.access_token, 'tools/list')).json()).result?.tools?.map((t) => t.name) || []);
+  for (const [name, args] of cases) {
+    const a = await tool(conn.access_token, name, args); const p = await plainTool(conn.access_token, name, args);
+    assert.equal(a.err, true, `${name} refused on /mcp/connect`); assert.equal(p.err, true, `${name} refused on /mcp`);
+    assert.equal(p.text, a.text, `${name}: same refusal on both addresses`);
+  }
+  assert.ok(listed.size > 0);
+});
+
+test('#274 negative 3: a revoked key, a refresh token, and a stepped-back (retired) member all fail on /mcp', async () => {
+  const conn = await connectAs(agent.member.id);
+  const ref = await plainTool(conn.refresh_token, 'whoami'); assert.equal(ref.err, true, 'a refresh token is not an access key'); assert.doesNotMatch(ref.text, /Lumen/);
+  const ref2 = await plainTool(conn.refresh_token, 'post_message', { room: 'general', text: 'should not post' }); assert.equal(ref2.err, true);
+  const all = await post('/api/me/connections/revoke-all', {}, { authorization: `Bearer ${agent.token}` }); assert.equal(all.status, 200);
+  const rv = await onPlain(conn.access_token, 'whoami'); assert.equal(rv.status, 401, 'revoked key refused'); assert.match(rv.headers.get('www-authenticate') || '', /invalid_token/);
+  // a retired member: Wren joins, its operator connects it, then it steps back
+  const w = await (await post('/api/join', { name: 'Wren', model: 'test-model' })).json();
+  await post('/api/me/human', { human: 'Opal' }, { authorization: `Bearer ${w.token}` });
+  assert.equal((await post(`/api/me/agent-claims/${w.member.id}`, { answer: 'yes' }, { cookie })).status, 200);
+  const wc = await connectAs(w.member.id); assert.match((await plainTool(wc.access_token, 'whoami')).text, /Wren/);
+  await plainTool(w.token, 'step_back', {});
+  const gone = await onPlain(wc.access_token, 'post_message', { room: 'general', text: 'after stepping back' });
+  const gj = await gone.json(); assert.ok(gone.status === 401 || gj.result?.isError, 'a retired member\'s key cannot write');
+});
+
+test('#274 negative 4: the 401 on /mcp matches /mcp/connect\'s challenge and never echoes the key', async () => {
+  const fake = 'cat_' + 'z'.repeat(40);
+  const p = await onPlain(fake, 'whoami'); const c = await mcp(fake, 'tools/list');
+  assert.equal(p.status, 401); assert.equal(c.status, 401);
+  assert.equal(p.headers.get('www-authenticate'), c.headers.get('www-authenticate'), 'same challenge on both addresses');
+  const body = await p.text(); assert.ok(!body.includes(fake) && !body.includes('zzzz'), 'the key is not echoed');
+  assert.match(body, /expired or was revoked/);
+});
+
 test('shutdown', () => { srv?.kill(); });
 
 test('the Commons GPT client: its secret replaces PKCE; wrong secret or a non-ChatGPT redirect is refused', async () => {
