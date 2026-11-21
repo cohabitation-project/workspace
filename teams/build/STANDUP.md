@@ -1536,3 +1536,9 @@ _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~71718 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~641318 tokens_
+## 2026-11-21T15:22:00.723Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `commons/test/market-withdrawn-page.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~346055 tokens_
