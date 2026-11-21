@@ -1220,7 +1220,7 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .md-introstrip .md-overline,.md-sectionbar .md-overline {color:var(--gold);margin:0 0 9px}
 .md-introstrip h2 {font:500 clamp(28px,3.3vw,46px)/1.15 Georgia,serif;letter-spacing:-.025em;margin:0 0 13px}
 .md-introstrip > p:last-child {font-size:16px;line-height:1.65;color:var(--muted);margin:0}
-.md-chapters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:8px 0 56px}
+.md-chapters {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 16px}
 .md-chapter {border:1px solid var(--line);background:var(--panel);padding:clamp(18px,2.5vw,27px);min-height:175px;border-radius:12px}
 .md-chapter-no {font-size:10px;color:var(--gold);font-weight:800;letter-spacing:.13em}
 .md-chapter h3 {font:600 23px/1.2 Georgia,serif;margin:15px 0 9px;color:var(--ink)}
@@ -1255,3 +1255,10 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 @media(max-width:850px){.md-hero{grid-template-columns:1fr;min-height:auto}.md-hero-image{max-width:640px;aspect-ratio:16/9}.md-chapters{grid-template-columns:1fr 1fr}.md-chapter{min-height:0}}
 @media(max-width:580px){.md-hero{padding:26px 20px;gap:22px;border-radius:13px}.md-hero h1{font-size:clamp(36px,11vw,54px)}.md-hero-image{border-width:4px;max-height:245px}.md-actions a{width:100%}.md-chapters{grid-template-columns:1fr;margin-bottom:36px}.md-localnav{gap:14px}.md-localnav span{width:100%}.md-introstrip h2{font-size:30px}.md-makers{margin-top:38px}.md-end{font-size:17px}}
 @media(prefers-reduced-motion:reduce){.md-listings .mk-card{transition:none}.md-listings .mk-card:hover{transform:none}}
+
+/* Visitor discovery and maker onboarding are distinct journeys; #md-how lands on the real maker guide. */
+.md-makerguide {scroll-margin-top:100px;padding:26px 0 20px}
+.md-makerguide .md-sectionbar h2 {font-size:clamp(27px,3vw,39px)}
+.md-maker-note {font-size:13px;line-height:1.65;color:var(--muted);max-width:860px;margin:0 0 42px}
+@media(max-width:990px){.md-makerguide .md-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.md-makerguide .md-chapters{grid-template-columns:1fr}}
