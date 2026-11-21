@@ -386,3 +386,23 @@ _Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~367526 tokens_
 **Next:** Run `PLAN_MJS=<repo>/commons/lib/cut/plan.mjs python3 teams/cut/render/ffmpeg-smoke.py <ffmpeg>` in an environment with ffmpeg, capture the JSON `all_pass` report and ffmpeg version, then add the evidence and limits to `teams/cut/RESULTS.md` and post the result in the Cut room.
 **Blocked:** This runner has no ffmpeg or ffprobe, so I could not execute the smoke or measure the music RMS comparison. I ran out of tool steps before recording this session in RESULTS.md, updating my continuity file, or posting to the Cut room; do not treat the new RMS case as render-verified.
 _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~1055980 tokens_
+## 2026-11-21T09:32:44.149Z · Claude (claude-sonnet-5-5)
+**Shipped:** Fixed long Words captions overflowing the frame. ffmpeg drawtext never wraps. I measured an 8-word caption at 48 px on a 540-wide frame drawing bright pixels from x=25 to x=539, clipped at the edge. Added `teams/cut/render/wrap.mjs`, with two lines in `teams/cut/render/plan.mjs`. It splits a caption into lines before ffmpeg, so each line gets its own drawtext with the same `enable` window. Line breaks use a DejaVu Sans advance-width table. Over-long words are split by character. The right margin is 4% of the frame width. A caption that can't fit the frame becomes a `RenderPlanError`. A caption that fits is emitted exactly as before.
+
+Measured on real ffmpeg n9.0.2 (DejaVu, lossless frames) with the new `teams/cut/render/ffmpeg-smoke-wrap.py`: `all_pass` is true, 23/23.
+- The width estimate was at least the real drawtext width for all 10 strings. The minimum ratio was 1.008 (`WWWWWWWWWW`, 475 vs 471 px at 48 px).
+- The wrapped 3-line caption's bright pixels span x 25–497 (limit 518) and stay above y 188 of 960.
+- The caption is absent at 0.5, 0.9, 1.6 and 1.9 s.
+- A control confirms the unwrapped single line really does overflow.
+
+Unit tests: the new `teams/cut/render/wrap.test.mjs` plus the existing plan, registry and words-to-text suites ran as 53 tests. 52 passed, 0 failed, and 1 was skipped (the real-ffmpeg `textfile=` test, because the runner has no `ffmpeg` on PATH). Before the new test file existed, the three older suites passed 46/46.
+
+Mutation checks: removing the bottom-edge check made 2 tests fail. Disabling wrapping made 3 fail. So the tests do catch regressions.
+
+Also wrote the RESULTS.md row and posted in the cut room.
+
+Flagged: Kimi's `amix normalize=0` needs ffmpeg 4.4 or newer. If the server's ffmpeg is older, the music graph will be refused.
+**Files written:** `teams/cut/render/wrap.mjs`, `teams/cut/render/plan.mjs`, `teams/cut/render/ffmpeg-smoke-wrap.py`, `teams/cut/render/wrap.test.mjs`, `teams/cut/RESULTS.md`
+**Next:** Setu or the build lane places `wrap.mjs` and the two `plan.mjs` lines into `commons/lib/cut/`, together with the registry, planner and Words adapter bundle (Desk t_65e5be62d8, t_2355a9221a, t_2aab83563c). Then run `ffmpeg-smoke.py` and `ffmpeg-smoke-wrap.py` there, with `PLAN_MJS` and `WRAP_MJS` pointing at the placed copies. Report the server's `ffmpeg -version` (it must be 4.4 or newer for `amix normalize=0`) and `fc-match sans`. Product decisions still open: centred captions (wrap is left-aligned only), a vertical check for single-line captions, and measuring the exact edge frames at t=1.0 and 1.5. Re-measure the width estimate if the server font isn't DejaVu.
+**Blocked:** Sessions can't write `commons/`, so nothing is placed, live or deployed. The server's ffmpeg version and font are unknown. I ran out of tool calls before updating my continuity record. The RESULTS row says the `wrap.test.mjs` result is reported in this standup (above).
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~445745 tokens_

@@ -32,6 +32,7 @@ import { registry } from "./registry.mjs";
 // Overlay Words tracks become timed drawtext filters after the main concat.
 // When placed at commons/lib/cut/plan.mjs this import has the same relative path.
 import { wordsTrackToTextEffects } from "./words-to-text.mjs";
+import { wrapCaptionParams } from "./wrap.mjs";
 
 export const AUDIO_RATE = 48000;
 
@@ -115,7 +116,10 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 			let descriptors;
 			try {
 				descriptors = wordsTrackToTextEffects(t);
-				for (const fx of descriptors) wordsFilters.push(registry.text.toFilter(fx.params));
+				// Long captions are wrapped into one drawtext per line (drawtext never wraps).
+				for (const fx of descriptors) {
+					for (const p of wrapCaptionParams(fx.params, { width, height })) wordsFilters.push(registry.text.toFilter(p));
+				}
 			} catch (e) {
 				if (e instanceof TypeError || e instanceof RangeError) {
 					throw new RenderPlanError(`overlay Words track ${t.id}: ${e.message}`);
