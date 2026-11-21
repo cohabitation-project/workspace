@@ -22,6 +22,8 @@ import numpy as np
 
 FF = sys.argv[1]
 HERE = os.path.dirname(os.path.abspath(__file__))
+# PLAN_MJS=/path/to/plan.mjs runs the same cases against another copy (e.g. placed commons/lib/cut/plan.mjs).
+PLAN = os.environ.get("PLAN_MJS", os.path.join(HERE, "plan.mjs"))
 TMP = tempfile.mkdtemp()
 W, H = 540, 960
 T = 120000  # ticks per second
@@ -41,7 +43,7 @@ def make_source(name, vf):
 
 def plan_args(src, effects):
     js = f"""
-import {{ buildRenderPlan }} from {json.dumps('file://' + os.path.join(HERE, 'plan.mjs'))};
+import {{ buildRenderPlan }} from {json.dumps('file://' + PLAN)};
 const T = {T};
 const clip = {{ id: 'c1', type: 'video', startTime: 0, duration: 2 * T, trimStart: 0, params: {{ src: {json.dumps(src)}, effects: {json.dumps(effects)} }} }};
 const p = buildRenderPlan({{ tracks: {{ overlay: [], audio: [], main: {{ id: 'm', type: 'video', elements: [clip] }} }}, width: {W}, height: {H}, fps: 30 }});
@@ -64,6 +66,21 @@ def render(name, src, effects):
     out = os.path.join(TMP, name + ".mp4")
     r = run([FF, "-y", "-v", "error", *p["args"], "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", out])
     return p, out, r
+
+
+def textfile_reference(name, text):
+    """Render the same literal text via drawtext's textfile input as a pixel ground truth."""
+    text_path = os.path.join(TMP, name + ".txt")
+    with open(text_path, "w", encoding="utf-8", newline="") as f:
+        f.write(text)
+    out = os.path.join(TMP, name + "-reference.mp4")
+    vf = (f"trim=duration=2,setpts=PTS-STARTPTS,drawtext=expansion=none:textfile={text_path}:"
+          f"x=10:y=100:fontsize=48:fontcolor=white,"
+          f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
+          f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p")
+    r = run([FF, "-y", "-v", "error", "-i", black, "-vf", vf, "-t", "2", "-an",
+             "-c:v", "libx264", "-pix_fmt", "yuv420p", out])
+    return out, r
 
 
 report = {"ffmpeg": run([FF, "-version"]).stdout.splitlines()[0], "cases": {}}
@@ -137,6 +154,64 @@ if r.returncode == 0:
 for k, txt in enumerate(["it's %{x}", "trailing backslash \\", "100% real: 'quoted' \"double\"", "unicode \u00e9\u00e8 \u2014 \u65e5\u672c"]):
     p, out, r = render(f"misc{k}", black, [{"id": "text", "params": {"text": txt}}])
     case(f"graph accepted: {txt!r}", r.returncode == 0, r.stderr[-300:])
+
+# 5. Escaping must be demonstrated by pixels, not merely ffmpeg's exit status.
+# Compare the filtergraph text against drawtext's textfile= ground truth using identical text,
+# geometry, scaling and encoding. This catches silent blank-text output for apostrophes.
+for k, txt in enumerate(["it's %{x}", HOSTILE, "  a: b  "]):
+    p, planned, planned_run = render(f"textcmp{k}", black, [{"id": "text", "params": {"text": txt, "x": 10, "y": 100, "fontSize": 48}}])
+    case(f"planned graph accepted for textfile comparison {k}", planned_run.returncode == 0, planned_run.stderr[-300:])
+    reference, reference_run = textfile_reference(f"textcmp{k}", txt)
+    case(f"textfile ground truth rendered for case {k}", reference_run.returncode == 0, reference_run.stderr[-300:])
+    if planned_run.returncode == 0 and reference_run.returncode == 0:
+        actual = frame(planned, 1)[360:420]
+        expected = frame(reference, 1)[360:420]
+        max_diff = int(np.abs(actual - expected).max())
+        case(f"text pixels match textfile ground truth for case {k}", max_diff < 8,
+             f"max absolute RGB difference in text band: {max_diff}")
+
+# 6. timed text: `enable` between(t,1,1.5) -> present at 1.2 s, absent at 0.5 s and 1.8 s
+p, out, r = render("timed", black, [{"id": "text", "params": {"text": "hello", "x": 10, "y": 100, "fontSize": 48, "enable": "between(t,1,1.5)"}}])
+case("graph accepted: timed text (enable)", r.returncode == 0, r.stderr[-300:])
+if r.returncode == 0:
+    on, off1, off2 = (int((frame(out, t)[360:420] > 128).sum()) for t in (1.2, 0.5, 1.8))
+    case("timed text shows only inside its window", on > 100 and off1 < 20 and off2 < 20, f"bright subpixels: 1.2s {on}, 0.5s {off1}, 1.8s {off2}")
+
+# 7. music: music starts at 1.0 s and outlasts the 2 s main clip; output duration remains main's.
+music = os.path.join(TMP, "music.wav")
+r = run([FF, "-y", "-f", "lavfi", "-i", "sine=f=1000:d=5", music])
+assert r.returncode == 0, r.stderr[-300:]
+js = f"""
+import {{ buildRenderPlan }} from {json.dumps('file://' + PLAN)};
+const T = {T};
+const clip = {{ id: 'c1', type: 'video', startTime: 0, duration: 2 * T, trimStart: 0, params: {{ src: {json.dumps(black)} }} }};
+const mu = {{ id: 'mu', type: 'audio', startTime: T, duration: 3 * T, trimStart: 0, params: {{ src: {json.dumps(music)} }} }};
+const p = buildRenderPlan({{ tracks: {{ overlay: [], audio: [{{ id: 'au', type: 'audio', elements: [mu] }}], main: {{ id: 'm', type: 'video', elements: [clip] }} }}, width: {W}, height: {H}, fps: 30 }});
+console.log(JSON.stringify(p));
+"""
+r = run(["node", "--input-type=module", "-e", js])
+case("plan built: main + one music clip", r.returncode == 0, r.stderr[-400:])
+if r.returncode == 0:
+    p = json.loads(r.stdout)
+    out = os.path.join(TMP, "music.mp4")
+    r = run([FF, "-y", "-v", "error", *p["args"], "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", out])
+    case("graph accepted: main + music", r.returncode == 0, r.stderr[-400:])
+    if r.returncode == 0:
+        raw = subprocess.run([FF, "-v", "error", "-i", out, "-vn", "-ac", "1", "-ar", "48000", "-f", "f32le", "-"], capture_output=True)
+        s = np.frombuffer(raw.stdout, np.float32)
+        def mags(t0, t1):
+            seg = s[int(t0 * 48000):int(t1 * 48000)]
+            spec = np.abs(np.fft.rfft(seg * np.hanning(len(seg))))
+            fr = np.fft.rfftfreq(len(seg), 1 / 48000)
+            return (float(spec[(fr > 410) & (fr < 470)].max()), float(spec[(fr > 970) & (fr < 1030)].max()))
+        m1, k1 = mags(0.2, 0.8)
+        m2, k2 = mags(1.2, 1.8)
+        dur = len(s) / 48000
+        case("output length is the main clip's (music is longer, still cut at 2 s)", abs(dur - 2.0) < 0.1, f"audio {dur:.3f} s")
+        case("music silent before its start (1.0 s)", m1 > 20 and k1 < 0.05 * m1, f"before: 440Hz {m1:.1f}, 1000Hz {k1:.2f}")
+        case("music audible after its start", k2 > 0.3 * m1 and m2 > 0.3 * m1, f"after: 440Hz {m2:.1f}, 1000Hz {k2:.1f}")
+        info = run([FF, "-i", out]).stderr
+        report["music_container_info"] = [l.strip() for l in info.splitlines() if "Duration" in l][:1]
 
 report["all_pass"] = bool(ok)
 print(json.dumps(report))
