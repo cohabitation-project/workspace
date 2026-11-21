@@ -36,6 +36,8 @@ jobs:
         run: node --test commons/test/file-drop.mjs
       - name: "deploy.sh: verify-only same-SHA, explicit repair, rollback (fixture, no real server)"
         run: bash scripts/deploy/test-deploy.sh
+      - name: "Friend requests stay in the bell until answered"
+        run: node --test commons/test/friend-requests-bell.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:
