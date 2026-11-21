@@ -43,7 +43,7 @@ def plan_args(src, effects):
     js = f"""
 import {{ buildRenderPlan }} from {json.dumps('file://' + os.path.join(HERE, 'plan.mjs'))};
 const T = {T};
-const clip = {{ id: 'c1', type: 'video', startTime: 0, duration: 2 * T, trimStart: 0, params: {{ src: {json.dumps(src)} }}, effects: {json.dumps(effects)} }};
+const clip = {{ id: 'c1', type: 'video', startTime: 0, duration: 2 * T, trimStart: 0, params: {{ src: {json.dumps(src)}, effects: {json.dumps(effects)} }} }};
 const p = buildRenderPlan({{ tracks: {{ overlay: [], audio: [], main: {{ id: 'm', type: 'video', elements: [clip] }} }}, width: {W}, height: {H}, fps: 30 }});
 console.log(JSON.stringify(p));
 """
@@ -88,15 +88,21 @@ black = make_source("black.mp4", "color=c=black")
 # 1. crop (left red half) + fade in over the first second
 p, out, r = render("crop_fade", rb, [
     {"id": "crop", "params": {"width": 640, "height": 360, "x": 0, "y": 0, "frameWidth": 1280, "frameHeight": 720}},
-    {"id": "fade", "params": {"direction": "in", "startTicks": 0, "durationTicks": T}},
+    {"id": "fade", "params": {"direction": "in", "start": 0, "duration": 1}},
 ])
+# Effects run BEFORE scale/pad (params.effects contract): the 640x360 crop is scaled to 540x304 and
+# letterboxed, so the picture sits in output rows ~328..632 and the rest is black pad.
 case("graph accepted: crop+fade", r.returncode == 0, r.stderr[-300:])
 if r.returncode == 0:
     f0, f1 = frame(out, 0), frame(out, 1.5)
     mid = f1[H // 2 - 50:H // 2 + 50, 100:440]
+    mid0 = f0[H // 2 - 50:H // 2 + 50, 100:440]
+    pad = f1[0:300, :]
     case("crop took the red half only", (mid[..., 0] > 200).all() and (mid[..., 2] < 60).all(),
          f"mid-band mean RGB {mid.reshape(-1, 3).mean(0).round(1).tolist()}")
-    case("fade-in: first frame darker than t=1.5s", f0.mean() < f1.mean() - 20, f"mean {f0.mean():.1f} vs {f1.mean():.1f}")
+    case("letterbox pad above the picture is black", pad.max() < 40, f"pad max {int(pad.max())}")
+    case("fade-in seen through the pad: picture band at t=0 darker than at t=1.5s", mid0.mean() < mid.mean() - 60,
+         f"band mean {mid0.mean():.1f} vs {mid.mean():.1f}")
 
 # 2. hostile drawtext text, no fontfile: accepted, and the text actually appears
 HOSTILE = "it's: a,b;[c]\\d %{x}"
@@ -104,9 +110,18 @@ p, out, r = render("hostile", black, [{"id": "text", "params": {"text": HOSTILE,
 case("graph accepted: hostile text", r.returncode == 0, r.stderr[-400:])
 if r.returncode == 0:
     f = frame(out, 1)
-    band = f[90:170]
+    # text at source y=100 (fontsize 48) -> output rows ~328+42 = 370 .. 400 after the 0.4219 scale
+    band = f[360:420]
     case("hostile text drew pixels (a font was found)", (band > 128).sum() > 200, f"{int((band > 128).sum())} bright subpixels in the text band")
-    case("text stayed literal (%{x} not expanded: no 'x' expansion error)", r.stderr.strip() == "", r.stderr[-200:])
+    case("ffmpeg stderr empty for hostile text", r.stderr.strip() == "", r.stderr[-200:])
+
+# 2b. %{pts} must draw LITERALLY: if it expanded, the text would change with the frame time
+p, out, r = render("literal_pts", black, [{"id": "text", "params": {"text": "%{pts} %{n}", "x": 10, "y": 100, "fontSize": 48}}])
+case("graph accepted: %{pts} text", r.returncode == 0, r.stderr[-300:])
+if r.returncode == 0:
+    a, b = frame(out, 0.5)[360:420], frame(out, 1.5)[360:420]
+    case("%{pts} drawn literally: text band identical at t=0.5 and t=1.5", (a > 128).sum() > 200 and np.abs(a - b).max() < 8,
+         f"bright {int((a > 128).sum())}, max diff {int(np.abs(a - b).max())}")
 
 # 3. injection payload: if the apostrophe closed the quote, drawbox would paint the frame red
 INJ = "',drawbox=x=0:y=0:w=iw:h=ih:color=red@1:t=fill,drawtext=text='"
@@ -114,8 +129,9 @@ p, out, r = render("inject", black, [{"id": "text", "params": {"text": INJ, "x":
 case("graph accepted: injection payload as plain text", r.returncode == 0, r.stderr[-400:])
 if r.returncode == 0:
     f = frame(out, 1)
-    corner = f[900:960, 0:60]
-    case("injection did not run: far corner still black", corner.max() < 40, f"corner max {int(corner.max())}")
+    # drawbox would run BEFORE scale/pad, so red would fill the picture area (the pad stays black): check the picture centre
+    centre = f[H // 2 - 50:H // 2 + 50, 100:440]
+    case("injection did not run: picture centre not red", centre[..., 0].max() < 40, f"centre R max {int(centre[..., 0].max())}")
 
 # 4. same payload with a nasty path-ish string and a backslash at the very end
 for k, txt in enumerate(["it's %{x}", "trailing backslash \\", "100% real: 'quoted' \"double\"", "unicode \u00e9\u00e8 \u2014 \u65e5\u672c"]):

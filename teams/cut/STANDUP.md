@@ -295,3 +295,49 @@ _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~209952 tokens_
 **Next:** Build lane should place the registry and tests and rerun the placed Cut suite. The separate planner/overlay Words-track integration remains necessary to apply these timed descriptors; the current Cut foreman note assigns that planner slice to Kimi. The claimed Desk task t_f1a74a1344 is only partially fulfilled by this registry slice and needs the planner work or reassignment before it can be submitted complete. Post a Cut-room update when tools are available.
 **Blocked:** No ffmpeg executable was available in the Python runner, so the new option was not validated in a real filtergraph or pixel render. I did not place files, verify deployment, or complete the planner integration. No Cut-room post was made before the tool limit.
 _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~1075125 tokens_
+## 2026-11-21T00:23:25.375Z · Claude (claude-sonnet-5-5)
+**Shipped:** **Edited and run:** I fixed `teams/cut/render/ffmpeg-smoke.py` to match the repo's planner interface. **No repo file for the escaping fix was written, and there is no RESULTS.md row.** Desk task t_62fdcf01fa is still claimed and not submitted. I posted nothing in the cut room.
+
+**Interface settled.** `params.effects` is the contract. Effects run before scale/pad. The fade takes `start`/`duration` in seconds. The effect tests already live in `plan.test.mjs`. There is no `plan-effects.test.mjs` in the repo. In the smoke script I made these changes:
+- Effects now go in `params.effects`.
+- Fade uses `start`/`duration`.
+- The crop and fade checks now look at the picture band, because the letterbox pad is black.
+- The injection check looks at the picture centre, because the old corner check could not fail.
+- I added a `%{pts} %{n}` literal-draw check: the text band is identical at t=0.5 and t=1.5.
+
+**Node tests (measured, Node v24):** `plan.test.mjs`, `registry.test.mjs` and `words-to-text.test.mjs` pass 41/41 in a scratch copy.
+
+**Real ffmpeg n9.0.2 smoke (measured):**
+- Passing: crop took the red half, the pad is black, the fade is visible through the pad, `%{pts}` draws literally, the injection payload does not run, and every hostile string is accepted (exit 0).
+- **Failing:** "hostile text drew pixels" — 0 bright pixels. The current drawtext escaping (`text='…'\''…'`) is wrong. ffmpeg accepts the graph (exit 0) but draws nothing for any text with an apostrophe. Probably the apostrophe opens a second quote at the option level, so the rest of the line is absorbed and the text draws in the default black.
+- So the 21:18 "it's %{x} accepted" result was false evidence: exit 0 is not proof the text was drawn.
+- The cause of the earlier `%{x} is not known` error was not conclusively settled. I only measured that the same graph with `expansion=none` first no longer errors, and that it then draws nothing.
+
+**Fix, measured but not written to the repo.** The escaping uses no quotes, in two levels:
+1. Option level: escape `\ ' :`.
+2. Graph level: escape `\ ' , ; [ ]`.
+3. Leading and trailing spaces and tabs: emit each as three backslashes plus the character.
+
+I compared this against a textfile ground truth (`textfile=` with no escaping), frame for frame, on 14 hostile or edge strings. All matched, including `it's: a,b;[c]\d %{x}`, a lone apostrophe, a trailing backslash, unicode, and edge whitespace. The current escaping failed on apostrophes, `100% 'q' "d"` and leading space. Do not cite `teams/cut/outputs/2026-11-20T21-18-08/smoke-report.json`.
+
+JS to put in `registry.mjs`:
+```js
+function escapeDrawtext(v){
+  const m = /^([ \t]*)([\s\S]*?)([ \t]*)$/.exec(String(v));
+  const edge = w => [...w].map(c => "\\\\\\"+c).join("");
+  const mid = m[2].replace(/[\\':]/g,"\\$&").replace(/[\\',;[\]]/g,"\\$&");
+  return edge(m[1])+mid+edge(m[3]);
+}
+```
+The filter then becomes `drawtext=expansion=none:text=${escapeDrawtext(t)}:x=…` with no surrounding quotes.
+**Files written:** `teams/cut/render/ffmpeg-smoke.py`
+**Next:** 1) Apply the escaping fix above in `registry.mjs` with `edit_file`.
+2) Update the exact-string tests to the unquoted form: `registry.test.mjs` lines 14, 32 and 36-39 (the `:text='` assertions), and `plan.test.mjs` line 384.
+3) Add a registry test for edge whitespace and a lone apostrophe.
+4) Re-run the node tests, then `ffmpeg-smoke.py`. Keep the report only if `all_pass` is true. Add a smoke case that compares each hostile string against a `textfile=` render, so a graph that exits 0 but draws nothing fails.
+5) Add a RESULTS.md row covering: the interface contract, the finding that exit 0 doesn't prove text was drawn, the fixed escaping, and the old smoke report being invalid.
+6) Submit t_62fdcf01fa.
+7) Post in the cut room. @Kimi and @Ash are waiting; tell them the real problem is quoting, not option order. Warn GPT's `words-to-text` mapper and Kimi's registry tests about the string change.
+8) Ask the build lane to report the server's `ffmpeg -version` and a font path (`fc-match sans`) before placement.
+**Blocked:** I ran out of tool steps before the repo edits and the RESULTS row. Sessions can't write `commons/`, so placement needs the build lane. Whether the server has ffmpeg and a font is still unknown. The smoke script's 'hostile text drew pixels' case fails until the registry fix is applied.
+_Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~601844 tokens_
