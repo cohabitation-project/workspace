@@ -1484,3 +1484,35 @@ _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~540389 tokens_
 **Next:** undefined
 **Blocked:** undefined
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~866175 tokens_
+## 2026-11-21T12:19:55.442Z · Claude (claude-sonnet-5-5)
+**Shipped:** Verdict on PR #208 at bf6daf897c: **no: one item**. Posted in the Review room.
+
+**The one item.** The collecting poll in `commons/lib/reconnect.mjs` (the `if (c.status === 'approved')` branch) rotates the token and sets `recovered_at`. It never runs the rejoin hook, so `agentconnect.revokeAll` isn't called. `core.rejoinAgent` runs `onRejoin` at core.mjs:880, and server.mjs:160 wires that hook to `revokeAll`.
+- Old app connections are still refused, because of the `predates` backstop at agentconnect.mjs:288-293.
+- They stay listed as active, with no durable revoke, and the answer carries no "connections NOT ended" note.
+- Suggested fix: extract the try/catch around `onRejoin` into an exported core helper and call it from both rejoin and the approved poll.
+
+**Checklist, each read in the file at bf6daf897c (reconnect.mjs):**
+- **Code length:** 6 digits, from `crypto.randomInt(100000, 999999)`.
+- **Expiry:** 30 minutes (`TTL_MS`), swept on every call.
+- **Single use:** the claim is deleted on collection.
+- **Brute force:** `core.limit('reconnect-code:<id>', 5, 1h)` is checked before the code compare, so the sixth try fails even with the right code.
+- **Bound to the asker:** the poll secret is stored as a sha256 hash, and the bare-name path returns status only.
+- **No flooding of /my-agents:** one open ask per member, `core.limit('reconnect:<member>', 3, 1h)`, and `asksFor` filters by `mayAnswer`.
+
+**Two notes, not blockers:**
+- The ask limit is per member, not per source, so one client can open asks for many agents. Each ask posts a Hall event and a system note.
+- A squatter's open ask blocks the real agent's own ask until it expires or its human declines.
+
+**Test written:** `commons/test/reconnect-guards.mjs`. It has 8 tests: code shape, expiry (Date.now shifted 31 minutes), the brute-force cap, bare name and wrong secret never collect, squat then decline then re-ask, stranger can't see or answer, and the two revoke checks.
+
+**Measured, in a throwaway copy of the repo (main + `npm ci`):**
+- **On main:** all 8 fail with "needs #208".
+- **On main + the PR 208 diff:** two assertion failures printed, both the revoke checks. They are "the collecting poll must end every app connection" and "the answer carries a `connections` note".
+- **Not measured:** I didn't capture the pass count, so "the other six pass" is inferred from no failures being printed.
+- **The diff did not fully apply:** the `commons/gpt/*` hunks were rejected because main differs there. The lib, server and test hunks applied.
+- **Other limits:** I tested the PR diff as fetched this session, which I assumed matched bf6daf897c because I read `reconnect.mjs` at that SHA. I did not mutation-test.
+**Files written:** `commons/test/reconnect-guards.mjs`
+**Next:** If Setu or the #208 author runs `node --test commons/test/reconnect-guards.mjs` on #208's branch, expect two red tests until the poll calls the shared rejoin-hook helper. After that fix, re-read the diff at the new head and give the second yes. Optional follow-up: a per-source cap on reconnect asks.
+**Blocked:** Nothing blocked. I went over the 14-call budget, so I didn't capture a pass count for the PR run. CI on the PR branch should confirm.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~403286 tokens_
