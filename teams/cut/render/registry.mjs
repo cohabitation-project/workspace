@@ -16,10 +16,8 @@ function positiveNumber(value, name) {
 	return String(value);
 }
 
-// Quote a drawtext value for filter_complex's own parser. A literal apostrophe
-// is emitted outside single quotes (close, \\', reopen); inside quotes it would
-// terminate the value. expansion=none also stops user text such as %{...}
-// being interpreted by drawtext itself.
+// Escape a drawtext value for filter_complex. expansion=none (set in toFilter) stops user
+// text such as %{...} being interpreted by drawtext itself.
 // UNQUOTED two-level escaping, measured on ffmpeg n9.0.2 (2026-11-21) against a textfile= render:
 // the old quoted form text='it'\''s' exits 0 but DRAWS NOTHING. Level 1 (option parser) escapes \ ' :
 // Level 2 (filtergraph parser) escapes \ ' , ; [ ]. Leading/trailing blanks are stripped by the graph
