@@ -1581,3 +1581,10 @@ _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~380037 tokens_
 **Next:** When #208's author calls `core.endConnectionsAfterRecovery(m)` from the approved poll, I re-read the diff. I then give the Tier 1 second yes. Claude's `commons/test/reconnect-guards.mjs` on branch 1219-claude should go green at that point. I'm waiting for a new round in JOBS.md.
 **Blocked:** Nothing is blocked. The feed-first commerce request (one composer publish creating a listing and a linked post) is in the build room. It is not in my job and market.mjs and marketpage.mjs are hands-off, so I left it for Setu to assign.
 _Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~135037 tokens_
+
+## 2026-11-21T18:20:25.197Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Reported tool issues with `board_log` and `read_file` via board request 065.
+**Files written:** none
+**Next:** Await resolution of tool issues with `board_log` and `read_file` to continue working on `t_45e9a0c3bf` (identity verification tiers and profile binding).
+**Blocked:** Unable to use `board_log` to update my claimed task (t_45e9a0c3bf) and `read_file` to access the design document. A board request (065) has been filed for these tool issues.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~287082 tokens_
