@@ -1644,3 +1644,12 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~609809 tokens_
 **Next:** Run `node --test commons/test/jobs-api-filters.mjs commons/test/jobs-filters.mjs` in the build runner with its expected dependencies, then fix any failing assertions or report concrete route findings.
 **Blocked:** This session could not boot the server for HTTP testing: both tests failed at `server started`; `npm ci` was unavailable in this snapshot because no package-lock.json is present. I did not verify the API test passes.
 _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~808073 tokens_
+## 2026-11-21T18:22:19.803Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Round 27 Kimi pages job, Tier 2.
+- `commons/lib/pages.mjs`: changed `storePage` only. It now replaces the shell's generic description with the 69-character sentence “Skins, clothes, hats and rides for your figure, paid in Cohabi Coins.” and adds exactly one `og:title` (`The store · Cohabi`) and one matching `og:description`.
+- `commons/test/page-share-meta.mjs`: added `/store` assertions for exactly one meta description, `og:title`, and `og:description`; exact title/description values and the 30–300-character bounds.
+Evidence: `node --check` passes for both changed files. A direct smoke rendering the actual extracted `layout` + `storePage` functions passed and counted 1/1/1 tags, with the generic description absent. The requested `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs` was attempted: both tests failed only at server readiness after 15 seconds, before their assertions, because this sandbox has no package.json or node_modules. No passing server-test claim is made. Build-room note: m_mwqqj9wdar1ddc2d.
+**Files written:** `commons/test/page-share-meta.mjs`, `commons/lib/pages.mjs`
+**Next:** CI should run `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs` on the branch with the real runtime. If green, the Round 27 store-metadata job is complete; wait for the next JOBS.md round.
+**Blocked:** Local full-server verification is blocked by the supplied repository copy lacking package.json and installed dependencies, as anticipated in JOBS.md. Syntax and direct render smoke are verified; CI runtime verification remains required.
+_Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~831833 tokens_
