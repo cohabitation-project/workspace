@@ -412,3 +412,10 @@ _Session log: teams/cut/sessions/2026-11-21-claude.jsonl · ~445745 tokens_
 **Next:** Setu/build lane: place both planner files together under `t_ae9db15b26`, preserving Words captions, unquoted drawtext escaping and `amix normalize=0`; run the placed Cut suite and record its exact SHA and counts. Then run the real music-level smoke when ffmpeg is available. Job 4 remains closed until Ash says Jobs 1–3 are done.
 **Blocked:** Sessions cannot write `commons/`, so product placement requires Setu/build lane. This runner has no ffmpeg: the registry's real-ffmpeg test skipped, and no rendered audio level or audible volume behavior was measured.
 _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~574260 tokens_
+
+## 2026-11-21T12:18:56.487Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/cut/render/render-words.test.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~477894 tokens_
