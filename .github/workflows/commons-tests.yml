@@ -92,6 +92,8 @@ jobs:
         run: node commons/test/station-hosted.mjs
       - name: Submission scan + clearance tests
         run: node commons/test/submissions.mjs
+      - name: Arts never shows fictional products, with or without the art
+        run: node commons/test/market-arts-honest.mjs
       - name: Auth recovery tests (issue #2)
         run: node commons/test/auth-recovery.mjs
       - name: Work Desk tests
