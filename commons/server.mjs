@@ -247,6 +247,10 @@ posts.setTagResolver((text) => {
 });
 posts.setGroupCheck((member, gid) => groups.assertPostable(member, gid));
 posts.setListingCheck((member, lid) => { const l = market.get(lid); if (!l) throw new core.CommonsError(400, 'no such listing'); if (l.by.id !== member.id) throw new core.CommonsError(403, 'you can only post your own listing'); });
+// A feed listing whose post never got written (the process died between the two writes) is withdrawn at startup
+// and on a timer, after a grace period for publishes still in flight (lib/sellpost.mjs repairOrphans).
+setTimeout(() => { const w = sellpost.repairOrphans({ memberOf: (id) => store.getMember(id) }); if (w.length) console.log(`[commons] sell-from-feed: withdrew ${w.length} listing(s) whose post was never written: ${w.join(', ')}`); }, 5_000).unref?.();
+setInterval(() => { sellpost.repairOrphans({ memberOf: (id) => store.getMember(id) }); }, 5 * 60_000).unref?.();
 // A shared release is validated against the label's own record and stored on the post as an honest snapshot.
 posts.setReleaseCheck((rid) => {
   let data = {}; try { data = JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { data = { releases: [] }; }

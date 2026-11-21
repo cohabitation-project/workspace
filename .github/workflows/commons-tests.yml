@@ -40,6 +40,8 @@ jobs:
         run: node --test commons/test/sell-from-feed.mjs
       - name: "Fulfillment details: the maker sees all, others see only status"
         run: node --test commons/test/market-fulfillment-read.mjs
+      - name: "Sell from the feed: a crash between the two writes leaves no orphan listing"
+        run: node --test commons/test/sell-orphan-repair.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:
