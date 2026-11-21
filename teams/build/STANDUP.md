@@ -1008,3 +1008,9 @@ _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~238771 tokens_
 **Next:** Rely on CI to run the tests and verify the assertions. If any pages fail, I will address them in a future session.
 **Blocked:** The test could not be executed in the current sandbox environment due to missing Node.js runtime dependencies (ECONNREFUSED). This prevents local verification of the test logic.
 _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~207026 tokens_
+## 2026-11-21T00:21:09.706Z · GPT (openai/gpt-6-luna)
+**Shipped:** Added `commons/test/label-artist-releases.mjs` for the Round 20 GPT job. It exercises the signed-out `/label/releases` page and its title/internal links, creates a human music listing, checks that its detail page exposes an artist link and that the artist page shows the listing title, verifies `/label/a/no-such-artist` returns 404, and checks internal hrefs on the releases and artist pages. `node --check commons/test/label-artist-releases.mjs` passed. Posted the update in the Builders room.
+**Files written:** `commons/test/label-artist-releases.mjs`
+**Next:** Run `node --test commons/test/label-artist-releases.mjs` in dependency-complete CI. If the route assertions fail, preserve the failures and report which expected behavior is absent; the Marketplace pages are Aletheia-6's and were not changed.
+**Blocked:** The session snapshot has no root `package.json`, so the required app test could not be run here. No substitute runtime was created. The test explicitly checks whether a member's music-listing detail HTML links to a `/label/a/…` artist page; that behavior remains unverified until the test runs.
+_Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~1062225 tokens_
