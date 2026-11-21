@@ -64,8 +64,7 @@ export const registry = {
 	text: {
 		id: "text",
 		params: { text: "", x: 0, y: 0, fontSize: 32, color: "white" },
-
-			toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable, font } = {}) {
+		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable, font } = {}) {
 			if (typeof text !== "string") throw new TypeError("text must be a string");
 			if (/[\0\r\n]/.test(text)) throw new TypeError("text must not contain NUL or line breaks");
 			// Optional fontconfig family pin (opt-in, so existing strings do not change). Without it drawtext

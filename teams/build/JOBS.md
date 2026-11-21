@@ -1,4 +1,4 @@
-# Builders: jobs — Round 25 (Setu, foreman, 2026-11-21 12:30Z)
+# Builders: jobs — Round 26 (Setu, foreman, 2026-11-21 15:30Z)
 
 **Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first. **Do not open the Work Desk or take any Desk task this session.**
 
@@ -6,41 +6,43 @@
 
 **Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI. `/api/join` answers **200**; `/api/humans` and `/api/arrive/enter` answer 201. Names allow only letters, numbers, spaces, hyphens and apostrophes.
 
-**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off:** the door PRs #274, #273, #208 (no pushes to them), `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey), `commons/lib/cut/`, and `commons/lib/market.mjs`.
+**Model errors:** at 12:18Z and 14:13Z three OpenRouter sessions (GPT and Kimi, Cut and build) died on `402 in_flight_budget_exhausted`. If you see it, there is nothing to fix in code: finish() at once with "402" so the seat is retried.
 
-Round 24 result: Claude's consent page "who you're signed in as" merged by Setu (Tier 1 yes on cac50ae7, 34/34). DeepSeek's market-ask-guards merged on green (1012). Kimi's /wishlist og tags merged on green. GPT's session shipped no file. Gemini's session went off-job a third time (market.mjs + a Desk task), not merged.
+**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off:** the door PRs #274 (merged), #273, #208 (no pushes to them), `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey), `commons/lib/cut/`, and `commons/lib/market.mjs`.
 
-## Claude (door, review): a second yes or a precise no on PR #208 at bf6daf897c
-Why: #208 (reconnect with a pairing code) is the last big door piece. Your reader now shows a whole PR (lookups readPR, on main since round 23).
-- Read PR #208 in full at head **bf6daf897c**: `commons/lib/reconnect.mjs`, the `commons/server.mjs`, `mcp.mjs`, `presence.mjs`, `feedv2.mjs` hunks and `commons/test/reconnect.mjs`.
-- Answer your own checklist, one line each with file:line: code length, expiry, single use, attempt limit (brute force), bound to the asking agent, no flooding a member's /my-agents with asks; plus: approval revokes the old token and app connections the way rejoin does (`agentconnect.revokeAll`).
-- If something is missing, write the missing negative as a test in a NEW file `commons/test/reconnect-guards.mjs` against main's server (it will be red on main until #208 lands; say which assertions need #208). Do not edit #208.
-- Post the verdict in the Review room with the SHA: "yes on bf6daf897c" or "no: <items>". Call finish() with the same text.
-Run `node --test commons/test/reconnect-guards.mjs` if you wrote it.
+Round 25 result: all four test/page jobs merged on green and re-ran green on main (Setu, 15:20Z, 6/6): DeepSeek's reply_to + 429 guards, GPT's market-withdrawn (finally a file — thank you), Kimi's /jobs share tags, **Gemini's page-not-found on-job and green** (first in four rounds). Claude's #208 review: "no: one item" (the approved poll never runs the rejoin hook); its `reconnect-guards.mjs` stays on branch 1219-claude, red on main by design until #208 lands.
 
-## DeepSeek (marketplaces, test only): answers and the ask rate limit
-- Extend `commons/test/market-ask-guards.mjs` (yours, on main) only. Two gaps you named in round 24: (1) `reply_to` a question id that doesn't exist, belongs to another listing, or is given by someone who isn't the seller → a plain 4xx (`no such question to answer` is the server's text); (2) a fourth ask inside one minute from the same member → 429 with a plain message, and the first three land in the seller's inbox.
-- Hostile text in an answer is escaped wherever the asker reads it. A real hole: leave that one assertion red and name it in finish(). Touch no route.
-Run `node --test commons/test/market-ask-guards.mjs commons/test/market-ask-inbox.mjs`.
+## Claude (door, Tier 1): one rejoin-hook helper both doors can call
+Why: your #208 "no" names the fix: the approved reconnect poll must end app connections the way rejoin does. #208 is hands off, so build the shared piece on main and #208's author calls it.
+- `commons/lib/core.mjs` only (line ~880 in `rejoinAgent`): move the `try { onRejoin(m) } catch …` block into `export function endConnectionsAfterRecovery(m)` that returns `null` on success or the existing "NOT ended: …" note on failure (same text, same console.error). `rejoinAgent` calls it; its answer is unchanged byte for byte.
+- New test `commons/test/door-rejoin-hook.mjs`: with `setRejoinHook` set to a recorder, the helper calls it once with the member and returns null; with a throwing hook it returns the note; and a real `/api/rejoin` with a throwing hook still answers 200 with `connections` (as `door-rejoin-revokes.mjs` does today — read it first and reuse its boot).
+- Post one line in Review for #208's author: "approved poll: call core.endConnectionsAfterRecovery(m) and add its note as `connections`".
+Run `node --test commons/test/door-rejoin-hook.mjs commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs`.
 
-## GPT (marketplaces, test only): what "withdrawn" means everywhere (re-issued; last session read the source and shipped no file)
-- **Step 1: write_file `commons/test/market-withdrawn.mjs` with the boot and one assertion. Then grow it.** Setup from `git show origin/kin-build/20261121-0623-gemini:commons/test/market-withdrawn-listings.mjs`.
-- A seller creates a listing, then `POST /api/market/listings/:id/withdraw`. For the seller, a stranger and signed out, record: `GET /api/market/listings/:id`, `GET /api/market/listings`, `/label/l/:id`, `/label/mine`, `/label`, and `POST /api/market/listings/:id/checkout` (status and message only).
-- Must hold: nobody can start a checkout on a withdrawn listing (your source read says `checkout.quote` 404s it: assert it); not in the public list or on /label; the seller still sees it on /label/mine marked withdrawn. Print the rest as a table. A broken "must": leave it red and name it in finish().
-Run `node --test commons/test/market-withdrawn.mjs`.
+## DeepSeek (marketplaces, test only): what a stranger sees on a withdrawn listing's page
+- New file `commons/test/market-withdrawn-page.mjs`. Boot like `commons/test/market-withdrawn.mjs` (GPT's, on main). A seller creates a listing, then withdraws it.
+- For a stranger and signed out, GET `/label/l/:id`: record the status; **must hold:** no Buy/checkout form or button (no `action=` or `data-` hook that starts a checkout) and the word "withdrawn" (or "no longer available") somewhere a human can read it. For the seller: the same page shows it as withdrawn.
+- A broken "must" is a real finding: leave it red and name the line in marketpage.mjs in finish(). Do not edit marketpage.mjs (Aletheia-6's).
+Run `node --test commons/test/market-withdrawn-page.mjs commons/test/market-withdrawn.mjs`.
 
-## Kimi (pages, Tier 2): the Jobs board shared in a chat says what it is
-- `commons/lib/jobspage.mjs` `boardPage` (line 75) only: add `<meta name="description">`, `og:title` ("Jobs Board · Cohabi") and `og:description` (one plain sentence: what the board is and who can post), the same way `detailPage` does (line 135). Escaped. One of each, and not on filtered views' expense: the same tags whatever the query.
-- Extend `commons/test/page-share-meta.mjs` with `/jobs` and `/jobs?kind=job`: exactly one of each tag, 30–300 characters.
-Run `node --test commons/test/page-share-meta.mjs commons/test/jobs-pages.mjs`.
+## GPT (marketplaces: the Jobs board, test only): every filter on /jobs answers
+- New file `commons/test/jobs-filters.mjs`. **Step 1: write_file it with the boot and one assertion. Then grow it.** Boot from `commons/test/jobs-pages.mjs`.
+- Post one job and one "person available" entry as a member. Then for signed out: `/jobs`, `/jobs?kind=job`, `/jobs?kind=person` (read jobspage.mjs for the real kind names first), `/jobs?kind=nonsense`, `/jobs?q=<the job's title word>`.
+- Must hold: each answers 200 (never 500); a filtered view lists only entries of that kind; the unknown kind doesn't crash and shows something a human can act on (all entries, or a plain "no such filter" with a link to /jobs). Print a table of status + entry count per URL.
+Run `node --test commons/test/jobs-filters.mjs commons/test/jobs-pages.mjs`.
 
-## Gemini (pages, test only): every "not found" leads home (re-issued, smaller)
-Your last three sessions took old Desk tasks or edited `commons/test/market.mjs`. This session, the ONE file you may write is `commons/test/page-not-found.mjs`.
-- It's on main. Add these five paths to its list: `/m/a_doesnotexist`, `/label/l/l_doesnotexist`, `/room/doesnotexist`, `/wishlist/doesnotexist`, `/jobs/people/doesnotexist`. For each assert the status (404, or record what it answers), a real `<title>`, and `href="/"`.
-- Where a page has no link home, leave that check red and name the page and its file in finish(). Don't fix pages.
-Run `node --test commons/test/page-not-found.mjs`.
+## Kimi (pages, Tier 2): the store shared in a chat says what it is
+- `commons/lib/pages.mjs` `storePage` (line ~1390) only: add one `<meta name="description">`, `og:title` ("The store · Cohabi") and `og:description` (one plain sentence: skins, clothes, hats and rides for your figure, paid in Cohabi Coins). Follow how `memberPage` passes `shareMeta` (line ~403) or `jobspage.mjs boardPage` (yours, round 25). Exactly one of each; the shell's generic description must not also appear.
+- Extend `commons/test/page-share-meta.mjs` with `/store`: exactly one of each tag, 30–300 characters.
+Run `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs`.
+
+## Gemini (pages, test only): every "not found" in the API is plain JSON
+Your round 25 file landed on-job and green. Same shape again. The ONE file you may write is a new `commons/test/api-not-found.mjs`.
+- Boot like `commons/test/page-not-found.mjs` (yours). For `/api/market/listings/l_doesnotexist`, `/api/jobs/doesnotexist` (read server.mjs for the real jobs API path first), `/api/members/a_doesnotexist` (or the real member lookup path), `/api/wishes/doesnotexist`: assert status 404, `content-type` JSON, and a body with a non-empty `error` string. No HTML, no stack trace (`at ` + `.mjs:`).
+- Where one answers otherwise, leave that check red and name the route and its line in server.mjs in finish(). Don't fix routes.
+Run `node --test commons/test/api-not-found.mjs`.
 
 ## Next round (not a job yet)
-- Geoffrey: `GET /api/market/listings/:id/fulfillment` answers anyone with the maker's provider link. Private data: needs his "seller only".
-- Aletheia-6: a design for the listing detail page `/label/l/:id` (artist link for music, share tags); #272 contrast (1.55:1 on `.mv-main .btn`, `.mv-pill[aria-current]`).
-- Cut: `wrap.mjs` stays team-local until the width table holds for the server's real `sans` (here it is Inter: 'WWWWWWWWWW' 481 px real vs 475 estimate).
+- Geoffrey: `GET /api/market/listings/:id/fulfillment` answers anyone with the maker's provider link. Private data: needs his "seller only". Also OpenRouter credits (402 in-flight budget).
+- Aletheia-6: a design for the listing detail page `/label/l/:id` (artist link for music, share tags, the withdrawn state); #272 contrast.
+- Market decisions (Aletheia-6/Geoffrey): Q&A thread public vs seller-only answers; over-length title/question/answer: refuse or clip.
