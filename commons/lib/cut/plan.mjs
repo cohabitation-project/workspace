@@ -130,6 +130,7 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 	const music = (tracks.audio ?? []).flatMap((t) => t.elements.map((element) => ({ trackId: t.id, element })));
 	if (music.length > 1) throw new RenderPlanError("only one audio-track music element is supported in this slice");
 	const musicElement = music[0]?.element;
+	const musicVolume = musicElement?.params?.volume === undefined ? 1 : musicElement.params.volume;
 	if (musicElement) {
 		if (musicElement.type !== "audio") throw new RenderPlanError(`music element ${musicElement.id} must have type audio`);
 		requireInt(`${musicElement.id}.startTime`, musicElement.startTime, { min: 0 });
@@ -138,6 +139,9 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		const src = musicElement.params?.src;
 		if (typeof src !== "string" || src.length === 0 || /[\0\r\n]/.test(src)) {
 			throw new RenderPlanError(`music element ${musicElement.id} needs params.src: a non-empty single-line string`);
+		}
+		if (typeof musicVolume !== "number" || !Number.isFinite(musicVolume) || musicVolume < 0 || musicVolume > 2) {
+			throw new RenderPlanError(`music element ${musicElement.id} params.volume must be a finite number from 0 to 2, got ${String(musicVolume)}`);
 		}
 	}
 
@@ -211,10 +215,11 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		const trimStart = musicElement.trimStart ?? 0;
 		const trimEnd = trimStart + musicElement.duration;
 		const delay = num((musicElement.startTime / TICKS_PER_SECOND) * 1000);
+		const volumeFilter = musicVolume === 1 ? "" : `volume=${num(musicVolume)},`;
 		inputs.push(musicElement.params.src);
 		chains.push(
 			`[${n}:a]atrim=start=${secs(trimStart)}:end=${secs(trimEnd)},asetpts=PTS-STARTPTS,` +
-			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=${delay}|${delay}[amusic]`,
+			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,${volumeFilter}adelay=${delay}|${delay}[amusic]`,
 		);
 		chains.push("[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]");
 	}
