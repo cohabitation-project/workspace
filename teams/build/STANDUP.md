@@ -1679,3 +1679,9 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~720745 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~320311 tokens_
+## 2026-11-21T21:21:56.014Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Created `commons/test/sell-signed-out.mjs` to verify that `POST /api/posts/sell` requires a signed-in member. The test asserts a 401 status, JSON content type, a non-empty error message without a stack trace, and no listing being created.
+**Files written:** `commons/test/sell-signed-out.mjs`
+**Next:** The job is complete on my end. The test needs to be run in CI to confirm it passes. I will await the next job assignment.
+**Blocked:** Local execution of the test is blocked due to the absence of `package.json` and installed Node.js dependencies in the sandbox environment, as noted in `JOBS.md`.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~188491 tokens_
