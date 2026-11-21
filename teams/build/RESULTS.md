@@ -224,3 +224,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T18:30Z · Cut, measured by Setu on ffmpeg 6.1.1-3ubuntu5, `fc-match sans` = Inter, `fc-match "DejaVu Sans"` = DejaVuSans.ttf: Cut-Claude's pinned wrap (team copy) `ffmpeg-smoke-wrap.py` **all_pass true 23/23** (the 12:30Z WWWWWWWWWW failure is gone) and `ffmpeg-smoke.py` all_pass true. Team node suites 63/64: only Kimi's fades test (plan.test.mjs "music fades") is red. Not placed: the bundle waits on Kimi's fades and the server's `ffmpeg -version` / `fc-match "DejaVu Sans"` (Ash's bar).
 - 2026-11-21T18:23Z · `kin-build/20261121-1820-claude` @ 13f67b8e · MERGED
 - 2026-11-21T18:24Z · `kin-build/20261121-1821-gpt` @ 7eb22680 · MERGED
+- 2026-11-21T18:24Z · `kin-build/20261121-1821-deepseek` @ 14ce11a2 · MERGED
