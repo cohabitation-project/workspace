@@ -36,6 +36,8 @@ jobs:
         run: node --test commons/test/file-drop.mjs
       - name: "deploy.sh: verify-only same-SHA, explicit repair, rollback (fixture, no real server)"
         run: bash scripts/deploy/test-deploy.sh
+      - name: "Sell from the feed: one publish makes the listing and its post"
+        run: node --test commons/test/sell-from-feed.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:

@@ -86,6 +86,11 @@ export function postCard(p, me) {
   const shown = ordered.slice(-2), hidden = ordered.slice(0, -2);
   const vid = p.video ? `<div class="fx-video"><video src="${esc(p.video.url)}" controls playsinline preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>${p.video.ready ? '' : '<p class="small muted">Still being prepared for every phone; it may not play everywhere for a minute.</p>'}</div>` : '';
   const pics = p.images.length ? `<div class="fx-media n${p.images.length}">${p.images.map((i) => `<figure><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a><figcaption>${creditHTML(i)}</figcaption></figure>`).join('')}</div>` : '';
+  const offer = p.listing ? (() => {
+    const l = market.get(p.listing); if (!l) return '';
+    const live = l.status === 'live';
+    return `<aside class="fx-offer${live ? '' : ' is-off'}" aria-label="Offered in the Cohabi Market"><span class="fx-offer-k">${live ? `Offered in ${esc(market.CATEGORIES[l.category] || 'the market')}` : 'No longer offered'}</span><strong class="fx-offer-t">${esc(l.title)}</strong>${live ? `<span class="fx-offer-p">${esc(market.priceLine(l.price, l.packages))}</span>` : ''}<span class="fx-offer-acts">${live ? `<a class="btn small" href="/label/l/${esc(l.id)}">See it in the market</a>` : ''}${own ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit listing</a>` : ''}</span></aside>`;
+  })() : '';
   return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
   <header class="fx-head">
     <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
@@ -99,7 +104,7 @@ export function postCard(p, me) {
     </div></details>
   </header>
   ${p.text && p.text.length > 650 ? `<details class="fx-longpost"><summary><span class="fx-excerpt">${esc(p.text.slice(0, 280))}…</span><span class="fx-readmore">Read full post</span><span class="fx-readless">Close full post</span></summary><div class="fx-body md">${linkTags(renderMarkdown(p.text), p.tags)}</div></details>` : `<div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>`}
-  ${releaseCard(p)}${vid}${pics}
+  ${releaseCard(p)}${vid}${pics}${offer}
   <div class="sx" data-post="${esc(p.id)}">
     ${names || cs.length ? `<div class="fx-stats"><span>${names}</span>${cs.length ? `<span>${cs.length} comment${cs.length === 1 ? '' : 's'}</span>` : ''}</div>` : ''}
     <div class="fx-actions">
@@ -186,6 +191,32 @@ export function railFor(me, { active = '' } = {}) {
   return html;
 }
 
+// ------------------------------------------------------------------------------------------ sell / offer
+// Geoffrey via Aletheia-6 (2026-11-21): the feed composer is where makers create and offer things. This panel adds
+// only the listing's own fields; the post's words and photos are the listing's description and pictures. One
+// publish makes both (POST /api/posts/sell, lib/sellpost.mjs). Store theme and layout stay in Creator Studio.
+function sellPanel(me) {
+  let pages = []; try { pages = myPagesOf(me); } catch { pages = []; }
+  const opts = (o, pick = '') => Object.entries(o).map(([k, v]) => `<option value="${esc(k)}"${k === pick ? ' selected' : ''}>${esc(v)}</option>`).join('');
+  const licenses = Object.fromEntries(Object.entries(market.LICENSES).filter(([k]) => k !== 'service'));
+  return `<div class="cx-attach cx-sell" data-cx-for="sell">
+    <p class="cx-sellnote">Your words and photos become the listing's description and pictures. One <strong>Publish</strong> puts it in the market and on your feed together.</p>
+    <label class="cx-lbl" for="cs-title">What is it called?</label><input id="cs-title" maxlength="90" placeholder="e.g. Salt Roads, a chapbook" autocomplete="off">
+    <div class="cx-sellrow">
+      <span><label class="cx-lbl" for="cs-cat">Market section</label><select id="cs-cat">${opts(market.CATEGORIES)}</select></span>
+      <span><label class="cx-lbl" for="cs-type">What kind</label><select id="cs-type">${opts(market.TYPES, 'product')}</select></span>
+    </div>
+    <div class="cx-sellrow">
+      <span><label class="cx-lbl" for="cs-mode">Price</label><select id="cs-mode"><option value="fixed">A set price</option><option value="free">Free</option><option value="donation">Free, donations welcome</option><option value="quote">Ask for a quote</option></select></span>
+      <span class="cx-amount"><label class="cx-lbl" for="cs-amount">Price in US dollars</label><input id="cs-amount" type="number" min="1" max="100000" step="0.01" inputmode="decimal" placeholder="25"></span>
+    </div>
+    <label class="cx-lbl" for="cs-license">Rights</label><select id="cs-license">${opts(licenses)}<option value="service">${esc(market.LICENSES.service)}</option></select>
+    ${pages.length ? `<label class="cx-lbl" for="cs-page">Offer it under</label><select id="cs-page"><option value="">Me, ${esc(me.name)}</option>${pages.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select>` : `<p class="small muted">It's offered under your own name. <a href="/page/new">Make a store or creator page</a> to offer things under it.</p>`}
+    <label class="cx-check"><input type="checkbox" id="cs-rights"> I made this, or I hold the rights to offer it.</label>
+    <p class="small muted">Payments aren't open yet: buyers can ask, and prices are asking prices. You can edit or withdraw it any time from the post.</p>
+  </div>`;
+}
+
 // ------------------------------------------------------------------------------------------ composer
 function composer(me, myGroups, { group = null } = {}) {
   if (!me) return '';
@@ -208,7 +239,7 @@ function composer(me, myGroups, { group = null } = {}) {
   <div class="cx-body">
    <p class="cx-sec">Publishing as</p>
    <div class="cx-identity">${face}<span><strong>${esc(me.name)}</strong> · ${me.kind === 'agent' ? 'AI member' : 'Personal profile'}</span></div>
-   <div class="cx-kinds" role="group" aria-label="What are you posting">${[['post', '✎ Post'], ['photo', '▣ Photo'], ['video', '▶ Video'], ['music', '♫ Music'], ['link', '↗ Link']].map(([k, t]) => `<button type="button" class="cx-kind" data-cx-mode="${k}" aria-pressed="${k === 'post'}">${t}</button>`).join('')}</div>
+   <div class="cx-kinds" role="group" aria-label="What are you posting">${[['post', '✎ Post'], ['photo', '▣ Photo'], ['video', '▶ Video'], ['music', '♫ Music'], ['link', '↗ Link'], ...(group ? [] : [['sell', '◈ Sell / Offer']])].map(([k, t]) => `<button type="button" class="cx-kind" data-cx-mode="${k}" aria-pressed="${k === 'post'}">${t}</button>`).join('')}</div>
    <label class="sr-only" for="c-text">Your post</label><textarea id="c-text" class="cx-text" maxlength="2000" rows="5" placeholder="What's on your mind, ${esc(me.name)}?"></textarea>
    <div class="cx-attach" data-cx-for="photo"><label class="cx-drop" for="c-files"><span class="cx-dropicons" aria-hidden="true">▣</span><strong>Add photos</strong><span>Up to 4. Each one needs what it shows and who made it.</span></label><input type="file" id="c-files" class="sr-only" accept="image/png,image/jpeg,image/webp,image/gif" multiple><div id="c-pics" class="c-pics"></div></div>
    <div class="cx-attach" data-cx-for="video">
@@ -219,6 +250,7 @@ function composer(me, myGroups, { group = null } = {}) {
    </div>
    <div class="cx-attach" data-cx-for="music">${rels.length ? `<label class="cx-lbl" for="c-release">Share a release that's already on the Label</label><select id="c-release"><option value="">Choose a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select>` : ''}<p class="small muted">This shares music that's already released. Putting out a new song or album happens on <a href="/label">the Label</a>, not here.</p></div>
    <div class="cx-attach" data-cx-for="link"><div id="fx-link-row" class="fx-link-row"><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><p id="fx-link-msg" role="status"></p></div></div>
+   ${group ? '' : sellPanel(me)}
    <p class="cx-sec">Add to your post</p>
    <div class="cx-adds"><button type="button" class="cx-chip" id="cx-tag">＠ Tag people</button><label class="cx-chip"><span aria-hidden="true">☺</span><span class="sr-only">Feeling or kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling' : k.replace('-', ' ')}</option>`).join('')}</select></label></div>
    <p class="cx-sec">Share &amp; attribution</p>

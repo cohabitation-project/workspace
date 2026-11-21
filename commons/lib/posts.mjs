@@ -50,6 +50,8 @@ function checkGroups(member, text) {
 const shares = new Map(); // postId -> [{ id, by, to:[{id,name}], note, ts }]
 export function setGroupCheck(fn) { groupCheck = fn; }
 export function setReleaseCheck(fn) { releaseCheck = fn; }
+let listingCheck = null; // (member, listingId) -> throws unless the member may attach this listing (server.mjs)
+export function setListingCheck(fn) { listingCheck = fn; }
 const fail = (status, error) => { const e = new Error(error); e.status = status; throw e; };
 const clean = (s, n) => String(s ?? '').replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, n);
 // Feed filters (Geoffrey, 2026-11-15): every post lands in one topic, chosen by the author or guessed for them.
@@ -126,7 +128,7 @@ export function init(dataDir) {
   }
 }
 
-export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null, video = null, topic = null } = {}) {
+export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null, video = null, topic = null, listing = null, sell_key = null, dry_run = false } = {}) {
   const t = clean(text, 2001); const list = Array.isArray(imgs) ? imgs.map(String) : String(imgs || '').split(',').map((x) => x.trim()).filter(Boolean);
   const vid = video ? String(video) : null;
   if (vid) { const v = videos.get(vid); if (!v) fail(400, `no such video: ${vid.slice(0, 40)} (upload it first: POST /api/videos)`); if (v.by !== member.id) fail(403, 'you can only post your own video'); }
@@ -139,13 +141,24 @@ export function create(member, { text, images: imgs = [], kind = 'post', group =
   let g = null, rel = null;
   if (group) { if (!groupCheck) fail(400, 'groups are not available here'); g = groupCheck(member, group); }
   if (release) { if (!releaseCheck) fail(400, 'release sharing is not available here'); rel = releaseCheck(release); }
+  if (listing) { if (!listingCheck) fail(400, 'selling from the feed is not available here'); listingCheck(member, String(listing)); }
   const today = new Date().toISOString().slice(0, 10);
   if ([...posts.values()].filter((p) => p.by === member.id && p.ts.startsWith(today)).length >= 30) fail(429, '30 posts per day');
-  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ...(vid ? { video: vid } : {}), topic: TOPICS[topic] ? topic : guessTopic(member, { kind, images: list, release, video: vid }), ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
+  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ...(vid ? { video: vid } : {}), topic: TOPICS[topic] ? topic : guessTopic(member, { kind, images: list, release, video: vid }), ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), ...(listing ? { listing: String(listing), ...(sell_key ? { sell_key: String(sell_key).slice(0, 64) } : {}) } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
+  if (dry_run) return null; // every check above ran; nothing is written (lib/sellpost.mjs checks first)
   fs.appendFileSync(FILE, JSON.stringify({ op: 'add', post }) + '\n'); posts.set(post.id, post);
   for (const t of post.tags || []) tellOf(t.id, { kind: 'tags', what: 'tag', from: member.id, post: post.id });
   return withImages(post);
 }
+
+/** The feed post a member made for a listing from the composer, by the composer's one-time key (lib/sellpost.mjs). */
+export function bySellKey(memberId, key) {
+  const k = String(key || '').slice(0, 64); if (!k) return null;
+  for (const p of posts.values()) if (p.by === memberId && p.sell_key === k) return withImages(p);
+  return null;
+}
+/** Feed posts that carry a listing (newest first), so a listing page can link back to its post. */
+export function forListing(listingId) { return [...posts.values()].filter((p) => p.listing === String(listingId)).sort((a, b) => (a.ts < b.ts ? 1 : -1)); }
 
 /** The author moves a post to another feed; a steward can move any post (e.g. into Political). */
 export function setTopic(member, id, topic, { steward = false } = {}) {
