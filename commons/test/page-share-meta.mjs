@@ -166,6 +166,23 @@ test('Jobs, profiles and the wish list have share metadata; listing gaps are rep
       assert.ok(value.length >= 30 && value.length <= 300, `the wish list ${label} is 30–300 characters (got ${value.length})`);
     }
 
+    const storeResponse = await request('GET', '/store');
+    assert.equal(storeResponse.status, 200, 'the public store answers 200');
+    const storeTags = shareTags(await storeResponse.text());
+    assert.equal(storeTags.title.length, 1, 'the store has exactly one og:title tag');
+    assert.equal(storeTags.description.length, 1, 'the store has exactly one og:description tag');
+    assert.equal(storeTags.metaDescription.length, 1, 'the store has exactly one meta description tag');
+    assert.equal(decode(attr(storeTags.title[0], 'content')), 'The store · Cohabi', 'the store share title names the page and site');
+    const expectedStoreDescription = 'Skins, clothes, hats and rides for your figure, paid in Cohabi Coins.';
+    const storeDescriptions = [
+      ['meta description', decode(attr(storeTags.metaDescription[0], 'content')).trim()],
+      ['og:description', decode(attr(storeTags.description[0], 'content')).trim()],
+    ];
+    for (const [label, value] of storeDescriptions) {
+      assert.equal(value, expectedStoreDescription, `the store ${label} says what the page is`);
+      assert.ok(value.length >= 30 && value.length <= 300, `the store ${label} is 30–300 characters (got ${value.length})`);
+    }
+
     const made = await post('/api/market/listings', {
       title: 'A share-metadata test print',
       text: 'One original test print used only to measure the public listing page metadata.',

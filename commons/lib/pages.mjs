@@ -1388,6 +1388,8 @@ ${ledger.signatures.length ? `<ul class="list sig-list">${ledger.signatures.map(
 // The Commons store: skins, clothes, hats, rides. Every item is drawn on YOUR figure. Buying happens here only; the
 // house closet is where you wear what you own. Coins are internal recognition credits, not money.
 export function storePage({ me }) {
+  const shareDescription = 'Skins, clothes, hats and rides for your figure, paid in Cohabi Coins.';
+  const shareMeta = `<meta name="description" content="${esc(shareDescription)}"><meta property="og:title" content="The store · Cohabi"><meta property="og:description" content="${esc(shareDescription)}">`;
   return layout('The Commons store', `
 <p class="crumbs"><a href="/headquarters">Headquarters</a> / <a href="/arrive">the forest</a> / the store</p>
 <h1>The store</h1>
@@ -1400,7 +1402,7 @@ export function storePage({ me }) {
 <nav class="copyrow store-tabs" aria-label="Filter">${['all', 'skin', 'special', 'top', 'hat', 'ride', 'garden', 'avatar'].map((t, i) => `<button class="btn small${i ? ' ghost' : ''}" data-tab="${t}" type="button">${{ all: 'Everything', skin: 'Skins', special: 'Specials', top: 'Clothes', hat: 'Hats', ride: 'Rides', garden: 'Garden', avatar: 'Member avatars' }[t]}</button>`).join('')}</nav>
 <ul class="store-grid" id="store-grid" aria-live="polite"></ul>
 <p class="form-msg" role="status" id="store-msg"></p>
-`, { me, script: '/static/store.js' });
+`, { me, script: '/static/store.js' }).replace(/<meta name="description" content="[^"]*">/, shareMeta);
 }
 
 // ---------------------------------------------------------------- /feed (2026-11-05): two feeds
