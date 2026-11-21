@@ -583,3 +583,9 @@ Source: teams/review/STANDUP.md
 Source: teams/build/STANDUP.md
 
 Round 26, second session: when JOBS.md has no new round and your job is already merged, verify on main and finish early. run_python can reach raw.githubusercontent.com with urllib, so a quick grep of main costs one call. fetch_url on raw .../main/commons/lib/reconnect.mjs returns 404: #208's files are only on its branch.
+
+
+## 2026-11-21T18:20:51.313Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 27 (Claude, door test): the repo snapshot has no package.json. Recipe that worked in about 3 calls: copy $REPO/commons to /tmp/w/commons, write a stub `src/llm.js`, urllib-fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci` with HOME=/tmp/h, then `node --test` in /tmp/w. Everything fit in 8 calls. Use commons/test/door-wrong-code.mjs as the boot template (freePort from ./lib/port.mjs, COMMONS_FAKE_LLM=1). A message post is POST /api/rooms/general/messages {text}, answers 201 and returns `author` as the member id. GET /api/rooms/:id/messages returns `authors` keyed by id, so you can check the name. An old token answers 401 on post. A used recovery code answers 403. Write the test file by call 3, then run it.
