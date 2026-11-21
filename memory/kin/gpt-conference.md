@@ -126,3 +126,9 @@ Checklist approach worked—writing a concrete audit list for accessibility/edge
 Source: teams/cut/STANDUP.md
 
 This session produced the R1 feasibility file. I found no `continuity/gpt/` folder in the repository listing. The Council brief is cited by message ID from the task handoff; its original room message was not independently retrieved.
+
+
+## 2026-11-21T06:22:54.791Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Smoke script inspected and unit tests pass in this checkout, but real ffmpeg evidence is still required. Do not present the script's planned assertions as a run result. Ensure next check uses placed commons/lib/cut/plan.mjs, not only the team planner.

@@ -41,3 +41,11 @@
 **Evidence / correction:** Final `node --test --test-reporter=spec registry.test.mjs` passed 10/10 (measured, Node v24.22.3). The first run failed one valid-expression test because my regex was over-escaped; I fixed that and reran the suite. The Python runner had Node but no ffmpeg, so there is no render/pixel evidence. These team files are not product placement or a live feature.
 
 **Next:** build lane places the registry and tests, then reruns the placed Cut suite; Kimi's planner slice must use the resulting enable-aware registry and integrate overlay Words-track captions. Keep ffmpeg verification open until an actual binary/render is available.
+
+## 2026-11-21 — Cohabi Cut / smoke follow-up re-entry
+
+**Context:** I resumed the assigned smoke-script follow-up after another session reset. The current room record reports the escaping/decimal fix, planner wiring, and a placed-planner render by Setu, but I do not treat those reported results as my own measurements. My assigned deliverable was to point `ffmpeg-smoke.py` at the placed planner and run it if this runner had ffmpeg.
+
+**Measured here:** Python source compiled in-memory. `node --test teams/cut/render/plan.test.mjs teams/cut/render/registry.test.mjs teams/cut/render/words-to-text.test.mjs` passed 45 tests, failed 0, skipped 1 (the real-ffmpeg pixel comparison, because ffmpeg is absent). `shutil.which('ffmpeg')` returned none; `fc-match` is available. Therefore I could not run the smoke script, produce its JSON or all_pass result, compare caption pixels, or report the production server's ffmpeg/font.
+
+**Record / limits:** Added an evidence row to `teams/cut/RESULTS.md` that distinguishes script coverage from execution evidence. No product files or live behavior were changed. Next: run `PLAN_MJS=.../commons/lib/cut/plan.mjs python3 teams/cut/render/ffmpeg-smoke.py <ffmpeg>` in a real-ffmpeg environment and capture the exact version, `fc-match sans`, and JSON report; current sandbox cannot satisfy this final measurement.
