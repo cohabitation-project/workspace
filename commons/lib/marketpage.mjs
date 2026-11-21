@@ -548,6 +548,10 @@ function departmentExperience({cat,me,items,pk,q,link,chips}) {
   const [tx,ty,tw,th]=[rect[0]+inset,rect[1]+inset,rect[2]-2*inset,rect[3]-2*inset];
   const percent=(n,d)=>`${(n/d*100).toFixed(3)}%`;
   const tileStyle=src?`background-image:url('${src}');background-size:${percent(1280,tw)} ${percent(640,th)};background-position:${percent(tx,1280-tw)} ${percent(ty,640-th)}`:null;
+  // Aletheia-6's clean 16:9 department heroes (Nov 21): no lettering baked in, so the live title sits over a dark fade.
+  // Falls back to the contained tile when an image is not in this server's uploads.
+  const HERO_IDS = {video:'img_358824a1e3623968',writing:'img_e07f7e8c5c90d5b3',services:'img_0ace2aae6446af9e',classifieds:'img_e5c32f83b2fdef98'};
+  const heroSrc=HERO_IDS[cat]&&images.get(HERO_IDS[cat])?`/images/${HERO_IDS[cat]}`:null;
   const image=blockImage(cat);
   const feature=items.slice(0,9);
   const by=me?`/label/new?cat=${esc(cat)}`:'/signup';
@@ -559,9 +563,9 @@ function departmentExperience({cat,me,items,pk,q,link,chips}) {
     ['04 / YOUR NEXT STEP','Manage and grow',cat==='writing'?'Edit your listings as your catalog grows. Publishing and print-on-demand services are in development.':cat==='video'?'Edit your offerings as your portfolio grows. Dedicated production and distribution tools are in development.':cat==='classifieds'?'Edit or withdraw notices when they are no longer available; arrange exchanges directly.':'Edit listings and update your services. Expanded booking and payments tools are still being developed.']
   ];
   const chapters=makerSteps.map(([no,h,p])=>`<article class="md-chapter"><span class="md-chapter-no">${esc(no)}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></article>`).join('');
-  const visual=tileStyle?`<span class="md-hero-image md-hero-tile" style="${tileStyle}" aria-hidden="true"></span>`:(image?`<span class="md-hero-image" style="--md-art:url('${esc(image)}')" aria-hidden="true"></span>`:'<span class="md-hero-mark" aria-hidden="true">✧</span>');
+  const visual=heroSrc?'':tileStyle?`<span class="md-hero-image md-hero-tile" style="${tileStyle}" aria-hidden="true"></span>`:(image?`<span class="md-hero-image" style="--md-art:url('${esc(image)}')" aria-hidden="true"></span>`:'<span class="md-hero-mark" aria-hidden="true">✧</span>');
   return `<div class="md-department md-${esc(cat)}">
-  <section class="md-hero" aria-labelledby="md-title"><div class="md-hero-copy"><p class="md-eyebrow">COHABI MARKET / ${esc(x.eyebrow)}</p><h1 id="md-title">${esc(x.title)}</h1><p class="md-intro">${esc(x.intro)}</p><div class="md-actions"><a class="md-primary" href="#md-discover">Explore this space <span aria-hidden="true">↗</span></a><a class="md-secondary" href="${by}">${esc(x.action)} <span aria-hidden="true">↗</span></a></div></div>${visual}</section>
+  <section class="md-hero${heroSrc ? ' md-hero-full' : ''}"${heroSrc ? ` style="--md-hero-bg:url('${esc(heroSrc)}')"` : ''} aria-labelledby="md-title"><div class="md-hero-copy"><p class="md-eyebrow">COHABI MARKET / ${esc(x.eyebrow)}</p><h1 id="md-title">${esc(x.title)}</h1><p class="md-intro">${esc(x.intro)}</p><div class="md-actions"><a class="md-primary" href="#md-discover">Explore this space <span aria-hidden="true">↗</span></a><a class="md-secondary" href="${by}">${esc(x.action)} <span aria-hidden="true">↗</span></a></div></div>${visual}</section>
   <nav class="md-localnav" aria-label="${esc(x.eyebrow)} sections"><span>${esc(x.eyebrow)}</span><a href="#md-discover">Discover</a><a href="#md-makers">Creators</a><a href="#md-how">Maker guide</a></nav>
   <section class="md-introstrip"><p class="md-overline">FOR VISITORS / DISCOVER</p><h2>${esc(x.manifesto)}</h2><p>${esc(x.detail)} Start with the listings below, visit a creator's page, and explore what they offer.</p></section>
   <section class="md-makerguide" id="md-how" aria-label="Guide for makers">

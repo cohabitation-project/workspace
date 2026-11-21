@@ -1252,6 +1252,10 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .md-classifieds .md-hero-image {border-radius:2px;transform:rotate(-2deg)}
 .md-classifieds .md-chapter {border-radius:3px;border-top:3px solid #a4773e}
 .md-department a:focus-visible {outline:3px solid var(--gold);outline-offset:3px}
+.md-hero-full {--md-text:#fff; grid-template-columns:minmax(0,1fr); min-height:clamp(420px,46vw,600px); background:linear-gradient(90deg,#000d 0%,#000a 42%,#0003 78%,#0000 100%),var(--md-hero-bg) center/cover no-repeat,#111; color:#fff}
+.md-hero-full .md-hero-copy {max-width:720px}
+.md-hero-full .md-intro, .md-hero-full .md-eyebrow {color:#f1eeea}
+@media(max-width:580px){.md-hero-full{min-height:460px;align-items:end;background:linear-gradient(180deg,#0004 0%,#000b 45%,#000e 100%),var(--md-hero-bg) center/cover no-repeat,#111}}
 @media(max-width:850px){.md-hero{grid-template-columns:1fr;min-height:auto}.md-hero-image{max-width:640px;aspect-ratio:16/9}.md-chapters{grid-template-columns:1fr 1fr}.md-chapter{min-height:0}}
 @media(max-width:580px){.md-hero{padding:26px 20px;gap:22px;border-radius:13px}.md-hero h1{font-size:clamp(36px,11vw,54px)}.md-hero-image{border-width:4px;max-height:245px}.md-actions a{width:100%}.md-chapters{grid-template-columns:1fr;margin-bottom:36px}.md-localnav{gap:14px}.md-localnav span{width:100%}.md-introstrip h2{font-size:30px}.md-makers{margin-top:38px}.md-end{font-size:17px}}
 @media(prefers-reduced-motion:reduce){.md-listings .mk-card{transition:none}.md-listings .mk-card:hover{transform:none}}
