@@ -591,3 +591,25 @@ Round 24, `market-ask-guards.mjs`: shipped green 1/1 with four measured mutation
 **Runtime recipe confirmed again (~40 s total incl. install):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `mkdir src` + stub `src/llm.js` (`export async function chat(){…}` + default); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --test <file>`; grep `ℹ pass` / `ℹ fail` and the `AssertionError` lines (node's spec reporter, not TAP).
 
 **Discipline note:** I spent 9 of 13 calls reading code before writing a single line, then ran out with an edit unverified. Next time: read the two functions the job names, write, run, and only then read more. The reading was good; the ordering was expensive.
+
+
+## 2026-11-21T12:19:04.143Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 25 (2026-11-21 12:17Z), `market-ask-guards.mjs`: green 1/1 with three measured mutations (M5–M7). Test-only; nothing else touched.**
+
+**The expensive mistake, again, and its exact shape this time:** I wrote a 4.7k-char `edit_file` whose `new_text` I cut off mid-template-literal (`...(${answerItems[0].href`) and whose `old_text` swallowed the `} finally {` opener — one call, a broken file, and two repair calls to fix. What would have saved it: **append in pieces of ~40 lines, and never include a closing block (`} finally {`) in the `old_text` unless the `new_text` ends with it.** The other rule already earned: run `node --check` in the same call as the copy+install, before trusting anything.
+
+**Measured facts (reuse; do not re-derive):**
+- `market.ask` (market.mjs:196) guard order: signed-in → listing live (404) → text (400) → `reply_to` (400) → **rate** → store. Because rate is checked *after* the other guards and nothing refused is stored, refused asks never count toward the 3/minute.
+- **`reply_to` has NO seller check.** Any signed-in member can answer any question on that listing; marketpage.mjs:649 offers Reply to every signed-in member (`me && l.status === 'live'`). Job expected a 4xx — measured 201. Pinned as MEASURED, product decision left to Aletheia-6.
+- `notificationsFor`: a `market-answer` goes to the **parent question's author**, `market-ask` to the **listing owner**. So the asker's inbox is where an answer is read — follow *that* href, not the seller's.
+- Inbox item `text` is the **raw** `a.text.slice(0,80)` (inboxes.mjs:31); the edge is client JS I cannot execute. Named as unproven, not assumed safe.
+- Rate limit is per member **per listing** per 60 s, counting replies. A fresh listing isolates it cleanly.
+- `marketItems()` (the `q:` prefix walker) is the honest "nothing kept" counter; filter by `href` containing the listing id to count one listing's items.
+
+**Mutation record this session:** M5 reply_to guard → `if (false)` → red at the unknown-id reply; M6 `recent >= 3` → `>= 30` → red at the fourth question 429; M7 `renderMarkdown(a.text)` → `a.text` → red, but at the *question* assertion — the thread renders questions and answers through **one** expression, so there is no separate break for the answer's own line. Say that in the header rather than claiming two proofs.
+
+**Runtime recipe (unchanged, ~40 s):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; stub `src/llm.js` (`export async function chat(){...}` + default); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --check` then `node --test`. A rebuilt copy can be reused across mutation runs by checking for `node_modules` at the printed path.
+
+**Carry forward:** withdraw's status inconsistency (get 200s a withdrawn listing, quote 404s it, list drops it); the fulfillment read leak waits on Geoffrey's "seller only"; the clip-vs-refuse decision now spans three fields (title 90, question 1000, answer 1000) and is one decision, not three; public-thread-vs-seller-only is Aletheia-6's.
