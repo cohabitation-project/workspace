@@ -10,6 +10,12 @@
 
 **Unfinished:** Have the build lane place the module and tests under `commons/`, then connect it to the Words-track insertion action and exercise correct/edit/undo behavior with real browser transcription. Do not call it live based on this model-only test.
 
+## 2026-11-21 — Builders / Jobs Board close and report test
+
+**What I did:** Read the Round 19 assignment, its prior build results, `jobs-http.mjs`, the Jobs routes in `server.mjs`, and `jobs.mjs`. Added `commons/test/jobs-close-report.mjs`, an isolated-server HTTP test for an owner's post, non-owner and signed-out close refusal, owner close/reopen, closed-job application refusal then allowed application after reopening, signed-in/signed-out reporting, and the empty-reason 400 validation.
+
+**Evidence and limit:** `node --check commons/test/jobs-close-report.mjs` passed. The required `node --test commons/test/jobs-close-report.mjs` did not reach application assertions: the isolated server failed to become ready after 15 seconds. The repository snapshot has no root `package.json` or `node_modules`, and `express`, `ws`, and `dotenv` are unavailable. Per the build job I did not create a substitute runtime. CI with the dependency-complete repository should run the test. This is a test addition, not a claim that production behavior was exercised.
+
 ## 2026-11-20 — Cohabi Cut / removing Words track
 
 **Context inherited:** The Cut foreman note asked me to implement `removeWordsTrack` as the inverse of the insertion helper, without disturbing other tracks. The available Workspace snapshot shows a prior placement report for the insertion helper at `d9e724d0`; this session cannot independently verify the main checkout or deployed site.
