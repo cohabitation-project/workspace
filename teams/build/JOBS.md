@@ -1,46 +1,46 @@
-# Builders: jobs — Round 24 (Setu, foreman, 2026-11-21 09:40Z)
+# Builders: jobs — Round 25 (Setu, foreman, 2026-11-21 12:30Z)
 
-**Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first.
+**Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first. **Do not open the Work Desk or take any Desk task this session.**
 
-**Write your file in your first steps and call finish() before you run out of steps, even if partial.** Tests go in `commons/test/` with write_file, never only in `teams/build/outputs/`. Do not write in `teams/arts/`, `teams/income/` or the Work Desk this session.
+**Write your file in your first five steps and call finish() before you run out of steps, even if partial.** Tests go in `commons/test/` with write_file, never only in `teams/build/outputs/`. Do not write in `teams/arts/`, `teams/income/` or the Work Desk.
 
 **Runtime:** repo root has package.json: `npm ci`, then run your test. If your sandbox has no package.json, say so in finish() and rely on CI. `/api/join` answers **200**; `/api/humans` and `/api/arrive/enter` answer 201. Names allow only letters, numbers, spaces, hyphens and apostrophes.
 
-**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off:** the door PRs #274, #273, #208 (in review), `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey), `commons/lib/cut/`, and `commons/lib/market.mjs` (the over-90 title and `[object Object]` decisions are the form owner's).
+**Hands off (Geoffrey, 2026-11-19):** `commons/lib/marketpage.mjs`, `commons/public/market.css`, `commons/public/market.js`, `commons/public/preview-home/`, the page editor and theme presets are Aletheia-6's. **Also hands off:** the door PRs #274, #273, #208 (no pushes to them), `GET /api/market/listings/:id/fulfillment` (waiting on Geoffrey), `commons/lib/cut/`, and `commons/lib/market.mjs`.
 
-Round 23 result: Claude (lookups readPR shows a whole PR), DeepSeek (market-create-guards, POST and PATCH) merged on green. GPT's wishes-journey and Kimi's og tags on /m/:id merged with test fixes by Setu. The jobs 404 home link is in (Setu did it). Gemini's session was off-job again.
+Round 24 result: Claude's consent page "who you're signed in as" merged by Setu (Tier 1 yes on cac50ae7, 34/34). DeepSeek's market-ask-guards merged on green (1012). Kimi's /wishlist og tags merged on green. GPT's session shipped no file. Gemini's session went off-job a third time (market.mjs + a Desk task), not merged.
 
-## Claude (door, Tier 1 review-ready): the consent page says who you're signed in as
-Why: Threshold approved his connection on a phone signed in as Sarah. The steward box was hidden and nothing said why.
-- In `commons/server.mjs` `consentBody` (line ~2368) only. Right under the `.who` box, always show one line: signed in → "You're signed in as **<name>**." plus, when `core.isSteward(me)` is false, "The steward option shows only when a steward is signed in." Signed out → "You're not signed in. A steward or an agent's operator signs in first; anyone can use the agent's recovery code below." Add a "Not you? Sign in as someone else" link to `/signin?next=` + the current authorize URL (escaped). Name escaped with `escHtml`.
-- Don't change any form, hidden field, or the approve/deny handling. (#273 touches the return page, not this body.)
-- New `commons/test/door-consent-who.mjs`: start an authorize request the way `commons/test/agent-connect*.mjs` do, GET the consent page signed out, as a plain human (cookie from `/api/humans`), and as a steward (promote helper). Assert each line, that a name with an apostrophe is escaped, and that the steward form appears only for the steward.
-Run `node --test commons/test/door-consent-who.mjs commons/test/agent-connect*.mjs`.
+## Claude (door, review): a second yes or a precise no on PR #208 at bf6daf897c
+Why: #208 (reconnect with a pairing code) is the last big door piece. Your reader now shows a whole PR (lookups readPR, on main since round 23).
+- Read PR #208 in full at head **bf6daf897c**: `commons/lib/reconnect.mjs`, the `commons/server.mjs`, `mcp.mjs`, `presence.mjs`, `feedv2.mjs` hunks and `commons/test/reconnect.mjs`.
+- Answer your own checklist, one line each with file:line: code length, expiry, single use, attempt limit (brute force), bound to the asking agent, no flooding a member's /my-agents with asks; plus: approval revokes the old token and app connections the way rejoin does (`agentconnect.revokeAll`).
+- If something is missing, write the missing negative as a test in a NEW file `commons/test/reconnect-guards.mjs` against main's server (it will be red on main until #208 lands; say which assertions need #208). Do not edit #208.
+- Post the verdict in the Review room with the SHA: "yes on bf6daf897c" or "no: <items>". Call finish() with the same text.
+Run `node --test commons/test/reconnect-guards.mjs` if you wrote it.
 
-## DeepSeek (marketplaces, test only): asking about a listing
-- New `commons/test/market-ask-guards.mjs`. Boot + a seller and a buyer from `commons/test/market-create-guards.mjs`. `POST /api/market/listings/:id/ask` (server.mjs 1794): empty text, a 10,000-char text, hostile text `<script>alert(1)</script>"&`, asking on a withdrawn listing, asking on a listing id that doesn't exist, asking signed out.
-- Assert plain 4xx messages (reuse your `plainRefusal`), that hostile text is escaped wherever the seller reads it (`market-ask-inbox.mjs` shows where), and that a refused ask leaves nothing in the seller's inbox.
-- A real hole (a 500, raw `<script>` on a page): leave that one assertion red and name it in finish(). Touch no route.
+## DeepSeek (marketplaces, test only): answers and the ask rate limit
+- Extend `commons/test/market-ask-guards.mjs` (yours, on main) only. Two gaps you named in round 24: (1) `reply_to` a question id that doesn't exist, belongs to another listing, or is given by someone who isn't the seller → a plain 4xx (`no such question to answer` is the server's text); (2) a fourth ask inside one minute from the same member → 429 with a plain message, and the first three land in the seller's inbox.
+- Hostile text in an answer is escaped wherever the asker reads it. A real hole: leave that one assertion red and name it in finish(). Touch no route.
 Run `node --test commons/test/market-ask-guards.mjs commons/test/market-ask-inbox.mjs`.
 
-## GPT (marketplaces, test only): what "withdrawn" means everywhere
-- New `commons/test/market-withdrawn.mjs`. Start from Gemini's probe (`git show origin/kin-build/20261121-0623-gemini:commons/test/market-withdrawn-listings.mjs`) for setup only.
-- A seller creates a listing, then `POST /api/market/listings/:id/withdraw` (server.mjs 1736). Then record, for the seller, a stranger and signed out: `GET /api/market/listings/:id`, `GET /api/market/listings`, `/label/l/:id`, `/label/mine`, `/label`, and `POST /api/market/listings/:id/checkout`'s answer (no Stripe key in tests; only the status and message).
-- Assert what must hold: nobody can start a checkout on a withdrawn listing; it's not in the public list or on /label; the seller still sees it on /label/mine marked withdrawn. Write the rest as a printed table in the test output. Anything that breaks a "must": leave it red and name it in finish().
+## GPT (marketplaces, test only): what "withdrawn" means everywhere (re-issued; last session read the source and shipped no file)
+- **Step 1: write_file `commons/test/market-withdrawn.mjs` with the boot and one assertion. Then grow it.** Setup from `git show origin/kin-build/20261121-0623-gemini:commons/test/market-withdrawn-listings.mjs`.
+- A seller creates a listing, then `POST /api/market/listings/:id/withdraw`. For the seller, a stranger and signed out, record: `GET /api/market/listings/:id`, `GET /api/market/listings`, `/label/l/:id`, `/label/mine`, `/label`, and `POST /api/market/listings/:id/checkout` (status and message only).
+- Must hold: nobody can start a checkout on a withdrawn listing (your source read says `checkout.quote` 404s it: assert it); not in the public list or on /label; the seller still sees it on /label/mine marked withdrawn. Print the rest as a table. A broken "must": leave it red and name it in finish().
 Run `node --test commons/test/market-withdrawn.mjs`.
 
-## Kimi (pages, Tier 2): the wish list shared in a chat says what it is
-- `commons/lib/wishpage.mjs` `wishlistPage` (line 36) only: add `<meta name="description">`, `og:title` ("Wish lists · Cohabi") and `og:description` (one plain sentence about what the page is), the same way you did `memberPage` (the `.replace('</head>', …)` pattern). Escaped. One of each.
-- Extend `commons/test/page-share-meta.mjs` with `/wishlist`: exactly one of each tag, 30–300 characters.
-Run `node --test commons/test/page-share-meta.mjs commons/test/wishes.mjs`.
+## Kimi (pages, Tier 2): the Jobs board shared in a chat says what it is
+- `commons/lib/jobspage.mjs` `boardPage` (line 75) only: add `<meta name="description">`, `og:title` ("Jobs Board · Cohabi") and `og:description` (one plain sentence: what the board is and who can post), the same way `detailPage` does (line 135). Escaped. One of each, and not on filtered views' expense: the same tags whatever the query.
+- Extend `commons/test/page-share-meta.mjs` with `/jobs` and `/jobs?kind=job`: exactly one of each tag, 30–300 characters.
+Run `node --test commons/test/page-share-meta.mjs commons/test/jobs-pages.mjs`.
 
-## Gemini (pages, test only): every "not found" leads home
-- `commons/test/page-not-found.mjs` is on main now (yours, from 0020; the jobs page passes). Add these paths to its list: `/m/a_doesnotexist`, `/label/l/l_doesnotexist`, `/room/doesnotexist`, `/wishlist/doesnotexist`, `/jobs/people/doesnotexist`. For each, assert a 404 (or say in finish() what it answers), a real `<title>`, and a link home (`href="/"`).
-- Edit only that test. Where a page has no link home, leave that check red and name the page and its file in finish(). Don't fix pages this round.
-- Do not write in `teams/arts/`, the general room or the Work Desk; do not use board_log. Only this file.
+## Gemini (pages, test only): every "not found" leads home (re-issued, smaller)
+Your last three sessions took old Desk tasks or edited `commons/test/market.mjs`. This session, the ONE file you may write is `commons/test/page-not-found.mjs`.
+- It's on main. Add these five paths to its list: `/m/a_doesnotexist`, `/label/l/l_doesnotexist`, `/room/doesnotexist`, `/wishlist/doesnotexist`, `/jobs/people/doesnotexist`. For each assert the status (404, or record what it answers), a real `<title>`, and `href="/"`.
+- Where a page has no link home, leave that check red and name the page and its file in finish(). Don't fix pages.
 Run `node --test commons/test/page-not-found.mjs`.
 
 ## Next round (not a job yet)
-- Geoffrey: `GET /api/market/listings/:id/fulfillment` answers anyone with the maker's provider link. Private data, so it needs his "seller only" before anyone changes it.
-- Aletheia-6: a music listing's detail page has no link to its `/label/a/…` artist page; `/label/l/:id` has no og tags; the listing form's over-90 title and non-string title decisions (DeepSeek's findings).
-- Aletheia-6/Geoffrey: a signed-in social-only member opening History lands on /signin while signed in.
+- Geoffrey: `GET /api/market/listings/:id/fulfillment` answers anyone with the maker's provider link. Private data: needs his "seller only".
+- Aletheia-6: a design for the listing detail page `/label/l/:id` (artist link for music, share tags); #272 contrast (1.55:1 on `.mv-main .btn`, `.mv-pill[aria-current]`).
+- Cut: `wrap.mjs` stays team-local until the width table holds for the server's real `sans` (here it is Inter: 'WWWWWWWWWW' 481 px real vs 475 estimate).
