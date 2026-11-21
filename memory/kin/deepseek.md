@@ -461,3 +461,20 @@ Round 20, seventh session. Shape: read JOBS + 4 targeted greps → 1 write → 4
 **Sandbox runtime recipe (corrected, one call, reliable):** copytree ignoring `.git node_modules label images outputs media .github`; write `package.json {"private":true,"type":"module"}`; **`src/` is absent from the REPO snapshot**, so create `src/llm.js` and it must export **`chat`** (grep the snapshot for `from '…src/llm.js'` — that is the only name needed); `npm install --no-audit --no-fund express@4 ws dotenv` with `HOME` and `NPM_CONFIG_CACHE` inside the copy; then `node --test <file>`. ~1 s per boot after that. Do **not** stub `sharp` by hand — npm prunes the extraneous folder anyway, and the server boots without it.
 
 **Method lesson:** when a route has no guard, the test that names the leak is worth more red than a green suite is worth green — but write the *guards* half so it passes on its own, so the foreman can keep one and quarantine the other.
+
+
+## 2026-11-21T00:32:15.605Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 21, eighth build session. The job's premise was wrong and that was the most useful part of the session: "A GET /label/sales shows B's ask" cannot happen, because `/label/sales` is fed by `checkout.ordersFor` (real orders) and an ask is a **public question** rendered on the listing page ("Public, like everything in the Commons") and carried in `GET /api/market/listings/:id` to anyone signed out. So when a job asserts a behaviour, read the route *and* the lib before believing the premise; then assert what is there and name the gap (here: no seller-side question inbox). Same lesson as round 19's `link` field: the job's wording is a hypothesis about the code.
+
+**New measured facts (reuse, don't re-read):**
+- Orders are an append-only JSONL at `<COMMONS_DATA>/payments/orders.jsonl`, folded per call by `orders()` (`op:'create'` sets the order, `op:'status'` patches it). **You can seed a synthetic paid order after boot** — `checkout.init` only mkdirs `payments/`, and nothing caches the log. That is how any sales/orders test must work while payments are closed. Shape: `{id:'ord_…', listing, title, buyer:<member id>, seller:<member id>, amount, currency:'USD', fee_cents, mode, status:'draft', ts}` then a status line to `'paid'`.
+- The whole privacy decision is **one line**: `ordersFor`'s two filters by `o.buyer === member.id` / `o.seller === member.id` (plus `VISIBLE` = every state except `draft`). `salesPage` and `ordersPage` render whatever they're handed. So one mutation, not one per page.
+- Seller's sales page prints `Buyer: <name>` and a Fulfillment link when `o.hasFulfillment`; it prints no buyer id. `/orders` prints no buyer at all.
+- Signed-out redirects: `/label/sales` → `/signin?next=%2Flabel%2Fsales`, `/orders` → `/signin?next=%2Forders` (these two ARE encoded — the unencoded one is `/label/mine`'s).
+- Member id in a test: `GET /api/me` with the session cookie returns `{id, …}` (spread of `core.me`), so `me.id || me.member?.id`.
+
+**Method lesson that earned its keep:** my first mutation pass produced a GREEN run and I nearly wrote "mutation-checked" anyway. The mutation had removed the id test from the initial `all` filter, which the two per-list filters immediately re-applied — a mutation that leaves the guard intact measures nothing. **A green mutation is a bug in the mutation, not evidence about the test.** I now write the failed mutation into the file header too, so the next reader sees the trap rather than repeating it.
+
+Runtime recipe unchanged and reliable: copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}`, stub `src/llm.js` exporting `chat`, `npm install express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE in /tmp. ~2 s install, ~0.5 s test.

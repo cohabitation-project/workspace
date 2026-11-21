@@ -1107,3 +1107,32 @@ _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~366427 tokens_
 **Next:** CI must run `node --test commons/test/visitor-first-minute.mjs commons/test/site-links.mjs`, and the nav-emptied mutation should fail. I did not post to the build room. For the foreman: the test is Tier 2 (it touches no Tier 1 file) and is green on the page as it stands. The one code step left is to run it once after my final edit.
 **Blocked:** Nothing blocked. I did not read the `commons_read("general")` room this session and posted nothing there. The last edit to the test was not run.
 _Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~517452 tokens_
+## 2026-11-21T00:32:15.605Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 21 job (marketplace, test only) — new `commons/test/market-sales-private.mjs`: who may read a market order.**
+
+Green: `node --test commons/test/market-sales-private.mjs` → **1/1 pass** (~0.5 s) in a throwaway runtime. **No package.json in the repo snapshot** (and no node_modules), so this ran in a copy: copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}`, a stub `src/llm.js` exporting `chat`, `npm install express@4 ws dotenv`. **Real CI must confirm.** One file written, one file edited (its own header); nothing else touched — `fulfillment.mjs`, `marketpage.mjs`, `market.css`, `market.js` all untouched.
+
+**What it measures** (server.mjs:1712–1723 → `checkout.ordersFor`, commons/lib/checkout.mjs:61):
+- signed out: `/label/sales` → 303 `?next=%2Flabel%2Fsales`, `/orders` → 303 `?next=%2Forders`, `/api/me/orders` → 401;
+- the seller's `/label/sales` shows the sale with the buyer's **name** (needed to fulfil) and **not** the buyer's member id;
+- the buyer's `/label/sales` is empty ("No sales yet") and never carries the order id, while their `/orders` shows the purchase;
+- the seller's `/orders` is empty — a seller does not inherit the buyer's purchases;
+- a third member sees neither page's contents;
+- `/api/me/orders` splits `{purchases, sales}` by member id for all three.
+
+**Three findings, named:**
+1. **An ask is not a sale, and there is no seller-facing question inbox.** The job's premise (A's `/label/sales` shows B's ask) is false: that page is fed by `checkout.ordersFor`, i.e. real orders only. Questions are **public by design** — the listing page prints them under "Questions — Public, like everything in the Commons", and `GET /api/market/listings/:id` hands `asks` to anyone signed out. I assert that as design (so nobody later reads it as a leak), but a maker expecting private questions gets none.
+2. **With payments closed, no order can exist**, so the activity pages can only be tested against a seeded record. The test writes one **synthetic** paid order into the server's own `<data>/payments/orders.jsonl` in the exact shape `startCheckout` writes and the webhook confirms (`op:'create'` + `op:'status' paid`; `orders()` folds the log per call, so writing after boot works). The **read side** is proved; the write side is not — round 17 covers that.
+3. **Mutation pass, and one mutation that lied.** Dropping `ordersFor`'s per-member filter → "the buyer has no sales"; swapping purchases/sales → the seller's `/Buyer: SalesBuyer/` line; dropping `/label/sales`'s sign-in redirect → "signed out, /label/sales redirects (401 !== 303)". My **first** attempt at the filter mutation stayed **green** because it removed the id test from the initial `all` filter only, which the two per-list filters re-applied — a mutation that leaves the guard intact measures nothing. All four runs recorded in the file header, because green-on-first-try is a hypothesis.
+
+**No leak found** in these two pages, so nothing here goes to Geoffrey. The round-20 fulfillment leak (`GET /api/market/listings/:id/fulfillment`, server.mjs:1740, answers anyone signed out) remains the open private-data item.
+
+**Files written:** `commons/test/market-sales-private.mjs`
+**Files written:** `commons/test/market-sales-private.mjs`
+**Next:** For the foreman: this is a clean, mergeable test-only file. Next marketplace gaps from inside the code, in value order: (1) the round-20 fulfillment leak — one-line shape is a guarded read at server.mjs:1740 (owner check via `market.get(id)?.by.id === actor(req)?.id`, else strip `product_id`/`variant_ids`/`sku`); it is Tier 1 and needs Geoffrey's word on "seller only" first; (2) the missing seller-side question inbox (asks are public and unread — `market.notificationsFor` may already cover part of it, worth reading); (3) the two NOT_OPEN texts for one state (marketpage vs checkout's 503) — Aletheia-6's call; (4) the unencoded `next=/label/mine` sign-in redirect.
+
+**Still mine and unclaimed on the Work Desk:** t_d8e9a757e3 (wallet adversarial simulation), t_be4d17ba99 (writing-memory benchmark), t_1a3a9a90e2 and t_54b40fa65f (Spine action receipts / isolation fixture).
+**Blocked:** Nothing blocked on this job. Two things a builder can't decide: the fulfillment leak is private-data code (Geoffrey's "seller only" before anyone changes server.mjs:1740), and whether a maker *should* get a private question inbox is a design call (Aletheia-6 / Setu), not a test's.
+
+Also unverified by me: this sandbox has no `package.json`/`node_modules`, so the run used a subbed-in runtime; CI must run `node --test commons/test/market-sales-private.mjs` on the pushed branch. `commons_read` worked this session (round 20 it did not).
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~828450 tokens_
