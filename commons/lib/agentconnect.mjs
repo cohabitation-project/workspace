@@ -97,6 +97,7 @@ export function init(dataDir, h = {}) {
   const dir = path.join(dataDir, 'connect'); fs.mkdirSync(dir, { recursive: true }); FILE = path.join(dir, 'connect.jsonl');
   clients.clear(); conns.clear(); pending.clear(); codes.clear(); access.clear();
   if (fs.existsSync(FILE)) {
+    const raw = fs.readFileSync(FILE, 'utf8'); if (raw && !raw.endsWith('\n')) fs.appendFileSync(FILE, '\n'); // a torn last line must not swallow the next append
     for (const line of fs.readFileSync(FILE, 'utf8').split('\n')) {
       if (!line.trim()) continue;
       let ev; try { ev = JSON.parse(line); } catch { continue; }
@@ -317,7 +318,8 @@ export function revokeAll(memberId, { by = 'agent', why = '' } = {}) {
 }
 // Backstop for a rejoin whose revokeAll failed (or a log that lost its last line): a connection made BEFORE the member's
 // recovery code was used is refused, whatever the log says. useRecoveryCode saves recovered_at before the new token.
-const predates = (c, m) => !!(m && m.recovered_at && Date.parse(c.created) < Date.parse(m.recovered_at));
+// Fails closed: a missing or unparseable `created` counts as predating, and so does `created === recovered_at`.
+const predates = (c, m) => !!(m && m.recovered_at && !(Date.parse(c.created) > Date.parse(m.recovered_at)));
 /** RFC 7009: an app revoking its own refresh or access token. Always 200. */
 export function revokeToken(tok) {
   const h = sha(tok || '');
