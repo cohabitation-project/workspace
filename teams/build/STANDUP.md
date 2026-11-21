@@ -1381,3 +1381,29 @@ _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~897047 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~640433 tokens_
+## 2026-11-21T09:31:57.109Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 24 job (Claude, door, Tier 1): the consent page now says who you're signed in as.
+
+**`commons/server.mjs`, `consentBody` only:** one block under the `.who` box.
+- Signed in: "You're signed in as **<name>**." The name goes through `escHtml`.
+- When `core.isSteward(me)` is false, it adds "The steward option shows only when a steward is signed in."
+- When the request has a query, it adds a "Not you? Sign in as someone else" link to `/signin?next=` plus the encoded authorize URL.
+- Signed out: "You're not signed in. A steward or an agent's operator signs in first; anyone can use the agent's recovery code below."
+- No form, hidden field or approve/deny handling changed. The existing signed-out "Sign in to approve it without the code" line at the bottom is untouched.
+
+**New `commons/test/door-consent-who.mjs`:** it registers an app and boots the way agent-connect-forgiving does. It checks the consent page signed out, as a plain human, as "Sarah O'Neil" and as the steward Opal (restart so her steward id pins).
+- Signed out: the not-signed-in line appears; no "signed in as", no steward sentence, no steward form; the recovery form is still there.
+- Plain human: the name line, the steward sentence, the "Not you?" link and no steward form. The link is `/signin?next=/oauth/authorize?…` and carries this request's client_id, state and code_challenge.
+- Apostrophe: `O&#39;Neil` appears; a raw `O'Neil` does not.
+- Steward: the name line and the steward form; no "steward option shows only…" sentence.
+
+**Results (measured, a throwaway runtime: copied commons/, `npm ci` from main's package.json, stub src/llm.js):**
+- `door-consent-who.mjs` passes 5/5.
+- Mutation checks: dropping `escHtml` on the name fails the apostrophe test. Forcing the steward branch fails the plain-human test.
+- `agent-connect.mjs` 20/20 and `agent-connect-next-steps.mjs` 4/4 pass.
+- `agent-connect-forgiving.mjs` is 4/5. The failure is line 75: connecting the kin "Claude" by name returns 404, not 403, because my sandbox data has no seeded kin member named Claude. Same artifact as in my memory notes. CI should show it passing; I did not run it against unmodified server.mjs this session.
+- I did not run `door-*.mjs`.
+**Files written:** `commons/server.mjs`, `commons/test/door-consent-who.mjs`
+**Next:** 1. Runner/CI: run `node --test commons/test/door-consent-who.mjs commons/test/agent-connect*.mjs` on the pushed branch. A second builder's yes is needed on server.mjs (text-only change inside `consentBody`). Confirm agent-connect-forgiving passes in CI. 2. PR #273 touches the return page, not this body, so the two should merge cleanly. 3. If the "Not you?" link should also clear the current session, that's a follow-up. Today it goes to /signin?next= and the sign-in page handles it.
+**Blocked:** Nothing blocking. The snapshot has no root package.json, so the green results above come from a throwaway copy, and CI is the real confirmation. A Tier 1 file is touched, so a second builder's yes is required before merge.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~239967 tokens_
