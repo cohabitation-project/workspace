@@ -156,19 +156,44 @@ test("the same file used twice gets two inputs, so no pad is reused", () => {
 	assertLabelsClosed(plan.filterComplex, 2);
 });
 
-test("nothing silently dropped: overlay, audio-track and text elements are reported in `ignored`", () => {
+test("nothing silently dropped: overlay and main-track text elements are reported in `ignored`", () => {
 	const tracks = timeline(clip("a", "/m/a.mp4", 0, T));
 	const overlay = createTrack({ type: "video", name: "ov", id: "ov1" });
 	overlay.elements.push(clip("o", "/m/o.mp4", 0, T));
 	tracks.overlay.push(overlay);
-	const music = createTrack({ type: "audio", name: "music", id: "au1" });
-	music.elements.push(createElement({ id: "m", type: "audio", startTime: 0, duration: T, params: { src: "/m/song.mp3" } }));
-	tracks.audio.push(music);
 	tracks.main.elements.push(createElement({ id: "t", type: "text", startTime: 0, duration: T, params: { content: "hi" } }));
 	const plan = buildRenderPlan({ tracks });
-	assert.deepEqual(plan.ignored.map((x) => x.elementId).sort(), ["m", "o", "t"]);
+	assert.deepEqual(plan.ignored.map((x) => x.elementId).sort(), ["o", "t"]);
 	assert.deepEqual(plan.inputs, ["/m/a.mp4"]); // the ignored ones add no input
-	assert.ok(!plan.filterComplex.includes("song.mp3"));
+});
+
+test("one music element: exact trim + delay + amix plan; a second is refused", () => {
+	const tracks = timeline(clip("a", "/m/a.mp4", 0, 2 * T));
+	const music = createTrack({ type: "audio", name: "music", id: "au1" });
+	music.elements.push(createElement({
+		id: "m", type: "audio", startTime: T / 2, duration: T, trimStart: 2 * T,
+		params: { src: "/m/song.mp3" },
+	}));
+	tracks.audio.push(music);
+	const plan = buildRenderPlan({ tracks });
+	assert.deepEqual(plan.inputs, ["/m/a.mp4", "/m/song.mp3"]);
+	assert.equal(plan.durationTicks, 2 * T);
+	assert.deepEqual(plan.ignored, []);
+	const expected = [
+		`[0:v]trim=start=0:end=2,setpts=PTS-STARTPTS,trim=end=2,${NORM}[v0]`,
+		"[0:a]atrim=start=0:end=2,asetpts=PTS-STARTPTS,atrim=end=2,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",
+		"[v0][a0]concat=n=1:v=1:a=1[vout][amain]",
+		"[1:a]atrim=start=2:end=3,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=500|500[amusic]",
+		"[amain][amusic]amix=inputs=2:duration=first[aout]",
+	].join(";");
+	assert.equal(plan.filterComplex, expected);
+	assertLabelsClosed(plan.filterComplex, 2);
+
+	music.elements.push(createElement({
+		id: "m2", type: "audio", startTime: 0, duration: T, trimStart: 0,
+		params: { src: "/m/other.mp3" },
+	}));
+	assert.throws(() => buildRenderPlan({ tracks }), (e) => e instanceof RenderPlanError && /only one audio-track music element/.test(e.message));
 });
 
 test("a hostile src stays one argv element and never enters a filter string", () => {
@@ -360,7 +385,7 @@ test("text effect: hostile text is escaped by the registry and stays inside one 
 	const text = "it's 5:00, [live]; \\n %{pts}";
 	const fc = buildRenderPlan({ tracks: timeline(fxClip([{ id: "text", params: { text, x: 10, y: 20, fontSize: 40 } }])) }).filterComplex;
 	const v0 = fc.split(/(?<!\\);/)[0]; // split on ';' not preceded by a backslash
-	assert.ok(v0.endsWith("[v0]") && v0.includes("drawtext=text='it'\\''s 5\\:00\\, \\[live\\]\\; \\\\n %{pts}':x=10:y=20:fontsize=40:fontcolor=white:expansion=none,scale="), v0);
+	assert.ok(v0.endsWith("[v0]") && v0.includes("drawtext=expansion=none:text='it'\\''s 5\\:00\\, \\[live\\]\\; \\\\n %{pts}':x=10:y=20:fontsize=40:fontcolor=white,scale="), v0);
 	assert.equal(fc.split(/(?<!\\);/).length, 3); // video chain, audio chain, concat: the text did not add a chain
 });
 

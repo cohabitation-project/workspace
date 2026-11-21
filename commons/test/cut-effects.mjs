@@ -11,7 +11,7 @@ test("crop emits the exact ffmpeg filter string", () => {
 });
 
 test("text emits the exact ffmpeg filter string", () => {
-	assert.equal(registry.text.toFilter({ text: "Hello Cohabi", x: 24, y: 36, fontSize: 42, color: "white" }), "drawtext=text='Hello Cohabi':x=24:y=36:fontsize=42:fontcolor=white:expansion=none");
+	assert.equal(registry.text.toFilter({ text: "Hello Cohabi", x: 24, y: 36, fontSize: 42, color: "white" }), "drawtext=expansion=none:text='Hello Cohabi':x=24:y=36:fontsize=42:fontcolor=white");
 });
 
 test("fade rejects a zero or negative duration", () => {
@@ -29,8 +29,14 @@ test("crop rejects a rectangle outside a supplied frame and incomplete dimension
 test("text escapes apostrophe, colon, backslash and filtergraph delimiters exactly", () => {
 	assert.equal(
 		registry.text.toFilter({ text: "it's: a,b;[c]\\d %{x}" }),
-		"drawtext=text='it'\\''s\\: a\\,b\\;\\[c\\]\\\\d %{x}':x=0:y=0:fontsize=32:fontcolor=white:expansion=none",
+		"drawtext=expansion=none:text='it'\\''s\\: a\\,b\\;\\[c\\]\\\\d %{x}':x=0:y=0:fontsize=32:fontcolor=white",
 	);
+});
+
+test("text puts expansion=none before text= (real ffmpeg rejects the reverse for apostrophe + %{x})", () => {
+	const f = registry.text.toFilter({ text: "it's %{x}" });
+	assert.ok(f.indexOf("expansion=none") < f.indexOf(":text='"), f);
+	assert.ok(f.startsWith("drawtext=expansion=none:text='"), f);
 });
 
 test("text rejects NUL and line breaks instead of emitting a malformed graph", () => {
