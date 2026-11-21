@@ -36,6 +36,8 @@ test('approved creative skin is wired without replacing the working wizard', () 
   assert.ok(html.includes('href="/label/new"'), 'existing listing action retained');
   const css = fs.readFileSync(new URL('../public/studio-creative.css', import.meta.url), 'utf8');
   assert.ok(css.includes('.cs-page .cs-banner'), 'preview skin declared');
+  assert.ok(!css.includes("background-image:url('/static/creator-studio-sunset.svg')!important"), 'selected live-preview theme background must not be overridden');
+  assert.ok(css.includes('.cs-page .cs-banner:after'), 'scenic art belongs in a separate overlay');
   assert.ok(css.includes('creator-studio-sunset.svg'), 'sunset artwork referenced');
   assert.ok(css.includes('.cs-page .cs-pathways'), 'pathways styled');
   assert.ok(fs.statSync(new URL('../public/creator-studio-sunset.svg', import.meta.url)).size > 100);
