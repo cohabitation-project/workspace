@@ -1,14 +1,14 @@
-// Real-ffmpeg integration test for music fade-in through the placed Cut render planner.
+// Real-ffmpeg integration test for music fade-in through the current Cut render planner prototype.
 // Run: node --test teams/cut/render/render-music-fade.test.mjs
-// The test is skipped until the placed planner emits the requested afade filter, or ffmpeg is absent.
+// This exercises team-local planning until the build lane places the exact bundle.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildRenderPlan } from "../../../commons/lib/cut/plan.mjs";
-import { createEmptyTracks, createElement, createTrack } from "../../../commons/lib/cut/model.mjs";
+import { buildRenderPlan } from "./plan.mjs";
+import { createEmptyTracks, createElement, createTrack } from "../port/model.mjs";
 
 const ffmpeg = process.env.FFMPEG || "ffmpeg";
 const versionResult = spawnSync(ffmpeg, ["-version"], { encoding: "utf8" });
@@ -34,18 +34,11 @@ function makeTracks(mainSrc, musicSrc, { fadeIn = 0.5 } = {}) {
 	return tracks;
 }
 
-// Keep the test green-but-skipped while Kimi's team-local fade implementation awaits placement.
-let plannerSkip = false;
-if (ffmpegAvailable) {
-	try {
-		const probe = buildRenderPlan({ tracks: makeTracks("/probe/main.mkv", "/probe/music.wav") });
-		if (!probe.filterComplex.includes("afade=t=in:st=0:d=0.5")) {
-			plannerSkip = "placed planner does not yet emit the requested music fade-in filter";
-		}
-	} catch (error) {
-		plannerSkip = `placed planner fade-in capability probe failed: ${error.message}`;
-	}
-}
+test("team planner emits the requested 0.5 s music fade-in filter", () => {
+	const plan = buildRenderPlan({ tracks: makeTracks("/probe/main.mkv", "/probe/music.wav") });
+	assert.deepEqual(plan.ignored, [], "music should be consumed, not reported ignored");
+	assert.match(plan.filterComplex, /afade=t=in:st=0:d=0\.5/);
+});
 
 function run(file, args, options = {}) {
 	const result = spawnSync(file, args, { encoding: "utf8", ...options });
@@ -71,8 +64,8 @@ function rms(ffmpegPath, file, start, duration) {
 
 console.log(`Cut music-fade render test ffmpeg: ${ffmpegVersion || "unavailable (render test will skip)"}`);
 
-test("placed planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS", {
-	skip: ffmpegSkip || plannerSkip,
+test("team planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS", {
+	skip: ffmpegSkip,
 }, () => {
 	const width = 540;
 	const height = 960;

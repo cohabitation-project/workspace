@@ -1,0 +1,13 @@
+Cut music-fade render test ffmpeg: unavailable (render test will skip)
+✔ team planner emits the requested 0.5 s music fade-in filter (10.402765ms)
+﹣ team planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS (0.090788ms) # real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 68.204706
+
+STDERR:
