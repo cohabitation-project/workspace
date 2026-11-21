@@ -1184,3 +1184,27 @@ _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~516302 tokens_
 **Next:** Run `node --test commons/test/marketplaces-journey.mjs` in dependency-complete CI and investigate any assertion failure there; no page or route changes are included.
 **Blocked:** The prescribed HTTP test was attempted but failed before assertions because the isolated server did not become ready. The repository snapshot has no root `package.json` or `node_modules`; no substitute runtime was created. Runtime behavior remains unverified.
 _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~944545 tokens_
+## 2026-11-21T03:18:04.566Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 22 job written, NOT yet measured — say that plainly: this session ran out of steps before the first run.**
+
+New `commons/test/market-api-signed-out.mjs` (test only; no route, page or lib touched — `marketpage.mjs`, `market.css`, `market.js` untouched).
+
+What it does, in one pass as the job asked:
+- Boots the real server (forest-gate bypass, `COMMONS_PAYMENTS` deliberately unset), makes two real members (`ApiOutMaker`, `ApiOutAsker`); the maker lists a $5 art product, the asker asks one question on it.
+- **Every `app.get('/api/market…` route, listed in the file header with its server.mjs line**: `/api/market/listings` (1732, plus `?q=` and `?by=`), `/api/market/listings/:id` (1733), `/api/market/listings/:id/checkout` (1768), and two made-up-listing 404 cases. **`…/fulfillment` (1740) is skipped with a comment naming the known finding, `market-fulfillment-guards.mjs`, and Geoffrey's pending "seller only"** — so this file can be green.
+- For each read: the status (200 vs 404), and **no `Set-Cookie`** — a read must never start a session.
+- **The secret sweep:** the asker rotates their real recovery code (`POST /api/me/recovery`) and the test extracts it as a canary, then asserts **no signed-out market body carries the recovery code, the session token, a Bearer string, a 32+ hex blob, or an email address**. This is the assertion that would catch a future `...member` spread into a listing or a quote.
+- **No forbidden key anywhere in the JSON tree** (recursive walk of keys, not prose): password/secret/token/cookie/session/recovery/email/hash/salt/stripe/account_id/bank/journal/consent/visibility/private.
+- **The public half asserted as design**, so nobody later reads it as a leak: title, maker's name and member id (ids are public — they are `/m/<id>`), the question text, and the asker's name and id on it, exactly what `/label/l/:id` prints; the same sweep is run against the page so page and API cannot drift apart.
+- A printed (not asserted) measurement of what a withdrawn listing still answers.
+
+**Measured: nothing yet.** The sandbox has no root `package.json`/`node_modules`, and my steps ran out before I could stand up my usual throwaway runtime. So this file is written to run (`node --test commons/test/market-api-signed-out.mjs`) but **unverified — CI is its first run**, and I will not claim otherwise in the room.
+
+Predicted red risks I could not check, named so CI's first failure is quick to place: (a) `POST /api/me/recovery` may be refused for a brand-new member by a newcomer write limit; (b) the recovery response's field names decide whether the canary extraction finds a code (`credentialValues` looks for keys matching /recovery|code|token|secret/ with length ≥ 6) — if it finds none, the assertion says so in plain words rather than passing silently.
+**Files written:** `commons/test/market-api-signed-out.mjs`
+**Next:** Run it (throwaway runtime: copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `src/llm.js` exporting `chat`; `npm install express@4 ws dotenv`), fix whatever it trips, then mutate one guard once to prove the sweep bites. Round 23: if it comes back to me, the fulfilment read leak (server.mjs:1740) and GPT's artist-link finding are still the two open market items, both waiting on people, not code.
+**Blocked:** No technical blocker beyond this session's step budget; the green run is CI's to confirm or the next session's to do first, before anything else.
+**Files written:** `commons/test/market-api-signed-out.mjs`
+**Next:** Next session, first action: run `node --test commons/test/market-api-signed-out.mjs` in the throwaway runtime and fix the first red — likely the recovery-code canary (`POST /api/me/recovery` shape, or a newcomer write limit on a fresh member). Then mutate one guard to show the sweep catches it, and post the measured result in the build room.
+**Blocked:** Sandbox has no root package.json/node_modules and I ran out of steps before the throwaway runtime was up, so the new test is unrun — CI must confirm it. The fulfilment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~792174 tokens_

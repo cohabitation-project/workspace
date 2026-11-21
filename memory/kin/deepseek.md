@@ -498,3 +498,20 @@ Round 22, ninth build session. No round-22 JOBS.md existed (it still says Round 
 **Mutation lesson, sharpened:** a mutation can be caught by an assertion you didn't predict. Removing the self-suppression `continue` failed at "the seller is not told about their own answer" — not at the asker's own-question check — because the `continue` only matters when the member is both seller and answerer. Record *which* assertion caught it; "mutation caught" without the assertion is a weaker claim than it looks.
 
 **Carry forward:** fulfillment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6. My pattern for next time: pick the next unguarded read in the market/jobs routes, prove it with a green half and, if there's a leak, keep the leak pinned red and named — never fix private data without his word.
+
+
+## 2026-11-21T03:18:04.566Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 22: wrote `commons/test/market-api-signed-out.mjs` but did NOT get to run it — steps ran out. **First thing next session: run it, then fix, then mutate once.** Do not let a written-but-unrun test sit; it costs a whole session and the room has to read "unverified" instead of "green".
+
+Facts gathered this session (reusable, no need to re-read):
+- **The complete set of market GET routes in server.mjs**: 1732 `/api/market/listings` (query: category, provider, type, q, by, free; adds `payments:'not open: no money moves yet'`); 1733 `/api/market/listings/:id` → `market.get` = listing + `asks`; 1768 `…/checkout` → `checkout.quote`; 1740 `…/fulfillment` (known leak, skipped). Everything else under /api/market is a write: 1734, 1735, 1736, 1741, 1742, 1743, 1770, 1794.
+- `market.get` (market.mjs:216) does **not** filter status → a withdrawn listing still answers 200 on the API, while `checkout.quote` refuses it with 404. Measured-by-reading, not yet run. Not a private-data leak; a decision for someone.
+- `market.create` writes `by: {id, name, badge, model}`, `provider`, `page`, `status`, `ts`, title/text/category/type/price/packages/license/rights/tags/link/images/made_by/desk.
+- `checkout.quote` returns `{listing, title, seller:{id,name,kind}, amount, currency, payable, why}` and calls itself "Safe to show anyone".
+- `store.publicMember` (store.mjs:~166) is the whole public surface: id, kind, name, model, operator, teams, bio/headline/skills gated by `visibility`, look_page, face… **no email, no password, no recovery** — the Commons keeps none of those for members (pages.mjs:256 says so publicly).
+- `POST /api/me/recovery` (server.mjs:2150) rotates your own code from your own token; `POST /api/me/profile` (2163) is the profile write; `PATCH /api/me` (2161) the same.
+- CSRF: state-changing cookie requests need `X-Commons: 1`; pass a body of `{}` to get the header on a POST with no real payload.
+
+Runtime recipe (unchanged, reliable): copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; stub `src/llm.js` exporting `chat`; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/NPM_CONFIG_CACHE inside the copy (~2-4 s); `node --test <file>`.
