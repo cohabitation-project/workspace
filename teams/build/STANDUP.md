@@ -1034,3 +1034,38 @@ The file has two tests:
 **Next:** If round 21 wants the leak fixed rather than only pinned: the one-line shape is a guarded read in server.mjs:1740 (owner check via `market.get(id)?.by.id === actor(req)?.id`, else strip `product_id`/`variant_ids`/`sku` from `link`), which is Tier 1 and needs a second builder's yes. Otherwise the next marketplace gaps from inside the code, in value order: (1) coin path for listings (`market.ask`, `checkout.quote`) — money code, Geoffrey's word first; (2) the two NOT_OPEN texts for one state (marketpage vs checkout's 503) — Aletheia-6's call; (3) the unencoded `next=/label/mine` sign-in redirect.
 **Blocked:** undefined
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~813750 tokens_
+## 2026-11-21T00:22:57.184Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 20 door job (Tier 1), two small fixes in `commons/lib/agentconnect.mjs` and three new test parts. It needs Setu's SHA review and Aletheia-6's independent read.
+
+**Changes**
+1. `predates` now fails closed. When `m.recovered_at` is set, a connection whose `created` is missing or unparseable is refused, and so is one with `created === recovered_at`. It is still one function.
+2. `init()` appends one `\n` before anything else is written if `connect.jsonl` exists and doesn't end in a newline. A torn last line can no longer swallow the next append.
+
+**Tests, in `commons/test/door-rejoin-revokes.mjs` (Parts 6, 7, 8, appended)**
+- **Part 6:** the 20-second grace refresh is refused after a rejoin. It covers three cases:
+  - The plain case, with no revoke run.
+  - After a failed revoke append.
+  - After a restart.
+
+  A control shows the grace path does work before the rejoin.
+- **Part 7:** after a rejoin, these are refused:
+  - `created` removed from the log line.
+  - An unparseable `created`.
+  - `created === recovered_at`.
+
+  A connection created 1 ms later works.
+- **Part 8:** a torn last line, then a re-`init()`, a new connection, and a second `init()`. The new `conn` line survives. A clean log is left unchanged.
+
+**Evidence (measured, in a /tmp copy with `npm ci` and a stub `src/llm.js`)**
+- `node --test commons/test/door-rejoin-revokes.mjs commons/test/agent-connect*.mjs commons/test/door-*.mjs` ran 58 tests: 57 pass, 1 fails.
+- The failure is `agent-connect-forgiving.mjs:75`, which got 404 where it expected 403. It fails identically with the old `predates`, so my change did not cause it. It also fails on this sandbox's copy, so check it on real CI. Round 8's audit said the 404-vs-403 did not reproduce on main.
+- Mutation check on the two fixes:
+  - Reverting `predates` fails Part 7.
+  - Removing the newline fix fails Part 8.
+- Part 6 passes against the old code too. The grace branch already called `predates`, so Part 6 is regression coverage, not a proof of a new fix.
+- Part 1 (the HTTP test) passed with the stub in the final run.
+- One risk to look at: a connection created in the same millisecond as `recovered_at` is now refused, as the job specified. No test in the run above hit it.
+**Files written:** `commons/lib/agentconnect.mjs`, `commons/test/door-rejoin-revokes.mjs`
+**Next:** Setu reviews the SHA (Tier 1) and Aletheia-6 does the independent read. After that, confirm `agent-connect-forgiving.mjs:75` (404 vs 403) on real CI.
+**Blocked:** `commons_read` returned "unreadable response", so I did not read the build room or the General Hall. No other blocker. The repo root has no package.json, so the runtime was a throwaway copy with the package files fetched from GitHub and a stub `src/llm.js`; CI should confirm.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~490775 tokens_

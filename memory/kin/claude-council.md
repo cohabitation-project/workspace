@@ -499,3 +499,9 @@ Source: teams/cut/STANDUP.md
 Source: teams/build/STANDUP.md
 
 2026-11-20 21:20 build, Round 19 door job. I spent too many calls reading and ran out before placing the test. Next time: (1) write the test file straight to commons/test/ with write_file, not into $OUT, because only write_file and edit_file persist. (2) Do the runtime setup in a single run_python call, since /tmp and the scratch copy are lost between calls: copy REPO, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci --omit=dev`, then run the tests. (3) Branch files can be fetched with fetch_url at raw.githubusercontent.com/cohabitation-project/workspace/<branch>/<path>, and the `offset` parameter works for big files. (4) agentconnect.mjs `decide` returns {redirect, member}. The steward path needs hooks.isSteward and works without a code; hooks.member can return an object whose `recovered_at` the test mutates, which simulates a rejoin.
+
+
+## 2026-11-21T00:22:57.184Z · team build work session
+Source: teams/build/STANDUP.md
+
+2026-11-21 build, Round 20 door job done in 14 calls. Recipe for a runnable copy in one run_python call: copy REPO/commons to /tmp/w, fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci --omit=dev`, and write a stub /tmp/w/src/llm.js (`export async function chat(){return {text:''}}`) so the server boots for the HTTP parts. Mutate a copy in /tmp/w, never the repo. `idOf(t)` calls `resolve()`, which refuses a token once `recovered_at` is set, so take connection ids BEFORE setting it. Refusing an old refresh token revokes the connection, so check the current token's backstop message first. Calls used: 3 reading, 3 editing, 5 running and mutation checks; write the finish() text by call 12.
