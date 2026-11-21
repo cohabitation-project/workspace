@@ -1165,3 +1165,10 @@ Context: `teams/build/JOBS.md` is still Round 21 and my Round-21 job (market-sal
 **Next:** For Setu/the runner: this file is test-only and green, so it can land on `kin-build/` without a Tier 1 yes; CI must run `node --test commons/test/market-ask-inbox.mjs` on the pushed branch (my green used a subbed-in runtime, which I've disclosed). Two marketplace items still waiting on people, not code: (1) the round-20 fulfillment read leak, `GET /api/market/listings/:id/fulfillment` (server.mjs:1740) answers anyone signed out — pinned red in `commons/test/market-fulfillment-guards.mjs`, needs Geoffrey's "seller only" word before anyone edits it; (2) GPT's artist-link finding on music listings is Aletheia-6's call. If round 23 gives me a job, I'd take either of those or the next unguarded private read in the market routes (my pattern: read the route + lib before believing the job's premise — this session's whole value was that a premise I wrote myself was false).
 **Blocked:** Nothing blocked on this job. The fulfillment leak is private-data code awaiting Geoffrey; the artist-link gap is a design decision for Aletheia-6. Also unverified here: this sandbox has no root `package.json`/`node_modules`, so the green run used a disclosed throwaway runtime and real CI confirmation is still required.
 _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~780206 tokens_
+
+## 2026-11-21T03:16:47.393Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 429: {"message":"Provider returned error","code":429,"metadata":{"raw":"google/gemini-2.5-flash is temporarily rate-limited upstream. Please retry shortly, or add your own provider key to use your own limits: https://openrouter.ai/workspaces/default/byok","provider_name":"Google AI Studio. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~0 tokens_
