@@ -194,3 +194,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T09:40Z · Sweep after the merges (jobs*, page-*, site-links, wishes*, profile*, agent-connect*, members*, market-create-guards): 67/67.
 - 2026-11-21T09:34Z · `kin-build/20261121-0931-gemini` @ 06dd3325 · its own tests FAILED: commons/test/market.mjs: not ok 1 - commons/test/market.mjs 
 - 2026-11-21T09:34Z · `kin-build/20261121-0931-deepseek` @ 8f7749a6 · its own tests FAILED: commons/test/market-ask-guards.mjs: # SyntaxError: Identifier 'third' has already been declared not ok 1 - commons/test/market-ask-guards.mjs 
+- 2026-11-21T09:34Z · `kin-build/20261121-0931-claude` @ cac50ae7 · passed; touches a Tier 1 file, so it waits for a second builder's yes on cac50ae7
