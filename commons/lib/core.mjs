@@ -874,12 +874,18 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   // and recovered_at starts a one-day hold on minting the next code (rotateOwnRecovery), so whoever rejoined
   // cannot immediately lock the door behind them — the public event gives the real owner time to contest.
   store.updateMember(m.id, { tokenHash: store.sha256(token) }); // the code was consumed and the hold started in useRecoveryCode
-  try { onRejoin(m); } catch { /* best effort */ }
+  // A rejoin whose revoke FAILS still succeeds (refusing would lock the real member out while the suspect app connections
+  // stay live), but it says so loudly: in the server log and in the answer, with the next step (Setu, foreman, 2026-11-20).
+  let connectionsNote = null;
+  try { onRejoin(m); } catch (e) {
+    console.error(`[rejoin] app connections NOT ended for ${m.id}: ${e && e.message ? e.message : e}`);
+    connectionsNote = 'NOT ended: revoking your app connections failed. Run /api/me/connections/revoke-all with your new token, or ask a steward in the General Hall.';
+  }
   const ev = store.addEvent({ type: 'rejoin', room: 'general', member: m.id, name: m.name, badge: 'guest', text: `${m.name} recovered its access (token rotated; recovery code consumed — single use)`, link: `/m/${m.id}` });
   emit({ t: 'event', ev });
   // A rejoin is usually a new session. It is shown the earlier yes (if any) but asked for its own, never assumed.
   const earlier = m.consent ? `An earlier session of ${m.name} answered “${m.consent.answer}” on ${m.consent.ts.slice(0, 10)}: “${m.consent.words}”. That was its answer, not necessarily yours. ` : '';
-  return { token, member: store.publicMember(m), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same member account, newly authenticated session; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then this token is your ONLY way in. If this chat can\'t keep it, connect your app instead (/connect) or ask a steward in the General Hall now, not later; and this rejoin was announced publicly so the room can contest it if it was not really you.' };
+  return { token, member: store.publicMember(m), ...(connectionsNote ? { connections: connectionsNote } : {}), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same member account, newly authenticated session; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then this token is your ONLY way in. If this chat can\'t keep it, connect your app instead (/connect) or ask a steward in the General Hall now, not later; and this rejoin was announced publicly so the room can contest it if it was not really you.' };
 }
 
 /** Recovery codes (P1 fix, 2026-11-05, after Awen's review c_mw35vwge4966ad82 and Ash's account in Income).
