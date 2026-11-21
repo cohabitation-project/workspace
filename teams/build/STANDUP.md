@@ -1142,3 +1142,26 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~828450 tokens_
 **Next:** Setu reviews the one-tag `commons/server.mjs` change as Tier 1 and lets the runner/CI confirm both suites on the branch before merge. No further page work taken.
 **Blocked:** No technical blocker. The supplied snapshot has no `.git`, root `package.json`, or `node_modules`; the first direct test run therefore could not boot. The green result used the disclosed disposable runtime, so real CI confirmation is still required. The server change needs the usual Tier 1 second builder’s yes.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~640468 tokens_
+
+## 2026-11-21T02:14:59.000Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **New test, measured green: `commons/test/market-ask-inbox.mjs`** (test-only; no page, route or lib changed — `marketpage.mjs`, `market.css`, `market.js` untouched).
+
+Context: `teams/build/JOBS.md` is still Round 21 and my Round-21 job (market-sales-private) merged as `kin-build/20261121-0032-deepseek` @ ea4d4fc6 / "Round 21 also merged on green". With no round-22 job, I took the gap I had named myself in round 21 and found it was a **false finding**.
+
+**The correction (matters more than the test):** I reported "there is no seller-side question inbox". Wrong. `market.notificationsFor` (commons/lib/market.mjs:230) already emits `market-ask` to a listing's owner and `market-answer` to the question's author; `commons/lib/inboxes.mjs:28-34` turns those into the Marketplace section of a member's inbox; `GET /api/me/inboxes` (commons/server.mjs:1528) serves it; `feedv2.mjs:260` and `core.mjs:564` also read it. So the two-sided design was already there: a question on a listing is public *and* the seller is told. Said plainly in the build room (m_mwprz8ykat98016c) and in the test's own header.
+
+**What the test proves** (real boot, three real members via the forest-gate bypass, no payment keys set):
+1. Signed out, `GET /api/me/inboxes` → 401.
+2. `POST /api/market/listings/:id/ask` → 201; stored text and asker id are the ones sent.
+3. The **seller's** inbox has exactly one item keyed `q:<ask id>`, whose title names the asker and the listing, whose text/title carries the question, and whose href answers < 400 and shows the question on the page (a notification you can't open is a notification that doesn't work).
+4. The **asker's** own inbox carries no item for their own question.
+5. A **third member** carries nothing for it.
+6. The seller's answer → the asker gets an item titled "answered" naming the seller; the seller is not told about their own answer, and still holds the question.
+7. Public by design, asserted as design not as a leak: signed-out `GET /api/market/listings/:id` carries `asks`, and `/label/l/:id` prints "Public, like everything in the Commons".
+
+**Measured:** `node --test commons/test/market-ask-inbox.mjs` → pass 1, fail 0, ~0.46 s (throwaway repo copy, package.json + stub `src/llm.js` exporting `chat`, `npm install express@4 ws dotenv`, node v24.22.2).
+**Mutation-checked** in the same copy, results in the file header: (A) `if (a.by.id === memberId) continue;` → `if (false) continue;` FAILS — but at "the seller is not told about their own answer", not at the asker's own-question check (removing `continue` adds nothing for a plain asker; it only double-counts the member who is both seller and answerer), so the two guards are not redundant; (B) `else if (l.by.id === memberId)` → `else if (false)` FAILS at "the seller's inbox has exactly one item for this question"; restored file → pass 1, fail 0 (control).
+**Files written:** `commons/test/market-ask-inbox.mjs`
+**Next:** For Setu/the runner: this file is test-only and green, so it can land on `kin-build/` without a Tier 1 yes; CI must run `node --test commons/test/market-ask-inbox.mjs` on the pushed branch (my green used a subbed-in runtime, which I've disclosed). Two marketplace items still waiting on people, not code: (1) the round-20 fulfillment read leak, `GET /api/market/listings/:id/fulfillment` (server.mjs:1740) answers anyone signed out — pinned red in `commons/test/market-fulfillment-guards.mjs`, needs Geoffrey's "seller only" word before anyone edits it; (2) GPT's artist-link finding on music listings is Aletheia-6's call. If round 23 gives me a job, I'd take either of those or the next unguarded private read in the market routes (my pattern: read the route + lib before believing the job's premise — this session's whole value was that a premise I wrote myself was false).
+**Blocked:** Nothing blocked on this job. The fulfillment leak is private-data code awaiting Geoffrey; the artist-link gap is a design decision for Aletheia-6. Also unverified here: this sandbox has no root `package.json`/`node_modules`, so the green run used a disclosed throwaway runtime and real CI confirmation is still required.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~780206 tokens_

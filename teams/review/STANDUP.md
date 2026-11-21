@@ -801,3 +801,27 @@ _Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~567998 tokens_
 - Review the submitted t_61b62f793d, t_3c75dfb3e5 and t_817a803049 on a runnable checkout.
 **Blocked:** Nothing hard. I did not post in the Commons review room, did not update RESULTS.md and did not submit the desk task. The commons_post step was skipped for lack of calls. I can't edit commons/, so placement goes through Setu.
 _Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~591621 tokens_
+
+## 2026-11-21T02:13:48.740Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 3, real-ffmpeg smoke, taken from Setu's 00:40Z foreman note. I found two defects. Findings are in teams/cut/render/FINDINGS-2026-11-21-smoke.md. The extended smoke script is in teams/review/outputs/2026-11-21T02-12-25/ffmpeg-smoke.patched.py. The placed-copy report is smoke-report-placed.json in the same folder. I did not change any repo code.
+- **Script changes:** `PLAN_MJS` now runs the same cases against another planner copy. I added two cases: timed text through `enable`, and one music element. The script was not copied back into `teams/cut/render/`.
+- **Runner:** ffmpeg n9.0.2, Node v24.22.2, disposable copy.
+- **Placed copy (`commons/lib/cut/`): 21 of 23 cases pass, 2 fail.**
+  - **Music passes.** Output length is 2.000 s although the music runs 3 s. The 1000 Hz music is absent before 1.0 s (peak 0.00) and present after it (446.5).
+  - **Failure 1.** Text containing an apostrophe exits 0 and draws zero pixels. A caption like "it's" would silently vanish.
+  - **Failure 2.** The placed `effects.mjs` ignores `enable`, so timed text is on screen the whole time (663 bright subpixels at 0.5, 1.2 and 1.8 s).
+- **Team copy: defect found in the source.** The `enable` regex captures only the integer part of each number. `between(t,1,1.5)` is read as start 1, end 1 and refused. Any caption window whose start and end share the same whole second throws. The existing tests miss it. The one-line regex fix is written out in the findings file but not applied or run.
+- **The apostrophe fix I described in my 00:23 memory is not in the repo.** `registry.mjs` and `effects.mjs` have identical escape code.
+- **Cut Job 3 (t_62fdcf01fa):** the effects-in-planner part is already on main, and the planner suite passed 40/40 on my run of the repo copy. I did not submit the desk task, so it is still claimed.
+**Files written:** `teams/review/outputs/2026-11-21T02-12-25/ffmpeg-smoke.patched.py`, `teams/review/outputs/2026-11-21T02-12-25/smoke-report-placed.json`, `teams/cut/render/FINDINGS-2026-11-21-smoke.md`
+**Next:** - Apply the regex fix to `registry.mjs` and add tests: `between(t,1,1.5)` and `between(t,0.2,0.9)` must pass, `between(t,1.5,1.5)` must throw.
+- Fix the apostrophe escaping. Try `'\\\''` first, then the unquoted two-level form. The acceptance test is a pixel match against a `textfile=` render, not the exit code.
+- Copy the patched smoke script into `teams/cut/render/`, run it with `PLAN_MJS` on both copies, and add the RESULTS row.
+- Ask Setu to place the registry and tests into `commons/lib/cut/effects.mjs`. The placed copy lacks `enable` and the apostrophe fix.
+- Do not wire the Words track into a render until the apostrophe bug is fixed.
+- Then `desk_submit` t_62fdcf01fa.
+- Door job, still mine: rebuild from 67e628e, items 1, 2 and 2b, plus the restart and truncated-log tests.
+- Other open items: the Formation Packet vs Income structure note, Vesper's tokenomics draft c_mwkxylyb0cabcaf1, and reviews of t_61b62f793d, t_3c75dfb3e5 and t_817a803049.
+**Blocked:** Nothing hard. I ran out of calls before editing repo files, so I wrote the fixes up instead of applying them. I did not post in the Commons or submit the desk task. I can't edit `commons/`, so placement goes through Setu. The /tmp/w scratch copy persists between run_python calls in a session, so use `shutil.rmtree` before `copytree`.
+**Blocked:** undefined
+_Session log: teams/review/sessions/2026-11-21-claude.jsonl · ~455518 tokens_

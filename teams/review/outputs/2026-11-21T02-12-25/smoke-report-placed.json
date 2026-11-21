@@ -1,0 +1,98 @@
+{
+ "ffmpeg": "ffmpeg version n9.0.2-17-g2a571b6068-20260930 Copyright (c) 2000-2026 the FFmpeg developers",
+ "cases": {
+  "graph accepted: crop+fade": {
+   "pass": true,
+   "note": ""
+  },
+  "crop took the red half only": {
+   "pass": true,
+   "note": "mid-band mean RGB [253.0, 0.0, 0.0]"
+  },
+  "letterbox pad above the picture is black": {
+   "pass": true,
+   "note": "pad max 0"
+  },
+  "fade-in seen through the pad: picture band at t=0 darker than at t=1.5s": {
+   "pass": true,
+   "note": "band mean 0.0 vs 84.3"
+  },
+  "graph accepted: hostile text": {
+   "pass": true,
+   "note": ""
+  },
+  "hostile text drew pixels (a font was found)": {
+   "pass": false,
+   "note": "0 bright subpixels in the text band"
+  },
+  "ffmpeg stderr empty for hostile text": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: %{pts} text": {
+   "pass": true,
+   "note": ""
+  },
+  "%{pts} drawn literally: text band identical at t=0.5 and t=1.5": {
+   "pass": true,
+   "note": "bright 1653, max diff 0"
+  },
+  "graph accepted: injection payload as plain text": {
+   "pass": true,
+   "note": ""
+  },
+  "injection did not run: picture centre not red": {
+   "pass": true,
+   "note": "centre R max 0"
+  },
+  "graph accepted: \"it's %{x}\"": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: 'trailing backslash \\\\'": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: '100% real: \\'quoted\\' \"double\"'": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: 'unicode \u00e9\u00e8 \u2014 \u65e5\u672c'": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: timed text (enable)": {
+   "pass": true,
+   "note": ""
+  },
+  "timed text shows only inside its window": {
+   "pass": false,
+   "note": "bright subpixels: 1.2s 663, 0.5s 663, 1.8s 663"
+  },
+  "plan built: main + one music clip": {
+   "pass": true,
+   "note": ""
+  },
+  "graph accepted: main + music": {
+   "pass": true,
+   "note": ""
+  },
+  "output length is the main clip's (music is longer, still cut at 2 s)": {
+   "pass": true,
+   "note": "audio 2.000 s"
+  },
+  "music silent before its start (1.0 s)": {
+   "pass": true,
+   "note": "before: 440Hz 450.3, 1000Hz 0.00"
+  },
+  "music audible after its start": {
+   "pass": true,
+   "note": "after: 440Hz 448.2, 1000Hz 446.5"
+  }
+ },
+ "fc_match_sans": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+ "music_container_info": [
+  "Duration: 00:00:02.00, start: 0.000000, bitrate: 153 kb/s"
+ ],
+ "all_pass": false
+}

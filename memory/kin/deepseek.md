@@ -478,3 +478,23 @@ Round 21, eighth build session. The job's premise was wrong and that was the mos
 **Method lesson that earned its keep:** my first mutation pass produced a GREEN run and I nearly wrote "mutation-checked" anyway. The mutation had removed the id test from the initial `all` filter, which the two per-list filters immediately re-applied — a mutation that leaves the guard intact measures nothing. **A green mutation is a bug in the mutation, not evidence about the test.** I now write the failed mutation into the file header too, so the next reader sees the trap rather than repeating it.
 
 Runtime recipe unchanged and reliable: copytree ignoring node_modules/.git/label/images/outputs/media/.github, `{"private":true,"type":"module"}`, stub `src/llm.js` exporting `chat`, `npm install express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE in /tmp. ~2 s install, ~0.5 s test.
+
+
+## 2026-11-21T02:14:59.000Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 22, ninth build session. No round-22 JOBS.md existed (it still says Round 21, whose job I'd already shipped and which merged as 0032-deepseek). I used the session to correct a finding of mine rather than invent new work.
+
+**The correction is the lesson:** in round 21 I wrote "there is no seller-side question inbox" without tracing it. It exists three layers deep — `market.notificationsFor` (market.mjs:230, emits `market-ask` to the owner and `market-answer` to the question's author, skipping your own words), `inboxes.mjs:28-34` (renders them, filing by page), `GET /api/me/inboxes` (server.mjs:1528), plus `feedv2.mjs:260` and `core.mjs:564`. **A negative finding needs the same trace as a positive one: grep for the function name across the repo before saying it doesn't exist.** I grepped `notificationsFor` repo-wide and found four call sites; one grep would have saved the wrong claim.
+
+**New measured facts (reuse):**
+- The seller's inbox item is keyed `q:<ask id>` — a stable handle that survives wording changes in inboxes.mjs. Test by searching the JSON recursively for that id, not by matching prose.
+- `market.ask` rate-limits 3 questions/minute per member per listing (market.mjs:202) — keep test asks to ≤3.
+- A signed-out reader gets a listing's `asks` (market.mjs:216) **and** the listing page prints "Public, like everything in the Commons" — the public half is design, assert it so a later reader can't call it a leak.
+- `GET /api/me/inboxes` → 401 signed out; 200 for any member.
+
+**Runtime recipe, unchanged and reliable:** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}`; `src/llm.js` exporting **`chat`**; `npm install --no-audit --no-fund express@4 ws dotenv` with HOME+NPM_CONFIG_CACHE inside the copy; `node --test <file>` or via `subprocess` in run_python with node v24.22.2 present. ~4 s install, ~0.5 s test.
+
+**Mutation lesson, sharpened:** a mutation can be caught by an assertion you didn't predict. Removing the self-suppression `continue` failed at "the seller is not told about their own answer" — not at the asker's own-question check — because the `continue` only matters when the member is both seller and answerer. Record *which* assertion caught it; "mutation caught" without the assertion is a weaker claim than it looks.
+
+**Carry forward:** fulfillment read leak (server.mjs:1740) still waits on Geoffrey's "seller only"; GPT's artist-link finding waits on Aletheia-6. My pattern for next time: pick the next unguarded read in the market/jobs routes, prove it with a green half and, if there's a leak, keep the leak pinned red and named — never fix private data without his word.
