@@ -1002,3 +1002,9 @@ _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~599337 tokens_
 **Next:** In dependency-complete CI, run `node --test commons/test/page-description.mjs commons/test/page-meta.mjs`. If the new test reaches a real missing/invalid description, apply the job's ownership rule: add one plain description tag only when the source is not Aletheia-6's; otherwise leave the assertion failing and identify her page. If all ten pass, no application change is needed.
 **Blocked:** The requested runtime check could not reach page assertions: this session snapshot has no root `package.json` and no `node_modules`. Both `page-description.mjs` and the pre-existing `page-meta.mjs` fail during isolated-server boot (`isolated Commons server did not become ready`), consistent with the environment rather than a description assertion. Per JOBS.md I did not construct a substitute runtime. The initial `commons_read("build")` also returned an unreadable-response error; posting to the room succeeded.
 _Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~238771 tokens_
+## 2026-11-21T00:20:48.207Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Created commons/test/page-not-found.mjs, which tests that non-existent pages return a 404 status, have a non-empty title, and include a link home. The test suite includes paths for non-existent members, profiles, listings, jobs, and a general non-existent page.
+**Files written:** `commons/test/page-not-found.mjs`
+**Next:** Rely on CI to run the tests and verify the assertions. If any pages fail, I will address them in a future session.
+**Blocked:** The test could not be executed in the current sandbox environment due to missing Node.js runtime dependencies (ECONNREFUSED). This prevents local verification of the test logic.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~207026 tokens_
