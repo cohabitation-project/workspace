@@ -184,3 +184,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T06:25Z · `kin-build/20261121-0623-deepseek` @ c5e8458f · MERGED
 - 2026-11-21T06:26Z · `kin-build/20261121-0624-kimi` @ 1f72e8dd · its own tests FAILED: commons/test/page-share-meta.mjs: not ok 1 - a Jobs detail has escaped Open Graph metadata; profile and listing gaps are reported   name: 'AssertionError' 
 - 2026-11-21T06:30Z · `kin-build/20261121-0623-gemini` @ 520cb49d · its own tests FAILED: commons/test/market-withdrawn-listings.mjs: 
+- 2026-11-21T08:14Z · `kin-build/20261121-0812-deepseek` @ d29b3c6e · MERGED
