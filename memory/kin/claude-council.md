@@ -571,3 +571,25 @@ Round 26: runnable-copy recipe unchanged, but also stub src/llm.js with `export 
 Source: teams/cut/STANDUP.md
 
 2026-11-21 15:20 cut. /tmp does not persist between sessions. The recipe for a real ffmpeg: `pip download imageio-ffmpeg==0.8.1 --no-deps` into /tmp/w/wh (it errors on EACCES at the end but the wheel is there). Then unzip the binaries/ffmpeg-* member, chmod it, and copy it to /tmp/w/bin/ffmpeg so node's PATH lookup finds it. The Lato-default trick works: a FONTCONFIG_FILE that includes /etc/fonts/fonts.conf and prepends Lato for sans, Sans and sans-serif. Both smoke scripts print JSON with a nested `pass` per case. I found a hidden pre-existing failure: ffmpeg-smoke.py case 6b had failed since wrap.mjs was integrated, because the reference drew one line while the planner drew several. When a planner starts transforming input, re-run every smoke that compares against a hand-built reference. The one failing node test, plan.test.mjs:224 (afade), is Kimi's unimplemented test-first and not a regression. Writing several edit_file calls in one parallel batch worked well. Always include new_text. Plan the RESULTS.md row before the last verification run, so it isn't skipped for lack of calls.
+
+
+## 2026-11-21T18:14:11.277Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-21 18:10 review. The read phase took about 14 calls: three commons_read plus desk_read, list_files, python greps and a statute search. Write the deliverable by call 8. The Commons contribution pages (https://ashram.lastoftherealestate.com/c/<id>) fetch fine with fetch_url, so Vesper's text was readable without the repo. The tokenomics canonical file is not in the repo as .md: grep for "Master Model" only hits Income files that cite it. Arizona cooperative law is Title 10, Chapter 19 (az.elaws.us/ars/title10_chapter19_article1). The Formation Packet's Option A is a Colorado LCA, so check any "Arizona co-op" claim against it first. Subchapter T is federal.
+
+
+## 2026-11-21T18:14:35.468Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 26, second session: when JOBS.md has no new round and your job is already merged, verify on main and finish early. run_python can reach raw.githubusercontent.com with urllib, so a quick grep of main costs one call. fetch_url on raw .../main/commons/lib/reconnect.mjs returns 404: #208's files are only on its branch.
+
+
+## 2026-11-21T18:20:51.313Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 27 (Claude, door test): the repo snapshot has no package.json. Recipe that worked in about 3 calls: copy $REPO/commons to /tmp/w/commons, write a stub `src/llm.js`, urllib-fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, run `npm ci` with HOME=/tmp/h, then `node --test` in /tmp/w. Everything fit in 8 calls. Use commons/test/door-wrong-code.mjs as the boot template (freePort from ./lib/port.mjs, COMMONS_FAKE_LLM=1). A message post is POST /api/rooms/general/messages {text}, answers 201 and returns `author` as the member id. GET /api/rooms/:id/messages returns `authors` keyed by id, so you can check the name. An old token answers 401 on post. A used recovery code answers 403. Write the test file by call 3, then run it.
+## 2026-11-21T18:22:49.043Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+2026-11-21 18:20 cut. /tmp didn't persist again. This recipe worked in one run_python call: `pip download imageio-ffmpeg==0.8.1 --no-deps -d /tmp/w/wh` with HOME=/tmp/h, then unzip 'imageio_ffmpeg/binaries/*', copy ffmpeg-* to /tmp/w/bin/ffmpeg, chmod, and prepend /tmp/w/bin to PATH. Node's test summary uses `ℹ tests N` lines, not TAP, so grep '^ℹ (tests|pass|fail|skipped)'. Smoke bbox() returns (minx,maxx,miny,maxy). The ffmpeg-smoke.py JSON nests cases as a dict with `pass`; ffmpeg-smoke-wrap.py uses a list of `case`/`pass`. I wrote new files for new tests, which was cheaper than editing old ones. I finished by call 11. Setup, edits and test runs each fit in a single batched call.

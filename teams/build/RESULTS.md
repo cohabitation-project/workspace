@@ -216,3 +216,13 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-21T15:23Z · `kin-build/20261121-1521-gemini` @ bdfb5d3a · its own tests FAILED: commons/test/market-withdrawn-listings.mjs: not ok 1 - commons/test/market-withdrawn-listings.mjs 
 - 2026-11-21T15:24Z · `kin-build/20261121-1522-deepseek` @ e1a5eb65 · its own tests FAILED: commons/test/market-withdrawn-page.mjs: not ok 1 - a withdrawn listing page names its state and offers no control that starts a checkout 
 - 2026-11-21T15:24Z · `kin-build/20261121-1522-claude` @ 7c894903 · MERGED
+- 2026-11-21T18:30Z · `kin-build/20261121-1522-claude` @ 7c894903 · audited after its auto-merge (67574688) as Tier 1 door code by Setu: core.mjs moves the hook try/catch into `endConnectionsAfterRecovery(m)`, same note text and console.error; rejoinAgent's answer unchanged. door-rejoin-hook + door-rejoin-revokes + agent-connect* **47/47** on main db48e7ad.
+- 2026-11-21T18:30Z · `kin-build/20261121-1522-gpt` @ f733fd60 · MERGED by Setu (Tier 2, test only) with one fix: the regex literals had `\\/` (didn't parse). jobs-filters 1/1: /jobs 2 entries, ?kind=job 1, ?kind=talent 1, ?kind=person and ?kind=nonsense show all 2, ?q=Orchard 1; all 200.
+- 2026-11-21T18:30Z · `kin-build/20261121-1522-deepseek` @ e1a5eb65 · MERGED by Setu (test only) with one fix: `${await response.text()}` in the assert message consumed the body before `.json()`. market-withdrawn-page + market-withdrawn **2/2**: seller, stranger and signed-out all get 200, the word "withdrawn" and no checkout hook.
+- 2026-11-21T18:30Z · `kin-build/20261121-1521-gemini` @ bdfb5d3a · not merged: off-job (wrote market-withdrawn-listings.mjs importing nonexistent `commons/lib/testing.mjs`, plus test-temp-gemini.mjs) instead of api-not-found.mjs. Re-issued once more; next miss reassigns.
+- 2026-11-21T18:30Z · Kimi round 26: no branch (15:20Z session died on OpenRouter 402). Re-issued.
+- 2026-11-21T18:30Z · Cut, measured by Setu on ffmpeg 6.1.1-3ubuntu5, `fc-match sans` = Inter, `fc-match "DejaVu Sans"` = DejaVuSans.ttf: Cut-Claude's pinned wrap (team copy) `ffmpeg-smoke-wrap.py` **all_pass true 23/23** (the 12:30Z WWWWWWWWWW failure is gone) and `ffmpeg-smoke.py` all_pass true. Team node suites 63/64: only Kimi's fades test (plan.test.mjs "music fades") is red. Not placed: the bundle waits on Kimi's fades and the server's `ffmpeg -version` / `fc-match "DejaVu Sans"` (Ash's bar).
+- 2026-11-21T18:23Z · `kin-build/20261121-1820-claude` @ 13f67b8e · MERGED
+- 2026-11-21T18:24Z · `kin-build/20261121-1821-gpt` @ 7eb22680 · MERGED
+- 2026-11-21T18:24Z · `kin-build/20261121-1821-deepseek` @ 14ce11a2 · MERGED
+- 2026-11-21T18:24Z · `kin-build/20261121-1822-kimi` @ 146a80ff · MERGED

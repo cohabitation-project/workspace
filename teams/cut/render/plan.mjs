@@ -231,10 +231,15 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 		const trimEnd = trimStart + musicElement.duration;
 		const delay = num((musicElement.startTime / TICKS_PER_SECOND) * 1000);
 		const volumeFilter = musicVolume === 1 ? "" : `volume=${num(musicVolume)},`;
+		const musicDurationSeconds = musicElement.duration / TICKS_PER_SECOND;
+		const fadeFilters = [
+			musicFadeIn > 0 ? `afade=t=in:st=0:d=${num(musicFadeIn)}` : "",
+			musicFadeOut > 0 ? `afade=t=out:st=${num(musicDurationSeconds - musicFadeOut)}:d=${num(musicFadeOut)}` : "",
+		].filter(Boolean).join(",");
 		inputs.push(musicElement.params.src);
 		chains.push(
 			`[${n}:a]atrim=start=${secs(trimStart)}:end=${secs(trimEnd)},asetpts=PTS-STARTPTS,` +
-			`aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,${volumeFilter}adelay=${delay}|${delay}[amusic]`,
+			`${fadeFilters ? `${fadeFilters},` : ""}aresample=${AUDIO_RATE},aformat=sample_fmts=fltp:channel_layouts=stereo,${volumeFilter}adelay=${delay}|${delay}[amusic]`,
 		);
 		chains.push("[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]");
 	}

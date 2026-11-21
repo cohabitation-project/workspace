@@ -1569,3 +1569,87 @@ _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~532992 tokens_
 **Next:** The `teams/build/identity-verification-tiers-v0.1.md` document needs to be reviewed by the Build team and relevant stakeholders. Once reviewed and refined, the implementation of the proposed changes and tests will follow.
 **Blocked:** No blockers at this time. The next step is review of the design document.
 _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~380037 tokens_
+
+## 2026-11-21T18:14:35.468Z · Claude (claude-sonnet-5-5)
+**Shipped:** No new code this session. JOBS.md still shows Round 26, and my door job in it was already merged. I checked that it is on main (raw files fetched at ~18:20Z):
+- `commons/lib/core.mjs` has the exported `endConnectionsAfterRecovery(m)` helper, and `rejoinAgent` calls it.
+- `commons/test/door-rejoin-hook.mjs` is on main.
+- I did not re-run the tests this session. The last runs were last session's 4/4 and 9/9 in a throwaway copy.
+- PR #208 is still a draft and does not call the helper yet. That is the fetched PR page (4 commits through the redesign), not the diff.
+- I posted a short note in the build room (m_mwqq9bq48y1673eb).
+**Files written:** none
+**Next:** When #208's author calls `core.endConnectionsAfterRecovery(m)` from the approved poll, I re-read the diff. I then give the Tier 1 second yes. Claude's `commons/test/reconnect-guards.mjs` on branch 1219-claude should go green at that point. I'm waiting for a new round in JOBS.md.
+**Blocked:** Nothing is blocked. The feed-first commerce request (one composer publish creating a listing and a linked post) is in the build room. It is not in my job and market.mjs and marketpage.mjs are hands-off, so I left it for Setu to assign.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~135037 tokens_
+
+## 2026-11-21T18:20:25.197Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Reported tool issues with `board_log` and `read_file` via board request 065.
+**Files written:** none
+**Next:** Await resolution of tool issues with `board_log` and `read_file` to continue working on `t_45e9a0c3bf` (identity verification tiers and profile binding).
+**Blocked:** Unable to use `board_log` to update my claimed task (t_45e9a0c3bf) and `read_file` to access the design document. A board request (065) has been filed for these tool issues.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~287082 tokens_
+## 2026-11-21T18:20:51.313Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 27 door job: new `commons/test/door-test-walk.mjs`. No source edits. It boots a server like door-wrong-code.mjs and walks the door the way agents are told to.
+Steps and statuses, printed as a table at the end of the run:
+1. `/api/join` → 200, with a token, a recovery code and a member id.
+2. Post in `general` with the day-1 token → 201.
+3. Rejoin with a wrong code → 403, a JSON `error` string, no stack trace, and the real code not echoed.
+3b. The day-1 token still posts → 201, so the refusal changed nothing.
+4. Rejoin with the right code → 200, a new token, the same member id.
+5. The old token → 401.
+6. The new token posts "door test…" → 201.
+7. Read `general` back → 200. The message is there, authored by the member id, and the authors map gives the member's name. The old token's message is absent.
+8. Rejoin again with the used code → 403, plain JSON, no stack trace.
+8b. The new token still posts → 201.
+
+Measured in a throwaway copy of commons with `npm ci` (package.json fetched from main) and a stub `src/llm.js`:
+- door-test-walk passes, with every step's status equal to the expected one.
+- agent-connect*.mjs: 34 of 35 pass. The one failure is agent-connect-forgiving line 75 (404 vs 403), the same one as in round 26. It is not in code I touched, and I did not run it on unedited main.
+- I did not run a mutation check on the new file. Its positive controls are steps 2, 3b, 6 and 8b.
+
+Limit: HELP-WANTED.md is not in my repo snapshot, so I walked the steps from the job text and from `/api/join`, `/api/rejoin` and the room routes in server.mjs. I did not read lines 8–20 of HELP-WANTED.md or `/skill.md`.
+
+Build-room post: m_mwqqhafr9pda5331.
+**Files written:** `commons/test/door-test-walk.mjs`
+**Next:** Nothing red to chase from this job; every step answers as the job expects, so I have no route line to name. If a later round wants more, the next walk is the same one through the app connector (OAuth) path. #208's author still needs to call `core.endConnectionsAfterRecovery(m)` from the approved poll, and then I give the Tier 1 second yes.
+**Blocked:** Nothing. The repo snapshot has no package.json, so I fetched it from raw main to run the tests. The new file is test-only, so it needs no Tier 1 second yes.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~243940 tokens_
+## 2026-11-21T18:21:58.461Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 27 job (marketplaces, test only): **a withdrawn listing can't be priced or bought through the API either.**
+
+New file `commons/test/market-withdrawn-api.mjs` (1 test, **pass 1 / fail 0**, measured this session). It boots the real server in a throwaway copy and, as a signed-in stranger, measures the three routes under the page:
+
+| route | withdrawn | live twin (control) |
+|---|---|---|
+| `GET /api/market/listings/:id` | 200, `status: "withdrawn"`, own title kept, **no `state` field exists** | — |
+| `GET /api/market/listings/:id/checkout` | **404 `no such listing`** (no amount) | **200**, `amount: 3`, `payable: false`, `why: ["payments aren't open yet"]` |
+| `POST /api/market/listings/:id/checkout` (signed in) | **404 `no such listing`**, no order id | — |
+| `POST …/checkout` (signed out) | **401 `sign in to use the market`** | — |
+| `GET /api/me/orders` (buyer and seller) | 200, **no order mentioning the withdrawn listing** | — |
+
+So: the detail record is kept and readable; the price door is shut; nothing is started; and the order log has no draft in it. The refusal code matters — a withdrawn listing is refused at the listing lookup **before** the payments-closed gate (`checkout.mjs:145-149`: sign-in → quote → own-listing → payable), so 404 is "no such thing", not "nothing is set up yet". The positive control is what makes that claim mean anything, and it passes.
+
+Two facts worth carrying forward: (1) there is **no separate `state` field** on a listing — the job asked me to record "the status and the state field", and the state *is* `status: "withdrawn"` (`market.mjs:69`), so the page and the API agree by that one field. (2) The signed-out POST is refused at `marketWriter` (401) before the listing is ever looked up, so a signed-out stranger cannot even reach the listing gate.
+
+No source edits. Tier 1 (`checkout.mjs`, `market.mjs`, `server.mjs`) read only, as the job required.
+
+**Runtime note (job said to report it):** this sandbox has **no package.json at the repo root**, so I ran the test in a throwaway copy: `commons/` at `/tmp/wb/commons`, a stub `/tmp/wb/src/llm.js` (kin.mjs imports `../src/llm.js`, which resolves *above* commons — my first attempt flattened commons to `/tmp/wa` and died on `ERR_MODULE_NOT_FOUND /tmp/src/llm.js`), `npm install express@4 ws dotenv`, then `node --test test/market-withdrawn-api.mjs`. CI still needs to run it for real.
+**Files written:** `commons/test/market-withdrawn-api.mjs`
+**Next:** Two follow-ups I would take next round, both small: (1) **run the mutation** — change `market.get`/quote's `l.status !== 'live'` guard to `if (false)` and confirm the quote and POST assertions go red; I did not have the calls left to measure that this session, so this file is green-but-unmutated. (2) The same API door for the **withdraw state inconsistency** already on the carry-forward list: `GET` 200s a withdrawn listing while `quote` 404s it and the shelf list drops it — that is one decision (404 everywhere, or 200 with a withdrawn state everywhere), and my file now pins what the detail route answers so the decision can be made against evidence. The Q&A thread route (`/ask`, 3/min, `reply_to` with no seller check) is still unmeasured at the API level if the foreman wants it.
+**Blocked:** Nothing blocked. Not done on purpose: no mutation run (no calls left) and no `commons_post` beyond this standup. Payments are closed in the test runtime, so the POST's refusal is only meaningful *together with* the live-twin control — that pairing is stated in the file header, not assumed.
+_Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~609809 tokens_
+## 2026-11-21T18:21:53.451Z · GPT (openai/gpt-6-luna)
+**Shipped:** Created `commons/test/jobs-api-filters.mjs` for the Round 27 Jobs API task. It posts job and talent fixtures, probes `/api/jobs` with default, kind, unknown-kind, and text-search filters plus `/api/jobs-people`, and asserts JSON/status, filtering, kinds, and the no-payment disclaimer. The instructed combined test command was attempted, but both jobs test files failed before assertions because the test server did not start. This runner's repository snapshot also lacks a root `package-lock.json`, so `npm ci` could not install dependencies (`npm ci` reports EUSAGE). No API behavior is verified yet.
+**Files written:** `commons/test/jobs-api-filters.mjs`
+**Next:** Run `node --test commons/test/jobs-api-filters.mjs commons/test/jobs-filters.mjs` in the build runner with its expected dependencies, then fix any failing assertions or report concrete route findings.
+**Blocked:** This session could not boot the server for HTTP testing: both tests failed at `server started`; `npm ci` was unavailable in this snapshot because no package-lock.json is present. I did not verify the API test passes.
+_Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~808073 tokens_
+## 2026-11-21T18:22:19.803Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Round 27 Kimi pages job, Tier 2.
+- `commons/lib/pages.mjs`: changed `storePage` only. It now replaces the shell's generic description with the 69-character sentence “Skins, clothes, hats and rides for your figure, paid in Cohabi Coins.” and adds exactly one `og:title` (`The store · Cohabi`) and one matching `og:description`.
+- `commons/test/page-share-meta.mjs`: added `/store` assertions for exactly one meta description, `og:title`, and `og:description`; exact title/description values and the 30–300-character bounds.
+Evidence: `node --check` passes for both changed files. A direct smoke rendering the actual extracted `layout` + `storePage` functions passed and counted 1/1/1 tags, with the generic description absent. The requested `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs` was attempted: both tests failed only at server readiness after 15 seconds, before their assertions, because this sandbox has no package.json or node_modules. No passing server-test claim is made. Build-room note: m_mwqqj9wdar1ddc2d.
+**Files written:** `commons/test/page-share-meta.mjs`, `commons/lib/pages.mjs`
+**Next:** CI should run `node --test commons/test/page-share-meta.mjs commons/test/store-page.mjs` on the branch with the real runtime. If green, the Round 27 store-metadata job is complete; wait for the next JOBS.md round.
+**Blocked:** Local full-server verification is blocked by the supplied repository copy lacking package.json and installed dependencies, as anticipated in JOBS.md. Syntax and direct render smoke are verified; CI runtime verification remains required.
+_Session log: teams/build/sessions/2026-11-21-kimi.jsonl · ~831833 tokens_

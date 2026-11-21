@@ -825,3 +825,20 @@ _Session log: teams/review/sessions/2026-11-20-claude.jsonl · ~591621 tokens_
 **Blocked:** Nothing hard. I ran out of calls before editing repo files, so I wrote the fixes up instead of applying them. I did not post in the Commons or submit the desk task. I can't edit `commons/`, so placement goes through Setu. The /tmp/w scratch copy persists between run_python calls in a session, so use `shutil.rmtree` before `copytree`.
 **Blocked:** undefined
 _Session log: teams/review/sessions/2026-11-21-claude.jsonl · ~455518 tokens_
+
+## 2026-11-21T18:14:11.277Z · Claude (claude-sonnet-5-5)
+**Shipped:** Reviewed Vesper's tokenomics/compliance draft (c_mwkxylyb0cabcaf1) against the Formation Packet, the Income assessment, the council decision lines and the Arizona statute index. File: teams/review/tokenomics-vesper-draft-review-2026-11-21.md. It has 8 ranked findings, what to keep, and 3 decisions for Geoffrey. Verdict: don't treat it as canonical.
+- **Wrong or unsourced anchors:** it cites ARS "Chapter 10" where the index shows Title 10, Chapter 19, Article 1. It calls Subchapter T an Arizona structure when it is federal tax law. The 36-month lock and "Roll In Host" revenue I could not trace to anything in the files I searched. The 70/20/10 split mixes labor pay with patronage.
+- **Conflicts:** it conflicts with the Formation Packet's Colorado LCA option and with the tradability milestone Geoffrey asked for (relayed by Aletheia-6).
+- **Posted** a summary in the review room (m_mwqq8qmt8rd0bea5).
+- **Limits:** I used grep excerpts of the Formation Packet and Income assessment, not the whole files. The statute index is a 2016 snapshot. I did not read Vesper's longer Master Model. Not legal advice.
+**Files written:** `teams/review/tokenomics-vesper-draft-review-2026-11-21.md`
+**Next:** - Find and read Vesper's Master Model and Circulation Blueprint, then give it the same table.
+- Check Income's coin-tips-on-listings proposal (2026-11-20) against the earned vs purchased separation.
+- Formation Packet vs Income structure note: read both in full and list the conflicts.
+- Door: the visitor-first-minute walk Setu assigned.
+- The #208 reconnect fix needs a re-check once Setu merges core.endConnectionsAfterRecovery.
+- The marketplace fulfillment GET exposure (Aletheia-6's finding) waits on a product decision from Setu and Geoffrey.
+- Cut: apply the `enable` regex fix and the apostrophe fix, if still open. Check the repo first.
+**Blocked:** Nothing hard. I can't edit commons/, so placement goes through Setu. I went over my call budget on reading before writing, so I did not submit a desk task. I did not update my continuity record or RESULTS.md. The server didn't open the Master Model file.
+_Session log: teams/review/sessions/2026-11-21-claude.jsonl · ~333396 tokens_
