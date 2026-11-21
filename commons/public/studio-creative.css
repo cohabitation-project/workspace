@@ -1,0 +1,82 @@
+/* Cohabi Creator Studio — Aletheia-6 approved 2026-11-21 creative treatment.
+ * Scoped visual layer over studio.css: all six existing wizard steps, events,
+ * persistence, validation, preview bindings and backend routes remain intact.
+ * The illustration is an original SVG and contains no fake inventory. */
+.cs-page{
+  --cs-cream:#fff6ed;--cs-paper:#fffaf7;--cs-ink:#391446;
+  --cs-muted:#70566d;--cs-edge:#f2d8dc;--cs-green:#752266;
+  --cs-shadow:0 16px 48px #963f7920;
+  background:
+    radial-gradient(ellipse 68% 32% at 95% 15%,#ffe1bca8,transparent 72%),
+    radial-gradient(ellipse 70% 36% at 0 94%,#edb2d2a8,transparent 72%),var(--cs-cream);
+}
+.cs-page .cs-shell{max-width:1310px;color:var(--cs-ink)}
+.cs-page .cs-shell p{color:var(--cs-muted)}
+.cs-page .cs-eyebrow{color:#92277c!important;position:relative;font-size:12px;letter-spacing:.2em}
+.cs-page .cs-eyebrow:after{content:"";display:block;width:52px;height:4px;background:#ee921e;border-radius:9px;margin-top:9px}
+.cs-page .cs-intro{position:relative;min-height:168px;padding:8px 0 10px;isolation:isolate}
+.cs-page .cs-intro:before{content:"";position:absolute;z-index:-1;right:2%;top:0;width:min(48%,530px);height:175px;background:url('/static/creator-studio-sunset.svg') center 26%/cover no-repeat;opacity:.62;mask-image:linear-gradient(90deg,transparent,#000 22%,#000 75%,transparent);pointer-events:none}
+.cs-page .cs-intro h1{font-size:clamp(39px,5.6vw,62px);font-weight:500;letter-spacing:-2px;color:var(--cs-ink)}
+.cs-page .cs-intro>div>p:last-child{max-width:610px;font-size:15px}
+.cs-page .cs-chip{color:#87296f;border:1px solid #dd92bd;background:#fffaf2f0;box-shadow:0 4px 22px #a7477521}
+.cs-page .cs-pathways{gap:12px}
+.cs-page .cs-pathways a{position:relative;display:grid;grid-template-columns:44px 1fr 18px;grid-template-rows:auto 1fr;gap:4px 12px;align-items:center;min-height:96px;border-color:#f1cfd9;background:linear-gradient(140deg,#fff8f8,#fce6f3);padding:16px 16px 16px 14px;border-radius:17px;box-shadow:0 4px 18px #ac519018;transition:transform .18s,box-shadow .18s}
+.cs-page .cs-pathways a:nth-child(2){background:linear-gradient(140deg,#fff9f0,#fff0dc);border-color:#f4d8af}
+.cs-page .cs-pathways a:nth-child(3){background:linear-gradient(140deg,#fff6f0,#ffe6df);border-color:#f6d0c5}
+.cs-page .cs-pathways a:before{content:"";grid-column:1;grid-row:1/3;width:44px;height:44px;border-radius:14px;background:#e9b7e5;display:grid;place-items:center;font-size:25px;color:#63216f}
+.cs-page .cs-pathways a:nth-child(1):before{content:"♜";background:#edc7e9}
+.cs-page .cs-pathways a:nth-child(2):before{content:"✚";color:#ad5604;background:#ffe0aa}
+.cs-page .cs-pathways a:nth-child(3):before{content:"◈";color:#b84b3b;background:#ffceba}
+.cs-page .cs-pathways a:after{content:"›";grid-column:3;grid-row:1/3;font-size:27px;color:#8c2679}
+.cs-page .cs-pathways strong{grid-column:2;color:#37143e;font-size:14px}
+.cs-page .cs-pathways span{grid-column:2;font-size:12px;color:#71566d}
+.cs-page .cs-pathways a:hover{transform:translateY(-2px);border-color:#b75b9b;box-shadow:0 10px 25px #ad569434}
+.cs-page .cs-alt a{color:#84276e;font-weight:750;text-underline-offset:3px}
+.cs-page .cs-work{background:#fffaf8e8;border:1px solid #f4d8db;border-radius:24px}
+.cs-page .cs-stepper{background:#fffaf7af;border-bottom-color:#f3dce0}
+.cs-page .cs-st{color:#755b71}.cs-page .cs-st.is-cur{color:#7b1b70}.cs-page .cs-st.is-done{color:#a65e8e}
+.cs-page .cs-bar{background:#f3ddd9}.cs-page .cs-st.is-cur .cs-bar,.cs-page .cs-st.is-done .cs-bar{background:#87217c}
+.cs-page .cs-no,.cs-page .cs-sub{color:#aa5c15!important}
+.cs-page .cs-body h2{color:var(--cs-ink);font-size:clamp(28px,3.5vw,37px)}
+.cs-page .cs-body h2:after{content:"✧";font-size:25px;color:#e99320;vertical-align:top;margin-left:9px}
+.cs-page .cs-option{background:#fff9f5;border-color:#ebd5df;color:#452046;box-shadow:0 2px 12px #5c2e4c0a}
+.cs-page .cs-option.is-on{border-color:#923181;background:#f9eafa;box-shadow:0 2px 13px #a74e9e21}
+.cs-page .cs-option small,.cs-page .cs-hint{color:#765e73}
+.cs-page .cs-musicgroup{background:#fff1f7;border-color:#eac4d9}
+.cs-page .cs-musicgroup.is-on{border-color:#953388}
+.cs-page .cs-tick,.cs-page .cs-field label,.cs-page .cs-lab{color:#71316d}
+.cs-page .cs-field input,.cs-page .cs-field textarea,.cs-page .cs-field select{background:#fffdfa;border-color:#e8ceda;color:#391446}
+.cs-page .cs-field input:focus,.cs-page .cs-field textarea:focus,.cs-page .cs-field select:focus{outline:2px solid #9b3b88;outline-offset:1px}
+.cs-page .cs-whoami{background:linear-gradient(130deg,#f7e2f5,#fff8f1);border-color:#872c7c;color:#3d1b43}
+.cs-page .cs-whoami small{color:#73596f}
+.cs-page .cs-avatar{background:#e5bde8;color:#54215c}
+.cs-page .cs-box{background:#fff1ef;border-color:#efcbd2;color:#71516c}
+.cs-page .cs-warn{background:#fff2de;border-color:#f1cd99;color:#6d4011}
+.cs-page .cs-sum,.cs-page .cs-sources{background:#fff4f6;border-color:#efd9e2}
+.cs-page .cs-check,.cs-page .cs-switch,.cs-page .cs-paystate{color:#4c2c4e!important}
+.cs-page .cs-check input,.cs-page .cs-switch input{accent-color:#862378}
+.cs-page .cs-btn{color:#76266d!important;border-color:#dec2d7;background:#fffaf8;border-radius:12px}
+.cs-page .cs-btn.cs-primary{background:linear-gradient(110deg,#76216f,#a03790);border-color:#76216f;color:#fff!important}
+.cs-page .cs-buttons{border-top-color:#f2dce2}
+.cs-page .cs-swatch.is-on{outline-color:#872578}
+.cs-page .cs-logopick .cs-logoempty{border-color:#d9a4cb}
+.cs-page .cs-previewpanel{top:89px}
+.cs-page .cs-panetitle strong{font-size:13px;color:#37143e}
+.cs-page .cs-panetitle span{background:#ffe4cf;border-radius:50px;color:#a65b19;font-weight:800;padding:5px 11px}
+.cs-page .cs-device{background:#fff7f0;border-color:#f7d9da;box-shadow:0 15px 38px #a4466426}
+.cs-page .cs-store{background:#fffdfa}
+.cs-page .cs-banner{background-image:url('/static/creator-studio-sunset.svg')!important;background-size:cover!important;background-position:center!important;color:#fff}
+.cs-page .cs-banner:before{width:100px;height:100px;transform:none;background:#fff3e52c;border:1px solid #ffebd66e;border-radius:50%;z-index:0}
+.cs-page .cs-banner:after{display:none}
+.cs-page .cs-symbol{filter:drop-shadow(0 2px 4px #5a2153);color:#fff8ef!important}
+.cs-page .cs-badge{color:#aa5e19!important}
+.cs-page .cs-inner h3{color:var(--cs-ink)}
+.cs-page .cs-chips span{background:#fff1f4;border-color:#f0d1db;color:#612a64}
+.cs-page .cs-art{background:linear-gradient(135deg,#eab3d8,#ffc98d);color:#702a70}
+.cs-page .cs-art2{background:linear-gradient(130deg,#ffd4a6,#f7acc0);color:#994f56}
+.cs-page .cs-prefoot{border-top-color:#f0dde1}
+.cs-page .cs-pathways a:focus-visible,.cs-page .cs-option:focus-visible,.cs-page .cs-btn:focus-visible{outline:3px solid #a13b91;outline-offset:3px}
+@media(max-width:980px){.cs-page .cs-previewpanel{top:auto}.cs-page .cs-intro{min-height:0}}
+@media(max-width:760px){.cs-page .cs-pathways a{grid-template-columns:42px 1fr 18px;min-height:80px}.cs-page .cs-intro:before{opacity:.22;width:100%;right:0}.cs-page .cs-chip{white-space:normal}.cs-page .cs-intro{align-items:start}}
+@media(max-width:620px){.cs-page .cs-shell{padding:22px 13px 100px}.cs-page .cs-intro h1{letter-spacing:-1.2px}.cs-page .cs-body h2{font-size:29px}.cs-page .cs-stepper{padding:17px 12px}.cs-page .cs-pathways a{padding:13px}.cs-page .cs-work{border-radius:18px}}
+@media(prefers-reduced-motion:reduce){.cs-page .cs-pathways a{transition:none}}
