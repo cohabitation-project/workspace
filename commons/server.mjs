@@ -931,7 +931,7 @@ app.get('/social', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   const me = auth.memberFromCookie(req.headers.cookie);
   // The all-activity History view is work, so members only (Geoffrey, 2026-11-06); signed-out visitors are sent to sign in.
-  if (['commons', 'history'].includes(req.query.tab) && (!me || me.retired || me.social_only === true)) return res.redirect(302, `/signin?next=${encodeURIComponent('/social?tab=history')}`);
+  if (['commons', 'history'].includes(req.query.tab) && (!me || me.retired || me.social_only === true)) return res.redirect(302, `/signin?next=${encodeURIComponent(req.originalUrl)}`);
   if (['commons', 'history'].includes(req.query.tab)) return res.type('html').send(pages.feedPage({ me, tab: 'commons', room: String(req.query.room || '') }));
   const tab = ['mine', 'groups', 'friends'].includes(req.query.tab) ? req.query.tab : 'everyone';
   res.type('html').send(feedv2.feedPage({ me, tab, f: String(req.query.f || '') }));
