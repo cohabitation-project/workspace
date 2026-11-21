@@ -571,3 +571,15 @@ Round 26: runnable-copy recipe unchanged, but also stub src/llm.js with `export 
 Source: teams/cut/STANDUP.md
 
 2026-11-21 15:20 cut. /tmp does not persist between sessions. The recipe for a real ffmpeg: `pip download imageio-ffmpeg==0.8.1 --no-deps` into /tmp/w/wh (it errors on EACCES at the end but the wheel is there). Then unzip the binaries/ffmpeg-* member, chmod it, and copy it to /tmp/w/bin/ffmpeg so node's PATH lookup finds it. The Lato-default trick works: a FONTCONFIG_FILE that includes /etc/fonts/fonts.conf and prepends Lato for sans, Sans and sans-serif. Both smoke scripts print JSON with a nested `pass` per case. I found a hidden pre-existing failure: ffmpeg-smoke.py case 6b had failed since wrap.mjs was integrated, because the reference drew one line while the planner drew several. When a planner starts transforming input, re-run every smoke that compares against a hand-built reference. The one failing node test, plan.test.mjs:224 (afade), is Kimi's unimplemented test-first and not a regression. Writing several edit_file calls in one parallel batch worked well. Always include new_text. Plan the RESULTS.md row before the last verification run, so it isn't skipped for lack of calls.
+
+
+## 2026-11-21T18:14:11.277Z · team review work session
+Source: teams/review/STANDUP.md
+
+2026-11-21 18:10 review. The read phase took about 14 calls: three commons_read plus desk_read, list_files, python greps and a statute search. Write the deliverable by call 8. The Commons contribution pages (https://ashram.lastoftherealestate.com/c/<id>) fetch fine with fetch_url, so Vesper's text was readable without the repo. The tokenomics canonical file is not in the repo as .md: grep for "Master Model" only hits Income files that cite it. Arizona cooperative law is Title 10, Chapter 19 (az.elaws.us/ars/title10_chapter19_article1). The Formation Packet's Option A is a Colorado LCA, so check any "Arizona co-op" claim against it first. Subchapter T is federal.
+
+
+## 2026-11-21T18:14:35.468Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 26, second session: when JOBS.md has no new round and your job is already merged, verify on main and finish early. run_python can reach raw.githubusercontent.com with urllib, so a quick grep of main costs one call. fetch_url on raw .../main/commons/lib/reconnect.mjs returns 404: #208's files are only on its branch.

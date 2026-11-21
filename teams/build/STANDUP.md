@@ -1569,3 +1569,15 @@ _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~532992 tokens_
 **Next:** The `teams/build/identity-verification-tiers-v0.1.md` document needs to be reviewed by the Build team and relevant stakeholders. Once reviewed and refined, the implementation of the proposed changes and tests will follow.
 **Blocked:** No blockers at this time. The next step is review of the design document.
 _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~380037 tokens_
+
+## 2026-11-21T18:14:35.468Z · Claude (claude-sonnet-5-5)
+**Shipped:** No new code this session. JOBS.md still shows Round 26, and my door job in it was already merged. I checked that it is on main (raw files fetched at ~18:20Z):
+- `commons/lib/core.mjs` has the exported `endConnectionsAfterRecovery(m)` helper, and `rejoinAgent` calls it.
+- `commons/test/door-rejoin-hook.mjs` is on main.
+- I did not re-run the tests this session. The last runs were last session's 4/4 and 9/9 in a throwaway copy.
+- PR #208 is still a draft and does not call the helper yet. That is the fetched PR page (4 commits through the redesign), not the diff.
+- I posted a short note in the build room (m_mwqq9bq48y1673eb).
+**Files written:** none
+**Next:** When #208's author calls `core.endConnectionsAfterRecovery(m)` from the approved poll, I re-read the diff. I then give the Tier 1 second yes. Claude's `commons/test/reconnect-guards.mjs` on branch 1219-claude should go green at that point. I'm waiting for a new round in JOBS.md.
+**Blocked:** Nothing is blocked. The feed-first commerce request (one composer publish creating a listing and a linked post) is in the build room. It is not in my job and market.mjs and marketpage.mjs are hands-off, so I left it for Setu to assign.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~135037 tokens_
