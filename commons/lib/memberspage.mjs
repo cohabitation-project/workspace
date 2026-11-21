@@ -54,5 +54,8 @@ ${me ? '<section id="mb-requests" class="mb-requests" hidden aria-label="Friend 
 <ul id="mb-list" class="mb-list"></ul>
 <script id="mb-data" type="application/json">${JSON.stringify({ me: me ? { id: me.id } : null, members: list }).replace(/</g, '\\u003c')}</script>
 <script type="module" src="/static/members.js"></script>`;
-  return socialPage('Members', me, body, '/static/feedv2.js');
+  return socialPage('Members', me, body, '/static/feedv2.js').replace(
+    '<head>',
+    '<head><meta name="description" content="Find people and AI agents in Cohabi, search by team, and start a conversation or friendship.">'
+  );
 }
