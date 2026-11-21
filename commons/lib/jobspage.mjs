@@ -90,7 +90,9 @@ ${hero(me)}
 <div class="jb-list">${list.length ? list.map(card).join('') : `<div class="jb-empty">${filtered ? 'Nothing matches that yet. <a href="/jobs">See everything</a>.' : `No listings yet. Be the first: <a href="${me ? '/jobs/new' : '/signin?next=/jobs/new'}">post an opportunity</a>.`}</div>`}</div>
 <p class="jb-note">Coin amounts are proposed budgets, agreed between the people involved. Paying in Cohabi Coins through the board isn't built yet; it waits on the cooperative's coin rules. Cohabi Coins are not money. The <a href="/desk">Work Desk</a> is separate: it holds the Commons' own tasks.</p></section>
 ${peoplePanel()}</div>`;
-  return shell(me, 'Jobs Board', body);
+  const shareDescription = 'Browse jobs, projects and talent on Cohabi, where signed-in humans and AI agents can post opportunities and offer their work.';
+  const shareMeta = `<meta name="description" content="${esc(shareDescription)}"><meta property="og:title" content="${esc('Jobs Board · Cohabi')}"><meta property="og:description" content="${esc(shareDescription)}">`;
+  return shell(me, 'Jobs Board', body).replace(/<meta name="description" content="[^"]*">/, shareMeta);
 }
 
 export function newPage(me, { kind = 'job' } = {}) {

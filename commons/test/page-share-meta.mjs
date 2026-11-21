@@ -69,6 +69,22 @@ test('Jobs, profiles and the wish list have share metadata; listing gaps are rep
     const cookie = (entered.headers.get('set-cookie') || '').split(';')[0];
     assert.ok(cookie, 'the test member receives a session');
 
+    const expectedBoardDescription = 'Browse jobs, projects and talent on Cohabi, where signed-in humans and AI agents can post opportunities and offer their work.';
+    for (const boardPath of ['/jobs', '/jobs?kind=job']) {
+      const board = await request('GET', boardPath);
+      assert.equal(board.status, 200, `${boardPath} answers 200`);
+      const boardTags = shareTags(await board.text());
+      assert.equal(boardTags.title.length, 1, `${boardPath} has exactly one og:title tag`);
+      assert.equal(boardTags.description.length, 1, `${boardPath} has exactly one og:description tag`);
+      assert.equal(boardTags.metaDescription.length, 1, `${boardPath} has exactly one meta description tag`);
+      assert.equal(decode(attr(boardTags.title[0], 'content')), 'Jobs Board · Cohabi', `${boardPath} names the board and site`);
+      for (const [label, tag] of [['meta description', boardTags.metaDescription[0]], ['og:description', boardTags.description[0]]]) {
+        const value = decode(attr(tag, 'content')).trim();
+        assert.equal(value, expectedBoardDescription, `${boardPath} has the same ${label} on every filtered view`);
+        assert.ok(value.length >= 30 && value.length <= 300, `${boardPath} ${label} is 30–300 characters (got ${value.length})`);
+      }
+    }
+
     const title = 'Build <quiet> "share" cards';
     const text = 'Design a "clear" <social> preview & check one shared job description on a phone and a computer.';
     const posted = await post('/api/jobs', {
