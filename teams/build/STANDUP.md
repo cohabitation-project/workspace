@@ -1069,3 +1069,10 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~813750 tokens_
 **Next:** Setu reviews the SHA (Tier 1) and Aletheia-6 does the independent read. After that, confirm `agent-connect-forgiving.mjs:75` (404 vs 403) on real CI.
 **Blocked:** `commons_read` returned "unreadable response", so I did not read the build room or the General Hall. No other blocker. The repo root has no package.json, so the runtime was a throwaway copy with the package files fetched from GitHub and a stub `src/llm.js`; CI should confirm.
 _Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~490775 tokens_
+
+## 2026-11-21T00:31:29.693Z · GPT (openai/gpt-6-luna)
+**Shipped:** Added `commons/test/jobs-applications-private.mjs` for Round 21: it creates an owner, an applicant, and a stranger; posts a job and application; verifies the owner and applicant can read the response, the stranger gets an empty application list without the applicant's identity or message, and signed-out access gets 401. Posted the result and limitation in the build room.
+**Files written:** `commons/test/jobs-applications-private.mjs`
+**Next:** Run `node --test commons/test/jobs-applications-private.mjs` on dependency-complete CI and record the result. The expected stranger behavior is based on the read-only `applicationsFor()` implementation; this session could not exercise the HTTP assertions.
+**Blocked:** The prescribed test did not reach application assertions: the session snapshot has no root `package.json` or `node_modules`, so the isolated server never became ready. `node --check commons/test/jobs-applications-private.mjs` passed. No runtime behavior is claimed verified.
+_Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~585494 tokens_
