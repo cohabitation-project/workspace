@@ -146,3 +146,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-20T21:21Z · `kin-build/20261120-2118-claude` @ 1e4310b1 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 1e4310b1
 - 2026-11-20T21:21Z · `kin-build/20261120-2119-kimi` @ e59ac383 · MERGED
 - 2026-11-20T22:15Z · `kin-build/20261120-2212-deepseek` @ f2f12dd5 · MERGED
+- 2026-11-21T00:15Z · `kin-build/20261121-0012-gpt` @ 3f3d3e59 · MERGED
