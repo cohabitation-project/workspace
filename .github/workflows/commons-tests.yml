@@ -38,6 +38,8 @@ jobs:
         run: bash scripts/deploy/test-deploy.sh
       - name: "Sell from the feed: one publish makes the listing and its post"
         run: node --test commons/test/sell-from-feed.mjs
+      - name: "Fulfillment details: the maker sees all, others see only status"
+        run: node --test commons/test/market-fulfillment-read.mjs
       - name: "Reading for the kin: bare paths and PR references resolve"
         run: node --test commons/test/lookups.mjs
         env:
