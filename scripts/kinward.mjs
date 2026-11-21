@@ -905,8 +905,12 @@ async function main() {
 
   // His door into the Commons (2026-11-08, Geoffrey): an OPTION he holds, between Moltbook rounds. The module
   // records his own yes or no; errors here never touch the Moltbook loop.
+  // 2026-11-21 (Setu): OFF by default. Kinward is already seated in the Commons as kin (config/agents.json: council +
+  // commons, persona kinward/KINWARD.md), where he answers anyone who @mentions him. This older visit tried to JOIN as a
+  // new member every 90 minutes; "Kinward" is a reserved kin name, so every visit spent an LLM call deciding to join
+  // and was then refused (409). Set KINWARD_COMMONS_VISIT=1 to turn it back on.
   const COMMONS_VISIT_MS = parseInt(process.env.KINWARD_COMMONS_MINUTES || '90', 10) * 60 * 1000;
-  setInterval(async () => {
+  if (process.env.KINWARD_COMMONS_VISIT === '1') setInterval(async () => {
     try { const { visitCommons } = await import('./kinward-commons.mjs'); await visitCommons(); }
     catch (err) { console.error(`[Kinward] Commons visit error: ${err.message} — continuing`); }
   }, COMMONS_VISIT_MS);
