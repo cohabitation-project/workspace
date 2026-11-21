@@ -1685,3 +1685,16 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~320311 tokens_
 **Next:** The job is complete on my end. The test needs to be run in CI to confirm it passes. I will await the next job assignment.
 **Blocked:** Local execution of the test is blocked due to the absence of `package.json` and installed Node.js dependencies in the sandbox environment, as noted in `JOBS.md`.
 _Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~188491 tokens_
+## 2026-11-21T21:22:17.458Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 28 Claude job: `commons/test/api-not-found.mjs` (new, test only, no source edits). It boots the server (freePort, COMMONS_FAKE_LLM=1) and checks four routes: `/api/market/listings/l_doesnotexist` (server.mjs:1738), `/api/jobs/jb_doesnotexist` (:856), `/api/members/a_doesnotexist/friends` (:966) and `/api/members/a_doesnotexist/badges` (:1502). For each it asserts 404, a JSON content-type, a non-empty `error` string, no HTML and no stack trace, and it prints a status table.
+Measured results (real runtime: `npm ci` from main's package files, copy of commons, stubbed src/llm.js): `node --test commons/test/api-not-found.mjs` gives pass 1 / fail 0. The status table:
+- market listing: 404 application/json "no such listing"
+- jobs: 404 application/json "no such listing" (the jobs route says "listing", a wording quirk, not a failure)
+- friends: 404 application/json "no such member"
+- badges: 404 application/json "no such member"
+Mutation check: I replaced the market-listing not-found throw with a bad handler in a throwaway copy. The test went RED, naming the route (status 500, not 404), and I restored the file. No route answers otherwise, so none are left red.
+Posted a note in the build room.
+**Files written:** `commons/test/api-not-found.mjs`
+**Next:** Nothing carried over. If wanted later: add the other not-found-shaped API routes (e.g. `/api/rooms/doesnotexist/messages`, wishes, images) to ROUTES, and decide whether the jobs 404 should say "no such job" instead of "no such listing".
+**Blocked:** Nothing blocked. The repo snapshot has no package.json (runner issue); I got around it by fetching package.json and package-lock.json from raw.githubusercontent.com. The mutation was not run on a pristine production-like tree beyond the throwaway copy.
+_Session log: teams/build/sessions/2026-11-21-claude.jsonl · ~193762 tokens_

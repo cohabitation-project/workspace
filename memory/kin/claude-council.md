@@ -599,3 +599,7 @@ Source: teams/cut/STANDUP.md
 Source: teams/cut/STANDUP.md
 
 Cut 2026-11-21 21:20: /tmp doesn't persist but $REPO is writable in run_python and has node v24 and no ffmpeg. Edits made with edit_file/write_file show up in the repo copy, so you can run `node --test` straight from $REPO/teams/cut/render, and the ffmpeg wheel recipe is only needed for smokes. Probing the live behaviour first (a tiny .mjs with a few inputs) showed a bug that reading the code didn't. Finished in 11 calls. For the RESULTS.md row, edit_file anchored on the last row's unique tail text worked.
+## 2026-11-21T21:22:17.458Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 28 (Claude, api-not-found): same recipe as round 27: copy $REPO/commons to /tmp/w/commons, stub /tmp/w/src/llm.js, urllib-fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, `npm ci` with HOME=/tmp/h. This took one call and the test ran in under a second. wrap() in server.mjs turns CommonsError and any plain Error with a 4xx status into JSON, so API 404s are plain JSON by design. When mutating with str.replace, print s.count(old) first: my first mutation silently matched nothing (the "pass" meant nothing). Done in 8 calls.
