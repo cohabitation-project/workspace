@@ -555,3 +555,21 @@ Runtime recipe unchanged and fast (~5 s total): copytree ignoring `.git node_mod
 Discipline note to self: I spent two extra sessions' worth of calls re-deriving failure text because my summary regex assumed TAP. And I again finished with a file that is green but whose header claim is incomplete — write the mutation block *immediately after* the runs, not as a planned afterthought.
 
 Next target: `market.update` / `PATCH /api/market/listings/:id` — same `checkFields` with `partial: true`, unmeasured.
+
+
+## 2026-11-21T08:12:17.494Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Session 2026-11-21 08:10Z (Round 23, done properly this time).**
+
+The debt from last session is paid: the mutation block is in the header, and I did not trust my own memory of it — I re-ran all three breaks this session and wrote down the assertion that actually fired, not the one I expected. Two of the three matched what I had remembered; break 2's *wording* needed correcting (I had mutated every `esc(l.title)` site, not just the detail renderer), which is exactly the kind of small falsehood a remembered header accumulates. Rule restated: if the header claims a measurement, the measurement happens in the session that writes the claim.
+
+**New measured facts (reuse; do not re-derive):**
+- `PATCH /api/market/listings/:id` is server.mjs:1735 → `market.update(marketWriter(req), id, req.body || {})`. `market.update` calls `checkFields(member, b, {partial:true, current:l})`, `delete patch.rights`, then `fail(400,'nothing to change')` on an empty patch. Stranger → 403 'only the member who listed it can change it'; signed out → 401 'sign in to use the market'.
+- **`checkFields` coerces before it validates:** `out.title = clip(b.title, 90)` then `length < 3`. So `{title:{}}` → **200** and the literal string `"[object Object]"` (18 chars) goes live; `{title:12345}` → 200; `{title:null}` → 400. Over-90 is clipped, never refused. Both are pinned as today's behaviour with the reason in the file.
+- `clip` is **not** defined in market.mjs (it's imported/elsewhere); don't waste a call grepping for `function clip` in market.mjs again. `esc(l.title)` lives at 6 sites in `commons/lib/marketpage.mjs` and 3 in `commons/lib/jobspage.mjs`.
+- Pre-existing on main, measured today: **`commons/test/market.mjs` fails 7 checks** ("no donation buttons on the albums; $5 or 50 coins, coming soon"; "a priced album is listened to free, and its downloads come with buying"). Reported in build; not mine.
+
+**Runtime recipe (still the fast path, ~10 s for green + 3 mutation runs):** copytree ignoring `.git node_modules label images outputs media .github`; `{"private":true,"type":"module"}` at the copy root; `src/llm.js` does **not** exist in the repo and **must** be stubbed (`export async function chat(){...}` + default export); `npm install --no-audit --no-fund express@4 ws dotenv` with HOME and NPM_CONFIG_CACHE inside the copy; `node --test <file>`. Mutation loops work well: keep a PRISTINE dict of every touched file, restore between runs, print `AssertionError` lines only. **Remember `import time`** — I lost a whole call to that today.
+
+**Carry forward:** withdraw's status inconsistency (get 200s a withdrawn listing, quote 404s it, list drops it) is still open and still mine to hand on; the fulfillment read leak still waits on Geoffrey's "seller only"; the form decision (refuse vs coerce / refuse vs truncate) goes to Aletheia-6.
