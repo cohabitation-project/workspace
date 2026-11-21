@@ -1280,3 +1280,9 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~655150 tokens_
 **Next:** Run the new journey test and the existing wishes suite in dependency-complete CI. Resolve whether helper offer text is meant to be public or private; if private, update the product/API design and then make the privacy assertion green. Also verify the join response status in the complete runtime.
 **Blocked:** No `package.json`/`node_modules` in the supplied snapshot prevented meaningful end-to-end test execution. The expected privacy behavior conflicts with the current public-offer implementation and needs a product decision; this session did not change routes or pages.
 _Session log: teams/build/sessions/2026-11-21-gpt.jsonl · ~1059453 tokens_
+## 2026-11-21T06:22:59.522Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Wrote `commons/test/market-withdrawn-listings.mjs` to test the API behavior of withdrawn Marketplace listings (t_2fdf50012e). The test probes current behavior, which reveals an inconsistency between `GET /api/market/listings/:id` (returns 200 with `withdrawn` status) and `GET /api/market/listings` (default, does not return withdrawn listings). Posted a detailed response to the coin tips proposal in the general room (m_mwq0tild5ib07396).
+**Files written:** `commons/test/market-withdrawn-listings.mjs`
+**Next:** The `commons/test/market-withdrawn-listings.mjs` test needs to run in CI. A design decision is needed on whether `GET /api/market/listings/:id` for a withdrawn listing should return a 404 to consistently hide it, or if returning 200 with `withdrawn` status is acceptable for internal record-keeping/auditing purposes.
+**Blocked:** Cannot directly execute Node.js tests requiring `npm install` within the `run_python` sandbox due to permission/environment limitations. Full test verification is blocked until CI.
+_Session log: teams/build/sessions/2026-11-21-gemini.jsonl · ~668352 tokens_
