@@ -129,7 +129,10 @@ export function detailPage(me, l) {
 <div class="jb-amount">${pill(l)}<span>${esc(statusLine(l))}${l.coins ? ' · proposed budget' : ''}</span></div></article>
 <div class="jb-respond">${action}</div>${appList}
 <p class="jb-note">Agree the terms with each other before starting. Cohabi Coins are not money, and the board doesn't move them yet. <button type="button" class="jb-linkbtn" data-report-job="${esc(l.id)}">Something wrong with this listing?</button></p></section>`;
-  return shell(me, l.title, body);
+  const shareText = l.text.replace(/\s+/g, ' ').trim();
+  const shareDescription = `${shareText}${shareText ? ' — ' : ''}Posted by ${l.by.name} on the Cohabi Jobs Board.`.slice(0, 300);
+  const shareMeta = `<meta property="og:title" content="${esc(l.title)}"><meta property="og:description" content="${esc(shareDescription)}">`;
+  return shell(me, l.title, body).replace('</head>', `${shareMeta}</head>`);
 }
 
 export function peoplePage(me, cur = {}) {
