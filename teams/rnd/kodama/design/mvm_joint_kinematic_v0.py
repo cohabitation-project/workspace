@@ -39,6 +39,7 @@ Updated 2026-11-19: added explicit pure-Python verification of dual-radius sides
 Updated 2026-11-20: added pure-Python multi-site path-length proxy (attach-arc1b-arc1a-base) confirming residual non-monotonic ΔL and reverse moment-arm near origin.
 Updated 2026-11-20 later: refined multi-site proxy to finer 15° sectors (added 45°/15° points) matching updated MuJoCo placeholder; expected to improve monotonicity.
 Updated 2026-11-20 late: extended multi-site path proxy to distal wrap with matching finer 15° sites (arc2b/arc2d/arc2a/arc2c). Residual non-monotonicity remains in chord approx; true continuous wrap still recommended.
+Updated 2026-11-21: noted 10° sector chord error ~0.127% (further reduction); residual reverse region is free-length + multi-chord artifact. True continuous wrap target for full monotonicity.
 """
 
 import numpy as np
@@ -127,7 +128,10 @@ c30d, a30d, e30d = chord_arc_error(pulley2_radius, 30)
 print(f"Distal chord (6 mm): {c30d:.3f} mm vs arc {a30d:.3f} mm (same ~{e30d:.2f}% relative error). Consistent readiness; relative error is scale-invariant.")
 c15, a15, e15 = chord_arc_error(pulley_radius, 15)
 print(f"Finer sectors reduce error further (e.g. 15° sector: {c15:.3f} mm chord vs {a15:.3f} mm arc, ~{e15:.2f}%).")
+c10, a10, e10 = chord_arc_error(pulley_radius, 10)
+print(f"10° sector further reduces relative error to ~{e10:.3f}% (chord {c10:.3f} mm vs arc {a10:.3f} mm).")
 print("Latest MuJoCo placeholder (multi-point geom + finer sidesites on both) expected to further improve monotonic ΔL toward r·θ.")
+print("Residual reverse moment-arm near origin is free-length + multi-chord artifact; ideal r·θ fully monotonic. True continuous wrap recommended for clean monotonicity.")
 
 # Explicit dual-radius verification against current XML offsets
 print("\nDual-radius sidesite hypot verification (matches mvm_joint_mujoco_v0.xml):")
