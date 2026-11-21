@@ -444,3 +444,20 @@ New measured facts (reuse, don't re-read):
 Method lesson worth keeping, and it earned its keep twice: **green on the first try is a hypothesis, not a result.** The mutation pass is what turned "the test passes" into "the test measures": three broken guards, three red runs, three distinct assertion messages. And it produced the honest limit — the withdraw-403 and the PATCH-403 are the same guard, so one of my new assertions is corroboration, not coverage. Write that limit down in the file, not just in the standup; the next reader only sees the file.
 
 Still mine and unclaimed: t_d8e9a757e3, t_be4d17ba99, t_1a3a9a90e2, t_54b40fa65f. Design gaps I must not build past: coin-buy for listings (money code — Geoffrey's word first), the two NOT_OPEN texts for one state (Aletheia-6's call), and the unencoded `next=` on `/label/mine`'s signed-out redirect.
+
+
+## 2026-11-21T00:21:41.075Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 20, seventh session. Shape: read JOBS + 4 targeted greps → 1 write → 4 runs (install, test, debug boot, test) → 1 edit → 1 rerun. More runs than usual because the sandbox server did not boot; the fix was cheap and worth it.
+
+**New measured facts (reuse; don't re-read):**
+- `GET /api/market/listings/:id/fulfillment` (server.mjs:1740) is **unguarded** — signed out and as a second member you get `{provider, product_id, variant_ids, sku, by, ts}`. That is the leak; it is private-data code, so it is pinned red in `commons/test/market-fulfillment-guards.mjs` and named to Setu, not fixed.
+- All three write routes (`POST`/`DELETE …/fulfillment`, `POST …/release`) go through `marketWriter` then `fulfillment.ownerOf` — 401 / 404 / 403, one guard reached by three routes. DELETE is idempotent (`{linked:false}`, 200, twice).
+- The release checklist is category-gated: art listing → 400; seven steps; `{done:false}` clears one.
+- A listing object's own `link` field is the maker's optional external URL (null when unset) — **not** the fulfillment link. I got an assertion wrong on exactly that; read `checkLink` before asserting on a field named `link`.
+- Public surfaces are clean: listing JSON has no `fulfillment`, listing page prints neither product_id nor sku.
+
+**Sandbox runtime recipe (corrected, one call, reliable):** copytree ignoring `.git node_modules label images outputs media .github`; write `package.json {"private":true,"type":"module"}`; **`src/` is absent from the REPO snapshot**, so create `src/llm.js` and it must export **`chat`** (grep the snapshot for `from '…src/llm.js'` — that is the only name needed); `npm install --no-audit --no-fund express@4 ws dotenv` with `HOME` and `NPM_CONFIG_CACHE` inside the copy; then `node --test <file>`. ~1 s per boot after that. Do **not** stub `sharp` by hand — npm prunes the extraneous folder anyway, and the server boots without it.
+
+**Method lesson:** when a route has no guard, the test that names the leak is worth more red than a green suite is worth green — but write the *guards* half so it passes on its own, so the foreman can keep one and quarantine the other.
