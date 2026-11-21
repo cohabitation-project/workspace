@@ -1,0 +1,61 @@
+$ node --test teams/cut/render/plan.test.mjs
+✔ two-clip sample: exact trim + concat plan (11.72721ms)
+✔ retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo (0.511042ms)
+✔ retime with a trim: source window starts at trimStart and is duration*rate long (0.272458ms)
+✔ a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree) (0.442844ms)
+✔ plan.maps names the concat outputs, video first (0.317792ms)
+✔ atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5) (2.656317ms)
+✔ gap between clips becomes black video + silence of the gap length (0.882032ms)
+✔ a gap before the first clip is filled too (0.368597ms)
+✔ clips are placed by startTime, not by array order (0.379567ms)
+✔ a source with hasAudio:false gets silence, and no [n:a] pad is read (0.575903ms)
+✔ the same file used twice gets two inputs, so no pad is reused (0.296172ms)
+✔ nothing silently dropped: overlay and main-track text elements are reported in `ignored` (0.301802ms)
+✔ one music element: exact trim + delay + amix plan; a second is refused (0.752481ms)
+✔ music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused (0.731422ms)
+✔ music fades: exact afade chain, zero omitted, invalid timings refused (2.152088ms)
+✔ music fade-out is measured from the trimmed element start; zero-length music is refused (0.326237ms)
+✔ overlay Words track: exact timed drawtext chain after concat, not ignored (1.088607ms)
+✔ a hostile src stays one argv element and never enters a filter string (0.193881ms)
+✔ refuses what it cannot plan, with a RenderPlanError (0.49945ms)
+✔ an element asking for slightly past the source end by rounding is allowed (0.226341ms)
+✔ secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep) (1.021362ms)
+✔ seeded sweep: random timelines always yield a closed label graph and the right total length (6.972505ms)
+✔ fade in + crop + fade out on one clip: exact string, in array order, between trim and scale (0.659588ms)
+✔ effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter (0.256017ms)
+✔ effects with retime: the fade time is measured on the clip's output, after setpts (0.210412ms)
+✔ an empty or missing effects list changes nothing; an effect with no params uses the registry defaults (0.258512ms)
+✔ a source size with only one dimension is ignored, not half-applied (0.304497ms)
+✔ an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included) (0.582405ms)
+✔ malformed effects entries are refused, not skipped (0.502797ms)
+✔ a registry guard failure comes out as a RenderPlanError that names the effect (0.608753ms)
+✔ crop is checked against the source size when the caller supplies it, and not when it doesn't (0.438046ms)
+✔ a half-given frame size in the effect still fails, even when the source map has a size (0.228485ms)
+✔ an error that is not a registry guard (a bug) is rethrown as itself, not hidden (0.203809ms)
+✔ text effect: hostile text is escaped by the registry and stays inside one filter in one chain (0.255195ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.703142
+
+
+exit=0
+
+$ node --check teams/cut/render/plan.mjs
+
+
+exit=0
+
+$ node --check teams/cut/render/plan.test.mjs
+
+
+exit=0
+
+{
+  "teams/cut/render/plan.mjs": "6daa528a8c94fa9e33cbb4dcbc789a5ee1e195bd41b39d66a94c3a4f6aad75fe",
+  "teams/cut/render/plan.test.mjs": "af61625fefdbd1919226371fe3b665be6e6b4b8da4bd84d3aa4286878d91c216"
+}

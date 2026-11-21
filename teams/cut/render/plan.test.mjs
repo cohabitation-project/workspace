@@ -254,6 +254,38 @@ test("music fades: exact afade chain, zero omitted, invalid timings refused", ()
 	}
 });
 
+test("music fade-out is measured from the trimmed element start; zero-length music is refused", () => {
+	const tracks = timeline(clip("a", "/m/a.mp4", 0, 4 * T));
+	const music = createTrack({ type: "audio", name: "music", id: "au1" });
+	music.elements.push(createElement({
+		id: "trimmed-music", type: "audio", startTime: T / 4, duration: 3 * T, trimStart: 5 * T,
+		params: { src: "/m/song.mp3", fadeOut: 0.75 },
+	}));
+	tracks.audio.push(music);
+	const plan = buildRenderPlan({ tracks });
+	const expected = [
+		`[0:v]trim=start=0:end=4,setpts=PTS-STARTPTS,trim=end=4,${NORM}[v0]`,
+		"[0:a]atrim=start=0:end=4,asetpts=PTS-STARTPTS,atrim=end=4,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0]",
+		"[v0][a0]concat=n=1:v=1:a=1[vout][amain]",
+		"[1:a]atrim=start=5:end=8,asetpts=PTS-STARTPTS,afade=t=out:st=2.25:d=0.75,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,adelay=250|250[amusic]",
+		"[amain][amusic]amix=inputs=2:duration=first:normalize=0[aout]",
+	].join(";");
+	assert.equal(plan.filterComplex, expected);
+	assertLabelsClosed(plan.filterComplex, 2);
+
+	const zeroTracks = timeline(clip("a", "/m/a.mp4", 0, T));
+	const zeroMusic = createTrack({ type: "audio", name: "music", id: "au0" });
+	zeroMusic.elements.push(createElement({
+		id: "zero-music", type: "audio", startTime: 0, duration: 0, trimStart: 5 * T,
+		params: { src: "/m/song.mp3", fadeOut: 0.5 },
+	}));
+	zeroTracks.audio.push(zeroMusic);
+	assert.throws(
+		() => buildRenderPlan({ tracks: zeroTracks }),
+		(e) => e instanceof RenderPlanError && /zero-music\.duration/.test(e.message),
+	);
+});
+
 test("overlay Words track: exact timed drawtext chain after concat, not ignored", () => {
 	const tracks = timeline(clip("a", "/m/a.mp4", 0, 2 * T));
 	const words = createTrack({ type: "text", name: "Words", id: "words" });

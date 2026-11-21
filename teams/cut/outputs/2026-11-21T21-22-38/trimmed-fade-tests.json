@@ -1,0 +1,42 @@
+{
+  "when_utc": "2026-11-21T21:22:38.305088+00:00",
+  "runner": "scheduled Kimi work session",
+  "implementation_changed": false,
+  "note": "Tests were added before any planner implementation change; the existing planner already implemented both requested behaviors.",
+  "hashes_sha256": {
+    "teams/cut/render/plan.mjs": "6daa528a8c94fa9e33cbb4dcbc789a5ee1e195bd41b39d66a94c3a4f6aad75fe",
+    "teams/cut/render/plan.test.mjs": "af61625fefdbd1919226371fe3b665be6e6b4b8da4bd84d3aa4286878d91c216"
+  },
+  "runs": [
+    {
+      "command": [
+        "node",
+        "--test",
+        "teams/cut/render/plan.test.mjs"
+      ],
+      "exit": 0,
+      "stdout": "\u2714 two-clip sample: exact trim + concat plan (11.72721ms)\n\u2714 retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo (0.511042ms)\n\u2714 retime with a trim: source window starts at trimStart and is duration*rate long (0.272458ms)\n\u2714 a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree) (0.442844ms)\n\u2714 plan.maps names the concat outputs, video first (0.317792ms)\n\u2714 atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5) (2.656317ms)\n\u2714 gap between clips becomes black video + silence of the gap length (0.882032ms)\n\u2714 a gap before the first clip is filled too (0.368597ms)\n\u2714 clips are placed by startTime, not by array order (0.379567ms)\n\u2714 a source with hasAudio:false gets silence, and no [n:a] pad is read (0.575903ms)\n\u2714 the same file used twice gets two inputs, so no pad is reused (0.296172ms)\n\u2714 nothing silently dropped: overlay and main-track text elements are reported in `ignored` (0.301802ms)\n\u2714 one music element: exact trim + delay + amix plan; a second is refused (0.752481ms)\n\u2714 music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused (0.731422ms)\n\u2714 music fades: exact afade chain, zero omitted, invalid timings refused (2.152088ms)\n\u2714 music fade-out is measured from the trimmed element start; zero-length music is refused (0.326237ms)\n\u2714 overlay Words track: exact timed drawtext chain after concat, not ignored (1.088607ms)\n\u2714 a hostile src stays one argv element and never enters a filter string (0.193881ms)\n\u2714 refuses what it cannot plan, with a RenderPlanError (0.49945ms)\n\u2714 an element asking for slightly past the source end by rounding is allowed (0.226341ms)\n\u2714 secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep) (1.021362ms)\n\u2714 seeded sweep: random timelines always yield a closed label graph and the right total length (6.972505ms)\n\u2714 fade in + crop + fade out on one clip: exact string, in array order, between trim and scale (0.659588ms)\n\u2714 effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter (0.256017ms)\n\u2714 effects with retime: the fade time is measured on the clip's output, after setpts (0.210412ms)\n\u2714 an empty or missing effects list changes nothing; an effect with no params uses the registry defaults (0.258512ms)\n\u2714 a source size with only one dimension is ignored, not half-applied (0.304497ms)\n\u2714 an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included) (0.582405ms)\n\u2714 malformed effects entries are refused, not skipped (0.502797ms)\n\u2714 a registry guard failure comes out as a RenderPlanError that names the effect (0.608753ms)\n\u2714 crop is checked against the source size when the caller supplies it, and not when it doesn't (0.438046ms)\n\u2714 a half-given frame size in the effect still fails, even when the source map has a size (0.228485ms)\n\u2714 an error that is not a registry guard (a bug) is rethrown as itself, not hidden (0.203809ms)\n\u2714 text effect: hostile text is escaped by the registry and stays inside one filter in one chain (0.255195ms)\n\u2139 tests 34\n\u2139 suites 0\n\u2139 pass 34\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 147.703142\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "teams/cut/render/plan.mjs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "teams/cut/render/plan.test.mjs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}
