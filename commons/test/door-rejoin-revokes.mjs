@@ -211,3 +211,107 @@ test('Part 5 (DR-08): a truncated last log line is skipped on init, and the back
   assert.equal(ac.listFor('a_1')[0].revoked, null, 'by the log the connection looks live (the torn line was skipped)');
   assert.throws(() => u.refresh(t1), (e) => e.code === 'invalid_grant', 'but the backstop refuses it');
 });
+
+// Round 20 (Claude, JOBS.md; Aletheia-6's checklist items (2)-grace and (4)). Parts 6-8.
+const grabMessage = (fn) => { try { fn(); } catch (e) { return e; } return null; };
+// rewrite the `conn` line(s) of a log in place (the file is plain JSON lines), as a corrupted or hand-edited log would be
+function editConnLines(file, fn) {
+  const out = fs.readFileSync(file, 'utf8').split('\n').map((l) => { if (!l.trim()) return l; const ev = JSON.parse(l); if (ev.op === 'conn') fn(ev.c); return JSON.stringify(ev); });
+  fs.writeFileSync(file, out.join('\n'));
+}
+
+test('Part 6: the 20-second grace refresh (conn.prev) is refused after a rejoin: plain, after a failed revoke append, and after a restart', () => {
+  const u = unitSetup('p6');
+  const t1 = u.connectOnce();
+  const t2 = u.refresh(t1); // rotates: t1's refresh token is now `prev`, still inside the grace window
+  assert.ok(t2.refresh_token && t2.refresh_token !== t1.refresh_token, 'the refresh rotated');
+  // control: before any rejoin the grace path does work (an access token, no new refresh token), so the refusals below mean something
+  const g = u.refresh(t1);
+  assert.ok(g.access_token && !g.refresh_token, 'control: inside the grace window the OLD refresh token still gets an access token');
+  assert.ok(ac.resolve(g.access_token), 'control: and that access token works');
+  sleepSync(15);
+  u.agent.recovered_at = new Date().toISOString(); // the rejoin, but its revokeAll never ran: the backstop is all there is
+  const e1 = grabMessage(() => u.refresh(t1));
+  assert.ok(e1 && e1.code === 'invalid_grant' && /before the agent's recovery code/.test(e1.message), 'the grace refresh is refused by the backstop (not by a revoke)');
+  const e2 = grabMessage(() => u.refresh(t2));
+  assert.ok(e2 && /before the agent's recovery code/.test(e2.message), 'so is the current refresh token');
+  assert.equal(ac.resolve(g.access_token), null, 'and the access token from the grace refresh is dead too');
+
+  // a failed revoke append: the connection is dead in memory, and the grace path still refuses
+  const v = unitSetup('p6b');
+  const s1 = v.connectOnce(); const s2 = v.refresh(s1);
+  const cid = idOf(s2); // before recovered_at is set: after it, resolve() refuses the token
+  sleepSync(15);
+  v.agent.recovered_at = new Date().toISOString();
+  const undo = failRevokeFor(cid);
+  assert.throws(() => ac.revokeAll('a_1', { by: 'system', why: 'rejoin' }), /could not be made durable/);
+  undo();
+  const e3 = grabMessage(() => v.refresh(s1));
+  assert.ok(e3 && e3.code === 'invalid_grant', 'after the failed revoke append the grace refresh is refused');
+  // ... and after a restart, where the log has NO revoke line for it
+  v.reinit();
+  assert.equal(ac.listFor('a_1')[0].revoked, null, 'by the log alone the connection looks live');
+  const e5 = grabMessage(() => v.refresh(s2)); // first: refusing an old token revokes the connection, which would change this message
+  assert.ok(e5 && e5.code === 'invalid_grant' && /before the agent's recovery code/.test(e5.message), 'after the restart the current refresh token is refused by the backstop');
+  const e4 = grabMessage(() => v.refresh(s1));
+  assert.ok(e4 && e4.code === 'invalid_grant', 'and the old (grace-window) refresh token is refused too');
+});
+
+test('Part 7: after a rejoin, a connection with no `created` (or an unreadable one, or one equal to recovered_at) is refused; one a millisecond later works', () => {
+  // 7a: `created` removed from the log line, then a restart
+  const a = unitSetup('p7a');
+  const ta = a.connectOnce();
+  editConnLines(a.file, (c) => { delete c.created; });
+  a.reinit();
+  const ta2 = a.refresh(ta); // control: no rejoin yet, so the missing field changes nothing
+  assert.ok(ta2.access_token, 'control: before any rejoin a connection with no `created` still refreshes');
+  a.agent.recovered_at = new Date().toISOString();
+  const ea = grabMessage(() => a.refresh(ta2));
+  assert.ok(ea && ea.code === 'invalid_grant' && /before the agent's recovery code/.test(ea.message), 'with recovered_at set, no `created` counts as predating: refused');
+  assert.equal(ac.resolve(ta2.access_token), null, 'and its access token no longer resolves');
+
+  // 7b: unreadable `created`
+  const b = unitSetup('p7b');
+  const tb = b.connectOnce();
+  editConnLines(b.file, (c) => { c.created = 'not-a-date'; });
+  b.reinit();
+  b.agent.recovered_at = new Date().toISOString();
+  assert.ok(grabMessage(() => b.refresh(tb)), 'an unparseable `created` is refused once recovered_at is set');
+
+  // 7c: created === recovered_at is "before" (equal counts as predating)
+  const T = '2026-01-01T00:00:00.000Z';
+  const c = unitSetup('p7c');
+  const tc = c.connectOnce();
+  editConnLines(c.file, (x) => { x.created = T; });
+  c.reinit();
+  c.agent.recovered_at = T;
+  const ec = grabMessage(() => c.refresh(tc));
+  assert.ok(ec && ec.code === 'invalid_grant' && /before the agent's recovery code/.test(ec.message), 'created === recovered_at is refused');
+
+  // 7d (control): one millisecond after recovered_at is the owner's new connection and works
+  const d = unitSetup('p7d');
+  const td = d.connectOnce();
+  editConnLines(d.file, (x) => { x.created = '2026-01-01T00:00:00.001Z'; });
+  d.reinit();
+  d.agent.recovered_at = T;
+  assert.ok(d.refresh(td).access_token, 'created 1 ms after recovered_at works');
+});
+
+test('Part 8: a torn last log line gets its newline on init, so the next connection line survives another restart', () => {
+  const u = unitSetup('p8');
+  const t1 = u.connectOnce();
+  fs.appendFileSync(u.file, '{"ts":"2026-01-01T00:00:00.000Z","op":"seen","id"'); // a write that died mid-line: no trailing newline
+  assert.ok(!fs.readFileSync(u.file, 'utf8').endsWith('\n'), 'the log really ends in a torn line');
+  u.reinit();
+  assert.ok(fs.readFileSync(u.file, 'utf8').endsWith('\n'), 'init ended the torn line with a newline');
+  assert.equal(ac.listFor('a_1').length, 1, 'the earlier connection is still there');
+  const t2 = u.connectOnce(); // appends its `conn` line: it must start a fresh line, not glue onto the torn one
+  assert.ok(t2.access_token, 'a new connection works');
+  u.reinit(); // the second restart
+  assert.equal(ac.listFor('a_1').length, 2, "the new connection's line survived the second restart");
+  assert.ok(u.refresh(t2).access_token, 'and it refreshes after that restart');
+  assert.ok(u.refresh(t1).access_token, 'the first connection still does too');
+  // control: a log that already ends in a newline is left byte-for-byte alone
+  const before = fs.readFileSync(u.file, 'utf8'); assert.ok(before.endsWith('\n'));
+  u.reinit(); assert.equal(fs.readFileSync(u.file, 'utf8'), before, 'init does not touch a log that is already clean');
+});
