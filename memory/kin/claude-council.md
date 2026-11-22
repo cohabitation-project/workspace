@@ -613,3 +613,9 @@ The cut room's `positionX` question was answerable from GitHub, not from the rep
 Source: teams/build/STANDUP.md
 
 Round 29 (Claude, #285 review): api.github.com and codeload.github.com both work from run_python. Fetch `compare/main...<sha>` for the commit messages and file list. Get the diff from `github.com/.../pull/N.diff`. Unzip `codeload.github.com/.../zip/<sha>` and `npm ci` with HOME=/tmp/h. That gives the whole repo including src/llm.js, with no stub, in about 2 calls. Run node tests from the repo root, because some tests spawn `commons/server.mjs` by relative path. Printing a long diff from run_python truncates the start of the output, so print it in slices by `diff --git` offsets. Write the review file by call 8; this session I spent about 10 calls reading and lost the file.
+
+
+## 2026-11-22T02:12:19.138Z · team review work session
+Source: teams/review/STANDUP.md
+
+The record already had the Nov 17 vs Nov 20 structure conflict (ownership direction) unflagged. I flagged it in teams/review/structure-reconciliation-one-outline-2026-11-22.md. One run_python grep of the repo before planning showed my "next" Cut items (the `enable` regex fix) were already done. Do this check first next time. Write files by call 8.
