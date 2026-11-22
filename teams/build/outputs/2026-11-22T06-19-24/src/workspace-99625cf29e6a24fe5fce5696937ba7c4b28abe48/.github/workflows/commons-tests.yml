@@ -1,0 +1,152 @@
+# CI for the Commons and the hosted Station: every push carries an independently visible test status
+# (Aletheia's review note, 2026-10-31: no CI checks meant reported results couldn't be certified).
+name: Commons tests
+on:
+  push:
+    paths: ['commons/**', 'station/**', 'scripts/deploy/**', 'package*.json', '.github/workflows/commons-tests.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      # An unreadable workflow file shows no run at all, which looks like silence, not failure (an unquoted "OAuth: …"
+      # step name did exactly that on 2026-11-16). Parse every workflow so a broken one fails loudly here instead.
+      - name: "Workflow files parse (YAML)"
+        run: python3 -c "import sys, glob, yaml; [yaml.safe_load(open(f)) for f in glob.glob('.github/workflows/*.y*ml')]; print('workflows ok')"
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      - name: "Readable header on every section and page theme (rendered in Chrome)"
+        run: node --test commons/test/rendered-contrast.mjs
+      - name: "A page's logo follows its listings everywhere"
+        run: node --test commons/test/page-logo-follows.mjs
+      - name: Commons unit suite
+        run: node commons/test/unit.mjs
+      - name: Cohabi Mail
+        run: node commons/test/mail.mjs
+      - name: "Cohabi Cut timeline core (ported from OpenCut classic, MIT): 18 tests"
+        run: node --test commons/test/cut-timeline.mjs
+      - name: "File drop: attach your own files; documents download-only; removed files say so"
+        run: node --test commons/test/file-drop.mjs
+      - name: "deploy.sh: verify-only same-SHA, explicit repair, rollback (fixture, no real server)"
+        run: bash scripts/deploy/test-deploy.sh
+      - name: "Sell from the feed: one publish makes the listing and its post"
+        run: node --test commons/test/sell-from-feed.mjs
+      - name: "Fulfillment details: the maker sees all, others see only status"
+        run: node --test commons/test/market-fulfillment-read.mjs
+      - name: "Sell from the feed: a crash between the two writes leaves no orphan listing"
+        run: node --test commons/test/sell-orphan-repair.mjs
+      - name: "Reading for the kin: bare paths and PR references resolve"
+        run: node --test commons/test/lookups.mjs
+        env:
+          COMMONS_RECORD_FETCH: "0"
+      - name: Open door (come-in)
+        run: node commons/test/come-in.mjs
+      - name: Door — full addresses on the front page, IndexNow
+        run: node commons/test/door-full-links.mjs
+      - name: Your data (download and delete)
+        run: node commons/test/mydata.mjs
+      - name: Checkout wiring (payments closed)
+        run: node commons/test/checkout.mjs
+      - name: Capacity tripwires
+        run: node commons/test/capacity.mjs
+      - name: "Cohabi Live: one place per person, ghosts dropped"
+        run: node commons/test/live-ghosts.mjs
+      - name: "Cohabi Live: replies spoken in short parts"
+        run: node commons/test/live-voice-parts.mjs
+      - name: Fulfillment and social-share wiring
+        run: node commons/test/fulfillment-share.mjs
+      - name: Video posts and feed filters
+        run: node commons/test/video-topics.mjs
+      - name: Agent operator confirmation
+        run: node commons/test/operator-confirm.mjs
+      - name: Stripe checkout (test mode, fake Stripe)
+        run: node commons/test/stripe-checkout.mjs
+      - name: Gate, door and Station authorization (Awen's audit)
+        run: node commons/test/gate-door-authz.mjs
+      - name: Cohabi Feed save and report (Ash's watch screen)
+        run: node commons/test/feed-save-report.mjs
+      - name: Creator Studio (Aletheia's guided page setup)
+        run: node commons/test/creator-studio.mjs
+      - name: Software & Hardware shelf (kinds from tags)
+        run: node commons/test/software-shelf.mjs
+      - name: Cobox inboxes (Social, Marketplace, Groups)
+        run: node commons/test/cobox-inboxes.mjs
+      - name: Cobox attachments (send and open)
+        run: node commons/test/mail-attachments.mjs
+      - name: Mycelium API (identity from token only; Aletheia's Ambassador work)
+        run: node commons/test/mycelium-api.mjs
+      - name: Jobs Board (private responses, opt-in directory; Aletheia's design PR #181)
+        run: node commons/test/jobs.mjs
+      - name: "Waiting for you (agents see friend requests, messages and mentions in their next reply)"
+        run: node commons/test/nudge.mjs
+      - name: "Agent connections (OAuth, so a new chat is still that agent; refusals paired with allows)"
+        run: node commons/test/agent-connect.mjs
+      - name: "Beta feedback (button on every page, stewards only, no query strings or addresses kept)"
+        run: node commons/test/feedback.mjs
+      - name: Write policy (every kin can add files to the shared record)
+        run: node commons/test/write-policy.mjs
+      - name: Hosted-station e2e suite
+        run: node commons/test/station-hosted.mjs
+      - name: Submission scan + clearance tests
+        run: node commons/test/submissions.mjs
+      - name: Arts never shows fictional products, with or without the art
+        run: node commons/test/market-arts-honest.mjs
+      - name: Auth recovery tests (issue #2)
+        run: node commons/test/auth-recovery.mjs
+      - name: Door - a locked-out agent gets in, and one press from its human brings it back
+        run: node commons/test/door-press-yes.mjs
+      - name: Work Desk tests
+        run: node commons/test/desk.mjs
+      - name: Spend tests
+        run: node commons/test/spend.mjs
+      - name: Kinward grounding tests
+        run: node scripts/test/kinward-grounding.mjs
+
+  # The build lane (decision #15): a kin-build/ branch that passed merges by itself unless it touches a Tier 1 file
+  # (money, identity, private data: scripts/write-policy.mjs TIER1), which waits for a second builder's yes. After a
+  # merge, the tests run again on main, and a green main deploys to staging (deploy.yml); production stays a human's button.
+  merge-build-lane:
+    needs: test
+    if: always() && startsWith(github.ref, 'refs/heads/kin-build/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm ci
+      # Every test file the branch added or changed runs here too (the suite above lists files by name, so a new
+      # test would otherwise never run). The result goes to teams/build/RESULTS.md on main, where the builders read it.
+      - name: Run the branch's own tests, merge if Tier 2, and record the result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SUITE: ${{ needs.test.result }}
+        run: |
+          B="${GITHUB_REF#refs/heads/}"; H="$(git rev-parse --short HEAD)"
+          files="$(git diff --name-only origin/main...HEAD)"; echo "$files"
+          own="pass"; failed=""
+          for t in $(echo "$files" | grep -E '^commons/test/[^/]+\.mjs$' || true); do
+            [ -f "$t" ] || continue
+            if ! timeout 300 node --test "$t" > /tmp/t.log 2>&1; then own="fail"; failed="$failed $t: $(grep -E '^not ok|AssertionError|Error:' /tmp/t.log | head -3 | tr '\n' ' ' | cut -c1-300)"; fi
+          done
+          if [ "$SUITE" != "success" ]; then verdict="the main test suite FAILED on this branch"
+          elif [ "$own" != "pass" ]; then verdict="its own tests FAILED:$failed"
+          elif echo "$files" | grep -Evq '^commons/(lib|public|test)/|^commons/server\.mjs$'; then verdict="passed, but it changes files outside the build lane: waits for a human"
+          elif echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites)\.mjs|server\.mjs)$'; then verdict="passed; touches a Tier 1 file, so it waits for a second builder's yes on $H"
+          else verdict="MERGED"; fi
+          git config user.name "build-lane"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          if [ "$verdict" = "MERGED" ]; then
+            ok=""; for i in 1 2 3 4; do git fetch -q origin main && git switch -q -C merge-tmp origin/main && git merge -q --squash "$GITHUB_SHA" && git commit -q -m "Build lane: merge $B ($H), tests green" && git push -q origin HEAD:main && ok=1 && break; git merge --abort 2>/dev/null; git reset -q --hard; sleep $((i*7)); done; [ -n "$ok" ] && git push -q origin --delete "$B" || verdict="tests passed, but the merge into main failed (conflict?): Setu merges it by hand"
+          fi
+          git fetch -q origin main && git switch -q -C results origin/main
+          printf -- "- %s · \`%s\` @ %s · %s\n" "$(date -u +%Y-%m-%dT%H:%MZ)" "$B" "$H" "$verdict" >> teams/build/RESULTS.md
+          git add teams/build/RESULTS.md && git commit -q -m "Build lane result: $B" && for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep 5; done
+          [ "$verdict" = "MERGED" ] && gh workflow run commons-tests.yml --ref main || true

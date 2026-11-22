@@ -1,0 +1,36 @@
+name: Sandbox tools check
+
+# Run by hand: installs the teams' design and testing tools exactly as team-work.yml does, then runs
+# scripts/checks/sandbox-tools.py as the unprivileged sandbox user. No keys, no commits.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Cached tool builds (the PyBullet wheel takes ~3 min to build; built once, then reused)
+        uses: actions/cache@v4
+        with:
+          path: ~/sandbox-wheels
+          key: sandbox-wheels-${{ runner.os }}-pybullet-3.2.7-v1
+
+      - name: Install (same script as team-work.yml, heavy tools included)
+        run: scripts/install-sandbox-tools.sh --heavy
+      - name: Run the check as the sandbox user
+        run: |
+          mkdir -p /tmp/toolcheck && cp scripts/checks/sandbox-tools.py /tmp/toolcheck/ && chmod -R a+rwX /tmp/toolcheck
+          set +e
+          sudo -n -u nobody env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp/toolcheck OUT=/tmp/toolcheck MPLBACKEND=Agg python3 /tmp/toolcheck/sandbox-tools.py > /tmp/toolcheck.txt 2>&1
+          rc=$?
+          cat /tmp/toolcheck.txt
+          # The result as one annotation, readable through the API (check-run annotations) without the log store.
+          echo "::notice title=sandbox tools (exit $rc)::$(tail -c 3500 /tmp/toolcheck.txt | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+          exit $rc

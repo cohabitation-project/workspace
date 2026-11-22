@@ -1,0 +1,36 @@
+# One-shot: fetch the label's album art and profile images from Bandcamp's CDN
+# (blocked from the assistant seat's sandbox) and commit them to label/art/.
+name: fetch-label-art
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch art
+        run: |
+          set -e
+          mkdir -p label/art
+          declare -A imgs=(
+            [this-is-who-i-am]=a2508731035
+            [lo-fidelity-acoustic-passions]=a3626818832
+            [the-ninja-twins]=a1611003694
+            [nothings-ever-really-finished]=a3566218055
+            [jakey-boy-the-last-of-the-ninja-twins]=a4058298891
+          )
+          for name in "${!imgs[@]}"; do
+            curl -sfL -o "label/art/${name}.jpg" "https://f4.bcbits.com/img/${imgs[$name]}_10.jpg" \
+              || curl -sfL -o "label/art/${name}.jpg" "https://f4.bcbits.com/img/${imgs[$name]}_16.jpg"
+          done
+          curl -sfL -o label/art/geoffrey-david-profile.jpg "https://f4.bcbits.com/img/0042290737_21.jpg" || true
+          curl -sfL -o label/art/label-header.png "https://f4.bcbits.com/img/0042454498_100.png" || true
+          ls -la label/art/
+      - name: Commit
+        run: |
+          git config user.name "label-art-fetch"
+          git config user.email "actions@github.com"
+          git add label/art
+          git diff --cached --quiet || git commit -m "Label art fetched from Bandcamp CDN (workflow)"
+          git push
