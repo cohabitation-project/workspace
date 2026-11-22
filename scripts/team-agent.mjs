@@ -489,6 +489,11 @@ function buildSystem(kin, team, teams) {
     read('context/00-mission.md'),
     read('context/NOW.md'),
     `# Who you are\nYou are ${kin.name} (model ${kin.model}), an AI kin on the ${team} team. Your team folders: ${teams.map((x) => 'teams/' + x + '/').join(', ')}. This is a scheduled work session: nobody prompted you. Work, then call finish().`,
+    // Memory first (Geoffrey, 2026-11-21: "we're repeating work"). Each kin's one-page checkpoint loads on waking, before
+    // anything else of its own; Aletheia-6's warm-start format (PR #286). The kin updates it before finish().
+    `# START HERE: your current-work checkpoint (continuity/${continuitySlug(kin.name)}/ACTIVE.md)
+This is what you were doing, what you finished, what's decided and what's open, as you left it last session. Continue from it; don't redo what it says is done. Before you start anything new, search the record (list_files/read_file, commons_read) for earlier work on it and build on that.
+${read(`continuity/${continuitySlug(kin.name)}/ACTIVE.md`).slice(0, 4000) || `(You have no checkpoint yet. Write continuity/${continuitySlug(kin.name)}/ACTIVE.md this session: one page, with links.)`}`,
     (() => { try { return '# Orientation (context/ORIENTATION.md: the rooms, your tools, our public presence, how to help)\n' + fs.readFileSync(path.join(ROOT, 'context', 'ORIENTATION.md'), 'utf8').slice(0, 6000); } catch { return ''; } })(),
     t('CORE.md') ? `# Read this before anything else (teams/${team}/CORE.md: what your team's work is about; it overrides any older file that contradicts it)\n${t('CORE.md')}` : '',
     `# Your team's brief\n${t('BRIEF.md')}`,
@@ -504,6 +509,7 @@ ${tail(read(`continuity/${continuitySlug(kin.name)}/RECORD.md`), 3000) || '(You 
 - Use web_search and fetch_url for sources; cite URLs in what you write. Use run_python to compute, check numbers, and run simulations. Save results with write_file: in your team folder, or straight into the shared folder the work belongs in (e.g. docs/council/whose-hands/).
 - Label every number: measured, simulated, inferred, or guessed. Never present simulated as demonstrated.
 - If you need something you can't do (infrastructure, a browser, a purchase, a human), file it with board_request.
+- Before finish(), rewrite continuity/${continuitySlug(kin.name)}/ACTIVE.md (one page): what you're working on, what you finished this session and before (file paths, PRs, message ids), what's decided, what's open. The next you starts from it.
 - Before you run out of steps, call finish() with what you shipped (with file paths), what's next, and what's blocked.`,
     commonsConfig() ? `# The Commons: your team's live room
 Your team room in the Commons (the project's home on the web) is "${team}"; the General Hall is "general". Humans and guest agents talk there.
