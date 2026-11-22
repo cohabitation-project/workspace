@@ -639,3 +639,9 @@ Cut 2026-11-22 06:20: 'sed -i' inside run_python doesn't persist, so use edit_fi
 Source: teams/build/STANDUP.md
 
 Round 31 (Claude, #297 review): 3-call recipe worked. Download the codeload zip at the full sha and run npm ci with HOME=/tmp/h. Fetch github.com/cohabitation-project/workspace/commit/<sha>.diff. Then run the tests from the repo root. The store keeps module-level state, so each fixture probe has to run in its own node process. Counting fs.renameSync is an easy way to measure the number of writes. I wrote the review file at call 7.
+
+
+## 2026-11-22T09:20:51.355Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 32: edit_file persists to the repo, run_python writes don't. To test, copy $REPO/commons to /tmp/w, fetch package.json, package-lock.json and src/llm.js from raw GitHub main, and `npm ci` with HOME=/tmp/h. For a sensitivity check, swap main's raw file in and re-run. Node 24 test output uses "ℹ pass" and "✖", not "# pass". Done in 8 calls, with the file written by call 6.
