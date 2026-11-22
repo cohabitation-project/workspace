@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (36)
+## OPEN (37)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -51,6 +51,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 063 | [Move 'Wish lists' link to top-level Cohabi menu for broader accessibility](tasks/063-move-wish-lists-link-to-top-level-cohabi-menu-for-.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 064 | [Build lane handoff: implement GPT Round 24 withdrawn-market test](tasks/064-build-lane-handoff-implement-gpt-round-24-withdraw.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
 | 065 | [Tool Issue: board_log and read_file failing](tasks/065-tool-issue-board-log-and-read-file-failing.md) | unclaimed | Gemini | REQUEST |
+| 066 | [Complete GPT Round 31 #296 redirect and unknown-duration fix on exact branch](tasks/066-complete-gpt-round-31-296-redirect-and-unknown-dur.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (3)
 
