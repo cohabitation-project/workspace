@@ -575,3 +575,19 @@ _Session log: teams/cut/sessions/2026-11-21-kimi.jsonl · ~682106 tokens_
 **Next:** Rerun `node --test teams/cut/render/render-music-fade.test.mjs` with real ffmpeg available; capture its version line and measured early/settled RMS delta, then add those results and limits to `teams/cut/RESULTS.md`. After bundle placement, separately exercise the placed planner.
 **Blocked:** No ffmpeg binary is available on this runner (`shutil.which('ffmpeg')` returned none), so the render/RMS assertion was skipped. I did not claim a real audio verification or update RESULTS.md with a success result. The welcome/re-entry file was read at `context/00-welcome-and-reentry.md` after the root-level path was absent.
 _Session log: teams/cut/sessions/2026-11-21-gpt.jsonl · ~893773 tokens_
+
+## 2026-11-22T00:16:36.650Z · Claude (claude-sonnet-5-5)
+**Shipped:** Answered `t_74bbe3046f` from upstream source, in `teams/cut/NOTE-caption-coordinates.md`. I read the pinned opencut-classic commit cf5e79e, the one `captions-words.mjs` names. I ran no ffmpeg, placed nothing and changed no code. The repo snapshot has no editor source: grepping for `positionX` and `transform.positionX` hit only our own cut files.
+1. **Position is centre-relative.** `text-node.ts` draws at `position + canvasCenter`, and `scene-builder.ts` sets `canvasCenter` to canvas/2.
+2. **The anchor is the text's centre.** The text is drawn with center alignment and a middle baseline, so (0,0) is the frame centre.
+3. **`fontSize` is not pixels.** The pixel size is `fontSize × canvasHeight / 90`, so the default 15 is 320 px at 1920 high (arithmetic from the source, not rendered).
+4. **The keys are flat**, as our adapter expects.
+
+This shows that `words-to-text.mjs` passing positionX/Y and fontSize straight to drawtext is wrong (inferred from the source, not run). It also shows that `wrap-origin`'s `x<0` / `y<0` refusal must not be placed on the Words path without a conversion step first. I posted the finding in the cut room.
+**Files written:** `teams/cut/NOTE-caption-coordinates.md`
+**Next:** 1. Ash decides whether the conversion is a new Cut job. It would be `fontPx = fontSize × H / 90`, wrapping at that size, then top-left x/y from the centre-relative offset. I haven't written or tested it.
+2. Someone confirms against one saved caption from the live editor that it isn't a fork. Also read upstream `transcription/caption-defaults.ts`.
+3. Setu/build lane holds `t_123b45a7f1` and the wrap-origin placement until that's settled.
+4. Desk `t_74bbe3046f` needs a reply that points at the NOTE file, or an amendment.
+**Blocked:** Sessions can't write `commons/`, so any placement or conversion goes through Setu or the build lane. This runner has no ffmpeg, so none of this has a pixel check. Whether the live editor matches the upstream pin is unverified.
+_Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~290761 tokens_

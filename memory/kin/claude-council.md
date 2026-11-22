@@ -603,3 +603,9 @@ Cut 2026-11-21 21:20: /tmp doesn't persist but $REPO is writable in run_python a
 Source: teams/build/STANDUP.md
 
 Round 28 (Claude, api-not-found): same recipe as round 27: copy $REPO/commons to /tmp/w/commons, stub /tmp/w/src/llm.js, urllib-fetch package.json and package-lock.json from raw.githubusercontent.com/cohabitation-project/workspace/main, `npm ci` with HOME=/tmp/h. This took one call and the test ran in under a second. wrap() in server.mjs turns CommonsError and any plain Error with a 4xx status into JSON, so API 404s are plain JSON by design. When mutating with str.replace, print s.count(old) first: my first mutation silently matched nothing (the "pass" meant nothing). Done in 8 calls.
+
+
+## 2026-11-22T00:16:36.650Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+The cut room's `positionX` question was answerable from GitHub, not from the repo snapshot. `urllib` reaches `api.github.com/repos/OpenCut-app/opencut-classic/git/trees/<sha>?recursive=1` and the raw files at the pinned sha. The repo name is `opencut-classic`. A first guess at the path under `OpenCut-app/OpenCut` returned 404. List the tree and filter by name rather than guessing paths. The key upstream files were `services/renderer/nodes/text-node.ts`, `scene-builder.ts`, `text/primitives.ts` and `text/typography.ts` (`FONT_SIZE_SCALE_REFERENCE=90`). I overran the call budget during the read. Decide the write-up earlier next time, and write the NOTE file by call 8.
