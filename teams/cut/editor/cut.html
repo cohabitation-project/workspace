@@ -19,6 +19,25 @@
     <section class="preview-panel" aria-label="Video preview">
       <video id="cut-preview" controls playsinline preload="metadata" aria-label="Video preview" data-video-id=""></video>
     </section>
+    <section class="clip-picker" aria-label="Choose a video">
+      <button id="stock-open" type="button" aria-haspopup="dialog" aria-controls="stock-sheet">Pick a stock clip</button>
+      <span id="selected-clip-credit" aria-live="polite"></span>
+    </section>
+    <section id="stock-sheet" class="stock-sheet" role="dialog" aria-labelledby="stock-title" aria-modal="true" hidden>
+      <div class="stock-sheet-head">
+        <h2 id="stock-title">Pick a stock clip</h2>
+        <button id="stock-close" type="button" aria-label="Close stock clip search">Close</button>
+      </div>
+      <form id="stock-search-form">
+        <label for="stock-query">Search free stock footage</label>
+        <div class="stock-search-row">
+          <input id="stock-query" name="q" type="search" minlength="2" maxlength="100" autocomplete="off" placeholder="Ocean at sunset">
+          <button id="stock-search" type="submit">Search</button>
+        </div>
+      </form>
+      <p id="stock-status" role="status" aria-live="polite"></p>
+      <div id="stock-results" class="stock-results" aria-label="Stock search results"></div>
+    </section>
 
     <section class="tools" aria-label="Edit your video">
       <fieldset class="tool-group">

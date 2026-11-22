@@ -64,14 +64,84 @@ async function loadMusic(select, wrapper, selectedId = '') {
   } catch { /* the optional library is unavailable; keep its control hidden */ }
 }
 
+function stockDuration(seconds) {
+  if (!Number.isFinite(Number(seconds)) || Number(seconds) <= 0) return 'Duration unknown';
+  const total = Math.round(Number(seconds));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')} (${total} seconds)`;
+}
+
+function renderStockResults(container, hits, onChoose) {
+  container.replaceChildren();
+  if (!Array.isArray(hits) || hits.length === 0) return 0;
+  for (const hit of hits) {
+    if (!hit || (typeof hit.id !== 'string' && typeof hit.id !== 'number')) continue;
+    const card = document.createElement('article');
+    card.className = 'stock-result';
+    const image = document.createElement('img');
+    image.alt = '';
+    image.loading = 'lazy';
+    if (typeof hit.thumb === 'string' && hit.thumb) image.src = hit.thumb;
+    card.append(image);
+    const details = document.createElement('div');
+    const duration = document.createElement('p');
+    duration.textContent = stockDuration(hit.seconds);
+    const credit = document.createElement('p');
+    credit.className = 'stock-credit';
+    credit.textContent = `by ${String(hit.by || 'Pixabay contributor')} on Pixabay`;
+    const tags = document.createElement('p');
+    tags.textContent = String(hit.tags || 'Stock video');
+    details.append(duration, credit, tags);
+    card.append(details);
+    const choose = document.createElement('button');
+    choose.type = 'button';
+    choose.textContent = 'Use this clip';
+    choose.addEventListener('click', () => onChoose(String(hit.id), choose));
+    card.append(choose);
+    container.append(card);
+  }
+  return container.childElementCount;
+}
+
 export function initCutEditor(root = document) {
   const byId = (id) => root.getElementById(id);
   const video = byId('cut-preview');
   if (!video) return;
   const params = new URLSearchParams(globalThis.location?.search ?? '');
-  const videoId = params.get('videoId') || video.dataset.videoId || '';
+  let videoId = params.get('videoId') || video.dataset.videoId || '';
   const source = params.get('src');
   if (source) video.src = source;
+
+  const stockOpen = byId('stock-open');
+  const stockSheet = byId('stock-sheet');
+  const stockClose = byId('stock-close');
+  const stockForm = byId('stock-search-form');
+  const stockQuery = byId('stock-query');
+  const stockSubmit = byId('stock-search');
+  const stockStatus = byId('stock-status');
+  const stockResults = byId('stock-results');
+  const selectedCredit = byId('selected-clip-credit');
+  stockOpen?.addEventListener('click', () => { stockSheet.hidden = false; stockQuery?.focus(); });
+  stockClose?.addEventListener('click', () => { stockSheet.hidden = true; stockOpen?.focus(); });
+  stockForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const query = stockQuery.value.trim();
+    if (query.length < 2) { stockStatus.textContent = 'Enter at least two characters to search.'; return; }
+    stockSubmit.disabled = true;
+    stockStatus.textContent = 'Searching Pixabay…';
+    stockResults.replaceChildren();
+    try {
+      const response = await fetch(`/api/stock/videos?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        stockStatus.textContent = payload.error || payload.message || `Stock search failed (${response.status}).`;
+        return;
+      }
+      const count = renderStockResults(stockResults, payload.hits, (id, button) => importStockClip(id, button));
+      stockStatus.textContent = count ? `${count} stock clips. Each is copied into Cohabi with its maker credited.` : 'No clips found. Try another search.';
+    } catch {
+      stockStatus.textContent = 'Could not reach stock search. Check your connection and try again.';
+    } finally { stockSubmit.disabled = false; }
+  });
 
   const start = byId('trim-start');
   const end = byId('trim-end');
@@ -83,8 +153,8 @@ export function initCutEditor(root = document) {
   const cover = byId('cover-scrub');
   const coverUse = byId('cover-use');
   const exportButton = byId('export-feed');
-  const draftKey = `${DRAFT_PREFIX}${videoId || 'unassigned'}`;
-  const draft = safeRead(draftKey);
+  let draftKey = `${DRAFT_PREFIX}${videoId || 'unassigned'}`;
+  let draft = safeRead(draftKey);
   if (draft) {
     if (Number.isFinite(draft.trimStart)) start.value = String(draft.trimStart);
     if (Number.isFinite(draft.trimEnd)) end.value = String(draft.trimEnd);
