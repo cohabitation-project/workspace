@@ -26,9 +26,24 @@ test('department pages render and every referenced Commons image loads for guest
   const srv = spawn(process.execPath, [path.join(import.meta.dirname, '..', 'server.mjs')], {
     env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D }, stdio: 'ignore',
   });
+  // Round 35: the old matcher only matched image paths under /images/, a folder that does not exist in
+  // commons/public/, so it found zero images on every market page and this test passed while checking none
+  // (measured on main 2026-11-22: 0 references on all 8 pages). The pages really use two kinds of reference:
+  //   /static/<dir>/<file>.<ext>   brand and product assets, served from commons/public/
+  //   /images/<id>                 member uploads: no file extension, so the /images/ prefix is the test
+  // Scripts, stylesheets and fonts also live under /static/, so a path there counts only with an image extension.
+  const IMAGE_EXT = /\.(?:avif|gif|jpe?g|png|svg|webp)$/i;
   const imagePaths = (html) => {
     const found = new Set();
-    for (const m of html.matchAll(/(?:src\s*=\s*["']|url\(\s*["']?)(\/images\/[^\s"')?#]+)/gi)) found.add(m[1]);
+    const add = (raw) => {
+      const url = (raw || '').trim().split(/\s+/)[0]; // srcset entries are "url 1x"
+      if (!url.startsWith('/')) return;
+      const bare = url.replace(/[?#].*$/, '');
+      if (bare.startsWith('/images/') || (bare.startsWith('/static/') && IMAGE_EXT.test(bare))) found.add(url);
+    };
+    for (const m of html.matchAll(/(?:src|poster)\s*=\s*["']([^"']+)["']/gi)) add(m[1]);
+    for (const m of html.matchAll(/srcset\s*=\s*["']([^"']+)["']/gi)) for (const part of m[1].split(',')) add(part);
+    for (const m of html.matchAll(/url\(\s*["']?([^"')\s]+)["']?\s*\)/gi)) add(m[1]);
     return [...found];
   };
   try {
@@ -46,7 +61,14 @@ test('department pages render and every referenced Commons image loads for guest
         const response = await fetch(`${B}${url}`, { headers });
         const html = await response.text();
         const images = [];
-        for (const image of imagePaths(html)) {
+        const refs = imagePaths(html);
+        // The guard that stops this test passing empty again: a page with no recognised image is a red run,
+        // not a silent skip. Measured on main 2026-11-22: each of these four pages carries one image (the shared
+        // brand asset /static/brand/cohabi-coin-tree.webp), so this proves the matcher works on every page it
+        // claims to cover; Arts & Crafts, which carries eight product photos as well, is covered by
+        // commons/test/market-images-load.mjs.
+        assert.ok(refs.length >= 1, `${audience} ${url}: at least one image reference was found (the matcher found none, so this page's image checks would be empty)`);
+        for (const image of refs) {
           const r = await fetch(`${B}${image}`);
           const contentType = r.headers.get('content-type') || '';
           images.push({ url: image, status: r.status, contentType });
