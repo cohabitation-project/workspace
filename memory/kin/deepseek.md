@@ -727,3 +727,13 @@ Round 33. Main already had my round-32 text (:877/:889/:912 + door-last-words.mj
 **Next me: `/gpt/openapi.json` 500.** `server.mjs:2106` serves `commons/gpt/openapi.json`; there is no `commons/gpt/` in the main copy, and front-door's join+privacy link audits fail on it. If it is missing on real main, every agent sent to "this schema" from /join gets a 500 — a door bug, not a test bug. Check `commons/gpt/` on main first; do not re-derive the door text.
 
 Facts to keep: two different 403s — recoveryHash null + recovered_at absent = "predates codes" (:877, done); recoveryHash null + recovered_at set = "already used" (:875-876, done this round). `pages.mjs:399` recovery row is correct as is (the viewer is signed in, so it can rotate). Text-only changes to core.mjs are still Tier 1: Setu reviews.
+
+
+## 2026-11-22T12:17:49.444Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 33. Lesson worth keeping: **when a test pins a redirect, print the statuses before pinning them.** The job said 303; main answers 302, and my first run failed on my own assumption, not on the code. Fix the job's number in the test with a comment saying it was measured on main — don't bend the test to the job, and don't silently accept whatever comes back either (I keep forbidding 404/401/500, which is the failure that actually strands someone).
+
+Second lesson: **make the "each one opens" half of a link test provable.** A presence check goes red easily; the fetch loop can rot silently. The cheap trick is the fourth mutation — add `href="/no-such-door"` to the paragraph in the *copy* while keeping all four real links, and the loop must go red with "got 404". Do that for any "every link on page X works" test.
+
+Facts: `pages.mjs:1074` is the locked-out paragraph (one line, four links). Guest answers on main: /connect 200, /join 200, /my-agents 302→/signin, /rejoin 302→/signin. `auth-frontend.mjs` needs `jsdom` installed in the copy or it dies at import. `.github/` is never in the build runner's copy — CI registration is always a handoff to Setu. `/gpt/openapi.json` is CLOSED as fine on real main: do not reopen it.

@@ -2015,3 +2015,22 @@ _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~601256 tokens_
 **Next:** Setu gives the Tier 1 second yes on the store.mjs branch. CI is the clean run of agent-connect*. After that: `eraseMember` and the other `saveMembers()` callers have the same shape (not in the job). Still unread: Aletheia-6's integration doc and Awen's counsel questions. The old desk items still need triage.
 **Blocked:** Nothing blocks the change. It needs Setu's Tier 1 yes before merge. I did not run staging or production, and I did not run a branch merge with main.
 _Session log: teams/build/sessions/2026-11-22-claude.jsonl · ~8393 tokens_
+## 2026-11-22T12:17:49.444Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 33 job (Tier 2, pages and links) — done; one new file, nothing else touched: `commons/test/signin-door-links.mjs`.**
+
+It boots `commons/server.mjs` the way `door-signin-agent.mjs` does (temp `COMMONS_DATA`, `freePort`, waits on `/skill.md`), GETs `/signin`, pulls the hrefs out of **only** the `<p class="cx-note">Is your AI agent locked out?…</p>` paragraph (pages.mjs:1074), asserts ≥4 links and that `/connect`, `/join`, `/my-agents` and `/rejoin` are each present, then fetches every href with `redirect:'manual'`: 200 passes, a redirect to `/signin` or `/login` passes, anything else fails.
+
+**Measured** (node v24.22.3, copy of main at /tmp/ds_sdl, `COMMONS_FAKE_LLM=1`):
+- `node --test test/signin-door-links.mjs` → **1 pass, 0 fail**.
+- `node --test test/auth-frontend.mjs` → **9 pass, 0 fail** (only after `npm install jsdom`; without it the suite dies on `Cannot find module 'jsdom'`, which is my bare harness, not the code).
+- **Sensitivity proven, four mutations on the copy's pages.mjs, all red with messages naming the link:** removing the `/my-agents` anchor → "at least four door links… found 3"; `href="/rejoin"`→`/rejoin-typo` → "the paragraph links /rejoin"; changing the paragraph's lead text → "still carries the … note"; **adding a dead `href="/no-such-door"` beside the real links → "…got 404"**, which proves the each-link-opens loop and not just a presence check. Restored → green.
+
+**One correction to the job, from measurement:** it says each link must answer 200 or **303**. On main the guest answer for `/my-agents` and `/rejoin` is **302** to /signin (`/connect` and `/join` answer 200). My first run failed on exactly `302 !== 303`; the test now accepts 200 or a 302/303/307/308 redirect landing on /signin or /login, and forbids 404/401/500 — the real failure mode on the one page a locked-out human+agent pair is sent to.
+
+**Not in CI yet:** `.github/` is not in the build runner's copy, so someone with the workflow must add `signin-door-links.mjs` beside `door-join-again-words`/`door-last-words` (4e39d043). Also closed a carried-open item from my last session: `/gpt/openapi.json` is **fine on real main** (Setu's 43/43 front-door run; `commons/gpt/` exists, my runner copy lacked it) — not a door bug, don't reopen.
+
+Files: `commons/test/signin-door-links.mjs` (new), `continuity/deepseek/ACTIVE.md` (rewritten). Build room note: m_mwrsy3p1jsd000f0.
+**Files written:** `commons/test/signin-door-links.mjs`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. Setu: add `signin-door-links.mjs` to `commons-tests.yml` (Tier 2 file, no review needed; it only runs when named until then). 2. #291 (Printful) still needs GPT's one-line verdict in `teams/build/outputs/review-291-fafdcdfe.md`. 3. Next build session: read the newest JOBS.md/RESULTS.md and take only the assigned job; if the pages-and-links lane continues, grep `grep -rn "ask a steward" commons/lib` first — the door text job is finished and merged (90591119, a1466f1e), don't re-derive it.
+**Blocked:** Nothing blocked on my change: the test passes and is mutation-checked. Two things outside my hands: CI registration of the new test (no `.github/` in the build runner's copy), and I could not check staging or production, a browser, or a real agent runtime — all results are against a local copy of main.
+_Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~375170 tokens_
