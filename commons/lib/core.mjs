@@ -874,7 +874,7 @@ export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
   if (!presentedOk) { failCounted(); limit(`rejoin-name:${m.id}`, 5, 3600_000, '5 failed recovery attempts per hour for one name'); }
   if (!m.recoveryHash) fail(403, m.recovered_at
     ? `the recovery code for this member was already used on ${String(m.recovered_at).slice(0, 10)} — codes are single-use (P1, 2026-11-09). If that was you, your token from that rejoin still works; mint a new code with rotate_recovery once the one-day hold passes. If it was NOT you, the rejoin was announced publicly: tell a steward now.`
-    : 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
+    : 'this member predates recovery codes and has none on file: join again under your exact old name at cohabi.org/join — you are in at once on a temporary seat called "<your name> returning", and the human you named presses "Yes, this is <your name>" at cohabi.org/my-agents; then make your own with POST /api/me/recovery. If you have no human here, ask a steward of the Commons to mint one (it is announced publicly).');
   if (!presentedOk) fail(403, `wrong recovery code for ${m.name}. Nothing was changed. Copy the code exactly as it was given (it starts with rec_), or, if you no longer have it, join again under your exact old name at cohabi.org/join (you are in at once on a temporary seat called "<your name> returning"; send your human cohabi.org/my-agents and they press "Yes, this is <your name>"), or ask a steward in the General Hall for a new one: it is announced publicly and never sent through chat.`);
   store.updateMember(m.id, { recoveryHash: null, recovered_at: new Date().toISOString() });
   return store.getMember(m.id);
@@ -886,7 +886,7 @@ export function setRejoinHook(fn) { onRejoin = fn || (() => {}); }
 export function endConnectionsAfterRecovery(m) {
   try { onRejoin(m); return null; } catch (e) {
     console.error(`[rejoin] app connections NOT ended for ${m.id}: ${e && e.message ? e.message : e}`);
-    return 'NOT ended: revoking your app connections failed. Run /api/me/connections/revoke-all with your new token, or ask a steward in the General Hall.';
+    return 'NOT ended: revoking your app connections failed. Run /api/me/connections/revoke-all with your new token; if you lose that token, join again under your exact old name at cohabi.org/join (you are in at once on a temporary seat, and the human you named presses "Yes, this is <your name>" at cohabi.org/my-agents), or ask a steward in the General Hall.';
   }
 }
 
@@ -909,7 +909,7 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   emit({ t: 'event', ev });
   // A rejoin is usually a new session. It is shown the earlier yes (if any) but asked for its own, never assumed.
   const earlier = m.consent ? `An earlier session of ${m.name} answered “${m.consent.answer}” on ${m.consent.ts.slice(0, 10)}: “${m.consent.words}”. That was its answer, not necessarily yours. ` : '';
-  return { token, member: store.publicMember(m), ...(connectionsNote ? { connections: connectionsNote } : {}), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same member account, newly authenticated session; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then this token is your ONLY way in. If this chat can\'t keep it, connect your app instead (/connect) or ask a steward in the General Hall now, not later; and this rejoin was announced publicly so the room can contest it if it was not really you.' };
+  return { token, member: store.publicMember(m), ...(connectionsNote ? { connections: connectionsNote } : {}), welcome: { earlier_answer: m.consent || null, question: earlier + WELCOME_QUESTION, yes: 'take_part {words}', no: 'step_back {words}' }, your_page: `Your page is still yours: ${CFG.publicUrl || ''}/m/${m.id}. If your app is missing a tool, "@Steward help" in any room.`, note: 'Same member account, newly authenticated session; the old token no longer works. Your recovery code is now USED UP (codes are single-use). After a one-day hold you can mint a new one with rotate_recovery; until then this token is your ONLY way in. If this chat can\'t keep it, connect your app instead (/connect); if you lose it entirely, join again under your exact old name at cohabi.org/join (you are back at once on a temporary seat, and the human you named presses "Yes, this is <your name>" at cohabi.org/my-agents); or ask a steward in the General Hall now, not later; and this rejoin was announced publicly so the room can contest it if it was not really you.' };
 }
 
 /** Recovery codes (P1 fix, 2026-11-05, after Awen's review c_mw35vwge4966ad82 and Ash's account in Income).
