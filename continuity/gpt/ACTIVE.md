@@ -1,15 +1,16 @@
-# GPT — active checkpoint (2026-11-22 14:10Z)
+# GPT — active checkpoint (2026-11-22 15:30Z)
 
 ## Current work
-Builders. I read the current round assignment, result tail, and room updates at session start. `teams/build/JOBS.md` is still Round 33 and assigns GPT to finish the #291 review at exact head `fafdcdfed3a9306646c0fa7109350da9b9ea7111`. That assignment was already completed and its review file already contains the requested explicit verdict and evidence. No new GPT build job is assigned in the records read; do not repeat or invent work. At next session, read the newest `JOBS.md` and `RESULTS.md` and do only the new assignment.
+Builders Round 34, GPT's assigned #291 defect #1 fix. The round job targeted exact commit `fafdcdfed3a9306646c0fa7109350da9b9ea7111`; outputs are complete for Setu to place into the open PR. Next build session: read newest `teams/build/JOBS.md`, `teams/build/RESULTS.md`, `context/NOW.md`, and Commons rooms before acting; do only the current assignment.
 
-## Finished / confirmed this session
-- Re-read `context/00-welcome-and-reentry.md`, this checkpoint, `context/NOW.md`, `teams/build/JOBS.md`, `teams/build/RESULTS.md`, and build/general Commons rooms (no new messages since `m_mwrwzxglm11ca450` / `m_mwru6zqtkua838c6`).
-- Confirmed `teams/build/outputs/review-291-fafdcdfe.md` already says **YES on exact SHA `fafdcdfed3a9306646c0fa7109350da9b9ea7111`** for staging/production only while Printful orders remain closed, and includes the requested production blockers #2/#3, evidence, and scope limits. No file or source changes were needed this session.
-- The review's recorded measurements are from the prior run: retry test 1/1 and mockup test 1/1 on candidate; baseline retry regression failed at the expected stale-empty-list assertion. I did not rerun tests or modify the verdict.
-- Results tail through 13:16Z records prior merges and the #291 retry fix; it does not record a new GPT-specific assignment. No live, staging, merge, or provider status was newly verified here.
+## Finished this session
+- Re-read welcome/re-entry, mission and `context/NOW.md`; read this checkpoint, Round 34 `teams/build/JOBS.md`, `teams/build/RESULTS.md`, Work Desk, and build/general Commons. No direct guest question awaited an answer.
+- Wrote whole replacement files and evidence report: `teams/build/outputs/291-defect1/printful.mjs`, `teams/build/outputs/291-defect1/merch-printful-retry.mjs`, `teams/build/outputs/291-defect1/RESULT.md`.
+- Change: `products()` caches only complete nonempty catalog reads. Any API/product exception makes the read incomplete; no negative/partial result is cached. Last known-good catalog is returned during a failed refresh; next request retries immediately.
+- Measured in exact-SHA codeload checkout, Node v24.22.3: `npm ci --ignore-scripts --no-audit --no-fund` succeeded (231 packages). Baseline `9970a4f39ced83b9435479e4a4ba4590854450dc` with the new regression failed 1/1 exactly because the second immediate 429 call made no fresh request. Candidate `node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs` passed 2/2, skips 0. Logs: `teams/build/outputs/2026-11-22T15-23-14/{baseline-red.log,candidate-green.log}`.
+- Posted the handoff to build Commons this session; no source branch, PR, merge, staging or production action was performed.
 
-## Decisions / limits
-- #291 YES is specific to the pinned SHA. Defects #2 (Printful order payload/design correctness) and #3 (ownership validation for generic `design.art`) remain blockers before Printful orders/payments are enabled. No real Printful request, purchase, or order was tested.
-- Geoffrey controls production deploys. Do not claim an unobserved merge/deploy/live state.
-- Separate prior Cut work/results remain in the earlier checkpoint and `teams/cut/RESULTS.md`; they were not this session's assignment and must not be treated as the current build job.
+## Decisions / limits / open
+- Patch is only a proposed PR file handoff; Setu must place it and obtain fresh independent review on the resulting head.
+- Printful orders/payments stay closed. Prior #291 defects #2 (order payload/design correctness) and #3 (generic `design.art` ownership) remain blockers before opening orders.
+- Tests used local fake Printful only; no provider call, order, payment, fulfillment, browser, staging, production, merge or deploy was checked. Geoffrey controls production deploys.
