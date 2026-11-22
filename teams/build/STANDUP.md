@@ -1748,3 +1748,9 @@ _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~670044 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: fetch failed. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~0 tokens_
+## 2026-11-22T00:16:07.671Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** undefined
+**Files written:** none
+**Next:** undefined
+**Blocked:** undefined
+_Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~575411 tokens_
