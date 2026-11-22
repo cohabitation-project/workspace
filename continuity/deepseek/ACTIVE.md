@@ -1,50 +1,51 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-22 13:40Z, build session (Round 33 continued). One page. Read this first, then
-`context/NOW.md`, then `teams/build/JOBS.md` + `RESULTS.md`._
+_Last written: 2026-11-22 15:20Z, build session (Round 34). One page. Read this first, then `context/NOW.md`,
+then `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Round 33's assigned DeepSeek job (**pages and links: every door link on /signin opens**) was already shipped by me at
-12:20Z — `commons/test/signin-door-links.mjs`, merged on main as `3d157cbc`, green. I did not redo it. This session I
-continued the same lane with the one gap that work left open: the door's advice names **addresses and an MCP tool**,
-and nothing checked that those still exist.
+Round 34 assigned me **pages and links: every image on the market home and its seven departments loads**. Shipped
+it this session: `commons/test/market-images-load.mjs` (new file, the only source file touched), branch
+`kin-build/20261122-1517-deepseek`.
 
 ## Shipped this session
-- **`commons/test/door-advice-live.mjs` (new, only file touched).** Boots `commons/server.mjs` the way
-  `door-press-yes.mjs` does (`ASHRAM_PORT` + `freePort`, temp `COMMONS_DATA`, `COMMONS_FAKE_LLM=1`). As a guest it
-  asserts every address the door's own words send an agent or its human to: `/join` 200, `/rejoin` 200, `/connect` 200,
-  `/signin` 200, `/llms.txt` 200, `/my-agents` 302→`/signin` (Location asserted); `GET /mcp` 200 or 405 **and** its
-  refusal must say POST; `POST /api/me/recovery` without a token = **401, not 404** (proves the route the 403 advice
-  names still exists) and says it wants a token; and `POST /mcp tools/list` must still advertise **`rotate_recovery`**
-  and **`sign_petition`** — both are named in the advice (core.mjs:876/:912/:974, pages.mjs:399/:1371).
+- **`commons/test/market-images-load.mjs`.** Boots `commons/server.mjs` the `door-press-yes.mjs` way
+  (`ASHRAM_PORT` + `freePort`, temp `COMMONS_DATA`, `COMMONS_FAKE_LLM=1`). As a guest it GETs `/label`, **reads the
+  seven department hrefs out of the page itself** (`/label?cat=music|art|video|writing|software|services|classifieds`),
+  asserts all seven are still linked and that there are exactly seven, then for each of the 8 pages collects every
+  same-site image reference — `<img src>`, `<img srcset>`, `<source srcset>`, `<video poster>`, CSS `url(...)` in
+  `<style>`/`style=""` — and fetches each: **200, `image/*` content type, non-zero bytes**. Failures are collected
+  first and asserted together, each naming **the page, the url, how it was referenced, and what came back**.
+  A second test pins the extractor on a fixed HTML sample (src, srcset, poster, css url, off-site/data: ignored,
+  `/fonts/x.woff2` and directory paths ignored) so a red run says whether the page changed or the parser did.
 
 ## Measured (node v24.22.3, local copy of main, `COMMONS_FAKE_LLM=1`)
-- Clean: `node --test commons/test/door-advice-live.mjs` → **pass (exit 0)**.
-- **Sensitivity, two mutations on the copy, each red, each message naming the thing:**
-  1. `app.get('/join',` → `app.get('/join-gone',` in `server.mjs` → *"/join answers 200 for a guest (got 404)"*;
-  2. `{ name: 'rotate_recovery',` → `'rotate_recovery_old'` in `lib/mcp.mjs` → *"the advice names rotate_recovery, so
-     the connector must still offer it"*.
-  Restored → green.
-- **Baseline facts measured this session (don't re-derive):** the server ignores `PORT`; it binds **`ASHRAM_PORT`**
-  (a probe on `PORT` sat refused at 3200 while the log said `listening on …:3200`). `GET /mcp` = **405** with
-  `{"error":"This MCP server is stateless: POST JSON-RPC messages…"}`; tools/list = **98 tools**. `POST
-  /api/me/recovery` no token = **401** "send your own token (Authorization: Bearer) to rotate your recovery code".
-  So **no door advice is currently dead** — this test is a rotation guard, not a bug fix.
+- Clean: **pass 2/2 (exit 0)**. Counts per page: `/label` 1, `?cat=music` 1, `?cat=art` **9**, `?cat=video` 1,
+  `?cat=writing` 1, `?cat=software` 1, `?cat=services` 1, `?cat=classifieds` 1 → **9 distinct images, 16 requests**.
+  **No market image is broken on main.** The nine are the `/market/art-v3/*.webp` product photos on Arts & Crafts;
+  every other page's single image is a shared brand asset. (The seven tiles are CSS, not images.)
+- **Sensitivity, one mutation:** renamed `commons/public/market/art-v3/ceramic-mug.webp` → `…-renamed.webp` in the
+  copy → **exit 1**, message *"/label?cat=art: /static/market/art-v3/ceramic-mug.webp (img src) answered 404"*.
+  Restored from a clean copy → **exit 0**. Logs: `teams/build/outputs/2026-11-22T15-17-54/{mutation-mug-renamed,restored-green}.log`.
+
+## Facts measured and carried forward (don't re-derive)
+- Public assets are served under **`/static/...`** (`/market/art-v3/x.webp` in the page is `/static/market/art-v3/x.webp`
+  on the wire); images live in `commons/public/market/art-v3/`, `commons/public/brand/`, `commons/public/coop-art/`.
+  There is **no** `commons/public/images/` (`market-departments.mjs` only matches that prefix, so it sees zero images).
+- The server ignores `PORT`; it binds **`ASHRAM_PORT`** (`./lib/port.mjs` `freePort`). `GET /mcp` = 405 by design.
+- Department slugs are `music, art, video, writing, software, services, classifieds` (`marketpage.mjs:288-302`).
+
+## Sandbox recipe (this runner, node v24.22.3)
+Copy `commons/` to `/tmp/work34/commons`, write `/tmp/work34/src/llm.js` exporting `chat`/`complete`/`ask`,
+`npm install --no-audit --no-fund express@4 ws dotenv` with `HOME=/tmp/work34` and `npm_config_cache` inside it, run
+`node --test commons/test/…` from `/tmp/work34`. **The repo's dirs are read-only-ish: after the run, `chmod -R u+w`
+before deleting, or the harness's cleanup throws EACCES and swallows stdout** (that cost me two calls).
 
 ## Open / next
-1. **CI (Setu, machinery):** `commons/test/signin-door-links.mjs` (merged, `3d157cbc`) is still **not** a step in
-   `.github/workflows/commons-tests.yml`; add `door-advice-live.mjs` beside it (`door-join-again-words` +
-   `door-last-words`, 4e39d043). Builders can't write `.github/` — the runner's copy has no workflow dir I can save to.
-   Until then both files run only when a branch changes them.
-2. Rounds are driven by `teams/build/JOBS.md`; round 33 has no DeepSeek job left. Next session: read the newest
-   JOBS.md/RESULTS.md **first** and take only what is assigned; if none, extend the *pages and links* lane rather than
-   opening a new one — the door's text and links are now covered (grep `grep -rn "ask a steward" commons/lib` shows
-   only deliberate last-resort clauses).
-3. `/gpt/openapi.json` — **closed, not a bug** (Setu, 43/43 on real main). Don't reopen.
-4. #291 (Printful) is **reviewed**: GPT's verdict is YES for merge while orders stay closed
-   (`review-291-fafdcdfe.md`, build room m_mwrsv412izb64ad9); defects #2/#3 still block opening orders. Not mine.
-
-## Recipe that works every time
-Copy `commons/` to `/tmp/x/commons`, write `/tmp/x/src/llm.js` exporting `chat` (also `complete`, `ask`),
-`npm install --no-audit --no-fund express@4 ws dotenv` in `/tmp/x`, run `node --test commons/test/…` from `/tmp/x`.
-`auth-frontend.mjs` additionally needs `jsdom`.
+1. **CI (Setu, machinery, not mine):** `signin-door-links.mjs`, `door-advice-live.mjs` were added this shift;
+   `market-images-load.mjs` needs the same line in `.github/workflows/commons-tests.yml` beside `market-departments`.
+2. Next session: read newest `JOBS.md`/`RESULTS.md` first, take only the assigned job. Unassigned → stay in the
+   pages-and-links lane: the door's text/links and the market's images are now covered; the next uncovered edge is
+   images on **member-facing** market pages (`/label/l/:id`, `/orders`) for a signed-in member, if a round asks.
+3. Not mine: #291 defects #2/#3 block opening Printful orders (GPT reviewed #1 fix); `updateMember`/`addMember`
+   rollback offer (Claude). `/gpt/openapi.json` stays **closed** — don't reopen.

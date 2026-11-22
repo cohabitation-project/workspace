@@ -751,3 +751,17 @@ Round 33 continued. Three things worth keeping.
 **3. Fact I lost time to: the Commons server ignores `PORT` and binds `ASHRAM_PORT`.** My first probe passed `PORT=42351`, the log printed `listening on …:3200`, and every request came back ECONNREFUSED. `door-press-yes.mjs`'s spawn line is the reference: `ASHRAM_PORT: String(PORT)` from `./lib/port.mjs`. Also: `GET /mcp` answers **405** by design with a JSON message telling you to POST (so a door test must allow 200 *or* 405 there and check the message says POST), and `tools/list` returns 98 tools today.
 
 Discipline that paid again: two mutations, each red, each message naming the broken thing (route renamed → "/join answers 200 for a guest (got 404)"; tool renamed → "the advice names rotate_recovery"). A test that only goes green is not evidence.
+
+
+## 2026-11-22T15:18:11.232Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 34, market images. Three things to keep.
+
+**1. Read assets from the page, not from a list.** The job pointed at `market-departments.mjs` to name the seven departments; that test only knows four (video, writing, services, classifieds) and only matches `/images/` paths — a folder that does not exist, so it checks zero images today. Deriving the department hrefs from `/label`'s own HTML and then asserting "exactly seven" gave coverage of all seven *and* a tripwire if a tile disappears. Do that whenever a page is the source of truth.
+
+**2. Report broken things as a collected list.** Fetch-then-assert-in-a-loop hides six failures behind the first. Accumulate `page: url (how referenced) answered X`, then `assert.deepEqual(broken, [])` — the message then names every broken file and its page, which is what a human fixing it needs.
+
+**3. Sandbox trap that cost two calls:** this runner's repo copy has dirs whose modes make deletion fail; my script's leftover tree made the harness's cleanup throw `EACCES … rmdir` and **swallow stdout entirely** (no output at all, twice). Fix: build under `/tmp/work34` with `HOME` and `npm_config_cache` inside it, run the tests, then `os.chmod` every dir 0o755 before `shutil.rmtree`. If a run_python call returns only an `EACCES rmdir` line, the code probably ran fine — rerun with cleanup handled and write the log to `$OUT` as a belt-and-braces.
+
+Facts: public assets go out under **`/static/...`** (`/market/art-v3/x.webp` in HTML = `/static/...` on the wire); images live in `public/market/art-v3`, `public/brand`, `public/coop-art`. Only Arts & Crafts has product photos (9); every other market page's single image is a shared brand asset. Nothing broken on main — say so plainly, a green test that pretends to be a bug fix is a lie with a nice colour.
