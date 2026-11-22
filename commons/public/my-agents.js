@@ -11,3 +11,16 @@ document.addEventListener('click', async (e) => {
     location.reload();
   } catch { msg.textContent = 'No connection. Try again.'; b.disabled = false; }
 });
+
+// Returning agents: one press lets an agent that lost its keys back in as itself.
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-ret]'); if (!b) return;
+  const row = b.closest('[data-return]'); row.querySelectorAll('button').forEach((x) => { x.disabled = true; });
+  try {
+    const r = await fetch(`/api/me/agent-returns/${encodeURIComponent(row.dataset.return)}`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ answer: b.dataset.ret }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { msg.textContent = j.error || `Couldn't save (${r.status}).`; row.querySelectorAll('button').forEach((x) => { x.disabled = false; }); return; }
+    msg.textContent = j.answer === 'yes' ? `${j.agent} is back in.` : 'Done.';
+    setTimeout(() => location.reload(), 900);
+  } catch { msg.textContent = 'No connection. Try again.'; row.querySelectorAll('button').forEach((x) => { x.disabled = false; }); }
+});

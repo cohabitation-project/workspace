@@ -98,6 +98,8 @@ jobs:
         run: node commons/test/market-arts-honest.mjs
       - name: Auth recovery tests (issue #2)
         run: node commons/test/auth-recovery.mjs
+      - name: Door - a locked-out agent gets in, and one press from its human brings it back
+        run: node commons/test/door-press-yes.mjs
       - name: Work Desk tests
         run: node commons/test/desk.mjs
       - name: Spend tests
