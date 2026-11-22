@@ -1,0 +1,44 @@
+{
+  "main_sha": "52fead57661ad527381d42db73f2e593b26735be",
+  "node": "v24.22.3",
+  "test_file": "commons/test/market-paid-journey.mjs",
+  "sha256": "620fc6082aa7521c6f33842005ce7948b4d5b84214d6419c6c42519319145f8c",
+  "results": {
+    "npm_ci": {
+      "cmd": "npm ci --no-audit --no-fund",
+      "exit": 0,
+      "log": "round35-npm-ci.log",
+      "tail": "\nadded 231 packages in 2s\nnpm notice\nnpm notice New major version of npm available! 11.19.1 -> 12.2.3\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3\nnpm notice To update run: npm install -g npm@12.2.3\nnpm notice\n"
+    },
+    "syntax": {
+      "cmd": "node --check commons/test/market-paid-journey.mjs",
+      "exit": 0,
+      "log": "round35-syntax.log",
+      "tail": ""
+    },
+    "journey": {
+      "cmd": "node --test commons/test/market-paid-journey.mjs",
+      "exit": 1,
+      "log": "round35-journey.log",
+      "tail": "ket-paid-journey.mjs:88:13\n\u2716 signed partial charge.refunded preserves the refund amount in both activity pages (1.624892ms)\n  AssertionError [ERR_ASSERTION]: /orders: expected \"Partly refunded ($10.00 back)\" for partly_refunded\n      at checkViews (file:///tmp/kimi35/src/workspace-52fead57661ad527381d42db73f2e593b26735be/commons/test/market-paid-journey.mjs:79:16)\n      at TestContext.<anonymous> (file:///tmp/kimi35/src/workspace-52fead57661ad527381d42db73f2e593b26735be/commons/test/market-paid-journey.mjs:92:7)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.start (node:internal/test_runner/test:1262:17)\n      at TestContext.test (node:internal/test_runner/test:400:20)\n      at TestContext.<anonymous> (file:///tmp/kimi35/src/workspace-52fead57661ad527381d42db73f2e593b26735be/commons/test/market-paid-journey.mjs:88:13)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n"
+    },
+    "existing_status": {
+      "cmd": "node --test commons/test/market-order-status-words.mjs",
+      "exit": 0,
+      "log": "round35-existing-status.log",
+      "tail": "[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_\u2026)\n[commons] stewards (by id): none\n\u2714 orders, sales and receipts use plain words for every order state (18.848147ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 109.534421\n"
+    },
+    "existing_stripe": {
+      "cmd": "node --test commons/test/stripe-checkout.mjs",
+      "exit": 0,
+      "log": "round35-existing-stripe.log",
+      "tail": "4a7bacc7f6d (Stripe said: The payment method type \"affirm\" is invalid. Please ensure the provided type is activated in your dashboard.); retrying with card\n\u2714 closed by default; a live key is refused without two approvers (0.636443ms)\n\u2714 a maker connects a payout account; an agent cannot (1.024493ms)\n\u2714 buying hands off to Stripe checkout, paying the maker directly; the webhook marks it paid (1.992762ms)\n\u2714 we choose the payment methods: card by default, only names Stripe knows, never Stripe's automatic list (0.718315ms)\n\u2714 in-app: with a publishable key of the same mode, the session is embedded and the page gets a client secret, not a link (0.71506ms)\n\u2714 if Stripe refuses a method (not switched on, amount too small), the buyer still pays by card (1.208068ms)\n\u2714 refunds and disputes reach the order; the split is there to recompute (practice-run checks 3-5) (2.249296ms)\n\u2714 a replayed or late paid event never undoes a refund, a dispute or later progress (Kimi, review of #292) (1.468668ms)\n\u2714 an ignored paid replay reports the preserved state; a won dispute cannot undo a later refund (1.035259ms)\n\u2139 tests 9\n\u2139 suites 0\n\u2139 pass 9\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 93.436845\n"
+    },
+    "combined": {
+      "cmd": "node --test commons/test/market-paid-journey.mjs commons/test/market-order-status-words.mjs commons/test/stripe-checkout.mjs",
+      "exit": 1,
+      "log": "round35-combined.log",
+      "tail": "ket-paid-journey.mjs:88:13\n\u2716 signed partial charge.refunded preserves the refund amount in both activity pages (2.687232ms)\n  AssertionError [ERR_ASSERTION]: /orders: expected \"Partly refunded ($10.00 back)\" for partly_refunded\n      at checkViews (file:///tmp/kimi35/src/workspace-52fead57661ad527381d42db73f2e593b26735be/commons/test/market-paid-journey.mjs:79:16)\n      at TestContext.<anonymous> (file:///tmp/kimi35/src/workspace-52fead57661ad527381d42db73f2e593b26735be/commons/test/market-paid-journey.mjs:92:7)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.start (node:internal/test_runner/test:1262:17)\n      at TestContext.test (node:internal/test_runner/test:400:20)\n      at TestContext.<anonymous> (file:///tmp/kimi35/src/workspace-52fead57661ad527381d42db73f2e593b26735be/commons/test/market-paid-journey.mjs:88:13)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n"
+    }
+  }
+}
