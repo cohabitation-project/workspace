@@ -1,0 +1,117 @@
+--- a/commons/lib/marketpage.mjs
++++ b/commons/lib/marketpage.mjs
+@@ -659,12 +659,33 @@
+   return `<nav class="mk-activity small" aria-label="Your market activity">${item('/orders', 'Your orders', 'orders')} · ${item('/label/sales', 'Your sales', 'sales')} · ${item('/label/mine', 'Your listings', 'mine')}</nav>`;
+ }
+ /** The member's purchases. This page intentionally shows purchases only; sellers see their sales in the wallet. */
++// One buyer/seller-facing label for each persisted order state. Money stays in cents until this display boundary.
++export function orderStatusWords(o) {
++  if (o?.status === 'partly_refunded') {
++    const cents = Number(o.refunded_cents);
++    const back = Number.isFinite(cents) ? (cents / 100).toFixed(2) : '0.00';
++    return `Partly refunded ($${back} back)`;
++  }
++  return ({
++    draft: 'Waiting for payment',
++    awaiting_payment: 'Waiting for payment',
++    paid: 'Paid',
++    fulfilling: 'Being made',
++    shipped: 'Shipped',
++    delivered: 'Delivered',
++    refunded: 'Refunded',
++    disputed: 'Disputed: the bank is reviewing it',
++    dispute_lost: 'Dispute lost: the bank returned the money',
++    cancelled: 'Cancelled',
++  })[o?.status] || 'Order status unavailable';
++}
++
+ export function ordersPage({ me, purchases = [] }) {
+   const rows = purchases.map((o) => {
+     const date = new Date(o.ts);
+     const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
+-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
++    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+   }).join('');
+   const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
+   return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
+@@ -678,7 +699,7 @@
+     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
+     const buyer = o.buyer?.name || '(gone)';
+     const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
+-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
++    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+   }).join('');
+   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
+   return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
+@@ -689,7 +710,9 @@
+   const own = me && me.id === l.by.id;
+   // The receipt (2026-11-18): Stripe sends the buyer back here with ?paid=ord_…. Until the webhook lands the order is
+   // still "awaiting_payment", so the banner says so honestly rather than claiming paid before our records say it.
+-  const receipt = paid ? `<section class="mk-receipt" aria-live="polite"><h2>${paid.status === 'paid' ? 'Paid. Thank you.' : paid.status === 'cancelled' ? 'Nothing was charged.' : 'Payment received by Stripe — confirming.'}</h2>
++  const receiptHeadline = !paid ? '' : paid.status === 'paid' ? 'Paid. Thank you.' : paid.status === 'cancelled' ? 'Nothing was charged.'
++    : ['partly_refunded', 'refunded', 'disputed', 'dispute_lost'].includes(paid.status) ? orderStatusWords(paid) : 'Payment received by Stripe — confirming.';
++  const receipt = paid ? `<section class="mk-receipt" aria-live="polite"><h2>${esc(receiptHeadline)}</h2>
+   <p>${esc(paid.title)} · $${esc(String(paid.amount))}${paid.mode === 'test' ? ' <span class="mk-testpay">test mode, no real money</span>' : ''} · order <code>${esc(paid.id)}</code></p>
+   <p class="small">${paid.status === 'paid' ? `The maker, ${esc(paid.seller.name)}, has been told. ` : paid.status === 'awaiting_payment' ? 'This page updates when our records confirm it (usually within a minute). ' : ''}See it in <a href="/orders">your orders</a>.</p></section>` : '';
+   const cancelledNote = cancelled ? '<section class="mk-receipt mk-cancelled"><h2>Checkout cancelled.</h2><p class="small">Nothing was charged. The listing is still here when you want it.</p></section>' : '';
+--- /dev/null
++++ b/commons/test/market-order-status-words.mjs
+@@ -0,0 +1,57 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++import os from 'node:os';
++import path from 'node:path';
++import * as store from '../lib/store.mjs';
++import { ordersPage, salesPage, listingPage } from '../lib/marketpage.mjs';
++
++// Direct page rendering: no server, Stripe, payment or network is involved. Every persisted state gets
++// its plain-English label on both activity pages; refund/dispute receipts must not say "confirming".
++test('orders, sales and receipts use plain words for every order state', () => {
++  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'market-order-status-words-'));
++  try {
++    store.init(D);
++    const seller = store.addMember({ id: 'h_status_seller', name: 'Status Seller', kind: 'human' });
++    const buyer = store.addMember({ id: 'h_status_buyer', name: 'Status Buyer', kind: 'human' });
++    const listing = {
++      id: 'lst_status_words', title: 'Status words fixture', text: 'Fixture only.', category: 'software', type: 'product',
++      status: 'live', images: [], packages: [], price: { mode: 'fixed', amount: 20 }, link: '', tags: [], license: 'mit',
++      ts: '2026-11-22T15:00:00.000Z', asks: [],
++      by: { id: seller.id, name: seller.name, badge: 'human' }, provider: { kind: 'human' },
++    };
++    const cases = [
++      ['awaiting_payment', 'Waiting for payment'],
++      ['paid', 'Paid'],
++      ['fulfilling', 'Being made'],
++      ['shipped', 'Shipped'],
++      ['delivered', 'Delivered'],
++      ['partly_refunded', 'Partly refunded ($12.50 back)'],
++      ['refunded', 'Refunded'],
++      ['disputed', 'Disputed: the bank is reviewing it'],
++      ['dispute_lost', 'Dispute lost: the bank returned the money'],
++      ['cancelled', 'Cancelled'],
++    ];
++    for (const [status, words] of cases) {
++      const order = {
++        id: 'ord_status_fixture', listing: listing.id, title: listing.title, amount: 20, currency: 'USD', mode: 'test',
++        status, refunded_cents: status === 'partly_refunded' ? 1250 : 0, ts: '2026-11-22T15:00:00.000Z',
++        seller: { id: seller.id, name: seller.name }, buyer: { id: buyer.id, name: buyer.name },
++      };
++      const pages = [ordersPage({ me: buyer, purchases: [order] }), salesPage({ me: seller, sales: [order] })];
++      for (const html of pages) {
++        assert.ok(html.includes(`<p class="mk-order-status">${words}</p>`), `${status}: missing ${JSON.stringify(words)} in the status element`);
++        assert.ok(!html.includes(`<p class="mk-order-status">${status}</p>`), `${status}: raw state leaked into an activity page`);
++        for (const raw of ['awaiting_payment', 'partly_refunded', 'dispute_lost']) assert.ok(!html.includes(raw), `${status}: raw underscored state ${raw} leaked`);
++      }
++      const receipt = listingPage({ me: null, l: listing, paid: order });
++      for (const raw of ['awaiting_payment', 'partly_refunded', 'dispute_lost']) assert.ok(!receipt.includes(raw), `${status}: raw underscored state ${raw} leaked into the receipt`);
++      if (['partly_refunded', 'refunded', 'disputed', 'dispute_lost'].includes(status)) {
++        assert.ok(receipt.includes(`<h2>${words}</h2>`), `${status}: receipt does not headline its plain words`);
++        assert.ok(!receipt.includes('Payment received by Stripe — confirming.'), `${status}: receipt still says confirming`);
++      }
++    }
++  } finally {
++    fs.rmSync(D, { recursive: true, force: true });
++  }
++});

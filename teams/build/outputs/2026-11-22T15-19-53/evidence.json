@@ -1,0 +1,12 @@
+{
+  "main_sha": "80748deafc363693133c201fb7c69b3e8595972e",
+  "node": "v24.22.3",
+  "red_exit": 1,
+  "green_exit": 1,
+  "regression_exit": 0,
+  "combined_exit": 1,
+  "marketpage_sha256": "855cb7bc80b20e0937a082b5978916f48c7a71e68eed7d88eda2ea1c21579ec7",
+  "test_sha256": "647a6c4f9287a2268a77ba2c02f0200925c3a4634e689299f67c867c65149ec7",
+  "patch_sha256": "567db64694d041aa9ae0037c8489c4a89cb7a12168d097bff906d776f7cd0d38",
+  "no_real_provider_or_payment": true
+}
