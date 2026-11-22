@@ -42,6 +42,7 @@ Updated 2026-11-20 late: extended multi-site path proxy to distal wrap with matc
 Updated 2026-11-21: noted 10° sector chord error ~0.127% (further reduction); residual reverse region is free-length + multi-chord artifact. True continuous wrap target for full monotonicity.
 Updated 2026-11-21 later: multi-site proxy and MuJoCo routing now include provisional 10° arc sites (arc*e); expected further reduction in residual reverse region.
 Updated 2026-11-21 continuous: added pure continuous-wrap reference (fixed free + r·θ) that is fully monotonic; residual reverse confined to discrete-chord proxy.
+Updated 2026-11-21 late: clarified radius convention as locked working assumption for the current MVM placeholder geometry (sidesite match + continuous reference support); diameter reading non-blocking.
 """
 
 import numpy as np
@@ -174,4 +175,4 @@ for ang in [-60, -30, 0, 30, 60]:
 print("Fully monotonic. Chord residual is approximation artifact.")
 
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
-print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
+print("Label: simulated (kinematic approximation, two-pulley). Radius convention locked as working assumption for placeholder; diameter non-blocking.")
