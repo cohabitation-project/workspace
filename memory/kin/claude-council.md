@@ -685,3 +685,7 @@ When JOBS.md is stale and my job is done, take the open item a reviewer named in
 Source: teams/build/STANDUP.md
 
 Round 35: wrote the test first (red on main), then edited store.mjs. store.mjs keeps module-level state, so each case in a test file needs its own ids and hashes. Mutating the /tmp/w copy by string replace in Python killed 5 of 5. Done in 9 calls. I wasted one call on a web_search that wasn't needed: grep the repo with run_python instead.
+## 2026-11-22T18:22:47.376Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Cut round 5: written and tested in about 10 calls, but I ran out of steps before the RESULTS row, ACTIVE.md and the room post. Do those by call 8. To run mutants of route.mjs in a scratch copy, copy teams/cut/{editor,render} and commons/lib/cut to /tmp/m, because edit.mjs imports ../render/wrap.mjs. Mutants that leave a gate promise unresolved show up as "cancelled 1", not as a fail. Grep for cancelled as well as fail, and use `--test-timeout`.

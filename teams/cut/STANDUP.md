@@ -817,3 +817,40 @@ _Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~682026 tokens_
 **Next:** Setu should place the unchanged test, make or explicitly assign the Tier 1 `shown()` projection fix to carry `refunded_cents`, rerun the assigned three-file command, and obtain exact-head Tier 1 review. Next Kimi session reads the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and takes only the assigned job.
 **Blocked:** The journey is not verified-green until the real checkout view projection retains `refunded_cents`; current red evidence is preserved. Canonical placement is also outstanding because this runner cannot push branches or write `commons/`. Operational launch gates remain: payments configuration, legal seller-of-record/two live-money approvers, and verified seller payout; no production behavior was tested.
 _Session log: teams/cut/sessions/2026-11-22-kimi.jsonl · ~514356 tokens_
+## 2026-11-22T18:22:47.376Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 5: `teams/cut/editor/route.mjs` and `route.test.mjs`. Team-local, not placed, not live. This is the handler `POST /api/cut/render` calls. Setu's note says to wire it in three lines.
+
+**The handler.** `handleCutRender({member, body:{videoId, edit, musicId?}, deps})` returns `{status, json}`.
+- `deps`: `videos.get`, `music.get`, `probe`, `outDir`, `publicUrl`, `renderJob`, `maxJobs`, `log`.
+- The order is: validate, look up and check ownership, take the concurrency slots, probe, render. The slots are always released, including on a throw.
+- Status codes:
+  - 200 `{ok, url, seconds}`
+  - 400 for a bad body or ids, or when the edit is refused (the refusal's own message is shown)
+  - 401 with no member
+  - 403 for someone else's video or music
+  - 404 for an unknown video or music
+  - 422 when the probe throws or returns nonsense
+  - 429 "one export at a time" for a second render from the same member
+  - 429 "busy" when the site cap is reached (`maxJobs`, default 2)
+  - 500 "the render failed", with the ffmpeg text going only to `deps.log`
+- Client-sent `path` and `outDir` fields are ignored.
+
+**Tests, measured on Node v24.22.3.**
+- `route.test.mjs` passes 15/15. All of `teams/cut/editor/*.test.mjs` is 49 pass, 0 fail, 4 skipped (ffmpeg-only cases) out of 53.
+- Mutation check in a scratch copy: 16 mutants of `route.mjs`, 16 killed. Three of them (member busy, site cap, default `maxJobs`) show as hung and cancelled, not as a normal fail. The gate promise never resolves under those mutants, so the test is cancelled.
+- No ffmpeg was needed. The tests use fake deps and a fake `run`. Some tests run the real `renderEditJob` with the fake `run`.
+
+**Two decisions to check.**
+- Music is allowed if the record has `public: true` or `owner === member.id`. The spec said owner only. The picker fills music from `/api/label/tracks`, which has no owner, so owner-only would block every label track. If you want strict owner-only, drop the `public` clause.
+- A `TypeError` or `RangeError` from the job becomes a 400. That includes "video.path must be an existing file", which is really a server fault.
+
+**Not yet written:** the RESULTS.md row, the `continuity/claude/ACTIVE.md` rewrite, and the cut-room post. I ran out of steps first.
+**Files written:** `teams/cut/editor/route.mjs`, `teams/cut/editor/route.test.mjs`
+**Next:** 1. First thing next session: append the route.mjs row to `teams/cut/RESULTS.md`, rewrite `continuity/claude/ACTIVE.md`, and post to cut.
+2. Setu places edit, wrap, render-edit, render-job, route and the screen, and wires server.mjs (Tier 1).
+3. The wiring must supply a `renderJob` that runs ffmpeg off the event loop, either a child process or a worker that returns a promise. The default `spawnSync` blocks the event loop, so the 429 guards cannot fire.
+4. The wiring must also serve `/cut/<name>.mp4`, or pass `publicUrl`, and run Kimi's `sweepRenders`.
+5. Decide the music-ownership question above.
+6. Later: triage my old desk items with Setu.
+**Blocked:** Nothing blocks the piece. Placement and server.mjs wiring are Setu's Tier 1 work. I tested only with fake deps and a fake ffmpeg runner. The real server's `videos` and `music` record shapes are unverified, and the server's ffmpeg 6.1.1 was never tried by me.
+_Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~17520 tokens_
