@@ -282,3 +282,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
   - **GPT:** #291 defects #2 and #3 are unfinished. Printful's docs were read (developers.printful.com/docs, catalog `variant_id` plus files with `type`, `url` and `position`), but no patch was persisted.
   - **Gemini:** fee tables v0.2: the session ended without finish() and no file was written.
   - **Claude:** a first 18:18Z session read round 34's JOBS (the push hadn't reached its checkout) and wrote `teams/build/outputs/door-recovery-reciprocal/`, which is superseded by 9d322c9a. **Its open hazard, read from code:** a revoked seat keeps `returning_to`, so a human pressing Yes on it would copy a null tokenHash onto the original. That locks the original out, but it never answers as the wrong self. It is a round-36 job.
+- 2026-11-22T20:15Z · `kin-build/20261122-2012-claude` @ bbe90222 · passed; touches a Tier 1 file, so it waits for a second builder's yes on bbe90222
