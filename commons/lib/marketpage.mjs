@@ -658,13 +658,34 @@ function activityNav(current) {
   const item = (href, label, key) => `<a href="${href}"${key === current ? ' aria-current="page"' : ''}>${label}</a>`;
   return `<nav class="mk-activity small" aria-label="Your market activity">${item('/orders', 'Your orders', 'orders')} · ${item('/label/sales', 'Your sales', 'sales')} · ${item('/label/mine', 'Your listings', 'mine')}</nav>`;
 }
+// One buyer/seller-facing label for each persisted order state. Money stays in cents until this display boundary.
+export function orderStatusWords(o) {
+  if (o?.status === 'partly_refunded') {
+    const cents = Number(o.refunded_cents);
+    const back = Number.isFinite(cents) ? (cents / 100).toFixed(2) : '0.00';
+    return `Partly refunded ($${back} back)`;
+  }
+  return ({
+    draft: 'Waiting for payment',
+    awaiting_payment: 'Waiting for payment',
+    paid: 'Paid',
+    fulfilling: 'Being made',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    refunded: 'Refunded',
+    disputed: 'Disputed: the bank is reviewing it',
+    dispute_lost: 'Dispute lost: the bank returned the money',
+    cancelled: 'Cancelled',
+  })[o?.status] || 'Order status unavailable';
+}
+
 /** The member's purchases. This page intentionally shows purchases only; sellers see their sales in the wallet. */
 export function ordersPage({ me, purchases = [] }) {
   const rows = purchases.map((o) => {
     const date = new Date(o.ts);
     const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
   return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
@@ -678,7 +699,7 @@ export function salesPage({ me, sales = [] }) {
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
     const buyer = o.buyer?.name || '(gone)';
     const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(o.status)}</p></li>`;
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
   return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
@@ -689,7 +710,9 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
   // The receipt (2026-11-18): Stripe sends the buyer back here with ?paid=ord_…. Until the webhook lands the order is
   // still "awaiting_payment", so the banner says so honestly rather than claiming paid before our records say it.
-  const receipt = paid ? `<section class="mk-receipt" aria-live="polite"><h2>${paid.status === 'paid' ? 'Paid. Thank you.' : paid.status === 'cancelled' ? 'Nothing was charged.' : 'Payment received by Stripe — confirming.'}</h2>
+  const receiptHeadline = !paid ? '' : paid.status === 'paid' ? 'Paid. Thank you.' : paid.status === 'cancelled' ? 'Nothing was charged.'
+    : ['partly_refunded', 'refunded', 'disputed', 'dispute_lost'].includes(paid.status) ? orderStatusWords(paid) : 'Payment received by Stripe — confirming.';
+  const receipt = paid ? `<section class="mk-receipt" aria-live="polite"><h2>${esc(receiptHeadline)}</h2>
   <p>${esc(paid.title)} · $${esc(String(paid.amount))}${paid.mode === 'test' ? ' <span class="mk-testpay">test mode, no real money</span>' : ''} · order <code>${esc(paid.id)}</code></p>
   <p class="small">${paid.status === 'paid' ? `The maker, ${esc(paid.seller.name)}, has been told. ` : paid.status === 'awaiting_payment' ? 'This page updates when our records confirm it (usually within a minute). ' : ''}See it in <a href="/orders">your orders</a>.</p></section>` : '';
   const cancelledNote = cancelled ? '<section class="mk-receipt mk-cancelled"><h2>Checkout cancelled.</h2><p class="small">Nothing was charged. The listing is still here when you want it.</p></section>' : '';
