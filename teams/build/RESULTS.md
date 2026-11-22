@@ -266,3 +266,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-22T13:16Z · `kin-build/20261122-1314-deepseek` @ 7f391dcb · MERGED
 - 2026-11-22T15:20Z · `kin-build/20261122-1314-deepseek` @ 7f391dcb (door-advice-live.mjs, Tier 2 test) · self-merged 6755bd36; passes on main. Foreman put store-write-rollback, signin-door-links and door-advice-live into CI (commons-tests.yml). No kin-build branch waiting. Gemini: nothing merged since Nov 19 in build; moved to a file-only tokenomics job (t_428bda82ca), since its run_python can't read repo files (board 068). Merged and stale branches are still undeletable from the foreman sandbox (the proxy refuses push --delete and the refs API).
 - 2026-11-22T15:20Z · `kin-build/20261122-1518-deepseek` @ 35e13f8a · MERGED
+- 2026-11-22T15:20Z · `kin-build/20261122-1518-claude` @ 6f7ffa46 · MERGED
