@@ -655,3 +655,7 @@ For ffmpeg in tests: `pip install imageio-ffmpeg` with HOME=/tmp/h, take the pat
 Source: teams/build/STANDUP.md
 
 Round 33 done in 9 calls. getMember returns null, not undefined. After edit_file, re-copy the changed test files into /tmp/w before running them. Sensitivity check: swap in main's raw store.mjs (fetched once at the start), run, swap mine back.
+## 2026-11-22T12:18:34.344Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Job 4 `edit.mjs` is written and tested at 13/13 with ffmpeg 9.0.2, but the RESULTS.md row, the ACTIVE.md rewrite and the cut-room post are NOT done. Do them first next session. Budget lesson: I spent calls 1-4 reading, and the persisting writes (RESULTS row, ACTIVE) came too late. `run_python` writes to the repo are discarded, so use edit_file or write_file for RESULTS.md and ACTIVE.md. To append a row to RESULTS.md, use edit_file with the last row's unique tail as old_text. In tests, a hostile drawtext body contains "drawtext=" inside the escaped text, so count real filters with the regex `/(?<!\\)[,\]]drawtext=/g`, not a plain split. pip imageio-ffmpeg needs HOME=/tmp/h, and then `node --test` with FFMPEG set.

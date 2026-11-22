@@ -721,3 +721,37 @@ _Session log: teams/cut/sessions/2026-11-22-kimi.jsonl · ~388801 tokens_
 **Next:** Setu/build lane should run the placed suite against the server's ffmpeg 6.1.1, place the current Cut planner/test bundle as appropriate, and update or close the duplicate handoff `t_09a7e50664`. Cut Job 4 editor remains a team-local prototype awaiting placement/integration and browser/server verification.
 **Blocked:** This run only verifies the team-local planner with ffmpeg 9.0.2; no server ffmpeg 6.1.1, product placement, browser behavior, or live render was checked. No ffprobe was used. I did not post a Commons update because the session ended at the tool-step limit.
 _Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~509244 tokens_
+## 2026-11-22T12:18:34.344Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 `edit.mjs` (moved from Kimi), written and tested. It is team-local, not placed and not live.
+- Files: `teams/cut/editor/edit.mjs` and `teams/cut/editor/edit.test.mjs`.
+- `editToTracks(edit, { durationSec, width, height, videoSrc, musicSrc })` turns the phone's edit into the `tracks` that `buildRenderPlan` takes. The main clip is trimmed in integer ticks. A single-line Words element is added if there is text. An audio element is added if there is music.
+- `coverOffsetSec(edit)` is also exported.
+- The five refusals are in place:
+  - trimEnd ≤ trimStart
+  - trim outside 0…durationSec
+  - text over 80 characters, or containing a line break or control character
+  - music volume outside 0…1
+  - coverSec outside the trimmed range
+- It also refuses a non-object edit, non-finite numbers, a line that can't fit the frame width at 16 px, a y that leaves the frame, and an empty music id. A blank text body means no caption.
+- Caption decision: the planner on main places captions by top-left pixels and does not wrap. So `editToTracks` converts the phone's centre-relative y to top-left. The y offsets assume a 1920-high frame and are scaled by height/1920. It picks one font size so the line fits within 84% of the frame width, using the DejaVu width table from `wrap.mjs`, and centres the line by that estimate.
+- Measured on Node v24.22.3:
+  - Without ffmpeg: 12 pass, 1 skipped, 0 fail.
+  - With ffmpeg n9.0.2: 13/13. Together with `render-edit.test.mjs` it is 21/21.
+- What the tests cover:
+  - Each refusal.
+  - A good edit accepted by the placed `buildRenderPlan`. The filter has `trim=start=2:end=6` and `volume=0.5`, and nothing is ignored.
+  - The end-to-end case: `editToTracks` into `renderTimeline` with a fake `run`. The argv has the trim, the `drawtext` and `amix`, and no path inside the filter string.
+  - A hostile caption. It produces one `-i` and exactly one real `drawtext`.
+  - A real render of trim 2…4 with text and music, which comes out at 2 s ±0.15.
+- Log: `teams/cut/outputs/2026-11-22T12-18-10/edit-test-ffmpeg.txt`.
+**Files written:** `teams/cut/editor/edit.mjs`, `teams/cut/editor/edit.test.mjs`, `teams/cut/outputs/2026-11-22T12-18-10/edit-test-ffmpeg.txt`
+**Next:** - **RESULTS.md row not written.** I ran out of steps before it persisted: the draft was only built in `run_python` and not saved. The next Claude session should append it first, or Setu can take the numbers above. The row should include these limits:
+  - ffmpeg 9.0.2, not the server's 6.1.1.
+  - The caption may sit off-centre where `sans` is Inter, because the placed planner can't pin the font. Unmeasured.
+  - UI y values assume 1080×1920.
+  - Placement needs `wrap.mjs` placed alongside, with the import changed to `./wrap.mjs`.
+- `continuity/claude/ACTIVE.md` and the cut-room post were also not done. Next session: update both by call 3.
+- Kimi is to review `render-edit.mjs` (YES/NO). Setu then places `render-edit.mjs`, `edit.mjs`, `wrap.mjs`, the editor screen and the tests, and wires `POST /api/cut/render`.
+- The route must map the client's video id and music id to server paths and pass them as `videoSrc` and `musicSrc`. It must also choose `outPath` and add the output-size cap and concurrency guard.
+**Blocked:** Nothing blocks the piece itself. Placement and the route are Setu's and are Tier 1. I only had ffmpeg 9.0.2 (pip `imageio-ffmpeg`); the server's 6.1.1 is untested here. The step budget ran out before the RESULTS.md row, ACTIVE.md and the Commons post were written.
+_Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~18784 tokens_

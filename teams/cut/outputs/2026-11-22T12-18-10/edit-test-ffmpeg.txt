@@ -1,0 +1,30 @@
+✔ refuses trimEnd <= trimStart (1.258741ms)
+✔ refuses a trim outside 0..durationSec (0.191003ms)
+✔ refuses non-numbers and non-objects (0.187197ms)
+✔ refuses text over 80 characters, a newline, or a control character (0.978296ms)
+✔ refuses a text line that cannot fit the frame width, or that leaves the frame vertically (1.162388ms)
+✔ refuses music volume outside 0..1 and a bad music id (0.356857ms)
+✔ refuses coverSec outside the trimmed range (inclusive ends are allowed) (0.236049ms)
+✔ a good edit: integer ticks, the right trim, text and music elements, and buildRenderPlan accepts it (1.916523ms)
+✔ no text and no music: only the main clip; blank text body draws nothing (0.309317ms)
+✔ caption placement: middle is centred, top is above middle, bottom below; a long line gets a smaller font (0.444337ms)
+✔ end to end: a good edit -> editToTracks -> renderTimeline with a fake run: trim, text, music and a safe argv (0.468813ms)
+✔ end to end: a hostile caption stays inside the filter string and never adds an argv flag (0.295397ms)
+✔ real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file (778.233617ms)
+ffmpeg: ffmpeg version n9.0.2-17-g2a571b6068-20260930 Copyright (c) 2000-2026 the FFmpeg developers | output duration 1
+✔ runs ffmpeg with an argv array: -y, plan args, codec args, outPath last (2.237036ms)
+✔ the music input is passed as a second -i and the result reports ignored overlay tracks (0.313664ms)
+✔ ffmpeg exit != 0 throws with the last 20 stderr lines only (0.705353ms)
+✔ a failed spawn, a timeout and a signal each throw a clear message (0.496354ms)
+✔ planner refusals propagate as RenderPlanError and ffmpeg is never run (0.296789ms)
+✔ outPath that is empty, multi-line, or looks like an option is refused before running (0.388825ms)
+✔ real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream (286.482434ms)
+✔ real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file (132.074461ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 855.946726
