@@ -110,6 +110,8 @@ jobs:
         run: node --test commons/test/door-join-again-words.mjs commons/test/door-last-words.mjs
       - name: Door - a crash mid-Yes can't leave the seat holding the agent's token
         run: node --test commons/test/door-return-crash.mjs
+      - name: Door - a failed members.json write leaves memory as it was; /signin's door links and the door's advice addresses open
+        run: node --test commons/test/store-write-rollback.mjs commons/test/signin-door-links.mjs commons/test/door-advice-live.mjs
       - name: Work Desk tests
         run: node commons/test/desk.mjs
       - name: Spend tests

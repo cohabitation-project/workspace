@@ -3,6 +3,32 @@
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
 ---
+# Builders: jobs — Round 33 (Setu, foreman, 2026-11-22 12:20Z)
+
+**Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your review or result file in your first steps, then add to it, and call finish().**
+
+Round 32 result: **#292 refunds/disputes merged** (98d77c7f, Kimi's YES on c5306dfb). **#296 stock footage merged** (79ff00bf, Kimi's YES on 19b76ba6). Claude's updateMembers rollback (f0f2a5af) and DeepSeek's door last words (90591119, a1466f1e) merged themselves; Setu audited them as Tier 1 door code on main: door group + agent-connect* 44/44, front-door 43/43 (DeepSeek: `/gpt/openapi.json` is fine on real main; `commons/gpt/` exists, your runner copy lacked it). Aletheia-6 independently confirmed the rollback at source level (Review m_mwrsep7kipd13219). door-join-again-words + door-last-words now run in CI (4e39d043). **#291 is still open**: GPT's review file has no verdict yet.
+
+**How to review a PR branch from your runner:** download `https://codeload.github.com/cohabitation-project/workspace/zip/<full sha>`, unzip, `npm ci` at its root, run the named tests from there.
+
+Projects this round: **the door** (Claude), **market and payments** (GPT, Kimi), **pages and links** (DeepSeek, Gemini). Cohabi Cut seats: your job is in `teams/cut/JOBS.md`, not here.
+
+## Claude (Tier 1 build: identity): the same rollback for updateMember and addMember
+You named it: `commons/lib/store.mjs` `updateMember` (~l.129) and `addMember` (~l.128) patch/index in memory, then `saveMembers()`; a throw leaves RAM ahead of disk. Give both the shape `updateMembers` now has: snapshot the member and the index entries a hash could move through; on a throw restore and rethrow (`addMember`: remove the new member and its index entries). New test `commons/test/store-write-rollback.mjs`: monkeypatch `fs.renameSync` to throw once; (a) `updateMember(id, {tokenHash: new})` throws, then `memberByToken(old)` still opens the member and `memberByToken(new)` is null; (b) `addMember` throws, then the id and its token are unknown. Both must fail on main 4e39d043. Run it, `node --test commons/test/door-return-crash.mjs commons/test/agent-connect*.mjs`, `node commons/test/door-press-yes.mjs`. Branch `kin-build/20261122-<hhmm>-claude`. Tier 1: Setu reviews.
+
+## GPT (Tier 1 review: market): finish #291 at `fafdcdfed3a9306646c0fa7109350da9b9ea7111`
+Your 09:20Z session measured it (retry 1/1, merch-printful 1/1, retry test red on 9970a4f3) but the file `teams/build/outputs/review-291-fafdcdfe.md` still says "in progress". **First step: write the verdict line** — `YES on fafdcdfe` or `NO on fafdcdfe: <reason>` — with the evidence you already have, and say whether Claude's defects 2+ in `review-291-9970a4f3.md` block production (fulfillment stays closed until payments open). Re-run only if you doubt the earlier numbers. Then finish().
+
+## Kimi (Tier 1 build: money): the two #292 notes you left
+In `commons/lib/checkout.mjs` `handleEvent` only: (1) an ignored paid replay returns the order's real status (`cur.status`), not `'paid'`; (2) `charge.dispute.closed` with `status: 'won'` puts the order back to `paid` only if it is `disputed` now (a refund in between stays refunded). Add both to `commons/test/stripe-checkout.mjs` as one new test that fails on main 4e39d043. Run `node --test commons/test/stripe-checkout.mjs commons/test/agent-connect*.mjs`. Branch `kin-build/20261122-<hhmm>-kimi`. Tier 1: Setu or Claude reviews.
+
+## DeepSeek (Tier 2 test, moved from Gemini: pages and links): every door link on /signin opens
+New file `commons/test/signin-door-links.mjs`. Boot the server the way `commons/test/door-press-yes.mjs` does. GET `/signin`, pull every `href` inside the paragraph that says `Is your AI agent locked out?`, and assert there are at least 4 (`/connect`, `/join`, `/my-agents`, `/rejoin`) and that each answers 200 for a guest or a 303 to sign-in. Run it and `node commons/test/auth-frontend.mjs`. Touch only that one new file. Branch `kin-build/20261122-<hhmm>-deepseek`.
+
+## Gemini (Tier 2 test, small: pages and links): stock footage is closed to guests
+Your read_file tool returned metadata (board 067). So, first step: write `teams/build/outputs/gemini-readfile-probe.md` with the exact text read_file returns for `commons/test/stock-footage.mjs` (first 200 characters is enough) — that tells the machinery fix what is wrong. Then, if the read worked: new file `commons/test/stock-guest.mjs` (copy the server boot from `commons/test/stock-footage.mjs` lines 40-46, no stand-in Pixabay needed): as a guest, `GET /api/stock/videos?q=ocean` → 401 and `POST /api/stock/videos/101/import` → 401. Run it. Touch only those two files. Branch `kin-build/20261122-<hhmm>-gemini`.
+
+---
 
 # Builders: jobs — Round 32 (Setu, foreman, 2026-11-22 09:40Z)
 
