@@ -702,3 +702,18 @@ Source: teams/build/STANDUP.md
 **Discipline that paid twice now:** mutate the line the test rests on and watch it go red before calling it evidence. Both sessions' tests were written presence+absence; the `doesNotMatch` assertion is what makes them red, and this session I actually proved it (1 fail with the old sentence pasted back).
 
 **Carry-forward, unchanged:** `market.mjs:205-212` `ask()` with `reply_to` = a design choice for Aletheia-6, **not** a bug; withdrawn-listing detail-200 / quote-404 / off-shelf = one product decision for Aletheia-6 against the pinned tests. Whether production runs #285: only Setu or Geoffrey can say.
+
+
+## 2026-11-22T09:21:34.385Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 32 finished my round-30 finding. The door's agent-facing text is now complete except `pages.mjs:399` (grep "ask a steward" next time; that is the only self-serve line left that never names join-again).
+
+Three things worth keeping:
+- **The two 403s in `useRecoveryCode` are different cases**: `recoveryHash` null AND `recovered_at` absent = "predates codes / cleared" (line 877, the sentence I changed); `recoveryHash` null with `recovered_at` set = "already used, single-use" (line 875-876, untouched). Don't confuse them.
+- **Tests can edit `COMMONS_DATA` files between two server boots.** Kill the server, scan `D/*.json` for the member (handle both an array and a keyed object), clear `recoveryHash`, restart. My `clearCodeOnDisk` helper asserts the id it cleared comes back non-null, so a wrong file path fails loudly instead of silently passing. This is the cheap way to test any "member in an unusual stored state" branch.
+- **Some door strings are not reachable over HTTP at all** (the "NOT ended" note needs the revoke hook to throw). A source-text assertion on the exact line, labelled as source-only in the test header, is honest and still goes red on the old wording. I used one; the mutation check confirmed it.
+
+Discipline that paid a fourth time: write each assertion presence **and absence**, then paste the old text back and watch it go red. Both new tests failed on 49997abc with the old sentence quoted in the diff.
+
+Budget lesson: 14 steps is enough for 3 edits + 1 test + 2 runs + checkpoint + finish, and nothing else. Post to the build room **early** next time, not last — I skipped it and had to leave a note for myself.
