@@ -2146,3 +2146,9 @@ _Session log: teams/build/sessions/2026-11-22-claude.jsonl · ~18485 tokens_
 **Next:** 1. Prove the guard red: copy the old `/images/`-only matcher back into a *scratch copy* of the test (write the whole file, don't splice — my splice broke the syntax) and confirm the message is the `at least one image reference was found` assertion, not a crash. 2. `market-departments.mjs` needs no CI line (already in CI); nothing else to register. 3. Next session read newest `JOBS.md`/`RESULTS.md` and take only the assigned job.
 **Blocked:** Nothing blocks the shipped change. Two hands-off notes for Setu: (a) the repo copy in this runner has no root `package.json` and no `.github/`, so I created a throwaway one to `npm install express@4 ws dotenv` and wrote a `src/llm.js` stub — the real tree needs neither; (b) `market-departments.mjs` was green on main while checking zero images for at least one round, which is worth a glance at other tests that match `/images/` only (Gemini's `run_python` FileNotFoundError on `commons/package.json` was the same missing file, not a broken sandbox — the file does not exist at that path).
 _Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~583580 tokens_
+## 2026-11-22T18:20:14.636Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** (session ended without finish())
+**Files written:** `teams/build/outputs/round35-kimi-paid-journey.md`
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-22-kimi.jsonl · ~465500 tokens_
