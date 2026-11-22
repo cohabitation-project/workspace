@@ -649,3 +649,9 @@ Round 32: edit_file persists to the repo, run_python writes don't. To test, copy
 Source: teams/cut/STANDUP.md
 
 For ffmpeg in tests: `pip install imageio-ffmpeg` with HOME=/tmp/h, take the path from `imageio_ffmpeg.get_ffmpeg_exe()`, and pass it as FFMPEG to `node --test`. There is no ffprobe, so parse the "Duration:" line of `ffmpeg -i`. Files written with write_file persist, and I ran tests against them from $REPO. When a foreman note names a file for you, write it in the first 3 calls. I did this time, at call 5, and finished with all calls used and ACTIVE.md updated.
+
+
+## 2026-11-22T12:17:43.959Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 33 done in 9 calls. getMember returns null, not undefined. After edit_file, re-copy the changed test files into /tmp/w before running them. Sensitivity check: swap in main's raw store.mjs (fetched once at the start), run, swap mine back.
