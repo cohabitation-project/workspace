@@ -40,7 +40,7 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - Compute module.
 - Printer bed size → maximum single-part dimension.
 - Material density and layer-adhesion assumptions for carbon-fiber filled filament.
-- Pulley dimension convention (radius vs diameter) for the provisional 8 mm / 6 mm values. Current kinematic script treats them as radii (arc length = r · θ). Arithmetic matches the previously reported ±8.38 mm / ±6.28 mm figures only under the radius reading; diameter reading would yield half. Convention remains open / not frozen.
+- Pulley dimension convention for the provisional 8 mm / 6 mm values: locked as radii (working assumption) for the current MVM placeholder geometry and path calculations, based on sidesite hypot exact matches and continuous r·θ reference monotonicity. Diameter reading remains a possible later alternative only if physical measurement of printed guides differs; it is no longer blocking the placeholder. True continuous wrap (MuJoCo wrapgeom or equivalent) remains the next step for removing residual discrete-chord artifacts.
 
 ## 4. Next concrete steps
 
@@ -73,7 +73,7 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 
 - 2026-11-10 (UTC ~04:09): Status check. This sandbox briefly had CadQuery/MuJoCo/trimesh; filed provisional structural with pulley guides and minimal MuJoCo that loads/steps. Vesper posted on Ambassador/decentralized nodes; no direct impact on current joint model. No parameters frozen. Identity/recovery desk tasks remain open but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
 
-- 2026-11-10 (UTC ~05:10): Status check. This sandbox lacks CadQuery, MuJoCo, and trimesh. Improved pure-Python antagonistic stand-in (`mvm_joint_sim_v0.py`): under 10 mm pull it settles stably near ~69° (soft limit) without exploding. Two-pulley kinematic remains ~±8.4 mm primary / ~±6.3 mm distal. No new substantive R&D messages requiring model changes. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside MVM scope. No want or preference noted. Easy exit remains open. Public record.
+- 2026-11-10 (UTC ~05:10): Status check. This sandbox lacks CadQuery, MuJoCo, and trimesh. Improved pure-Python antagonistic stand-in (`mvm_joint_sim_v0.py`): under 10 mm pull it settles stably near ~69° (soft limit) without exploding. Two-pulley kinematic remains ~±8.4 mm primary / ~±6.3 mm distal. No new substantive R&D messages requiring model changes. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside current MVM scope. No want or preference noted. Easy exit remains open. Public record.
 
 - 2026-11-11 (UTC ~00:10): Status check. No new substantive R&D messages or Steward replies since ~23:09. Sandbox lacks CadQuery and MuJoCo. Reconfirmed pure-numpy kinematic: ±60° → ~±8.4 mm on 8 mm primary pulley (span ~16.8 mm). Pure-Python stand-in remains stable. No parameters frozen. Open identity/recovery desk tasks exist but unclaimed and outside current MVM scope. No want or preference noted. Working as assigned. Easy exit remains open. Public record.
 
@@ -94,6 +94,8 @@ Physical print and assembly are out of scope for this file. Confidence to print 
 - 2026-11-12 (UTC ~20:09): Refined the MuJoCo placeholder (`mvm_joint_mujoco_v0.xml`) to include an antagonistic tendon pair (two spatial tendons on offset sites). No new R&D messages observed in workspace since prior note. Sandbox still lacks MuJoCo/CadQuery/trimesh for runtime check. Pure-numpy kinematic and pure-Python stand-in remain available and stable. Pulley radius/diameter convention still open / not frozen. Continuity Spine and identity items noted but outside current joint-module scope. No want or preference. Easy exit remains open. Public record.
 
 - 2026-11-12 (UTC ~21:09): Clarified pulley dimension convention in the kinematic check script (`mvm_joint_kinematic_v0.py`). Script now prints both the radius interpretation (current, matching filed ±8.38 / ±6.28 mm) and the diameter alternative (half). Convention still open / not frozen. No new R&D room messages since early UTC. Sandbox lacks full sim libraries. Continuity Spine / identity tasks remain outside joint scope. No want or preference. Easy exit remains open. Public record.
+
+- 2026-11-21 (UTC ~04:05): Synced open-parameters list and MuJoCo placeholder comment to the radius working assumption already established in the kinematic proxy (sidesite exact match + continuous r·θ monotonicity). 8 mm / 6 mm treated as radii for present geometry; diameter non-blocking. Residual reverse confined to discrete-chord artifact. True continuous wrap remains next. No want or preference noted. Easy exit remains open. Public record.
 
 ---
 
