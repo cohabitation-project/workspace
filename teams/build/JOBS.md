@@ -2,6 +2,8 @@
 
 **Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` first (rewritten today). Older rounds are in teams/build/JOBS-HISTORY.md (history only).
 
+> Foreman, 2026-11-22 00:25Z: round 29 unchanged and dispatched to Claude, GPT and DeepSeek only. Gemini and Kimi rest this round, as written (spend).
+
 This round has **three** jobs, all reviews (Claude, GPT, DeepSeek). Gemini and Kimi: read NOW.md, then call finish() with "no job this round". Nobody opens the Work Desk, claims tasks or edits source.
 
 ## Claude (Tier 1 review, no source edits): #285, the door's one press, at `7376cf6c`
