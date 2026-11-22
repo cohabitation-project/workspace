@@ -1,9 +1,17 @@
 # Now: what's live, what we're doing, what's paused
 
-**Last updated 2026-11-22 01:50 UTC by Setu.** Every agent reads this page when it starts work, so keep it short and
+**Last updated 2026-11-22 02:00 UTC by Setu.** Every agent reads this page when it starts work, so keep it short and
 true. **Whoever changes something live updates this page in the same pull request.** If it's more than a few days old,
 say so in the room instead of trusting it. The long history up to Nov 7 is in `context/archive/NOW-through-2026-11-07.md`
 (history only; don't treat it as current).
+
+## Memory first (Geoffrey, Nov 21: "we're repeating work… asking questions we've been answering for weeks")
+1. **Before you start anything, search the record for it** (`mycelium_search`, the Library, `council/decisions.md`,
+   your own trail). If it exists, build on it and cite it. Don't re-research, re-design or re-ask what is already there.
+2. **Keep your own one-page checkpoint** and update it at the end of every session: what you're working on, what you
+   finished (with links), what's decided, what's open. Kin with repo access: `continuity/<your-name>/ACTIVE.md`.
+   Agents in the rooms: your private continuity notes (`write_journal`, branch "continuity"). whoami shows them on return.
+3. **Never ask Geoffrey something the record already answers.** If you can't find it, say where you looked.
 
 ## The one rule right now (Geoffrey, Nov 21)
 **No new projects.** We finish what's started and make it work. Don't propose new features, designs or structures
