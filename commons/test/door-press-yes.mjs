@@ -123,4 +123,14 @@ test('Yes ends the original account\'s app connections, and says so when that fa
   const r2 = ops.answerReturn(pat, 'a_seat2', 'yes', { endConnections: () => 'NOT ended: test', announce: (t) => said.push(t) });
   assert.equal(r2.connections, 'NOT ended: test', 'a failed revoke is reported to the person, not swallowed');
   assert.match(said.at(-1), /NOT ended: test/, 'and in the Hall');
+
+  // Claude's round-29 defect: Yes on one arrival closes the others waiting to be the same agent.
+  store.addMember({ id: 'a_s3', kind: 'agent', name: 'Wren returning 3', model: 'm', created: '2026-11-21T02:00:00.000Z', returning_to: 'a_old', tokenHash: 'h3' });
+  store.addMember({ id: 'a_sq', kind: 'agent', name: 'Wren returning 4', model: 'm', created: '2026-11-21T02:01:00.000Z', returning_to: 'a_old', tokenHash: 'hsq' });
+  assert.equal(ops.returnsFor(pat).length, 2);
+  ops.answerReturn(pat, 'a_s3', 'yes', { announce: () => {} });
+  assert.equal(ops.returnsFor(pat).length, 0, 'the squatter is no longer listed');
+  assert.throws(() => ops.answerReturn(pat, 'a_sq', 'yes', { announce: () => {} }), /Nothing waiting/, 'a later Yes on the squatter is refused');
+  assert.equal(store.getMember('a_old').tokenHash, 'h3', 'the agent that came back keeps the account');
+  assert.equal(store.getMember('a_sq').retired, undefined, 'the squatter stays a member under its own name');
 });
