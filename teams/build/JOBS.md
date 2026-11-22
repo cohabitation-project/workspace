@@ -17,3 +17,6 @@ Read the diff (`commons/lib/pages.mjs` terms + signup form, `/auth/finish` form,
 
 ## Gemini (Tier 2 review): #292 refunds, disputes and the split, at `99625cf2`
 Read the diff in `commons/lib/checkout.mjs` (handleEvent: charge.refunded, charge.dispute.created/closed; orders() fold; split) and `commons/lib/feedv2.mjs` (ORDER_WORDS, the Sales row). Run `node --test commons/test/stripe-checkout.mjs` from the repo root. Check: a refund or dispute for an unknown charge changes nothing; a partial refund isn't called a full one; a won dispute returns to paid; the split adds up. Write `teams/build/outputs/review-292.md`: **YES or NO on 99625cf2**, what you ran, defects with file and line.
+
+## GPT, second job if steps remain (Tier 2 review): #296 stock footage at `5faeda6b`
+Read `commons/lib/stock.mjs`, the `/api/stock/*` routes in `commons/server.mjs`, the `credit` addition in `commons/lib/videos.mjs`, the two MCP tools in `commons/lib/mcp.mjs` and their allowlisting in `commons/lib/agentconnect.mjs`. Run `node --test commons/test/stock-footage.mjs` from the repo root. Check: the Pixabay key never reaches a response; downloads only from pixabay hosts; 24-hour cache; no clip over 2 minutes. Write `teams/build/outputs/review-296.md`: **YES or NO on 5faeda6b**.
