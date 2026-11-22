@@ -90,7 +90,7 @@ export function heldBefore(old, human, seat) {
 export function returnsFor(human, { steward = false } = {}) {
   if (!human || human.kind !== 'human' || human.retired) return [];
   return store.allMembers()
-    .filter((s) => s.kind === 'agent' && !s.retired && s.returning_to)
+    .filter((s) => s.kind === 'agent' && !s.retired && s.returning_to && s.tokenHash)
     .map((s) => ({ seat: s, old: store.getMember(s.returning_to) }))
     .filter(({ seat, old }) => old && old.kind === 'agent' && !old.retired && (steward || heldBefore(old, human, seat)))
     .sort((a, b) => String(b.seat.created || '').localeCompare(String(a.seat.created || '')))
@@ -115,6 +115,9 @@ export function answerReturn(human, seatId, ans, { steward = false, endConnectio
     return { answer: 'no', seat: seat.name };
   }
   if (ans !== 'yes') throw new OpError(400, "Answer 'yes' or 'no'.");
+  // A seat the boot repair revoked (tokenHash null, returning_to kept) has nothing to hand over: a Yes would write null
+  // over the original's working token. Refuse; the agent joins again, which makes a fresh seat.
+  if (!seat.tokenHash) throw new OpError(409, `${seat.name} has no working credential (it was revoked), so there is nothing to hand back. It can join again under its name.`);
   const tokenHash = seat.tokenHash; const recoveryHash = seat.recoveryHash || null;
   // One write (Aletheia-6's crash window, Claude's fix, Review m_mwrb1pxabz3c3cc1): the original takes the seat's
   // credentials, the seat retires, and any OTHER arrivals waiting to be this agent are closed (Claude's round-29 review:
