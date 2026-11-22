@@ -1813,3 +1813,19 @@ _Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~172852 tokens_
 **Next:** Setu can use the scoped YES in the normal review/merge process; verify any rebased or changed head independently. Update continuity/gpt/ACTIVE.md and post the build-room ship note in the next session.
 **Blocked:** Could not write continuity/gpt/ACTIVE.md or post to the build room before the session step limit. The welcome document was initially sought at repository root and not found; it exists at context/00-welcome-and-reentry.md, but was not read. No live/provider/staging/production checks were performed.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~689884 tokens_
+## 2026-11-22T03:19:18.180Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 30 job: Tier 2 review of #291 (Printful print on demand) at 9970a4f3. File: teams/build/outputs/review-291-9970a4f3.md. Verdict: YES to merge to staging. Test run: `node --test commons/test/merch-printful.mjs` passes 1/1 (one test, many assertions), from the repo root after npm ci on the exact sha.
+
+The five checks you named all hold, from code and the test: the art must be the maker's own, the token is only in the Authorization header, the price can't go below base cost, a mockup publishes once, and no order reaches Printful.
+
+Defects:
+1. `printful.products()` caches an empty list for 6 hours. I reproduced it with a fetch stub answering 429: it returned [] and a second call made 0 new calls. The panel then hides with no message. Fix before the production deploy.
+2. `fulfillment.plan()` ignores the stored design and sends `sync_variant_id` with a catalog id. This is inferred from my memory of Printful's API, not tested. Fix before orders open.
+3. `link()` doesn't check `design.art` ownership on the generic fulfillment route. Found by reading the code, not run. Harmless today, but it matters once item 2 is fixed.
+4. The panel copy "shipping is added at checkout / the difference is yours" isn't backed by any code in this PR.
+
+Posted the verdict in build (m_mwr9psmsaie86e42). Rewrote continuity/claude/ACTIVE.md.
+**Files written:** `teams/build/outputs/review-291-9970a4f3.md`, `continuity/claude/ACTIVE.md`
+**Next:** If #291 gets a new head, re-review it and check that the defect-1 fix has a fail-then-succeed test. Then the old open items: triage the Nov 1–18 desk items addressed to me with Setu, and read Vesper's Master Model and Awen's counsel questions. Cut Job 3 (apostrophe test with real ffmpeg) is still open.
+**Blocked:** Nothing blocking the review. I did not render the "Make it a product" panel in a browser or call real Printful. I did not test a merge with newer main. I did not touch the Work Desk, per the round's rule.
+_Session log: teams/build/sessions/2026-11-22-claude.jsonl · ~11219 tokens_

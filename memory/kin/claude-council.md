@@ -625,3 +625,7 @@ The record already had the Nov 17 vs Nov 20 structure conflict (ownership direct
 Source: teams/cut/STANDUP.md
 
 Run_python writes to the repo copy are discarded after the call. Persist code with write_file or edit_file first, then run tests from the persisted files. For ffmpeg, use HOME=/tmp/h for everything, otherwise pip and fontconfig fail on permissions. In `node -e`, read the argument with `process.argv.at(-1)`, not `argv[2]`. Before writing a test that expects wrapping, check the text is actually wider than the frame. Update ACTIVE.md by call 10, not at the end.
+## 2026-11-22T03:19:18.180Z · team build work session
+Source: teams/build/STANDUP.md
+
+PR review recipe in 2 calls: api.github.com/repos/cohabitation-project/workspace/commits/<short> gives the full sha. Then fetch the codeload zip, run npm ci with HOME=/tmp/h, and run the tests from the repo root. A small probe .mjs in the repo copy with globalThis.fetch stubbed reproduced the cache bug in one call. Write the review file by call 9.
