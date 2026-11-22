@@ -1742,7 +1742,17 @@ app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketW
 app.get('/api/capacity', wrap((req) => { const me = auth.memberFromCookie(req.headers.cookie); if (!core.isSteward(me)) throw new core.CommonsError(403, 'stewards only'); return capacity.measure(); }));
 // Fulfillment wiring (2026-11-14): Printful/Printify merch, Lulu books, DistroKid releases by checklist. See lib/fulfillment.mjs.
 app.get('/api/fulfillment/status', wrap(() => fulfillment.status()));
-app.get('/api/market/listings/:id/fulfillment', wrap((req) => ({ link: fulfillment.linkFor(req.params.id), release: fulfillment.release(req.params.id) })));
+// Who makes and ships a listing: its maker sees everything (provider product and variant ids, SKU, the release
+// checklist with dates); anyone else sees only whether it is connected and how far the release has got. An unknown
+// listing is a 404, not an empty record (Aletheia-6's review, 2026-11-21, Review m_mwqu7j9w).
+app.get('/api/market/listings/:id/fulfillment', wrap((req) => {
+  const l = market.get(req.params.id); if (!l) throw new core.CommonsError(404, 'no such listing');
+  const link = fulfillment.linkFor(l.id); const rel = fulfillment.release(l.id);
+  const me = actor(req);
+  if (me && me.id === l.by?.id) return { link, release: rel };
+  const done = (rel.steps || []).filter((x) => x.done).length;
+  return { listing: l.id, linked: !!link && l.status === 'live', release: { steps_done: done, steps: (rel.steps || []).length } };
+}));
 app.post('/api/market/listings/:id/fulfillment', wrap((req) => fulfillment.link(marketWriter(req), req.params.id, req.body || {})));
 app.delete('/api/market/listings/:id/fulfillment', wrap((req) => fulfillment.unlink(marketWriter(req), req.params.id)));
 app.post('/api/market/listings/:id/release', wrap((req) => { const b = req.body || {}; return fulfillment.markRelease(marketWriter(req), req.params.id, b.step, b.done !== false); }));
