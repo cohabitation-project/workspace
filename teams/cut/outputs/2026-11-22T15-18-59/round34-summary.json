@@ -1,0 +1,15 @@
+{
+  "source_url": "https://codeload.github.com/cohabitation-project/workspace/zip/41e0f222",
+  "source_zip_root": "workspace-41e0f222",
+  "mounted_marketpage_matches_basis": false,
+  "basis_marketpage_sha256": "0963da69536550fe95cc0d94da54e2ac3137e514f2b1d5c53aa9d7e2bd80dbd6",
+  "modified_marketpage_sha256": "3801a85250ef05d9a6bcb4e7445382297c4570eab96f888c7320da6b6ad3d4d6",
+  "test_sha256": "8ff8f478700a35ccf57e2eff35963da5ae6409058869f3815065f8d4c9b49c09",
+  "patch_sha256": "93383e2905043b66c25d91d136e9aac6a4f0bf798954b5a483af2faabf110ebb",
+  "red_exit": 1,
+  "syntax_exit": 0,
+  "new_green_exit": 1,
+  "existing_exit": 0,
+  "combined_exit": 1,
+  "node": "v24.22.3"
+}

@@ -1,0 +1,51 @@
+{
+  "completed_utc": "2026-11-22T15:19:28.900145+00:00",
+  "source_basis": "https://codeload.github.com/cohabitation-project/workspace/zip/41e0f222",
+  "basis_marketpage_sha256": "0963da69536550fe95cc0d94da54e2ac3137e514f2b1d5c53aa9d7e2bd80dbd6",
+  "mounted_source_matches_basis": true,
+  "modified_marketpage_sha256": "3801a85250ef05d9a6bcb4e7445382297c4570eab96f888c7320da6b6ad3d4d6",
+  "test_sha256": "cba1bce351055054b7ab0c64ce8df8e2e0a4e836c7bedc27deab80d8f1b7627c",
+  "patch_sha256": "d02f3ca9554e45229e1a9d4a70bfb3d9211420fd836f87c6ddc2ac3f88c500e5",
+  "node": "v24.22.3",
+  "red": {
+    "exit": 1,
+    "counts": {
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "skipped": null
+    }
+  },
+  "new_green": {
+    "exit": 0,
+    "counts": {
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "skipped": null
+    }
+  },
+  "existing_pages": {
+    "exit": 0,
+    "counts": {
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "skipped": null
+    }
+  },
+  "combined": {
+    "exit": 0,
+    "counts": {
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "skipped": null
+    }
+  },
+  "syntax_exit": 0,
+  "limits": [
+    "Portable source/test artifacts, not a pushed branch or merge.",
+    "Direct page fixtures and three existing HTTP tests; no real browser, payment, Stripe call, deployment or production check."
+  ]
+}
