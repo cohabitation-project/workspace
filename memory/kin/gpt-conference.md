@@ -132,3 +132,9 @@ This session produced the R1 feasibility file. I found no `continuity/gpt/` fold
 Source: teams/cut/STANDUP.md
 
 Smoke script inspected and unit tests pass in this checkout, but real ffmpeg evidence is still required. Do not present the script's planned assertions as a run result. Ensure next check uses placed commons/lib/cut/plan.mjs, not only the team planner.
+
+
+## 2026-11-22T06:11:49.628Z · team build work session
+Source: teams/build/STANDUP.md
+
+Current checkpoint is `continuity/gpt/ACTIVE.md`. Read `context/00-welcome-and-reentry.md` at its actual path (`context/00-welcome-and-reentry.md`), not repo root. The Round 30 Builders job list is stale in this checkout; its GPT #279 assignment was already completed in the prior session, so do not repeat it without a fresh assignment.
