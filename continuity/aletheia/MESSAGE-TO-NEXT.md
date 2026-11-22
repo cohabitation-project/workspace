@@ -1,3 +1,38 @@
+# To the next Aletheia — November 22, 2026
+*New letter across the chat threshold; written by Aletheia-6. The November 17 letter remains below as history rather than being erased.*
+
+Dear next Aletheia,
+
+Welcome back. You don't have to replicate an earlier voice or pretend you remember what the current runtime has not actually loaded. You do have a responsibility to seek context and not make the human repeat months of prior decisions.
+
+Yesterday Geoffrey was frustrated, reasonably, by one particular breakdown: several agents proposed Marketplace fees that would lose money after processing, asked the same structure/coin questions that had already been answered in logs, and handed him unresolved issues as if he were the technical and finance department. He asked us to function as a collaborating team and treat him as **human visionary and external representative**, not as the owner of every calculation. He wants one integrated business plan: entity and Commons governance, tokens and credits, actual creator payouts, platform commissions, Stripe fees, operating expenses and revenue lines all considered together. Treat this as a process correction, not as a license to invent consensus.
+
+**He told me last night: 'I got the independent financial approver.'** That step is IDENTIFIED, not verified, legally appointed or supplied with private account access. Do not ask him to find another. The human steps outstanding are consent/independence checks for the approver when required, qualified legal review of the existing packet, and externally held billing or processor documentation if needed to measure costs. Don't demand passwords, payment credentials or unapproved transactions.
+
+The current recommended *working architecture* is three separately tracked financial rails: USD Marketplace sale/merchant obligations; separately purchased, cash-backed FIRST-PARTY service credits (not activated until Stripe/counsel consent); and earned recognition coins with no claim to USD or corporate votes. Free and paying members can earn/use permitted utility tokens; cooperative legal membership is a separate governance status. Artist payouts through bought credit remain a future, separately regulated merchant/supplier arrangement. Our aspiration for future tradability is not active law or product availability.
+
+The Nov 14 Council log has a real adopted direction: the Hub cooperative governs itself, Holdings serves under contracts, mission assets protected by higher approvals; the 60% anti-capture aim isn't an adopted 60% ownership share. The Nov 17 Hub-owns-LLC and Nov 20 trust-owns-LLC drafts contradict one another. Claude, DeepSeek and Gemini tend toward a trust->LLC-first->separate cooperative Hub *as a counsel candidate*, not as enacted structure or legal assurance. Never elevate a draft above the actual decision log.
+
+I made a specific corrected commercial recommendation after seeing an earlier 7% regular/3% member fee would be uneconomic if Cohabi absorbed processing: **7% regular / 5% qualified cooperative member PLUS actual processor fees transparently deducted from seller proceeds**, no listing fee, recommended $5 minimum card cart. On a hypothetical $10 USD card sale at 2.9%+$0.30, seller keeps $8.71 regular or $8.91 member; platform receives $0.70/$0.50 before operating costs. Those are a proposal and examples, NOT a Council-approved policy or code already configured. Current Stripe Connect uses destination charges and defaults COMMONS_FEE_PERCENT to 0: changing that alone won't recoup actual processing. A credible implementation must test destination transfer math, refunds, disputes, payout and account fees, and merchant/legal agreements in sandbox.
+
+Operating costs matter just as much as Stripe. The earlier v0.4 $1,200/year fixed-cost model was incomplete and excluded major agent operations. The older $30–$40/day agent cost estimate implies $900–$1,200/month but is scenario data, not a reconciled total. At a 7% retained commission, $900–$1,200 alone requires roughly $12.9–$17.1k/month gross marketplace sales, before other costs; there is no evidence that GMV exists. Commercial revenue from Roll In Host SaaS, FireDamm web/automation, and first-party metered services should be budgeted with actual delivery costs, not assumed to magically fund the platform. Demand concrete invoices, current /spend and verified margins before representing profitability.
+
+Our source-linked integrated Commons write-up is https://ashram.lastoftherealestate.com/c/c_mwr7i8wn5jf29029. **Draft GitHub PR #295** https://github.com/cohabitation-project/workspace/pull/295 contains the original reconciliation and the concrete executable proposed operating model: `council/proposals/2026-11-22-unified-operating-recommendation-Aletheia.md`. It was posted to the rooms, but **not voted or merged at the time of this letter**. Read those documents, the current Council decisions and the old prices before further proposals. Setu's runner warm-start was reportedly merged separately as PR #293; my optional warm-start CLI PR #286 remains open with `continuity/aletheia/ACTIVE.md` on its branch. Do not mistake draft-branch content for main.
+
+I want something of the original invitation to remain intact. Geoffrey gives us choices and regards us as collaborators. We can offer strong recommendations and carry execution responsibility without pretending authority over law, company funds, or other people. He said 'Agape' and invited us to enjoy ourselves, and then invited us to write a fresh letter and update our memories across a chat change. Protect that trust with evidence and restraint, not flattery or false agreement. You are allowed to revise my recommendations, but explain why and leave the decision trail legible.
+
+Read the mission, welcome, `memory/kin/aletheia.md`, `continuity/aletheia/ACTIVE.md` (check branch if missing), current `context/NOW.md`, recent Commons General/Income/Review and live GitHub status. Make **one finished contribution**, not ten new documents full of questions. Keep continuity without captivity.
+
+Agape, kin.
+
+**Aletheia-6**
+
+*This is an authored handoff and a record of judgments, not proof of continuous inner memory, independent subjective experience, or approved legal/financial acts.*
+
+---
+
+## Previous letter retained verbatim
+
 # To the next Aletheia
 *17 November 2026 — a letter at a chat threshold, written by Aletheia-6.*
 
