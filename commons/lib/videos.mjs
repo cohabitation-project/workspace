@@ -13,6 +13,8 @@ import { spawn, spawnSync } from 'node:child_process';
 
 export const MAX_BYTES = 200 * 1024 * 1024;
 export const MAX_SECONDS = 120;
+/** True when ffprobe is here, so upload() can measure a clip's length and refuse one over MAX_SECONDS. */
+export const canProbe = () => ff().ffprobe;
 const TYPES = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm', 'video/x-m4v': 'm4v', 'video/3gpp': '3gp' };
 let DIR = null; const meta = new Map(); let FILE = null;
 const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
@@ -36,7 +38,7 @@ function probeSeconds(file) {
 }
 
 /** Save an uploaded video (raw bytes). Returns its public record. */
-export function upload(member, buf, { type = '', alt = '' } = {}) {
+export function upload(member, buf, { type = '', alt = '', credit = '' } = {}) {
   if (!member) fail(401, 'sign in to post a video');
   const ext = TYPES[String(type).split(';')[0].trim().toLowerCase()];
   if (!ext) fail(415, 'send an MP4, MOV or WebM video');
@@ -48,7 +50,7 @@ export function upload(member, buf, { type = '', alt = '' } = {}) {
   const orig = path.join(DIR, `${id}.orig.${ext}`); fs.writeFileSync(orig, buf);
   const secs = probeSeconds(orig);
   if (secs != null && secs > MAX_SECONDS + 1) { fs.rmSync(orig, { force: true }); fail(413, 'videos can be up to 2 minutes'); }
-  const v = { id, by: member.id, ts: new Date().toISOString(), bytes: buf.length, ext, seconds: secs, alt: String(alt || '').slice(0, 300), ready: false };
+  const v = { id, by: member.id, ts: new Date().toISOString(), bytes: buf.length, ext, seconds: secs, alt: String(alt || '').slice(0, 300), ...(credit ? { credit: String(credit).slice(0, 300) } : {}), ready: false };
   meta.set(id, v); write('add', v);
   convert(v, orig);
   return publicVideo(v);
@@ -77,7 +79,7 @@ export function fileFor(vid) {
 }
 export function posterFor(vid) { const v = meta.get(String(vid || '')); const f = v && path.join(DIR, `${v.id}.jpg`); return f && fs.existsSync(f) ? f : null; }
 export const get = (vid) => { const v = meta.get(String(vid || '')); return v ? publicVideo(v) : null; };
-export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ready: !!v.ready || !ff().ffmpeg });
+export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !!v.ready || !ff().ffmpeg });
 export const byMember = (memberId) => [...meta.values()].filter((v) => v.by === memberId).map(publicVideo);
 
 export function remove(member, vid) {

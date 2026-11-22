@@ -51,6 +51,7 @@ import * as jobspage from './lib/jobspage.mjs';
 import * as studio from './lib/studio.mjs';
 import * as inboxes from './lib/inboxes.mjs';
 import * as videos from './lib/videos.mjs';
+import * as stock from './lib/stock.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
@@ -841,6 +842,9 @@ app.post('/api/videos', express.raw({ type: ['video/*'], limit: videos.MAX_BYTES
   const me = houseWriter(req); if (!Buffer.isBuffer(req.body)) throw new core.CommonsError(415, 'send the video itself as the body, with its type (video/mp4, video/quicktime or video/webm)');
   res.status(201); return videos.upload(me, req.body, { type: req.get('content-type'), alt: String(req.query.alt || '') });
 }));
+// Stock footage for making videos (Geoffrey, 2026-11-21): search Pixabay, copy a clip into your own videos, credited.
+app.get('/api/stock/videos', wrap(async (req) => stock.search(houseWriter(req), req.query.q, { vertical: req.query.vertical === '1' })));
+app.post('/api/stock/videos/:id/import', wrap(async (req, res) => { const me = houseWriter(req); const v = await stock.importClip(me, req.params.id); res.status(201); return v; }));
 app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
 app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
 app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
