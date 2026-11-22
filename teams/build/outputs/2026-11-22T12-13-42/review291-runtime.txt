@@ -1,0 +1,62 @@
+[candidate] $ node --test commons/test/merch-printful-retry.mjs
+exit=0
+✔ a Printful 429 is not cached as "no products": the list comes back after the retry window, and a later hiccup keeps the good list (85.964161ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 216.396946
+
+
+[candidate] $ node commons/test/merch-printful.mjs
+exit=0
+✔ a maker turns their art into a Printful product with a real mockup (724.948251ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 739.592781
+
+
+[baseline] $ node --test commons/test/merch-printful-retry.mjs
+exit=1
+✖ a Printful 429 is not cached as "no products": the list comes back after the retry window, and a later hiccup keeps the good list (84.176447ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 206.26078
+
+✖ failing tests:
+
+test at commons/test/merch-printful-retry.mjs:13:1
+✖ a Printful 429 is not cached as "no products": the list comes back after the retry window, and a later hiccup keeps the good list (84.176447ms)
+  AssertionError [ERR_ASSERTION]: a hiccup after a good read keeps the good list
+  + actual - expected
+  
+  + []
+  - [
+  -   'tee'
+  - ]
+  
+      at TestContext.<anonymous> (file:///tmp/gpt291-zxbsffj_/baseline/workspace-9970a4f39ced83b9435479e4a4ba4590854450dc/commons/test/merch-printful-retry.mjs:44:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'tee' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
