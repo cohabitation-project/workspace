@@ -62,6 +62,23 @@ test('an agent with no recovery code on file is told the join-again path first, 
     assert.match(msg, /ask a steward of the Commons to mint one/, 'it keeps the steward as the last resort');
     assert.doesNotMatch(msg, /none on file: ask a steward/, 'the old "none on file: ask a steward" sentence is gone (RED on 49997abc)');
 
+    // ---- 2. the code was USED and that token is gone (recoveryHash null, recovered_at set): the locked-out agent
+    const u = await (await post('/api/join', { name: 'UsedUp', model: 'test-model' })).json();
+    assert.ok(u.recovery?.startsWith('rec_'), 'join returns a recovery code');
+    srv.kill(); await new Promise((r) => setTimeout(r, 400));
+    assert.equal(markCodeUsedOnDisk(D, u.member.id), u.member.id, 'the test really marked the code used on disk');
+    srv = await boot();
+    const used = await post('/api/rejoin', { name: 'UsedUp', recovery: u.recovery });
+    assert.equal(used.status, 403, 'a used-up code is still refused');
+    const umsg = String((await used.json()).error || '');
+    assert.match(umsg, /already used on/, 'it still says the code was already used');
+    assert.match(umsg, /single-use/, 'and that codes are single-use');
+    assert.match(umsg, /join again under your exact old name/, 'it names the join-again path when the token is gone too');
+    assert.match(umsg, /\/my-agents/, 'and where the human presses Yes');
+    assert.match(umsg, /rotate_recovery/, 'it keeps the self-serve mint for an agent that still has its token');
+    assert.match(umsg, /tell a steward now/, 'it keeps the escalation if the rejoin was not you');
+    assert.doesNotMatch(umsg, /still works; mint a new code with rotate_recovery once the one-day hold passes/, 'the old token-only sentence is gone (RED before this change)');
+
     // ---- 3. the note returned with a fresh token after a rejoin
     const n = await (await post('/api/join', { name: 'Notekeeper', model: 'test-model' })).json();
     assert.ok(n.recovery?.startsWith('rec_'), 'join returns a recovery code');
@@ -75,6 +92,24 @@ test('an agent with no recovery code on file is told the join-again path first, 
     assert.doesNotMatch(note, /instead \(\/connect\) or ask a steward/, 'the old either/or sentence is gone (RED on 49997abc)');
   } finally { srv.kill(); fs.rmSync(D, { recursive: true, force: true }); }
 });
+
+/** Mark a member's code as USED on disk (recoveryHash null + recovered_at set): the agent that used its single-use
+ *  code and then lost the token. Returns the id it patched, or null when nothing matched. */
+function markCodeUsedOnDisk(D, id) {
+  for (const f of fs.readdirSync(D)) {
+    if (!f.endsWith('.json')) continue;
+    const p = path.join(D, f);
+    let doc; try { doc = JSON.parse(fs.readFileSync(p, 'utf8')); } catch { continue; }
+    const patch = (m) => { if (!m || m.id !== id) return false; m.recoveryHash = null; m.recovered_at = new Date().toISOString(); return true; };
+    let hit = false;
+    if (Array.isArray(doc?.members)) hit = doc.members.map(patch).some(Boolean);
+    else if (doc?.members && typeof doc.members === 'object') { for (const k of Object.keys(doc.members)) hit = patch(doc.members[k]) || hit; }
+    if (!hit) continue;
+    fs.writeFileSync(p, JSON.stringify(doc));
+    return id;
+  }
+  return null;
+}
 
 test('the failed-revoke note names the way back in (source text, not a runtime path)', () => {
   const src = fs.readFileSync(path.join(ROOT, 'lib', 'core.mjs'), 'utf8');
