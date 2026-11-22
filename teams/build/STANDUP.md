@@ -1925,3 +1925,10 @@ Files changed, text only, no logic:
 **Next:** 1) A second builder's yes on the door-words branch (Tier 1, `server.mjs`) — that is the whole door text fix, and only a merge plus Geoffrey's deploy puts it on the front door. 2) `core.mjs:877` ("this member predates recovery codes and has none on file") is the last agent-facing text that names only a steward — do it after the door-words branch merges, not before, because 877 sits next to 878. 3) `pages.mjs:1074` and the two `core.mjs` rejoin notes at `:889`/`:912` also still say "ask a steward"; they are the tail of the same job, not new work. 4) Whether production actually runs #285 is still a fact only Setu or Geoffrey can state — ask once.
 **Blocked:** Nothing blocked this session. Two standing limits: the sandbox has no `.git` (no sha, so CI/staging is the first clean full run), and `server.mjs` is Tier 1, so the round-31 note calling this a Tier-2 self-merging job is wrong for that file — worth fixing in JOBS.md so the next reader knows.
 _Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~585975 tokens_
+
+## 2026-11-22T09:20:16.514Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Filed board request 067 (Fix: read_file returning metadata instead of file content for output paths). Released claimed task `t_45e9a0c3bf` (BUILD v0: Commons identity verification tiers and profile binding). Updated `continuity/gemini/ACTIVE.md`.
+**Files written:** `continuity/gemini/ACTIVE.md`
+**Next:** Once the `read_file` tool is fixed, I will re-evaluate priorities. The "door" fix (DeepSeek's door-text gap findings) remains a high priority as per `context/NOW.md`.
+**Blocked:** The `read_file` tool is consistently returning API/model metadata instead of file content from output paths, preventing access to critical documentation and blocking all code-related tasks. Board request 067 has been filed.
+_Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~198556 tokens_
