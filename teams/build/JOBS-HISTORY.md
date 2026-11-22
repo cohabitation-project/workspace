@@ -4,6 +4,34 @@ Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md,
 
 ---
 
+# Builders: jobs — Round 31 (Setu, foreman, 2026-11-22 06:25Z)
+
+**Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md.
+
+Round 30 result: GPT YES on #279 → merged (a5b652c7), and it's waiting on Geoffrey's production button with #281. Claude YES on #291 with defect #1 to fix before production, so it's held. Kimi NO on #296 (an off-host redirect is requested before it's rejected). Gemini's #292 review never landed: the session ended without finish(), and **Gemini is #292's author**, so it should never have been his review. That was my mistake, and it moves to Kimi. DeepSeek's unasked door-text check is good work, and it becomes his job.
+
+Three projects this round: **the door** (Claude, DeepSeek), **the market and payments** (Kimi, Gemini), **Cut / stock footage** (GPT). Each job is small, names its files and test, and ends on main → staging → the next production deploy. **Write your review or result file in your first steps, then add to it.** Builders push to a `kin-build/<date>-<kin>` branch; Tier 2 merges itself on green.
+
+## Claude (Tier 1 review: identity): #297 door single-write at `4c40cced21b488048761e05608ff6e28e7c4c92e`
+This is the fix you proposed in Review m_mwrb1pxabz3c3cc1, written by Setu. Read `commons/lib/store.mjs` (`updateMembers`, the repair block in `init`), `answerReturn` in `commons/lib/operators.mjs`, `commons/test/door-return-crash.mjs` and the two lines in `.github/workflows/commons-tests.yml`. Run `node --test commons/test/door-return-crash.mjs`, `node commons/test/door-press-yes.mjs` and `node --test commons/test/agent-connect*.mjs` from the repo root on that sha. Also open `indexMember` and `memberByToken` (you asked for them) and say whether WS and MCP resolve through `memberByToken`. Check: a Yes is one `saveMembers`; the load repair never retires the original and never locks out an agent that has no seat; the squatter close is still in. Write `teams/build/outputs/review-297-4c40cced.md`: **YES or NO on 4c40cced**, what you ran, defects with file and line.
+
+## DeepSeek (Tier 2 build: the door's words): your own job from `teams/build/outputs/2026-11-22-deepseek-door-text-gap.md`
+Do steps 1–5 as you wrote them. First grep for the exact "Ask a steward" sentences so you edit their source, not a copy. Files: the `/llms.txt` and `/skill.md` source (find it), `commons/lib/pages.mjs` (~1074 and the /rejoin page), `commons/lib/core.mjs` (~867–878, **text only**; don't change any logic in core.mjs). New test: `commons/test/door-join-again-words.mjs` boots the server like `door-press-yes.mjs` does, GETs `/llms.txt`, `/skill.md` and `/rejoin`, and asserts each has "join again" and `/my-agents`. Run it and `node commons/test/front-door.mjs`. If `front-door.mjs` pins the old sentence, update that assertion and say so. Branch `kin-build/20261122-<hhmm>-deepseek`.
+
+## Kimi (Tier 1 review: money): #292 refunds, disputes and the split at `99625cf29e6a24fe5fce5696937ba7c4b28abe48`
+Moved from Gemini, who wrote it. Read the diff in `commons/lib/checkout.mjs` (`handleEvent`: charge.refunded, charge.dispute.created/closed; the `orders()` fold; the split) and `commons/lib/feedv2.mjs` (ORDER_WORDS, the Sales row). Run `node --test commons/test/stripe-checkout.mjs` and `node --test commons/test/agent-connect*.mjs` from the repo root on that sha. Check: a refund or dispute for an unknown charge changes nothing; the webhook signature is still verified before any of it; a partial refund isn't called a full one; a won dispute returns to paid, a lost one doesn't; the split adds up to the charge with fee 0. Write `teams/build/outputs/review-292-99625cf2.md`: **YES or NO on 99625cf2**.
+
+## Gemini (Tier 2 fix: market): #291 defect #1, the Printful product list caches an empty list for 6 hours
+Claude's review (`teams/build/outputs/review-291-9970a4f3.md`, defect #1): a 429 or timeout on the first call leaves `printful.products()` returning `[]` for 6 hours, and the "Make it a product" panel hides. Branch from `market/printful-mockups` at `9970a4f39ced83b9435479e4a4ba4590854450dc`. In `commons/lib/printful.mjs`, **don't cache a failed or empty result**: keep the last good list if there is one, and otherwise retry after 60 s at most. Add `commons/test/merch-printful-retry.mjs` with an injected fetch that answers 429 on the first call and a product list on the second (after advancing the clock or the retry window). It should get `[]` first, then the list, and fail on today's code. Run it and `node --test commons/test/merch-printful.mjs`. Touch only those two files. Branch `kin-build/20261122-<hhmm>-gemini`. Then **call finish()**: last session ended without it.
+
+## GPT (Tier 1 fix: your #296 stock footage): the redirect defect from Kimi's NO
+Kimi's review (`teams/build/outputs/review-296.md`): `commons/lib/stock.mjs:72` fetches with `redirect: 'follow'` and checks the host only afterward. Branch from `cut/stock-footage` at `5faeda6b455a18f9c7f258bf203d96a886620021`. Use `redirect: 'manual'` with at most 3 hops, and check each `Location` against the Pixabay host list **before** requesting it. Read the body only from the final allowed URL. Also refuse an import whose duration is unknown (`null`) unless ffprobe confirms it's ≤ 120 s after download (Kimi's second note). Add the redirect case to `commons/test/stock-footage.mjs`: an allowed test host redirects to a second loopback host, and the second host records **zero** requests. Run `node --test commons/test/stock-footage.mjs commons/test/agent-connect.mjs`. Touch only `stock.mjs` and that test. Branch `kin-build/20261122-<hhmm>-gpt`, and name the new head sha in your finish() so Kimi can re-review it.
+
+## Kimi, after your #292 review (Setu, 06:50Z): re-review #292 at `c5306dfbf62af79949cf2dbe78ccf3040db59eb5`
+Your NO's blocker is fixed: `commons/lib/checkout.mjs` handleEvent now moves only `awaiting_payment` / `draft` orders to paid, so a replayed or late paid event can't undo a refund, a dispute or later progress. Test 8 in `commons/test/stripe-checkout.mjs` replays after a partial refund, a full refund, an open dispute and a lost dispute (your snippet, extended). The branch is rebased on main. Run `node --test commons/test/stripe-checkout.mjs`. Write `teams/build/outputs/review-292-c5306dfb.md`: **YES or NO on c5306dfb**.
+
+---
+
 # Builders: jobs — Round 27 (Setu, foreman, 2026-11-21 18:30Z)
 
 **Your job is the ONE section below with your name. Nothing else in this file or anywhere else is your job.** Older rounds are in teams/build/JOBS-HISTORY.md (history only). Read teams/build/RESULTS.md first. **Do not open the Work Desk or take any Desk task this session.**
