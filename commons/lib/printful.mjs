@@ -18,6 +18,8 @@ import * as images from './images.mjs';
 import { PIPES } from './fulfillment.mjs';
 
 const fail = (s, m) => { throw new CommonsError(s, m); };
+// A failure that may pass by itself (rate limit, timeout, network, Printful 5xx): never cached as "no products".
+const transient = (s, m) => { const e = new CommonsError(s, m); e.transient = true; throw e; };
 const env = (k) => (process.env[k] || '').trim();
 export const configured = () => !!env('PRINTFUL_TOKEN');
 
@@ -34,19 +36,26 @@ async function api(p, { method = 'GET', body } = {}) {
   const headers = { authorization: `Bearer ${env('PRINTFUL_TOKEN')}`, ...(body ? { 'content-type': 'application/json' } : {}) };
   if (env('PRINTFUL_STORE_ID')) headers['X-PF-Store-Id'] = env('PRINTFUL_STORE_ID');
   let r; try { r = await fetch(PIPES.printful.base() + p, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(25_000) }); }
-  catch { fail(502, "Couldn't reach the print partner. Try again in a minute."); }
+  catch { transient(502, "Couldn't reach the print partner. Try again in a minute."); }
   const j = await r.json().catch(() => ({}));
-  if (r.status === 429) fail(429, 'The print partner makes only a few mockups a minute. Try again in a minute.');
+  if (r.status === 429) transient(429, 'The print partner makes only a few mockups a minute. Try again in a minute.');
+  if (r.status >= 500) transient(502, `The print partner had a problem (${r.status}). Try again in a minute.`);
   if (!r.ok) fail(502, `The print partner said no (${r.status}${j?.error?.message ? `: ${String(j.error.message).slice(0, 160)}` : ''}).`);
   return j.result ?? j;
 }
 
 // ------------------------------------------------------------------ the product list (cached 6 hours)
-let cache = null; let cacheAt = 0;
-export function resetCache() { cache = null; cacheAt = 0; tasks.clear(); recent.length = 0; }
+// Claude's review of #291, defect 1: a 429 or timeout on the first read used to cache [] for 6 hours and hide the panel.
+// Now only a complete read is cached. If Printful had a passing problem, the last good list stays in use (if there is
+// one) and the list is read again after RETRY_MS; with no good list yet, [] is returned and retried after RETRY_MS.
+const FRESH_MS = 6 * 3600_000; export const RETRY_MS = 60_000;
+let cache = null; let cacheAt = 0; let failAt = 0;
+export function resetCache() { cache = null; cacheAt = 0; failAt = 0; tasks.clear(); recent.length = 0; }
 export async function products() {
-  if (cache && Date.now() - cacheAt < 6 * 3600_000) return cache;
-  const out = [];
+  const now = Date.now();
+  if (cache && now - cacheAt < FRESH_MS) return cache;
+  if (failAt && now - failAt < RETRY_MS) return cache || [];
+  const out = []; let hiccup = false;
   for (const { key, id } of curated()) {
     try {
       const p = await api(`/products/${Number(id)}`);
@@ -64,9 +73,10 @@ export async function products() {
       out.push({ key, id: Number(id), title: p.product.title || p.product.model || key, image: p.product.image || null, currency: p.product.currency || 'USD',
         placement, placement_label: placements[placement] || placement, area: { width: printfile.width, height: printfile.height }, variants,
         base_from: Math.min(...variants.map((v) => v.price).filter((n) => n > 0)) });
-    } catch (e) { if (e?.status === 503) throw e; /* one product failing leaves the rest */ }
+    } catch (e) { if (e?.status === 503) throw e; if (e?.transient) hiccup = true; /* a product Printful refuses is left out */ }
   }
-  cache = out; cacheAt = Date.now();
+  if (hiccup || !out.length) { failAt = Date.now(); return cache || out; }
+  cache = out; cacheAt = Date.now(); failAt = 0;
   return out;
 }
 
