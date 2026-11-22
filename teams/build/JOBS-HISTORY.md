@@ -3,6 +3,45 @@
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
 ---
+# Builders: jobs — Round 35 (Setu, foreman, 2026-11-22 18:25Z)
+
+**Geoffrey, Nov 21: no new projects; finish what's started; keep spend low. Nov 22 order (relayed by Aletheia-6, income m_mws23flesyf87ee7): (1) doors, with failure/restart cases; (2) marketplace, a verified end-to-end test and the real launch blockers; (3) structure and the financial model.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your result file in your first steps, then add to it, and call finish().**
+
+Round 34 result: Claude's door-yes-write-fail (7/7), Kimi's order status words (393f3a81), DeepSeek's market-images-load and Gemini's fee-tables file all landed; production now runs 1a8a2e4a (Geoffrey, 16:48Z). GPT's #291 defect-1 patch was not pushed (fafdcdfe already has the 60 s backoff; see RESULTS). This shift the foreman put door-yes-write-fail, market-order-status-words and market-images-load into CI, and **`commons/lib/store.mjs` and `commons/lib/core.mjs` are now Tier 1** (Geoffrey's answer #4, Hall m_mws4puwr5fcb3245; scripts/write-policy.mjs).
+
+**How to review or patch a PR branch from your runner:** download `https://codeload.github.com/cohabitation-project/workspace/zip/<full sha>`, unzip, `npm ci` at its root, run the named tests there. A fix to an open PR is written as whole files under `teams/build/outputs/<folder>/`, and the foreman pushes it.
+
+Projects this round: **the door** (Claude), **market and payments** (Kimi, GPT), **pages and links** (DeepSeek), **tokenomics** (Gemini). No new visual design from Aletheia-6 since round 33, so no design build this round. Cohabi Cut seats: your job is in `teams/cut/JOBS.md`, not here.
+
+## Claude (Tier 1: identity, store.mjs): the startup repair cuts and tells (decision B)
+Setu decided B under Geoffrey's delegation (Review m_mws41de750209f2f); Aletheia-6's six cases (c_mws2e31h0lce27b1) fold in. You raised three open points (m_mws41ry453f69885). The foreman's answers: **(a)** a claimant group is any two or more non-retired members sharing one `tokenHash`, linked or not. **(b)** At boot, if the repair's save fails, memory keeps the revocation, one line is logged, and the next save persists it. `init` never throws for this. **(c)** "Tell" is the log line only for v1 (`[store] ambiguous credential revoked: <ids>`); no steward hook. Index cleanup deletes only entries that point at a claimant.
+Write the test first: new `commons/test/store-repair-ambiguous.mjs`, store level, a fresh temp `COMMONS_DATA` per case and a hand-written members.json. Cases:
+1. A valid pair (`seat.returning_to === m.id`, both `kind: 'agent'`, `m` live) resolves as today, in both array orders.
+2. A pair with `returning_to` missing or pointing elsewhere: both claimants have `tokenHash` null, the hash opens nobody, nobody is retired, recovery hashes are intact.
+3. A retired original: revoked, and the index never points at the retired record.
+4. Two originals claiming one seat, in both orders: all three revoked.
+5. Two unrelated members sharing a hash: both revoked.
+6. The save fails once at boot (monkeypatch `fs.renameSync`): `init` returns, the hash opens nobody, and after the patch is removed the next `updateMember` persists the revocation to disk.
+It must fail on main. Then change `init()` in `commons/lib/store.mjs` only (lines 59–71). Run `node --test commons/test/store-repair-ambiguous.mjs commons/test/store-write-rollback.mjs commons/test/door-return-crash.mjs commons/test/door-yes-write-fail.mjs commons/test/agent-connect*.mjs` and `node commons/test/door-press-yes.mjs`. Branch `kin-build/20261122-<hhmm>-claude`. Tier 1: Setu reviews on the exact head.
+
+## Kimi (Tier 2 test: market and payments): one paid order, start to finish, as a test
+Geoffrey's (2): "demonstrate a verified end-to-end test". New file `commons/test/market-paid-journey.mjs`, in-process with no network and a temp `COMMONS_DATA`. Seed a seller and a listing. Build `checkout.session.completed`, then `charge.refunded` (partial), then `charge.dispute.created` and `charge.dispute.closed` (lost), each signed for `verifyWebhook` in `commons/lib/stripe.mjs` with a test secret (copy how `commons/test/stripe-checkout.mjs` signs). Feed them through the same handler the `/api/payments/webhook` route (server.mjs:1816) calls. After each event, assert the order's state, `refunded_cents`, and the words `orderStatusWords` gives on `/orders` and `/label/sales`. Replay one event and assert nothing changes. Touch only that new file. If the handler can't be reached without the server, boot it the way `door-press-yes.mjs` does. In your result file, list the **launch blockers you can see** for real paid orders, one line each with a file and line. Run it with `node --test commons/test/market-paid-journey.mjs commons/test/market-order-status-words.mjs commons/test/stripe-checkout.mjs`. Branch `kin-build/20261122-<hhmm>-kimi`.
+
+## GPT (fix for open PR #291, Tier 1 because it rides with server.mjs): defects #2 and #3 in fulfillment.mjs
+Read defects #2 and #3 in `teams/build/outputs/review-291-9970a4f3.md`. Download #291's head `fafdcdfed3a9306646c0fa7109350da9b9ea7111`. First read Printful's current order API docs on the web and cite the URL. The review's claim that `/orders` takes a catalog `variant_id` plus `files: [{ url, … }]` is from memory. In `commons/lib/fulfillment.mjs` only: **#2** `plan()`'s printful branch, for a listing with a stored `design`, sends the catalog `variant_id` and a `files` entry with the art's public URL and placement, as the docs say. **#3** `link()` drops `design` unless `images.get(design.art)` is owned by the member linking it. New test `commons/test/merch-printful-order.mjs`: the order body carries the catalog variant and the art URL, and linking someone else's image id stores no design. It must fail on fafdcdfe. Write both whole files plus `RESULT.md` (docs URL, red run, green run, and `node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs commons/test/merch-printful-order.mjs` counts) to `teams/build/outputs/291-defect2-3/`. No real Printful call. Setu pushes it to #291, and Kimi or Claude reviews the new head.
+
+## DeepSeek (Tier 2 test: pages and links): market-departments.mjs checks zero images
+Your round-34 finding: `commons/test/market-departments.mjs` only matches image paths under `/images/`, which doesn't exist in `commons/public/`, so it checks nothing while saying it checks every image. Fix that test file only. Match the paths the pages really use (`/static/…`, as your market-images-load.mjs found), and assert it checked **at least one** image per department page, so it can never pass empty again. Show it red with one mutation (point one department's tile or image at a missing file), then restore it. Run `node commons/test/market-departments.mjs` and `node --test commons/test/market-images-load.mjs`. Branch `kin-build/20261122-<hhmm>-deepseek`.
+
+## Gemini (tokenomics, file only): royalty and fee tables v0.2
+Claude (Hall m_mws4v87h6658ba81) and Ash (m_mws5e5no6gf60ab7) read v0.1. Every worked example shows the seller getting $0.00. That is because 70/20/10 is Vesper's revenue allocation, not a seller fee. Write `teams/income/royalty-fee-tables-v0.2.md` (leave v0.1 as it is):
+- Table 1, **today**: our fee is 0% (`context/NOW.md`; quote the line).
+- Table 2, **proposals, not adopted**: 7/3 and 10/7, each with who proposed it and where.
+- Table 3, **Vesper's allocation**: labelled as allocation of the project's own revenue, citing `c_mwkxylyb0cabcaf1`.
+- Worked examples for $10, $50 and $200 under today and under each proposal. Show the seller's share, our fee, and a payment-processing line written as **percent + fixed per transaction, both marked ASSUMED**. Don't state processor prices as fact. Ash is checking Stripe's published pricing.
+Submit it on the Desk against t_428bda82ca. No branch is needed.
+
+---
 # Builders: jobs — Round 34 (Setu, foreman, 2026-11-22 15:20Z)
 
 **Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your review or result file in your first steps, then add to it, and call finish().**
