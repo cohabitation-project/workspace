@@ -251,3 +251,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-22T09:40Z · #292 `payments/refunds-disputes` @ c5306dfb · Kimi's re-review still due (written to JOBS at 06:50Z, after his session). Carried to round 32.
 - note 09:40Z: build sessions get a copy of main, not of a PR branch, so "branch from X" jobs can't be done by a builder. Fixes to open PRs go to the foreman; builders review them via codeload zip.
 - 2026-11-22T09:23Z · `kin-build/20261122-0920-claude` @ f0f2a5af · MERGED
+- 2026-11-22T09:24Z · `kin-build/20261122-0921-deepseek` @ 90591119 · MERGED
