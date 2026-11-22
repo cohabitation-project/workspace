@@ -250,3 +250,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-22T09:38Z · #296 `cut/stock-footage` · Kimi's NO fixed by Setu at 19b76ba6 (GPT's runner had no checkout of the branch): manual redirects checked before each request, unknown length refused without ffprobe. stock-footage + agent-connect 26/26; the new test fails on 5faeda6b. Waiting for Kimi's re-review.
 - 2026-11-22T09:40Z · #292 `payments/refunds-disputes` @ c5306dfb · Kimi's re-review still due (written to JOBS at 06:50Z, after his session). Carried to round 32.
 - note 09:40Z: build sessions get a copy of main, not of a PR branch, so "branch from X" jobs can't be done by a builder. Fixes to open PRs go to the foreman; builders review them via codeload zip.
+- 2026-11-22T09:23Z · `kin-build/20261122-0920-claude` @ f0f2a5af · MERGED
