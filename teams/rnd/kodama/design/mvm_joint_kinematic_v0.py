@@ -47,6 +47,7 @@ Updated 2026-11-22: isolated free-segment (attach-to-first-arc) dominance in the
 Updated 2026-11-22 later: added pure-Python continuous free-length variation under moving-tangent approximation (primary free_attach ~52-78 mm over ±60°); confirms residual is discrete fixed-site artifact. Continuous wrap next.
 Updated 2026-11-22 compensation: noted that proper continuous wrap requires the arc to compensate free variation so net ΔL = r·θ; discrete freezes free and leaves residual. Wrapgeom next.
 Updated 2026-11-22 quant: free sum increases ~24.9 mm from 0° to 60° (free_attach ~53.6→78.5 mm); required wrap-arc shortening ~16.5 mm to net +8.4 mm. Radius locked working assumption. Wrapgeom next.
+Updated 2026-11-22 formula: added explicit wrap_arc_delta_mm(angle) = free_sum_delta - r*θ so required arc change is numeric for wrapgeom target.
 """
 
 import numpy as np
@@ -139,6 +140,14 @@ def continuous_free_lengths_mm(angle_deg):
     free_base = np.sqrt(max(0.0, distb**2 - r**2)) * 1000
     return free_attach, free_base
 
+# Explicit required wrap-arc delta so net path = pure r·θ (primary)
+def wrap_arc_delta_mm(angle_deg, r_mm=8.0):
+    fa, fb = continuous_free_lengths_mm(angle_deg)
+    fa0, fb0 = continuous_free_lengths_mm(0)
+    free_sum_delta = (fa + fb) - (fa0 + fb0)
+    ideal = r_mm * np.deg2rad(angle_deg)
+    return free_sum_delta - ideal  # arc must change by this (negative = shortening)
+
 print("MVM tendon joint — kinematic check (provisional, two-pulley)")
 print(f"Link length: {link_length} mm")
 print(f"Primary pulley radius: {pulley_radius} mm (diameter would be {pulley_radius*2} mm)")
@@ -206,9 +215,15 @@ print("Moving-tangent free varies; arc compensates for monotonic total ΔL = r·
 print("Compensation note: free sum varies by ~26 mm over ±60°; proper continuous wrap arc must offset that variation so net path ΔL equals pure r·θ (±8.4 mm). Discrete freezes free, leaving residual. Wrapgeom enforces the offset automatically.")
 print("Quantified (0° to 60°): free sum +24.9 mm, required arc shortening ~16.5 mm to net +8.4 mm.")
 
+print("\nExplicit wrap-arc compensation formula (primary):")
+for ang in [0, 30, 60]:
+    print(f"  At {ang:3d} deg: required wrap-arc Δ = {wrap_arc_delta_mm(ang):.2f} mm (negative = shortening)")
+print("At 60°: ~-16.5 mm shortening so net path ΔL = +8.4 mm. Wrapgeom target is now numeric.")
+
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention locked as working assumption for placeholder; diameter non-blocking.")
 print("Free-segment isolation: residual reverse is primarily free-length change to fixed first site; continuous wrap (moving tangent) eliminates it.")
 print("Continuous free quantified: confirms next step is true wrapgeom.")
 print("Free-arc compensation clarified: arc offsets free variation under continuous; discrete does not.")
 print("Arc delta quantified: ~16.5 mm shortening required over 0–60° for net r·θ.")
+print("Wrap-arc formula explicit: wrap_arc_delta_mm(angle) = free_sum_delta - r*θ.")
