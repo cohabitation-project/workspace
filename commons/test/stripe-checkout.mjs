@@ -146,3 +146,24 @@ test('refunds and disputes reach the order; the split is there to recompute (pra
   assert.equal(checkout.handleEvent({ type: 'charge.dispute.closed', data: { object: { id: 'dp_2', payment_intent: 'pi_test_11', status: 'won' } } }).status, 'paid');
   assert.equal(checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_x', payment_intent: 'pi_nobody', amount: 100, amount_refunded: 100 } } }).ignored, 'unknown order');
 });
+
+test('a replayed or late paid event never undoes a refund, a dispute or later progress (Kimi, review of #292)', async () => {
+  const id = listing.id || listing.listing?.id;
+  const paidEv = (order, n) => ({ type: 'checkout.session.completed', data: { object: { id: `cs_replay_${n}`, payment_status: 'paid', payment_intent: `pi_replay_${n}`, metadata: { cohabi_order: order } } } });
+  const r = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+  checkout.handleEvent(paidEv(r.order, 1));
+  checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_r1', payment_intent: 'pi_replay_1', amount: 2500, amount_refunded: 1000 } } });
+  checkout.handleEvent(paidEv(r.order, 1));
+  assert.equal(checkout.order(r.order).status, 'partly_refunded', 'replay after a partial refund');
+  checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_r1', payment_intent: 'pi_replay_1', amount: 2500, amount_refunded: 2500 } } });
+  checkout.handleEvent(paidEv(r.order, 1));
+  assert.equal(checkout.order(r.order).status, 'refunded', 'replay after a full refund');
+  const r2 = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+  checkout.handleEvent(paidEv(r2.order, 2));
+  checkout.handleEvent({ type: 'charge.dispute.created', data: { object: { id: 'dp_r', payment_intent: 'pi_replay_2', status: 'needs_response' } } });
+  checkout.handleEvent(paidEv(r2.order, 2));
+  assert.equal(checkout.order(r2.order).status, 'disputed', 'replay during a dispute');
+  checkout.handleEvent({ type: 'charge.dispute.closed', data: { object: { id: 'dp_r', payment_intent: 'pi_replay_2', status: 'lost' } } });
+  checkout.handleEvent(paidEv(r2.order, 2));
+  assert.equal(checkout.order(r2.order).status, 'dispute_lost', 'replay after a lost dispute');
+});

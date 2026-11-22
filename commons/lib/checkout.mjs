@@ -195,7 +195,10 @@ export function handleEvent(ev) {
     const id = o.metadata?.cohabi_order || o.client_reference_id; const cur = id && order(id);
     if (!cur) return { ignored: 'unknown order' };
     if (o.payment_status && o.payment_status !== 'paid') return { order: id, status: cur.status };
-    if (cur.status !== 'paid') logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
+    // Only an order still waiting for payment becomes paid. Stripe delivers webhooks at least once and not always in
+    // order, so a replayed or late "paid" event must never undo a refund, a dispute, or later progress (Kimi's review
+    // of #292: a replay turned a refunded order back into "paid").
+    if (cur.status === 'awaiting_payment' || cur.status === 'draft') logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
     return { order: id, status: 'paid' };
   }
   if (ev?.type === 'checkout.session.expired') { const id = o.metadata?.cohabi_order; if (id && order(id)?.status === 'awaiting_payment') logOrder({ op: 'status', order: id, status: 'cancelled' }); return { order: id, status: 'cancelled' }; }
