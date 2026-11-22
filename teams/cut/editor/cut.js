@@ -95,7 +95,7 @@ function renderStockResults(container, hits, onChoose) {
     const choose = document.createElement('button');
     choose.type = 'button';
     choose.textContent = 'Use this clip';
-    choose.addEventListener('click', () => onChoose(String(hit.id), choose));
+    choose.addEventListener('click', () => onChoose(String(hit.id), choose, String(hit.by || '')));
     card.append(choose);
     container.append(card);
   }
@@ -136,7 +136,7 @@ export function initCutEditor(root = document) {
         stockStatus.textContent = payload.error || payload.message || `Stock search failed (${response.status}).`;
         return;
       }
-      const count = renderStockResults(stockResults, payload.hits, (id, button) => importStockClip(id, button));
+      const count = renderStockResults(stockResults, payload.hits, (id, button, maker) => importStockClip(id, button, maker));
       stockStatus.textContent = count ? `${count} stock clips. Each is copied into Cohabi with its maker credited.` : 'No clips found. Try another search.';
     } catch {
       stockStatus.textContent = 'Could not reach stock search. Check your connection and try again.';
@@ -176,6 +176,44 @@ export function initCutEditor(root = document) {
     safeWrite(draftKey, values);
     return values;
   };
+  async function importStockClip(stockId, button, maker = '') {
+    button.disabled = true;
+    stockStatus.textContent = 'Adding this clip to your videos…';
+    try {
+      const response = await fetch(`/api/stock/videos/${encodeURIComponent(stockId)}/import`, {
+        method: 'POST', headers: { Accept: 'application/json' },
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message = payload.error || payload.message || `Could not import clip (${response.status}).`;
+        stockStatus.textContent = message;
+        if (response.status === 401 || response.status === 503) showToast(message);
+        return;
+      }
+      if ((typeof payload.id !== 'string' && typeof payload.id !== 'number') || typeof payload.url !== 'string' || !payload.url) {
+        const message = 'The stock import returned no video to preview. Try another clip.';
+        stockStatus.textContent = message;
+        showToast(message);
+        return;
+      }
+      videoId = String(payload.id);
+      video.dataset.videoId = videoId;
+      video.src = payload.url;
+      draftKey = `${DRAFT_PREFIX}${videoId}`;
+      // Carry the current edit forward to the imported video as its local draft.
+      draft = null;
+      duration = 0;
+      safeWrite(draftKey, saveDraft());
+      selectedCredit.textContent = `by ${String(payload.by || maker || 'Pixabay contributor')} on Pixabay`;
+      stockStatus.textContent = 'Clip added. Your edit is saved in this draft.';
+      stockSheet.hidden = true;
+      video.load();
+    } catch {
+      const message = 'Could not import this clip. Check your connection and try again.';
+      stockStatus.textContent = message;
+      showToast(message);
+    } finally { button.disabled = false; }
+  }
   const syncRange = (changed) => {
     const a = clampTime(start.value);
     const b = clampTime(end.value);

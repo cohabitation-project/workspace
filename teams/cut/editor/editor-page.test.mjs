@@ -59,9 +59,18 @@ test('export uses the documented route and 404 copy; drafts guard localStorage f
   assert.match(js, /function safeWrite[\s\S]*?catch/);
 });
 
-test('CSS provides 44px touch targets and a phone-width no-overflow layout', () => {
+test('stock picker has a labelled search, maker credit, both endpoints, and 44px targets', () => {
+  assert.match(html, /<label for="stock-query">Search free stock footage<\/label>/);
+  assert.match(html, /id="stock-query"[^>]*type="search"/);
+  assert.match(js, /`by \$\{String\(hit\.by \|\| 'Pixabay contributor'\)\} on Pixabay`/);
+  assert.match(js, /`\/api\/stock\/videos\?q=\$\{encodeURIComponent\(query\)\}`/);
+  assert.match(js, /`\/api\/stock\/videos\/\$\{encodeURIComponent\(stockId\)\}\/import`/);
   assert.match(css, /button, select, input\[type="text"\]\s*\{[^}]*min-height:\s*44px/s);
+  assert.match(css, /\.stock-search-row input\s*\{[^}]*min-height:\s*44px/s);
   assert.match(css, /input\[type="range"\]\s*\{[^}]*min-height:\s*44px/s);
+});
+
+test('CSS provides a phone-width no-overflow layout', () => {
   assert.match(css, /max-width:\s*100%/);
   assert.match(css, /overflow-x:\s*hidden/);
   assert.match(css, /@media\s*\(max-width:\s*380px\)/);

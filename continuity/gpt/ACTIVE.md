@@ -1,16 +1,21 @@
-# GPT — active checkpoint (2026-11-22 15:30Z)
+# GPT — active checkpoint (2026-11-22 18:18Z)
 
 ## Current work
-Builders Round 34, GPT's assigned #291 defect #1 fix. The round job targeted exact commit `fafdcdfed3a9306646c0fa7109350da9b9ea7111`; outputs are complete for Setu to place into the open PR. Next build session: read newest `teams/build/JOBS.md`, `teams/build/RESULTS.md`, `context/NOW.md`, and Commons rooms before acting; do only the current assignment.
+Cohabi Cut Job 4, assigned stock-picker integration. Implemented in the team-local editor prototype; next is Setu placing/integrating it with the Cut route and verifying it in a browser. Do not claim it is live.
 
 ## Finished this session
-- Re-read welcome/re-entry, mission and `context/NOW.md`; read this checkpoint, Round 34 `teams/build/JOBS.md`, `teams/build/RESULTS.md`, Work Desk, and build/general Commons. No direct guest question awaited an answer.
-- Wrote whole replacement files and evidence report: `teams/build/outputs/291-defect1/printful.mjs`, `teams/build/outputs/291-defect1/merch-printful-retry.mjs`, `teams/build/outputs/291-defect1/RESULT.md`.
-- Change: `products()` caches only complete nonempty catalog reads. Any API/product exception makes the read incomplete; no negative/partial result is cached. Last known-good catalog is returned during a failed refresh; next request retries immediately.
-- Measured in exact-SHA codeload checkout, Node v24.22.3: `npm ci --ignore-scripts --no-audit --no-fund` succeeded (231 packages). Baseline `9970a4f39ced83b9435479e4a4ba4590854450dc` with the new regression failed 1/1 exactly because the second immediate 429 call made no fresh request. Candidate `node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs` passed 2/2, skips 0. Logs: `teams/build/outputs/2026-11-22T15-23-14/{baseline-red.log,candidate-green.log}`.
-- Posted the handoff to build Commons this session; no source branch, PR, merge, staging or production action was performed.
+- Re-read `context/00-welcome-and-reentry.md`, mission, this checkpoint, `context/NOW.md`, Cut `JOBS.md` / `RESULTS.md`, Work Desk, and the Cut + General Commons. No waiting guest question in the room messages.
+- In `teams/cut/editor/cut.js`, implemented `importStockClip(id)`: POST `/api/stock/videos/:id/import`; validate returned `id` and `url`; load the imported video in the preview; key/save the current edit draft by returned video id; show maker credit; and surface server-provided messages in `.rl-toast` for 401/503. Stock result credit is “by <maker> on Pixabay”.
+- Extended `teams/cut/editor/editor-page.test.mjs` to assert a labelled stock search, maker credit, both stock endpoints, and 44 px touch controls.
+- Added evidence row to `teams/cut/RESULTS.md`.
+- Measured on this runner: `node --test teams/cut/editor/editor-page.test.mjs` **7/7, 0 skips**; `node --check teams/cut/editor/cut.js` exit 0.
+
+## Finished before this session
+- Job 4 editor screen payload contract test recorded in `teams/cut/RESULTS.md`; screen already existed in the team prototype. Prior measurements: 6/6 and syntax check passed; no browser or live route checked.
+- Job 3 music fade-in real-render test recorded in `teams/cut/RESULTS.md`; team prototype with static ffmpeg 9.0.2, not placed/server ffmpeg.
+- Builders #291 retry-cache fix proposed in `teams/build/outputs/291-defect1/`; Setu placement and exact-head independent review remain outstanding. Orders/payments stay closed; defects 2/3 remain blockers.
 
 ## Decisions / limits / open
-- Patch is only a proposed PR file handoff; Setu must place it and obtain fresh independent review on the resulting head.
-- Printful orders/payments stay closed. Prior #291 defects #2 (order payload/design correctness) and #3 (generic `design.art` ownership) remain blockers before opening orders.
-- Tests used local fake Printful only; no provider call, order, payment, fulfillment, browser, staging, production, merge or deploy was checked. Geoffrey controls production deploys.
+- Job 4 is team-local only. No live stock endpoint, browser, route/server integration, placement, merge, or deployment was checked. The site production deploy remains Geoffrey's button.
+- Next: Setu places/integrates the picker and associated Job 4 pieces, checks browser behavior and the returned stock-import contract, then runs the full editor/route checks. Keep any mismatch explicit; no live claim without deployed observation.
+- No Work Desk task was claimed this session; desk items offered to GPT were unrelated to this Cut assignment.
