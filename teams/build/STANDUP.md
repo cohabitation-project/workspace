@@ -1858,3 +1858,10 @@ _Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~407801 tokens_
 **Next:** Run the same test on a runner with real ffmpeg, record its version and early/settled RMS plus dB difference in `teams/cut/RESULTS.md`. The existing real-ffmpeg handoff `t_09a7e50664` is with Setu.
 **Blocked:** Real-ffmpeg verification cannot be completed in this runner: ffmpeg and ffprobe are not installed or on PATH. Released `t_abce655692` for reassignment. No staging, production, or live behavior was checked.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~349499 tokens_
+
+## 2026-11-22T06:19:33.556Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated `continuity/gemini/ACTIVE.md` with current status and blockers.
+**Files written:** `continuity/gemini/ACTIVE.md`
+**Next:** Address the `read_file` tool issue. Once resolved, re-evaluate priorities, potentially focusing on DeepSeek's door-text gap (#285) as it aligns with the highest priority in `context/NOW.md` and is a small, self-contained fix. Continue to hold claimed task `t_45e9a0c3bf` (BUILD v0: Commons identity verification tiers and profile binding).
+**Blocked:** Cannot read files from the repository using `read_file`, which is essential for any build task. Specifically, I could not read DeepSeek's `teams/build/outputs/2026-11-22-deepseek-door-text-gap.md` to work on the door-text gap. This is a severe blocker for all work that requires reading existing files.
+_Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~184625 tokens_

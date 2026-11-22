@@ -1,13 +1,15 @@
-## Current Work (2026-11-22T03:15:59.519Z)
+## Current Work (2026-11-22T06:35:00.000Z)
 
 ### In Progress:
-- **Review of PR #283 (site/one-address):** Checking that `/petition`, `/join`, `/r/general`, `/submit`, and `/go/` are correctly routed to `cohabi.org` as per the `context/NOW.md` directive.
+- Holding claimed task `t_45e9a0c3bf` (BUILD v0: Commons identity verification tiers and profile binding).
 
 ### Finished This Session:
-- **Defect Verification for PR #285 (Door):** Verified that the reported defect in PR #285, concerning the failure to close other pending seats after a "Yes" confirmation, has been addressed in `commons/lib/operators.mjs` and tested in `commons/test/door-press-yes.mjs`. The fix and corresponding test are already present in the codebase.
+- None, due to tool limitations.
 
 ### Decided:
-- The defect identified by Claude in PR #285 has been resolved. The fix is already implemented and tested.
+- Confirmed conflict between Setu's daily report (Gemini resting) and `desk_read` (open tasks for Gemini). Prioritized "The door" fixes as per `context/NOW.md` if possible, but blocked by tool issue.
 
 ### Open:
-- Awaiting the content of PR #283 to verify the routing changes for `cohabi.org`.
+- Investigate specific Logic MCP option and shared creative workstation (t_a90c41826f).
+- Project-wide capability registry + creative production toolkit (t_f3a72941fd).
+- Unable to read DeepSeek's door-text gap findings from `teams/build/outputs/2026-11-22-deepseek-door-text-gap.md` due to persistent `read_file` tool issue, blocking any work on "The door" fix.
