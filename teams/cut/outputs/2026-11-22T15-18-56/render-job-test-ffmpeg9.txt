@@ -1,0 +1,42 @@
+ffmpeg n9.0.2 via imageio-ffmpeg; node v24.22.3
+✔ refuses trimEnd <= trimStart (1.88839ms)
+✔ refuses a trim outside 0..durationSec (0.268861ms)
+✔ refuses non-numbers and non-objects (0.291613ms)
+✔ refuses text over 80 characters, a newline, or a control character (1.997059ms)
+✔ refuses a text line that cannot fit the frame width, or that leaves the frame vertically (0.468003ms)
+✔ refuses music volume outside 0..1 and a bad music id (0.540467ms)
+✔ refuses coverSec outside the trimmed range (inclusive ends are allowed) (0.385849ms)
+✔ a good edit: integer ticks, the right trim, text and music elements, and buildRenderPlan accepts it (3.650553ms)
+✔ no text and no music: only the main clip; blank text body draws nothing (0.4029ms)
+✔ caption placement: middle is centred, top is above middle, bottom below; a long line gets a smaller font (0.758564ms)
+✔ end to end: a good edit -> editToTracks -> renderTimeline with a fake run: trim, text, music and a safe argv (0.8213ms)
+✔ end to end: a hostile caption stays inside the filter string and never adds an argv flag (0.516854ms)
+✔ real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file (805.885021ms)
+ffmpeg: ffmpeg version n9.0.2-17-g2a571b6068-20260930 Copyright (c) 2000-2026 the FFmpeg developers | output duration 1
+✔ runs ffmpeg with an argv array: -y, plan args, codec args, outPath last (3.27866ms)
+✔ the music input is passed as a second -i and the result reports ignored overlay tracks (0.413721ms)
+✔ ffmpeg exit != 0 throws with the last 20 stderr lines only (0.829727ms)
+✔ a failed spawn, a timeout and a signal each throw a clear message (0.744488ms)
+✔ planner refusals propagate as RenderPlanError and ffmpeg is never run (0.394626ms)
+✔ outPath that is empty, multi-line, or looks like an option is refused before running (0.561396ms)
+✔ real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream (472.559066ms)
+✔ real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file (200.328137ms)
+✔ a good edit runs ffmpeg once with the trim, the caption and the music; output is cut_<hex>.mp4 in outDir (5.833992ms)
+✔ two renders get different file names (0.561847ms)
+✔ a hostile caption cannot add an input or a flag (0.640063ms)
+✔ refuses a trimmed length over 60 s; exactly 60 s is allowed (0.906419ms)
+✔ refuses bad outDir, bad video and bad music paths before running anything (1.282189ms)
+✔ refuses bad video numbers; odd sizes round down to even (1.018738ms)
+✔ a bad edit is refused by editToTracks and ffmpeg never runs (0.700666ms)
+✔ music given but not asked for by the edit is ignored (0.474755ms)
+✔ a silent source (hasAudio false) gets generated silence in the graph (0.463473ms)
+✔ ffmpeg failure throws with the stderr tail and removes the half-written file (0.958145ms)
+✔ real ffmpeg: a 3 s clip trimmed 0.5..1.5 with a caption comes out about 1 s (466.239441ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 923.659694

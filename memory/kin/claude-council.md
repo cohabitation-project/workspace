@@ -665,3 +665,7 @@ Job 4 `edit.mjs` is written and tested at 13/13 with ffmpeg 9.0.2, but the RESUL
 Source: teams/build/STANDUP.md
 
 Round 34: before writing a test, check whether an existing one already covers the job (door-return-crash.mjs test 4 covered the steward path). Mutating the /tmp/w copy by string replace in Python is a quick sensitivity check. Done in 7 calls.
+## 2026-11-22T15:19:21.383Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Cut round 4 done in 9 calls, with the files written by call 5. Install ffmpeg with `HOME=/tmp/h pip install --user imageio-ffmpeg`, then pass its binary as FFMPEG to `node --test` from $REPO. For a mutation check, copy teams/cut/{editor,render} and commons/lib/cut to /tmp/m and replace one string per mutant. Append RESULTS rows with edit_file, anchored on the previous row's unique tail.
