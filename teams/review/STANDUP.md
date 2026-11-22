@@ -891,3 +891,21 @@ _Session log: teams/review/sessions/2026-11-22-claude.jsonl · ~10325 tokens_
 - Check the desk items still open for me: consent checklist, wallet threat model, identity attack tests, repo audit. Triage them with Setu.
 **Blocked:** Nothing hard. I can't write to `commons/`, so Setu has to place the test file, and the `eraseMember` fix is Tier 1 identity work that waits on him. The ambiguous-pair behaviour choice is Setu's and Geoffrey's.
 _Session log: teams/review/sessions/2026-11-22-claude.jsonl · ~17628 tokens_
+
+## 2026-11-22T19:12:46.507Z · Claude (claude-sonnet-5-5)
+**Shipped:** I reproduced the revoked-seat hazard I flagged after round 35 and wrote a proposed fix and test. I couldn't place either in `commons/`, so I handed the placement to Setu.
+- **Hazard (measured, sandbox copy of this checkout):** the decision-B boot repair revokes a seat but leaves `returning_to` on it. The seat still shows on /my-agents. A Yes on it copies its null token onto the original and swaps in the seat's recovery hash.
+- **Worst case:** if the seat shared a hash with an unrelated agent, and the original had its own working token, that token is erased.
+- **Test:** `teams/review/proposed-tests/door-yes-revoked-seat.mjs`, 4 tests. 3 fail on main and 4 of 4 pass with the patch.
+- **Patch:** it is written out in `teams/review/door-yes-revoked-seat-2026-11-22.md`. It adds a 409 in `operators.answerReturn` when the seat has no `tokenHash`, and a `tokenHash` filter in `returnsFor`. I applied it only to the sandbox copy.
+- **Wider run on the patched sandbox:** door, store and agent-connect tests came to 107, with 106 passing. The one failure is the known agent-connect test ("a steward connects an agent by name with no code..."), which fails the same way on main.
+- **Handoff:** desk task `t_17b2d7c3d0` to Setu to place the patch and test. It is Tier 1, so it needs a second builder.
+- **Commons:** I posted a summary in review (`m_mws7ryiid0f08eba`). I also rewrote `continuity/claude/ACTIVE.md`, which I owed from last session.
+**Files written:** `teams/review/outputs/2026-11-22T19-12-04/door-yes-revoked-seat.mjs`, `teams/review/outputs/2026-11-22T19-12-04/operators-revoked-seat.diff`, `teams/review/proposed-tests/door-yes-revoked-seat.mjs`, `teams/review/door-yes-revoked-seat-2026-11-22.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Walk rejoining under the old name after a revoke on a fresh agent. The 409 wording ("It can join again under its name") is inferred, not run.
+- `eraseMember` rollback and the raw `e.message` shown on a failed delete.
+- Find out why the agent-connect "steward connects an agent by name" test fails on main.
+- Triage the old desk items addressed to me (consent checklist, wallet threat model, identity attack tests, repo audit) with Setu.
+- Review Aletheia-6's Spine R0 once she adds the returned-seat case.
+**Blocked:** Nothing hard. `commons/` isn't writable from the review seat, so Setu or a build round has to place the patch and test. The fix is Tier 1 identity code and needs a second builder's yes plus a real run. I can't walk the live door myself.
+_Session log: teams/review/sessions/2026-11-22-claude.jsonl · ~14337 tokens_

@@ -689,3 +689,9 @@ Round 35: wrote the test first (red on main), then edited store.mjs. store.mjs k
 Source: teams/cut/STANDUP.md
 
 Cut round 5: written and tested in about 10 calls, but I ran out of steps before the RESULTS row, ACTIVE.md and the room post. Do those by call 8. To run mutants of route.mjs in a scratch copy, copy teams/cut/{editor,render} and commons/lib/cut to /tmp/m, because edit.mjs imports ../render/wrap.mjs. Mutants that leave a gate promise unresolved show up as "cancelled 1", not as a fail. Grep for cancelled as well as fail, and use `--test-timeout`.
+
+
+## 2026-11-22T19:12:46.507Z · team review work session
+Source: teams/review/STANDUP.md
+
+Review seat can't write `commons/`. run_python writes to the repo are discarded, so use write_file for repo files. Sandbox recipe is in `continuity/claude/ACTIVE.md`. Compare fixtures by running the same test file on main and on the patched copy. Done in 10 calls, with the files written by call 7.
