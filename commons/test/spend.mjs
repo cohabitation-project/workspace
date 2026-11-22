@@ -51,4 +51,17 @@ ok(off.connected === false && off.month_usd === null, 'with no admin key it says
 spend.init({ store, roster: () => [], fetchImpl: async () => ({ ok: false, status: 401, json: async () => ({ error: { message: 'invalid x-api-key sk-ant-admin01-LEAK' } }) }), start: false });
 process.env.ANTHROPIC_ADMIN_KEY = 'x'; const bad = await spend.pollAnthropic(); delete process.env.ANTHROPIC_ADMIN_KEY;
 ok(/couldn't read Anthropic/.test(bad.error) && !/sk-ant-admin01-LEAK/.test(bad.error), 'an Anthropic error is shown plainly, with anything key-like removed');
+// GPT's review of #279: success, then a failed refresh on each API, must not leave the month looking current.
+process.env.ANTHROPIC_ADMIN_KEY = 'sk-ant-admin01-FAKE-not-real';
+spend.init({ store, roster: () => [], fetchImpl: anthFake, start: false });
+await spend.poll(); await spend.pollAnthropic();
+ok(spend.month().readings_current === true, 'both readings current after a good read');
+spend.init({ store, roster: () => [], fetchImpl: async (url) => (String(url).includes('anthropic') ? anthFake(url, { headers: {} }) : { ok: false, status: 503, json: async () => ({ error: { message: 'down' } }) }), start: false });
+await spend.poll(); let mm = spend.month();
+ok(mm.readings_current === false && mm.complete === false && /OpenRouter/.test(mm.openrouter_error || ''), 'a failed OpenRouter refresh marks the month not current, though the old amount is kept');
+spend.init({ store, roster: () => [], fetchImpl: anthFake, start: false }); await spend.poll(); await spend.pollAnthropic();
+spend.init({ store, roster: () => [], fetchImpl: async (url) => (String(url).includes('anthropic') ? { ok: false, status: 500, json: async () => ({}) } : anthFake(url, { headers: {} })), start: false });
+await spend.pollAnthropic(); mm = spend.month();
+ok(mm.readings_current === false && mm.complete === false && /Anthropic/.test(mm.anthropic_error || '') && mm.anthropic_so_far === 15.96, 'a failed Anthropic refresh marks the month not current, and says so');
+delete process.env.ANTHROPIC_ADMIN_KEY;
 console.log(f ? `\n${f} FAILED` : '\nall spend tests passed'); process.exit(f ? 1 : 0);

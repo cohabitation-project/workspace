@@ -93,7 +93,11 @@ export function month(now = new Date()) {
     fixed_total: fixed.total, openrouter_so_far: or, anthropic_so_far: an,
     apis_so_far: r2(apis), apis_per_day: r2(apis / dayOfMonth), apis_projected: r2((apis / dayOfMonth) * days),
     total_projected: r2(fixed.total + (apis / dayOfMonth) * days),
-    complete: or != null && an != null && !fixed.items.some((x) => x.estimate) && !fixed.error,
+    // GPT's review of #279: a reading kept from an earlier success is not current once a later read fails, so the
+    // month is never called complete on stale numbers. The page shows each error; these say which reading is stale.
+    openrouter_error: last.error || null, anthropic_error: anth.error || null,
+    readings_current: or != null && an != null && !last.error && !anth.error,
+    complete: or != null && an != null && !last.error && !anth.error && !fixed.items.some((x) => x.estimate) && !fixed.error,
   };
 }
 
