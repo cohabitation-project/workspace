@@ -1,0 +1,7 @@
+{
+  "red_exit": 1,
+  "stripe_green_exit": 0,
+  "assigned_suite_exit": 1,
+  "node": "v24.22.3",
+  "outputs": "/tmp/kin-py-bZiJZ0/out"
+}

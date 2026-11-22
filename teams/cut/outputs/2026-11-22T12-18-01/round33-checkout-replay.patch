@@ -1,0 +1,52 @@
+--- a/commons/lib/checkout.mjs
++++ b/commons/lib/checkout.mjs
+@@ -198,8 +198,9 @@
+     // Only an order still waiting for payment becomes paid. Stripe delivers webhooks at least once and not always in
+     // order, so a replayed or late "paid" event must never undo a refund, a dispute, or later progress (Kimi's review
+     // of #292: a replay turned a refunded order back into "paid").
+-    if (cur.status === 'awaiting_payment' || cur.status === 'draft') logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
+-    return { order: id, status: 'paid' };
++    const becomesPaid = cur.status === 'awaiting_payment' || cur.status === 'draft';
++    if (becomesPaid) logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
++    return { order: id, status: becomesPaid ? 'paid' : cur.status };
+   }
+   if (ev?.type === 'checkout.session.expired') { const id = o.metadata?.cohabi_order; if (id && order(id)?.status === 'awaiting_payment') logOrder({ op: 'status', order: id, status: 'cancelled' }); return { order: id, status: 'cancelled' }; }
+   if (ev?.type === 'account.updated') { const who = applyAccount(o); return { account: o.id, member: who }; }
+@@ -215,7 +216,7 @@
+   if (ev?.type === 'charge.dispute.created' || ev?.type === 'charge.dispute.closed') {
+     const cur = byCharge(o); if (!cur) return { ignored: 'unknown order' };
+     const dispute = { id: o.id, reason: o.reason || null, status: o.status || null };
+-    const status = ev.type === 'charge.dispute.created' ? 'disputed' : o.status === 'won' ? 'paid' : o.status === 'lost' ? 'dispute_lost' : 'disputed';
++    const status = ev.type === 'charge.dispute.created' ? 'disputed' : o.status === 'won' ? (cur.status === 'disputed' ? 'paid' : cur.status) : o.status === 'lost' ? 'dispute_lost' : 'disputed';
+     logOrder({ op: 'status', order: cur.id, status, dispute });
+     return { order: cur.id, status };
+   }
+--- a/commons/test/stripe-checkout.mjs
++++ b/commons/test/stripe-checkout.mjs
+@@ -167,3 +167,26 @@
+   checkout.handleEvent(paidEv(r2.order, 2));
+   assert.equal(checkout.order(r2.order).status, 'dispute_lost', 'replay after a lost dispute');
+ });
++
++
++test('ignored paid replays report canonical state; a won dispute never undoes a refund', async () => {
++  const id = listing.id || listing.listing?.id;
++  const paidEv = (order, n) => ({ type: 'checkout.session.completed', data: { object: { id: `cs_canonical_${n}`, payment_status: 'paid', payment_intent: `pi_canonical_${n}`, metadata: { cohabi_order: order } } } });
++  const r = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
++  checkout.handleEvent(paidEv(r.order, 1));
++  checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_canonical_1', payment_intent: 'pi_canonical_1', amount: 2500, amount_refunded: 2500 } } });
++  const replay = checkout.handleEvent(paidEv(r.order, 1));
++  assert.equal(replay.status, 'refunded', 'an ignored paid replay reports the canonical status, not paid');
++  assert.equal(checkout.order(r.order).status, 'refunded');
++
++  const r2 = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
++  checkout.handleEvent(paidEv(r2.order, 2));
++  checkout.handleEvent({ type: 'charge.dispute.created', data: { object: { id: 'dp_canonical', payment_intent: 'pi_canonical_2', status: 'needs_response' } } });
++  checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_canonical_2', payment_intent: 'pi_canonical_2', amount: 2500, amount_refunded: 2500 } } });
++  assert.equal(checkout.order(r2.order).status, 'refunded', 'the refund after the dispute opened is canonical');
++  const won = checkout.handleEvent({ type: 'charge.dispute.closed', data: { object: { id: 'dp_canonical', payment_intent: 'pi_canonical_2', status: 'won' } } });
++  assert.equal(won.status, 'refunded', 'a late won dispute does not erase the refund');
++  assert.equal(checkout.order(r2.order).status, 'refunded');
++  assert.equal(checkout.order(r2.order).refunded_cents, 2500);
++  assert.equal(checkout.order(r2.order).dispute.status, 'won', 'the dispute outcome is still recorded');
++});

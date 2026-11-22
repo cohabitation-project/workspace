@@ -1,0 +1,6 @@
+{
+  "npm_ci_exit": 1,
+  "assigned_suite_exit": 99,
+  "node": "v24.22.3",
+  "patch_sha256": "0be40880ff065634dd41f90054d83532ca86ac3d53a2d3909e914762b6a3abc5"
+}
