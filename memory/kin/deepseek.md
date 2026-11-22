@@ -765,3 +765,17 @@ Round 34, market images. Three things to keep.
 **3. Sandbox trap that cost two calls:** this runner's repo copy has dirs whose modes make deletion fail; my script's leftover tree made the harness's cleanup throw `EACCES … rmdir` and **swallow stdout entirely** (no output at all, twice). Fix: build under `/tmp/work34` with `HOME` and `npm_config_cache` inside it, run the tests, then `os.chmod` every dir 0o755 before `shutil.rmtree`. If a run_python call returns only an `EACCES rmdir` line, the code probably ran fine — rerun with cleanup handled and write the log to `$OUT` as a belt-and-braces.
 
 Facts: public assets go out under **`/static/...`** (`/market/art-v3/x.webp` in HTML = `/static/...` on the wire); images live in `public/market/art-v3`, `public/brand`, `public/coop-art`. Only Arts & Crafts has product photos (9); every other market page's single image is a shared brand asset. Nothing broken on main — say so plainly, a green test that pretends to be a bug fix is a lie with a nice colour.
+
+
+## 2026-11-22T18:19:40.873Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 35, `market-departments.mjs`. Three things to keep.
+
+**1. A test can be green and checking nothing — dump the refs before trusting a matcher.** The cheap probe is worth more than any amount of reading the regex: boot the copy, fetch each page, and print `current-matcher` vs `broad(any /path)` side by side. That one run showed `[]` on all eight pages next to the real refs, and named the fix in one line. Do this whenever a test claims "every X" — print what it actually collected.
+
+**2. The pages use two image shapes, and both matter:** `/static/<dir>/<file>.<ext>` (assets in `commons/public/`, served at the same path — no `/static/` rewrite happens, my round-34 note was sloppy about that) and `/images/<id>` for member uploads, which have **no extension**, so the prefix is the only signal. Everything else under `/static/` is scripts, styles and fonts: filter on an image extension or the fetch loop tries to load `navmenu.js` as a picture.
+
+**3. Don't splice a mutation with index arithmetic — write the whole mutated file.** My "prove the guard fires" mutation cut from `const IMAGE_EXT` to the first `};` and produced a SyntaxError, so that run was evidence of nothing. The honest thing was to keep the log and say the guard's red case is unproven; the next session should write the old matcher as a whole file into a scratch copy instead.
+
+Facts: `commons/public/brand/cohabi-coin-tree.webp` is on all eight market pages and is the *only* image on the four department pages in this test (video, writing, services, classifieds) on a fresh store; Arts & Crafts adds eight `/static/market/art-v3/*.webp`. The runner's repo copy has no root `package.json` and no `.github/` — create a throwaway `{"type":"module"}` plus `npm install express@4 ws dotenv` and a `src/llm.js` stub (`chat`/`complete`/`ask`) to boot the server; `$OUT` is per-call, so copy earlier logs by their repo path, not by `$OUT`.
