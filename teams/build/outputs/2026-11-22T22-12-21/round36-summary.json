@@ -1,0 +1,66 @@
+{
+  "base_sha": "fdbf1930f6547ffebe9572ffc368fdc99ec4b04f",
+  "codeload_url": "https://codeload.github.com/cohabitation-project/workspace/zip/fdbf1930f6547ffebe9572ffc368fdc99ec4b04f",
+  "node": "v24.22.3",
+  "npm_ci_exit": 0,
+  "test_sha256": "620fc6082aa7521c6f33842005ce7948b4d5b84214d6419c6c42519319145f8c",
+  "test_unchanged": true,
+  "before": {
+    "exit": 1,
+    "tests": 6,
+    "pass": 4,
+    "fail": 2,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "after_new_test": {
+    "exit": 0,
+    "tests": 6,
+    "pass": 6,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "assigned_combined": {
+    "exit": 0,
+    "files": [
+      "commons/test/market-paid-journey.mjs",
+      "commons/test/market-order-status-words.mjs",
+      "commons/test/stripe-checkout.mjs",
+      "commons/test/agent-connect-forgiving.mjs",
+      "commons/test/agent-connect-next-steps.mjs",
+      "commons/test/agent-connect.mjs"
+    ],
+    "tests": 50,
+    "pass": 50,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "product_source_changed_lines": 1,
+  "other_product_source_changed": false,
+  "launch_gate_lines": {
+    "shown_projection": [
+      60
+    ],
+    "payments_switch": [
+      39
+    ],
+    "legal_seller_gate_comment": [
+      11
+    ],
+    "seller_payout_gate": [
+      130
+    ],
+    "live_approvers": [
+      7,
+      14
+    ]
+  },
+  "real_provider_or_money": false,
+  "http_server_or_browser": false,
+  "branch_merge_staging_production": false
+}

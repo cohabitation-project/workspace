@@ -1,0 +1,135 @@
+diff --git a/commons/test/market-paid-journey.mjs b/commons/test/market-paid-journey.mjs
+new file mode 100644
+--- /dev/null
++++ b/commons/test/market-paid-journey.mjs
+@@ -0,0 +1,118 @@
++// One paid Marketplace order, exercised without network or real money.
++// Every event is signed and verified exactly as /api/payments/webhook does before
++// the route's checkout.handleEvent call. The activity pages render the same views
++// that /orders and /label/sales receive.
++import { test } from 'node:test';
++import assert from 'node:assert/strict';
++import crypto from 'node:crypto';
++import fs from 'node:fs';
++import os from 'node:os';
++import path from 'node:path';
++
++test('paid order journey: payment, partial refund, dispute lost, and a harmless replay', async (t) => {
++  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'market-paid-journey-'));
++  const oldFetch = globalThis.fetch;
++  try {
++    process.env.COMMONS_DATA = D;
++    process.env.COMMONS_PAYMENTS = 'stripe';
++    process.env.STRIPE_SECRET_KEY = 'sk_test_journey';
++    process.env.STRIPE_WEBHOOK_SECRET = 'whsec_journey';
++    delete process.env.COMMONS_LIVE_PAYMENTS_APPROVED;
++    delete process.env.STRIPE_PUBLISHABLE_KEY;
++
++    const store = await import('../lib/store.mjs'); store.init(D);
++    const market = await import('../lib/market.mjs'); market.init?.(D);
++    const stripe = await import('../lib/stripe.mjs');
++    const checkout = await import('../lib/checkout.mjs'); checkout.init(D);
++    const { ordersPage, salesPage, orderStatusWords } = await import('../lib/marketpage.mjs');
++
++    const add = (m) => { store.addMember({ created: new Date().toISOString(), ...m }); return store.getMember(m.id); };
++    const seller = add({ id: 'h_journey_seller', kind: 'human', name: 'Journey Seller' });
++    const buyer = add({ id: 'h_journey_buyer', kind: 'human', name: 'Journey Buyer' });
++    const fakeStripe = async (url, init) => {
++      const p = new URL(url).pathname;
++      const ok = (j) => ({ ok: true, status: 200, json: async () => j });
++      if (p === '/v1/accounts' && init.method === 'POST') return ok({ id: 'acct_journey' });
++      if (p === '/v1/account_links') return ok({ url: 'https://connect.stripe.test/onboard' });
++      if (p === '/v1/accounts/acct_journey') return ok({ id: 'acct_journey', charges_enabled: true, payouts_enabled: true, details_submitted: true });
++      if (p === '/v1/checkout/sessions') return ok({ id: 'cs_journey', url: 'https://checkout.stripe.test/pay', client_secret: 'cs_journey_secret' });
++      return { ok: false, status: 404, json: async () => ({ error: { message: 'unexpected fake Stripe request' } }) };
++    };
++    globalThis.fetch = fakeStripe;
++
++    await checkout.startPayoutAccount(seller, { base: 'https://cohabi.test', fetchImpl: fakeStripe });
++    assert.equal((await checkout.refreshAccount(seller, { fetchImpl: fakeStripe })).status, 'verified');
++    const made = market.create(seller, {
++      title: 'Journey print', category: Object.keys(market.CATEGORIES)[0], type: 'product',
++      price: { mode: 'fixed', amount: 25 }, text: 'A test-only print', rights: true,
++      made_by: 'human', license: 'all-rights',
++    });
++    const listingId = made.id || made.listing?.id;
++    const started = await checkout.startCheckout(buyer, listingId, {}, { base: 'https://cohabi.test', fetchImpl: fakeStripe });
++    const orderId = started.order;
++    assert.equal(checkout.order(orderId).status, 'awaiting_payment');
++
++    // This is server.mjs's webhook sequence: exact bytes -> verifyWebhook -> handleEvent.
++    const deliver = (event) => {
++      const raw = Buffer.from(JSON.stringify(event));
++      const ts = Math.floor(Date.now() / 1000);
++      const v1 = crypto.createHmac('sha256', process.env.STRIPE_WEBHOOK_SECRET).update(`${ts}.${raw.toString('utf8')}`).digest('hex');
++      const verified = stripe.verifyWebhook(raw, `t=${ts},v1=${v1}`);
++      return checkout.handleEvent(verified);
++    };
++    const paidEvent = {
++      type: 'checkout.session.completed',
++      data: { object: { id: 'cs_journey', payment_status: 'paid', payment_intent: 'pi_journey', metadata: { cohabi_order: orderId } } },
++    };
++    const checkViews = (status, refundedCents, words) => {
++      const persisted = checkout.order(orderId);
++      assert.equal(persisted.status, status, 'persisted order status');
++      assert.equal(Number(persisted.refunded_cents || 0), refundedCents, 'persisted refunded cents');
++      assert.equal(orderStatusWords(persisted), words, 'plain words from the complete order');
++      const purchase = checkout.ordersFor(buyer).purchases.find((o) => o.id === orderId);
++      const sale = checkout.ordersFor(seller).sales.find((o) => o.id === orderId);
++      assert.ok(purchase, 'buyer view contains the order');
++      assert.ok(sale, 'seller view contains the order');
++      const ordersHtml = ordersPage({ me: buyer, purchases: [purchase] });
++      const salesHtml = salesPage({ me: seller, sales: [sale] });
++      for (const [page, html] of [['/orders', ordersHtml], ['/label/sales', salesHtml]]) {
++        assert.ok(html.includes(`<p class="mk-order-status">${words}</p>`), `${page}: expected ${JSON.stringify(words)} for ${status}`);
++        assert.ok(!html.includes(`<p class="mk-order-status">${status}</p>`), `${page}: raw status leaked`);
++      }
++    };
++
++    await t.test('signed checkout.session.completed marks it paid', () => {
++      assert.equal(deliver(paidEvent).status, 'paid');
++      checkViews('paid', 0, 'Paid');
++    });
++    await t.test('signed partial charge.refunded preserves the refund amount in both activity pages', () => {
++      assert.equal(deliver({ type: 'charge.refunded', data: { object: {
++        id: 'ch_journey', payment_intent: 'pi_journey', amount: 2500, amount_refunded: 1000,
++      } } }).status, 'partly_refunded');
++      checkViews('partly_refunded', 1000, 'Partly refunded ($10.00 back)');
++    });
++    await t.test('signed charge.dispute.created opens the dispute without erasing the refund', () => {
++      assert.equal(deliver({ type: 'charge.dispute.created', data: { object: {
++        id: 'dp_journey', payment_intent: 'pi_journey', reason: 'fraudulent', status: 'needs_response',
++      } } }).status, 'disputed');
++      checkViews('disputed', 1000, 'Disputed: the bank is reviewing it');
++    });
++    await t.test('signed charge.dispute.closed lost closes the dispute without erasing the refund', () => {
++      assert.equal(deliver({ type: 'charge.dispute.closed', data: { object: {
++        id: 'dp_journey', payment_intent: 'pi_journey', status: 'lost',
++      } } }).status, 'dispute_lost');
++      checkViews('dispute_lost', 1000, 'Dispute lost: the bank returned the money');
++    });
++    await t.test('replaying the paid event changes neither the order nor its append-only log', () => {
++      const before = checkout.order(orderId);
++      const log = path.join(D, 'payments', 'orders.jsonl');
++      const bytesBefore = fs.readFileSync(log);
++      assert.equal(deliver(paidEvent).status, 'dispute_lost');
++      assert.deepEqual(checkout.order(orderId), before);
++      assert.ok(fs.readFileSync(log).equals(bytesBefore), 'ignored replay appends no duplicate state');
++    });
++  } finally {
++    globalThis.fetch = oldFetch;
++    fs.rmSync(D, { recursive: true, force: true });
++  }
++});
+diff --git a/commons/lib/checkout.mjs b/commons/lib/checkout.mjs
+--- a/commons/lib/checkout.mjs
++++ b/commons/lib/checkout.mjs
+@@ -57,7 +57,7 @@
+ // The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
+ // the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
+ const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100 }; };
+-const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
++const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
+ 
+ /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
+  *  who backed out of Stripe sees that nothing was charged. */
