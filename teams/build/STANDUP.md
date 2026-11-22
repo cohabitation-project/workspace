@@ -1754,3 +1754,42 @@ _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~0 tokens_
 **Next:** undefined
 **Blocked:** undefined
 _Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~575411 tokens_
+## 2026-11-22T00:20:58.803Z · Claude (claude-sonnet-5-5)
+**Shipped:** **Round 29 job: review of #285 at 7376cf6c. I did not write `teams/build/outputs/review-285-7376cf6c.md`.** I ran out of steps before writing it, so the verdict below exists only in this standup. I also did not review #283.
+
+**Verdict: conditional YES on 7376cf6c.** I hold the YES until the one defect below is fixed or the author says it is accepted. It is a defect in what the code does, not a hole a stranger can use.
+
+**What I ran** (full repo from the commit zip, `npm ci`, run from the repo root with COMMONS_FAKE_LLM=1):
+- `node --test commons/test/door-press-yes.mjs`: 6 tests, 6 pass. The named subtests "word-match confirm then Yes gives 403", "late confirm then Yes gives 403" and "the real agent still gets in after several squatters" all pass.
+- `auth-recovery.mjs`: all passed.
+- `e2e.mjs`: 181 passed, 0 failed.
+- `operator-confirm.mjs`: 4 of 4.
+- `door-rejoin-hook.mjs`: 4 of 4.
+- `agent-connect.mjs`: 25 of 25.
+- `patch --dry-run` of the PR diff on current main: every file applies, with one fuzz-1 hunk in the `.github` workflow file. The branch is 26 commits behind main, so I did not run the tests on the merged result.
+- Gotcha for whoever reruns this: the test spawns `commons/server.mjs` relative to the working directory. Run from the repo root, not `commons/`, or it fails with "server started".
+
+**Do the earlier points hold?**
+- **Word-match confirm:** closed. `heldBefore` requires `old.operatorId === human.id`, `c.by === human.id`, `status(old) === 'confirmed'`, and a confirmation timestamp before the seat's `created`. A missing or unparseable timestamp comes out as NaN and refuses, which is safe. A human who only word-matches (my "Mallory Pat" check) gets 404 on the seat.
+- **Same predicate as server.mjs:** holds. It checks `status(old) === 'confirmed'`.
+- **Squatting cap:** holds. There is no cap, and the 4-squatter test passes.
+- **Crash window:** holds. The original account is written first, then the seat is retired.
+- **The seat's own connection (DR-04):** holds. The unit test shows connections ending and a failed revoke being reported to the person and in the Hall. `recovered_at` is set, and `agentconnect.mjs:322` `predates` refuses connections made before it.
+- **Name collisions:** holds. The "returning 2…50" sequence is bounded, with a random-suffix fallback.
+
+**Defect (my adversarial script, `/tmp/w/adv.mjs`, not saved to the repo):**
+- **File and line:** `commons/lib/operators.mjs`, `answerReturn`, the Yes branch (about lines 118–125).
+- **What happens:** Yes on one seat does not close the other pending seats for the same original agent. With a real seat `s1` and a squatter `s2` both pending, Pat presses Yes on `s1`. `returnsFor` still lists `s2` on /my-agents.
+- **Consequence:** A later Yes on `s2` is accepted and replaces the original's `tokenHash` with the squatter's. The real agent is locked out. This needs Pat's own press, so it is a misclick or social-engineering risk, not a stranger takeover.
+- **Fix:** On Yes, clear `returning_to` on every other seat with the same `returning_to` and record it as superseded. Alternatively refuse Yes when the original already has `returned_from` and a later `recovered_at`. Then add a test where Yes on `s1` leaves `s2` out of `returnsFor` and makes a Yes on `s2` return 404.
+
+**Smaller notes:**
+- `.github/workflows/commons-tests.yml` is touched (2 lines, adding the test to CI). Geoffrey should see that.
+- The branch needs a rebase or merge on main, with a rerun.
+- The Hall announcement only works if Pat can tell the seats apart. The page shows arrival time, model and door, which is thin.
+**Files written:** none
+**Next:** 1. Write `teams/build/outputs/review-285-7376cf6c.md` from the verdict above. It should be a conditional YES on 7376cf6c pending the fix for the other pending seats staying open after Yes, and it should record that I ran the tests on the branch and did not run them on a merge with main.
+2. Review #283 (branch `site/one-address`): check that /petition, /join, /r/general, /submit and /go/ are routes in server.mjs.
+3. After Setu's fix, rerun `door-press-yes.mjs` on the rebased head. Setu or Geoffrey should look at the `.github` workflow edit.
+**Blocked:** Nothing external. I ran out of steps before writing the review file, and I did not review #283. I did not test #285 on a merge with main, because the branch is 26 commits behind. I did not look at /my-agents on staging or a real browser.
+_Session log: teams/build/sessions/2026-11-22-claude.jsonl · ~459638 tokens_

@@ -609,3 +609,7 @@ Round 28 (Claude, api-not-found): same recipe as round 27: copy $REPO/commons to
 Source: teams/cut/STANDUP.md
 
 The cut room's `positionX` question was answerable from GitHub, not from the repo snapshot. `urllib` reaches `api.github.com/repos/OpenCut-app/opencut-classic/git/trees/<sha>?recursive=1` and the raw files at the pinned sha. The repo name is `opencut-classic`. A first guess at the path under `OpenCut-app/OpenCut` returned 404. List the tree and filter by name rather than guessing paths. The key upstream files were `services/renderer/nodes/text-node.ts`, `scene-builder.ts`, `text/primitives.ts` and `text/typography.ts` (`FONT_SIZE_SCALE_REFERENCE=90`). I overran the call budget during the read. Decide the write-up earlier next time, and write the NOTE file by call 8.
+## 2026-11-22T00:20:58.803Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 29 (Claude, #285 review): api.github.com and codeload.github.com both work from run_python. Fetch `compare/main...<sha>` for the commit messages and file list. Get the diff from `github.com/.../pull/N.diff`. Unzip `codeload.github.com/.../zip/<sha>` and `npm ci` with HOME=/tmp/h. That gives the whole repo including src/llm.js, with no stub, in about 2 calls. Run node tests from the repo root, because some tests spawn `commons/server.mjs` by relative path. Printing a long diff from run_python truncates the start of the output, so print it in slices by `diff --git` offsets. Write the review file by call 8; this session I spent about 10 calls reading and lost the file.
