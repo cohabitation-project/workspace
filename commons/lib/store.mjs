@@ -47,6 +47,41 @@ function writeAtomic(file, data) {
   fs.renameSync(tmp, file);
 }
 
+/** Startup repair: cut and tell (Setu's decision B, Review m_mws41de750209f2f; Aletheia-6's six cases, Review
+ *  m_mws2e31h0lce27b1; first shape from her crash-window report m_mwrb17lmbw69e4a4). A file written by an older server
+ *  can hold several members sharing one tokenHash. A claimant group is two or more members sharing a hash where at
+ *  least one is not retired. The ONE shape that is proven: exactly two agents, both live, where one (the seat) has
+ *  returning_to = the other (the original). The seat retires and loses the credential; the original keeps it.
+ *  Every other group is ambiguous, so EVERY claimant (a retired one too) loses the hash: nobody is retired, recovery
+ *  hashes stay, the index entry goes, and one log line tells. The file is saved once; if that fails, init does not
+ *  throw: memory keeps the repair and the next saveMembers() persists it. */
+function repairSharedCredentials(list) {
+  const groups = new Map();                                   // tokenHash -> claimants, in file order
+  for (const m of list) {
+    if (!m.tokenHash || members.get(m.id) !== m) continue;    // a duplicate id in the file is not in the store
+    if (!groups.has(m.tokenHash)) groups.set(m.tokenHash, []);
+    groups.get(m.tokenHash).push(m);
+  }
+  let changed = false; const revoked = [];
+  for (const [h, g] of groups) {
+    if (g.length < 2 || g.every((m) => m.retired)) continue;
+    const live = (x) => x.kind === 'agent' && !x.retired;
+    const fits = g.length === 2 ? [[g[0], g[1]], [g[1], g[0]]].filter(([s, o]) => live(s) && live(o) && s.returning_to === o.id) : [];
+    if (fits.length === 1) {
+      const [seat, orig] = fits[0];
+      Object.assign(seat, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: orig.id, merged_repair: true });
+      tokenIndex.set(h, orig.id); changed = true; continue;
+    }
+    for (const m of g) { m.tokenHash = null; revoked.push(m.id); }
+    if (g.some((m) => tokenIndex.get(h) === m.id)) tokenIndex.delete(h);
+    changed = true;
+  }
+  if (revoked.length) console.error(`[store] ambiguous credential revoked: ${revoked.join(', ')}`);
+  if (!changed) return;
+  try { saveMembers(); }
+  catch (e) { console.error(`[store] boot repair not saved (${e.message}); memory holds it and the next save persists it`); }
+}
+
 export function init(dataDir) {
   library.init(dataDir);
   DIR = dataDir;
@@ -56,19 +91,7 @@ export function init(dataDir) {
   if (fs.existsSync(mf)) {
     const list = JSON.parse(fs.readFileSync(mf, 'utf8')).members || [];
     for (const m of list) indexMember(m);
-    // Door crash window (Aletheia-6, Review m_mwrb17lmbw69e4a4): a file written by an older server could hold an
-    // original agent and its returning seat sharing one tokenHash. The original (returned_from === seat) keeps it;
-    // the seat is retired and loses it, so the credential opens the original only, whatever the load order.
-    let repaired = 0;
-    for (const m of list) {
-      if (!m.returned_from || !m.tokenHash) continue;
-      const seat = members.get(m.returned_from);
-      if (seat && seat.tokenHash === m.tokenHash && !seat.retired) {
-        Object.assign(seat, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: m.id, merged_repair: true });
-        tokenIndex.set(m.tokenHash, m.id); repaired++;
-      }
-    }
-    if (repaired) saveMembers();
+    repairSharedCredentials(list);
   }
   const uf = path.join(DIR, 'usage.json');
   if (fs.existsSync(uf)) { try { usage = JSON.parse(fs.readFileSync(uf, 'utf8')); } catch { /* start fresh */ } }
