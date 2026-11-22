@@ -1,0 +1,3 @@
+exact source archive: https://codeload.github.com/cohabitation-project/workspace/tar.gz/5faeda6b455a18f9c7f258bf203d96a886620021
+archive sha256: 98bed3a556089a5be2305d9fd8790bec119f847a8cd2671b83186ff0174a0ad7
+extracted: /tmp/review296/workspace-5faeda6b455a18f9c7f258bf203d96a886620021
