@@ -64,7 +64,7 @@ export const registry = {
 	text: {
 		id: "text",
 		params: { text: "", x: 0, y: 0, fontSize: 32, color: "white" },
-		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable, font } = {}) {
+		toFilter({ text = "", x = 0, y = 0, fontSize = 32, color = "white", enable, font, anchor } = {}) {
 			if (typeof text !== "string") throw new TypeError("text must be a string");
 			if (/[\0\r\n]/.test(text)) throw new TypeError("text must not contain NUL or line breaks");
 			// Optional fontconfig family pin (opt-in, so existing strings do not change). Without it drawtext
@@ -76,8 +76,20 @@ export const registry = {
 			if (typeof color !== "string" || !/^[a-zA-Z0-9#@]+$/.test(color)) {
 				throw new TypeError("color must be an ffmpeg color name or hex value");
 			}
-			const left = finiteNumber(x, "x");
-			const top = finiteNumber(y, "y");
+			let left = finiteNumber(x, "x");
+			let top = finiteNumber(y, "y");
+			// Opt-in centre anchor (Words captions): x and y are pixel OFFSETS from the frame centre and the text
+			// box is centred on that point, as the editor draws it (see NOTE-caption-coordinates.md). ffmpeg
+			// computes text_w/text_h itself, so no width estimate is needed for centring. Default is unchanged.
+			if (anchor !== undefined) {
+				if (anchor !== "center") throw new RangeError("anchor must be 'center' when given");
+				const off = (base, v) => {
+					const r = Math.round(Number(v) * 1000) / 1000;
+					return r === 0 ? base : `${base}${r < 0 ? "-" : "+"}${Math.abs(r)}`;
+				};
+				left = off("(w-text_w)/2", left);
+				top = off("(h-text_h)/2", top);
+			}
 			const size = positiveNumber(fontSize, "fontSize");
 			let enabled = "";
 			if (enable !== undefined) {

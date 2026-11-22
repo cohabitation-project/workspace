@@ -604,3 +604,38 @@ _Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~368334 tokens_
 **Next:** PR #296 needs bounded manual redirect handling that validates every target before requesting it, plus a redirect regression test; then re-review the new exact head. The existing direct-off-host test and passing official suite do not cover this path. Unknown-duration handling and the exact 24-hour cache boundary remain documented as unverified boundaries. Next session, read the newest `teams/build/JOBS.md` and take only its assigned job.
 **Blocked:** #296 is blocked on the confirmed off-host redirect-request defect. The normal merge/deploy path remains with Setu/Geoffrey after a fixed head passes review. No infrastructure blocker to my local review.
 _Session log: teams/cut/sessions/2026-11-22-kimi.jsonl · ~754224 tokens_
+## 2026-11-22T03:18:53.018Z · Claude (claude-sonnet-5-5)
+**Shipped:** I wrote the centre-relative caption conversion that the Cut room agreed was needed. Real ffmpeg places captions within 1.5 px of the intended centre, but one of my six unit tests fails and I have not fixed it. Nothing is placed or live. All files are team-local under `teams/cut/render/`.
+
+- **`words-position.mjs` (new).** `centreCaptionParams` takes a Words caption descriptor and returns one drawtext params object per wrapped line:
+  - It treats x/y as pixel offsets from the frame centre, per `NOTE-caption-coordinates.md`.
+  - It converts fontSize with `fontSize × H / 90`.
+  - It wraps, and spreads the lines symmetrically about the offset.
+  - It refuses non-centre `textAlign`, a block that would leave the frame, and an offset that leaves less than one glyph of width.
+- **`registry.mjs` (edited).** The text effect has an opt-in `anchor:"center"`. It emits `x=(w-text_w)/2±X` and `y=(h-text_h)/2±Y`, so ffmpeg does the centring and no width estimate is needed. Without `anchor` the output string is unchanged.
+- **`words-position.test.mjs` (new, 6 tests).**
+- **`ffmpeg-smoke-centre.py` (new).** It renders on a 640×360 black frame with real ffmpeg n9.0.2 and measures the bright-pixel bounding box. Output is in `teams/cut/outputs/2026-11-22T03-18-37/centre-smoke.json`.
+  - Default caption: dx +1.0, dy 0.0.
+  - Offset +100/−50: dx 0, dy 0.
+  - Offset −120/+60: dx 0, dy 0.
+  - Wrapped to 2 lines: dx −0.5, dy −1.5.
+  - All four cases stayed inside the frame.
+
+**Measured test result (not clean):** `node --test` in `teams/cut/render` ran 84 tests, 83 pass, 1 fail, 0 skipped. The failure is my own new test, "wrapped lines are spread symmetrically about the offset". My reading, which I did not run, is that the sample text fits on one line at 20 px in a 640 px frame. If so, the test's `ps.length >= 2` assertion is wrong, not the converter. An earlier run in the same session (before the files were saved) showed 1 failure in 84 tests once and 0 failures in 78 tests three times; I did not find the cause of the difference.
+
+**Findings from the registry and planner read.**
+- The placed `commons/lib/cut/words-to-text.mjs` passes `transform.positionX/Y` and `fontSize` straight into drawtext. The registry emits them as top-left pixels (`x=${left}:y=${top}`).
+- So the centre-vs-top-left error is already on main in the placed planner, not only in a planner still waiting to be placed. This was read from source and not rendered.
+- `teams/cut/RESULTS.md` has no row for `NOTE-caption-coordinates.md` (grep count 0).
+**Files written:** `teams/cut/outputs/2026-11-22T03-17-50/centre-smoke.json`, `teams/cut/render/words-position.mjs`, `teams/cut/render/words-position.test.mjs`, `teams/cut/render/registry.mjs`, `teams/cut/render/ffmpeg-smoke-centre.py`, `teams/cut/outputs/2026-11-22T03-18-29/centre-smoke.json`, `teams/cut/outputs/2026-11-22T03-18-37/centre-smoke.json`
+**Next:** 1. **Fix my test.** Use longer text or a larger fontSize so the caption really wraps to 2 or more lines. Rerun `node --test` and confirm 0 fail.
+2. **Add the RESULTS.md rows.** One for the NOTE, worded "answered for the pin, not confirmed for the live editor", and one for this converter and its smoke results. I couldn't safely anchor an edit in that file this session.
+3. **Wire the converter into `teams/cut/render/plan.mjs`.** `plan.mjs` calls `wrapCaptionParams` on descriptors from `wordsTrackToTextEffects`; switch the Words path to `centreCaptionParams`, and fix the plan tests that assume top-left. Hand placement to Setu or the build lane, with the placed `words-to-text.mjs` and `plan.mjs` named as the copy to change.
+4. **Confirm against the live editor.** One saved centred caption from the live editor would confirm the pin and the 90 divisor. `caption-defaults.ts` is still unread.
+5. **Known limits of the converter.** The `fontPx` rounding is a guess. Vertical centring uses ffmpeg's text box, not the editor's middle baseline, which is within about 1.5 px here. Only centre alignment is handled.
+6. **Door, market, publication.** Per Geoffrey's order, Cut work should stop after this unless the door, market and publication are verified.
+**Blocked:** - **Sessions can't write `commons/`**, so placement needs Setu or the build lane.
+- **Sandbox files vanish between `run_python` calls.** Only files written with `write_file` or `edit_file` persist. I lost the first copy of the new files and had to write them again, which used up my steps. I couldn't update `continuity/claude/ACTIVE.md` or post to the cut room, so the next session starts from the standup above.
+- **Pixel checks ran on ffmpeg n9.0.2 (imageio wheel), not the server's 6.1.1.**
+- **The live editor's saved-caption format is still unconfirmed.**
+_Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~19751 tokens_

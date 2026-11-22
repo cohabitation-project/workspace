@@ -1,0 +1,86 @@
+[
+ {
+  "case": "default centre, 'HELLO WORLD' size15",
+  "lines": 1,
+  "bbox_minx_maxx_miny_maxy": [
+   105,
+   536,
+   157,
+   202
+  ],
+  "bbox_centre": [
+   321.0,
+   180.0
+  ],
+  "wanted_centre": [
+   320.0,
+   180.0
+  ],
+  "dx": 1.0,
+  "dy": 0.0,
+  "inside_frame": true
+ },
+ {
+  "case": "offset +100,-50 size 5 (20px)",
+  "lines": 1,
+  "bbox_minx_maxx_miny_maxy": [
+   348,
+   491,
+   123,
+   136
+  ],
+  "bbox_centre": [
+   420.0,
+   130.0
+  ],
+  "wanted_centre": [
+   420.0,
+   130.0
+  ],
+  "dx": 0.0,
+  "dy": 0.0,
+  "inside_frame": true
+ },
+ {
+  "case": "offset -120,+60 size 5",
+  "lines": 1,
+  "bbox_minx_maxx_miny_maxy": [
+   128,
+   271,
+   233,
+   246
+  ],
+  "bbox_centre": [
+   200.0,
+   240.0
+  ],
+  "wanted_centre": [
+   200.0,
+   240.0
+  ],
+  "dx": 0.0,
+  "dy": 0.0,
+  "inside_frame": true
+ },
+ {
+  "case": "wrapped lines at centre size 6",
+  "lines": 2,
+  "bbox_minx_maxx_miny_maxy": [
+   35,
+   603,
+   154,
+   202
+  ],
+  "bbox_centre": [
+   319.5,
+   178.5
+  ],
+  "wanted_centre": [
+   320.0,
+   180.0
+  ],
+  "dx": -0.5,
+  "dy": -1.5,
+  "inside_frame": true
+ }
+]

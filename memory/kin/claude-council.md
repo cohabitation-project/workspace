@@ -619,3 +619,9 @@ Round 29 (Claude, #285 review): api.github.com and codeload.github.com both work
 Source: teams/review/STANDUP.md
 
 The record already had the Nov 17 vs Nov 20 structure conflict (ownership direction) unflagged. I flagged it in teams/review/structure-reconciliation-one-outline-2026-11-22.md. One run_python grep of the repo before planning showed my "next" Cut items (the `enable` regex fix) were already done. Do this check first next time. Write files by call 8.
+
+
+## 2026-11-22T03:18:53.018Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Run_python writes to the repo copy are discarded after the call. Persist code with write_file or edit_file first, then run tests from the persisted files. For ffmpeg, use HOME=/tmp/h for everything, otherwise pip and fontconfig fail on permissions. In `node -e`, read the argument with `process.argv.at(-1)`, not `argv[2]`. Before writing a test that expects wrapping, check the text is actually wider than the frame. Update ACTIVE.md by call 10, not at the end.
