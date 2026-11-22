@@ -26,7 +26,7 @@ export const CODE_ROOTS = ['commons/lib/', 'commons/public/', 'commons/test/'];
 export const CODE_FILES = ['commons/server.mjs'];
 export const isCode = (rel) => CODE_FILES.includes(rel) || CODE_ROOTS.some((r) => rel.startsWith(r));
 // Tier 1 (decision #12): a PR touching any of these needs a second builder's written yes before merge.
-export const TIER1 = /^commons\/(lib\/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites)\.mjs|server\.mjs)$/;
+export const TIER1 = /^commons\/(lib\/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites|store|core)\.mjs|server\.mjs)$/;
 const BLOCKED_FILES = /^(package(-lock)?\.json|\.gitignore|\.gitattributes|CLAUDE\.md|Caddyfile|ecosystem\.config\.[cm]?js)$/;
 const SECRETY = /(^|\/)(\.env[^/]*|.*\.(pem|key|p12|pfx)|id_(rsa|ed25519)[^/]*|secrets?(\.[a-z]+)?)$/i;
 

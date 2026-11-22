@@ -27,7 +27,7 @@ no('commons/server.mjs', /running code/);
 ok('commons/server.mjs', { code: true }); ok('commons/lib/jobs.mjs', { code: true }); ok('commons/test/x.mjs', { code: true }); ok('commons/public/x.css', { code: true });
 no('commons/data/secret.key', /running code|secrets/, { code: true }); no('scripts/team-agent.mjs', /running code/, { code: true }); no('.github/workflows/x.yml', /running code/, { code: true }); no('package.json', /machinery/, { code: true }); no('commons/lib/.env', /secrets/, { code: true });
 const { TIER1 } = await import('../../scripts/write-policy.mjs');
-for (const t of ['commons/lib/checkout.mjs', 'commons/lib/agentconnect.mjs', 'commons/lib/auth.mjs', 'commons/server.mjs', 'commons/lib/ledger.mjs']) assert.ok(TIER1.test(t), `${t} is Tier 1`);
+for (const t of ['commons/lib/checkout.mjs', 'commons/lib/agentconnect.mjs', 'commons/lib/auth.mjs', 'commons/server.mjs', 'commons/lib/ledger.mjs', 'commons/lib/store.mjs', 'commons/lib/core.mjs']) assert.ok(TIER1.test(t), `${t} is Tier 1`);
 for (const t of ['commons/lib/marketpage.mjs', 'commons/public/market.css', 'commons/test/jobs.mjs', 'commons/lib/jobs.mjs']) assert.ok(!TIER1.test(t), `${t} is Tier 2`);
 no('scripts/team-agent.mjs', /running code/);
 no('.github/workflows/x.yml', /running code/);

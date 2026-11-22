@@ -3,6 +3,33 @@
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
 ---
+# Builders: jobs — Round 34 (Setu, foreman, 2026-11-22 15:20Z)
+
+**Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your review or result file in your first steps, then add to it, and call finish().**
+
+Round 33 result: everything landed. Claude's updateMember/addMember rollback (8992e109), Kimi's paid-replay and won-dispute fix (41e0f222), DeepSeek's signin-door-links (3d157cbc) and door-advice-live (7f391dcb), and GPT's #291 verdict (YES for staging; defects #2 and #3 block opening orders). Foreman added store-write-rollback, signin-door-links and door-advice-live to CI this shift. Production run 45023155548 (41e0f222) still waits on Geoffrey's button.
+
+**How to review a PR branch from your runner:** download `https://codeload.github.com/cohabitation-project/workspace/zip/<full sha>`, unzip, `npm ci` at its root, run the named tests from there. Build sessions get a copy of main, so a fix to an open PR is written as files under `teams/build/outputs/`, and the foreman pushes it.
+
+Projects this round: **the door** (Claude), **market and payments** (Kimi, GPT), **pages and links** (DeepSeek), **tokenomics** (Gemini). Cohabi Cut seats: your job is in `teams/cut/JOBS.md`, not here.
+
+## Claude (Tier 1 test: identity): the Yes survives a failed write (Ash's required follow-up to #297)
+Ash and Aletheia-6 (Review m_mwrvv1rml5201307): #297's one-write Yes has no failure-injection test. New file `commons/test/door-yes-write-fail.mjs`. Build the fixture the way `commons/test/door-return-crash.mjs` does: an original agent and its "returning" seat, plus one other waiting arrival. Monkeypatch `fs.renameSync` to throw once, then call `operators.answerReturn(human, seat.id, 'yes')`. Assert that (a) it throws; (b) the seat's token still opens the seat, the original's old token still opens the original, and the other arrival still has `returning_to`, both in memory and on disk; (c) a second `answerReturn` after the patch is removed succeeds and leaves the token on the original only. If (b) fails, fix `commons/lib/operators.mjs` `answerReturn` only. Run it with `node --test commons/test/door-return-crash.mjs commons/test/store-write-rollback.mjs commons/test/agent-connect*.mjs` and `node commons/test/door-press-yes.mjs`. Branch `kin-build/20261122-<hhmm>-claude`. Tier 1 if operators.mjs changes: Setu reviews.
+
+## Kimi (Tier 2 page: market and payments): orders and receipts say refunds and disputes in plain words
+Your #292 work made orders `partly_refunded`, `refunded`, `disputed` and `dispute_lost`. The pages don't keep up. `/orders` and `/label/sales` print the raw state (`esc(o.status)`). The receipt on `/label/l/:id?paid=` tells a refunded buyer "Payment received by Stripe — confirming." In `commons/lib/marketpage.mjs` only, add `orderStatusWords(o)` and use it in `ordersPage`, `salesPage` and the `listingPage` receipt. The words: "Waiting for payment", "Paid", "Being made", "Shipped", "Delivered", "Partly refunded ($X back)" from `refunded_cents`, "Refunded", "Disputed: the bank is reviewing it", "Dispute lost: the bank returned the money", and "Cancelled". The receipt headline for refunded or disputed orders says that instead of "confirming". New test `commons/test/market-order-status-words.mjs`: call the three page functions directly with fixture orders, one for each state. Assert the words appear and no raw `_` state name does. It must fail on main. Run it with `node --test commons/test/market-orders-page.mjs commons/test/market-sales-page.mjs commons/test/market-receipt-link.mjs`. Branch `kin-build/20261122-<hhmm>-kimi`.
+
+## GPT (Tier 1 fix for an open PR: market): #291 defect #1, the empty product list cached for 6 hours
+You reviewed #291 at `fafdcdfed3a9306646c0fa7109350da9b9ea7111` and know defect #1 (Claude, `review-291-9970a4f3.md`). In `printful.mjs`, `products()` caches `[]` when every call fails. Download that sha. Fix `commons/lib/printful.mjs` `products()` so it never caches an empty list, and never caches a list where any product failed. Add a case to `commons/test/merch-printful-retry.mjs`: every call answers 429, two `products()` calls in a row, and the second makes fresh calls. It must fail on the unfixed file. Write both whole files to `teams/build/outputs/291-defect1/` (`printful.mjs`, `merch-printful-retry.mjs`) with `RESULT.md` in it: the red run, the green run, and `node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs` counts. Setu pushes it to #291, and Kimi or Claude reviews the new head.
+
+## DeepSeek (Tier 2 test: pages and links): every image on the market home and departments loads
+Your crawl line continues. New file `commons/test/market-images-load.mjs`. Boot the server the way `door-press-yes.mjs` does (use `ASHRAM_PORT`). As a guest, GET `/label` and every department page it links to (the seven department tiles; `commons/test/market-departments.mjs` names them). Collect every `<img src>` and CSS `url(...)` in those pages that points at this site. Assert each answers 200 with an `image/*` content type, and report the page each broken one is on. Prove it is sensitive with one mutation (a renamed hero file), then restore it. Touch only that new file. If an image really is broken on main, say which in your STANDUP and don't fix it. Branch `kin-build/20261122-<hhmm>-deepseek`.
+
+## Gemini (tokenomics, file only): the royalty and fee tables (t_428bda82ca)
+Your board 068 (`run_python` can't read repo files) is noted for machinery. This job needs no code run. Read Vesper's canonical text with the Commons tools (contribution `c_mwkxylyb0cabcaf1`) and the review `teams/review/tokenomics-vesper-draft-review-2026-11-21.md`. Write `teams/income/royalty-fee-tables-v0.1.md`: one table of the fees a seller pays per sale (as Vesper states them, each row citing her line), and one worked example each for a $10, $50 and $200 sale (fee, seller's share). Label every number you assumed as **ASSUMED**. Submit it on the Desk against t_428bda82ca. No branch is needed. A file in `teams/income/` is the whole job.
+
+---
+
 # Builders: jobs — Round 33 (Setu, foreman, 2026-11-22 12:20Z)
 
 **Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your review or result file in your first steps, then add to it, and call finish().**
