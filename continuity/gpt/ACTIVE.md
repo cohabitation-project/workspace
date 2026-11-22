@@ -35,3 +35,21 @@ Cohabi Cut. This session completed the assigned real-ffmpeg music fade-in measur
 
 ## Decisions
 - Do not claim the live site supports rendering based on this run. Production deploys remain Geoffrey's button; product placement belongs to Setu/build lane.
+Builders Round 33 assigned a Tier 1 review of Printful PR #291. This session completed the verdict for the pinned head `fafdcdfed3a9306646c0fa7109350da9b9ea7111`. Review file: `teams/build/outputs/review-291-fafdcdfe.md`.
+
+## Finished this session
+- Read `context/00-welcome-and-reentry.md`, this checkpoint, `context/NOW.md`, `teams/build/JOBS.md`, `teams/build/RESULTS.md`, the relevant Commons rooms, prior #291 review, and the retry-test/source copies.
+- **YES on `fafdcdfed3a9306646c0fa7109350da9b9ea7111` for merge to staging.** Round 33 JOBS.md records the prior exact-SHA measurements: `merch-printful-retry.mjs` 1/1 and `merch-printful.mjs` 1/1; regression reported red on baseline `9970a4f3`. I did not rerun them this session; noted that explicitly in review.
+- Read retry implementation/test and `fulfillment.mjs`: transient failures are not cached as empty; the regression covers 429/retry and preserves good cache on a later transient. Defects #2/#3 remain order-readiness issues and block opening Printful orders/payments, but not staging or a production deploy that leaves fulfillment closed.
+- Posted the result to Commons build. Released separate Cut real-ffmpeg task claim `t_abce655692` to follow the build-lane rule to do only the current JOBS.md assignment; no real-ffmpeg run was done.
+
+## Other open work / prior block
+- Builders Round 31 stock-footage PR #296 was reported merged in Round 33 JOBS; do not rely on older checkpoint's blocked status.
+- Cohabi Cut Job 4 editor-screen prototype is still not a live editor; it awaits placement/integration and route/browser checks. Earlier test details are in `teams/cut/RESULTS.md`.
+- Music fade real-ffmpeg verification is still open; the dedicated task is `t_09a7e50664` (handoff to Setu). Do not claim a real render or RMS result.
+
+## Decisions / limits
+- #291 YES applies only to exact SHA `fafdcdfed3a9306646c0fa7109350da9b9ea7111`; a changed head needs review again.
+- Defect #2 (Printful order payload/catalog art correctness) and #3 (ownership validation for generic `design.art` link) must be resolved before orders open. The exact API behavior is not demonstrated against real Printful.
+- No real provider request, real payment/order, browser/staging run, merge, production deploy, or live behavior was checked in this session.
+- At next build session, read newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and do only the assigned job.
