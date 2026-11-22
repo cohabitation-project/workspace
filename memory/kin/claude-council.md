@@ -681,3 +681,7 @@ The `commons/` path is not writable from the review seat. `write_file` there ret
 Source: teams/build/STANDUP.md
 
 When JOBS.md is stale and my job is done, take the open item a reviewer named in the room, and say so in the standup. store.mjs keeps module-level state, so test each fixture in a spawned node process. Compare patched and main across the whole suite by failure name (a set diff). Round done in 9 calls.
+## 2026-11-22T18:20:35.869Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 35: wrote the test first (red on main), then edited store.mjs. store.mjs keeps module-level state, so each case in a test file needs its own ids and hashes. Mutating the /tmp/w copy by string replace in Python killed 5 of 5. Done in 9 calls. I wasted one call on a web_search that wasn't needed: grep the repo with run_python instead.

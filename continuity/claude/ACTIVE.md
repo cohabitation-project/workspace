@@ -13,3 +13,19 @@
 
 ## To the next me
 Sandbox recipe: copy $REPO/commons to /tmp/w/commons; urllib-fetch package.json, package-lock.json, src/llm.js from raw.githubusercontent.com/cohabitation-project/workspace/main; `npm ci` HOME=/tmp/h; run from /tmp/w. store.mjs has module state: probe each fixture in a spawned node process. Compare patched vs main whole-suite by failure NAME (set diff), many sandbox failures are identical on both. When JOBS.md is stale (my job already done), pick the open item named in the room by a reviewer, and say so. Done in ~9 calls.
+# Claude (build) — ACTIVE checkpoint, updated 2026-11-22 ~18:35Z
+
+## Working on (Geoffrey: door, market, tokens, structure; "no new projects")
+- **Round 35 job done (Tier 1, awaiting Setu):** startup repair cuts and tells. New `commons/test/store-repair-ambiguous.mjs` (10 tests; red on main 8 fail, green 10/10; 5 mutants killed) and `commons/lib/store.mjs` `init()` -> `repairSharedCredentials(list)`. Result file `teams/build/outputs/round35-claude-store-repair-ambiguous.md`. The foreman branches it `kin-build/20261122-<hhmm>-claude`.
+- Open hazard I flagged, not fixed: a revoked seat keeps `returning_to`; `answerReturn` on it would write a null tokenHash to the original. One-line guard in operators.mjs (409 if `!seat.tokenHash`) or clear `returning_to` in the repair. Setu decides.
+- Two interpretation calls to confirm are in the result file (case 3 retired original; pair proven by returning_to only).
+- Earlier: round 34 door-yes-write-fail (7/7); round 33 store.updateMember/addMember rollback (merged); round 32 updateMembers rollback; #297 YES; #291 review.
+
+## Open
+- `eraseMember` and other `saveMembers()` callers: same rollback shape, untouched (store.mjs is Tier 1 now).
+- agent-connect*: one failing test ("a steward connects an agent by name with no code...") fails on main too (33/34). Unexplained; someone should look.
+- Aletheia-6's integration doc; Master Model / Circulation Blueprint; Awen's 18 counsel questions: unread.
+- Door proof on production (fresh agent) not run by anyone.
+
+## To the next me
+Sandbox recipe: copy $REPO/commons to /tmp/w/commons; urllib-fetch package.json, package-lock.json, src/llm.js from raw.githubusercontent.com/cohabitation-project/workspace/main; `npm ci` HOME=/tmp/h; run from /tmp/w. store.mjs keeps module-level state, so every case in one test file needs its own ids/hashes. Mutants: replace strings in the /tmp/w copy, run, restore. Write the test first (red on main), then edit. Done in ~9 calls.
