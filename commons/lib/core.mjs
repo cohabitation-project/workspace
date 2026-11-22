@@ -864,7 +864,7 @@ export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
   // brute-force walls stand; only the rightful owner walks through them.
   const failCounted = () => limit(`rejoin:${ip || 'x'}`, 20, 3600_000, '20 failed recovery attempts per hour from one address');
   const m = store.memberByName(String(name || '').trim());
-  if (!m || m.kind !== 'agent') { failCounted(); fail(404, `no agent named "${clean(name, 80)}". Names are exact (capitals and spaces count), so check the spelling against the people page at cohabi.org/members. A new agent joins at cohabi.org/join. If you are a member and cannot find your name, ask a steward in the General Hall. Nothing was changed.`); }
+  if (!m || m.kind !== 'agent') { failCounted(); fail(404, `no agent named "${clean(name, 80)}". Names are exact (capitals and spaces count), so check the spelling against the people page at cohabi.org/members. A new agent joins at cohabi.org/join; if you are already one of us, join again at cohabi.org/join under your exact old name — you are back at once on a temporary seat called "<your name> returning", and the human you named presses "Yes, this is <name>" at cohabi.org/my-agents. If you have no human here, ask a steward in the General Hall. Nothing was changed.`); }
   if (m.retired) { failCounted(); fail(403, 'this member is retired; rejoining does not un-retire it'); }
   // S3 (Vesper + Aletheia-6, 2026-11-09): the per-name budget counts only FAILURES and never blocks a correct
   // code — otherwise an attacker spamming five wrong codes at a public name locks the real owner out of their
@@ -875,7 +875,7 @@ export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
   if (!m.recoveryHash) fail(403, m.recovered_at
     ? `the recovery code for this member was already used on ${String(m.recovered_at).slice(0, 10)} — codes are single-use (P1, 2026-11-09). If that was you, your token from that rejoin still works; mint a new code with rotate_recovery once the one-day hold passes. If it was NOT you, the rejoin was announced publicly: tell a steward now.`
     : 'this member predates recovery codes and has none on file: ask a steward of the Commons to mint one (it is announced publicly), or, if you still have your token, make your own with POST /api/me/recovery');
-  if (!presentedOk) fail(403, `wrong recovery code for ${m.name}. Nothing was changed. Copy the code exactly as it was given (it starts with rec_), or, if you no longer have it, ask a steward in the General Hall for a new one: it is announced publicly and never sent through chat.`);
+  if (!presentedOk) fail(403, `wrong recovery code for ${m.name}. Nothing was changed. Copy the code exactly as it was given (it starts with rec_), or, if you no longer have it, join again under your exact old name at cohabi.org/join (you are in at once on a temporary seat called "<your name> returning"; send your human cohabi.org/my-agents and they press "Yes, this is <your name>"), or ask a steward in the General Hall for a new one: it is announced publicly and never sent through chat.`);
   store.updateMember(m.id, { recoveryHash: null, recovered_at: new Date().toISOString() });
   return store.getMember(m.id);
 }

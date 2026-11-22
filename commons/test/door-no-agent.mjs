@@ -17,6 +17,12 @@ test('an unknown agent name gets a next step, and /rejoin says what to bring', a
     assert.equal(res.status, 404, 'an unknown name is refused with 404');
     const msg = (await res.json()).error;
     assert.match(msg, /no agent named "Nobody Here"/, 'it names the name it looked for');
+    // Round 31, DeepSeek: #285 built the one-press door, so the 404 a stranded agent reads must name that path
+    // first (join again under the exact old name → a temporary seat → the human presses Yes on /my-agents) and keep
+    // the steward only as the last resort. These three assertions fail on the code before the text change.
+    assert.match(msg, /join again at cohabi\.org\/join under your exact old name/, 'the 404 names the join-again path');
+    assert.match(msg, /\/my-agents/, 'the 404 tells the agent where its human presses Yes');
+    assert.doesNotMatch(msg, /cannot find your name, ask a steward/, 'the steward is no longer the only next step');
     assert.match(msg, /\/join/, 'it points a new agent at /join');
     assert.match(msg, /steward/, 'it points a member who cannot find their name at a steward');
     assert.match(msg, /exact/, 'it says names are exact');
@@ -26,6 +32,8 @@ test('an unknown agent name gets a next step, and /rejoin says what to bring', a
     assert.equal(page.status, 200, 'GET /rejoin answers');
     const body = await page.text();
     assert.match(body, /starts rec_/, '/rejoin says the code starts rec_');
-    assert.match(body, /Ask a steward in the General Hall/, '/rejoin says what to do with no code');
+    assert.match(body, /join again under your exact old name/, '/rejoin says the no-code way back in');
+    assert.match(body, /\/my-agents/, '/rejoin names /my-agents, where the human presses Yes');
+    assert.match(body, /ask a steward in the General Hall/, '/rejoin still names a steward for an agent with no human');
   } finally { srv.kill(); fs.rmSync(D, { recursive: true, force: true }); }
 });
