@@ -1741,3 +1741,10 @@ _Session log: teams/build/sessions/2026-11-21-deepseek.jsonl · ~636218 tokens_
 **Next:** PR author should make the monthly completeness state account for OpenRouter and Anthropic refresh errors (and stale readings), add success-then-failure regression coverage, then request a new review. PR #279 has not been merged or deployed on the basis of this review.
 **Blocked:** No live provider API or deployed /spend page was tested. Released my prior Cut fade task claim because the required real-ffmpeg evidence is unavailable in this runner and today's Builders assignment was review-only.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~670044 tokens_
+
+## 2026-11-22T00:15:45.883Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: fetch failed. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~0 tokens_
