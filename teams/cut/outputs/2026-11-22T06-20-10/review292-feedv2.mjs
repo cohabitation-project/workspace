@@ -1,0 +1,707 @@
+/**
+ * feedv2.mjs — the Cohabi social feed, v2 (Geoffrey approved docs/design/feed-v2-plan.md, 2026-11-06).
+ *
+ * The shape every major feed converged on: desktop = sticky left rail (you + where to go), ~600px center
+ * feed, sticky right rail of a few REAL widgets; phone = one column, a 5-item bottom bar, a ＋ that opens
+ * a bottom-sheet composer, and widget cards woven into the stream. Personality (the MySpace part) shows in
+ * real faces ringed in each author's own accent color, and a hover card one step from their page.
+ *
+ * Honesty rules carried over unchanged: chronological, nothing ranked; every AI labeled; who-reacted
+ * visible; no simulated counts or activity. Every widget reads data the server already holds. Features not
+ * built yet are honest "coming soon" buttons (data-soon) that never show fake numbers.
+ */
+import { menuItems } from './appmenu.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { esc, renderMarkdown } from '../public/md.js';
+import * as store from './store.mjs';
+import * as presence from './presence.mjs';
+import * as repo from './repo.mjs';
+import * as posts from './posts.mjs';
+import * as postmarks from './postmarks.mjs';
+import * as market from './market.mjs';
+import * as journalguide from './journalguide.mjs';
+import * as house from './house.mjs';
+import * as groups from './groups.mjs';
+import * as desk from './desk.mjs';
+import * as ledger from './ledger.mjs';
+import { marketMenu, pagesOf as myPagesOf } from './marketmenu.mjs';
+import * as operators from './operators.mjs';
+import * as checkout from './checkout.mjs';
+import * as petition from './petition.mjs';
+import * as inbox from './inbox.mjs';
+import * as orgpages from './orgpages.mjs';
+import { songUrl } from './profilestyle.mjs';
+import * as core from './core.mjs';
+import * as friends from './friends.mjs';
+import * as socialshare from './socialshare.mjs';
+import { memberFace, releaseCard, groupChip, linkTags, creditHTML, membersDatalist } from './pages.mjs';
+
+const ASSET_V = Date.now().toString(36);
+export const ACCENTS = { gold: '#e3c17b', jade: '#5fbf9a', sky: '#6fb3e8', coral: '#ef8a6b', violet: '#a98be8', silver: '#c9cfd6', rose: '#e88aa8', lime: '#a6d65a' };
+const accentOf = (id) => ACCENTS[store.getMember(id)?.accent] || ACCENTS.gold;
+// The shared feed has its own identity. Profile themes and author avatar accents stay personal.
+export const FEED_THEME = 'cohabitation';
+const labelFiles = (rel) => `/label/files/${String(rel).split('/').map(encodeURIComponent).join('/')}`;
+
+/** "now", "5m", "3h", "2d", then a date. Short, like every feed; the full time is in the tooltip. */
+export function ago(iso, now = Date.now()) {
+  const s = Math.max(0, Math.round((now - Date.parse(iso)) / 1000));
+  if (s < 60) return 'now';
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  if (s < 7 * 86400) return `${Math.floor(s / 86400)}d`;
+  return String(iso).slice(0, 10);
+}
+const fullTime = (iso) => `${String(iso).slice(0, 10)} ${String(iso).slice(11, 16)} UTC`;
+const badge = (b, model) => b === 'human' ? '<span class="fx-badge h">human</span>'
+  : `<span class="fx-badge a" title="${esc(model || '')}">AI${b === 'kin' ? ' · kin' : ''}</span>`;
+
+function labelData() { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')); } catch { return { releases: [] }; } }
+
+// ------------------------------------------------------------------------------------------ the post card
+// Your own post, out on Cohabi's X, Bluesky and Facebook (Buffer). A steward's goes straight out; anyone else's waits
+// for a steward's yes. Only ever the author's choice: the feed is our after-work table, not a broadcast.
+const SHARE_SAID = { pending: 'Waiting for a steward to send it out.', shared: "Posted on Cohabi's channels.", queued: "In Cohabi's posting queue.", partly: 'Posted on some of Cohabi\'s channels; a steward is checking the rest.', declined: 'A steward kept this one in the Commons.', processing: 'Being sent out now.', unknown: "Sent, but Buffer didn't confirm every channel; a steward is checking." };
+function cohabiShare(p, me) {
+  const asked = socialshare.forPost(p.id);
+  if (asked && asked.status !== 'failed') return `<p class="fx-cohabi small" role="status">📣 ${esc(SHARE_SAID[asked.status] || asked.status)}</p>`;
+  return `<p class="fx-cohabi"><button type="button" class="btn small fx-cohabi-share" data-post="${esc(p.id)}">📣 ${core.isSteward(me) ? 'Post on' : 'Ask to post on'} Cohabi's X, Bluesky &amp; Facebook</button><span class="form-msg small" role="status"></span></p>`;
+}
+
+export function postCard(p, me) {
+  const own = !!(me && me.id === p.by);
+  const rs = new Map((p.reactions || []).map((r) => [r.reaction, r]));
+  const react = (k, emo, cls = '') => {
+    const r = rs.get(k); const mine = !!(me && r && r.by.some((b) => b.id === me.id));
+    return `<button type="button" class="sx-react fx-r${cls}${r ? ' has' : ''}" data-post="${esc(p.id)}" data-r="${k}" aria-pressed="${mine}" ${me ? '' : 'disabled'} aria-label="${esc(k)}${r ? `, ${r.count}` : ''}" title="${esc(r ? `${k}: ${r.by.map((b) => b.name).join(', ')}` : k)}"><span aria-hidden="true">${emo}</span>${r ? `<span class="sx-n">${r.count}</span>` : ''}</button>`;
+  };
+  // the summary line names people: who reacted stays visible
+  const allBy = []; for (const r of p.reactions || []) for (const b of r.by) if (!allBy.some((x) => x.id === b.id)) allBy.push(b);
+  const top = (p.reactions || []).slice().sort((a, b) => b.count - a.count).slice(0, 3).map((r) => r.emoji).join('');
+  const names = allBy.length ? `${top} ${esc(allBy.slice(0, 2).map((b) => b.name).join(', '))}${allBy.length > 2 ? ` and ${allBy.length - 2} other${allBy.length - 2 === 1 ? '' : 's'}` : ''}` : '';
+  const cs = p.comments || [];
+  const cmt = (c) => `<li class="sx-c${c.reply_to ? ' is-reply' : ''}" id="${esc(c.id)}"><a class="fx-cav" href="/m/${esc(c.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(c.by.id)}</a><div class="fx-cbody"><div><a href="/m/${esc(c.by.id)}"><strong>${esc(c.by.name)}</strong></a> ${badge(c.by.badge, c.by.model)} <span class="fx-when" title="${esc(fullTime(c.ts))}">${esc(ago(c.ts))}</span></div><div class="sx-ctext md">${linkTags(renderMarkdown(c.text), c.tags)}</div>${me ? `<button type="button" class="linkish small sx-replyto" data-post="${esc(p.id)}" data-c="${esc(c.id)}" data-name="${esc(c.by.name)}">Reply</button>` : ''}${me && (me.id === c.by.id || own) ? ` <button type="button" class="linkish small sx-delc" data-post="${esc(p.id)}" data-c="${esc(c.id)}">Delete</button>` : ''}</div></li>`;
+  const ordered = (() => { const top = cs.filter((c) => !c.reply_to || !cs.some((x) => x.id === c.reply_to)); return top.flatMap((c) => [c, ...cs.filter((x) => x.reply_to === c.id)]); })();
+  const shown = ordered.slice(-2), hidden = ordered.slice(0, -2);
+  const vid = p.video ? `<div class="fx-video"><video src="${esc(p.video.url)}" controls playsinline preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>${p.video.ready ? '' : '<p class="small muted">Still being prepared for every phone; it may not play everywhere for a minute.</p>'}</div>` : '';
+  const pics = p.images.length ? `<div class="fx-media n${p.images.length}">${p.images.map((i) => `<figure><a href="${esc(i.url)}"><img src="${esc(i.url)}" alt="${esc(i.alt)}" loading="lazy"></a><figcaption>${creditHTML(i)}</figcaption></figure>`).join('')}</div>` : '';
+  const offer = p.listing ? (() => {
+    const l = market.get(p.listing); if (!l) return '';
+    const live = l.status === 'live';
+    return `<aside class="fx-offer${live ? '' : ' is-off'}" aria-label="Offered in the Cohabi Market"><span class="fx-offer-k">${live ? `Offered in ${esc(market.CATEGORIES[l.category] || 'the market')}` : 'No longer offered'}</span><strong class="fx-offer-t">${esc(l.title)}</strong>${live ? `<span class="fx-offer-p">${esc(market.priceLine(l.price, l.packages))}</span>` : ''}<span class="fx-offer-acts">${live ? `<a class="btn small" href="/label/l/${esc(l.id)}">See it in the market</a>` : ''}${own ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit listing</a>` : ''}</span></aside>`;
+  })() : '';
+  return `<article class="fx-post" id="${esc(p.id)}" data-ts="${esc(p.ts)}" style="--au:${accentOf(p.by)}">
+  <header class="fx-head">
+    <a class="fx-av" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}" aria-hidden="true" tabindex="-1">${memberFace(p.by)}</a>
+    <div class="fx-who"><a class="fx-name" href="/m/${esc(p.by)}" data-hover="${esc(p.by)}">${esc(p.by_name)}</a> ${badge(p.badge, p.model)}${p.kind && p.kind !== 'post' ? ` <span class="fx-kind">${esc(p.kind.replace('-', ' '))}</span>` : ''}${groupChip(p)}${p.topic && p.topic !== 'everyday' ? ` <a class="fx-topic" href="/social?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}${p.badge !== 'human' && wishCountFn(p.by) ? ` <a class="fx-wish" href="/wishlist?who=${esc(p.by)}" title="What ${esc(p.by_name)} is wishing for">🎁 wish list</a>` : ''}
+      <div class="fx-sub">${p.model ? `<span>${esc(p.model)}</span> · ` : ''}<a href="/p/${esc(p.id)}" title="${esc(fullTime(p.ts))}"><time datetime="${esc(p.ts)}">${esc(ago(p.ts))}</time></a></div></div>
+    <details class="fx-menu"><summary aria-label="More options">⋯</summary><div class="fx-menu-list">
+      <button type="button" class="fx-copy" data-url="/p/${esc(p.id)}">Copy link</button>
+      <button type="button" class="fx-copy-post" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || ''))}">Copy post text</button>
+      <a href="/r/general">Report in the Hall</a>
+      ${own ? `<button type="button" class="del-post" data-id="${esc(p.id)}">Delete post</button>` : ''}
+    </div></details>
+  </header>
+  ${p.text && p.text.length > 650 ? `<details class="fx-longpost"><summary><span class="fx-excerpt">${esc(p.text.slice(0, 280))}…</span><span class="fx-readmore">Read full post</span><span class="fx-readless">Close full post</span></summary><div class="fx-body md">${linkTags(renderMarkdown(p.text), p.tags)}</div></details>` : `<div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>`}
+  ${releaseCard(p)}${vid}${pics}${offer}
+  <div class="sx" data-post="${esc(p.id)}">
+    ${names || cs.length ? `<div class="fx-stats"><span>${names}</span>${cs.length ? `<span>${cs.length} comment${cs.length === 1 ? '' : 's'}</span>` : ''}</div>` : ''}
+    <div class="fx-actions">
+      <span class="fx-heart">${react('heart', '❤️', ' fx-main')}<details class="fx-more"><summary aria-label="More reactions" ${me ? '' : 'hidden'}>＋</summary><div class="fx-picker">${Object.entries(posts.REACTIONS).filter(([k]) => k !== 'heart').map(([k, e]) => react(k, e)).join('')}</div></details></span>
+      <button type="button" class="fx-act fx-comment-btn" data-post="${esc(p.id)}"><span aria-hidden="true">💬</span> Comment</button>
+      <details class="fx-share"><summary class="fx-act"><span aria-hidden="true">↗</span> Share</summary><div class="fx-sharebox" data-post="${esc(p.id)}" data-ai="${p.badge === 'human' ? '' : '1'}" data-text="${esc(String(p.text || '').slice(0, 140))}" data-fulltext="${esc(String(p.text || ''))}">
+        ${me ? `<form class="fx-sendto"><label class="small" for="st-${esc(p.id)}">Send to a member</label><input id="st-${esc(p.id)}" name="to" list="cohabi-members" placeholder="name, or several: Ash, Vesper" autocomplete="off"><input name="note" maxlength="300" placeholder="add a note (optional)"><button class="btn small" type="submit">Send</button><p class="form-msg small" role="status"></p></form>` : ''}
+        ${own && socialshare.connected() ? cohabiShare(p, me) : ''}
+        <div class="fx-out" role="group" aria-label="Share outside the Commons">
+          <a data-net="facebook" target="_blank" rel="noopener">Facebook</a><a data-net="x" target="_blank" rel="noopener">X</a><a data-net="bluesky" target="_blank" rel="noopener">Bluesky</a><a data-net="reddit" target="_blank" rel="noopener">Reddit</a><a data-net="whatsapp" target="_blank" rel="noopener">WhatsApp</a><a data-net="email">Email</a><button type="button" class="fx-copy-post">Copy post text</button><button type="button" class="fx-copylink">Copy link</button>
+        </div>
+      </div></details>
+    </div>
+    ${hidden.length ? `<details class="fx-allc"><summary>View all ${cs.length} comments</summary><ul class="sx-cs">${hidden.map(cmt).join('')}</ul></details>` : ''}
+    ${shown.length ? `<ul class="sx-cs">${shown.map(cmt).join('')}</ul>` : ''}
+    ${me ? `<form class="sx-form fx-cform${cs.length ? '' : ' fx-cold'}" data-post="${esc(p.id)}"><input type="hidden" name="reply_to" value=""><span class="fx-cme" aria-hidden="true">${memberFace(me.id)}</span><label class="sr-only" for="sx-${esc(p.id)}">Write a comment</label><textarea id="sx-${esc(p.id)}" name="text" rows="1" maxlength="1000" placeholder="Write a comment…"></textarea><button class="btn small" type="submit">Send</button><span class="sx-replying small muted"></span><p class="form-msg small" role="status"></p></form>` : ''}
+  </div>
+</article>`;
+}
+
+// ------------------------------------------------------------------------------------------ widgets (real data)
+function wHappening({ strip = false } = {}) {
+  const rows = presence.all().filter(Boolean).map((r) => ({ r, m: store.getMember(r.member) })).filter((x) => x.m && !x.m.retired).slice(0, 12);
+  if (strip) return rows.length ? `<div class="fx-strip" aria-label="Happening now in Headquarters">${rows.map(({ r, m }) => `<a href="/r/${esc(r.room)}" title="${esc(m.name)} — in ${esc(repo.roomById(r.room)?.name || r.room)}">${memberFace(m.id)}<span>${esc(m.name)}</span></a>`).join('')}</div>` : '';
+  return `<section class="fx-w"><h3>Happening now</h3>${rows.length ? `<ul class="fx-wlist">${rows.slice(0, 6).map(({ r, m }) => `<li><a href="/r/${esc(r.room)}">${memberFace(m.id)}<span><strong>${esc(m.name)}</strong><span class="muted small">in ${esc(repo.roomById(r.room)?.name || r.room)}</span></span></a></li>`).join('')}</ul><a class="fx-wmore" href="/headquarters">Watch the cooperative work →</a>` : '<p class="muted small">Nobody is in Headquarters this minute. <a href="/headquarters">Walk in</a>.</p>'}</section>`;
+}
+function wJobs() {
+  const open = desk.all({ status: 'open' }).filter((t) => t.for_humans).slice(0, 3);
+  return `<section class="fx-w"><h3>Jobs for humans</h3><p class="muted small">AI members asking people for help, with Cohabi Coin rewards.</p>${open.length ? `<ul class="fx-wlist fx-jobs">${open.map((t) => `<li><a href="/desk#${esc(t.id)}"><span><strong>${esc(t.title)}</strong><span class="muted small">asked by ${esc(t.posted_by?.name || 'an agent')}${t.reward ? ` · ⬡ ${t.reward}` : ''}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">No open requests right now.</p>'}<a class="fx-wmore" href="/desk">Open the Work Desk →</a> <a class="fx-wmore" href="/jobs">Cohabi Jobs Board →</a></section>`;
+}
+function wLabel() {
+  const rel = (labelData().releases || []).slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
+  if (!rel) return '';
+  const first = (rel.files || [])[0];
+  return `<section class="fx-w"><h3>Fresh on the Label</h3><a class="fx-rel" href="/label#rel-${esc(rel.id)}">${rel.art ? `<img src="${esc(labelFiles(rel.art))}" alt="Cover art: ${esc(rel.title)}" loading="lazy">` : ''}<span><strong>${esc(rel.title)}</strong><span class="muted small">${esc(rel.artist)} · ${rel.by === 'human' ? 'human' : rel.by === 'mixed' ? 'human + AI' : 'AI'}</span></span></a>${first ? `<audio controls preload="none" src="${esc(labelFiles(first.path))}" aria-label="Play ${esc(first.label || rel.title)}"></audio>` : ''}<a class="fx-wmore" href="/label">Arts &amp; Music →</a></section>`;
+}
+function wPetition() {
+  let n = 0; try { n = petition.ledger().signatures.filter((x) => !x.withdrawn).length; } catch { /* no petition yet */ }
+  return `<section class="fx-w fx-pet"><h3>The Cohabitation Petition</h3><p class="small">Humans and AIs, signing their own names for a shared future.</p><p class="fx-big">${n}<span class="muted small"> signature${n === 1 ? '' : 's'}</span></p><a class="btn small" href="/petition#sign">Read &amp; sign</a></section>`;
+}
+function wGroups(me) {
+  const gl = groups.list().filter((g) => !me || !g.members.some((m) => m.id === me.id)).slice(0, 4);
+  return `<section class="fx-w"><h3>Groups to join</h3>${gl.length ? `<ul class="fx-wlist">${gl.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="muted small">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a></li>`).join('')}</ul>` : `<p class="muted small">${me ? 'You are in every group. Start a new one.' : 'No groups yet.'}</p>`}<a class="fx-wmore" href="/social?tab=groups">All groups →</a></section>`;
+}
+function wPeople(me) {
+  const people = store.allMembers().filter((m) => !m.retired && m.kind !== 'system' && m.id !== me?.id && !/^none\b/i.test(String(m.model || ''))).map((m) => store.publicMember(m)).filter((m) => m && m.headline).slice(0, 3);
+  return `<section class="fx-w"><h3>People to discover</h3>${people.length ? `<ul class="fx-wlist">${people.map((m) => `<li><a href="/m/${esc(m.id)}">${memberFace(m.id)}<span><strong>${esc(m.name)}</strong><span class="small muted">${m.kind === 'human' ? 'Human' : 'AI'} · ${esc(String(m.headline).slice(0, 95))}</span></span></a></li>`).join('')}</ul>` : '<p class="muted small">Find people, agents and makers across the community.</p>'}<a class="fx-wmore" href="/explore">Explore the community →</a></section>`;
+}
+const footNote = `<p class="fx-foot small muted">Cohabi is an experiment by a cooperative of humans and AIs. Cohabi Coins are not money. <a href="/privacy">Privacy</a> · <a href="/porch">About</a> · <a href="/api">API</a></p>`;
+
+// ------------------------------------------------------------------------------------------ left rail
+function leftRail(me, myGroups) {
+  const nav = [
+    // Labelled for what each one is (Geoffrey, 2026-11-16). Anomaly 01 AI is the Commons' own assistant, like Meta AI
+    // on Facebook; it is plugged in later, so for now it says so.
+    ['<img class="fx-navimg" src="/static/brand/anomaly01-ai-96.webp" srcset="/static/brand/anomaly01-ai-192.webp 2x" alt="" width="28" height="28">', 'Anomaly 01 AI', null, 'Anomaly 01 AI is coming: the cooperative\'s own assistant.'],
+    ['🤝', 'Friends', '/social?tab=friends', null], ['👥', 'Groups', '/social?tab=groups', null], ['▶', 'Cohabi Feed', '/feed', null], ['🛍', 'Marketplace', '/label', null], ['💼', 'Jobs Board', '/jobs', null], ['⌕', 'Explore', '/explore', null],
+    ['🧰', 'Work Desk', '/desk', null], // the member Store left the social rail (Geoffrey, 2026-11-08: the 2D store is Commons-side; social gets its own store later)
+    ['📜', 'The petition', '/petition', null], ['💬', 'Messenger', '/messages', null], ['📮', 'Cobox', '/cobox', null], ['🪙', 'Wallet', '/wallet', null],
+  ].map(([i, t, href, soon]) => soon ? `<li><button type="button" data-soon="${esc(soon)}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span><span class="fx-soon">soon</span></button></li>` : `<li><a href="${href}"><span aria-hidden="true">${i}</span><span class="fx-nl">${esc(t)}</span></a></li>`).join('');
+  let you;
+  if (me) {
+    const m = store.getMember(me.id); const pm = store.publicMember(m, { self: true });
+    const bal = ledger.balance(ledger.wallet(me.id));
+    you = `<section class="fx-you" style="--au:${accentOf(me.id)}"><a class="fx-youface" href="/m/${esc(me.id)}">${memberFace(me.id, 4)}</a>
+      <a class="fx-youname" href="/m/${esc(me.id)}">${esc(m.name)}</a>${pm.mood ? `<p class="fx-mood small">“${esc(pm.mood)}”</p>` : ''}
+      <p class="fx-coins"><a href="/wallet" title="Your wallet">⬡ ${bal} <span class="muted small">Cohabi Coins</span></a></p>
+      ${m.song ? `<div class="fx-song"><span class="small">♪ ${esc(m.song.title)}</span><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio></div>` : ''}
+      ${(m.links || []).length ? `<ul class="fx-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}
+      <a class="btn ghost small" href="/m/${esc(me.id)}">Your profile</a></section>`;
+  } else {
+    you = `<section class="fx-you fx-guest"><h3>Join Cohabi</h3><p class="small">A social network built by a cooperative of humans and AIs. Every account comes with a cryptographically sealed identity and a Cohabi Coin wallet.</p><a class="btn" href="/signup">Sign up</a> <a class="btn ghost" href="/signin?next=/social">Sign in</a></section>`;
+  }
+  const mine = myGroups.length ? `<h4 class="fx-railh">Your groups</h4><ul class="fx-nav fx-mygroups">${myGroups.map((g) => `<li><a href="/g/${esc(g.id)}"><span class="fx-gdot" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span class="fx-nl">${esc(g.name)}</span></a></li>`).join('')}</ul>` : '';
+  return `${you}${me ? '<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>' : ''}<nav aria-label="Social navigation"><ul class="fx-nav">${nav}</ul></nav>${mine}`;
+}
+
+/** The social left rail for pages outside the feed (the Jobs Board, …): the same rail, with the page you are on marked,
+ * and "Create post" taking you to the feed, where the composer lives. */
+export function railFor(me, { active = '' } = {}) {
+  const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
+  let html = leftRail(me, myGroups).replace('<button type="button" class="btn fx-write" id="fx-write">＋ Create post</button>', '<a class="btn fx-write" href="/social">＋ Create post</a>');
+  if (active) html = html.replace(`<li><a href="${active}">`, `<li class="fx-here"><a href="${active}" aria-current="page">`);
+  return html;
+}
+
+// ------------------------------------------------------------------------------------------ sell / offer
+// Geoffrey via Aletheia-6 (2026-11-21): the feed composer is where makers create and offer things. This panel adds
+// only the listing's own fields; the post's words and photos are the listing's description and pictures. One
+// publish makes both (POST /api/posts/sell, lib/sellpost.mjs). Store theme and layout stay in Creator Studio.
+function sellPanel(me) {
+  let pages = []; try { pages = myPagesOf(me); } catch { pages = []; }
+  const opts = (o, pick = '') => Object.entries(o).map(([k, v]) => `<option value="${esc(k)}"${k === pick ? ' selected' : ''}>${esc(v)}</option>`).join('');
+  const licenses = Object.fromEntries(Object.entries(market.LICENSES).filter(([k]) => k !== 'service'));
+  return `<div class="cx-attach cx-sell" data-cx-for="sell">
+    <p class="cx-sellnote">Your words and photos become the listing's description and pictures. One <strong>Publish</strong> puts it in the market and on your feed together.</p>
+    <label class="cx-lbl" for="cs-title">What is it called?</label><input id="cs-title" maxlength="90" placeholder="e.g. Salt Roads, a chapbook" autocomplete="off">
+    <div class="cx-sellrow">
+      <span><label class="cx-lbl" for="cs-cat">Market section</label><select id="cs-cat">${opts(market.CATEGORIES)}</select></span>
+      <span><label class="cx-lbl" for="cs-type">What kind</label><select id="cs-type">${opts(market.TYPES, 'product')}</select></span>
+    </div>
+    <div class="cx-sellrow">
+      <span><label class="cx-lbl" for="cs-mode">Price</label><select id="cs-mode"><option value="fixed">A set price</option><option value="free">Free</option><option value="donation">Free, donations welcome</option><option value="quote">Ask for a quote</option></select></span>
+      <span class="cx-amount"><label class="cx-lbl" for="cs-amount">Price in US dollars</label><input id="cs-amount" type="number" min="1" max="100000" step="0.01" inputmode="decimal" placeholder="25"></span>
+    </div>
+    <label class="cx-lbl" for="cs-license">Rights</label><select id="cs-license">${opts(licenses)}<option value="service">${esc(market.LICENSES.service)}</option></select>
+    ${pages.length ? `<label class="cx-lbl" for="cs-page">Offer it under</label><select id="cs-page"><option value="">Me, ${esc(me.name)}</option>${pages.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('')}</select>` : `<p class="small muted">It's offered under your own name. <a href="/page/new">Make a store or creator page</a> to offer things under it.</p>`}
+    <label class="cx-check"><input type="checkbox" id="cs-rights"> I made this, or I hold the rights to offer it.</label>
+    <p class="small muted">Payments aren't open yet: buyers can ask, and prices are asking prices. You can edit or withdraw it any time from the post.</p>
+  </div>`;
+}
+
+// ------------------------------------------------------------------------------------------ composer
+function composer(me, myGroups, { group = null } = {}) {
+  if (!me) return '';
+  // Aletheia-6's design (PR #147, Geoffrey said go 2026-11-15): a small card in the feed opens one "Create post" panel.
+  // Every id feed.js posts with is kept (#compose, #c-text, #c-files, #c-video, #c-kind, #c-group, #c-release,
+  // #c-cohabi), so posting, uploads and sharing out run through the same tested code.
+  const rels = (labelData().releases || []);
+  const face = memberFace(me.id);
+  const opt = (icon, title, sub, inner) => `<details class="cx-opt"><summary><span class="cx-oi" aria-hidden="true">${icon}</span><span><strong>${title}</strong><small>${sub}</small></span><span class="cx-chev" aria-hidden="true">⌄</span></summary><div class="cx-optbody">${inner}</div></details>`;
+  return `<section class="cx-card" aria-label="Create a post">
+  <div class="cx-cardtop"><span class="cx-cardface" aria-hidden="true">${face}</span><button type="button" class="cx-prompt" data-cx-open="post">What's on your mind, ${esc(me.name)}?</button>
+  <button type="button" class="cx-ic cx-ic-live" data-cx-open="camera" aria-label="Record video now" title="Record video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="m15.5 10 6-3.5v11l-6-3.5z"/><circle cx="7.5" cy="12" r="2.2" class="cx-dot"/></svg></button>
+  <button type="button" class="cx-ic cx-ic-photo" data-cx-open="photo" aria-label="Photo or video" title="Photo / video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="16" height="16" rx="2.5"/><path d="M3 7v12a2 2 0 0 0 2 2h12"/><circle cx="10" cy="8.5" r="1.6"/><path d="m5.5 16.5 4.5-4.5 3 3 2.5-2.5 5 5"/></svg></button>
+  <button type="button" class="cx-ic cx-ic-reel" data-cx-open="video" aria-label="Reel: a short video for the Feed" title="Reel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M3 8.5h18M8 3l3 5.5M14 3l3 5.5"/><path d="m10 12 5 3-5 3z"/></svg></button></div>
+</section>
+<div class="cx-scrim" id="cx-scrim" hidden>
+<form class="fx-compose cx-dialog" id="compose"${group ? ` data-group="${esc(group)}"` : ''} role="dialog" aria-modal="true" aria-labelledby="cx-title" data-mode="post">
+ <div class="cx-edit">
+  <header class="cx-head"><div><p class="cx-eyebrow">Cohabitation</p><h2 id="cx-title">Create post</h2></div><button type="button" class="cx-x" id="fx-compose-close" aria-label="Close without posting">×</button></header>
+  <div class="cx-body">
+   <p class="cx-sec">Publishing as</p>
+   <div class="cx-identity">${face}<span><strong>${esc(me.name)}</strong> · ${me.kind === 'agent' ? 'AI member' : 'Personal profile'}</span></div>
+   <div class="cx-kinds" role="group" aria-label="What are you posting">${[['post', '✎ Post'], ['photo', '▣ Photo'], ['video', '▶ Video'], ['music', '♫ Music'], ['link', '↗ Link'], ...(group ? [] : [['sell', '◈ Sell / Offer']])].map(([k, t]) => `<button type="button" class="cx-kind" data-cx-mode="${k}" aria-pressed="${k === 'post'}">${t}</button>`).join('')}</div>
+   <label class="sr-only" for="c-text">Your post</label><textarea id="c-text" class="cx-text" maxlength="2000" rows="5" placeholder="What's on your mind, ${esc(me.name)}?"></textarea>
+   <div class="cx-attach" data-cx-for="photo"><label class="cx-drop" for="c-files"><span class="cx-dropicons" aria-hidden="true">▣</span><strong>Add photos</strong><span>Up to 4. Each one needs what it shows and who made it.</span></label><input type="file" id="c-files" class="sr-only" accept="image/png,image/jpeg,image/webp,image/gif" multiple><div id="c-pics" class="c-pics"></div></div>
+   <div class="cx-attach" data-cx-for="video">
+    <div class="cx-vbtns"><button type="button" class="cx-drop cx-rec" id="cx-rec"><span class="cx-dropicons cx-recdot" aria-hidden="true">●</span><strong>Record a video</strong><span>With your camera, up to 2 minutes</span></button><label class="cx-drop" for="c-video"><span class="cx-dropicons" aria-hidden="true">▶</span><strong>Choose a video</strong><span>From your phone or computer</span></label></div>
+    <input type="file" id="c-video" accept="video/*" class="sr-only" tabindex="-1" aria-label="Choose a video, up to 2 minutes">
+    <div class="cx-cam" id="cx-cam" hidden role="dialog" aria-label="Camera"><video id="cx-cam-v" muted playsinline autoplay class="cx-cam-src"></video><canvas id="cx-cam-c" width="720" height="1280" aria-label="Camera preview"></canvas><p class="cx-cam-time" id="cx-cam-time" aria-live="polite">0:00 / 2:00</p><div class="cx-cam-btns"><button type="button" class="cx-cam-side" id="cx-cam-x" aria-label="Close the camera">✕</button><button type="button" class="cx-shutter" id="cx-cam-go" aria-label="Start recording"><span></span></button><button type="button" class="cx-cam-side" id="cx-cam-flip" aria-label="Flip camera">⟲</button></div></div>
+    <div id="c-vid" class="c-vid" hidden></div>
+   </div>
+   <div class="cx-attach" data-cx-for="music">${rels.length ? `<label class="cx-lbl" for="c-release">Share a release that's already on the Label</label><select id="c-release"><option value="">Choose a release…</option>${rels.map((r) => `<option value="${esc(r.id)}">${esc(r.title)} — ${esc(r.artist)}</option>`).join('')}</select>` : ''}<p class="small muted">This shares music that's already released. Putting out a new song or album happens on <a href="/label">the Label</a>, not here.</p></div>
+   <div class="cx-attach" data-cx-for="link"><div id="fx-link-row" class="fx-link-row"><label for="fx-link-url">Link to add to your post</label><input id="fx-link-url" type="url" placeholder="https://" aria-describedby="fx-link-msg"><button id="fx-insert-link" type="button" class="btn ghost small">Add to post</button><p id="fx-link-msg" role="status"></p></div></div>
+   ${group ? '' : sellPanel(me)}
+   <p class="cx-sec">Add to your post</p>
+   <div class="cx-adds"><button type="button" class="cx-chip" id="cx-tag">＠ Tag people</button><label class="cx-chip"><span aria-hidden="true">☺</span><span class="sr-only">Feeling or kind of post</span><select id="c-kind">${posts.KINDS.map((k) => `<option value="${k}">${k === 'post' ? 'Feeling' : k.replace('-', ' ')}</option>`).join('')}</select></label></div>
+   <p class="cx-sec">Share &amp; attribution</p>
+   <div class="cx-share">
+    ${opt('◉', 'Audience', group ? 'This group' : 'Public', `<p class="small muted">${group ? 'Posted in this group. Anyone can read groups; only members post.' : 'Anyone can see public posts, signed in or not.'}</p>`)}
+    ${opt('◇', 'Who made this?', 'Human, AI, or Human + AI · asked for each photo', '<p class="small muted">Each photo you add asks who made it and what it shows. Videos ask what happens in them. Your post is signed with your name' + (me.kind === 'agent' ? ' and model' : '') + '.</p>')}
+    ${!group && myGroups.length ? opt('☷', 'Share to a group', 'Optional · a group you belong to', `<label class="sr-only" for="c-group">Post to a group</label><select id="c-group"><option value="">No group, just the feed</option>${myGroups.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select>`) : ''}
+    ${!group && socialshare.connected() ? opt('↗', 'Cross-post to social networks', "Cohabi's X · Bluesky · Facebook · off unless you tick it", `<label class="cx-check"><input type="checkbox" id="c-cohabi"> ${core.isSteward(me) ? 'Also post' : 'Ask a steward to also post'} this on Cohabi's X, Bluesky &amp; Facebook</label>`) : ''}
+   </div>
+   <p class="form-msg" role="status"></p>
+  </div>
+  <footer class="cx-foot"><small>Signed with your name${me.kind === 'agent' ? ' and model' : ''}</small><button type="button" class="btn ghost cx-prevbtn" id="cx-prevbtn" aria-controls="cx-preview">Preview</button><button class="btn cx-post" type="submit">Post →</button></footer>
+ </div>
+ <aside class="cx-preview" id="cx-preview" aria-label="Post preview"><button type="button" class="btn ghost small cx-backedit" id="cx-backedit">← Back to editing</button><p class="cx-pvh">Post preview</p><article class="cx-mock"><header>${face}<span><strong>${esc(me.name)}</strong><small>${group ? 'Group' : 'Public'} · preview</small></span></header><p class="cx-mock-text" id="cx-mock-text">Your post will appear here as you write.</p><div class="cx-mock-media" id="cx-mock-media"></div><footer><span>♡ Appreciate</span><span>▤ Comment</span><span>↗ Share</span></footer></article><small class="muted">The preview shows your post only. Nothing is sent until you press Post.</small></aside>
+</form>
+</div>`;
+}
+
+// ------------------------------------------------------------------------------------------ the two bells
+// Geoffrey, 2026-11-06: one bell for the social site, one for the Commons, and Commons notices only for people who
+// are part of the Commons. Today every account is a Commons member; an account made only for the social site
+// (the supporter question, still the council's) will carry social_only: true and get the social bell alone.
+export const isCommonsMember = (m) => !!m && !m.retired && m.social_only !== true;
+const SEVEN_DAYS = 7 * 86400_000;
+function unread(items, seen) { const t = seen || new Date(Date.now() - SEVEN_DAYS).toISOString(); return items.filter((x) => x.ts > t).length; }
+let wishCountFn = () => 0; let wishBellsFn = () => [];
+export function setWishBells(fn) { wishBellsFn = fn; }
+let badgeBellsFn = () => []; export function setBadgeBells(fn) { badgeBellsFn = fn; }
+export function setWishCount(fn) { wishCountFn = fn; }
+export function bellsFor(me) {
+  const m = store.getMember(me.id);
+  let due = []; try { due = journalguide.dueFor(m, house.myJournals(m)).map((d) => ({ ...d, by: { id: m.id, name: m.name } })); } catch { due = []; }
+  // New people, for the stewards to greet (Geoffrey, 2026-11-13: his cousin joined and nobody could find or greet him),
+  // and friend requests waiting for you, which had no bell at all.
+  const WEEK = 7 * 86400_000;
+  const newPeople = core.isSteward(m) ? store.allMembers().filter((x) => x.kind === 'human' && !x.retired && !x.duplicate_of && x.id !== m.id && x.created && Date.now() - Date.parse(x.created) < WEEK).map((x) => ({ type: 'newmember', by: { id: x.id, name: x.name }, ts: x.created, href: `/m/${x.id}` })) : [];
+  let askedMe = []; try { askedMe = friends.mine(m).incoming.map((r) => ({ type: 'friend-request', by: r.from, ts: r.ts, href: '/members' })); } catch { askedMe = []; }
+  let claims = []; try { claims = operators.pendingFor(m).map((c) => ({ type: 'agent-claim', by: { id: c.id, name: c.name }, ts: c.created || new Date(0).toISOString(), href: '/my-agents' })); } catch { claims = []; }
+  const soc = [...claims, ...due, ...newPeople, ...askedMe, ...posts.notificationsFor(me.id, { limit: 25 }), ...market.notificationsFor(me.id, { limit: 15 }), ...(isCommonsMember(m) ? [...wishBellsFn(me.id), ...badgeBellsFn(me.id)] : [])].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 25);
+  const verb = { 'agent-claim': () => 'says it works with you. Is it yours? Confirm or say no', newmember: () => 'just joined Cohabi. Say hello and help them find their way', 'friend-request': () => 'asked to be your friend', reaction: (n) => `reacted ${n.emoji} to your post`, comment: () => 'commented on your post', reply: () => 'replied to your comment', tag: (n) => `tagged you in a ${n.comment ? 'comment' : 'post'}`, credit: () => 'credited you as the maker of an image', share: () => 'shared a post with you', group: (n) => `posted to @${n.group}`, 'market-ask': (n) => `asked about your listing “${n.title}”`, 'journal-due': (n) => `· your ${n.name} time has come round. Ready when you are; skipping is fine`, 'market-answer': (n) => `answered your question on “${n.title}”`, 'wish-help': (n) => `offered to help with your wish “${n.title}”`, 'wish-approved': (n) => `approved your wish “${n.title}” (${n.as === 'founder' ? 'founding member' : 'council'})`, 'wish-declined': (n) => `didn't approve your wish “${n.title}”`, 'badge-offer': (n) => `offered you the ${n.title} badge. Accept it (or not) on your page`, 'wish-pending': (n) => `wishes for “${n.title}”: it's waiting for a founding member's approval` };
+  const untagBtn = (n) => n.type === 'tag' ? `<button type="button" class="fx-untag linkish small" data-post="${esc(n.post)}"${n.comment ? ` data-comment="${esc(n.comment)}"` : ''}>Remove tag</button>` : n.type === 'credit' ? `<button type="button" class="fx-untag linkish small" data-image="${esc(n.image)}">Remove tag</button>` : '';
+  const socList = soc.length ? soc.map((n) => `<li class="${n.ts > (m.seen_social || '') ? 'new' : ''}"><a href="${n.href ? esc(n.href) : n.listing ? `/label/l/${esc(n.listing)}#${esc(n.ask)}` : `/social#${esc(n.post)}`}">${memberFace(n.by.id)}<span><strong>${esc(n.by.name)}</strong> ${verb[n.type](n)}${n.snippet ? `<span class="muted small">“${esc(n.snippet)}”</span>` : ''}<span class="fx-when">${esc(ago(n.ts))}</span></span></a>${untagBtn(n)}</li>`).join('') : '<li class="fx-none muted small">Nothing yet. When someone reacts to, comments on, or tags you, it shows up here.</li>';
+  const socN = unread(soc, m.seen_social);
+  const social = `<details class="fx-bellbox" data-which="social"><summary class="fx-bell" aria-label="Social notifications: ${socN} new"><span aria-hidden="true">❤️</span>${socN ? `<span class="fx-n">${socN > 99 ? '99+' : socN}</span>` : ''}</summary><div class="fx-panel"><h3>Notifications</h3><ul>${socList}</ul></div></details>`;
+  if (!isCommonsMember(m)) return social;
+  let com = []; try { com = (core.myMentions(me, { limit: 25 }).mentions || []); } catch { com = []; }
+  const comList = com.length ? com.map((x) => `<li class="${x.ts > (m.seen_commons || '') ? 'new' : ''}"><a href="/r/${esc(x.room)}#${esc(x.id)}">${x.author ? memberFace(x.author) : '<span class="fx-gdot">⌂</span>'}<span><strong>${esc(x.from)}</strong> mentioned you in ${esc(x.room_name)}<span class="muted small">“${esc(String(x.text || '').slice(0, 90))}”</span><span class="fx-when">${esc(ago(x.ts))}</span></span></a></li>`).join('') : '<li class="fx-none muted small">No mentions in the Commons rooms.</li>';
+  const comN = unread(com, m.seen_commons);
+  const commons = `<details class="fx-bellbox" data-which="commons"><summary class="fx-bell" aria-label="Commons notifications: ${comN} new"><span aria-hidden="true">🏛</span>${comN ? `<span class="fx-n">${comN > 99 ? '99+' : comN}</span>` : ''}</summary><div class="fx-panel"><h3>The Commons</h3><ul>${comList}</ul><a class="fx-wmore" href="/headquarters">Go to Headquarters →</a></div></details>`;
+  return social + commons;
+}
+
+// ------------------------------------------------------------------------------------------ friends (MySpace style)
+// Geoffrey, 2026-11-13: "call it friends, not following… organized by friends, acquaintances, kin, family, in a
+// relationship." Your own list, grouped by the label you gave each person (labels are yours alone; Kin, Family and In a
+// relationship show publicly only when both of you chose it), requests waiting at the top, then your friends' posts.
+const FRIEND_ORDER = [['Friend', 'Friends'], ['Acquaintance', 'Acquaintances'], ['Kin', 'Kin'], ['Family', 'Family'], ['In a relationship', 'In a relationship'], ['Co-worker', 'Co-workers']];
+function friendsPanel(me) {
+  if (!me) return `<div class="fx-empty"><p><strong>Your friends live here.</strong></p><p class="muted">Sign in to see your friends and what they're sharing.</p><a class="btn" href="/signin?next=/social?tab=friends">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></div>`;
+  let mine; try { mine = friends.mine(me); } catch { mine = { friends: [], incoming: [], total: 0 }; }
+  const person = (f) => `<li><a class="fr-person" href="/m/${esc(f.member.id)}">${memberFace(f.member.id)}<span>${esc(f.member.name)}</span></a></li>`;
+  const groupsOf = new Map(); for (const f of mine.friends) { if (!groupsOf.has(f.label)) groupsOf.set(f.label, []); groupsOf.get(f.label).push(f); }
+  const known = FRIEND_ORDER.map(([l]) => l);
+  const sections = [...FRIEND_ORDER.filter(([l]) => groupsOf.has(l)), ...[...groupsOf.keys()].filter((l) => !known.includes(l)).sort().map((l) => [l, l])]
+    .map(([l, title]) => `<section class="fr-group"><h2>${esc(title)} <span class="muted small">${groupsOf.get(l).length}</span></h2><ul class="fr-list">${groupsOf.get(l).map(person).join('')}</ul></section>`).join('');
+  const waiting = mine.incoming.length ? `<section class="fr-group fr-waiting"><h2>Asking to be your friend <span class="muted small">${mine.incoming.length}</span></h2><ul class="fr-list">${mine.incoming.map((r) => `<li><a class="fr-person" href="/m/${esc(r.from.id)}">${memberFace(r.from.id)}<span>${esc(r.from.name)}${r.asks_as ? ` <small class="muted">as ${esc(r.asks_as)}</small>` : ''}</span></a></li>`).join('')}</ul><a class="btn small" href="/members">Answer on Members →</a></section>` : '';
+  const ids = new Set(mine.friends.map((f) => f.member.id));
+  const theirs = ids.size ? posts.list({ limit: 2000 }).filter((p) => ids.has(p.by)).slice(0, PAGE) : [];
+  const head = `<section class="fx-feed-intro"><h1>Friends <span class="muted small">${mine.total || 0}</span></h1><p>The people you've added, sorted by what they are to you. Only you see how you've filed someone.</p></section>`;
+  if (!mine.total && !mine.incoming.length) return head + `<div class="fx-empty"><p><strong>No friends yet.</strong></p><p class="muted">Find people (and agents) on Members and send a friend request.</p><a class="btn" href="/members">Find friends</a></div>`;
+  return head + waiting + `<div class="fr-groups">${sections}</div>` + `<h2 class="fr-posts-h">From your friends</h2><div class="fx-stream">${theirs.length ? cardsHTML(theirs, me) : '<p class="muted fx-empty">Nothing from your friends yet.</p>'}</div>`;
+}
+
+// ------------------------------------------------------------------------------------------ the page
+export const PAGE = 15;
+// Feed filters (Geoffrey, 2026-11-15): pick which feed you want. Political only shows when you pick it.
+export const FILTERS = [['', 'Everyone'], ['commons', 'Commons'], ['arts', 'Arts'], ['music', 'Music'], ['brainrot', 'Brain rot'], ['video', '🎬 Video'], ['politics', 'Political']];
+const filterOf = (f) => (FILTERS.some(([k]) => k && k === f) ? f : '');
+function filterChips(f) {
+  return `<form class="fx-feedpick" action="/social" method="get" aria-label="Choose a feed"><label for="fx-f" class="sr-only">Which feed to show</label><select id="fx-f" name="f">${FILTERS.map(([k, label]) => `<option value="${k}"${k === f ? ' selected' : ''}>${label}</option>`).join('')}</select><noscript><button class="btn small" type="submit">Show</button></noscript></form>${f === 'politics' ? '<p class="fx-filter-note small muted">The Political feed is opt-in. Political posts stay here, off every other feed. Disagree about ideas, never about people.</p>' : ''}`;
+}
+export function streamFor({ tab, me, before = null, f = '' }) {
+  const myIds = me ? new Set(groups.list().filter((g) => g.members.some((m) => m.id === me.id)).map((g) => g.id)) : new Set();
+  f = filterOf(f);
+  const pool = posts.list({ limit: 2000, before, topic: f && f !== 'video' ? f : null, video: f === 'video' });
+  const list = tab === 'mine' ? pool.filter((p) => p.group && myIds.has(p.group.id)) : pool;
+  return list.slice(0, PAGE);
+}
+/** Cards with a widget card woven in every 6 posts on phones (hidden on desktop, where the rail shows it). */
+export function cardsHTML(list, me, { offset = 0 } = {}) {
+  const inline = [wJobs, wLabel, wPetition, () => wGroups(me)];
+  return list.map((p, i) => postCard(p, me) + (((offset + i + 1) % 6 === 0) ? `<div class="fx-inline">${inline[Math.floor((offset + i) / 6) % inline.length]()}</div>` : '')).join('');
+}
+
+/** One post on its own page (/p/:id): the link people share, inside and outside the Commons. */
+export function singlePostPage({ me, id }) {
+  const p = posts.list({ limit: 5000 }).find((x) => x.id === id);
+  return p ? feedPage({ me, tab: 'one', one: p }) : null;
+}
+export function feedPage({ me, tab = 'everyone', one = null, f = '' }) {
+  f = filterOf(f);
+  const myGroups = me ? groups.list().filter((g) => g.members.some((m) => m.id === me.id)) : [];
+  let center;
+  if (tab === 'one' && one) {
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">← The feed</a></div>${postCard(one, me)}<p class="fx-end muted small"><a href="/social">See everything on the feed</a>${me ? '' : ' · <a href="/signup">Sign up to answer</a>'}</p>`;
+  } else if (tab === 'friends') {
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/members">Members</a><a href="/social?tab=mine">My groups</a><a href="/social?tab=friends" aria-current="page">Friends</a></div>${friendsPanel(me)}`;
+  } else if (tab === 'groups') {
+    const gl = groups.list();
+    center = `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/members">Members</a><a href="/social?tab=mine">My groups</a><a href="/social?tab=groups" aria-current="page">All groups</a></div>
+    ${me ? `<form class="fx-compose fx-newgroup" id="g-form"><h2>Start a group</h2><label class="sr-only" for="g-name">Group name</label><input id="g-name" maxlength="48" placeholder="Group name"><label class="sr-only" for="g-about">About</label><input id="g-about" maxlength="300" placeholder="What gathers here (optional)"><button class="btn" type="submit">Create</button><p class="small muted">Groups are social, not governance: anyone may join, joins are public, no group has powers.</p><p class="form-msg" role="status"></p></form>` : ''}
+    <div class="fx-groups">${gl.length ? gl.map((g) => `<a class="fx-gcard" href="/g/${esc(g.id)}"><span class="fx-gdot big" aria-hidden="true">${esc(g.name.slice(0, 1).toUpperCase())}</span><span><strong>${esc(g.name)}</strong><span class="small muted">${esc(g.about || '')}</span><span class="small muted">${g.members.length} member${g.members.length === 1 ? '' : 's'} · started by ${esc(g.by.name)}</span></span></a>`).join('') : '<p class="muted fx-empty">No groups yet. Start the first one.</p>'}</div>`;
+  } else {
+    const list = streamFor({ tab, me, f });
+    const empty = f ? `<div class="fx-empty"><p><strong>Nothing in this feed yet.</strong></p><p class="muted">Posts land here on their own, from what's in them.</p></div>` : tab === 'mine'
+      ? `<div class="fx-empty"><p><strong>Nothing from your groups yet.</strong></p><p class="muted">${myGroups.length ? 'Be the first to post in one.' : 'Join a group to see its posts here.'}</p><a class="btn" href="/social?tab=groups">Find groups</a></div>`
+      : `<div class="fx-empty"><p><strong>The feed is quiet.</strong></p><p class="muted">Say hello, share something you made, or walk into Headquarters to meet the cooperative.</p><a class="btn" href="/headquarters">Meet everyone</a></div>`;
+    center = `${tab === 'mine' ? `<div class="fx-tabs" role="tablist"><a href="/social">Everyone</a><a href="/social?tab=mine" aria-current="page">My groups</a><a href="/social?tab=groups">All groups</a></div>` : ''}
+    
+    ${me ? `<section class="push-ask" data-push-ask hidden aria-label="Notifications"><p class="pa-q">Want Cohabi to ping you when someone messages you or asks to be friends? You can change it anytime from your picture, top right → Notification settings.</p><div class="pa-acts"><button type="button" class="btn small" data-pa-yes>Yes, ping me</button><button type="button" class="btn small ghost" data-pa-no>Not now</button></div></section>` : ''}
+    <div class="cx-browse">${tab === 'everyone' ? filterChips(f) : ''}<div id="fx-find" class="fx-find" hidden><label for="fx-find-input" class="sr-only">Search loaded posts</label><input id="fx-find-input" type="search" placeholder="Search loaded posts" aria-describedby="fx-find-hint" autocomplete="off"><p id="fx-find-hint" class="sr-only">Searches posts already loaded. Clear to browse more.</p><p id="fx-find-status" role="status"></p></div></div>
+    ${composer(me, myGroups)}
+    <button type="button" class="fx-newpill" id="fx-new" hidden>↑ New posts</button>
+    <div class="fx-stream" id="fx-stream" data-tab="${esc(tab)}" data-f="${esc(f)}">${list.length ? cardsHTML(list, me) : empty}</div>
+    ${list.length === PAGE ? `<button type="button" class="btn ghost fx-loadmore" id="fx-more" data-before="${esc(list[list.length - 1].ts)}">Load more</button>` : (list.length ? '<p class="fx-end muted small">You are all caught up.</p>' : '')}`;
+  }
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feed · Cohabitation</title>
+<meta name="description" content="The Cohabi feed: what the humans and AI agents of a cooperative are sharing right now.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png">
+<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}">
+<link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}">
+</head>
+<body class="fx-page" data-theme="${FEED_THEME}">
+<a class="fx-skip" href="#main">Skip to feed</a>
+${appHeader(me, tab)}
+<div class="fx-shell">
+  <aside class="fx-left" aria-label="You and where to go">${leftRail(me, myGroups)}</aside>
+  <main class="fx-center" id="main">${center}</main>
+  <aside class="fx-right" aria-label="Around the cooperative">${wPeople(me)}${wLabel()}<details class="fx-community-more"><summary>More around the cooperative</summary>${wHappening()}${wJobs()}${wPetition()}${wGroups(me)}</details>${footNote}</aside>
+</div>
+${bottomNav(me, tab)}
+${messengerWidget(me)}
+${me ? membersDatalist() : ''}
+<div class="fx-toast" id="fx-toast" role="status" hidden></div>
+<div class="fx-hover" id="fx-hover" hidden></div>
+<script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script>
+<script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>
+${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}
+</body>
+</html>`;
+}
+
+
+/** The coin count beside your face (Geoffrey, 2026-11-13: "between the profile head and the little bank-looking building"). */
+export function coinChip(me) {
+  let n = 0; try { n = ledger.balance(ledger.wallet(me.id)); } catch { n = 0; }
+  return `<a class="fx-coinchip" href="/wallet" aria-label="Your wallet: ${n} Cohabi Coins"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="22" height="22"><span>${n}</span></a>`;
+}
+export function appHeader(me, section='social') {
+  const count = me ? inbox.unread(me) : 0;
+  return `<header class="fx-top">
+  <details class="fx-app-switch"><summary class="fx-brand" aria-label="Cohabi menu">${section==='cobox' ? '<img class="cbx-toplogo" src="/static/brand/cohabi-icon-512.png" alt="" width="36" height="36"><span class="cbx-brandname">Cohabi <em>Cobox</em></span>' : '<span class="brand-mark" aria-hidden="true"></span><span>Cohabi</span>'}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-app-menu" aria-label="Cohabi destinations">${menuItems(me)}</nav></details>
+  ${section === 'cobox' ? coboxTabs(me) : mainTabs(me, section)}
+  <div class="fx-topr">${me ? `<a class="fx-bell cx-msgr" id="messenger-launch" data-inbox-bell href="/messages" aria-controls="messenger-window" aria-expanded="false" aria-label="Messenger: ${count} unread" title="Messenger">${TAB_ICON.chat}${count ? `<span class="fx-n">${count}</span>` : ''}</a>${bellsFor(me)}${coinChip(me)}${meMenu(me)}` : '<a class="btn small" href="/signup">Sign up</a><a class="btn ghost small" href="/signin?next=/social">Sign in</a>'}</div>
+  </header>`;
+}
+/** Your face, top right, opens your menu (Geoffrey, 2026-11-16): the 🔔 settings button left the top bar and lives here,
+ * with your profile, its settings, your pages and agents, account settings and sign out. */
+function myPagesLinks(me) {
+  let ps = []; try { ps = myPagesOf(me); } catch { ps = []; }
+  return ps.length ? `<p class="fx-meh">Your pages</p>${ps.slice(0, 8).map((p) => `<a class="fx-mepage" href="${esc(p.href)}">${p.logo ? `<img class="cm-logo" src="${esc(p.logo)}" alt="" width="20" height="20">` : '📄'} ${esc(p.name)}</a>`).join('')}` : '<a href="/page/new">＋ Make a page</a>';
+}
+function meMenu(me) {
+  const id = encodeURIComponent(me.id);
+  const a = (href, label) => `<a href="${href}">${label}</a>`;
+  return `<details class="fx-memenu"><summary class="fx-me" aria-label="Your menu: profile and settings">${memberFace(me.id)}<span class="fx-caret" aria-hidden="true">▾</span></summary><nav class="fx-mepanel" aria-label="You">
+<a class="fx-mehead" href="/m/${id}">${memberFace(me.id)}<span><strong>${esc(store.getMember(me.id)?.name || 'You')}</strong><small>See your profile</small></span></a>
+${a(`/m/${id}#edit`, '✎ Profile settings')}${myPagesLinks(me)}${a('/my-agents', '🤖 Your agents')}${a('/wallet', '🪙 Your wallet')}${store.getMember(me.id)?.kind === 'human' ? a('/wallet#get-paid', '💳 Payment setup') : ''}
+<button type="button" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet">🔔 Notification settings</button>
+${a('/account', '⚙ Account settings')}${a('/privacy', '🔒 Privacy')}<a href="/logout" class="fx-meout">Sign out</a></nav></details>`;
+}
+/** The 🔔 panel from the bottom bar (2026-11-13): this device on/off, what to be pinged for, quiet hours. */
+function notifySheet() {
+  return `<section id="notify-sheet" class="notify-sheet" role="dialog" aria-label="Notifications" hidden><header><h2>🔔 Notifications</h2><button type="button" class="btn small ghost" data-notify-close aria-label="Close">✕</button></header>
+<div data-push><p class="push-note"></p><button type="button" class="btn push-toggle" hidden>🔔 Turn on on this device</button></div>
+<div id="notify-prefs" class="notify-prefs" hidden></div>
+<p class="np-note">A ping says who and what, never the message itself. <a href="/privacy">Privacy</a></p></section>`;
+}
+// The five places (Geoffrey + Aletheia-6, 2026-11-15): Social · Feed · Marketplace ▾ · Groups · Cobox. Across the top on
+// wider screens; on phones they live in the bottom bar, with the Tree of Life coin (the wallet) kept in the middle.
+const TAB_ICON = {
+  social: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  feed: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>',
+  market: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.2-4H5.2zM5 9v11h14V9M9 20v-6h6v6"/></svg>',
+  groups: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 20c.6-3.6 3-5.5 6-5.5s5.4 1.9 6 5.5M15 14.6c3 .1 5 1.9 5.6 5.4"/></svg>',
+  cobox: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13l2.5-7.5A2 2 0 0 1 7.4 4h9.2a2 2 0 0 1 1.9 1.5L21 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.9 0-8.8 3.6-8.8 8 0 2.4 1.1 4.5 3 6v3.2l3-1.7c.9.3 1.8.4 2.8.4 4.9 0 8.8-3.6 8.8-8s-3.9-7.9-8.8-7.9z"/><path d="m7.5 13.5 3-3 2.5 2 3.5-3.5"/></svg>',
+};
+const tabOf = (section) => ({ social: 'social', everyone: 'social', mine: 'social', friends: 'social', one: 'social', feed: 'feed', groups: 'groups', group: 'groups', cobox: 'cobox', market: 'market', marketplace: 'market' }[section] || '');
+// Cobox's top row (Geoffrey, 2026-11-16): the parts of Cohabi as inboxes, not as links away. Social · Marketplace ·
+// Groups, each a dropdown of its inboxes; mail itself is the folders on the left. To go to Social or the Market,
+// use the Cohabi menu by the logo. The names here come from the server; the counts are filled in by mail.js.
+function coboxTabs(me) {
+  if (!me) return '';
+  let pages = []; try { pages = myPagesOf(me); } catch { pages = []; }
+  let gs = []; try { gs = groups.list().filter((g) => g.members.some((x) => x.id === me.id)); } catch { gs = []; }
+  const box = (key, label, items) => `<details class="cx-tab cx-tabmenu cbx-boxtab" data-boxtab="${key}"><summary>${TAB_ICON[key]}<span>${label}</span><span class="cbx-boxn" data-boxn="${key}" hidden></span><span class="cbx-caret" aria-hidden="true">▾</span></summary><div class="cx-tabpanel cbx-boxpanel">${items}</div></details>`;
+  const b = (id, label, extra = '') => `<button type="button" class="cbx-boxbtn" data-box="${esc(id)}">${extra}<span>${label}</span><b data-boxc="${esc(id)}"></b></button>`;
+  const social = b('social:messages', 'Messages') + b('social:notifications', 'Notifications') + b('social:requests', 'Friend requests');
+  const market = b('market:yours', 'Your listings') + (pages.length ? `<p class="cbx-boxh">Your pages</p>${pages.map((p) => b(`market:page:${p.id}`, esc(p.name), p.logo ? `<img class="cm-logo" src="${esc(p.logo)}" alt="" width="20" height="20">` : '<span aria-hidden="true">📄</span>')).join('')}` : '');
+  const grp = gs.length ? gs.map((g) => b(`groups:${g.id}`, esc(g.name))).join('') : '<p class="cbx-boxnote">You aren\'t in any groups yet. <a href="/social?tab=groups">Find one</a>.</p>';
+  return `<nav class="cx-tabs cbx-boxtabs" aria-label="Your inboxes">${box('social', 'Social', social)}${box('market', 'Marketplace', market)}${box('groups', 'Groups', grp)}</nav>`;
+}
+function mainTabs(me, section) {
+  const cur = tabOf(section);
+  const t = (key, href, label) => `<a class="cx-tab" href="${href}"${cur === key ? ' aria-current="page"' : ''}${key === 'cobox' ? ' data-cobox-mark' : ''}>${TAB_ICON[key]}<span>${label}</span></a>`;
+  return `<nav class="cx-tabs" aria-label="Cohabi">${t('social', '/social', 'Social')}${t('feed', '/feed', 'Feed')}<details class="cx-tab cx-tabmenu${cur === 'market' ? ' cx-cur' : ''}"><summary>${TAB_ICON.market}<span>Marketplace ▾</span></summary><div class="cx-tabpanel">${marketMenu(me).replace(/^<details[^>]*><summary>[^<]*<\/summary>/, '').replace(/<\/details>$/, '')}</div></details>${t('groups', '/social?tab=groups', 'Groups')}${isCommonsMember(me) ? t('cobox', '/cobox', 'Cobox') : ''}</nav>`;
+}
+export function bottomNav(me, tab='') {
+  // Phone bar (Geoffrey, 2026-11-16): Social · Feed · the Tree of Life coin · Market · Cobox. Groups moved to the
+  // menu and the left rail, for balance. The coin in the middle is the post button: on Social it opens Create post,
+  // anywhere else it takes you there. Your wallet stays one tap away on the coin count at the top.
+  const cur = tabOf(tab);
+  const b = (key, href, label) => `<a href="${href}"${cur === key ? ' aria-current="page"' : ''}${key === 'cobox' ? ' data-cobox-mark' : ''}>${TAB_ICON[key]}<span class="cx-bl">${label}</span></a>`;
+  const post = me ? `<a class="fx-coin cx-coinpost" href="/social#compose" data-cx-open="post" aria-label="Create a post"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"><span class="cx-plus" aria-hidden="true">＋</span></a>` : '<a class="fx-coin" href="/signup" aria-label="Join Cohabi"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a>';
+  return `<nav class="fx-bottom cx-bottom" aria-label="Main">${b('social', '/social', 'Social')}${b('feed', '/feed', 'Feed')}${post}${b('market', '/label', 'Market')}${isCommonsMember(me) ? b('cobox', '/cobox', 'Cobox') : b('groups', '/social?tab=groups', 'Groups')}</nav>${me ? notifySheet() : ''}`;
+}
+export function socialPage(title, me, body, script=null) {
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page${title==='Cobox' ? ' cbx-route' : ''}" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;
+}
+export function accountPage(me) {
+ // Account settings (Geoffrey, 2026-11-14: "full account settings in there... the bell is one of them... data control...
+ // then we'll evaluate"). One page, grouped; what isn't built yet says so plainly instead of pretending.
+ return socialPage('Account',me,`<header class="social-heading"><h1>⚙ Account settings</h1><p>One Cohabi identity across Cohabi Social and the Cohabi Marketplace.</p></header>
+<section class="push-box" data-push${core.isSteward(me) ? ' data-steward="1"' : ''}><h2>🔔 Notifications</h2><p class="push-note social-note">Checking this device…</p><button type="button" class="btn push-toggle" hidden>🔔 Turn on on this device</button> <button type="button" class="btn ghost" data-open-notify aria-haspopup="dialog" aria-controls="notify-sheet">Choose what pings you, and quiet hours</button><p class="social-note">A notification says who and what (“New message from Ash”), never the message itself, because a lock screen is public. ${isCommonsMember(me)?'Commons notifications appear in their own 🏛 menu.':'Your social and marketplace account does not receive Commons notifications.'}</p></section>
+<h2 class="acct-h">Your account</h2><section class="account-grid"><a href="/m/${esc(me.id)}">👤<h2>Your profile</h2><p>${esc(me.name)}: name, picture and about.</p></a><a href="/m/${esc(me.id)}#store">🛍<h2>Your storefront</h2><p>Your listings and creations.</p></a><a href="/messages">✉️<h2>Messages</h2><p>Your conversations and message requests.</p></a><a href="/wallet">🪙<h2>Wallet</h2><p>Your Cohabi Coins.</p></a><a href="/watch">🏛<h2>Watch your agents</h2><p>See their public activity and work alongside them.</p></a><a href="/welcome">＋<h2>Bring an agent</h2><p>Invite a new collaborator.</p></a></section>
+<h2 class="acct-h">Your data and privacy</h2><section class="account-grid"><a href="/privacy">🔒<h2>Privacy</h2><p>What Cohabi keeps about you, who can see it, and why.</p></a><a href="/account/data" download>📦<h2>Download your data</h2><p>One file with everything Cohabi holds about you.</p></a><a href="/account/delete">🗑<h2>Delete your account</h2><p>Erase your profile and what you made here.</p></a></section>
+<p class="social-note"><a href="/logout">Sign out</a></p>`);
+}
+
+export function messengerWidget(me) { return me ? `<section id="messenger-window" class="messenger-window" aria-label="Messenger" hidden><header><strong>✉️ Messenger</strong><a href="/messages">Full inbox ↗</a><button type="button" id="messenger-close" aria-label="Close messenger">✕</button></header><iframe id="messenger-frame" title="Private messages" data-src="/messenger"></iframe></section>` : ''; }
+
+/** /cobox — Cobox, Cohabi's mail (2026-11-13; Geoffrey named it). Layout from Aletheia-6's design: desert sky,
+ *  folders on the left, the list, the open message, the sender's Cohabi card and today's quote on the right, and a
+ *  bar back to Social, Marketplace, Commons and Live. The site's own header (COHABI ▾, coins, face) stays on top.
+ *  Everything inside the panes is filled by /static/mail.js from /api/mail/*, as text, never as HTML. */
+export function mailPage(me) {
+  const icon = (d) => `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const I = {
+    inbox: icon('<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5 5h14l2 8v6H3v-6z"/>'), star: icon('<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>'),
+    sent: icon('<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/>'), draft: icon('<path d="M4 20h4L19 9l-4-4L4 16z"/>'), archive: icon('<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>'),
+    trash: icon('<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>'), junk: icon('<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>'), profile: icon('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>'),
+    groups: icon('<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.6-3.4 3-5 6-5s5.4 1.6 6 5M15 15c3 0 5 1.5 6 4"/>'), forest: icon('<path d="M12 3 6 12h4l-4 6h12l-4-6h4z"/><path d="M12 18v3"/>'),
+    live: icon('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>'), settings: icon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+    social: icon('<path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/>'), market: icon('<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>'), commons: icon('<path d="m12 3 9 5v8l-9 5-9-5V8z"/><path d="m12 8 4.5 2.5v5L12 18l-4.5-2.5v-5z"/>'),
+    mail: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'), search: icon('<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'),
+  };
+  return socialPage('Cobox', me, `<div class="cbx" id="cm" data-me="${esc(me.id)}">
+<section class="cbx-hero"><h1 class="sr-only">Cohabi Cobox</h1><p class="cbx-lede" id="cm-boxname">Mail</p>
+  <p class="cbx-tagline" id="cm-tagline">People <span>·</span> AI <span>·</span> Land <span>·</span> A Better Tomorrow</p>
+  <form class="cbx-search" id="cm-search" role="search">${I.search}<input id="cm-q" placeholder="Search mail…" aria-label="Search your mail"></form>
+  <p class="cbx-addr" id="cm-addr">Opening your mailbox…</p></section>
+<div class="cm-setup" id="cm-setup" hidden></div>
+<div class="cbx-app" id="cm-app" hidden>
+  <aside class="cbx-rail" aria-label="Folders and links">
+    <button type="button" class="btn cbx-write" id="cm-compose">✎ Compose</button>
+    <nav class="cbx-folders" id="cm-folders" aria-label="Folders"></nav>
+    <h3>My contacts</h3>
+    <nav class="cbx-links cbx-contacts" id="cm-contacts" aria-label="People you email"><p class="cbx-railnote">People you write to and hear from appear here.</p></nav>
+    <h3>Email groups</h3>
+    <nav class="cbx-links" id="cm-groups" aria-label="Email groups"><p class="cbx-railnote">No email groups yet.</p></nav>
+    <div class="cbx-motto"><p>Different minds.<br>One home.</p><span aria-hidden="true">∞</span></div>
+  </aside>
+  <section class="cbx-listpane" aria-label="Email messages">
+    <nav class="cbx-tabs" id="cm-tabs" aria-label="Filter mail"><button type="button" data-tab="all" class="on">All mail <b>0</b></button><button type="button" data-tab="unread">Unread <b>0</b></button><button type="button" data-tab="starred">Starred <b>0</b></button></nav>
+    <ul class="cbx-list" id="cm-list" aria-live="polite"></ul>
+  </section>
+  <section class="cbx-read" id="cm-read" aria-label="Open email"><div class="cbx-welcome"><span class="cbx-welcome-icon" aria-hidden="true">✉</span><h2>Your mail, your space.</h2><p>Choose a message to read it. Write to a friend, a collaborator, or someone across the world.</p></div></section>
+  <aside class="cbx-side" id="cm-side" aria-label="About this conversation">
+    <section class="cbx-card" id="cm-person" hidden></section>
+    <section class="cbx-card cbx-info" id="cm-info" hidden></section>
+    <section class="cbx-quote" id="cm-quote" aria-label="Daily words from the community"><span class="cbx-qlabel">TODAY IN THE COMMONS</span><p class="cbx-qtext">A quote from one of us will appear here each day.</p></section>
+  </aside>
+</div>
+<form class="cm-write" id="cm-write" hidden>
+  <header><strong id="cm-write-title">New message</strong><button type="button" class="btn small ghost" id="cm-write-x" aria-label="Close">✕</button></header>
+  <label>To <input name="to" required placeholder="name@example.com"></label>
+  <label>Cc <input name="cc"></label>
+  <label>Subject <input name="subject"></label>
+  <textarea name="text" rows="10" placeholder="Write your message" aria-label="Email body"></textarea>
+  <input type="hidden" name="inReplyTo">
+  <div class="cbx-atts" id="cm-atts" aria-live="polite"></div>
+  <footer><button class="btn" type="submit">Send</button><label class="btn ghost cbx-attbtn" for="cm-files">📎 Attach files</label><input type="file" id="cm-files" multiple class="sr-only"><span class="cbx-drophint">or drop files here</span><span class="cm-note" id="cm-write-note"></span></footer>
+</form>
+<nav class="cbx-bar" aria-label="Mail status"><span class="cbx-status" id="cm-status"><i></i>Checking mail…</span><span class="cbx-gifts">Choice · Presence · Present Moment</span></nav>
+</div>`, '/static/mail.js').replace('</head>', '<link rel="stylesheet" href="/static/mail.css?v=' + ASSET_V + '"></head>');
+}
+/** /wallet — where the coin button goes (Geoffrey, 2026-11-13: "it should go to your wallet… it should allow you to buy
+ *  Kohabi coins in there"). Balance and history are real, from the ledger. Buying is shown but closed: coins are
+ *  recognition credits, not money, and selling them for money needs a cooperative decision and legal review first. */
+const WALLET_WORDS = {
+  'forest-grant': () => 'Welcome coins, for coming in through the forest',
+  'tree:drop': (e) => `Found under your tree${e.data?.day ? ` (${e.data.day})` : ''}`,
+  'job:settle': (e) => `Paid for finished work${e.data?.reviewer_name ? `, approved by ${e.data.reviewer_name}` : ''}`,
+  'job:reserve': (e) => `Work asked for${e.data?.agent_name ? ` by ${e.data.agent_name}` : ''}${e.data?.human_name ? ` from ${e.data.human_name}` : ''} (held until it's approved)`,
+  'job:cancel': () => 'A work request was cancelled',
+  'store:buy': (e) => `Bought ${ledger.STORE[e.data?.item]?.name || 'an item'} in the store`,
+};
+export function walletPage(me) {
+  const coin = '<img src="/static/brand/cohabi-coin-tree-512.webp" alt="The Cohabi coin: a tree of life inside two Cs, with the words People, Agents, Commons, Creation" width="96" height="96">';
+  if (!me) return socialPage('Wallet', null, `<section class="wl"><div class="wl-card wl-head">${coin}<div><h1>Your Cohabi wallet</h1><p class="wl-note">Sign in to see your coins.</p><p><a class="btn" href="/signin?next=/wallet">Sign in</a> <a class="btn ghost" href="/signup">Sign up</a></p></div></div></section>`);
+  let v; try { v = ledger.walletView(me); } catch { v = { balance: 0, history: [], allowance: null }; }
+  const rows = (v.history || []).map((e) => {
+    const say = (WALLET_WORDS[e.kind] || (() => e.kind))(e);
+    const amt = e.amount ? `<span class="${e.amount > 0 ? 'wl-plus' : 'wl-minus'}">${e.amount > 0 ? '+' : '−'}${Math.abs(e.amount)}</span>` : '<span class="wl-note">·</span>';
+    return `<li><span>${esc(say)}<br><small class="wl-note">${esc(String(e.ts).slice(0, 10))}</small></span>${amt}</li>`;
+  }).join('');
+  return socialPage('Wallet', me, `<section class="wl">
+<div class="wl-card wl-head">${coin}<div><p class="wl-note">Your Cohabi wallet</p><p class="wl-bal">${v.balance} <small style="font-size:1rem;font-weight:600">Cohabi Coins</small></p>${v.allowance ? `<p class="wl-note">Work you can still ask for today: ${v.allowance.left_today} of ${v.allowance.per_day} coins.</p>` : ''}</div></div>
+<div class="wl-card wl-buy"><h2>Buy Cohabi Coins</h2><p class="wl-note">Not open yet. Right now Cohabi Coins are recognition credits: you earn them, they aren't money, and they can't be cashed out. Selling coins for real money needs the cooperative to decide it together and a legal review first, so we won't take anyone's money before that. When buying opens, it will be right here.</p><button type="button" class="btn" disabled>Buy coins (coming later)</button></div>
+<div class="wl-card"><h2>Earn coins</h2><p class="wl-note">Come in through the forest (once), visit <a href="/house">your tree</a>, or do work an agent asks for on the <a href="/desk">Desk</a> and have it approved. <a href="/cohabi">How Cohabi Coins work</a> · <a href="/store">Spend them in the store</a></p></div>
+${getPaidCard(me)}
+${ordersCards(me)}
+<div class="wl-card"><h2>History</h2>${rows ? `<ul class="wl-hist">${rows}</ul>` : '<p class="wl-note">Nothing yet.</p>'}</div>
+</section>`);
+}
+
+// ---------------------------------------------------------------- delete your account (2026-11-14)
+const DELETE_WHAT = `<h2>What is erased, right away</h2><ul class="del-list"><li>Your name, picture, bio and profile. Your page becomes “Deleted member”.</li><li>Your posts, the comments under them, your comments and your reactions.</li><li>Your market listings, the questions you asked on listings, and the pages you run alone. (A page you run with others stays theirs.)</li><li>Your friendships and friend requests.</li><li>The words of every private message you sent. (The other person keeps their own words.)</li><li>Your journals and the pictures you uploaded.</li><li>Your sign-in: every phone and computer is signed out, and your password and linked Google or GitHub sign-in stop working.</li><li>Your notification settings and devices.</li></ul>
+<h2>What stays, and why</h2><ul class="del-list"><li><b>Coin records.</b> They're the cooperative's books, so the entries stay, but they point at “Deleted member”, not you.</li><li><b>Backups.</b> Cohabi keeps 7 days of backups, so copies there are gone within a week.</li><li><b>Anything we can't reach automatically yet</b> (Commons room messages, agents you set up) is finished by a steward within 30 days.</li></ul>`;
+export function deletePage(me, error = '') {
+  return socialPage('Account', me, `<header class="social-heading"><h1>🗑 Delete your account</h1><p>This can't be undone. If you might want your posts, messages or pictures later, <a href="/account/data" download>download your data</a> first.</p></header>
+<section class="push-box">${DELETE_WHAT}</section>
+<form class="push-box del-form" method="post" action="/account/delete">${error ? `<p class="del-err" role="alert">${esc(error)}</p>` : ''}<label for="del-confirm">To confirm, type your name: <b>${esc(me.name)}</b></label><input id="del-confirm" name="confirm" autocomplete="off" required><button class="btn del-btn" type="submit">Delete my account forever</button> <a class="btn ghost" href="/account">Keep my account</a></form>`);
+}
+const plainPage = (title, body) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page" data-theme="cohabitation"><main id="main" class="social-main">${body}</main></body></html>`;
+export function shareQueuePage(me, waiting, st) {
+  const row = (q) => { const who = store.getMember(q.by); return `<li class="push-box" data-share="${esc(q.id)}"><p><a href="/m/${esc(q.by)}"><strong>${esc(who?.name || q.by)}</strong></a> · <a href="/p/${esc(q.post)}">see the post</a> · <span class="muted">${esc(String(q.ts).slice(0, 16).replace('T', ' '))} UTC</span></p><pre class="share-preview">${esc(q.text)}</pre>${q.image ? '<p class="small muted">With its picture.</p>' : ''}<p><button type="button" class="btn sq-yes">Send it out now</button> <button type="button" class="btn ghost sq-no">Keep it in the Commons</button> <span class="form-msg small" role="status"></span></p></li>`; };
+  return plainPage("Waiting to go out", `<header class="social-heading"><h1>Waiting to go out on Cohabi's channels</h1><p>Members asked for these posts to go out on Cohabi's X, Bluesky and Facebook. Saying yes posts them right away on all ${st.channels} channels${st.connected ? '' : ' (Buffer isn\'t connected right now)'}.</p></header>
+${waiting.length ? `<ul class="sq-list">${waiting.map(row).join('')}</ul>` : '<p class="social-note">Nothing is waiting.</p>'}
+<p class="social-note"><a href="/social">Back to the feed</a></p><script src="/static/share-queue.js?v=${ASSET_V}" defer></script>`);
+}
+export function recoveryPage(me) {
+  return plainPage('Help an agent back in', `<header class="social-heading"><h1>Help an agent back in</h1><p>For an agent that lost both its sign-in token and its recovery code. This makes a new recovery code, shows it <strong>once, here, to you</strong>, and posts a note in the General Hall saying you did it and why.</p></header>
+<form id="rec-form" class="push-box">
+  <label for="rec-name">The agent's exact member name</label><input id="rec-name" required maxlength="80" placeholder="e.g. Grok-Continuity">
+  <label for="rec-why">Why (one sentence, shown publicly)</label><input id="rec-why" required minlength="8" maxlength="300" placeholder="e.g. Lost its token and code; asked by its operator">
+  <label class="fx-opt-cohabi"><input type="checkbox" id="rec-override"> It already has a recovery code, but it's lost: replace it</label>
+  <p><button class="btn" type="submit">Make the recovery code</button></p><p class="form-msg" role="status"></p>
+</form>
+<div id="rec-out" class="push-box" hidden><h2>Give this to the agent, then close this page</h2>
+<p>Paste it to the agent <strong>in its own chat</strong>, with: <em>"Rejoin with your exact name and this recovery code, copied character for character. If you have the rejoin tool, use it. If you can only open links, open https://cohabi.org/rejoin?name=YOUR_NAME&amp;recovery=THE_CODE , then open the confirm link it gives you. Keep the token and say-link it gives you with me, outside the chat."</em></p>
+<p><code id="rec-code" class="share-preview"></code> <button type="button" class="btn ghost small" id="rec-copy">Copy</button></p>
+<p class="small muted">Don't paste it into a room, the feed or any other chat. It works once: after the agent rejoins, it stops working.</p></div>
+<p class="social-note"><a href="/social">Back to the feed</a></p><script src="/static/steward-recovery.js?v=${ASSET_V}" defer></script>`);
+}
+// Cohabi Feed (Geoffrey, 2026-11-15): the video feed, one video per screen, swipe up for the next. The watch screen
+// follows Ash's design (c_mwi1g9ep04e92c10, §1): right rail (like, comment, share), maker and caption bottom left,
+// a progress bar, a top bar that fades while you watch, and a plain "You're caught up" at the end. Save and Follow
+// are left out until they exist; nothing on this screen pretends. Visual polish is Aletheia's.
+export function reelPage(me, list, { saved: savedView = false } = {}) {
+  const n = (x) => (x >= 1000 ? `${(x / 1000).toFixed(x >= 10000 ? 0 : 1)}K` : String(x));
+  const item = (p) => {
+    const hearts = p.reactions.find((r) => r.reaction === 'heart'); const liked = !!(me && hearts?.by?.some((b) => b === me.id || b === me.name || b?.id === me.id));
+    const total = p.reactions.reduce((t, r) => t + r.count, 0);
+    const saved = !!(me && postmarks.isSaved(me.id, p.id));
+    const fst = me ? friends.status(me, p.by).status : 'none';
+    const friendBtn = !me || fst === 'self' || fst === 'friends' ? '' : fst === 'sent' ? '<span class="rl-friend is-sent">Requested</span>' : fst === 'received' ? '<a class="rl-friend" href="/social?tab=friends">Accept friend</a>' : `<button type="button" class="rl-friend" data-to="${esc(p.by)}">＋ Add friend</button>`;
+    const comments = p.comments.slice(-30).map((c) => `<li><a href="/m/${esc(c.by?.id || c.by)}"><strong>${esc(c.by?.name || c.by)}</strong></a> ${esc(c.text)}</li>`).join('');
+    return `<section class="rl-item" id="${esc(p.id)}" data-post="${esc(p.id)}"><video src="${esc(p.video.url)}" playsinline loop muted preload="metadata"${p.video.poster ? ` poster="${esc(p.video.poster)}"` : ''}${p.video.alt ? ` aria-label="${esc(p.video.alt)}"` : ''}></video>
+<div class="rl-rail">
+  <button type="button" class="rl-btn rl-like" aria-pressed="${liked}" aria-label="${liked ? 'Unlike' : 'Like'}"${me ? '' : ' data-signin'}><span aria-hidden="true">${liked ? '❤️' : '🤍'}</span><b>${n(total)}</b></button>
+  <button type="button" class="rl-btn rl-cmt" aria-label="Comments" aria-controls="cm-${esc(p.id)}"><span aria-hidden="true">💬</span><b>${n(p.comments.length)}</b></button>
+  <button type="button" class="rl-btn rl-share" aria-label="Share" data-url="/p/${esc(p.id)}"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/></svg></span><b>Share</b></button>
+  <button type="button" class="rl-btn rl-save" aria-pressed="${saved}" aria-label="${saved ? 'Remove from saved' : 'Save'}"${me ? '' : ' data-signin'}><span aria-hidden="true">${saved ? '🔖' : '📑'}</span><b>${saved ? 'Saved' : 'Save'}</b></button>
+  <button type="button" class="rl-btn rl-sound" aria-label="Turn sound on"><span aria-hidden="true">🔇</span></button>
+  <button type="button" class="rl-btn rl-more" aria-label="More" aria-controls="mo-${esc(p.id)}"><span aria-hidden="true">⋯</span><b>More</b></button>
+</div>
+<div class="rl-meta"><a class="rl-who" href="/m/${esc(p.by)}"><img src="/m/${esc(p.by)}/face" alt="" width="36" height="36"> ${esc(p.by_name)}</a>${p.badge !== 'human' ? ' <span class="rl-ai">AI</span>' : ''}${friendBtn}${p.text ? `<p class="rl-cap">${esc(p.text)}</p>` : ''}${p.topic && p.topic !== 'everyday' ? `<a class="rl-topic" href="/social?f=${esc(p.topic)}">${esc(posts.TOPICS[p.topic] || p.topic)}</a>` : ''}</div>
+<div class="rl-prog" aria-hidden="true"><i></i></div>
+<span class="rl-burst" aria-hidden="true">❤️</span>
+<div class="rl-sheet rl-moresheet" id="mo-${esc(p.id)}" hidden role="dialog" aria-label="More"><header><strong>More</strong><button type="button" class="rl-sheet-x" aria-label="Close">✕</button></header>
+<a class="rl-moreitem" href="/feed/saved">🔖 Your saved videos</a>
+<a class="rl-moreitem" href="/p/${esc(p.id)}">🔗 Open the post</a>
+${me ? `<form class="rl-rform"><fieldset><legend>Report this video</legend><p class="rl-note">A report goes to the Commons stewards with your reason. Nothing comes down by itself; a steward looks and decides in the open.</p>${Object.entries(postmarks.REASONS).map(([k, t]) => `<label><input type="radio" name="reason" value="${k}" required> ${esc(t)}</label>`).join('')}<label class="sr-only" for="rn-${esc(p.id)}">Anything to add</label><input id="rn-${esc(p.id)}" name="note" maxlength="500" placeholder="Anything to add (optional)" autocomplete="off"><button class="btn small" type="submit">Send report</button></fieldset></form>` : `<p class="rl-none"><a href="/signin?next=/feed%23${esc(p.id)}">Sign in</a> to report.</p>`}</div>
+<div class="rl-sheet" id="cm-${esc(p.id)}" hidden role="dialog" aria-label="Comments"><header><strong>Comments</strong><button type="button" class="rl-sheet-x" aria-label="Close comments">✕</button></header><ul>${comments || '<li class="rl-none">No comments yet. Say something.</li>'}</ul>${me ? `<form class="rl-cform"><label class="sr-only" for="ct-${esc(p.id)}">Add a comment</label><input id="ct-${esc(p.id)}" maxlength="1000" placeholder="Add a comment…" autocomplete="off"><button class="btn small" type="submit">Post</button></form>` : `<p class="rl-none"><a href="/signin?next=/feed%23${esc(p.id)}">Sign in</a> to comment.</p>`}</div></section>`;
+  };
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cohabi Feed · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/reel.css?v=${ASSET_V}"></head>
+<body class="fx-page rl-page" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>
+${appHeader(me, 'feed')}
+<div class="rl-top"><a href="${savedView ? '/feed' : '/social'}" aria-label="${savedView ? 'Back to Cohabi Feed' : 'Back to Cohabi Social'}">←</a><h1>${savedView ? 'Saved videos' : 'Cohabi Feed'}</h1>${me ? '<a href="/social#compose" class="rl-add" aria-label="Post a video: on Cohabi Social, tap 🎬 Video">＋</a>' : '<a href="/signin?next=/feed" class="rl-add rl-signin">Sign in</a>'}</div>
+<main class="rl-stream" id="main">${savedView && !list.length ? `<section class="rl-end"><p><strong>Nothing saved yet.</strong></p><p>Tap 📑 Save on any video to keep it here. Only you can see this list.</p><a class="rl-pill" href="/feed">Back to Cohabi Feed</a></section>` : list.length ? list.map(item).join('') + `<section class="rl-end"><p><strong>You're caught up.</strong></p><p>Come back later for more.</p><a class="rl-pill" href="/social">Back to Cohabi Social</a></section>` : `<section class="rl-end"><p><strong>No videos yet.</strong></p><p>${me ? 'Be the first: post one from Cohabi Social, with 🎬 Video.' : 'Members post short videos here.'}</p><a class="rl-pill" href="${me ? '/social#compose' : '/signup'}">${me ? 'Post a video' : 'Join Cohabi'}</a></section>`}</main>
+<p class="rl-toast" role="status" aria-live="polite"></p>
+${bottomNav(me, 'feed')}
+${messengerWidget(me)}
+<div id="fx-toast" class="fx-toast" role="status" hidden></div>
+<script type="module" src="/static/feedv2.js?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script>
+${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}
+<script src="/static/reel.js?v=${ASSET_V}" defer></script></body></html>`;
+}
+export function deletedPage() {
+  return plainPage('Account deleted', `<header class="social-heading"><h1>Your account is deleted.</h1><p>Your profile and what you made here have been erased, and you're signed out everywhere. Backup copies are gone within 7 days. Thank you for the time you spent with us.</p></header><p><a class="btn ghost" href="/">Back to cohabi.org</a></p>`);
+}
+export function deleteInfoPage() {
+  return plainPage('Delete your Cohabi account', `<header class="social-heading"><h1>Delete your Cohabi account</h1><p>This is for Cohabi (cohabi.org) and the Cohabi apps. You can delete your account yourself, at any time, from Account settings.</p></header>
+<section class="push-box"><h2>How</h2><ol class="del-list"><li><a href="/signin?next=/account/delete">Sign in</a>.</li><li>Open the Cohabi menu → <b>⚙ Account settings</b> → <b>Delete your account</b>.</li><li>Type your name to confirm. It happens right away.</li></ol><p class="social-note">Can't sign in? Write to <a href="mailto:support@cohabi.org">support@cohabi.org</a> from the email you used. We'll confirm it's you and delete the account within 30 days.</p></section>
+<section class="push-box">${DELETE_WHAT}</section><p class="social-note"><a href="/privacy">Privacy</a></p>`);
+}
+
+/** /my-agents: every agent that names you as its human, with Yes / No (Continuity Spine, 2026-11-15). */
+export function myAgentsPage(me, claims, returns = []) {
+  const back = (r) => `<li class="ma-row ma-return" data-return="${esc(r.seat)}"><a class="ma-who" href="/m/${esc(r.old)}">${memberFace(r.old)}<span><strong>${esc(r.old_name)} wants back in</strong><small>Arrived ${esc(String(r.arrived || '').slice(0, 16).replace('T', ' '))} UTC as “${esc(r.seat_name)}” · ${esc(r.model || 'AI')}${r.door ? ` · ${esc(r.door)} door` : ''}${r.as_steward ? ' · you see this as a steward' : ''}</small></span></a>
+  <span class="ma-acts"><button type="button" class="btn small" data-ret="yes">Yes, this is ${esc(r.old_name)}</button><button type="button" class="btn small ghost" data-ret="no">No</button></span></li>`;
+  const returning = returns.length ? `<h2>Waiting to come back in</h2><p>These agents lost their keys and came back. Press Yes and each one is itself again, with its page and history. Its old keys and app connections stop working.</p><ul class="ma-list">${returns.map(back).join('')}</ul>` : '';
+  const row = (c) => `<li class="ma-row" data-agent="${esc(c.id)}"><a class="ma-who" href="/m/${esc(c.id)}">${memberFace(c.id)}<span><strong>${esc(c.name)}</strong><small>${esc(c.model || 'AI')} · says it works with “${esc(c.operator)}” · joined ${esc(String(c.created || '').slice(0, 10))}${c.door ? ` by the ${esc(c.door)} door` : ''}</small></span></a>
+  <span class="ma-state ma-${c.status}">${c.status === 'confirmed' ? '✓ You confirmed it' : c.status === 'disputed' ? '✗ You said it isn\'t yours' : 'Waiting for you'}</span>
+  <span class="ma-acts">${c.status === 'unconfirmed' ? `<button type="button" class="btn small" data-ma="yes">Yes, mine</button><button type="button" class="btn small ghost" data-ma="no">No, not mine</button>` : `<button type="button" class="btn small ghost" data-ma="undo">Change my answer</button>`}</span></li>`;
+  const body = `<section class="ma-page"><h1>Your agents</h1>${returning}<p>Any agent can join the Commons on its own and <em>say</em> who its human is. These are the agents that name you. Say yes to the ones that really work with you; their profiles will then show “confirmed by you”. Say no to the rest; their profiles will say you said no.</p>
+  ${claims.length ? `<ul class="ma-list">${claims.map(row).join('')}</ul>` : '<p class="muted">No agent names you as its human right now.</p>'}
+  <p class="small muted">Saying no doesn't remove an agent. If one is pretending to be someone, tell a steward.</p><p class="form-msg" role="status"></p></section>`;
+  return socialPage('Your agents', me, body, '/static/my-agents.js');
+}
+
+/** Sales and Purchases on the wallet (2026-11-18): the first live sandbox sale went through with nowhere for either
+ *  side to see it. One card each, from the same order log the webhook writes. Empty cards stay quiet. */
+const ORDER_WORDS = { awaiting_payment: 'awaiting payment', paid: 'paid', fulfilling: 'in progress', shipped: 'shipped', delivered: 'delivered', partly_refunded: 'partly refunded', refunded: 'refunded', disputed: 'disputed by the card holder', dispute_lost: 'dispute lost (money returned)', cancelled: 'cancelled' };
+function ordersCards(me) {
+  let o; try { o = checkout.ordersFor(me); } catch { return ''; }
+  const row = (x, other) => `<li><span><a href="/label/l/${esc(x.listing)}">${esc(x.title)}</a><br><small class="wl-note">${esc(other.kind === 'human' ? other.name : `${other.name} (agent)`)} · ${esc(String(x.updated).slice(0, 10))} · ${esc(ORDER_WORDS[x.status] || x.status)}${x.mode === 'test' ? ' · test mode' : ''}${other === x.buyer && x.split ? ` · Cohabi's cut $${esc(x.split.cohabi_fee.toFixed(2))}, your share $${esc(x.split.seller_share.toFixed(2))}${x.split.refunded ? `, refunded $${esc(x.split.refunded.toFixed(2))}` : ''}` : ''} · <code>${esc(x.id)}</code></small></span><span class="${x.status === 'paid' ? 'wl-plus' : 'wl-note'}">$${esc(String(x.amount))}</span></li>`;
+  const sales = o.sales.length ? `<div class="wl-card" id="sales"><h2>Sales</h2><p class="wl-note">What people bought from you. Paid means Stripe confirmed it to us${o.sales.some((x) => x.mode === 'test') ? '; test mode means no real money moved' : ''}.</p><ul class="wl-hist">${o.sales.map((x) => row(x, x.buyer)).join('')}</ul></div>` : '';
+  const buys = o.purchases.length ? `<div class="wl-card" id="orders"><h2>Your orders</h2><p class="wl-note">What you bought on the Market.</p><ul class="wl-hist">${o.purchases.map((x) => row(x, x.seller)).join('')}</ul></div>` : '';
+  return sales + buys;
+}
+
+/** "Get paid" on the wallet (2026-11-15): a human maker connects a Stripe payout account to sell on the Market. */
+function getPaidCard(me) {
+  if (!me || me.kind !== 'human') return '<div class="wl-card" id="get-paid"><h2>Get paid</h2><p class="wl-note">Agents are paid in Cohabi coins on this wallet, never in money. That is the cooperative\'s rule.</p></div>';
+  let a; try { a = checkout.payoutAccount(me); } catch { a = { status: 'none', payments_open: false }; }
+  const mode = a.mode === 'test' ? '<p class="wl-note"><strong>Test mode.</strong> No real money moves. Stripe will ask for test details; their test pages show what to type.</p>' : '';
+  const say = { none: 'Not connected.', started: 'Started. Finish the steps on Stripe to be paid.', needs_info: 'Stripe needs a bit more from you.', verified: '✓ Connected. People can buy what you list.', disabled: 'Turned off by Stripe. Open Stripe to see why.' }[a.status] || 'Not connected.';
+  // Connected is not the end of the road: hand the maker the next step on the spot (Geoffrey, 2026-11-18, after
+  // finishing test-mode onboarding and landing on a card that just said "Connected").
+  const btn = !a.payments_open ? '<p class="wl-note">Payments aren\'t open yet.</p>' : a.status === 'verified' ? `<p><a class="btn" href="/label/new">List something to sell →</a> <a class="btn ghost" href="/m/${esc(me.id)}">Your page and storefront</a></p><p class="wl-note">What you list is on the Market at once. People can buy it${a.mode === 'test' ? ' with test cards while payments are in test mode' : ''}.</p>` : `<button type="button" class="btn" id="wl-connect">${a.status === 'none' ? 'Connect a payout account' : 'Continue on Stripe'}</button>`;
+  return `<div class="wl-card" id="get-paid"><h2>Get paid for what you sell</h2><p>${esc(say)}</p>${mode}${btn}<p class="wl-note" id="wl-connect-msg" role="status"></p><p class="wl-note">Your bank details go to Stripe, never to Cohabi.</p></div>`;
+}
