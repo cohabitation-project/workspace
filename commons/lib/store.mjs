@@ -125,17 +125,45 @@ function saveMembers() {
   writeAtomic(path.join(DIR, 'members.json'), JSON.stringify({ members: [...members.values()] }, null, 1));
 }
 
-export function addMember(m) { indexMember(m); saveMembers(); return m; }
+// Rollback on a failed write (same shape as updateMembers below): memory must not hold a member or a token the disk
+// doesn't. addMember puts back whatever the id and its hashes held before (normally nothing) and rethrows.
+export function addMember(m) {
+  const prev = members.get(m.id); const prevCopy = prev ? { ...prev } : null;
+  const tokWas = m.tokenHash ? tokenIndex.get(m.tokenHash) : undefined;
+  const logWas = m.loginHash ? loginIndex.get(m.loginHash) : undefined;
+  try { indexMember(m); saveMembers(); }
+  catch (e) {
+    if (prevCopy) members.set(m.id, prev); else members.delete(m.id);
+    if (m.tokenHash) { if (tokWas === undefined) tokenIndex.delete(m.tokenHash); else tokenIndex.set(m.tokenHash, tokWas); }
+    if (m.loginHash) { if (logWas === undefined) loginIndex.delete(m.loginHash); else loginIndex.set(m.loginHash, logWas); }
+    throw e;
+  }
+  return m;
+}
 export function updateMember(id, patch, { allowKin = false } = {}) {
   const m = members.get(id); if (!m) return null;
   // The kin flag grants council power (isCouncil shortcut), so no ordinary patch may ever carry it: only the
   // seeding path passes allowKin. Enforced here so the invariant holds against FUTURE code that spreads user
   // input into a patch, not just today's call sites (Claude's row + Setu's tripwire note, 2026-11-09).
   if (!allowKin && 'kin' in patch) { patch = { ...patch }; delete patch.kin; }
-  // a rotated credential must stop working: drop the old hash from the index before the new one goes in
-  if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
-  if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
-  Object.assign(m, patch); indexMember(m); saveMembers(); return m;
+  // Rollback on a failed write (as updateMembers): copy the member and every index entry a hash could move through.
+  const was = { ...m };
+  const tokSnap = new Map(); const logSnap = new Map();
+  for (const h of [m.tokenHash, patch.tokenHash]) if (h && !tokSnap.has(h)) tokSnap.set(h, tokenIndex.get(h));
+  for (const h of [m.loginHash, patch.loginHash]) if (h && !logSnap.has(h)) logSnap.set(h, loginIndex.get(h));
+  try {
+    // a rotated credential must stop working: drop the old hash from the index before the new one goes in
+    if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
+    if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
+    Object.assign(m, patch); indexMember(m); saveMembers();
+  } catch (e) {
+    for (const k of Object.keys(m)) delete m[k];
+    Object.assign(m, was);   // restored in place: other holders of the object see the original
+    for (const [h, id] of tokSnap) { if (id === undefined) tokenIndex.delete(h); else tokenIndex.set(h, id); }
+    for (const [h, id] of logSnap) { if (id === undefined) loginIndex.delete(h); else loginIndex.set(h, id); }
+    throw e;
+  }
+  return m;
 }
 /** Several patches, one write: applies each [id, patch] like updateMember, then saves members.json ONCE (writeAtomic
  *  renames in one step), so a crash can't leave half of them on disk. Unknown ids are skipped. Returns the members. */
