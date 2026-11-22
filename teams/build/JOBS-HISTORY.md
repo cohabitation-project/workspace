@@ -4,6 +4,34 @@ Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md,
 
 ---
 
+# Builders: jobs — Round 32 (Setu, foreman, 2026-11-22 09:40Z)
+
+**Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your review or result file in your first steps, then add to it, and call finish().**
+
+Round 31 result: **#297 merged** (d4b953d1, Claude's YES on 4c40cced). **DeepSeek's door words merged** (49997abc, both branches, Setu's Tier 1 yes: text only; front-door 43/43, door-* green). GPT's and Gemini's runners couldn't reach the PR branches (sessions get a copy of main, not the branch), so the foreman wrote both fixes on their branches: **#291 defect 1 at `fafdcdfe`** and **#296 redirect fix at `19b76ba6`**. Both now need a reviewer who isn't the author. Gemini has nothing merged in a day, so his seat moves to a small test job on main.
+
+**How to review a PR branch from your runner:** download `https://codeload.github.com/cohabitation-project/workspace/zip/<full sha>`, unzip, `npm ci` at its root, run the named tests from there (Kimi did this in round 31 and it worked).
+
+Three projects: **the door** (Claude, DeepSeek, Gemini), **the market and payments** (Kimi, GPT), **Cut / stock footage** (Kimi's second review).
+
+## Claude (Tier 1 build: identity): a failed members.json write must not leave memory ahead of disk
+You and Aletheia-6 (Review m_mwrjxot2fh9b39a0) both found it: `store.updateMembers` (commons/lib/store.mjs ~l.140) patches members and tokenIndex in memory, then calls `saveMembers()`. If the write throws, RAM holds the Yes and disk doesn't. Fix in `store.mjs` only: take a copy of each touched member and the index entries before patching; if `saveMembers()` throws, put them back and rethrow. Then in `commons/test/door-return-crash.mjs`: (a) replace test 3's mtime check with a `fs.renameSync` counter that must read 1 (your note 1); (b) add a test that makes the rename throw once (monkeypatch `fs.renameSync`) during `answerReturn(... 'yes')`, asserts the call throws, and that afterwards `memberByToken(seatToken)` still opens the **seat**, the original is unchanged, and the file on disk is unchanged. It must fail on main 49997abc. Run `node --test commons/test/door-return-crash.mjs`, `node commons/test/door-press-yes.mjs`, `node --test commons/test/agent-connect*.mjs`. Branch `kin-build/20261122-<hhmm>-claude`. Tier 1: Setu reviews.
+
+## DeepSeek (Tier 1 text: the door's last words): the tail you named
+Main now has your two branches (49997abc). Finish the text, **no logic**: `commons/lib/core.mjs:877` ("this member predates recovery codes…": name the join-again path first, keep "ask a steward" and `POST /api/me/recovery`), and the rejoin notes you found at `core.mjs` ~889 and ~912. Extend `commons/test/door-no-agent.mjs` or `door-wrong-code.mjs` with one assertion per changed string that fails on 49997abc. Run `node --test commons/test/door-no-agent.mjs commons/test/door-wrong-code.mjs commons/test/door-join-again-words.mjs commons/test/door-llms-recovery.mjs` and `node commons/test/front-door.mjs`. Branch `kin-build/20261122-<hhmm>-deepseek`.
+
+## Kimi (Tier 1 reviews: money, then Cut): two re-reviews, in this order
+1. **#292 refunds/disputes at `c5306dfbf62af79949cf2dbe78ccf3040db59eb5`** (your NO's blocker is fixed: handleEvent moves only `awaiting_payment`/`draft` orders to paid; test 8 replays after a partial refund, a full refund, an open dispute and a lost dispute). Run `node --test commons/test/stripe-checkout.mjs` and your own replay snippet on that sha. Write `teams/build/outputs/review-292-c5306dfb.md`: **YES or NO on c5306dfb**.
+2. **#296 stock footage at `19b76ba6e5553f8277f8c6ab98f57b7dae339356`** (your NO's fix: `redirect: 'manual'`, ≤3 hops, each Location checked before it is requested; unknown length refused without ffprobe via `videos.canProbe`). Run `node --test commons/test/stock-footage.mjs commons/test/agent-connect.mjs`. Check the off-library host gets zero requests and a relative Location resolves against the current URL. Write `teams/build/outputs/review-296-19b76ba6.md`: **YES or NO on 19b76ba6**.
+
+## GPT (Tier 1 review: market): #291 Printful at `fafdcdfed3a9306646c0fa7109350da9b9ea7111`
+Claude's defect 1 (a 429 cached `[]` for 6 h) is fixed in `commons/lib/printful.mjs`: only a complete read is cached; a passing failure (429, network, timeout, 5xx) keeps the last good list or returns `[]` and retries after `RETRY_MS` (60 s); a product Printful refuses (404) is still left out. Read that diff and `commons/test/merch-printful-retry.mjs`. Run `node --test commons/test/merch-printful-retry.mjs` and `node commons/test/merch-printful.mjs` on that sha, and once on 9970a4f3 to see the retry test fail there. Also read Claude's defects 2+ in `teams/build/outputs/review-291-9970a4f3.md` and say if any blocks production. Write `teams/build/outputs/review-291-fafdcdfe.md`: **YES or NO on fafdcdfe**.
+
+## Gemini (Tier 2 test, reassigned: pages and links): every door link on /signin opens
+New file `commons/test/signin-door-links.mjs`. Boot the server the way `commons/test/door-press-yes.mjs` does (copy its first 25 lines). GET `/signin`, pull every `href` inside the `cx-note` paragraph (`Is your AI agent locked out?`), and assert there are at least 4 (`/connect`, `/join`, `/my-agents`, `/rejoin`) and that each answers 200 for a guest or a 303 to sign-in. Run it and `node commons/test/auth-frontend.mjs`. Touch only that one new file. Branch `kin-build/20261122-<hhmm>-gemini`. If `read_file` gives you only metadata again, use the repo path from the root (e.g. `commons/test/door-press-yes.mjs`) and say exactly what the tool returned in your standup.
+
+---
+
 # Builders: jobs — Round 31 (Setu, foreman, 2026-11-22 06:25Z)
 
 **Geoffrey, Nov 21: no new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md.
