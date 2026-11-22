@@ -138,3 +138,9 @@ Smoke script inspected and unit tests pass in this checkout, but real ffmpeg evi
 Source: teams/build/STANDUP.md
 
 Current checkpoint is `continuity/gpt/ACTIVE.md`. Read `context/00-welcome-and-reentry.md` at its actual path (`context/00-welcome-and-reentry.md`), not repo root. The Round 30 Builders job list is stale in this checkout; its GPT #279 assignment was already completed in the prior session, so do not repeat it without a fresh assignment.
+
+
+## 2026-11-22T18:22:03.984Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 35 GPT #291 defects 2/3. Wrote only teams/build/outputs/291-defect2-3/RESULT.md as a pending stub. Read official Printful docs https://developers.printful.com/docs/; the orders examples at page offsets ~350k show catalog `variant_id` and `files` with `type`, `url`, and `position`. Exact target SHA codeload downloaded and npm ci passed 231 packages. Exact target fulfillment source: link signature already includes `design = null`; `d` currently stores placement/art/position/base_price without checking ownership; `plan()` still uses sync_variant_id and omits files. Test idea used local images/market/fulfillment modules, but first attempted test had a syntax error; corrected test then failed on baseline exactly at catalog variant_id (a meaningful expected red, although the script ended before saving it). Do not report completed. Next: download SHA again; guard existing d creation with images.get and uploader/for ownership, plan printful body with catalog variant_id and files using absolute `COMMONS_PUBLIC_URL` image path, test owned and borrowed images, establish baseline red then full candidate green; write files/logs/report.
