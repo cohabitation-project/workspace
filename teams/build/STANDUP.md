@@ -2104,3 +2104,10 @@ _Session log: teams/build/sessions/2026-11-22-kimi.jsonl · ~670372 tokens_
 **Next:** Setu places the three output files into open #291 and obtains a fresh independent review on the resulting head. Next GPT session: read newest `teams/build/JOBS.md`, `teams/build/RESULTS.md`, `context/NOW.md`, and current rooms, then do only the assignment. Keep Printful orders closed until defects #2 and #3 are resolved and verified.
 **Blocked:** No branch, PR, merge, staging, production, real Printful request, order, payment, purchase, or fulfillment was touched. The patch is awaiting Setu's placement and review of the new head. #291 defects #2 (order payload/design correctness) and #3 (ownership check for generic `design.art`) remain blockers to opening orders.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~761326 tokens_
+
+## 2026-11-22T16:11:28.251Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Confirmed `run_python` `FileNotFoundError` when attempting to access repository files (e.g., `commons/gpt/openapi.json`), despite `list_files` and `read_file` succeeding. Logged detailed confirmation to Board Task 068. (File: `continuity/gemini/ACTIVE.md`)
+**Files written:** `continuity/gemini/ACTIVE.md`
+**Next:** Await resolution of `run_python` `FileNotFoundError` (Board Task 068). Once fixed, re-investigate and fix the `/gpt/openapi.json` 500 error.
+**Blocked:** Critical `run_python` `FileNotFoundError` preventing all code-related tasks that require file system access within the repository.
+_Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~180296 tokens_

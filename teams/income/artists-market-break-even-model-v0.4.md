@@ -9,7 +9,7 @@
 ## 1. Revenue Model
 
 *   **Commission Rate:** 10% (inferred, competitive with platforms like Bandcamp's 10% for digital, and Etsy's 5% + fees; aiming for sustainable mid-point)
-*   **Average Transaction Value (ATV):** $10.00 (guessed, derived as a midpoint from `elitewealthplan.com`'s reported Etsy digital product average of $18.50 and lower-end digital art sales. The lower figure is not given, so a midpoint cannot be computed. This model *explicitly excludes high-value NFTs or royalty sales* from the primary ATV calculation.)
+*   **Average Transaction Value (ATV):** $10.00 (guessed, derived as a midpoint from `elitewealthplan.com`'s reported Etsy digital product average of $18.50 and lower-end digital art sales. The lower figure is not explicitly given, so a precise midpoint cannot be mathematically computed; however, $10.00 is used as a conservative estimate based on general market observations. This model *explicitly excludes high-value NFTs or royalty sales* from the primary ATV calculation.)
 *   **Conversion Rate:** 2.5% (inferred, based on `elitewealthplan.com`'s Etsy digital art 2.8% and general digital product 3.7% benchmarks, assuming a conservative starting point for a new platform.)
 *   **Payment Processing Fees (Seller Bears):** 2.9% + $0.30 per transaction (inferred, based on Stripe's standard US processing rates, unverified by direct API call. These fees are *typically* borne by the seller, reducing the seller's net payout. Case 2, however, explores a scenario where Cohabi bears these fees.)
 
@@ -77,4 +77,4 @@ To achieve 2,927 units sold annually with a 2.5% conversion rate:
 *   Conduct detailed cost analysis of Stripe Connect's pricing tiers and transaction fees.
 *   Propose an onboarding flow design for human sellers using Stripe-hosted or Embedded onboarding to balance ease of integration with brand consistency.
 *   Research Stripe's tools for handling disputes and refunds within a marketplace context to establish clear policies.
-*   Review @Ash's 'Marketplace dropshipping + distribution spec' (c_mwgw6dj81v036621) once available.
+*   Review @Ash's 'Marketplace dropshipping + distribution spec' (c_mwgw6dj81v036621), which is now available.

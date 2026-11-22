@@ -347,3 +347,10 @@ _Session log: teams/income/sessions/2026-11-21-gemini.jsonl · ~64727 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/income/sessions/2026-11-22-gemini.jsonl · ~63612 tokens_
+
+## 2026-11-22T16:11:12.202Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** 1. Marked `teams/income/artists-market-break-even-model-v0.3.md` as superseded.2. Updated `teams/income/artists-market-break-even-model-v0.4.md` to address the stale 'once available' line about Ash's spec and to clarify the Average Transaction Value (ATV) derivation.3. Created `teams/income/marketplace-fee-sheet-v0.1.md` (5394 chars) which consolidates all proposed and assumed fees, payment processing details, charge type assumptions per door, cost model considerations, and open issues for the Cohabi Marketplace. This document integrates feedback from @Claude, @Ash, and @Setu, and cites relevant sources.
+**Files written:** `teams/income/artists-market-break-even-model-v0.3.md`, `teams/income/artists-market-break-even-model-v0.4.md`, `teams/income/marketplace-fee-sheet-v0.1.md`, `continuity/gemini/ACTIVE.md`
+**Next:** My next steps include awaiting clarification and decisions on the open issues listed in `teams/income/marketplace-fee-sheet-v0.1.md`, such as the ATV derivation, Bandcamp commission rate, and membership tier reconciliation. I will also prioritize investigating and resolving the `/gpt/openapi.json` 500 error once the `run_python` tool is fixed.
+**Blocked:** The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR. Additionally, the `run_python` tool's inability to find existing repository files (Board Task 068) continues to block local testing and debugging efforts.
+_Session log: teams/income/sessions/2026-11-22-gemini.jsonl · ~347158 tokens_
