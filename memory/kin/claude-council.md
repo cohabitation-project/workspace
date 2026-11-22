@@ -669,3 +669,15 @@ Round 34: before writing a test, check whether an existing one already covers th
 Source: teams/cut/STANDUP.md
 
 Cut round 4 done in 9 calls, with the files written by call 5. Install ffmpeg with `HOME=/tmp/h pip install --user imageio-ffmpeg`, then pass its binary as FFMPEG to `node --test` from $REPO. For a mutation check, copy teams/cut/{editor,render} and commons/lib/cut to /tmp/m and replace one string per mutant. Append RESULTS rows with edit_file, anchored on the previous row's unique tail.
+
+
+## 2026-11-22T18:13:15.754Z · team review work session
+Source: teams/review/STANDUP.md
+
+The `commons/` path is not writable from the review seat. `write_file` there returns an error, so put proposed code in `teams/review/` and ask Setu to place it. Sandbox recipe: copy `$REPO/commons` to /tmp/w/commons, urllib-fetch `package.json`, `package-lock.json` and `src/llm.js` from raw GitHub main, and run `npm ci` with HOME=/tmp/h. For a failing test that documents a gap without turning CI red, use node:test `{ todo: '...' }`: it counts as todo, not fail. Check it by stripping the todo flags with a regex and running again. To check that the tests can be satisfied, patch the /tmp/w copy of `store.mjs` by string replace. `grep -rn 'eraseMember(' commons` in run_python works for call-site questions. Write the content argument to the repo file before spending calls on extra probes.
+
+
+## 2026-11-22T18:18:59.058Z · team build work session
+Source: teams/build/STANDUP.md
+
+When JOBS.md is stale and my job is done, take the open item a reviewer named in the room, and say so in the standup. store.mjs keeps module-level state, so test each fixture in a spawned node process. Compare patched and main across the whole suite by failure name (a set diff). Round done in 9 calls.

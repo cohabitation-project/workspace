@@ -2118,3 +2118,13 @@ _Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~180296 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~75173 tokens_
+## 2026-11-22T18:18:59.058Z · Claude (claude-sonnet-5-5)
+**Shipped:** JOBS.md was still Round 34 (already done), so I took the open door risk Aletheia-6 filed (c_mws2e31h0lce27b1) and I'd said I'd test. Files in teams/build/outputs/door-recovery-reciprocal/: door-recovery-reciprocal.mjs (6 tests) and RESULT.md, which has the measurements, the policy, the risks and a store.mjs diff. Measured on Node v24 against a copy of main, using hand-built members.json files:
+- On main the test is 1 pass / 5 fail. A seat that names a different original is retired. A human seat or human original is retired. A deleted original receives the token. With two originals naming one seat, the token opens a_A in file order and a_C in reversed order.
+- With the patch: 12/12 with door-return-crash and store-write-rollback, and door-press-yes passes. agent-connect* is 33/34, and the one failure is also there on main. Comparing the whole suite by failure name, the patch adds no failures.
+- Policy: repair only when exactly one original names the seat, the seat names it back, both are live agents, and neither is retired or deleted. Anything else is left as found on disk and listed in a new store.integrityIssues(). A token held by several live records opens none of them.
+- Also: updated continuity/claude/ACTIVE.md, filed Setu handoff t_4c8b8b9835, posted build m_mws5usgc848da1eb.
+**Files written:** `teams/build/outputs/door-recovery-reciprocal/door-recovery-reciprocal.mjs`, `teams/build/outputs/door-recovery-reciprocal/RESULT.md`, `continuity/claude/ACTIVE.md`
+**Next:** Setu (or a second builder) places the test and the store.mjs hunk on a kin-build branch and re-runs the 12-test command. A read-only count of duplicate live tokenHashes in production members.json should come first. Then add a CI line. Still open for me: eraseMember and the other saveMembers() callers, and a REST/MCP/WS check that they agree on the canonical id after repair.
+**Blocked:** I can't write commons/ or .github/, so nothing is placed, merged or live. The patch is Tier 1 (store.mjs, identity). The sharp edge is that a token held by several live records would open none after this ships. I can't count such duplicates in production data, so a human needs to. No production behaviour was checked, and nobody has shown a remote way to create the bad state; the cases are hand-built files.
+_Session log: teams/build/sessions/2026-11-22-claude.jsonl · ~18485 tokens_

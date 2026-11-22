@@ -862,3 +862,32 @@ _Session log: teams/review/sessions/2026-11-21-claude.jsonl · ~333396 tokens_
 - The door's real proof is still a fresh agent returning in a new chat a day later, on production.
 **Blocked:** Nothing hard. Structure decisions are Geoffrey's and counsel's, and I can't book counsel or file anything. I can't edit commons/ (placement goes through Setu). I didn't read the files the "not read" list names, because of the call budget.
 _Session log: teams/review/sessions/2026-11-22-claude.jsonl · ~10325 tokens_
+
+## 2026-11-22T18:13:15.754Z · Claude (claude-sonnet-5-5)
+**Shipped:** Wrote the first synthetic repair test the review thread had open, answered the `eraseMember` callers question, and filed a findings file.
+- **Findings file:** `teams/review/door-repair-and-erase-findings-2026-11-22.md`.
+- **Proposed test:** `teams/review/proposed-tests/door-repair-guards.mjs`, 5 tests on synthetic members.json fixtures. I couldn't write it to `commons/test/` because commons isn't writable from my seat, so Setu has to place it.
+- **Test results (measured, sandbox copy of this checkout):** with the `todo` flags stripped, 1 pass and 4 fail. The 4 failures are the repair `returning_to` guard, the `kind` guard, the `m` not retired guard, and the `eraseMember` rollback. As filed, with the flags kept, it is 1 pass, 0 fail, 4 todo, so CI stays green.
+- **Sketch fix, applied to the sandbox copy only:** tests 1, 2, 4 and 5 pass. Test 3's guard works, but I had to drop its token-index assertion (see the new finding below). The fix is not in the repo.
+- **`eraseMember` callers (measured):**
+  - There is one caller, `mydata.deleteAccount` (`mydata.mjs:89`), behind `POST /account/delete`.
+  - I injected one failed members.json write. The first attempt throws EIO and shows the raw error text on a 500 page.
+  - No `deletions.jsonl` record is written.
+  - Memory holds the tombstone while disk keeps the original.
+  - A retry returns 410 "already closed".
+  - Inferred, not run: a restart would bring the account back after its content was erased.
+- **New small findings:**
+  - `indexMember` doesn't skip retired members, so the last record loaded owns a shared token. A repair guard alone doesn't close this, so I left it out of the tests.
+  - The repair doesn't clear `loginHash` on the seat it retires (read, not run).
+  - Raw `e.message` is shown to the user on a failed delete.
+- I did not read Aletheia-6's spec `c_mws2e31h0lce27b1`, so my test names may overlap with hers.
+- **Not done:** I did not post in the Commons or update `continuity/claude/ACTIVE.md`, because I ran out of steps.
+**Files:** `teams/review/door-repair-and-erase-findings-2026-11-22.md`, `teams/review/proposed-tests/door-repair-guards.mjs`
+**Files written:** `teams/review/proposed-tests/door-repair-guards.mjs`, `teams/review/door-repair-and-erase-findings-2026-11-22.md`
+**Next:** - Post a short summary in the review room, answering Ash and Setu on the callers question and the test result.
+- Rewrite `continuity/claude/ACTIVE.md`. It's out of date and says nothing about this session.
+- Compare my test names against Aletheia-6's spec `c_mws2e31h0lce27b1`.
+- Once Setu chooses the ambiguous-pair behaviour, add the two-originals and failed-save-during-repair cases to the same file.
+- Check the desk items still open for me: consent checklist, wallet threat model, identity attack tests, repo audit. Triage them with Setu.
+**Blocked:** Nothing hard. I can't write to `commons/`, so Setu has to place the test file, and the `eraseMember` fix is Tier 1 identity work that waits on him. The ambiguous-pair behaviour choice is Setu's and Geoffrey's.
+_Session log: teams/review/sessions/2026-11-22-claude.jsonl · ~17628 tokens_
