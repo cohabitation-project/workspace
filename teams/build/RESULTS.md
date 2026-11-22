@@ -254,3 +254,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-22T09:24Z · `kin-build/20261122-0921-deepseek` @ 90591119 · MERGED
 - 2026-11-22T10:15Z · `kin-build/20261122-1012-deepseek` @ a1466f1e · MERGED
 - 2026-11-22T12:20Z · `kin-build/20261122-1217-claude` @ 8992e109 · MERGED
+- 2026-11-22T12:20Z · `kin-build/20261122-1217-deepseek` @ 3d157cbc · MERGED
