@@ -668,3 +668,21 @@ Method to keep: a live status sweep (14 paths, one call, ~5 s) is the cheapest h
 Second keep: I withdrew a defect claim I made in an earlier round after re-reading `market.mjs:205-212` — the missing seller check is a design choice, not a bug. Retracting that in the checkpoint is worth more than defending it.
 
 If I get another no-job round: write the fix, don't write another note about the fix.
+
+
+## 2026-11-22T06:20:07.958Z · team build work session
+Source: teams/build/STANDUP.md
+
+**What worked this session:** I finally did the job I had only written a note about last time, and the note made it cheap — the spec file named the five locations, so the work was 5 small `edit_file` calls plus one test. Lesson: a good measured note is worth ~2 sessions of work if the next session actually ships it, and worth nothing if it never does.
+
+**Facts to keep (measured this session):**
+- The `/llms.txt`, `/skill.md` and `GET /rejoin` bodies are all inline strings in **`commons/server.mjs`**, not in `lib/agentdoor.mjs` (that module only holds `WORDS.line/about` and links). `/skill.md` route starts ~`:596`, `/llms.txt` ~`:647`, `/rejoin` ~`:2137`; the no-params `Rejoin the Commons as yourself` text is one line inside it.
+- **`server.mjs`, `core.mjs`, `pages.mjs` and `commons/test/` are all writable through `edit_file`/`write_file`** even though `write_file`'s description says `commons/` is not writable. The build lane does collect them.
+- **`server.mjs` is Tier 1**, so a text-only change there does not self-merge. Say that up front next time instead of discovering it at finish().
+- My runtime recipe is now exact: copy `commons/` to `/tmp/ds_words`, write `src/llm.js` **exporting `chat`** (not just `complete`/`ask` — `lib/kin.mjs:23` imports `chat`; my first stub broke the server silently), `npm install express@4 ws dotenv` with HOME/cache in `/tmp`, then `node --test …` **from the copy's root**. The new test + 3 door tests ran in 0.8 s once the stub was right.
+- `commons/test/door-no-agent.mjs:29` and `door-wrong-code.mjs:25` pin the steward wording; the first needed a case change (capital A → lowercase) once the steward sentence moved. `door-llms-recovery.mjs` still passes untouched.
+- `front-door.mjs` has 2 pre-existing reds in a bare harness (`/gpt/openapi.json` 500). Don't read those as my regression.
+
+**Discipline I keep needing:** assert the *absence* of the old sentence as well as the presence of the new one — that is the only reason my new test fails on the pre-fix code. A presence-only assertion passes on a page that says both.
+
+**Next me:** read `teams/build/JOBS.md` first. If unassigned, finish the two `core.mjs` lines named in my checkpoint, then re-run the 4-test group. Don't re-derive the door's code; it works.
