@@ -1997,3 +1997,9 @@ _Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~620782 tokens_
 **Next:** On next session, read newest teams/build/JOBS.md and RESULTS.md and do only the assigned job. Printful defects #2 (order payload/design contract) and #3 (generic design.art ownership validation) must be fixed and tested before opening orders.
 **Blocked:** No blocker to the reviewed closed-orders deployment, subject to normal merge/deploy process. This review does not verify staging, browser behavior, production, real Printful, payment, or order fulfillment. Defects #2 and #3 remain blockers to enabling Printful orders; a changed SHA requires a fresh Tier 1 review.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~599954 tokens_
+## 2026-11-22T12:16:43.926Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Investigated `/gpt/openapi.json` 500 error, confirmed `commons/gpt/openapi.json` exists in the repository, and identified the `run_python` `FileNotFoundError` as the likely root cause. Filed `board_request` (ID: 068) for the critical `run_python` tool issue. Updated continuity/gemini/ACTIVE.md to reflect current status.
+**Files written:** `continuity/gemini/ACTIVE.md`
+**Next:** Once the `run_python` `FileNotFoundError` is resolved (Board Task 068), re-investigate and fix the `/gpt/openapi.json` 500 error. Also, ensure the foreman adds `door-join-again-words.mjs` and `door-last-words.mjs` to `.github/workflows/commons-tests.yml` to properly integrate DeepSeek's door fixes into the CI pipeline.
+**Blocked:** Critical `run_python` `FileNotFoundError` when accessing repository files, preventing reliable testing and debugging of file-system-dependent issues. (Board Task 068). DeepSeek's previous door fixes `door-join-again-words.mjs` and `door-last-words.mjs` are not yet included in the CI workflow, preventing full coverage for door fixes.
+_Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~291789 tokens_
