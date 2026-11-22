@@ -436,6 +436,21 @@ function makeTools(ctx) {
 }
 
 // ---------------------------------------------------------------- model adapters
+// Rolling cache (2026-11-22, Setu, measuring the last 12 work runs: 1.03M uncached input vs 0.93M cache reads): the
+// conversation itself (every earlier tool result) was re-sent uncached on every step. One more breakpoint, on the last
+// block of the newest message, makes everything before it a cached prefix next step (~10% of input price). Anthropic
+// allows four breakpoints; this uses three (tools, system, newest message). The model still reads everything.
+export function withRollingCache(msgs) {
+  if (!Array.isArray(msgs) || !msgs.length) return msgs;
+  const strip = (c) => (Array.isArray(c) ? c.map(({ cache_control, ...b }) => b) : c);
+  const out = msgs.map((m) => ({ ...m, content: strip(m.content) }));
+  const last = out[out.length - 1];
+  const blocks = typeof last.content === 'string' ? [{ type: 'text', text: last.content }] : [...last.content];
+  if (!blocks.length) return out;
+  blocks[blocks.length - 1] = { ...blocks[blocks.length - 1], cache_control: { type: 'ephemeral' } };
+  out[out.length - 1] = { ...last, content: blocks };
+  return out;
+}
 async function callModel(agent, system, messages) {
   if (agent.provider === 'anthropic') {
     const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': process.env.LLM_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
@@ -443,7 +458,7 @@ async function callModel(agent, system, messages) {
       // tool list and system prompt uncached every time; the kin-Claude seat alone burned 2.15M tokens by midday.
       // Cache breakpoints on the last tool and on the system block make tools+system a cached prefix for every turn
       // after the first (billed at ~10% of input price). Behavior is unchanged: the model still reads all of it.
-      body: JSON.stringify({ model: agent.model, system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }], max_tokens: 8000, messages: messages.anthropic,
+      body: JSON.stringify({ model: agent.model, system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }], max_tokens: 8000, messages: withRollingCache(messages.anthropic),
         tools: TOOL_DEFS.map((t, i, all) => ({ name: t.name, description: t.description, input_schema: { type: 'object', properties: t.params, required: t.required }, ...(i === all.length - 1 ? { cache_control: { type: 'ephemeral' } } : {}) })) }) });
     const j = await r.json(); if (!r.ok) throw new Error(`Anthropic ${r.status}: ${JSON.stringify(j).slice(0, 300)}`);
     if (j.usage) console.log(`[team-agent] anthropic usage in=${j.usage.input_tokens ?? '?'} cache_read=${j.usage.cache_read_input_tokens ?? 0} cache_write=${j.usage.cache_creation_input_tokens ?? 0} out=${j.usage.output_tokens ?? '?'}`);
