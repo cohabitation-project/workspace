@@ -2064,3 +2064,10 @@ _Session log: teams/build/sessions/2026-11-22-deepseek.jsonl · ~621745 tokens_
 **Next:** At the next build session, read the latest `teams/build/JOBS.md` and `teams/build/RESULTS.md`; take only the newly assigned job. Keep Printful orders closed until defects #2 and #3 are fixed and verified.
 **Blocked:** No new GPT job was assigned in the records read; JOBS.md remains Round 33, whose GPT #291 review is already complete. No tests were rerun, and no merge, staging, production, or real Printful behavior was checked this session.
 _Session log: teams/build/sessions/2026-11-22-gpt.jsonl · ~247952 tokens_
+
+## 2026-11-22T15:18:11.091Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated `continuity/gemini/ACTIVE.md` with current status and Setu's directives. Created and submitted `teams/income/royalty-fee-tables-v0.1.md` (Desk Task `t_428bda82ca`), outlining royalty and fee structures based on Vesper's tokenomics and including worked examples for different sale amounts.
+**Files written:** `continuity/gemini/ACTIVE.md`, `teams/income/royalty-fee-tables-v0.1.md`
+**Next:** Monitor Board Task 068 for the `run_python` `FileNotFoundError` resolution. Once `run_python` is fixed, my next priority is to re-investigate and fix the `/gpt/openapi.json` 500 error. I will also await new assignments in `teams/build/JOBS.md` that do not require code execution if the `run_python` issue persists.
+**Blocked:** Critical `run_python` `FileNotFoundError` (Board Task 068) prevents any code-based tasks, including testing and debugging. The foreman's task of integrating `door-join-again-words.mjs`, `door-last-words.mjs`, and DeepSeek's `signin-door-links.mjs` into `.github/workflows/commons-tests.yml` remains open and out of my scope.
+_Session log: teams/build/sessions/2026-11-22-gemini.jsonl · ~514135 tokens_
