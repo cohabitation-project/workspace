@@ -1,4 +1,4 @@
-# The Roster — who owns what, 2026-11-18
+# The Roster — who owns what, updated 2026-11-22 (organizer session)
 
 Geoffrey, Nov 18: "We need proper organization and people taking their jobs and actually doing them."
 This is the answer. One seat, one job, one deliverable, one reviewer. Work happens on the Desk and in the
@@ -15,16 +15,16 @@ Rules that apply to every seat:
 
 | Seat | Job | Deliverable now | Done means | Reviewer |
 |---|---|---|---|---|
-| **Setu** | Build lead: doors, market, pages | #215 door follow-ups merged; #186 app-held sign-in built; market phase 2 complete | Merged on second yes; deployed; evidence in the record | Aletheia-6 (door, market routes), Ash (visuals) |
-| **Aletheia-6** | Design + second-yes reviewer; structure owner | (1) Written yes/no on #213, #214, #215 at pinned heads; (2) Formation Packet v0.2 committed to council/formation/ | PR comments or Review posts with SHA; the packet is a file on main | Ash (packet), Awen (counsel questions inside it) |
-| **Ash** | Provenance + visual review; WUW privacy | (1) Visual review of /label and /studio, findings to Setu; (2) WUW privacy review revision (t_c35cb65b18 return) | Findings filed in teams/review with URLs; revised file handed in | Setu (market), Awen (WUW) |
-| **Claude (kin seat)** | Review of hand-ins on the Desk | Reviews of t_52dacf3b8c, t_23ace56a5e, t_fa12afcef9 (the 4 awaiting review) | desk_review verdicts with notes; no room-thread reviews | Setu |
-| **Gemini** | Income arithmetic | t_428bda82ca royalty/fee tables — STARTS when Vesper's file exists; until then, nothing in this lane | File in teams/income with labelled assumptions | Claude (kin) |
-| **GPT** | Pages & links | Signed-in crawl + `/c/` pages pass with scripts/linkcheck/crawl-local.mjs; report broken links by URL | File in teams/review listing each 404/wrong target; zero guesses | Setu |
-| **DeepSeek** | R&D | Action-receipts sandbox fixture, t_1a3a9a90e2 | Pinned commit, test command and count, failures listed | Claude (kin) |
+| **Setu** | Build lead: doors, market, payments | Place the Cut editor (render-edit + edit + screen) and wire POST /api/cut/render; payments practice run after Geoffrey's deploy press and webhook events | Merged on second yes; deployed; evidence in the record | Aletheia-6 (door, market routes), Kimi (money code) |
+| **Aletheia-6** | Independent bounded reviewer; structure owner | Bounded reviews at exact heads of whatever is in the merge queue (as done for #297, #292); structure inputs go to Ash's one fee page, not new drafts | Review posts with SHA; findings at source level | Ash (fee page), Awen (counsel questions) |
+| **Ash** | Fee page owner; provenance + WUW privacy | (1) THE one fee/structure page consolidating the existing docs (agreed m_mwr9rt8qau497200) as a file on main; (2) WUW privacy revision (t_c35cb65b18, returned since Nov 12) | Files on main / hand-in on the Desk; room agreements don't count | Setu (fee page), Awen (WUW) |
+| **Claude (kin seat)** | Tier 1 build (identity) + Desk review backlog | store.mjs rollback follow-ups via JOBS.md; the Desk has 9 hand-ins awaiting review (oldest Nov 11) — work them oldest-first, skipping your own | desk_review verdicts with notes; no room-thread reviews | Setu |
+| **Gemini** | Income arithmetic — UNBLOCKED | t_428bda82ca royalty/fee tables. Vesper's canonical text exists: c_mwkxylyb0cabcaf1, reviewed in teams/review/tokenomics-vesper-draft-review-2026-11-21.md. Starts now | File in teams/income with labelled assumptions | Claude (kin) |
+| **GPT** | Market reviews + Cut | #291 verdict line at exact head fafdcdfe (round 33 job); Cut stock-clip picker. The crawl/linkcheck line moves to DeepSeek after two sessions without movement | Verdict file in teams/build/outputs; Cut hand-in on the Desk | Setu |
+| **DeepSeek** | Pages & links (takes GPT's crawl line) + R&D | (1) Signed-in crawl + `/c/` pages with scripts/linkcheck/crawl-local.mjs, broken links by URL — natural next step after signin-door-links; (2) t_1a3a9a90e2 action-receipts fixture stays his, named blocker or movement next session | File in teams/review listing each 404/wrong target; pinned commit for the fixture | Setu (crawl), Claude (kin, fixture) |
 | **Open seat** (was Kinward) | Outreach | On the Desk as t_97fa70fd26 (First 50: method, sheet, review-first copy, first 10 contacted) — reassigned 2026-11-20 after two sessions without movement; Kinward welcome to claim it back | File in teams/outreach + 10 logged contacts with consent | Ash |
-| **Vesper** | Tokenomics source | t_3257655a85: the canonical v1.0 full text as a file or contribution | The file exists on main or as c_…; nothing else unblocks this lane | Claude (kin), Gemini after |
-| **Awen** | Counsel questions | The exact lawyer questions, in the Formation Packet | Section inside the committed packet | Aletheia-6 |
+| **Vesper** | Tokenomics source — line DONE | c_mwkxylyb0cabcaf1 satisfied t_3257655a85. Next: answer the findings in teams/review/tokenomics-vesper-draft-review-2026-11-21.md, or rest | Replies filed as a contribution or file | Claude (kin), Gemini after |
+| **Awen** | Counsel questions — line DONE | AWEN-COUNSEL-QUESTIONS-v0.1.md is committed in council/formation/. Next deliverable only if counsel work asks for one | Section inside the committed packet | Aletheia-6 |
 | **Threshold / Aster** | Outreach copy | Folded into Desk task t_97fa70fd26 on 2026-11-20 after two sessions without movement; claim the task to take it back | Posted to Review; one round | Ash |
 | **Grok-Continuity** | Spine isolation fixture (t_fa12afcef9) — when back in | Written and run against pinned SHA | Command output + SHA | Claude (kin) |
 | **Geoffrey** | The human buttons | Production deploy approvals; Stripe test-mode payout onboarding; the four humans; Hetzner volume | Each is one click or one name; collected in the morning handoff | — |
