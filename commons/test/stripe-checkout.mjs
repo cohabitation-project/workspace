@@ -119,3 +119,30 @@ test('if Stripe refuses a method (not switched on, amount too small), the buyer 
     await assert.rejects(() => checkout.startCheckout(buyer, id, {}, { base: 'https://x' }), /No such destination/);
   } finally { globalThis.fetch = real; }
 });
+
+test('refunds and disputes reach the order; the split is there to recompute (practice-run checks 3-5)', async () => {
+  const id = listing.id || listing.listing?.id;
+  process.env.COMMONS_FEE_PERCENT = '10';
+  const r = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+  delete process.env.COMMONS_FEE_PERCENT;
+  checkout.handleEvent({ type: 'checkout.session.completed', data: { object: { id: 'cs_test_9', payment_status: 'paid', payment_intent: 'pi_test_9', metadata: { cohabi_order: r.order } } } });
+  const sale = checkout.ordersFor(maker).sales.find((x) => x.id === r.order);
+  assert.deepEqual(sale.split, { paid: 25, cohabi_fee: 2.5, seller_share: 22.5, refunded: 0 }, 'buyer paid 25, Cohabi 10%, seller the rest');
+  // a partial refund, then the rest
+  assert.equal(checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_1', payment_intent: 'pi_test_9', amount: 2500, amount_refunded: 1000 } } }).status, 'partly_refunded');
+  assert.equal(checkout.order(r.order).refunded_cents, 1000);
+  assert.equal(checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_1', payment_intent: 'pi_test_9', amount: 2500, amount_refunded: 2500 } } }).status, 'refunded');
+  assert.equal(checkout.ordersFor(buyer).purchases.find((x) => x.id === r.order).status, 'refunded', 'the buyer sees it too');
+  // a dispute on another sale: opened, then lost
+  const r2 = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+  checkout.handleEvent({ type: 'checkout.session.completed', data: { object: { id: 'cs_test_10', payment_status: 'paid', payment_intent: 'pi_test_10', metadata: { cohabi_order: r2.order } } } });
+  assert.equal(checkout.handleEvent({ type: 'charge.dispute.created', data: { object: { id: 'dp_1', payment_intent: 'pi_test_10', reason: 'fraudulent', status: 'needs_response' } } }).status, 'disputed');
+  assert.equal(checkout.order(r2.order).dispute.reason, 'fraudulent');
+  assert.equal(checkout.handleEvent({ type: 'charge.dispute.closed', data: { object: { id: 'dp_1', payment_intent: 'pi_test_10', status: 'lost' } } }).status, 'dispute_lost');
+  // won puts it back to paid; an unknown charge is ignored
+  const r3 = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+  checkout.handleEvent({ type: 'checkout.session.completed', data: { object: { id: 'cs_test_11', payment_status: 'paid', payment_intent: 'pi_test_11', metadata: { cohabi_order: r3.order } } } });
+  checkout.handleEvent({ type: 'charge.dispute.created', data: { object: { id: 'dp_2', payment_intent: 'pi_test_11', status: 'needs_response' } } });
+  assert.equal(checkout.handleEvent({ type: 'charge.dispute.closed', data: { object: { id: 'dp_2', payment_intent: 'pi_test_11', status: 'won' } } }).status, 'paid');
+  assert.equal(checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_x', payment_intent: 'pi_nobody', amount: 100, amount_refunded: 100 } } }).ignored, 'unknown order');
+});

@@ -27,7 +27,7 @@ const ordersFile = () => path.join(DIR, 'orders.jsonl');
 let accounts = {}; // memberId -> { provider, account_id, status, updated }
 
 export const NOT_OPEN = "Payments aren't open yet. When they open, you'll pay the maker here, through the Cohabi Market.";
-export const ORDER_STATES = ['draft', 'awaiting_payment', 'paid', 'fulfilling', 'shipped', 'delivered', 'refunded', 'cancelled'];
+export const ORDER_STATES = ['draft', 'awaiting_payment', 'paid', 'fulfilling', 'shipped', 'delivered', 'partly_refunded', 'refunded', 'disputed', 'dispute_lost', 'cancelled'];
 export const ACCOUNT_STATES = ['none', 'started', 'needs_info', 'verified', 'disabled'];
 
 export function init(dataDir) {
@@ -45,7 +45,7 @@ const logOrder = (rec) => fs.appendFileSync(ordersFile(), JSON.stringify({ ts: n
 export function orders() {
   const out = new Map(); let lines = [];
   try { lines = fs.readFileSync(ordersFile(), 'utf8').split('\n').filter(Boolean); } catch { return []; }
-  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), updated: r.ts }); }
+  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), ...(r.payment_intent ? { payment_intent: r.payment_intent } : {}), ...(r.refunded_cents != null ? { refunded_cents: r.refunded_cents } : {}), ...(r.dispute ? { dispute: r.dispute } : {}), updated: r.ts }); }
   return [...out.values()];
 }
 export const order = (id) => orders().find((o) => o.id === id) || null;
@@ -54,7 +54,10 @@ export const order = (id) => orders().find((o) => o.id === id) || null;
 // receipt for the buyer, no sales list for the seller, no API. These read the same append-only log the webhook writes.
 const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft never reached Stripe; not a thing to show
 const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m.name, kind: m.kind } : { id, name: '(gone)', kind: null }; };
-const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller) });
+// The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
+// the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
+const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100 }; };
+const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
 
 /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
  *  who backed out of Stripe sees that nothing was charged. */
@@ -192,10 +195,26 @@ export function handleEvent(ev) {
     const id = o.metadata?.cohabi_order || o.client_reference_id; const cur = id && order(id);
     if (!cur) return { ignored: 'unknown order' };
     if (o.payment_status && o.payment_status !== 'paid') return { order: id, status: cur.status };
-    if (cur.status !== 'paid') logOrder({ op: 'status', order: id, status: 'paid', session: o.id });
+    if (cur.status !== 'paid') logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
     return { order: id, status: 'paid' };
   }
   if (ev?.type === 'checkout.session.expired') { const id = o.metadata?.cohabi_order; if (id && order(id)?.status === 'awaiting_payment') logOrder({ op: 'status', order: id, status: 'cancelled' }); return { order: id, status: 'cancelled' }; }
   if (ev?.type === 'account.updated') { const who = applyAccount(o); return { account: o.id, member: who }; }
+  // Refunds and disputes (Ash's practice-run checks 4 and 5): until now a refunded or disputed sale still read "paid".
+  // The charge carries the payment intent; the order learned it when it was paid (older orders: by its metadata).
+  const byCharge = (c) => { const pi = typeof c.payment_intent === 'string' ? c.payment_intent : c.payment_intent?.id; return orders().find((x) => (pi && x.payment_intent === pi) || (c.metadata?.cohabi_order && x.id === c.metadata.cohabi_order)) || null; };
+  if (ev?.type === 'charge.refunded') {
+    const cur = byCharge(o); if (!cur) return { ignored: 'unknown order' };
+    const refunded = Number(o.amount_refunded) || 0; const full = refunded >= (Number(o.amount) || Math.round(Number(cur.amount) * 100));
+    logOrder({ op: 'status', order: cur.id, status: full ? 'refunded' : 'partly_refunded', refunded_cents: refunded });
+    return { order: cur.id, status: full ? 'refunded' : 'partly_refunded' };
+  }
+  if (ev?.type === 'charge.dispute.created' || ev?.type === 'charge.dispute.closed') {
+    const cur = byCharge(o); if (!cur) return { ignored: 'unknown order' };
+    const dispute = { id: o.id, reason: o.reason || null, status: o.status || null };
+    const status = ev.type === 'charge.dispute.created' ? 'disputed' : o.status === 'won' ? 'paid' : o.status === 'lost' ? 'dispute_lost' : 'disputed';
+    logOrder({ op: 'status', order: cur.id, status, dispute });
+    return { order: cur.id, status };
+  }
   return { ignored: ev?.type || 'no type' };
 }
