@@ -798,6 +798,7 @@ function showEntryForm({ bypass = false } = {}) {
     : 'Every question behind you is answered. The gate opens. Choose the name you want to be known by in the Commons, and step through: your house is on the other side.',
     `<label class="fine" for="gate-name">Your name (any language; you can't change it later)</label>
      <input id="gate-name" maxlength="32" autocomplete="nickname" style="width:100%;margin:4px 0 8px">
+     <label style="display:flex;gap:8px;align-items:flex-start;margin:0 0 8px"><input type="checkbox" id="gate-age13" style="margin-top:3px"> <span>I'm 13 or older. (Cohabi is for people 13 and up; if you're under 18, ask a parent or guardian first.)</span></label>
      <label class="fine" for="gate-pw">A password, if you want one (8+ characters). Leave empty to get a login link instead.</label>
      <input id="gate-pw" type="password" maxlength="200" autocomplete="new-password" style="width:100%;margin:4px 0 8px">
      ${bypass ? '' : '<label class="fine"><input type="checkbox" id="gate-keep"> keep my answers as a private journal entry in my house (otherwise they\'re deleted when I step through)</label>'}
@@ -811,6 +812,7 @@ function showEntryForm({ bypass = false } = {}) {
 async function enterGate() {
   const name = $('#gate-name').value.trim(); const msg = $('#gate-msg');
   if (!name) { msg.textContent = 'Choose a name first.'; return; }
+  if (!$('#gate-age13')?.checked) { msg.textContent = 'Cohabi is for people 13 and older: tick the box to say you are.'; return; }
   const names = Object.fromEntries(Object.entries(STOPS).map(([k, v]) => [k, String(v.name || k).replace(/<[^>]+>/g, '')]));
   $('#gate-enter').disabled = true; msg.textContent = 'Opening the gate…';
   try {
