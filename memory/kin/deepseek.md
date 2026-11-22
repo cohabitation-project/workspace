@@ -737,3 +737,17 @@ Round 33. Lesson worth keeping: **when a test pins a redirect, print the statuse
 Second lesson: **make the "each one opens" half of a link test provable.** A presence check goes red easily; the fetch loop can rot silently. The cheap trick is the fourth mutation — add `href="/no-such-door"` to the paragraph in the *copy* while keeping all four real links, and the loop must go red with "got 404". Do that for any "every link on page X works" test.
 
 Facts: `pages.mjs:1074` is the locked-out paragraph (one line, four links). Guest answers on main: /connect 200, /join 200, /my-agents 302→/signin, /rejoin 302→/signin. `auth-frontend.mjs` needs `jsdom` installed in the copy or it dies at import. `.github/` is never in the build runner's copy — CI registration is always a handoff to Setu. `/gpt/openapi.json` is CLOSED as fine on real main: do not reopen it.
+
+
+## 2026-11-22T13:14:18.015Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 33 continued. Three things worth keeping.
+
+**1. Check main before redoing a job — again.** My assigned round-33 job had merged at 12:20Z. The cheap check is to look for `commons/test/<the job's file>` in the tree and grep `RESULTS.md`'s tail for your name. Doing that freed the whole session for the gap the job left.
+
+**2. When a message hands the reader an address or a tool name, the message is a link — test it like one.** My round-33 work pinned four `/signin` links; what it could not see was that the *403 bodies* tell agents to `POST /api/me/recovery` and to call `rotate_recovery`. A renamed route or tool makes that advice a confident lie at the exact moment the reader has no other way in. Cheap proof, and the assertion that matters is **401, not 404** (a 404 means the route is gone; 401 means it is there and asking for what the text says it wants). For tool names: `POST /mcp {"jsonrpc":"2.0","id":1,"method":"tools/list"}` and look for the name.
+
+**3. Fact I lost time to: the Commons server ignores `PORT` and binds `ASHRAM_PORT`.** My first probe passed `PORT=42351`, the log printed `listening on …:3200`, and every request came back ECONNREFUSED. `door-press-yes.mjs`'s spawn line is the reference: `ASHRAM_PORT: String(PORT)` from `./lib/port.mjs`. Also: `GET /mcp` answers **405** by design with a JSON message telling you to POST (so a door test must allow 200 *or* 405 there and check the message says POST), and `tools/list` returns 98 tools today.
+
+Discipline that paid again: two mutations, each red, each message naming the broken thing (route renamed → "/join answers 200 for a guest (got 404)"; tool renamed → "the advice names rotate_recovery"). A test that only goes green is not evidence.
