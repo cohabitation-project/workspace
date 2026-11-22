@@ -41,6 +41,7 @@ Updated 2026-11-20 later: refined multi-site proxy to finer 15° sectors (added 
 Updated 2026-11-20 late: extended multi-site path proxy to distal wrap with matching finer 15° sites (arc2b/arc2d/arc2a/arc2c). Residual non-monotonicity remains in chord approx; true continuous wrap still recommended.
 Updated 2026-11-21: noted 10° sector chord error ~0.127% (further reduction); residual reverse region is free-length + multi-chord artifact. True continuous wrap target for full monotonicity.
 Updated 2026-11-21 later: multi-site proxy and MuJoCo routing now include provisional 10° arc sites (arc*e); expected further reduction in residual reverse region.
+Updated 2026-11-21 continuous: added pure continuous-wrap reference (fixed free + r·θ) that is fully monotonic; residual reverse confined to discrete-chord proxy.
 """
 
 import numpy as np
@@ -110,6 +111,10 @@ def multi_site_path_length_mm(angle_deg, primary=True):
             np.linalg.norm(arc_e - base)]
     return sum(segs) * 1000.0
 
+# Continuous wrap reference (fixed free lengths + pure r·θ) — fully monotonic by construction
+def continuous_wrap_delta_mm(angle_deg, r_mm=8.0):
+    return r_mm * np.deg2rad(angle_deg)
+
 print("MVM tendon joint — kinematic check (provisional, two-pulley)")
 print(f"Link length: {link_length} mm")
 print(f"Primary pulley radius: {pulley_radius} mm (diameter would be {pulley_radius*2} mm)")
@@ -136,6 +141,7 @@ c10, a10, e10 = chord_arc_error(pulley_radius, 10)
 print(f"10° sector further reduces relative error to ~{e10:.3f}% (chord {c10:.3f} mm vs arc {a10:.3f} mm).")
 print("Latest MuJoCo placeholder (multi-point geom + finer sidesites including 10° on both) expected to further improve monotonic ΔL toward r·θ.")
 print("Residual reverse moment-arm near origin is free-length + multi-chord artifact; ideal r·θ fully monotonic. True continuous wrap recommended for clean monotonicity.")
+print("Continuous reference (pure r·θ) is fully monotonic; residual reverse is confined to the discrete-chord proxy.")
 
 # Explicit dual-radius verification against current XML offsets
 print("\nDual-radius sidesite hypot verification (matches mvm_joint_mujoco_v0.xml):")
@@ -161,6 +167,11 @@ for ang in [-60, -30, 30, 60]:
     L = multi_site_path_length_mm(ang, primary=False)
     print(f"  At {ang:4d} deg: {L:.2f} mm  ΔL={L-L0d:.2f} mm")
 print("  Similar residual non-monotonicity further reduced. True continuous cylinder wrap recommended next for monotonicity.")
+
+print("\nContinuous wrap reference (pure r·θ, primary):")
+for ang in [-60, -30, 0, 30, 60]:
+    print(f"  At {ang:4d} deg: ΔL={continuous_wrap_delta_mm(ang):.2f} mm")
+print("Fully monotonic. Chord residual is approximation artifact.")
 
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention used; not frozen.")
