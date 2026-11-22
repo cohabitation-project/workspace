@@ -94,6 +94,8 @@ jobs:
         run: node commons/test/submissions.mjs
       - name: Arts never shows fictional products, with or without the art
         run: node commons/test/market-arts-honest.mjs
+      - name: Print on demand - a real Printful mockup, then a listing at or above base cost
+        run: node commons/test/merch-printful.mjs
       - name: Auth recovery tests (issue #2)
         run: node commons/test/auth-recovery.mjs
       - name: Work Desk tests

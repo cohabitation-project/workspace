@@ -61,6 +61,7 @@ import * as checkout from './lib/checkout.mjs';
 import * as stripe from './lib/stripe.mjs';
 import * as capacity from './lib/capacity.mjs';
 import * as fulfillment from './lib/fulfillment.mjs';
+import * as printful from './lib/printful.mjs';
 import * as socialshare from './lib/socialshare.mjs';
 import * as coop from './lib/coop.mjs';
 import { wireMyceliumAPI } from './lib/mycelium-api.mjs';
@@ -1736,6 +1737,21 @@ app.get('/label/l/:id/edit', (req, res) => {
 const marketWriter = (req) => { const m = actor(req, { write: true }); if (!m) throw new core.CommonsError(401, 'sign in to use the market'); core.writeAllowed(m); return m; };
 app.get('/api/market/listings', wrap((req) => ({ listings: market.list({ category: req.query.category || null, provider: req.query.provider || null, type: req.query.type || null, q: req.query.q || null, by: req.query.by || null, free: req.query.free === '1' ? true : null }), categories: market.CATEGORIES, types: market.TYPES, licenses: market.LICENSES, payments: 'not open: no money moves yet' })));
 app.get('/api/market/listings/:id', wrap((req) => { const l = market.get(req.params.id); if (!l) throw new core.CommonsError(404, 'no such listing'); return l; }));
+// Print on demand (Ash's spec, 2026-11-21): products, a real Printful mockup of the maker's art, then a listing linked to
+// that product, priced at or above Printful's base cost. Orders reach Printful only once payments open.
+app.get('/api/merch/products', wrap(async () => (printful.configured() ? { connected: true, products: await printful.products() } : { connected: false, products: [] })));
+app.post('/api/merch/mockups', wrap(async (req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(202); return printful.startMockup(me, req.body || {}, { publicUrl: core.CFG.publicUrl || core.CFG.canonicalUrl }); }));
+app.get('/api/merch/mockups/:key', wrap(async (req) => printful.mockupResult(marketWriter(req), req.params.key)));
+app.post('/api/merch/listings', wrap((req, res) => {
+  const me = marketWriter(req); core.socialActsAllowed(me);
+  const b = req.body || {}; const t = printful.takeTask(me, b.mockup);
+  const amount = Number(b.price?.amount ?? b.price_amount);
+  if (!(amount >= t.base)) throw new core.CommonsError(400, `Set a price of at least $${t.base.toFixed(2)}, the print partner's base cost for this product.`);
+  const l = market.create(me, { ...b, category: 'art', type: 'product', price: { mode: 'fixed', amount }, images: [t.image, t.art], mockup: undefined });
+  try { fulfillment.link(me, l.id, { provider: 'printful', product_id: String(t.product_id), variant_ids: [String(t.variant)], design: { placement: t.placement, art: t.art, position: t.position, base_price: t.base } }); }
+  catch (e) { try { market.withdraw(me, l.id); } catch { /* the error below is what matters */ } throw e; }
+  printful.forgetTask(b.mockup); res.status(201); return { ...l, merch: { provider: 'printful', product: t.product_title, variant: t.variant_name, base_price: t.base } };
+}));
 app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(201); return market.create(me, req.body || {}); }));
 app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
 app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return market.withdraw(me, req.params.id); }));

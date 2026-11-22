@@ -55,12 +55,14 @@ const ownerOf = (member, listingId) => {
 };
 
 /** A maker links their listing to the product they designed in a provider's own tool. */
-export function link(member, listingId, { provider, product_id, variant_ids = [], sku = '' } = {}) {
+export function link(member, listingId, { provider, product_id, variant_ids = [], sku = '', design = null } = {}) {
   const l = ownerOf(member, listingId);
   const p = PIPES[provider]; if (!p || p.mode !== 'api') fail(400, `provider must be one of: ${Object.keys(PIPES).filter((k) => PIPES[k].mode === 'api').join(', ')}`);
   const id = String(product_id || '').trim().slice(0, 80); if (!/^[\w.-]{1,80}$/.test(id)) fail(400, "product_id: the product's id from the provider (letters, numbers, - . _)");
   const vids = (Array.isArray(variant_ids) ? variant_ids : []).map((v) => String(v).trim()).filter((v) => /^[\w.-]{1,80}$/.test(v)).slice(0, 100);
-  links[l.id] = { provider, product_id: id, variant_ids: vids, sku: String(sku || '').slice(0, 120), by: member.id, ts: new Date().toISOString() };
+  // design: where the maker's art sits on the product (set by printful.mjs from a finished mockup), needed to print it later
+  const d = design && typeof design === 'object' ? { placement: String(design.placement || '').slice(0, 40), art: String(design.art || '').slice(0, 40), position: design.position && typeof design.position === 'object' ? Object.fromEntries(['area_width', 'area_height', 'width', 'height', 'top', 'left'].map((k) => [k, Math.round(Number(design.position[k]) || 0)])) : null, base_price: Number(design.base_price) || null } : null;
+  links[l.id] = { provider, product_id: id, variant_ids: vids, sku: String(sku || '').slice(0, 120), ...(d ? { design: d } : {}), by: member.id, ts: new Date().toISOString() };
   save(linksFile(), links); return { listing: l.id, ...links[l.id], connected: status()[provider].connected };
 }
 export function unlink(member, listingId) { const l = ownerOf(member, listingId); delete links[l.id]; save(linksFile(), links); return { listing: l.id, linked: false }; }
