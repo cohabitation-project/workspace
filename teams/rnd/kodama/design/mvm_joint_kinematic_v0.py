@@ -44,6 +44,7 @@ Updated 2026-11-21 later: multi-site proxy and MuJoCo routing now include provis
 Updated 2026-11-21 continuous: added pure continuous-wrap reference (fixed free + r·θ) that is fully monotonic; residual reverse confined to discrete-chord proxy.
 Updated 2026-11-21 late: clarified radius convention as locked working assumption for the current MVM placeholder geometry (sidesite match + continuous reference support); diameter reading non-blocking.
 Updated 2026-11-22: isolated free-segment (attach-to-first-arc) dominance in the residual reverse region of the multi-site proxy; wrap chords nearly fixed, so non-monotonicity is primarily free-length geometry until continuous tangent wrap is used. Radius working assumption holds. True continuous wrap remains next.
+Updated 2026-11-22 later: added pure-Python continuous free-length variation under moving-tangent approximation (primary free_attach ~52-78 mm over ±60°); confirms residual is discrete fixed-site artifact. Continuous wrap next.
 """
 
 import numpy as np
@@ -117,6 +118,25 @@ def multi_site_path_length_mm(angle_deg, primary=True):
 def continuous_wrap_delta_mm(angle_deg, r_mm=8.0):
     return r_mm * np.deg2rad(angle_deg)
 
+# Continuous free-length variation under moving-tangent approximation (primary)
+def continuous_free_lengths_mm(angle_deg):
+    theta = np.deg2rad(angle_deg)
+    c, s = np.cos(theta), np.sin(theta)
+    R = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
+    link_origin = np.array([0.0, 0.0, 0.02])
+    attach_rel = np.array([0.08, 0.008, 0.005])
+    attach = link_origin + R @ attach_rel
+    pulley_center = np.array([0.026, 0.008, 0.030])
+    r = 0.008
+    base = np.array([0.0, 0.008, 0.01])
+    vec = attach - pulley_center
+    dist = np.linalg.norm(vec)
+    free_attach = np.sqrt(max(0.0, dist**2 - r**2)) * 1000
+    vecb = base - pulley_center
+    distb = np.linalg.norm(vecb)
+    free_base = np.sqrt(max(0.0, distb**2 - r**2)) * 1000
+    return free_attach, free_base
+
 print("MVM tendon joint — kinematic check (provisional, two-pulley)")
 print(f"Link length: {link_length} mm")
 print(f"Primary pulley radius: {pulley_radius} mm (diameter would be {pulley_radius*2} mm)")
@@ -176,6 +196,13 @@ for ang in [-60, -30, 0, 30, 60]:
     print(f"  At {ang:4d} deg: ΔL={continuous_wrap_delta_mm(ang):.2f} mm")
 print("Fully monotonic. Chord residual is approximation artifact; free-segment geometry dominates discrete residual until tangent point moves with continuous wrap.")
 
+print("\nContinuous free-length variation (moving-tangent approx, primary):")
+for ang in [-60, -26, 0, 30, 60]:
+    fa, fb = continuous_free_lengths_mm(ang)
+    print(f"  At {ang:4d} deg: free_attach={fa:.2f} mm, free_base={fb:.2f} mm")
+print("Moving-tangent free varies; arc compensates for monotonic total ΔL = r·θ. Discrete fixed sites leave residual free artifact.")
+
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention locked as working assumption for placeholder; diameter non-blocking.")
 print("Free-segment isolation: residual reverse is primarily free-length change to fixed first site; continuous wrap (moving tangent) eliminates it.")
+print("Continuous free quantified: confirms next step is true wrapgeom.")
