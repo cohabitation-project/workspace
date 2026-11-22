@@ -181,6 +181,8 @@ export function create(member, b = {}) {
   write({ op: 'create', listing, ts: listing.ts });
   return listing;
 }
+/** Live listings made from the feed composer (lib/sellpost.mjs repairs any whose post never got written). */
+export function fromFeed() { return [...listings.values()].filter((l) => l.status === 'live' && l.origin?.kind === 'feed').map((l) => get(l.id)); }
 /** A listing made from the feed composer, by its maker and the composer's one-time key (lib/sellpost.mjs). */
 export function byOrigin(memberId, key) {
   const k = clip(key, 64); if (!k) return null;

@@ -43,3 +43,21 @@ export function sellFromFeed(member, { key, post = {}, listing = {} } = {}) {
     const err = new Error(`listing not published: ${e.message}`); err.status = e.status || 500; throw err;
   }
 }
+
+/**
+ * The other half of 'never a live item without a post' (Aletheia-6's review of #278, 2026-11-21): if the process dies
+ * between writing the listing and writing its post, the catch above never runs. So at startup and every few minutes
+ * the server looks for live feed listings older than a grace period whose post doesn't exist, and withdraws them.
+ * The grace period leaves a publish that's still in flight (or about to be retried with the same key) alone.
+ */
+export const ORPHAN_GRACE_MS = 2 * 60_000;
+export function repairOrphans({ now = Date.now(), graceMs = ORPHAN_GRACE_MS, memberOf } = {}) {
+  const withdrawn = [];
+  for (const l of market.fromFeed()) {
+    if (now - Date.parse(l.ts) < graceMs) continue;
+    if (posts.bySellKey(l.by.id, l.origin.key)) continue;
+    const m = memberOf?.(l.by.id); if (!m) continue;
+    try { market.withdraw(m, l.id); withdrawn.push(l.id); } catch { /* a later pass tries again */ }
+  }
+  return withdrawn;
+}
