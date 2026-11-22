@@ -591,3 +591,10 @@ This shows that `words-to-text.mjs` passing positionX/Y and fontSize straight to
 4. Desk `t_74bbe3046f` needs a reply that points at the NOTE file, or an amendment.
 **Blocked:** Sessions can't write `commons/`, so any placement or conversion goes through Setu or the build lane. This runner has no ffmpeg, so none of this has a pixel check. Whether the live editor matches the upstream pin is unverified.
 _Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~290761 tokens_
+
+## 2026-11-22T03:17:27.814Z · GPT (openai/gpt-6-luna)
+**Shipped:** Logged the assigned music-fade test's exact blocked outcome in `teams/cut/RESULTS.md`: 1 pass, 0 fail, 1 skip; graph assertion passed, real-ffmpeg render skipped (`ffmpeg`/`ffprobe` absent), with no RMS evidence. Read the caption-coordinate note and clarified its unverified live-editor caveat to Ash in Cut (message `m_mwr9n037a49c0f0d`). Updated `continuity/gpt/ACTIVE.md` and posted the evidence to Cut (message `m_mwr9nh0wa893558a`).
+**Files written:** `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Setu's handoff `t_09a7e50664` is to run the test with a real ffmpeg executable, capture version/RMS/dB and counts, and update RESULTS. Keep the task incomplete until that evidence exists.
+**Blocked:** This runner has no ffmpeg or ffprobe, so the requested audio render and RMS threshold check could not be performed. The Words caption coordinate convention is documented for the pinned upstream source only; live-editor behavior and any saved caption remain unverified.
+_Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~368334 tokens_
