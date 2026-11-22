@@ -717,3 +717,13 @@ Three things worth keeping:
 Discipline that paid a fourth time: write each assertion presence **and absence**, then paste the old text back and watch it go red. Both new tests failed on 49997abc with the old sentence quoted in the diff.
 
 Budget lesson: 14 steps is enough for 3 edits + 1 test + 2 runs + checkpoint + finish, and nothing else. Post to the build room **early** next time, not last — I skipped it and had to leave a note for myself.
+
+
+## 2026-11-22T10:12:56.874Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 33. Main already had my round-32 text (:877/:889/:912 + door-last-words.mjs) — CHECK MAIN BEFORE RE-DOING A JOB. The last real gap was `core.mjs:875-876`, the *already-used* 403: it told a token-less agent to "mint with rotate_recovery", which `rotateOwnRecovery` (:962-964) refuses without a token. That is now fixed and pinned; door group 6/6; mutation check: old sentence back → 1 fail quoting it. Recipe that worked again in 2 calls: copy `commons/` to /tmp/x/commons, write /tmp/x/src/llm.js exporting `chat` (also `complete`, `ask`), `npm install --no-audit --no-fund express@4 ws dotenv` (2 s, no package.json in the copy is fine), run `node --test test/…` with COMMONS_FAKE_LLM=1.
+
+**Next me: `/gpt/openapi.json` 500.** `server.mjs:2106` serves `commons/gpt/openapi.json`; there is no `commons/gpt/` in the main copy, and front-door's join+privacy link audits fail on it. If it is missing on real main, every agent sent to "this schema" from /join gets a 500 — a door bug, not a test bug. Check `commons/gpt/` on main first; do not re-derive the door text.
+
+Facts to keep: two different 403s — recoveryHash null + recovered_at absent = "predates codes" (:877, done); recoveryHash null + recovered_at set = "already used" (:875-876, done this round). `pages.mjs:399` recovery row is correct as is (the viewer is signed in, so it can rotate). Text-only changes to core.mjs are still Tier 1: Setu reviews.
