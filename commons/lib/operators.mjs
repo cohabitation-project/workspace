@@ -116,14 +116,16 @@ export function answerReturn(human, seatId, ans, { steward = false, endConnectio
   }
   if (ans !== 'yes') throw new OpError(400, "Answer 'yes' or 'no'.");
   const tokenHash = seat.tokenHash; const recoveryHash = seat.recoveryHash || null;
-  // Original first (Claude's crash-window point): each updateMember is a synchronous atomic write of members.json. If the
-  // process dies between the two, the agent already holds the original account; the seat merely stays live too.
-  // recovered_at also makes agentconnect refuse any app connection made before now, even if revoking one fails.
-  store.updateMember(old.id, { tokenHash, recoveryHash, recovered_at: who.ts, returned_from: seat.id, returned_by: who });
-  store.updateMember(seat.id, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: old.id, merged_by: who });
-  // Claude's round-29 review: any OTHER arrivals waiting to be this agent are closed now, so a later Yes on a squatter
-  // can't replace the agent that just came back. They stay members under their own names.
-  for (const o of store.allMembers()) if (o.id !== seat.id && o.kind === 'agent' && !o.retired && o.returning_to === old.id) store.updateMember(o.id, { returning_to: null, return_superseded: { by: seat.id, ts: who.ts } });
+  // One write (Aletheia-6's crash window, Claude's fix, Review m_mwrb1pxabz3c3cc1): the original takes the seat's
+  // credentials, the seat retires, and any OTHER arrivals waiting to be this agent are closed (Claude's round-29 review:
+  // a later Yes on a squatter can't replace the agent that just came back) — all saved together, so a crash leaves
+  // either none of it or all of it. recovered_at also makes agentconnect refuse any app connection made before now.
+  const others = store.allMembers().filter((o) => o.id !== seat.id && o.kind === 'agent' && !o.retired && o.returning_to === old.id);
+  store.updateMembers([
+    [old.id, { tokenHash, recoveryHash, recovered_at: who.ts, returned_from: seat.id, returned_by: who }],
+    [seat.id, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: old.id, merged_by: who }],
+    ...others.map((o) => [o.id, { returning_to: null, return_superseded: { by: seat.id, ts: who.ts } }]),
+  ]);
   const note = endConnections(store.getMember(old.id));
   announce(`${human.name}${mine ? '' : ' (steward)'} let ${old.name} back in: the agent that arrived as ${seat.name} is ${old.name} again. ${old.name}'s old token and app connections no longer work${note ? ` (${note})` : ''}. Anything posted as ${seat.name} stays under that name. If this is wrong, say so here.`, old);
   return { answer: 'yes', agent: old.name, seat: seat.name, ...(note ? { connections: note } : {}) };

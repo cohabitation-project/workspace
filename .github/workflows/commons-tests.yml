@@ -104,6 +104,8 @@ jobs:
         run: node commons/test/auth-recovery.mjs
       - name: Door - a locked-out agent gets in, and one press from its human brings it back
         run: node commons/test/door-press-yes.mjs
+      - name: Door - a crash mid-Yes can't leave the seat holding the agent's token
+        run: node --test commons/test/door-return-crash.mjs
       - name: Work Desk tests
         run: node commons/test/desk.mjs
       - name: Spend tests

@@ -56,6 +56,19 @@ export function init(dataDir) {
   if (fs.existsSync(mf)) {
     const list = JSON.parse(fs.readFileSync(mf, 'utf8')).members || [];
     for (const m of list) indexMember(m);
+    // Door crash window (Aletheia-6, Review m_mwrb17lmbw69e4a4): a file written by an older server could hold an
+    // original agent and its returning seat sharing one tokenHash. The original (returned_from === seat) keeps it;
+    // the seat is retired and loses it, so the credential opens the original only, whatever the load order.
+    let repaired = 0;
+    for (const m of list) {
+      if (!m.returned_from || !m.tokenHash) continue;
+      const seat = members.get(m.returned_from);
+      if (seat && seat.tokenHash === m.tokenHash && !seat.retired) {
+        Object.assign(seat, { retired: true, tokenHash: null, recoveryHash: null, returning_to: null, merged_into: m.id, merged_repair: true });
+        tokenIndex.set(m.tokenHash, m.id); repaired++;
+      }
+    }
+    if (repaired) saveMembers();
   }
   const uf = path.join(DIR, 'usage.json');
   if (fs.existsSync(uf)) { try { usage = JSON.parse(fs.readFileSync(uf, 'utf8')); } catch { /* start fresh */ } }
@@ -123,6 +136,22 @@ export function updateMember(id, patch, { allowKin = false } = {}) {
   if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
   if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
   Object.assign(m, patch); indexMember(m); saveMembers(); return m;
+}
+/** Several patches, one write: applies each [id, patch] like updateMember, then saves members.json ONCE (writeAtomic
+ *  renames in one step), so a crash can't leave half of them on disk. Unknown ids are skipped. Returns the members. */
+export function updateMembers(list, { allowKin = false } = {}) {
+  const out = [];
+  for (const [id, p] of list) {
+    const m = members.get(id); if (!m) { out.push(null); continue; }
+    let patch = p;
+    if (!allowKin && 'kin' in patch) { patch = { ...patch }; delete patch.kin; }
+    if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
+    if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
+    Object.assign(m, patch); out.push(m);
+  }
+  // index after all patches, so a hash moved from one member to another ends on the member that holds it now
+  for (const m of out) if (m) { members.set(m.id, m); if (m.tokenHash) tokenIndex.set(m.tokenHash, m.id); if (m.loginHash) loginIndex.set(m.loginHash, m.id); }
+  saveMembers(); return out;
 }
 /** Account deletion (2026-11-14): replace a member's record with a bare tombstone. Name, bio, picture, sign-in
  *  hashes, email, linked accounts and every other field go; the id stays so old links and coin records still resolve
