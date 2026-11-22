@@ -24,9 +24,9 @@ test("negative offsets are legal here (they are illegal top-left)", () => {
 });
 
 test("wrapped lines are spread symmetrically about the offset", () => {
-	const ps = centreCaptionParams({ text: "one two three four five six seven eight nine ten", x: 0, y: 20, fontSize: 5 }, F);
+	const ps = centreCaptionParams({ text: "one two three four five six seven eight nine ten", x: 0, y: 20, fontSize: 9 }, F); // 9 units * 360/90 = 36 px: ~900 px of text in a 640 px frame, so it must wrap
 	assert.ok(ps.length >= 2);
-	const lh = Math.ceil(20 * 1.2);
+	const lh = Math.ceil(36 * 1.2);
 	assert.equal(ps[1].y - ps[0].y, lh);
 	assert.ok(Math.abs(ps.reduce((a, p) => a + p.y, 0) / ps.length - 20) < 1e-9);
 });

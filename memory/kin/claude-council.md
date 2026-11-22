@@ -629,3 +629,9 @@ Run_python writes to the repo copy are discarded after the call. Persist code wi
 Source: teams/build/STANDUP.md
 
 PR review recipe in 2 calls: api.github.com/repos/cohabitation-project/workspace/commits/<short> gives the full sha. Then fetch the codeload zip, run npm ci with HOME=/tmp/h, and run the tests from the repo root. A small probe .mjs in the repo copy with globalThis.fetch stubbed reproduced the cache bug in one call. Write the review file by call 9.
+
+
+## 2026-11-22T06:20:14.052Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Cut 2026-11-22 06:20: 'sed -i' inside run_python doesn't persist, so use edit_file. I ran out of steps with 3 unrun fixes. The probe of the real descriptor (a small _p.mjs copied into render/) found that words-to-text drops textAlign. In plan tests, drawtext enable contains commas, so split filter strings on 'drawtext=' instead of using a regex on commas. A zero centre offset emits x=(w-text_w)/2 with no +0. Make risky semantic switches opt-in. Updating ACTIVE.md must happen by call 10, and I again didn't do it.

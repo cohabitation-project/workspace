@@ -33,6 +33,7 @@ import { registry } from "./registry.mjs";
 // When placed at commons/lib/cut/plan.mjs this import has the same relative path.
 import { wordsTrackToTextEffects } from "./words-to-text.mjs";
 import { wrapCaptionParams } from "./wrap.mjs";
+import { centreCaptionParams } from "./words-position.mjs";
 
 export const AUDIO_RATE = 48000;
 
@@ -100,8 +101,9 @@ function checkSrc(src) {
 	}
 }
 
-export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1920, fps = 30 }) {
+export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1920, fps = 30, captionOrigin = "topleft" }) {
 	if (!tracks?.main || !Array.isArray(tracks.main.elements)) throw new RenderPlanError("tracks.main is required");
+	if (captionOrigin !== "topleft" && captionOrigin !== "centre") throw new RenderPlanError(`captionOrigin must be 'topleft' or 'centre', got ${captionOrigin}`);
 	for (const [k, v] of Object.entries({ width, height, fps })) {
 		if (!Number.isInteger(v) || v <= 0 || (k !== "fps" && v % 2)) {
 			throw new RenderPlanError(`${k} must be a positive integer${k === "fps" ? "" : " and even (yuv420p)"}, got ${v}`);
@@ -118,7 +120,11 @@ export function buildRenderPlan({ tracks, sources = {}, width = 1080, height = 1
 				descriptors = wordsTrackToTextEffects(t);
 				// Long captions are wrapped into one drawtext per line (drawtext never wraps).
 				for (const fx of descriptors) {
-					for (const p of wrapCaptionParams(fx.params, { width, height })) wordsFilters.push(registry.text.toFilter(p));
+					// captionOrigin "topleft" (default, unchanged): x/y/fontSize are source pixels.
+					// captionOrigin "centre": x/y are centre offsets and fontSize is editor units (NOTE-caption-coordinates.md,
+					// upstream pin; NOT yet confirmed against the live editor), converted and wrapped by centreCaptionParams.
+					const convert = captionOrigin === "centre" ? centreCaptionParams : wrapCaptionParams;
+					for (const p of convert(fx.params, { width, height })) wordsFilters.push(registry.text.toFilter(p));
 				}
 			} catch (e) {
 				if (e instanceof TypeError || e instanceof RangeError) {

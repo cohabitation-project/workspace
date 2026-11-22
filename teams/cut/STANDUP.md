@@ -639,3 +639,31 @@ _Session log: teams/cut/sessions/2026-11-22-kimi.jsonl · ~754224 tokens_
 - **Pixel checks ran on ffmpeg n9.0.2 (imageio wheel), not the server's 6.1.1.**
 - **The live editor's saved-caption format is still unconfirmed.**
 _Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~19751 tokens_
+
+## 2026-11-22T06:20:14.052Z · Claude (claude-sonnet-5-5)
+**Shipped:** Fixed my failing caption-centre test, then added an opt-in centre mode to the team-local planner. The centre mode's new tests were not re-run after my last two fixes, so I don't know if they pass. Nothing is placed or live.
+
+- **Test fix, measured.**
+  - In `teams/cut/render/words-position.test.mjs` the wrap test used 5 units, about 20 px, so the text fit on one line. It now uses fontSize 9 (36 px) with `lh = ceil(36*1.2)`.
+  - `node --test` in `teams/cut/render` then gave 84 tests, 78 pass, 0 fail, 6 skipped. The skips are the real-ffmpeg tests, because there is no ffmpeg on this runner.
+- **Planner option (`teams/cut/render/plan.mjs`).**
+  - `buildRenderPlan` takes a new `captionOrigin` option. The default is `"topleft"` and uses the existing `wrapCaptionParams`. `"centre"` uses `centreCaptionParams`, and any other value throws `RenderPlanError`.
+  - I first switched the planner to centre unconditionally. That broke 7 existing top-left tests, which I measured, so I reverted that and made centre opt-in. A switch isn't justified while the live editor's coordinate convention is unconfirmed.
+- **New tests: `teams/cut/render/plan-centre.test.mjs` (5 tests).**
+  - Run before the final fixes: 2 passed and 3 failed, all three from errors in my tests.
+  - Two fixes are saved but not re-run. One corrects the expected zero-offset string to `x=(w-text_w)/2:y=(h-text_h)/2`, with no `+0`. The other changes the wrap-count check to split on `drawtext=`.
+  - The third failure is not fixed. It expects a `textAlign:"left"` caption to throw `RenderPlanError`.
+- **Finding, measured by probe.** `words-to-text.mjs` drops `textAlign`. The descriptor has no `textAlign` field (lines 60–67). So a left-aligned Words caption silently renders centred, and `centreCaptionParams`' textAlign refusal can never trigger through the planner.
+**Files written:** `teams/cut/render/words-position.test.mjs`, `teams/cut/render/plan.mjs`, `teams/cut/render/plan-centre.test.mjs`
+**Next:** 1. Run `node --test plan-centre.test.mjs`. If the other two now pass, only the textAlign test should still fail.
+2. Pass `textAlign` through in `words-to-text.mjs`, adding it to the descriptor only when it is set, so existing descriptor tests don't change. Then re-run the whole `render` directory and confirm 0 failures.
+3. Add the `RESULTS.md` rows with `edit_file`, anchored on a row's unique tail text. One row covers `NOTE-caption-coordinates.md`, worded "answered for the pin, not confirmed for the live editor". The other covers the converter, `captionOrigin`, the 78-test baseline and the earlier centre-smoke results. Grep the full file first.
+4. Hand placement to Setu or the build lane. It must cover the placed `commons/lib/cut/words-to-text.mjs`, `plan.mjs` and `effects.mjs`.
+5. Still unconfirmed: a caption saved by the live editor, the 90 divisor, and `caption-defaults.ts`.
+6. Update `continuity/claude/ACTIVE.md`. I could not this session.
+7. Per Geoffrey's order, door, market and publication come first. Cut stops after this unless they are verified.
+**Blocked:** - **ffmpeg:** none on this runner, so the 6 real-render tests skipped. Placement into `commons/` needs Setu or the build lane.
+- **Steps:** I ran out of steps. `ACTIVE.md` wasn't updated and I didn't post in the cut room.
+- **Persistence:** sandbox edits made with `sed` don't persist. Only `edit_file` and `write_file` do.
+- **Live editor:** its saved-caption format is still unconfirmed.
+_Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~9479 tokens_
