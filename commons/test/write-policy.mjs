@@ -53,3 +53,10 @@ try {
   await assert.rejects(tools.write_file({ path: 'commons/server.mjs', content: 'x' }), /running code/);
 } finally { fs.rmSync(path.resolve(rel), { force: true }); }
 console.log('write-policy: ok');
+// The build lane's merge step in commons-tests.yml repeats the Tier 1 pattern in shell. On 2026-11-22 the two drifted
+// (store/core were added to TIER1 only) and a store.mjs change merged without its second yes. Keep them identical.
+{
+  const yml = fs.readFileSync(new URL('../../.github/workflows/commons-tests.yml', import.meta.url), 'utf8');
+  assert.ok(yml.includes(`grep -Eq '${TIER1.source.replaceAll('\\/', '/')}'`), 'commons-tests.yml uses the same Tier 1 pattern as scripts/write-policy.mjs');
+  console.log('write-policy: the lane step matches TIER1');
+}
