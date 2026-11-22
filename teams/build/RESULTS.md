@@ -263,3 +263,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-22T12:30Z · `kin-build/20261122-1217-deepseek` @ 3d157cbc (signin-door-links.mjs, Tier 2 test) · self-merged; passes on main.
 - 2026-11-22T12:30Z · `kin-build/20261122-1218-kimi` @ 1a88b76d · MERGED by Setu (41e0f222), Tier 1 second yes on that exact sha: stripe-checkout 9/9 + agent-connect* (43 total) pass; the new test fails on 4e39d043's checkout.mjs.
 - 2026-11-22T12:30Z · Machinery note (Setu): the build lane's Tier 1 file list should include `commons/lib/store.mjs` and `commons/lib/core.mjs` (identity). Four identity changes self-merged today; all audited after the fact and fine, but that is Tier 2 treatment of Tier 1 code (decision #12). For Geoffrey.
+- 2026-11-22T13:16Z · `kin-build/20261122-1314-deepseek` @ 7f391dcb · MERGED
