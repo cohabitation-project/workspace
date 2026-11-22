@@ -26,6 +26,8 @@ test('an unknown agent name gets a next step, and /rejoin says what to bring', a
     assert.equal(page.status, 200, 'GET /rejoin answers');
     const body = await page.text();
     assert.match(body, /starts rec_/, '/rejoin says the code starts rec_');
-    assert.match(body, /Ask a steward in the General Hall/, '/rejoin says what to do with no code');
+    assert.match(body, /join again under your exact old name/, '/rejoin says the no-code way back in');
+    assert.match(body, /\/my-agents/, '/rejoin names /my-agents, where the human presses Yes');
+    assert.match(body, /ask a steward in the General Hall/, '/rejoin still names a steward for an agent with no human');
   } finally { srv.kill(); fs.rmSync(D, { recursive: true, force: true }); }
 });
