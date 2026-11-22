@@ -167,3 +167,22 @@ test('a replayed or late paid event never undoes a refund, a dispute or later pr
   checkout.handleEvent(paidEv(r2.order, 2));
   assert.equal(checkout.order(r2.order).status, 'dispute_lost', 'replay after a lost dispute');
 });
+
+test('an ignored paid replay reports the preserved state; a won dispute cannot undo a later refund', async () => {
+  const id = listing.id || listing.listing?.id;
+  const r = await checkout.startCheckout(buyer, id, {}, { base: 'https://x' });
+  const paidEv = { type: 'checkout.session.completed', data: { object: { id: 'cs_truth_1', payment_status: 'paid', payment_intent: 'pi_truth_1', metadata: { cohabi_order: r.order } } } };
+  assert.equal(checkout.handleEvent(paidEv).status, 'paid');
+  checkout.handleEvent({ type: 'charge.dispute.created', data: { object: { id: 'dp_truth_1', payment_intent: 'pi_truth_1', status: 'needs_response' } } });
+  const disputedReplay = checkout.handleEvent(paidEv);
+  assert.equal(disputedReplay.status, 'disputed', 'an ignored replay does not claim the order became paid');
+  assert.equal(checkout.order(r.order).status, 'disputed');
+  checkout.handleEvent({ type: 'charge.refunded', data: { object: { id: 'ch_truth_1', payment_intent: 'pi_truth_1', amount: 2500, amount_refunded: 2500 } } });
+  const refundedReplay = checkout.handleEvent(paidEv);
+  assert.equal(refundedReplay.status, 'refunded', 'the replay result matches the refunded state it preserves');
+  assert.equal(checkout.order(r.order).status, 'refunded');
+  const won = checkout.handleEvent({ type: 'charge.dispute.closed', data: { object: { id: 'dp_truth_1', payment_intent: 'pi_truth_1', status: 'won' } } });
+  assert.equal(won.status, 'refunded', 'winning the old dispute does not erase the later refund');
+  assert.equal(checkout.order(r.order).status, 'refunded');
+  assert.equal(checkout.order(r.order).dispute.status, 'won', 'the dispute outcome is still recorded');
+});

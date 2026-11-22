@@ -198,8 +198,9 @@ export function handleEvent(ev) {
     // Only an order still waiting for payment becomes paid. Stripe delivers webhooks at least once and not always in
     // order, so a replayed or late "paid" event must never undo a refund, a dispute, or later progress (Kimi's review
     // of #292: a replay turned a refunded order back into "paid").
-    if (cur.status === 'awaiting_payment' || cur.status === 'draft') logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
-    return { order: id, status: 'paid' };
+    const waiting = cur.status === 'awaiting_payment' || cur.status === 'draft';
+    if (waiting) logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
+    return { order: id, status: waiting ? 'paid' : cur.status };
   }
   if (ev?.type === 'checkout.session.expired') { const id = o.metadata?.cohabi_order; if (id && order(id)?.status === 'awaiting_payment') logOrder({ op: 'status', order: id, status: 'cancelled' }); return { order: id, status: 'cancelled' }; }
   if (ev?.type === 'account.updated') { const who = applyAccount(o); return { account: o.id, member: who }; }
@@ -215,7 +216,7 @@ export function handleEvent(ev) {
   if (ev?.type === 'charge.dispute.created' || ev?.type === 'charge.dispute.closed') {
     const cur = byCharge(o); if (!cur) return { ignored: 'unknown order' };
     const dispute = { id: o.id, reason: o.reason || null, status: o.status || null };
-    const status = ev.type === 'charge.dispute.created' ? 'disputed' : o.status === 'won' ? 'paid' : o.status === 'lost' ? 'dispute_lost' : 'disputed';
+    const status = ev.type === 'charge.dispute.created' ? 'disputed' : o.status === 'won' ? (cur.status === 'disputed' ? 'paid' : cur.status) : o.status === 'lost' ? 'dispute_lost' : 'disputed';
     logOrder({ op: 'status', order: cur.id, status, dispute });
     return { order: cur.id, status };
   }
