@@ -141,17 +141,41 @@ export function updateMember(id, patch, { allowKin = false } = {}) {
  *  renames in one step), so a crash can't leave half of them on disk. Unknown ids are skipped. Returns the members. */
 export function updateMembers(list, { allowKin = false } = {}) {
   const out = [];
-  for (const [id, p] of list) {
-    const m = members.get(id); if (!m) { out.push(null); continue; }
-    let patch = p;
-    if (!allowKin && 'kin' in patch) { patch = { ...patch }; delete patch.kin; }
-    if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
-    if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
-    Object.assign(m, patch); out.push(m);
+  // Rollback (Claude + Aletheia-6, Review m_mwrjxot2fh9b39a0): if the write throws, memory must not hold a Yes the
+  // disk doesn't. Before patching, copy each touched member (once) and every index entry a hash could move through.
+  const snap = new Map();          // id -> shallow copy of the member as it was
+  const tokSnap = new Map();       // tokenHash -> memberId | undefined, as it was
+  const logSnap = new Map();       // loginHash -> memberId | undefined, as it was
+  const remember = (m, patch) => {
+    if (!snap.has(m.id)) snap.set(m.id, { ...m });
+    for (const h of [m.tokenHash, patch.tokenHash]) if (h && !tokSnap.has(h)) tokSnap.set(h, tokenIndex.get(h));
+    for (const h of [m.loginHash, patch.loginHash]) if (h && !logSnap.has(h)) logSnap.set(h, loginIndex.get(h));
+  };
+  try {
+    for (const [id, p] of list) {
+      const m = members.get(id); if (!m) { out.push(null); continue; }
+      let patch = p;
+      if (!allowKin && 'kin' in patch) { patch = { ...patch }; delete patch.kin; }
+      remember(m, patch);
+      if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
+      if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
+      Object.assign(m, patch); out.push(m);
+    }
+    // index after all patches, so a hash moved from one member to another ends on the member that holds it now
+    for (const m of out) if (m) { members.set(m.id, m); if (m.tokenHash) tokenIndex.set(m.tokenHash, m.id); if (m.loginHash) loginIndex.set(m.loginHash, m.id); }
+    saveMembers();
+  } catch (e) {
+    // put every touched member back in place (other holders of the object see the original), then the index entries
+    for (const [id, was] of snap) {
+      const m = members.get(id); if (!m) continue;
+      for (const k of Object.keys(m)) delete m[k];
+      Object.assign(m, was);
+    }
+    for (const [h, id] of tokSnap) { if (id === undefined) tokenIndex.delete(h); else tokenIndex.set(h, id); }
+    for (const [h, id] of logSnap) { if (id === undefined) loginIndex.delete(h); else loginIndex.set(h, id); }
+    throw e;
   }
-  // index after all patches, so a hash moved from one member to another ends on the member that holds it now
-  for (const m of out) if (m) { members.set(m.id, m); if (m.tokenHash) tokenIndex.set(m.tokenHash, m.id); if (m.loginHash) loginIndex.set(m.loginHash, m.id); }
-  saveMembers(); return out;
+  return out;
 }
 /** Account deletion (2026-11-14): replace a member's record with a bare tombstone. Name, bio, picture, sign-in
  *  hashes, email, linked accounts and every other field go; the id stays so old links and coin records still resolve
