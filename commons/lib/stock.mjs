@@ -67,11 +67,24 @@ export async function importClip(member, id) {
   if (!h) { const j = await api({ id: sid }); const hit = (j.hits || [])[0]; if (!hit) fail(404, 'No such clip.'); h = shape(hit); byId.set(sid, h); }
   if (!h.file) fail(404, 'That clip has no downloadable file.');
   if (h.seconds != null && h.seconds > videos.MAX_SECONDS) fail(413, `Clips can be up to ${videos.MAX_SECONDS / 60} minutes.`);
+  // Kimi's review of #296, note 2: a clip of unknown length is taken only when the server can measure it (videos.upload
+  // refuses one over the limit after ffprobe reads it).
+  if (h.seconds == null && !videos.canProbe()) fail(422, "The stock library didn't say how long that clip is, so it can't be checked. Pick another.");
   let u; try { u = new URL(h.file); } catch { fail(502, 'The stock library sent an unreadable address.'); }
   if (!allowedHost(u)) fail(502, 'That clip is not on the stock library\'s own servers.');
-  let r; try { r = await fetch(u, { redirect: 'follow', signal: AbortSignal.timeout(60_000) }); } catch { fail(502, "Couldn't download the clip. Try again."); }
+  // Kimi's NO on #296: redirects are followed by hand, at most 3, and each new address is checked BEFORE it is asked
+  // for, so nothing off the stock library's own servers is ever requested.
+  let r;
+  for (let hop = 0; ; hop++) {
+    try { r = await fetch(u, { redirect: 'manual', signal: AbortSignal.timeout(60_000) }); } catch { fail(502, "Couldn't download the clip. Try again."); }
+    if (r.status < 300 || r.status > 399) break;
+    const loc = r.headers.get('location'); try { await r.body?.cancel(); } catch { /* nothing to read */ }
+    if (!loc || hop >= 3) fail(502, 'The stock library sent the download round too many turns.');
+    let next; try { next = new URL(loc, u); } catch { fail(502, 'The stock library sent an unreadable address.'); }
+    if (!allowedHost(next)) fail(502, 'The clip download was redirected off the stock library.');
+    u = next;
+  }
   if (!r.ok) fail(502, `The stock library answered ${r.status} for that clip.`);
-  if (r.url && !allowedHost(new URL(r.url))) fail(502, 'The clip download was redirected off the stock library.');
   const len = Number(r.headers.get('content-length') || 0); if (len > videos.MAX_BYTES) fail(413, 'That clip is too large.');
   const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > videos.MAX_BYTES) fail(413, 'That clip is too large.');
   const credit = `Stock footage by ${h.by} on Pixabay${h.page ? ` (${h.page})` : ''}`;

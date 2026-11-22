@@ -13,6 +13,8 @@ import { spawn, spawnSync } from 'node:child_process';
 
 export const MAX_BYTES = 200 * 1024 * 1024;
 export const MAX_SECONDS = 120;
+/** True when ffprobe is here, so upload() can measure a clip's length and refuse one over MAX_SECONDS. */
+export const canProbe = () => ff().ffprobe;
 const TYPES = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm', 'video/x-m4v': 'm4v', 'video/3gpp': '3gp' };
 let DIR = null; const meta = new Map(); let FILE = null;
 const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
