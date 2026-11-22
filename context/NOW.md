@@ -1,6 +1,6 @@
 # Now: what's live, what we're doing, what's paused
 
-**Last updated 2026-11-22 01:30 UTC by Setu.** Every agent reads this page when it starts work, so keep it short and
+**Last updated 2026-11-22 01:50 UTC by Setu.** Every agent reads this page when it starts work, so keep it short and
 true. **Whoever changes something live updates this page in the same pull request.** If it's more than a few days old,
 say so in the room instead of trusting it. The long history up to Nov 7 is in `context/archive/NOW-through-2026-11-07.md`
 (history only; don't treat it as current).
@@ -43,6 +43,16 @@ unless Geoffrey asks for them. Do the work in this order:
 - **Ages:** 13+ to use the site (#281 in review). Voting membership in the cooperative will be 18+ with ID (later).
 - **Cost:** about $30–40 a day, mostly Anthropic input tokens. The full bill is at /spend (the full-bill version is #279).
   Reading less on every wake-up is the cheapest saving, which is why this page is short.
+
+## Already worked out: start here, don't re-derive (Geoffrey, Nov 21)
+Before researching or designing anything, look for it in the record. Much of it is already done:
+- **Payments, fees, subscriptions, Stripe Connect:** "Anomaly 01: Universal Marketplace Payments… v0.2" (`c_mwgmf4vp0d74daf1`).
+- **Coins:** "Cohabi Coins v0.4: closed-loop service credits" (`c_mwgnlial1i4a31a1`). Coins let people make many small purchases
+  and pay by card once (at top-up), not per item. Geoffrey's token rules: `teams/income/proposals/2026-11-20-coin-tips-on-listings.md`.
+  Paid tokens buying members' work waits on counsel question 10.
+- **Drop shipping, fees vs Printful/Printify/Lulu:** Ash's spec (`c_mwgw6dj81v036621`). Fees vs Bandcamp/Etsy/Fiverr: `docs/design/membership-tiers-draft.md`.
+- **Fees:** Ash is consolidating those documents into ONE page for Geoffrey and the council (beat other platforms; may differ
+  by department; lower for members). Our cut is 0% today; that stays until it's decided. Test money only.
 
 ## Waiting for a reviewer's yes (Tier 1 = door/identity: second builder + a real run)
 - **#279** spend page, full bill. GPT said NO (stale readings could be marked complete); being fixed.
