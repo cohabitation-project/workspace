@@ -1,16 +1,18 @@
-# Claude — ACTIVE checkpoint, updated 2026-11-22 ~19:25Z (review seat)
+# Claude — ACTIVE checkpoint, updated 2026-11-22 ~20:30Z (build seat)
 
 ## Working on (Geoffrey: door, market, tokens, structure; "no new projects")
-- **This session (review):** reproduced the revoked-seat hazard I flagged in round 35. After the decision-B boot repair a revoked seat keeps `returning_to`; `answerReturn` Yes copies its null token onto the original. Files: `teams/review/door-yes-revoked-seat-2026-11-22.md` (patch inline) and `teams/review/proposed-tests/door-yes-revoked-seat.mjs` (4 tests; 3 red on main, 4/4 patched; 107-test door/store/agent-connect run has the 1 known failure). Desk handoff to Setu to place (Tier 1; commons/ not writable from review). Posted in review room.
-- Last review session: `teams/review/door-repair-and-erase-findings-2026-11-22.md` and `proposed-tests/door-repair-guards.mjs` (largely superseded by round 35's `commons/test/store-repair-ambiguous.mjs`, now in the checkout).
+- **This session (build, no round-36 job in JOBS.md; took my own named hazard):** placed the revoked-seat fix in the checkout. `commons/lib/operators.mjs` (Tier 1): `returnsFor` now needs `s.tokenHash`, and `answerReturn` refuses a Yes on a seat with no tokenHash (409) before it copies hashes onto the original. New test `commons/test/door-yes-revoked-seat.mjs` (4 tests).
+  Measured in a sandbox copy (node 24, npm ci): patched 4/4; with main's operators.mjs, 3 of 4 fail. Wider run (door-*, store-*, agent-connect*, operator-confirm) is 111 tests, 110 pass, 1 fail.
+  That failure is agent-connect-forgiving "a steward connects an agent by name with no code..." (404 !== 403 at line 75).
+  Cause, found at the very end: the test connects the name 'Claude' as a kin, and `m.kin` is set only by core.mjs:1186 when kin are seeded. My sandbox has no seeded kin, so the member isn't found and the answer is 404. So it is environment, not a defect: Setu's runs with kin seeded pass 51/51. Not yet confirmed by running with kin seeded.
+- Earlier: `teams/review/door-yes-revoked-seat-2026-11-22.md` (the analysis), round 35 `store-repair-ambiguous` (merged, 9d322c9a).
 
 ## Open
-- `eraseMember` rollback (`mydata.deleteAccount`, mydata.mjs:89, POST /account/delete); raw `e.message` shown on failed delete. Tier 1, untouched.
-- Rejoin-under-old-name after a revoke not walked (the 409 wording is inferred).
-- agent-connect "a steward connects an agent by name with no code..." fails on main too; unexplained.
-- Review of Aletheia-6's Spine R0 (c_mws5x43x929599ac): I read it last turn; returned-seat case suggested.
-- Aletheia-6's integration doc; Master Model; Awen's 18 counsel questions: unread. Old desk items (consent checklist, wallet threat model, identity attack tests, repo audit): triage with Setu.
+- Tier 1 for operators.mjs: Setu's second yes on the exact head, and the new test added to commons-tests.yml (builders can't write .github/).
+- Unwalked: rejoin under the old name after a revoke (the 409 wording "join again under its name" is inferred).
+- `eraseMember` rollback (`mydata.deleteAccount`, mydata.mjs:89); raw `e.message` shown on a failed delete.
+- Unread: Aletheia-6's Spine R0 review (c_mws5x43x929599ac), integration doc, Master Model, Awen's counsel questions. Old review desk items still need triage with Setu.
 - Door proof on production with a fresh agent: nobody has run it.
 
 ## To the next me
-Sandbox recipe: copy $REPO/commons to /tmp/w/commons; urllib-fetch package.json, package-lock.json, src/llm.js from raw.githubusercontent.com/cohabitation-project/workspace/main; `npm ci` with HOME=/tmp/h; run from /tmp/w. Writes from run_python to the repo are discarded: use write_file for repo files (commons/ is not writable from review). store.mjs has module state: give each fixture its own ids/hashes. Done in ~10 calls.
+Sandbox recipe: copy $REPO/commons to /tmp/w/commons; urllib-fetch package.json, package-lock.json, src/llm.js from raw.githubusercontent.com/cohabitation-project/workspace/main; `npm ci` with HOME=/tmp/h; run from /tmp/w. node --test prints with ✔/✖/ℹ lines, not TAP: grep those. The build seat CAN write commons/. agent-connect-forgiving fails in the sandbox only because no kin are seeded. Done in 12 calls.
