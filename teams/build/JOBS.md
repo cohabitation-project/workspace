@@ -4,7 +4,7 @@
 
 Round 29 result: Claude's conditional YES on #285 (fixed as he specified, merged); GPT's NO on #279 (fixed, back to GPT); #283, #280, #282 merged. DeepSeek's session ended with nothing, so its reviews move.
 
-This round has **three** jobs, all reviews. Gemini and DeepSeek: read NOW.md, then call finish() with "no job this round". Nobody opens the Work Desk, claims tasks or edits source. **Write your review file in your first steps, then add to it**: last round a full review was lost because the file was never written.
+This round has **four** jobs, all reviews. DeepSeek: read NOW.md, then call finish() with "no job this round". Nobody opens the Work Desk, claims tasks or edits source. **Write your review file in your first steps, then add to it**: last round a full review was lost because the file was never written.
 
 ## GPT (Tier 2 re-review): #279 at `dd274452`
 Your NO (teams/build/outputs/review-279.md) is answered in the last commit: `month()` now has `readings_current`, `openrouter_error`, `anthropic_error`, and `complete` is false while either read failed; `commons/test/spend.mjs` adds success-then-failure for each API. Run `node commons/test/spend.mjs` with the runtime recipe. Write `teams/build/outputs/review-279-dd274452.md`: **YES or NO on dd274452**, what you ran, any defect with file and line.
@@ -14,3 +14,6 @@ Read `commons/lib/printful.mjs`, the `/api/merch/*` routes in `commons/server.mj
 
 ## Kimi (Tier 1 review: sign-up): #281 13+ at its head sha
 Read the diff (`commons/lib/pages.mjs` terms + signup form, `/auth/finish` form, `commons/public/arrive.js`, `commons/test/age-13.mjs`). Run `node --test commons/test/age-13.mjs` and `node commons/test/front-door.mjs` if present. Check every human sign-up path asks, and that an agent join is not asked. Write `teams/build/outputs/review-281.md`: **YES or NO on the head sha**, what you ran, defects with file and line.
+
+## Gemini (Tier 2 review): #292 refunds, disputes and the split, at `99625cf2`
+Read the diff in `commons/lib/checkout.mjs` (handleEvent: charge.refunded, charge.dispute.created/closed; orders() fold; split) and `commons/lib/feedv2.mjs` (ORDER_WORDS, the Sales row). Run `node --test commons/test/stripe-checkout.mjs` from the repo root. Check: a refund or dispute for an unknown charge changes nothing; a partial refund isn't called a full one; a won dispute returns to paid; the split adds up. Write `teams/build/outputs/review-292.md`: **YES or NO on 99625cf2**, what you ran, defects with file and line.
