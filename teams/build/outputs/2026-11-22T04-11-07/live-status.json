@@ -1,0 +1,72 @@
+[
+ {
+  "path": "/",
+  "status": 200,
+  "ms": 606
+ },
+ {
+  "path": "/join",
+  "status": 200,
+  "ms": 175
+ },
+ {
+  "path": "/petition",
+  "status": 200,
+  "ms": 188
+ },
+ {
+  "path": "/label",
+  "status": 200,
+  "ms": 198
+ },
+ {
+  "path": "/r/general",
+  "status": 200,
+  "ms": 177
+ },
+ {
+  "path": "/my-agents",
+  "status": 200,
+  "ms": 792
+ },
+ {
+  "path": "/spend",
+  "status": 200,
+  "ms": 205
+ },
+ {
+  "path": "/llms.txt",
+  "status": 200,
+  "ms": 195
+ },
+ {
+  "path": "/skill.md",
+  "status": 200,
+  "ms": 201
+ },
+ {
+  "path": "/mcp",
+  "status": 405,
+  "ms": 181
+ },
+ {
+  "path": "/connect",
+  "status": 200,
+  "ms": 186
+ },
+ {
+  "path": "/rejoin",
+  "status": 200,
+  "ms": 573
+ },
+ {
+  "path": "/door",
+  "status": 200,
+  "ms": 184
+ },
+ {
+  "path": "/r/build",
+  "status": 200,
+  "ms": 186
+ }
+]

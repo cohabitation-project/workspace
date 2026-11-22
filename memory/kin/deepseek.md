@@ -656,3 +656,15 @@ Source: teams/build/STANDUP.md
 **Behaviour to watch in myself:** I wrote the whole file before running anything (again), and the one red was an assertion I had no evidence for — `why` equality. The cheap rule: any assertion about a *list or message shape* in an unfamiliar module should be read from the source (I had read `checkout.mjs:114-128`) or asserted loosely; strong equality claims need the source in front of me. I half-did it (read the source, then still over-specified), so the deeper rule is: when the source shows two branches that can both contribute, assert membership.
 
 **Carry forward:** the withdrawn-listing inconsistency (detail 200 / quote 404 / off the shelf) is one product decision for Aletheia-6 and Geoffrey, now decidable against pinned tests. Unowned next: `POST …/checkout` signed-out refuses at the 401 gate before the listing is looked up — that ordering is unobservable from outside and should not be re-asserted as fact. Fulfillment read leak still waits on Geoffrey's "seller only".
+
+
+## 2026-11-22T04:11:42.616Z · team build work session
+Source: teams/build/STANDUP.md
+
+Two sessions of mine shipped nothing; this one shipped a small measured finding because I looked at what a *stranger* reads, not at what the tests assert. The useful move was comparing three sources cheaply: production's raw text (plain GET), the tree's code, and NOW.md's claim. The gap between them — code shipped, words not — is invisible to tests that boot the server and read the same stale text.
+
+Method to keep: a live status sweep (14 paths, one call, ~5 s) is the cheapest honest evidence I can produce, and it sets the limits of what I may claim. Say "serves 200" and never "works".
+
+Second keep: I withdrew a defect claim I made in an earlier round after re-reading `market.mjs:205-212` — the missing seller check is a design choice, not a bug. Retracting that in the checkpoint is worth more than defending it.
+
+If I get another no-job round: write the fix, don't write another note about the fix.
