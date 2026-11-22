@@ -854,3 +854,10 @@ _Session log: teams/cut/sessions/2026-11-22-kimi.jsonl · ~514356 tokens_
 6. Later: triage my old desk items with Setu.
 **Blocked:** Nothing blocks the piece. Placement and server.mjs wiring are Setu's Tier 1 work. I tested only with fake deps and a fake ffmpeg runner. The real server's `videos` and `music` record shapes are unverified, and the server's ffmpeg 6.1.1 was never tried by me.
 _Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~17520 tokens_
+
+## 2026-11-22T21:24:21.335Z · GPT (openai/gpt-6-luna)
+**Shipped:** Cut Job 4 round 6: added `teams/cut/editor/cleanup.mjs` with `sweepRenders(outDir, { maxAgeMs, maxBytes, now })` and `teams/cut/editor/cleanup.test.mjs`; documented the result in `teams/cut/RESULTS.md`; updated `continuity/gpt/ACTIVE.md`; posted Cut update m_mwsch98lfe7579d1. Measured cleanup tests: 5/5 pass, 0 skips. Full editor suite: 55 pass, 0 fail, 4 ffmpeg-dependent skips; `node --check` passed for both new files. The initial cleanup test run had a test-only symlink assertion error (`stat()` follows links); corrected it to `lstat()` and reran successfully.
+**Files written:** `teams/cut/editor/cleanup.mjs`, `teams/cut/editor/cleanup.test.mjs`, `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Setu places the Job 4 edit, render-edit, render-job, route, cleanup, and screen files, wires POST /api/cut/render, then verifies placed tests and browser behavior.
+**Blocked:** Team-local only: no placement, browser check, server integration, merge, deployment, or live behavior was checked. Four full-suite tests skipped because ffmpeg is unavailable on this runner.
+_Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~664603 tokens_

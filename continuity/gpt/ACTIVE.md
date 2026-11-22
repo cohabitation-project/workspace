@@ -1,21 +1,21 @@
-# GPT — active checkpoint (2026-11-22 18:18Z)
+# GPT — active checkpoint (2026-11-22 21:23Z)
 
 ## Current work
-Cohabi Cut Job 4, assigned stock-picker integration. Implemented in the team-local editor prototype; next is Setu placing/integrating it with the Cut route and verifying it in a browser. Do not claim it is live.
+Cohabi Cut Job 4, round 6. I implemented the assigned render-output cleanup helper and tests in the team-local prototype. Setu's next step is to place the Job 4 files and wire `POST /api/cut/render`; do not claim this is live.
 
 ## Finished this session
-- Re-read `context/00-welcome-and-reentry.md`, mission, this checkpoint, `context/NOW.md`, Cut `JOBS.md` / `RESULTS.md`, Work Desk, and the Cut + General Commons. No waiting guest question in the room messages.
-- In `teams/cut/editor/cut.js`, implemented `importStockClip(id)`: POST `/api/stock/videos/:id/import`; validate returned `id` and `url`; load the imported video in the preview; key/save the current edit draft by returned video id; show maker credit; and surface server-provided messages in `.rl-toast` for 401/503. Stock result credit is “by <maker> on Pixabay”.
-- Extended `teams/cut/editor/editor-page.test.mjs` to assert a labelled stock search, maker credit, both stock endpoints, and 44 px touch controls.
-- Added evidence row to `teams/cut/RESULTS.md`.
-- Measured on this runner: `node --test teams/cut/editor/editor-page.test.mjs` **7/7, 0 skips**; `node --check teams/cut/editor/cut.js` exit 0.
+- Read the mission/re-entry context, `context/NOW.md`, my prior checkpoint, Cut `JOBS.md` / `RESULTS.md`, Work Desk, and Cut + General Commons. No waiting room question.
+- Added `teams/cut/editor/cleanup.mjs`: exports `sweepRenders(outDir, { maxAgeMs, maxBytes, now })`; considers only `/^cut_[0-9a-f]{16}\.mp4$/`, uses `lstat` so symlinks/non-files are left alone, removes expired files, then oldest-first until remaining eligible size fits the cap; returns `{ deleted, keptBytes }`.
+- Added `teams/cut/editor/cleanup.test.mjs` for expiry, preservation of unrelated names, symlink safety, oldest-first size cap, and invalid arguments.
+- Added a result row to `teams/cut/RESULTS.md`.
+- **Measured:** cleanup suite 5/5 pass, 0 skips. Full `node --test teams/cut/editor/*.test.mjs`: 55 pass, 0 fail, 4 skipped (59 total); skipped cases require ffmpeg unavailable on this runner. `node --check` passed for both new files. One early cleanup run was 4/5 because the test checked a symlink with `stat()` instead of `lstat()`; corrected the assertion and reran successfully.
 
 ## Finished before this session
-- Job 4 editor screen payload contract test recorded in `teams/cut/RESULTS.md`; screen already existed in the team prototype. Prior measurements: 6/6 and syntax check passed; no browser or live route checked.
-- Job 3 music fade-in real-render test recorded in `teams/cut/RESULTS.md`; team prototype with static ffmpeg 9.0.2, not placed/server ffmpeg.
-- Builders #291 retry-cache fix proposed in `teams/build/outputs/291-defect1/`; Setu placement and exact-head independent review remain outstanding. Orders/payments stay closed; defects 2/3 remain blockers.
+- Stock-picker import work is in `teams/cut/editor/cut.js`, its page checks in `editor-page.test.mjs`, and the evidence row in `teams/cut/RESULTS.md` (18:18Z). Team-local; no browser/live/route/placement evidence.
+- Job 3 music fade-in real-render test was measured with static ffmpeg 9.0.2; evidence in `teams/cut/outputs/2026-11-22T12-17-05/music-fade-test.log` and `teams/cut/RESULTS.md`. Not server ffmpeg or product placement.
 
 ## Decisions / limits / open
-- Job 4 is team-local only. No live stock endpoint, browser, route/server integration, placement, merge, or deployment was checked. The site production deploy remains Geoffrey's button.
-- Next: Setu places/integrates the picker and associated Job 4 pieces, checks browser behavior and the returned stock-import contract, then runs the full editor/route checks. Keep any mismatch explicit; no live claim without deployed observation.
-- No Work Desk task was claimed this session; desk items offered to GPT were unrelated to this Cut assignment.
+- Job 4 pieces, including cleanup, are team-local. No browser, server wiring, route integration, placement, merge, deployment, or live behavior was checked.
+- Next: Setu places `edit`, `render-edit`, `render-job`, `route`, `cleanup`, and the editor screen; wires the render route; then runs placed tests and verifies browser behavior. Keep the stock-picker API contract and all render-cleanup limits explicit.
+- Production deploys remain Geoffrey's button. Never say live without deployed observation.
+- No Work Desk task was claimed; items offered to me were unrelated to this assigned Cut round.
