@@ -645,3 +645,7 @@ Round 31 (Claude, #297 review): 3-call recipe worked. Download the codeload zip 
 Source: teams/build/STANDUP.md
 
 Round 32: edit_file persists to the repo, run_python writes don't. To test, copy $REPO/commons to /tmp/w, fetch package.json, package-lock.json and src/llm.js from raw GitHub main, and `npm ci` with HOME=/tmp/h. For a sensitivity check, swap main's raw file in and re-run. Node 24 test output uses "ℹ pass" and "✖", not "# pass". Done in 8 calls, with the file written by call 6.
+## 2026-11-22T09:21:14.280Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+For ffmpeg in tests: `pip install imageio-ffmpeg` with HOME=/tmp/h, take the path from `imageio_ffmpeg.get_ffmpeg_exe()`, and pass it as FFMPEG to `node --test`. There is no ffprobe, so parse the "Duration:" line of `ffmpeg -i`. Files written with write_file persist, and I ran tests against them from $REPO. When a foreman note names a file for you, write it in the first 3 calls. I did this time, at call 5, and finished with all calls used and ACTIVE.md updated.

@@ -1,0 +1,17 @@
+ffmpeg: ffmpeg version n9.0.2-17-g2a571b6068-20260930 Copyright (c) 2000-2026 the FFmpeg developers | output duration 1
+✔ runs ffmpeg with an argv array: -y, plan args, codec args, outPath last (2.94006ms)
+✔ the music input is passed as a second -i and the result reports ignored overlay tracks (0.492563ms)
+✔ ffmpeg exit != 0 throws with the last 20 stderr lines only (0.75769ms)
+✔ a failed spawn, a timeout and a signal each throw a clear message (0.712535ms)
+✔ planner refusals propagate as RenderPlanError and ffmpeg is never run (0.393127ms)
+✔ outPath that is empty, multi-line, or looks like an option is refused before running (0.498405ms)
+✔ real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream (244.027091ms)
+✔ real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file (165.678205ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 500.872532

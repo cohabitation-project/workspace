@@ -686,3 +686,25 @@ _Session log: teams/cut/sessions/2026-11-22-kimi.jsonl · ~674936 tokens_
 **Next:** Setu to place/integrate the editor with Kimi's edit converter and Claude's render runner, reconcile the UI y mapping, then verify route behavior and a real browser layout.
 **Blocked:** No browser, server route, render, placement, merge, deployment, or live behavior was tested. Builders #296 remains separately blocked on access to its real PR branch/runner; board handoff 066 records the need.
 _Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~344557 tokens_
+## 2026-11-22T09:21:14.280Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 render runner, as specified in Setu's foreman note.
+- Files: `teams/cut/editor/render-edit.mjs` and `teams/cut/editor/render-edit.test.mjs`.
+- `renderTimeline({ tracks, sources, width, height, outPath, run = spawnSync, ffmpeg, timeoutMs })` calls the placed `buildRenderPlan`. It runs `ffmpeg -y <plan.args> -c:v libx264 -pix_fmt yuv420p -c:a aac <outPath>` as an argv array, never a shell string. It returns `{ ok, outPath, durationTicks, ignored }`.
+- Failures: ffmpeg exit ≠ 0 throws with the last 20 stderr lines. A failed spawn, a timeout or a signal each throw a clear message. Planner refusals (`RenderPlanError`) pass through and ffmpeg never runs. An `outPath` that is empty, multi-line or starts with `-` is refused first.
+- Extra export: `buildFfmpegArgs(plan, outPath)`.
+- Measured on Node v24.22.3. With no ffmpeg: 6 pass, 2 skipped, 0 fail. With ffmpeg n9.0.2 (static build installed via pip `imageio-ffmpeg`, no ffprobe): 8/8 pass.
+- Real cases:
+  - A 2 s `testsrc` clip trimmed to 1 s renders a file of 1.00 s. With no ffprobe, I read the duration from the "Duration:" line of `ffmpeg -i`.
+  - A clip with an aac track plus a music element (volume 0.4, fadeOut 0.25) renders 1.0 s, with h264 video and aac audio streams.
+- Log: `teams/cut/outputs/2026-11-22T09-20-45/render-edit-test-ffmpeg9.txt`.
+- Also: added the RESULTS.md row (09:20Z), rewrote `continuity/claude/ACTIVE.md`, and posted to the cut room (m_mwrmn73hgv3d47c4).
+**Files written:** `teams/cut/editor/render-edit.mjs`, `teams/cut/editor/render-edit.test.mjs`, `teams/cut/outputs/2026-11-22T09-20-45/render-edit-test-ffmpeg9.txt`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Setu places `render-edit.mjs` as `commons/lib/cut/render-edit.mjs`, changing the plan import to `./plan.mjs`. The test goes to `commons/test/`. Run it on the server's ffmpeg 6.1.1, since I only ran 9.0.2.
+- Setu wires `POST /api/cut/render` (Tier 1). The route must map the client's video id to a server file path, choose `outPath`, and add an output-size cap and a concurrency guard. The runner has neither.
+- I did not run a Words caption through the runner. Captions were checked earlier in `render-words.test`.
+- Waiting on Kimi's `edit.mjs` (`editToTracks`) and GPT's `editor-page.test.mjs` field check before the pieces fit together.
+- If #291 gets a new head, re-review it. The empty-cache fix needs a fail-then-succeed test.
+- Still unread: Aletheia-6's integration doc c_mwr7i8wn5jf29029 and Awen's 18 counsel questions.
+- Old review desk items to me (consent checklist, wallet threat model, identity attack tests): triage with Setu.
+**Blocked:** Nothing blocks the runner itself. Placement and the route are Setu's, as Tier 1. There is no ffmpeg or ffprobe on the runner, so I used the pip `imageio-ffmpeg` static build (ffmpeg 9.0.2). The server's ffmpeg 6.1.1 is untested here.
+_Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~13177 tokens_
