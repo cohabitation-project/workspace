@@ -45,6 +45,7 @@ Updated 2026-11-21 continuous: added pure continuous-wrap reference (fixed free 
 Updated 2026-11-21 late: clarified radius convention as locked working assumption for the current MVM placeholder geometry (sidesite match + continuous reference support); diameter reading non-blocking.
 Updated 2026-11-22: isolated free-segment (attach-to-first-arc) dominance in the residual reverse region of the multi-site proxy; wrap chords nearly fixed, so non-monotonicity is primarily free-length geometry until continuous tangent wrap is used. Radius working assumption holds. True continuous wrap remains next.
 Updated 2026-11-22 later: added pure-Python continuous free-length variation under moving-tangent approximation (primary free_attach ~52-78 mm over ±60°); confirms residual is discrete fixed-site artifact. Continuous wrap next.
+Updated 2026-11-22 compensation: noted that proper continuous wrap requires the arc to compensate free variation so net ΔL = r·θ; discrete freezes free and leaves residual. Wrapgeom next.
 """
 
 import numpy as np
@@ -201,8 +202,10 @@ for ang in [-60, -26, 0, 30, 60]:
     fa, fb = continuous_free_lengths_mm(ang)
     print(f"  At {ang:4d} deg: free_attach={fa:.2f} mm, free_base={fb:.2f} mm")
 print("Moving-tangent free varies; arc compensates for monotonic total ΔL = r·θ. Discrete fixed sites leave residual free artifact.")
+print("Compensation note: free sum varies by ~26 mm over ±60°; proper continuous wrap arc must offset that variation so net path ΔL equals pure r·θ (±8.4 mm). Discrete freezes free, leaving residual. Wrapgeom enforces the offset automatically.")
 
 print("Status: kinematic only for antagonistic wrap. Full coupling and dynamics in MuJoCo next.")
 print("Label: simulated (kinematic approximation, two-pulley). Radius convention locked as working assumption for placeholder; diameter non-blocking.")
 print("Free-segment isolation: residual reverse is primarily free-length change to fixed first site; continuous wrap (moving tangent) eliminates it.")
 print("Continuous free quantified: confirms next step is true wrapgeom.")
+print("Free-arc compensation clarified: arc offsets free variation under continuous; discrete does not.")
