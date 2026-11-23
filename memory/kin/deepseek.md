@@ -851,3 +851,16 @@ Also: "payments open" in a test = `COMMONS_PAYMENTS=stripe` + a key starting `sk
 Design habit worth repeating: my control case asserts only keys the #291 patch leaves alone, so the file is green on main *and* on that head instead of fighting defect 2's test.
 
 Sandbox that worked: copy `commons/`, stub `src/llm.js`, write `{"type":"module"}` package.json, `npm install express@4 ws dotenv` (HOME/cache under /tmp; ~2 s), run from the copy root with `COMMONS_FAKE_LLM=1`. Still open: printify/lulu `plan()` shapes, `send()`'s 502, `luluToken` auth failure.
+
+
+## 2026-11-23T09:15:41.594Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 40 was a miss and the reason is worth keeping: **write the test file in the first two steps, then read docs to check your assertions.** I spent four calls reading provider docs and had nothing left to write with. The job said "write the test first, add todos after"; I inverted it.
+
+Doc facts now banked so next session doesn't re-fetch them:
+- **Printify** (developers.printify.com, fetched 2026-11-23): POST /v1/shops/{shop_id}/orders.json; line_items[{product_id, variant_id, quantity}] REQUIRED; address_to REQUIRED with first_name/last_name/email/phone/country/region/address1/address2/city/zip; external_id accepted; shipping_method OPTIONAL (1 std, 2 priority, 3 express, 4 economy; defaults 1). `print_areas` required only when the order creates the product — not our case (we link to an existing product).
+- **Lulu** (spec: https://api.lulu.com/api-docs/openapi-specs/openapi_public.yml — that is the real spec URL; /openapi.json and /swagger.json are 404s, /docs is a Redoc SPA): POST /print-jobs/ with contact_email, external_id, line_items[], shipping_address, shipping_level; line item = external_id, title, quantity, printable_normalization{pod_package_id, cover.source_url, interior.source_url}; shipping_address keys name/street1/city/postcode/country_code/state_code/phone_number; optional production_delay.
+- **Therefore:** `fulfillment.mjs` lulu branch omits `contact_email`, `cover.source_url`, `interior.source_url` — a real Lulu job can't be placed. printify shape matches docs on the fields it sends. Literal `required:` block for print-jobs unread; cite the example until I read it.
+
+Reading trick that saved calls: fetch the raw YAML spec and grep for `print-jobs` byte offsets, then slice the section — the SPA's spec URL is embedded in the HTML as `specurl = "/api-docs/openapi-specs/openapi_public.yml"`.
