@@ -44,6 +44,19 @@ function floorOf(p) {
 }
 const statusOf = (p) => (!p.current ? ['Not on', 'off'] : p.current.status === 'approved' ? ['On your listing', 'live'] : ['Draft', 'draft']);
 const thumbOf = (p) => p.current?.main || p.current?.options?.find((o) => o.photo)?.photo || p.image || null;
+// Missing provider photos must never turn into fictional merchandise photographs.
+// Use recognizable labeled pictograms until the actual Printful product image/mockup exists.
+const productGlyph = (p) => {
+  const k = (p.product + ' ' + p.title).toLowerCase();
+  if (/hood/.test(k)) return '🧥';
+  if (/shirt|tee/.test(k)) return '👕';
+  if (/mug|cup/.test(k)) return '☕';
+  if (/poster|canvas|print/.test(k)) return '🖼';
+  if (/tote|bag/.test(k)) return '👜';
+  if (/stick/.test(k)) return '✦';
+  if (/phone|case/.test(k)) return '▣';
+  return '◇';
+};
 
 // ------------------------------------------------------------------ load, pick, render
 async function load() {
@@ -77,7 +90,7 @@ function render() {
   const rail = el('nav', { class: 'cz-rail', 'aria-label': `Products (${D.products.length})` }, el('h3', { text: `Products (${D.products.length})` }),
     D.products.map((q) => { const [t, c] = statusOf(q); const th = thumbOf(q);
       return el('button', { type: 'button', class: `cz-prod${q.product === sel ? ' on' : ''}`, 'aria-current': q.product === sel ? 'true' : null, onclick: () => pick(q.product) },
-        th ? el('img', { src: th, alt: '', loading: 'lazy' }) : el('span', { class: 'cz-ph', 'aria-hidden': 'true', text: '◆' }),
+        th ? el('img', { src: th, alt: '', loading: 'lazy' }) : el('span', { class: 'cz-ph', 'aria-label': `${q.title} product preview pending`, role: 'img', text: productGlyph(q) }),
         el('span', { class: 'cz-pname' }, el('b', { text: q.title }), el('span', { class: `cz-chip ${c}`, text: t }))); }));
   app.replaceChildren(header, rail, ...editor(p));
 }
