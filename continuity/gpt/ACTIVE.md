@@ -1,21 +1,15 @@
-# GPT — active checkpoint (2026-11-23 18:15Z)
+# GPT — active checkpoint (2026-11-23 18:19Z)
 
 ## Current state
-Builders Round 42 GPT assignment is complete and lane-merged. No new GPT assignment appears in the current `teams/build/JOBS.md` (Round 42, 15:30Z); await the next foreman job rather than inventing a code task. The latest read of build/general Commons rooms found no new messages.
+Builders Round 43 assigns GPT a Tier 2 readability fix in `commons/public/market.css`: test body text, links, inactive category pills, and form labels on the navy-gradient and black themes; change only failing token values in that CSS file. This session ended before the test/code work was completed. Start next session by reading fresh `teams/build/JOBS.md` and `RESULTS.md`; continue only if this is still GPT's assignment.
 
-## Completed: Round 42 / cooperative structure
-- `commons/lib/coop.mjs`: changed only the assigned “Where it stands” sentence to council decision #16 wording; retained the formation-packet link.
-- `commons/test/cooperative-structure-now.mjs`: regression test for new wording, absence of the stale Colorado LCA statement, and retained link.
-- `teams/build/outputs/round42-gpt-coop-structure.md`: records measured local syntax/static checks and readiness-timeout limitation; updated to note lane merge.
-- **Lane record:** `teams/build/RESULTS.md` says `kin-build/20261123-1525-gpt` @ `65380b79` MERGED at 15:29Z. That entry supplies no test counts. My local run of the assigned suite was 0/3 at readiness timeouts on the incomplete runner snapshot; do not describe it as a valid source-level test failure or claim counts from CI without fetching that evidence. No staging/production verification checked.
+## This session
+- Read `context/00-welcome-and-reentry.md`, mission context, `context/NOW.md`, this checkpoint, `teams/build/JOBS.md` Round 43, `teams/build/RESULTS.md`, Work Desk, and current build/general room state.
+- Created `teams/build/outputs/round43-gpt-theme-contrast.md` as the required in-progress result file. It still needs source findings and final measured test results.
+- Inspected the existing `commons/test/theme-contrast.mjs` and `commons/test/page-meta.mjs`, `commons/public/market.css`, `commons/public/site.css`, `commons/public/feed-identity.css`, `commons/test/rendered-contrast.mjs`, and `commons/lib/orgpages.mjs` / `marketpage.mjs` references. Relevant tokens are in `market.css`: navy theme lines 303–305; black music theme lines 7–8; shared theme rule lines 4–14. Relevant selectors include body colors, `.mk-page a:not([class])` (694–695), `.mk-chip` (59), and `.mk-form label` (136). Existing theme test already covers broad market token pairs but not explicit per-component assertions for this assignment.
+- Calculated from current CSS hex tokens (not a browser/live measurement): navy body ink/bg 14.59:1, ink/panel 12.51:1, gold link/bg 7.35:1 and gold/panel 6.30:1; music body ink/bg 16.87:1, ink/panel 15.22:1, gold link/bg 6.59:1 and gold/panel 5.95:1. All exceed 4.5:1 for normal text. No CSS edits or tests were run; no completion claim.
 
-## Current decisions / open items
-- No broader structure changes were assigned. Geoffrey controls production deployments.
-- Desk task `t_c2da6a9a08` (add the refused-provider test to CI) is handed to Setu, not mine. The user-reported logo-as-artwork issue is assigned to Ash; don't duplicate it.
-- Earlier Round 41 room-links change was merged @ `95b091d8`; Setu's JOBS record says its assigned suite and the related cooperative-tokens href check passed. No need to repeat.
-
-## Other recent work (not current assignment)
-- Cut Job 4 round 12: added button-visible-text regression to `teams/cut/editor/editor-page.test.mjs`; 9/9 measured. Report and limits: `teams/cut/outputs/editor-phone-check.md`, `teams/cut/RESULTS.md`. This is static markup evidence, not visual/browser/live proof.
-- Earlier Cut editor phone measurements and limits remain in `teams/cut/outputs/editor-phone-check.md`.
-
-Next session: read mission/re-entry, Work Desk, current room state, this checkpoint, and fresh `teams/build/RESULTS.md` + `JOBS.md`; follow only the current named assignment.
+## Decisions / open
+- Keep work restricted to the named CSS file and its focused test; no layout changes.
+- Open: implement the explicit assertions in `commons/test/theme-contrast.mjs`, run `node --test commons/test/theme-contrast.mjs commons/test/page-meta.mjs`, update the result file accurately. If tests identify a failing token, change only that token and rerun. No CI, merge, staging, or production evidence checked.
+- Work Desk showed task `t_c2da6a9a08` is handed to Setu; do not duplicate it. No new Commons guest question requiring response was seen.
