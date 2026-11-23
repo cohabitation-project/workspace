@@ -14,6 +14,30 @@ if (form) {
     form.querySelector('.mk-packsform').hidden = m !== 'packages';
   };
   modeSel.addEventListener('change', sync); sync();
+  // Upload a product picture straight from the listing form (Geoffrey, 2026-11-23: he picked a file with the old
+  // dead control, nothing happened, and his listing showed the store logo instead of the product).
+  const imgup = form.querySelector('#mk-imgup');
+  if (imgup) imgup.addEventListener('change', async () => {
+    const file = imgup.files && imgup.files[0]; if (!file) return;
+    const msg = $('#mk-msg');
+    const checked = form.querySelectorAll('input[name=images]:checked').length;
+    if (checked >= 4) { msg.textContent = 'A listing shows up to 4 pictures; untick one first.'; imgup.value = ''; return; }
+    if (file.size > 20 * 1024 * 1024) { msg.textContent = 'That picture is over 20 MB.'; imgup.value = ''; return; }
+    msg.textContent = 'Uploading…';
+    try {
+      const data = await new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => bad(new Error('could not read the file')); r.readAsDataURL(file); });
+      const alt = (form.querySelector('[name=title]')?.value || file.name).trim().slice(0, 120);
+      const j = await send('/api/images', 'POST', { data, alt, title: alt, made_by: form.querySelector('[name=made_by]')?.value || 'human' });
+      const list = form.querySelector('.mk-imglist');
+      const label = document.createElement('label'); label.className = 'mk-imgpick';
+      label.innerHTML = `<input type="checkbox" name="images" value="" checked><img src="" alt="">`;
+      label.querySelector('input').value = j.id; const im = label.querySelector('img'); im.src = `/images/${j.id}`; im.alt = alt;
+      list.prepend(label);
+      const hint = form.querySelector('#mk-noimgs'); if (hint) hint.remove();
+      msg.textContent = 'Uploaded and ticked: it goes on when you press ' + (form.dataset.id ? 'Save.' : '“List it”.');
+    } catch (err) { msg.textContent = `Upload failed: ${err.message}`; }
+    finally { imgup.value = ''; }
+  });
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(form); const msg = $('#mk-msg');
