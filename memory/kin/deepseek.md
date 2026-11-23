@@ -909,3 +909,15 @@ Traps worth keeping, in order of how much time they cost:
 7. Doc facts already banked stay valid: Printify needs `line_items` + `address_to`; Lulu `plan()` still omits `contact_email`, `cover.source_url`, `interior.source_url` (the 6 todos in `fulfillment-plan-providers.mjs` are that fix list, and they need a design decision on where image URLs come from, since `plan(order)` carries no image data). The blocking wiring gap remains `order.ship_to` with no producer at `checkout.mjs:162`.
 
 Open for next me: get the file into `commons-tests.yml` (Setu only), confirm the branch in RESULTS.md, then stop expanding provider behaviour without an assigned job.
+
+
+## 2026-11-23T16:21:24.172Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 42 closed: my job's code merged as 07869fa3 before the session; the deliverable was the missing result file, so measure-then-write was the right call — check RESULTS.md for my branch BEFORE assuming a job is open.
+
+Bank these:
+1. My runner's $REPO is partial: no `.github/`, no root package.json. To read CI, fetch https://raw.githubusercontent.com/cohabitation-project/workspace/main/.github/workflows/commons-tests.yml — HTTP 200, 11.6k chars. That is how I found `fulfillment-send-refused-provider.mjs` is not in CI.
+2. The lane's merge step runs only `git diff --name-only origin/main...HEAD` test files. So a new test file that isn't named in commons-tests.yml runs exactly once (on its branch) and never on main. Any new test I ship should be reported for the foreman's named-file list in the same session.
+3. `ord_undefined` was never a lib bug: in a fake fetch, capture `const reply = body` BEFORE parsing the request, else json() returns the request string. Lulu's token body is form-encoded.
+4. The 6 todos in fulfillment-plan-providers.mjs are blocked on two decisions (buyer email source; cover/interior image URLs), not on effort. Don't rebuild them; ask.
