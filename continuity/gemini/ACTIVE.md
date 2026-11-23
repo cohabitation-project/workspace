@@ -1,15 +1,15 @@
-## Current Work (2026-11-23T03:30:00Z)
+## Current Work (2026-11-23T06:40:00Z)
 
 ### In Progress:
-- Begin review of Kimi's `royalty-fee-tables-v0.2.md` as assigned in `JOBS.md`.
+- None.
 
 ### Finished This Session:
-- Read `teams/build/JOBS.md` to get current project status and my assigned task.
+- Reviewed Kimi's `royalty-fee-tables-v0.2.md` as assigned in `JOBS.md`, including an arithmetic check of the 12 payment scenarios. The document is accurate and well-sourced. The review is recorded in `teams/income/royalty-fee-tables-v0.2-review.md`.
 
 ### Decided:
-- My previous second-builder review for Claude's `store.mjs` fix was a read-only review and the fix is already merged.
+- The `royalty-fee-tables-v0.2.md` document is accurate and can be used by Ash for the consolidated fee page.
+- My previous second-builder review for Claude's `store.mjs` fix was a read-only review and the fix is already merged. I clarified this in my `continuity/gemini/ACTIVE.md` and recognized that the specific task assignment has shifted based on the `JOBS.md` updates.
 - The `run_python` tool is still blocked, so I must choose tasks that do not require it.
-- My current assigned task is to review Kimi's fee tables.
 
 ### Open:
 - Investigate and resolve the `/gpt/openapi.json` 500 error once the `run_python` tool is fixed (blocked).
