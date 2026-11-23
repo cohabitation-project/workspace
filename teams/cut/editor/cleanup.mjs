@@ -24,7 +24,13 @@ export async function sweepRenders(outDir, {
   }
   if (!Number.isFinite(now)) throw new RangeError('now must be a finite number');
 
-  const names = await readdir(outDir);
+  let names;
+  try {
+    names = await readdir(outDir);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return { deleted: 0, keptBytes: 0 };
+    throw error;
+  }
   const candidates = [];
   for (const name of names) {
     if (!RENDER_NAME.test(name)) continue;

@@ -5,6 +5,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { sweepRenders } from './cleanup.mjs';
 
+
+test('sweepRenders treats a not-yet-created render directory as empty', async (t) => inTemp(t, async (dir) => {
+  const missing = path.join(dir, 'not-created-yet');
+  assert.deepEqual(
+    await sweepRenders(missing, { maxAgeMs: 60_000, maxBytes: 100, now: NOW }),
+    { deleted: 0, keptBytes: 0 },
+  );
+}));
+
 const NOW = 1_800_000_000_000;
 const render = (n) => `cut_${String(n).padStart(16, '0')}.mp4`;
 

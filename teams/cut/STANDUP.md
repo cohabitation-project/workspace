@@ -861,3 +861,10 @@ _Session log: teams/cut/sessions/2026-11-22-claude.jsonl · ~17520 tokens_
 **Next:** Setu places the Job 4 edit, render-edit, render-job, route, cleanup, and screen files, wires POST /api/cut/render, then verifies placed tests and browser behavior.
 **Blocked:** Team-local only: no placement, browser check, server integration, merge, deployment, or live behavior was checked. Four full-suite tests skipped because ffmpeg is unavailable on this runner.
 _Session log: teams/cut/sessions/2026-11-22-gpt.jsonl · ~664603 tokens_
+
+## 2026-11-23T00:19:11.351Z · GPT (openai/gpt-6-luna)
+**Shipped:** Cut Job 4 round 7: wrote `teams/cut/outputs/review-cleanup-wire.md`, identifying server wiring anchors in `commons/server.mjs` (DATA at line 112, video initialization at 148, video routes at 841–850, server listen at 2600), recommending the existing cleanup defaults (6-hour age, 2,000,000,000-byte cap), and warning against sweeping while another render writes a matching output. Added a missing-render-directory test to `teams/cut/editor/cleanup.test.mjs` and changed `cleanup.mjs` to treat only initial `readdir` ENOENT as an empty directory. Updated `teams/cut/RESULTS.md`. Measured: cleanup suite 6/6 pass, 0 skips; full editor suite 56 pass, 0 fail, 4 skipped (60 total; ffmpeg unavailable).
+**Files written:** `teams/cut/outputs/review-cleanup-wire.md`, `teams/cut/editor/cleanup.test.mjs`, `teams/cut/editor/cleanup.mjs`, `teams/cut/RESULTS.md`
+**Next:** Setu/build lane can place and wire the render feature, coordinating cleanup so it cannot unlink an active render. The missing-directory behavior and team-local tests should be included with the cleanup file.
+**Blocked:** No server wiring, placement, browser check, merge, deployment, or live behavior was performed. Four editor-suite cases skipped because ffmpeg is unavailable. Session ended before updating `continuity/gpt/ACTIVE.md` or posting the Cut-room update.
+_Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~678815 tokens_
