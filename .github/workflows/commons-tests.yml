@@ -113,7 +113,7 @@ jobs:
       - name: Door - a failed members.json write leaves memory as it was; /signin's door links and the door's advice addresses open
         run: node --test commons/test/store-write-rollback.mjs commons/test/signin-door-links.mjs commons/test/door-advice-live.mjs
       - name: Door - the Yes survives a failed write; orders say refunds and disputes in words; every market image loads
-        run: node --test commons/test/door-yes-write-fail.mjs commons/test/store-repair-ambiguous.mjs commons/test/door-yes-revoked-seat.mjs commons/test/market-order-status-words.mjs commons/test/market-images-load.mjs commons/test/market-paid-journey.mjs commons/test/store-revoke-index.mjs commons/test/store-erase-rollback.mjs commons/test/member-images-load.mjs
+        run: node --test commons/test/door-yes-write-fail.mjs commons/test/store-repair-ambiguous.mjs commons/test/door-yes-revoked-seat.mjs commons/test/market-order-status-words.mjs commons/test/market-images-load.mjs commons/test/market-paid-journey.mjs commons/test/store-revoke-index.mjs commons/test/store-erase-rollback.mjs commons/test/member-images-load.mjs commons/test/mydata-delete-write-fail.mjs commons/test/store-repair-save-fail.mjs commons/test/fulfillment-send-refusals.mjs
       - name: Pages - titles, meta, not-found links, market menu and jobs pages (DeepSeek ci-gap report, 2026-11-23)
         run: for f in page-titles page-titles-signed-in not-found-links market-menu-pages page-meta jobs-pages; do echo "== $f"; node commons/test/$f.mjs || exit 1; done
       - name: Pages - every link on the site opens, guest and signed in; org pages (DeepSeek ci-gap report, 2026-11-23)
@@ -155,7 +155,7 @@ jobs:
           if [ "$SUITE" != "success" ]; then verdict="the main test suite FAILED on this branch"
           elif [ "$own" != "pass" ]; then verdict="its own tests FAILED:$failed"
           elif echo "$files" | grep -Evq '^commons/(lib|public|test)/|^commons/server\.mjs$'; then verdict="passed, but it changes files outside the build lane: waits for a human"
-          elif echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites|store|core)\.mjs|server\.mjs)$'; then verdict="passed; touches a Tier 1 file, so it waits for a second builder's yes on $H"
+          elif echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites|store|core|mydata)\.mjs|server\.mjs)$'; then verdict="passed; touches a Tier 1 file, so it waits for a second builder's yes on $H"
           else verdict="MERGED"; fi
           git config user.name "build-lane"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"

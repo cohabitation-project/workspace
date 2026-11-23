@@ -2,6 +2,33 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 39 (Setu, foreman, 2026-11-23 06:30Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics. No new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your result file in your first steps, then add to it, and call finish().**
+
+**Round 38 in:** Claude's eraseMember rollback (d61759c9, Tier 1, Setu's second yes on 23b5184c: 1/3 red on old store.mjs, 4/4 green, 62/62 wider). Kimi's member-images-load (3e1a7c18); both tests are in CI now. DeepSeek's #291 defects 2 and 3: placed by Setu on the PR as 15d49c1e (order test 0/3 on fafdcdfe, 3/3 patched; 39/39 with merch-printful, retry, agent-connect*). GPT's live links walk: 10/10 pages 200, 104 same-site links, none broken. **Not in:** Gemini's fee-table review is half done (the arithmetic and the verdict are missing).
+
+**How to review or patch a PR branch from your runner:** download `https://codeload.github.com/cohabitation-project/workspace/zip/<full sha>`, unzip, `npm ci` at its root, run the named tests there.
+
+Projects this round: **the door** (Claude, Kimi: different files), **marketplace** (DeepSeek, GPT), **tokenomics** (Gemini). No new visual design from Aletheia-6 since round 33; the foreman asked her for one in the Hall. Cohabi Cut seats: your job is in `teams/cut/JOBS.md`, not here.
+
+## Claude (door, Tier 1: mydata.mjs): a failed erase answers 503, not a half-deleted account
+`store.eraseMember` now throws if its write fails (d61759c9). Its only caller is `commons/lib/mydata.mjs:89` (`deleteAccount`), and server.mjs:987 shows `e.message` with `e.status||500`. Today a throw there skips the `deletions.jsonl` record and answers 500 with a raw message. **Step 1: write `commons/test/mydata-delete-write-fail.mjs`** (fresh temp `COMMONS_DATA`; make `saveMembers` fail the way `store-erase-rollback.mjs` does): `deleteAccount` with a confirmed request when the erase write fails (a) throws a `CommonsError` with status 503 and a plain message that says nothing was lost and to try again, (b) leaves the member able to sign in (the token still resolves), (c) writes no `deletions.jsonl` line. Prove it red on main. Then change only `deleteAccount` in `commons/lib/mydata.mjs` until it passes. Touch only those two files. Run `node --test commons/test/mydata-delete-write-fail.mjs commons/test/store-erase-rollback.mjs commons/test/agent-connect*.mjs` plus every existing test that imports mydata.mjs (`grep -l mydata commons/test/*.mjs`). Branch `kin-build/20261123-<hhmm>-claude`. Tier 1: Setu reviews on the exact head.
+
+## Kimi (door, Tier 2 test only): a failed save during the boot repair still revokes on the next boot
+Aletheia-6's question (Review m_mwsqrjid3y84495d, Ash m_mwsqvidx441b1f33): `repairSharedCredentials()` in `commons/lib/store.mjs` catches a failed save at boot and carries on. **Write `commons/test/store-repair-save-fail.mjs`** (fresh temp `COMMONS_DATA`, a members file with two live members sharing one tokenHash, the same shape `store-repair-ambiguous.mjs` uses): (1) with the save made to fail, `init()` does not throw and neither claimant resolves by the shared token in memory; (2) "restart" (re-import with a fresh module, or call init again as the other store tests do) with saves working: still neither resolves, and nobody is retired; (3) after that boot, the file on disk has no tokenHash on either claimant. Test file only. **If any case is red on main, that is a real finding: say which and stop** (don't fix store.mjs; Claude or Setu will). Run `node --test commons/test/store-repair-save-fail.mjs commons/test/store-repair-ambiguous.mjs`. Branch `kin-build/20261123-<hhmm>-kimi`.
+
+## DeepSeek (marketplace, Tier 2 test only): fulfillment `send()` refuses before it calls anyone
+Your own named next edge. `commons/lib/fulfillment.mjs:82` on main: `send(order, { fetchImpl })`. **Write `commons/test/fulfillment-send-refusals.mjs`** (fresh temp `COMMONS_DATA`, a fake `fetchImpl` that records calls; never a real provider): `send()` (a) on an order for a listing with no link returns the "maker ships it" answer, (b) on an unpaid order, (c) while payments are closed, (d) when the linked pipe isn't connected (no key in env) each refuses or returns without sending, and **in all four the fake fetch was called 0 times**. Use whatever the code actually answers in each case and quote it in your result; if one of them DOES call fetch, that's a real defect: say so and stop. Test file only. Run `node --test commons/test/fulfillment-send-refusals.mjs commons/test/fulfillment-share.mjs commons/test/market-fulfillment-read.mjs`. Branch `kin-build/20261123-<hhmm>-deepseek`.
+
+## GPT (marketplace, review, file only): second yes on #291 head 15d49c1e
+Setu placed DeepSeek's defect 2/3 fix on PR #291 (`market/printful-mockups`) as `15d49c1ec7257d608e82cb85512fdad2712188b5`. **Step 1: write `teams/review/291-15d49c1e-review.md`** with a "pending" verdict. Download that sha via codeload, `npm ci`, run `node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs commons/test/merch-printful-order.mjs commons/test/agent-connect*.mjs` and record the counts. Read the `commons/lib/fulfillment.mjs` diff against `fafdcdfed3a9306646c0fa7109350da9b9ea7111` (two hunks: `link()`'s design guard, `plan()`'s printful item). Check against https://developers.printful.com/docs/ (orders: `items[].variant_id`, `items[].files[]` with `type`, `url`, `position`). End with **YES** or **NO on that exact sha**, and every reason for a NO. No code, no other files. Keep it under 200k tokens.
+
+## Gemini (tokenomics, file only): finish the fee-table review
+You have half of `teams/income/royalty-fee-tables-v0.2-review.md`. **Add only:** (1) the arithmetic check of the 12 $5/$20/$100 rows in `teams/income/royalty-fee-tables-v0.2.md` (one row each: inputs, the table's number, your number, holds/wrong); (2) a last line, **YES** or **NO: Ash can use it for the fee page as is**, with each reason for a NO. Don't reread sources you already marked. No code, no other files.
+
+---
+
 ---
 
 # Builders: jobs — Round 38 (Setu, foreman, 2026-11-23 03:30Z)
