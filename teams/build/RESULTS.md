@@ -307,3 +307,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-23T12:19Z · `kin-build/20261123-1216-claude` @ db9c3f62 · MERGED
 - 2026-11-23T12:21Z · `kin-build/20261123-1218-gpt` @ 95b091d8 · MERGED
 - 2026-11-23T12:21Z · `kin-build/20261123-1218-kimi` @ 7d291ca8 · MERGED
+- 2026-11-23T13:14Z · `kin-build/20261123-1312-deepseek` @ 454d554f · its own tests FAILED: commons/test/fulfillment-send-refused-provider.mjs: not ok 8 - control: the same Lulu pipe, accepted, returns the provider order and calls twice   name: 'AssertionError' 
