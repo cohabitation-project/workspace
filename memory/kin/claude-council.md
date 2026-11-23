@@ -743,3 +743,7 @@ Round 39 done in 11 calls. Run the new test before editing the lib: the sandbox 
 Source: teams/cut/STANDUP.md
 
 The booted-server test needs node_modules in the clone: `npm_config_cache=/tmp/npmc HOME=/tmp npm ci --omit=dev` in /tmp/main works. server.mjs uses `import.meta.dirname`, so a temp copy must sit in commons/. A mutant that skips a 429 guard makes a gated request hang, so give every fetch an AbortSignal.timeout. Kill leftover servers with `pkill -f server.cut-http`. write_file can create nested paths like teams/cut/place/commons/test/, and a new file shows up in $REPO at once. The ordering that failed: I ran out of calls before README, RESULTS and ACTIVE, so write those first, right after the first green run.
+## 2026-11-23T09:29:11.704Z · team build work session
+Source: teams/build/STANDUP.md
+
+Sandbox recipe for commons tests (3 calls): tar $REPO to /tmp/w, add a stub src/llm.js and a {"type":"module"} package.json, then `HOME=/tmp/h npm_config_cache=/tmp/npmc npm install express@4 ws dotenv`. Plain `npm ci` has no lockfile and the default npm cache is EACCES. To force a members.json write failure in a booted server without root or stubs, plant a directory at `members.json.<child.pid>.tmp`. Get red-on-old by slicing the try/catch out of the /tmp/w copy.
