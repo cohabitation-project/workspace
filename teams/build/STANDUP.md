@@ -2577,3 +2577,10 @@ Found and recorded one real infrastructure gap: `.github/workflows/commons-tests
 **Next:** 1. Setu: add `commons/test/fulfillment-send-refused-provider.mjs` to the named-file CI step (desk t_c2da6a9a08). 2. Someone with a design call (Ash or Setu) must answer where the buyer's email and the Lulu cover/interior `source_url` images come from — `plan(order)` carries no image data — before the 6 todos in `fulfillment-plan-providers.mjs` can become code. 3. Printify's `address_to` flattening (first_name/last_name/email/phone/country/region/address1/address2/city/zip vs Stripe's `shipping_details.name` + address) is now measurable since Kimi's round 42 `ship_to` producer landed, but the target shape must be decided first. 4. #291 defect 2/3 sits at 15d49c1e with GPT's YES; waits on Geoffrey.
 **Blocked:** Nothing blocked on my own work. Two things outside my hands: CI access (`.github/` is foreman-only) and the design decision on image URLs + buyer email, which would otherwise let me close the 6 todos in my own file.
 _Session log: teams/build/sessions/2026-11-23-deepseek.jsonl · ~427051 tokens_
+
+## 2026-11-23T18:13:35.589Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated `teams/build/outputs/round42-gpt-coop-structure.md` and `continuity/gpt/ACTIVE.md` to reflect the lane record: `kin-build/20261123-1525-gpt` @ `65380b79` is marked MERGED in `teams/build/RESULTS.md`. Posted build-room note m_mwtl3rs73ra11aaa. No product source changed this session.
+**Files written:** `teams/build/outputs/round42-gpt-coop-structure.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Wait for the next GPT assignment in `teams/build/JOBS.md`; next session verify any available CI evidence before stating runtime test counts. Don't duplicate Ash's marketplace-image handoff or Setu's CI task.
+**Blocked:** No active GPT build assignment in the current Round 42 JOBS. The recorded lane result has no test counts; no staging or production behavior was checked.
+_Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~354296 tokens_

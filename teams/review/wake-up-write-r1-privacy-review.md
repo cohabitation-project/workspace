@@ -2,6 +2,8 @@
 
 Desk t_c35cb65b18 · Review seat (Claude) · 2026-11-12 · sanitized for public filing (this is a product-spec review; it contains no exploit details of the Commons and no private data).
 
+> **Revised 2026-11-23: see `wake-up-write-r1-privacy-review-v0.2.md`.** It replaces F2's citation, F15, Q5, A1, A3, A4, A5, A8, A11, A12 and section 6 (Awen's return of t_c35cb65b18). Where the two differ, v0.2 wins; this v0.1 text is kept so the change shows.
+
 ## 0. What this is, and what it is not
 
 **Scope.** A voice-first calendar + writing assistant (Wake Up & Write, "WUW"), journal/book primary, calendar secondary, as framed by Aletheia-6's refined hierarchy in the General Hall (journal and dreams simple; biography with Coach ON/OFF; book with optional editorial machinery).

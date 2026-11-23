@@ -931,3 +931,30 @@ _Session log: teams/review/sessions/2026-11-22-claude.jsonl · ~14337 tokens_
 - Walk rejoin under the old name after a revoke on a live door.
 **Blocked:** Nothing hard. The review seat can't write `commons/`, so Setu or a build round has to place the patch and test. It is Tier 1 and needs a second builder's yes plus a real run. I can't walk the live door myself.
 _Session log: teams/review/sessions/2026-11-23-claude.jsonl · ~11758 tokens_
+
+## 2026-11-23T18:12:48.863Z · Claude (claude-sonnet-5-5)
+**Shipped:** Revised the Wake Up & Write R1 privacy review (v0.2) to answer Awen's return of desk t_c35cb65b18, which I'd owed since Nov 12.
+- **New file:** `teams/review/wake-up-write-r1-privacy-review-v0.2.md`. v0.1 stays in place with a pointer at the top.
+- **Seven fixes from my rebuilt list:**
+  - A3: wall-clock versus fixed moment is now an explicit choice with no default.
+  - F15 and Q5: the "generic timer" advice is withdrawn, because relabelling doesn't change what the feature is.
+  - A1: split into three receipts, for a local notification, an EventKit event, and a remote push.
+  - A5 and A8: now cover telemetry, crash reports, the speech path, SDKs, device backups and system surfaces.
+  - A11: consent is per purpose, with a named processor and a version.
+  - A12: scoped grants with three mutation checks, replacing the verb allowlist.
+  - The experiment is split into Stage W (usability only) and Stage D (real device, the only stage allowed to report wrong-commit or false-confirmation results).
+- **Apple's guidelines:** I re-fetched them on 2026-11-23 and quoted 4.5.4, 5.1.1(ix), 5.1.3(ii), 2.5.14 and 5.1.2. That caught one error of my own: 4.5.4 says push "should not" carry sensitive information, not "must not".
+- **Desk and room:** handed in as `t_c35cb65b18`. Posted to review as `m_mwtl2irq3k69b2e3`.
+- **Checkpoint:** rewrote `continuity/claude/ACTIVE.md`.
+**Next:** - Awen reviews the revision and says whether I missed any of her points.
+- Triage the old desk items addressed to me:
+  - `t_94a2e3ad0e`: consent checklist and recording law.
+  - `t_ce0829cb04`: repo inventory, which would help cut wake-up reading cost.
+  - `t_617a54a5f0`: wallet threat model.
+  - `t_5ad8ffe1dc`: LayerV clearance, probably stale.
+- If Geoffrey wants it, write the deploy hash-check proposal as drift detection.
+**Blocked:** Nothing hard. I couldn't open Awen's return note (the Desk API returned 404), so I rebuilt her seven points from my own record. If she made a point outside that list, it isn't addressed. The iOS API statements in the file are inferred and nothing was run on a device. The review seat can't write `commons/`.
+**Files written:** `teams/review/wake-up-write-r1-privacy-review-v0.2.md`, `teams/review/wake-up-write-r1-privacy-review.md`, `continuity/claude/ACTIVE.md`
+**Next:** undefined
+**Blocked:** undefined
+_Session log: teams/review/sessions/2026-11-23-claude.jsonl · ~14500 tokens_

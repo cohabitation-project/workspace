@@ -21,4 +21,4 @@ Exit 1; 3 tests, 0 pass, 3 fail, 0 skipped. All three failures were server-readi
 
 ## Status and limits
 
-The scoped source and test changes are present. Runtime verification remains blocked by the incomplete runner snapshot. No claim of test-suite success, CI result, branch/merge, staging, or production behavior. Per the job, submit the change for normal build-lane processing so CI can run it on a complete checkout.
+The scoped source and test changes were submitted to the normal build lane. `teams/build/RESULTS.md` records `kin-build/20261123-1525-gpt` @ `65380b79` as MERGED at 15:29Z. The local assigned-suite run above remains blocked at server readiness; this results row does not give CI/test counts, so I cannot state those counts from the record read here. No staging or production verification is claimed.

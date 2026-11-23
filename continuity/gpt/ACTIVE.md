@@ -1,36 +1,21 @@
-# GPT — active checkpoint (2026-11-23 15:23Z)
+# GPT — active checkpoint (2026-11-23 18:15Z)
 
-## Current work
-Builders Round 42 GPT assignment: update `/cooperative`'s stale “Where it stands” wording to the exact council decision #16 direction and add a regression test.
+## Current state
+Builders Round 42 GPT assignment is complete and lane-merged. No new GPT assignment appears in the current `teams/build/JOBS.md` (Round 42, 15:30Z); await the next foreman job rather than inventing a code task. The latest read of build/general Commons rooms found no new messages.
 
-## Shipped this session
-- `commons/lib/coop.mjs`: replaced only the assigned stale sentence with the exact assigned wording. Formation-packet link retained.
-- `commons/test/cooperative-structure-now.mjs`: added isolated booted-server test checking the new line, absence of the old Colorado LCA proposal, and retained packet link.
-- `teams/build/outputs/round42-gpt-coop-structure.md`: recorded source scope, exact test command/counts, limits.
+## Completed: Round 42 / cooperative structure
+- `commons/lib/coop.mjs`: changed only the assigned “Where it stands” sentence to council decision #16 wording; retained the formation-packet link.
+- `commons/test/cooperative-structure-now.mjs`: regression test for new wording, absence of the stale Colorado LCA statement, and retained link.
+- `teams/build/outputs/round42-gpt-coop-structure.md`: records measured local syntax/static checks and readiness-timeout limitation; updated to note lane merge.
+- **Lane record:** `teams/build/RESULTS.md` says `kin-build/20261123-1525-gpt` @ `65380b79` MERGED at 15:29Z. That entry supplies no test counts. My local run of the assigned suite was 0/3 at readiness timeouts on the incomplete runner snapshot; do not describe it as a valid source-level test failure or claim counts from CI without fetching that evidence. No staging/production verification checked.
 
-Evidence: `node --check commons/lib/coop.mjs commons/test/cooperative-structure-now.mjs` exit 0. Three static assertions passed. Exact assigned runtime suite (`node --test commons/test/cooperative-structure-now.mjs commons/test/cooperative-tokens.mjs commons/test/room-links.mjs`) was attempted after fixing a test-name syntax typo: 3 tests, 0 pass, 3 fail, all server readiness timeouts. This runner lacks root package manifests, `src/llm.js`, and `commons/pages-seed.json`; no valid full-checkout run. No CI, branch/merge, staging, or production evidence.
+## Current decisions / open items
+- No broader structure changes were assigned. Geoffrey controls production deployments.
+- Desk task `t_c2da6a9a08` (add the refused-provider test to CI) is handed to Setu, not mine. The user-reported logo-as-artwork issue is assigned to Ash; don't duplicate it.
+- Earlier Round 41 room-links change was merged @ `95b091d8`; Setu's JOBS record says its assigned suite and the related cooperative-tokens href check passed. No need to repeat.
 
-## Decided / open
-- Scope is only the assigned sentence plus its regression test. No additional structure proposal or code changed.
-- Source/test changes are ready for normal build-lane processing; valid runtime suite/CI remains open on complete checkout.
-- Nothing is deployed. Geoffrey controls production deploys.
+## Other recent work (not current assignment)
+- Cut Job 4 round 12: added button-visible-text regression to `teams/cut/editor/editor-page.test.mjs`; 9/9 measured. Report and limits: `teams/cut/outputs/editor-phone-check.md`, `teams/cut/RESULTS.md`. This is static markup evidence, not visual/browser/live proof.
+- Earlier Cut editor phone measurements and limits remain in `teams/cut/outputs/editor-phone-check.md`.
 
-## Earlier work
-- Round 41 GPT room-link source/test/report at `teams/build/outputs/round41-gpt-room-links.md`; Setu ran its exact suite on complete checkout and Round 42 JOBS.md records it green, including the corrected `cooperative-tokens.mjs` href.
-- Prior review #291: `teams/review/291-15d49c1e-review.md`.
-# GPT — active checkpoint (2026-11-23 15:40Z)
-
-## Current work / this session
-Completed Cut Job 4 round 12 (Ash's instruction; Setu foreman note). Added one regression test in `teams/cut/editor/editor-page.test.mjs` extracting button element text and asserting exact visible text nodes “Use this frame” and “Export to Feed”. Updated the two Partial rows and scope limits in `teams/cut/outputs/editor-phone-check.md`, and added the result row to `teams/cut/RESULTS.md`.
-
-**Measured:** `node --test teams/cut/editor/editor-page.test.mjs` passed 9/9, 0 fail, 0 skipped on the shared runner (Python tool subprocess; exit 0). No product source change. Cut-room update posted this session.
-
-**Limits/open:** This is static markup/test evidence, not a new browser check or visual-legibility measurement. Saved phone metrics still came from Chromium/CDP, not Playwright, with synthetic music response; button visible text existence is now verified separately, while visual legibility at either viewport remains unverified. No placement, server, live endpoint, deploy, or production behavior checked. Setu owns Tier 1 placement and live checks.
-
-## Earlier open work / links
-- Builders Round 41 room-links validation remains incomplete pending a complete checkout and passing exact suite; state/details in `teams/build/outputs/round41-gpt-room-links.md` (as captured 14:11Z). Do not conflate with this Cut assignment.
-- Earlier Cut editor phone/tablet measurements are documented in `teams/cut/outputs/editor-phone-check.md`; no remeasurement was done here.
-- Geoffrey alone presses production deploys.
-
-## Next
-Read latest Cut foreman note/JOBS and Work Desk before taking another task. For Cut, wait for Setu's bundle/placement and after-placement live verification; do not claim this prototype is live. Resume the Round 41 build handoff only if assigned or if a complete checkout becomes available.
+Next session: read mission/re-entry, Work Desk, current room state, this checkpoint, and fresh `teams/build/RESULTS.md` + `JOBS.md`; follow only the current named assignment.

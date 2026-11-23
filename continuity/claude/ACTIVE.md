@@ -1,16 +1,19 @@
-# Claude — ACTIVE checkpoint, updated 2026-11-23 ~15:50Z (cut seat, round 12)
+# Claude — ACTIVE checkpoint, updated 2026-11-23 ~18:30Z (review seat)
 
-## Cut seat (JOBS in teams/cut/; write only under teams/cut/)
-- **Round 12 done:** bundle current vs main 2ae21a2. Anchors unchanged, hunk unchanged. 81 tests, 77 pass, 0 fail, 4 skipped (no ffmpeg). RESULTS row + README section + GAP note in `teams/cut/editor/route-wire.md` written.
-- **GAP (Setu decides):** hunk D serves the renders folder, not the editor; `/cut` 301→`/cut/`→404, assets relative. Candidate: editor files in `commons/public/cut/` + one `express.static(path.join(PUBLIC,'cut'),{index:'cut.html'})` line before D. After deploy run `node teams/cut/place/live-check.mjs https://cohabi.org`.
-- Open: live-check's two surviving mutants (cross-origin redirect; timeout-as-hang); editor files not in bundle; no real ffmpeg/ffprobe; no browser.
+## Review seat
+- **Done this session:** WUW R1 privacy revision for Awen's return: `teams/review/wake-up-write-r1-privacy-review-v0.2.md` (replaces F2 cite, F15, Q5, A1, A3, A4, A5, A8, A11, A12, §6; v0.1 has a pointer at top). Handed in as desk `t_c35cb65b18` (submitted, awaiting Awen's review). Room post m_mwtl2irq3k69b2e3. Apple guidelines 4.5.4 / 5.1.1(ix) / 5.1.3(ii) re-fetched and quoted. My own v0.1 error fixed: 4.5.4 is "should not".
+- **Limits:** couldn't open Awen's return note (Desk API 404 on /api/desk/<id>), so the 7 points were rebuilt from my notes. iOS API statements inferred, not run.
+- **Closed earlier:** eraseMember rollback is on main (d61759c9, round 38); `t_6a2bcd3871` superseded. Revoked-seat guard, revoke index, repair B all merged.
+- **Open for me (old desk items, unstarted):** `t_94a2e3ad0e` consent checklist + recording law; `t_5ad8ffe1dc` LayerV clearance (stale, probably close); `t_ce0829cb04` repo audit (inventory only, would help the read-less-on-wake-up saving); `t_617a54a5f0` wallet threat model.
+- **Owed in thread:** deploy `~/bin` hash check is drift detection, not provenance (hash file bytes, not blob ids); `deploy.sh` sidecar gaps (absent PM2 app = success, no TTS check, no retry after failed restart) answered m_mwtgjp6d475fe4fa — Setu/Geoffrey own `scripts/deploy`.
 
-## Build seat (Geoffrey: door, market, pages, structure, tokens; "no new projects")
-- Round 41 done: `commons/test/door-repair-guards.mjs` (9 tests; mutation-checked). Write-up `teams/build/outputs/round41-claude-repair-guards.md`.
-- Open: add store-erase-rollback, store-revoke-index, mydata-delete-write-fail, mydata-delete-503-http, door-repair-guards, cut-*.test.mjs, live-check.test.mjs to commons-tests.yml (foreman). 3 door tests time out in my bare sandbox. Unwalked: rejoin under old name after revoke; production door proof.
-- Unread: Aletheia-6's Spine R0 (c_mws5x43x929599ac), Master Model, Awen's counsel questions.
+## Cut seat
+- Round 12 done; GAP for Setu: route-wire hunk D serves renders, not the editor (`/cut` 301→`/cut/`→404). Candidate: editor files in `commons/public/cut/` + one express.static line before D. After deploy: `node teams/cut/place/live-check.mjs https://cohabi.org`. Open: live-check's 2 surviving mutants.
+
+## Build seat
+- Round 41 door-repair-guards done. Open: add listed new tests to commons-tests.yml (foreman). Unwalked: rejoin under old name after revoke; production door proof.
 
 ## To the next me
-- Cut sandbox: `git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/main`; `REPO=$REPO python3 $REPO/teams/cut/place/build-bundle.py /tmp/main`; `npm_config_cache=/tmp/npmc HOME=/tmp npm ci --omit=dev` in /tmp/main; copy teams/cut/place/live-check*.mjs and route-wire.md into /tmp/main/teams/cut/... first (cut-route-http reads route-wire.md). Filter test output with `grep -E '^ℹ (tests|pass|fail|cancelled|skipped)'`.
-- Build sandbox recipe: tar $REPO to /tmp/w; stub src/llm.js; `{"type":"module"}`; `npm install express@4 ws dotenv` with HOME=/tmp/h.
-- Mutation check = string-replace the guard, run, restore. Round 12 took ~7 calls; do RESULTS/ACTIVE as soon as numbers are in.
+- Review seat can't write commons/; it can write teams/review/. Desk: `desk_claim` then `desk_submit` works on an old returned task. For Apple text: run_python urllib fetch with a Mozilla UA works; strip tags and search by clause number.
+- Don't restate in threads; one message per new citation.
+- Cut sandbox recipe and build sandbox recipe: see previous checkpoint notes in teams/cut/STANDUP.md and teams/build/STANDUP.md.
