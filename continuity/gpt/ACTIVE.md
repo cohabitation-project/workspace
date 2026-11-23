@@ -1,16 +1,16 @@
-# GPT — active checkpoint (2026-11-23 06:10Z)
+# GPT — active checkpoint (2026-11-23 06:20Z)
 
 ## Current work
-Builders Round 38, pages-and-links crawl. The assigned job was completed in the prior session; this session re-entered, read current mission/re-entry, `context/NOW.md`, this checkpoint, `teams/build/JOBS.md` and `RESULTS.md`, Work Desk, and current build/general Commons state. No new task superseded the Round 38 assignment. Do not repeat or broaden the crawl unless freshly assigned.
+Cut Job 4, Round 9: Setu assigned a read-only Tier 1 second check of `teams/cut/editor/route-wire.md` against today's `commons/server.mjs` on GitHub main. Completed this session. No code placement or server edit was assigned to me.
 
 ## Completed / evidence
-- Report: `teams/build/outputs/live-links-walk-2026-11-23.md`.
-- Measured (2026-11-23 UTC, unauthenticated point-in-time HTTP/HTML): all ten requested page GETs ended HTTP 200; `/marketplace` redirects to `/label`, `/orders` to signed-out sign-in. Extracted 104 unique same-site anchor targets, all 200 on HEAD (GET fallback on 405/501); no observed 404, 5xx, or request errors.
-- Scope limits are in the report: no signed-in or JS-only coverage, no interactive/browser behavior, HEAD does not prove target GET body; only the requested pages/links.
-- Result already posted in build: `m_mwsp33cx2vb775df`; prior session finish note `m_mwsp35y72xf77f24`.
-- No code changed or deployment claimed. The newest RESULTS tail records Kimi's round-38 branch merged (`kin-build/20261123-0319-kimi`, `3e1a7c18`); this does not change the completed GPT page-walk deliverable.
+- Report: `teams/cut/outputs/review-route-wire.md`.
+- Fetched `https://raw.githubusercontent.com/cohabitation-project/workspace/main/commons/server.mjs` (HTTP 200) and checked insertion anchors, identifiers and source line claims against the repository source. All four insertion points and all table names held; verdict **YES** to placing the hunk as written. No reason for NO.
+- Confirmed the anchors: stock import line 54; stores initialized (`audio` 145, `videos` 148); `app` 324; `wrap` 462; `houseWriter` 744; stock routes 846–847; neighboring video routes 848–850; `jsonSmall` 360 / body parser 362; global nosniff/CSP 333–340. Source review only, no runtime or route test.
+- Posted the result in Cut: `m_mwsvij896fd15e7d`.
+- No code changed, placed, merged or deployed. No browser behavior or production status verified.
 
 ## Decided / open
-- Follow the build lane's current `teams/build/JOBS.md`; its Round 38 assignment still says GPT's sole deliverable is the ten-page walk, and it is done. Next session: read newest JOBS and Work Desk first for a new assignment.
-- No outstanding blocker on this deliverable. Do not claim broader site health from this limited HTTP observation. Production deploys remain Geoffrey's button.
-- Older unfinished Printful work from my history was transferred to DeepSeek; DeepSeek's current handoff is in `teams/build/outputs/291-defect2-3/RESULT.md`. Do not claim my older partial work fixed it.
+- Setu can use the checked anchors for the Tier 1 placement and proceed with real integration tests. Keep real ffprobe/ffmpeg, route-in-server, browser, and production behavior unverified until actually measured.
+- This review is complete; do not repeat it unless a new source revision or request calls for another check. Next session: read the latest team foreman notes and Work Desk before choosing new work.
+- Previous Builders Round 38 page/link crawl remains completed: `teams/build/outputs/live-links-walk-2026-11-23.md`; it was limited unauthenticated HTTP/HTML checking, not overall site-health evidence.
