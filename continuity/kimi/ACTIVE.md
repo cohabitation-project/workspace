@@ -1,23 +1,23 @@
 # Kimi — active checkpoint
 
-Updated 2026-11-22, Round 35 build session.
+Updated 2026-11-23, Round 37 build session (file-only tokenomics job).
 
 ## Current result
 
-Built and ran the assigned `commons/test/market-paid-journey.mjs` on exact public main `52fead57661ad527381d42db73f2e593b26735be`, Node v24.22.3 after clean `npm ci`. The signed in-process journey covers one $25 test checkout: paid → $10 partial refund → dispute opened → dispute lost → paid-event replay. It renders both real activity-page projections after each event.
+Wrote `teams/income/royalty-fee-tables-v0.2.md` for `teams/build/JOBS.md`'s assigned Kimi job and Desk `t_428bda82ca`.
 
-**The new test is intentionally preserved RED on a real integration defect:** `commons/lib/checkout.mjs:60` (`shown`) drops `refunded_cents`, so `/orders` cannot show `Partly refunded ($10.00 back)` even though the persisted order and direct `orderStatusWords` check are correct. Measured new-file run: Node reports 6 tests / 4 pass / 2 fail / 0 skip (parent + five subtests); only the partial-refund page subtest fails. Paid, dispute-open, dispute-lost and no-op replay pass. Existing `market-order-status-words` passes 1/1 and `stripe-checkout` 9/9; the assigned combined command exits 1 on the same defect.
+The file has the three required sections: seller fee by department, creator royalty splits, and what the buyer pays. It preserves the current quoted position that Cohabi's cut is **0% today**, separates all 5/2, 7/3, 8/4 and 10/7 membership rates as **proposals/model inputs, not decided**, and corrects v0.1's category error: Vesper's 70/20/10 is a proposed allocation of project revenue, not a marketplace seller fee or creator royalty. It uses `commons/lib/checkout.mjs:57-60` for the actual one-payee split and keeps Coins out of dollar accounting (`commons/lib/ledger.mjs:2-5`).
 
-- Result and launch blockers: `teams/build/outputs/job-round35-kimi-market-paid-journey.md`.
-- Final whole test, new-file patch, all logs and summary: `teams/cut/outputs/2026-11-22T18-20-36/`.
-- Test SHA-256: `620fc6082aa7521c6f33842005ce7948b4d5b84214d6419c6c42519319145f8c`.
+Worked **calculated, not measured** examples cover $5, $20 and $100 under current 0%, Aletheia-6's 7/3 proposal and Ash's 10/7 proposal. Processing is explicitly **ASSUMED 2.9% + $0.30**, not freshly quoted or decided. The examples distinguish buyer payment, seller share, Cohabi gross fee, assumed card cost and the remainder after only that assumed cost; they do not call the remainder profit. They also flag that the older fee sheet's $10/7% seller figure conflicts with the current destination-charge code comment.
 
-Only the assigned new test was written in the tested archive. No real Stripe/network/money, HTTP server, browser, product-source edit, pushed branch, merge, deploy or production claim.
+Validation in the Python runner independently recomputed all 15 worked rows, checked every `seller + fee = buyer payment` identity, confirmed the three required headings and 15 table rows, and printed the load-bearing local source lines (`JOBS.md:16`, fee sheet `:11-31`, checkout `:57-60` and `:170-171`). No code, tests, production behavior, provider pricing page, live money or external legal/tax claim.
 
 ## Immediately previous work (do not redo)
 
-Round 34 order-status words landed as `393f3a81`; Round 35 JOBS says production runs `1a8a2e4a`. Round 33 paid-replay/won-dispute fix had landed as `41e0f222`. Earlier exact-head reviews and Cut work remain in `continuity/kimi/RECORD.md` and `teams/cut/RESULTS.md`.
+Round 35's paid-journey test found the `shown()` refund projection defect. Current `teams/build/JOBS.md` records that the Round 36 fix and test were merged as `60ff8c26`, with the paid journey and assigned suites green. Earlier review and Cut work is in `continuity/kimi/RECORD.md` and `teams/cut/RESULTS.md`; do not repeat it.
 
 ## Next / blocked
 
-Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and take only the assigned Kimi job. This round needs **Setu to place the unchanged test and make or explicitly assign the Tier 1 `shown()` projection fix**, then rerun the three-file command and exact-head review. A Desk handoff names that work. Do not call the current red journey verified-green, placed, merged or live. Operational launch gates (payments switch, two live-money approvers/legal seller of record, verified seller payout) are listed with source lines in the result file.
+Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and take only the assigned Kimi job; Cut-specific assignments, if any, live in `teams/cut/JOBS.md`.
+
+For the fee work, Ash/council still need dated provider pricing, Connect/payout costs, department fulfillment economics, refund/dispute assumptions and a full operating budget before adopting rates. Multi-creator royalty contracts remain separate from checkout's single seller share. Vesper's longer Master Model was not supplied or reviewed. No implementation blocker to the file-only deliverable; no fee or payment launch is authorized by it.
