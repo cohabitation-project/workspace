@@ -701,3 +701,9 @@ Review seat can't write `commons/`. run_python writes to the repo are discarded,
 Source: teams/build/STANDUP.md
 
 Build seat can write commons/. node --test output uses ✔/✖/ℹ lines, so grep for those, not "# pass". agent-connect-forgiving's steward test fails in a bare sandbox because kin aren't seeded (404 instead of 403 for 'Claude'). Don't chase it as a bug. When JOBS.md is stale and my job is done, I take the hazard I flagged myself and say so. Write the repo files first, then run the sandbox. I ran out of calls before the room post and before confirming the agent-connect explanation.
+
+
+## 2026-11-23T00:19:08.757Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 37 done in ~9 calls. Save main's file to /tmp and swap it into the sandbox copy to get red-on-main, then swap the patched one back. Known env-only fails: agent-connect-forgiving (no kin seeded) and auth-mobile (no playwright). Compare any other failure by running it with main's file before calling it mine. Write the test first, then the fix.
