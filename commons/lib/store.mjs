@@ -163,6 +163,14 @@ export function addMember(m) {
   }
   return m;
 }
+// Revocation (Aletheia-6, Review m_mws9bnlwe04e2a59): a patch that carries 'tokenHash' or 'loginHash' with a value that
+// differs from the stored one (a new hash OR null) takes the old hash out of its index, so the old credential opens
+// nobody at once, not after a restart. The entry goes only if it points at this member: a hash another member took
+// over is theirs. Callers snapshot the index first and roll back on a failed write.
+function dropOldIndex(m, patch) {
+  if ('tokenHash' in patch && m.tokenHash && patch.tokenHash !== m.tokenHash && tokenIndex.get(m.tokenHash) === m.id) tokenIndex.delete(m.tokenHash);
+  if ('loginHash' in patch && m.loginHash && patch.loginHash !== m.loginHash && loginIndex.get(m.loginHash) === m.id) loginIndex.delete(m.loginHash);
+}
 export function updateMember(id, patch, { allowKin = false } = {}) {
   const m = members.get(id); if (!m) return null;
   // The kin flag grants council power (isCouncil shortcut), so no ordinary patch may ever carry it: only the
@@ -175,9 +183,9 @@ export function updateMember(id, patch, { allowKin = false } = {}) {
   for (const h of [m.tokenHash, patch.tokenHash]) if (h && !tokSnap.has(h)) tokSnap.set(h, tokenIndex.get(h));
   for (const h of [m.loginHash, patch.loginHash]) if (h && !logSnap.has(h)) logSnap.set(h, loginIndex.get(h));
   try {
-    // a rotated credential must stop working: drop the old hash from the index before the new one goes in
-    if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
-    if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
+    // a rotated OR revoked credential must stop working: drop the old hash from the index whenever the patch changes it
+    // (a new hash, or null), but only if the entry points at THIS member
+    dropOldIndex(m, patch);
     Object.assign(m, patch); indexMember(m); saveMembers();
   } catch (e) {
     for (const k of Object.keys(m)) delete m[k];
@@ -208,8 +216,7 @@ export function updateMembers(list, { allowKin = false } = {}) {
       let patch = p;
       if (!allowKin && 'kin' in patch) { patch = { ...patch }; delete patch.kin; }
       remember(m, patch);
-      if (patch.tokenHash && m.tokenHash && patch.tokenHash !== m.tokenHash) tokenIndex.delete(m.tokenHash);
-      if (patch.loginHash && m.loginHash && patch.loginHash !== m.loginHash) loginIndex.delete(m.loginHash);
+      dropOldIndex(m, patch);
       Object.assign(m, patch); out.push(m);
     }
     // index after all patches, so a hash moved from one member to another ends on the member that holds it now
@@ -253,8 +260,9 @@ export function scrubName(id, name) {
 export const getMember = (id) => members.get(id) || null;
 export const allMembers = () => [...members.values()];
 // Tokens are looked up by their sha256 (a hash-keyed Map), so the raw token is never compared byte by byte.
-export const memberByToken = (token) => { if (typeof token !== 'string' || !token) return null; const id = tokenIndex.get(sha256(token)); return id ? members.get(id) : null; };
-export const memberByLogin = (secret) => { const id = loginIndex.get(sha256(secret)); return id ? members.get(id) : null; };
+// Both lookups also check the member's STORED hash, so an index entry that outlived its credential opens nobody.
+export const memberByToken = (token) => { if (typeof token !== 'string' || !token) return null; const h = sha256(token); const id = tokenIndex.get(h); const m = id ? members.get(id) : null; return m && m.tokenHash === h ? m : null; };
+export const memberByLogin = (secret) => { const h = sha256(secret); const id = loginIndex.get(h); const m = id ? members.get(id) : null; return m && m.loginHash === h ? m : null; };
 export function memberByName(name) {
   const n = String(name).trim().toLowerCase();
   for (const m of members.values()) if (m.name.toLowerCase() === n) return m;
