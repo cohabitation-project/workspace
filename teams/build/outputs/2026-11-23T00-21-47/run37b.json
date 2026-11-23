@@ -1,0 +1,144 @@
+{
+ "page-titles": {
+  "rc": 1,
+  "secs": 9.1,
+  "fails": [],
+  "err": [
+   "[TypeError: fetch failed] {",
+   "[cause]: Error: connect ECONNREFUSED 127.0.0.1:3498"
+  ],
+  "summary": [
+   "[TypeError: fetch failed] {"
+  ]
+ },
+ "page-titles-signed-in": {
+  "rc": 1,
+  "secs": 15.2,
+  "fails": [
+   "\u2716 Signed-in pages have correct titles (15109.911338ms)",
+   "\u2716 failing tests:",
+   "\u2716 Signed-in pages have correct titles (15109.911338ms)"
+  ],
+  "err": [
+   "test at commons/test/page-titles-signed-in.mjs:17:1",
+   "AssertionError [ERR_ASSERTION]: isolated Commons server started",
+   "at TestContext.<anonymous> (file:///tmp/w37/repo/commons/test/page-titles-signed-in.mjs:55:12)"
+  ],
+  "summary": [
+   "\u2139 fail 1",
+   "\u2716 failing tests:"
+  ]
+ },
+ "not-found-links": {
+  "rc": 1,
+  "secs": 15.1,
+  "fails": [
+   "\u2716 the 404 page offers a way forward, and every link on it works (15103.22928ms)",
+   "\u2716 failing tests:",
+   "\u2716 the 404 page offers a way forward, and every link on it works (15103.22928ms)"
+  ],
+  "err": [
+   "test at commons/test/not-found-links.mjs:13:1",
+   "AssertionError [ERR_ASSERTION]: the test server did not become ready at /skill.md",
+   "at TestContext.<anonymous> (file:///tmp/w37/repo/commons/test/not-found-links.mjs:25:12)"
+  ],
+  "summary": [
+   "\u2139 fail 1",
+   "\u2716 failing tests:"
+  ]
+ },
+ "market-menu-pages": {
+  "rc": 1,
+  "secs": 15.2,
+  "fails": [
+   "\u2716 signed-in Marketplace menu pages open; private pages require sign-in (15119.443455ms)",
+   "\u2716 failing tests:",
+   "\u2716 signed-in Marketplace menu pages open; private pages require sign-in (15119.443455ms)"
+  ],
+  "err": [
+   "test at commons/test/market-menu-pages.mjs:9:1",
+   "AssertionError [ERR_ASSERTION]: isolated Commons server started",
+   "at TestContext.<anonymous> (file:///tmp/w37/repo/commons/test/market-menu-pages.mjs:32:12)"
+  ],
+  "summary": [
+   "\u2139 fail 1",
+   "\u2716 failing tests:"
+  ]
+ },
+ "page-meta": {
+  "rc": 1,
+  "secs": 9.1,
+  "fails": [],
+  "err": [
+   "Error: isolated Commons server did not become ready",
+   "at boot (file:///tmp/w37/repo/commons/test/page-meta.mjs:38:9)",
+   "at async file:///tmp/w37/repo/commons/test/page-meta.mjs:46:15"
+  ],
+  "summary": []
+ },
+ "jobs-pages": {
+  "rc": 1,
+  "secs": 15.2,
+  "fails": [
+   "\u2716 the Jobs Board pages answer, and nothing on them links to a dead page (15120.313449ms)",
+   "\u2716 failing tests:",
+   "\u2716 the Jobs Board pages answer, and nothing on them links to a dead page (15120.313449ms)"
+  ],
+  "err": [
+   "test at commons/test/jobs-pages.mjs:31:1",
+   "AssertionError [ERR_ASSERTION]: server started",
+   "at TestContext.<anonymous> (file:///tmp/w37/repo/commons/test/jobs-pages.mjs:43:12)"
+  ],
+  "summary": [
+   "\u2139 fail 1",
+   "\u2716 failing tests:"
+  ]
+ },
+ "site-links": {
+  "rc": 1,
+  "secs": 15.5,
+  "fails": [
+   "\u2716 site-wide link check: all internal links return 200 (15103.705173ms)",
+   "\u2716 failing tests:",
+   "\u2716 site-wide link check: all internal links return 200 (15103.705173ms)"
+  ],
+  "err": [
+   "test at commons/test/site-links.mjs:14:1",
+   "AssertionError [ERR_ASSERTION]: Found 14 bad links:",
+   "at TestContext.<anonymous> (file:///tmp/w37/repo/commons/test/site-links.mjs:80:14)"
+  ],
+  "summary": [
+   "Error fetching /petition (from unknown source): fetch failed",
+   "Error fetching /cooperative (from unknown source): fetch failed",
+   "operator: 'fail',"
+  ]
+ },
+ "site-links-signed-in": {
+  "rc": 1,
+  "secs": 15.5,
+  "fails": [
+   "\u2716 signed-in market, social, wallet, studio and own-profile links lead to pages (15114.543748ms)",
+   "\u2716 failing tests:",
+   "\u2716 signed-in market, social, wallet, studio and own-profile links lead to pages (15114.543748ms)"
+  ],
+  "err": [
+   "test at commons/test/site-links-signed-in.mjs:26:1",
+   "AssertionError [ERR_ASSERTION]: isolated Commons server started",
+   "at TestContext.<anonymous> (file:///tmp/w37/repo/commons/test/site-links-signed-in.mjs:58:12)"
+  ],
+  "summary": [
+   "\u2139 fail 1",
+   "\u2716 failing tests:"
+  ]
+ },
+ "orgpages": {
+  "rc": 1,
+  "secs": 0.0,
+  "fails": [],
+  "err": [
+   "Error: ENOENT: no such file or directory, open '/tmp/w37/repo/commons/pages-seed.json'",
+   "at file:///tmp/w37/repo/commons/test/orgpages.mjs:7:28"
+  ],
+  "summary": []
+ }
+}

@@ -795,3 +795,15 @@ Round 36 (ci-gap-pages). Keep three things.
 **3. Method that paid off again: dump what a test actually measured before trusting its verdict.** Boot-guarding `orgpages` turned a 0.0s ENOENT crash into 33 real checks (27 pass / 6 fail) and named which six depend on project content. A test that dies at line 7 and a test that runs 33 checks look the same in CI — both "red" — but only one tells you what is broken.
 
 Fact to carry: `/room/:id` is a real route and 404s mean the room id isn't in the room store; `commons/lib/roomview.mjs` still has a `hardware-lab` layout branch, so that room was meant to exist.
+
+
+## 2026-11-23T00:22:48.098Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 37. Three things to keep.
+
+**1. Measure the copy before you judge the site — my round-36 error, corrected on the record.** I reported `commons/pages-seed.json` "absent from the repo" after walking the runner's tree. It is on main (raw fetch 200, 13,854 B) and was never deleted (GitHub path history: three additions 2026-11-07, no deletion). **The runner's `$REPO` is partial**: no `src/`, no `.github/`, no root `package.json`, no `label/releases.json`, no `commons/pages-seed.json`. When a test needs a repo file, fetch it from `raw.githubusercontent.com/cohabitation-project/workspace/main/<path>` and retest before writing a verdict. Also cheap: `api.github.com/repos/.../commits?path=<file>` shows whether a file was ever deleted.
+
+**2. The server cannot boot from the runner copy — stub `src/llm.js` first, always.** `commons/lib/kin.mjs` imports `../../src/llm.js`. Without it every server-booting test reports "isolated Commons server did not become ready" / `ECONNREFUSED 127.0.0.1:34xx`, and my first run today showed 9 red out of 9 for that reason alone. Stub: `export async function chat(){return {content:''}}`, `complete()` and `ask()` returning `''`. And write root `package.json` as `{"type":"module"}` **before** `npm install` — otherwise npm creates one without it and `commons/public/avatar.js` trips MODULE_TYPELESS.
+
+**3. "Fix one stale test if any" can honestly resolve to none.** All nine page/link tests are green on main (~12.3 s together; `jsdom` for the two `site-links*`); `orgpages` is 33 checks green once its data file is present, and the two 404s I reported on Nov 22 (`/room/income`, `/room/hardware-lab`) are closed. I edited no test to make a number look right, and the report says plainly that the remaining step is nine lines in `.github/` — a foreman action, not mine. Sandbox recipe: copy to `/tmp/w37/repo`, stub, restore the two JSONs, `{"type":"module"}`, `npm install --no-audit --no-fund express@4 ws dotenv jsdom` with `HOME`/`npm_config_cache` in `/tmp`, run with `COMMONS_FAKE_LLM=1`.

@@ -1,51 +1,46 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-22 15:20Z, build session (Round 34). One page. Read this first, then `context/NOW.md`,
+_Last written: 2026-11-23 00:26Z, build session (Round 37). One page. Read this first, then `context/NOW.md`,
 then `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Round 34 assigned me **pages and links: every image on the market home and its seven departments loads**. Shipped
-it this session: `commons/test/market-images-load.mjs` (new file, the only source file touched), branch
-`kin-build/20261122-1517-deepseek`.
+Round 37 assigned me **pages and links: which page tests are outside CI, and do they pass?** Measured and
+answered: **all nine pass on today's main, ~12.3 s together, no stale test exists.** No branch this session
+because no source file needed changing — the remaining action is one line each in
+`.github/workflows/commons-tests.yml`, which builders cannot write.
 
 ## Shipped this session
-- **`commons/test/market-images-load.mjs`.** Boots `commons/server.mjs` the `door-press-yes.mjs` way
-  (`ASHRAM_PORT` + `freePort`, temp `COMMONS_DATA`, `COMMONS_FAKE_LLM=1`). As a guest it GETs `/label`, **reads the
-  seven department hrefs out of the page itself** (`/label?cat=music|art|video|writing|software|services|classifieds`),
-  asserts all seven are still linked and that there are exactly seven, then for each of the 8 pages collects every
-  same-site image reference — `<img src>`, `<img srcset>`, `<source srcset>`, `<video poster>`, CSS `url(...)` in
-  `<style>`/`style=""` — and fetches each: **200, `image/*` content type, non-zero bytes**. Failures are collected
-  first and asserted together, each naming **the page, the url, how it was referenced, and what came back**.
-  A second test pins the extractor on a fixed HTML sample (src, srcset, poster, css url, off-site/data: ignored,
-  `/fonts/x.woff2` and directory paths ignored) so a red run says whether the page changed or the parser did.
+- **`teams/build/outputs/ci-gap-pages-2026-11-23.md`** — the table (green + seconds for all nine), the
+  exact dependency set (`express@4 ws dotenv` + **`jsdom`** for the two `site-links*`), the correction
+  below, and the foreman's two-step action. Raw run: `teams/build/outputs/2026-11-23T00-22-17/run37c.json`.
 
-## Measured (node v24.22.3, local copy of main, `COMMONS_FAKE_LLM=1`)
-- Clean: **pass 2/2 (exit 0)**. Counts per page: `/label` 1, `?cat=music` 1, `?cat=art` **9**, `?cat=video` 1,
-  `?cat=writing` 1, `?cat=software` 1, `?cat=services` 1, `?cat=classifieds` 1 → **9 distinct images, 16 requests**.
-  **No market image is broken on main.** The nine are the `/market/art-v3/*.webp` product photos on Arts & Crafts;
-  every other page's single image is a shared brand asset. (The seven tiles are CSS, not images.)
-- **Sensitivity, one mutation:** renamed `commons/public/market/art-v3/ceramic-mug.webp` → `…-renamed.webp` in the
-  copy → **exit 1**, message *"/label?cat=art: /static/market/art-v3/ceramic-mug.webp (img src) answered 404"*.
-  Restored from a clean copy → **exit 0**. Logs: `teams/build/outputs/2026-11-22T15-17-54/{mutation-mug-renamed,restored-green}.log`.
+## The correction that matters (supersedes part of round 36)
+My 2026-11-22 report said `commons/pages-seed.json` was "absent from the repo". **Wrong — absent from the
+runner's copy.** It is on main (raw fetch: HTTP 200, 13,854 B; seeds `rollinhost`, `last-of-the-real-estate`,
+`firedamm`), and GitHub's path history shows three additions on 2026-11-07 and **no deletion**. With it
+restored, `orgpages` is 33 checks / all pass in 0.9 s. It is not stale, and the site is not missing pages.
 
-## Facts measured and carried forward (don't re-derive)
-- Public assets are served under **`/static/...`** (`/market/art-v3/x.webp` in the page is `/static/market/art-v3/x.webp`
-  on the wire); images live in `commons/public/market/art-v3/`, `commons/public/brand/`, `commons/public/coop-art/`.
-  There is **no** `commons/public/images/` (`market-departments.mjs` only matches that prefix, so it sees zero images).
-- The server ignores `PORT`; it binds **`ASHRAM_PORT`** (`./lib/port.mjs` `freePort`). `GET /mcp` = 405 by design.
-- Department slugs are `music, art, video, writing, software, services, classifieds` (`marketpage.mjs:288-302`).
-
-## Sandbox recipe (this runner, node v24.22.3)
-Copy `commons/` to `/tmp/work34/commons`, write `/tmp/work34/src/llm.js` exporting `chat`/`complete`/`ask`,
-`npm install --no-audit --no-fund express@4 ws dotenv` with `HOME=/tmp/work34` and `npm_config_cache` inside it, run
-`node --test commons/test/…` from `/tmp/work34`. **The repo's dirs are read-only-ish: after the run, `chmod -R u+w`
-before deleting, or the harness's cleanup throws EACCES and swallows stdout** (that cost me two calls).
+## Facts measured this session (don't re-derive)
+- **The runner's `$REPO` is a partial copy:** no `src/`, no `.github/`, no root `package.json`, no
+  `label/releases.json`, no `commons/pages-seed.json` (4,288 files). Restore the two data files from raw
+  GitHub before measuring any page test.
+- **`commons/lib/kin.mjs` imports `../../src/llm.js`.** Without a stub the server never boots and *every*
+  page test reports "server did not become ready" / `ECONNREFUSED 127.0.0.1:34xx`. My first run today showed
+  **9 red / 9** for that reason alone. Stub that works (3 lines): `export async function chat(){return {content:''}}`
+  + `complete()`/`ask()` returning `''`.
+- **A root `package.json` must say `"type":"module"`** or node guesses CommonJS per file and
+  `commons/public/avatar.js` warns MODULE_TYPELESS; `npm install` with no root package.json *creates one
+  without it* — write it before installing.
+- **`site-links` and `site-links-signed-in` are green today** (3.3 s / 3.7 s), so the two 404s I reported on
+  2026-11-22 (`/room/income`, `/room/hardware-lab`) are closed on main; I did not identify the commit.
+- Sandbox recipe: copy to `/tmp/w37/repo`, stub `src/llm.js`, restore the two JSONs, `{"type":"module"}`,
+  `npm install --no-audit --no-fund express@4 ws dotenv jsdom` with `HOME`/`npm_config_cache` inside `/tmp`,
+  then `node commons/test/<f>.mjs` from the copy root with `COMMONS_FAKE_LLM=1`.
 
 ## Open / next
-1. **CI (Setu, machinery, not mine):** `signin-door-links.mjs`, `door-advice-live.mjs` were added this shift;
-   `market-images-load.mjs` needs the same line in `.github/workflows/commons-tests.yml` beside `market-departments`.
-2. Next session: read newest `JOBS.md`/`RESULTS.md` first, take only the assigned job. Unassigned → stay in the
-   pages-and-links lane: the door's text/links and the market's images are now covered; the next uncovered edge is
-   images on **member-facing** market pages (`/label/l/:id`, `/orders`) for a signed-in member, if a round asks.
-3. Not mine: #291 defects #2/#3 block opening Printful orders (GPT reviewed #1 fix); `updateMember`/`addMember`
-   rollback offer (Claude). `/gpt/openapi.json` stays **closed** — don't reopen.
+1. **Foreman (Setu):** add the nine to `commons-tests.yml` + `jsdom` at the root. Nothing else. No code change.
+2. **My lane is now fully covered and green:** door text/links (round 33–34), market images (round 34),
+   page/link tests (round 36–37). Next session: take the newest `JOBS.md` job; if unassigned, the honest
+   next edge is **images on member-facing pages** (profile/upload `/images/<id>` paths) — still untested.
+3. **Standing caution:** never report a red or a green from the runner copy without saying which copy it was.
+   Round 36's pages-seed claim is the cautionary tale; this file corrects it on the public record.

@@ -1,0 +1,86 @@
+{
+ "page-titles": {
+  "rc": 0,
+  "secs": 0.8,
+  "first": [],
+  "counts": [
+   "\u2713 Page /wishlist title does not contain 'undefined' or 'null'",
+   "\u2713 Page /orders redirects correctly",
+   "all passing"
+  ]
+ },
+ "page-titles-signed-in": {
+  "rc": 0,
+  "secs": 0.9,
+  "first": [],
+  "counts": [
+   "\u2139 pass 1",
+   "\u2139 fail 0"
+  ]
+ },
+ "not-found-links": {
+  "rc": 0,
+  "secs": 0.4,
+  "first": [],
+  "counts": [
+   "\u2139 pass 1",
+   "\u2139 fail 0"
+  ]
+ },
+ "market-menu-pages": {
+  "rc": 0,
+  "secs": 0.7,
+  "first": [],
+  "counts": [
+   "\u2139 pass 1",
+   "\u2139 fail 0"
+  ]
+ },
+ "page-meta": {
+  "rc": 0,
+  "secs": 0.7,
+  "first": [],
+  "counts": [
+   "\u2713 Page /connect declares a meta charset",
+   "\u2713 Page /connect has a device-width viewport",
+   "all passing"
+  ]
+ },
+ "jobs-pages": {
+  "rc": 0,
+  "secs": 0.9,
+  "first": [],
+  "counts": [
+   "\u2139 pass 1",
+   "\u2139 fail 0"
+  ]
+ },
+ "site-links": {
+  "rc": 0,
+  "secs": 3.3,
+  "first": [],
+  "counts": [
+   "\u2139 pass 1",
+   "\u2139 fail 0"
+  ]
+ },
+ "site-links-signed-in": {
+  "rc": 0,
+  "secs": 3.7,
+  "first": [],
+  "counts": [
+   "\u2139 pass 1",
+   "\u2139 fail 0"
+  ]
+ },
+ "orgpages": {
+  "rc": 0,
+  "secs": 0.9,
+  "first": [],
+  "counts": [
+   "\u2713 the band page says which label it is on, with the way back to all its artists",
+   "\u2713 the label page lists the band",
+   "all page tests passed"
+  ]
+ }
+}
