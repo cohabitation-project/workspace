@@ -58,3 +58,9 @@ if os.path.exists(HTTP_TEST):
     shutil.copy(HTTP_TEST, os.path.join(T, "cut-route-http.test.mjs"))
     print("also wrote cut-route-http.test.mjs")
 print("wrote 8 lib files to", L, "and 6 tests to", T)
+# Round 13: the editor page (hunk E mounts commons/public/cut/ at /cut). Copied byte for byte; cut.html names ./cut.js and ./cut.css.
+P = os.path.join(target, "commons/public/cut")
+os.makedirs(P, exist_ok=True)
+for f in ("cut.html", "cut.js", "cut.css"):
+    shutil.copy(os.path.join(E, f), os.path.join(P, f))
+print("wrote cut.html, cut.js, cut.css to", P)

@@ -167,6 +167,9 @@ function findRoot() {
 	return null;
 }
 const ROOT = findRoot();
+// Round 13: after placement.patch, commons/server.mjs ALREADY holds the hunk (and mounts commons/public/cut/ at /cut).
+// Inserting it again is "Identifier 'handleCutRender' has already been declared", so a placed server.mjs is booted as it is.
+const PLACED = ROOT ? fs.readFileSync(path.join(ROOT, "commons/server.mjs"), "utf8").includes("handleCutRender") : false;
 const EDITOR_DIR_ABS = path.resolve(HERE, "..", "editor");
 // route-wire.md's hunk (A, B, C, D), as in cut-route-http.test.mjs, with no test injection: nothing here renders.
 const HUNK_A = ["import { handleCutRender } from './lib/cut/route.mjs';", "import { makeCutDeps } from './lib/cut/wire.mjs';", "import { sweepRenders } from './lib/cut/cleanup.mjs';"];
@@ -204,7 +207,8 @@ const realServerTest = (EXTRA) => async () => {
 	let srv, err = "";
 	const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 	try {
-		fs.writeFileSync(copy, apply(fs.readFileSync(path.join(COMMONS, "server.mjs"), "utf8"), EXTRA));
+		const mainSrc = fs.readFileSync(path.join(COMMONS, "server.mjs"), "utf8");
+		fs.writeFileSync(copy, PLACED ? mainSrc : apply(mainSrc, EXTRA));
 		srv = spawn(process.execPath, [copy], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: path.join(tmp, "data") }, stdio: ["ignore", "ignore", "pipe"] });
 		srv.stderr.on("data", (d) => { err = (err + d).slice(-3000); });
 		let ready = false;
@@ -230,5 +234,5 @@ const realServerTest = (EXTRA) => async () => {
 	}
 };
 const SKIP_WHY = "SKIPPED (no checkout here has commons/server.mjs and commons/lib/cut/route.mjs: copy the bundle over main first)";
-test(ROOT ? "REAL server, route-wire.md's hunk as written: 401 and 404 pass; /cut is NOT the editor (301 to /cut/, then 404): FPPF pinned" : SKIP_WHY, { skip: !ROOT }, realServerTest(false));
-test(ROOT ? "REAL server, hunk + the editor folder mounted at /cut before the renders mount: all four pass (the candidate fix)" : SKIP_WHY, { skip: !ROOT || !realEditor }, realServerTest(true));
+test(!ROOT ? SKIP_WHY : PLACED ? "SKIPPED (server.mjs is already placed: the 'hunk without the editor mount' case no longer exists to pin)" : "REAL server, route-wire.md's hunk as written: 401 and 404 pass; /cut is NOT the editor (301 to /cut/, then 404): FPPF pinned", { skip: !ROOT || PLACED }, realServerTest(false));
+test(!ROOT ? SKIP_WHY : PLACED ? "REAL server.mjs AS PLACED (placement.patch applied, booted unmodified): all four checks pass" : "REAL server, hunk + the editor folder mounted at /cut before the renders mount: all four pass (the candidate fix)", { skip: !ROOT || (!realEditor && !PLACED) }, realServerTest(true));

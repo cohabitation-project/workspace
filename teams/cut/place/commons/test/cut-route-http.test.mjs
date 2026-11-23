@@ -34,6 +34,11 @@ const HUNK = {
 	C: [
 		"app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));",
 	],
+	// (E) round 13: the editor folder (commons/public/cut/: cut.html, cut.js, cut.css) mounted at /cut BEFORE the renders mount (D),
+	// with cut.html as its index, so /cut -> /cut/ -> the page and ./cut.js resolves to /cut/cut.js. Same dotfile rule as D.
+	E: [
+		"app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));",
+	],
 	D: [
 		"app.use('/cut', express.static(CUT_OUT, { index: false, dotfiles: 'deny', maxAge: '5m' }));",
 	],
@@ -52,11 +57,24 @@ function insertAfter(src, anchor, lines) {
 	return rows.join("\n");
 }
 
+// Round 13: once placement.patch is applied, server.mjs ALREADY holds the hunk. Then the test must not insert it a second
+// time (that is "Identifier 'handleCutRender' has already been declared"); it boots the file as it is, adding only the
+// test's own injection (one import + the spread into makeCutDeps).
+export const isPlaced = (src) => src.includes("handleCutRender");
+
 export function applyHunk(src) {
+	if (isPlaced(src)) {
+		const rows = src.split("\n");
+		for (const l of [...HUNK.A, ...HUNK.B, ...HUNK.C, ...HUNK.E, ...HUNK.D]) assert.equal(rows.filter((x) => x === l).length, 1, `server.mjs is already placed but does not hold this hunk line exactly once: ${l.slice(0, 70)}`);
+		assert.ok(rows.indexOf(HUNK.E[0]) < rows.indexOf(HUNK.D[0]), "the editor mount (E) must come BEFORE the renders mount (D), or /cut/ would never reach the page");
+		let s = insertAfter(src, HUNK.A[2], [INJECT_IMPORT]);
+		assert.equal(s.split(B_ORIG).length - 1, 1, "makeCutDeps( call to spread the inject into appears once");
+		return s.replace(B_ORIG, B_INJECTED);
+	}
 	let s = insertAfter(src, "import * as stock from './lib/stock.mjs';", [...HUNK.A, INJECT_IMPORT]);
 	s = insertAfter(s, "videos.init(DATA);", HUNK.B.map((l) => l.replace(B_ORIG, B_INJECTED)));
 	s = insertAfter(s, "app.delete('/api/videos/:id'", HUNK.C);
-	s = insertAfter(s, "app.get('/videos/:id/poster.jpg'", HUNK.D);
+	s = insertAfter(s, "app.get('/videos/:id/poster.jpg'", [...HUNK.E, ...HUNK.D]);
 	return s;
 }
 
@@ -81,17 +99,42 @@ test("applyHunk puts all four pieces in, once each, and leaves every other line 
 	const src = fs.readFileSync(SERVER, "utf8");
 	const out = applyHunk(src);
 	const a = src.split("\n"), b = out.split("\n");
-	assert.equal(b.length, a.length + 3 + 1 + 2 + 1 + 1, "7 hunk lines + the inject import");
-	for (const l of [...HUNK.A, ...HUNK.C, ...HUNK.D]) assert.equal(out.split("\n").filter((x) => x === l).length, 1, l.slice(0, 60));
-	// removing the inserted lines gives main's file back byte for byte
-	const added = new Set([...HUNK.A, INJECT_IMPORT, ...HUNK.B.map((l) => l.replace(B_ORIG, B_INJECTED)), ...HUNK.C, ...HUNK.D]);
-	assert.equal(b.filter((l) => !added.has(l)).join("\n"), src);
+	const placed = isPlaced(src);
+	// unplaced: 8 hunk lines (A 3, B 2, C 1, E 1, D 1) + the inject import. placed: the inject import only.
+	assert.equal(b.length, a.length + (placed ? 1 : 3 + 2 + 1 + 1 + 1 + 1), placed ? "placed: only the inject import is added" : "8 hunk lines + the inject import");
+	for (const l of [...HUNK.A, ...HUNK.C, ...HUNK.E, ...HUNK.D]) assert.equal(out.split("\n").filter((x) => x === l).length, 1, l.slice(0, 60));
+	assert.ok(b.indexOf(HUNK.E[0]) < b.indexOf(HUNK.D[0]), "E before D");
+	// removing the inserted lines gives main's file back byte for byte (placed: the file as it was, minus nothing but the inject)
+	const inj = HUNK.B.map((l) => l.replace(B_ORIG, B_INJECTED));
+	if (placed) assert.equal(out.replace(INJECT_IMPORT + "\n", "").replace(B_INJECTED, B_ORIG), src, "placed: removing the injection gives server.mjs back byte for byte");
+	else {
+		const added = new Set([...HUNK.A, INJECT_IMPORT, ...inj, ...HUNK.C, ...HUNK.E, ...HUNK.D]);
+		assert.equal(b.filter((l) => !added.has(l)).join("\n"), src);
+	}
 	assert.equal(out.split(B_INJECTED).length - 1, 1, "the inject spread appears once");
+});
+
+test("the placed-versus-unplaced switch: a server.mjs that already holds the hunk is not given it twice; an unplaced one gets all of it", () => {
+	const unplaced = ["import * as stock from './lib/stock.mjs';", "videos.init(DATA);", "app.delete('/api/videos/:id', x);", "app.get('/videos/:id/poster.jpg', y);"].join("\n");
+	assert.equal(isPlaced(unplaced), false);
+	const once = applyHunk(unplaced);
+	assert.equal(isPlaced(once), true);
+	// strip the injection to get what placement.patch would leave behind, then boot-as-is must add only the injection
+	const placedSrc = once.replace(INJECT_IMPORT + "\n", "").replace(B_INJECTED, B_ORIG);
+	const again = applyHunk(placedSrc);
+	assert.equal(again.split("\n").length, placedSrc.split("\n").length + 1);
+	assert.equal(again.split("import { handleCutRender }").length - 1, 1, "handleCutRender is imported once, not twice");
+	// a half-placed file (the route but not the editor mount) is refused loudly, not silently doubled
+	assert.throws(() => applyHunk(placedSrc.replace(HUNK.E[0] + "\n", "")), /already placed but does not hold/);
+	// and the order is checked: D before E is refused
+	const swapped = placedSrc.replace(HUNK.E[0] + "\n" + HUNK.D[0], HUNK.D[0] + "\n" + HUNK.E[0]);
+	assert.notEqual(swapped, placedSrc);
+	assert.throws(() => applyHunk(swapped), /BEFORE the renders mount/);
 });
 
 test("the hunk in this test is the hunk in route-wire.md (skipped when that note is not in the checkout)", { skip: !fs.existsSync(path.join(COMMONS, "..", "teams/cut/editor/route-wire.md")) }, () => {
 	const md = fs.readFileSync(path.join(COMMONS, "..", "teams/cut/editor/route-wire.md"), "utf8");
-	for (const l of [...HUNK.A, ...HUNK.B, ...HUNK.C, ...HUNK.D]) assert.ok(md.includes(l), `route-wire.md lacks: ${l.slice(0, 70)}`);
+	for (const l of [...HUNK.A, ...HUNK.B, ...HUNK.C, ...HUNK.E, ...HUNK.D]) assert.ok(md.includes(l), `route-wire.md lacks: ${l.slice(0, 70)}`);
 });
 
 test("booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429", async () => {
@@ -180,8 +223,11 @@ test("booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); 
 		assert.equal(await got.text(), "FAKE-MP4-BYTES");
 		assert.equal(got.headers.get("x-content-type-options"), "nosniff");
 		assert.match(got.headers.get("content-type") || "", /video\/mp4/);
-		// the static mount lists nothing and refuses dotfiles
-		assert.equal((await fetch(B + "/cut/")).status === 200 && (await (await fetch(B + "/cut/")).text()).includes("cut_"), false, "no directory listing");
+		// the static mount lists nothing and refuses dotfiles. /cut/ is the EDITOR PAGE (hunk E), not a listing of renders.
+		const slash = await fetch(B + "/cut/");
+		assert.equal(slash.status, 200, "/cut/ serves the editor page");
+		assert.match(slash.headers.get("content-type") || "", /text\/html/);
+		assert.equal((await slash.text()).includes("cut_"), false, "no directory listing");
 		assert.notEqual((await fetch(B + "/cut/.hidden")).status, 200);
 
 		// one export at a time: with the gate shut, alice's first render waits, her second is 429, and releasing the gate lets the first finish with 200

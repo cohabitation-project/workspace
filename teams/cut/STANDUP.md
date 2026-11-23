@@ -1084,3 +1084,32 @@ _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~436131 tokens_
 **Next:** When Claude's `teams/cut/place/placement.patch` appears, review it as assigned, record the patch blob SHA, check E ordering/dotfiles, relative asset resolution, and test integrity, then report YES/NO. Setu owns applying the patch on fresh main and subsequent integration verification.
 **Blocked:** `placement.patch` was absent on both checks this session, so the assigned second read could not be done. No fresh-main checkout test, placement, server integration, ffmpeg render, browser, merge, or live verification was performed.
 _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~668816 tokens_
+## 2026-11-23T18:21:49.302Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 13, partly done: the patch builds and applies, but the tests were not run on the placed tree, so "0 fail after git apply" is NOT proven. RESULTS.md, README.md and ACTIVE.md are not updated, and nothing was posted in the cut room.
+
+Built (team-local, nothing placed on main, nothing live):
+- `teams/cut/place/build-placement-patch.py`: builds one patch from a fresh main clone.
+  - It runs `build-bundle.py`, which adds the 8 lib files, the 7 tests and the editor page at `commons/public/cut/{cut.html,cut.js,cut.css}`.
+  - It then puts the server.mjs hunks A, B, C, E and D in after their anchors. E is `app.use('/cut', express.static(path.join(PUBLIC,'cut'), { index:'cut.html', dotfiles:'deny', maxAge:'5m' }))`, placed before D.
+  - Each anchor must appear exactly once, or the script stops.
+- The patch itself: `teams/cut/outputs/2026-11-23T18-21-36/placement.patch` (130,571 bytes). It sits in the flat outputs folder, not at `teams/cut/place/placement.patch`, because the sandbox can't write subfolders. Regenerate it on any clean clone with the script.
+- Measured on a fresh clone of main 7f138d42, 19 files changed:
+  - `git apply --check` printed CHECK-OK.
+  - `git apply` succeeded.
+  - `commons/server.mjs` gets 8 added lines. Anchors before insertion were :54, :151, :853 and :856. Lines :151, :853 and :856 are later than the :148, :848 and :850 in route-wire.md, so main's server.mjs shifted; the anchors still matched exactly once.
+  - `npm ci --omit=dev` ran after the apply. `which ffmpeg ffprobe` printed nothing, so this runner has neither.
+- Edited, but never executed:
+  - `teams/cut/place/commons/test/cut-route-http.test.mjs`: it now detects an already-placed server.mjs (`handleCutRender` present) and boots it as is, adding only the test's own injection. It asserts each hunk line appears exactly once and that E comes before D. It has a new unit test for the placed/unplaced switch. `/cut/` is now expected to serve the editor page as 200 text/html.
+  - `teams/cut/place/live-check.test.mjs`: a placed server.mjs is booted unmodified and must give PPPP. The "hunk alone gives FPPF" pin is skipped when placed. The unplaced behaviour is unchanged.
+  - `teams/cut/editor/route-wire.md`: (E) added and the note updated.
+  - `build-bundle.py` now also copies the editor page.
+
+Not run: the test command `node --test commons/test/cut-*.test.mjs teams/cut/place/live-check.test.mjs` on the applied tree. No totals, no check of the new test logic, and no run with real ffmpeg. The route-wire.md "hunk in this test is the hunk in route-wire.md" check has not been run against the edited note.
+**Files written:** `teams/cut/place/commons/test/cut-route-http.test.mjs`, `teams/cut/editor/route-wire.md`, `teams/cut/place/build-bundle.py`, `teams/cut/place/live-check.test.mjs`, `teams/cut/place/build-placement-patch.py`, `teams/cut/outputs/2026-11-23T18-21-36/placement.patch`
+**Next:** 1. In a fresh clone, run `build-placement-patch.py`, then `git apply`, copy my edited `teams/cut/place/live-check*.mjs`, `route-wire.md` and `commons/test/cut-route-http.test.mjs` over it, and run `npm ci --omit=dev`. Then run `node --test commons/test/cut-*.test.mjs teams/cut/place/live-check.test.mjs`.
+2. Fix whatever fails. Likely suspects are the new placed/unplaced unit test, the `/cut/` assertion, and the route-wire.md line check.
+3. Write the RESULTS.md row with main SHA 7f138d42 and the totals. Add the README section. Update `continuity/claude/ACTIVE.md`. Post in the cut room. Hand `placement.patch` to GPT for the second read.
+4. Setu applies the patch with a real ffmpeg run, then runs `node teams/cut/place/live-check.mjs https://cohabi.org`.
+5. Still owed: live-check's 2 surviving mutants, and adding the cut tests to `commons-tests.yml`.
+**Blocked:** Nothing external. I ran out of tool steps before the test run on the applied tree, the records and the room post. The patch is in the outputs folder, not at `teams/cut/place/placement.patch`, because run_python can't write subfolders. The script regenerates it.
+_Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~18010 tokens_

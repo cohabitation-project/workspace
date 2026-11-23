@@ -18,9 +18,14 @@ const cutSweep = () => sweepRenders(CUT_OUT).catch((e) => console.error('[cut] s
 // (C) after server.mjs:848 (`app.delete('/api/videos/:id', ...)`; :846 and :847 are the stock search and import routes)
 app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));
 
-// (D) after server.mjs:850 (`app.get('/videos/:id/poster.jpg', ...)`)
+// (E) round 13, after server.mjs:850 (`app.get('/videos/:id/poster.jpg', ...)`) and BEFORE (D): the editor page. Files: commons/public/cut/{cut.html,cut.js,cut.css}
+app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));
+
+// (D) right after (E)
 app.use('/cut', express.static(CUT_OUT, { index: false, dotfiles: 'deny', maxAge: '5m' }));
 ```
+
+**Round 13: the hunk is now eight lines, and it is applied by `teams/cut/place/placement.patch` (see `teams/cut/place/README.md`), not by hand.** (E) closes the GAP described at the bottom of this note.
 
 Every name used is already in scope at its insertion point:
 
