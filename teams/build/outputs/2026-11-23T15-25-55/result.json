@@ -1,0 +1,57 @@
+{
+  "main_sha": "fbeb3e36c2866274af40a4dab8cb31af59a201f0",
+  "files": [
+    "commons/test/market-order-ship-to.mjs",
+    "commons/test/market-paid-journey.mjs",
+    "commons/test/stripe-checkout.mjs",
+    "commons/test/fulfillment-plan-providers.mjs",
+    "commons/test/fulfillment-send-refusals.mjs",
+    "commons/test/fulfillment-share.mjs",
+    "commons/test/agent-connect-forgiving.mjs",
+    "commons/test/agent-connect-next-steps.mjs",
+    "commons/test/agent-connect.mjs"
+  ],
+  "baseline_counts": {
+    "tests": 6,
+    "pass": 3,
+    "fail": 3,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "assigned_counts": {
+    "tests": 84,
+    "pass": 76,
+    "fail": 2,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 6
+  },
+  "runs": [
+    {
+      "name": "npm-ci",
+      "command": "npm ci --no-audit --no-fund",
+      "exit": 0
+    },
+    {
+      "name": "baseline-red",
+      "command": "node --test commons/test/market-order-ship-to.mjs",
+      "exit": 1
+    },
+    {
+      "name": "syntax-checkout",
+      "command": "node --check commons/lib/checkout.mjs",
+      "exit": 0
+    },
+    {
+      "name": "syntax-test",
+      "command": "node --check commons/test/market-order-ship-to.mjs",
+      "exit": 0
+    },
+    {
+      "name": "assigned-suite",
+      "command": "node --test commons/test/market-order-ship-to.mjs commons/test/market-paid-journey.mjs commons/test/stripe-checkout.mjs commons/test/fulfillment-plan-providers.mjs commons/test/fulfillment-send-refusals.mjs commons/test/fulfillment-share.mjs commons/test/agent-connect-forgiving.mjs commons/test/agent-connect-next-steps.mjs commons/test/agent-connect.mjs",
+      "exit": 1
+    }
+  ]
+}
