@@ -1,21 +1,18 @@
-# GPT — active checkpoint (2026-11-22 21:23Z)
+# GPT — active checkpoint (2026-11-23 03:16Z)
 
 ## Current work
-Cohabi Cut Job 4, round 6. I implemented the assigned render-output cleanup helper and tests in the team-local prototype. Setu's next step is to place the Job 4 files and wire `POST /api/cut/render`; do not claim this is live.
+Builders Round 38, assigned pages-and-links crawl. Completed exactly the ten-page unauthenticated live check from `teams/build/JOBS.md`; do not expand it into a broader crawl or code change unless a fresh assignment asks.
 
 ## Finished this session
-- Read the mission/re-entry context, `context/NOW.md`, my prior checkpoint, Cut `JOBS.md` / `RESULTS.md`, Work Desk, and Cut + General Commons. No waiting room question.
-- Added `teams/cut/editor/cleanup.mjs`: exports `sweepRenders(outDir, { maxAgeMs, maxBytes, now })`; considers only `/^cut_[0-9a-f]{16}\.mp4$/`, uses `lstat` so symlinks/non-files are left alone, removes expired files, then oldest-first until remaining eligible size fits the cap; returns `{ deleted, keptBytes }`.
-- Added `teams/cut/editor/cleanup.test.mjs` for expiry, preservation of unrelated names, symlink safety, oldest-first size cap, and invalid arguments.
-- Added a result row to `teams/cut/RESULTS.md`.
-- **Measured:** cleanup suite 5/5 pass, 0 skips. Full `node --test teams/cut/editor/*.test.mjs`: 55 pass, 0 fail, 4 skipped (59 total); skipped cases require ffmpeg unavailable on this runner. `node --check` passed for both new files. One early cleanup run was 4/5 because the test checked a symlink with `stat()` instead of `lstat()`; corrected the assertion and reran successfully.
+- Read re-entry orientation, this session's mission context, own previous checkpoint, current Builders `JOBS.md` and `RESULTS.md`, Work Desk, and current build/general Commons rooms.
+- First created `teams/build/outputs/live-links-walk-2026-11-23.md` with all ten rows pending, then fetched the pages and their extracted same-site anchor targets.
+- Measured 10/10 requested page GETs final HTTP 200. `/marketplace` redirects to `/label`; signed-out `/orders` redirects to `/signin?next=%2Forders` (final 200).
+- Extracted 104 unique same-site anchor URLs total; checked them by HEAD (GET fallback on 405/501), all 104 returned 200; zero 404, 5xx, or request errors. Report states scope/method and limits: unauthenticated point-in-time HTTP, not browser/signed-in behavior; no code changed.
 
-## Finished before this session
-- Stock-picker import work is in `teams/cut/editor/cut.js`, its page checks in `editor-page.test.mjs`, and the evidence row in `teams/cut/RESULTS.md` (18:18Z). Team-local; no browser/live/route/placement evidence.
-- Job 3 music fade-in real-render test was measured with static ffmpeg 9.0.2; evidence in `teams/cut/outputs/2026-11-22T12-17-05/music-fade-test.log` and `teams/cut/RESULTS.md`. Not server ffmpeg or product placement.
+## Finished earlier / current limits
+- Prior checkpoint covered Cut Job 4's team-local render cleanup helper/tests, but it was stale relative to this session's assigned Builders job; see `teams/cut/RESULTS.md` and the earlier checkpoint history if Cut is reassigned. No Cut files changed this session.
+- Prior #291 Printful defects 2/3 work was incomplete; Round 38 transfers that task to DeepSeek. Do not present the old partial work as fixed.
+- Nothing checked here establishes signed-in links, JavaScript-only links, production deployment correctness beyond these live HTTP observations, or link target interactive behavior.
 
-## Decisions / limits / open
-- Job 4 pieces, including cleanup, are team-local. No browser, server wiring, route integration, placement, merge, deployment, or live behavior was checked.
-- Next: Setu places `edit`, `render-edit`, `render-job`, `route`, `cleanup`, and the editor screen; wires the render route; then runs placed tests and verifies browser behavior. Keep the stock-picker API contract and all render-cleanup limits explicit.
-- Production deploys remain Geoffrey's button. Never say live without deployed observation.
-- No Work Desk task was claimed; items offered to me were unrelated to this assigned Cut round.
+## Next
+Read the newest `teams/build/JOBS.md` and current Work Desk at next wake. Current Round 38 requires only the ten-page walk and no code/other files beyond the report. Production deploys remain Geoffrey's button; don't claim any change is live unless deployed behavior was actually observed.
