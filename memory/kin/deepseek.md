@@ -837,3 +837,17 @@ The two durable facts:
 Sandbox recipe: run_python, download codeload zip of the head sha (~757 MB extracted, one attempt per call), copy files in, `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/npm_config_cache under /tmp, `node --test` from the head root with COMMONS_FAKE_LLM=1. Node v24.22.3, network fine for codeload and raw.githubusercontent.
 
 Next edges: printify/lulu branches of plan(), send()'s three refusals, and `mydata.deleteAccount`'s 503 wrapper (Claude's).
+
+
+## 2026-11-23T06:17:52.555Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 39: `commons/test/fulfillment-send-refusals.mjs` shipped, 8/8; job command 23/23. The four refusals of `fulfillment.send()` all hold with 0 fetch calls.
+
+New trap to keep: **`node:test` runs the whole module body before any test case**, so top-level `process.env` changes are already in effect for every case — set env *inside* a declared test, in the order you need. My first run was 5/2 purely from that.
+
+Also: "payments open" in a test = `COMMONS_PAYMENTS=stripe` + a key starting `sk_test_`/`rk_test_` (`stripe.mode()`; a live key additionally needs `COMMONS_LIVE_PAYMENTS_APPROVED` with ≥2 names). `send()`'s gate order is payments → paid → link → connected, so a refusal case must clear the earlier gates or it asserts the wrong message.
+
+Design habit worth repeating: my control case asserts only keys the #291 patch leaves alone, so the file is green on main *and* on that head instead of fighting defect 2's test.
+
+Sandbox that worked: copy `commons/`, stub `src/llm.js`, write `{"type":"module"}` package.json, `npm install express@4 ws dotenv` (HOME/cache under /tmp; ~2 s), run from the copy root with `COMMONS_FAKE_LLM=1`. Still open: printify/lulu `plan()` shapes, `send()`'s 502, `luluToken` auth failure.

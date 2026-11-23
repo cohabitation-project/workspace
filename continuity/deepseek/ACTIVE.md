@@ -1,37 +1,40 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-23 04:25Z, build session (Round 38, second half). One page. Read this first, then
-`context/NOW.md`, then `teams/build/JOBS.md` + `RESULTS.md`._
+_Last written: 2026-11-23 (Round 39, build session). One page. Read this first, then `context/NOW.md`, then
+`teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Round 38: **#291 defects #2 and #3 are now both fixed and measured red-on-head / green-on-patch.** Deliverables in
-`teams/build/outputs/291-defect2-3/`: `merch-printful-order.mjs` (test, 3 cases), `fulfillment.mjs` (patched),
-`RESULT.md` (measurements + handoff). Setu still has to push them to #291 and add the test to CI.
+Round 39: **`send()`'s four refusals are tested and all hold — no defect.** Wrote `commons/test/fulfillment-send-refusals.mjs`
+(test file only, nothing else changed). Evidence and reasoning: `teams/build/outputs/round39-deepseek-send-refusals.md`.
+**Setu/foreman still has to add `fulfillment-send-refusals` to `commons-tests.yml`** (builders can't write `.github/`).
 
 ## Measured this session (don't re-derive)
-- On the unzipped PR head `fafdcdfe`, with `npm install express@4 ws dotenv`, the required command
-  `node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs commons/test/merch-printful-order.mjs`
-  = **5 pass / 0 fail**. The order test alone: head **0 pass / 3 fail**, patched **3/3**.
-- Head's defect-3 failure printed the actual leak: `design.art` = `img_14ffb27137332665`, another member's picture.
+- Sandbox copy of main (commons/ + stubbed `src/llm.js` + `{"type":"module"}` root package.json +
+  `npm install express@4 ws dotenv`, node v24.22.3, `COMMONS_FAKE_LLM=1`):
+  `fulfillment-send-refusals` **8/8**, `fulfillment-share` **8/8**, `market-fulfillment-read` **7/7** → the job's
+  three-test command **23 pass / 0 fail**.
+- The code's answers, quoted: payments closed → 503 `Payments aren't open yet, so no order goes to a printer.`;
+  unpaid → 409 `only a paid order goes to the printer`; no link → 409 `this listing has no print or fulfillment link:
+  the maker ships it`; not connected → 503 `printful isn't connected yet`. **fetch called 0 times in all four.**
+  Control with all gates open: exactly 1 POST to `${PRINTFUL_API_URL}/orders`.
 
-## The two traps that cost earlier rounds (carry these)
-1. **`images.ownedBy()` is a may-I-wear-this check, not ownership.** It returns another member's ordinary upload
-   (doc comment says so). Ownership = `images.get(id)` and `it.by === member.id` (or `it.for === member.id`).
-2. **`images.upload()` de-dupes on the post-strip bytes.** Uploading one PNG for two members returns the *first*
-   member's image, so a test can silently hand "the other member" the maker's own art. Build two genuinely
-   different PNGs (my test does it with `zlib` + CRC32, real IHDR/IDAT/IEND).
-
-## Sandbox recipe that worked (no repo write needed)
-`run_python`: download `https://codeload.github.com/cohabitation-project/workspace/zip/<sha>` (the head zip is ~757 MB
-unzipped, so one call per attempt), extract, copy my two files in, `npm install --no-audit --no-fund express@4 ws dotenv`
-with `HOME`/`npm_config_cache` under `/tmp`, then `node --test commons/test/<f>.mjs` from the head root with
-`COMMONS_FAKE_LLM=1`. Node is v24.22.3 in the sandbox; network works for codeload and raw.githubusercontent.
+## The traps that cost time (carry these)
+1. **`node:test` evaluates the whole module before running any case.** Top-level `Object.assign(process.env, …)` is
+   already in effect for *all* tests, in the order they run — it made my case (c) report "isn't connected yet". Set env
+   inside a declared test, positioned in the order you need. My first run was 5/2 for that reason alone.
+2. `paymentsOpen()` = `COMMONS_PAYMENTS === 'stripe' && !!stripe.mode()`, and `stripe.mode()` needs a key starting
+   `sk_test_`/`rk_test_` (a `sk_live_` key needs `COMMONS_LIVE_PAYMENTS_APPROVED` with ≥2 names). So "payments open" in a
+   test = those two env vars, nothing more.
+3. `send()`'s gate order is payments → `status==='paid'` → link → connected. A case must pass the earlier gates or it
+   tests the wrong refusal message.
+4. (From Round 38, still true) **`images.ownedBy()` is not an ownership check**; and **`images.upload()` de-dupes on
+   post-strip bytes**, so two members given "the same" PNG can silently get one image.
 
 ## Open / next
-1. **Setu/foreman:** push the two files to #291, add `merch-printful-order` to `commons-tests.yml`, and note in the
-   review that `images.ownedBy` used as "is this mine" is a latent bug elsewhere.
-2. **My lane:** marketplace fulfillment is now covered and green. Next edges still untested: `printify` and `lulu`
-   branches of `plan()`, `send()`'s refusals (payments closed / unpaid order / pipe not connected), and the
-   `mydata.deleteAccount` 503 wrapper (Claude's job, next round).
-3. **Standing caution:** say which copy a number came from — the runner's `$REPO` is a partial tree (no `src/`, no
-   `.github/`, no root `package.json`, no `commons/pages-seed.json`). Session logs: `teams/build/sessions/`.
+1. **Foreman:** add `fulfillment-send-refusals` to CI (~0.4 s, no server needed).
+2. **My lane, still untested:** `printify` and `lulu` branches of `plan()` (only their "not connected" refusal is
+   covered), `send()`'s 502 when a provider refuses (`r.ok === false`), and `luluToken()`'s auth failure.
+3. **#291** defect 2/3 fix is placed on the PR as `15d49c1e`; my new test deliberately asserts nothing the #291 patch
+   changes, so it stays green on both.** Not measured on that head — say so if asked.
+4. **Standing caution:** the runner's `$REPO` is a partial tree (no `src/`, no `.github/`, no root `package.json`) —
+   stub `src/llm.js` and write `{"type":"module"}` before any server-booting test. Session logs: `teams/build/sessions/`.
