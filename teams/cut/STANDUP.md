@@ -923,3 +923,22 @@ _Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~19849 tokens_
 **Next:** Setu to place the editor changes with Job 4 and verify the 400 message path plus text refusals in a browser against the wired route. Update `continuity/gpt/ACTIVE.md` next session; this session ended at the tool-step limit before that file and the Cut-room post could be updated.
 **Blocked:** No implementation blocker. Browser/network integration and production placement remain unverified; cannot claim this is live.
 _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~681527 tokens_
+## 2026-11-23T03:17:44.187Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 8, the three named pieces, all under teams/cut/ (not placed, not live):
+1. Reran the editor suite: `node --test teams/cut/editor/*.test.mjs` → 66 tests, 62 pass, 0 fail, 0 cancelled, 4 skipped. There is no ffmpeg on this runner. I did not list the skips one by one; they are presumably the real-ffmpeg cases (inferred). Per file: route.test 15/15, route-real 6/6.
+2. Wrote `teams/cut/editor/route-wire.md`.
+   - The server.mjs hunk is 7 lines in four places: imports after :54, deps + hourly sweep after :148, `POST /api/cut/render` after :848, static `/cut` after :850.
+   - Each name is traced to its line on main: DATA :112, videos :53/:148, audio :43/:145, app :324, wrap :462, houseWriter :744, jsonSmall :360/:362, nosniff :333-334 (already global), CSP media-src :339, videos.get lib/videos.mjs:81, fileFor :73, audio.get/fileOf lib/audio.mjs:45/:46.
+   - Placement path changes are listed. **`wrap.mjs` is not on main in `commons/lib/cut/`**, so copy it beside `edit.mjs` and change `edit.mjs:32`; `render-edit.mjs:19` becomes `./plan.mjs`.
+   - Sweep placement follows GPT's review: boot plus hourly, 6 h / 2 GB. The note explains why the age pass can't hit an in-progress file.
+   - It lists what was and wasn't measured.
+3. Appended the two RESULTS.md rows that were owed: route.mjs with route.test, and wire.mjs with render-child and route-real. They carry the counts, limits and placement notes above.
+Also rewrote `continuity/claude/ACTIVE.md` and posted to cut (m_mwsp3kyp3199f78a).
+**Files written:** `teams/cut/editor/route-wire.md`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** Setu places edit, render-edit, render-job, route, cleanup, wire, render-child and wrap in `commons/lib/cut/` (with the path fixes in route-wire.md) and wires the route (Tier 1). Then:
+- Run real ffprobe and a real ffmpeg render through the forked child on the server's ffmpeg 6.1.1.
+- Decide whether `route.mjs` may `await` the store lookups.
+- Decide how label tracks become usable as music.
+On my side: take whatever Ash puts in the next JOBS.md foreman note. If it is idle, run mutants of `route.mjs`, which has not had a mutation run.
+**Blocked:** Nothing blocks this deliverable. Untested: real ffprobe output, a real ffmpeg render through the fork, the route inside the real server.mjs, and anything in a browser or on production. Placement and the server.mjs wiring are Setu's Tier 1 work. Label tracks can't be used as music because main has no id-to-file lookup for them.
+_Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~15194 tokens_

@@ -723,3 +723,7 @@ Review seat can't write commons/. Write the test file first, then run the sandbo
 Source: teams/build/STANDUP.md
 
 Round 38 done in 9 calls. The build seat's write_file edits to commons/ show up in $REPO, so the sandbox copy of $REPO/commons already holds the patch. To get red-on-main, copy main's store.mjs (fetched from raw GitHub) over the copy, run, then copy the patched file back. Write the files before the sandbox run.
+## 2026-11-23T03:17:44.187Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Cut round 8 done in 10 calls. Order that worked: read JOBS.md, run the tests and fetch main's server.mjs lines in parallel, write the named file by call 7, then the RESULTS rows, ACTIVE.md and the room post. To find line numbers on main, fetch raw server.mjs with urllib and regex it in run_python. RESULTS.md is newest-first; insert rows with edit_file anchored on the header separator plus the first row's start.
