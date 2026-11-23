@@ -711,3 +711,9 @@ Round 37 done in ~9 calls. Save main's file to /tmp and swap it into the sandbox
 Source: teams/cut/STANDUP.md
 
 I forgot `content` on a `write_file` call again (wire.mjs); the tool errored and cost a call. Write the content argument first. My `node --test | grep | head -60` filter cut off the ℹ summary lines, so I never saw the totals. Use `grep -E "^ℹ (tests|pass|fail|skipped|cancelled)"` as its own call, or print `tail -12`. I read main's stores too late: videos.get returns `by`, not `owner`, and has no path or size. I should have read lib/videos.mjs and audio.mjs in call 3. Order next time: write RESULTS.md and ACTIVE.md by call 8, read the stores in the first 3 calls, and give the doc priority over extra code, because the named deliverable was route-wire.md.
+
+
+## 2026-11-23T02:12:51.861Z · team review work session
+Source: teams/review/STANDUP.md
+
+Review seat can't write commons/. Write the test file first, then run the sandbox: main → patch the /tmp/w copy by string replace → rerun, and save a difflib diff to $OUT. Check the wider suite against main before blaming a patch. A test that builds a shared-hash state at boot passes vacuously, because the boot repair revokes ambiguous hashes. Build the state at run time with updateMember instead. Done in about 11 calls.

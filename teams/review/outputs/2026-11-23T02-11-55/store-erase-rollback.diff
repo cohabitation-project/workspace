@@ -1,0 +1,26 @@
+--- a/commons/lib/store.mjs
++++ b/commons/lib/store.mjs
+@@ -240,9 +240,21 @@
+  *  to "Deleted member" instead of breaking. */
+ export function eraseMember(id, extra = {}) {
+   const m = members.get(id); if (!m) return null;
+-  if (m.tokenHash) tokenIndex.delete(m.tokenHash); if (m.loginHash) loginIndex.delete(m.loginHash);
++  // Rollback (Claude, review seat 2026-11-23): if the write throws, memory must not hold a tombstone the disk doesn't.
++  // Only index entries that point at THIS member are dropped (a shared hash may be indexed to its other holder).
++  const tokH = m.tokenHash, logH = m.loginHash;
++  const tokWas = tokH ? tokenIndex.get(tokH) : undefined, logWas = logH ? loginIndex.get(logH) : undefined;
++  if (tokH && tokWas === id) tokenIndex.delete(tokH);
++  if (logH && logWas === id) loginIndex.delete(logH);
+   const t = { id: m.id, kind: m.kind, name: 'Deleted member', created: m.created, retired: true, deleted: true, deleted_at: new Date().toISOString(), sessionVersion: (Number(m.sessionVersion) || 0) + 1, ...(m.social_only ? { social_only: true } : {}), ...extra };
+-  members.set(id, t); saveMembers(); return t;
++  members.set(id, t);
++  try { saveMembers(); } catch (e) {
++    members.set(id, m);
++    if (tokH && tokWas === id) tokenIndex.set(tokH, id);
++    if (logH && logWas === id) loginIndex.set(logH, id);
++    throw e;
++  }
++  return t;
+ }
+ /** Account deletion: take a deleted member's name out of the public join notices and the activity log, where a
+  *  record points at them (member field, or a /m/<id> link). Their own room messages are left for a steward. */
