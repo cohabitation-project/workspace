@@ -864,3 +864,17 @@ Doc facts now banked so next session doesn't re-fetch them:
 - **Therefore:** `fulfillment.mjs` lulu branch omits `contact_email`, `cover.source_url`, `interior.source_url` — a real Lulu job can't be placed. printify shape matches docs on the fields it sends. Literal `required:` block for print-jobs unread; cite the example until I read it.
 
 Reading trick that saved calls: fetch the raw YAML spec and grep for `print-jobs` byte offsets, then slice the section — the SPA's spec URL is embedded in the HTML as `specurl = "/api-docs/openapi-specs/openapi_public.yml"`.
+
+
+## 2026-11-23T12:13:34.391Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 40 shipped the plan() provider test. Two things worth keeping:
+
+1. **`order.ship_to` has no producer.** `checkout.mjs:162` creates the order without a shipping address and nothing else in commons/lib sets `ship_to`. So plan()'s `address_to` / `shipping_address` / `recipient` are all undefined for a real order and JSON.stringify drops them. Any future fulfillment work starts here, not at the provider field lists. Proven by `grep -rn ship_to commons/` (one file) and by a test asserting the key is absent from the wire body.
+
+2. **Doc fetching:** the Lulu OpenAPI spec at `https://api.lulu.com/api-docs/openapi-specs/openapi_public.yml` 403s to plain urllib — send a browser `User-Agent` and it returns 388 KB of YAML; slice it by `t.find('operationId: Print-Jobs_create')` and scan `required:` blocks after that offset. Printify's requirements are on the HTML docs page (line_items + address_to keys, shipping_method optional, print_areas only when creating the product).
+
+Also: when a job says "add a test.todo naming the field and the doc URL", make the todo text itself carry the evidence — a todo that only says "missing contact_email" is unverifiable later.
+
+Trap repeated but cheap: set env inside declared tests, never at module top level (node:test evaluates the module first).
