@@ -203,11 +203,19 @@ const logoAsArt = (l) => (LOGO_AS_ART.has(l.category) ? pagePortrait(l) : null);
 const cardImage = (l) => firstImage(l) || logoAsArt(l);
 const mvArt = (img, i, logo = false) => (img ? `<div class="mv-art has-img${logo ? ' is-logo' : ''}" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
 /** One card per maker in this section: their newest work's picture and title, then a way to their page. Real data only. */
+// Where "Visit their page" / "View creator" goes (Geoffrey, 2026-11-23: the cards sent Anomaly Art House and
+// Aletheia-6 Studios to a personal profile, not the art page). A listing stores its page's id and name but never its
+// address, so l.page.href was always empty and every card fell back to /m/<maker>. Now: a page's own address; a maker
+// with no page goes to the storefront on their profile (#store), which is where their work is.
+const makerLink = (l) => {
+  if (l.page) { const pg = orgpages.get(l.page.id); return { name: pg?.name || l.page.name, href: pg ? orgpages.href(pg) : `/m/${l.by.id}#store` }; }
+  return { name: l.by.name, href: `/m/${l.by.id}#store` };
+};
 function makers(list) {
   const seen = new Map();
   for (const l of list) { const k = l.page?.id || l.by.id; if (!seen.has(k)) seen.set(k, l); }
   return [...seen.values()].slice(0, 9).map((l, i) => {
-    const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` };
+    const who = makerLink(l);
     const tag = (l.tags || [])[0] || ({ fixed: 'For sale', packages: 'Commissions', donation: 'Pay what you like', free: 'Free', quote: 'Ask for a quote' }[l.price.mode] || 'Work');
     return `<article class="mv-card">${mvArt(cardImage(l), i, !firstImage(l))}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
   }).join('');
@@ -530,7 +538,7 @@ function artPage({ me, items, pk, q, sort = '' }) {
     return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span></div></div></article>`; }).join('');
   const examples = ''; // fictional products are never shown (Geoffrey, Aletheia-6, Nov 21)
   const seen = new Map(); for (const l of items) { const k = l.page?.id || l.by.id; if (!seen.has(k)) seen.set(k, l); }
-  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = cardImage(l); const who = l.page ? { name: l.page.name, href: l.page.href || `/m/${l.by.id}` } : { name: l.by.name, href: `/m/${l.by.id}` }; const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
+  const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = cardImage(l); const who = makerLink(l); const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
     return `<article class="av-maker">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="av-makerface">${memberFace(l.by.id)}</span>`}<div><h3>${esc(who.name)}</h3><p>${esc(market.PROVIDERS[l.provider.kind] ? ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '') : '')} · ${n} piece${n === 1 ? '' : 's'}</p><a href="${esc(who.href)}">Visit their page →</a></div></article>`; }).join('');
   // A public artist page exists before its first listing. Keep it findable here instead of making a listing the price of discovery.
   const emptyPages = orgpages.list({ kind: 'artist' }).filter((p) => !seen.has(p.id) && !market.list({ page: p.id }).length);
