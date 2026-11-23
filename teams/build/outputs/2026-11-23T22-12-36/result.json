@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "commons/test/theme-contrast.mjs",
+    "commons/test/page-meta.mjs"
+  ],
+  "exit": 1,
+  "timestamp": "2026-11-23T22:12:36.207680+00:00"
+}
