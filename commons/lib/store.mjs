@@ -274,7 +274,7 @@ export const allMembers = () => [...members.values()];
 // Tokens are looked up by their sha256 (a hash-keyed Map), so the raw token is never compared byte by byte.
 // Both lookups also check the member's STORED hash, so an index entry that outlived its credential opens nobody.
 export const memberByToken = (token) => { if (typeof token !== 'string' || !token) return null; const h = sha256(token); const id = tokenIndex.get(h); const m = id ? members.get(id) : null; return m && m.tokenHash === h ? m : null; };
-export const memberByLogin = (secret) => { const h = sha256(secret); const id = loginIndex.get(h); const m = id ? members.get(id) : null; return m && m.loginHash === h ? m : null; };
+export const memberByLogin = (secret) => { const h = sha256(secret); const id = loginIndex.get(h); const m = id ? members.get(id) : null; return m && !m.retired && m.loginHash === h ? m : null; };   // a retired seat's login link opens nobody (round 42)
 export function memberByName(name) {
   const n = String(name).trim().toLowerCase();
   for (const m of members.values()) if (m.name.toLowerCase() === n) return m;

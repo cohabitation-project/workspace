@@ -89,8 +89,7 @@ test('5. the seat that the repair retires does not keep a working login link (lo
     agent('g5_orig', { tokenHash: sha('g5-shared'), loginHash: sha('g5-orig-login'), returned_from: 'g5_seat' }),
   ]);
   assert.equal(store.memberByLogin('g5-orig-login')?.id, 'g5_orig', 'the original login still works');
-  const got = store.memberByLogin('g5-seat-login');
-  if (got) assert.ok(got.retired, 'if the seat login still resolves it resolves to the retired record (a dead end, not a way in)');
+  assert.equal(store.memberByLogin('g5-seat-login'), null, 'the retired seat\'s login link opens nobody (round 42: memberByLogin refuses a retired seat)');
   assert.equal(b.disk().g5_seat.retired, true);
 });
 
