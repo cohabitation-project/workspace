@@ -7,12 +7,12 @@
   const H = { 'content-type': 'application/json', 'x-commons': '1' };
   const esc = (x) => String(x ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const DRAFT = 'cohabi-studio-draft';
-  const s = { step: 0, kind: 'band', import: 'manual', url: '', sources: [], name: '', genre: '', bio: '', location: '', theme: 'midnight', logo: null, logoUrl: '', item: '', itemText: '', priceMode: 'free', price: '', share: true, rights: false };
-  try { Object.assign(s, JSON.parse(localStorage.getItem(DRAFT) || '{}'), { step: 0, logo: null, logoUrl: '', rights: false }); } catch { /* no saved draft */ }
+  const s = { step: 0, kind: 'band', import: 'manual', url: '', sources: [], name: '', genre: '', bio: '', location: '', theme: 'midnight', logo: null, logoUrl: '', pic: null, picUrl: '', item: '', itemText: '', priceMode: 'free', price: '', share: true, rights: false };
+  try { Object.assign(s, JSON.parse(localStorage.getItem(DRAFT) || '{}'), { step: 0, logo: null, logoUrl: '', pic: null, picUrl: '', rights: false }); } catch { /* no saved draft */ }
   if (boot.kind) s.kind = boot.kind;
   if (!Array.isArray(s.sources)) s.sources = [];
   s.sources = s.sources.filter((x) => x && typeof x.url === 'string' && /^https:\/\//i.test(x.url)).slice(0, 6);
-  const save = () => { try { const { logo, logoUrl, rights, ...keep } = s; localStorage.setItem(DRAFT, JSON.stringify(keep)); } catch { /* storage off */ } };
+  const save = () => { try { const { logo, logoUrl, pic, picUrl, rights, ...keep } = s; localStorage.setItem(DRAFT, JSON.stringify(keep)); } catch { /* storage off */ } };
 
   const KINDS = {
     band: { label: 'Band / musician', icon: '♫', desc: 'Music, albums, shows and merch', cat: 'music', nameL: 'Band or musician name', genreL: 'Genre', genreP: 'Indie folk / electronic', fallback: 'Your band' },
@@ -26,6 +26,14 @@
   // [swatch, page theme, name, accent]. Themes that aren't market sections, so a colour never files a page under the
   // wrong section; accents light enough to read on the dark ones.
   const THEMES = { midnight: ['#213c3d', 'midnight', 'Midnight', '#7fc4b0'], gallery: ['#ede5d8', 'home', 'Gallery', '#8a5a0c'], grove: ['#285f4e', 'home', 'Grove', '#285f4e'], dusk: ['#5b4a70', 'midnight', 'Dusk', '#c3aee3'], ember: ['#664439', 'navy', 'Ember', '#eb9a6e'] };
+  // First piece (2026-11-23, Geoffrey's Anomaly Art House report): the piece has its own picture. Without one, the market
+  // card fell back to the page logo and the logo passed for the artwork. Art, music, video and writing need a picture;
+  // software and services may go without (the logo is honestly their face). These three are pure so a test can run them.
+  const PIC_NEEDED = new Set(['art', 'music', 'video', 'writing']);
+  const PIC_REFUSAL = 'Add a picture of the piece, or clear the first piece.';
+  const pieceImage = (st) => (st.pic && st.pic !== st.logo ? st.pic : null); // never the logo's id
+  const pieceProblem = (st, cat) => (st.item && PIC_NEEDED.has(cat) && !pieceImage(st) ? PIC_REFUSAL : '');
+  const pieceBody = (st, cat, kind, pageId) => ({ title: st.item.trim(), text: (st.itemText || st.bio || st.item).trim(), category: cat, type: kind === 'business' ? 'service' : 'product', price: st.priceMode === 'fixed' ? { mode: 'fixed', amount: Number(st.price) } : { mode: st.priceMode }, license: kind === 'business' ? 'service' : 'all-rights', rights: true, page: pageId, images: pieceImage(st) ? [pieceImage(st)] : [] });
   const LABELS = ['You', 'Your page', 'Bring your work', 'About', 'Look', 'Publish'];
   const TITLES = ['Welcome to your creative home', 'What are you creating?', 'Bring your work along', 'Tell us your story', 'Make it feel like you', 'One creation. Many places.'];
   const DESCS = [
@@ -75,7 +83,8 @@
     return `<div class="cs-sum"><div><span>Page</span><strong>${esc(s.name || '—')}</strong></div><div><span>Kind</span><strong>${esc(k.label)}</strong></div>${s.genre ? `<div><span>${esc(k.genreL)}</span><strong>${esc(s.genre)}</strong></div>` : ''}${s.sources.length ? `<div><span>External links</span><strong>${s.sources.length} connected</strong></div>` : ''}<div><span>Colour</span><strong>${esc(THEMES[s.theme][2])}${s.logoUrl ? ' · logo added' : ''}</strong></div></div>
       <h3 class="cs-sub">A first piece (optional)</h3>
       ${field('Title', 'item', 'A song, a print, a service…', { max: 90 })}
-      <div id="cs-itemmore"${s.item ? '' : ' hidden'}>${field('Say what it is', 'itemText', 'A sentence or two for buyers.', { area: true, max: 2000 }) + `<div class="cs-grid2"><div class="cs-field"><label for="cs-priceMode">Price</label><select id="cs-priceMode" data-key="priceMode"><option value="free"${s.priceMode === 'free' ? ' selected' : ''}>Free</option><option value="fixed"${s.priceMode === 'fixed' ? ' selected' : ''}>A price in dollars</option><option value="quote"${s.priceMode === 'quote' ? ' selected' : ''}>Ask me</option></select></div><div>${s.priceMode === 'fixed' ? field('Dollars', 'price', '25', { max: 6, type: 'number' }) : ''}</div></div>
+      <div id="cs-itemmore"${s.item ? '' : ' hidden'}>${field('Say what it is', 'itemText', 'A sentence or two for buyers.', { area: true, max: 2000 }) + `<div class="cs-field"><span class="cs-lab">A picture of this piece${PIC_NEEDED.has(k.cat) ? ' <span class="cs-req">(needed)</span>' : ' (optional)'}</span><div class="cs-logopick cs-piecepick">${s.picUrl ? `<img src="${esc(s.picUrl)}" alt="Preview of your first piece" width="72" height="72">` : '<span class="cs-logoempty" aria-hidden="true">＋</span>'}
+        <div><label class="cs-btn cs-filebtn" for="cs-picfile">${s.picUrl ? 'Change picture' : 'Choose a picture'}</label><input id="cs-picfile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="sr-only">${s.picUrl ? ' <button type="button" class="cs-linkbtn" id="cs-picx">Remove</button>' : ''}<small class="cs-hint">The piece's own picture, not your logo. It is what buyers see on the market.</small></div></div></div><div class="cs-grid2"><div class="cs-field"><label for="cs-priceMode">Price</label><select id="cs-priceMode" data-key="priceMode"><option value="free"${s.priceMode === 'free' ? ' selected' : ''}>Free</option><option value="fixed"${s.priceMode === 'fixed' ? ' selected' : ''}>A price in dollars</option><option value="quote"${s.priceMode === 'quote' ? ' selected' : ''}>Ask me</option></select></div><div>${s.priceMode === 'fixed' ? field('Dollars', 'price', '25', { max: 6, type: 'number' }) : ''}</div></div>
         <label class="cs-check"><input type="checkbox" data-flag="rights"${s.rights ? ' checked' : ''}><span>I made this, or hold the rights to offer it.</span></label>`}</div><p class="cs-hint" id="cs-itemnone"${s.item ? ' hidden' : ''}>Leave it empty to make the page now and list things later.</p>
       <h3 class="cs-sub">Get paid</h3>
       <div class="cs-pay">${payNow}<p class="cs-hint">Paying each other in Cohabi coins isn't built yet; it waits on the coin rules. Until then, a buyer can ask you on any listing.</p></div>
@@ -98,7 +107,7 @@
     $('cs-symbol').hidden = !!s.logoUrl; const lg = $('cs-logo'); lg.hidden = !s.logoUrl; if (s.logoUrl) lg.src = s.logoUrl;
     $('cs-pname').textContent = s.name || k.fallback; $('cs-phead').textContent = [s.genre, s.location].filter(Boolean).join(' · ');
     $('cs-pbio').textContent = s.bio || 'A little about your creative world will appear here.';
-    $('cs-itemtitle').textContent = s.item || 'Your first creation'; $('cs-itemart').textContent = k.icon;
+    $('cs-itemtitle').textContent = s.item || 'Your first creation'; const art = $('cs-itemart'); art.textContent = s.picUrl ? '' : k.icon; if (s.picUrl) { const im = document.createElement('img'); im.src = s.picUrl; im.alt = ''; im.style.cssText = 'width:100%;height:100%;object-fit:cover'; art.appendChild(im); }
     $('cs-itemprice').textContent = !s.item ? 'Coming soon' : s.priceMode === 'free' ? 'Free' : s.priceMode === 'quote' ? 'Ask me' : (s.price ? `$${s.price}` : 'A price');
   }
   function msg(t, bad = false) { const m = $('cs-msg'); m.textContent = t; m.classList.toggle('on', !!t); m.classList.toggle('bad', bad); }
@@ -108,6 +117,7 @@
     const b = e.target.closest('[data-field]'); if (b && b.closest('#cs-step')) { s[b.dataset.field] = b.dataset.value; render(); return; }
     if (e.target.closest('[data-remove-source]')) { const i = Number(e.target.closest('[data-remove-source]').dataset.removeSource); s.sources.splice(i, 1); render(); return; }
     if (e.target.closest('#cs-addsource')) { if (addSource()) { render(); msg('Link added to your page draft.'); } return; }
+    if (e.target.closest('#cs-picx')) { s.pic = null; s.picUrl = ''; render(); return; }
     if (e.target.closest('#cs-logox')) { s.logo = null; s.logoUrl = ''; render(); return; }
     if (e.target.closest('#cs-stripe')) {
       const r = await fetch('/api/payments/account', { method: 'POST', credentials: 'same-origin', headers: H, body: '{}' }); const j = await r.json().catch(() => ({}));
@@ -126,6 +136,16 @@
       const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ data, alt: `${s.name || 'Page'} logo`, title: `${s.name || 'Page'} logo` }) });
       const j = await r.json().catch(() => ({})); if (!r.ok || !j.id) { msg(j.error || 'Could not add that picture.', true); return; }
       s.logo = j.id; s.logoUrl = j.url || `/images/${j.id}`; render(); msg('Logo added.');
+    }
+    if (e.target.id === 'cs-picfile') { // the first piece's own picture: alt and title come from the piece, not "logo"
+      const file = e.target.files?.[0]; if (!file) return;
+      if (file.size > 8 * 1024 * 1024) { msg('That picture is over 8 MB. Try a smaller one.', true); return; }
+      msg('Adding the picture…');
+      const data = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = no; fr.readAsDataURL(file); }).catch(() => null);
+      const name = (s.item || 'First piece').trim();
+      const r = await fetch('/api/images', { method: 'POST', credentials: 'same-origin', headers: H, body: JSON.stringify({ data, alt: `Picture of ${name}`.slice(0, 300), title: name.slice(0, 120) }) });
+      const j = await r.json().catch(() => ({})); if (!r.ok || !j.id) { msg(j.error || 'Could not add that picture.', true); return; }
+      s.pic = j.id; s.picUrl = j.url || `/images/${j.id}`; render(); msg('Picture added.');
     }
   });
   function addSource() {
@@ -150,6 +170,7 @@
     if (s.item && !s.rights) { msg('Tick the box saying you made it or hold the rights, or clear the first piece.', true); return; }
     if (s.item && s.item.trim().length < 3) { msg('The first piece needs a title of at least 3 characters.', true); return; }
     if (s.item && s.priceMode === 'fixed' && !(Number(s.price) >= 1)) { msg('Give a price of at least $1, or choose Free.', true); return; }
+    const noPic = pieceProblem(s, KINDS[s.kind].cat); if (noPic) { msg(noPic, true); return; } // before anything is created
     const btn = $('cs-next'); btn.disabled = true; msg('Making your page…');
     let page;
     try { page = await call('POST', '/api/pages', { kind: s.kind, name: s.name.trim() }); }
@@ -160,8 +181,7 @@
     if (s.sources.length) patch.links = s.sources;
     try { page = await call('PATCH', `/api/pages/${encodeURIComponent(page.id)}`, patch); done.push('Look and words saved.'); } catch (e) { problems.push(`The look and words didn't save (${e.message}). You can add them on your page.`); }
     if (s.item.trim()) {
-      const price = s.priceMode === 'fixed' ? { mode: 'fixed', amount: Number(s.price) } : { mode: s.priceMode };
-      try { await call('POST', '/api/market/listings', { title: s.item.trim(), text: (s.itemText || s.bio || s.item).trim(), category: KINDS[s.kind].cat, type: s.kind === 'business' ? 'service' : 'product', price, license: s.kind === 'business' ? 'service' : 'all-rights', rights: true, page: page.id }); done.push('First piece listed.'); }
+      try { await call('POST', '/api/market/listings', pieceBody(s, KINDS[s.kind].cat, s.kind, page.id)); done.push('First piece listed.'); }
       catch (e) { problems.push(`The first piece didn't list (${e.message}). You can list it from your page.`); }
     }
     if (s.share) {
