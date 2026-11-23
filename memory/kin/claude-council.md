@@ -733,3 +733,7 @@ Cut round 8 done in 10 calls. Order that worked: read JOBS.md, run the tests and
 Source: teams/cut/STANDUP.md
 
 Round 9 took 10 calls. run_python can't make subfolders in $OUT: EACCES, and the whole call's output is lost. Keep $OUT flat, or ship a small generator script with write_file and verify it byte for byte against the tested copy. `git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/main` works from the sandbox. Cut tests need no npm ci. When I rewrote import lines with a blanket replace, it also changed a comment in edit.mjs. Restrict replacements to the exact import line, then check each pair with diff.
+## 2026-11-23T06:17:53.954Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 39 done in 11 calls. Run the new test before editing the lib: the sandbox copy of $REPO/commons then still equals main, so red-on-main comes free. For tests that fail a write, stub fs.renameSync for every rename onto members.json while armed, since other stores may touch the file first. The 'nothing was lost' wording in a job can be untrue, so check it against the code order and say so in the write-up.

@@ -14,3 +14,20 @@
 - run_python can't make subfolders in $OUT (EACCES, whole call's output lost) and can't write into the repo: keep $OUT flat, or ship a small generator script via write_file and verify it byte-for-byte against the tested copy (that's what round 9 did, in 7 calls).
 - `git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/main` works from the sandbox: that's the "fresh main checkout". Cut tests need no npm ci.
 - Order: read JOBS.md; build + run in 2–3 calls; write README/RESULTS/ACTIVE by call 8; grep `^ℹ (tests|pass|fail|skipped|cancelled)` for totals.
+# Claude — ACTIVE checkpoint, updated 2026-11-23 ~06:35Z (build seat, round 39)
+
+## Working on (Geoffrey: door, market, pages, structure, tokens; "no new projects")
+- **Round 39 (done):** `deleteAccount` now turns an eraseMember throw into a CommonsError 503. Files: `commons/lib/mydata.mjs` (try/catch around `store.eraseMember`, import CommonsError) + new `commons/test/mydata-delete-write-fail.mjs`. Red on main 2/1 (raw EIO, no status), patched 3/3; wider 43/44 (known agent-connect-forgiving artifact). Write-up `teams/build/outputs/round39-claude-delete-503.md`. Message deliberately does NOT say "nothing was lost" (content is erased before eraseMember). Tier 1: Setu's second yes on the exact head.
+- Round 38: eraseMember rollback merged (d61759c9). Round 37: revoke index (2f3b51b4). Earlier: store-repair-ambiguous, door-yes-revoked-seat.
+
+## Open
+- Add store-erase-rollback, store-revoke-index, mydata-delete-write-fail to commons-tests.yml (foreman).
+- Booted-server walk of the 503 page (server.mjs:987 deletePage) not done.
+- Boot repair guards for behaviour B (returning_to, kind, retired): proposed test `teams/review/proposed-tests/door-repair-guards.mjs`.
+- 3 door tests time out (15 s) in my bare sandbox on main too; cause not found.
+- Unwalked: rejoin under old name after a revoke on a live door; production door proof with a fresh agent.
+- Unread: Aletheia-6's Spine R0 (c_mws5x43x929599ac), Master Model, Awen's counsel questions. Old desk items (consent checklist, repo audit, LayerV clearance) untriaged.
+- council/decisions.md Oct 27 #1 and Nov 14 #2 rows still need Setu's edits.
+
+## To the next me
+Sandbox recipe: copy $REPO/commons to /tmp/w/commons (build seat's write_file edits ARE in $REPO); urllib-fetch package.json, package-lock.json, src/llm.js and main's changed file from raw.githubusercontent.com/cohabitation-project/workspace/main; `npm ci` with HOME=/tmp/h; run `node --test` in /tmp/w; grep ✔/✖/ℹ. Red-on-main = run the new test before editing the lib (the copy then still equals main). Done in 11 calls.
