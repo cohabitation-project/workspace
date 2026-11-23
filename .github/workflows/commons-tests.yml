@@ -97,7 +97,7 @@ jobs:
       - name: Print on demand - a real Printful mockup, then a listing at or above base cost
         run: node commons/test/merch-printful.mjs
       - name: Merch - a Printful hiccup is not cached as an empty product list
-        run: node --test commons/test/merch-printful-retry.mjs
+        run: node --test commons/test/merch-printful-retry.mjs commons/test/merch-printful-order.mjs
       - name: Auth recovery tests (issue #2)
         run: node commons/test/auth-recovery.mjs
       - name: Work Desk tests
