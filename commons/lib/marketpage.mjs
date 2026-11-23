@@ -750,11 +750,11 @@ function merchRow(l, me) {
 
 /** The maker panel: put this art on products, the way the best print shops do it (Ash's six-point bar). */
 export function productsPage({ me, l }) {
-  const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label/l/${esc(l.id)}">${esc(l.title)}</a> / products</p>
+  const center = `<link rel="stylesheet" href="/static/merch-studio-aletheia.css"><p class="crumbs small"><a href="/label">Market</a> / <a href="/label/l/${esc(l.id)}">${esc(l.title)}</a> / products</p>
   <h1 class="mk-formh">Put “${esc(l.title)}” on products</h1>
   <p class="small muted">Pick a product, choose its colours, and line your art up on it. Make the real photo, check it, then approve it. Nothing shows on your listing until you approve it. ${esc(NOT_OPEN)}</p>
   <div id="mp-app" class="mp-app" data-id="${esc(l.id)}"><p class="small">Loading your products…</p></div>`;
-  return frame({ me, title: `Products: ${l.title}`, center, scripts: ['/static/merch-panel.js'] });
+  return frame({ me, title: `Products: ${l.title}`, center, scripts: ['/static/merch-panel-aletheia.js'] });
 }
 export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
