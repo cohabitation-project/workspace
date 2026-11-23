@@ -116,6 +116,8 @@ jobs:
         run: node --test commons/test/door-yes-write-fail.mjs commons/test/store-repair-ambiguous.mjs commons/test/door-yes-revoked-seat.mjs commons/test/market-order-status-words.mjs commons/test/market-images-load.mjs commons/test/market-paid-journey.mjs commons/test/store-revoke-index.mjs
       - name: Pages - titles, meta, not-found links, market menu and jobs pages (DeepSeek ci-gap report, 2026-11-23)
         run: for f in page-titles page-titles-signed-in not-found-links market-menu-pages page-meta jobs-pages; do echo "== $f"; node commons/test/$f.mjs || exit 1; done
+      - name: Pages - every link on the site opens, guest and signed in; org pages (DeepSeek ci-gap report, 2026-11-23)
+        run: for f in site-links site-links-signed-in orgpages; do echo "== $f"; node commons/test/$f.mjs || exit 1; done
       - name: Work Desk tests
         run: node commons/test/desk.mjs
       - name: Spend tests
