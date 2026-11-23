@@ -1277,17 +1277,48 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 @media(max-width:990px){.md-makerguide .md-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:580px){.md-makerguide .md-chapters{grid-template-columns:1fr}}
 
-/* One artwork, many products (Geoffrey, 2026-11-23). Plain first version; Aletheia-6's design replaces it. */
+/* One artwork, many products (Geoffrey, 2026-11-23). Plain, functional styling; Aletheia-6's design replaces it. */
 .mk-pods { margin: 1.5rem 0; }
-.mk-podgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; }
-.mk-pod { border: 1px solid rgba(127,127,127,.25); border-radius: 12px; padding: .6rem; display: flex; flex-direction: column; gap: .35rem; }
+.mk-podgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.mk-pod { border: 1px solid rgba(127,127,127,.25); border-radius: 12px; padding: .6rem; display: flex; flex-direction: column; gap: .4rem; }
 .mk-pod h3 { font-size: .95rem; margin: 0; }
 .mk-podimg { display: block; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: rgba(127,127,127,.08); }
 .mk-podimg img { width: 100%; height: 100%; object-fit: cover; }
-.mk-podwait { display: flex; align-items: center; justify-content: center; text-align: center; font-size: .85rem; opacity: .75; padding: .5rem; }
+.mk-podwait { display: flex; align-items: center; justify-content: center; height: 100%; font-size: .85rem; opacity: .75; }
 .mk-podprice { font-weight: 600; margin: 0; }
 .mk-pod select { max-width: 100%; }
-.mk-podsedit .mp-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; padding: .3rem 0; }
-.mk-podsedit .mp-name { min-width: 11rem; }
-.mk-podsedit .mp-amt { width: 6.5rem; }
+.mk-swatches { display: flex; flex-wrap: wrap; gap: .3rem; }
+.mk-sw { width: 1.4rem; height: 1.4rem; border-radius: 50%; border: 2px solid rgba(127,127,127,.4); background: var(--sw); cursor: pointer; padding: 0; }
+.mk-sw.on { outline: 2px solid currentColor; outline-offset: 2px; }
 .av-pods { margin: .3rem 0 0; opacity: .8; }
+/* the maker panel */
+.mp-app { display: grid; grid-template-columns: minmax(170px, 220px) 1fr; gap: 1.2rem; align-items: start; }
+@media (max-width: 760px) { .mp-app { grid-template-columns: 1fr; } }
+.mp-list { display: flex; flex-direction: column; gap: .35rem; }
+@media (max-width: 760px) { .mp-list { flex-direction: row; overflow-x: auto; } }
+.mp-tab { display: flex; justify-content: space-between; gap: .5rem; align-items: center; text-align: left; padding: .5rem .6rem; border-radius: 10px; border: 1px solid rgba(127,127,127,.25); background: none; color: inherit; cursor: pointer; white-space: nowrap; }
+.mp-tab.on { border-color: currentColor; }
+.mp-chip { font-size: .72rem; padding: .1rem .45rem; border-radius: 99px; background: rgba(127,127,127,.15); }
+.mp-chip.live { background: #2e7d4f; color: #fff; } .mp-chip.draft { background: #b7791f; color: #fff; }
+.mp-editor h2 { margin: 0 0 .2rem; }
+.mp-stage { position: relative; width: 100%; max-width: 520px; border-radius: 12px; overflow: hidden; touch-action: none; }
+.mp-stage .mp-bg, .mp-stage .mp-tpl { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.mp-stage .mp-tpl { z-index: 2; }
+.mp-zone { position: absolute; outline: 1px dashed rgba(0,0,0,.45); z-index: 1; }
+.mp-art { position: absolute; cursor: grab; user-select: none; object-fit: contain; }
+.mp-art:active { cursor: grabbing; }
+.mp-controls { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: .6rem 0; }
+.mp-controls input[type=number] { width: 4.5rem; }
+.mp-quality { font-weight: 600; margin: .2rem 0 .8rem; }
+.mp-quality.excellent, .mp-earn { color: #2e7d4f; } .mp-quality.good { color: #3d7a2e; } .mp-quality.acceptable { color: #b7791f; } .mp-quality.poor, .mp-warn { color: #b3261e; }
+.mp-colors { display: flex; flex-wrap: wrap; gap: .4rem .9rem; }
+.mp-color { display: flex; align-items: center; gap: .3rem; font-size: .9rem; }
+.mp-color .mp-sw { flex: none; width: 1rem; height: 1rem; border-radius: 50%; border: 1px solid rgba(127,127,127,.5); display: inline-block; }
+.mp-look { font-size: .72rem; border: 1px solid rgba(127,127,127,.35); background: none; color: inherit; border-radius: 6px; padding: 0 .3rem; cursor: pointer; }
+.mp-look.on { border-color: currentColor; }
+.mp-money { border-collapse: collapse; margin: .5rem 0; width: 100%; max-width: 560px; }
+.mp-money th, .mp-money td { padding: .25rem .4rem; border-bottom: 1px solid rgba(127,127,127,.2); text-align: right; }
+.mp-money th:first-child, .mp-money td:first-child { text-align: left; }
+.mp-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 .5rem; }
+.mp-photo img { max-width: 360px; width: 100%; border-radius: 10px; }
+.mk-podslink { margin: 1rem 0; }

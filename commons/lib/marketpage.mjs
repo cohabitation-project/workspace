@@ -729,18 +729,32 @@ export function salesPage({ me, sales = [] }) {
 }
 
 // ------------------------------------------------------------------------------------------ one listing
-// "Get it on": the products this artwork is on (Geoffrey, 2026-11-23: one image, applied to anything). Each card shows the
-// real Printful mockup once it's made; until then it says the photo is being made. Buying a product is not wired yet
-// (a Tier 1 checkout step), so the button stays off and the line under the row says why.
+// "Get it on": the products this artwork is on (Geoffrey, 2026-11-23: one image, applied to anything). Only products the
+// maker previewed and approved show here. Each card: the real Printful photo, the maker's colours as swatches (tap to see
+// that colour), sizes with their own price (bigger sizes cost more to print), and Buy, which stays off until the
+// product checkout step is wired (Tier 1) — the line under the row says so.
 function merchRow(l, me) {
-  const v = merchsets.view(l.id); if (!v.items.length) return '';
-  const mine = !!me && l.by.id === me.id;
-  const cards = v.items.map((it) => `<article class="mk-pod">${it.mockup ? `<a class="mk-podimg" href="${esc(it.mockup)}" target="_blank" rel="noopener" title="See it bigger"><img src="${esc(it.mockup)}" alt="${esc(it.title)} printed with this art" loading="lazy"></a>` : `<span class="mk-podimg mk-podwait">${it.status === 'failed' ? 'The photo didn\'t come through' : 'Making the photo…'}</span>`}
-    <h3>${esc(it.title)}</h3><p class="mk-podprice">$${esc(it.price.toFixed(2))}</p>
-    ${it.options.length ? `<label class="small">Colour / size <select>${it.options.map((o) => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('')}</select></label>` : ''}
+  const v = merchsets.view(l.id); const mine = !!me && l.by.id === me.id;
+  if (!v.items.length) return mine && ['art', 'music'].includes(l.category) ? `<section class="mk-pods"><p><a class="btn ghost" href="/label/l/${esc(l.id)}/products">Put this art on products →</a></p></section>` : '';
+  const cards = v.items.map((it) => `<article class="mk-pod" data-pod>
+    <a class="mk-podimg" href="${esc(it.main || '#')}" target="_blank" rel="noopener" title="See it bigger">${it.main ? `<img data-pod-img src="${esc(it.main)}" alt="${esc(it.title)} printed with this art" loading="lazy">` : '<span class="mk-podwait">Photo coming</span>'}</a>
+    <h3>${esc(it.title)}</h3>
+    ${it.colors.length > 1 || it.colors[0]?.name !== 'Standard' ? `<div class="mk-swatches" role="group" aria-label="Colour">${it.colors.map((c, i) => `<button type="button" class="mk-sw${i ? '' : ' on'}" data-photo="${esc(c.photo || '')}" title="${esc(c.name)}" aria-label="${esc(c.name)}" style="--sw:${esc(c.code || '#ccc')}"></button>`).join('')}</div>` : ''}
+    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
+    <p class="mk-podprice" data-pod-price>$${esc((it.sizes[0]?.price ?? it.price).toFixed(2))}</p>
     <button type="button" class="btn small" disabled>Buy</button></article>`).join('');
   return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>
-  <p class="small muted">Printed and shipped by Printful when you order. Buying products opens with payments.${mine ? ` <a href="/label/l/${esc(l.id)}/edit#mk-pods-edit">Change products</a>` : ''}</p></section>`;
+  <p class="small muted">Printed and shipped by Printful when you order. Buying products opens with payments.${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
+  <script type="module" src="/static/merch-row.js"></script></section>`;
+}
+
+/** The maker panel: put this art on products, the way the best print shops do it (Ash's six-point bar). */
+export function productsPage({ me, l }) {
+  const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label/l/${esc(l.id)}">${esc(l.title)}</a> / products</p>
+  <h1 class="mk-formh">Put “${esc(l.title)}” on products</h1>
+  <p class="small muted">Pick a product, choose its colours, and line your art up on it. Make the real photo, check it, then approve it. Nothing shows on your listing until you approve it. ${esc(NOT_OPEN)}</p>
+  <div id="mp-app" class="mp-app" data-id="${esc(l.id)}"><p class="small">Loading your products…</p></div>`;
+  return frame({ me, title: `Products: ${l.title}`, center, scripts: ['/static/merch-panel.js'] });
 }
 export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
@@ -849,9 +863,7 @@ export function listingForm({ me, l = null, cat = null, asPage = null }) {
     <fieldset class="mk-imgs"><legend>Pictures (up to 4; tick the ones this listing shows)</legend><div class="mk-imglist">${mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('')}</div>${mine.length ? '' : '<p class="small muted" id="mk-noimgs">No uploads yet — add your product\'s picture right here:</p>'}
     <label class="small mk-pgup">⬆ Upload a picture of this product <input type="file" id="mk-imgup" accept="image/png,image/jpeg,image/webp,image/gif"></label>
     <p class="small muted">No picture? A services or software listing shows your page's logo; music, art, video, writing and classifieds show a plain placeholder — upload the work itself.</p></fieldset>
-  ${l && ['art', 'music'].includes(l.category) ? `<fieldset class="mk-podsedit" id="mk-pods-edit"><legend>Put this art on products</legend>
-    <p class="small muted">Tick what this art can be printed on and set a price for each. Your first picture above is the art. We place it on each product and make a real photo of it; the photos appear on your listing over the next few minutes. Printful prints and ships when someone orders.</p>
-    <div id="mp-list" class="small">Loading products…</div></fieldset>` : ''}
+  ${l && ['art', 'music'].includes(l.category) ? `<p class="mk-podslink" id="mk-pods-edit"><a class="btn ghost" href="/label/l/${esc(l.id)}/products">Put this art on products →</a> <span class="small muted">Line it up, pick colours, see the real photo and your earnings.</span></p>` : ''}
   ${!l ? '<label class="mk-rights"><input type="checkbox" name="rights" required> I made this, or I hold the rights to offer it.</label>' : ''}
   <p class="form-msg" role="status" id="mk-msg"></p>
   <button class="btn">${l ? 'Save' : 'List it'}</button>

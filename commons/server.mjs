@@ -1767,8 +1767,24 @@ app.post('/api/merch/listings', wrap((req, res) => {
   printful.forgetTask(b.mockup); res.status(201); return { ...l, merch: { provider: 'printful', product: t.product_title, variant: t.variant_name, base_price: t.base } };
 }));
 // One artwork, many products (Geoffrey, 2026-11-23). GET: the products this art is on (public). PUT: its maker sets them.
-app.get('/api/market/listings/:id/merch', wrap((req) => merchsets.view(req.params.id)));
-app.put('/api/market/listings/:id/merch', wrap(async (req) => { const me = marketWriter(req); core.socialActsAllowed(me); return merchsets.setProducts(me, req.params.id, (req.body || {}).items); }));
+app.get('/api/market/listings/:id/merch', wrap((req) => { const me = actor(req); const l = market.get(req.params.id); return merchsets.view(req.params.id, { owner: !!me && !!l && l.by.id === me.id && req.query.mine === '1' }); }));
+// The maker panel (Ash's six-point bar, Income m_mwtpc8631geb4a0b): draft -> line it up -> real photo -> approve.
+app.get('/api/merch/template/:product/:kind', async (req, res) => {
+  try { const kind = req.params.kind === 'background' ? 'background' : 'image'; const t = await printful.templateImage(req.params.product, kind);
+    res.setHeader('Cache-Control', 'public, max-age=21600'); res.type(t.type).send(t.buf); }
+  catch (e) { res.status(e.status || 502).type('text/plain').send(e.message || 'no picture'); }
+});
+app.get('/api/market/listings/:id/merch/panel', wrap(async (req) => merchsets.panel(marketWriter(req), req.params.id)));
+app.put('/api/market/listings/:id/merch/:product', wrap(async (req) => { const me = marketWriter(req); core.socialActsAllowed(me); return merchsets.saveDraft(me, req.params.id, req.params.product, req.body || {}); }));
+app.post('/api/market/listings/:id/merch/:product/photo', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(202); return merchsets.requestPhoto(me, req.params.id, req.params.product, (req.body || {}).color); }));
+app.post('/api/market/listings/:id/merch/:product/approve', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return merchsets.approve(me, req.params.id, req.params.product); }));
+app.delete('/api/market/listings/:id/merch/:product', wrap((req) => merchsets.remove(marketWriter(req), req.params.id, req.params.product)));
+app.get('/label/l/:id/products', (req, res) => {
+  const me = auth.memberFromCookie(req.headers.cookie); const l = market.get(req.params.id);
+  if (!me) return res.redirect(303, `/signin?next=${encodeURIComponent(req.originalUrl)}`);
+  if (!l || l.by.id !== me.id || l.status !== 'live') return res.status(404).type('html').send(pages.notFound('No listing of yours here.', { me }));
+  res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.productsPage({ me, l }));
+});
 app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(201); return market.create(me, req.body || {}); }));
 app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
 app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return market.withdraw(me, req.params.id); }));

@@ -71,7 +71,7 @@ export async function products() {
       const printfile = (pf.printfiles || []).find((x) => x.printfile_id === vp?.placements?.[placement]) || (pf.printfiles || [])[0];
       if (!printfile?.width || !printfile?.height) continue;
       out.push({ key, id: Number(id), title: p.product.title || p.product.model || key, image: p.product.image || null, currency: p.product.currency || 'USD',
-        placement, placement_label: placements[placement] || placement, area: { width: printfile.width, height: printfile.height }, variants,
+        placement, placement_label: placements[placement] || placement, area: { width: printfile.width, height: printfile.height }, dpi: Number(printfile.dpi) || 150, variants,
         base_from: Math.min(...variants.map((v) => v.price).filter((n) => n > 0)) });
     } catch (e) { if (e?.status === 503) throw e; if (e?.transient) hiccup = true; /* a product Printful refuses is left out */ }
   }
@@ -161,3 +161,43 @@ export async function taskResult(key, placement) {
 }
 /** The last good product list without waiting on Printful (for rendering pages); [] until the first read. */
 export const cachedProducts = () => cache || [];
+
+// ------------------------------------------------------------------ templates: client-side positioning (maker panel)
+// Printful's templates for a product "can be used for client-side positioning": a picture of the product with the exact
+// print-area box on it. The maker drags the art on that in the browser, live, with no mockup call per move; the real
+// Printful photo is made only when they ask for it (the mockup generator allows ~2 tasks a minute market-wide).
+const tplCache = new Map(); // productId -> { at, value }
+export async function template(productId, placement) {
+  const id = Number(productId); const hit = tplCache.get(id);
+  if (hit && Date.now() - hit.at < FRESH_MS) return pick(hit.value, placement);
+  const r = await api(`/mockup-generator/templates/${id}`);
+  const value = { min_dpi: Number(r?.min_dpi) || null, mapping: r?.variant_mapping || [], templates: (r?.templates || []).map((t) => ({
+    id: t.template_id, image: t.image_url || null, background: t.background_url || null, background_color: t.background_color || null,
+    width: Number(t.template_width) || 0, height: Number(t.template_height) || 0,
+    area: { left: Number(t.print_area_left) || 0, top: Number(t.print_area_top) || 0, width: Number(t.print_area_width) || 0, height: Number(t.print_area_height) || 0 },
+  })).filter((t) => t.width && t.height && t.area.width && t.area.height) };
+  tplCache.set(id, { at: Date.now(), value });
+  return pick(value, placement);
+}
+function pick(v, placement) {
+  // Prefer the template the catalog maps to this placement; otherwise the first usable one.
+  const ids = new Set(); for (const m of v.mapping || []) for (const t of m.templates || []) if (!placement || t.placement === placement) ids.add(t.template_id);
+  const t = v.templates.find((x) => ids.has(x.id)) || v.templates[0] || null;
+  return t ? { ...t, min_dpi: v.min_dpi } : null;
+}
+
+// Our pages only load images from our own address (Content Security Policy), so the panel can't show Printful's template
+// picture straight from Printful's CDN. The server fetches ONLY the picture Printful's own template listing named for that
+// product (never an address from the browser: no open proxy) and serves it from here, kept in memory for 6 hours.
+const tplImg = new Map(); // `${productId}:${kind}` -> { at, buf, type }
+export async function templateImage(productId, kind = 'image') {
+  const id = Number(productId); const k = `${id}:${kind}`; const hit = tplImg.get(k);
+  if (hit && Date.now() - hit.at < FRESH_MS) return hit;
+  const t = await template(id, null); const url = kind === 'background' ? t?.background : t?.image;
+  if (!url || !/^https?:\/\//.test(url)) fail(404, 'No template picture for this product.');
+  let r; try { r = await fetch(url, { signal: AbortSignal.timeout(20_000) }); } catch { transient(502, "Couldn't fetch the product picture. Try again in a minute."); }
+  if (!r.ok) fail(502, `The product picture didn't load (${r.status}).`);
+  const type = r.headers.get('content-type') || 'image/png'; if (!/^image\/(png|jpeg|webp|gif)/.test(type)) fail(502, 'The product picture is not an image.');
+  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > 8 * 1024 * 1024) fail(502, 'The product picture is too large.');
+  const v = { at: Date.now(), buf, type }; tplImg.set(k, v); return v;
+}

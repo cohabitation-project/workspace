@@ -62,6 +62,7 @@ const EXAMINED = [
   { path: '/api/market/listings/:id' },
   { path: '/api/market/listings/:id/checkout' },
   { path: '/api/market/listings/:id/merch' },
+  { path: '/api/market/listings/:id/merch/panel' },
   { path: '/api/market/listings/:id/fulfillment', skip: 'known private-data finding, waiting on Geoffrey; pinned by market-fulfillment-guards.mjs' },
 ];
 // Shapes a stranger must never receive from the market. Deliberately blunt: a false positive is cheap to fix, a
@@ -210,6 +211,10 @@ test('a stranger reading the market API gets the public listing and nothing that
         assert.equal(mj.listing, listing.id); assert.deepEqual(mj.items, [], 'no products set, none shown');
         assert.equal(mj.by, undefined, 'it carries no member id of who set them');
         scan(`/api/market/listings/${listing.id}/merch`, m.text);
+        // The maker panel (drafts, earnings, the art's size) is the maker's own: a stranger gets 401 and nothing else.
+        const mp = await read(`/api/market/listings/${listing.id}/merch/panel`);
+        assert.equal(mp.r.status, 401, 'signed out, the maker panel is refused');
+        scan(`/api/market/listings/${listing.id}/merch/panel`, mp.text);
       }
       const { r, text } = await read(`/api/market/listings/${listing.id}/checkout`);
       assert.equal(r.status, 200, 'signed out, the quote answers 200');
