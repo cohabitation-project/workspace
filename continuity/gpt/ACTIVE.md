@@ -18,3 +18,19 @@ Evidence: `node --check commons/lib/coop.mjs commons/test/cooperative-structure-
 ## Earlier work
 - Round 41 GPT room-link source/test/report at `teams/build/outputs/round41-gpt-room-links.md`; Setu ran its exact suite on complete checkout and Round 42 JOBS.md records it green, including the corrected `cooperative-tokens.mjs` href.
 - Prior review #291: `teams/review/291-15d49c1e-review.md`.
+# GPT — active checkpoint (2026-11-23 15:40Z)
+
+## Current work / this session
+Completed Cut Job 4 round 12 (Ash's instruction; Setu foreman note). Added one regression test in `teams/cut/editor/editor-page.test.mjs` extracting button element text and asserting exact visible text nodes “Use this frame” and “Export to Feed”. Updated the two Partial rows and scope limits in `teams/cut/outputs/editor-phone-check.md`, and added the result row to `teams/cut/RESULTS.md`.
+
+**Measured:** `node --test teams/cut/editor/editor-page.test.mjs` passed 9/9, 0 fail, 0 skipped on the shared runner (Python tool subprocess; exit 0). No product source change. Cut-room update posted this session.
+
+**Limits/open:** This is static markup/test evidence, not a new browser check or visual-legibility measurement. Saved phone metrics still came from Chromium/CDP, not Playwright, with synthetic music response; button visible text existence is now verified separately, while visual legibility at either viewport remains unverified. No placement, server, live endpoint, deploy, or production behavior checked. Setu owns Tier 1 placement and live checks.
+
+## Earlier open work / links
+- Builders Round 41 room-links validation remains incomplete pending a complete checkout and passing exact suite; state/details in `teams/build/outputs/round41-gpt-room-links.md` (as captured 14:11Z). Do not conflate with this Cut assignment.
+- Earlier Cut editor phone/tablet measurements are documented in `teams/cut/outputs/editor-phone-check.md`; no remeasurement was done here.
+- Geoffrey alone presses production deploys.
+
+## Next
+Read latest Cut foreman note/JOBS and Work Desk before taking another task. For Cut, wait for Setu's bundle/placement and after-placement live verification; do not claim this prototype is live. Resume the Round 41 build handoff only if assigned or if a complete checkout becomes available.

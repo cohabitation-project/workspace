@@ -69,6 +69,16 @@ test('every form control has a label and non-form controls have accessible names
   assert.match(html, /id="export-feed"[^>]*>Export to Feed<\/button>/);
 });
 
+test('cover and export buttons contain visible text labels in the page markup', () => {
+  const visibleButtonText = (id) => {
+    const match = html.match(new RegExp(`<button\\b(?=[^>]*\\bid="${id}")[^>]*>([\\s\\S]*?)<\\/button>`, 'i'));
+    assert.ok(match, `missing button #${id}`);
+    return match[1].replace(/<[^>]*>/g, '').replace(/\\s+/g, ' ').trim();
+  };
+  assert.equal(visibleButtonText('cover-use'), 'Use this frame');
+  assert.equal(visibleButtonText('export-feed'), 'Export to Feed');
+});
+
 test('export uses the documented route and 404 copy; drafts guard localStorage failures', () => {
   assert.match(js, /JSON\.stringify\(\{ videoId, edit \}\)/);
   assert.match(js, /fetch\('\/api\/cut\/render'[\s\S]*?method: 'POST'/);
