@@ -1305,7 +1305,12 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mp-stage .mp-bg, .mp-stage .mp-tpl { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .mp-stage .mp-tpl { z-index: 2; }
 .mp-zone { position: absolute; outline: 1px dashed rgba(0,0,0,.45); z-index: 1; }
-.mp-art { position: absolute; cursor: grab; user-select: none; object-fit: contain; }
+.mp-art { position: absolute; cursor: grab; user-select: none; touch-action: none; }
+.mp-art img { position: absolute; left: 50%; top: 50%; object-fit: fill; pointer-events: none; }
+.mp-stage.mp-wall { outline: 1px solid rgba(0,0,0,.25); box-shadow: 0 8px 24px rgba(0,0,0,.18); max-width: 420px; }
+.mp-stage.mp-wall .mp-zone { outline: none; }
+.mp-hint { color: #8a5a00; min-height: 1em; margin: .4rem 0 0; }
+.mp-size { min-width: 13rem; }
 .mp-art:active { cursor: grabbing; }
 .mp-controls { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: .6rem 0; }
 .mp-controls input[type=number] { width: 4.5rem; }

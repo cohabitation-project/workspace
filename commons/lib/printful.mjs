@@ -61,12 +61,17 @@ export async function products() {
       const p = await api(`/products/${Number(id)}`);
       if (!p?.product || p.product.is_discontinued) continue;
       const pf = await api(`/mockup-generator/printfiles/${Number(id)}`);
-      const variants = (p.variants || []).filter((v) => v.in_stock !== false).slice(0, 60)
-        .map((v) => ({ id: v.id, name: v.name, color: v.color || null, color_code: v.color_code || null, size: v.size || null, price: Number(v.price) || 0 }));
-      if (!variants.length) continue;
       const placements = pf?.available_placements || {};
       const placement = placements.front ? 'front' : placements.default ? 'default' : Object.keys(placements)[0];
       if (!placement) continue;
+      // Each variant's own print file: wall art (canvas, posters) is a different SHAPE per size, so the art is placed on
+      // that size's print area, not one shared one (Geoffrey, 2026-11-23: wide art on a tall canvas).
+      const pfById = new Map((pf.printfiles || []).map((x) => [x.printfile_id, x]));
+      const pfOf = (vid) => pfById.get((pf.variant_printfiles || []).find((x) => x.variant_id === vid)?.placements?.[placement]);
+      const variants = (p.variants || []).filter((v) => v.in_stock !== false).slice(0, 500)
+        .map((v) => { const f = pfOf(v.id); return { id: v.id, name: v.name, color: v.color || null, color_code: v.color_code || null, size: v.size || null, price: Number(v.price) || 0,
+          area: f?.width && f?.height ? { width: f.width, height: f.height } : null, dpi: Number(f?.dpi) || null }; });
+      if (!variants.length) continue;
       const vp = (pf.variant_printfiles || []).find((x) => x.placements?.[placement]);
       const printfile = (pf.printfiles || []).find((x) => x.printfile_id === vp?.placements?.[placement]) || (pf.printfiles || [])[0];
       if (!printfile?.width || !printfile?.height) continue;

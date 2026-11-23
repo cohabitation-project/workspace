@@ -739,8 +739,8 @@ function merchRow(l, me) {
   const cards = v.items.map((it) => `<article class="mk-pod" data-pod>
     <a class="mk-podimg" href="${esc(it.main || '#')}" target="_blank" rel="noopener" title="See it bigger">${it.main ? `<img data-pod-img src="${esc(it.main)}" alt="${esc(it.title)} printed with this art" loading="lazy">` : '<span class="mk-podwait">Photo coming</span>'}</a>
     <h3>${esc(it.title)}</h3>
-    ${it.colors.length > 1 || it.colors[0]?.name !== 'Standard' ? `<div class="mk-swatches" role="group" aria-label="Colour">${it.colors.map((c, i) => `<button type="button" class="mk-sw${i ? '' : ' on'}" data-photo="${esc(c.photo || '')}" title="${esc(c.name)}" aria-label="${esc(c.name)}" style="--sw:${esc(c.code || '#ccc')}"></button>`).join('')}</div>` : ''}
-    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
+    ${it.kind === 'colors' ? `<div class="mk-swatches" role="group" aria-label="Colour">${it.options.map((c, i) => `<button type="button" class="mk-sw${i ? '' : ' on'}" data-photo="${esc(c.photo || '')}" title="${esc(c.name)}" aria-label="${esc(c.name)}" style="--sw:${esc(c.code || '#ccc')}"></button>`).join('')}</div>` : ''}
+    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}" data-photo="${esc(z.photo || '')}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
     <p class="mk-podprice" data-pod-price>$${esc((it.sizes[0]?.price ?? it.price).toFixed(2))}</p>
     <button type="button" class="btn small" disabled>Buy</button></article>`).join('');
   return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>

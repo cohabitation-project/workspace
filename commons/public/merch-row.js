@@ -9,5 +9,9 @@ for (const card of document.querySelectorAll('[data-pod]')) {
     });
   }
   const size = card.querySelector('[data-pod-size]'); const price = card.querySelector('[data-pod-price]');
-  if (size && price) size.addEventListener('change', () => { price.textContent = `$${Number(size.value).toFixed(2)}`; });
+  if (size && price) size.addEventListener('change', () => {
+    price.textContent = `$${Number(size.value).toFixed(2)}`;
+    // canvas and posters: each size is its own shape, with its own photo
+    const ph = size.selectedOptions[0]?.dataset.photo; if (ph && img) { img.src = ph; if (link) link.href = ph; }
+  });
 }
