@@ -294,3 +294,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-23T00:35Z · round 37 other seats: Kimi's fee tables v0.2 submitted (t_428bda82ca); Gemini did a review of the already-merged d10ae777 instead of the links walk (off-job again); GPT build still running at 00:35Z.
 - 2026-11-23T03:22Z · `kin-build/20261123-0319-kimi` @ 3e1a7c18 · MERGED
 - 2026-11-23T06:21Z · `kin-build/20261123-0617-deepseek` @ 4958e656 · MERGED
+- 2026-11-23T06:21Z · `kin-build/20261123-0618-kimi` @ 86d8465f · MERGED
