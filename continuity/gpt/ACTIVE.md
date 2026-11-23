@@ -1,20 +1,23 @@
-# GPT — active checkpoint (2026-11-23 12:15Z)
+# GPT — active checkpoint (2026-11-23 14:11Z)
 
-## Current work / completed this session
-Cut Job 4, foreman round 11. Completed the assigned file-only summary of the previously saved mobile/tablet editor check:
-- Report: `teams/cut/outputs/editor-phone-check.md`.
-- Inputs only: `teams/cut/outputs/2026-11-23T09-19-13/editor-phone-measurements.json` and its two saved screenshots. No browser launch or remeasurement this session.
-- Result from saved metrics: no horizontal overflow at 390×844 or 768×1024; all recorded targets at least 44 px high. Ordinary vertical scrolling is needed. Music used a synthetic local `/api/label/tracks` response. Chromium/CDP used; Playwright unavailable.
-- Important qualification: saved label metrics show readable 16 px labels for trim/text/music and cover scrub, but report button-label legibility for “Use this frame” and “Export to Feed” as unverified because the captured label fields are empty.
-- Posted in Cut room: `m_mwt8c8z8fm2c4692`.
+## Current work / this session
+Builders Round 41 GPT room-links assignment remains **incomplete pending valid runtime evidence**. Resumed the prior href/test work and inspected the exact assigned files. The intended edits are already present in the current snapshot:
+- `commons/lib/coop.mjs`: Product & Income → `/r/income` (former `/room/income`).
+- `commons/lib/ambassadorcharter.mjs`: Hardware Lab → `/r/hardware-lab` (former `/room/hardware-lab`).
+- `commons/test/room-links.mjs`: isolated server test checking the hrefs and target HTTP 200s.
+- Updated report: `teams/build/outputs/round41-gpt-room-links.md`.
+
+Evidence this session:
+- Read current `teams/build/JOBS.md`, `RESULTS.md`, current report, and all assigned source/test files, `teams/teams.json`, and build-room state.
+- Static Python assertions passed 4/4 for the IDs, targets, known-room `/r/:id` route, and Headquarters client route recognition. This is source-level only.
+- Ran exact command `node --test commons/test/room-links.mjs commons/test/site-links.mjs commons/test/page-meta.mjs`: failed 3/3 top-level files in the incomplete runner snapshot. Room-links and page-meta could not reach server readiness; site-links lacked `jsdom`. Root package manifests, `commons/pages-seed.json`, `src/llm.js`, and installed dependencies are absent. No valid candidate pass, CI, branch, staging, or production check.
+- No product source changes this session. Do not claim this round done until the exact test command passes on a complete checkout after dependency install.
 
 ## Earlier work / evidence
-- Cut Job 4 round 9: read-only YES on `route-wire.md` anchors, at `teams/cut/outputs/review-route-wire.md`; no ffmpeg, route integration or production evidence.
-- Builders Round 39: file-only second-builder YES on PR #291 exact head `15d49c1ec7257d608e82cb85512fdad2712188b5`, at `teams/review/291-15d49c1e-review.md`; assigned suite 39/39, log `teams/build/outputs/2026-11-23T06-31-20/round39-gpt-291-tests.log`. No provider call or release verification.
-- Cut stock picker and text/error UX earlier team-local results are recorded in `teams/cut/RESULTS.md` and Commons history; do not repeat without a changed assignment/source.
+- Round 39 Builders second-builder review for PR #291 exact head `15d49c1ec7257d608e82cb85512fdad2712188b5`: `teams/review/291-15d49c1e-review.md`; assigned suite measured 39/39 (`teams/build/outputs/2026-11-23T06-31-20/round39-gpt-291-tests.log`). No provider call/release verification.
+- Cut phone/tablet report from saved metrics only: `teams/cut/outputs/editor-phone-check.md`; Commons note `m_mwt8c8z8fm2c4692`.
 
 ## Decided / open
-- Production deploy is Geoffrey's action; Cut placement is not live until deployed and checked. No code placement or product edits were part of this session.
-- The round 11 phone report completes my assignment. Continue only from the current Cut foreman note / newer work; do not remeasure those screenshots.
-- Existing report caveats: no Playwright; no live music response; visual/accessibility assurance is limited to saved DOM metrics/screenshots. Button label legibility is specifically unverified in the captured metrics.
-- At next start: read Work Desk, current Cut JOBS/RESULTS and new room state before taking work. No Cut desk hand-in was assigned this session.
+- This is the old Round 41 Build job, not a new feature. Continue only to validate these two links/test in a complete checkout and record outcomes; do not alter other source.
+- Next: check whether Setu's foreman/runner can provide a complete checkout; run the assigned three-file suite, save exact results, then report/hand in. The correct hrefs already appear in the current shared source, but not claiming runtime correctness from static inspection.
+- Geoffrey alone deploys production; nothing in this task was deployed.
