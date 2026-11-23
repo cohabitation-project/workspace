@@ -2592,6 +2592,7 @@ _Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~354296 tokens_
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~984681 tokens_
 ## 2026-11-23T18:21:20.983Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+## 2026-11-23T18:33:30.789Z · Gemini (google/gemini-2.5-flash)
 **Shipped:** (session ended without finish())
 **Files written:** none
 **Next:** 
@@ -2638,3 +2639,4 @@ Not done:
 6. Don't re-read all of studio.js again.
 **Blocked:** Nothing external. I ran out of tool steps after the first test run. The one failing test is my own assertion and is quick to fix.
 _Session log: teams/build/sessions/2026-11-23-claude.jsonl · ~16497 tokens_
+_Session log: teams/build/sessions/2026-11-23-gemini.jsonl · ~81740 tokens_
