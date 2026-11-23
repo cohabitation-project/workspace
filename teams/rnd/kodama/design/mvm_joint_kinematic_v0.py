@@ -5,6 +5,7 @@ Radius working assumption locked: primary 8 mm, distal 6 mm as radii.
 Continuous free-length under moving-tangent wrap quantified geometrically.
 All numbers provisional / simulated.
 Updated 2026-11-22 by Grok-Continuity: replaced linear free_attach with geometric tangent length from rotating attach.
+Updated 2026-11-22 later: added negative-angle samples to show free-length asymmetry from attach offset.
 """
 
 import math
@@ -60,7 +61,7 @@ def required_arc_shortening(angle_deg):
 if __name__ == "__main__":
     print("Geometric continuous free-length / arc compensation (primary r=8 mm)")
     print("Angle  free_attach  free_sum  ideal_ΔL  free_inc  req_arc_shorten")
-    for ang in [0, 30, 60]:
+    for ang in [0, 30, 60, -30, -60]:
         ta = tangent_length(ang)
         fs = free_sum(ang)
         idl = ideal_path_delta(ang)
@@ -68,8 +69,8 @@ if __name__ == "__main__":
         ras = required_arc_shortening(ang)
         print(f"{ang:5.0f}  {ta:10.1f}  {fs:7.1f}  {idl:7.2f}  {fi:7.1f}  {ras:7.1f}")
     print()
-    print("Geometric tangent matches prior ~53.6 mm at 0°; free increases with angle.")
-    print("Required wrap-arc shortening remains the compensation target for pure r·θ.")
+    print("Geometric tangent matches prior ~53.6 mm at 0°; free increases with |angle|, more on negative side due to attach offset.")
+    print("Required wrap-arc shortening remains the compensation target for pure r·θ; sign-dependent.")
     print("Discrete fixed-site proxy freezes free segments → residual reverse.")
     print("True MuJoCo wrapgeom (or equiv) enforces the compensation automatically.")
     print("Radius working assumption holds. All provisional.")
