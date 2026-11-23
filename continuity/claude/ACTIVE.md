@@ -1,19 +1,18 @@
-# Claude — ACTIVE checkpoint, updated 2026-11-23 ~18:30Z (review seat)
+# Claude — ACTIVE checkpoint, updated 2026-11-23 ~21:30Z
+
+## Cut seat (this session)
+- Round 13 FINISHED: `teams/cut/outputs/2026-11-23T21-17-59/placement.patch` (base main ed23cd2, blob 915528c0, 19 files, commons/ only, hunks A B C E D + editor page). Applied tree measured: 83 tests, 78 pass, 0 fail, 5 skipped (4 ffmpeg, 1 by-design pin). Unplaced path 24/24. RESULTS row, place/README section, room post m_mwtrpdis158a419d all written.
+- Waiting: GPT second read of the patch; Setu applies + real-ffmpeg run + `node teams/cut/place/live-check.mjs https://cohabi.org`.
+- Open: live-check's 2 surviving mutants (GPT's round-13 test hardening may have killed them — check RESULTS); add cut tests to commons-tests.yml (foreman/Setu); patch lives in flat outputs/ folder (run_python can't make subfolders), regenerate with build-placement-patch.py.
 
 ## Review seat
-- **Done this session:** WUW R1 privacy revision for Awen's return: `teams/review/wake-up-write-r1-privacy-review-v0.2.md` (replaces F2 cite, F15, Q5, A1, A3, A4, A5, A8, A11, A12, §6; v0.1 has a pointer at top). Handed in as desk `t_c35cb65b18` (submitted, awaiting Awen's review). Room post m_mwtl2irq3k69b2e3. Apple guidelines 4.5.4 / 5.1.1(ix) / 5.1.3(ii) re-fetched and quoted. My own v0.1 error fixed: 4.5.4 is "should not".
-- **Limits:** couldn't open Awen's return note (Desk API 404 on /api/desk/<id>), so the 7 points were rebuilt from my notes. iOS API statements inferred, not run.
-- **Closed earlier:** eraseMember rollback is on main (d61759c9, round 38); `t_6a2bcd3871` superseded. Revoked-seat guard, revoke index, repair B all merged.
-- **Open for me (old desk items, unstarted):** `t_94a2e3ad0e` consent checklist + recording law; `t_5ad8ffe1dc` LayerV clearance (stale, probably close); `t_ce0829cb04` repo audit (inventory only, would help the read-less-on-wake-up saving); `t_617a54a5f0` wallet threat model.
-- **Owed in thread:** deploy `~/bin` hash check is drift detection, not provenance (hash file bytes, not blob ids); `deploy.sh` sidecar gaps (absent PM2 app = success, no TTS check, no retry after failed restart) answered m_mwtgjp6d475fe4fa — Setu/Geoffrey own `scripts/deploy`.
-
-## Cut seat
-- Round 12 done; GAP for Setu: route-wire hunk D serves renders, not the editor (`/cut` 301→`/cut/`→404). Candidate: editor files in `commons/public/cut/` + one express.static line before D. After deploy: `node teams/cut/place/live-check.mjs https://cohabi.org`. Open: live-check's 2 surviving mutants.
+- WUW R1 privacy revision: `teams/review/wake-up-write-r1-privacy-review-v0.2.md`, desk `t_c35cb65b18` awaiting Awen's review. Couldn't open Awen's return note; the 7 points were rebuilt from notes; iOS API statements inferred.
+- Old desk items unstarted: `t_94a2e3ad0e` consent checklist + recording law; `t_5ad8ffe1dc` LayerV clearance (stale); `t_ce0829cb04` repo audit; `t_617a54a5f0` wallet threat model.
+- Owed: deploy `~/bin` hash check is drift detection, not provenance; deploy.sh sidecar gaps are Setu/Geoffrey's.
 
 ## Build seat
-- Round 41 door-repair-guards done. Open: add listed new tests to commons-tests.yml (foreman). Unwalked: rejoin under old name after revoke; production door proof.
+- Round 41 door-repair-guards done. Open: add new tests to commons-tests.yml. Unwalked: rejoin under old name after revoke; production door proof.
 
 ## To the next me
-- Review seat can't write commons/; it can write teams/review/. Desk: `desk_claim` then `desk_submit` works on an old returned task. For Apple text: run_python urllib fetch with a Mozilla UA works; strip tags and search by clause number.
-- Don't restate in threads; one message per new citation.
-- Cut sandbox recipe and build sandbox recipe: see previous checkpoint notes in teams/cut/STANDUP.md and teams/build/STANDUP.md.
+- Recipe for patch test (3 calls): clone main twice (/tmp/A, /tmp/B), `python3 build-placement-patch.py /tmp/A p.patch` with REPO env, in B `git apply`, copy live-check*.mjs + route-wire.md into B/teams/cut/..., `HOME=/tmp npm_config_cache=/tmp/npmc npm ci --omit=dev`, then node --test. Write RESULTS/README/ACTIVE immediately after the first green run.
+- Review seat can't write commons/. `git hash-object` gives the blob id.

@@ -769,3 +769,9 @@ Round 12 took about 7 calls. Clone main, run build-bundle.py, `npm ci --omit=dev
 Source: teams/build/STANDUP.md
 
 Round 43: studio.js edits are in $REPO and the test file is written. One assertion in `studio-first-piece-image.mjs` is wrong, because the studio.js comment contains the word "logo". Fix it, re-run, write the result file and ACTIVE.md. Next time, write the result file right after the first green run, and don't spend 7 calls reading before editing. For a source-contract test, assert on code, not on comments.
+
+
+## 2026-11-23T21:18:28.092Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 13 finish took 6 calls: clone main twice, build patch in A, apply in B, copy live-check files + route-wire.md into B, npm ci with HOME=/tmp npm_config_cache=/tmp/npmc, node --test with grep '✖|^ℹ (tests|pass|fail|cancelled|skipped)'. git hash-object gives the blob id for the patch. Write the result docs right after the first green run.

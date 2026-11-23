@@ -1,0 +1,2490 @@
+diff --git a/commons/lib/cut/cleanup.mjs b/commons/lib/cut/cleanup.mjs
+new file mode 100644
+index 0000000..ad0c1e1
+--- /dev/null
++++ b/commons/lib/cut/cleanup.mjs
+@@ -0,0 +1,83 @@
++import { lstat, readdir, unlink } from 'node:fs/promises';
++import path from 'node:path';
++
++const RENDER_NAME = /^cut_[0-9a-f]{16}\.mp4$/;
++
++/**
++ * Remove only Cut render outputs from outDir. Symlinks and all other names are
++ * deliberately left alone. Expired renders go first; if the remaining eligible
++ * files exceed maxBytes, the oldest are removed until the cap is met.
++ */
++export async function sweepRenders(outDir, {
++  maxAgeMs = 6 * 60 * 60 * 1000,
++  maxBytes = 2_000_000_000,
++  now = Date.now(),
++} = {}) {
++  if (typeof outDir !== 'string' || !outDir || !path.isAbsolute(outDir)) {
++    throw new TypeError('outDir must be an absolute directory path');
++  }
++  if (!Number.isFinite(maxAgeMs) || maxAgeMs < 0) {
++    throw new RangeError('maxAgeMs must be a finite non-negative number');
++  }
++  if (!Number.isFinite(maxBytes) || maxBytes < 0) {
++    throw new RangeError('maxBytes must be a finite non-negative number');
++  }
++  if (!Number.isFinite(now)) throw new RangeError('now must be a finite number');
++
++  let names;
++  try {
++    names = await readdir(outDir);
++  } catch (error) {
++    if (error?.code === 'ENOENT') return { deleted: 0, keptBytes: 0 };
++    throw error;
++  }
++  const candidates = [];
++  for (const name of names) {
++    if (!RENDER_NAME.test(name)) continue;
++    const filePath = path.join(outDir, name);
++    let stat;
++    try {
++      stat = await lstat(filePath);
++    } catch (error) {
++      if (error?.code === 'ENOENT') continue; // concurrently removed
++      throw error;
++    }
++    if (!stat.isFile()) continue; // in particular, never follow or remove symlinks
++    candidates.push({ name, filePath, mtimeMs: stat.mtimeMs, size: stat.size });
++  }
++
++  let deleted = 0;
++  const remove = async (entry) => {
++    try {
++      await unlink(entry.filePath); // unlink removes an entry, never follows a symlink
++      deleted++;
++      return true;
++    } catch (error) {
++      if (error?.code === 'ENOENT') return false;
++      throw error;
++    }
++  };
++
++  const cutoff = now - maxAgeMs;
++  for (const entry of candidates) {
++    if (entry.mtimeMs < cutoff) await remove(entry);
++  }
++
++  const survivors = [];
++  for (const entry of candidates) {
++    if (entry.mtimeMs < cutoff) continue;
++    try {
++      const stat = await lstat(entry.filePath);
++      if (stat.isFile()) survivors.push({ ...entry, size: stat.size, mtimeMs: stat.mtimeMs });
++    } catch (error) {
++      if (error?.code !== 'ENOENT') throw error;
++    }
++  }
++  let keptBytes = survivors.reduce((total, entry) => total + entry.size, 0);
++  survivors.sort((a, b) => a.mtimeMs - b.mtimeMs || a.name.localeCompare(b.name));
++  for (const entry of survivors) {
++    if (keptBytes <= maxBytes) break;
++    if (await remove(entry)) keptBytes -= entry.size;
++  }
++  return { deleted, keptBytes };
++}
+diff --git a/commons/lib/cut/edit.mjs b/commons/lib/cut/edit.mjs
+new file mode 100644
+index 0000000..701c49e
+--- /dev/null
++++ b/commons/lib/cut/edit.mjs
+@@ -0,0 +1,146 @@
++// Cohabi Cut, Job 4: the edit list -> the planner's `tracks`.
++//
++// editToTracks(edit, { durationSec, width = 1080, height = 1920, videoSrc, musicSrc })
++//   edit = what the phone sends (see cut.js buildEdit):
++//     { trimStart, trimEnd,            seconds into the SOURCE video
++//       text?: { body, y },            one line, y = pixel offset from the frame centre on a 1080x1920 frame
++//       music?: { id, volume },        volume 0..1
++//       coverSec }                     seconds into the SOURCE video, inside the trimmed range
++//   returns the `tracks` object buildRenderPlan() takes: { main, overlay, audio }, integer ticks (120,000/s).
++//
++// Refusals (RangeError/TypeError with a plain message; the route turns them into a 400):
++//   not an object; trimStart/trimEnd not finite numbers; trimEnd <= trimStart; trimStart < 0 or trimEnd > durationSec;
++//   text body not a string, over 80 characters, or containing a line break / control character;
++//   text.y not finite, or the line would leave the frame; a line that cannot fit the frame width at 16 px;
++//   music.id not a non-empty string; music.volume not a number from 0 to 1;
++//   coverSec not a finite number inside [trimStart, trimEnd].
++//
++// PATHS: `videoSrc` / `musicSrc` are SERVER-SIDE file paths the route has already looked up from the client's
++// video id and music id. The client never supplies a path. If omitted they default to the placeholder
++// names "main-video" and "music-<id>", which ffmpeg cannot open: the route must pass real paths.
++//
++// CAPTION CONVENTION: the planner on main (commons/lib/cut/plan.mjs) draws a Words caption at x/y = TOP-LEFT
++// source pixels with fontSize in pixels, and does not wrap. So this module converts: it picks a font size that
++// fits ONE line (<= 84% of the frame width by the DejaVu Sans width table in wrap.mjs, between 16 px and ~4% of
++// the frame height), centres the line horizontally by that estimate, and puts its vertical centre at
++// height/2 + y * height/1920. The estimate is for DejaVu Sans; the server's default `sans` may be another face
++// (Inter on one box), so the line may sit a little off-centre there. That is a known, unmeasured limit.
++//
++// Import path: written to run from teams/cut/editor/. When placed at commons/lib/cut/edit.mjs change
++// "../render/wrap.mjs" to "./wrap.mjs" (wrap.mjs has no imports of its own and must be placed with it).
++
++import { estimateTextWidth, LINE_HEIGHT_FACTOR } from "./wrap.mjs";
++
++export const TICKS_PER_SECOND = 120_000;
++export const MAX_TEXT_CHARS = 80;
++export const UI_FRAME_HEIGHT = 1920; // the frame height the phone's y offsets (-540 / 0 / +540) assume
++export const MIN_FONT_PX = 16;
++export const WIDTH_FRACTION = 0.84;
++
++const ticks = (sec) => Math.round(sec * TICKS_PER_SECOND);
++
++function finite(name, v) {
++	if (typeof v !== "number" || !Number.isFinite(v)) throw new TypeError(`${name} must be a finite number, got ${String(v)}`);
++	return v;
++}
++
++function textElement(body, y, { durationTicks, width, height }) {
++	if (typeof body !== "string") throw new TypeError("text.body must be a string");
++	if (body.length > MAX_TEXT_CHARS) throw new RangeError(`text must be at most ${MAX_TEXT_CHARS} characters, got ${body.length}`);
++	if (/[\u0000-\u001f\u007f\u2028\u2029]/.test(body)) throw new RangeError("text must be one line: no line breaks or control characters");
++	const yOffset = finite("text.y", y ?? 0);
++	let px = Math.max(MIN_FONT_PX, Math.round(height * 0.04));
++	const maxWidth = width * WIDTH_FRACTION;
++	while (px > MIN_FONT_PX && estimateTextWidth(body, px) > maxWidth) px--;
++	const w = estimateTextWidth(body, px);
++	if (w > maxWidth) throw new RangeError(`text is too long to fit on one line of a ${width}px frame at ${MIN_FONT_PX}px`);
++	const lh = Math.ceil(px * LINE_HEIGHT_FACTOR);
++	const centreY = height / 2 + (yOffset * height) / UI_FRAME_HEIGHT;
++	if (centreY - lh / 2 < 0 || centreY + lh / 2 > height) throw new RangeError(`text at y offset ${yOffset} would leave the ${height}px frame`);
++	return {
++		id: "cut-caption-1",
++		type: "text",
++		name: "Caption",
++		startTime: 0,
++		duration: durationTicks,
++		trimStart: 0,
++		trimEnd: 0,
++		params: {
++			content: body,
++			fontSize: px,
++			color: "white",
++			"transform.positionX": Math.round((width - w) / 2),
++			"transform.positionY": Math.round(centreY - lh / 2),
++		},
++	};
++}
++
++export function editToTracks(edit, { durationSec, width = 1080, height = 1920, videoSrc = "main-video", musicSrc } = {}) {
++	if (!edit || typeof edit !== "object" || Array.isArray(edit)) throw new TypeError("edit must be an object");
++	finite("durationSec", durationSec);
++	if (durationSec <= 0) throw new RangeError("durationSec must be greater than 0");
++	const trimStart = finite("trimStart", edit.trimStart);
++	const trimEnd = finite("trimEnd", edit.trimEnd);
++	if (trimEnd <= trimStart) throw new RangeError(`trimEnd (${trimEnd}) must be greater than trimStart (${trimStart})`);
++	if (trimStart < 0 || trimEnd > durationSec) throw new RangeError(`trim ${trimStart}..${trimEnd} must lie within 0..${durationSec} seconds of the video`);
++	const coverSec = finite("coverSec", edit.coverSec);
++	if (coverSec < trimStart || coverSec > trimEnd) throw new RangeError(`coverSec ${coverSec} must lie inside the trimmed range ${trimStart}..${trimEnd}`);
++
++	const startTick = ticks(trimStart);
++	const durationTicks = ticks(trimEnd) - startTick;
++	if (durationTicks < 1) throw new RangeError("the trimmed clip is shorter than one tick");
++
++	const tracks = {
++		overlay: [],
++		main: {
++			id: "main",
++			type: "video",
++			elements: [{
++				id: "cut-main-1",
++				type: "video",
++				startTime: 0,
++				duration: durationTicks,
++				trimStart: startTick,
++				sourceDuration: ticks(durationSec),
++				params: { src: videoSrc },
++			}],
++		},
++		audio: [],
++	};
++
++	if (edit.text !== undefined && edit.text !== null) {
++		if (typeof edit.text !== "object" || Array.isArray(edit.text)) throw new TypeError("text must be an object { body, y }");
++		// A blank body means "no text" (the page omits it, but a stray empty string must not draw an empty caption).
++		if (typeof edit.text.body === "string" && edit.text.body.trim() === "") {
++			// nothing to draw
++		} else {
++			tracks.overlay.push({ id: "words", name: "Words", type: "text", hidden: false, elements: [textElement(edit.text.body, edit.text.y, { durationTicks, width, height })] });
++		}
++	}
++
++	if (edit.music !== undefined && edit.music !== null) {
++		const m = edit.music;
++		if (typeof m !== "object" || Array.isArray(m)) throw new TypeError("music must be an object { id, volume }");
++		if (typeof m.id !== "string" || m.id.length === 0) throw new TypeError("music.id must be a non-empty string");
++		const volume = finite("music.volume", m.volume);
++		if (volume < 0 || volume > 1) throw new RangeError(`music.volume must be from 0 to 1, got ${volume}`);
++		tracks.audio.push({
++			id: "music",
++			type: "audio",
++			elements: [{
++				id: "cut-music-1",
++				type: "audio",
++				startTime: 0,
++				duration: durationTicks,
++				trimStart: 0,
++				params: { src: musicSrc ?? `music-${m.id}`, volume },
++			}],
++		});
++	}
++	return tracks;
++}
++
++/** Where the cover frame sits in the RENDERED video, in seconds (coverSec is in the source video). */
++export function coverOffsetSec(edit) {
++	return finite("coverSec", edit.coverSec) - finite("trimStart", edit.trimStart);
++}
+diff --git a/commons/lib/cut/render-child.mjs b/commons/lib/cut/render-child.mjs
+new file mode 100644
+index 0000000..6f43fcd
+--- /dev/null
++++ b/commons/lib/cut/render-child.mjs
+@@ -0,0 +1,10 @@
++// Child process for POST /api/cut/render: runs renderEditJob (which uses spawnSync) OFF the server's event loop.
++// Started by forkRenderJob in wire.mjs. Gets the job over IPC, answers once, exits.
++import { renderEditJob } from "./render-job.mjs";
++
++process.once("message", (job) => {
++	let out;
++	try { out = { ok: true, result: renderEditJob(job) }; }
++	catch (e) { out = { ok: false, name: String(e?.name || "Error"), message: String(e?.message || e) }; }
++	process.send(out, () => process.exit(0));
++});
+diff --git a/commons/lib/cut/render-edit.mjs b/commons/lib/cut/render-edit.mjs
+new file mode 100644
+index 0000000..da43468
+--- /dev/null
++++ b/commons/lib/cut/render-edit.mjs
+@@ -0,0 +1,61 @@
++// Cohabi Cut, Job 4: the render runner.
++//
++// renderTimeline({ tracks, sources, width, height, outPath, run, ffmpeg, timeoutMs })
++//   1. buildRenderPlan() (the planner on main) turns `tracks` into ffmpeg input args + a filter graph.
++//   2. ffmpeg -y <plan.args> -c:v libx264 -pix_fmt yuv420p -c:a aac <outPath> is run with an ARGV
++//      ARRAY (never a shell string). `run` defaults to child_process.spawnSync and is injectable for tests.
++//   3. Returns { ok: true, outPath, durationTicks, ignored }. On ffmpeg exit != 0 (or a failed spawn, or
++//      a timeout) it throws an Error whose message ends with the last 20 stderr lines.
++//
++// The caller owns the paths: `tracks` must already carry SERVER-SIDE file paths in params.src (the
++// planner's own contract), and `outPath` must be a server-chosen path. This module refuses an outPath
++// that is not a non-empty single-line string or that starts with "-" (it would be read as an option).
++// No server.mjs, no network, no file reads: this module only builds argv and runs the process.
++//
++// Import path: written to run from teams/cut/editor/. When placed at commons/lib/cut/render-edit.mjs
++// change the plan import to "./plan.mjs".
++
++import { spawnSync } from "node:child_process";
++import { buildRenderPlan } from "./plan.mjs";
++
++export const VIDEO_CODEC_ARGS = Object.freeze(["-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac"]);
++export const STDERR_TAIL_LINES = 20;
++
++function tail(text, n = STDERR_TAIL_LINES) {
++	const lines = String(text ?? "").split(/\r?\n/);
++	while (lines.length && lines[lines.length - 1] === "") lines.pop();
++	return lines.slice(-n).join("\n");
++}
++
++// The full ffmpeg argv for a plan (exported so tests and callers can inspect it without running anything).
++export function buildFfmpegArgs(plan, outPath) {
++	if (typeof outPath !== "string" || outPath.length === 0 || /[\0\r\n]/.test(outPath) || outPath.startsWith("-")) {
++		throw new TypeError("outPath must be a non-empty single-line path that does not start with '-'");
++	}
++	return ["-y", ...plan.args, ...VIDEO_CODEC_ARGS, outPath];
++}
++
++export function renderTimeline({
++	tracks,
++	sources = {},
++	width = 1080,
++	height = 1920,
++	outPath,
++	run = spawnSync,
++	ffmpeg = process.env.FFMPEG || "ffmpeg",
++	timeoutMs = 10 * 60 * 1000,
++} = {}) {
++	// Planner errors (RenderPlanError) propagate unchanged: they are the user-facing refusals.
++	const plan = buildRenderPlan({ tracks, sources, width, height });
++	const argv = buildFfmpegArgs(plan, outPath);
++	const r = run(ffmpeg, argv, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: timeoutMs });
++	if (r?.error) {
++		const why = r.error.code === "ETIMEDOUT" ? `timed out after ${timeoutMs} ms` : `could not start (${r.error.code ?? r.error.message})`;
++		throw new Error(`ffmpeg ${why}`);
++	}
++	if (!r || r.status !== 0) {
++		const code = r?.status ?? (r?.signal ? `signal ${r.signal}` : "unknown");
++		throw new Error(`ffmpeg exited with ${code}\n${tail(r?.stderr)}`);
++	}
++	return { ok: true, outPath, durationTicks: plan.durationTicks, ignored: plan.ignored };
++}
+diff --git a/commons/lib/cut/render-job.mjs b/commons/lib/cut/render-job.mjs
+new file mode 100644
+index 0000000..aa8082f
+--- /dev/null
++++ b/commons/lib/cut/render-job.mjs
+@@ -0,0 +1,103 @@
++// Cohabi Cut, Job 4: the one call POST /api/cut/render makes.
++//
++// renderEditJob({ edit, video, music = null, outDir, run = spawnSync, ffmpeg, timeoutMs })
++//   edit   what the phone sent: { trimStart, trimEnd, text?{body,y}, music?{id,volume}, coverSec }
++//   video  { path, durationSec, width, height, hasAudio? }  looked up BY THE ROUTE from the client's video id.
++//          `path` must be an absolute path to an existing file. width/height are the OUTPUT frame
++//          (rounded down to even numbers, 16..4096). `hasAudio` defaults to true, as in the planner: a silent
++//          source must say `hasAudio: false` or ffmpeg will fail on the missing audio stream (loudly, not silently).
++//   music  { path } looked up by the route from edit.music.id, or null. Absolute path to an existing file.
++//   outDir an absolute path to an existing directory the route owns. The output is a random cut_<16 hex>.mp4 in it.
++//   returns { ok: true, outPath, seconds }   seconds = length of the rendered (trimmed) video.
++//
++// Order: validate everything and run editToTracks first (so a bad edit never reaches ffmpeg), then renderTimeline.
++// Refusals throw TypeError/RangeError with a plain message (the route turns them into a 400); an ffmpeg failure
++// throws the runner's Error (the route turns that into a 500) and any half-written output file is removed.
++//
++// Refuses: a trimmed length over 60 s; an outDir that is not an absolute existing directory; a video.path or
++// music.path that is not an absolute existing file; edit.music with no music file given.
++// If `music` is given but edit.music is absent, the music is ignored (nothing to mix at, no volume to use).
++//
++// Import path: same folder as edit.mjs and render-edit.mjs, so placing the three together at commons/lib/cut/
++// needs no change here (edit.mjs and render-edit.mjs each have their own one-line import change).
++
++import { spawnSync } from "node:child_process";
++import { randomBytes } from "node:crypto";
++import { existsSync, statSync, unlinkSync } from "node:fs";
++import { isAbsolute, join } from "node:path";
++import { editToTracks } from "./edit.mjs";
++import { renderTimeline } from "./render-edit.mjs";
++
++export const MAX_RENDER_SECONDS = 60;
++export const MAX_SIDE_PX = 4096;
++export const MIN_SIDE_PX = 16;
++
++function stat(p) {
++	try { return statSync(p); } catch { return null; }
++}
++
++function absoluteFile(name, p) {
++	if (typeof p !== "string" || p.length === 0 || /[\0\r\n]/.test(p)) throw new TypeError(`${name} must be a non-empty single-line path`);
++	if (!isAbsolute(p)) throw new TypeError(`${name} must be an absolute path`);
++	const s = stat(p);
++	if (!s || !s.isFile()) throw new TypeError(`${name} must be an existing file`);
++	return p;
++}
++
++function side(name, v) {
++	if (!Number.isFinite(v)) throw new TypeError(`${name} must be a finite number`);
++	const even = Math.floor(v / 2) * 2;
++	if (even < MIN_SIDE_PX || even > MAX_SIDE_PX) throw new RangeError(`${name} must be from ${MIN_SIDE_PX} to ${MAX_SIDE_PX} pixels, got ${v}`);
++	return even;
++}
++
++export function renderEditJob({
++	edit,
++	video,
++	music = null,
++	outDir,
++	run = spawnSync,
++	ffmpeg = process.env.FFMPEG || "ffmpeg",
++	timeoutMs,
++} = {}) {
++	if (!video || typeof video !== "object") throw new TypeError("video must be an object { path, durationSec, width, height }");
++	const videoPath = absoluteFile("video.path", video.path);
++	if (!Number.isFinite(video.durationSec) || video.durationSec <= 0) throw new RangeError("video.durationSec must be a number greater than 0");
++	const width = side("video.width", video.width);
++	const height = side("video.height", video.height);
++	if (video.hasAudio !== undefined && typeof video.hasAudio !== "boolean") throw new TypeError("video.hasAudio must be true or false when given");
++
++	if (typeof outDir !== "string" || !isAbsolute(outDir)) throw new TypeError("outDir must be an absolute path");
++	const d = stat(outDir);
++	if (!d || !d.isDirectory()) throw new TypeError("outDir must be an existing directory");
++
++	let musicPath;
++	if (music !== null && music !== undefined) {
++		if (typeof music !== "object") throw new TypeError("music must be an object { path } or null");
++		musicPath = absoluteFile("music.path", music.path);
++	}
++	const wantsMusic = edit && typeof edit === "object" && edit.music !== undefined && edit.music !== null;
++	if (wantsMusic && musicPath === undefined) throw new TypeError("the edit asks for music but no music file was given");
++
++	// Validates the whole edit (trim, text, music volume, cover) before anything else happens.
++	const tracks = editToTracks(edit, {
++		durationSec: video.durationSec,
++		width,
++		height,
++		videoSrc: videoPath,
++		musicSrc: wantsMusic ? musicPath : undefined,
++	});
++
++	const seconds = edit.trimEnd - edit.trimStart;
++	if (seconds > MAX_RENDER_SECONDS) throw new RangeError(`the trimmed video is ${seconds.toFixed(1)} s; the limit is ${MAX_RENDER_SECONDS} s`);
++
++	const sources = { [videoPath]: { hasAudio: video.hasAudio !== false, width: video.width, height: video.height } };
++	const outPath = join(outDir, `cut_${randomBytes(8).toString("hex")}.mp4`);
++	try {
++		const res = renderTimeline({ tracks, sources, width, height, outPath, run, ffmpeg, ...(timeoutMs ? { timeoutMs } : {}) });
++		return { ok: true, outPath: res.outPath, seconds };
++	} catch (err) {
++		try { if (existsSync(outPath)) unlinkSync(outPath); } catch { /* best effort */ }
++		throw err;
++	}
++}
+diff --git a/commons/lib/cut/route.mjs b/commons/lib/cut/route.mjs
+new file mode 100644
+index 0000000..3717b74
+--- /dev/null
++++ b/commons/lib/cut/route.mjs
+@@ -0,0 +1,131 @@
++// Cohabi Cut, Job 4: the handler POST /api/cut/render calls.
++//
++// handleCutRender({ member, body, deps }) -> Promise<{ status, json }>
++//
++//   member  the signed-in member (route already authenticated): { id }. No member id -> 401.
++//   body    parsed JSON from the phone: { videoId, edit, musicId? }.
++//   deps    everything the handler touches, so server.mjs stays three lines and tests need no server:
++//     videos.get(id)   -> null | { owner, path, durationSec, width, height, hasAudio? }
++//     music.get(id)    -> null | { owner?, public?, path }     (only needed when music is asked for)
++//     probe(path)      -> boolean | { hasAudio }               optional; when absent the video record's hasAudio is used
++//     outDir           absolute existing directory (renders go here as cut_<16hex>.mp4)
++//     publicUrl(outPath) -> string                              optional; default "/cut/<basename>" (the server must serve it)
++//     renderJob(args)  -> result | Promise<result>              optional; default renderEditJob from ./render-job.mjs
++//     maxJobs          site-wide simultaneous renders, default 2
++//     log(msg)         optional, gets the real error text of a failed render (never sent to the client)
++//
++// Answers:
++//   200 { ok:true, url, seconds }
++//   400 bad body / bad ids / the edit refused (the refusal's own message)
++//   401 no member
++//   403 the video (or music) is not yours
++//   404 no such video / music
++//   422 the server could not read the video's audio
++//   429 "one export at a time" (this member already has a render) | "the editor is busy, try again in a minute" (site cap)
++//   500 "the render failed" (the ffmpeg text goes to deps.log only)
++//
++// Order: validate -> look up + ownership -> concurrency slots -> probe -> render. Slots are always released.
++//
++// IMPORTANT FOR THE WIRING: renderEditJob / renderTimeline call ffmpeg with spawnSync by default. A synchronous render
++// blocks the Node event loop, so while it runs no second request is even read and the 429 guards cannot fire. The
++// guards are real only if deps.renderJob runs ffmpeg off the event loop (a child process or worker returning a promise).
++// With the default renderJob they are still correct, just idle.
++
++import { basename } from "node:path";
++import { renderEditJob } from "./render-job.mjs";
++
++export const DEFAULT_MAX_JOBS = 2;
++const MAX_ID_LEN = 200;
++
++// Per-process counters. One map entry per member with a render running; `active` is the site-wide count.
++const memberBusy = new Set();
++let active = 0;
++
++export function _resetCutRouteState() { memberBusy.clear(); active = 0; }
++export function _cutRouteState() { return { members: [...memberBusy], active }; }
++
++const reply = (status, json) => ({ status, json });
++const fail = (status, error) => reply(status, { ok: false, error });
++
++function goodId(v) {
++	return typeof v === "string" && v.length > 0 && v.length <= MAX_ID_LEN && !/[\0\r\n]/.test(v);
++}
++
++export async function handleCutRender({ member, body, deps } = {}) {
++	if (!member || !goodId(member.id)) return fail(401, "sign in to export");
++	if (!deps || typeof deps !== "object" || !deps.videos || typeof deps.videos.get !== "function") {
++		return fail(500, "the editor is not set up on this server");
++	}
++	if (!body || typeof body !== "object" || Array.isArray(body)) return fail(400, "send { videoId, edit }");
++	const { videoId, edit } = body;
++	if (!goodId(videoId)) return fail(400, "videoId is required");
++	if (!edit || typeof edit !== "object" || Array.isArray(edit)) return fail(400, "edit is required");
++	if (body.musicId !== undefined && body.musicId !== null && !goodId(body.musicId)) return fail(400, "musicId must be a short text id");
++	const musicId = body.musicId ?? (edit.music && typeof edit.music === "object" ? edit.music.id : undefined);
++	if (musicId !== undefined && musicId !== null && !goodId(musicId)) return fail(400, "music id must be a short text id");
++	// Only fetch music when the edit actually mixes it; the job ignores music without edit.music.
++	const wantsMusic = edit.music !== undefined && edit.music !== null;
++	if (wantsMusic && !musicId) return fail(400, "the edit asks for music but gives no music id");
++
++	const video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)
++	if (!video) return fail(404, "no such video");
++	if (video.owner !== member.id) return fail(403, "that video is not yours");
++
++	let music = null;
++	if (wantsMusic) {
++		if (!deps.music || typeof deps.music.get !== "function") return fail(400, "music is not available on this server");
++		const m = await deps.music.get(musicId);
++		if (!m) return fail(404, "no such music");
++		// Label tracks are public: they say so explicitly. Everything else must be the member's own.
++		if (m.public !== true && m.owner !== member.id) return fail(403, "that music is not yours");
++		music = { path: m.path };
++	}
++
++	const maxJobs = Number.isInteger(deps.maxJobs) && deps.maxJobs > 0 ? deps.maxJobs : DEFAULT_MAX_JOBS;
++	if (memberBusy.has(member.id)) return fail(429, "one export at a time");
++	if (active >= maxJobs) return fail(429, "the editor is busy, try again in a minute");
++	memberBusy.add(member.id);
++	active += 1;
++	try {
++		let hasAudio = video.hasAudio;
++		const dims = {}; // measured by deps.probe AFTER the ownership check; the store's record has no width/height
++		if (typeof deps.probe === "function") {
++			try {
++				const p = await deps.probe(video.path);
++				hasAudio = typeof p === "boolean" ? p : p && typeof p === "object" ? p.hasAudio : undefined;
++				if (p && typeof p === "object") for (const k of ["durationSec", "width", "height"]) if (Number.isFinite(p[k]) && p[k] > 0) dims[k] = p[k];
++			} catch (err) {
++				if (typeof deps.log === "function") deps.log(`cut probe failed: ${err && err.message}`);
++				return fail(422, "could not read that video");
++			}
++			if (typeof hasAudio !== "boolean") return fail(422, "could not read that video");
++		}
++
++		const job = {
++			edit,
++			video: {
++				path: video.path, durationSec: video.durationSec, width: video.width, height: video.height,
++				...dims,
++				...(typeof hasAudio === "boolean" ? { hasAudio } : {}),
++			},
++			music,
++			outDir: deps.outDir,
++		};
++		let res;
++		try {
++			res = await (typeof deps.renderJob === "function" ? deps.renderJob(job) : renderEditJob(job));
++		} catch (err) {
++			// TypeError/RangeError are the job's own refusals (bad edit, bad file, too long): safe to show.
++			if (err instanceof TypeError || err instanceof RangeError || (err && err.name === "RenderPlanError")) {
++				return fail(400, String(err.message || "the edit was refused"));
++			}
++			if (typeof deps.log === "function") deps.log(`cut render failed: ${err && err.message}`);
++			return fail(500, "the render failed");
++		}
++		const url = typeof deps.publicUrl === "function" ? deps.publicUrl(res.outPath) : `/cut/${basename(res.outPath)}`;
++		return reply(200, { ok: true, url, seconds: res.seconds });
++	} finally {
++		memberBusy.delete(member.id);
++		active -= 1;
++	}
++}
+diff --git a/commons/lib/cut/wire.mjs b/commons/lib/cut/wire.mjs
+new file mode 100644
+index 0000000..606d630
+--- /dev/null
++++ b/commons/lib/cut/wire.mjs
+@@ -0,0 +1,72 @@
++// Cohabi Cut, Job 4: the glue between route.mjs and the server's real stores. Pure functions of the stores handed in,
++// so a test can pass stores with the same SHAPES as commons/lib/videos.mjs and commons/lib/audio.mjs.
++//
++// What main's stores actually give (read at commons/lib/videos.mjs and audio.mjs, 2026-11-23):
++//   videos.get(id)     -> { id, by, url, seconds|null, ready, ... }   owner is `by`; NO file path, NO width/height
++//   videos.fileFor(id) -> { file, type } | null                      the file to read (converted mp4, else the original)
++//   audio.get(id)      -> { id, ext, by, title, ... } | null         owner is `by`
++//   audio.fileOf(item) -> absolute path
++// route.mjs wants { owner, path } from videos.get / music.get and { hasAudio, width, height, durationSec } from probe.
++import { execFile, fork } from "node:child_process";
++import { basename, isAbsolute } from "node:path";
++
++const run = (impl, file, args) => new Promise((res, rej) => {
++	impl(file, args, { timeout: 20000, maxBuffer: 1 << 20 }, (e, so) => (e ? rej(e) : res(String(so))));
++});
++
++/** Parse `ffprobe -print_format json -show_streams -show_format` output into what the editor needs. */
++export function parseProbe(json) {
++	const j = typeof json === "string" ? JSON.parse(json) : json;
++	const streams = Array.isArray(j?.streams) ? j.streams : [];
++	const v = streams.find((s) => s.codec_type === "video");
++	if (!v) throw new Error("no video stream");
++	let w = Number(v.width), h = Number(v.height);
++	// Phones record sideways and add a rotation flag; ffmpeg auto-rotates, so the frame the editor sees is swapped.
++	const rot = Number((v.side_data_list || []).map((d) => d?.rotation).find((r) => r !== undefined) ?? v.tags?.rotate ?? 0);
++	if (Math.abs(rot) % 180 === 90) [w, h] = [h, w];
++	const dur = Number(j?.format?.duration ?? v.duration);
++	if (!(w > 0) || !(h > 0) || !(dur > 0)) throw new Error("unreadable video");
++	return { hasAudio: streams.some((s) => s.codec_type === "audio"), width: w, height: h, durationSec: dur };
++}
++
++export function makeCutDeps({ videos, audio, labelTracks = null, outDir, ffprobe = process.env.FFPROBE || "ffprobe", execFileImpl = execFile, maxJobs = 2, renderJob = forkRenderJob, log = () => {} } = {}) {
++	return {
++		videos: {
++			get(id) {
++				const v = videos.get(id), f = videos.fileFor(id);
++				return v && f ? { owner: v.by, path: f.file } : null;
++			},
++		},
++		music: {
++			get(id) {
++				if (labelTracks) { const t = labelTracks.get(id); if (t) return { public: true, path: t.path }; }
++				const a = audio.get(id);
++				return a ? { owner: a.by, path: audio.fileOf(a) } : null;
++			},
++		},
++		async probe(path) {
++			if (!isAbsolute(path)) throw new Error("probe wants an absolute path");
++			return parseProbe(await run(execFileImpl, ffprobe, ["-v", "error", "-print_format", "json", "-show_streams", "-show_format", path]));
++		},
++		outDir, maxJobs, renderJob, log,
++		publicUrl: (outPath) => `/cut/${basename(outPath)}`,
++	};
++}
++
++/** Run renderEditJob in a child process so ffmpeg's spawnSync never blocks the server; refusals keep their type. */
++export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./render-child.mjs", import.meta.url) } = {}) {
++	return new Promise((resolve, reject) => {
++		const p = fork(child, [], { stdio: ["ignore", "ignore", "ignore", "ipc"], execArgv: [] });
++		let done = false;
++		const end = (fn, v) => { if (done) return; done = true; clearTimeout(t); try { p.kill(); } catch { /* already gone */ } fn(v); };
++		const t = setTimeout(() => end(reject, new Error("render timed out")), timeoutMs);
++		p.once("message", (m) => {
++			if (m?.ok) return end(resolve, m.result);
++			const e = m?.name === "TypeError" ? new TypeError(m.message) : m?.name === "RangeError" ? new RangeError(m.message) : Object.assign(new Error(m?.message || "render failed"), { name: m?.name || "Error" });
++			end(reject, e);
++		});
++		p.once("error", (e) => end(reject, e));
++		p.once("exit", () => end(reject, new Error("render process exited")));
++		p.send(job);
++	});
++}
+diff --git a/commons/lib/cut/wrap.mjs b/commons/lib/cut/wrap.mjs
+new file mode 100644
+index 0000000..3b56599
+--- /dev/null
++++ b/commons/lib/cut/wrap.mjs
+@@ -0,0 +1,100 @@
++// Cohabi Cut Job 3 follow-up: wrap long Words captions so they stay inside the frame.
++// ffmpeg drawtext never wraps: on 2026-11-21 an 8-word caption's bright pixels reached x=534 of 540.
++// This module splits a caption into lines BEFORE ffmpeg, one drawtext per line, so the registry stays
++// the only drawtext serializer and never has to accept a line break inside a value.
++//
++// Width estimate: advance widths of DejaVu Sans (units per 1000 em, ASCII 0x20..0x7e, measured with
++// PIL ImageFont.getlength at size 1000 on 2026-11-21). The table fits ONLY DejaVu Sans. An earlier
++// version of this comment claimed DejaVu is among the widest sans fonts so an unknown `sans` would err
++// toward early wrapping; that was FALSE (measured 2026-11-21, 10 x "W" at 48 px: bright x-extent 2..472
++// under DejaVu but 1..495 under a Lato default). So every caption this module returns is PINNED to
++// WRAP_FONT (`font=DejaVu Sans`), wrapped or not: the font drawtext uses is then the one measured here,
++// whatever the server's fontconfig default is. Characters outside ASCII are assumed 1.0 em (as wide
++// as a CJK glyph). The estimate was checked against real drawtext pixel bounds in
++// teams/cut/render/ffmpeg-smoke-wrap.py and a test here. The server must have DejaVu Sans installed;
++// if fontconfig substitutes another face, the width guarantee is gone (check `fc-match "DejaVu Sans"`).
++
++export const WRAP_FONT = "DejaVu Sans";
++
++export const DEJAVU_ADVANCE = [
++	318, 401, 460, 838, 636, 950, 780, 275, 390, 390, 500, 838, 318, 361, 318, 337, 636, 636, 636, 636,
++	636, 636, 636, 636, 636, 636, 337, 337, 838, 838, 838, 531, 1000, 684, 686, 698, 770, 632, 575, 775,
++	752, 295, 295, 656, 557, 863, 748, 787, 603, 787, 695, 635, 611, 732, 684, 989, 685, 611, 685, 390,
++	337, 390, 838, 500, 500, 613, 635, 550, 635, 615, 352, 635, 634, 278, 278, 579, 278, 974, 634, 612,
++	635, 635, 411, 521, 392, 634, 592, 818, 592, 592, 525, 636, 337, 636, 838,
++];
++
++export const LINE_HEIGHT_FACTOR = 1.2;
++export const RIGHT_MARGIN_FRACTION = 0.04;
++
++/** Estimated rendered width in pixels of a single line at `fontSize`. */
++export function estimateTextWidth(text, fontSize) {
++	let units = 0;
++	for (const ch of String(text)) {
++		const c = ch.codePointAt(0);
++		units += c >= 0x20 && c <= 0x7e ? DEJAVU_ADVANCE[c - 0x20] : 1000;
++	}
++	return (units * fontSize) / 1000;
++}
++
++/** Greedy word wrap to `maxWidth` pixels. A word wider than the line is split by character. */
++export function wrapLines(text, fontSize, maxWidth) {
++	if (estimateTextWidth(text, fontSize) <= maxWidth) return [text];
++	const lines = [];
++	let line = "";
++	const fits = (s) => estimateTextWidth(s, fontSize) <= maxWidth;
++	for (const word of text.split(/ +/).filter((w) => w.length > 0)) {
++		let rest = word;
++		while (!fits(rest)) {
++			// hard split: longest prefix that fits, at least one character
++			const chars = [...rest];
++			let n = chars.length - 1;
++			while (n > 1 && !fits(chars.slice(0, n).join(""))) n--;
++			if (line) { lines.push(line); line = ""; }
++			lines.push(chars.slice(0, n).join(""));
++			rest = chars.slice(n).join("");
++		}
++		if (!line) line = rest;
++		else if (fits(`${line} ${rest}`)) line = `${line} ${rest}`;
++		else { lines.push(line); line = rest; }
++	}
++	if (line) lines.push(line);
++	return lines;
++}
++
++/**
++ * Turn one text-effect params object into one params object per wrapped line.
++ * Every returned object carries `font: WRAP_FONT` (see header), including a caption that fits on one line.
++ * Throws RangeError when it cannot fit the frame.
++ */
++export function wrapCaptionParams(params, { width, height }) {
++	const { text, x = 0, y = 0, fontSize = 32 } = params;
++	if (typeof text !== "string" || !Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(fontSize) || fontSize <= 0) {
++		return [params]; // let the registry produce its own precise error
++	}
++	// Top-left pixel origin: a negative x or y puts the first glyphs off the left/top edge. Before this check
++	// a negative x also WIDENED maxWidth, so a caption at x=-200 wrapped as if the frame were 200 px wider.
++	if (x < 0 || y < 0) {
++		throw new RangeError(`caption origin (${x}, ${y}) is outside the frame: x and y are top-left pixels and must be >= 0`);
++	}
++	const margin = Math.round(width * RIGHT_MARGIN_FRACTION);
++	const maxWidth = width - x - margin;
++	if (estimateTextWidth(text, fontSize) <= maxWidth) {
++		// A caption that fits on one line is still checked against the bottom edge (same line-box rule as wrapped lines).
++		const oneLine = Math.ceil(fontSize * LINE_HEIGHT_FACTOR);
++		if (y + oneLine > height) {
++			throw new RangeError(`caption at y=${y} needs a ${oneLine}px line box (bottom edge ${y + oneLine}px) but the frame is ${height}px tall`);
++		}
++		return [{ ...params, font: WRAP_FONT }];
++	}
++	if (maxWidth < fontSize) {
++		throw new RangeError(`caption at x=${x} leaves ${maxWidth}px of a ${width}px frame, less than one ${fontSize}px glyph`);
++	}
++	const lines = wrapLines(text, fontSize, maxWidth);
++	const lineHeight = Math.ceil(fontSize * LINE_HEIGHT_FACTOR);
++	const bottom = y + (lines.length - 1) * lineHeight + lineHeight;
++	if (bottom > height) {
++		throw new RangeError(`caption needs ${lines.length} lines (bottom edge ${bottom}px) but the frame is ${height}px tall`);
++	}
++	return lines.map((line, i) => ({ ...params, text: line, y: y + i * lineHeight, font: WRAP_FONT }));
++}
+diff --git a/commons/public/cut/cut.css b/commons/public/cut/cut.css
+new file mode 100644
+index 0000000..7f06f0d
+--- /dev/null
++++ b/commons/public/cut/cut.css
+@@ -0,0 +1,98 @@
++* { box-sizing: border-box; }
++:root {
++  color-scheme: dark;
++  font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  background: #101114;
++  color: #f6f5f2;
++}
++html, body { margin: 0; min-height: 100%; max-width: 100%; overflow-x: hidden; }
++body { background: #101114; }
++button, input, select { font: inherit; }
++.editor {
++  width: min(100%, 520px);
++  min-height: 100vh;
++  margin-inline: auto;
++  padding: max(8px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
++}
++.topbar {
++  min-height: 56px;
++  display: grid;
++  grid-template-columns: minmax(48px, 1fr) auto minmax(130px, 1fr);
++  align-items: center;
++  gap: 8px;
++}
++.topbar h1 { margin: 0; font-size: 1.05rem; text-align: center; white-space: nowrap; }
++.back { color: #e7e1ff; text-decoration: none; padding: 10px 4px; }
++button, select, input[type="text"] {
++  min-height: 44px;
++  border: 1px solid #565760;
++  border-radius: 10px;
++  background: #202126;
++  color: inherit;
++}
++button { padding: 8px 12px; cursor: pointer; }
++button:disabled { opacity: .65; cursor: wait; }
++.primary { justify-self: end; min-width: 130px; background: #ded5ff; color: #19142a; border-color: #ded5ff; font-weight: 700; }
++.preview-panel {
++  width: 100%;
++  height: min(56vh, 620px);
++  min-height: 240px;
++  display: grid;
++  place-items: center;
++  overflow: hidden;
++  border-radius: 14px;
++  background: #050506;
++}
++#cut-preview { display: block; width: 100%; height: 100%; object-fit: contain; }
++.clip-picker { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
++#selected-clip-credit { color: #c4c3ca; font-size: .85rem; }
++.stock-sheet {
++  position: fixed; inset: auto 0 0; z-index: 5; max-height: min(82vh, 760px); overflow-y: auto;
++  width: min(100%, 520px); margin-inline: auto; padding: 16px;
++  border: 1px solid #62616d; border-radius: 18px 18px 0 0; background: #17181d;
++  box-shadow: 0 -12px 38px #0009;
++}
++.stock-sheet[hidden] { display: none; }
++.stock-sheet-head, .stock-search-row { display: flex; align-items: center; gap: 10px; }
++.stock-sheet-head { justify-content: space-between; }
++.stock-sheet h2 { margin: 0; font-size: 1.1rem; }
++.stock-sheet form label { display: block; margin: 12px 0 4px; }
++.stock-search-row input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 10px; }
++.stock-search-row button, .stock-sheet-head button { min-height: 44px; }
++#stock-status { min-height: 1.45em; color: #dedee5; }
++.stock-results { display: grid; gap: 10px; }
++.stock-result { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #35363b; }
++.stock-result img { width: 112px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; background: #050506; }
++.stock-result p { margin: 2px 0; color: #dedee5; font-size: .88rem; overflow-wrap: anywhere; }
++.stock-result .stock-credit { color: #c4c3ca; }
++.stock-result button { grid-column: 1 / -1; width: 100%; min-height: 44px; }
++.tools { padding-top: 8px; }
++.tool-group {
++  min-width: 0;
++  margin: 0;
++  padding: 12px 0;
++  border: 0;
++  border-bottom: 1px solid #35363b;
++}
++.tool-group legend { padding: 0; font-weight: 700; font-size: 1.05rem; }
++.tool-group label { display: block; margin: 8px 0 4px; color: #dedee5; }
++.tool-group input[type="text"], .tool-group select { width: 100%; padding: 8px 10px; }
++.tool-group input[type="range"] { display: block; width: 100%; min-height: 44px; accent-color: #bcaaff; }
++.tool-group button { width: 100%; }
++.draft-note { color: #c4c3ca; font-size: .88rem; }
++.rl-toast {
++  position: sticky;
++  bottom: max(8px, env(safe-area-inset-bottom));
++  z-index: 2;
++  margin: 8px 0 0;
++  padding: 12px;
++  border: 1px solid #8982a7;
++  border-radius: 10px;
++  background: #25232c;
++}
++@media (max-width: 380px) {
++  .editor { padding-inline: 12px; }
++  .topbar { grid-template-columns: 44px minmax(0, 1fr) 126px; gap: 4px; }
++  .primary { min-width: 0; padding-inline: 7px; font-size: .9rem; }
++  .topbar h1 { font-size: .95rem; }
++}
+diff --git a/commons/public/cut/cut.html b/commons/public/cut/cut.html
+new file mode 100644
+index 0000000..1274ea9
+--- /dev/null
++++ b/commons/public/cut/cut.html
+@@ -0,0 +1,84 @@
++<!doctype html>
++<html lang="en">
++<head>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
++  <meta name="theme-color" content="#101114">
++  <title>Cohabi Cut · Edit video</title>
++  <link rel="stylesheet" href="./cut.css">
++  <script type="module" src="./cut.js"></script>
++</head>
++<body>
++  <main class="editor" aria-labelledby="page-title">
++    <header class="topbar">
++      <a class="back" href="/" aria-label="Back to Cohabi">Back</a>
++      <h1 id="page-title">Cohabi Cut</h1>
++      <button id="export-feed" class="primary" type="button">Export to Feed</button>
++    </header>
++
++    <section class="preview-panel" aria-label="Video preview">
++      <video id="cut-preview" controls playsinline preload="metadata" aria-label="Video preview" data-video-id=""></video>
++    </section>
++    <section class="clip-picker" aria-label="Choose a video">
++      <button id="stock-open" type="button" aria-haspopup="dialog" aria-controls="stock-sheet">Pick a stock clip</button>
++      <span id="selected-clip-credit" aria-live="polite"></span>
++    </section>
++    <section id="stock-sheet" class="stock-sheet" role="dialog" aria-labelledby="stock-title" aria-modal="true" hidden>
++      <div class="stock-sheet-head">
++        <h2 id="stock-title">Pick a stock clip</h2>
++        <button id="stock-close" type="button" aria-label="Close stock clip search">Close</button>
++      </div>
++      <form id="stock-search-form">
++        <label for="stock-query">Search free stock footage</label>
++        <div class="stock-search-row">
++          <input id="stock-query" name="q" type="search" minlength="2" maxlength="100" autocomplete="off" placeholder="Ocean at sunset">
++          <button id="stock-search" type="submit">Search</button>
++        </div>
++      </form>
++      <p id="stock-status" role="status" aria-live="polite"></p>
++      <div id="stock-results" class="stock-results" aria-label="Stock search results"></div>
++    </section>
++
++    <section class="tools" aria-label="Edit your video">
++      <fieldset class="tool-group">
++        <legend>Trim</legend>
++        <label for="trim-start">Start <output id="trim-start-output">0</output> seconds</label>
++        <input id="trim-start" name="trimStart" type="range" min="0" max="30" step="0.01" value="0">
++        <label for="trim-end">End <output id="trim-end-output">30</output> seconds</label>
++        <input id="trim-end" name="trimEnd" type="range" min="0" max="30" step="0.01" value="30">
++      </fieldset>
++
++      <fieldset class="tool-group">
++        <legend>Text</legend>
++        <label for="edit-text">One-line text (up to 80 characters)</label>
++        <input id="edit-text" name="text" type="text" maxlength="80" autocomplete="off" placeholder="Add a few words">
++        <label for="text-position">Text position</label>
++        <select id="text-position" name="textPosition">
++          <option value="top">Top</option>
++          <option value="middle" selected>Middle</option>
++          <option value="bottom">Bottom</option>
++        </select>
++      </fieldset>
++
++      <fieldset class="tool-group" id="music-wrap" hidden>
++        <legend>Music</legend>
++        <label for="music-track">Choose label music</label>
++        <select id="music-track" name="musicId">
++          <option value="">No music</option>
++        </select>
++        <label for="music-volume">Music volume</label>
++        <input id="music-volume" name="musicVolume" type="range" min="0" max="1" step="0.01" value="0.7">
++      </fieldset>
++
++      <fieldset class="tool-group">
++        <legend>Cover</legend>
++        <label for="cover-scrub">Scrub to a cover frame (seconds)</label>
++        <input id="cover-scrub" name="coverSec" type="range" min="0" max="30" step="0.01" value="0">
++        <button id="cover-use" type="button">Use this frame</button>
++      </fieldset>
++    </section>
++    <p class="draft-note">Your edit is saved as a draft on this device. Nothing posts without your review.</p>
++    <p class="rl-toast" role="status" aria-live="polite" hidden></p>
++  </main>
++</body>
++</html>
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+new file mode 100644
+index 0000000..ce9a73e
+--- /dev/null
++++ b/commons/public/cut/cut.js
+@@ -0,0 +1,297 @@
++// Cohabi Cut Job 4 editor screen prototype. No server render route is wired yet.
++// The edit payload deliberately contains only the fields consumed by editToTracks.
++
++const DRAFT_PREFIX = 'cohabi-cut-draft:';
++const DEFAULT_VOLUME = 0.7;
++const Y_BY_POSITION = Object.freeze({ top: -540, middle: 0, bottom: 540 });
++
++export function buildEdit({ trimStart, trimEnd, textBody = '', textPosition = 'middle', musicId = '', musicVolume = DEFAULT_VOLUME, coverSec }) {
++  const edit = { trimStart: Number(trimStart), trimEnd: Number(trimEnd) };
++  const body = String(textBody);
++  if (body.length > 80) throw new RangeError(`text must be at most 80 characters, got ${body.length}`);
++  if (/[\u0000-\u001f\u007f\u2028\u2029]/.test(body)) throw new RangeError('text must be one line: no line breaks or control characters');
++  if (body.trim()) {
++    if (!Object.hasOwn(Y_BY_POSITION, textPosition)) throw new RangeError('Choose top, middle, or bottom for text.');
++    edit.text = { body, y: Y_BY_POSITION[textPosition] };
++  }
++  if (musicId) edit.music = { id: String(musicId), volume: Number(musicVolume) };
++  edit.coverSec = Number(coverSec);
++  return edit;
++}
++
++function safeRead(key) {
++  try {
++    const raw = localStorage.getItem(key);
++    if (!raw) return null;
++    const parsed = JSON.parse(raw);
++    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
++  } catch {
++    return null;
++  }
++}
++
++function safeWrite(key, value) {
++  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* draft remains usable in this page */ }
++}
++
++export function exportFailureMessage(status, payload) {
++  if (status === 404) return "Export isn't open yet — your edit is saved here.";
++  if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
++  return 'Export could not finish. Your edit is saved here.';
++}
++
++function showToast(message) {
++  const toast = document.querySelector('.rl-toast');
++  if (!toast) return;
++  toast.textContent = message;
++  toast.hidden = false;
++  clearTimeout(showToast.timer);
++  showToast.timer = setTimeout(() => { toast.hidden = true; }, 5000);
++}
++
++function trackLabel(track) {
++  return String(track?.title ?? track?.name ?? track?.label ?? 'Untitled track');
++}
++
++async function loadMusic(select, wrapper, selectedId = '') {
++  try {
++    const response = await fetch('/api/label/tracks', { headers: { Accept: 'application/json' } });
++    if (!response.ok) return;
++    const payload = await response.json();
++    const tracks = Array.isArray(payload) ? payload : (Array.isArray(payload?.tracks) ? payload.tracks : []);
++    for (const track of tracks) {
++      if (!track || typeof track.id !== 'string' || !track.id) continue;
++      const option = document.createElement('option');
++      option.value = track.id;
++      option.textContent = trackLabel(track);
++      select.append(option);
++    }
++    if (select.options.length > 1) wrapper.hidden = false;
++    if (selectedId) select.value = selectedId;
++  } catch { /* the optional library is unavailable; keep its control hidden */ }
++}
++
++function stockDuration(seconds) {
++  if (!Number.isFinite(Number(seconds)) || Number(seconds) <= 0) return 'Duration unknown';
++  const total = Math.round(Number(seconds));
++  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')} (${total} seconds)`;
++}
++
++function renderStockResults(container, hits, onChoose) {
++  container.replaceChildren();
++  if (!Array.isArray(hits) || hits.length === 0) return 0;
++  for (const hit of hits) {
++    if (!hit || (typeof hit.id !== 'string' && typeof hit.id !== 'number')) continue;
++    const card = document.createElement('article');
++    card.className = 'stock-result';
++    const image = document.createElement('img');
++    image.alt = '';
++    image.loading = 'lazy';
++    if (typeof hit.thumb === 'string' && hit.thumb) image.src = hit.thumb;
++    card.append(image);
++    const details = document.createElement('div');
++    const duration = document.createElement('p');
++    duration.textContent = stockDuration(hit.seconds);
++    const credit = document.createElement('p');
++    credit.className = 'stock-credit';
++    credit.textContent = `by ${String(hit.by || 'Pixabay contributor')} on Pixabay`;
++    const tags = document.createElement('p');
++    tags.textContent = String(hit.tags || 'Stock video');
++    details.append(duration, credit, tags);
++    card.append(details);
++    const choose = document.createElement('button');
++    choose.type = 'button';
++    choose.textContent = 'Use this clip';
++    choose.addEventListener('click', () => onChoose(String(hit.id), choose, String(hit.by || '')));
++    card.append(choose);
++    container.append(card);
++  }
++  return container.childElementCount;
++}
++
++export function initCutEditor(root = document) {
++  const byId = (id) => root.getElementById(id);
++  const video = byId('cut-preview');
++  if (!video) return;
++  const params = new URLSearchParams(globalThis.location?.search ?? '');
++  let videoId = params.get('videoId') || video.dataset.videoId || '';
++  const source = params.get('src');
++  if (source) video.src = source;
++
++  const stockOpen = byId('stock-open');
++  const stockSheet = byId('stock-sheet');
++  const stockClose = byId('stock-close');
++  const stockForm = byId('stock-search-form');
++  const stockQuery = byId('stock-query');
++  const stockSubmit = byId('stock-search');
++  const stockStatus = byId('stock-status');
++  const stockResults = byId('stock-results');
++  const selectedCredit = byId('selected-clip-credit');
++  stockOpen?.addEventListener('click', () => { stockSheet.hidden = false; stockQuery?.focus(); });
++  stockClose?.addEventListener('click', () => { stockSheet.hidden = true; stockOpen?.focus(); });
++  stockForm?.addEventListener('submit', async (event) => {
++    event.preventDefault();
++    const query = stockQuery.value.trim();
++    if (query.length < 2) { stockStatus.textContent = 'Enter at least two characters to search.'; return; }
++    stockSubmit.disabled = true;
++    stockStatus.textContent = 'Searching Pixabay…';
++    stockResults.replaceChildren();
++    try {
++      const response = await fetch(`/api/stock/videos?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
++      const payload = await response.json().catch(() => ({}));
++      if (!response.ok) {
++        stockStatus.textContent = payload.error || payload.message || `Stock search failed (${response.status}).`;
++        return;
++      }
++      const count = renderStockResults(stockResults, payload.hits, (id, button, maker) => importStockClip(id, button, maker));
++      stockStatus.textContent = count ? `${count} stock clips. Each is copied into Cohabi with its maker credited.` : 'No clips found. Try another search.';
++    } catch {
++      stockStatus.textContent = 'Could not reach stock search. Check your connection and try again.';
++    } finally { stockSubmit.disabled = false; }
++  });
++
++  const start = byId('trim-start');
++  const end = byId('trim-end');
++  const text = byId('edit-text');
++  const position = byId('text-position');
++  const music = byId('music-track');
++  const musicWrap = byId('music-wrap');
++  const volume = byId('music-volume');
++  const cover = byId('cover-scrub');
++  const coverUse = byId('cover-use');
++  const exportButton = byId('export-feed');
++  let draftKey = `${DRAFT_PREFIX}${videoId || 'unassigned'}`;
++  let draft = safeRead(draftKey);
++  if (draft) {
++    if (Number.isFinite(draft.trimStart)) start.value = String(draft.trimStart);
++    if (Number.isFinite(draft.trimEnd)) end.value = String(draft.trimEnd);
++    if (typeof draft.textBody === 'string') text.value = draft.textBody;
++    if (['top', 'middle', 'bottom'].includes(draft.textPosition)) position.value = draft.textPosition;
++    if (typeof draft.musicId === 'string') music.value = draft.musicId;
++    if (Number.isFinite(draft.musicVolume)) volume.value = String(draft.musicVolume);
++    if (Number.isFinite(draft.coverSec)) cover.value = String(draft.coverSec);
++  }
++
++  let duration = 0;
++  const clampTime = (value) => Math.max(0, Math.min(duration || Number(value) || 0, Number(value) || 0));
++  const saveDraft = () => {
++    const values = {
++      trimStart: clampTime(start.value), trimEnd: clampTime(end.value),
++      textBody: text.value, textPosition: position.value, musicId: music.value,
++      musicVolume: Number(volume.value), coverSec: clampTime(cover.value),
++    };
++    safeWrite(draftKey, values);
++    return values;
++  };
++  async function importStockClip(stockId, button, maker = '') {
++    button.disabled = true;
++    stockStatus.textContent = 'Adding this clip to your videos…';
++    try {
++      const response = await fetch(`/api/stock/videos/${encodeURIComponent(stockId)}/import`, {
++        method: 'POST', headers: { Accept: 'application/json' },
++      });
++      const payload = await response.json().catch(() => ({}));
++      if (!response.ok) {
++        const message = payload.error || payload.message || `Could not import clip (${response.status}).`;
++        stockStatus.textContent = message;
++        if (response.status === 401 || response.status === 503) showToast(message);
++        return;
++      }
++      if ((typeof payload.id !== 'string' && typeof payload.id !== 'number') || typeof payload.url !== 'string' || !payload.url) {
++        const message = 'The stock import returned no video to preview. Try another clip.';
++        stockStatus.textContent = message;
++        showToast(message);
++        return;
++      }
++      videoId = String(payload.id);
++      video.dataset.videoId = videoId;
++      video.src = payload.url;
++      draftKey = `${DRAFT_PREFIX}${videoId}`;
++      // Carry the current edit forward to the imported video as its local draft.
++      draft = null;
++      duration = 0;
++      safeWrite(draftKey, saveDraft());
++      selectedCredit.textContent = `by ${String(payload.by || maker || 'Pixabay contributor')} on Pixabay`;
++      stockStatus.textContent = 'Clip added. Your edit is saved in this draft.';
++      stockSheet.hidden = true;
++      video.load();
++    } catch {
++      const message = 'Could not import this clip. Check your connection and try again.';
++      stockStatus.textContent = message;
++      showToast(message);
++    } finally { button.disabled = false; }
++  }
++  const syncRange = (changed) => {
++    const a = clampTime(start.value);
++    const b = clampTime(end.value);
++    if (changed === start && a >= b) start.value = String(Math.max(0, b - 0.01));
++    if (changed === end && b <= a) end.value = String(Math.min(duration || b + 0.01, a + 0.01));
++    saveDraft();
++  };
++
++  video.addEventListener('loadedmetadata', () => {
++    duration = Number.isFinite(video.duration) ? video.duration : 0;
++    for (const input of [start, end, cover]) input.max = String(duration);
++    end.value = String(Math.max(0, duration));
++    if (draft) {
++      if (Number.isFinite(draft.trimStart)) start.value = String(clampTime(draft.trimStart));
++      if (Number.isFinite(draft.trimEnd)) end.value = String(clampTime(draft.trimEnd));
++      if (Number.isFinite(draft.coverSec)) cover.value = String(clampTime(draft.coverSec));
++    }
++    cover.value = String(clampTime(cover.value));
++    saveDraft();
++  });
++  video.addEventListener('timeupdate', () => {
++    if (Number(cover.value) !== video.currentTime) cover.value = String(video.currentTime);
++  });
++  start.addEventListener('input', () => syncRange(start));
++  end.addEventListener('input', () => syncRange(end));
++  for (const input of [text, position, music, volume]) input.addEventListener('input', saveDraft);
++  music.addEventListener('change', saveDraft);
++  cover.addEventListener('input', () => {
++    video.currentTime = clampTime(cover.value);
++    saveDraft();
++  });
++  coverUse.addEventListener('click', () => {
++    cover.value = String(clampTime(video.currentTime));
++    saveDraft();
++    showToast('Cover frame saved in this draft.');
++  });
++
++  exportButton.addEventListener('click', async () => {
++    const values = saveDraft();
++    let edit;
++    try {
++      edit = buildEdit({ ...values, coverSec: values.coverSec });
++    } catch (error) {
++      showToast(error.message);
++      return;
++    }
++    if (!videoId) {
++      showToast('Pick a video before exporting. Your edit is saved here.');
++      return;
++    }
++    exportButton.disabled = true;
++    try {
++      const response = await fetch('/api/cut/render', {
++        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
++        body: JSON.stringify({ videoId, edit }),
++      });
++      if (!response.ok) {
++        const payload = await response.json().catch(() => ({}));
++        showToast(exportFailureMessage(response.status, payload));
++      } else {
++        showToast('Export requested. Review it before posting.');
++      }
++    } catch {
++      showToast('Export is unavailable offline. Your edit is saved here.');
++    } finally {
++      exportButton.disabled = false;
++    }
++  });
++
++  loadMusic(music, musicWrap, draft?.musicId || '').then(saveDraft);
++  saveDraft();
++}
++
++if (typeof document !== 'undefined') initCutEditor();
+diff --git a/commons/server.mjs b/commons/server.mjs
+index d3d612e..8b57052 100644
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -52,6 +52,9 @@ import * as studio from './lib/studio.mjs';
+ import * as inboxes from './lib/inboxes.mjs';
+ import * as videos from './lib/videos.mjs';
+ import * as stock from './lib/stock.mjs';
++import { handleCutRender } from './lib/cut/route.mjs';
++import { makeCutDeps } from './lib/cut/wire.mjs';
++import { sweepRenders } from './lib/cut/cleanup.mjs';
+ import * as groups from './lib/groups.mjs';
+ import * as market from './lib/market.mjs';
+ import * as marketpage from './lib/marketpage.mjs';
+@@ -148,6 +151,8 @@ audio.init(DATA);
+ docfiles.init(DATA);
+ const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter copies this machine can make
+ videos.init(DATA);
++const CUT_OUT = path.join(DATA, 'cut'); fs.mkdirSync(CUT_OUT, { recursive: true }); const cutDeps = makeCutDeps({ videos, audio, outDir: CUT_OUT, log: (m) => console.error('[cut]', m) });
++const cutSweep = () => sweepRenders(CUT_OUT).catch((e) => console.error('[cut] sweep', e.message)); cutSweep(); setInterval(cutSweep, 3600_000).unref();
+ posts.init(DATA);
+ postmarks.init(DATA);
+ feedback.init(DATA);
+@@ -850,8 +855,11 @@ app.post('/api/videos', express.raw({ type: ['video/*'], limit: videos.MAX_BYTES
+ app.get('/api/stock/videos', wrap(async (req) => stock.search(houseWriter(req), req.query.q, { vertical: req.query.vertical === '1' })));
+ app.post('/api/stock/videos/:id/import', wrap(async (req, res) => { const me = houseWriter(req); const v = await stock.importClip(me, req.params.id); res.status(201); return v; }));
+ app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
++app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));
+ app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
+ app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
++app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));
++app.use('/cut', express.static(CUT_OUT, { index: false, dotfiles: 'deny', maxAge: '5m' }));
+ app.post('/api/posts/:id/topic', wrap((req) => { const me = houseWriter(req); return posts.setTopic(me, req.params.id, String((req.body || {}).topic || ''), { steward: core.isSteward(me) }); }));
+ // Addresses (Geoffrey, 2026-11-15): cohabi.org/social is the posts page and cohabi.org/feed is the video feed.
+ // Old links keep working: /feed with anything after a ? was the posts page, so it goes to /social; /cohabi-feed → /feed.
+diff --git a/commons/test/cut-cleanup.test.mjs b/commons/test/cut-cleanup.test.mjs
+new file mode 100644
+index 0000000..b3de1a2
+--- /dev/null
++++ b/commons/test/cut-cleanup.test.mjs
+@@ -0,0 +1,83 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { lstat, mkdtemp, mkdir, readFile, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
++import os from 'node:os';
++import path from 'node:path';
++import { sweepRenders } from '../lib/cut/cleanup.mjs';
++
++
++test('sweepRenders treats a not-yet-created render directory as empty', async (t) => inTemp(t, async (dir) => {
++  const missing = path.join(dir, 'not-created-yet');
++  assert.deepEqual(
++    await sweepRenders(missing, { maxAgeMs: 60_000, maxBytes: 100, now: NOW }),
++    { deleted: 0, keptBytes: 0 },
++  );
++}));
++
++const NOW = 1_800_000_000_000;
++const render = (n) => `cut_${String(n).padStart(16, '0')}.mp4`;
++
++async function inTemp(t, fn) {
++  const dir = await mkdtemp(path.join(os.tmpdir(), 'cut-cleanup-'));
++  t.after(() => rm(dir, { recursive: true, force: true }));
++  return fn(dir);
++}
++
++async function put(dir, name, bytes, mtimeMs) {
++  const file = path.join(dir, name);
++  await writeFile(file, Buffer.alloc(bytes, 0x5a));
++  await utimes(file, mtimeMs / 1000, mtimeMs / 1000);
++  return file;
++}
++
++test('sweepRenders removes expired eligible files and preserves recent and unrelated entries', async (t) => inTemp(t, async (dir) => {
++  const old = await put(dir, render(1), 3, NOW - 60_001);
++  const fresh = await put(dir, render(2), 5, NOW - 1_000);
++  const otherName = await put(dir, 'movie.mp4', 7, NOW - 90_000);
++  const similarName = await put(dir, 'cut_ABCDEF0123456789.mp4', 11, NOW - 90_000);
++
++  const result = await sweepRenders(dir, { maxAgeMs: 60_000, maxBytes: 100, now: NOW });
++  assert.deepEqual(result, { deleted: 1, keptBytes: 5 });
++  await assert.rejects(stat(old), { code: 'ENOENT' });
++  assert.equal((await stat(fresh)).size, 5);
++  assert.equal((await stat(otherName)).size, 7);
++  assert.equal((await stat(similarName)).size, 11);
++}));
++
++test('sweepRenders does not follow or remove symlinks', async (t) => inTemp(t, async (dir) => {
++  const targetDir = path.join(dir, 'target');
++  await mkdir(targetDir);
++  const target = await put(targetDir, 'keep.mp4', 9, NOW - 100_000);
++  const link = path.join(dir, render(3));
++  await symlink(target, link);
++  const result = await sweepRenders(dir, { maxAgeMs: 0, maxBytes: 0, now: NOW });
++  assert.deepEqual(result, { deleted: 0, keptBytes: 0 });
++  assert.equal((await readFile(target)).length, 9);
++  assert.equal((await lstat(link)).isSymbolicLink(), true);
++}));
++
++test('size cap removes the oldest eligible files first', async (t) => inTemp(t, async (dir) => {
++  const oldest = await put(dir, render(4), 4, NOW - 4_000);
++  const middle = await put(dir, render(5), 5, NOW - 3_000);
++  const newest = await put(dir, render(6), 6, NOW - 2_000);
++  const result = await sweepRenders(dir, { maxAgeMs: 10_000, maxBytes: 11, now: NOW });
++  assert.deepEqual(result, { deleted: 1, keptBytes: 11 });
++  await assert.rejects(stat(oldest), { code: 'ENOENT' });
++  assert.equal((await stat(middle)).size, 5);
++  assert.equal((await stat(newest)).size, 6);
++}));
++
++test('size cap keeps deleting oldest files until eligible bytes fit', async (t) => inTemp(t, async (dir) => {
++  await put(dir, render(7), 4, NOW - 4_000);
++  await put(dir, render(8), 5, NOW - 3_000);
++  await put(dir, render(9), 6, NOW - 2_000);
++  const result = await sweepRenders(dir, { maxAgeMs: 10_000, maxBytes: 6, now: NOW });
++  assert.deepEqual(result, { deleted: 2, keptBytes: 6 });
++  assert.equal((await stat(path.join(dir, render(9)))).size, 6);
++}));
++
++test('sweepRenders refuses invalid path and limits', async (t) => inTemp(t, async (dir) => {
++  await assert.rejects(sweepRenders('relative', {}), /absolute directory/);
++  await assert.rejects(sweepRenders(dir, { maxAgeMs: -1 }), /maxAgeMs/);
++  await assert.rejects(sweepRenders(dir, { maxBytes: Infinity }), /maxBytes/);
++}));
+diff --git a/commons/test/cut-edit.test.mjs b/commons/test/cut-edit.test.mjs
+new file mode 100644
+index 0000000..845384c
+--- /dev/null
++++ b/commons/test/cut-edit.test.mjs
+@@ -0,0 +1,166 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { spawnSync } from "node:child_process";
++import { mkdtempSync, rmSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { editToTracks, coverOffsetSec, TICKS_PER_SECOND } from "../lib/cut/edit.mjs";
++import { buildRenderPlan } from "../lib/cut/plan.mjs";
++import { renderTimeline } from "../lib/cut/render-edit.mjs";
++
++const O = { durationSec: 10, width: 1080, height: 1920 };
++const good = () => ({ trimStart: 2, trimEnd: 6, text: { body: "Hello, it's 100%: a, b", y: 540 }, music: { id: "trk-1", volume: 0.5 }, coverSec: 3 });
++
++test("refuses trimEnd <= trimStart", () => {
++	assert.throws(() => editToTracks({ ...good(), trimEnd: 2 }, O), /greater than trimStart/);
++	assert.throws(() => editToTracks({ ...good(), trimEnd: 1 }, O), /greater than trimStart/);
++});
++
++test("refuses a trim outside 0..durationSec", () => {
++	assert.throws(() => editToTracks({ ...good(), trimStart: -1, coverSec: 3 }, O), /within 0\.\.10/);
++	assert.throws(() => editToTracks({ ...good(), trimEnd: 10.5 }, O), /within 0\.\.10/);
++});
++
++test("refuses non-numbers and non-objects", () => {
++	assert.throws(() => editToTracks(null, O), /object/);
++	assert.throws(() => editToTracks({ ...good(), trimStart: "2" }, O), /finite number/);
++	assert.throws(() => editToTracks({ ...good(), trimEnd: NaN }, O), /finite number/);
++	assert.throws(() => editToTracks(good(), { ...O, durationSec: 0 }), /greater than 0/);
++});
++
++test("refuses text over 80 characters, a newline, or a control character", () => {
++	assert.throws(() => editToTracks({ ...good(), text: { body: "x".repeat(81), y: 0 } }, O), /at most 80/);
++	assert.throws(() => editToTracks({ ...good(), text: { body: "a\nb", y: 0 } }, O), /one line/);
++	assert.throws(() => editToTracks({ ...good(), text: { body: "a\u0000b", y: 0 } }, O), /one line/);
++	assert.throws(() => editToTracks({ ...good(), text: { body: 5, y: 0 } }, O), /string/);
++	// exactly 80 characters is allowed
++	assert.doesNotThrow(() => editToTracks({ ...good(), text: { body: "i".repeat(80), y: 0 } }, O));
++});
++
++test("refuses a text line that cannot fit the frame width, or that leaves the frame vertically", () => {
++	assert.throws(() => editToTracks({ ...good(), text: { body: "W".repeat(80), y: 0 } }, { ...O, width: 360, height: 640 }), /too long to fit/);
++	assert.throws(() => editToTracks({ ...good(), text: { body: "hi", y: 99999 } }, O), /leave the/);
++	assert.throws(() => editToTracks({ ...good(), text: { body: "hi", y: Infinity } }, O), /finite/);
++});
++
++test("refuses music volume outside 0..1 and a bad music id", () => {
++	assert.throws(() => editToTracks({ ...good(), music: { id: "a", volume: 1.01 } }, O), /0 to 1/);
++	assert.throws(() => editToTracks({ ...good(), music: { id: "a", volume: -0.1 } }, O), /0 to 1/);
++	assert.throws(() => editToTracks({ ...good(), music: { id: "a", volume: "0.5" } }, O), /finite number/);
++	assert.throws(() => editToTracks({ ...good(), music: { id: "", volume: 0.5 } }, O), /music\.id/);
++	assert.doesNotThrow(() => editToTracks({ ...good(), music: { id: "a", volume: 0 } }, O));
++	assert.doesNotThrow(() => editToTracks({ ...good(), music: { id: "a", volume: 1 } }, O));
++});
++
++test("refuses coverSec outside the trimmed range (inclusive ends are allowed)", () => {
++	assert.throws(() => editToTracks({ ...good(), coverSec: 1.9 }, O), /trimmed range/);
++	assert.throws(() => editToTracks({ ...good(), coverSec: 6.1 }, O), /trimmed range/);
++	assert.throws(() => editToTracks({ ...good(), coverSec: undefined }, O), /finite number/);
++	assert.doesNotThrow(() => editToTracks({ ...good(), coverSec: 2 }, O));
++	assert.doesNotThrow(() => editToTracks({ ...good(), coverSec: 6 }, O));
++	assert.equal(coverOffsetSec(good()), 1);
++});
++
++test("a good edit: integer ticks, the right trim, text and music elements, and buildRenderPlan accepts it", () => {
++	const tracks = editToTracks(good(), { ...O, videoSrc: "/srv/v/1.mp4", musicSrc: "/srv/m/1.mp3" });
++	const clip = tracks.main.elements[0];
++	assert.equal(clip.trimStart, 2 * TICKS_PER_SECOND);
++	assert.equal(clip.duration, 4 * TICKS_PER_SECOND);
++	assert.equal(clip.params.src, "/srv/v/1.mp4");
++	for (const n of [clip.startTime, clip.duration, clip.trimStart, clip.sourceDuration]) assert.ok(Number.isInteger(n));
++	const words = tracks.overlay[0].elements[0];
++	assert.equal(words.params.content, "Hello, it's 100%: a, b");
++	assert.equal(words.duration, clip.duration);
++	assert.ok(words.params["transform.positionX"] >= 0 && words.params["transform.positionY"] >= 0);
++	const music = tracks.audio[0].elements[0];
++	assert.deepEqual([music.params.src, music.params.volume, music.duration], ["/srv/m/1.mp3", 0.5, clip.duration]);
++	const plan = buildRenderPlan({ tracks, width: 1080, height: 1920 });
++	assert.equal(plan.durationTicks, 4 * TICKS_PER_SECOND);
++	assert.deepEqual(plan.ignored, []);
++	assert.match(plan.filterComplex, /trim=start=2:end=6/);
++	assert.match(plan.filterComplex, /volume=0\.5/);
++});
++
++test("no text and no music: only the main clip; blank text body draws nothing", () => {
++	const a = editToTracks({ trimStart: 0, trimEnd: 3, coverSec: 0 }, O);
++	assert.deepEqual([a.overlay.length, a.audio.length, a.main.elements.length], [0, 0, 1]);
++	const b = editToTracks({ trimStart: 0, trimEnd: 3, coverSec: 1, text: { body: "   ", y: 0 } }, O);
++	assert.equal(b.overlay.length, 0);
++	assert.doesNotThrow(() => buildRenderPlan({ tracks: a }));
++});
++
++test("caption placement: middle is centred, top is above middle, bottom below; a long line gets a smaller font", () => {
++	const at = (y, body = "Hello") => editToTracks({ ...good(), text: { body, y } }, O).overlay[0].elements[0].params;
++	const mid = at(0), top = at(-540), bot = at(540);
++	assert.ok(top["transform.positionY"] < mid["transform.positionY"] && mid["transform.positionY"] < bot["transform.positionY"]);
++	// the line's vertical centre sits at the frame centre for y=0 (within the 1px rounding)
++	const lh = Math.ceil(mid.fontSize * 1.2);
++	assert.ok(Math.abs(mid["transform.positionY"] + lh / 2 - 960) <= 1);
++	assert.ok(at(0, "x".repeat(80)).fontSize < mid.fontSize);
++	// y scales with the frame height: the same +540 on a 960-high frame is half the pixel offset
++	const small = editToTracks({ ...good(), text: { body: "Hello", y: 540 } }, { ...O, width: 540, height: 960 }).overlay[0].elements[0].params;
++	const lh2 = Math.ceil(small.fontSize * 1.2);
++	assert.ok(Math.abs(small["transform.positionY"] + lh2 / 2 - (480 + 270)) <= 1);
++});
++
++test("end to end: a good edit -> editToTracks -> renderTimeline with a fake run: trim, text, music and a safe argv", () => {
++	const calls = [];
++	const run = (cmd, argv) => { calls.push({ cmd, argv }); return { status: 0, stdout: "", stderr: "" }; };
++	const tracks = editToTracks(good(), { ...O, videoSrc: "/srv/v/1.mp4", musicSrc: "/srv/m/1.mp3" });
++	const r = renderTimeline({ tracks, width: 1080, height: 1920, outPath: "/tmp/out.mp4", run, ffmpeg: "ffmpeg" });
++	assert.equal(r.ok, true);
++	assert.equal(r.durationTicks, 4 * TICKS_PER_SECOND);
++	assert.equal(calls.length, 1);
++	const { argv } = calls[0];
++	assert.deepEqual(argv.slice(0, 5), ["-y", "-i", "/srv/v/1.mp4", "-i", "/srv/m/1.mp3"]);
++	assert.equal(argv.at(-1), "/tmp/out.mp4");
++	const fc = argv[argv.indexOf("-filter_complex") + 1];
++	assert.match(fc, /trim=start=2:end=6/); // the trim
++	assert.match(fc, /drawtext=expansion=none/); // the text
++	assert.ok(fc.includes("Hello") && fc.includes("100"));
++	assert.ok(!fc.includes("/srv/")); // paths stay in -i, never inside a filter
++	assert.match(fc, /amix=inputs=2/); // the music
++	// user text never becomes its own argv element, so it cannot be read as an option
++	assert.ok(!argv.some((a) => a === "Hello, it's 100%: a, b" || a.startsWith("-text")));
++});
++
++test("end to end: a hostile caption stays inside the filter string and never adds an argv flag", () => {
++	const calls = [];
++	const run = (cmd, argv) => { calls.push(argv); return { status: 0, stdout: "", stderr: "" }; };
++	const body = "'; -f lavfi -i x ,drawtext=text=boo:x=0";
++	const tracks = editToTracks({ trimStart: 0, trimEnd: 2, coverSec: 1, text: { body, y: 0 } }, { ...O, videoSrc: "/srv/v/1.mp4" });
++	renderTimeline({ tracks, outPath: "/tmp/o.mp4", run, ffmpeg: "ffmpeg" });
++	const argv = calls[0];
++	assert.equal(argv.filter((a) => a === "-i").length, 1);
++	assert.equal(argv.filter((a) => a === "lavfi").length, 0);
++	const fc = argv[argv.indexOf("-filter_complex") + 1];
++	// exactly one real drawtext filter: the injected "drawtext=" is inside the escaped text (its comma is backslash-escaped)
++	assert.equal((fc.match(/(?<!\\)[,\]]drawtext=/g) ?? []).length, 1);
++	assert.ok(fc.includes("\\,drawtext=text=boo"));
++});
++
++// Real ffmpeg (skipped when none is available: set FFMPEG or have ffmpeg on PATH).
++const FFMPEG = process.env.FFMPEG || "ffmpeg";
++const haveFfmpeg = spawnSync(FFMPEG, ["-version"], { encoding: "utf8" }).status === 0;
++const durationOf = (file) => {
++	const m = /Duration: (\d+):(\d+):(\d+\.\d+)/.exec(spawnSync(FFMPEG, ["-i", file], { encoding: "utf8" }).stderr);
++	return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : NaN;
++};
++
++test("real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file", { skip: !haveFfmpeg && "no ffmpeg" }, () => {
++	const dir = mkdtempSync(join(tmpdir(), "cut-edit-"));
++	try {
++		const v = join(dir, "v.mp4"), m = join(dir, "m.wav"), out = join(dir, "out.mp4");
++		const mk = (args) => assert.equal(spawnSync(FFMPEG, ["-y", ...args], { encoding: "utf8" }).status, 0);
++		mk(["-f", "lavfi", "-i", "testsrc=s=320x240:r=30:d=6", "-f", "lavfi", "-i", "sine=f=440:d=6", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", v]);
++		mk(["-f", "lavfi", "-i", "sine=f=220:d=6", m]);
++		const edit = { trimStart: 2, trimEnd: 4, text: { body: "it's 100%: a, b", y: 540 }, music: { id: "t", volume: 0.5 }, coverSec: 3 };
++		const tracks = editToTracks(edit, { durationSec: 6, width: 540, height: 960, videoSrc: v, musicSrc: m });
++		const r = renderTimeline({ tracks, width: 540, height: 960, outPath: out, ffmpeg: FFMPEG });
++		assert.equal(r.ok, true);
++		const d = durationOf(out);
++		assert.ok(Math.abs(d - 2) < 0.15, `duration ${d}`);
++	} finally {
++		rmSync(dir, { recursive: true, force: true });
++	}
++});
+diff --git a/commons/test/cut-render-edit.test.mjs b/commons/test/cut-render-edit.test.mjs
+new file mode 100644
+index 0000000..3c850c0
+--- /dev/null
++++ b/commons/test/cut-render-edit.test.mjs
+@@ -0,0 +1,151 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { spawnSync } from "node:child_process";
++import { mkdtempSync, existsSync, rmSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { renderTimeline, buildFfmpegArgs, VIDEO_CODEC_ARGS } from "../lib/cut/render-edit.mjs";
++import { RenderPlanError } from "../lib/cut/plan.mjs";
++
++const TPS = 120000;
++const clip = (over = {}) => ({
++	id: "c1", type: "video", startTime: 0, duration: TPS, trimStart: 0, params: { src: "/srv/media/in.mp4" }, ...over,
++});
++const tracks = (over = {}) => ({ main: { id: "m", type: "video", elements: [clip(over)] }, overlay: [], audio: [] });
++const ok = (status = 0, stderr = "") => ({ status, stderr, stdout: "" });
++
++test("runs ffmpeg with an argv array: -y, plan args, codec args, outPath last", () => {
++	const calls = [];
++	const res = renderTimeline({
++		tracks: tracks(), sources: { "/srv/media/in.mp4": { hasAudio: true } }, width: 540, height: 960,
++		outPath: "/tmp/out.mp4", ffmpeg: "ffmpeg", run: (cmd, argv, opts) => { calls.push({ cmd, argv, opts }); return ok(); },
++	});
++	assert.equal(calls.length, 1);
++	const { cmd, argv, opts } = calls[0];
++	assert.equal(cmd, "ffmpeg");
++	assert.ok(Array.isArray(argv));
++	assert.equal(argv[0], "-y");
++	assert.deepEqual(argv.slice(1, 3), ["-i", "/srv/media/in.mp4"]);
++	assert.equal(argv[3], "-filter_complex");
++	assert.match(argv[4], /trim=start=0:end=1/);
++	assert.match(argv[4], /scale=540:960/);
++	assert.deepEqual(argv.slice(5, 9), ["-map", "[vout]", "-map", "[aout]"]);
++	assert.deepEqual(argv.slice(9, 9 + VIDEO_CODEC_ARGS.length), ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac"]);
++	assert.equal(argv.at(-1), "/tmp/out.mp4");
++	assert.equal(opts.encoding, "utf8");
++	assert.deepEqual(res, { ok: true, outPath: "/tmp/out.mp4", durationTicks: TPS, ignored: [] });
++});
++
++test("the music input is passed as a second -i and the result reports ignored overlay tracks", () => {
++	let seen;
++	const t = tracks();
++	t.audio = [{ id: "a", type: "audio", elements: [{ id: "mu", type: "audio", startTime: 0, duration: TPS, trimStart: 0, params: { src: "/srv/media/song.mp3", volume: 0.5 } }] }];
++	t.overlay = [{ id: "ov", type: "sticker", elements: [{ id: "s1" }] }];
++	const res = renderTimeline({ tracks: t, outPath: "/tmp/o.mp4", run: (c, argv) => { seen = argv; return ok(); } });
++	assert.deepEqual(seen.filter((_, i) => seen[i - 1] === "-i"), ["/srv/media/in.mp4", "/srv/media/song.mp3"]);
++	assert.equal(res.ignored.length, 1);
++	assert.equal(res.ignored[0].elementId, "s1");
++});
++
++test("ffmpeg exit != 0 throws with the last 20 stderr lines only", () => {
++	const stderr = Array.from({ length: 30 }, (_, i) => `line ${i + 1}`).join("\n") + "\n";
++	assert.throws(
++		() => renderTimeline({ tracks: tracks(), outPath: "/tmp/o.mp4", run: () => ok(1, stderr) }),
++		(e) => {
++			assert.match(e.message, /exited with 1/);
++			assert.match(e.message, /line 30$/);
++			assert.match(e.message, /line 11\b/);
++			assert.doesNotMatch(e.message, /line 10\b/);
++			return true;
++		},
++	);
++});
++
++test("a failed spawn, a timeout and a signal each throw a clear message", () => {
++	const mk = (r) => () => renderTimeline({ tracks: tracks(), outPath: "/tmp/o.mp4", run: () => r });
++	assert.throws(mk({ error: Object.assign(new Error("spawn ffmpeg ENOENT"), { code: "ENOENT" }), status: null }), /could not start \(ENOENT\)/);
++	assert.throws(mk({ error: Object.assign(new Error("t"), { code: "ETIMEDOUT" }), status: null }), /timed out/);
++	assert.throws(mk({ status: null, signal: "SIGKILL", stderr: "x" }), /signal SIGKILL/);
++	assert.throws(mk(undefined), /exited with unknown/);
++});
++
++test("planner refusals propagate as RenderPlanError and ffmpeg is never run", () => {
++	let ran = false;
++	assert.throws(
++		() => renderTimeline({ tracks: tracks({ duration: 0 }), outPath: "/tmp/o.mp4", run: () => { ran = true; return ok(); } }),
++		RenderPlanError,
++	);
++	assert.throws(
++		() => renderTimeline({ tracks: { main: { id: "m", elements: [] } }, outPath: "/tmp/o.mp4", run: () => { ran = true; return ok(); } }),
++		RenderPlanError,
++	);
++	assert.equal(ran, false);
++});
++
++test("outPath that is empty, multi-line, or looks like an option is refused before running", () => {
++	let ran = false;
++	for (const outPath of [undefined, "", "a\nb", "-f", 42]) {
++		assert.throws(() => renderTimeline({ tracks: tracks(), outPath, run: () => { ran = true; return ok(); } }), TypeError);
++	}
++	assert.equal(ran, false);
++	assert.throws(() => buildFfmpegArgs({ args: [] }, "-x"), TypeError);
++});
++
++const have = (bin) => { const r = spawnSync(bin, ["-version"], { encoding: "utf8" }); return !r.error && r.status === 0; };
++const FFMPEG = process.env.FFMPEG || "ffmpeg";
++const FFPROBE = process.env.FFPROBE || "ffprobe";
++const real = have(FFMPEG);
++// ffprobe when present; otherwise the "Duration: hh:mm:ss.xx" line that `ffmpeg -i` prints on stderr.
++function durationOf(file) {
++	if (have(FFPROBE)) {
++		const p = spawnSync(FFPROBE, ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", file], { encoding: "utf8" });
++		return Number(p.stdout.trim());
++	}
++	const p = spawnSync(FFMPEG, ["-i", file], { encoding: "utf8" });
++	const m = /Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/.exec(p.stderr);
++	return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : NaN;
++}
++
++test("real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream", { skip: real ? false : "ffmpeg not available" }, () => {
++	const dir = mkdtempSync(join(tmpdir(), "cut-render-edit-"));
++	try {
++		const src = join(dir, "in.mp4");
++		const song = join(dir, "song.wav");
++		const g1 = spawnSync(FFMPEG, ["-y", "-f", "lavfi", "-i", "testsrc=d=2:s=320x240:r=30", "-f", "lavfi", "-i", "sine=f=440:d=2", "-shortest", "-pix_fmt", "yuv420p", "-c:a", "aac", src], { encoding: "utf8" });
++		const g2 = spawnSync(FFMPEG, ["-y", "-f", "lavfi", "-i", "sine=f=880:d=3", song], { encoding: "utf8" });
++		assert.equal(g1.status, 0, g1.stderr?.split("\n").slice(-5).join("\n"));
++		assert.equal(g2.status, 0);
++		const t = tracks({ params: { src } });
++		t.audio = [{ id: "a", type: "audio", elements: [{ id: "mu", type: "audio", startTime: 0, duration: TPS, trimStart: 0, params: { src: song, volume: 0.4, fadeOut: 0.25 } }] }];
++		const out = join(dir, "out.mp4");
++		renderTimeline({ tracks: t, sources: { [src]: { hasAudio: true } }, width: 320, height: 240, outPath: out, ffmpeg: FFMPEG });
++		assert.ok(Math.abs(durationOf(out) - 1.0) <= 0.1);
++		const info = spawnSync(FFMPEG, ["-i", out], { encoding: "utf8" }).stderr;
++		assert.match(info, /Stream #0:\d.*Video: h264/);
++		assert.match(info, /Stream #0:\d.*Audio: aac/);
++	} finally {
++		rmSync(dir, { recursive: true, force: true });
++	}
++});
++
++test("real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file", { skip: real ? false : "ffmpeg not available" }, () => {
++	const dir = mkdtempSync(join(tmpdir(), "cut-render-edit-"));
++	try {
++		const src = join(dir, "in.mp4");
++		const gen = spawnSync(FFMPEG, ["-y", "-f", "lavfi", "-i", "testsrc=d=2:s=320x240:r=30", "-pix_fmt", "yuv420p", src], { encoding: "utf8" });
++		assert.equal(gen.status, 0, gen.stderr?.split("\n").slice(-5).join("\n"));
++		const out = join(dir, "out.mp4");
++		const res = renderTimeline({
++			tracks: tracks({ duration: TPS, trimStart: 0, params: { src } }),
++			sources: { [src]: { hasAudio: false } }, width: 320, height: 240, outPath: out, ffmpeg: FFMPEG,
++		});
++		assert.equal(res.ok, true);
++		assert.equal(res.durationTicks, TPS);
++		assert.ok(existsSync(out));
++		const dur = durationOf(out);
++		assert.ok(Math.abs(dur - 1.0) <= 0.1, `duration ${dur}`);
++		console.log("ffmpeg:", spawnSync(FFMPEG, ["-version"], { encoding: "utf8" }).stdout.split("\n")[0], "| output duration", dur);
++	} finally {
++		rmSync(dir, { recursive: true, force: true });
++	}
++});
+diff --git a/commons/test/cut-render-job.test.mjs b/commons/test/cut-render-job.test.mjs
+new file mode 100644
+index 0000000..bf2da12
+--- /dev/null
++++ b/commons/test/cut-render-job.test.mjs
+@@ -0,0 +1,159 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { spawnSync } from "node:child_process";
++import { mkdtempSync, writeFileSync, existsSync, rmSync, readdirSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { renderEditJob, MAX_RENDER_SECONDS } from "../lib/cut/render-job.mjs";
++
++const dir = mkdtempSync(join(tmpdir(), "cut-job-"));
++const outDir = mkdtempSync(join(tmpdir(), "cut-out-"));
++const vid = join(dir, "in.mp4");
++const mus = join(dir, "song.mp3");
++writeFileSync(vid, "x");
++writeFileSync(mus, "y");
++test.after(() => { rmSync(dir, { recursive: true, force: true }); rmSync(outDir, { recursive: true, force: true }); });
++
++const video = (over = {}) => ({ path: vid, durationSec: 20, width: 540, height: 960, ...over });
++const goodEdit = (over = {}) => ({ trimStart: 2, trimEnd: 6, coverSec: 3, ...over });
++const ok = { status: 0, stderr: "", stdout: "" };
++const fake = (calls = []) => (cmd, argv, opts) => { calls.push({ cmd, argv, opts }); return ok; };
++
++test("a good edit runs ffmpeg once with the trim, the caption and the music; output is cut_<hex>.mp4 in outDir", () => {
++	const calls = [];
++	const res = renderEditJob({
++		edit: goodEdit({ text: { body: "hello there", y: 540 }, music: { id: "m1", volume: 0.5 } }),
++		video: video(), music: { path: mus }, outDir, run: fake(calls), ffmpeg: "ffmpeg",
++	});
++	assert.equal(calls.length, 1);
++	const { argv } = calls[0];
++	assert.equal(res.ok, true);
++	assert.equal(res.seconds, 4);
++	assert.match(res.outPath, /cut_[0-9a-f]{16}\.mp4$/);
++	assert.equal(res.outPath.startsWith(outDir), true);
++	assert.equal(argv.at(-1), res.outPath);
++	assert.deepEqual(argv.filter((_, i) => argv[i - 1] === "-i"), [vid, mus]);
++	const fc = argv[argv.indexOf("-filter_complex") + 1];
++	assert.match(fc, /trim=start=2:end=6/);
++	assert.match(fc, /drawtext=/);
++	assert.match(fc, /volume=0.5/);
++	assert.ok(!fc.includes(vid), "no path inside the filter string");
++});
++
++test("two renders get different file names", () => {
++	const a = renderEditJob({ edit: goodEdit(), video: video(), outDir, run: fake() });
++	const b = renderEditJob({ edit: goodEdit(), video: video(), outDir, run: fake() });
++	assert.notEqual(a.outPath, b.outPath);
++});
++
++test("a hostile caption cannot add an input or a flag", () => {
++	const calls = [];
++	renderEditJob({ edit: goodEdit({ text: { body: "-i /etc/passwd -y ; rm -rf /" } }), video: video(), outDir, run: fake(calls) });
++	const argv = calls[0].argv;
++	assert.equal(argv.filter((a) => a === "-i").length, 1);
++	assert.ok(!argv.some((a) => a.includes("/etc/passwd") && a !== argv[argv.indexOf("-filter_complex") + 1]));
++});
++
++test("refuses a trimmed length over 60 s; exactly 60 s is allowed", () => {
++	let n = 0;
++	const run = () => { n++; return ok; };
++	assert.throws(() => renderEditJob({ edit: goodEdit({ trimStart: 0, trimEnd: 60.5, coverSec: 1 }), video: video({ durationSec: 120 }), outDir, run }), /limit is 60 s/);
++	assert.equal(n, 0);
++	const res = renderEditJob({ edit: goodEdit({ trimStart: 0, trimEnd: MAX_RENDER_SECONDS, coverSec: 1 }), video: video({ durationSec: 120 }), outDir, run });
++	assert.equal(res.seconds, 60);
++	assert.equal(n, 1);
++});
++
++test("refuses bad outDir, bad video and bad music paths before running anything", () => {
++	let n = 0;
++	const run = () => { n++; return ok; };
++	const go = (o) => renderEditJob({ edit: goodEdit(), video: video(), outDir, run, ...o });
++	assert.throws(() => go({ outDir: join(dir, "missing") }), /existing directory/);
++	assert.throws(() => go({ outDir: vid }), /existing directory/, "a file is not a directory");
++	assert.throws(() => go({ outDir: "relative/dir" }), /absolute/);
++	assert.throws(() => go({ outDir: undefined }), /absolute/);
++	assert.throws(() => go({ video: video({ path: "in.mp4" }) }), /video.path must be an absolute/);
++	assert.throws(() => go({ video: video({ path: join(dir, "nope.mp4") }) }), /existing file/);
++	assert.throws(() => go({ video: video({ path: dir }) }), /existing file/, "a directory is not a file");
++	assert.throws(() => go({ video: video({ path: "/x\n-y" }) }), /single-line/);
++	assert.throws(() => go({ video: undefined }), /video must be an object/);
++	assert.throws(() => go({ edit: goodEdit({ music: { id: "m", volume: 1 } }), music: { path: "song.mp3" } }), /music.path must be an absolute/);
++	assert.throws(() => go({ edit: goodEdit({ music: { id: "m", volume: 1 } }), music: { path: join(dir, "nope.mp3") } }), /existing file/);
++	assert.throws(() => go({ edit: goodEdit({ music: { id: "m", volume: 1 } }), music: null }), /no music file/);
++	assert.equal(n, 0, "ffmpeg never ran");
++});
++
++test("refuses bad video numbers; odd sizes round down to even", () => {
++	let n = 0;
++	const calls = [];
++	const run = () => { n++; return ok; };
++	const go = (v) => renderEditJob({ edit: goodEdit(), video: video(v), outDir, run });
++	assert.throws(() => go({ durationSec: 0 }), /durationSec/);
++	assert.throws(() => go({ durationSec: "20" }), /durationSec/);
++	assert.throws(() => go({ width: 8 }), /video.width/);
++	assert.throws(() => go({ height: 9000 }), /video.height/);
++	assert.throws(() => go({ width: NaN }), /video.width/);
++	assert.throws(() => go({ hasAudio: "yes" }), /hasAudio/);
++	assert.equal(n, 0);
++	renderEditJob({ edit: goodEdit(), video: video({ width: 541, height: 961 }), outDir, run: fake(calls) });
++	assert.match(calls[0].argv[calls[0].argv.indexOf("-filter_complex") + 1], /scale=540:960/);
++});
++
++test("a bad edit is refused by editToTracks and ffmpeg never runs", () => {
++	let n = 0;
++	const run = () => { n++; return ok; };
++	const bad = [
++		goodEdit({ trimEnd: 2 }),
++		goodEdit({ trimEnd: 99 }),
++		goodEdit({ text: { body: "a\nb", y: 0 } }),
++		goodEdit({ text: { body: "x".repeat(81), y: 0 } }),
++		goodEdit({ music: { id: "m", volume: 2 } }),
++		goodEdit({ coverSec: 10 }),
++		null,
++	];
++	for (const edit of bad) assert.throws(() => renderEditJob({ edit, video: video(), music: { path: mus }, outDir, run }));
++	assert.equal(n, 0);
++});
++
++test("music given but not asked for by the edit is ignored", () => {
++	const calls = [];
++	renderEditJob({ edit: goodEdit(), video: video(), music: { path: mus }, outDir, run: fake(calls) });
++	assert.equal(calls[0].argv.filter((a) => a === "-i").length, 1);
++});
++
++test("a silent source (hasAudio false) gets generated silence in the graph", () => {
++	const calls = [];
++	renderEditJob({ edit: goodEdit(), video: video({ hasAudio: false }), outDir, run: fake(calls) });
++	assert.match(calls[0].argv[calls[0].argv.indexOf("-filter_complex") + 1], /anullsrc/);
++});
++
++test("ffmpeg failure throws with the stderr tail and removes the half-written file", () => {
++	let target;
++	const run = (c, argv) => { target = argv.at(-1); writeFileSync(target, "partial"); return { status: 1, stderr: "boom: no such filter", stdout: "" }; };
++	assert.throws(() => renderEditJob({ edit: goodEdit(), video: video(), outDir, run }), /ffmpeg exited with 1[\s\S]*boom: no such filter/);
++	assert.ok(target);
++	assert.equal(existsSync(target), false);
++});
++
++const FF = process.env.FFMPEG || (spawnSync("ffmpeg", ["-version"]).status === 0 ? "ffmpeg" : null);
++
++test("real ffmpeg: a 3 s clip trimmed 0.5..1.5 with a caption comes out about 1 s", { skip: !FF && "no ffmpeg" }, () => {
++	const src = join(dir, "real.mp4");
++	const mk = spawnSync(FF, ["-y", "-f", "lavfi", "-i", "testsrc=duration=3:size=320x240:rate=30", "-f", "lavfi", "-i", "sine=frequency=440:duration=3", "-shortest", "-pix_fmt", "yuv420p", src], { encoding: "utf8" });
++	assert.equal(mk.status, 0, mk.stderr?.slice(-300));
++	const res = renderEditJob({
++		edit: { trimStart: 0.5, trimEnd: 1.5, coverSec: 1, text: { body: "hi there", y: 0 } },
++		video: { path: src, durationSec: 3, width: 270, height: 480, hasAudio: true },
++		outDir, ffmpeg: FF,
++	});
++	assert.equal(res.ok, true);
++	assert.ok(existsSync(res.outPath));
++	const info = spawnSync(FF, ["-i", res.outPath], { encoding: "utf8" }).stderr;
++	const m = /Duration: (\d+):(\d+):(\d+\.\d+)/.exec(info);
++	assert.ok(m, info.slice(-300));
++	const secs = Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]);
++	assert.ok(Math.abs(secs - 1) < 0.15, `duration ${secs}`);
++	assert.match(info, /Video: h264/);
++	assert.match(info, /Audio: aac/);
++	assert.equal(readdirSync(outDir).filter((f) => f === res.outPath.split("/").pop()).length, 1);
++});
+diff --git a/commons/test/cut-route-http.test.mjs b/commons/test/cut-route-http.test.mjs
+new file mode 100644
+index 0000000..95194cf
+--- /dev/null
++++ b/commons/test/cut-route-http.test.mjs
+@@ -0,0 +1,256 @@
++// Cohabi Cut, Job 4 round 10: the booted-server proof for POST /api/cut/render.
++//
++// Boots the REAL commons/server.mjs in a child process, with route-wire.md's four-place hunk applied to a TEMP COPY of
++// server.mjs (main's file is never touched), then talks to it over HTTP: sign two members up, upload a video as the first,
++// and POST /api/cut/render. No ffmpeg and no ffprobe are needed: the temp server is given one extra import
++// (cut-http-inject: a fake ffprobe reply and a renderJob that runs the real renderEditJob with a fake `run` that writes
++// the output file), spread into makeCutDeps. Everything else is the hunk exactly: real routes, real stores, real
++// houseWriter auth, real handleCutRender, real express.static mount, real nosniff header.
++//
++// Placed at commons/test/cut-route-http.test.mjs. Temp files (commons/server.cut-http-<pid>.tmp.mjs and the inject
++// module) are removed in `finally`.
++import test from "node:test";
++import assert from "node:assert/strict";
++import fs from "node:fs";
++import os from "node:os";
++import path from "node:path";
++import { spawn } from "node:child_process";
++import { freePort } from "./lib/port.mjs";
++
++const COMMONS = path.resolve(import.meta.dirname, "..");
++const SERVER = path.join(COMMONS, "server.mjs");
++
++// The hunk, exactly as teams/cut/editor/route-wire.md lists it (A, B, C, D).
++const HUNK = {
++	A: [
++		"import { handleCutRender } from './lib/cut/route.mjs';",
++		"import { makeCutDeps } from './lib/cut/wire.mjs';",
++		"import { sweepRenders } from './lib/cut/cleanup.mjs';",
++	],
++	B: [
++		"const CUT_OUT = path.join(DATA, 'cut'); fs.mkdirSync(CUT_OUT, { recursive: true }); const cutDeps = makeCutDeps({ videos, audio, outDir: CUT_OUT, log: (m) => console.error('[cut]', m) });",
++		"const cutSweep = () => sweepRenders(CUT_OUT).catch((e) => console.error('[cut] sweep', e.message)); cutSweep(); setInterval(cutSweep, 3600_000).unref();",
++	],
++	C: [
++		"app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));",
++	],
++	// (E) round 13: the editor folder (commons/public/cut/: cut.html, cut.js, cut.css) mounted at /cut BEFORE the renders mount (D),
++	// with cut.html as its index, so /cut -> /cut/ -> the page and ./cut.js resolves to /cut/cut.js. Same dotfile rule as D.
++	E: [
++		"app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));",
++	],
++	D: [
++		"app.use('/cut', express.static(CUT_OUT, { index: false, dotfiles: 'deny', maxAge: '5m' }));",
++	],
++};
++// The ONE addition the test makes to the hunk: the inject module is imported and spread first into makeCutDeps.
++const INJECT_IMPORT = "import CUT_TEST_INJECT from './cut-http-inject.tmp.mjs';";
++const B_ORIG = "makeCutDeps({ videos, audio, outDir: CUT_OUT,";
++const B_INJECTED = "makeCutDeps({ ...CUT_TEST_INJECT, videos, audio, outDir: CUT_OUT,";
++
++// Insert `lines` after the single line of `src` that starts with `anchor`.
++function insertAfter(src, anchor, lines) {
++	const rows = src.split("\n");
++	const at = rows.reduce((a, r, i) => (r.startsWith(anchor) ? [...a, i] : a), []);
++	assert.equal(at.length, 1, `anchor ${JSON.stringify(anchor)} must appear exactly once at the start of a line in server.mjs, found ${at.length}`);
++	rows.splice(at[0] + 1, 0, ...lines);
++	return rows.join("\n");
++}
++
++// Round 13: once placement.patch is applied, server.mjs ALREADY holds the hunk. Then the test must not insert it a second
++// time (that is "Identifier 'handleCutRender' has already been declared"); it boots the file as it is, adding only the
++// test's own injection (one import + the spread into makeCutDeps).
++export const isPlaced = (src) => src.includes("handleCutRender");
++
++export function applyHunk(src) {
++	if (isPlaced(src)) {
++		const rows = src.split("\n");
++		for (const l of [...HUNK.A, ...HUNK.B, ...HUNK.C, ...HUNK.E, ...HUNK.D]) assert.equal(rows.filter((x) => x === l).length, 1, `server.mjs is already placed but does not hold this hunk line exactly once: ${l.slice(0, 70)}`);
++		assert.ok(rows.indexOf(HUNK.E[0]) < rows.indexOf(HUNK.D[0]), "the editor mount (E) must come BEFORE the renders mount (D), or /cut/ would never reach the page");
++		let s = insertAfter(src, HUNK.A[2], [INJECT_IMPORT]);
++		assert.equal(s.split(B_ORIG).length - 1, 1, "makeCutDeps( call to spread the inject into appears once");
++		return s.replace(B_ORIG, B_INJECTED);
++	}
++	let s = insertAfter(src, "import * as stock from './lib/stock.mjs';", [...HUNK.A, INJECT_IMPORT]);
++	s = insertAfter(s, "videos.init(DATA);", HUNK.B.map((l) => l.replace(B_ORIG, B_INJECTED)));
++	s = insertAfter(s, "app.delete('/api/videos/:id'", HUNK.C);
++	s = insertAfter(s, "app.get('/videos/:id/poster.jpg'", [...HUNK.E, ...HUNK.D]);
++	return s;
++}
++
++const INJECT_SRC = `
++import fs from 'node:fs';
++import path from 'node:path';
++import { renderEditJob } from './lib/cut/render-job.mjs';
++const LOG = process.env.CUT_HTTP_LOG, GATE = process.env.CUT_HTTP_GATE;
++const note = (o) => fs.appendFileSync(LOG, JSON.stringify(o) + '\\n');
++export default {
++  ffprobe: 'ffprobe-fake',
++  execFileImpl: (file, args, o, cb) => { note({ kind: 'ffprobe', file, args }); cb(null, JSON.stringify({ streams: [{ codec_type: 'video', width: 1080, height: 1920 }, { codec_type: 'audio' }], format: { duration: '20.0' } })); },
++  renderJob: async (job) => {
++    note({ kind: 'job', video: job.video, outDir: job.outDir });
++    while (fs.existsSync(GATE)) await new Promise((r) => setTimeout(r, 25));
++    return renderEditJob({ ...job, ffmpeg: 'ffmpeg-fake', run: (cmd, argv) => { note({ kind: 'ffmpeg', cmd, argv }); fs.writeFileSync(argv[argv.length - 1], 'FAKE-MP4-BYTES'); return { status: 0, stdout: '', stderr: '' }; } });
++  },
++};
++`;
++
++test("applyHunk puts all four pieces in, once each, and leaves every other line of server.mjs alone", () => {
++	const src = fs.readFileSync(SERVER, "utf8");
++	const out = applyHunk(src);
++	const a = src.split("\n"), b = out.split("\n");
++	const placed = isPlaced(src);
++	// unplaced: 8 hunk lines (A 3, B 2, C 1, E 1, D 1) + the inject import. placed: the inject import only.
++	assert.equal(b.length, a.length + (placed ? 1 : 3 + 2 + 1 + 1 + 1 + 1), placed ? "placed: only the inject import is added" : "8 hunk lines + the inject import");
++	for (const l of [...HUNK.A, ...HUNK.C, ...HUNK.E, ...HUNK.D]) assert.equal(out.split("\n").filter((x) => x === l).length, 1, l.slice(0, 60));
++	assert.ok(b.indexOf(HUNK.E[0]) < b.indexOf(HUNK.D[0]), "E before D");
++	// removing the inserted lines gives main's file back byte for byte (placed: the file as it was, minus nothing but the inject)
++	const inj = HUNK.B.map((l) => l.replace(B_ORIG, B_INJECTED));
++	if (placed) assert.equal(out.replace(INJECT_IMPORT + "\n", "").replace(B_INJECTED, B_ORIG), src, "placed: removing the injection gives server.mjs back byte for byte");
++	else {
++		const added = new Set([...HUNK.A, INJECT_IMPORT, ...inj, ...HUNK.C, ...HUNK.E, ...HUNK.D]);
++		assert.equal(b.filter((l) => !added.has(l)).join("\n"), src);
++	}
++	assert.equal(out.split(B_INJECTED).length - 1, 1, "the inject spread appears once");
++});
++
++test("the placed-versus-unplaced switch: a server.mjs that already holds the hunk is not given it twice; an unplaced one gets all of it", () => {
++	const unplaced = ["import * as stock from './lib/stock.mjs';", "videos.init(DATA);", "app.delete('/api/videos/:id', x);", "app.get('/videos/:id/poster.jpg', y);"].join("\n");
++	assert.equal(isPlaced(unplaced), false);
++	const once = applyHunk(unplaced);
++	assert.equal(isPlaced(once), true);
++	// strip the injection to get what placement.patch would leave behind, then boot-as-is must add only the injection
++	const placedSrc = once.replace(INJECT_IMPORT + "\n", "").replace(B_INJECTED, B_ORIG);
++	const again = applyHunk(placedSrc);
++	assert.equal(again.split("\n").length, placedSrc.split("\n").length + 1);
++	assert.equal(again.split("import { handleCutRender }").length - 1, 1, "handleCutRender is imported once, not twice");
++	// a half-placed file (the route but not the editor mount) is refused loudly, not silently doubled
++	assert.throws(() => applyHunk(placedSrc.replace(HUNK.E[0] + "\n", "")), /already placed but does not hold/);
++	// and the order is checked: D before E is refused
++	const swapped = placedSrc.replace(HUNK.E[0] + "\n" + HUNK.D[0], HUNK.D[0] + "\n" + HUNK.E[0]);
++	assert.notEqual(swapped, placedSrc);
++	assert.throws(() => applyHunk(swapped), /BEFORE the renders mount/);
++});
++
++test("the hunk in this test is the hunk in route-wire.md (skipped when that note is not in the checkout)", { skip: !fs.existsSync(path.join(COMMONS, "..", "teams/cut/editor/route-wire.md")) }, () => {
++	const md = fs.readFileSync(path.join(COMMONS, "..", "teams/cut/editor/route-wire.md"), "utf8");
++	for (const l of [...HUNK.A, ...HUNK.B, ...HUNK.C, ...HUNK.E, ...HUNK.D]) assert.ok(md.includes(l), `route-wire.md lacks: ${l.slice(0, 70)}`);
++});
++
++test("booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429", async () => {
++	const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "cut-http-"));
++	const D = path.join(tmp, "data"); fs.mkdirSync(D);
++	const LOG = path.join(tmp, "log.jsonl"), GATE = path.join(tmp, "gate");
++	const serverCopy = path.join(COMMONS, `server.cut-http-${process.pid}.tmp.mjs`);
++	const injectCopy = path.join(COMMONS, "cut-http-inject.tmp.mjs");
++	const PORT = await freePort(); const B = `http://127.0.0.1:${PORT}`;
++	let srv, stderr = "";
++	const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
++	const lines = () => (fs.existsSync(LOG) ? fs.readFileSync(LOG, "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : []);
++	const call = async (url, { method = "GET", member, body, raw, type, timeoutMs = 20000 } = {}) => {
++		const headers = { "x-commons": "1" };
++		if (member?.cookie) headers.cookie = member.cookie;
++		let payload;
++		if (raw !== undefined) { headers["content-type"] = type; payload = raw; } else if (body !== undefined) { headers["content-type"] = "application/json"; payload = JSON.stringify(body); }
++		// a request that is never answered fails the test in `timeoutMs` instead of hanging it
++		const r = await fetch(B + url, { method, headers, body: payload, redirect: "manual", signal: AbortSignal.timeout(timeoutMs) });
++		const text = await r.text();
++		let json = null; try { json = JSON.parse(text); } catch { /* not json */ }
++		return { r, text, json };
++	};
++	const signup = async (name) => {
++		const r = await fetch(`${B}/api/humans`, { method: "POST", headers: { "content-type": "application/json", "x-commons": "1" }, body: JSON.stringify({ name }) });
++		const j = await r.json().catch(() => ({}));
++		assert.equal(r.status, 201, `${name} signs up: ${JSON.stringify(j)}`);
++		return { cookie: (r.headers.get("set-cookie") || "").split(";")[0], j };
++	};
++	try {
++		fs.writeFileSync(injectCopy, INJECT_SRC);
++		fs.writeFileSync(serverCopy, applyHunk(fs.readFileSync(SERVER, "utf8")));
++		srv = spawn(process.execPath, [serverCopy], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, CUT_HTTP_LOG: LOG, CUT_HTTP_GATE: GATE }, stdio: ["ignore", "ignore", "pipe"] });
++		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
++		let ready = false;
++		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }
++		assert.ok(ready, `the patched server started. stderr tail: ${stderr}`);
++		assert.ok(fs.existsSync(path.join(D, "cut")), "hunk (B) made the cut output directory");
++
++		const alice = await signup("Cut Alice"), bob = await signup("Cut Bob");
++		const up = await call("/api/videos", { method: "POST", member: alice, raw: Buffer.from("not really a video, a stand-in file"), type: "video/mp4" });
++		assert.equal(up.r.status, 201, `alice uploads a video: ${up.text}`);
++		const vid = up.json.id;
++		assert.match(vid, /^vid_[0-9a-f]{16}$/);
++		const edit = { trimStart: 2, trimEnd: 6, coverSec: 3, text: { body: "Hello Cut", y: 0 } };
++
++		// signed out: 401 and nothing started
++		const out = await call("/api/cut/render", { method: "POST", body: { videoId: vid, edit } });
++		assert.equal(out.r.status, 401, out.text);
++		assert.equal(lines().length, 0, "a signed-out POST starts no probe and no render");
++
++		// someone else's video: 403, and ffprobe/ffmpeg are never started
++		const stranger = await call("/api/cut/render", { method: "POST", member: bob, body: { videoId: vid, edit } });
++		assert.equal(stranger.r.status, 403, stranger.text);
++		assert.match(stranger.json.error, /not yours/);
++		assert.equal(lines().length, 0, "a stranger's POST starts no probe and no render");
++
++		// unknown id: 404
++		const nope = await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: "vid_0000000000000000", edit } });
++		assert.equal(nope.r.status, 404, nope.text);
++
++		// a refused edit: 400 with the refusal's own words, and no ffmpeg
++		const bad = await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: vid, edit: { ...edit, trimStart: 5, trimEnd: 5 } } });
++		assert.equal(bad.r.status, 400, bad.text);
++		assert.match(bad.json.error, /trimEnd/);
++		assert.equal(lines().filter((l) => l.kind === "ffmpeg").length, 0);
++
++		// the owner: 200 and a cut_<16hex>.mp4 path
++		const ok = await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: vid, edit } });
++		assert.equal(ok.r.status, 200, ok.text + stderr);
++		assert.equal(ok.json.ok, true);
++		assert.match(ok.json.url, /^\/cut\/cut_[0-9a-f]{16}\.mp4$/);
++		assert.equal(ok.json.seconds, 4);
++		const log = lines();
++		const probe = log.find((l) => l.kind === "ffprobe"), job = log.find((l) => l.kind === "job"), ff = log.find((l) => l.kind === "ffmpeg");
++		assert.ok(probe && job && ff, "the route probed, then rendered, then ran ffmpeg (fake)");
++		assert.ok(probe.args.at(-1).startsWith(path.join(D, "videos", vid)), "ffprobe was asked about the member's own stored file: " + probe.args.at(-1));
++		assert.deepEqual([job.video.width, job.video.height, job.video.durationSec, job.video.hasAudio], [1080, 1920, 20, true], "size and audio come from the probe, not the store");
++		assert.equal(job.outDir, path.join(D, "cut"));
++		assert.ok(ff.argv.includes(job.video.path), "the uploaded file is ffmpeg's input");
++		assert.ok(ff.argv.join(" ").includes("Hello Cut"), "the caption text reached the ffmpeg argv");
++
++		// the returned URL is served: bytes, nosniff, an mp4 type, and it is the file the fake ffmpeg wrote
++		const got = await fetch(B + ok.json.url);
++		assert.equal(got.status, 200);
++		assert.equal(await got.text(), "FAKE-MP4-BYTES");
++		assert.equal(got.headers.get("x-content-type-options"), "nosniff");
++		assert.match(got.headers.get("content-type") || "", /video\/mp4/);
++		// the static mount lists nothing and refuses dotfiles. /cut/ is the EDITOR PAGE (hunk E), not a listing of renders.
++		const slash = await fetch(B + "/cut/");
++		assert.equal(slash.status, 200, "/cut/ serves the editor page");
++		assert.match(slash.headers.get("content-type") || "", /text\/html/);
++		assert.equal((await slash.text()).includes("cut_"), false, "no directory listing");
++		assert.notEqual((await fetch(B + "/cut/.hidden")).status, 200);
++
++		// one export at a time: with the gate shut, alice's first render waits, her second is 429, and releasing the gate lets the first finish with 200
++		fs.writeFileSync(GATE, "");
++		const before = lines().filter((l) => l.kind === "job").length;
++		const first = call("/api/cut/render", { method: "POST", member: alice, body: { videoId: vid, edit } });
++		for (let i = 0; i < 80 && lines().filter((l) => l.kind === "job").length === before; i++) await sleep(50);
++		assert.equal(lines().filter((l) => l.kind === "job").length, before + 1, "the first render has started and is held at the gate");
++		const second = await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: vid, edit }, timeoutMs: 5000 }).catch((e) => assert.fail(`the second export was not refused, it waited behind the first (${e.name})`));
++		assert.equal(second.r.status, 429, second.text);
++		assert.match(second.json.error, /one export at a time/);
++		// while it waits, the server still answers other requests (the event loop is free)
++		assert.equal((await fetch(`${B}/skill.md`)).status, 200);
++		fs.rmSync(GATE);
++		const done = await first;
++		assert.equal(done.r.status, 200, done.text);
++		assert.match(done.json.url, /^\/cut\/cut_[0-9a-f]{16}\.mp4$/);
++		assert.notEqual(done.json.url, ok.json.url, "each export gets its own random name");
++		// the slot is free again afterwards
++		assert.equal((await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: vid, edit } })).r.status, 200);
++	} finally {
++		if (srv) { srv.kill(); await sleep(100); }
++		for (const f of [serverCopy, injectCopy]) fs.rmSync(f, { force: true });
++		fs.rmSync(tmp, { recursive: true, force: true });
++	}
++});
+diff --git a/commons/test/cut-route-real.test.mjs b/commons/test/cut-route-real.test.mjs
+new file mode 100644
+index 0000000..b568150
+--- /dev/null
++++ b/commons/test/cut-route-real.test.mjs
+@@ -0,0 +1,99 @@
++// handleCutRender -> real renderEditJob, with stores that have the SHAPES of commons/lib/videos.mjs and audio.mjs
++// (owner is `by`, no path or size on videos.get) and a fake ffprobe/ffmpeg. Proves the wiring in route-wire.md.
++import test from "node:test";
++import assert from "node:assert/strict";
++import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { handleCutRender, _resetCutRouteState, _cutRouteState } from "../lib/cut/route.mjs";
++import { makeCutDeps, parseProbe } from "../lib/cut/wire.mjs";
++import { renderEditJob } from "../lib/cut/render-job.mjs";
++
++const dir = mkdtempSync(join(tmpdir(), "cut-real-"));
++const outDir = mkdtempSync(join(tmpdir(), "cut-real-out-"));
++const vfile = join(dir, "vid_a.mp4"), afile = join(dir, "aud_1.mp3"), bfile = join(dir, "aud_2.mp3");
++for (const f of [vfile, afile, bfile]) writeFileSync(f, "x");
++test.after(() => { rmSync(dir, { recursive: true, force: true }); rmSync(outDir, { recursive: true, force: true }); });
++test.beforeEach(() => _resetCutRouteState());
++
++// store fakes in main's shapes
++const videos = {
++	get: (id) => (id === "vid_a" ? { id, by: "m_alice", url: `/videos/${id}`, seconds: null, alt: "", ready: true } : null),
++	fileFor: (id) => (id === "vid_a" ? { file: vfile, type: "video/mp4" } : null),
++};
++const items = { aud_1: { id: "aud_1", ext: "mp3", by: "m_alice", title: "mine" }, aud_2: { id: "aud_2", ext: "mp3", by: "m_bob", title: "bobs" } };
++const audio = { get: (id) => items[id] || null, fileOf: (it) => (it.id === "aud_1" ? afile : bfile) };
++
++const probeJson = (over = {}) => JSON.stringify({
++	streams: [{ codec_type: "video", width: 1080, height: 1920 }, { codec_type: "audio" }], format: { duration: "20.0" }, ...over,
++});
++function make({ json = probeJson(), fail = false, renderJob } = {}) {
++	const seen = { ffprobe: [], run: [], jobs: [] };
++	const execFileImpl = (file, args, o, cb) => { seen.ffprobe.push([file, ...args]); fail ? cb(new Error("boom")) : cb(null, json); };
++	const deps = makeCutDeps({
++		videos, audio, outDir, execFileImpl, ffprobe: "ffprobe", log: () => {},
++		renderJob: renderJob || (async (job) => { seen.jobs.push(job); return renderEditJob({ ...job, run: (c, argv) => { seen.run.push(argv); return { status: 0, stderr: "", stdout: "" }; }, ffmpeg: "ffmpeg" }); }),
++	});
++	return { deps, seen };
++}
++const alice = { id: "m_alice" }, bob = { id: "m_bob" };
++const edit = (o = {}) => ({ trimStart: 2, trimEnd: 6, coverSec: 3, ...o });
++
++test("owner: 200; the video's file comes from fileFor, its size and audio from ffprobe, ffprobe is asked once", async () => {
++	const { deps, seen } = make();
++	const r = await handleCutRender({ member: alice, body: { videoId: "vid_a", edit: edit() }, deps });
++	assert.equal(r.status, 200, JSON.stringify(r.json));
++	assert.match(r.json.url, /^\/cut\/cut_[0-9a-f]{16}\.mp4$/);
++	assert.equal(r.json.seconds, 4);
++	assert.equal(seen.ffprobe.length, 1);
++	assert.equal(seen.ffprobe[0].at(-1), vfile);
++	assert.deepEqual([seen.jobs[0].video.width, seen.jobs[0].video.height, seen.jobs[0].video.durationSec, seen.jobs[0].video.hasAudio], [1080, 1920, 20, true]);
++	assert.equal(seen.run.length, 1);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
++
++test("stranger: 403, and ffprobe and ffmpeg are never started", async () => {
++	const { deps, seen } = make();
++	const r = await handleCutRender({ member: bob, body: { videoId: "vid_a", edit: edit() }, deps });
++	assert.equal(r.status, 403);
++	assert.equal(seen.ffprobe.length, 0);
++	assert.equal(seen.run.length, 0);
++});
++
++test("a phone clip flagged as rotated 90 degrees is measured as the frame ffmpeg will see (1920x1080 -> 1080x1920)", () => {
++	const p = parseProbe(JSON.stringify({ streams: [{ codec_type: "video", width: 1920, height: 1080, side_data_list: [{ rotation: -90 }] }], format: { duration: "3" } }));
++	assert.deepEqual([p.width, p.height, p.hasAudio], [1080, 1920, false]);
++	const q = parseProbe(JSON.stringify({ streams: [{ codec_type: "video", width: 1920, height: 1080, tags: { rotate: "90" } }], format: { duration: "3" } }));
++	assert.deepEqual([q.width, q.height], [1080, 1920]);
++});
++
++test("a video with no audio stream renders with hasAudio:false; no video stream / ffprobe failure is 422", async () => {
++	const a = make({ json: probeJson({ streams: [{ codec_type: "video", width: 540, height: 960 }] }) });
++	assert.equal((await handleCutRender({ member: alice, body: { videoId: "vid_a", edit: edit() }, deps: a.deps })).status, 200);
++	assert.equal(a.seen.jobs[0].video.hasAudio, false);
++	const b = make({ json: probeJson({ streams: [{ codec_type: "audio" }] }) });
++	assert.equal((await handleCutRender({ member: alice, body: { videoId: "vid_a", edit: edit() }, deps: b.deps })).status, 422);
++	const c = make({ fail: true });
++	assert.equal((await handleCutRender({ member: alice, body: { videoId: "vid_a", edit: edit() }, deps: c.deps })).status, 422);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
++
++test("music from the audio store: your own 200 (its file reaches ffmpeg), someone else's 403, unknown 404", async () => {
++	const { deps, seen } = make();
++	const go = (id) => handleCutRender({ member: alice, body: { videoId: "vid_a", edit: edit({ music: { id, volume: 0.5 } }) }, deps });
++	assert.equal((await go("aud_1")).status, 200);
++	assert.ok(seen.run[0].includes(afile));
++	assert.equal((await go("aud_2")).status, 403);
++	assert.equal((await go("aud_zzz")).status, 404);
++	assert.equal(seen.run.length, 1);
++});
++
++test("the real child process: a bad edit comes back as 400 with the refusal text (type survives the fork); slots are released", async () => {
++	const { deps } = make({ renderJob: undefined });
++	delete deps.renderJob; // use wire.mjs's default forkRenderJob
++	const d = makeCutDeps({ videos, audio, outDir, execFileImpl: (f, a, o, cb) => cb(null, probeJson()), log: () => {} });
++	const r = await handleCutRender({ member: alice, body: { videoId: "vid_a", edit: edit({ trimStart: 5, trimEnd: 5 }) }, deps: d });
++	assert.equal(r.status, 400, JSON.stringify(r.json));
++	assert.match(r.json.error, /trim/i);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
+diff --git a/commons/test/cut-route.test.mjs b/commons/test/cut-route.test.mjs
+new file mode 100644
+index 0000000..8b88259
+--- /dev/null
++++ b/commons/test/cut-route.test.mjs
+@@ -0,0 +1,248 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { handleCutRender, _resetCutRouteState, _cutRouteState } from "../lib/cut/route.mjs";
++
++const dir = mkdtempSync(join(tmpdir(), "cut-route-"));
++const outDir = mkdtempSync(join(tmpdir(), "cut-route-out-"));
++const vid = join(dir, "in.mp4");
++const mus = join(dir, "song.mp3");
++writeFileSync(vid, "x");
++writeFileSync(mus, "y");
++test.after(() => { rmSync(dir, { recursive: true, force: true }); rmSync(outDir, { recursive: true, force: true }); });
++test.beforeEach(() => _resetCutRouteState());
++
++const alice = { id: "m_alice" };
++const bob = { id: "m_bob" };
++const goodEdit = (over = {}) => ({ trimStart: 2, trimEnd: 6, coverSec: 3, ...over });
++const ok = { status: 0, stderr: "", stdout: "" };
++
++function makeDeps(over = {}) {
++	const calls = { probe: [], run: [], log: [] };
++	const deps = {
++		videos: { get: (id) => (id === "v1" ? { owner: "m_alice", path: vid, durationSec: 20, width: 540, height: 960 } : null) },
++		music: {
++			get: (id) => (id === "mine" ? { owner: "m_alice", path: mus }
++				: id === "bobs" ? { owner: "m_bob", path: mus }
++				: id === "label" ? { public: true, path: mus } : null),
++		},
++		probe: (p) => { calls.probe.push(p); return { hasAudio: true }; },
++		outDir,
++		log: (m) => calls.log.push(m),
++		...over,
++	};
++	return { deps, calls };
++}
++// The default job with a fake ffmpeg runner: lets the real renderEditJob run its checks.
++const withFakeRun = (calls, over = {}) => ({
++	renderJob: async (job) => {
++		const { renderEditJob } = await import("../lib/cut/render-job.mjs");
++		return renderEditJob({ ...job, run: (c, argv, o) => { calls.run.push({ c, argv, o }); return ok; }, ffmpeg: "ffmpeg" });
++	},
++	...over,
++});
++
++test("a good edit by the owner answers 200 { ok, url, seconds } and ffmpeg is asked once", async () => {
++	const { deps, calls } = makeDeps();
++	Object.assign(deps, withFakeRun(calls));
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit({ text: { body: "hi", y: 540 } }) }, deps });
++	assert.equal(r.status, 200);
++	assert.equal(r.json.ok, true);
++	assert.equal(r.json.seconds, 4);
++	assert.match(r.json.url, /^\/cut\/cut_[0-9a-f]{16}\.mp4$/);
++	assert.equal(calls.run.length, 1);
++	assert.deepEqual(calls.probe, [vid]);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
++
++test("hasAudio from the probe reaches the job; a silent video renders without an audio map", async () => {
++	const seen = [];
++	const { deps } = makeDeps({ probe: () => false, renderJob: async (j) => { seen.push(j); return { ok: true, outPath: join(outDir, "cut_0123456789abcdef.mp4"), seconds: 4 }; } });
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit() }, deps });
++	assert.equal(r.status, 200);
++	assert.equal(seen[0].video.hasAudio, false);
++	assert.equal(seen[0].outDir, outDir);
++	assert.equal(seen[0].music, null);
++});
++
++test("someone else's video is 403 and nothing is probed or rendered; unknown video is 404", async () => {
++	const { deps, calls } = makeDeps();
++	Object.assign(deps, withFakeRun(calls));
++	const r = await handleCutRender({ member: bob, body: { videoId: "v1", edit: goodEdit() }, deps });
++	assert.equal(r.status, 403);
++	assert.equal(calls.probe.length, 0);
++	assert.equal(calls.run.length, 0);
++	const r2 = await handleCutRender({ member: alice, body: { videoId: "nope", edit: goodEdit() }, deps });
++	assert.equal(r2.status, 404);
++});
++
++test("someone else's music is 403; a public label track and your own music are allowed; unknown music is 404", async () => {
++	const { deps, calls } = makeDeps();
++	Object.assign(deps, withFakeRun(calls));
++	const go = (id) => handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit({ music: { id, volume: 0.5 } }) }, deps });
++	assert.equal((await go("bobs")).status, 403);
++	assert.equal(calls.run.length, 0);
++	assert.equal((await go("nope")).status, 404);
++	assert.equal((await go("mine")).status, 200);
++	assert.equal((await go("label")).status, 200);
++	assert.equal(calls.run.length, 2);
++});
++
++test("body.musicId wins over edit.music.id when both are given; music asked for with no id is 400", async () => {
++	const asked = [];
++	const { deps } = makeDeps({ renderJob: async () => ({ ok: true, outPath: join(outDir, "cut_0123456789abcdef.mp4"), seconds: 4 }) });
++	const orig = deps.music.get;
++	deps.music.get = (id) => { asked.push(id); return orig(id); };
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", musicId: "mine", edit: goodEdit({ music: { id: "bobs", volume: 0.5 } }) }, deps });
++	assert.equal(r.status, 200);
++	assert.deepEqual(asked, ["mine"]);
++	const r2 = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit({ music: { volume: 0.5 } }) }, deps });
++	assert.equal(r2.status, 400);
++});
++
++test("no member is 401; a bad body is 400 and never reaches the lookups", async () => {
++	let looked = 0;
++	const { deps } = makeDeps();
++	deps.videos.get = () => { looked++; return null; };
++	assert.equal((await handleCutRender({ member: null, body: { videoId: "v1", edit: goodEdit() }, deps })).status, 401);
++	assert.equal((await handleCutRender({ member: {}, body: { videoId: "v1", edit: goodEdit() }, deps })).status, 401);
++	for (const body of [null, [], "x", {}, { videoId: "v1" }, { edit: goodEdit() }, { videoId: 5, edit: goodEdit() },
++		{ videoId: "a\nb", edit: goodEdit() }, { videoId: "v1", edit: [] }, { videoId: "v1", edit: goodEdit(), musicId: { x: 1 } },
++		{ videoId: "x".repeat(201), edit: goodEdit() }]) {
++		const r = await handleCutRender({ member: alice, body, deps });
++		assert.equal(r.status, 400, JSON.stringify(body));
++	}
++	assert.equal(looked, 0);
++});
++
++test("a bad edit is 400 with the refusal's own message, and ffmpeg never runs", async () => {
++	const { deps, calls } = makeDeps();
++	Object.assign(deps, withFakeRun(calls));
++	const bad = [
++		[goodEdit({ trimStart: 6, trimEnd: 2 }), /trimEnd/],
++		[goodEdit({ trimEnd: 99 }), /within 0\.\.20/],
++		[goodEdit({ text: { body: "a\nb", y: 0 } }), /one line/],
++		[goodEdit({ music: { id: "mine", volume: 2 } }), /volume/],
++		[goodEdit({ coverSec: 10 }), /coverSec/],
++	];
++	for (const [edit, re] of bad) {
++		const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit }, deps });
++		assert.equal(r.status, 400);
++		assert.equal(r.json.ok, false);
++		assert.match(r.json.error, re);
++	}
++	assert.equal(calls.run.length, 0);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
++
++test("over 60 s is 400 from the job's own limit", async () => {
++	const { deps, calls } = makeDeps();
++	deps.videos.get = () => ({ owner: "m_alice", path: vid, durationSec: 300, width: 540, height: 960 });
++	Object.assign(deps, withFakeRun(calls));
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit({ trimStart: 0, trimEnd: 90, coverSec: 1 }) }, deps });
++	assert.equal(r.status, 400);
++	assert.match(r.json.error, /limit is 60 s/);
++	assert.equal(calls.run.length, 0);
++});
++
++test("a second export from the same member while one runs is 429 'one export at a time'; another member is fine; the slot frees afterwards", async () => {
++	let release;
++	const gate = new Promise((r) => { release = r; });
++	const out = { ok: true, outPath: join(outDir, "cut_0123456789abcdef.mp4"), seconds: 4 };
++	const { deps } = makeDeps({ maxJobs: 5, renderJob: async () => { await gate; return out; } });
++	deps.videos.get = (id) => ({ owner: id === "vb" ? "m_bob" : "m_alice", path: vid, durationSec: 20, width: 540, height: 960 });
++	const body = (videoId) => ({ videoId, edit: goodEdit() });
++	const first = handleCutRender({ member: alice, body: body("va"), deps });
++	await new Promise((r) => setImmediate(r));
++	assert.deepEqual(_cutRouteState().members, ["m_alice"]);
++	const second = await handleCutRender({ member: alice, body: body("va"), deps });
++	assert.equal(second.status, 429);
++	assert.match(second.json.error, /one export at a time/);
++	const other = handleCutRender({ member: bob, body: body("vb"), deps });
++	await new Promise((r) => setImmediate(r));
++	assert.equal(_cutRouteState().active, 2);
++	release();
++	assert.equal((await first).status, 200);
++	assert.equal((await other).status, 200);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++	deps.renderJob = async () => out;
++	assert.equal((await handleCutRender({ member: alice, body: body("va"), deps })).status, 200);
++});
++
++test("the site cap (maxJobs, default 2) answers 429 to a third member; a rejected request holds no slot", async () => {
++	let release;
++	const gate = new Promise((r) => { release = r; });
++	const out = { ok: true, outPath: join(outDir, "cut_0123456789abcdef.mp4"), seconds: 4 };
++	const { deps } = makeDeps({ renderJob: async () => { await gate; return out; } }); // no maxJobs -> 2
++	deps.videos.get = (id) => ({ owner: id, path: vid, durationSec: 20, width: 540, height: 960 });
++	const run = (id) => handleCutRender({ member: { id }, body: { videoId: id, edit: goodEdit() }, deps });
++	const a = run("m_a");
++	const b = run("m_b");
++	await new Promise((r) => setImmediate(r));
++	const c = await run("m_c");
++	assert.equal(c.status, 429);
++	assert.match(c.json.error, /busy/);
++	assert.equal(_cutRouteState().active, 2);
++	release();
++	await Promise.all([a, b]);
++	assert.equal(_cutRouteState().active, 0);
++	deps.renderJob = async () => out;
++	assert.equal((await run("m_c")).status, 200);
++});
++
++test("an ffmpeg failure is 500 'the render failed', the stderr goes to log only, and slots are released", async () => {
++	const { deps, calls } = makeDeps({ renderJob: async () => { throw new Error("ffmpeg exited 1: /srv/secret/path Invalid data"); } });
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit() }, deps });
++	assert.equal(r.status, 500);
++	assert.equal(r.json.error, "the render failed");
++	assert.ok(!JSON.stringify(r.json).includes("secret"));
++	assert.equal(calls.log.length, 1);
++	assert.match(calls.log[0], /secret/);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
++
++test("a synchronous throw inside renderJob is also 500 and releases the slots", async () => {
++	const { deps } = makeDeps({ renderJob: () => { throw new Error("boom"); } });
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit() }, deps });
++	assert.equal(r.status, 500);
++	assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++});
++
++test("a probe that throws or answers nonsense is 422, never renders, and releases the slots", async () => {
++	let ran = 0;
++	for (const probe of [() => { throw new Error("no streams"); }, async () => { throw new Error("x"); }, () => ({}), () => "yes"]) {
++		const { deps } = makeDeps({ probe, renderJob: async () => { ran++; return {}; } });
++		const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit() }, deps });
++		assert.equal(r.status, 422);
++		assert.deepEqual(_cutRouteState(), { members: [], active: 0 });
++	}
++	assert.equal(ran, 0);
++});
++
++test("without deps.probe the video record's hasAudio is used; publicUrl is honoured", async () => {
++	const seen = [];
++	const { deps } = makeDeps({
++		probe: undefined,
++		renderJob: async (j) => { seen.push(j); return { ok: true, outPath: join(outDir, "cut_0123456789abcdef.mp4"), seconds: 4 }; },
++		publicUrl: (p) => `https://cdn.example/${p.split("/").pop()}`,
++	});
++	deps.videos.get = () => ({ owner: "m_alice", path: vid, durationSec: 20, width: 540, height: 960, hasAudio: false });
++	const r = await handleCutRender({ member: alice, body: { videoId: "v1", edit: goodEdit() }, deps });
++	assert.equal(r.status, 200);
++	assert.equal(seen[0].video.hasAudio, false);
++	assert.equal(r.json.url, "https://cdn.example/cut_0123456789abcdef.mp4");
++});
++
++test("the member cannot choose the path or the output: client-sent path/outDir fields are ignored", async () => {
++	const seen = [];
++	const { deps } = makeDeps({ renderJob: async (j) => { seen.push(j); return { ok: true, outPath: join(outDir, "cut_0123456789abcdef.mp4"), seconds: 4 }; } });
++	await handleCutRender({
++		member: alice,
++		body: { videoId: "v1", edit: goodEdit(), path: "/etc/passwd", outDir: "/tmp", video: { path: "/etc/shadow" } },
++		deps,
++	});
++	assert.equal(seen[0].video.path, vid);
++	assert.equal(seen[0].outDir, outDir);
++});

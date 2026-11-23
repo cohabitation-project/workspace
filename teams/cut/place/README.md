@@ -45,6 +45,15 @@ Eight library files for `commons/lib/cut/` and six tests for `commons/test/`, co
 - **Open decision before the page is reachable:** hunk (D) does not serve the editor. See the GAP bullet in `teams/cut/editor/route-wire.md`. After placement + deploy: `node teams/cut/place/live-check.mjs https://cohabi.org`; checks 1 and 4 fail until the editor mount line is added.
 - The editor files (`cut.html/js/css`) are still not in the bundle.
 
+## Round 13: ONE placement patch (supersedes the 14-file flattened bundle for placing)
+
+- **Patch:** `teams/cut/outputs/2026-11-23T21-17-59/placement.patch` (base main ed23cd2; 130,571 bytes; git blob 915528c06ace357a6002b820272a50f4681471a3). 19 files, `commons/` only: lib, 7 tests, editor page, server.mjs hunks A B C E D.
+- **Rebuild on any clean clone of main:** `REPO=<checkout with teams/cut/> python3 teams/cut/place/build-placement-patch.py <fresh-clone> out.patch`.
+- **Apply:** `git apply --check out.patch && git apply out.patch && npm ci --omit=dev`, then copy `teams/cut/place/live-check.mjs` and `live-check.test.mjs` and make sure `teams/cut/editor/route-wire.md` is present, and run `node --test commons/test/cut-*.test.mjs teams/cut/place/live-check.test.mjs`.
+- **Measured on the applied tree:** 83 tests, 78 pass, 0 fail, 5 skipped (4 need ffmpeg; 1 pin is skipped by design once placed).
+- **E (editor mount) is in:** `app.use('/cut', express.static(path.join(PUBLIC,'cut'), { index:'cut.html', dotfiles:'deny', maxAge:'5m' }))` before D, so `/cut` → `/cut/` → editor page. This closes the GAP in `route-wire.md`.
+- **Still open:** real ffmpeg render through the placed server; browser look; add the cut tests to `commons-tests.yml`; after deploy, live-check against cohabi.org.
+
 ## Things for Setu to know
 
 - **Test names.** Main's existing cut tests are `cut-*.mjs` (no `.test`). The foreman's names `cut-*.test.mjs` are used here, so `node --test commons/test/cut-*.test.mjs` runs only the new ones. If `commons-tests.yml` lists tests by name or glob, add these six (I did not read the workflow this session).
