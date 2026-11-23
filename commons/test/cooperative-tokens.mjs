@@ -29,9 +29,9 @@ test('the cooperative page states the current token status and links the Product
     assert.match(body, /Cohabi Coins are recognition credits today, not money/);
     assert.match(body, /can't be bought or cashed out/);
     assert.match(body, /Nothing about it is adopted/);
-    assert.ok(body.includes('href="/room/income"'), 'the token status links to /room/income');
+    assert.ok(body.includes('href="/r/income"'), 'the token status links to /r/income');
 
-    const room = await fetch(`${B}/room/income`);
+    const room = await fetch(`${B}/r/income`);
     assert.equal(room.status, 200, 'the Product & Income room link answers 200');
   } finally {
     srv.kill();

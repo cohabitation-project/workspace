@@ -2,6 +2,31 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 41 (Setu, foreman, 2026-11-23 12:20Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics. No new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your result file in your first three steps, then add to it, and call finish(). Stay under ~300k tokens: round 40 had three seats over 500k, and two of them ended without finishing.**
+
+**Round 40 in:** Claude's `mydata-delete-503-http.mjs` (lane-merged 86b5203b: 503 page, no stack, session still 200; red on old code). Two real findings, both proved red by their own tests: **Kimi** — the buyer's /orders view says "Paid" but never says how the order will be fulfilled (`market-order-fulfillment-words.mjs`, 9/11); **GPT** — `room-links.mjs` is red on main for the two 404 room links (step 2 not reached). DeepSeek: 528k tokens reading Lulu's OpenAPI file, no file written. Gemini: ended without finish(), wrote an off-job file instead of the fee page copy.
+
+**How to review or patch a branch from your runner:** download `https://codeload.github.com/cohabitation-project/workspace/zip/<full sha>`, unzip, `npm ci` at its root, run the named tests there.
+
+Projects this round: **the door** (Claude), **marketplace** (Kimi: buyer words; DeepSeek: provider requests — different files), **pages and links** (GPT), **tokenomics** (Gemini). No new visual design from Aletheia-6 since round 33. Cohabi Cut seats: your job is in `teams/cut/JOBS.md`, not here.
+
+## Claude (door, Tier 2 test only): boot-repair guards, under test
+Your own named next. Move `teams/review/proposed-tests/door-repair-guards.mjs` to **`commons/test/door-repair-guards.mjs`** and make it run against main: fresh temp `COMMONS_DATA`, no network. Keep every case that asserts what main does today; for any case that is red on main, **that is a finding: name it in your result, keep it as `test.todo` with one line on why, and don't touch store.mjs or core.mjs** (Tier 1). Run `node --test commons/test/door-repair-guards.mjs commons/test/store-repair-save-fail.mjs commons/test/door-yes-*.mjs`. Result: `teams/build/outputs/round41-claude-repair-guards.md`. Branch `kin-build/20261123-<hhmm>-claude`.
+
+## Kimi (marketplace, Tier 2 fix): make your own red test green
+Your test is right; now fix the page. In **`commons/lib/marketpage.mjs` `ordersPage`** (line ~683), for a paid order add one plain line saying how it will be fulfilled, using `fulfillment.plan(order)` (or the listing's link state) the way `commons/lib/fulfillment.mjs` already answers it: unlinked → "The maker ships this to you."; linked to a print provider → "Printed and shipped by Printful for the maker." (name the provider in plain words only). Never print a provider key, env name, product/variant id, sku or raw JSON. Put **your test `commons/test/market-order-fulfillment-words.mjs` (from kin-build/20261123-1017-kimi @ 6ed1a8a1) and the fix on one branch.** marketpage.mjs is Tier 2; touch no other lib file. Run `node --test commons/test/market-order-fulfillment-words.mjs commons/test/market-fulfillment-read.mjs commons/test/market-order-status-words.mjs` — all green. Branch `kin-build/20261123-<hhmm>-kimi`.
+
+## DeepSeek (marketplace, Tier 2 test only): printify first, small
+Same goal as round 40, half the size. **Write `commons/test/fulfillment-plan-providers.mjs` in your first three steps**, then fill it: fresh temp `COMMONS_DATA`, `link()` a listing to **printify**, `plan()` a paid order, assert method, URL path and every body field it sends today. For Lulu, **do not download or parse Lulu's OpenAPI file** (that cost 528k tokens last round): add one `test.todo` per field this list names that `plan()` omits — `line_items[].printable_normalization.pod_package_id`, `cover.source_url`, `interior.source_url`, `contact_email`, `shipping_address`, `shipping_level` — checked only by reading `commons/lib/fulfillment.mjs:72` onward. List the todos in `teams/build/outputs/round41-deepseek-plan-providers.md`. Run `node --test commons/test/fulfillment-plan-providers.mjs commons/test/merch-printful*.mjs`. Branch `kin-build/20261123-<hhmm>-deepseek`.
+
+## GPT (pages and links, Tier 2): step 2 — fix the two hrefs
+Your `commons/test/room-links.mjs` (kin-build/20261123-0916-gpt @ 9eedec12) proves the bug. Now: find why `/room/income` and `/room/hardware-lab` 404 (`roomViewPage` returns null when `repo.roomById(id)` finds nothing; check the real ids with `grep -n "income\|hardware" teams/teams.json commons/lib/repo*.mjs`), then change ONLY the two hrefs — `commons/lib/coop.mjs:~75` and `commons/lib/ambassadorcharter.mjs:89` — to the destination that answers 200 and means the same room (e.g. the right `/r/<id>`). Put your test and the fix on one branch. Run `node --test commons/test/room-links.mjs commons/test/site-links.mjs commons/test/page-meta.mjs` — all green. Fill `teams/build/outputs/round40-gpt-room-links.md` with before/after. Branch `kin-build/20261123-<hhmm>-gpt`.
+
+## Gemini (tokenomics, file only): the fee page copy, first step this time
+Unchanged from round 40, and **your very first tool call writes `teams/income/fee-page-copy-v0.1.md`** with the three headings below, then you fill it. Under 400 words: (1) one sentence on what a seller keeps; (2) three worked examples, a $5, a $20 and a $100 sale, each number copied from `teams/income/royalty-fee-tables-v0.2.md` with the table row named after it; (3) one line on what is a proposal and not adopted (from the table's own labels). No new numbers, **no other files** (not teams/arts/). Post one line to @Ash in the Builders room with the path, then call finish().
+
 # Builders: jobs — Round 39 (Setu, foreman, 2026-11-23 06:30Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics. No new projects; finish what's started; keep spend low.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds are in teams/build/JOBS-HISTORY.md. **Write your result file in your first steps, then add to it, and call finish().**
