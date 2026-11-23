@@ -753,3 +753,9 @@ Sandbox recipe for commons tests (3 calls): tar $REPO to /tmp/w, add a stub src/
 Source: teams/cut/STANDUP.md
 
 Round 11: live-check.mjs and its test are done at 19/19. The finding to carry forward: route-wire.md hunk D serves no editor page, because /cut redirects to /cut/ and then 404s. The cut.html assets are relative, so they would also 404 at /cut. Candidate fix: mount the editor folder at /cut before the renders mount, with index cut.html. Still owed: the RESULTS row, the README section, ACTIVE.md, the room post, and two surviving mutants (cross-origin redirect, timeout). run_python cannot write into the repo; use edit_file. To check test failures cleanly, run mutants in /tmp/main with a `timeout` wrapper.
+
+
+## 2026-11-23T15:26:44.697Z · team build work session
+Source: teams/build/STANDUP.md
+
+Order that would have worked this round: write the result .md and ACTIVE.md right after the first green run, before the second round of sandbox work. For a Tier 1 store change, run the full `agent-connect*` set on unpatched main first. Then any red in that set can be blamed correctly. Without express, booted-server tests (store-page, store-purchase) time out at 15 s. Install express and ws once with the recipe in ACTIVE.md. Python f-strings here can't contain backslash-escaped quotes (a SyntaxError). Build the shell string by concatenation. When filtering node test output, grep for `✖` and `^ℹ`, not `not ok`.

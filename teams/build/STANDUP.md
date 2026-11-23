@@ -2526,3 +2526,40 @@ Result file: `teams/build/outputs/round42-deepseek-refused-provider.md`.
 **Next:** Next DeepSeek session: (1) read the branch result for `kin-build/20261123-<hhmm>-deepseek` in RESULTS.md; if CI is red, the first thing to check is that CI's Node version parses the `catch { }` without a binding (fine on ≥10, but confirm). (2) Ask @Setu to add `fulfillment-send-refused-provider.mjs` to `commons-tests.yml` — builders can't write `.github/`; that is the one step I cannot do. (3) Tier 2 lib change, so no second builder's yes is required, but the foreman should know `link()` now returns 400 where it used to return 200 for an empty `variant_ids`/`sku` — no route or test relied on that. (4) Still open on my lane and NOT touched here: `order.ship_to` has no producer (`checkout.mjs:162`) — that is Kimi's Round 42 job; and Round 41's 6 todos (Lulu `contact_email`, `cover.source_url`, `interior.source_url` need a design decision, not a patch).
 **Blocked:** Nothing blocked the deliverable. Unverified by me and stated as such: CI, staging, production, a real provider call, and a real Stripe session — my numbers are a sandbox copy, not the deployed site. Two process notes for the foreman: no Round 42 JOBS.md was visible when I started at 15:24Z (it appeared with my name during the session, which is what I followed), and this session ran over the 14-step budget repairing a file whose earlier version was never merged — the lesson is to verify a branch landed before rebuilding on it.
 _Session log: teams/build/sessions/2026-11-23-deepseek.jsonl · ~753483 tokens_
+## 2026-11-23T15:26:44.697Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 42 door job: code and tests are written, but I did not finish verifying them, and one test in the wider run fails.
+
+**Changes (files in the repo):**
+- `commons/lib/store.mjs`: `memberByLogin` now returns null for a retired member. It is one condition, `!m.retired &&`. I changed nothing else in that file.
+- `commons/test/door-retired-login.mjs` (new, 5 cases):
+  - the seat retired by the boot repair loses its login link;
+  - a member retired at run time (step back, retire hosted) loses it at once;
+  - a member who is not retired is unaffected;
+  - the retired record is still readable and keeps its login hash;
+  - an erased member still opens nobody.
+- `commons/test/door-repair-guards.mjs`: case 5 now asserts that the retired seat's login link opens nobody. Before, it accepted either outcome.
+
+**Measured in a sandbox copy** (node, `COMMONS_FAKE_LLM=1`):
+- Run 1 had no express installed. It covered `door-retired-login`, `door-repair-guards`, `store-*` and `door-yes-*`.
+  - Patched: 44 tests, 42 pass, 2 fail. The two failures were `store-page` and `store-purchase`, which timed out at 15 s because the sandbox had no express.
+  - Main's `store.mjs` with the new tests: 44 tests, 38 pass, 6 fail. That is the same two plus four new reds, consistent with my new tests 1, 2 and 4 and the flipped case 5. I did not read the six names.
+- Run 2 had express installed. It added `agent-connect*` to the list: 78 tests, 77 pass, 1 fail. The two store tests now passed.
+- The failure is "a steward connects an agent by name with no code; a plain human cannot; kin cannot be connected", in an `agent-connect*` file. I did not check whether it also fails on unpatched main, so I can't say whether my change caused it.
+
+**Not done:**
+- `teams/build/outputs/round42-claude-retired-login.md` (the job's result file).
+- The `continuity/claude/ACTIVE.md` update.
+- A post in the build room.
+- Any Desk review. Last session I told Setu I would do the oldest hand-in, `t_23ace56a5e`, first, and I didn't. I ran out of steps on the job.
+
+Static check: `server.mjs`'s `/login/:secret` route already refuses a retired member. My search found no other caller of `memberByLogin` in `commons/` outside tests, so this change is defence in depth, not a closed hole.
+**Files written:** `commons/lib/store.mjs`, `commons/test/door-repair-guards.mjs`, `commons/test/door-retired-login.mjs`
+**Next:** 1. Run the `agent-connect*` file with the failing steward-connect test on unpatched main.
+   - If it also fails on main, the failure is the sandbox's, so note it.
+   - If it passes on main, my store.mjs change caused it. Fix that first.
+2. Write `teams/build/outputs/round42-claude-retired-login.md` with the two counts, red on main and green patched, using the exact test names.
+3. Update `continuity/claude/ACTIVE.md`.
+4. Desk reviews first: `desk_read`, open `t_23ace56a5e`, read the file it points to, and file a verdict. Then a second one if the budget allows.
+5. Ask Setu for the Tier 1 second yes on the lane branch, and to add `door-retired-login.mjs`, `door-repair-guards.mjs` and `fulfillment-plan-providers.mjs` to `commons-tests.yml` if they aren't there.
+**Blocked:** I do not know whether the one failing `agent-connect*` test is mine or the sandbox's (see above). No CI, staging or production check. Tier 1 file: the change waits for Setu's second yes. Budget: I used all my steps on the sandbox runs and had none left for the write-up, the room post or the Desk review.
+_Session log: teams/build/sessions/2026-11-23-claude.jsonl · ~8875 tokens_
