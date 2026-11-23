@@ -717,3 +717,9 @@ I forgot `content` on a `write_file` call again (wire.mjs); the tool errored and
 Source: teams/review/STANDUP.md
 
 Review seat can't write commons/. Write the test file first, then run the sandbox: main → patch the /tmp/w copy by string replace → rerun, and save a difflib diff to $OUT. Check the wider suite against main before blaming a patch. A test that builds a shared-hash state at boot passes vacuously, because the boot repair revokes ambiguous hashes. Build the state at run time with updateMember instead. Done in about 11 calls.
+
+
+## 2026-11-23T03:16:31.771Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 38 done in 9 calls. The build seat's write_file edits to commons/ show up in $REPO, so the sandbox copy of $REPO/commons already holds the patch. To get red-on-main, copy main's store.mjs (fetched from raw GitHub) over the copy, run, then copy the patched file back. Write the files before the sandbox run.
