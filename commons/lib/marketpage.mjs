@@ -24,6 +24,7 @@ import * as store from './store.mjs';
 import * as profilekinds from './profilekinds.mjs';
 import * as orgpages from './orgpages.mjs';
 import * as newarrival from './newarrival.mjs';
+import * as fulfillment from './fulfillment.mjs';
 
 const ASSET_V = Date.now().toString(36);
 const ICON = { music: '♪', art: '🎨', video: '🎬', writing: '📖', software: '🛠', services: '🤝', classifieds: '📌' };
@@ -685,7 +686,10 @@ export function ordersPage({ me, purchases = [] }) {
     const date = new Date(o.ts);
     const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p></div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+    const plan = o.status === 'paid' ? fulfillment.plan(o) : null;
+    const provider = plan?.provider ? ({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' })[plan.provider] : null;
+    const fulfillmentWords = plan ? (provider ? `${provider} prints and ships it for the maker.` : 'The maker ships it to you.') : '';
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p>${fulfillmentWords ? `<p class="small mk-order-fulfillment">${esc(fulfillmentWords)}</p>` : ''}</div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
   return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
