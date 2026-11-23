@@ -1,0 +1,11 @@
+{
+  "node_check_exit": 0,
+  "test_exit": 1,
+  "tests": null,
+  "pass": null,
+  "fail": null,
+  "skipped": null,
+  "duration_ms": null,
+  "command": "node --test commons/test/market-order-fulfillment-words.mjs commons/test/market-fulfillment-read.mjs commons/test/market-order-status-words.mjs",
+  "evidence": "tests.log"
+}
