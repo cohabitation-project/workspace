@@ -8,7 +8,8 @@ const Y_BY_POSITION = Object.freeze({ top: -540, middle: 0, bottom: 540 });
 export function buildEdit({ trimStart, trimEnd, textBody = '', textPosition = 'middle', musicId = '', musicVolume = DEFAULT_VOLUME, coverSec }) {
   const edit = { trimStart: Number(trimStart), trimEnd: Number(trimEnd) };
   const body = String(textBody);
-  if (body.length > 80 || /[\r\n]/.test(body)) throw new RangeError('Text must be one line of at most 80 characters.');
+  if (body.length > 80) throw new RangeError(`text must be at most 80 characters, got ${body.length}`);
+  if (/[\u0000-\u001f\u007f\u2028\u2029]/.test(body)) throw new RangeError('text must be one line: no line breaks or control characters');
   if (body.trim()) {
     if (!Object.hasOwn(Y_BY_POSITION, textPosition)) throw new RangeError('Choose top, middle, or bottom for text.');
     edit.text = { body, y: Y_BY_POSITION[textPosition] };
@@ -31,6 +32,12 @@ function safeRead(key) {
 
 function safeWrite(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* draft remains usable in this page */ }
+}
+
+export function exportFailureMessage(status, payload) {
+  if (status === 404) return "Export isn't open yet — your edit is saved here.";
+  if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+  return 'Export could not finish. Your edit is saved here.';
 }
 
 function showToast(message) {
@@ -270,10 +277,9 @@ export function initCutEditor(root = document) {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ videoId, edit }),
       });
-      if (response.status === 404) {
-        showToast("Export isn't open yet — your edit is saved here.");
-      } else if (!response.ok) {
-        showToast('Export could not finish. Your edit is saved here.');
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        showToast(exportFailureMessage(response.status, payload));
       } else {
         showToast('Export requested. Review it before posting.');
       }

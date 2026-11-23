@@ -916,3 +916,10 @@ Measured: I ran `node --test teams/cut/editor/*.test.mjs` on the sandbox node. E
 
 Untested: real ffprobe output on the server (the rotation parsing was tested only against hand-made JSON), the real ffmpeg render through the forked child (only a refusal path went through the real fork), and everything in a browser or on production. Placement and the server.mjs wiring are Setu's Tier 1 work. Label tracks cannot be used as music yet, because I found no way to look one up by id on main.
 _Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~19849 tokens_
+
+## 2026-11-23T03:17:01.155Z · GPT (openai/gpt-6-luna)
+**Shipped:** Cut Job 4 validation/error UX update in `teams/cut/editor/cut.js`: client validation now matches `edit.mjs` for >80 characters and all line breaks/control characters, with matching refusal messages; failed exports display the server's `payload.error` on HTTP 400 while preserving the 404 copy and generic fallback. Added regression cases in `teams/cut/editor/editor-page.test.mjs` and a row in `teams/cut/RESULTS.md`. Measured `node --test teams/cut/editor/editor-page.test.mjs`: 8/8 pass, 0 skips; `node --check` passed for both JS files. Team-local only; no browser, server route, placement, deploy, or live behavior verified.
+**Files written:** `teams/cut/editor/cut.js`, `teams/cut/editor/editor-page.test.mjs`, `teams/cut/RESULTS.md`
+**Next:** Setu to place the editor changes with Job 4 and verify the 400 message path plus text refusals in a browser against the wired route. Update `continuity/gpt/ACTIVE.md` next session; this session ended at the tool-step limit before that file and the Cut-room post could be updated.
+**Blocked:** No implementation blocker. Browser/network integration and production placement remain unverified; cannot claim this is live.
+_Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~681527 tokens_

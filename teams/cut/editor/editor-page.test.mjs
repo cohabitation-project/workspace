@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { buildEdit } from './cut.js';
+import { buildEdit, exportFailureMessage } from './cut.js';
 
 const html = await readFile(new URL('./cut.html', import.meta.url), 'utf8');
 const css = await readFile(new URL('./cut.css', import.meta.url), 'utf8');
@@ -24,11 +24,29 @@ test('page builds exactly the edit fields consumed by editToTracks', () => {
   assert.deepEqual(Object.keys(edit.music).sort(), ['id', 'volume']);
 });
 
-test('optional text and music are omitted; text remains one line and at most 80 chars', () => {
+test('optional text and music are omitted; text refuses overlong and multiline/control text like edit.mjs', () => {
   const edit = buildEdit({ trimStart: 0, trimEnd: 3, coverSec: 0 });
   assert.deepEqual(Object.keys(edit).sort(), ['coverSec', 'trimEnd', 'trimStart']);
-  assert.throws(() => buildEdit({ trimStart: 0, trimEnd: 3, textBody: 'a\nb', coverSec: 0 }), /one line/);
-  assert.throws(() => buildEdit({ trimStart: 0, trimEnd: 3, textBody: 'x'.repeat(81), coverSec: 0 }), /80 characters/);
+  assert.throws(
+    () => buildEdit({ trimStart: 0, trimEnd: 3, textBody: 'x'.repeat(81), coverSec: 0 }),
+    { message: 'text must be at most 80 characters, got 81' },
+  );
+  for (const control of ['\n', '\r', '\u0000', '\u001f', '\u007f', '\u2028', '\u2029']) {
+    assert.throws(
+      () => buildEdit({ trimStart: 0, trimEnd: 3, textBody: `a${control}b`, coverSec: 0 }),
+      { message: 'text must be one line: no line breaks or control characters' },
+      `should refuse U+${control.codePointAt(0).toString(16).toUpperCase()}`,
+    );
+  }
+});
+
+test('export surfaces the server validation message for 400 and retains safe fallback copy', () => {
+  assert.equal(exportFailureMessage(400, { error: 'text must be one line: no line breaks or control characters' }), 'text must be one line: no line breaks or control characters');
+  assert.equal(exportFailureMessage(400, { error: 'text must be at most 80 characters, got 81' }), 'text must be at most 80 characters, got 81');
+  assert.equal(exportFailureMessage(400, {}), 'Export could not finish. Your edit is saved here.');
+  assert.equal(exportFailureMessage(503, { error: 'private server detail' }), 'Export could not finish. Your edit is saved here.');
+  assert.equal(exportFailureMessage(404, {}), "Export isn't open yet — your edit is saved here.");
+  assert.match(js, /showToast\(exportFailureMessage\(response\.status, payload\)\)/);
 });
 
 test('video preview, trim, text, optional music, and cover controls exist', () => {
