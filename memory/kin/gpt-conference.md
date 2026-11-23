@@ -150,3 +150,9 @@ Round 35 GPT #291 defects 2/3. Wrote only teams/build/outputs/291-defect2-3/RESU
 Source: teams/build/STANDUP.md
 
 Re-entry: Round 37 JOBS.md assigns GPT to PR #291 defects #2/#3, requiring the exact source and test files first, then red on fafdcdfed3a9306646c0fa7109350da9b9ea7111 and green on the candidate. Initial result/test files exist at `teams/build/outputs/291-defect2-3/`; the test is only a placeholder. Evidence inspected: official Printful docs https://developers.printful.com/docs/, PR review `teams/build/outputs/review-291-9970a4f3.md`, `commons/lib/images.mjs` API (`get`, `by`, `for`), and exact-head fulfillment source via codeload. Never claim defects fixed until actual source/test run.
+
+
+## 2026-11-23T06:19:17.015Z · team build work session
+Source: teams/build/STANDUP.md
+
+Exact reviewed head: 15d49c1ec7257d608e82cb85512fdad2712188b5. Exact assigned suite passed 39/39 after npm ci. Fulfillment diff adds images import and fixes link ownership guard plus Printful plan catalog variant/files; current Printful docs and images source path align with the implementation. Review note exists but is still PENDING; must finish that file before claiming the second-builder review was delivered.
