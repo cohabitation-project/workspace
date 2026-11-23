@@ -182,3 +182,64 @@
  .cz-actions { position:sticky; bottom:8px; z-index:20; box-shadow:0 10px 24px #3a204a25; }
 }
 @media(prefers-reduced-motion:reduce) { #mp-app *,#mp-app *::before,#mp-app *::after { transition:none!important; animation:none!important; } }
+
+
+/* Cohabi MARKET header: the first PR did not carry the visual identity above the panel.
+   Scope this to the product customizer alone; keep global Cohabi navigation usable. */
+body.mk-page:has(#mp-app) { background:linear-gradient(180deg,#fff6ec 0%,#fffdf7 430px,#fff8f0 100%); }
+body.mk-page:has(#mp-app) .mv-wrap {
+  max-width:none; width:100%; margin:0; padding:0 clamp(16px,3vw,58px) 70px;
+}
+body.mk-page:has(#mp-app) .mv-wrap::before {
+  content:""; display:block; height:14px; margin:0 calc(-1 * clamp(16px,3vw,58px)) 0;
+  background:linear-gradient(90deg,#531e52,#aa6b4e,#eaa13c,#873f78);
+}
+body.mk-page:has(#mp-app) .mv-eyebrow {
+  display:block; position:relative; margin:0 calc(-1 * clamp(16px,3vw,58px));
+  padding:21px clamp(20px,4vw,68px) 7px; color:#fff2dc!important;
+  font:800 14px/1.4 system-ui,sans-serif; letter-spacing:.23em;
+  background:linear-gradient(90deg,#411b43,#5a2258 68%,#9a457d);
+}
+body.mk-page:has(#mp-app) .mv-pills {
+  margin:0 calc(-1 * clamp(16px,3vw,58px)); padding:7px clamp(16px,4vw,68px) 15px;
+  align-items:center; gap:7px 13px; border:0; min-height:55px;
+  background:linear-gradient(90deg,#411b43,#5a2258 68%,#9a457d);
+}
+body.mk-page:has(#mp-app) .mv-pill {
+  background:transparent; color:#fff7e7!important; border:1px solid transparent;
+  border-radius:99px; font:650 12px system-ui,sans-serif;
+  padding:9px 11px; transition:background .16s,color .16s;
+}
+body.mk-page:has(#mp-app) .mv-pill:hover { background:#ffffff23; }
+body.mk-page:has(#mp-app) .mv-pill[aria-current="page"] {
+  background:#813681; color:white!important; box-shadow:0 3px 12px #230d3039;
+}
+body.mk-page:has(#mp-app) .mv-search {
+  margin:0 calc(-1 * clamp(16px,3vw,58px)) 19px;
+  padding:0 clamp(16px,5vw,84px) 33px;
+  background:linear-gradient(180deg,#9a457d,#68345f 12%,#6d3564 62%,transparent 100%);
+}
+body.mk-page:has(#mp-app) .mv-search input {
+  background:#fff9f2; border:1px solid #f0d9c7; color:#35183c; min-height:43px;
+  border-radius:99px; box-shadow:0 6px 20px #32132a2b; padding-left:20px;
+}
+body.mk-page:has(#mp-app) .mv-search .btn { border-radius:99px; background:#5b2860; border:1px solid #d9a85e; color:white; }
+body.mk-page:has(#mp-app) .mv-main { max-width:1650px; margin:0 auto; }
+body.mk-page:has(#mp-app) .mk-foot { max-width:1650px; margin:26px auto 0; border-top:1px solid #dfcfbd; }
+body.mk-page:has(#mp-app) .crumbs { color:#7a5373; }
+body.mk-page:has(#mp-app) .cz-head { background:transparent; }
+body.mk-page:has(#mp-app) .cz-head::after {
+  content:"✧"; position:absolute; right:10px; top:-7px; font-size:56px;
+  color:#df9e65; opacity:.47; pointer-events:none;
+}
+body.mk-page:has(#mp-app) .cz-stagewrap { box-shadow:inset 0 0 0 1px #f2dfd1,0 9px 32px #50203613; }
+@media(max-width:900px) {
+ body.mk-page:has(#mp-app) .mv-pills { overflow-x:auto; flex-wrap:nowrap; }
+ body.mk-page:has(#mp-app) .mv-pill { flex:none; }
+}
+@media(max-width:720px) {
+ body.mk-page:has(#mp-app) .mv-eyebrow { padding-top:14px; }
+ body.mk-page:has(#mp-app) .mv-search { padding-bottom:15px; }
+ body.mk-page:has(#mp-app) .mv-search input { min-width:0; }
+ body.mk-page:has(#mp-app) .cz-head::after { display:none; }
+}
