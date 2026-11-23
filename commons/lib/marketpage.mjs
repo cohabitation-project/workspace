@@ -25,6 +25,7 @@ import * as profilekinds from './profilekinds.mjs';
 import * as orgpages from './orgpages.mjs';
 import * as newarrival from './newarrival.mjs';
 import * as fulfillment from './fulfillment.mjs';
+import * as merchsets from './merchsets.mjs';
 
 const ASSET_V = Date.now().toString(36);
 const ICON = { music: '♪', art: '🎨', video: '🎬', writing: '📖', software: '🛠', services: '🤝', classifieds: '📌' };
@@ -535,7 +536,7 @@ function artPage({ me, items, pk, q, sort = '' }) {
   const chips = [[null, 'Everyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="av-chip${(k || null) === pk ? ' selected' : ''}" href="${esc(link({ by: k }))}#browse">${esc(n)}</a>`).join('');
   const price = (l) => ({ fixed: `$${l.price.amount}`, donation: `From $${l.price.min}`, free: 'Free', quote: 'Ask for a quote', packages: `From $${Math.min(...(l.packages || []).map((k) => k.price))}` }[l.price.mode] || '');
   const real = items.map((l) => { const img = cardImage(l); const who = l.page?.name || l.by.name; const subj = (l.tags || [])[0] || market.TYPES[l.type] || 'Work';
-    return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span></div></div></article>`; }).join('');
+    return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span></div>${merchsets.count(l.id) ? `<p class="av-pods small">Also on ${merchsets.count(l.id)} product${merchsets.count(l.id) === 1 ? '' : 's'}</p>` : ''}</div></article>`; }).join('');
   const examples = ''; // fictional products are never shown (Geoffrey, Aletheia-6, Nov 21)
   const seen = new Map(); for (const l of items) { const k = l.page?.id || l.by.id; if (!seen.has(k)) seen.set(k, l); }
   const makerCards = [...seen.values()].slice(0, 6).map((l) => { const img = cardImage(l); const who = makerLink(l); const n = items.filter((x) => (x.page?.id || x.by.id) === (l.page?.id || l.by.id)).length;
@@ -728,6 +729,19 @@ export function salesPage({ me, sales = [] }) {
 }
 
 // ------------------------------------------------------------------------------------------ one listing
+// "Get it on": the products this artwork is on (Geoffrey, 2026-11-23: one image, applied to anything). Each card shows the
+// real Printful mockup once it's made; until then it says the photo is being made. Buying a product is not wired yet
+// (a Tier 1 checkout step), so the button stays off and the line under the row says why.
+function merchRow(l, me) {
+  const v = merchsets.view(l.id); if (!v.items.length) return '';
+  const mine = !!me && l.by.id === me.id;
+  const cards = v.items.map((it) => `<article class="mk-pod">${it.mockup ? `<a class="mk-podimg" href="${esc(it.mockup)}" target="_blank" rel="noopener" title="See it bigger"><img src="${esc(it.mockup)}" alt="${esc(it.title)} printed with this art" loading="lazy"></a>` : `<span class="mk-podimg mk-podwait">${it.status === 'failed' ? 'The photo didn\'t come through' : 'Making the photo…'}</span>`}
+    <h3>${esc(it.title)}</h3><p class="mk-podprice">$${esc(it.price.toFixed(2))}</p>
+    ${it.options.length ? `<label class="small">Colour / size <select>${it.options.map((o) => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join('')}</select></label>` : ''}
+    <button type="button" class="btn small" disabled>Buy</button></article>`).join('');
+  return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>
+  <p class="small muted">Printed and shipped by Printful when you order. Buying products opens with payments.${mine ? ` <a href="/label/l/${esc(l.id)}/edit#mk-pods-edit">Change products</a>` : ''}</p></section>`;
+}
 export function listingPage({ me, l, paid = null, cancelled = false }) {
   const own = me && me.id === l.by.id;
   // The receipt (2026-11-18): Stripe sends the buyer back here with ?paid=ord_…. Until the webhook lands the order is
@@ -776,6 +790,7 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   ${own && l.status === 'live' ? `<p class="mk-own"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a> <button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></p>` : ''}
   <section class="mk-offered"><h2 class="small">Offered by</h2>${prov}${(() => { const sm = store.getMember(l.by.id); return sm && profilekinds.isShopKind(sm) ? `<p class="small">${profilekinds.badgeHTML(sm)} <a href="/m/${esc(sm.id)}">${esc(profilekinds.shopTab(sm))} on ${esc(sm.name)}'s page</a></p>` : ''; })()}</section>
   </div></article>
+  ${merchRow(l, me)}
   <section class="mk-askbox" id="mk-ask"><h2>Questions</h2><p class="small muted">Public, like everything in the Commons. Don't share a phone number, an address or anything private here.</p>
   <ul class="mk-qs">${thread(null) || '<li class="muted small">No questions yet.</li>'}</ul>
   ${l.status === 'live' ? (me ? `<form class="mk-askform" data-id="${esc(l.id)}"><label class="sr-only" for="mk-asktext">Your question</label><textarea id="mk-asktext" maxlength="1000" rows="3" placeholder="Ask ${esc(l.provider.kind === 'team' ? l.provider.lead.name : l.by.name)} something (public)"></textarea><input type="hidden" name="reply_to" value=""><p class="mk-replying small muted" hidden>Replying · <button type="button" class="linkish mk-cancel">cancel</button></p><button class="btn small">Ask</button></form>` : `<p><a href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in</a> or <a href="/signup">sign up</a> to ask.</p>`) : ''}
@@ -834,18 +849,9 @@ export function listingForm({ me, l = null, cat = null, asPage = null }) {
     <fieldset class="mk-imgs"><legend>Pictures (up to 4; tick the ones this listing shows)</legend><div class="mk-imglist">${mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('')}</div>${mine.length ? '' : '<p class="small muted" id="mk-noimgs">No uploads yet — add your product\'s picture right here:</p>'}
     <label class="small mk-pgup">⬆ Upload a picture of this product <input type="file" id="mk-imgup" accept="image/png,image/jpeg,image/webp,image/gif"></label>
     <p class="small muted">No picture? A services or software listing shows your page's logo; music, art, video, writing and classifieds show a plain placeholder — upload the work itself.</p></fieldset>
-  ${!l ? `<fieldset class="mk-merch" id="mk-merch" hidden><legend>Make it a product (printed and shipped by Printful)</legend>
-    <p class="small muted">Put your art on a shirt, mug, poster and more. You'll see a real photo of the product before you publish, and you set the price. Nothing is printed until someone buys it, and orders open when payments do.</p>
-    <label><input type="checkbox" id="mf-on"> Yes, make this a product</label>
-    <div id="mf-body" hidden>
-      <div class="mk-row"><label>Product<select id="mf-product"></select></label><label>Colour / size<select id="mf-variant"></select></label></div>
-      <fieldset class="mk-imgs"><legend>Your art (one of your uploads)</legend>${mine.length ? mine.map((im) => `<label class="mk-imgpick"><input type="radio" name="mf_art" value="${esc(im.id)}"><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') : '<p class="small muted">Upload your art from your profile page first, then come back.</p>'}</fieldset>
-      <div class="mk-row"><label>Size on the product<input type="range" id="mf-scale" min="20" max="100" value="80"></label><label>Up or down<input type="range" id="mf-y" min="0" max="100" value="35"></label></div>
-      <button type="button" class="btn ghost" id="mf-go">Show me the real mockup</button>
-      <p class="small" id="mf-msg" role="status"></p>
-      <img id="mf-img" alt="" hidden style="max-width:100%;border-radius:12px">
-      <p class="small" id="mf-base" hidden></p>
-    </div></fieldset>` : ''}
+  ${l && ['art', 'music'].includes(l.category) ? `<fieldset class="mk-podsedit" id="mk-pods-edit"><legend>Put this art on products</legend>
+    <p class="small muted">Tick what this art can be printed on and set a price for each. Your first picture above is the art. We place it on each product and make a real photo of it; the photos appear on your listing over the next few minutes. Printful prints and ships when someone orders.</p>
+    <div id="mp-list" class="small">Loading products…</div></fieldset>` : ''}
   ${!l ? '<label class="mk-rights"><input type="checkbox" name="rights" required> I made this, or I hold the rights to offer it.</label>' : ''}
   <p class="form-msg" role="status" id="mk-msg"></p>
   <button class="btn">${l ? 'Save' : 'List it'}</button>

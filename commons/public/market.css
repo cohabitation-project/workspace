@@ -1276,3 +1276,18 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .md-maker-note {font-size:13px;line-height:1.65;color:var(--muted);max-width:860px;margin:0 0 42px}
 @media(max-width:990px){.md-makerguide .md-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:580px){.md-makerguide .md-chapters{grid-template-columns:1fr}}
+
+/* One artwork, many products (Geoffrey, 2026-11-23). Plain first version; Aletheia-6's design replaces it. */
+.mk-pods { margin: 1.5rem 0; }
+.mk-podgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; }
+.mk-pod { border: 1px solid rgba(127,127,127,.25); border-radius: 12px; padding: .6rem; display: flex; flex-direction: column; gap: .35rem; }
+.mk-pod h3 { font-size: .95rem; margin: 0; }
+.mk-podimg { display: block; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: rgba(127,127,127,.08); }
+.mk-podimg img { width: 100%; height: 100%; object-fit: cover; }
+.mk-podwait { display: flex; align-items: center; justify-content: center; text-align: center; font-size: .85rem; opacity: .75; padding: .5rem; }
+.mk-podprice { font-weight: 600; margin: 0; }
+.mk-pod select { max-width: 100%; }
+.mk-podsedit .mp-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; padding: .3rem 0; }
+.mk-podsedit .mp-name { min-width: 11rem; }
+.mk-podsedit .mp-amt { width: 6.5rem; }
+.av-pods { margin: .3rem 0 0; opacity: .8; }

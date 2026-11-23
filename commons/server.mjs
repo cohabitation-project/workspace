@@ -63,6 +63,7 @@ import * as stripe from './lib/stripe.mjs';
 import * as capacity from './lib/capacity.mjs';
 import * as fulfillment from './lib/fulfillment.mjs';
 import * as printful from './lib/printful.mjs';
+import * as merchsets from './lib/merchsets.mjs';
 import * as socialshare from './lib/socialshare.mjs';
 import * as coop from './lib/coop.mjs';
 import { wireMyceliumAPI } from './lib/mycelium-api.mjs';
@@ -166,6 +167,8 @@ market.init(DATA);
 checkout.init(DATA);
 capacity.start();
 fulfillment.init(DATA);
+merchsets.init(DATA); // one artwork, many products (Geoffrey, 2026-11-23); mockups are made in the background
+merchsets.start(() => core.CFG.publicUrl || core.CFG.canonicalUrl, Number(process.env.MERCH_TICK_MS) || 20_000);
 socialshare.init(DATA);
 pages.setStorefront(marketpage.storefront);
 orgpages.setHooks({ member: (q) => store.getMember(q) || store.memberByName?.(q) || null, imageOwned: (m, id) => images.ownedBy(m, id), labelOwners: () => { try { return JSON.parse(fs.readFileSync(path.join(repo.ROOT, 'label', 'releases.json'), 'utf8')).artists || {}; } catch { return {}; } }, labelFolders: () => marketpage.artists() });
@@ -1763,6 +1766,9 @@ app.post('/api/merch/listings', wrap((req, res) => {
   catch (e) { try { market.withdraw(me, l.id); } catch { /* the error below is what matters */ } throw e; }
   printful.forgetTask(b.mockup); res.status(201); return { ...l, merch: { provider: 'printful', product: t.product_title, variant: t.variant_name, base_price: t.base } };
 }));
+// One artwork, many products (Geoffrey, 2026-11-23). GET: the products this art is on (public). PUT: its maker sets them.
+app.get('/api/market/listings/:id/merch', wrap((req) => merchsets.view(req.params.id)));
+app.put('/api/market/listings/:id/merch', wrap(async (req) => { const me = marketWriter(req); core.socialActsAllowed(me); return merchsets.setProducts(me, req.params.id, (req.body || {}).items); }));
 app.post('/api/market/listings', wrap((req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(201); return market.create(me, req.body || {}); }));
 app.patch('/api/market/listings/:id', wrap((req) => market.update(marketWriter(req), req.params.id, req.body || {})));
 app.post('/api/market/listings/:id/withdraw', wrap((req) => { const me = marketWriter(req); core.socialActsAllowed(me); return market.withdraw(me, req.params.id); }));

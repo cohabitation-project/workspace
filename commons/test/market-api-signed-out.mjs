@@ -8,6 +8,7 @@
 //   1732  /api/market/listings                  → market.list({...query}) + {payments: 'not open: …'}
 //   1733  /api/market/listings/:id              → market.get(id) = the listing + its `asks`
 //   1768  /api/market/listings/:id/checkout     → checkout.quote(id) = {listing, title, seller, amount, currency, payable, why}
+//         /api/market/listings/:id/merch        → merchsets.view(id) = {listing, items:[]} for art on no products; never `by`
 //   1740  /api/market/listings/:id/fulfillment  → SKIPPED, see below
 // Everything else under /api/market is a write (create, edit, ask, withdraw, checkout, fulfillment link/unlink,
 // release). Those are covered by other files: market-seller-edit, market-sales-private, the checkout guards.
@@ -60,6 +61,7 @@ const EXAMINED = [
   { path: '/api/market/listings' },
   { path: '/api/market/listings/:id' },
   { path: '/api/market/listings/:id/checkout' },
+  { path: '/api/market/listings/:id/merch' },
   { path: '/api/market/listings/:id/fulfillment', skip: 'known private-data finding, waiting on Geoffrey; pinned by market-fulfillment-guards.mjs' },
 ];
 // Shapes a stranger must never receive from the market. Deliberately blunt: a false positive is cheap to fix, a
@@ -199,6 +201,16 @@ test('a stranger reading the market API gets the public listing and nothing that
     // (3) The price quote. Public by its own design ("Safe to show anyone"): it names the seller and says why
     //     nothing can be bought yet. It must not carry the seller's account.
     {
+      {
+        // One artwork, many products (2026-11-23): public, because the same products show on the public listing page.
+        // With none set it is an empty list; it never names who set them (the listing already says who made it).
+        const m = await read(`/api/market/listings/${listing.id}/merch`);
+        assert.equal(m.r.status, 200, 'signed out, the products list answers 200');
+        const mj = JSON.parse(m.text);
+        assert.equal(mj.listing, listing.id); assert.deepEqual(mj.items, [], 'no products set, none shown');
+        assert.equal(mj.by, undefined, 'it carries no member id of who set them');
+        scan(`/api/market/listings/${listing.id}/merch`, m.text);
+      }
       const { r, text } = await read(`/api/market/listings/${listing.id}/checkout`);
       assert.equal(r.status, 200, 'signed out, the quote answers 200');
       const q = JSON.parse(text);

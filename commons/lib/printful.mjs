@@ -137,3 +137,27 @@ export function takeTask(member, key) {
   return t;
 }
 export const forgetTask = (key) => tasks.delete(String(key || ''));
+
+// ------------------------------------------------------------------ mockups for a merch set (merchsets.mjs)
+// Geoffrey, 2026-11-23: one artwork, many products ("make the one image that's sitting there able to be applied to
+// anything"). merchsets.mjs owns which products an artwork is on; these two calls are its only way to Printful. They use
+// the same market-wide limiter as startMockup. The art check is the caller's: the art is the picture on the maker's own
+// listing, which they attested they hold the rights to when they listed it.
+/** Start one mockup. Returns Printful's task key, or null when this minute's quota is used (try again next tick). */
+export async function queueMockup({ productId, variantId, placement, imageUrl, position }) {
+  const now = Date.now(); while (recent.length && now - recent[0] > 60_000) recent.shift();
+  if (recent.length >= PER_MINUTE()) return null;
+  const r = await api(`/mockup-generator/create-task/${Number(productId)}`, { method: 'POST', body: { variant_ids: [Number(variantId)], format: 'jpg', files: [{ placement, image_url: imageUrl, position }] } });
+  if (!r?.task_key) fail(502, "The print partner didn't start the mockup.");
+  recent.push(now); return r.task_key;
+}
+/** Where a mockup task stands: pending, completed (with Printful's short-lived picture link) or failed. */
+export async function taskResult(key, placement) {
+  const r = await api(`/mockup-generator/task?task_key=${encodeURIComponent(key)}`);
+  if (r?.status === 'failed') return { status: 'failed', error: String(r.error || 'the print partner could not make it').slice(0, 160) };
+  if (r?.status !== 'completed') return { status: 'pending' };
+  const m = (r.mockups || []).find((x) => x.placement === placement) || (r.mockups || [])[0];
+  return m?.mockup_url ? { status: 'completed', url: m.mockup_url } : { status: 'failed', error: 'the print partner sent no picture' };
+}
+/** The last good product list without waiting on Printful (for rendering pages); [] until the first read. */
+export const cachedProducts = () => cache || [];

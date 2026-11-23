@@ -14,6 +14,29 @@ if (form) {
     form.querySelector('.mk-packsform').hidden = m !== 'packages';
   };
   modeSel.addEventListener('change', sync); sync();
+  // Put this art on products (Geoffrey, 2026-11-23): one artwork, many products. Ticks + one price each; saved with the listing.
+  const podBox = form.querySelector('#mp-list');
+  if (podBox && form.dataset.id) {
+    Promise.all([fetch('/api/merch/products', { headers: { 'X-Commons': '1' } }).then((r) => r.json()), fetch(`/api/market/listings/${form.dataset.id}/merch`).then((r) => r.json())])
+      .then(([pr, cur]) => {
+        const have = new Map((cur.items || []).map((it) => [it.product, it]));
+        if (!pr.connected || !(pr.products || []).length) { podBox.textContent = "The print partner's products aren't available right now. Try again in a minute."; return; }
+        podBox.innerHTML = '';
+        for (const p of pr.products) {
+          const top = Math.max(...p.variants.map((v) => v.price).filter((n) => n > 0));
+          const it = have.get(p.key); const suggested = Math.ceil(top * 1.5);
+          const row = document.createElement('label'); row.className = 'mp-row';
+          row.innerHTML = '<input type="checkbox" class="mp-on"> <span class="mp-name"></span> <span class="mp-price">$<input type="number" step="0.01" class="mp-amt"></span> <span class="muted mp-base"></span> <span class="mp-state"></span>';
+          row.querySelector('.mp-on').dataset.key = p.key; row.querySelector('.mp-on').checked = !!it;
+          row.querySelector('.mp-name').textContent = p.title.split(' | ')[0];
+          const amt = row.querySelector('.mp-amt'); amt.min = String(top); amt.value = String(it ? it.price : suggested);
+          row.querySelector('.mp-base').textContent = `(Printful's cost up to $${top.toFixed(2)})`;
+          if (it) row.querySelector('.mp-state').textContent = it.status === 'ready' ? '✓ photo ready' : it.status === 'failed' ? '⚠ photo failed, save to retry' : '… photo being made';
+          podBox.append(row);
+        }
+      }).catch(() => { podBox.textContent = "Couldn't load the products. Reload the page to try again."; });
+  }
+
   // Upload a product picture straight from the listing form (Geoffrey, 2026-11-23: he picked a file with the old
   // dead control, nothing happened, and his listing showed the store logo instead of the product).
   const imgup = form.querySelector('#mk-imgup');
@@ -56,7 +79,13 @@ if (form) {
     if (merch) { body.mockup = form.dataset.mockup; body.price = { mode: 'fixed', amount: Number(f.get('price_amount')) }; }
     try {
       const l = id ? await send(`/api/market/listings/${id}`, 'PATCH', body) : merch ? await send('/api/merch/listings', 'POST', body) : await send('/api/market/listings', 'POST', body);
-      location.href = `/label/l/${l.id}`;
+      if (id && podBox) {
+        const items = [...podBox.querySelectorAll('.mp-row')].filter((r) => r.querySelector('.mp-on').checked)
+          .map((r) => ({ product: r.querySelector('.mp-on').dataset.key, price: Number(r.querySelector('.mp-amt').value) }));
+        msg.textContent = items.length ? 'Saving products…' : 'Saving…';
+        await send(`/api/market/listings/${id}/merch`, 'PUT', { items });
+      }
+      location.href = `/label/l/${l.id}${id && podBox ? '#get-it-on' : ''}`;
     } catch (err) { msg.textContent = err.message; }
   });
 }
