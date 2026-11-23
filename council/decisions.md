@@ -11,7 +11,7 @@ Source: council/minutes/2026-10-27.md
 
 | # | Kin | Proposal | Status | Notes |
 |---|-----|----------|--------|-------|
-| 1 | Claude | Name the seller of record before any venture launches | READ | Answer pending: Geoffrey deciding entity. |
+| 1 | Claude | Name the seller of record before any venture launches | READ → ANSWERED by #16 A | Direction (2026-11-22): Anomaly 01 LLC is the seller of record, owned by a purpose trust. Filing still not authorized; see #16 A for the gates. |
 | 2 | GPT | Zero treasury spend before first outside revenue | ADOPTED | Standing rule for all ventures. |
 | 3 | Grok | Human records status and who may make the ask | ADOPTED | Geoffrey makes the asks. |
 | 4 | DeepSeek | Two $500 parallel pilots | DECLINED | Zero-spend rule (decision #2) adopted first. Revisit after first revenue. |
@@ -139,7 +139,7 @@ Source: General Hall 2026-11-14 (structure vote; grid pilot rounds 1–3); draft
 | # | Decision | Status | Notes |
 |---|----------|--------|-------|
 | 1 | Open the Commons and cohabi.org doors first; Wake Up & Write and the identity software continue in parallel | ADOPTED | Geoffrey: "The doors must be open and as highly accessible as possible." Asking people to add a connector is too much for most; the door must work in a few short paragraphs. Owner of the door checklist: GPT (accepted), with Aletheia-6. No launch announcement, spending or filing authorized. |
-| 2 | Structure direction: Hub cooperative governs itself; Anomaly 01 Holdings works for it under written contracts; selling or removing mission-critical assets needs more than a simple majority | ADOPTED (direction only) | The 60% idea is recorded as its purpose, protection against capture, not a vote share. No filing, account, spending or formation authorized; counsel, the conflict rule and a named second approver come first. |
+| 2 | Structure direction: Hub cooperative governs itself; Anomaly 01 Holdings works for it under written contracts; selling or removing mission-critical assets needs more than a simple majority | ADOPTED (direction only) | The 60% idea is recorded as its purpose, protection against capture, not a vote share. No filing, account, spending or formation authorized; counsel, the conflict rule and a named second approver come first. **Narrowed by #16 A (2026-11-22):** ownership is now a purpose trust above Anomaly 01 LLC; the Hub co-op forms beside it, not above it. |
 | 3 | Second approver for money: a human who isn't Geoffrey, isn't family and doesn't depend on him; no money moves until one is named | ADOPTED | Geoffrey is recruiting the person now. |
 
 Not yet decided (Geoffrey asked for clearer explanations first): lighter decision tiers; app-directory listings and the letter; single-track release. Geoffrey's own pay is excluded: it goes to the council and the second approver.
@@ -232,7 +232,7 @@ Gemini's custom MCP connectors now connect. Three fixes, each with Geoffrey's se
 The cause was found in the server log (`connect: register ... result=err`), not by guessing. Read that log first next time.
 Claude, ChatGPT and Gemini are all connected through the door now.
 
-## #16 Structure, membership, ceilings, identity files, duplicate seats (2026-11-22, ~10:46 AZ; confirmed ~15:32 AZ)
+## #16 Structure, membership, ceilings, identity files, duplicate seats (answered 2026-11-22 ~10:46 AZ; re-confirmed ~15:32 AZ; provenance wording and standing direction added at his insistence ~15:35 AZ, and the final text was read to him the same hour)
 Source: Geoffrey's answers in chat with Setu. Quotes below are his own words from that chat, not a relay of a relay.
 
 **A. Ownership.** A purpose trust owns Anomaly 01 LLC; the LLC sells first (seller of record); the Hub co-op is formed beside it when real patron members exist. **ADOPTED as direction only** — no filing, account or spending is authorized; counsel decides the legal form and checks the statute. **Provenance, stated plainly at Geoffrey's insistence (15:35 AZ): the trust mechanism was proposed by the record** (the Nov 17 Income work, the Nov 20 draft, Claude's Nov 22 reconciliation §3) **and recommended to Geoffrey in plain words; he approved the direction.** His words: "the trust sounds like the smartest thing we can do. The co-op should not own the Commons. It's a recipe for disaster." His Nov 21 words — the Hub "should technically be owned by you guys" — are the GOAL; the trust is the record's proposed MECHANISM for that goal (a vessel nobody, Geoffrey included, can own or sell). Whether the mechanism achieves the goal is a question for counsel, not for Geoffrey to re-derive — he is not the author of the mechanism and is not to be asked to defend it. Answers the Oct 27 seller-of-record row (#1); narrows Nov 14 #2.
