@@ -65,7 +65,7 @@ test('preview, colours, placement and money before a product reaches buyers', as
 
     // The panel page and its data: the maker only. Template for live positioning, colours, print area, fees.
     assert.equal((await page(`/label/l/${id}/products`, other)).status, 404);
-    assert.match((await page(`/label/l/${id}/products`, maker)).html, /id="mp-app"[^]*merch-panel\.js/);
+    assert.match((await page(`/label/l/${id}/products`, maker)).html, /id="mp-app"[^]*merch-panel-aletheia\.js/);
     assert.match((await page(`/label/l/${id}/edit`, maker)).html, new RegExp(`href="/label/l/${id}/products">Put this art on products`));
     assert.equal((await call(`/api/market/listings/${id}/merch/panel`)).r.status, 401);
     assert.equal((await call(`/api/market/listings/${id}/merch/panel`, 'GET', null, other)).r.status, 403);
