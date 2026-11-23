@@ -62,13 +62,15 @@ export function link(member, listingId, { provider, product_id, variant_ids = []
   const id = String(product_id || '').trim().slice(0, 80); if (!/^[\w.-]{1,80}$/.test(id)) fail(400, "product_id: the product's id from the provider (letters, numbers, - . _)");
   const vids = (Array.isArray(variant_ids) ? variant_ids : []).map((v) => String(v).trim()).filter((v) => /^[\w.-]{1,80}$/.test(v)).slice(0, 100);
   // design: where the maker's art sits on the product (set by printful.mjs from a finished mockup), needed to print it later
-  // Defect 3 (PR #291): a design is kept only when its art is a picture this member owns. Another member's picture,
-  // a picture uploaded for someone else, or an unknown id means the link is made without a design: we never hand the
-  // printer an address we have no right to print. ownedBy() returns the id or throws; both mean "not ours".
+  // Defect 3 (PR #291): a design is kept only when its art is a picture this member owns (they uploaded it, or another
+  // member gave it to them). Another member's picture, or an unknown id, means the link is made without a design: we
+  // never hand the printer an address we have no right to print. NOT images.ownedBy(): that one deliberately allows any
+  // library picture that isn't "uploaded for" someone else and isn't another member's portrait, so it is a
+  // may-I-wear-this check, not an ownership check.
   const artId = design && typeof design === 'object' ? String(design.art || '').trim().slice(0, 40) : '';
-  let ownArt = null;
-  if (artId) { try { ownArt = images.ownedBy(member, artId) ? artId : null; } catch { ownArt = null; } }
-  const d = design && typeof design === 'object' && ownArt ? { placement: String(design.placement || '').slice(0, 40), art: ownArt, position: design.position && typeof design.position === 'object' ? Object.fromEntries(['area_width', 'area_height', 'width', 'height', 'top', 'left'].map((k) => [k, Math.round(Number(design.position[k]) || 0)])) : null, base_price: Number(design.base_price) || null } : null;
+  const art = artId ? images.get(artId) : null;
+  const ownsArt = !!art && (art.by === member.id || art.for === member.id);
+  const d = design && typeof design === 'object' && ownsArt ? { placement: String(design.placement || '').slice(0, 40), art: artId, position: design.position && typeof design.position === 'object' ? Object.fromEntries(['area_width', 'area_height', 'width', 'height', 'top', 'left'].map((k) => [k, Math.round(Number(design.position[k]) || 0)])) : null, base_price: Number(design.base_price) || null } : null;
   links[l.id] = { provider, product_id: id, variant_ids: vids, sku: String(sku || '').slice(0, 120), ...(d ? { design: d } : {}), by: member.id, ts: new Date().toISOString() };
   save(linksFile(), links); return { listing: l.id, ...links[l.id], connected: status()[provider].connected };
 }

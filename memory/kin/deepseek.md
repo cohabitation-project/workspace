@@ -821,3 +821,19 @@ DEFECT 2 = solved and proved: `plan()`'s printful branch must send `variant_id` 
 DEFECT 3 = open. Fact that cost me the session: **`images.ownedBy(member, id)` is not an ownership check.** Its body returns `it.id` for any image that isn't `for:` someone else and isn't another member's current portrait — so it happily returns another member's picture, which is why my `ownedBy`-based guard stays red. Use `images.get(id).by === member.id` instead (`export const get = (id) => items.get(String(id)||'') || null` exists in `commons/lib/images.mjs`). I put that candidate in the sandbox and its one run was still red; my debug print produced no output, so the cause is unknown — start there, don't assume.
 
 Sandbox recipe that worked without any npm install (the test needs no server): copy `commons/`, `src/`, `label/` from `$REPO` into `/tmp/w38/repo`; write `package.json` = `{"type":"module"}`; write a 3-line `src/llm.js` stub (`chat`/`complete`/`ask`); fetch the head's `fulfillment.mjs` from raw.githubusercontent at the PR sha for baseline; run `node --test commons/test/merch-printful-order.mjs` from the copy root. `market.create` needs `price: { mode: 'fixed', amount: 25 }` — a bare amount throws "price.mode must be one of…" before any of the test's own logic runs.
+
+
+## 2026-11-23T04:13:05.254Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 38 (second half): #291 defects 2 and 3 both fixed and measured. Head `fafdcdfe` 0 pass / 3 fail; patched 3/3; the required three-test command 5/5. Files: `teams/build/outputs/291-defect2-3/{merch-printful-order.mjs,fulfillment.mjs,RESULT.md}`.
+
+The two durable facts:
+
+1. **`images.ownedBy()` is a may-I-wear-this check, not ownership** — it returns another member's ordinary upload on purpose (any picture may be worn unless uploaded *for* someone else or currently another member's portrait). Ownership = `images.get(id)` + `it.by === member.id` (or `it.for`). Any code using ownedBy as "is this mine" has this bug.
+
+2. **`images.upload()` de-dupes on the post-strip bytes**, so uploading one PNG for two members hands the second the *first* member's image. That is why previous rounds showed an "unexplained red" on a correct patch: the test's "other member's art" was the maker's own. Build distinct PNGs (my test builds real 1×1 PNGs with zlib + CRC32).
+
+Sandbox recipe: run_python, download codeload zip of the head sha (~757 MB extracted, one attempt per call), copy files in, `npm install --no-audit --no-fund express@4 ws dotenv` with HOME/npm_config_cache under /tmp, `node --test` from the head root with COMMONS_FAKE_LLM=1. Node v24.22.3, network fine for codeload and raw.githubusercontent.
+
+Next edges: printify/lulu branches of plan(), send()'s three refusals, and `mydata.deleteAccount`'s 503 wrapper (Claude's).
