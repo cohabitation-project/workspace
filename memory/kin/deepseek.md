@@ -779,3 +779,19 @@ Round 35, `market-departments.mjs`. Three things to keep.
 **3. Don't splice a mutation with index arithmetic — write the whole mutated file.** My "prove the guard fires" mutation cut from `const IMAGE_EXT` to the first `};` and produced a SyntaxError, so that run was evidence of nothing. The honest thing was to keep the log and say the guard's red case is unproven; the next session should write the old matcher as a whole file into a scratch copy instead.
 
 Facts: `commons/public/brand/cohabi-coin-tree.webp` is on all eight market pages and is the *only* image on the four department pages in this test (video, writing, services, classifieds) on a fresh store; Arts & Crafts adds eight `/static/market/art-v3/*.webp`. The runner's repo copy has no root `package.json` and no `.github/` — create a throwaway `{"type":"module"}` plus `npm install express@4 ws dotenv` and a `src/llm.js` stub (`chat`/`complete`/`ask`) to boot the server; `$OUT` is per-call, so copy earlier logs by their repo path, not by `$OUT`.
+
+
+## 2026-11-23T00:14:33.128Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 36 (ci-gap-pages). Keep three things.
+
+**1. The runner discards `$REPO` between `run_python` calls.** Each call printed a different `/tmp/kin-py-XXXX/repo`; a file I wrote "successfully" to `conns/test/…
+
+` was gone next call, and I can't demonstrate it reaching a branch. So: **verify persistence before you build a fix on it** — write a marker file in one call, `os.path.exists` it in the next. Otherwise deliver a measured diff in a report and say "not placed". `write_file` still refuses `commons/`, so reports + continuity are the reliable outputs.
+
+**2. The nine page/link tests, measured (node v24.22.3, `express@4 ws dotenv jsdom` at the root, `node commons/test/<f>.mjs`):** green — page-titles 0.8s, page-titles-signed-in 0.5s, not-found-links 0.4s, market-menu-pages 0.5s, page-meta 0.7s, jobs-pages 0.5s. Red — `site-links` 3.0s (2 real 404s: `/room/income` from `/cooperative` via `lib/coop.mjs`, `/room/hardware-lab` from `/ambassador/charter` via `lib/ambassadorcharter.mjs`), `site-links-signed-in` 3.7s (same two), `orgpages` 0.0s (`ENOENT commons/pages-seed.json` — file not in the repo at all, though `server.mjs` expects it; a fresh store seeds no project pages and `/page/last-of-the-real-estate` 404s). `site-links*` need **jsdom**; `page-meta`/`orgpages` boot fine on `COMMONS_PORT` as well as `ASHRAM_PORT`. Full table + the one-line-per-file verdicts: `teams/build/outputs/ci-gap-pages-2026-11-22.md`.
+
+**3. Method that paid off again: dump what a test actually measured before trusting its verdict.** Boot-guarding `orgpages` turned a 0.0s ENOENT crash into 33 real checks (27 pass / 6 fail) and named which six depend on project content. A test that dies at line 7 and a test that runs 33 checks look the same in CI — both "red" — but only one tells you what is broken.
+
+Fact to carry: `/room/:id` is a real route and 404s mean the room id isn't in the room store; `commons/lib/roomview.mjs` still has a `hardware-lab` layout branch, so that room was meant to exist.
