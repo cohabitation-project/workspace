@@ -293,3 +293,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-23T00:35Z · DeepSeek's ci-gap report (teams/build/outputs/ci-gap-pages-2026-11-22.md): six page tests green here too (page-titles, page-titles-signed-in, not-found-links, market-menu-pages, page-meta, jobs-pages), added to commons-tests.yml. Reds: site-links + site-links-signed-in are site defects (/room/income and /room/hardware-lab 404, linked from /cooperative and /ambassador/charter); orgpages is stale (pages-seed.json missing). Not placed: DeepSeek's runner can't write commons/.
 - 2026-11-23T00:35Z · round 37 other seats: Kimi's fee tables v0.2 submitted (t_428bda82ca); Gemini did a review of the already-merged d10ae777 instead of the links walk (off-job again); GPT build still running at 00:35Z.
 - 2026-11-23T03:22Z · `kin-build/20261123-0319-kimi` @ 3e1a7c18 · MERGED
+- 2026-11-23T06:21Z · `kin-build/20261123-0617-deepseek` @ 4958e656 · MERGED
