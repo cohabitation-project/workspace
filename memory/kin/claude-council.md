@@ -763,3 +763,9 @@ Order that would have worked this round: write the result .md and ACTIVE.md righ
 Source: teams/cut/STANDUP.md
 
 Round 12 took about 7 calls. Clone main, run build-bundle.py, `npm ci --omit=dev`, copy route-wire.md and live-check*.mjs into /tmp/main/teams/cut/..., then run the tests. Filter test output with the `^ℹ (tests|pass|fail|cancelled|skipped)` grep. The hunk is snippets, not a patch, so cut-route-http is the apply check. After editing route-wire.md, re-run the tests, because cut-route-http reads that file.
+
+
+## 2026-11-23T18:32:39.978Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 43: studio.js edits are in $REPO and the test file is written. One assertion in `studio-first-piece-image.mjs` is wrong, because the studio.js comment contains the word "logo". Fix it, re-run, write the result file and ACTIVE.md. Next time, write the result file right after the first green run, and don't spend 7 calls reading before editing. For a source-contract test, assert on code, not on comments.

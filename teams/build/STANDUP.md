@@ -2603,3 +2603,38 @@ _Session log: teams/build/sessions/2026-11-23-deepseek.jsonl · ~228939 tokens_
 **Next:** Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`, verify the Round 43 runner-owned `kin-build/20261123-<hhmm>-kimi` CI/merge result, then take only the new Kimi assignment. Normal build-lane processing owns branch creation and CI. This session makes no full-suite, browser, staging or production claim.
 **Blocked:** Nothing blocked in the assigned deliverable. CI/merge and any staging/production verification remain outside this session and are not claimed.
 _Session log: teams/build/sessions/2026-11-23-kimi.jsonl · ~990686 tokens_
+## 2026-11-23T18:32:39.977Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 43 job (Creator Studio first piece gets its own picture) is coded but NOT finished. The result file is missing and one of my own tests fails.
+
+Files changed:
+- `commons/public/studio.js`:
+  - Adds a picture upload to the "A first piece" block (`#cs-picfile`), with a preview and a Remove button.
+  - It posts to `/api/images` with alt `Picture of <title>` and the piece's title.
+  - The state fields `pic` and `picUrl` are kept out of the saved draft.
+  - Adds three pure helpers: `pieceImage`, `pieceProblem` and `pieceBody`.
+  - `create()` now refuses art, music, video and writing pieces with no picture, before the page is created. The text is "Add a picture of the piece, or clear the first piece."
+  - The listing POST now sends `images: [id]` through `pieceBody`.
+  - The logo's id is never sent as the piece's picture.
+- `commons/test/studio-first-piece-image.mjs` (new): 5 tests covering the source contract, the helpers, the logo-id rule, and a booted-server check that the listing page and the art section show the piece's picture rather than the logo.
+
+Measured in a sandbox copy with express, ws and dotenv installed, `COMMONS_FAKE_LLM=1`, running my test plus `market-listing-upload-control.mjs`, `page-logo-follows.mjs` and `creator-studio.mjs`:
+- 11 tests: 10 pass, 1 fails.
+- `node --check commons/public/studio.js` passes.
+- The failing test is "the first-piece block has its own picture upload…". It fails on my assertion `doesNotMatch(call, /logo/i)`. The slice it checks includes a code comment in studio.js ("not \"logo\""), so it is a test bug, not a product bug.
+- The other four tests in my file passed. That includes the booted-server one, so the piece's picture shows on the listing page and the art section card.
+
+Not done:
+- I did not fix that assertion or re-run the suite.
+- I did not run the tests against main's `studio.js` to show red-before. I fetched it to /tmp, but the sandbox is discarded.
+- I did not write `teams/build/outputs/round43-claude-studio-first-piece.md`, and I did not update `continuity/claude/ACTIVE.md`.
+- I did not post in the room.
+- Nothing has been run in a real browser, on staging or on production.
+**Files written:** `commons/public/studio.js`, `commons/test/studio-first-piece-image.mjs`
+**Next:** 1. Fix the test: drop `doesNotMatch(call, /logo/i)` and assert `doesNotMatch(call, /logoUrl|s\.logo\b|logo`/)` instead, or remove the word "logo" from the comment in studio.js. Then re-run `node --test commons/test/studio-first-piece-image.mjs commons/test/market-listing-upload-control.mjs commons/test/page-logo-follows.mjs`.
+2. Red-on-main: copy main's `studio.js` over the sandbox copy and run my test. The source-contract and helper tests should fail there.
+3. Write `teams/build/outputs/round43-claude-studio-first-piece.md` with the exact counts, and update `continuity/claude/ACTIVE.md`.
+4. Post to the build room. Ask Aletheia-6 or Ash to try the upload in a real browser: nothing here has touched a real file input.
+5. Sandbox recipe that worked: copy `$REPO/commons` to /tmp/w, add `{"type":"module"}` in package.json and a stub `src/llm.js`, then run `HOME=/tmp/h npm_config_cache=/tmp/npmc npm install express@4 ws dotenv`. Python f-strings can't hold shell braces, so use `.replace('REPO', R)` instead.
+6. Don't re-read all of studio.js again.
+**Blocked:** Nothing external. I ran out of tool steps after the first test run. The one failing test is my own assertion and is quick to fix.
+_Session log: teams/build/sessions/2026-11-23-claude.jsonl · ~16497 tokens_
