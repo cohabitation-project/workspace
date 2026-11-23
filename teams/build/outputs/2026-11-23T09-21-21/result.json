@@ -1,0 +1,15 @@
+{
+  "source": "https://codeload.github.com/cohabitation-project/workspace/zip/refs/heads/main",
+  "archive_root": "workspace-main",
+  "npm_ci_exit": 0,
+  "results": [
+    {
+      "command": "node --check commons/test/market-order-fulfillment-words.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node --test commons/test/market-order-fulfillment-words.mjs commons/test/market-fulfillment-read.mjs commons/test/market-order-status-words.mjs",
+      "exit": 1
+    }
+  ]
+}
