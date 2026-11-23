@@ -60,7 +60,14 @@ export function link(member, listingId, { provider, product_id, variant_ids = []
   const p = PIPES[provider]; if (!p || p.mode !== 'api') fail(400, `provider must be one of: ${Object.keys(PIPES).filter((k) => PIPES[k].mode === 'api').join(', ')}`);
   const id = String(product_id || '').trim().slice(0, 80); if (!/^[\w.-]{1,80}$/.test(id)) fail(400, "product_id: the product's id from the provider (letters, numbers, - . _)");
   const vids = (Array.isArray(variant_ids) ? variant_ids : []).map((v) => String(v).trim()).filter((v) => /^[\w.-]{1,80}$/.test(v)).slice(0, 100);
-  links[l.id] = { provider, product_id: id, variant_ids: vids, sku: String(sku || '').slice(0, 120), by: member.id, ts: new Date().toISOString() };
+  // A print order can't be placed without these, and silently dropping the field is worse than saying no here:
+  // Printful and Printify address the exact variant; Lulu the exact print package (see plan() and each provider's docs).
+  if ((provider === 'printful' || provider === 'printify') && !vids.length) {
+    fail(400, `${provider} needs at least one variant id: the variant you sell, from the product you made in their tool`);
+  }
+  const pkg = String(sku || '').trim().slice(0, 120);
+  if (provider === 'lulu' && !pkg) fail(400, 'lulu needs the print package id (its sku) of the book you made');
+  links[l.id] = { provider, product_id: id, variant_ids: vids, sku: pkg, by: member.id, ts: new Date().toISOString() };
   save(linksFile(), links); return { listing: l.id, ...links[l.id], connected: status()[provider].connected };
 }
 export function unlink(member, listingId) { const l = ownerOf(member, listingId); delete links[l.id]; save(linksFile(), links); return { listing: l.id, linked: false }; }
