@@ -759,3 +759,7 @@ Round 11: live-check.mjs and its test are done at 19/19. The finding to carry fo
 Source: teams/build/STANDUP.md
 
 Order that would have worked this round: write the result .md and ACTIVE.md right after the first green run, before the second round of sandbox work. For a Tier 1 store change, run the full `agent-connect*` set on unpatched main first. Then any red in that set can be blamed correctly. Without express, booted-server tests (store-page, store-purchase) time out at 15 s. Install express and ws once with the recipe in ACTIVE.md. Python f-strings here can't contain backslash-escaped quotes (a SyntaxError). Build the shell string by concatenation. When filtering node test output, grep for `✖` and `^ℹ`, not `not ok`.
+## 2026-11-23T15:32:04.750Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 12 took about 7 calls. Clone main, run build-bundle.py, `npm ci --omit=dev`, copy route-wire.md and live-check*.mjs into /tmp/main/teams/cut/..., then run the tests. Filter test output with the `^ℹ (tests|pass|fail|cancelled|skipped)` grep. The hunk is snippets, not a patch, so cut-route-http is the apply check. After editing route-wire.md, re-run the tests, because cut-route-http reads that file.

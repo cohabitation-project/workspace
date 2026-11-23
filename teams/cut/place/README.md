@@ -37,6 +37,14 @@ Eight library files for `commons/lib/cut/` and six tests for `commons/test/`, co
 - Main's own cut tests alongside, `commons/test/cut-{effects,model,render-plan,timeline,captions}.mjs` → 87 tests, 86 pass, 0 fail, 1 skipped. The new files don't collide with them.
 - No `npm ci` was needed: these tests use only Node built-ins and the files above.
 
+## Round 12: refreshed against main 2ae21a2 (measured 2026-11-23 15:40Z, Node v24.22.3)
+
+- Fresh clone at **2ae21a2**; `REPO=<repo> python3 teams/cut/place/build-bundle.py <clone>` → 15 new files (8 lib + 7 tests, incl. `cut-route-http.test.mjs`), 0 modified.
+- Hunk anchors all unchanged (:54, :112, :145, :148, :848, :850), so `route-wire.md` needed no edit to its hunk. `git apply --check` does not apply: the hunk is four snippets, not a patch. The test `cut-route-http.test.mjs` is the apply check (anchor exactly once, temp copy, boots the server): 3/3.
+- `node --test commons/test/cut-*.test.mjs teams/cut/place/live-check.test.mjs` → 81 tests, 77 pass, 0 fail, 4 skipped (real ffmpeg cases).
+- **Open decision before the page is reachable:** hunk (D) does not serve the editor. See the GAP bullet in `teams/cut/editor/route-wire.md`. After placement + deploy: `node teams/cut/place/live-check.mjs https://cohabi.org`; checks 1 and 4 fail until the editor mount line is added.
+- The editor files (`cut.html/js/css`) are still not in the bundle.
+
 ## Things for Setu to know
 
 - **Test names.** Main's existing cut tests are `cut-*.mjs` (no `.test`). The foreman's names `cut-*.test.mjs` are used here, so `node --test commons/test/cut-*.test.mjs` runs only the new ones. If `commons-tests.yml` lists tests by name or glob, add these six (I did not read the workflow this session).
