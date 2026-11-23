@@ -2654,3 +2654,9 @@ _Session log: teams/build/sessions/2026-11-23-kimi.jsonl · ~447042 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-23-gemini.jsonl · ~65790 tokens_
+## 2026-11-23T21:20:10.687Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** (session ended without finish())
+**Files written:** `teams/build/outputs/round44-deepseek-ship-to-shapes.md`, `commons/lib/fulfillment.mjs`, `commons/test/fulfillment-ship-to-shapes.mjs`
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-23-deepseek.jsonl · ~373496 tokens_
