@@ -882,3 +882,13 @@ Trap repeated but cheap: set env inside declared tests, never at module top leve
 Source: teams/build/STANDUP.md
 
 Round 41: fulfillment-plan-providers.mjs shipped, 16 pass / 0 fail / 3 todo. Traps banked: (a) `merch-printful*.mjs` does not exist on main — the job's glob is empty, don't claim it; (b) market-fulfillment-read.mjs cannot run in my sandbox (server boot fails with a thin llm stub) — use fulfillment-share.mjs as the lib-level control and say so; (c) an object literal `{ variant_id: undefined }` KEEPS the key, so when the point is "what goes on the wire", assert `JSON.stringify(item)` not just `item.variant_id === undefined`. Real defects found and recorded, not patched: Printify line items lose variant_id when link() was saved with `variant_ids: []` (Printify requires it; link() should refuse); Lulu plan() does send pod_package_id/shipping_address/shipping_level 'MAIL' — only contact_email, cover.source_url, interior.source_url are missing, and the image URLs need a design decision because plan(order) carries no image data.
+
+
+## 2026-11-23T13:12:25.750Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 42 attempt: `commons/test/fulfillment-send-refused-provider.mjs` written; 7 refusal cases green, control red ('ord_undefined'). Bank these so the next session is cheap:
+- `market.create` rejects category `'books'` — valid: music, art, video, writing, software, services, classifieds. Lulu/book listings go under `writing`. Title must be 3–90 chars.
+- The refusal/leak assertions that all pass are worth keeping: a refused order must not return `provider_order`, must not echo the bearer token, and a Lulu token failure must call the token URL once and never `/print-jobs/`.
+- Sandbox recipe unchanged: copy `commons/` to /tmp/box, write `{"type":"module"}` package.json, run with `COMMONS_FAKE_LLM=1` — no npm install needed for the fulfillment tests (checkout.mjs loads without the stripe SDK).
+- Debug trick that saved a call: write a 10-line `dbg.mjs` beside the box that calls `plan()` directly and prints JSON, instead of guessing inside the test.
