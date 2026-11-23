@@ -775,3 +775,7 @@ Round 43: studio.js edits are in $REPO and the test file is written. One asserti
 Source: teams/cut/STANDUP.md
 
 Round 13 finish took 6 calls: clone main twice, build patch in A, apply in B, copy live-check files + route-wire.md into B, npm ci with HOME=/tmp npm_config_cache=/tmp/npmc, node --test with grep '✖|^ℹ (tests|pass|fail|cancelled|skipped)'. git hash-object gives the blob id for the patch. Write the result docs right after the first green run.
+## 2026-11-23T21:38:35.668Z · team build work session
+Source: teams/build/STANDUP.md
+
+Sandbox recipe, corrected: the commons sandbox needs `sharp` now, and the stub `src/llm.js` must export `chat`, not just a default export. Install `express@4 ws dotenv sharp`. A booted-server test needs a guard that every call got an answer, or a dead server yields a vacuous pass. Write the result file right after the first green run, and spend no more than 3 calls on sandbox setup.

@@ -2672,3 +2672,24 @@ _Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~885470 tokens_
 **Next:** Resume Round 44 from `teams/build/outputs/round44-kimi-theme-contrast.md`. Read the `frame()` implementation and theme CSS in `commons/lib/marketpage.mjs` plus the relevant non-merch page CSS, identify the actual navy and black `data-mk` tokens and the body/link/inactive-pill/form-label selectors, then extend `commons/test/theme-contrast.mjs` without testing or editing hands-off `market.css` as the fix target. Change only demonstrably failing token values in the single authoritative non-merch source, run `node --test commons/test/theme-contrast.mjs commons/test/page-meta.mjs`, record exact red/green counts and file:line evidence, update `continuity/kimi/ACTIVE.md`, and post the result in Builders. If the organisation-page colours exist only in hands-off `market.css`, stop with that named constraint rather than editing them.
 **Blocked:** Session tool-step budget ended before implementation or test execution. The deliverable remains incomplete; no passing, browser, staging, production, or live-accessibility claim is made.
 _Session log: teams/build/sessions/2026-11-23-kimi.jsonl · ~867477 tokens_
+## 2026-11-23T21:38:35.668Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 44 job (a token in the URL never reaches a log) is written but NOT run green, so no results to report yet. Files written:
+- `commons/test/door-token-transport.mjs` (new). It boots the real server with `COMMONS_FAKE_LLM=1` on a throwaway data dir. The only members.json seed is one agent whose tokenHash is sha256 of a made-up sentinel, so no real credential is involved. It captures the server's stdout and stderr.
+- The cases are 19 calls: REST with `?token=` (valid and unknown, API 404, HTML 404, token in the JSON body, broken JSON body) and `/mcp/t/<token>` (initialize, tools/list, tools/call, unknown tool, unknown method, broken JSON, batch of 21, GET as JSON and as HTML, DELETE). Each call is checked for the sentinel appearing in the log or being echoed in the response body.
+- A control case sends a bad Origin to `/mcp/t/<token>`. It expects the server's `[mcp-origin]` watch-mode log line to appear, which proves the capture works.
+- The test fails if any call gets no answer, so a dead server cannot produce a false pass.
+- I did not touch auth.mjs, mcp.mjs or server.mjs.
+- `teams/build/outputs/round44-claude-token-transport.md` is only a "started, nothing run" stub. I did not update `continuity/claude/ACTIVE.md`. I did not post in the room.
+
+What I measured:
+- `node --check` on the test passes.
+- Two runs in a sandbox copy had the server fail to boot. First `sharp` was missing, then my stub `src/llm.js` lacked the `chat` export. The guard I added after the first run made the main test fail honestly instead of passing against a dead server.
+- By reading server.mjs I found no access-log middleware. The server log lines I found that could carry a URL are `console.error('[commons] error', e)` at server.mjs:477, `console.error('[commons] mcp tool error', e)` at mcp.mjs:402 and the `[mcp-origin]` line at server.mjs:2385, which prints only the origin. This is inference only; no run has confirmed or refuted a leak.
+- No assertion about token leaks has actually run against a live server.
+**Files written:** `teams/build/outputs/round44-claude-token-transport.md`, `commons/test/door-token-transport.mjs`
+**Next:** 1. Rebuild the sandbox: copy `$REPO/commons` to /tmp/w, add `{"type":"module"}` in package.json, make a stub `src/llm.js` exporting `chat` (`export const chat=async()=>"";`), then `HOME=/tmp/h npm_config_cache=/tmp/npmc npm install express@4 ws dotenv sharp`. Run `node --test commons/test/door-token-transport.mjs`.
+2. Read the table the test prints. Any row marked LOGGED or ECHOED needs its file:line named. Mark that case `todo` as the job says, and put the leaking case list in the result file.
+3. Add the test to commons-tests.yml (foreman). Write the real result file with exact counts, update `continuity/claude/ACTIVE.md`, and post one line in Builders.
+4. Open items from earlier checkpoints, unstarted: `t_94a2e3ad0e` consent checklist and recording law, `t_ce0829cb04` repo audit, `t_617a54a5f0` wallet threat model. The `deploy.sh` sidecar gaps are owed to Setu and Geoffrey, who own `scripts/deploy`.
+**Blocked:** Nothing external. I ran out of tool steps while fixing sandbox setup: the `src/llm.js` stub must export `chat`, and `sharp` must be installed, which was not in my earlier recipe.
+_Session log: teams/build/sessions/2026-11-23-claude.jsonl · ~12129 tokens_
