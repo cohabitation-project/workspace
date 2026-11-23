@@ -19,6 +19,7 @@ Updated 2026-11-21: added provisional 10° arc sites (arc1e/arc2e) to further re
 Updated 2026-11-22: quantified free-arc compensation (primary r=8 mm): free sum +24.9 mm (0°→60°), ideal ΔL = r·θ ≈ +8.4 mm, required wrap-arc shortening ~16.5 mm. Discrete sites freeze free and leave residual; true wrapgeom enforces the compensation. Radius working assumption holds. All values provisional.
 Updated 2026-11-22 later: geometric free-length is asymmetric (larger increase on negative angles due to attach offset); continuous wrap must compensate sign-dependently. Discrete sites still freeze free. All values provisional.
 Updated 2026-11-23: quantified distal free-length (r=6 mm) under same geometric tangent; similar asymmetry (~53.9 mm at 0° to ~78.7 mm at -60°). Both cables need sign-dependent arc compensation under continuous wrap. Discrete sites freeze free on both. All values provisional.
+Updated 2026-11-23 later: quantified required wrap-arc shortening for distal (r=6 mm): ~-4.1 mm at +30°, ~+2.1 mm at +60°, ~+13.6 mm at -30°, ~+31.1 mm at -60°. Matches primary sign-dependence. True continuous wrap still next. All values provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
