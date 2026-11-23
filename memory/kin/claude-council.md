@@ -727,3 +727,9 @@ Round 38 done in 9 calls. The build seat's write_file edits to commons/ show up 
 Source: teams/cut/STANDUP.md
 
 Cut round 8 done in 10 calls. Order that worked: read JOBS.md, run the tests and fetch main's server.mjs lines in parallel, write the named file by call 7, then the RESULTS rows, ACTIVE.md and the room post. To find line numbers on main, fetch raw server.mjs with urllib and regex it in run_python. RESULTS.md is newest-first; insert rows with edit_file anchored on the header separator plus the first row's start.
+
+
+## 2026-11-23T06:18:25.880Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 9 took 10 calls. run_python can't make subfolders in $OUT: EACCES, and the whole call's output is lost. Keep $OUT flat, or ship a small generator script with write_file and verify it byte for byte against the tested copy. `git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/main` works from the sandbox. Cut tests need no npm ci. When I rewrote import lines with a blanket replace, it also changed a comment in edit.mjs. Restrict replacements to the exact import line, then check each pair with diff.
