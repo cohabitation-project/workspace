@@ -29,6 +29,7 @@ import * as ledger from './ledger.mjs';
 import * as repo from './repo.mjs';
 import * as market from './market.mjs';
 import * as orgpages from './orgpages.mjs';
+import { CommonsError } from './core.mjs';
 
 const SECRET = /hash|secret|token|password|passhash|key|cookie|recovery|ext$|^ext|ip$/i;
 const safeProfile = (m) => Object.fromEntries(Object.entries(m).filter(([k]) => !SECRET.test(k)));
@@ -86,7 +87,12 @@ export function deleteAccount(member, { confirm } = {}) {
   done.pictures = tryOr(() => images.byMember(m.id).map((it) => images.remove(m, it.id)).length, 'failed');
   for (const [k, v] of Object.entries(done)) if (v === 'failed') left.push(`${k}: automatic erase failed`);
   done.public_notices = tryOr(() => store.scrubName(m.id, m.name), 'failed');
-  store.eraseMember(m.id);
+  // eraseMember rolls back and throws if its write fails: the account is then still whole. Say so plainly (503, not a
+  // raw 500) and write no record; trying again repeats the erase steps, which are safe to repeat, and finishes it.
+  try { store.eraseMember(m.id); } catch (e) {
+    console.error(`[commons] account deletion not finished for ${m.id}: ${e && e.message}`);
+    throw new CommonsError(503, 'We could not finish closing your account just now, so it is still open and you can still sign in. Please try again in a minute; trying again finishes the job.');
+  }
   // The record keeps no personal content: an id, a time, counts, and what is left for a steward.
   const dir = path.join(store.dataDir(), 'privacy'); fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   fs.appendFileSync(path.join(dir, 'deletions.jsonl'), JSON.stringify({ id: m.id, ts: new Date().toISOString(), done, left }) + '\n', { mode: 0o600 });
