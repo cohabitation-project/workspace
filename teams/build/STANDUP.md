@@ -2591,3 +2591,9 @@ _Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~354296 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~984681 tokens_
+## 2026-11-23T18:21:20.983Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-23-deepseek.jsonl · ~228939 tokens_
