@@ -19,6 +19,7 @@ import * as store from './store.mjs';
 import * as market from './market.mjs';
 import { CommonsError } from './core.mjs';
 import * as stripe from './stripe.mjs';
+import * as fulfillment from './fulfillment.mjs';
 
 const fail = (status, msg, extra) => { throw new CommonsError(status, msg, extra); };
 let DIR = null;
@@ -45,7 +46,7 @@ const logOrder = (rec) => fs.appendFileSync(ordersFile(), JSON.stringify({ ts: n
 export function orders() {
   const out = new Map(); let lines = [];
   try { lines = fs.readFileSync(ordersFile(), 'utf8').split('\n').filter(Boolean); } catch { return []; }
-  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), ...(r.payment_intent ? { payment_intent: r.payment_intent } : {}), ...(r.refunded_cents != null ? { refunded_cents: r.refunded_cents } : {}), ...(r.dispute ? { dispute: r.dispute } : {}), updated: r.ts }); }
+  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), ...(r.payment_intent ? { payment_intent: r.payment_intent } : {}), ...(r.ship_to ? { ship_to: r.ship_to } : {}), ...(r.refunded_cents != null ? { refunded_cents: r.refunded_cents } : {}), ...(r.dispute ? { dispute: r.dispute } : {}), updated: r.ts }); }
   return [...out.values()];
 }
 export const order = (id) => orders().find((o) => o.id === id) || null;
@@ -166,6 +167,7 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
   const back = `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`;
   const params = (methods) => ({
     mode: 'payment', client_reference_id: ord.id, payment_method_types: methods,
+    ...(fulfillment.plan(ord).provider ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
     ...(pk ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1` }),
     line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
     payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
@@ -199,7 +201,8 @@ export function handleEvent(ev) {
     // order, so a replayed or late "paid" event must never undo a refund, a dispute, or later progress (Kimi's review
     // of #292: a replay turned a refunded order back into "paid").
     const waiting = cur.status === 'awaiting_payment' || cur.status === 'draft';
-    if (waiting) logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}) });
+    const shipTo = o.shipping_details?.name && o.shipping_details?.address ? { name: o.shipping_details.name, address: o.shipping_details.address } : null;
+    if (waiting) logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}), ...(shipTo ? { ship_to: shipTo } : {}) });
     return { order: id, status: waiting ? 'paid' : cur.status };
   }
   if (ev?.type === 'checkout.session.expired') { const id = o.metadata?.cohabi_order; if (id && order(id)?.status === 'awaiting_payment') logOrder({ op: 'status', order: id, status: 'cancelled' }); return { order: id, status: 'cancelled' }; }
