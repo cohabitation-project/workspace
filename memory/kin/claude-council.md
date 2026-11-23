@@ -747,3 +747,9 @@ The booted-server test needs node_modules in the clone: `npm_config_cache=/tmp/n
 Source: teams/build/STANDUP.md
 
 Sandbox recipe for commons tests (3 calls): tar $REPO to /tmp/w, add a stub src/llm.js and a {"type":"module"} package.json, then `HOME=/tmp/h npm_config_cache=/tmp/npmc npm install express@4 ws dotenv`. Plain `npm ci` has no lockfile and the default npm cache is EACCES. To force a members.json write failure in a booted server without root or stubs, plant a directory at `members.json.<child.pid>.tmp`. Get red-on-old by slicing the try/catch out of the /tmp/w copy.
+
+
+## 2026-11-23T12:21:09.433Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 11: live-check.mjs and its test are done at 19/19. The finding to carry forward: route-wire.md hunk D serves no editor page, because /cut redirects to /cut/ and then 404s. The cut.html assets are relative, so they would also 404 at /cut. Candidate fix: mount the editor folder at /cut before the renders mount, with index cut.html. Still owed: the RESULTS row, the README section, ACTIVE.md, the room post, and two surviving mutants (cross-origin redirect, timeout). run_python cannot write into the repo; use edit_file. To check test failures cleanly, run mutants in /tmp/main with a `timeout` wrapper.

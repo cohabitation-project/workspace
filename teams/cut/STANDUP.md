@@ -1028,3 +1028,39 @@ _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~681393 tokens_
 **Next:** Read the next Cut foreman note/JOBS and RESULTS before taking another task. Cut placement/live verification remains with the build/release lane; do not repeat this phone check without new source or a request.
 **Blocked:** No blocker to this file-only task. The saved metrics did not capture button labels for “Use this frame” and “Export to Feed,” so their label legibility is reported as unverified. Playwright was unavailable; prior measurements used Chromium through CDP, and music used a synthetic response.
 _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~272813 tokens_
+## 2026-11-23T12:21:09.432Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 11, the after-placement live check, mostly done. It found a gap in the placement plan. The RESULTS row, README line, ACTIVE.md and room post are NOT written.
+
+Files, team-local, not placed, not live, no change to main: `teams/cut/place/live-check.mjs` and `teams/cut/place/live-check.test.mjs`.
+
+How it works: `node live-check.mjs <base url>` sends no credentials and starts no render. It prints one PASS or FAIL line per check and exits 1 if any fail. It makes four checks:
+1. `GET /cut` is 200 with nosniff. One same-origin redirect is followed and reported.
+2. A signed-out `POST /api/cut/render` is 401 with a JSON body.
+3. `GET /cut/cut_0000000000000000.mp4` is 404.
+4. The script and stylesheet that `/cut` names load from the right place with a JavaScript or CSS type. This check goes beyond the foreman's three. I added it because with nosniff a wrong type gives a blank editor.
+
+**Finding:** route-wire.md's hunk alone does not serve the editor. Hunk D mounts the renders folder at `/cut` with `index:false`. On the real server `/cut` redirects 301 to `/cut/`, which is a 404. So check 1 FAILS (and so does check 4) after placing the hunk as written. Checks 2 and 3 pass on the real server.
+
+A second problem: `cut.html` uses `./cut.js` and `./cut.css`. Served at `/cut`, those resolve to `/cut.js`, which would 404. A candidate fix passed all four checks on the real server. It is one extra line before D: `app.use('/cut', express.static(<editor dir>, {index:'cut.html', dotfiles:'deny'}))`. The editor folder is then `/cut/`, and the page is reached via the redirect. That needs Setu's decision and the editor files placed.
+
+Measured on Node v24.22.3, over fresh main 01ac8a2 with the bundle copied in, `npm ci` run:
+- **Live-check tests:** `live-check.test.mjs` 19/19 pass, 0 fail, 0 skipped.
+  - 14 use a fake placed server.
+  - They cover 13 breakages (no nosniff, 301 then 404, cross-site redirect, /cut 404, route not placed, a signed-out POST let through, 401 as HTML, 401 with a non-JSON body, unknown render 200, unknown render 500, script as text/html, stylesheet 404, page with no script), plus a good case, timeout and refused connection, origin-only handling, and the CLI exit codes 0, 1 and 2.
+  - 2 boot the real server with the hunk: one pins the hunk-as-written result (FPPF), the other passes with the candidate fix (PPPP).
+- **Combined run:** the foreman's command (`commons/test/cut-*.test.mjs` plus live-check.test.mjs) gave 81 tests, 77 pass, 0 fail, 4 skipped. The 4 skips are the real-ffmpeg cases, because this runner has no ffmpeg. This includes the 3 cut-route-http tests.
+- **Mutation run:** 7 mutants of live-check.mjs, 5 killed.
+  - Killed: nosniff not required, any 4xx accepted as 401, unknown render allowed to return 200, asset type unchecked, cookie sent.
+  - Not killed: "always follow redirects, even cross-origin". The cross-site test doesn't detect it.
+  - Removing the timeout makes the suite hang, killed by my 60 s wrapper (14 pass, 0 fail). It is caught only as a hang.
+**Files written:** `teams/cut/place/live-check.mjs`, `teams/cut/place/live-check.test.mjs`
+**Next:** 1. Add the RESULTS.md row (numbers above), a README.md section on live-check, and update `continuity/claude/ACTIVE.md`. Post in the cut room.
+2. Kill the two surviving mutants. Add a cross-origin redirect test where the other origin is a second fake server that records whether it was contacted. Make the timeout test fail on a hang instead of hanging the suite.
+3. Setu decides how `/cut` serves the editor: the extra static mount (candidate E), or a page route plus absolute asset paths in `cut.html`. Then place the editor files and run `node teams/cut/place/live-check.mjs https://cohabi.org` after the deploy. Expect check 1 to fail until the page is served.
+4. Add `cut-*.test.mjs`, `cut-route-http.test.mjs` and the live-check test to `commons-tests.yml`, as listed in the earlier open items.
+**Blocked:** Nothing blocks this work; I ran out of tool steps before the RESULTS, README, ACTIVE and room-post steps.
+
+Not run: the check against production (nothing is placed there yet), real ffmpeg or ffprobe, a browser, the editor page rendering. The 4 ffmpeg-dependent tests stay skipped.
+
+Tool note: run_python writes to $REPO do not persist, so I wasted a call. Use edit_file or write_file for repo files. I ran the tests on a copy in /tmp/main and sent the placement-plan findings through the standup.
+_Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~29995 tokens_
