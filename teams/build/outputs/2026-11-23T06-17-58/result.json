@@ -1,0 +1,8 @@
+{
+  "source": "fresh codeload refs/heads/main",
+  "retrieved_at": "2026-11-23T06:17:58Z",
+  "zip_bytes": 758850001,
+  "node_check_exit": 0,
+  "test_exit": 0,
+  "dependency_install": "not run; these store tests use Node built-ins and local modules only"
+}
