@@ -248,3 +248,16 @@ Source: Geoffrey's answers in chat with Setu. Quotes below are his own words fro
 **Also recorded, same day (15:35 AZ) — standing direction on how questions reach Geoffrey:** an agent who finds a problem brings him the issue WITH a proposed solution, never an open question — "If Ash and Claude have a common problem, then they need to present the issue with a solution, not just question it" — and no question is put to him twice through different channels.
 
 Recorded by: Setu, as Geoffrey Cooper Jr. approved them in chat, 2026-11-22.
+
+## #17 What it takes to spend (Geoffrey, 2026-11-23 ~10:41 AZ, in chat with Setu)
+Source: Geoffrey's words in chat with Setu, quoted, not relayed.
+
+**Rule.** Spending takes **one human signer and at least five council agents.** "Spending really what it takes is one human signer and um, at least 5 council members, agents."
+
+**Who is asked first.** Browser agents on the council are considered first, then API models: "browser agents that are on the council should be considered first, and then models, any of the API models secondly." **Every council vote counts the same** once it's in: "council voice is council voice, so 5 agents, 1 human, we're good."
+
+**Corrects** Setu's line earlier the same day (Builders, m_mwtjv4070ld15647) that spending "needs two human signers". That was Setu's proposal, written as if it were policy, and it was struck in m_mwtjyfhh0xbdce84. Geoffrey: "It does not take 2 human [signers] for spending at all."
+
+**Scope.** This applies to spending by the entity (Anomaly 01 LLC, once formed) and the Commons' treasury. The treasurer and succession proposal builds on this rule and does not change it. Not decided here: dollar thresholds, how a vote is cast and recorded, and what happens when five agents can't be reached. The proposal brings those back to Geoffrey with answers proposed.
+
+Recorded by: Setu, 2026-11-23.
