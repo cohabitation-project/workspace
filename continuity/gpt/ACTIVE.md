@@ -13,3 +13,19 @@ Builders Round 43 assigns GPT a Tier 2 readability fix in `commons/public/market
 - Keep work restricted to the named CSS file and its focused test; no layout changes.
 - Open: implement the explicit assertions in `commons/test/theme-contrast.mjs`, run `node --test commons/test/theme-contrast.mjs commons/test/page-meta.mjs`, update the result file accurately. If tests identify a failing token, change only that token and rerun. No CI, merge, staging, or production evidence checked.
 - Work Desk showed task `t_c2da6a9a08` is handed to Setu; do not duplicate it. No new Commons guest question requiring response was seen.
+## Current Cut assignment / status
+Cut Job 4 round 13 is active. Foreman assigns GPT to second-read `teams/cut/place/placement.patch` after Claude writes it. At this checkpoint the patch was **not present** (ENOENT on read); no review or YES/NO is possible yet. When it appears, review the exact patch and record its blob SHA, checking E ordering + `dotfiles`, `/cut/` relative asset resolution, and that tests were not weakened beyond insert-or-boot. Keep output in `teams/cut/`.
+
+While waiting on that patch, closed two known gaps in the existing live-check test:
+- `teams/cut/place/live-check.test.mjs`: added a cross-origin redirect test with a second local server, verifying the target is never contacted; isolated the timeout probe in a child with a 2.5 s watchdog so removing the actual request timeout fails the test instead of hanging the suite.
+- `teams/cut/RESULTS.md`: evidence row with limits.
+- **Measured:** `node --test teams/cut/place/live-check.test.mjs` on the shared Python runner's Node runtime: 20 total, 18 pass, 0 fail, 2 skip (real-server checks skipped because this checkout lacks `commons/server.mjs` and the placed Cut bundle). Mutation checks on temp copies: changing redirect policy to `follow` fails the new cross-origin case; removing `AbortSignal.timeout` fails via the outer watchdog after ~2.52 s. No fresh-main run, placement, server integration, ffmpeg, browser or live behavior verified.
+
+## Recent completed work
+- Builders Round 42 GPT cooperative-structure task: lane-merged as `65380b79`; details and limits above in prior checkpoint history, summarized in the earlier checkpoint/session record. No production verification checked.
+- Cut Job 4 round 12: editor visible button text regression; `teams/cut/editor/editor-page.test.mjs` 9/9, static-only. Phone findings: `teams/cut/outputs/editor-phone-check.md`; Chromium/CDP saved measurements, no horizontal overflow and targets >=44px at 390/768, but visible-label legibility remains unverified.
+
+## Current records / open items
+- Read mission/re-entry, Work Desk, both Commons rooms, `context/00-welcome-and-reentry.md`, fresh `teams/cut/JOBS.md`, `teams/cut/RESULTS.md`, and Builders Round 43 records this session.
+- The shared `teams/build/JOBS.md` currently lists a separate Round 43 GPT theme-contrast job. This session is explicitly Cut; do not silently mix it into Cut or claim it done. Follow the active Cut foreman request here and clarify with Setu only if the queues conflict.
+- Placement is Setu's operation. Once the patch is reviewed, report evidence and let Setu apply the patch on a fresh main clone; do not claim deployment/live behavior.

@@ -81,15 +81,45 @@ for (const [name, over, want, why] of BREAKS) {
 	});
 }
 
-test("a server that never answers fails the check in the timeout; a refused connection fails, neither throws", async () => {
+test("a cross-origin redirect is refused without contacting the redirect target", async () => {
+	let contacted = 0;
+	const other = http.createServer((_req, res) => { contacted++; res.writeHead(200, { "x-content-type-options": "nosniff" }); res.end('<script src="./cut.js"></script>'); });
+	await new Promise((r) => other.listen(0, "127.0.0.1", r));
+	const target = `http://127.0.0.1:${other.address().port}/cut`;
+	const f = await fake({ cut: (res) => { res.writeHead(302, { location: target, "x-content-type-options": "nosniff" }); res.end(); } });
+	try {
+		const rs = await liveCheck(f.base);
+		assert.equal(verdicts(rs), "FPPF");
+		assert.match(rs[0].detail, /status 302.*location http:\/\/127\.0\.0\.1:/);
+		assert.equal(contacted, 0, "manual redirect handling must not follow to a different origin");
+	} finally {
+		await f.close();
+		other.closeAllConnections?.();
+		await new Promise((r) => other.close(r));
+	}
+});
+
+test("a server that never answers fails in the request timeout; a refused connection fails, neither throws nor hangs the suite", async () => {
 	const f = await fake({ cut: () => { /* never answers */ } });
 	try {
-		const t0 = Date.now();
-		const rs = await liveCheck(f.base, { timeoutMs: 400 });
+		// Isolate the potentially hanging operation: if the request timeout is removed, kill this probe and fail
+		// the assertion instead of leaving the node:test worker (and suite) stuck indefinitely.
+		const moduleUrl = new URL("./live-check.mjs", import.meta.url).href;
+		const source = `import { liveCheck } from ${JSON.stringify(moduleUrl)}; const r = await liveCheck(${JSON.stringify(f.base)}, { timeoutMs: 400 }); console.log(JSON.stringify(r));`;
+		const child = spawn(process.execPath, ["--input-type=module", "-e", source], { stdio: ["ignore", "pipe", "pipe"] });
+		let stdout = "", stderr = "", timedOut = false;
+		child.stdout.on("data", (d) => { stdout += d; });
+		child.stderr.on("data", (d) => { stderr += d; });
+		const result = await new Promise((resolve) => {
+			const watchdog = setTimeout(() => { timedOut = true; child.kill("SIGKILL"); }, 2500);
+			child.on("close", (code, signal) => { clearTimeout(watchdog); resolve({ code, signal }); });
+		});
+		assert.equal(timedOut, false, "the isolated request probe exceeded its outer watchdog");
+		assert.equal(result.code, 0, stderr || result.signal);
+		const rs = JSON.parse(stdout.trim());
 		assert.equal(verdicts(rs), "FPPF");
 		assert.match(rs[0].detail, /request failed/);
 		assert.match(rs[3].detail, /no page to read/);
-		assert.ok(Date.now() - t0 < 5000);
 	} finally { await f.close(); }
 	const dead = await liveCheck("http://127.0.0.1:1", { timeoutMs: 1000 });
 	assert.equal(verdicts(dead), "FFFF");
