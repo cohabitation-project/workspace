@@ -1,0 +1,658 @@
+[
+  {
+    "size": [
+      390,
+      844
+    ],
+    "measurement": {
+      "viewport": {
+        "innerWidth": 390,
+        "innerHeight": 844,
+        "documentClientWidth": 390,
+        "scrollWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "groups": {
+        "trim": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "trim-start",
+              "holds": true,
+              "x": 18,
+              "right": 376
+            },
+            {
+              "id": "trim-end",
+              "holds": true,
+              "x": 18,
+              "right": 376
+            }
+          ],
+          "targets": [
+            {
+              "id": "trim-start",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            },
+            {
+              "id": "trim-end",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "trim-start",
+              "text": "Start 0 seconds",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            },
+            {
+              "id": "trim-end",
+              "text": "End 30 seconds",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            }
+          ],
+          "labelsReadable": true,
+          "controls": [
+            {
+              "id": "trim-start",
+              "x": 18,
+              "y": 688.5,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "trim-end",
+              "x": 18,
+              "y": 767.7,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "text": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "edit-text",
+              "holds": true,
+              "x": 16,
+              "right": 374
+            },
+            {
+              "id": "text-position",
+              "holds": true,
+              "x": 16,
+              "right": 374
+            }
+          ],
+          "targets": [
+            {
+              "id": "edit-text",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            },
+            {
+              "id": "text-position",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "edit-text",
+              "text": "One-line text (up to 80 characters)",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            },
+            {
+              "id": "text-position",
+              "text": "Text position",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            }
+          ],
+          "labelsReadable": true,
+          "controls": [
+            {
+              "id": "edit-text",
+              "x": 16,
+              "y": 898.3,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "text-position",
+              "x": 16,
+              "y": 977.4,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "music": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "music-track",
+              "holds": true,
+              "x": 16,
+              "right": 374
+            },
+            {
+              "id": "music-volume",
+              "holds": true,
+              "x": 18,
+              "right": 376
+            }
+          ],
+          "targets": [
+            {
+              "id": "music-track",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            },
+            {
+              "id": "music-volume",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "music-track",
+              "text": "Choose label music",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            },
+            {
+              "id": "music-volume",
+              "text": "Music volume",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            }
+          ],
+          "labelsReadable": true,
+          "controls": [
+            {
+              "id": "music-track",
+              "x": 16,
+              "y": 1106,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "music-volume",
+              "x": 18,
+              "y": 1185.2,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "cover": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "cover-scrub",
+              "holds": true,
+              "x": 18,
+              "right": 376
+            },
+            {
+              "id": "cover-use",
+              "holds": true,
+              "x": 16,
+              "right": 374
+            }
+          ],
+          "targets": [
+            {
+              "id": "cover-scrub",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            },
+            {
+              "id": "cover-use",
+              "height": 44,
+              "width": 358,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "cover-scrub",
+              "text": "Scrub to a cover frame (seconds)",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 358
+            },
+            {
+              "id": "cover-use",
+              "text": "",
+              "visible": false,
+              "fontSize": null
+            }
+          ],
+          "labelsReadable": false,
+          "controls": [
+            {
+              "id": "cover-scrub",
+              "x": 18,
+              "y": 1315.7,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "cover-use",
+              "x": 16,
+              "y": 1361.7,
+              "width": 358,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "render": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "export-feed",
+              "holds": true,
+              "x": 244,
+              "right": 374
+            }
+          ],
+          "targets": [
+            {
+              "id": "export-feed",
+              "height": 64.4,
+              "width": 130,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 64.4,
+          "labels": [
+            {
+              "id": "export-feed",
+              "text": "",
+              "visible": false,
+              "fontSize": null
+            }
+          ],
+          "labelsReadable": false,
+          "controls": [
+            {
+              "id": "export-feed",
+              "x": 244,
+              "y": 8,
+              "width": 130,
+              "height": 64.4,
+              "visible": true
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "size": [
+      768,
+      1024
+    ],
+    "measurement": {
+      "viewport": {
+        "innerWidth": 768,
+        "innerHeight": 1024,
+        "documentClientWidth": 753,
+        "scrollWidth": 753,
+        "bodyScrollWidth": 753
+      },
+      "groups": {
+        "trim": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "trim-start",
+              "holds": true,
+              "x": 134.5,
+              "right": 622.5
+            },
+            {
+              "id": "trim-end",
+              "holds": true,
+              "x": 134.5,
+              "right": 622.5
+            }
+          ],
+          "targets": [
+            {
+              "id": "trim-start",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            },
+            {
+              "id": "trim-end",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "trim-start",
+              "text": "Start 0 seconds",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            },
+            {
+              "id": "trim-end",
+              "text": "End 30 seconds",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            }
+          ],
+          "labelsReadable": true,
+          "controls": [
+            {
+              "id": "trim-start",
+              "x": 134.5,
+              "y": 781,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "trim-end",
+              "x": 134.5,
+              "y": 860.2,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "text": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "edit-text",
+              "holds": true,
+              "x": 132.5,
+              "right": 620.5
+            },
+            {
+              "id": "text-position",
+              "holds": true,
+              "x": 132.5,
+              "right": 620.5
+            }
+          ],
+          "targets": [
+            {
+              "id": "edit-text",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            },
+            {
+              "id": "text-position",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "edit-text",
+              "text": "One-line text (up to 80 characters)",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            },
+            {
+              "id": "text-position",
+              "text": "Text position",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            }
+          ],
+          "labelsReadable": true,
+          "controls": [
+            {
+              "id": "edit-text",
+              "x": 132.5,
+              "y": 990.7,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "text-position",
+              "x": 132.5,
+              "y": 1069.9,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "music": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "music-track",
+              "holds": true,
+              "x": 132.5,
+              "right": 620.5
+            },
+            {
+              "id": "music-volume",
+              "holds": true,
+              "x": 134.5,
+              "right": 622.5
+            }
+          ],
+          "targets": [
+            {
+              "id": "music-track",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            },
+            {
+              "id": "music-volume",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "music-track",
+              "text": "Choose label music",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            },
+            {
+              "id": "music-volume",
+              "text": "Music volume",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            }
+          ],
+          "labelsReadable": true,
+          "controls": [
+            {
+              "id": "music-track",
+              "x": 132.5,
+              "y": 1198.4,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "music-volume",
+              "x": 134.5,
+              "y": 1277.6,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "cover": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "cover-scrub",
+              "holds": true,
+              "x": 134.5,
+              "right": 622.5
+            },
+            {
+              "id": "cover-use",
+              "holds": true,
+              "x": 132.5,
+              "right": 620.5
+            }
+          ],
+          "targets": [
+            {
+              "id": "cover-scrub",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            },
+            {
+              "id": "cover-use",
+              "height": 44,
+              "width": 488,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "cover-scrub",
+              "text": "Scrub to a cover frame (seconds)",
+              "visible": true,
+              "fontSize": "16px",
+              "width": 488
+            },
+            {
+              "id": "cover-use",
+              "text": "",
+              "visible": false,
+              "fontSize": null
+            }
+          ],
+          "labelsReadable": false,
+          "controls": [
+            {
+              "id": "cover-scrub",
+              "x": 134.5,
+              "y": 1408.1,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            },
+            {
+              "id": "cover-use",
+              "x": 132.5,
+              "y": 1454.1,
+              "width": 488,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        },
+        "render": {
+          "allControlsVisible": true,
+          "allControlsWithinViewport": true,
+          "withinViewport": [
+            {
+              "id": "export-feed",
+              "holds": true,
+              "x": 462,
+              "right": 620.5
+            }
+          ],
+          "targets": [
+            {
+              "id": "export-feed",
+              "height": 44,
+              "width": 158.5,
+              "atLeast44px": true
+            }
+          ],
+          "minTargetHeight": 44,
+          "labels": [
+            {
+              "id": "export-feed",
+              "text": "",
+              "visible": false,
+              "fontSize": null
+            }
+          ],
+          "labelsReadable": false,
+          "controls": [
+            {
+              "id": "export-feed",
+              "x": 462,
+              "y": 14,
+              "width": 158.5,
+              "height": 44,
+              "visible": true
+            }
+          ]
+        }
+      }
+    }
+  }
+]
