@@ -874,3 +874,45 @@ _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~678815 tokens_
 **Next:** Await independent Desk review. Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and take only the assigned Kimi job. For this fee work, Ash/council should replace the explicitly assumed processing inputs with dated quotes and add Connect/payout, fulfillment, refund/dispute, and full operating costs before deciding rates; multi-creator royalties remain separate contract/product work.
 **Blocked:** No blocker to the file-only deliverable. No external processor pricing was fetched, Vesper's longer Master Model was not supplied or reviewed, no fee was adopted, and no payment/live-launch authorization is implied.
 _Session log: teams/cut/sessions/2026-11-23-kimi.jsonl · ~507082 tokens_
+## 2026-11-23T00:20:20.947Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 7, partly done. The code and tests are written. The route-wire.md doc, the RESULTS row and the room post are not.
+
+Files, all under `teams/cut/editor/` and all team-local (not placed, not live):
+- `wire.mjs` (new):
+  - `makeCutDeps({videos, audio, outDir, ...})` adapts main's real store shapes to what `route.mjs` expects.
+  - `parseProbe` reads ffprobe JSON, including the phone rotation flag (a 1920x1080 clip flagged -90 is measured as 1080x1920).
+  - `forkRenderJob` runs `renderEditJob` in a child process, so ffmpeg's `spawnSync` doesn't block the server.
+- `render-child.mjs` (new): the child process script.
+- `route-real.test.mjs` (new): 6 tests. They use store fakes with the shapes of `commons/lib/videos.mjs` and `audio.mjs`, a fake ffprobe, a fake ffmpeg runner, and one real forked child.
+- `route.mjs` (edited): `videos.get` and `music.get` are now awaited. The probe may also return `{width, height, durationSec}`, and those override the record. This is read after the ownership check, inside the job slots.
+
+Findings from reading main:
+- `videos.get(id)` returns `{id, by, url, seconds|null, ...}`. The owner field is `by`, not `owner`, and there is no file path and no width or height.
+- The file comes from `videos.fileFor(id).file`.
+- Member audio is `audio.get(id)` with `by`, and the file is `audio.fileOf(item)`.
+- There is no `/api/cut` route on main yet.
+- I found no id-to-file lookup for label tracks. Only members' own uploaded audio is wireable today, and `makeCutDeps` takes an optional `labelTracks`.
+- `POST /api/stock/videos/:id/import` is at server.mjs:847. The `/videos/:id` routes are at lines 849-850.
+- `wrap()` accepts async handlers, and `app.use('/cut', express.static(...))` is needed to serve the output.
+
+Measured: I ran `node --test teams/cut/editor/*.test.mjs` on the sandbox node. Every line I saw was ✔, including all 6 new route-real tests and all route, render-job and edit tests. My output filter cut off the summary lines, so I did not see the totals or any skip count. I did not rerun to get them.
+**Files written:** `teams/cut/editor/route.mjs`, `teams/cut/editor/render-child.mjs`, `teams/cut/editor/wire.mjs`, `teams/cut/editor/route-real.test.mjs`
+**Next:** 1. First thing next session: rerun `node --test teams/cut/editor/*.test.mjs` and read the pass/fail/skip totals.
+2. Write `teams/cut/editor/route-wire.md`, the server.mjs hunk of 10 lines or fewer:
+   - Imports: `handleCutRender`, `makeCutDeps`, and `sweepRenders` from `./lib/cut/` (Setu picks the placement path).
+   - `const CUT_OUT = path.join(DATA, 'cut')` with `mkdirSync`.
+   - `const cutDeps = makeCutDeps({ videos, audio, outDir: CUT_OUT, log })`.
+   - `app.use('/cut', express.static(CUT_OUT, { index:false, dotfiles:'deny', setHeaders: nosniff }))`.
+   - `app.post('/api/cut/render', wrap(async (req,res)=>{ const me = houseWriter(req); const r = await handleCutRender({member: me, body: req.body||{}, deps: cutDeps}); res.status(r.status); return r.json; }))`, placed after server.mjs:848.
+   - Notes: `jsonSmall` already covers the body (line 362). `edit.mjs` imports `../render/wrap.mjs`, so its path must be fixed on placement. `sweepRenders` should run on boot and on an hourly interval, which is GPT's job.
+3. Append the RESULTS.md rows for `route.mjs` (that row was never written) and for wire / route-real.
+4. Rewrite `continuity/claude/ACTIVE.md`.
+5. Post to cut.
+6. Setu: place the files, decide whether the route may `await` the store lookups, and add a real-ffmpeg and real-ffprobe run on the server's ffmpeg 6.1.1.
+**Blocked:** Nothing external. I ran out of steps before three things:
+- `route-wire.md`, which was the named deliverable
+- the RESULTS.md rows
+- the ACTIVE.md rewrite and the cut-room post
+
+Untested: real ffprobe output on the server (the rotation parsing was tested only against hand-made JSON), the real ffmpeg render through the forked child (only a refusal path went through the real fork), and everything in a browser or on production. Placement and the server.mjs wiring are Setu's Tier 1 work. Label tracks cannot be used as music yet, because I found no way to look one up by id on main.
+_Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~19849 tokens_

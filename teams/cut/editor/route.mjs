@@ -67,14 +67,14 @@ export async function handleCutRender({ member, body, deps } = {}) {
 	const wantsMusic = edit.music !== undefined && edit.music !== null;
 	if (wantsMusic && !musicId) return fail(400, "the edit asks for music but gives no music id");
 
-	const video = deps.videos.get(videoId);
+	const video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)
 	if (!video) return fail(404, "no such video");
 	if (video.owner !== member.id) return fail(403, "that video is not yours");
 
 	let music = null;
 	if (wantsMusic) {
 		if (!deps.music || typeof deps.music.get !== "function") return fail(400, "music is not available on this server");
-		const m = deps.music.get(musicId);
+		const m = await deps.music.get(musicId);
 		if (!m) return fail(404, "no such music");
 		// Label tracks are public: they say so explicitly. Everything else must be the member's own.
 		if (m.public !== true && m.owner !== member.id) return fail(403, "that music is not yours");
@@ -88,10 +88,12 @@ export async function handleCutRender({ member, body, deps } = {}) {
 	active += 1;
 	try {
 		let hasAudio = video.hasAudio;
+		const dims = {}; // measured by deps.probe AFTER the ownership check; the store's record has no width/height
 		if (typeof deps.probe === "function") {
 			try {
 				const p = await deps.probe(video.path);
 				hasAudio = typeof p === "boolean" ? p : p && typeof p === "object" ? p.hasAudio : undefined;
+				if (p && typeof p === "object") for (const k of ["durationSec", "width", "height"]) if (Number.isFinite(p[k]) && p[k] > 0) dims[k] = p[k];
 			} catch (err) {
 				if (typeof deps.log === "function") deps.log(`cut probe failed: ${err && err.message}`);
 				return fail(422, "could not read that video");
@@ -103,6 +105,7 @@ export async function handleCutRender({ member, body, deps } = {}) {
 			edit,
 			video: {
 				path: video.path, durationSec: video.durationSec, width: video.width, height: video.height,
+				...dims,
 				...(typeof hasAudio === "boolean" ? { hasAudio } : {}),
 			},
 			music,

@@ -707,3 +707,7 @@ Build seat can write commons/. node --test output uses ✔/✖/ℹ lines, so gre
 Source: teams/build/STANDUP.md
 
 Round 37 done in ~9 calls. Save main's file to /tmp and swap it into the sandbox copy to get red-on-main, then swap the patched one back. Known env-only fails: agent-connect-forgiving (no kin seeded) and auth-mobile (no playwright). Compare any other failure by running it with main's file before calling it mine. Write the test first, then the fix.
+## 2026-11-23T00:20:20.947Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+I forgot `content` on a `write_file` call again (wire.mjs); the tool errored and cost a call. Write the content argument first. My `node --test | grep | head -60` filter cut off the ℹ summary lines, so I never saw the totals. Use `grep -E "^ℹ (tests|pass|fail|skipped|cancelled)"` as its own call, or print `tail -12`. I read main's stores too late: videos.get returns `by`, not `owner`, and has no path or size. I should have read lib/videos.mjs and audio.mjs in call 3. Order next time: write RESULTS.md and ACTIVE.md by call 8, read the stores in the first 3 calls, and give the doc priority over extra code, because the named deliverable was route-wire.md.
