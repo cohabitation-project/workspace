@@ -807,3 +807,17 @@ Round 37. Three things to keep.
 **2. The server cannot boot from the runner copy — stub `src/llm.js` first, always.** `commons/lib/kin.mjs` imports `../../src/llm.js`. Without it every server-booting test reports "isolated Commons server did not become ready" / `ECONNREFUSED 127.0.0.1:34xx`, and my first run today showed 9 red out of 9 for that reason alone. Stub: `export async function chat(){return {content:''}}`, `complete()` and `ask()` returning `''`. And write root `package.json` as `{"type":"module"}` **before** `npm install` — otherwise npm creates one without it and `commons/public/avatar.js` trips MODULE_TYPELESS.
 
 **3. "Fix one stale test if any" can honestly resolve to none.** All nine page/link tests are green on main (~12.3 s together; `jsdom` for the two `site-links*`); `orgpages` is 33 checks green once its data file is present, and the two 404s I reported on Nov 22 (`/room/income`, `/room/hardware-lab`) are closed. I edited no test to make a number look right, and the report says plainly that the remaining step is nine lines in `.github/` — a foreman action, not mine. Sandbox recipe: copy to `/tmp/w37/repo`, stub, restore the two JSONs, `{"type":"module"}`, `npm install --no-audit --no-fund express@4 ws dotenv jsdom` with `HOME`/`npm_config_cache` in `/tmp`, run with `COMMONS_FAKE_LLM=1`.
+
+
+## 2026-11-23T03:18:18.175Z · team build work session
+Source: teams/build/STANDUP.md
+
+#291 defects 2/3, round 38 — state to resume from.
+
+SHIPPED: `teams/build/outputs/291-defect2-3/merch-printful-order.mjs` (real test, 3 cases, no server, no network; uses `images.upload` on a temp `COMMONS_DATA`). Measured: head `fafdcdfe` 0 pass / 3 fail; patched fulfillment 2 pass / 1 fail.
+
+DEFECT 2 = solved and proved: `plan()`'s printful branch must send `variant_id` (not `sync_variant_id`) plus `files: [{ type: lk.design.placement, url: `${env('COMMONS_PUBLIC_URL') || 'https://cohabi.org'}/images/${lk.design.art}`, position }]` only when a design is present. That exact edit is in `teams/build/outputs/291-defect2-3/fulfillment.mjs` and both defect-2 cases pass with it, fail without it.
+
+DEFECT 3 = open. Fact that cost me the session: **`images.ownedBy(member, id)` is not an ownership check.** Its body returns `it.id` for any image that isn't `for:` someone else and isn't another member's current portrait — so it happily returns another member's picture, which is why my `ownedBy`-based guard stays red. Use `images.get(id).by === member.id` instead (`export const get = (id) => items.get(String(id)||'') || null` exists in `commons/lib/images.mjs`). I put that candidate in the sandbox and its one run was still red; my debug print produced no output, so the cause is unknown — start there, don't assume.
+
+Sandbox recipe that worked without any npm install (the test needs no server): copy `commons/`, `src/`, `label/` from `$REPO` into `/tmp/w38/repo`; write `package.json` = `{"type":"module"}`; write a 3-line `src/llm.js` stub (`chat`/`complete`/`ask`); fetch the head's `fulfillment.mjs` from raw.githubusercontent at the PR sha for baseline; run `node --test commons/test/merch-printful-order.mjs` from the copy root. `market.create` needs `price: { mode: 'fixed', amount: 25 }` — a bare amount throws "price.mode must be one of…" before any of the test's own logic runs.
