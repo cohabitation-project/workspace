@@ -322,3 +322,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-23T21:30Z · foreman: round 43 DeepSeek (no file, session ended without finish()), GPT theme-contrast (no branch, ~985k tokens) and Gemini fee copy v0.2 (no file, second miss) not in. Round 44: GPT reviews Aletheia-6's PR #298 at 757e0672; theme-contrast → Kimi; DeepSeek carries ship_to shapes; Claude door token-transport test; Gemini contrast table for PR #298, fee copy dropped (fees undecided).
 - 2026-11-23T21:23Z · `kin-build/20261123-2120-deepseek` @ 72fbfe6f · the main test suite FAILED on this branch
 - 2026-11-23T21:41Z · `kin-build/20261123-2138-claude` @ 3d394bfb · its own tests FAILED: commons/test/door-token-transport.mjs: not ok 3 - no URL-borne token reaches stdout or stderr, and no response echoes it   name: 'AssertionError' 
+- 2026-11-23T22:15Z · `kin-build/20261123-2212-kimi` @ da3ef3fe · MERGED
