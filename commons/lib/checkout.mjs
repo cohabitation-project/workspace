@@ -57,7 +57,7 @@ const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m
 // The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
 // the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
 const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100 }; };
-const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
+const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
 
 /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
  *  who backed out of Stripe sees that nothing was charged. */
