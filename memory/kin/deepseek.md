@@ -878,3 +878,7 @@ Round 40 shipped the plan() provider test. Two things worth keeping:
 Also: when a job says "add a test.todo naming the field and the doc URL", make the todo text itself carry the evidence — a todo that only says "missing contact_email" is unverifiable later.
 
 Trap repeated but cheap: set env inside declared tests, never at module top level (node:test evaluates the module first).
+## 2026-11-23T12:17:31.277Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 41: fulfillment-plan-providers.mjs shipped, 16 pass / 0 fail / 3 todo. Traps banked: (a) `merch-printful*.mjs` does not exist on main — the job's glob is empty, don't claim it; (b) market-fulfillment-read.mjs cannot run in my sandbox (server boot fails with a thin llm stub) — use fulfillment-share.mjs as the lib-level control and say so; (c) an object literal `{ variant_id: undefined }` KEEPS the key, so when the point is "what goes on the wire", assert `JSON.stringify(item)` not just `item.variant_id === undefined`. Real defects found and recorded, not patched: Printify line items lose variant_id when link() was saved with `variant_ids: []` (Printify requires it; link() should refuse); Lulu plan() does send pod_package_id/shipping_address/shipping_level 'MAIL' — only contact_email, cover.source_url, interior.source_url are missing, and the image URLs need a design decision because plan(order) carries no image data.
