@@ -1,0 +1,10 @@
+{
+  "base_main_sha": "3bb509fb845e47b641f57657833e57a981ac7fd2",
+  "syntax_exit_codes": [
+    0,
+    0
+  ],
+  "test_exit_code": 0,
+  "command": "node --test commons/test/market-order-fulfillment-words.mjs commons/test/market-fulfillment-read.mjs commons/test/market-order-status-words.mjs",
+  "output_tail": "\u2714 boot; a maker lists something and links it to a print partner product (713.780227ms)\n\u2714 the maker sees everything (15.421581ms)\n\u2714 signed out sees only connected + progress: no provider ids, SKU, maker id or dates (4.978713ms)\n\u2714 another member sees only connected + progress: no provider ids, SKU, maker id or dates (2.737989ms)\n\u2714 an unknown listing is a 404, not an empty record (2.813488ms)\n\u2714 a withdrawn listing reads as not connected to strangers (5.622549ms)\n\u2714 shutdown (2.490158ms)\n[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_\u2026)\n[commons] stewards (by id): none\n\u2714 fixture: one paid order has no fulfillment link and the other is linked to Printful (1.336554ms)\n\u2714 buyer view: an unlinked paid order plainly says the maker ships it (18.132049ms)\n\u2714 buyer view: a Printful-linked paid order plainly says who makes or ships it (2.828357ms)\n[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_\u2026)\n[commons] stewards (by id): none\n\u2714 orders, sales and receipts use plain words for every order state (53.899462ms)\n\u2139 tests 11\n\u2139 suites 0\n\u2139 pass 11\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 849.365593\n"
+}
