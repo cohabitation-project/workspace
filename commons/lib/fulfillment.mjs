@@ -16,6 +16,7 @@ import * as store from './store.mjs';
 import * as market from './market.mjs';
 import { CommonsError } from './core.mjs';
 import { paymentsOpen } from './checkout.mjs';
+import * as images from './images.mjs';
 
 const fail = (s, m) => { throw new CommonsError(s, m); };
 const env = (k) => (process.env[k] || '').trim();
@@ -55,7 +56,7 @@ const ownerOf = (member, listingId) => {
 };
 
 /** A maker links their listing to the product they designed in a provider's own tool. */
-export function link(member, listingId, { provider, product_id, variant_ids = [], sku = '' } = {}) {
+export function link(member, listingId, { provider, product_id, variant_ids = [], sku = '', design = null } = {}) {
   const l = ownerOf(member, listingId);
   const p = PIPES[provider]; if (!p || p.mode !== 'api') fail(400, `provider must be one of: ${Object.keys(PIPES).filter((k) => PIPES[k].mode === 'api').join(', ')}`);
   const id = String(product_id || '').trim().slice(0, 80); if (!/^[\w.-]{1,80}$/.test(id)) fail(400, "product_id: the product's id from the provider (letters, numbers, - . _)");
@@ -67,7 +68,17 @@ export function link(member, listingId, { provider, product_id, variant_ids = []
   }
   const pkg = String(sku || '').trim().slice(0, 120);
   if (provider === 'lulu' && !pkg) fail(400, 'lulu needs the print package id (its sku) of the book you made');
-  links[l.id] = { provider, product_id: id, variant_ids: vids, sku: pkg, by: member.id, ts: new Date().toISOString() };
+  // design: where the maker's art sits on the product (set by printful.mjs from a finished mockup), needed to print it later
+  // Defect 3 (PR #291): a design is kept only when its art is a picture this member owns (they uploaded it, or another
+  // member gave it to them). Another member's picture, or an unknown id, means the link is made without a design: we
+  // never hand the printer an address we have no right to print. NOT images.ownedBy(): that one deliberately allows any
+  // library picture that isn't "uploaded for" someone else and isn't another member's portrait, so it is a
+  // may-I-wear-this check, not an ownership check.
+  const artId = design && typeof design === 'object' ? String(design.art || '').trim().slice(0, 40) : '';
+  const art = artId ? images.get(artId) : null;
+  const ownsArt = !!art && (art.by === member.id || art.for === member.id);
+  const d = design && typeof design === 'object' && ownsArt ? { placement: String(design.placement || '').slice(0, 40), art: artId, position: design.position && typeof design.position === 'object' ? Object.fromEntries(['area_width', 'area_height', 'width', 'height', 'top', 'left'].map((k) => [k, Math.round(Number(design.position[k]) || 0)])) : null, base_price: Number(design.base_price) || null } : null;
+  links[l.id] = { provider, product_id: id, variant_ids: vids, sku: pkg, ...(d ? { design: d } : {}), by: member.id, ts: new Date().toISOString() };
   save(linksFile(), links); return { listing: l.id, ...links[l.id], connected: status()[provider].connected };
 }
 export function unlink(member, listingId) { const l = ownerOf(member, listingId); delete links[l.id]; save(linksFile(), links); return { listing: l.id, linked: false }; }
@@ -78,7 +89,18 @@ export function plan(order) {
   const lk = links[order.listing]; if (!lk) return { provider: null, why: 'this listing has no print or fulfillment link: the maker ships it' };
   const p = PIPES[lk.provider];
   const req = lk.provider === 'printful'
-    ? { method: 'POST', url: `${p.base()}/orders`, body: { external_id: order.id, recipient: order.ship_to, items: [{ sync_variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1 }] } }
+    // Two honest cases, one per Printful order shape (https://developers.printful.com/docs/ — order items take either):
+    //  - the maker designed it HERE (PR #291: a design with their own art): the item is the catalog `variant_id` plus
+    //    the design's file, printed on the fly — a store variant id would print nothing;
+    //  - the maker made the product in Printful's own tool and pasted its id (no design here): the item is that store
+    //    product's `sync_variant_id`, whose art Printful already holds (round 42, DeepSeek).
+    // Merged 2026-11-23 by Setu when #291 met round 42; both tests hold.
+    ? { method: 'POST', url: `${p.base()}/orders`, body: { external_id: order.id, recipient: order.ship_to, items: [
+      lk.design?.art && lk.design.placement
+        ? { variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1,
+          files: [{ type: lk.design.placement, url: `${env('COMMONS_PUBLIC_URL') || 'https://cohabi.org'}/images/${lk.design.art}`, ...(lk.design.position ? { position: lk.design.position } : {}) }] }
+        : { sync_variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1 },
+    ] } }
     : lk.provider === 'printify'
       ? { method: 'POST', url: `${p.base()}/v1/shops/${env('PRINTIFY_SHOP_ID') || '<shop>'}/orders.json`, body: { external_id: order.id, line_items: [{ product_id: lk.product_id, variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1 }], address_to: order.ship_to } }
       : { method: 'POST', url: `${p.base()}/print-jobs/`, body: { external_id: order.id, line_items: [{ external_id: lk.product_id, title: order.title, printable_normalization: { pod_package_id: lk.sku }, quantity: order.quantity || 1 }], shipping_address: order.ship_to, shipping_level: 'MAIL' } };

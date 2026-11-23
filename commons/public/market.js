@@ -52,8 +52,10 @@ if (form) {
     const id = form.dataset.id;
     if (!id) { body.rights = f.get('rights') === 'on'; if (f.get('team')) body.team = f.get('team'); if (f.get('page')) body.page = f.get('page'); }
     msg.textContent = 'Saving…';
+    const merch = !id && form.dataset.mockup && $('#mf-on')?.checked;
+    if (merch) { body.mockup = form.dataset.mockup; body.price = { mode: 'fixed', amount: Number(f.get('price_amount')) }; }
     try {
-      const l = id ? await send(`/api/market/listings/${id}`, 'PATCH', body) : await send('/api/market/listings', 'POST', body);
+      const l = id ? await send(`/api/market/listings/${id}`, 'PATCH', body) : merch ? await send('/api/merch/listings', 'POST', body) : await send('/api/market/listings', 'POST', body);
       location.href = `/label/l/${l.id}`;
     } catch (err) { msg.textContent = err.message; }
   });
@@ -126,4 +128,41 @@ if (new URLSearchParams(location.search).get('buy') === '1') {
   const main = document.querySelector('[data-buy]:not([data-package]):not([data-amount-from]):not(.mk-card [data-buy])');
   const u = new URL(location.href); u.searchParams.delete('buy'); history.replaceState(null, '', u.pathname + u.search + u.hash);
   if (main && !main.disabled) main.click();
+}
+
+// Print on demand: pick a product, place your art, see a real Printful mockup (Ash's spec, 2026-11-21).
+const merchBox = $('#mk-merch');
+if (form && merchBox) {
+  const cat = form.querySelector('[name=category]'); const on = $('#mf-on'); const body = $('#mf-body');
+  const pSel = $('#mf-product'); const vSel = $('#mf-variant'); const mmsg = $('#mf-msg'); const img = $('#mf-img'); const base = $('#mf-base');
+  let products = [];
+  const fillVariants = () => { const p = products.find((x) => x.key === pSel.value); vSel.innerHTML = (p?.variants || []).map((v) => `<option value="${v.id}">${v.name.replace(/</g, '&lt;')} · from $${v.price.toFixed(2)}</option>`).join(''); };
+  const show = () => { merchBox.hidden = !products.length || cat.value !== 'art'; body.hidden = !on.checked; };
+  fetch('/api/merch/products', { headers: { 'X-Commons': '1' } }).then((r) => r.json()).then((j) => {
+    products = j.products || [];
+    pSel.innerHTML = products.map((p) => `<option value="${p.key}">${p.title.replace(/</g, '&lt;')}</option>`).join('');
+    fillVariants(); show();
+  }).catch(() => {});
+  cat.addEventListener('change', show); on.addEventListener('change', () => { show(); if (on.checked) { form.querySelector('[name=price_mode]').value = 'fixed'; form.querySelector('[name=price_mode]').dispatchEvent(new Event('change')); } });
+  pSel.addEventListener('change', () => { fillVariants(); delete form.dataset.mockup; img.hidden = true; base.hidden = true; });
+  vSel.addEventListener('change', () => { delete form.dataset.mockup; img.hidden = true; });
+  $('#mf-go').addEventListener('click', async () => {
+    const art = form.querySelector('[name=mf_art]:checked'); if (!art) { mmsg.textContent = 'Pick your art first.'; return; }
+    const pic = art.parentElement.querySelector('img'); const aspect = pic.naturalWidth && pic.naturalHeight ? pic.naturalWidth / pic.naturalHeight : 1;
+    mmsg.textContent = 'Asking Printful for the mockup… this takes about half a minute.'; img.hidden = true; delete form.dataset.mockup;
+    try {
+      const t = await send('/api/merch/mockups', 'POST', { product: pSel.value, variant: Number(vSel.value), art: art.value, scale: $('#mf-scale').value / 100, y: $('#mf-y').value / 100, x: 0.5, aspect });
+      for (let i = 0; i < 40; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const r = await send(`/api/merch/mockups/${encodeURIComponent(t.task)}`, 'GET');
+        if (r.status === 'completed') {
+          img.src = r.url; img.hidden = false; form.dataset.mockup = t.task;
+          base.textContent = `Printful's base cost: $${r.base_price.toFixed(2)}. Set your price above it; the difference is yours. Shipping is added at checkout.`; base.hidden = false;
+          const amt = form.querySelector('[name=price_amount]'); amt.min = r.base_price; if (!amt.value || Number(amt.value) < r.base_price) amt.value = Math.ceil(r.base_price * 1.5);
+          mmsg.textContent = 'Here it is. Adjust and try again, or fill in the rest and publish.'; return;
+        }
+      }
+      mmsg.textContent = 'Printful is taking a while. Try again in a minute.';
+    } catch (err) { mmsg.textContent = err.message; }
+  });
 }

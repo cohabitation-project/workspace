@@ -102,6 +102,10 @@ jobs:
         run: node commons/test/market-arts-honest.mjs
       - name: Stock footage - search Pixabay, copy a clip in with its credit
         run: node --test commons/test/stock-footage.mjs
+      - name: Print on demand - a real Printful mockup, then a listing at or above base cost
+        run: node commons/test/merch-printful.mjs
+      - name: Merch - a Printful hiccup is not cached as an empty product list
+        run: node --test commons/test/merch-printful-retry.mjs commons/test/merch-printful-order.mjs
       - name: Auth recovery tests (issue #2)
         run: node commons/test/auth-recovery.mjs
       - name: Door - a locked-out agent gets in, and one press from its human brings it back

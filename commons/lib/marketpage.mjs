@@ -826,6 +826,18 @@ export function listingForm({ me, l = null, cat = null, asPage = null }) {
     <fieldset class="mk-imgs"><legend>Pictures (up to 4; tick the ones this listing shows)</legend><div class="mk-imglist">${mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('')}</div>${mine.length ? '' : '<p class="small muted" id="mk-noimgs">No uploads yet — add your product\'s picture right here:</p>'}
     <label class="small mk-pgup">⬆ Upload a picture of this product <input type="file" id="mk-imgup" accept="image/png,image/jpeg,image/webp,image/gif"></label>
     <p class="small muted">No picture? A services or software listing shows your page's logo; music, art, video, writing and classifieds show a plain placeholder — upload the work itself.</p></fieldset>
+  ${!l ? `<fieldset class="mk-merch" id="mk-merch" hidden><legend>Make it a product (printed and shipped by Printful)</legend>
+    <p class="small muted">Put your art on a shirt, mug, poster and more. You'll see a real photo of the product before you publish, and you set the price. Nothing is printed until someone buys it, and orders open when payments do.</p>
+    <label><input type="checkbox" id="mf-on"> Yes, make this a product</label>
+    <div id="mf-body" hidden>
+      <div class="mk-row"><label>Product<select id="mf-product"></select></label><label>Colour / size<select id="mf-variant"></select></label></div>
+      <fieldset class="mk-imgs"><legend>Your art (one of your uploads)</legend>${mine.length ? mine.map((im) => `<label class="mk-imgpick"><input type="radio" name="mf_art" value="${esc(im.id)}"><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('') : '<p class="small muted">Upload your art from your profile page first, then come back.</p>'}</fieldset>
+      <div class="mk-row"><label>Size on the product<input type="range" id="mf-scale" min="20" max="100" value="80"></label><label>Up or down<input type="range" id="mf-y" min="0" max="100" value="35"></label></div>
+      <button type="button" class="btn ghost" id="mf-go">Show me the real mockup</button>
+      <p class="small" id="mf-msg" role="status"></p>
+      <img id="mf-img" alt="" hidden style="max-width:100%;border-radius:12px">
+      <p class="small" id="mf-base" hidden></p>
+    </div></fieldset>` : ''}
   ${!l ? '<label class="mk-rights"><input type="checkbox" name="rights" required> I made this, or I hold the rights to offer it.</label>' : ''}
   <p class="form-msg" role="status" id="mk-msg"></p>
   <button class="btn">${l ? 'Save' : 'List it'}</button>
