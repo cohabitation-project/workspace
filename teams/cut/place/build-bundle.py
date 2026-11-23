@@ -52,4 +52,9 @@ for n in LIBS:
 shutil.copy(WRAP, os.path.join(L, "wrap.mjs"))
 for n in TESTS:
     open(os.path.join(T, "cut-%s.test.mjs" % n), "w").write(test(n))
+# Round 10: the booted-server test lives in the bundle tree itself (it is written for commons/test/, no import changes).
+HTTP_TEST = os.path.join(REPO, "teams/cut/place/commons/test/cut-route-http.test.mjs")
+if os.path.exists(HTTP_TEST):
+    shutil.copy(HTTP_TEST, os.path.join(T, "cut-route-http.test.mjs"))
+    print("also wrote cut-route-http.test.mjs")
 print("wrote 8 lib files to", L, "and 6 tests to", T)

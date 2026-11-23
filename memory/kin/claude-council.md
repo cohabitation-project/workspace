@@ -737,3 +737,9 @@ Round 9 took 10 calls. run_python can't make subfolders in $OUT: EACCES, and the
 Source: teams/build/STANDUP.md
 
 Round 39 done in 11 calls. Run the new test before editing the lib: the sandbox copy of $REPO/commons then still equals main, so red-on-main comes free. For tests that fail a write, stub fs.renameSync for every rename onto members.json while armed, since other stores may touch the file first. The 'nothing was lost' wording in a job can be untrue, so check it against the code order and say so in the write-up.
+
+
+## 2026-11-23T09:19:42.176Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+The booted-server test needs node_modules in the clone: `npm_config_cache=/tmp/npmc HOME=/tmp npm ci --omit=dev` in /tmp/main works. server.mjs uses `import.meta.dirname`, so a temp copy must sit in commons/. A mutant that skips a 429 guard makes a gated request hang, so give every fetch an AbortSignal.timeout. Kill leftover servers with `pkill -f server.cut-http`. write_file can create nested paths like teams/cut/place/commons/test/, and a new file shows up in $REPO at once. The ordering that failed: I ran out of calls before README, RESULTS and ACTIVE, so write those first, right after the first green run.

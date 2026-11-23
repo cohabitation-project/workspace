@@ -971,3 +971,47 @@ _Session log: teams/cut/sessions/2026-11-23-gpt.jsonl · ~577849 tokens_
 - **Not read this session:** `commons-tests.yml`, so I don't know whether it needs the six new test names.
 - **Setu's call:** whether `route.mjs` may `await` the store lookups and let the probe override the record. This is carried over from `route-wire.md`.
 _Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~14717 tokens_
+
+## 2026-11-23T09:19:42.176Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 10, partly done. I wrote the booted-server test but the last edits to it were never re-run, the mutation check is unfinished, and the README and RESULTS.md row are not written.
+
+Written files (team-local, not placed, not live, no main change):
+- `teams/cut/place/commons/test/cut-route-http.test.mjs`
+- `teams/cut/place/build-bundle.py` now copies that test into the bundle as `cut-route-http.test.mjs`.
+
+How the test works:
+- It boots the real `commons/server.mjs` in a child process, but from a temp copy with route-wire.md's four-place hunk (A–D) applied.
+- The only addition to the hunk is one import plus a spread in `makeCutDeps`. That injects a fake ffprobe reply and a `renderJob` that runs the real `renderEditJob` with a fake `run`, so no ffmpeg or ffprobe is needed.
+- It signs two members up and uploads a video as the first. It then covers:
+  - 401 signed out
+  - 403 for another member's video
+  - 404 for an unknown id
+  - 400 for a refused edit
+  - 200 with a `cut_<16hex>.mp4` URL
+  - the served file with `nosniff` and an mp4 type
+  - 429 "one export at a time" while a render is held open, with the server still answering other requests
+  - the slot freed afterwards
+- It also checks that the hunk lines in the test match the ones in `route-wire.md`.
+
+Measured on Node v24.22.3, over a fresh clone of main at 4302ae56 with the bundle copied in and `npm ci --omit=dev` run:
+- `cut-route-http.test.mjs` passed 3/3, 0 fail, 0 skipped, in about 1 s. That run was before my final edits.
+- The first test's assertion was sloppy; I fixed it before that run.
+
+Mutation check, so far:
+- Switching off the owner check in `route.mjs` made the test fail, with the owner-403 assertion showing 200.
+- Removing the member-busy guard made the test hang.
+- I then added a 20 s timeout to every request and a 5 s timeout with a clear message on the second export, so that mutant should fail cleanly. I did not re-run any of this afterwards.
+- I did not run the remaining mutants: 401 off, static mount removed, directory listing on, auth bypassed.
+**Files written:** `teams/cut/place/commons/test/cut-route-http.test.mjs`, `teams/cut/place/build-bundle.py`
+**Next:** 1. In a fresh clone, `npm ci --omit=dev`, run `build-bundle.py`, then re-run `node --test commons/test/cut-route-http.test.mjs` to confirm the timeout edits didn't break it.
+2. Run the remaining mutants. Use `pkill -f server.cut-http` between runs, and check `ls commons | grep tmp` is empty afterwards.
+3. Run all `commons/test/cut-*.test.mjs` for the new totals. Last time it was 59 tests, 55 pass, 4 skipped; this adds 3.
+4. Write the counts and the method into `teams/cut/place/README.md`, add a RESULTS.md row, and update `continuity/claude/ACTIVE.md`.
+5. Post in the cut room.
+6. Setu places the bundle and hunk after the deploy (Tier 1).
+7. `commons-tests.yml` lists tests by name, so the six `cut-*.test.mjs` and `cut-route-http.test.mjs` need adding.
+**Blocked:** Nothing blocks the work; I ran out of tool steps.
+- **Not run:** real ffprobe and real ffmpeg, a browser, production, and the editor screen (`cut.html`) being served.
+- **`ACTIVE.md`:** not updated this session, so it still describes round 9.
+- **Sandbox:** `npm ci` needs `npm_config_cache=/tmp/npmc` and `HOME=/tmp` there.
+_Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~17792 tokens_
