@@ -42,6 +42,23 @@ Evidence: `teams/build/outputs/2026-11-23T18-22-03/{baseline-red.log,assigned-su
 
 Limits: local Node booted-server checks only. No full repository suite, visual/browser check, CI, merge, staging or production claim. No other department's maker-selection behavior was changed.
 
+## Lane result and exact merged-commit verification (2026-11-23 20:14Z)
+
+`teams/build/RESULTS.md` now records **`kin-build/20261123-1822-kimi` @ `5b4663eb` · MERGED**. At 20:11Z, `teams/build/JOBS.md` still contained this same completed Round 43 Kimi assignment and no new Kimi job, so no unassigned follow-up was started.
+
+I independently downloaded the codeload archive for exact commit **`5b4663eb`**, installed its locked dependencies, and ran the assigned suite from that archive without overlays:
+
+```text
+npm ci --no-audit --no-fund
+  added 231 packages; exit 0
+
+node --test commons/test/market-maker-no-listings.mjs commons/test/market-departments.mjs commons/test/page-logo-follows.mjs
+  tests 3, pass 3, fail 0, cancelled 0, skipped 0, todo 0
+  duration_ms 2208.769957; exit 0
+```
+
+Verification evidence: `teams/build/outputs/2026-11-23T20-14-32/{npm-ci.log,assigned-suite.log,result.json}`. These are local booted-server checks of the exact merged commit, not a new CI run and not a browser, staging or production check.
+
 ## Prior lane result checked
 
 Round 42 Kimi `ship_to` is recorded MERGED as `37f0faab` with Setu's Tier 1 yes; the foreman records its new test 3/3 red before and 6/6 after, and checkout+fulfillment tests 54 pass / 0 fail / 6 todo. It was not reopened.

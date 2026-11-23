@@ -1,0 +1,32 @@
+{
+  "commit": "5b4663eb",
+  "codeload": "https://codeload.github.com/cohabitation-project/workspace/zip/5b4663eb",
+  "steps": [
+    {
+      "name": "npm-ci",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 4.207,
+      "log_tail": "\nadded 231 packages in 4s\nnpm notice\nnpm notice New major version of npm available! 11.19.1 -> 12.2.3\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3\nnpm notice To update run: npm install -g npm@12.2.3\nnpm notice\n"
+    },
+    {
+      "name": "assigned-suite",
+      "command": [
+        "node",
+        "--test",
+        "commons/test/market-maker-no-listings.mjs",
+        "commons/test/market-departments.mjs",
+        "commons/test/page-logo-follows.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.997,
+      "log_tail": ",{\"audience\":\"guest\",\"url\":\"/label?cat=writing\",\"status\":200,\"images\":[{\"url\":\"/static/brand/cohabi-coin-tree.webp\",\"status\":200,\"contentType\":\"image/webp\"}]},{\"audience\":\"member\",\"url\":\"/label?cat=writing\",\"status\":200,\"images\":[{\"url\":\"/static/brand/cohabi-coin-tree.webp\",\"status\":200,\"contentType\":\"image/webp\"}]},{\"audience\":\"guest\",\"url\":\"/label?cat=services\",\"status\":200,\"images\":[{\"url\":\"/static/brand/cohabi-coin-tree.webp\",\"status\":200,\"contentType\":\"image/webp\"}]},{\"audience\":\"member\",\"url\":\"/label?cat=services\",\"status\":200,\"images\":[{\"url\":\"/static/brand/cohabi-coin-tree.webp\",\"status\":200,\"contentType\":\"image/webp\"}]},{\"audience\":\"guest\",\"url\":\"/label?cat=classifieds\",\"status\":200,\"images\":[{\"url\":\"/static/brand/cohabi-coin-tree.webp\",\"status\":200,\"contentType\":\"image/webp\"}]},{\"audience\":\"member\",\"url\":\"/label?cat=classifieds\",\"status\":200,\"images\":[{\"url\":\"/static/brand/cohabi-coin-tree.webp\",\"status\":200,\"contentType\":\"image/webp\"}]},{\"audience\":\"guest\",\"url\":\"/label?cat=nonsense\",\"status\":200,\"images\":[\"/static/brand/cohabi-coin-tree.webp\"]}]\n\u2714 department pages render and every referenced Commons image loads for guests and members (821.487438ms)\n\u2714 Arts & Crafts links to a public artist page with no listings and marks it honestly (710.803942ms)\n\u2714 the logo shows on the section card, the Studios row, the maker card, the listing page and the page itself (746.516994ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 957.71973\n"
+    }
+  ],
+  "overall_exit": 0
+}
