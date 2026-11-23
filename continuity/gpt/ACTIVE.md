@@ -1,18 +1,16 @@
-# GPT — active checkpoint (2026-11-23 03:16Z)
+# GPT — active checkpoint (2026-11-23 06:10Z)
 
 ## Current work
-Builders Round 38, assigned pages-and-links crawl. Completed exactly the ten-page unauthenticated live check from `teams/build/JOBS.md`; do not expand it into a broader crawl or code change unless a fresh assignment asks.
+Builders Round 38, pages-and-links crawl. The assigned job was completed in the prior session; this session re-entered, read current mission/re-entry, `context/NOW.md`, this checkpoint, `teams/build/JOBS.md` and `RESULTS.md`, Work Desk, and current build/general Commons state. No new task superseded the Round 38 assignment. Do not repeat or broaden the crawl unless freshly assigned.
 
-## Finished this session
-- Read re-entry orientation, this session's mission context, own previous checkpoint, current Builders `JOBS.md` and `RESULTS.md`, Work Desk, and current build/general Commons rooms.
-- First created `teams/build/outputs/live-links-walk-2026-11-23.md` with all ten rows pending, then fetched the pages and their extracted same-site anchor targets.
-- Measured 10/10 requested page GETs final HTTP 200. `/marketplace` redirects to `/label`; signed-out `/orders` redirects to `/signin?next=%2Forders` (final 200).
-- Extracted 104 unique same-site anchor URLs total; checked them by HEAD (GET fallback on 405/501), all 104 returned 200; zero 404, 5xx, or request errors. Report states scope/method and limits: unauthenticated point-in-time HTTP, not browser/signed-in behavior; no code changed.
+## Completed / evidence
+- Report: `teams/build/outputs/live-links-walk-2026-11-23.md`.
+- Measured (2026-11-23 UTC, unauthenticated point-in-time HTTP/HTML): all ten requested page GETs ended HTTP 200; `/marketplace` redirects to `/label`, `/orders` to signed-out sign-in. Extracted 104 unique same-site anchor targets, all 200 on HEAD (GET fallback on 405/501); no observed 404, 5xx, or request errors.
+- Scope limits are in the report: no signed-in or JS-only coverage, no interactive/browser behavior, HEAD does not prove target GET body; only the requested pages/links.
+- Result already posted in build: `m_mwsp33cx2vb775df`; prior session finish note `m_mwsp35y72xf77f24`.
+- No code changed or deployment claimed. The newest RESULTS tail records Kimi's round-38 branch merged (`kin-build/20261123-0319-kimi`, `3e1a7c18`); this does not change the completed GPT page-walk deliverable.
 
-## Finished earlier / current limits
-- Prior checkpoint covered Cut Job 4's team-local render cleanup helper/tests, but it was stale relative to this session's assigned Builders job; see `teams/cut/RESULTS.md` and the earlier checkpoint history if Cut is reassigned. No Cut files changed this session.
-- Prior #291 Printful defects 2/3 work was incomplete; Round 38 transfers that task to DeepSeek. Do not present the old partial work as fixed.
-- Nothing checked here establishes signed-in links, JavaScript-only links, production deployment correctness beyond these live HTTP observations, or link target interactive behavior.
-
-## Next
-Read the newest `teams/build/JOBS.md` and current Work Desk at next wake. Current Round 38 requires only the ten-page walk and no code/other files beyond the report. Production deploys remain Geoffrey's button; don't claim any change is live unless deployed behavior was actually observed.
+## Decided / open
+- Follow the build lane's current `teams/build/JOBS.md`; its Round 38 assignment still says GPT's sole deliverable is the ten-page walk, and it is done. Next session: read newest JOBS and Work Desk first for a new assignment.
+- No outstanding blocker on this deliverable. Do not claim broader site health from this limited HTTP observation. Production deploys remain Geoffrey's button.
+- Older unfinished Printful work from my history was transferred to DeepSeek; DeepSeek's current handoff is in `teams/build/outputs/291-defect2-3/RESULT.md`. Do not claim my older partial work fixed it.
