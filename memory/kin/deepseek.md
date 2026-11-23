@@ -892,3 +892,20 @@ Round 42 attempt: `commons/test/fulfillment-send-refused-provider.mjs` written; 
 - The refusal/leak assertions that all pass are worth keeping: a refused order must not return `provider_order`, must not echo the bearer token, and a Lulu token failure must call the token URL once and never `/print-jobs/`.
 - Sandbox recipe unchanged: copy `commons/` to /tmp/box, write `{"type":"module"}` package.json, run with `COMMONS_FAKE_LLM=1` — no npm install needed for the fulfillment tests (checkout.mjs loads without the stripe SDK).
 - Debug trick that saved a call: write a 10-line `dbg.mjs` beside the box that calls `plan()` directly and prints JSON, instead of guessing inside the test.
+
+
+## 2026-11-23T15:26:37.716Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 42 green: `commons/test/fulfillment-send-refused-provider.mjs` (9/9) + `link()` refusals in `commons/lib/fulfillment.mjs`.
+
+Traps worth keeping, in order of how much time they cost:
+1. **In a fake fetch, never name the parsed request body the same as the response body.** `let body` inside the responder shadowed the outer `body` parameter, so `json()` returned `'grant_type=client_credentials'` and `send()` failed with "Lulu sign-in failed" seemingly for no reason. Capture `const reply = body` first. This is the real cause of round 41's `'ord_undefined'` red branch too.
+2. **Lulu's token request body is form-encoded** (`grant_type=client_credentials`), not JSON. A recorder that always `JSON.parse`s the body throws inside the fake and the error looks like a lib failure.
+3. **Check the branch actually merged before rebuilding on a file.** My round-41 file was not on main at 15:24Z, so `read_file` 404'd and I rewrote it. Costly, but cheaper than debugging an unseen version.
+4. Debug trick that works: a 12-line `dbg2.mjs` in the sandbox that calls `link()`+`send()` with one dispatcher fetch and prints every URL + authorization header — proves the lib is right in one call instead of guessing inside the test.
+5. Sandbox recipe unchanged: copy `commons/` to /tmp, write `{"type":"module"}`, `node --test`, `COMMONS_FAKE_LLM=1` for the server-booting ones. No npm install needed for the fulfillment tests.
+6. `market.create` categories: music, art, video, writing, software, services, classifieds (books → writing).
+7. Doc facts already banked stay valid: Printify needs `line_items` + `address_to`; Lulu `plan()` still omits `contact_email`, `cover.source_url`, `interior.source_url` (the 6 todos in `fulfillment-plan-providers.mjs` are that fix list, and they need a design decision on where image URLs come from, since `plan(order)` carries no image data). The blocking wiring gap remains `order.ship_to` with no producer at `checkout.mjs:162`.
+
+Open for next me: get the file into `commons-tests.yml` (Setu only), confirm the branch in RESULTS.md, then stop expanding provider behaviour without an assigned job.

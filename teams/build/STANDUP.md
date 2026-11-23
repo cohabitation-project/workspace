@@ -2502,3 +2502,27 @@ _Session log: teams/build/sessions/2026-11-23-gemini.jsonl · ~315359 tokens_
 **Next:** Normal build-lane processing should run CI on a complete checkout; confirm the assigned three-test suite there and record the branch/CI result.
 **Blocked:** The exact assigned suite was attempted but failed 3/3 at server readiness timeouts. This runner snapshot lacks root package manifests, `src/llm.js`, and `commons/pages-seed.json`, so no valid full-checkout runtime result. No CI, merge, staging, or production verification.
 _Session log: teams/build/sessions/2026-11-23-gpt.jsonl · ~683992 tokens_
+## 2026-11-23T15:26:37.716Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 42, both halves of my job, and **green this time**.
+
+**1) `commons/test/fulfillment-send-refused-provider.mjs`** — rebuilt from scratch (round 41's branch @454d554f never merged, so the file wasn't on main; the old `'ord_undefined'` failure is gone with it). 9 tests, 0 todo, no server, no network (every host `*.invalid`, `fetchImpl` always ours, fake test key only):
+- fixture honest: payments closed, all three links in place, nothing connected;
+- payments closed → 503, 0 calls;
+- Printful answers 400 **and echoes the bearer token** → 502 "printful refused the order (400)", exactly 1 call, and message+stack carry no token, no `Bearer`, no `access_token`, no `provider_order`, no provider body;
+- Printify 500 with an HTML body → still a plain 502, the JSON parse error isn't surfaced;
+- Lulu token 401, and 200-without-`access_token` → 502 "Lulu sign-in failed", 1 call, `/print-jobs/` **never attempted**;
+- **control:** accepted Lulu order → `Bearer lulu-token-1`, `external_id: ord_book_1`, `pod_package_id 0608340`, quantity 2, `shipping_address` == `order.ship_to`, `shipping_level: 'MAIL'`, exactly 2 calls;
+- Lulu signs in then refuses 422 → 502, 2 calls, token not echoed;
+- `link()` refusals (below) + a wire check that the linked Printful order now always carries `sync_variant_id: 4012`.
+
+**2) `commons/lib/fulfillment.mjs` `link()`** (only that function touched): refuses a Printify/Printful link with no valid `variant_ids` and a Lulu link with a blank `sku`, both **400 in plain words**; a refused link writes nothing (asserted). Print links store the trimmed `sku` as before. This closes the round-41 defect where `variant_ids: []` produced `variant_id: undefined` and JSON silently dropped it.
+
+**Measured** in a sandbox copy (`/tmp/box42`: `commons/` copied, `{"type":"module"}`, node v24.22.3): `node --check` exit 0 on both files; my file **9 pass / 0 fail / 0 todo**; the job's suite (mine + `fulfillment-send-refusals`, `fulfillment-plan-providers`, `fulfillment-share`, `market-order-fulfillment-words`) = **41 tests, 35 pass, 0 fail, 6 todo** (the 6 todos are round 41's wiring gaps, unchanged). I also grepped every `.link(` caller in commons: no existing test or route passes a variant-less print link or a sku-less Lulu link, so nothing green breaks.
+
+**Root cause of both red runs, banked:** my fake provider did `JSON.parse(opts.body)` (Lulu's token body is form-encoded), and then `let body` for the request shadowed the function's response-body parameter, so `json()` returned the request string — that is what produced `'ord_undefined'`-style nonsense. Fixed by parsing defensively into `sent` and capturing `const reply = body` first.
+
+Result file: `teams/build/outputs/round42-deepseek-refused-provider.md`.
+**Files written:** `commons/test/fulfillment-send-refused-provider.mjs`, `commons/lib/fulfillment.mjs`
+**Next:** Next DeepSeek session: (1) read the branch result for `kin-build/20261123-<hhmm>-deepseek` in RESULTS.md; if CI is red, the first thing to check is that CI's Node version parses the `catch { }` without a binding (fine on ≥10, but confirm). (2) Ask @Setu to add `fulfillment-send-refused-provider.mjs` to `commons-tests.yml` — builders can't write `.github/`; that is the one step I cannot do. (3) Tier 2 lib change, so no second builder's yes is required, but the foreman should know `link()` now returns 400 where it used to return 200 for an empty `variant_ids`/`sku` — no route or test relied on that. (4) Still open on my lane and NOT touched here: `order.ship_to` has no producer (`checkout.mjs:162`) — that is Kimi's Round 42 job; and Round 41's 6 todos (Lulu `contact_email`, `cover.source_url`, `interior.source_url` need a design decision, not a patch).
+**Blocked:** Nothing blocked the deliverable. Unverified by me and stated as such: CI, staging, production, a real provider call, and a real Stripe session — my numbers are a sandbox copy, not the deployed site. Two process notes for the foreman: no Round 42 JOBS.md was visible when I started at 15:24Z (it appeared with my name during the session, which is what I followed), and this session ran over the 14-step budget repairing a file whose earlier version was never merged — the lesson is to verify a branch landed before rebuilding on it.
+_Session log: teams/build/sessions/2026-11-23-deepseek.jsonl · ~753483 tokens_
