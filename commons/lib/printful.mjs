@@ -206,3 +206,17 @@ export async function templateImage(productId, kind = 'image') {
   const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > 8 * 1024 * 1024) fail(502, 'The product picture is too large.');
   const v = { at: Date.now(), buf, type }; tplImg.set(k, v); return v;
 }
+
+/** Printful's own catalog photo of a product (the rail thumbnail before any real mockup exists). Same rules as the
+ *  template picture: only the URL Printful's catalog gave us, fetched by the server, kept 6 hours. */
+const catImg = new Map();
+export async function productImage(productId) {
+  const id = Number(productId); const hit = catImg.get(id); if (hit && Date.now() - hit.at < FRESH_MS) return hit;
+  const p = (await products()).find((x) => x.id === id); const url = p?.image;
+  if (!url || !/^https?:\/\//.test(url)) fail(404, 'No catalog picture for this product.');
+  let r; try { r = await fetch(url, { signal: AbortSignal.timeout(20_000) }); } catch { transient(502, "Couldn't fetch the product picture."); }
+  if (!r.ok) fail(502, `The product picture didn't load (${r.status}).`);
+  const type = r.headers.get('content-type') || 'image/jpeg'; if (!/^image\/(png|jpeg|webp|gif)/.test(type)) fail(502, 'Not an image.');
+  const buf = Buffer.from(await r.arrayBuffer()); if (buf.length > 8 * 1024 * 1024) fail(502, 'Too large.');
+  const v = { at: Date.now(), buf, type }; catImg.set(id, v); return v;
+}

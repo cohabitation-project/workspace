@@ -129,11 +129,11 @@ export async function panel(member, listingId) {
     if (tpl) tpl = { ...tpl, image: tpl.image ? `/api/merch/template/${p.id}/image` : null, background: tpl.background ? `/api/merch/template/${p.id}/background` : null };
     const colors = [...new Map(p.variants.map((v) => [colorOf(v), v.color_code || null]))].map(([name, code]) => ({ name, code }));
     const sizes = [...new Map(p.variants.map((v) => [sizeOf(v), v]))].map(([name, v]) => ({ name, area: v.area || p.area, dpi: v.dpi || p.dpi, price: v.price }));
-    out.push({ product: p.key, kind, title: shortTitle(p.title), placement: p.placement_label, area: p.area, dpi: p.dpi, template: tpl, colors, sizes,
+    out.push({ product: p.key, kind, title: shortTitle(p.title), image: p.image ? `/api/merch/product-image/${p.id}` : null, placement: p.placement_label, area: p.area, dpi: p.dpi, template: tpl, colors, sizes,
       variants: p.variants.map((v) => ({ id: v.id, color: colorOf(v), size: sizeOf(v), price: v.price })),
       floor: floor(p, []), current: current.find((c) => c.product === p.key) || null });
   }
-  return { listing: l.id, title: l.title, art: { id: art.id, url: `/images/${art.id}`, ...(px || {}) }, fees, products: out };
+  return { listing: l.id, title: l.title, maker: l.by.name, page: l.page?.name || null, art: { id: art.id, url: `/images/${art.id}`, ...(px || {}) }, fees, products: out };
 }
 
 // ------------------------------------------------------------------ the maker's actions

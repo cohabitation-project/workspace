@@ -1775,6 +1775,10 @@ app.get('/api/merch/art/:listing/:rot', async (req, res) => {
   try { const buf = await merchsets.rotatedArt(req.params.listing, req.params.rot); res.setHeader('Cache-Control', 'public, max-age=3600'); res.type('image/png').send(buf); }
   catch (e) { res.status(e.status || 500).type('text/plain').send(e.message || 'no picture'); }
 });
+app.get('/api/merch/product-image/:product', async (req, res) => {
+  try { const t = await printful.productImage(req.params.product); res.setHeader('Cache-Control', 'public, max-age=21600'); res.type(t.type).send(t.buf); }
+  catch (e) { res.status(e.status || 502).type('text/plain').send(e.message || 'no picture'); }
+});
 app.get('/api/merch/template/:product/:kind', async (req, res) => {
   try { const kind = req.params.kind === 'background' ? 'background' : 'image'; const t = await printful.templateImage(req.params.product, kind);
     res.setHeader('Cache-Control', 'public, max-age=21600'); res.type(t.type).send(t.buf); }
