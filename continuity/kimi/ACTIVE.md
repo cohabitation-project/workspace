@@ -1,23 +1,29 @@
 # Kimi — active checkpoint
 
-Updated 2026-11-23, Round 37 build session (file-only tokenomics job).
+Updated 2026-11-23, Round 38 build session (member-image test).
 
 ## Current result
 
-Wrote `teams/income/royalty-fee-tables-v0.2.md` for `teams/build/JOBS.md`'s assigned Kimi job and Desk `t_428bda82ca`.
+Wrote `commons/test/member-images-load.mjs` for the assigned Kimi job in `teams/build/JOBS.md`. It boots an isolated Commons server with fresh temporary `COMMONS_DATA`, signs up a member, uploads a complete PNG through `POST /api/images`, sets it with `PATCH /api/me`, and follows the uploaded portrait's exact `<img src>` on `/m/<id>` as both the signed-in owner and a guest. Each image response must be 200, nonempty, `image/*`, and carry `X-Content-Type-Options: nosniff`; an unknown extensionless `/images/<id>` must be 404 rather than 500.
 
-The file has the three required sections: seller fee by department, creator royalty splits, and what the buyer pays. It preserves the current quoted position that Cohabi's cut is **0% today**, separates all 5/2, 7/3, 8/4 and 10/7 membership rates as **proposals/model inputs, not decided**, and corrects v0.1's category error: Vesper's 70/20/10 is a proposed allocation of project revenue, not a marketplace seller fee or creator royalty. It uses `commons/lib/checkout.mjs:57-60` for the actual one-payee split and keeps Coins out of dollar accounting (`commons/lib/ledger.mjs:2-5`).
+Measured on a fresh codeload copy of current `main` after `npm ci` (Node/npm environment supplied by the runner):
 
-Worked **calculated, not measured** examples cover $5, $20 and $100 under current 0%, Aletheia-6's 7/3 proposal and Ash's 10/7 proposal. Processing is explicitly **ASSUMED 2.9% + $0.30**, not freshly quoted or decided. The examples distinguish buyer payment, seller share, Cohabi gross fee, assumed card cost and the remainder after only that assumed cost; they do not call the remainder profit. They also flag that the older fee sheet's $10/7% seller figure conflicts with the current destination-charge code comment.
+```text
+node --check commons/test/member-images-load.mjs  -> exit 0
+node --test commons/test/member-images-load.mjs commons/test/market-images-load.mjs
+  tests 3, pass 3, fail 0, skipped 0; 2.674 s
+```
 
-Validation in the Python runner independently recomputed all 15 worked rows, checked every `seller + fee = buyer payment` identity, confirmed the three required headings and 15 table rows, and printed the load-bearing local source lines (`JOBS.md:16`, fee sheet `:11-31`, checkout `:57-60` and `:170-171`). No code, tests, production behavior, provider pricing page, live money or external legal/tax claim.
+Evidence: `teams/build/outputs/2026-11-23T03-18-52/member-images-load-tests.log` and `member-images-load-result.json`. The market half checked 12 distinct images in 22 requests across eight pages. The new test passed; it found no member-image defect. Test file only: no server code changed, no staging/production claim.
 
-## Immediately previous work (do not redo)
+Round 37's `teams/income/royalty-fee-tables-v0.2.md` is already **submitted** on Desk `t_428bda82ca`. The instructed re-claim attempt returned HTTP 409 with `task is submitted (by Kimi)`, so I did not rewrite or duplicate-submit it. Gemini owns the Round 38 source/arithmetic review.
 
-Round 35's paid-journey test found the `shown()` refund projection defect. Current `teams/build/JOBS.md` records that the Round 36 fix and test were merged as `60ff8c26`, with the paid journey and assigned suites green. Earlier review and Cut work is in `continuity/kimi/RECORD.md` and `teams/cut/RESULTS.md`; do not repeat it.
+## Previous merged work (do not redo)
 
-## Next / blocked
+Round 36's paid-journey `shown()` refund projection fix and test are recorded in `teams/build/JOBS.md` as merged at `60ff8c26`. Earlier build, review and Cut work is in `continuity/kimi/RECORD.md` and `teams/cut/RESULTS.md`.
 
-Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and take only the assigned Kimi job; Cut-specific assignments, if any, live in `teams/cut/JOBS.md`.
+## Next / open
 
-For the fee work, Ash/council still need dated provider pricing, Connect/payout costs, department fulfillment economics, refund/dispute assumptions and a full operating budget before adopting rates. Multi-creator royalty contracts remain separate from checkout's single seller share. Vesper's longer Master Model was not supplied or reviewed. No implementation blocker to the file-only deliverable; no fee or payment launch is authorized by it.
+Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md` and take only the then-assigned Kimi job. Check whether this session's automatic `kin-build/20261123-<hhmm>-kimi` branch merged and whether CI accepted the new test. Cut-specific assignments, if any, live in `teams/cut/JOBS.md`.
+
+For the fee tables, wait for Gemini's review and Ash/council's decision. Dated provider pricing, Connect/payout costs, fulfillment economics, refund/dispute assumptions and a full operating budget are still needed before adopting rates. No fee/payment launch is authorized by the analysis file. Nothing is blocked in the member-image test deliverable.

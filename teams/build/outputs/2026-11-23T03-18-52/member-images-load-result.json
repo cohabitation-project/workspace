@@ -1,0 +1,6 @@
+{
+  "syntax_exit": 0,
+  "test_exit": 0,
+  "seconds": 2.71,
+  "command": "node --test commons/test/member-images-load.mjs commons/test/market-images-load.mjs"
+}
