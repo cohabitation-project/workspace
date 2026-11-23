@@ -33,3 +33,46 @@ test('links on market pages follow the theme, not the shared plum', () => {
   const fx = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'feed-identity.css'), 'utf8');
   assert.match(fx, /\.fx-page a \{ color:var\(--fx-link, #633c7d\); \}/);
 });
+
+// Organisation pages reuse the market frame: orgpages.themeOf(p) becomes data-mk in marketpage.mjs. Their navy
+// gradient and midnight (black) themes therefore need checks on the actual page selectors, not only on feed themes.
+const pageTheme = (name) => {
+  const match = css.match(new RegExp(`\\.mk-page\\[data-mk=${name}\\]\\s*\\{([^}]*)\\}`));
+  assert.ok(match, `missing ${name} page theme`);
+  const body = match[1];
+  const tokens = Object.fromEntries([...body.matchAll(/--([\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\b/g)].map((m) => [m[1], m[2]]));
+  const background = body.match(/background:\s*([^;]+)/)?.[1] || '';
+  const gradientStops = background.match(/#[0-9a-fA-F]{6}\b/g) || [];
+  return { tokens, backgrounds: [...new Set([tokens.bg, tokens.panel, tokens.panel2, ...gradientStops])] };
+};
+
+for (const name of ['navy', 'midnight']) {
+  test(`${name} organisation-page body text, links and form labels meet WCAG AA`, () => {
+    const { tokens: v, backgrounds } = pageTheme(name);
+    const bad = [];
+    for (const bg of backgrounds) {
+      for (const [role, fg] of [['body text', v.ink], ['link', v.gold]]) {
+        if (ratio(fg, bg) < 4.5) bad.push(`${role} ${fg} on ${bg}: ${ratio(fg, bg).toFixed(2)}:1`);
+      }
+    }
+    // The edit-dialog label colour is shared by both page themes; its background is the theme's panel.
+    assert.match(css, /\.mk-pgdialog label,\.mk-pgdialog legend,\.mk-pgdialog \.hint\{color:(#[0-9a-fA-F]{6})\}/);
+    const label = css.match(/\.mk-pgdialog label,\.mk-pgdialog legend,\.mk-pgdialog \.hint\{color:(#[0-9a-fA-F]{6})\}/)[1];
+    if (ratio(label, v.panel) < 4.5) bad.push(`form label ${label} on ${v.panel}: ${ratio(label, v.panel).toFixed(2)}:1`);
+    assert.deepEqual(bad, [], bad.join('\n'));
+  });
+}
+
+// TODO: this is a real, measured failure. The foreground, --mv-paper override and pill selector all live in
+// hands-off market.css (Round 44), so this assignment cannot change the single authoritative source. Keep the
+// regression visible as a todo rather than moving an override into a second stylesheet or claiming AA compliance.
+for (const name of ['navy', 'midnight']) {
+  test.todo(`${name} inactive organisation-page category pills meet WCAG AA (market.css is hands off)`, () => {
+    const { tokens: v } = pageTheme(name);
+    assert.match(css, /\.mk-page\.mv-page\{[^}]*--mv-paper:var\(--panel,/);
+    const pill = css.match(/\.mk-pagebody \.mv-pill\{color:(#[0-9a-fA-F]{6})!important\}/);
+    assert.ok(pill, 'missing the organisation-page inactive-pill foreground');
+    assert.ok(ratio(pill[1], v.panel) >= 4.5,
+      `${pill[1]} on ${v.panel} is ${ratio(pill[1], v.panel).toFixed(2)}:1; needs 4.5:1 (normal 12px text)`);
+  });
+}
