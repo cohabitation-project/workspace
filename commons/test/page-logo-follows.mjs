@@ -1,5 +1,9 @@
 // A page's logo follows its listings everywhere (Geoffrey, 2026-11-19: "If an artist or creator adds a logo for their
-// site, it should follow everywhere that it pops up").
+// site, it should follow everywhere that it pops up") — scoped on 2026-11-23, after Geoffrey's own art listing came up
+// wearing his store logo as if it were the work: the logo stands in as the ART only for services and software, where
+// the logo honestly is the work's face. In music, art, video, writing and classifieds an empty picture slot shows a
+// plain placeholder, so the maker sees it's empty and uploads the work itself. The small logo beside the business's
+// NAME (mk-provlogo) is identity, not artwork, and stays in every section.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -33,5 +37,15 @@ test('the logo shows on the section card, the Studios row, the maker card, the l
     const page = await (await fetch(B + l.url)).text();
     assert.match(page, /mk-logotile/, 'listing page uses the logo when it has no picture of its own');
     assert.match(page, new RegExp(`class="mk-provlogo" src="/images/${id}"`), 'business line on the listing page');
+
+    // The artist's side (2026-11-23): same page, same missing picture — but in the art section the logo must NOT
+    // stand in as the work. The slot shows the plain placeholder; the logo stays only beside the business's name.
+    const a = await call('market_create', { title: 'A painting', text: 'Words.', category: 'art', type: 'product', price: { mode: 'quote' }, license: 'all-rights', rights: true, page: pg.page });
+    const artPage = await (await fetch(B + a.url)).text();
+    assert.doesNotMatch(artPage, /mk-logotile/, 'an art listing with no picture does not wear the logo as its art');
+    assert.match(artPage, /mk-gallery mk-noimg/, 'it shows the plain empty-picture placeholder instead');
+    assert.match(artPage, new RegExp(`class="mk-provlogo" src="/images/${id}"`), 'the logo still shows beside the business name (identity, not artwork)');
+    const artSection = await (await fetch(`${B}/label?cat=art`)).text();
+    assert.doesNotMatch(artSection, new RegExp(`class="mk-pagelogo" src="/images/${id}"`), 'no art-section card wears the logo as a cover');
   } finally { srv.kill(); }
 });

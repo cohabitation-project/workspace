@@ -103,7 +103,7 @@ function providerLine(l) {
 function cover(l) {
   const im = l.images[0] ? images.get(l.images[0]) : null;
   if (im) return `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}" loading="lazy">`;
-  const pg = pagePortrait(l);
+  const pg = logoAsArt(l); // services/software only; an artist's empty slot stays visibly empty (Geoffrey, 2026-11-23)
   return pg ? `<img class="mk-pagelogo" src="${esc(pg)}" alt="${esc(l.page.name)} logo" loading="lazy">` : `<span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span>`;
 }
 const madeBy = (l) => (l.made_by === 'human' ? '' : `<span class="mk-made">${l.made_by === 'hybrid' ? 'human + AI' : 'AI-made'}</span>`);
@@ -191,10 +191,16 @@ function mvHero({ kicker, title, text, buttons = '', img = null }) {
 }
 const SHAPES = ['one', 'two', 'three', 'four', 'five', 'six'];
 const firstImage = (l) => { const id = (l.images || [])[0]; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
-// A listing with no picture of its own shows its business page's picture (Geoffrey, 2026-11-19: when a page changes
-// its logo, that's how its listings should show up in the market). Cards only; hero and tile art still use real photos.
+// A listing with no picture of its own shows its business page's picture — but only where the logo honestly IS the
+// work's face (Geoffrey, 2026-11-19: a page's logo follows its listings; refined 2026-11-23 after his own art listing
+// came up wearing his store logo: "a service is basically going to have their logo as their art… but an artist will
+// have a logo, and they'll also have their art"). Services and software keep the logo; music, art, video, writing and
+// classifieds show a plain placeholder instead, so an empty slot looks empty and the maker uploads the work itself.
+// The small logo beside the business's NAME (mk-provlogo) is identity, not artwork: it stays in every section.
+const LOGO_AS_ART = new Set(['services', 'software']);
 const pagePortrait = (l) => { const pg = l.page && orgpages.get(l.page.id); const id = pg?.portrait; return id && images.get(id) ? `/images/${encodeURIComponent(id)}` : null; };
-const cardImage = (l) => firstImage(l) || pagePortrait(l);
+const logoAsArt = (l) => (LOGO_AS_ART.has(l.category) ? pagePortrait(l) : null);
+const cardImage = (l) => firstImage(l) || logoAsArt(l);
 const mvArt = (img, i, logo = false) => (img ? `<div class="mv-art has-img${logo ? ' is-logo' : ''}" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
 /** One card per maker in this section: their newest work's picture and title, then a way to their page. Real data only. */
 function makers(list) {
@@ -721,7 +727,7 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   <p class="small">${paid.status === 'paid' ? `The maker, ${esc(paid.seller.name)}, has been told. ` : paid.status === 'awaiting_payment' ? 'This page updates when our records confirm it (usually within a minute). ' : ''}See it in <a href="/orders">your orders</a>.</p></section>` : '';
   const cancelledNote = cancelled ? '<section class="mk-receipt mk-cancelled"><h2>Checkout cancelled.</h2><p class="small">Nothing was charged. The listing is still here when you want it.</p></section>' : '';
   const imgs = l.images.map((id) => images.get(id)).filter(Boolean);
-  const logo = !imgs.length && pagePortrait(l); // no picture of its own: the business's logo stays with it (Geoffrey, 2026-11-19)
+  const logo = !imgs.length && logoAsArt(l); // services/software: the business's logo stays with it (Geoffrey, 2026-11-19; scoped to those sections 2026-11-23)
   const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : logo ? `<div class="mk-gallery mk-noimg mk-logotile"><img class="mk-pagelogo" src="${esc(logo)}" alt="${esc(l.page.name)} logo"></div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
   // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
   // a human maker with a verified payout account). Otherwise they stay greyed out and say why.
@@ -815,7 +821,7 @@ export function listingForm({ me, l = null, cat = null, asPage = null }) {
   <label>Bounty: its Work Desk task id (only for bounties)<input name="desk" maxlength="40" value="${v('desk')}" placeholder="t_…"></label>
     <fieldset class="mk-imgs"><legend>Pictures (up to 4; tick the ones this listing shows)</legend><div class="mk-imglist">${mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('')}</div>${mine.length ? '' : '<p class="small muted" id="mk-noimgs">No uploads yet — add your product\'s picture right here:</p>'}
     <label class="small mk-pgup">⬆ Upload a picture of this product <input type="file" id="mk-imgup" accept="image/png,image/jpeg,image/webp,image/gif"></label>
-    <p class="small muted">Without a picture, the listing shows your page's logo instead.</p></fieldset>
+    <p class="small muted">No picture? A services or software listing shows your page's logo; music, art, video, writing and classifieds show a plain placeholder — upload the work itself.</p></fieldset>
   ${!l ? '<label class="mk-rights"><input type="checkbox" name="rights" required> I made this, or I hold the rights to offer it.</label>' : ''}
   <p class="form-msg" role="status" id="mk-msg"></p>
   <button class="btn">${l ? 'Save' : 'List it'}</button>
