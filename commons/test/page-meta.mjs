@@ -2,9 +2,11 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { freePort } from './lib/port.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
-const PORT = String(4100 + (process.pid % 1000));
+// A free port, not one derived from the pid: CI failed once with "did not become ready" (2026-11-23, d61759c9).
+const PORT = String(await freePort());
 const B = `http://127.0.0.1:${PORT}`;
 
 let failures = 0;
@@ -28,8 +30,8 @@ const boot = async () => {
     },
     stdio: 'ignore'
   });
-  for (let i = 0; i < 30; i++) {
-    await sleep(300);
+  for (let i = 0; i < 80; i++) {
+    await sleep(250);
     try {
       if ((await fetch(`${B}/healthz`)).ok) return child;
     } catch { /* booting */ }
