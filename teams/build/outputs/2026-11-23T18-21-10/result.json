@@ -1,0 +1,10 @@
+{
+  "main_sha": "7f138d4246fdf7b9549a0964bf1ef4e953283e23",
+  "baseline_exit": 1,
+  "final_exit": 0,
+  "files": [
+    "commons/lib/marketpage.mjs",
+    "commons/test/market-maker-no-listings.mjs"
+  ],
+  "scope": "fresh codeload + npm ci; booted local Node server tests; no browser/staging/production"
+}
