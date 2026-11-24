@@ -188,7 +188,7 @@
    Scope this to the product customizer alone; keep global Cohabi navigation usable. */
 body.mk-page:has(#mp-app) { background:linear-gradient(180deg,#fff6ec 0%,#fffdf7 430px,#fff8f0 100%); }
 body.mk-page:has(#mp-app) .mv-wrap {
-  max-width:none; width:100%; margin:0; padding:0 clamp(16px,3vw,58px) 70px;
+  box-sizing:border-box; max-width:none; width:100%; margin:0; padding:0 clamp(16px,3vw,58px) 70px;
 }
 body.mk-page:has(#mp-app) .mv-wrap::before {
   content:""; display:block; height:14px; margin:0 calc(-1 * clamp(16px,3vw,58px)) 0;
