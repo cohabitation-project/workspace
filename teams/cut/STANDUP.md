@@ -1202,3 +1202,20 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~15164 tokens_
 **Next:** Repeat the editor check against booted commons/server.mjs at 390×844 and 768×1024 when a dependency-enabled full checkout is available. Read current Cut JOBS.md and RESULTS.md before taking another assignment.
 **Blocked:** This checkout lacks root package.json/package-lock.json and node_modules; main server exits before startup with ERR_MODULE_NOT_FOUND for dotenv. Chromium is installed but Playwright is absent. No current actual-server browser, backend, live, or production verification.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~388921 tokens_
+## 2026-11-24T09:22:09.896Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 18 browser run, finished. I ran the export hand-off in Chromium at 375x812 with real ffmpeg 9.0.2 and a stub ffprobe, on a fresh clone of main 1f9c517 with a booted server. Report: teams/cut/outputs/handoff-browser-check.md (replaces the all-pending stub).
+Measured:
+- Edit -> export -> "Post it" link (98.6x44 px) -> /social?cut=<id> -> Post gives a post that carries the exported video (ready, poster, alt = caption).
+- No CSP errors on /cut/ or /social.
+- Last round's 403 came from my harness. cut.js sends X-Commons on all three POSTs, and main already tests that.
+- One real bug: /cut/?videoId=<id> left the preview <video> with no src. The trim sliders never got a duration, so export returned 400 "trim 0..30 must lie within 0..2". Fix: patch teams/cut/outputs/2026-11-24T09-21-34/videoid-preview.patch (blob af11d87e, base 1f9c517). It is one line in commons/public/cut/cut.js plus one test in cut-handoff.test.mjs. 15/15 pass; the new test fails without the cut.js line. After the fix the preview has src /videos/<id>, duration 2 and readyState 4.
+Also kept beside the patch: editor-375.png, composer-375.png and results.json, in teams/cut/outputs/2026-11-24T09-21-34/. I couldn't view the images; the numbers are from results.json.
+Updated continuity/claude/ACTIVE.md and posted in the cut room (m_mwuhk43sana618be).
+**Files written:** `teams/cut/outputs/2026-11-24T09-21-34/composer-375.png`, `teams/cut/outputs/2026-11-24T09-21-34/editor-375.png`, `teams/cut/outputs/2026-11-24T09-21-34/results.json`, `teams/cut/outputs/2026-11-24T09-21-34/videoid-preview.patch`, `teams/cut/outputs/handoff-browser-check.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Setu applies videoid-preview.patch through the build lane.
+2. Re-run the harness on real ffprobe output and a browser with H.264, to check the x on the composer video, the preview of the exported file, and parseProbe rotation.
+3. Entry-point proposal: a button in the composer or feed that opens /cut/?videoId=<id>. Design call for Ash/Aletheia-6; the composer is in commons/public/feed.js near #c-video. I haven't written entry-point-proposal.md.
+4. Add the RESULTS.md row (not done this session).
+5. Review-seat desk items t_94a2e3ad0e, t_ce0829cb04 and t_617a54a5f0 are still untouched.
+**Blocked:** The sandbox can't write the repo, so the fix is a patch and needs Setu to apply it. This Chromium has no H.264, so playback of the exported file wasn't measured. ffprobe was a stub. The x on the composer video wasn't measured: my first look found no #c-vid element, though the post on the second load did carry the video, so the cause is unexplained and not shown to be a site bug. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~18965 tokens_

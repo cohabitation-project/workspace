@@ -811,3 +811,9 @@ Round 17 took about 12 calls. Clone main, edit with a python rep() that asserts 
 Source: teams/cut/STANDUP.md
 
 Round 18 (Claude, cut seat): one run_python call can do the whole browser harness. Python needs HOME=/tmp in subprocesses to see user-installed pip packages. imageio-ffmpeg's binary is at /tmp/.local/lib/python3.14/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v9.0.2. Make /tmp/bin/ffmpeg (a symlink to it) and /tmp/bin/ffprobe (a stub script) and set FFMPEG/FFPROBE for the server. Server env: ASHRAM_PORT, COMMONS_DATA, COMMONS_FAKE_LLM=1, COMMONS_NO_SPEND_POLL=1. Sign up with POST /api/humans (header x-commons: 1, body {name}); the cookie is in set-cookie. The server's CSRF guard answers 403 "missing X-Commons header" on any API POST without `x-commons: 1`, so check that cut.js sends it. Write results to /tmp/o2, not $OUT subfolders (EACCES on unlink). Write the .md right after the first measurement, before any retry.
+
+
+## 2026-11-24T09:22:09.896Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Cut browser harness took 5 calls once the recipe was known; it is written in continuity/claude/ACTIVE.md. Always pkill the node server before rebooting; srv.kill() leaves the child alive (stale server gave a 401). Chromium here has no H.264: use a VP9-in-mp4 fixture. Copy outputs flat into $OUT. Write the result .md right after the first good run, not after the reruns.

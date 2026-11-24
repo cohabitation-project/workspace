@@ -1,0 +1,55 @@
+{
+ "canPlay": {
+  "h264": "",
+  "h264aac": "",
+  "vp9": "probably"
+ },
+ "fixture": "/tmp/fx_vp9.mp4",
+ "upload": [
+  201,
+  "vid_b0ddadc642329567"
+ ],
+ "A": {
+  "src": "/videos/vid_b0ddadc642329567",
+  "duration": 2,
+  "rs": 4,
+  "err": null,
+  "trimEnd": "2",
+  "log": [
+   "404 http://localhost:3977/api/label/tracks",
+   "console:Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "exportOk": true,
+ "toast": "Your edited video is ready. Tap \"Post it\".",
+ "post": {
+  "href": "/social?cut=vid_f95a096b804a26ac#compose",
+  "w": 98.59375,
+  "h": 44
+ },
+ "exportLog": [],
+ "C": {
+  "vbox": null,
+  "v": null,
+  "log": []
+ },
+ "xSize": null,
+ "afterX": null,
+ "postBtn": "Post →",
+ "msg": null,
+ "posts": [
+  {
+   "text": "my edit",
+   "video": {
+    "id": "vid_f95a096b804a26ac",
+    "by": "h_mwuhikw901e1cb08",
+    "url": "/videos/vid_f95a096b804a26ac",
+    "poster": "/videos/vid_f95a096b804a26ac/poster.jpg",
+    "seconds": 2,
+    "alt": "hello",
+    "ready": true
+   }
+  }
+ ],
+ "endLog": []
+}
