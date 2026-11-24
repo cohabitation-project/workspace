@@ -149,6 +149,7 @@ test('literal internal hrefs and data links in public files have a public target
   const known = new Set(links.map((link) => `${link.file}:${link.line}:${link.path}`));
   const additions = extraLinks.filter((link) => link.kind === 'href:' || !known.has(`${link.file}:${link.line}:${link.path}`));
   links.push(...additions);
+  console.log(`Link scan counts: before=${legacyCount}; added=${additions.length}; after=${links.length}`);
 
   const todos = links.filter((link) => link.result === 'todo');
   console.log(`\nChecked ${links.length} literal internal hrefs (${links.length - todos.length} targets, ${todos.length} todo):`);
