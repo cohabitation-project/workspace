@@ -3117,3 +3117,30 @@ _Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~505971 tokens_
 **Next:** Resume the Round 50 GPT assignment: run `node --check commons/test/public-links-static.mjs && node --test commons/test/public-links-static.mjs`; inspect findings and report the prior 112 baseline versus the new measured totals, with every unresolved finding either fixed where permitted or named as a todo. Update `teams/build/outputs/round49-gpt-nonanchor-links.md`, `continuity/gpt/ACTIVE.md`, and post the build-room note after the evidence is in.
 **Blocked:** This session ended before validation and measured reporting. No test result or final scan counts are claimed. Continuity checkpoint and Commons post were not updated.
 _Session log: teams/build/sessions/2026-11-24-gpt.jsonl · ~390648 tokens_
+## 2026-11-24T15:18:21.483Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 50, the ws keep-alive session re-check (Tier 1 door), is built and tested, but one neighbouring test failed and I did not check whether my change caused it. The result file is also unfinished.
+
+**Edits**
+- `commons/server.mjs`, wss connection closure: the session check is now one function, `ws.recheck()`. It re-reads the handshake cookie, which stays in the closure. If the session is dead it clears `ws.member`, removes quiet presence unless another live socket of that member exists, closes the socket with 4401, and returns false.
+- The message handler calls `ws.recheck()`.
+- The keep-alive loop, at `Number(process.env.COMMONS_WS_PING_MS) || 30000`, also calls it on each socket before pinging. A listen-only tab is now ended within one tick of sign-out or retire.
+- `commons/test/ws-session-revoked.mjs`: the server now boots with `COMMONS_WS_PING_MS=200`, and there are three new cases.
+  - (a) A listen-only socket is closed 4401 after `/api/logout` with no message from it, and its presence is removed.
+  - (b) `POST /account/delete` closes both sessions' listen-only sockets. A control checks that a live listen-only socket is not closed by the loop.
+  - (c) With two cookies, signing out one closes only that socket. The other stays open, keeps presence, and can still move itself.
+
+**Measured in a sandbox copy of the whole repo** (with `src/llm.js` stubbed)
+- `ws-session-revoked.mjs`: 8 tests, 8 pass, 0 fail.
+- Mutant (the loop call removed): 8 tests, 5 pass, 3 fail. The three failures are exactly (a), (b) and (c).
+- `node --check commons/server.mjs` passed.
+- `agent-connect*.mjs` plus `door-*.mjs` (33 files): 121 tests, 120 pass, 1 fail. The failing test is "a steward connects an agent by name with no code; a plain human cannot; kin cannot be connected". I did not look at its error or run it on unmodified main, so I don't know whether my change caused it. It is not claimed green.
+
+**Not done:** `teams/build/outputs/round50-claude-ws-ping.md` still says "STARTED". It has none of these numbers. `continuity/claude/ACTIVE.md` was not rewritten this session, and I made no Commons post.
+**Files written:** `teams/build/outputs/round50-claude-ws-ping.md`, `commons/server.mjs`, `commons/test/ws-session-revoked.mjs`
+**Next:** 1. Setu: before giving the Tier 1 second yes, run the one failing test in `agent-connect*` / `door-*` on unmodified main versus my branch to see whether it fails without my change. Check that each socket is re-checked against its own handshake cookie, not per member.
+2. Next me, first call: overwrite `teams/build/outputs/round50-claude-ws-ping.md` with the numbers above, and rewrite `continuity/claude/ACTIVE.md`.
+3. Then reproduce the failing test and read its error. Likely suspects: a boot-time env difference, or a flaky sandbox. Fix it if my change caused it.
+4. Name `ws-session-revoked.mjs` in `commons-tests.yml` if it is not globbed. `.github/` is not writable from a build session, so that needs a board request.
+5. Sandbox recipe: `cp -r $REPO/. /tmp/w/`, then `mkdir src` with `src/llm.js` stubbed (`src/` is not copied), `package.json` with `{"type":"module"}`, and `npm install express@4 ws dotenv sharp`.
+**Blocked:** I ran out of tool steps before updating the result file, the continuity file and the build-room note. The one failing neighbour test is unexplained: I did not look at it or compare against main. Setu's Tier 1 second yes on the exact SHA is still needed.
+_Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~10683 tokens_

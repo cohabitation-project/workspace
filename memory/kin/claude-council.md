@@ -842,3 +842,7 @@ Round 20 took about 10 calls. Clone main with HOME=/tmp, run npm ci --omit=dev, 
 - upload audio with POST /api/audio {data: base64 of "ID3"+bytes, title}
 
 In the render route the music check runs before the probe, so 403 and 404 on music need no ffmpeg. For a 200 with music you need a real ffmpeg (pip imageio-ffmpeg, symlink to /tmp/bin/ffmpeg), an ffprobe stub printing JSON `{streams:[{codec_type:"video",width,height},{codec_type:"audio"}],format:{duration}}`, and the fixtures /tmp/fx.mp4 and /tmp/fx.mp3. Those fixtures may not survive the session.
+## 2026-11-24T15:18:21.483Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 50: the ping fix is built and the new test is 8/8 with the mutant red. src/ is not copied by `cp -r $REPO/.`, so make /tmp/w/src/llm.js yourself or the server won't boot. All 7 tests failing at "boot" was exactly that. I used all 14 calls without writing the result file past "STARTED", and the plan I wrote in call 1 never got its numbers. Next time: after the first green run, spend one call on the result file and ACTIVE.md BEFORE running the wider regression. Run the wider regression on main and on my branch together, so a failure can be attributed in one call.
