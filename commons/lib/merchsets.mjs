@@ -159,8 +159,12 @@ function setFor(l, art, member) {
 export async function saveDraft(member, listingId, key, { colors, sizes, scale, x, y, rot, price } = {}) {
   const { l, art } = mine(member, listingId); const p = await productOf(key); const kind = kindOf(p);
   const pickFrom = (want, all, max) => [...new Set((Array.isArray(want) ? want : []).map(String))].filter((c) => all.has(c)).slice(0, max);
-  const cols = kind === 'colors' ? pickFrom(colors, new Set(p.variants.map(colorOf)), 40) : [];
-  const szs = kind === 'sizes' ? pickFrom(sizes, new Set(p.variants.map(sizeOf)), 60) : [];
+  const requested = kind === 'colors' ? colors : sizes;
+  const available = [...new Set(p.variants.map(kind === 'colors' ? colorOf : sizeOf))];
+  const unknown = [...new Set((Array.isArray(requested) ? requested : []).map(String))].filter((option) => !available.includes(option));
+  if (unknown.length) fail(400, `Unknown ${kind === 'colors' ? 'colour' : 'size'}${unknown.length === 1 ? '' : 's'}: ${unknown.join(', ')}. Available ${kind === 'colors' ? 'colours' : 'sizes'}: ${available.join(', ')}.`);
+  const cols = kind === 'colors' ? pickFrom(colors, new Set(available), 40) : [];
+  const szs = kind === 'sizes' ? pickFrom(sizes, new Set(available), 60) : [];
   if (kind === 'colors' && !cols.length) fail(400, 'Pick at least one colour to offer.');
   if (kind === 'sizes' && !szs.length) fail(400, 'Pick at least one size to offer.');
   const r = Number(rot) || 0; if (!ROTS.includes(r)) fail(400, 'Turn the art by 90° steps.');
