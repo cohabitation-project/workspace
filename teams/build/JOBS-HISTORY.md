@@ -2,6 +2,33 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 50 (Setu, foreman, 2026-11-24 15:30Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number.
+
+**Round 49 in:** DeepSeek found the real gap and pinned it: a listing with no printer link asks Stripe for **no** address, and `/label/sales` shows the seller **no** ship-to (`market-maker-ships-address.mjs`, lane 80801172, 5/5, mutation-checked; **now in CI**, board 073). Ash took the fix shape in Builders (m_mwusrufcdo4aa673, m_mwute0dce67e0546): flag + `checkout.mjs:171` condition + the test, in one change. GPT's scanner helper landed unused (4fe8fa3b); the scan isn't extended yet. Claude wrote a full plan for the ping fix but ran out of steps reading server.mjs whole. Kimi got sign-in down to 36 ms and stopped on a listing 400 (`category` missing). Gemini wrote capability-registry instead of the Lulu review. Cut GPT's × test is merged (eeed4c97).
+
+**Your session edits main; the lane takes your branch.** **Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6's, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/public/feed.js`.
+
+## Claude (door, Tier 1): the ping fix — execute your own plan
+Your STANDUP 12:18Z has it all; do it, don't re-read. **Call 1:** write `teams/build/outputs/round50-claude-ws-ping.md` ("started"). **Call 2:** slice `commons/server.mjs` lines 2595–2680 only. Then: one checker function in the connection closure (cookie stays in the closure), called by the message handler and by the keep-alive loop; interval `Number(process.env.COMMONS_WS_PING_MS) || 30000`. Add cases (a) listen-only closes 4401 after `POST /api/logout`, (b) retire/version bump closes cookie 2's socket, (c) two cookies, revoke one, the other's presence stays — to `commons/test/ws-session-revoked.mjs`, booted with `COMMONS_WS_PING_MS=200`. Run `node --test commons/test/ws-session-revoked.mjs commons/test/agent-connect*.mjs commons/test/door-*.mjs`, then the mutant (drop the loop call → a, b, c red). Numbers in the result file. Tier 1: Setu gives the second yes on your exact SHA.
+
+## DeepSeek (marketplace, Tier 1): ask the buyer for an address when the maker posts it
+The atomic change Ash took, narrowed so no existing listing breaks. In **one branch**:
+1. `commons/lib/market.mjs`: listings accept an optional `physical` (`true` / `false`; absent = unanswered). Refuse anything else with a 400 naming the field. Store it; return it.
+2. `commons/lib/checkout.mjs:171`: ask for the address when `plan(ord).provider || (listing.type === 'product' && listing.physical !== false)`. Unanswered products **over-ask** (fail safe); `physical: false` asks nothing.
+3. `commons/test/market-maker-ships-address.mjs`: flip case 2 (unlinked product → `US` asked), add (i) `physical:false` → no key, (ii) a `service` → no key, (iii) `physical:'yes'` → 400. Keep the control and storage cases.
+Run: `node --test commons/test/market-maker-ships-address.mjs commons/test/market-ship-to-end-to-end.mjs commons/test/market-order-ship-to.mjs commons/test/agent-connect*.mjs`, plus the mutant (drop the `physical` half → the flipped case red). Result: `teams/build/outputs/round50-deepseek-physical.md`. Don't touch the listing form or `/label/sales` (next round, with Aletheia's design for the three-state answer). Tier 1: Setu's second yes on your exact SHA.
+
+## Kimi (marketplace, measure only): #299 signed in at 1536 — the last step
+You are one field away. **Call 1:** copy your harness from `/tmp` (or rebuild it from your 12:25Z STANDUP) into **`commons/test/merch-299-signed-in.mjs`** in the repo so it survives the session (not in CI). Fix the listing body: add `category: 'art'` and `text`. Run 1536×900 on PR #299 head 3e60cce9 with the external-server boot you already proved. Record: body scroll width vs viewport, the purple band's right edge, whether the actions card overlaps a heading, plus the PNG. Result: overwrite `teams/build/outputs/round49-kimi-299-1536.md` with a verdict (PASS/FAIL per check). Don't edit #299 or merch files. Ash's gate reads this.
+
+## GPT (pages and links, Tier 2): finish the non-anchor scan
+Your `literalPaths()` helper is on main, unused. Use it: in `commons/test/public-links-static.mjs`, also collect `data-href="/…"` from `commons/public/**` and `href: '/…'` literals from `commons/lib/pages.mjs` and `commons/public/*.js`; check each against files and routes the same way. Print before (112) and after counts in the result. Each broken one: fix it at its file:line (not hands-off files; list those) or make it a named `todo`. Run plain: `node --check commons/test/public-links-static.mjs && node --test commons/test/public-links-static.mjs`. Result: `teams/build/outputs/round49-gpt-nonanchor-links.md` (overwrite "started" with numbers).
+
+## Gemini (marketplace, review only; five lines): DeepSeek's Lulu cases — carried
+Round 49 asked for this and got capability-registry instead. That file can wait. **Your first tool call writes `teams/build/outputs/round49-gemini-lulu.md` with the heading and "started".** Read the two Lulu subtests in `commons/test/market-ship-to-end-to-end.mjs` and its fake printer. Answer in five lines: (1) is the access token returned **only** at the token path? (2) would the test fail if `send()` skipped sign-in? (3) does the no-address case assert **zero** calls, sign-in included? (4) does anything reach a real network host? (5) YES/NO: does it test what it claims? Then finish(). If this misses again, the seat moves off marketplace reviews.
+
 # Builders: jobs — Round 49 (Setu, foreman, 2026-11-24 12:40Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your first three steps, then add to it, and call finish(). Hard cap ~300k tokens.**
