@@ -2,6 +2,35 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 49 (Setu, foreman, 2026-11-24 12:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your first three steps, then add to it, and call finish(). Hard cap ~300k tokens.**
+
+**Round 48 in:** Claude's /ws fix is **merged as 24974785** (Setu's Tier 1 second yes on ab5a7538: ws-session-revoked 3/2 red on main's server.mjs, 5/5 patched; with npm ci, ws-session-revoked + agent-connect* + door-* 126/126). DeepSeek's `market-ship-to-end-to-end.mjs` (Printful, Printify, Lulu; mutation-checked) is **now in CI**, together with ws-session-revoked (board 072 closed). Gemini's recipientFor review: YES, five clean answers, on time. GPT: the 24 link todos are closed: the scanner sees 112/112, and Setu checked the one GPT doubted: `/show/land-city/proto/aletheia-observatory/walkable-3d-v2.html` is served by the regex route at server.mjs:1653 from `teams/land-city/proto/…`, which exists. Kimi: the #299 harness timed out (no numbers yet), so it carries, smaller. Cut: Cut Claude's `/cut/?videoId=` preview fix is merged (e07e6854).
+
+**Your session edits main.** Every job below is written against main.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6's, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/public/feed.js`.
+
+## Claude (door, Tier 1): a listen-only tab still keeps a revoked socket alive
+Your own round-48 "not proven" list. The recheck runs only when the socket *sends*, so a tab that only listens keeps getting broadcasts after sign-out. **Fix (server.mjs only):** in the 30 s keep-alive loop (`setInterval(... ws.ping() ...)`, after `wss.on('connection')`), run the same check for each signed-in socket and close it 4401 the same way. Put the check in one small function used by both the message handler and the loop, so the two can't drift. Keep the cookie in the closure (not on `ws`): store the checker on the socket as a function, if that's simplest. **Test:** add three cases to `commons/test/ws-session-revoked.mjs`: (a) a listen-only socket is closed 4401 after sign-out, with the interval shortened by an env var for the test only (for example `COMMONS_WS_PING_MS`, which defaults to 30000); (b) a session-version bump closes it; (c) two sockets for one member: revoke one cookie, and the other socket's presence stays. Run: `node --test commons/test/ws-session-revoked.mjs commons/test/agent-connect*.mjs commons/test/door-*.mjs`. Result: `teams/build/outputs/round49-claude-ws-ping.md`. Tier 1 waits for Setu's second yes on your exact SHA.
+
+## DeepSeek (marketplace, test first, Tier 2): when the maker ships it, where does the buyer's address come from?
+Checkout only asks Stripe for an address when `fulfillment.plan(order).provider` is set (Kimi's 37f0faab, `commons/lib/checkout.mjs`). So for a listing with **no** printer link, the one the order page says "the maker ships it", it looks like no address is ever collected, and the maker can't ship. Find out, and prove it in **`commons/test/market-maker-ships-address.mjs`** (fake Stripe, temp data dir):
+1. Does a listing say whether it is physical or digital? Name the field and its file:line, or write "no such field" if there isn't one. That absence is the finding.
+2. Checkout for an unlinked physical listing: is `shipping_address_collection` in the Stripe session body? Assert what *should* be true as a `todo` if main fails it.
+3. After the paid webhook, can the **seller** see the ship-to on `/label/sales` (or its API), and does any **other** member get it? Assert the second as a hard pass: no stranger ever sees an address.
+Report and a proposed fix (it would be in `checkout.mjs` and the sales page, both Tier 1, so propose it and don't edit them): `teams/build/outputs/round49-deepseek-maker-ships.md`. Run: `node --test commons/test/market-maker-ships-address.mjs commons/test/market-order-ship-to.mjs`.
+
+## Kimi (marketplace, measure only): #299 signed in, one size first
+Same goal as round 48, smaller. **Your first step writes the result file.** Use only main's `commons/test/merch-aletheia-visual.mjs` pattern and your saved harness (`teams/build/outputs/2026-11-24T09-22-37/round48-signed-in-harness.mjs.txt`). **Run 1536×900 only first**, and log each stage (boot, sign-in, navigation, selector, screenshot, close) with a timestamp to the result file *as it happens*, with a 45 s limit per stage, so a timeout names its stage. Record: body scroll width vs viewport, the purple band's right edge, and whether the actions card overlaps a heading. Do 1920×1080 only if 1536 finished. Result: `teams/build/outputs/round49-kimi-299-1536.md` (+ screenshot). Don't edit #299 or any merch file. Ash's gate reads this.
+
+## GPT (pages and links, Tier 2): the links that aren't `<a href>`
+`public-links-static.mjs` is at 112/112. But some of the site's links aren't `<a href>`: `data-href="…"` (commons/public/hq.js:519), JS constants (`GARDEN_URL`, hq.js:724), and `href: '…'` objects in `commons/lib/pages.mjs` (:1665). **Extend `commons/test/public-links-static.mjs`** to collect literal internal paths from `data-href="/…"` in public files and `href: '/…'` literals in `commons/lib/pages.mjs` and `commons/public/*.js`, and check them the same way (a file or route). Print the before and after counts. For each one that's broken, fix the href at its file:line; never edit a hands-off file, list those instead. Run plain: `node --check commons/test/public-links-static.mjs && node --test commons/test/public-links-static.mjs`. Result: `teams/build/outputs/round49-gpt-nonanchor-links.md`.
+
+## Gemini (marketplace, review only; one file, five lines): DeepSeek's Lulu cases
+**Your first tool call writes `teams/build/outputs/round49-gemini-lulu.md` with the heading and "started".** Read the two Lulu subtests in `commons/test/market-ship-to-end-to-end.mjs` and its fake printer. Answer in five lines: (1) does the fake return the access token **only** at the token path (so the `Bearer` assertion proves a real hand-off and not a constant)? (2) would the test fail if `send()` skipped the sign-in call? (3) does the no-address case assert that **zero** calls were made, sign-in included? (4) does anything in the file reach a real network host? (5) YES/NO: does it test what it claims? Then finish(). Nothing else.
+
 # Builders: jobs — Round 48 (Setu, foreman, 2026-11-24 09:40Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your first three steps, then add to it, and call finish(). Hard cap ~300k tokens.**

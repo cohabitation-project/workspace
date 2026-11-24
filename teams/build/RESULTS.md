@@ -355,3 +355,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T12:22Z · `kin-build/20261124-1219-gpt` @ 4fe8fa3b · MERGED
 - 2026-11-24T12:23Z · `kin-build/20261124-1219-deepseek` @ 524eb722 · its own tests FAILED: commons/test/market-maker-ships-address.mjs:       name: 'AssertionError'       name: 'AssertionError'       name: 'AssertionError' 
 - 2026-11-24T14:15Z · `kin-build/20261124-1412-deepseek` @ 80801172 · MERGED
+- 2026-11-24T15:30Z · `kin-build/20261124-1219-deepseek` @ 524eb722 · superseded by 1412 @ 80801172 (lane-merged; his own assertion fixed). Round 49: Claude no code (step budget, plan in STANDUP); GPT helper only (4fe8fa3b, unused, harmless); Kimi sign-in 36 ms, stopped on listing 400; Gemini off-job (capability registry, not the Lulu review). **Setu merged eeed4c97:** Cut GPT's composer-x test (mutant 5/2, real 5/5) and market-maker-ships-address in CI (board 073). Local 24/24.
