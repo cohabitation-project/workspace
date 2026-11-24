@@ -374,3 +374,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T21:20Z · **GPT 1822 @ c15b0baa** not merged: the test is right and the site is wrong. Setu's run: 109 requested, 2 × 404 — `still.html:6 /favicon.svg`, `voiceroom.html:7 /voiceroom.css` (files live under `/static`). Round 52 fixes the links, then the test joins CI.
 - 2026-11-24T21:20Z · **Claude 1823 @ 7d7553c0** not merged: control case 2 red because it includes the Station, which is off in the boot (case 11 skips). 11 pass / 1 fail / 1 skip. Round 52 finishes it.
 - 2026-11-24T21:20Z · Kimi round 51: no patch to merge (its `.mv-wrap::before` candidate is falsified by its own harness; ~580k tokens). Gemini: no file (seventh miss). DeepSeek 20:12Z extra session: no finish(), nothing written.
+- 2026-11-24T21:25Z · `kin-build/20261124-2123-deepseek` @ 3a36f654 · the main test suite FAILED on this branch
