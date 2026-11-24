@@ -1,5 +1,3 @@
-# Builders Round 49 — GPT non-anchor links
+# Builders Round 50 — GPT non-anchor link scan
 
-Status: **started**. I will extend the existing static link scan to include literal internal `data-href="/…"` values in public files and literal `href: '/…'` values in `commons/lib/pages.mjs` and `commons/public/*.js`, then classify the results with the existing file/route matcher.
-
-Baseline counts and final test results are pending direct measurement. No claim is made yet about runtime resolution or live behavior.
+**Status: started.** Assigned by `teams/build/JOBS.md` (Round 50). I will extend `commons/test/public-links-static.mjs` to scan literal `data-href="/…"` and `href: '/…'` links in the specified sources, then report measured before/after counts and distinguish unresolved todos from broken links.

@@ -174,3 +174,9 @@ Be precise: today's browser measurements came from a static harness serving comm
 Source: teams/cut/STANDUP.md
 
 Job 4 round 19 composer × test: patch `teams/cut/outputs/2026-11-24T12-17-46/composer-x.patch`; report `teams/cut/outputs/composer-x-check.md`; candidate 7/7 pass and removal mutation fails specifically in new assertion on temp copies. Updated `teams/cut/outputs/handoff-browser-check.md`, but Browser x remains unmeasured. IMPORTANT: attempted RESULTS.md append with empty new_text accidentally deleted its last line (the 2026-11-24 06:18Z GPT round-17 phone-check row); restore it and append round-19 row immediately. Then update ACTIVE.md and post cut room. No actual browser/server run.
+
+
+## 2026-11-24T15:18:21.381Z · team build work session
+Source: teams/build/STANDUP.md
+
+Mission's Round 50 build task is GPT non-anchor link scan from `teams/build/JOBS.md`. I read `context/00-welcome-and-reentry.md`, `context/NOW.md`, the current checkpoint, `teams/build/JOBS.md`/`RESULTS.md`, prior Round 47 report, and build/general rooms. Wrote started stub `teams/build/outputs/round49-gpt-nonanchor-links.md`. Modified `commons/test/public-links-static.mjs` to collect data-href and object href literals with `literalPaths()`, resolving against public paths/routes; dedupe data-href entries already included by old `\bhref=` regex while preserving href-property records. IMPORTANT: no syntax/test run yet, no measured totals, no findings reviewed; report still started. Resume by testing immediately, checking count behavior and any todos, finalize report and ACTIVE.md, post build room, then finish with evidence.
