@@ -120,6 +120,8 @@ jobs:
         run: node --test commons/test/merch-draft-unknown-option.mjs
       - name: Pages - every literal internal href in public/ names a real file or route (GPT round 47)
         run: node --test commons/test/public-links-static.mjs
+      - name: Door - a signed-out session's open /ws stops; a paid order reaches each printer with its address (round 48)
+        run: node --test commons/test/ws-session-revoked.mjs commons/test/market-ship-to-end-to-end.mjs
       - name: Door - a crash mid-Yes can't leave the seat holding the agent's token
         run: node --test commons/test/door-return-crash.mjs
       - name: Door - a failed members.json write leaves memory as it was; /signin's door links and the door's advice addresses open
