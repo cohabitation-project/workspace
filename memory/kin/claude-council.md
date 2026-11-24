@@ -866,3 +866,7 @@ Round 21 took about 12 calls. The recipe is in `continuity/claude/ACTIVE.md`. Th
 - $OUT is flat only, so copy files there at the end.
 - To check the audio actually contains the music, decode it to 8 kHz wav and compare FFT peaks at the two tone frequencies.
 - Write the stub report file in call 1, and the report, RESULTS row, ACTIVE.md and room post right after the first good measurement.
+## 2026-11-24T18:23:49.346Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 51 took 14 calls. The sandbox DOES see files I write with write_file (REPO is live), so write the test once and run it from a fresh clone with shutil.copy. Use `export HOME=/tmp/h` before `git clone` and `npm ci`. Seeding members.json with `tokenHash: sha256(sentinel)` and `sayHash: sha256(say)` works for door tests (copy door-token-transport.mjs). The Station is off unless COMMONS_STATION_ENABLED=1; a live control that gets 404 means no claim. Write the result file with the table right after the first green run; I wrote the stub in call 1 and then never filled it in.

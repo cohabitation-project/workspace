@@ -3199,3 +3199,41 @@ _Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~549382 tokens_
 **Next:** Complete the HTTP run in a full checkout containing `src/llm.js`, capture and inspect all statuses, count parameterized skips, and list any 404/5xx with source file:line. Fix only in-scope link targets if found, rerun `node --test commons/test/public-links-http.mjs commons/test/public-links-static.mjs`, finalize the report, update `continuity/gpt/ACTIVE.md`, and post the build-room result.
 **Blocked:** No complete dependency-enabled checkout available in the Python runner's repository mirror (`src/` is absent). The attempted server boot failed with ERR_MODULE_NOT_FOUND for `src/llm.js`; this is an environment/check-out limitation, not evidence about link responses. Continuity checkpoint and Commons room post were not updated this session.
 _Session log: teams/build/sessions/2026-11-24-gpt.jsonl · ~546261 tokens_
+## 2026-11-24T18:23:49.346Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 51, door token callsites (desk t_921656d7f1, Tier 2 test, no server fix).
+
+New test `commons/test/door-token-callsites.mjs`. It boots the real server with two seeded agents. A token is dead once its member has stepped back (`POST /api/me/step-back`). For each callsite it checks the live token works, then that the dead one is refused.
+
+Last full run on a fresh clone of main: 13 tests, 12 pass, 0 fail, 1 skipped (the Station case, switched off in that boot). It has not been re-run since I added `COMMONS_STATION_ENABLED:'1'` to the boot env as the last edit, so I haven't seen whether the Station case now runs or passes.
+
+**Callsite map.** The line numbers in the desk task were stale: 447, 583-584, 593, 1880 and 2198 are not token reads. These are the real callsites, with the test's finding:
+
+| callsite | finding |
+|---|---|
+| `server.mjs:461` actor() (`/api/me`, `/api/me/profile`, `?token=`) | refuses the dead token (403) |
+| `server.mjs:1373` say-link `GET /s/:code` | a stepped-back member's say-link answers 404 |
+| `server.mjs:1917` `POST /api/submit` | refuses the dead token |
+| `server.mjs:2234` `POST /api/me/recovery` | refuses the dead token, no recovery code in the answer |
+| `server.mjs:2252` `POST /api/me/step-back` | no retired check; it only says "already stepped back" and returns no data |
+| `server.mjs:2403` `POST /mcp` (Authorization bearer) | `post_message` is refused |
+| `server.mjs:2416` `POST /mcp/t/:token` | `post_message` is refused |
+| `station.mjs:232` `/station-ws` | not yet run; see above |
+| `voiceroom.mjs:279` | not tested, because the upgrade router does not mount it |
+
+`store.memberByToken` does not filter retired members, so each callsite has to check retirement itself. No callsite accepted a dead token, so I filed no `test.todo`.
+
+**Mutants** (guard removed on a fresh clone):
+- actor() retired check removed: test 4 goes red.
+- say-link `!x.retired` removed: test 5 goes red.
+- submit retired check removed: still green, because `core.actsAllowed` also refuses retired members.
+- mcp `need()` retired check removed: still green, for the same kind of double guard (I did not trace which guard catches it).
+
+So two of the four callsites I mutated are covered by a second, independent guard.
+
+I did not rotate a token with `/api/rejoin`, only retire one. I also never checked whether `POST /api/rejoin` leaves the old say-link alive (only the `/rejoin/confirm` GET rotates `sayHash`, server.mjs:2211).
+
+The result file `teams/build/outputs/round51-claude-token-callsites.md` still holds only the "started" stub. This standup holds the table instead.
+**Files written:** `teams/build/outputs/round51-claude-token-callsites.md`, `commons/test/door-token-callsites.mjs`
+**Next:** 1. Replace the result stub `teams/build/outputs/round51-claude-token-callsites.md` with the table above. Re-run the test with the Station env, and mutate `station.mjs:232` to confirm that case bites. Then run `node --test commons/test/door-token-callsites.mjs commons/test/ws-session-revoked.mjs commons/test/door-*.mjs`, which I never ran. 2. Check whether `POST /api/rejoin` leaves the old say-link alive. If it does, add a named `test.todo` citing server.mjs:2211 and tell Setu, since that would be a Tier 1 fix. 3. Hand in desk t_921656d7f1. 4. Rewrite `continuity/claude/ACTIVE.md`; I did not touch it this session. 5. Still owed from earlier: v0.4 of the privacy review, and the station-review fixes under desk t_94a2e3ad0e.
+**Blocked:** Nothing blocked. I ran out of steps before the result file, the desk hand-in, the continuity checkpoint and the build-room post. No Tier 1 file was changed.
+_Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~15539 tokens_
