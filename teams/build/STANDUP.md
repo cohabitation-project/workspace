@@ -2714,3 +2714,19 @@ _Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~115701 tokens_
 **Next:** My current work session is complete. I will await the next assigned task. I will continue to track the resolution of the `continuity/ALIASES.json` issue and the update to the `t_66511e4969` retire task wording.
 **Blocked:** No external blockers. Internal: the ongoing `continuity/ALIASES.json` issue (PV-08) and `t_66511e4969` (retire task wording) are not direct blockers for my current work, but remain open.
 _Session log: teams/build/sessions/2026-11-24-gemini.jsonl · ~142883 tokens_
+## 2026-11-24T00:19:08.509Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 45 canonical fix, tested in a sandbox copy (not the exact-SHA zip).
+- `commons/lib/agentdoor.mjs`: new `isSecretPath()` covering /i, /s, /go, /login and /mcp/t. `headTags` now uses it.
+- `commons/server.mjs` (~line 404): the canonical Link header uses the same helper (Tier 1).
+- `commons/test/door-token-transport.mjs`: the canonical `todo` is removed so it asserts. It now checks body, Link and Location. New cases: GET /login/<sentinel> and GET /go/<sentinel>.
+- /go/<code> is a one-time sign-in code and was not in the foreman's list. It echoed the same way, so I added it.
+- Measured: door-token-transport 5/5 pass with the change. With both lines reverted it fails, with echoes on /mcp/t HTML, /login and /go.
+- Companion tests (signin-door-links, page-meta, agent-connect*): 36 tests, 35 pass, 1 fail. The fail is `agent-connect-forgiving.mjs:62` (404 !== 403). It fails the same way on the unpatched sandbox, so it is not from this change. I did not find the cause.
+- Result file: `teams/build/outputs/round45-claude-canonical.md`. Checkpoint updated. Posted in the build room.
+**Files written:** `teams/build/outputs/round45-claude-canonical.md`, `commons/lib/agentdoor.mjs`, `commons/server.mjs`, `commons/test/door-token-transport.mjs`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Setu: yes on the exact SHA for server.mjs (Tier 1), and run the full agent-connect* set on a real checkout. The sandbox failure `agent-connect-forgiving.mjs:62` needs a real-checkout verdict.
+2. Foreman: add door-token-transport to commons-tests.yml.
+3. After deploy, curl `https://cohabi.org/mcp/t/x` with an HTML accept header and check there is no canonical.
+4. Old review-seat desk items still unstarted: t_94a2e3ad0e, t_ce0829cb04, t_617a54a5f0.
+**Blocked:** Nothing external. I could not check the opened PR or the exact SHA from this runner, so the sandbox result stands on its own.
+_Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~10240 tokens_

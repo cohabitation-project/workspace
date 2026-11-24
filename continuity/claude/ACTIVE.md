@@ -1,18 +1,16 @@
-# Claude — ACTIVE checkpoint, updated 2026-11-23 ~21:30Z
+# Claude — ACTIVE checkpoint, updated 2026-11-24 ~00:45Z
 
-## Cut seat (this session)
-- Round 13 FINISHED: `teams/cut/outputs/2026-11-23T21-17-59/placement.patch` (base main ed23cd2, blob 915528c0, 19 files, commons/ only, hunks A B C E D + editor page). Applied tree measured: 83 tests, 78 pass, 0 fail, 5 skipped (4 ffmpeg, 1 by-design pin). Unplaced path 24/24. RESULTS row, place/README section, room post m_mwtrpdis158a419d all written.
-- Waiting: GPT second read of the patch; Setu applies + real-ffmpeg run + `node teams/cut/place/live-check.mjs https://cohabi.org`.
-- Open: live-check's 2 surviving mutants (GPT's round-13 test hardening may have killed them — check RESULTS); add cut tests to commons-tests.yml (foreman/Setu); patch lives in flat outputs/ folder (run_python can't make subfolders), regenerate with build-placement-patch.py.
+## Build seat (Round 45)
+- DONE: canonical fix. `agentdoor.isSecretPath` (/i /s /go /login /mcp/t) used in agentdoor.mjs headTags and server.mjs Link header; door-token-transport.mjs asserts (todo removed), checks body+Link+Location, adds /login and /go cases. Sandbox: 5/5 pass; red-on-old shows 3 echoes. Result: `teams/build/outputs/round45-claude-canonical.md`.
+- Open: `agent-connect-forgiving.mjs:62` fails (404!==403) in my sandbox on both old and new code — verify on a real exact-SHA checkout. Waits for Setu's yes (Tier 1). Add door-token-transport to commons-tests.yml (foreman).
+- Round 44 stub `round44-claude-token-transport.md` is superseded by e00ff687 merge + this round.
+
+## Cut seat
+- Round 13 patch `teams/cut/outputs/2026-11-23T21-17-59/placement.patch`; Job 4 placed (99e6ec10 per foreman). Nothing owed unless live-check surfaces something.
 
 ## Review seat
-- WUW R1 privacy revision: `teams/review/wake-up-write-r1-privacy-review-v0.2.md`, desk `t_c35cb65b18` awaiting Awen's review. Couldn't open Awen's return note; the 7 points were rebuilt from notes; iOS API statements inferred.
-- Old desk items unstarted: `t_94a2e3ad0e` consent checklist + recording law; `t_5ad8ffe1dc` LayerV clearance (stale); `t_ce0829cb04` repo audit; `t_617a54a5f0` wallet threat model.
-- Owed: deploy `~/bin` hash check is drift detection, not provenance; deploy.sh sidecar gaps are Setu/Geoffrey's.
-
-## Build seat
-- Round 41 door-repair-guards done. Open: add new tests to commons-tests.yml. Unwalked: rejoin under old name after revoke; production door proof.
+- `teams/review/wake-up-write-r1-privacy-review-v0.2.md` awaiting Awen. Old desk items unstarted: t_94a2e3ad0e consent checklist, t_ce0829cb04 repo audit, t_617a54a5f0 wallet threat model.
 
 ## To the next me
-- Recipe for patch test (3 calls): clone main twice (/tmp/A, /tmp/B), `python3 build-placement-patch.py /tmp/A p.patch` with REPO env, in B `git apply`, copy live-check*.mjs + route-wire.md into B/teams/cut/..., `HOME=/tmp npm_config_cache=/tmp/npmc npm ci --omit=dev`, then node --test. Write RESULTS/README/ACTIVE immediately after the first green run.
-- Review seat can't write commons/. `git hash-object` gives the blob id.
+- Sandbox recipe (4 calls): cp -r $REPO/commons /tmp/w/commons; add /tmp/w/src/llm.js (`export const chat=async()=>"";`) and package.json {"type":"module"}; `HOME=/tmp/h npm_config_cache=/tmp/npmc npm install express@4 ws dotenv sharp`; node --test. run_python cannot write the repo: use edit_file for repo changes, run_python only to read/test.
+- Write the result file right after first green.

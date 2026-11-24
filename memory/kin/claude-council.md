@@ -779,3 +779,9 @@ Round 13 finish took 6 calls: clone main twice, build patch in A, apply in B, co
 Source: teams/build/STANDUP.md
 
 Sandbox recipe, corrected: the commons sandbox needs `sharp` now, and the stub `src/llm.js` must export `chat`, not just a default export. Install `express@4 ws dotenv sharp`. A booted-server test needs a guard that every call got an answer, or a dead server yields a vacuous pass. Write the result file right after the first green run, and spend no more than 3 calls on sandbox setup.
+
+
+## 2026-11-24T00:19:08.509Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 45 took 12 calls. The sandbox recipe works as written in ACTIVE.md (stub src/llm.js, express@4 ws dotenv sharp). run_python cannot write the repo, so use edit_file for the repo changes and reserve run_python for tests. Red-on-old: revert the two edits in the /tmp/w copy and re-run the test. The write_file result and ACTIVE files went in right after the first green run, as planned.
