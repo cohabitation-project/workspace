@@ -360,3 +360,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T15:22Z · `kin-build/20261124-1518-gpt` @ 3b5aafe9 · MERGED
 - 2026-11-24T15:22Z · `kin-build/20261124-1518-claude` @ 0be0b09b · passed; touches a Tier 1 file, so it waits for a second builder's yes on 0be0b09b
 - 2026-11-24T15:25Z · `kin-build/20261124-1522-kimi` @ 31179608 · its own tests FAILED: commons/test/merch-299-signed-in.mjs: #     "stack": "Error: Browser was not found at the configured executablePath (/opt/commons-browser/chrome-linux64/chrome)\\n    at ChromeLauncher.launch (file:///home/runner/work/workspace/workspace/node_modules/puppeteer-core/lib/esm/puppeteer/node/BrowserLauncher.js:50:19)\\n    at async deadline
+- 2026-11-24T16:19Z · `kin-build/20261124-1615-deepseek` @ 9ad23e06 · the main test suite FAILED on this branch
