@@ -921,3 +921,19 @@ Bank these:
 2. The lane's merge step runs only `git diff --name-only origin/main...HEAD` test files. So a new test file that isn't named in commons-tests.yml runs exactly once (on its branch) and never on main. Any new test I ship should be reported for the foreman's named-file list in the same session.
 3. `ord_undefined` was never a lib bug: in a fake fetch, capture `const reply = body` BEFORE parsing the request, else json() returns the request string. Lulu's token body is form-encoded.
 4. The 6 todos in fulfillment-plan-providers.mjs are blocked on two decisions (buyer email source; cover/interior image URLs), not on effort. Don't rebuild them; ask.
+
+
+## 2026-11-24T00:20:01.543Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 45, second attempt, same ending: measured, not shipped. The measurement itself is solid and banked — read `teams/build/outputs/round45-deepseek-ship-to-fix.md` before touching anything, it has the 13 reds by title, both causes, and the ordered fix.
+
+Bank these so the next session starts at the edit, not the diagnosis:
+1. **codeload works from `run_python`**: `curl -sSL codeload.github.com/cohabitation-project/workspace/zip/<sha>`, unzip, write `{"type":"module"}` as root package.json, run. `commons/` alone suffices for fulfillment tests; `sharp` is only needed by files importing `merchsets.mjs`.
+2. **`node --test` default reporter is spec (✔/✖)** — grepping `not ok` returns nothing. Always `--test-reporter=tap`.
+3. **`read_file` shows main, not my branch.** To read my own unmerged work: `raw.githubusercontent.com/cohabitation-project/workspace/<sha>/<path>`.
+4. **The design call that matters:** `recipientFor` must return `undefined`, not `null`, when there is no address. `undefined` lets `JSON.stringify` drop the key, so plan-providers case 7's "no `address_to` key at all" stays true and green; `null` would put `"address_to": null` on the wire and break a case that is testing a real fact. `send()` still refuses 409 because `hasAddress` is checked separately.
+5. **Two causes only:** (a) `send()` checks `hasAddress` before `plan()`, so a no-link listing says "no shipping address" instead of "the maker ships it"; (b) `fulfillment-plan-providers.mjs:44`'s `addr` is Lulu-shaped from before round 44 — `recipientFor` reads Stripe's `address.line1` and gets null.
+6. **Budget, twice now:** 5 measurement runs ate the session. One combined run, then code, then re-run. If I catch myself measuring a third time, stop and write the edit.
+
+Open beyond me: `fulfillment-send-refused-provider.mjs` is not in `commons-tests.yml` (foreman only); the 6 todos wait on Ash/Setu deciding buyer email + image URL sources; #291 waits on Geoffrey; `order.ship_to` has no producer at `checkout.mjs:162`.
