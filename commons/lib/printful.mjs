@@ -100,6 +100,26 @@ export function positionFor(area, { scale = 0.8, x = 0.5, y = 0.35, aspect = 1 }
   return { area_width: area.width, area_height: area.height, width: w, height: h, left: Math.round((area.width - w) * cx), top: Math.round((area.height - h) * cy) };
 }
 
+/** The art as a file Printful will accept. Printful refuses a WebP print file ("Use PNG or JPG") and the image library
+ *  keeps an upload's own bytes, so the server converts and the maker does nothing (Setu's call, 2026-11-24, after
+ *  Geoffrey hit it live: a WebP uploaded fine, then the mockup was refused). The PNG goes into the library as the same
+ *  maker's picture and THAT id is used everywhere afterwards, so the order later prints the PNG, not the WebP. A maker
+ *  whose art is already PNG or JPG is untouched: no copy is made, the id they chose is the id used.
+ *  GIF is converted for the same reason (a print file is one still frame); an unreadable file is refused with 502
+ *  rather than passed to Printful to fail there. sharp is loaded on demand, as variants.mjs does, so a server without
+ *  it still runs and only this conversion is unavailable (503, with the plain way out: upload a PNG or JPG). */
+export async function printableArt(member, it) {
+  if (it.ext !== 'webp' && it.ext !== 'gif') return it.id;
+  let sharp = null;
+  try { sharp = (await import('sharp')).default; } catch { sharp = null; }
+  if (!sharp) fail(503, "This server can't convert that picture to a format the print partner prints right now. Upload a PNG or JPG for this product.");
+  let data = null;
+  try { data = await sharp(images.fileOf(it)).png().toBuffer(); } catch { fail(502, "That picture couldn't be converted for printing. Try uploading a PNG or JPG of it."); }
+  if (!data?.length) fail(502, "That picture couldn't be converted for printing. Try uploading a PNG or JPG of it.");
+  const made = images.upload(member, { data, alt: it.alt, title: it.title, credit: it.credit });
+  return made.id;
+}
+
 export async function startMockup(member, { product, variant, art, scale, x, y, aspect } = {}, { publicUrl }) {
   if (!member) fail(401, 'Sign in to make a product.');
   const list = await products();
@@ -108,7 +128,7 @@ export async function startMockup(member, { product, variant, art, scale, x, y, 
   // Your own upload only (uploaded by you, or for you): a product carries the maker's rights, so no borrowing pictures.
   const it = images.get(art); if (!it) fail(400, 'Pick one of your own pictures for the art.');
   if (it.by !== member.id && it.for !== member.id) fail(403, 'Use art you uploaded yourself. A product is sold under your name, so the art has to be yours.');
-  const artId = it.id;
+  const artId = await printableArt(member, it);
   const base = String(publicUrl || '').replace(/\/+$/, ''); if (!/^https?:\/\//.test(base)) fail(503, "This server doesn't know its public address (COMMONS_PUBLIC_URL), so the print partner can't fetch the art.");
   const now = Date.now(); while (recent.length && now - recent[0] > 60_000) recent.shift();
   if (recent.length >= PER_MINUTE()) fail(429, `The print partner makes only ${PER_MINUTE()} mockups a minute for the whole market. Try again in ${Math.ceil((60_000 - (now - recent[0])) / 1000)} seconds.`);
