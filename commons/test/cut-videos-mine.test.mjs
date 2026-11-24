@@ -1,4 +1,4 @@
-// Cohabi Cut on OpenCut (2026-11-24): GET /api/videos?by=me lists the signed-in member's OWN videos, for the \"From Cohabi\" tab.
+// Cohabi Cut on OpenCut (2026-11-24): GET /api/videos?by=me lists the signed-in member's OWN videos, for the "From Cohabi" tab.
 // Boots the real commons/server.mjs on a temp data dir (no ffmpeg needed: the music check in handleCutRender runs before any probe).
 import test from "node:test";
 import assert from "node:assert/strict";
