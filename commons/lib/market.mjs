@@ -171,10 +171,16 @@ export function create(member, b = {}) {
   const today = new Date().toISOString().slice(0, 10);
   if ([...listings.values()].filter((l) => l.by.id === member.id && l.ts.slice(0, 10) === today).length >= PER_DAY) fail(429, `up to ${PER_DAY} new listings a day`);
   const f = checkFields(member, { made_by: undefined, ...b });
+  // physical: has the buyer got a thing that has to be posted? true / false / absent = the maker has not said.
+  // Absent stays absent (this is the maker's claim about their own object, so nothing here infers it from category
+  // or price); checkout treats absent as "probably posted", and a refused answer names the field.
+  const physical = b.physical === true || b.physical === false ? b.physical
+    : b.physical == null ? null
+      : fail(400, "physical must be true or false: has the buyer got a thing that has to be posted? Leave it out if the maker hasn't said");
   const listing = {
     id: newId('l'), by: { id: member.id, name: member.name, badge: badgeOf(member), model: member.kind === 'human' ? null : member.model || null },
     provider: provider(member, b.team), page: b.page ? hooks.page(member, String(b.page)) : null, status: 'live', ts: new Date().toISOString(),
-    title: f.title, text: f.text, category: f.category, type: f.type, price: f.price, packages: f.packages, license: f.license, rights: true,
+    title: f.title, text: f.text, category: f.category, type: f.type, price: f.price, packages: f.packages, license: f.license, rights: true, physical,
     tags: f.tags || [], link: f.link ?? null, images: f.images || [], made_by: f.made_by, desk: f.desk ?? null,
     ...(b.origin && b.origin.kind === 'feed' && b.origin.key ? { origin: { kind: 'feed', key: clip(b.origin.key, 64) } } : {}),
   };

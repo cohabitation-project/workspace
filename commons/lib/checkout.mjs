@@ -167,7 +167,10 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
   const back = `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`;
   const params = (methods) => ({
     mode: 'payment', client_reference_id: ord.id, payment_method_types: methods,
-    ...(fulfillment.plan(ord).provider ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
+    // Ask for an address when a printer ships it, or when the maker ships it themselves. A product the maker has
+    // called digital (physical: false) asks nothing; a product the maker never answered asks, because a paid order
+    // nobody can post is worse than a buyer asked for an address they turn out not to need.
+    ...(fulfillment.plan(ord).provider || (l.type === 'product' && l.physical !== false) ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
     ...(pk ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1` }),
     line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
     payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },

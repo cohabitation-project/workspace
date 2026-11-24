@@ -92,14 +92,40 @@ test('a maker-shipped order collects no shipping address, though a printer order
       assert.equal(fulfillment.plan({ listing: printed, id: printedOrder.id }).provider, 'printful');
     });
 
-    await t.test('the same listing without the printer link asks for no address at all', async () => {
+    await t.test('a product the maker never answered also asks: the maker is the shipper, and it is posted', async () => {
       assert.equal(fulfillment.plan({ listing: makerShips, id: 'ord_probe' }).provider, null, 'no provider: the maker is the shipper');
       makerOrder = await start(makerShips);
-      assert.equal(
-        [...makerOrder.body.keys()].some((k) => k.startsWith('shipping_address_collection')),
-        false,
-        'a maker-shipped product is still a thing that must be posted, and its checkout collects nothing',
+      assert.deepEqual(
+        makerOrder.body.getAll('shipping_address_collection[allowed_countries][0]'),
+        ['US'],
+        'nobody has said this one is digital, so the buyer is asked: over-asking is a nuisance, a paid order nobody can post is not',
       );
+    });
+
+    await t.test('a product the maker calls digital asks for no address', async () => {
+      const digital = market.create(seller, {
+        title: 'A download, not a parcel', category: 'art', type: 'product', price: { mode: 'fixed', amount: 25 },
+        text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights', physical: false,
+      });
+      const o = await start(digital.id || digital.listing?.id);
+      assert.equal([...o.body.keys()].some((k) => k.startsWith('shipping_address_collection')), false);
+    });
+
+    await t.test('a service is never posted, whatever its physical answer says', async () => {
+      const service = market.create(seller, {
+        title: 'An hour of my time', category: 'services', type: 'service', price: { mode: 'fixed', amount: 40 },
+        text: 'A test-only service', rights: true, made_by: 'human', license: 'all-rights', physical: true,
+      });
+      const o = await start(service.id || service.listing?.id);
+      assert.equal([...o.body.keys()].some((k) => k.startsWith('shipping_address_collection')), false,
+        'the type decides: a service has nothing to post, even if the maker answered about shipping');
+    });
+
+    await t.test("physical:'yes' is refused, and the answer names the field", () => {
+      assert.throws(() => market.create(seller, {
+        title: 'A sloppy answer', category: 'art', type: 'product', price: { mode: 'fixed', amount: 25 },
+        text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights', physical: 'yes',
+      }), (e) => e.status === 400 && /physical/.test(e.message));
     });
 
     await t.test('storage is not the gap: if Stripe did send an address, handleEvent keeps it', () => {
