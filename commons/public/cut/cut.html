@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101114">
+  <title>Cohabi Cut · Edit video</title>
+  <link rel="stylesheet" href="./cut.css">
+  <script type="module" src="./cut.js"></script>
+</head>
+<body>
+  <main class="editor" aria-labelledby="page-title">
+    <header class="topbar">
+      <a class="back" href="/" aria-label="Back to Cohabi">Back</a>
+      <h1 id="page-title">Cohabi Cut</h1>
+      <button id="export-feed" class="primary" type="button">Export to Feed</button>
+    </header>
+
+    <section class="preview-panel" aria-label="Video preview">
+      <video id="cut-preview" controls playsinline preload="metadata" aria-label="Video preview" data-video-id=""></video>
+    </section>
+    <section class="clip-picker" aria-label="Choose a video">
+      <button id="stock-open" type="button" aria-haspopup="dialog" aria-controls="stock-sheet">Pick a stock clip</button>
+      <span id="selected-clip-credit" aria-live="polite"></span>
+    </section>
+    <section id="stock-sheet" class="stock-sheet" role="dialog" aria-labelledby="stock-title" aria-modal="true" hidden>
+      <div class="stock-sheet-head">
+        <h2 id="stock-title">Pick a stock clip</h2>
+        <button id="stock-close" type="button" aria-label="Close stock clip search">Close</button>
+      </div>
+      <form id="stock-search-form">
+        <label for="stock-query">Search free stock footage</label>
+        <div class="stock-search-row">
+          <input id="stock-query" name="q" type="search" minlength="2" maxlength="100" autocomplete="off" placeholder="Ocean at sunset">
+          <button id="stock-search" type="submit">Search</button>
+        </div>
+      </form>
+      <p id="stock-status" role="status" aria-live="polite"></p>
+      <div id="stock-results" class="stock-results" aria-label="Stock search results"></div>
+    </section>
+
+    <section class="tools" aria-label="Edit your video">
+      <fieldset class="tool-group">
+        <legend>Trim</legend>
+        <label for="trim-start">Start <output id="trim-start-output">0</output> seconds</label>
+        <input id="trim-start" name="trimStart" type="range" min="0" max="30" step="0.01" value="0">
+        <label for="trim-end">End <output id="trim-end-output">30</output> seconds</label>
+        <input id="trim-end" name="trimEnd" type="range" min="0" max="30" step="0.01" value="30">
+      </fieldset>
+
+      <fieldset class="tool-group">
+        <legend>Text</legend>
+        <label for="edit-text">One-line text (up to 80 characters)</label>
+        <input id="edit-text" name="text" type="text" maxlength="80" autocomplete="off" placeholder="Add a few words">
+        <label for="text-position">Text position</label>
+        <select id="text-position" name="textPosition">
+          <option value="top">Top</option>
+          <option value="middle" selected>Middle</option>
+          <option value="bottom">Bottom</option>
+        </select>
+      </fieldset>
+
+      <fieldset class="tool-group" id="music-wrap" hidden>
+        <legend>Music</legend>
+        <label for="music-track">Choose label music</label>
+        <select id="music-track" name="musicId">
+          <option value="">No music</option>
+        </select>
+        <label for="music-volume">Music volume</label>
+        <input id="music-volume" name="musicVolume" type="range" min="0" max="1" step="0.01" value="0.7">
+      </fieldset>
+
+      <fieldset class="tool-group">
+        <legend>Cover</legend>
+        <label for="cover-scrub">Scrub to a cover frame (seconds)</label>
+        <input id="cover-scrub" name="coverSec" type="range" min="0" max="30" step="0.01" value="0">
+        <button id="cover-use" type="button">Use this frame</button>
+      </fieldset>
+    </section>
+    <p class="draft-note">Your edit is saved as a draft on this device. Nothing posts without your review.</p>
+    <p class="rl-toast" role="status" aria-live="polite" hidden></p>
+  </main>
+</body>
+</html>

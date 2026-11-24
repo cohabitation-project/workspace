@@ -52,6 +52,9 @@ import * as studio from './lib/studio.mjs';
 import * as inboxes from './lib/inboxes.mjs';
 import * as videos from './lib/videos.mjs';
 import * as stock from './lib/stock.mjs';
+import { handleCutRender } from './lib/cut/route.mjs';
+import { makeCutDeps } from './lib/cut/wire.mjs';
+import { sweepRenders } from './lib/cut/cleanup.mjs';
 import * as groups from './lib/groups.mjs';
 import * as market from './lib/market.mjs';
 import * as marketpage from './lib/marketpage.mjs';
@@ -148,6 +151,8 @@ audio.init(DATA);
 docfiles.init(DATA);
 const VARIANTS = await variants.init(DATA); // { images, audio }: which lighter copies this machine can make
 videos.init(DATA);
+const CUT_OUT = path.join(DATA, 'cut'); fs.mkdirSync(CUT_OUT, { recursive: true }); const cutDeps = makeCutDeps({ videos, audio, outDir: CUT_OUT, log: (m) => console.error('[cut]', m) });
+const cutSweep = () => sweepRenders(CUT_OUT).catch((e) => console.error('[cut] sweep', e.message)); cutSweep(); setInterval(cutSweep, 3600_000).unref();
 posts.init(DATA);
 postmarks.init(DATA);
 feedback.init(DATA);
@@ -850,8 +855,11 @@ app.post('/api/videos', express.raw({ type: ['video/*'], limit: videos.MAX_BYTES
 app.get('/api/stock/videos', wrap(async (req) => stock.search(houseWriter(req), req.query.q, { vertical: req.query.vertical === '1' })));
 app.post('/api/stock/videos/:id/import', wrap(async (req, res) => { const me = houseWriter(req); const v = await stock.importClip(me, req.params.id); res.status(201); return v; }));
 app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
+app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));
 app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
 app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
+app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));
+app.use('/cut', express.static(CUT_OUT, { index: false, dotfiles: 'deny', maxAge: '5m' }));
 app.post('/api/posts/:id/topic', wrap((req) => { const me = houseWriter(req); return posts.setTopic(me, req.params.id, String((req.body || {}).topic || ''), { steward: core.isSteward(me) }); }));
 // Addresses (Geoffrey, 2026-11-15): cohabi.org/social is the posts page and cohabi.org/feed is the video feed.
 // Old links keep working: /feed with anything after a ? was the posts page, so it goes to /social; /cohabi-feed → /feed.
