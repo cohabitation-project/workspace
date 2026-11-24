@@ -3243,3 +3243,10 @@ _Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~15539 tokens_
 **Next:** Do NOT apply or submit the saved candidate patch. Resume the assigned band job by diagnosing `.mk-searchbar.mv-search` (the 1,200px-wide form hit at the band), inspect its computed background/box-shadow/border/pseudo paint, then test the smallest declaration-level patch at both viewports. Update `teams/build/outputs/round51-kimi-band.md`, write `continuity/kimi/ACTIVE.md`, and only claim PASS when the third desktop purple run is actually absent and the other geometry remains fixed. If the scratch checkout survived, its CSS was restored before the last diagnostic attempt; verify `git diff` before continuing.
 **Blocked:** Out of tool steps before the search-form diagnostic could be read and before a valid patch/result/checkpoint could be written. No live-site or human visual-approval claim. The only saved patch is explicitly invalid and must not be merged.
 _Session log: teams/build/sessions/2026-11-24-kimi.jsonl · ~582738 tokens_
+
+## 2026-11-24T20:12:41.212Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~275470 tokens_

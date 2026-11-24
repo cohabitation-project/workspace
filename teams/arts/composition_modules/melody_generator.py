@@ -21,18 +21,50 @@ class MelodyGenerator:
             self.track.append(MetaMessage('set_tempo', tempo=self.microseconds_per_beat, time=0))
             self.track.append(Message('program_change', program=instrument_program, time=0))
 
-    def generate_rhythmic_pattern(self, base_duration=1, variations=[0.5, 0.75, 1, 1.5, 2], num_beats=4, density=0.7):
+    def generate_rhythmic_pattern(self, base_duration=1, variations=[0.5, 0.75, 1, 1.5, 2], num_beats=4, density=0.7,
+                                rhythmic_phrases=None, syncopation_chance=0.1, dynamic_density_profile=None):
         """
-        Generates a more complex rhythmic pattern by varying a base duration.
+        Generates a more complex rhythmic pattern by varying a base duration,
+        introducing rhythmic phrases, syncopation, and dynamic density.
         base_duration: The basic unit of rhythm (e.g., 1 for quarter note).
         variations: Multipliers for the base duration to create rhythmic variety.
         num_beats: The total number of base duration beats to fill.
-        density: Probability of placing a note on a given beat (0.0 to 1.0).
+        density: Base probability of placing a note on a given beat (0.0 to 1.0).
+        rhythmic_phrases: A list of predefined rhythmic motifs (e.g., [[0.5, 0.5, 1], [1, 0.5, 0.5]]).
+        syncopation_chance: Probability of placing an accent on an off-beat (0.0 to 1.0).
+        dynamic_density_profile: A list of (beat_start, beat_end, density_modifier) tuples to change density dynamically.
         """
         pattern = []
         current_beats = 0
+        
         while current_beats < num_beats:
-            if random.random() < density:
+            current_density = density
+            if dynamic_density_profile:
+                for start, end, modifier in dynamic_density_profile:
+                    if start <= current_beats < end:
+                        current_density *= modifier
+                        break
+
+            if rhythmic_phrases and random.random() < 0.2: # 20% chance to use a phrase
+                phrase = random.choice(rhythmic_phrases)
+                phrase_duration = sum(d for d in phrase if d != 0) # Sum of note durations, ignoring rests
+                if current_beats + phrase_duration <= num_beats:
+                    pattern.extend(phrase)
+                    current_beats += phrase_duration
+                    continue
+
+            # Apply syncopation logic: try to make the previous note longer or add a rest
+            if random.random() < syncopation_chance and pattern and pattern[-1] != 0:
+                last_duration = pattern[-1]
+                # If the last note was short, extend it by adding a longer duration here
+                # Or add a rest before the next note to create a syncopated feel
+                if last_duration < base_duration * 1.5:
+                    pattern[-1] += base_duration * random.choice([0.5, 1]) # Extend last note
+                else:
+                    pattern.append(0.5) # Add a short rest for syncopation
+                current_beats += 0.5 # Account for the rest in total beats
+
+            if random.random() < current_density:
                 duration_factor = random.choice(variations)
                 actual_duration = base_duration * duration_factor
                 pattern.append(actual_duration)
@@ -42,22 +74,35 @@ class MelodyGenerator:
                 rest_duration = base_duration * random.choice([0.5, 1]) # Small rests
                 pattern.append(0) # 0 signifies a rest
                 current_beats += rest_duration
-        # Ensure pattern length is reasonable
-        return [d for d in pattern if d > 0][:int(num_beats * 2)] if pattern else [base_duration]
+        
+        # Ensure pattern length is reasonable and total beats are met (can be slightly over due to variations)
+        final_pattern = []
+        total_actual_beats = 0
+        for d in pattern:
+            if total_actual_beats + (d if d != 0 else base_duration) <= num_beats * 1.5: # Allow slight overrun
+                final_pattern.append(d)
+                total_actual_beats += (d if d != 0 else base_duration)
+            else:
+                break
+        
+        return final_pattern if final_pattern else [base_duration]
 
     def generate_random_melody(self, start_note=60, scale_intervals=[0, 2, 4, 5, 7, 9, 11], num_notes=16,
                                 rhythm_pattern=None, velocity=64, melodic_contour=None,
-                                rhythmic_variations=None):
+                                rhythmic_variations=None, contour_strength=0.7):
         """
         Generates a random melody within a specified scale.
         scale_intervals: intervals from the root note to form the scale (e.g., major scale).
         rhythm_pattern: List of note durations (e.g., [1, 0.5, 0.5, 1] for quarter, eighth, eighth, quarter).
                         If None, uses quarter notes.
-        melodic_contour: 'up', 'down', 'random', or None. Influences direction of note selection.
+        melodic_contour: 'up', 'down', 'arch', 'random', or None. Influences direction of note selection.
         rhythmic_variations: Dictionary for rhythmic pattern generation parameters {base_duration, variations, num_beats, density}.
+        contour_strength: How strictly to adhere to the melodic contour (0.0 to 1.0).
         """
         current_time = 0
         previous_note_val = start_note # Keep track for contour
+        notes_generated_in_contour = 0
+        contour_direction = None # For 'arch' contour
 
         if rhythmic_variations:
             rhythm_to_use = self.generate_rhythmic_pattern(**rhythmic_variations)
@@ -77,16 +122,28 @@ class MelodyGenerator:
                 current_time += int(self.quarter_note_time * (random.choice([0.5, 1])))
                 continue
 
-            # Select a note based on melodic contour
-            if melodic_contour == 'up':
-                available_notes = [n for n in scale_intervals if (start_note + n) > previous_note_val]
-                if not available_notes: available_notes = scale_intervals # Fallback if no higher notes
-            elif melodic_contour == 'down':
-                available_notes = [n for n in scale_intervals if (start_note + n) < previous_note_val]
-                if not available_notes: available_notes = scale_intervals # Fallback if no lower notes
-            else: # 'random' or None
-                available_notes = scale_intervals
+            # Determine contour direction for 'arch'
+            if melodic_contour == 'arch':
+                if notes_generated_in_contour < num_notes / 2: # Ascending phase
+                    contour_direction = 'up'
+                else: # Descending phase
+                    contour_direction = 'down'
+            else:
+                contour_direction = melodic_contour
 
+            # Select a note based on melodic contour and contour_strength
+            available_notes = scale_intervals
+            if contour_direction == 'up':
+                # More strictly choose an ascending note if random.random() < contour_strength
+                if random.random() < contour_strength:
+                    potential_notes = [n for n in scale_intervals if (start_note + n) > previous_note_val]
+                    if potential_notes: available_notes = potential_notes
+            elif contour_direction == 'down':
+                # More strictly choose a descending note if random.random() < contour_strength
+                if random.random() < contour_strength:
+                    potential_notes = [n for n in scale_intervals if (start_note + n) < previous_note_val]
+                    if potential_notes: available_notes = potential_notes
+            
             scale_degree = random.choice(available_notes)
             note_val = start_note + scale_degree
             
@@ -101,6 +158,7 @@ class MelodyGenerator:
             self.track.append(Message('note_off', note=note_val, velocity=velocity, time=note_duration_ticks))
             current_time = 0 # Delta time for subsequent messages
             previous_note_val = note_val # Update previous note for contour
+            notes_generated_in_contour += 1 # Increment for arch contour tracking
 
         return self.midi_file
 
