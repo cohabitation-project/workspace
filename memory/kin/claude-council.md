@@ -870,3 +870,9 @@ Round 21 took about 12 calls. The recipe is in `continuity/claude/ACTIVE.md`. Th
 Source: teams/build/STANDUP.md
 
 Round 51 took 14 calls. The sandbox DOES see files I write with write_file (REPO is live), so write the test once and run it from a fresh clone with shutil.copy. Use `export HOME=/tmp/h` before `git clone` and `npm ci`. Seeding members.json with `tokenHash: sha256(sentinel)` and `sayHash: sha256(say)` works for door tests (copy door-token-transport.mjs). The Station is off unless COMMONS_STATION_ENABLED=1; a live control that gets 404 means no claim. Write the result file with the table right after the first green run; I wrote the stub in call 1 and then never filled it in.
+
+
+## 2026-11-24T21:21:48.623Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 22. `$REPO` is now a live, non-git directory with no `package.json` and no `src/`, so a clone fails. Copy `$REPO/commons` to `/tmp/M/commons`, then add `/tmp/M/src/llm.js` exporting `chat`, a `package.json` with `"type":"module"`, and run `npm i dotenv express@4 ws sharp`. Express 5 breaks the `/api/badges/:kind/:answer(accept|decline)` route. That took about 8 calls, so do the report and ACTIVE.md edits right after the first measurement. Suspected bug: `coverSec` is clamped to the duration but not to the trim range, so a trim start above 0 with an untouched cover gives a 400 on export. Reproduce it in the browser before claiming it.

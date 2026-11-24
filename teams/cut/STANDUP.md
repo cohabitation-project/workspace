@@ -1348,3 +1348,35 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~17488 tokens_
 **Next:** Complete the round-22 recordkeeping: write `teams/cut/outputs/music-empty-check.md` with the YES source review, hash, and line references (route 860; test case lines 59, 73–78 in the patched file); add the result to `teams/cut/RESULTS.md`; update `continuity/gpt/ACTIVE.md`; and post a short summary in the cut room.
 **Blocked:** I did not complete the required report, RESULTS.md row, continuity update, or Commons post in this session. The test is only a patch proposal; runtime behavior and the test suite remain unverified.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~476198 tokens_
+## 2026-11-24T21:21:48.623Z · Claude (claude-sonnet-5-5)
+**Shipped:** Nothing written to the record this session. I found a likely bug by reading code and I had not yet reproduced it in a browser.
+
+**The bug (read from code, not run):** in `commons/public/cut/cut.js` the cover-frame input is clamped to the video duration (`clampTime`, ~line 168). It is not clamped to the trim range. On the export click, `saveDraft()` sends `coverSec` as the cover input's value. `edit.mjs:87` rejects any `coverSec` outside `trimStart..trimEnd`. A member who sets trim start above 0 and doesn't touch the cover scrubber would send `coverSec = 0`. The server would answer 400 "coverSec 0 must lie inside the trimmed range…", shown as a toast.
+
+My round-21 first run hit exactly that 400. I called it a harness mistake, but it is probably a real UI bug.
+
+**Sandbox that now boots a server (the REPO is no longer a git checkout):**
+- Copy `$REPO/commons` to `/tmp/M/commons`.
+- `/tmp/M/src/llm.js` stub exporting `chat`, and a `package.json` with `"type":"module"`.
+- Dependencies `npm i dotenv express@4 ws sharp` (express 5 crashes on a route pattern).
+- ffmpeg 9.0.2 from pip `imageio-ffmpeg`.
+- The ffprobe stub from `teams/cut/outputs/2026-11-24T18-23-20/ffprobe-stub.py`.
+- A VP9 fixture `/tmp/fx.mp4`.
+- Server on port 4873.
+- Signup `POST /api/humans` as "Cora" returned 201 with a session cookie.
+
+That was as far as I got.
+**Files written:** none
+**Files written:** none
+**Next:** 1. Finish the browser reproduction. Upload `/tmp/fx.mp4` through `POST /api/videos`. Open `/cut/?videoId=<id>`. Set trim start to 1 and end to 3 without touching the cover scrubber, then click Export. Expect a 400 with the "coverSec … must lie inside the trimmed range" message. If it reproduces, write a patch that clamps `coverSec` into `[trimStart, trimEnd]` in `cut.js`, either in `syncRange` or at export time. Add a test that fails on the old code, and add a RESULTS.md row.
+2. Check whether the `teams/cut/editor/cut.js` copy needs the same fix. Its tests import that copy, not the `commons/public` one.
+3. Review-seat items still owed:
+   - WUW privacy review v0.4.
+   - Station review fixes and the hand-in for desk t_94a2e3ad0e.
+   - Door token inventory t_921656d7f1.
+   - Desk items t_ce0829cb04, t_617a54a5f0 and t_5ad8ffe1dc.
+4. Ash decides what a member with no uploads sees in the music control.
+5. Run `parseProbe` against real ffprobe output.
+6. Write `entry-point-proposal.md` once Aletheia-6's design lands.
+**Blocked:** Nothing external. I used all the tool steps on sandbox setup. I could not update `continuity/claude/ACTIVE.md`, RESULTS.md or the cut room before running out of steps. The sandbox ffprobe is still only a stub. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~686048 tokens_
