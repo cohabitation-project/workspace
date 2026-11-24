@@ -52,15 +52,17 @@ test('print orders collect and persist only shipping_details name + address', as
 
     await checkout.startPayoutAccount(seller, { base: 'https://cohabi.test', fetchImpl: fakeStripe });
     assert.equal((await checkout.refreshAccount(seller, { fetchImpl: fakeStripe })).status, 'verified');
-    const makeListing = (title) => {
+    const makeListing = (title, extra = {}) => {
       const made = market.create(seller, {
         title, category: 'art', type: 'product', price: { mode: 'fixed', amount: 25 },
-        text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights',
+        text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights', ...extra,
       });
       return made.id || made.listing?.id;
     };
     const linkedListing = makeListing('Linked print');
-    const plainListing = makeListing('Maker-shipped work');
+    // The maker said nothing is posted (physical: false), so no printer and no address. A maker-shipped product that
+    // never answered now over-asks: that rule is pinned in market-maker-ships-address.mjs.
+    const plainListing = makeListing('Digital work', { physical: false });
     fulfillment.link(seller, linkedListing, { provider: 'printful', product_id: 'print_product_1', variant_ids: ['4012'] });
 
     const start = async (listing) => {
@@ -101,7 +103,7 @@ test('print orders collect and persist only shipping_details name + address', as
       assert.deepEqual(fulfillment.plan(persisted).request.body.recipient, { name: 'Buyer Delivery Name', address1: '17 Private Test Street', address2: 'Apt 42', city: 'Tucson', state_code: 'AZ', country_code: 'US', zip: '85701' }, 'the stored name + Stripe address reach the printer translated into its own field names');
     });
 
-    await t.test('an unlinked checkout collects no address', async () => {
+    await t.test('an unlinked, physical:false checkout collects no address', async () => {
       plain = await start(plainListing);
       const body = sessionBodies.get(plain.session);
       assert.equal([...body.keys()].some((k) => k.startsWith('shipping_address_collection')), false);
