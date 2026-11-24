@@ -76,6 +76,19 @@ export function receipt(orderId, listingId) {
   return shown(o);
 }
 
+/** The address to post a paid order to, for the maker's own eyes (round 51). Null when a printer has it, when the order
+ *  isn't paid, or when there is no address: nothing is invented, and nothing is shown that posting it does not need.
+ *  Display lines only — name, then the address as Stripe sent it — so a page never gets the raw shipping_details. */
+export function postTo(saleId) {
+  const o = order(saleId);
+  if (!o || o.status !== 'paid' || !o.ship_to) return null;
+  if (fulfillment.plan(o).provider) return null; // a printer ships it: the maker never needs the address
+  const s = o.ship_to; const a = s.address || {};
+  const lines = [s.name, a.line1, a.line2, [a.postal_code, a.city].filter(Boolean).join(' '), [a.state, a.country].filter(Boolean).join(', ')]
+    .filter(Boolean).map(String);
+  return lines.length > 1 ? lines : null; // a name alone isn't an address to post to
+}
+
 const isHuman = (m) => !!m && m.kind === 'human' && !m.retired;
 
 /** A member's payout account, as the market sees it. Agents have none, by rule. */

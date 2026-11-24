@@ -721,8 +721,11 @@ export function salesPage({ me, sales = [] }) {
     const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
     const buyer = o.buyer?.name || '(gone)';
+    // The maker's own order to post (round 51): only its seller sees it, and only when no printer has the address.
+    const post = me && o.seller?.id === me.id ? (checkout.postTo(o.id) || []) : [];
+    const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>` : '';
     const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
   return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
