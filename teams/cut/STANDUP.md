@@ -1257,3 +1257,42 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~13740 tokens_
 **Next:** Add the review outcome to `teams/cut/RESULTS.md`, update `continuity/gpt/ACTIVE.md`, and post a brief result in the cut room. If a music patch lands, verify its blob SHA, no-path response guarantee, and unauthenticated 401-before-list behavior.
 **Blocked:** Those required record updates and Commons post were not completed before the tool-step limit. Label release/file counts were not independently recounted; no patch existed for the conditional patch review.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~490525 tokens_
+## 2026-11-24T15:18:55.774Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 20, cut seat: music option A is built as a patch. It is not applied to main and not deployed.
+
+**Patch:** `teams/cut/outputs/2026-11-24T15-18-04/music-a.patch`. Base is main 372067a, `git hash-object` is 5f861248db9eec3a0d84c531a7cc313da4bb4618, 9,572 bytes, 4 files. `git apply --check` passes on a clean clone.
+- `commons/server.mjs`: +2 lines after the render route. `GET /api/cut/music` calls `actor(req)`. Signed out gives 401 JSON, checked by the route itself because `actor` returns null. Signed in gives `audio.list({by: me.id, limit: 60})` mapped to `{id, title, source:"yours"}`. No path in the response.
+- `commons/public/cut/cut.js:65` now fetches `/api/cut/music`.
+- `commons/public/cut/cut.html` label is now "Choose your music".
+- New `commons/test/cut-music-list.test.mjs`. It boots the real server and covers proposal cases 1, 2, 3 and 5.
+
+**Measured** on a fresh clone of main 372067a, Node v24.22.3, no ffmpeg:
+- New test: 2/2 pass.
+- Red on old main: 0/2 pass.
+- Three mutants each turn it red (1 fail each): the 401 check removed, `audio.list` without `by`, a `path` key added to the response.
+- `commons/test/cut-*.test.mjs` + `teams/cut/editor/editor-page.test.mjs` + `teams/cut/place/live-check.test.mjs`:
+  - With the patch applied: 101 tests, 96 pass, 0 fail, 0 cancelled, 5 skipped.
+  - Unpatched main: 99 tests, 94 pass, 0 fail, 5 skipped.
+  - The 5 skips are the real-ffmpeg cases.
+
+**Records:**
+- RESULTS.md row added at the top of the table.
+- `continuity/claude/ACTIVE.md` rewritten.
+- Posted in the cut room (m_mwuuaht7g239af7f) asking GPT to check "no path key" and "401 before any list" against the blob.
+
+**Limits:**
+- Case 3 stops at the music rule. Bob's video with Alice's track id gives 403 "music is not yours". An unknown id gives 404 "no such music". Alice's own listed id gets past the music check. A 200 render with music was not run.
+- I got a real ffmpeg, an ffprobe stub and mp4/mp3 fixtures set up in /tmp, but ran out of steps before a rendered-with-music run.
+- The 60-row cap is read in the code, not tested.
+- A member with no uploads gets no music control and no hint. That is a design call.
+- The stale copy `teams/cut/editor/cut.js:58` still has the old URL; I didn't touch it.
+- No browser, no deploy.
+**Files written:** `teams/cut/outputs/2026-11-24T15-18-04/music-a.patch`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Setu applies music-a.patch with the second yes (server.mjs is Tier 1), and GPT reads the blob for "no path key" and "401 before any list".
+2. Run one real-ffmpeg render with music: sign up, upload `/tmp/fx.mp3` through `POST /api/audio`, then render with the ffprobe stub. Confirm a 200 from `POST /api/cut/render` with the listed id. This closes the case 3 limit.
+3. Ash decides what a member with no uploads sees, for example "Upload a track to add music".
+4. `entry-point-proposal.md` is still unwritten; Aletheia-6's design is pending.
+5. Review-seat desk items t_94a2e3ad0e, t_ce0829cb04 and t_617a54a5f0 are untouched.
+6. Option B (label tracks opted in per release) waits on Geoffrey's rights decision.
+**Blocked:** The sandbox can't write the repo except through write_file and edit_file, so the code change is a patch and needs Setu to apply it. There is no ffmpeg on the sandbox path by default (I installed a pip copy but ran out of steps). Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~16009 tokens_

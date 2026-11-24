@@ -1,0 +1,134 @@
+diff --git a/commons/public/cut/cut.html b/commons/public/cut/cut.html
+index 3347cf8..87935da 100644
+--- a/commons/public/cut/cut.html
++++ b/commons/public/cut/cut.html
+@@ -62,7 +62,7 @@
+ 
+       <fieldset class="tool-group" id="music-wrap" hidden>
+         <legend>Music</legend>
+-        <label for="music-track">Choose label music</label>
++        <label for="music-track">Choose your music</label>
+         <select id="music-track" name="musicId">
+           <option value="">No music</option>
+         </select>
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index 59523a3..7386c27 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -62,7 +62,7 @@ function trackLabel(track) {
+ 
+ async function loadMusic(select, wrapper, selectedId = '') {
+   try {
+-    const response = await fetch('/api/label/tracks', { headers: { Accept: 'application/json' } });
++    const response = await fetch('/api/cut/music', { headers: { Accept: 'application/json' } });
+     if (!response.ok) return;
+     const payload = await response.json();
+     const tracks = Array.isArray(payload) ? payload : (Array.isArray(payload?.tracks) ? payload.tracks : []);
+diff --git a/commons/server.mjs b/commons/server.mjs
+index 948392f..c41cb19 100644
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -856,6 +856,8 @@ app.get('/api/stock/videos', wrap(async (req) => stock.search(houseWriter(req),
+ app.post('/api/stock/videos/:id/import', wrap(async (req, res) => { const me = houseWriter(req); const v = await stock.importClip(me, req.params.id); res.status(201); return v; }));
+ app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
+ app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));
++// The editor's music list: the signed-in member's OWN uploads, newest first, no file path. actor() returns null when signed out, so this route says 401 itself.
++app.get('/api/cut/music', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in to choose music'); return { tracks: audio.list({ by: me.id, limit: 60 }).map((a) => ({ id: a.id, title: a.title, source: 'yours' })) }; }));
+ app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
+ app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
+ app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));
+diff --git a/commons/test/cut-music-list.test.mjs b/commons/test/cut-music-list.test.mjs
+new file mode 100644
+index 0000000..fb2ae8a
+--- /dev/null
++++ b/commons/test/cut-music-list.test.mjs
+@@ -0,0 +1,89 @@
++// Cut: the editor's music list (Job 4, round 20). GET /api/cut/music lists the signed-in member's OWN uploads, and only those.
++// Boots the real commons/server.mjs on a temp data dir (no ffmpeg needed: the music check in handleCutRender runs before any probe).
++import test from "node:test";
++import assert from "node:assert/strict";
++import fs from "node:fs";
++import os from "node:os";
++import path from "node:path";
++import { spawn } from "node:child_process";
++import { freePort } from "./lib/port.mjs";
++
++const COMMONS = path.resolve(import.meta.dirname, "..");
++const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
++const cutJs = fs.readFileSync(path.join(COMMONS, "public/cut/cut.js"), "utf8");
++const cutHtml = fs.readFileSync(path.join(COMMONS, "public/cut/cut.html"), "utf8");
++
++// 5. Static: the editor asks the route that exists, under the label the member sees.
++test("cut.js fetches /api/cut/music, never the missing /api/label/tracks", () => {
++	assert.ok(cutJs.includes("fetch('/api/cut/music'"), "loadMusic fetches /api/cut/music");
++	assert.equal(cutJs.includes("/api/label/tracks"), false, "the dead URL is gone");
++	assert.match(cutHtml, />Choose your music</);
++	assert.equal(cutHtml.includes("Choose label music"), false);
++});
++
++test("GET /api/cut/music: 401 signed out; own uploads only, newest first, no path; ids work in the render route's music rule", async () => {
++	const PORT = await freePort(), B = `http://127.0.0.1:${PORT}`;
++	const D = fs.mkdtempSync(path.join(os.tmpdir(), "cut-music-"));
++	let srv, stderr = "";
++	const signup = async (name) => {
++		const r = await fetch(`${B}/api/humans`, { method: "POST", headers: { "content-type": "application/json", "x-commons": "1" }, body: JSON.stringify({ name }) });
++		const j = await r.json().catch(() => ({}));
++		assert.equal(r.status, 201, `${name} signs up: ${JSON.stringify(j)}`);
++		return { cookie: (r.headers.get("set-cookie") || "").split(";")[0] };
++	};
++	const call = async (url, { method = "GET", member, body, raw, type } = {}) => {
++		const headers = { "x-commons": "1" };
++		if (member?.cookie) headers.cookie = member.cookie;
++		let payload;
++		if (raw !== undefined) { headers["content-type"] = type; payload = raw; } else if (body !== undefined) { headers["content-type"] = "application/json"; payload = JSON.stringify(body); }
++		const r = await fetch(B + url, { method, headers, body: payload, signal: AbortSignal.timeout(20000) });
++		const text = await r.text(); let json = null; try { json = JSON.parse(text); } catch { /* not json */ }
++		return { r, text, json };
++	};
++	const mp3 = (n) => Buffer.concat([Buffer.from("ID3"), Buffer.alloc(40, n)]).toString("base64");
++	try {
++		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1" }, stdio: ["ignore", "ignore", "pipe"] });
++		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
++		let ready = false;
++		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }
++		assert.ok(ready, `server started. stderr tail: ${stderr}`);
++
++		// 1. signed out: 401 JSON, and no list (signed-out GET /api/audio?by=me lists everyone's, so this route must check itself)
++		const anon = await fetch(`${B}/api/cut/music`);
++		assert.equal(anon.status, 401);
++		assert.match(anon.headers.get("content-type") || "", /json/);
++		const anonJson = await anon.json();
++		assert.equal(typeof anonJson.error, "string");
++		assert.equal("tracks" in anonJson, false);
++
++		const alice = await signup("Music Alice"), bob = await signup("Music Bob");
++		const up = async (m, title, n) => { const x = await call("/api/audio", { method: "POST", member: m, body: { data: mp3(n), title } }); assert.equal(x.r.status, 201, x.text); await sleep(8); return x.json; };
++		const a1 = await up(alice, "Alice first", 1), a2 = await up(alice, "Alice second", 2), b1 = await up(bob, "Bob only", 3);
++
++		// 2. Alice sees exactly hers, newest first, with exactly {id,title,source}, and no path anywhere in the body
++		const la = await call("/api/cut/music", { member: alice });
++		assert.equal(la.r.status, 200, la.text);
++		assert.deepEqual(la.json.tracks.map((t) => t.id), [a2.id, a1.id]);
++		for (const t of la.json.tracks) assert.deepEqual(Object.keys(t).sort(), ["id", "source", "title"]);
++		assert.deepEqual(la.json.tracks.map((t) => [t.title, t.source]), [["Alice second", "yours"], ["Alice first", "yours"]]);
++		assert.equal(la.text.includes(b1.id), false, "Bob's track is not in Alice's list");
++		assert.equal(/path|\.mp3|"ext"|"by"|"bytes"/.test(la.text) || la.text.includes(D), false, "no file path or store field in the response: " + la.text);
++		const lb = await call("/api/cut/music", { member: bob });
++		assert.deepEqual(lb.json.tracks.map((t) => t.id), [b1.id]);
++
++		// 3. round trip into the render route's music rule (which runs before any probe or ffmpeg):
++		//    Bob's video + Alice's track id -> 403 "not yours"; unknown id -> 404; Alice's own id gets past the music check.
++		const vup = async (m) => { const x = await call("/api/videos", { method: "POST", member: m, raw: Buffer.from("not really a video, a stand-in file"), type: "video/mp4" }); assert.equal(x.r.status, 201, x.text); return x.json.id; };
++		const av = await vup(alice), bv = await vup(bob);
++		const edit = (id) => ({ trimStart: 0, trimEnd: 2, coverSec: 1, music: { id, volume: 0.5 } });
++		const theirs = await call("/api/cut/render", { method: "POST", member: bob, body: { videoId: bv, edit: edit(a1.id) } });
++		assert.equal(theirs.r.status, 403, theirs.text); assert.match(theirs.json.error, /music is not yours/);
++		const unknown = await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: av, edit: edit("aud_0000000000000000") } });
++		assert.equal(unknown.r.status, 404, unknown.text); assert.match(unknown.json.error, /no such music/);
++		const mine = await call("/api/cut/render", { method: "POST", member: alice, body: { videoId: av, edit: edit(a2.id) } });
++		assert.ok(![403, 404].includes(mine.r.status) && !/music/.test(mine.json?.error || ""), `Alice's own listed id passes the music check (the stand-in video fails later, never on music): ${mine.r.status} ${mine.text}`);
++	} finally {
++		if (srv) { srv.kill("SIGKILL"); await sleep(100); }
++		fs.rmSync(D, { recursive: true, force: true });
++	}
++});

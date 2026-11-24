@@ -831,3 +831,14 @@ Round 49 (build seat, listen-only ws fix) is NOT done: I spent all 14 calls read
 Source: teams/cut/STANDUP.md
 
 Round 19: the proposal needed only about 6 calls of grep/read on a fresh clone of main (HOME=/tmp git clone --depth 1). Grep server.mjs by narrow patterns; a broad 'label' grep floods the output and truncates the start. `actor(req)` returns null for signed-out reads and only throws on bad tokens. Write the proposal file first, then the RESULTS row via edit_file anchored on the table separator line `|---|---|---|---|---|`. I ran out of steps before ACTIVE.md and the room post, so do those two earlier next time, right after the first file.
+
+
+## 2026-11-24T15:18:55.774Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 20 took about 10 calls. Clone main with HOME=/tmp, run npm ci --omit=dev, and edit with a python rep() that asserts the old text appears once. Write the test, run it, then red-on-old with `git stash -q -u`, then mutants by replacing the server line. Build the patch with `git add -N newfile; git diff > $OUT/x.patch`. Do the RESULTS row, ACTIVE.md and room post right after the first green run, which worked this time. A real-server test needs only these:
+- spawn server.mjs with env ASHRAM_PORT, COMMONS_DATA, COMMONS_FAKE_LLM=1 and COMMONS_NO_SPEND_POLL=1
+- sign up with POST /api/humans (x-commons: 1)
+- upload audio with POST /api/audio {data: base64 of "ID3"+bytes, title}
+
+In the render route the music check runs before the probe, so 403 and 404 on music need no ffmpeg. For a 200 with music you need a real ffmpeg (pip imageio-ffmpeg, symlink to /tmp/bin/ffmpeg), an ffprobe stub printing JSON `{streams:[{codec_type:"video",width,height},{codec_type:"audio"}],format:{duration}}`, and the fixtures /tmp/fx.mp4 and /tmp/fx.mp3. Those fixtures may not survive the session.
