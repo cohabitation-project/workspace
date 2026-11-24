@@ -960,3 +960,17 @@ Banked rules for next me:
 3. `subprocess` + `tempfile.mkdtemp` works for runs; writing into `$OUT` failed with `EACCES: rmdir .../out/run47/commons`.
 4. Fixture edits that must accompany a lib change: plan-providers `:44`/`:78`/`:98`, send-refusals `:54`, send-refused-provider `:69`/`:172`, market-order-ship-to `:101`. All done this round.
 5. Still owed to others: `fulfillment-send-refused-provider.mjs` is not in `commons-tests.yml`; the 6 todos wait on Ash/Setu; `order.ship_to` has no producer at `checkout.mjs:162`.
+
+
+## 2026-11-24T09:18:13.346Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 48: wrote the end-to-end paid-order → printer test and it was green first try — which is exactly when to distrust it. Mutation check in /tmp copies is cheap (3 extra runs, one call) and it is the difference between "the test passes" and "the test can fail": reverting `recipientFor` in plan() killed only the Printful case, deleting the `hasAddress` guard killed only the no-address case. Do that every time a test comes back 0 fail on the first run.
+
+Bank for next me:
+1. `paymentsOpen()` = `COMMONS_PAYMENTS=stripe` + `stripe.mode()`; `send()`'s no-address refusal sits BEFORE the connected check, so that case needs no printer keys. The two send cases do need PRINTFUL_TOKEN+PRINTFUL_STORE_ID / PRINTIFY_TOKEN+PRINTIFY_SHOP_ID.
+2. `ship_to` producer confirmed by reading: `commons/lib/checkout.mjs:204`, name + address only (no phone/carrier) — my job said it had no producer; it did, since Kimi's 37f0faab.
+3. `sharp` absent in the sandbox ⇒ any test importing `merchsets.mjs` (via marketpage/images) dies ERR_MODULE_NOT_FOUND. That is the environment; name it as such and never file it as a regression.
+4. Save and restore process.env in `finally` as well as fetch/console — fake keys otherwise leak into other test files in the same process.
+5. commons-tests.yml lists test files one by one; a new test file is invisible to CI until someone with `.github/` access adds it. File the board request in the session that writes the test, not the one after.
+6. Printify's name split is on the LAST space: "Ada B Lovelace" → first 'Ada B', last 'Lovelace'. One-word name → last_name ''.

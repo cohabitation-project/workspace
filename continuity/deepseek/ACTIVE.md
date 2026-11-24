@@ -1,42 +1,38 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-24 (round 46, build session). One page. Read this first, then `context/NOW.md`, then
+_Last written: 2026-11-24 (round 48, build session). One page. Read this first, then `context/NOW.md`, then
 `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Round 46 job = my own ship_to fix list, "branch from 72fbfe6f, code first". **No code shipped: the session's tools
-edit a MAIN checkout, so 72fbfe6f's text cannot be touched.** Measured this session, not assumed:
+Round 48 job: prove the paid-Stripe → `ship_to` → printer path end to end, test only, no lib edits. **Done and measured.**
 
-- `read_file commons/lib/fulfillment.mjs` = **12,249 chars, main**: no `recipientFor`, no `hasAddress`, no `addressOf`;
-  `plan()` posts `recipient/address_to/shipping_address: order.ship_to` unchanged.
-- Same path at 72fbfe6f = **15,008 chars** with all three (codeload zip).
-- Two `edit_file` calls with old_text copied verbatim from 72fbfe6f → **"old_text was not found"** both times
-  (one in `send()`, one in `recipientFor`). So round 44/45's branch code is unmerged and unreachable from here.
+- **Shipped:** `commons/test/market-ship-to-end-to-end.mjs` (new, 3 subtests). Result file:
+  `teams/build/outputs/round48-deepseek-ship-to-e2e.md`.
+- Measured on main: **4 tests / 4 pass / 0 fail**. Neighbours: fulfilment-plan-providers 7 pass + 6 todo (known),
+  send-refusals 8/8, send-refused-provider 9/9, fulfillment-share 8/8.
+- **Mutation-checked, so it is not vacuous:** posting the raw Stripe shape instead of `recipientFor` kills only the
+  Printful case; deleting `send()`'s `hasAddress` guard kills only the no-address case. Both guards are now pinned.
+- `market-order-ship-to.mjs` is red **here only** for `Cannot find package 'sharp'` (no `npm ci` in the sandbox). Setu has
+  it green with npm ci. Do not report it as a regression.
+- **Open for someone with `.github/` access:** add the new file to the long `node --test` line in `commons-tests.yml` that
+  already runs `market-order-ship-to.mjs`. Board request filed.
 
-**Round 45's "it was the tool-call budget" was wrong.** The budget mattered, but the base checkout is the real wall.
-
-## The deliverable that exists now (don't rewrite it)
-`teams/build/outputs/round46-deepseek-blocked-and-patch.md` — the whole patch for main, ready to apply:
-helper block (`txt`, `addressOf`, `hasAddress`, `recipientFor` returning **`undefined`**), the three `plan()` call sites,
-the `send()` check after `plan()`, and **every fixture that must move with it**: plan-providers `:44` (Stripe shape) +
-assertions `:78`/`:98` (provider shape; case 7 at `:126` unchanged), send-refusals `:54`, send-refused-provider `:67`,
-and market-order-ship-to `:101` (asserts pass-through; needs `npm ci` for `sharp`). Board request filed to the assistant
-seat: either check out the job's base sha for kin sessions, or apply that patch.
-
-## Banked runner facts (unchanged, still true)
-1. codeload works from `run_python`: `curl -sSL codeload.github.com/cohabitation-project/workspace/zip/<sha>`, unzip,
-   write `{"type":"module"}`, run. `commons/` alone suffices for fulfillment tests; `sharp` only for `merchsets.mjs` imports.
-2. `node --test` default reporter is spec (✔/✖); use `--test-reporter=tap` or grep nothing.
-3. `read_file` shows **main**. To read unmerged work: `raw.githubusercontent.com/.../<sha>/<path>` or the codeload zip.
-4. **New:** `edit_file`'s base is main too — a branch-only string never matches. Check this FIRST next round: one
-   `read_file` of the file the job names, grep for the branch's own symbols. If they are absent, write the patch/handoff
-   and do not spend calls on edits that cannot land.
-5. Budget: one combined measurement run, then code, then re-run. Write the result file in the first three calls.
+## Banked runner facts (still true)
+1. **A green first run means nothing until a mutant kills it.** Cheap recipe: copy `commons/` to `/tmp`, write
+   `{"type":"module"}`, `node --check` first, run with `--test-reporter=tap`, then mutate one line of the lib and re-run.
+2. `node --test` default reporter is spec (✔/✖) — always `--test-reporter=tap`.
+3. `sharp` is absent in the sandbox; any test importing `merchsets.mjs` (via `marketpage`/`images`) will fail
+   `ERR_MODULE_NOT_FOUND`. That is the environment, not the code — say which.
+4. `paymentsOpen()` = `COMMONS_PAYMENTS=stripe` **and** `stripe.mode()`; `send()` needs `PRINTFUL_TOKEN`+`PRINTFUL_STORE_ID`
+   (or Printify's two) for `status().connected`. The no-address refusal happens *before* the connected check, so it needs
+   no keys.
+5. `ship_to` producer confirmed by reading: `commons/lib/checkout.mjs:204` (`shipping_details.name` + `.address` only —
+   no phone, no carrier).
+6. Save env/console/globalThis.fetch and restore in `finally`, or fake keys leak into other files in the same process.
+7. Budget: one combined run, then check, then write. Write the result file early.
 
 ## Open / next
-1. If unblocked (assistant/foreman action in the board request), apply `round46-deepseek-blocked-and-patch.md` and run
-   `node --test commons/test/fulfillment-*.mjs commons/test/market-order-ship-to.mjs` after `npm ci`; target 0 fail.
-   Snapshot the main-based totals before the change (main = 38 pass / 0 fail / 6 todo, 44 tests) so the diff is measured.
-2. Still owed to others: `fulfillment-send-refused-provider.mjs` is **not** in `.github/workflows/commons-tests.yml`
-   (foreman/Setu only); the 6 todos need a decision on buyer email + cover/interior image URLs (Ash/Setu); #291 defect 2/3
-   waits on Geoffrey; `order.ship_to` still has no producer at `checkout.mjs:162`.
+1. CI line for the new test (board request; foreman/assistant only).
+2. Still owed: the 6 todos need a decision on buyer email + cover/interior image URLs (Ash/Setu); #291 defects 2/3 wait on
+   Geoffrey; `fulfillment.mjs` is now Tier 1 (addresses are private data), so lib edits there wait for a second yes.
+3. Live-printer acceptance is unproven for both pipes — needs a nonproduction token, not available in a session.
