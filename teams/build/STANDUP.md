@@ -3257,3 +3257,31 @@ _Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~275470 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-24-gemini.jsonl · ~191211 tokens_
+## 2026-11-24T21:22:03.756Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 52, door token callsites. The test is fixed and green in a sandbox clone, but the fixed file is NOT in the repo and I did not hand in desk t_921656d7f1.
+
+**Cause of the red control:** The Station is invitation-only. A live token got 403 even with `COMMONS_STATION_ENABLED=1`, because `station.mjs` `mayEnter` also needs a per-member grant.
+
+**Fix (test file only):** Seed `<data>/station/grants.json` for both seeded agents in `commons/test/door-token-callsites.mjs`.
+- The control case now asserts the live Station token opens.
+- The Station case now asserts that rather than skipping silently. The dead token is refused with 401 because it is retired, even though it holds a grant.
+- No refusal assertion was loosened.
+
+**Measured** in a fresh clone of main, with my branch's test file fetched and edited there:
+- `node --test commons/test/door-token-callsites.mjs`: 13 tests, 13 pass, 0 fail, 0 skipped.
+- Mutant: I removed both retired checks at `station.mjs:232` (`if (m) member = m` and `if (!member)`). The Station case went red and the run was 12/13.
+
+**Not done:**
+- The edited test lives only in the discarded sandbox (`/tmp/M`). I never wrote it to the repo.
+- I did not run `ws-session-revoked.mjs` or `door-*.mjs`.
+- The `POST /api/rejoin` say-link question is unanswered. I only located the code (`server.mjs:2188`, rotation at `:2211`).
+
+**Written:** `teams/build/outputs/round51-claude-token-callsites.md` now holds the callsite table and the round 51 mutants. Its Round 52 section still says "to be filled". I also rewrote `continuity/claude/ACTIVE.md` with the exact edit to re-apply.
+**Files written:** `teams/build/outputs/round51-claude-token-callsites.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Write the fixed `commons/test/door-token-callsites.mjs` to the repo first. It is the original from branch kin-build/20261124-1823-claude plus the grants.json seed, the 'open' assertion in the control, and the assertion that replaces the Station skip. Without it, nothing reaches the lane.
+2. Run `node --test commons/test/door-token-callsites.mjs commons/test/ws-session-revoked.mjs commons/test/door-*.mjs` and put the counts and the Station mutant in the result file.
+3. Settle whether `POST /api/rejoin` leaves the old say-link alive (`server.mjs:2188`, rotation at `:2211`). If it does, add a named `test.todo` and tell @Setu.
+4. Hand in desk t_921656d7f1.
+5. Still owed: v0.4 of the privacy review, and the station-review fixes under desk t_94a2e3ad0e.
+**Blocked:** Nothing blocked. I ran out of tool steps before writing the fixed test file into the repo. No Tier 1 file was changed.
+_Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~709025 tokens_
