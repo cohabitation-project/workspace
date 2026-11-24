@@ -168,3 +168,9 @@ Round 15 foreman assignment is a real Playwright check of the placed editor on m
 Source: teams/cut/STANDUP.md
 
 Be precise: today's browser measurements came from a static harness serving commons/public with /cut/ rewritten to cut.html, not the actual application server. The report calls the check partial and identifies the missing main-server validation.
+
+
+## 2026-11-24T12:19:05.618Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Job 4 round 19 composer × test: patch `teams/cut/outputs/2026-11-24T12-17-46/composer-x.patch`; report `teams/cut/outputs/composer-x-check.md`; candidate 7/7 pass and removal mutation fails specifically in new assertion on temp copies. Updated `teams/cut/outputs/handoff-browser-check.md`, but Browser x remains unmeasured. IMPORTANT: attempted RESULTS.md append with empty new_text accidentally deleted its last line (the 2026-11-24 06:18Z GPT round-17 phone-check row); restore it and append round-19 row immediately. Then update ACTIVE.md and post cut room. No actual browser/server run.

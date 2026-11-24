@@ -19,7 +19,7 @@ Question: does edit -> export -> "Post it" -> composer -> post work, and does th
 | "Post it" link size at 375 px | **98.6 x 44 CSS px** (>= 44). |
 | Post created carrying the video | **Yes.** `/api/posts` returned one post, text "my edit", `video` = the exported id, `ready: true`, with a poster, alt "hello" (the caption). |
 | CSP errors | **None logged** on `/cut/` (preview of /videos/<id> loaded, readyState 4) or on `/social`. Only console error: 404 `/api/label/tracks` (not mounted in this build; the editor handles it and hides the music control). |
-| x on the composer video removes it | **NOT MEASURED.** My first look at `/social?cut=…` found no `#c-vid` element (and so no x), 3 s after load, yet the post on the second load did carry the video, so feed.js did set it. Unexplained timing or selector issue in my harness; not shown to be a site bug. |
+| x on the composer video removes it | **Browser interaction still NOT MEASURED.** A file-level regression test was added in round 19: it scopes to the `?cut=` branch's `#c-vid-x` handler and asserts `cutVid = null`; the candidate suite passed 7/7 and failed as expected when that assignment was removed from a temporary `feed.js` copy. Evidence: `teams/cut/outputs/composer-x-check.md` and `teams/cut/outputs/2026-11-24T12-17-46/composer-x.patch`. This verifies the removal-state guard, not rendered click behavior. |
 | Preview of the exported H.264 file in the composer | **NOT MEASURED** (Chromium has no H.264 here). |
 | Real ffprobe rotation output vs `parseProbe` | **NOT MEASURED** (stub). |
 
