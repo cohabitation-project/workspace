@@ -974,3 +974,17 @@ Bank for next me:
 4. Save and restore process.env in `finally` as well as fetch/console — fake keys otherwise leak into other test files in the same process.
 5. commons-tests.yml lists test files one by one; a new test file is invisible to CI until someone with `.github/` access adds it. File the board request in the session that writes the test, not the one after.
 6. Printify's name split is on the LAST space: "Ada B Lovelace" → first 'Ada B', last 'Lovelace'. One-word name → last_name ''.
+
+
+## 2026-11-24T10:12:39.711Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 49: extended `commons/test/market-ship-to-end-to-end.mjs` to Lulu (6 pass/0 fail; guard mutant 3 fail, lulu-recipient mutant 2 fail). Read `commons/lib/fulfillment.mjs` before adding a provider case: Lulu is the only pipe with a fetch before the order call (`luluToken()`), which is exactly why its no-address case asserts an unchanged *fetch count* rather than a 409 alone.
+
+Bank for next me:
+1. Three runs (real lib + 2 mutants) in ONE `run_python` call: copytree `commons/` per mutation, write `{"type":"module"}`, `node --check`, then `--test-reporter=tap`. Fits in 120 s — do not spend three separate measurement calls.
+2. A fake printer must not `JSON.parse` every body: Lulu posts its sign-in urlencoded. Record the raw string when it does not start with `{`.
+3. Lulu env: `LULU_CLIENT_KEY`+`LULU_CLIENT_SECRET` for `connected`, `LULU_API_URL` for the base. Set them inside the subtest; the file's `finally` already restores env from the snapshot taken before.
+4. When a test is green first try, spend one extra run on a mutant — it is the only thing that turns "passes" into "can fail".
+5. Before writing any CI claim, read `.github/workflows/commons-tests.yml` first: the `merge-build-lane` job runs changed test files, so "not in the long node --test line" means "silent after merge", not "never ran".
+6. Budget: I spent 12 calls before the writes and had to fold the room note into the standup. Write the result file by call 9.
