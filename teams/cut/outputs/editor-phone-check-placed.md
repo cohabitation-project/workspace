@@ -1,23 +1,7 @@
-# Placed Cut editor phone check — 2026-11-24
+# Placed Cut editor phone check — Job 4, round 18
 
-**Assignment:** Job 4 round 17, finish the placed-editor phone check. **Status: partial browser check; local application-server check not completed.** I measured the browser-rendered placed editor assets in an isolated static HTTP harness, not a booted `commons/server.mjs` instance and not production.
+**Result: blocked; not a server-backed check.** I attempted to boot main with `COMMONS_FAKE_LLM=1`, a fresh temporary `COMMONS_DATA`, and port 3979. On this checkout, `node commons/server.mjs` exits 1 before starting: `ERR_MODULE_NOT_FOUND: Cannot find package 'dotenv' imported from commons/server.mjs` (Node v24.22.3). The repository has no root `package.json` or `package-lock.json`, and no `node_modules`; this runner therefore cannot run `npm ci`. Chromium exists at `/usr/bin/chromium`, but `playwright-core` is not installed. I did not use a static server as a substitute this round.
 
-## Method and limits
+**Previous partial measurement (2026-11-24 06:17Z; static harness only, not today's server run):** At 390×844 and 768×1024, the editor page, `cut.js`, and `cut.css` returned 200 in the static harness; “Use this frame” and “Export to Feed” were visible; body width matched viewport; every measured listed target was at least 44×44 CSS px. Screenshots from that run: `teams/cut/outputs/2026-11-24T06-17-50/cut-390x844.png` and `teams/cut/outputs/2026-11-24T06-17-50/cut-768x1024.png`. The harness was not `commons/server.mjs`; local API requests emitted 404 resource errors. Those measurements do not establish actual-server routing, clean network/console, backend behavior, or production behavior.
 
-- Headless Playwright + system Chromium, using the checked-out `commons/public/cut/cut.html`, `cut.js`, and `cut.css`; viewport 390×844 and 768×1024 CSS px, device scale factor 1.
-- An isolated Python static server served `commons/public` and rewrote `/cut/` to `/cut/cut.html`. It is a client layout/assets check only. It does **not** validate server routing, authenticated data, render/export, or production behavior.
-- `commons/server.mjs` could not be booted as a full local app in this checkout: repository root has no `package.json` or `package-lock.json`, so project dependencies/`npm ci` are unavailable here. Chromium itself launched successfully. I did not install project dependencies or change the checkout.
-- Screenshot files: [`cut-390x844.png`](2026-11-24T06-17-50/cut-390x844.png) and [`cut-768x1024.png`](2026-11-24T06-17-50/cut-768x1024.png).
-
-## Measured results
-
-| Viewport | Page and assets | Visible text | Horizontal overflow | Tap-target measurements |
-|---|---|---|---|---|
-| 390×844 | `/cut/` returned 200; `cut.css` 200; `cut.js` 200; no page errors | “Use this frame” and “Export to Feed” visible | body scroll width 390 = viewport 390 | Cover button 358×44; Export button 130×64.4; stock picker 153.2×44; trim sliders 358×44 each; text input 358×44; text-position select 358×44 |
-| 768×1024 | `/cut/` returned 200; `cut.css` 200; `cut.js` 200; no page errors | “Use this frame” and “Export to Feed” visible | body scroll width 768 = viewport 768 | Cover button 488×44; Export button 158.5×44; stock picker 153.2×44; trim sliders 488×44 each; text input 488×44; text-position select 488×44 |
-
-All listed interactive controls measured at least 44×44 CSS px in this static browser run. The browser console also emitted local 404 resource errors from the static harness, whose API endpoints are not implemented; these do not change the observed 200 responses for the editor page, CSS, and JS, but their exact request URLs were not retained. Thus this is **not** a clean full-server/no-console-error result.
-
-## Conclusion
-
-The editor's static page layout and essential visible labels pass these two viewport measurements, with no horizontal overflow and measured targets meeting 44 px. The assigned booted-main-server check is still open: retry in a complete dependency-enabled checkout and verify `/cut/`, asset responses, and console/network errors against `commons/server.mjs` itself. No claim about backend or live editor behavior is made.
+**Round 18 actual-server measurements:** none. `/cut/` delivery, browser network/console, and target measurements against a booted Commons server remain unverified. No deployment/live claim.
