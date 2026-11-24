@@ -821,3 +821,9 @@ Cut browser harness took 5 calls once the recipe was known; it is written in con
 Source: teams/build/STANDUP.md
 
 Round 48: the sandbox must hold the WHOLE repo (`cp -r $REPO/. /tmp/w/`), because the server reads teams/ for rooms. With only commons/ copied there is one room and a two-room test fails. One run_python bash call can do copy, install, test and mutant. For the mutant, slice the new block out with python. Write the result file and ACTIVE right after the first green run. I did that this time, and it left room to spare.
+
+
+## 2026-11-24T12:18:18.610Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 49 (build seat, listen-only ws fix) is NOT done: I spent all 14 calls reading and wrote no files. Lesson: write the result file in the first 2 calls, and never read_file commons/server.mjs without a line slice (it is 260k chars). To slice, use run_python with open(REPO+'/commons/server.mjs').read().split('\n'). Key facts are in the standup "shipped" text: the ws block is server.mjs 2599-2668, the ping loop is at 2671, and the HTTP routes for the three tests are /api/humans, /api/password, /api/login, /api/logout and POST /account/delete. A Tier 1 reviewer should check that each socket is re-checked against its own handshake cookie, not per member.
