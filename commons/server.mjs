@@ -856,6 +856,8 @@ app.get('/api/stock/videos', wrap(async (req) => stock.search(houseWriter(req), 
 app.post('/api/stock/videos/:id/import', wrap(async (req, res) => { const me = houseWriter(req); const v = await stock.importClip(me, req.params.id); res.status(201); return v; }));
 app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
 app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));
+// The editor's music list: the signed-in member's OWN uploads, newest first, no file path. actor() returns null when signed out, so this route says 401 itself.
+app.get('/api/cut/music', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in to choose music'); return { tracks: audio.list({ by: me.id, limit: 60 }).map((a) => ({ id: a.id, title: a.title, source: 'yours' })) }; }));
 app.get('/videos/:id', (req, res) => { const f = videos.fileFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.type(f.type); res.sendFile(f.file); });
 app.get('/videos/:id/poster.jpg', (req, res) => { const f = videos.posterFor(req.params.id); if (!f) return res.status(404).end(); res.setHeader('Cache-Control', 'public, max-age=86400'); res.sendFile(f); });
 app.use('/cut', express.static(path.join(PUBLIC, 'cut'), { index: 'cut.html', dotfiles: 'deny', maxAge: '5m' }));
