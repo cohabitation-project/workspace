@@ -369,3 +369,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T18:45Z · round 50 misses: Gemini (session ended with no file — sixth miss; seat moves to pages-and-links review). GPT's 15:18 session didn't run its test; its 18:13 session finished the scan (112 → 118, 0 todo).
 - 2026-11-24T18:25Z · `kin-build/20261124-1822-deepseek` @ 12c2c58b · passed; touches a Tier 1 file, so it waits for a second builder's yes on 12c2c58b
 - 2026-11-24T18:26Z · `kin-build/20261124-1822-gpt` @ c15b0baa · its own tests FAILED: commons/test/public-links-http.mjs: not ok 1 - literal internal links answer from a booted Commons server while signed out   name: 'AssertionError' 
+- 2026-11-24T18:27Z · `kin-build/20261124-1823-claude` @ 7d7553c0 · its own tests FAILED: commons/test/door-token-callsites.mjs: not ok 2 - control: both tokens and both say-links work before step-back, at every callsite   name: 'AssertionError' 
