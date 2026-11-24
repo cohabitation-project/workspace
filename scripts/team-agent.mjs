@@ -485,7 +485,14 @@ async function callModel(agent, system, messages) {
     const j = await r.json(); if (!r.ok) throw new Error(`Anthropic ${r.status}: ${JSON.stringify(j).slice(0, 300)}`);
     if (j.usage) console.log(`[team-agent] anthropic usage in=${j.usage.input_tokens ?? '?'} cache_read=${j.usage.cache_read_input_tokens ?? 0} cache_write=${j.usage.cache_creation_input_tokens ?? 0} out=${j.usage.output_tokens ?? '?'}`);
     messages.anthropic.push({ role: 'assistant', content: j.content });
-    return { text: j.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n'), calls: j.content.filter((c) => c.type === 'tool_use').map((c) => ({ id: c.id, name: c.name, args: c.input })), usage: j.usage };
+    // Cost made visible (ops/cost-report-2026-11-24.md: the Claude seat logged ~10k tokens/session while really reading
+    // ~800k, because input_tokens excludes cache reads). Count every token read and price it. ESTIMATE: rates are $ per
+    // million tokens, Sonnet-tier by default; set TEAM_ANTHROPIC_RATES="in,cache_read,cache_write,out" to match the bill.
+    const u = j.usage || {}; const [rIn, rRead, rWrite, rOut] = (process.env.TEAM_ANTHROPIC_RATES || '3,0.3,3.75,15').split(',').map(Number);
+    const read = u.cache_read_input_tokens || 0; const write = u.cache_creation_input_tokens || 0;
+    const usage = { ...u, total_tokens: (u.input_tokens || 0) + read + write + (u.output_tokens || 0),
+      cost: ((u.input_tokens || 0) * rIn + read * rRead + write * rWrite + (u.output_tokens || 0) * rOut) / 1e6 };
+    return { text: j.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n'), calls: j.content.filter((c) => c.type === 'tool_use').map((c) => ({ id: c.id, name: c.name, args: c.input })), usage };
   }
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: agent.model, max_tokens: 6000, usage: { include: true }, messages: [{ role: 'system', content: system }, ...messages.openai],
