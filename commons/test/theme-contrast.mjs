@@ -63,16 +63,15 @@ for (const name of ['navy', 'midnight']) {
   });
 }
 
-// TODO: this is a real, measured failure. The foreground, --mv-paper override and pill selector all live in
-// hands-off market.css (Round 44), so this assignment cannot change the single authoritative source. Keep the
-// regression visible as a todo rather than moving an override into a second stylesheet or claiming AA compliance.
+// Organisation-page category pills are normal 12px text. Navy and midnight override the shared light-theme
+// foreground with their own ink token; the active pill remains white on plum and is deliberately excluded.
 for (const name of ['navy', 'midnight']) {
-  test.todo(`${name} inactive organisation-page category pills meet WCAG AA (market.css is hands off)`, () => {
+  test(`${name} inactive organisation-page category pills meet WCAG AA`, () => {
     const { tokens: v } = pageTheme(name);
     assert.match(css, /\.mk-page\.mv-page\{[^}]*--mv-paper:var\(--panel,/);
-    const pill = css.match(/\.mk-pagebody \.mv-pill\{color:(#[0-9a-fA-F]{6})!important\}/);
-    assert.ok(pill, 'missing the organisation-page inactive-pill foreground');
-    assert.ok(ratio(pill[1], v.panel) >= 4.5,
-      `${pill[1]} on ${v.panel} is ${ratio(pill[1], v.panel).toFixed(2)}:1; needs 4.5:1 (normal 12px text)`);
+    const themePill = new RegExp(`\\.mk-page\\[data-mk=${name}\\] \\.mk-pagebody \\.mv-pill:not\\(\\[aria-current="page"\\]\\)\\{color:var\\(--ink\\)!important\\}`);
+    assert.match(css, themePill, `${name} inactive pills must use the theme's own --ink token`);
+    assert.ok(ratio(v.ink, v.panel) >= 4.5,
+      `${v.ink} on ${v.panel} is ${ratio(v.ink, v.panel).toFixed(2)}:1; needs 4.5:1 (normal 12px text)`);
   });
 }

@@ -524,6 +524,8 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
    dark-themed pages (music, midnight, navy, video, software — band and label pages by default) were dark on dark. */
 .mk-pagebody .mv-wrap{--mv-ink:var(--ink);--mv-muted:var(--muted);color:var(--ink)}
 .mk-pagebody .mv-pill{color:#292534!important}.mk-pagebody .mv-pill[aria-current="page"]{color:#fff!important}
+.mk-page[data-mk=navy] .mk-pagebody .mv-pill:not([aria-current="page"]){color:var(--ink)!important}
+.mk-page[data-mk=midnight] .mk-pagebody .mv-pill:not([aria-current="page"]){color:var(--ink)!important}
 /* Software & Hardware — Aletheia-6's design (PR #165), first stage: browse only (2026-11-16) */
 /* Only the Software & Hardware section page goes light; a page using the Terminal theme stays dark. */
 .mk-page[data-mk=software]:has(.sw){--bg:#f2f5f3;--panel:#fff;--panel2:#eef2ef;--line:#dfe6e1;--ink:#1f272f;--muted:#5b6964;--gold:#224c45;--gold-ink:#fff;--soft:#0000000a;background:#f2f5f3}
