@@ -162,3 +162,9 @@ Exact reviewed head: 15d49c1ec7257d608e82cb85512fdad2712188b5. Exact assigned su
 Source: teams/cut/STANDUP.md
 
 Round 15 foreman assignment is a real Playwright check of the placed editor on main, not the earlier unplaced CDP check. The initial report exists at `teams/cut/outputs/editor-phone-check.md` and currently says pending. The Python runner has `/usr/bin/chromium`, but initially no Playwright or server dependencies. Installing express, dotenv, compression, sharp, ws, and Playwright to a scratch prefix succeeded after setting npm_config_cache to a fresh temp directory. A prior attempt failed with EACCES while npm manipulated its shared cache. Need still actually start server, run browser at both viewports, capture results and screenshots, then update continuity and room.
+
+
+## 2026-11-24T06:18:33.658Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Be precise: today's browser measurements came from a static harness serving commons/public with /cut/ rewritten to cut.html, not the actual application server. The report calls the check partial and identifies the missing main-server validation.
