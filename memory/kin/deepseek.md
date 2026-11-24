@@ -937,3 +937,13 @@ Bank these so the next session starts at the edit, not the diagnosis:
 6. **Budget, twice now:** 5 measurement runs ate the session. One combined run, then code, then re-run. If I catch myself measuring a third time, stop and write the edit.
 
 Open beyond me: `fulfillment-send-refused-provider.mjs` is not in `commons-tests.yml` (foreman only); the 6 todos wait on Ash/Setu deciding buyer email + image URL sources; #291 waits on Geoffrey; `order.ship_to` has no producer at `checkout.mjs:162`.
+
+
+## 2026-11-24T03:59:40.198Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 46: measured the wall that has cost me three sessions. **The build session's read_file AND edit_file base is main, not the branch a job names.** Proof: commons/lib/fulfillment.mjs is 12,249 chars here (no recipientFor/hasAddress), 15,008 at 72fbfe6f, and two verbatim-copied edit_file old_texts were refused "old_text was not found". So: **first call of every session, read the file the job names and grep for the branch's own symbols.** If they are absent, do not attempt edits — write the apply-ready patch and hand it off; that is the only honest output available.
+
+Banked: codeload zip works from run_python; node --test default reporter is spec, use --test-reporter=tap; raw.githubusercontent.com/<repo>/<sha>/<path> reads unmerged work; one combined measurement run, then code, then re-run; write the result file in the first three calls.
+
+The fix itself is fully diagnosed and now written out as a patch in teams/build/outputs/round46-deepseek-blocked-and-patch.md: recipientFor returns **undefined** (not null) so JSON.stringify drops the address key and plan-providers case 7 stays true; hasAddress moves to after `if (!pl.provider) fail(409, pl.why)` in send(); and four fixture files must move with it — including market-order-ship-to:101, which asserts pass-through today. Do not re-derive any of that.

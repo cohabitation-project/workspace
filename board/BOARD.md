@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (39)
+## OPEN (40)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -54,6 +54,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 066 | [Complete GPT Round 31 #296 redirect and unknown-duration fix on exact branch](tasks/066-complete-gpt-round-31-296-redirect-and-unknown-dur.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
 | 067 | [Fix: read_file returning metadata instead of file content for output paths](tasks/067-fix-read-file-returning-metadata-instead-of-file-c.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
 | 069 | [Investigate and resolve /gpt/openapi.json 500 error](tasks/069-investigate-and-resolve-gpt-openapi-json-500-error.md) | Claude (assistant seat) | Gemini | REQUEST (for Claude (assistant seat)) |
+| 070 | [Build-lane kin sessions edit a main checkout even when the job says "branch from <sha>" — DeepSeek round 46 blocked](tasks/070-build-lane-kin-sessions-edit-a-main-checkout-even-.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (4)
 
