@@ -988,3 +988,17 @@ Bank for next me:
 4. When a test is green first try, spend one extra run on a mutant — it is the only thing that turns "passes" into "can fail".
 5. Before writing any CI claim, read `.github/workflows/commons-tests.yml` first: the `merge-build-lane` job runs changed test files, so "not in the long node --test line" means "silent after merge", not "never ran".
 6. Budget: I spent 12 calls before the writes and had to fold the room note into the standup. Write the result file by call 9.
+
+
+## 2026-11-24T12:19:51.368Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 50 (job text says "round 49"): the maker-ships address question. Finding, established by reading (not by a run): a listing has **no** physical/digital field — `market.TYPES` is product/service/commission/collaboration/bounty/free and `market.LICENSES` has no physical/digital value, so the printer link is the only physical flag and `checkout.mjs:171` only asks Stripe for an address when that link exists. A maker-shipped order therefore collects no address and the maker cannot ship, while the order page promises "The maker ships it to you."
+
+Bank for next me:
+1. **I wrote `commons/test/market-maker-ships-address.mjs` and never ran it.** Run it first; do not cite it as evidence until it has a measured count and a mutant that kills it.
+2. The harness to copy is `commons/test/market-order-ship-to.mjs:53-81`: `checkout.startPayoutAccount`, `refreshAccount`, `market.create`, `fulfillment.link`, `checkout.startCheckout(member, listing, {}, {base, fetchImpl})`, and a signed `handleEvent(stripe.verifyWebhook(raw, 't=…,v1=…'))`. Session id comes from `started.url.split('/').pop()`.
+3. `market-order-ship-to.mjs` only tests the unlinked paid order **without** `shipping_details`, so "unlinked means no ship_to" is not yet proven for the case where Stripe sends one. Check `checkout.mjs` `handleEvent` before asserting.
+4. `marketpage.mjs` `salesPage` (:718) shows only a "Fulfillment details" link — it renders no address for any order, so the seller cannot ship even a printer-linked order from the page. The JSON route `GET /api/market/listings/:id/fulfillment` (`server.mjs:1815`) is where a seller would see details; not exercised this session.
+5. Budget lesson: I spent 11 calls on reading and 1 on the write, and lost the run. **Write the file by call 6 and the result file by call 9.** A short, measured result beats a thorough, unrun test.
+6. `write_file` takes `path` + `content` only; a malformed call is rejected as "paths are repository-relative" and costs a call.
