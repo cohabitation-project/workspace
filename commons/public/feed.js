@@ -25,8 +25,17 @@ if (form) {
   });
   // 🎬 one video per post: recorded on the spot (phones offer the camera) or chosen. Up to 200 MB and 2 minutes.
   let video = null; const vbox = $('#c-vid');
+  // From the editor (/cut?): the edited video is already saved to the member's videos, and the link carries its id.
+  // The server still checks at post time that the video exists and is theirs.
+  let cutVid = null;
+  { const id = new URLSearchParams(location.search).get('cut');
+    if (id && /^[A-Za-z0-9_-]{1,64}$/.test(id) && vbox) {
+      cutVid = id; vbox.hidden = false;
+      vbox.innerHTML = `<div class="cx-vprev"><video class="cx-vthumb" src="/videos/${id}" controls playsinline preload="metadata" aria-label="Your edited video"></video><button type="button" class="cx-vx" id="c-vid-x" aria-label="Remove the video">×</button></div>`;
+      $('#c-vid-x').addEventListener('click', () => { cutVid = null; vbox.hidden = true; vbox.innerHTML = ''; });
+    } }
   $('#c-video')?.addEventListener('change', (e) => {
-    const f = e.target.files[0]; video = null; if (!vbox) return;
+    const f = e.target.files[0]; video = null; cutVid = null; if (!vbox) return;
     if (!f) { vbox.hidden = true; vbox.innerHTML = ''; return; }
     if (f.size > 200 * 1024 * 1024) { msg.textContent = `${f.name}: over 200 MB. Trim it, or record a shorter one.`; e.target.value = ''; return; }
     video = f; vbox.hidden = false;
@@ -82,7 +91,7 @@ if (form) {
     const text = $('#c-text').value.trim();
     let sell = null;
     if (sellMode()) { try { sell = sellFields(); } catch (err) { msg.textContent = err.message; return; } if (!text) { msg.textContent = 'Describe what you are offering in the post (it becomes the listing description).'; return; } }
-    if (!text && !files.length && !video) { msg.textContent = 'Write something, or add an image or a video.'; return; }
+    if (!text && !files.length && !video && !cutVid) { msg.textContent = 'Write something, or add an image or a video.'; return; }
     posting = true; form.setAttribute('aria-busy', 'true');
     const controls = [...form.querySelectorAll('button,input,textarea,select')].map((el) => [el, el.disabled]);
     controls.forEach(([el]) => { el.disabled = true; });
@@ -97,7 +106,7 @@ if (form) {
         ids.push((await uploadImage(files[i], { alt, credit, made_by, maker: credit })).id);
       }
       let vid = null;
-      if (video) vid = (await sendVideo(video, $('#c-vid-alt')?.value.trim())).id;
+      if (video) vid = (await sendVideo(video, $('#c-vid-alt')?.value.trim())).id; else if (cutVid) vid = cutVid;
       msg.textContent = 'posting…';
       const group = form.dataset.group || null;
       const release = $('#c-release')?.value || null;

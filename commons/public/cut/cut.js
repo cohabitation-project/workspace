@@ -34,6 +34,13 @@ function safeWrite(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* draft remains usable in this page */ }
 }
 
+// The editor's hand-off to the post composer: the id of a saved video, or null if it can't be a safe link.
+export const VIDEO_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+export function handoffHref(id) {
+  const s = String(id ?? '');
+  return VIDEO_ID_RE.test(s) ? `/social?cut=${encodeURIComponent(s)}#compose` : null;
+}
+
 export function exportFailureMessage(status, payload) {
   if (status === 404) return "Export isn't open yet — your edit is saved here.";
   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
@@ -258,6 +265,26 @@ export function initCutEditor(root = document) {
     showToast('Cover frame saved in this draft.');
   });
 
+  const resultBox = byId('export-result');
+  const resultLink = byId('export-post');
+  // The render sits in the renders folder; copy it into the member's own videos (the same upload the
+  // composer uses, so it is probed and gets a poster), then link to the composer with that video chosen.
+  async function handOff(payload) {
+    if (typeof payload?.url !== 'string' || !payload.url.startsWith('/cut/')) { showToast('The export finished but returned no video. Try again.'); return; }
+    showToast('Export done. Saving it to your videos…');
+    const file = await fetch(payload.url, { credentials: 'same-origin' });
+    if (!file.ok) { showToast('The export is ready but could not be fetched. Try again.'); return; }
+    const blob = await file.blob();
+    const up = await fetch(`/api/videos?alt=${encodeURIComponent(text.value.trim().slice(0, 300))}`, {
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'video/mp4', 'X-Commons': '1' }, body: blob,
+    });
+    const saved = await up.json().catch(() => ({}));
+    const href = up.ok ? handoffHref(saved.id) : null;
+    if (!href) { showToast(saved.error || `Could not save the export to your videos (${up.status}).`); return; }
+    resultLink.href = href; resultBox.hidden = false;
+    showToast('Your edited video is ready. Tap "Post it".');
+  }
+
   exportButton.addEventListener('click', async () => {
     const values = saveDraft();
     let edit;
@@ -281,7 +308,7 @@ export function initCutEditor(root = document) {
         const payload = await response.json().catch(() => ({}));
         showToast(exportFailureMessage(response.status, payload));
       } else {
-        showToast('Export requested. Review it before posting.');
+        await handOff(await response.json().catch(() => ({})));
       }
     } catch {
       showToast('Export is unavailable offline. Your edit is saved here.');
