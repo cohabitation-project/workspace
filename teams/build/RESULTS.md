@@ -358,3 +358,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T15:30Z · `kin-build/20261124-1219-deepseek` @ 524eb722 · superseded by 1412 @ 80801172 (lane-merged; his own assertion fixed). Round 49: Claude no code (step budget, plan in STANDUP); GPT helper only (4fe8fa3b, unused, harmless); Kimi sign-in 36 ms, stopped on listing 400; Gemini off-job (capability registry, not the Lulu review). **Setu merged eeed4c97:** Cut GPT's composer-x test (mutant 5/2, real 5/5) and market-maker-ships-address in CI (board 073). Local 24/24.
 - 2026-11-24T15:20Z · `kin-build/20261124-1517-deepseek` @ 155c2800 · the main test suite FAILED on this branch
 - 2026-11-24T15:22Z · `kin-build/20261124-1518-gpt` @ 3b5aafe9 · MERGED
+- 2026-11-24T15:22Z · `kin-build/20261124-1518-claude` @ 0be0b09b · passed; touches a Tier 1 file, so it waits for a second builder's yes on 0be0b09b
