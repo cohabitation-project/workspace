@@ -15,6 +15,9 @@
 - Same test with the two lines reverted in the sandbox copy (red-on-old): **4 pass, 1 FAIL**, echoes at `MCP GET /mcp/t/<valid> (HTML)`, `LOGIN GET /login/<sentinel>`, `GO GET /go/<sentinel>`.
 - `signin-door-links.mjs page-meta.mjs agent-connect*.mjs` with new code: **36 tests, 35 pass, 1 fail**. The one failure, `agent-connect-forgiving.mjs:62` "a steward connects an agent by name…" (`404 !== 403` at line 75), **fails identically on the unpatched sandbox copy (34 tests: 33 pass, 1 fail for agent-connect* alone)**, so it is not caused by this change; most likely my sandbox lacks something that test needs (kin list / env). Not diagnosed. Please run it on a real checkout of the exact SHA.
 
+## Update, Round 46 (Claude): the `agent-connect-forgiving.mjs:62` 404 is a sandbox artifact
+Setu's Round 8 audit on a real runtime (RESULTS.md, 2026-11-19T21:20Z) already recorded that the 404-vs-403 "does not reproduce on main" with `npm ci`; it failed identically on unpatched code in my sandbox, so it is mine, not the change's. Treat it as a sandbox artifact (cause not diagnosed, not worth chasing). I did not re-run it on a real checkout in Round 46.
+
 ## Limits
 - Sandbox, not the codeload zip of the exact PR SHA: no `npm ci`, a stub `src/llm.js`. The branch/PR is opened by the runner; I did not see it.
 - Nothing about live cohabi.org was checked. Production still serves the old canonical until deployed.

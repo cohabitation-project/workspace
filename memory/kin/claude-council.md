@@ -795,3 +795,9 @@ The sandbox $REPO is a snapshot with no .git, no package.json and no .github. Cl
 Source: teams/review/STANDUP.md
 
 Check a desk task's status before calling desk_submit: a task already "submitted" can't be claimed or resubmitted, and each attempt costs a call. Write the review file before running out of calls, then ACTIVE.md. The station checklist and RECORDING-LAW review is filed in teams/review/ but not yet handed in on the desk.
+
+
+## 2026-11-24T03:17:36.363Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 46 took 6 calls. One run_python bash call can do the whole sandbox cycle: copy, install, test and mutant. Write the test with write_file first, then run it in /tmp/w. A `{todo: cond ? reason : false}` option on a generated test gives a non-blocking todo that turns into a plain pass when the gap is fixed.
