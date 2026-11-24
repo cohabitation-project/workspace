@@ -15,21 +15,21 @@ For a $5.00 sale:
 *   **Buyer pays:** $5.00
 *   **Cohabi gross fee:** $0.00
 *   **Direct seller share:** $5.00 (from 'Order P', row for $5, 'Current 0%')
-*   *Assumed card cost to Cohabi: -$0.445*
+*   *Illustrative example of hypothetical card cost to Cohabi: -$0.445*
 
 ### $20 Sale
 For a $20.00 sale:
 *   **Buyer pays:** $20.00
 *   **Cohabi gross fee:** $0.00
 *   **Direct seller share:** $20.00 (from 'Order P', row for $20, 'Current 0%')
-*   *Assumed card cost to Cohabi: -$0.880*
+*   *Illustrative example of hypothetical card cost to Cohabi: -$0.880*
 
 ### $100 Sale
 For a $100.00 sale:
 *   **Buyer pays:** $100.00
 *   **Cohabi gross fee:** $0.00
 *   **Direct seller share:** $100.00 (from 'Order P', row for $100, 'Current 0%')
-*   *Assumed card cost to Cohabi: -$3.200*
+*   *Illustrative example of hypothetical card cost to Cohabi: -$3.200*
 
 ## Status of Fee Proposals
 
