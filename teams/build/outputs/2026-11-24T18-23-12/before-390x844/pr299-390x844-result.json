@@ -1,0 +1,396 @@
+{
+  "status": "measured",
+  "head": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "stage": "close",
+  "started_at": "2026-11-24T18:22:40.339Z",
+  "evidence": {
+    "member_id": "h_mwv0vdvi01014d12",
+    "listing_id": "l_a6b673371c9a8d",
+    "http_status": 200,
+    "url": "http://127.0.0.1:43245/label/l/l_a6b673371c9a8d/products",
+    "geometry": {
+      "signed_in_label": {
+        "member_name_visible": true,
+        "sign_out_visible": false,
+        "header_text": "Cohabi\n▾\n❤️\n0"
+      },
+      "header": {
+        "x": 38,
+        "y": 522.13,
+        "width": 314,
+        "height": 163.64,
+        "right": 352,
+        "bottom": 685.77
+      },
+      "actions_card": {
+        "x": 38,
+        "y": 1896.3,
+        "width": 314,
+        "height": 131.38,
+        "right": 352,
+        "bottom": 2027.67
+      },
+      "actions_card_heading_overlap_px2": 0,
+      "pricing_heading": {
+        "x": 55,
+        "y": 1912.3,
+        "width": 150.69,
+        "height": 22,
+        "right": 205.69,
+        "bottom": 1934.3
+      },
+      "price": {
+        "x": 55,
+        "y": 1942.3,
+        "width": 157.66,
+        "height": 38,
+        "right": 212.66,
+        "bottom": 1980.3
+      },
+      "pricing_heading_price_overlap_px2": 0,
+      "table": {
+        "rect": {
+          "x": 52,
+          "y": 2133.48,
+          "width": 380,
+          "height": 67.59,
+          "right": 432,
+          "bottom": 2201.08
+        },
+        "client_width": 380,
+        "scroll_width": 380,
+        "horizontal_overflow_px": 0,
+        "outside_viewport_px": 42
+      },
+      "document_horizontal_overflow_px": 0,
+      "purple_band_bottom": null,
+      "purple_bands": [],
+      "counts": {
+        "products": 8,
+        "headings": 6
+      },
+      "app_text": "COHABI CREATOR WORKSHOP · ONE ARTWORK, MANY PRODUCTS\n\nPR299 diagnostic art\n\nBy PR299 Painter · 0 products published · Place, preview and approve each product\n\n👕\nDiagnostic product 71\nNot on\n🧥\nDiagnostic product 146\nNot on\n☕\nDiagnostic product 19\nNot on\n🖼\nDiagnostic product 1\nNot on\n🖼\nCanvas (in)\nNot on\n👜\nDiagnostic product 84\nNot on\n✦\nDiagnostic product 358\nNot on\n▣\nDiagnostic product 181\nNot on\n\nDesign preview · Diagnostic product 71 · Black · Print print area\n\nArt placement\n\nMove your artwork directly on the product. Only the outlined print area will be printed.\n\nSize\n%\nLeft ↔ right\n%\nUp ↕ down\n%\nCentre artwork\n↻ Turn 90°\n\nPrint quality: Poor — may print blurry. Make it smaller or upload a larger file · 0 dpi\n\nProduct colour (Diagnostic product 71)\n\nTap a colour to preview it. Each colour you sell comes in every size.\n\n✓\nViewing: Black. The selected swatch is not automatically offered for sale.\n✓ Selling this colour — stop selling\n\nYou sell: Black\n\nPricing & earnings\nYour price\nBuyer pays\n$20.00\nPrintful cost\n$11.50\nEst. you earn\n$7.62\nSize breakdown (Diagnostic product 71)\nSize\tBuyer pays\tPrintful\tCard fee\tCohabi 0%\tYou earn\nM\t$20.00\t$11.50\t$0.88\t$0.00\t$7.62\n\nIllustrative earnings only; shipping, applicable tax and additional charges are not included here. The card fee is provisionally shown on the maker side until the cooperative determines who carries it. Size price adjustments reflect production costs.\n\nSave draft\n📷 Generate Printful mockup\n🚀 Approve and publish\n\n🔒 Draft products stay private until you approve the verified Printful mockup.\n\nPrintful mockup · Diagnostic product 71 · Black\n\nNo mockup yet. Select your design, save the draft, and generate a Printful mockup before approving."
+    },
+    "band_diagnostics": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pseudo_gradients": [
+        {
+          "tag": "HEADER",
+          "id": "",
+          "class": "fx-top",
+          "pseudo": "::after",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 66
+          },
+          "height": "5px",
+          "display": "block",
+          "background": "linear-gradient(90deg, rgb(233, 178, 93) 0px, rgb(233, 178, 93) 25%, rgb(143, 211, 255) 25%, rgb(143, 211, 255) 50%, rgb(199, 155, 242) 50%, rgb(199, 155, 242) 75%, rgb(240, 138, 107) 75%, rgb(240, 138, 107) 100%)",
+          "margin": "0px"
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "class": "mv-wrap",
+          "pseudo": "::before",
+          "rect": {
+            "x": 0,
+            "y": 66,
+            "width": 390,
+            "height": 3109.140625
+          },
+          "height": "14px",
+          "display": "block",
+          "background": "linear-gradient(90deg, rgb(83, 30, 82), rgb(170, 107, 78), rgb(234, 161, 60), rgb(135, 63, 120))",
+          "margin": "0px -16px"
+        },
+        {
+          "tag": "DIV",
+          "id": "mp-app",
+          "class": "mp-app",
+          "pseudo": "::before",
+          "rect": {
+            "x": 26,
+            "y": 510.125,
+            "width": 338,
+            "height": 2319.515625
+          },
+          "height": "242px",
+          "display": "block",
+          "background": "linear-gradient(90deg, rgba(255, 248, 240, 0.88) 0%, rgba(255, 247, 239, 0.91) 42%, rgba(255, 237, 228, 0.68) 100%), url(\"http://127.0.0.1:43245/images/img_f884393c921a334f\")",
+          "margin": "0px"
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "class": "cz-stagewrap",
+          "pseudo": "::before",
+          "rect": {
+            "x": 38,
+            "y": 815.578125,
+            "width": 314,
+            "height": 378.375
+          },
+          "height": "37px",
+          "display": "block",
+          "background": "radial-gradient(rgba(96, 65, 106, 0.2), rgba(0, 0, 0, 0) 68%)",
+          "margin": "0px"
+        }
+      ],
+      "hits": [
+        {
+          "y": 234,
+          "elements": [
+            {
+              "tag": "FORM",
+              "id": "",
+              "class": "mk-searchbar mv-search",
+              "rect": {
+                "x": 0,
+                "y": 176.59375,
+                "width": 390,
+                "height": 59
+              }
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "class": "mv-wrap",
+              "rect": {
+                "x": 0,
+                "y": 66,
+                "width": 390,
+                "height": 3109.140625
+              }
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "class": "fx-page mk-page mv-page",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3623.140625
+              }
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "class": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3641.140625
+              }
+            }
+          ]
+        },
+        {
+          "y": 238,
+          "elements": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "class": "mv-wrap",
+              "rect": {
+                "x": 0,
+                "y": 66,
+                "width": 390,
+                "height": 3109.140625
+              }
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "class": "fx-page mk-page mv-page",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3623.140625
+              }
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "class": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3641.140625
+              }
+            }
+          ]
+        },
+        {
+          "y": 240,
+          "elements": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "class": "mv-wrap",
+              "rect": {
+                "x": 0,
+                "y": 66,
+                "width": 390,
+                "height": 3109.140625
+              }
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "class": "fx-page mk-page mv-page",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3623.140625
+              }
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "class": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3641.140625
+              }
+            }
+          ]
+        },
+        {
+          "y": 245,
+          "elements": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "class": "mv-wrap",
+              "rect": {
+                "x": 0,
+                "y": 66,
+                "width": 390,
+                "height": 3109.140625
+              }
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "class": "fx-page mk-page mv-page",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3623.140625
+              }
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "class": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3641.140625
+              }
+            }
+          ]
+        },
+        {
+          "y": 246,
+          "elements": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "class": "mv-wrap",
+              "rect": {
+                "x": 0,
+                "y": 66,
+                "width": 390,
+                "height": 3109.140625
+              }
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "class": "fx-page mk-page mv-page",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3623.140625
+              }
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "class": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3641.140625
+              }
+            }
+          ]
+        },
+        {
+          "y": 247,
+          "elements": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "class": "mv-wrap",
+              "rect": {
+                "x": 0,
+                "y": 66,
+                "width": 390,
+                "height": 3109.140625
+              }
+            },
+            {
+              "tag": "BODY",
+              "id": "",
+              "class": "fx-page mk-page mv-page",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3623.140625
+              }
+            },
+            {
+              "tag": "HTML",
+              "id": "",
+              "class": "",
+              "rect": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 3641.140625
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "screenshot": "/tmp/kin-py-C2OKZR/out/before-390x844/pr299-390x844.png",
+    "console_errors": []
+  },
+  "failure": null,
+  "finished_at": "2026-11-24T18:22:42.635Z"
+}

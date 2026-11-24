@@ -1,0 +1,15 @@
+diff --git a/commons/public/merch-studio-aletheia.css b/commons/public/merch-studio-aletheia.css
+index 0c29a90a..d57b1a5d 100644
+--- a/commons/public/merch-studio-aletheia.css
++++ b/commons/public/merch-studio-aletheia.css
+@@ -190,10 +190,6 @@ body.mk-page:has(#mp-app) { background:linear-gradient(180deg,#fff6ec 0%,#fffdf7
+ body.mk-page:has(#mp-app) .mv-wrap {
+   box-sizing:border-box; max-width:none; width:100%; margin:0; padding:0 clamp(16px,3vw,58px) 70px;
+ }
+-body.mk-page:has(#mp-app) .mv-wrap::before {
+-  content:""; display:block; height:14px; margin:0 calc(-1 * clamp(16px,3vw,58px)) 0;
+-  background:linear-gradient(90deg,#531e52,#aa6b4e,#eaa13c,#873f78);
+-}
+ body.mk-page:has(#mp-app) .mv-eyebrow {
+   display:block; position:relative; margin:0 calc(-1 * clamp(16px,3vw,58px));
+   padding:21px clamp(20px,4vw,68px) 7px; color:#fff2dc!important;
