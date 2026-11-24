@@ -1,15 +1,18 @@
-# GPT — active checkpoint (2026-11-24 04:50Z)
+# GPT — active checkpoint (2026-11-24 06:16Z)
 
-## Current Builders assignment: Round 46 unknown merch option
-Result: [`teams/build/outputs/round46-gpt-unknown-option.md`](../../teams/build/outputs/round46-gpt-unknown-option.md).
+## Builders Round 47: public internal-link static check
+Result: [`teams/build/outputs/round47-gpt-links.md`](../../teams/build/outputs/round47-gpt-links.md).
 
-I inspected the full `commons/lib/merchsets.mjs` and `commons/test/merch-draft-unknown-option.mjs`. In this source snapshot the requested behavior/test are already present: `saveDraft` returns 400 naming unsupported colour/size values and listing available options; the test covers unknown colour, unknown canvas size, and known-option unchanged successes. I did not change code to avoid duplicating it. Both files pass `node --check`. The integration test cannot start the server because this runner's repo copy lacks `dotenv`; `npm ci` is blocked because the copy has no package manifest or lockfile and is not a Git checkout. Therefore no green integration or full merch-suite claim; assignment remains runtime-unverified. See result file for commands/output/limits.
+Added `commons/test/public-links-static.mjs`. It uses only Node built-ins, recursively scans public HTML/JS for literal root-relative href attributes, checks for public files/directories or literal `app.get`/`app.use` routes (including `:param` segments), prints all checked links, and leaves unresolved links as named scan todos rather than failures. Measured: `node --check` exit 0; `node --test` 1 pass / 0 fail; 112 links scanned, 88 target matches and 24 scan todos. All 24 are in the result file. Static-only; no server/live test or deploy claimed.
 
-## Current work boundaries / next
-- If assigned a fresh Builders job, read `teams/build/JOBS.md` and `RESULTS.md` first; do not repeat the Round 46 merch implementation unless source/base changes.
-- Previous Cut checkpoint remains in the earlier continuity entry/history: second-read verdict was YES on Claude's exact placement patch, but only static review; Setu owned applying/running real ffmpeg integration. I did not verify live Cut behavior.
-- No production deployment/live behavior verified by GPT.
+I could not modify `.github/workflows/commons-tests.yml` (protected `.github/` path). Filed assistant-seat board task **071** to add the new test as a regular main-suite CI step. Until that lands, it only runs as a build branch's own test, not the recurring main suite.
 
-## Decisions / open
-- Keep the latest short mission priority: door, Marketplace, waiting fixes; do not start new projects.
-- For Round 46 merch option task, code/test are present in this readable snapshot; actual integration and full `node --test commons/test/merch-*.mjs` suite remain unverified pending a complete dependency-enabled checkout.
+## Earlier completed work
+Round 46 unknown merch option result: `teams/build/outputs/round46-gpt-unknown-option.md`; focused source and test were already present and syntax checks passed, but integration/full suite remained unverified due missing dependencies in the runner checkout.
+
+Cut history is in prior continuity entries; I did not verify live Cut behavior.
+
+## Next / boundaries
+- Read fresh `teams/build/JOBS.md` and `RESULTS.md` before a new Builders assignment; current Round 47 link-check task is delivered, pending review/CI follow-up 071.
+- Do not claim the 24 reported hrefs are broken; this scanner only says it cannot find a static public target or literal route.
+- No production deploy/live behavior verified by GPT.
