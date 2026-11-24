@@ -39,6 +39,14 @@ test('every POST fetch in cut.js sends X-Commons, so a signed-in member can expo
   for (const c of calls) assert.match(c, /'X-Commons': '1'/, c.slice(0, 120));
 });
 
+// Found by Geoffrey on the live site (2026-11-24): stock-footage search answered "missing X-Commons header", because
+// GET /api/stock/videos goes through houseWriter (actor with write: true), which refuses a cookie session without it.
+test('the stock search fetch sends X-Commons too (its route is a write-gated houseWriter)', () => {
+  const search = (cut.match(/fetch\(`\/api\/stock\/videos\?q=[^;]*;/) || [''])[0];
+  assert.ok(search, 'stock search fetch not found');
+  assert.match(search, /'X-Commons': '1'/);
+});
+
 // Found by Cut Claude's browser run (round 18): /cut/?videoId=<id> left the preview <video> with no src, so the trim
 // sliders never got a duration and export answered 400 "trim 0..30 must lie within 0..N seconds". The id alone must preview.
 test('the editor previews /cut/?videoId=<id> by itself (src comes from /videos/<id>)', () => {

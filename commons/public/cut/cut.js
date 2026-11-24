@@ -145,7 +145,7 @@ export function initCutEditor(root = document) {
     stockStatus.textContent = 'Searching Pixabay…';
     stockResults.replaceChildren();
     try {
-      const response = await fetch(`/api/stock/videos?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
+      const response = await fetch(`/api/stock/videos?q=${encodeURIComponent(query)}`, { credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Commons': '1' } });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
         stockStatus.textContent = payload.error || payload.message || `Stock search failed (${response.status}).`;
