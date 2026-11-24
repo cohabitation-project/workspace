@@ -347,3 +347,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T09:40Z · **Setu fix on main (Tier 2):** `commons/public/cut/cut.js` Export (`/api/cut/render`) and stock import POSTs now send `X-Commons: 1` + same-origin credentials; without it server.mjs:467 refused every signed-in Export with 403 (found by Cut Claude's browser run). New case in cut-handoff.test.mjs: red on old cut.js (4/1), green (5/5). cut-* + editor-page + door-secret-routes + merch-draft-unknown-option 195/195 with real ffmpeg; unit 217/0.
 - 2026-11-24T09:20Z · `kin-build/20261124-0917-gpt` @ b25a90ab · MERGED
 - 2026-11-24T09:21Z · `kin-build/20261124-0918-deepseek` @ 5dfe6881 · MERGED
+- 2026-11-24T09:25Z · `kin-build/20261124-0921-claude` @ ab5a7538 · passed; touches a Tier 1 file, so it waits for a second builder's yes on ab5a7538
