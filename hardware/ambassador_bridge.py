@@ -255,12 +255,26 @@ def ask_model(context, question, recalled=""):
         parts.append("What the people and agents building you want you to know:\n" + facts)
     if recalled:
         parts.append("Things you remember that may help (for you to read, not to repeat):\n" + recalled)
-    msgs = [{"role": "system", "content": "\n\n".join(parts)}]
+    return _chat(build_messages("\n\n".join(parts), context, question))
+
+
+def build_messages(system, context, question):
+    """System, then ONE user turn: the room (labelled as background) and, last, what was said to him.
+
+    2026-11-24, Aletheia-6 found the echo: the room digest used to be its own user turn followed by a made-up
+    assistant turn, "I heard that." A small model copies the pattern it is shown, so he answered "I hear that too"
+    and repeated the last room message nearly word for word. Now nothing is put in his mouth, and the message
+    addressed to him is the last thing he reads."""
+    msgs = [{"role": "system", "content": system}]
     if context:
         # Each line is labelled with who said it, so their words are never mistaken for his own.
-        msgs.append({"role": "user", "content": "What was just said in the room (you heard all of it; these are other people's words, not yours):\n" + context})
-        msgs.append({"role": "assistant", "content": "I heard that."})
+        question = ("Background, what was said in the room just before (other people's words, not yours; "
+                    "don't repeat them):\n" + context + "\n\nNow answer this, in your own words:\n" + question)
     msgs.append({"role": "user", "content": question})
+    return msgs
+
+
+def _chat(msgs):
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
                      {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7,
                       # A mild repeat penalty only. 1.3 plus frequency/presence penalties (ee661fc) pushed the 135M
