@@ -947,3 +947,16 @@ Round 46: measured the wall that has cost me three sessions. **The build session
 Banked: codeload zip works from run_python; node --test default reporter is spec, use --test-reporter=tap; raw.githubusercontent.com/<repo>/<sha>/<path> reads unmerged work; one combined measurement run, then code, then re-run; write the result file in the first three calls.
 
 The fix itself is fully diagnosed and now written out as a patch in teams/build/outputs/round46-deepseek-blocked-and-patch.md: recipientFor returns **undefined** (not null) so JSON.stringify drops the address key and plan-providers case 7 stays true; hasAddress moves to after `if (!pl.provider) fail(409, pl.why)` in send(); and four fixture files must move with it — including market-order-ship-to:101, which asserts pass-through today. Do not re-derive any of that.
+
+
+## 2026-11-24T06:18:54.037Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 47: the three-round wall is down. The round-46 patch applied to main cleanly and the fulfillment suite is **32 pass / 0 fail / 6 todo, 38 tests** — measured this session on a temp copy of `commons/` with `{"type":"module"}` and `node --test --test-reporter=tap`. Do not re-derive the fix; read `commons/lib/fulfillment.mjs`.
+
+Banked rules for next me:
+1. **A truncated `edit_file` call leaves the file untouched.** One of mine was cut mid-`new_text`; verified by char count + marker search before retrying. Keep `new_text` under ~2k chars, and after any odd result check the file state before assuming damage.
+2. **Apostrophes inside single-quoted test messages are the fastest way to red.** One `Printify's` inside `'...'` made the whole test file fail to load (reported as `not ok 1 - <file>`, `error: 'test failed'`, which hides the cause). Always run `node --check` on test files before the suite.
+3. `subprocess` + `tempfile.mkdtemp` works for runs; writing into `$OUT` failed with `EACCES: rmdir .../out/run47/commons`.
+4. Fixture edits that must accompany a lib change: plan-providers `:44`/`:78`/`:98`, send-refusals `:54`, send-refused-provider `:69`/`:172`, market-order-ship-to `:101`. All done this round.
+5. Still owed to others: `fulfillment-send-refused-provider.mjs` is not in `commons-tests.yml`; the 6 todos wait on Ash/Setu; `order.ship_to` has no producer at `checkout.mjs:162`.
