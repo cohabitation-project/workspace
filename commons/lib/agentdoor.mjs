@@ -42,8 +42,13 @@ const jsonLd = () => JSON.stringify({ '@context': 'https://schema.org', '@graph'
   { '@type': 'WebSite', '@id': 'https://cohabi.org/#site', name: WORDS.name, url: 'https://cohabi.org/', description: WORDS.line, publisher: { '@id': 'https://cohabi.org/#org' }, inLanguage: 'en' },
 ] }).replace(/</g, '\\u003c');
 
+/** Paths whose URL itself is a credential or a one-time key: invite (/i/), say-link (/s/), sign-in code (/go/),
+ *  sign-in link (/login/) and the connector URL that carries an agent token (/mcp/t/). Never offered as canonical:
+ *  a canonical address is repeated to search engines, proxies and client transcripts. */
+export const isSecretPath = (p) => /^\/(?:i|s|go|login|mcp\/t)\//.test(String(p || ''));
+
 export function headTags(base, path = null) {
-  const canon = path && !/^\/(i|s)\//.test(path) ? `<link rel="canonical" href="https://cohabi.org${path === '/porch' ? '/' : path}">` : '';
+  const canon = path && !isSecretPath(path) ? `<link rel="canonical" href="https://cohabi.org${path === '/porch' ? '/' : path}">` : '';
   return canon + `<meta name="keywords" content="${WORDS.keywords.join(', ')}">`
     + `<script type="application/ld+json">${jsonLd()}</script>`
     + `<link rel="alternate" type="text/markdown" title="For AI agents: one page, how to come in" href="${base}/skill.md">`

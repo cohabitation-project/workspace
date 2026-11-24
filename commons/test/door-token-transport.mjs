@@ -74,6 +74,8 @@ const cases = [
   ['MCP POST /mcp/t/<valid> batch of 21 (refused)', () => mcp(`/mcp/t/${SENTINEL}`, Array.from({ length: 21 }, () => rpc('ping')))],
   ['MCP GET /mcp/t/<valid> (JSON 405)', () => fetch(`${B}/mcp/t/${SENTINEL}`)],
   ['MCP GET /mcp/t/<valid> (HTML help page)', () => fetch(`${B}/mcp/t/${SENTINEL}`, { headers: { accept: 'text/html' } })],
+  ['LOGIN GET /login/<sentinel> (HTML 404, canonical must be absent)', () => fetch(`${B}/login/${SENTINEL}`, { headers: { accept: 'text/html' }, redirect: 'manual' })],
+  ['GO GET /go/<sentinel> (HTML 404, canonical must be absent)', () => fetch(`${B}/go/${SENTINEL}`, { headers: { accept: 'text/html' }, redirect: 'manual' })],
   ['MCP DELETE /mcp/t/<valid>', () => fetch(`${B}/mcp/t/${SENTINEL}`, { method: 'DELETE' })],
 ];
 
@@ -82,11 +84,12 @@ test('no URL-borne token reaches stdout or stderr', async () => {
   for (const [label, call] of cases) {
     const before = out.length;
     let status = '(no answer)'; let body = '';
-    try { const r = await call(); status = r.status; body = await r.text(); } catch (e) { status = 'ERR ' + e.message; }
+    let hdrs = '';
+    try { const r = await call(); status = r.status; body = await r.text(); hdrs = [r.headers.get('link'), r.headers.get('location')].filter(Boolean).join(' '); } catch (e) { status = 'ERR ' + e.message; }
     await new Promise((s) => setTimeout(s, 120));
     const added = out.slice(before);
     const bad = added.includes(SENTINEL) || added.includes(UNKNOWN) || /SENTINEL/.test(added);
-    const echo = body.includes(SENTINEL) || body.includes(UNKNOWN);
+    const echo = body.includes(SENTINEL) || body.includes(UNKNOWN) || hdrs.includes(SENTINEL) || hdrs.includes(UNKNOWN);
     rows.push(`${String(status).padEnd(4)} ${label}${bad ? '  <-- LOGGED' : ''}${echo ? '  <-- ECHOED' : ''}`);
     if (bad) leaks.push(`${label}: log text near the token: ${JSON.stringify(added.slice(Math.max(0, added.search(/SENTINEL/) - 80), added.search(/SENTINEL/) + 60))}`);
     if (echo) echoes.push(label);
@@ -100,11 +103,11 @@ test('no URL-borne token reaches stdout or stderr', async () => {
 });
 
 // A response that echoes the caller's own token back is not a log leak, but it lands in client transcripts, proxies and
-// search engines. Measured red at 3d394bfb (foreman, 2026-11-24): GET /mcp/t/<token> as HTML carries
-// <link rel="canonical" href="https://cohabi.org/mcp/t/<token>"> from commons/lib/agentdoor.mjs:46, and server.mjs:399
-// builds the same canonical Link header from req.path. Left as todo until those two lines skip secret-bearing paths.
-test('no response echoes a URL-borne token (canonical link)', { todo: 'agentdoor.mjs:46 and server.mjs:399 put /mcp/t/<token> in rel=canonical' }, () => {
-  assert.deepEqual(ECHOES, [], 'a response body repeated the token:\n' + ECHOES.join('\n'));
+// search engines. Found at 3d394bfb: GET /mcp/t/<token> as HTML carried <link rel="canonical"> and a canonical Link
+// header built from req.path. Fixed in round 45: agentdoor.isSecretPath() is used by headTags (agentdoor.mjs) and the
+// Link header (server.mjs); /i/ /s/ /go/ /login/ /mcp/t/ are never offered as canonical. Body, Link and Location checked.
+test('no response echoes a URL-borne token (body, canonical link, Link header)', () => {
+  assert.deepEqual(ECHOES, [], 'a response repeated the token:\n' + ECHOES.join('\n'));
 });
 
 test('stop the server', () => { try { srv.kill(); } catch { /* gone */ } fs.rmSync(D, { recursive: true, force: true }); });

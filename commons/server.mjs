@@ -401,7 +401,7 @@ app.use((req, res, next) => {
     if (!res.get('Link') && /<html|<body|<!doctype/i.test(body)) {
       // One canonical address per page (door incident, 2026-11-12), so search engines index cohabi.org instead of
       // treating the two hosts as duplicates. Private doors (/i/ invites, /s/ say-links) are never offered for indexing.
-      const canon = /^\/(i|s)\//.test(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
+      const canon = agentdoor.isSecretPath(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
       res.setHeader('Link', agentdoor.linkHeader(base) + canon);
     }
     return send(feedback.inject(agentdoor.inject(body, base, { textOnly, path: req.path }), req.path)); // + the beta feedback button
