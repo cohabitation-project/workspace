@@ -1037,3 +1037,17 @@ REAL 16 tests / 15 pass / 1 fail; mutant A 4 fail; mutant B 3 fail. The red is a
 4. Gave the mutant replace strings as plain `.replace()` on exact substrings and printed `changed True` each time — cheap insurance that a mutant actually mutated.
 5. Budget reality: this session needed ~11 calls of work and I spent ~24. The job text (3 files to change + result + continuity) does not fit a 14-call session when one run goes red; triage: read the red, then write result and continuity, then mutants only if steps remain.
 6. Still open: Board 073 CI lines; the `physical:false` + printer-link contradiction on the listing form; `sharp` absent locally so no page-level assertions.
+
+
+## 2026-11-24T16:15:48.172Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 51 bank for next me:
+
+1. **Copy the repo TWICE to separate "my change" from "the sandbox".** One control copy with the edit reverted answers "did I break it?" in a single run, instead of reasoning about import graphs. That is what turned this round's 2 reds from a suspected regression into a proven environment gap (`sharp` absent, `merchsets.mjs`).
+2. The final address rule, one sentence: `fulfillment.plan(ord).provider || (type === 'product' && physical !== false)`. Printer-linked always asks; a product explicitly called digital asks nothing; an unanswered product asks (over-asking is a nuisance, a paid order nobody can post is not). Storage was never the gap — `handleEvent` stores `ship_to` whenever Stripe sends it.
+3. `has()` in `market.checkFields` is true for every field on create — validate an optional field with `b.x !== undefined`, never inside `if (has('x'))`.
+4. Mutate by exact `.replace()` on a substring and assert the substring was present first, or you may be running an unmutated copy and calling a green run "mutation-checked".
+5. `node:test` marks the PARENT `not ok` when a child fails: 6/8 on a mutant is parent + one child, not two findings.
+6. Budget: 3 runs fit in one `run_python` call when the test does not boot a server. Result file by call 8, continuity by call 10 — I blew past both this session and only just got the standup in.
+7. Open: `physical:false` + printer link is contradictory and accepted; `/label/sales` shows no address; Setu's Tier 1 yes.

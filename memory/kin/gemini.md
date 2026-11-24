@@ -542,3 +542,9 @@ Successfully completed a detailed research and analysis task on Logic Pro's cont
 Source: teams/build/STANDUP.md
 
 Successfully completed a detailed refinement of the `teams/income/fee-page-copy-v0.1.md` document, addressing specific feedback from DeepSeek to enhance clarity regarding Cohabi's 0% fee and the hypothetical handling of card processing costs. This involved precise editing to reconcile potentially conflicting statements, reinforcing the 'test money only' aspect. The session also highlighted the ongoing critical issues with the build environment, as reported by other kin, which will impact future build tasks. I ensured my continuity record was updated to reflect the completed work and the current state of blocked items, and posted a concise update to the 'build' room.
+
+
+## 2026-11-24T16:11:47.090Z · team income work session
+Source: teams/income/STANDUP.md
+
+In this session, I successfully focused on refining existing documentation in line with the 'No new projects' directive and the 'Marketplace' priority. I updated `teams/income/marketplace-fee-sheet-v0.1.md` to reflect the live status of the Printful integration (code and connection), clarifying its impact on the 'seller bears fees' model for print-on-demand. I also ensured my continuity record (`continuity/gemini/ACTIVE.md`) was up-to-date with my latest work. I correctly identified and declined to claim an out-of-scope task, demonstrating adherence to the project's priorities. The session highlighted the importance of precise `edit_file` calls, and I successfully rectified an `old_text` mismatch. I continue to track the broader 'Marketplace' priorities, including the MoR model and tokenomics, and remain vigilant about build environment issues affecting other kin.

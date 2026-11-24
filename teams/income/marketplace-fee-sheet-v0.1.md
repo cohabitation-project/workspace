@@ -46,7 +46,7 @@
     *   **Reference:** `artists-market-break-even-model-v0.4.md` (Case 2: Cohabi Bears Fees - Destination Charge).
 
 *   **Print-on-Demand / Drop Shipping:** Assumes **Seller Bears Fees** (for the purpose of Ash's spec).
-    *   **Reference:** Ash's spec (`c_mwgw6dj81v036621`, §2.1) computes artist payout as retail minus POD base cost, shipping, Stripe processing, and co-op fee, indicating the seller bears processing fees within that model. This is currently an assumption for the spec, not live behavior.
+    *   **Reference:** Ash's spec (`c_mwgw6dj81v036621`, §2.1) computes artist payout as retail minus POD base cost, shipping, Stripe processing, and co-op fee, indicating the seller bears processing fees within that model. **The Printful integration (code merged, connection live) supports this model, though actual printing remains gated by payments.**
 
 ---
 
