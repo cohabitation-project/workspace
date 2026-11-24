@@ -22,21 +22,60 @@ function walk(dir) {
 
 function registeredRoutes(source) {
   const routes = [];
-  // Only literal app.get/app.use paths are statically knowable here.
-  const re = /\bapp\.(get|use)\(\s*(['"`])([^'"`]+)\2/g;
-  for (const match of source.matchAll(re)) routes.push({ method: match[1], path: match[3] });
+  const readArgument = (start) => {
+    while (/\s/.test(source[start] || '')) start++;
+    const first = source[start];
+    if (first === '[') {
+      const end = source.indexOf(']', start + 1);
+      if (end < 0) return [];
+      const values = [];
+      const strings = /(['"`])((?:\\.|(?!\1)[^\\])*?)\1/g;
+      for (const match of source.slice(start + 1, end).matchAll(strings)) values.push({ path: match[2] });
+      return values;
+    }
+    if (first === "'" || first === '"' || first === '`') {
+      let end = start + 1;
+      while (end < source.length && (source[end] !== first || source[end - 1] === '\\')) end++;
+      return end < source.length ? [{ path: source.slice(start + 1, end) }] : [];
+    }
+    if (first === '/') {
+      let end = start + 1, inClass = false;
+      for (; end < source.length; end++) {
+        const char = source[end];
+        if (char === '\\') { end++; continue; }
+        if (char === '[') inClass = true;
+        else if (char === ']') inClass = false;
+        else if (char === '/' && !inClass) break;
+      }
+      if (end >= source.length) return [];
+      let flagsEnd = end + 1;
+      while (/[dgimsuvy]/.test(source[flagsEnd] || '')) flagsEnd++;
+      try { return [{ regex: new RegExp(source.slice(start + 1, end), source.slice(end + 1, flagsEnd)) }]; }
+      catch { return []; }
+    }
+    return [];
+  };
+  const calls = /\bapp\.(get|use)\(\s*/g;
+  for (const match of source.matchAll(calls)) {
+    const args = readArgument(match.index + match[0].length);
+    for (const route of args) routes.push({ method: match[1], ...route });
+  }
   return routes;
 }
 
-function routeMatches(hrefPath, routes) {
+function routeMatches(hrefPath, routes, { dynamicPrefix = false } = {}) {
   const normalize = (value) => value.length > 1 ? value.replace(/\/+$/, '') : value;
   const target = normalize(hrefPath);
-  return routes.some(({ method, path: route }) => {
+  return routes.some(({ method, path: route, regex }) => {
+    if (regex) return regex.test(target);
     route = normalize(route);
     const parts = route.split('/');
     const pattern = parts.map((part) => part.startsWith(':') ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('/');
     const exact = new RegExp(`^${pattern}/?$`);
     if (exact.test(target)) return true;
+    // A JS href literal followed by an encoded value is a known prefix of a dynamic route.
+    const targetParts = target.split('/');
+    if (dynamicPrefix && targetParts.length < parts.length && targetParts.every((part, i) => part === parts[i]) && parts.slice(targetParts.length).every((part) => part.startsWith(':'))) return true;
     // Express app.use mounts a middleware at a path prefix, not just an exact URL.
     return method === 'use' && (route === '/' || target.startsWith(route + '/'));
   });
@@ -51,6 +90,10 @@ function publicPath(hrefPath) {
 }
 
 test('literal internal hrefs in public HTML and JS have a public target or registered route', () => {
+  const fixtureRoutes = registeredRoutes("app.get(['/one', '/two'], handler); app.get(/^\\/show\\/([a-z]+)\\.html$/, handler);");
+  assert.ok(routeMatches('/two', fixtureRoutes), 'route arrays are recognized');
+  assert.ok(routeMatches('/show/garden.html', fixtureRoutes), 'literal regular-expression routes are recognized');
+  assert.ok(routeMatches('/m/', [{ method: 'get', path: '/m/:id' }], { dynamicPrefix: true }), 'a known concatenated href prefix may match dynamic route segments');
   const routes = registeredRoutes(fs.readFileSync(SERVER, 'utf8'));
   const links = [];
   // Cover quoted HTML/JS attributes and the literal-backtick form requested for JS templates.
@@ -64,7 +107,9 @@ test('literal internal hrefs in public HTML and JS have a public target or regis
       const line = text.slice(0, match.index).split('\n').length;
       const publicTarget = publicPath(hrefPath);
       const exists = publicTarget !== null && fs.existsSync(publicTarget);
-      const routed = routeMatches(hrefPath, routes);
+      const afterHref = text.slice(match.index + match[0].length);
+      const dynamicPrefix = /^\s*\+\s*encodeURIComponent\s*\(/.test(afterHref);
+      const routed = routeMatches(hrefPath, routes, { dynamicPrefix });
       const displayFile = path.relative(PUBLIC, file).split(path.sep).join('/');
       links.push({ file: displayFile, line, path: hrefPath, result: exists ? 'public file/dir' : routed ? 'server route' : 'todo' });
     }
