@@ -167,7 +167,11 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
   const back = `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`;
   const params = (methods) => ({
     mode: 'payment', client_reference_id: ord.id, payment_method_types: methods,
-    ...(fulfillment.plan(ord).provider ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
+    // Ask for a postal address when a printer ships it, or when the maker says the thing itself must be posted. An
+    // unanswered listing (physical null/absent) over-asks: over-asking a download buyer is recoverable, a paid order
+    // with nowhere to send it is not. `physical === false` asks nothing, and a printer link outranks it (a printer
+    // order always needs an address, and refusing that combination belongs on the listing form, next round).
+    ...(fulfillment.plan(ord).provider || (l.type === 'product' && l.physical !== false) ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
     ...(pk ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1` }),
     line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
     payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },

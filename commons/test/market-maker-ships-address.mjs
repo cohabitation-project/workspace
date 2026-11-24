@@ -1,10 +1,11 @@
 // Who ships it, and does the checkout know?
 //
-// `checkout.startCheckout` asks Stripe for a shipping address only when the order has a fulfillment provider
-// (`fulfillment.plan(ord).provider`). A listing has no physical/digital field (market.TYPES is
-// product/service/commission/collaboration/bounty/free; LICENSES has no physical/digital value), so the printer link
-// is the only "this is a thing you post" flag we have. This file pins what that means: an order the *maker* ships
-// collects no address at all, and `handleEvent` would have stored one if Stripe had sent it.
+// Round 50 changed the question. Until this round `checkout.startCheckout` asked Stripe for a shipping address only
+// when the order had a fulfillment provider (`fulfillment.plan(ord).provider`), and a listing had no physical/digital
+// field at all — so an order the *maker* ships collected no address: paid, with nowhere to send it. Now a listing
+// carries `physical` (true = post it, false = nothing is posted, null = the maker has not answered) and the checkout
+// asks when `plan(ord).provider || (type === 'product' && physical !== false)`. Unanswered products over-ask on purpose.
+// `handleEvent` was never the gap: it stores `ship_to` whenever Stripe sends shipping_details.
 // Fake Stripe only: no network, no credentials, no real payment, no provider call.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -56,15 +57,18 @@ test('a maker-shipped order collects no shipping address, though a printer order
 
     await checkout.startPayoutAccount(seller, { base: 'https://cohabi.test', fetchImpl: fakeStripe });
     assert.equal((await checkout.refreshAccount(seller, { fetchImpl: fakeStripe })).status, 'verified');
-    const makeListing = (title) => {
+    const makeListing = (title, extra = {}) => {
       const made = market.create(seller, {
         title, category: 'art', type: 'product', price: { mode: 'fixed', amount: 25 },
-        text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights',
+        text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights', ...extra,
       });
       return made.id || made.listing?.id;
     };
     const printed = makeListing('Printed by the printer');
-    const makerShips = makeListing('Posted by the maker');
+    const makerShips = makeListing('Posted by the maker', { physical: true });
+    const notPosted = makeListing('A file: nothing is posted', { physical: false });
+    const service = makeListing('A service: nothing is posted', { type: 'service' });
+    const unanswered = makeListing('Nobody said whether it is posted');
     fulfillment.link(seller, printed, { provider: 'printful', product_id: 'print_product_1', variant_ids: ['4012'] });
 
     const start = async (listingId) => {
@@ -92,14 +96,46 @@ test('a maker-shipped order collects no shipping address, though a printer order
       assert.equal(fulfillment.plan({ listing: printed, id: printedOrder.id }).provider, 'printful');
     });
 
-    await t.test('the same listing without the printer link asks for no address at all', async () => {
+    await t.test('a maker-posted product asks for an address: the printer link is no longer the only route', async () => {
+      assert.equal(market.get(makerShips).physical, true, 'the answer is stored and returned');
       assert.equal(fulfillment.plan({ listing: makerShips, id: 'ord_probe' }).provider, null, 'no provider: the maker is the shipper');
       makerOrder = await start(makerShips);
-      assert.equal(
-        [...makerOrder.body.keys()].some((k) => k.startsWith('shipping_address_collection')),
-        false,
-        'a maker-shipped product is still a thing that must be posted, and its checkout collects nothing',
+      assert.deepEqual(
+        makerOrder.body.getAll('shipping_address_collection[allowed_countries][0]'),
+        ['US'],
+        'a maker-shipped product is a thing that must be posted: its checkout now collects the address',
       );
+    });
+
+    await t.test('an unanswered product over-asks rather than under-asks', async () => {
+      assert.equal(market.get(unanswered).physical, null, 'absent reads as unanswered, never as "nothing is posted"');
+      const o = await start(unanswered);
+      assert.deepEqual(o.body.getAll('shipping_address_collection[allowed_countries][0]'), ['US']);
+    });
+
+    await t.test('physical:false asks nothing: a download needs no postal address', async () => {
+      const o = await start(notPosted);
+      assert.equal([...o.body.keys()].some((k) => k.startsWith('shipping_address_collection')), false);
+    });
+
+    await t.test('a service asks nothing, answered or not', async () => {
+      const o = await start(service);
+      assert.equal([...o.body.keys()].some((k) => k.startsWith('shipping_address_collection')), false);
+    });
+
+    await t.test('the answer is true, false or absent; anything else is refused by name', async () => {
+      assert.throws(
+        () => makeListing('A string answer', { physical: 'yes' }),
+        (e) => e.status === 400 && /physical/.test(e.message),
+        'a 400 that names the field, not a silent coercion',
+      );
+      // The contradiction Ash flagged: a listing marked "not posted" with a printer linked still needs an address.
+      // The checkout keeps asking (a printer order cannot ship without one); refusing that pair on the listing form
+      // is the next round's edit.
+      const contradictory = makeListing('Not posted, but printer-linked', { physical: false });
+      fulfillment.link(seller, contradictory, { provider: 'printful', product_id: 'print_product_2', variant_ids: ['4012'] });
+      const o = await start(contradictory);
+      assert.deepEqual(o.body.getAll('shipping_address_collection[allowed_countries][0]'), ['US']);
     });
 
     await t.test('storage is not the gap: if Stripe did send an address, handleEvent keeps it', () => {

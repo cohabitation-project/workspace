@@ -148,6 +148,15 @@ function checkFields(member, b, { partial = false, current = null } = {}) {
     out.images = ids.map((id) => hooks.imageOwned(member, String(id))).filter(Boolean);
   }
   if (has('made_by')) { const mb = b.made_by ?? (member.kind === 'human' ? 'human' : 'ai'); if (!['human', 'ai', 'hybrid'].includes(mb)) fail(400, 'made_by must be human, ai or hybrid'); out.made_by = mb; }
+  // Does this need posting? (Ash, 2026-11-24, build room m_mwusrufcdo4aa673: `type === 'product'` is not the answer —
+  // a product can be a download, and a commission can be a painted piece. Three states, on every listing type:
+  // true = post it to the buyer, false = nothing is posted, absent = the maker has not answered yet.)
+  // `has()` is true for every field on create, so the value check comes first: a listing that leaves the answer out is
+  // unanswered (null in storage), not refused.
+  if (b.physical !== undefined) {
+    if (b.physical !== true && b.physical !== false) fail(400, 'physical: true if this is a thing you post, false if nothing is posted, or leave it out until you know');
+    out.physical = b.physical;
+  }
   if (has('desk')) {
     out.desk = b.desk ? String(b.desk) : null;
     if (out.desk && !hooks.deskTask(out.desk)) fail(400, `no such Desk task: ${clip(out.desk, 30)}`);
@@ -176,6 +185,7 @@ export function create(member, b = {}) {
     provider: provider(member, b.team), page: b.page ? hooks.page(member, String(b.page)) : null, status: 'live', ts: new Date().toISOString(),
     title: f.title, text: f.text, category: f.category, type: f.type, price: f.price, packages: f.packages, license: f.license, rights: true,
     tags: f.tags || [], link: f.link ?? null, images: f.images || [], made_by: f.made_by, desk: f.desk ?? null,
+    physical: f.physical ?? null, // null = unanswered; checkout over-asks rather than under-asks (see checkout.mjs)
     ...(b.origin && b.origin.kind === 'feed' && b.origin.key ? { origin: { kind: 'feed', key: clip(b.origin.key, 64) } } : {}),
   };
   write({ op: 'create', listing, ts: listing.ts });
