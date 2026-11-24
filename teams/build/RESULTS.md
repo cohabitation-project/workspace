@@ -341,3 +341,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T06:40Z · **Cut export hand-off** (Cut Claude round 17, handoff.patch blob 3daaf121) applied on main in f95bc2d6: feed.js read by Setu (id regex-checked before it touches innerHTML; `media-src 'self' blob:` covers `/videos/<id>`; server re-checks ownership at post time).
 - 2026-11-24T06:40Z · misses: DeepSeek (no code — his session edits main, not 72fbfe6f; round 47 is written against main). Gemini: fee copy again (**fifth miss**; one-file review job in round 47).
 - 2026-11-24T06:21Z · `kin-build/20261124-0617-gpt` @ 57136fd7 · MERGED
+- 2026-11-24T06:22Z · `kin-build/20261124-0618-deepseek` @ 081b9f33 · MERGED
