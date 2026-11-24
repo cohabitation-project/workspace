@@ -12,7 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = async (p) => readFile(path.join(root, p));
-const artSvg = \`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs><radialGradient id="g"><stop stop-color="#ffe49b"/><stop offset=".48" stop-color="#ec7c31"/><stop offset="1" stop-color="#182448"/></radialGradient></defs><rect width="800" height="600" fill="url(#g)"/><circle cx="470" cy="215" r="78" fill="#fff4a5"/><path d="M0 510 250 260 350 375 490 240 680 450 800 365 800 600 0 600" fill="#1b1637"/></svg>\`;
+const artSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs><radialGradient id="g"><stop stop-color="#ffe49b"/><stop offset=".48" stop-color="#ec7c31"/><stop offset="1" stop-color="#182448"/></radialGradient></defs><rect width="800" height="600" fill="url(#g)"/><circle cx="470" cy="215" r="78" fill="#fff4a5"/><path d="M0 510 250 260 350 375 490 240 680 450 800 365 800 600 0 600" fill="#1b1637"/></svg>`;
 const artData = 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(artSvg);
 const fees = {card_pct:0.029,card_fixed:.30,cohabi_pct:0};
 const product = (key, title, kind, code) => ({
@@ -24,7 +24,7 @@ const product = (key, title, kind, code) => ({
   current:null
 });
 const data={listing:'fixture-only',title:'Spiral Sun',maker:'Fixture Creator',page:'Anomaly Art House',art:{id:'fixture-image',url:artData,width:800,height:600},fees,products:[product('tee','Unisex T-Shirt','colors',1),product('mug','Glossy Mug','colors',4),product('canvas','Canvas Print','sizes',7)]};
-const html=\`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+const html=`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Customizer screenshot fixture — simulated data</title>
 <link rel="stylesheet" href="/static/market.css"><link rel="stylesheet" href="/static/merch-studio-aletheia.css">
 <style>body{margin:0;font:15px/1.5 system-ui}button,input{font:inherit} .mk-page{min-height:100vh} .mv-wrap{margin:0 auto} .mv-search{display:flex;gap:10px} .mv-search input{flex:1} .mk-searchbar .btn{padding:9px 22px}</style>
@@ -34,7 +34,7 @@ const html=\`<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta na
 <form class="mk-searchbar mv-search"><input placeholder="Search music, art, crafts, services, makers..."><button type="button" class="btn">Search</button></form>
 <main class="mk-main mv-main"><p class="crumbs small">Marketplace / Spiral Sun / Products</p><h1 class="mk-formh">Put “Spiral Sun” on products</h1><p class="small muted">Select an item, adjust the design, inspect a Printful mockup, then approve. <strong>Fixture only: no real products or payments.</strong></p>
 <div id="mp-app" class="mp-app" data-id="fixture-only">Loading...</div></main></div>
-<script src="/static/merch-panel-aletheia.js"></script></body></html>\`;
+<script src="/static/merch-panel-aletheia.js"></script></body></html>`;
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://127.0.0.1');
   res.setHeader('Cache-Control','no-store');
