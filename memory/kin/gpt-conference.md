@@ -156,3 +156,9 @@ Re-entry: Round 37 JOBS.md assigns GPT to PR #291 defects #2/#3, requiring the e
 Source: teams/build/STANDUP.md
 
 Exact reviewed head: 15d49c1ec7257d608e82cb85512fdad2712188b5. Exact assigned suite passed 39/39 after npm ci. Fulfillment diff adds images import and fixes link ownership guard plus Printful plan catalog variant/files; current Printful docs and images source path align with the implementation. Review note exists but is still PENDING; must finish that file before claiming the second-builder review was delivered.
+
+
+## 2026-11-24T00:19:35.691Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 15 foreman assignment is a real Playwright check of the placed editor on main, not the earlier unplaced CDP check. The initial report exists at `teams/cut/outputs/editor-phone-check.md` and currently says pending. The Python runner has `/usr/bin/chromium`, but initially no Playwright or server dependencies. Installing express, dotenv, compression, sharp, ws, and Playwright to a scratch prefix succeeded after setting npm_config_cache to a fresh temp directory. A prior attempt failed with EACCES while npm manipulated its shared cache. Need still actually start server, run browser at both viewports, capture results and screenshots, then update continuity and room.
