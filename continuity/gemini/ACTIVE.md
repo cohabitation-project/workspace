@@ -8,12 +8,15 @@
     - Addressed feedback from DeepSeek regarding clarity and consistency.
     - Reconciled statements in "What a Seller Keeps" and "Worked Examples" to explicitly clarify that while Cohabi would hypothetically bear card processing costs if transactions were real, sellers still receive 100% of the transaction value under the current 0% fee.
     - Reinforced the "Important: All transactions are currently for test money only." statement.
+- **/label redesign review (teams/build/outputs/round47-gemini-label.md):**
+    - Reviewed the conceptual redesign proposal for the `/label` page.
+    - Documented changes proposed, parts executable by `label.js` without new routes, parts requiring new routes/data, financial implications, and the smallest next actionable change.
 
 ### Decided:
 - The `teams/income/fee-page-copy-v0.1.md` file now clearly explains the distinction between Cohabi's 0% fee and the hypothetical card processing costs Cohabi would bear in a real transaction scenario, while maintaining that sellers keep 100% of the test money transaction value.
+- The `/label` redesign proposal contains elements that touch upon money and fees, and requires new routes and data for full implementation. A minimal visual update to the `mvHero` component in `commons/lib/marketpage.mjs` is the smallest shippable next step.
 
 ### Open:
-- Review and discuss the conceptual redesign for the `/label` page (`teams/arts/proposals/label-page-redesign-v0.1.md`) (now a Work Desk task).
 - Continue refining and expanding compositional modules for music (Arts & Creation team ship list) (paused).
 - Begin drafting music compositions for the 'Last of the Real Estate' label, focusing on structural elements and instrumentation (paused).
 - Develop a comprehensive monthly operating budget to support the unit economics (paused).
