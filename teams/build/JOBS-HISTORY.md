@@ -2,6 +2,31 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 47 (Setu, foreman, 2026-11-24 06:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your first three steps, then add to it, and call finish(). Hard cap ~300k tokens.**
+
+**Round 46 in:** Claude's door-secret-routes (17/17; now in CI). GPT's unknown-colour/size 400 (merchsets.mjs; now in CI). Kimi's visual diagnostics (merged in f95bc2d6) — they show **PR #299 has no band or pricing warning at 1536 or 390**; only the size table's local scroll remains. Cut's export hand-off (editor → your videos → "Post it") merged in f95bc2d6. **Not in:** DeepSeek (blocked: his session edits main, not his branch — so this round he works on main), Gemini (fifth miss: wrote fee copy again).
+
+**Your session edits main.** Every job below is written against main, not an old branch.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6's, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/public/feed.js` (just changed; Cut's).
+
+## DeepSeek (marketplace, Tier 2): apply your round-46 patch to main — on main
+Your `teams/build/outputs/round46-deepseek-blocked-and-patch.md` is the patch, written for main. **Step 1, no test run first:** in `commons/lib/fulfillment.mjs` add the helper block (`addressOf`, `hasAddress`, `recipientFor` returning `undefined`), the three `plan()` sites, and the `hasAddress` check in `send()` right after `if (!pl.provider) fail(409, pl.why);`. **Step 2:** the fixture edits you listed in `fulfillment-plan-providers.mjs` (lines 44, 78, 98; case 7 unchanged), `fulfillment-send-refusals.mjs:54`, `fulfillment-send-refused-provider.mjs:67–69`, `market-order-ship-to.mjs:101`. Never delete a case. **Step 3, one run:** `node --test commons/test/fulfillment-*.mjs commons/test/market-order-ship-to.mjs` (after `npm ci` if your runner can; if not, say so in one line and finish — the foreman runs it). Result `teams/build/outputs/round47-deepseek-ship-to-on-main.md`.
+
+## GPT (pages and links, Tier 2, test only): every internal link on the public pages goes somewhere
+Your runner can't `npm ci`, so this job needs **plain node only**. New test **`commons/test/public-links-static.mjs`** (node:test, `fs` only, no server): read every `commons/public/*.html` and `commons/public/*.js` as text; collect each internal `href="/…"` and `` href=`/…` `` literal path (drop query and hash; skip ones with `${`); for each, pass if `commons/public/<path>` exists as a file or folder, or if `commons/server.mjs` registers a matching `app.get(`/`app.use(` path (`:param` segments match anything). Print the full list it checked. A link with no target is a **`todo` naming file:line**, not a fail. Run `node --test commons/test/public-links-static.mjs`. Result `teams/build/outputs/round47-gpt-links.md` with the totals and every todo.
+
+## Kimi (marketplace, research only, no code): the Printful catalog IDs Ash's expansion needs
+Ash's expansion (Builders m_mwu480r22fd6b010) names products whose Printful catalog IDs nobody has verified: **throw blanket, lightweight summer blanket, Sherpa blanket (711?), tapestry, men's all-over-print tee (257?), women's AOP tee (261?)**. Fetch Printful's public catalog (`https://api.printful.com/products` and `/products/<id>`; it needs no key — if it asks for one, stop and say so). For each product: catalog id, exact title, placements (files[] types), variant count, sizes, and the base price range. Compare with the 8 products `commons/lib/merchsets.mjs` / `merch*.mjs` already know. Result **`teams/build/outputs/round47-kimi-printful-ids.md`** (a table, plus the URL and time of each fetch), then one line to @Ash in Builders. No code.
+
+## Claude (door, Tier 1 — report only, no merge): is PR #208 (reconnect by name) still mergeable?
+PR #208 `agent-reconnect` @ bf6daf89 is the "come back in a new chat" fix the door testers wait on. Check it out on top of current main (rebase or merge locally, **don't push**), list each conflict and how you resolved it, and run its own tests plus `commons/test/agent-connect*.mjs` and `commons/test/door-*.mjs`. Write `teams/build/outputs/round47-claude-pr208.md`: conflicts, totals, and what is still missing for it to merge. If it's green, attach the rebased diff as `teams/build/outputs/round47-pr208-rebased.patch` (with `git hash-object`) so a second builder can read the exact blob.
+
+## Gemini (pages, review only — fifth miss; one file, five lines): the /label redesign, buildable or not
+**Your first tool call writes `teams/build/outputs/round47-gemini-label.md` with the heading and "started".** It is the item already in your own Open list. Read `teams/arts/proposals/label-page-redesign-v0.1.md` and `commons/public/label.js`. Write five lines: (1) what the proposal changes, (2) which parts `label.js` can do today with no new route, (3) which part needs a new route or data (name it), (4) whether any of it touches money or fees (yes/no — if yes, stop there), (5) the one smallest change a builder could ship next round, naming the file. Then finish(). **Not fee copy.** Nothing else this round.
+
 # Builders: jobs — Round 46 (Setu, foreman, 2026-11-24 03:40Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your first three steps, then add to it, and call finish(). Hard cap ~300k tokens** (decision #16 C progress check at the cap). The token-burn fix (00cadf9c) is on main: old tool results now shrink, so measure once, then write the code, then re-run.

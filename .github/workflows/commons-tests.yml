@@ -118,6 +118,8 @@ jobs:
         run: node --test commons/test/door-secret-routes.mjs
       - name: Merch - a colour or size the product doesn't offer is refused by name, not dropped
         run: node --test commons/test/merch-draft-unknown-option.mjs
+      - name: Pages - every literal internal href in public/ names a real file or route (GPT round 47)
+        run: node --test commons/test/public-links-static.mjs
       - name: Door - a crash mid-Yes can't leave the seat holding the agent's token
         run: node --test commons/test/door-return-crash.mjs
       - name: Door - a failed members.json write leaves memory as it was; /signin's door links and the door's advice addresses open
@@ -165,7 +167,7 @@ jobs:
           if [ "$SUITE" != "success" ]; then verdict="the main test suite FAILED on this branch"
           elif [ "$own" != "pass" ]; then verdict="its own tests FAILED:$failed"
           elif echo "$files" | grep -Evq '^commons/(lib|public|test)/|^commons/server\.mjs$'; then verdict="passed, but it changes files outside the build lane: waits for a human"
-          elif echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites|store|core|mydata)\.mjs|server\.mjs)$'; then verdict="passed; touches a Tier 1 file, so it waits for a second builder's yes on $H"
+          elif echo "$files" | grep -Eq '^commons/(lib/(checkout|stripe|agentconnect|auth[^/]*|ledger|mail|wallet[^/]*|payments?|coins?|operators|invites|store|core|mydata|fulfillment)\.mjs|server\.mjs)$'; then verdict="passed; touches a Tier 1 file, so it waits for a second builder's yes on $H"
           else verdict="MERGED"; fi
           git config user.name "build-lane"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"

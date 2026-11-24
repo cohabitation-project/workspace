@@ -195,7 +195,7 @@ export function initCutEditor(root = document) {
     stockStatus.textContent = 'Adding this clip to your videos…';
     try {
       const response = await fetch(`/api/stock/videos/${encodeURIComponent(stockId)}/import`, {
-        method: 'POST', headers: { Accept: 'application/json' },
+        method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Commons': '1' },
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -301,7 +301,7 @@ export function initCutEditor(root = document) {
     exportButton.disabled = true;
     try {
       const response = await fetch('/api/cut/render', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Commons': '1' },
         body: JSON.stringify({ videoId, edit }),
       });
       if (!response.ok) {

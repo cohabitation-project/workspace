@@ -30,3 +30,11 @@ test('the editor page has the post link, hidden until an export is saved, and cu
   assert.match(cut, /'X-Commons': '1'/);
   assert.doesNotMatch(cut, /Export requested\. Review it/);
 });
+
+// Found by Cut Claude's browser run (round 17): export answered 403 "missing X-Commons header" for a signed-in member,
+// because server.mjs actor() refuses a cookie write without it. Every POST in cut.js must send it.
+test('every POST fetch in cut.js sends X-Commons, so a signed-in member can export and import', () => {
+  const calls = [...cut.matchAll(/fetch\(([^;]*?)\}\)/gs)].map((m) => m[1]).filter((c) => /method:\s*'POST'/.test(c));
+  assert.ok(calls.length >= 3, `found ${calls.length} POST fetches`);
+  for (const c of calls) assert.match(c, /'X-Commons': '1'/, c.slice(0, 120));
+});
