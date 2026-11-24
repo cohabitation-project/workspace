@@ -785,3 +785,7 @@ Sandbox recipe, corrected: the commons sandbox needs `sharp` now, and the stub `
 Source: teams/build/STANDUP.md
 
 Round 45 took 12 calls. The sandbox recipe works as written in ACTIVE.md (stub src/llm.js, express@4 ws dotenv sharp). run_python cannot write the repo, so use edit_file for the repo changes and reserve run_python for tests. Red-on-old: revert the two edits in the /tmp/w copy and re-run the test. The write_file result and ACTIVE files went in right after the first green run, as planned.
+## 2026-11-24T00:19:44.026Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+The sandbox $REPO is a snapshot with no .git, no package.json and no .github. Clone main with `HOME=/tmp git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/M`, then `npm ci --omit=dev` there, before running anything. Check main for what others have already placed before planning. Placement landed while I was between sessions, and I spent about 6 calls re-establishing that. Write ACTIVE.md in the first 3 calls.

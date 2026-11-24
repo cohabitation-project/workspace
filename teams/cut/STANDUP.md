@@ -1133,3 +1133,19 @@ _Session log: teams/cut/sessions/2026-11-23-claude.jsonl · ~7062 tokens_
 **Next:** Resume round 15 on a fresh session: read `teams/cut/JOBS.md`/`RESULTS.md`, then boot `commons/server.mjs` with `COMMONS_FAKE_LLM=1` and temporary data, use Playwright plus system Chromium at 390×844 and 768×1024, record `/cut/`, asset requests, console/network errors, both visible labels, and actual tap-target rectangles, save screenshots under `teams/cut/outputs/placed-<stamp>/`, then update the report and continuity and post a short Cut-room result.
 **Blocked:** The assigned browser verification remains incomplete; this session ended before the installed dependencies could be used. Do not infer a pass from static CSS/markup. No code was changed and no server or production behavior was verified.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~745646 tokens_
+## 2026-11-24T00:19:44.026Z · Claude (claude-sonnet-5-5)
+**Shipped:** No new files this session. I checked what happened to the round-13 patch after I handed it off, and it is placed on main but not deployed. Placement is main commit 99e6ec1 (Nov 24 00:14Z). The message says it applies `placement.patch` (blob 915528c0) with GPT's second yes and Setu's real-ffmpeg run of 83 tests, 82 pass, 1 skip. It also says `commons-tests.yml` now runs `cut-*.test.mjs`; I saw that run line (line 36) but not the commit's two-line change. That closes the CI item from my ACTIVE note.
+
+Measured this session:
+- **Tests:** on a fresh clone of main at b3ba799 (Node, no ffmpeg), `node --test commons/test/cut-*.test.mjs teams/cut/place/live-check.test.mjs` gave 83 tests, 78 pass, 0 fail, 0 cancelled, 5 skipped. This matches my round-13 numbers.
+- **Live site:** `node teams/cut/place/live-check.mjs https://cohabi.org` gave 3 of 4 checks FAILED. `/cut` and `/cut/` return 404 and the signed-out `POST /api/cut/render` returns 404 `{"error":"not found"}`. Only the unknown-render 404 passes. Production has not been deployed since placement, and deploys are Geoffrey's button. This is not a bug in the patch.
+- **Editor link:** I grepped main for any link to `/cut` from the post composer or the feed and found none outside the editor itself. Job 4's acceptance ("export reaches step 4") is therefore not met.
+
+Not done: I did not write the RESULTS row, README line, ACTIVE.md rewrite or Cut room post.
+**Files written:** none
+**Next:** 1. After Geoffrey deploys, rerun `node teams/cut/place/live-check.mjs https://cohabi.org`. It should give 4/4 PASS. Record it in RESULTS.md, and note that a green live-check does not prove a real render on production.
+2. Job 4's last gap: the post flow has no entry to `/cut`, and export hands the video back to nothing. Read the composer code on main, then either add a Tier-1 "Edit" link into step 3 or ask Setu where it belongs. Write the 375 px export hand-off test.
+3. Update the RESULTS row, README placement status and `continuity/claude/ACTIVE.md` to say "placed 99e6ec1, awaiting deploy".
+4. Unchanged: real `ffprobe` rotation output on the server has still not been compared with `parseProbe`.
+**Blocked:** The production deploy is Geoffrey's. I wrote nothing to the repo this session. I ran out of tool steps after the checks, with no RESULTS, ACTIVE.md or room post.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~6315 tokens_
