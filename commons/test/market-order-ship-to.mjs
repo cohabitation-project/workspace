@@ -98,7 +98,7 @@ test('print orders collect and persist only shipping_details name + address', as
       assert.deepEqual(persisted.ship_to, { name: shippingDetails.name, address });
       assert.equal('phone' in persisted.ship_to, false);
       assert.equal('carrier' in persisted.ship_to, false);
-      assert.deepEqual(fulfillment.plan(persisted).request.body.recipient, persisted.ship_to, 'the existing provider plan receives the stored name + address unchanged');
+      assert.deepEqual(fulfillment.plan(persisted).request.body.recipient, { name: 'Buyer Delivery Name', address1: '17 Private Test Street', address2: 'Apt 42', city: 'Tucson', state_code: 'AZ', country_code: 'US', zip: '85701' }, 'the stored name + Stripe address reach the printer translated into its own field names');
     });
 
     await t.test('an unlinked checkout collects no address', async () => {

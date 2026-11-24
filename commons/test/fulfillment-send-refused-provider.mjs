@@ -66,7 +66,7 @@ function provider(status, body, bodyText = null) {
 }
 const order = (over = {}) => ({
   id: 'ord_refused_1', listing: tee.id, status: 'paid', quantity: 1, title: 'Desert tee',
-  ship_to: { name: 'Ada Buyer', address1: '1 Long St', city: 'Tucson', country_code: 'US' },
+  ship_to: { name: 'Ada Buyer', address: { line1: '1 Long St', city: 'Tucson', state: 'AZ', postal_code: '85701', country: 'US' } },
   ...over,
 });
 const trySend = async (o, p) => { try { return { ok: true, result: await ful.send(o, { fetchImpl: p.fetchImpl }) }; } catch (e) { return { ok: false, error: e }; } };
@@ -169,7 +169,7 @@ test('control: an accepted lulu order is sent once, with the book, the address a
     assert.equal(p.calls[0].body.line_items[0].external_id, 'lulu-item-1');
     assert.equal(p.calls[0].body.line_items[0].printable_normalization.pod_package_id, '0608340');
     assert.equal(p.calls[0].body.line_items[0].quantity, 2);
-    assert.deepEqual(p.calls[0].body.shipping_address, o.ship_to);
+    assert.deepEqual(p.calls[0].body.shipping_address, { name: 'Ada Buyer', street1: '1 Long St', street2: '', city: 'Tucson', state_code: 'AZ', country_code: 'US', postcode: '85701' }, 'the stored Stripe address is translated into the field names Lulu requires');
     assert.equal(p.calls[0].body.shipping_level, 'MAIL');
   } finally { clearEnv(LU); }
 });

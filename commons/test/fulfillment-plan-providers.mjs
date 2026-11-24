@@ -41,7 +41,7 @@ const luLink = ful.link(maker, luListing.id, { provider: 'lulu', product_id: 'it
 
 // A paid order as the rest of the code would hand it over. ship_to is spelled the way a provider-neutral address
 // should be; note (see the "no shipping address exists yet" case below) that nothing in commons/lib builds this field.
-const addr = { name: 'Ada Buyer', street1: '1 Long Street', city: 'Tucson', state_code: 'AZ', postcode: '85701', country_code: 'US', phone_number: '+15550000000', email: 'buyer@example.invalid' };
+const addr = { name: 'Ada Buyer', address: { line1: '1 Long Street', city: 'Tucson', state: 'AZ', postal_code: '85701', country: 'US' } };
 const order = (listing, over = {}) => ({ id: 'ord_plan_1', listing, title: 'Printify poster', status: 'paid', quantity: 2, ship_to: { ...addr }, ...over });
 const wire = (pl) => JSON.parse(JSON.stringify(pl.request.body)); // what JSON.stringify actually puts on the wire
 
@@ -75,7 +75,7 @@ test('printify: POST to /v1/shops/{shop}/orders.json with line_items and address
     assert.equal(b.line_items[0].product_id, '60f1a2b3c4d5e6f708192a3b');
     assert.equal(b.line_items[0].variant_id, 4012, 'a numeric variant id is sent as a number');
     assert.equal(b.line_items[0].quantity, 2);
-    assert.deepEqual(b.address_to, addr, 'the shipping address is passed through unchanged');
+    assert.deepEqual(b.address_to, { first_name: 'Ada', last_name: 'Buyer', address1: '1 Long Street', address2: '', city: 'Tucson', region: 'AZ', country: 'US', zip: '85701' }, "the stored Stripe address is translated into Printify's own field names");
   } finally { delete process.env.PRINTIFY_API_URL; delete process.env.PRINTIFY_SHOP_ID; }
 });
 
@@ -95,7 +95,7 @@ test('lulu: POST to /print-jobs/ on the sandbox by default, with the fields plan
     assert.deepEqual(Object.keys(b).sort(), ['external_id', 'line_items', 'shipping_address', 'shipping_level']);
     assert.equal(b.external_id, 'ord_plan_1');
     assert.equal(b.shipping_level, 'MAIL', 'a valid Lulu shipping level');
-    assert.deepEqual(b.shipping_address, addr);
+    assert.deepEqual(b.shipping_address, { name: 'Ada Buyer', street1: '1 Long Street', street2: '', city: 'Tucson', state_code: 'AZ', country_code: 'US', postcode: '85701' });
     assert.equal(b.line_items.length, 1);
     assert.deepEqual(Object.keys(b.line_items[0]).sort(), ['external_id', 'printable_normalization', 'quantity', 'title']);
     assert.equal(b.line_items[0].external_id, luLink.product_id, 'the provider item id, not the listing id');

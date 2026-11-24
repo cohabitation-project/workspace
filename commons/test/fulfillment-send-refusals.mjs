@@ -51,7 +51,7 @@ const unlinked = listIt('Unlinked ceramic mug');
 const link = ful.link(maker, linked.id, { provider: 'printful', product_id: 'pf-123', variant_ids: ['4012'] });
 assert.equal(link.connected, false, 'fixture starts disconnected');
 
-const order = (over = {}) => ({ id: 'ord_1', listing: linked.id, status: 'paid', quantity: 1, title: 'Desert tee', ship_to: { name: 'Ada Buyer', address1: '1 Long St', city: 'Tucson', country_code: 'US' }, ...over });
+const order = (over = {}) => ({ id: 'ord_1', listing: linked.id, status: 'paid', quantity: 1, title: 'Desert tee', ship_to: { name: 'Ada Buyer', address: { line1: '1 Long St', city: 'Tucson', state: 'AZ', postal_code: '85701', country: 'US' } }, ...over });
 const statusOf = (e) => e?.status;
 const trySend = async (o) => { reset(); try { const r = await ful.send(o, { fetchImpl: fakeFetch }); return { ok: true, result: r }; } catch (e) { return { ok: false, error: e }; } };
 

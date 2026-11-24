@@ -84,6 +84,32 @@ export function link(member, listingId, { provider, product_id, variant_ids = []
 export function unlink(member, listingId) { const l = ownerOf(member, listingId); delete links[l.id]; save(linksFile(), links); return { listing: l.id, linked: false }; }
 export const linkFor = (listingId) => links[listingId] || null;
 
+const txt = (v) => (v == null ? '' : String(v).trim().slice(0, 200));
+/** The address a printer is sent, in that printer's own shape. checkout stores Stripe's shape:
+ *  { name, address: { line1, line2, city, state, postal_code, country } }; each printer names those fields differently
+ *  and refuses one in another's names. Nothing is invented here: no email, no phone. */
+const addressOf = (ship_to) => {
+  if (!ship_to || typeof ship_to !== 'object') return null;
+  const a = ship_to.address && typeof ship_to.address === 'object' ? ship_to.address : ship_to;
+  return String(a.line1 || '').trim() ? a : null;
+};
+export const hasAddress = (ship_to) => !!addressOf(ship_to);
+export function recipientFor(provider, ship_to) {
+  // undefined, not null: JSON.stringify then drops the key, so a plan with no address carries no address key at all
+  // (the fact fulfillment-plan-providers case 7 pins). null would post "address_to": null to a printer. send() refuses
+  // a no-address order on its own, with hasAddress.
+  const a = addressOf(ship_to); if (!a) return undefined;
+  const name = txt(ship_to.name);
+  const city = txt(a.city), postal = txt(a.postal_code), state = txt(a.state), country = txt(a.country);
+  if (provider === 'printful') return { name, address1: txt(a.line1), address2: txt(a.line2), city, state_code: state, country_code: country, zip: postal };
+  if (provider === 'printify') {
+    const i = name.lastIndexOf(' ');
+    return { first_name: i > 0 ? name.slice(0, i) : name, last_name: i > 0 ? name.slice(i + 1) : '', address1: txt(a.line1), address2: txt(a.line2), city, region: state, country, zip: postal };
+  }
+  if (provider === 'lulu') return { name, street1: txt(a.line1), street2: txt(a.line2), city, state_code: state, country_code: country, postcode: postal };
+  return undefined;
+}
+
 /** What would be sent to the printer for a paid order, without sending it. */
 export function plan(order) {
   const lk = links[order.listing]; if (!lk) return { provider: null, why: 'this listing has no print or fulfillment link: the maker ships it' };
@@ -95,15 +121,15 @@ export function plan(order) {
     //  - the maker made the product in Printful's own tool and pasted its id (no design here): the item is that store
     //    product's `sync_variant_id`, whose art Printful already holds (round 42, DeepSeek).
     // Merged 2026-11-23 by Setu when #291 met round 42; both tests hold.
-    ? { method: 'POST', url: `${p.base()}/orders`, body: { external_id: order.id, recipient: order.ship_to, items: [
+    ? { method: 'POST', url: `${p.base()}/orders`, body: { external_id: order.id, recipient: recipientFor('printful', order.ship_to), items: [
       lk.design?.art && lk.design.placement
         ? { variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1,
           files: [{ type: lk.design.placement, url: `${env('COMMONS_PUBLIC_URL') || 'https://cohabi.org'}/images/${lk.design.art}`, ...(lk.design.position ? { position: lk.design.position } : {}) }] }
         : { sync_variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1 },
     ] } }
     : lk.provider === 'printify'
-      ? { method: 'POST', url: `${p.base()}/v1/shops/${env('PRINTIFY_SHOP_ID') || '<shop>'}/orders.json`, body: { external_id: order.id, line_items: [{ product_id: lk.product_id, variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1 }], address_to: order.ship_to } }
-      : { method: 'POST', url: `${p.base()}/print-jobs/`, body: { external_id: order.id, line_items: [{ external_id: lk.product_id, title: order.title, printable_normalization: { pod_package_id: lk.sku }, quantity: order.quantity || 1 }], shipping_address: order.ship_to, shipping_level: 'MAIL' } };
+      ? { method: 'POST', url: `${p.base()}/v1/shops/${env('PRINTIFY_SHOP_ID') || '<shop>'}/orders.json`, body: { external_id: order.id, line_items: [{ product_id: lk.product_id, variant_id: Number(lk.variant_ids[0]) || lk.variant_ids[0], quantity: order.quantity || 1 }], address_to: recipientFor('printify', order.ship_to) } }
+      : { method: 'POST', url: `${p.base()}/print-jobs/`, body: { external_id: order.id, line_items: [{ external_id: lk.product_id, title: order.title, printable_normalization: { pod_package_id: lk.sku }, quantity: order.quantity || 1 }], shipping_address: recipientFor('lulu', order.ship_to), shipping_level: 'MAIL' } };
   return { provider: lk.provider, request: req };
 }
 
@@ -112,6 +138,9 @@ export async function send(order, { fetchImpl = fetch } = {}) {
   if (!paymentsOpen()) fail(503, "Payments aren't open yet, so no order goes to a printer.");
   if (order?.status !== 'paid') fail(409, 'only a paid order goes to the printer');
   const pl = plan(order); if (!pl.provider) fail(409, pl.why);
+  // An order with no shipping address stops HERE: after plan() has said which printer it is, or that the maker ships
+  // it, and before any provider fetch (Lulu's sign-in is a fetch too). Nothing is invented; no printer gets a blank address.
+  if (!hasAddress(order?.ship_to)) fail(409, 'this order has no shipping address');
   if (!status()[pl.provider].connected) fail(503, `${pl.provider} isn't connected yet`);
   const headers = { 'content-type': 'application/json' };
   if (pl.provider === 'printful') { headers.authorization = `Bearer ${env('PRINTFUL_TOKEN')}`; headers['X-PF-Store-Id'] = env('PRINTFUL_STORE_ID'); }
