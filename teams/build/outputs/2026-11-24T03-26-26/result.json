@@ -1,0 +1,1277 @@
+{
+  "main_sha": "a4429fa26b2bdacf5bbe674d8927eeca648ab4bc",
+  "pr299_sha": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "runs": [
+    {
+      "label": "main",
+      "sha": "a4429fa26b2bdacf5bbe674d8927eeca648ab4bc",
+      "mode": "desktop",
+      "command": "node commons/test/merch-aletheia-visual.mjs",
+      "exit": 1,
+      "diagnostics": [
+        {
+          "viewport": 1536,
+          "bodyScrollWidth": 1628,
+          "warnings": [],
+          "measurements": {
+            "searchBand": {
+              "bandPastViewportPx": 0,
+              "searchPastViewportPx": 0,
+              "searchRightPastBandPx": 0,
+              "band": {
+                "left": 0,
+                "right": 1200,
+                "top": 138.59,
+                "bottom": 216.59,
+                "width": 1200,
+                "height": 78,
+                "clientWidth": 1200,
+                "scrollWidth": 1200,
+                "paddingLeft": 76.8,
+                "paddingRight": 76.8,
+                "overflowX": "visible"
+              },
+              "search": {
+                "left": 0,
+                "right": 1200,
+                "top": 138.59,
+                "bottom": 216.59,
+                "width": 1200,
+                "height": 78,
+                "clientWidth": 1200,
+                "scrollWidth": 1200,
+                "paddingLeft": 76.8,
+                "paddingRight": 76.8,
+                "overflowX": "visible"
+              },
+              "input": {
+                "left": 76.8,
+                "right": 1015.66,
+                "top": 138.59,
+                "bottom": 183.59,
+                "width": 938.86,
+                "height": 45,
+                "clientWidth": 899,
+                "scrollWidth": 899,
+                "paddingLeft": 20,
+                "paddingRight": 18,
+                "overflowX": "clip"
+              },
+              "button": {
+                "left": 1025.66,
+                "right": 1123.2,
+                "top": 138.59,
+                "bottom": 183.59,
+                "width": 97.55,
+                "height": 45,
+                "clientWidth": 96,
+                "scrollWidth": 96,
+                "paddingLeft": 22,
+                "paddingRight": 22,
+                "overflowX": "visible"
+              }
+            },
+            "actionsCard": {
+              "card": {
+                "left": 1052.08,
+                "right": 1537.52,
+                "top": 1007.31,
+                "bottom": 1129.91,
+                "width": 485.44,
+                "height": 122.59,
+                "clientWidth": 483,
+                "scrollWidth": 483,
+                "paddingLeft": 10,
+                "paddingRight": 10,
+                "overflowX": "visible"
+              },
+              "buttons": [
+                {
+                  "label": "Save draft",
+                  "left": 1063.08,
+                  "right": 1290.3,
+                  "top": 1022.31,
+                  "bottom": 1064.31,
+                  "width": 227.22,
+                  "height": 42,
+                  "clientWidth": 225,
+                  "scrollWidth": 225,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\udcf7 Generate Printful mockup",
+                  "left": 1299.3,
+                  "right": 1526.52,
+                  "top": 1022.31,
+                  "bottom": 1064.31,
+                  "width": 227.22,
+                  "height": 42,
+                  "clientWidth": 225,
+                  "scrollWidth": 225,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\ude80 Approve and publish",
+                  "left": 1063.08,
+                  "right": 1526.52,
+                  "top": 1073.31,
+                  "bottom": 1116.91,
+                  "width": 463.44,
+                  "height": 43.59,
+                  "clientWidth": 459,
+                  "scrollWidth": 459,
+                  "paddingLeft": 17,
+                  "paddingRight": 17,
+                  "overflowX": "visible"
+                }
+              ],
+              "actionButtonsPastCardPx": 0,
+              "actionButtonsPastViewportPx": 0
+            },
+            "pricing": {
+              "headingPastCardPx": 0,
+              "pricePastCardPx": 0,
+              "headingTextOverflowPx": 0,
+              "headingPriceOverlapPx": 0,
+              "heading": {
+                "left": 1069.08,
+                "right": 1223.19,
+                "top": 588.56,
+                "bottom": 610.56,
+                "width": 154.11,
+                "height": 22,
+                "clientWidth": 154,
+                "scrollWidth": 154,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "price": {
+                "left": 1348.86,
+                "right": 1520.52,
+                "top": 581.31,
+                "bottom": 617.81,
+                "width": 171.66,
+                "height": 36.5,
+                "clientWidth": 172,
+                "scrollWidth": 172,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "priceInput": {
+                "left": 1418.52,
+                "right": 1520.52,
+                "top": 581.31,
+                "bottom": 617.81,
+                "width": 102,
+                "height": 36.5,
+                "clientWidth": 88,
+                "scrollWidth": 88,
+                "paddingLeft": 6,
+                "paddingRight": 6,
+                "overflowX": "clip"
+              },
+              "payhead": {
+                "left": 1053.08,
+                "right": 1536.52,
+                "top": 566.31,
+                "bottom": 617.81,
+                "width": 483.44,
+                "height": 51.5,
+                "clientWidth": 483,
+                "scrollWidth": 483,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "overflowX": "visible"
+              }
+            },
+            "sizeTable": {
+              "tablePastViewportPx": 0,
+              "tablePastScrollerPx": 0,
+              "localHorizontalScrollPx": 0,
+              "table": {
+                "left": 1066.08,
+                "right": 1523.52,
+                "top": 752.81,
+                "bottom": 885.31,
+                "width": 457.44,
+                "height": 132.5,
+                "clientWidth": 457,
+                "scrollWidth": 457,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 1053.08,
+                "right": 1536.52,
+                "top": 706.31,
+                "bottom": 994.31,
+                "width": 483.44,
+                "height": 288,
+                "clientWidth": 483,
+                "scrollWidth": 483,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "visible"
+              }
+            }
+          }
+        }
+      ],
+      "stdout_tail": "9,\"top\":588.56,\"bottom\":610.56,\"width\":154.11,\"height\":22,\"clientWidth\":154,\"scrollWidth\":154,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"price\":{\"left\":1348.86,\"right\":1520.52,\"top\":581.31,\"bottom\":617.81,\"width\":171.66,\"height\":36.5,\"clientWidth\":172,\"scrollWidth\":172,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"priceInput\":{\"left\":1418.52,\"right\":1520.52,\"top\":581.31,\"bottom\":617.81,\"width\":102,\"height\":36.5,\"clientWidth\":88,\"scrollWidth\":88,\"paddingLeft\":6,\"paddingRight\":6,\"overflowX\":\"clip\"},\"payhead\":{\"left\":1053.08,\"right\":1536.52,\"top\":566.31,\"bottom\":617.81,\"width\":483.44,\"height\":51.5,\"clientWidth\":483,\"scrollWidth\":483,\"paddingLeft\":16,\"paddingRight\":16,\"overflowX\":\"visible\"}},\"sizeTable\":{\"tablePastViewportPx\":0,\"tablePastScrollerPx\":0,\"localHorizontalScrollPx\":0,\"table\":{\"left\":1066.08,\"right\":1523.52,\"top\":752.81,\"bottom\":885.31,\"width\":457.44,\"height\":132.5,\"clientWidth\":457,\"scrollWidth\":457,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"breakdown\":{\"left\":1053.08,\"right\":1536.52,\"top\":706.31,\"bottom\":994.31,\"width\":483.44,\"height\":288,\"clientWidth\":483,\"scrollWidth\":483,\"paddingLeft\":13,\"paddingRight\":13,\"overflowX\":\"visible\"}}}}\n",
+      "stderr_tail": "file:///tmp/cohabi-main-a4429fa2/workspace-a4429fa26b2bdacf5bbe674d8927eeca648ab4bc/commons/test/merch-aletheia-visual.mjs:104\n    if(metrics.bodyScroll>width+4)throw Error('Horizontal overflow at '+width+': '+JSON.stringify(metrics));\n                                        ^\n\nError: Horizontal overflow at 1536: {\"viewport\":1536,\"bodyScroll\":1628,\"rail\":{\"x\":91,\"y\":565,\"w\":208,\"h\":291},\"stage\":{\"x\":319,\"y\":565,\"w\":712,\"h\":798},\"side\":{\"x\":1052,\"y\":565,\"w\":485,\"h\":834},\"header\":{\"x\":91,\"y\":386,\"w\":1447,\"h\":159},\"buttons\":[{\"name\":\"Save draft\",\"disabled\":false},{\"name\":\"\ud83d\udcf7 Generate Printful mockup\",\"disabled\":false},{\"name\":\"\ud83d\ude80 Approve and publish\",\"disabled\":true}]}\n    at file:///tmp/cohabi-main-a4429fa2/workspace-a4429fa26b2bdacf5bbe674d8927eeca648ab4bc/commons/test/merch-aletheia-visual.mjs:104:41\n\nNode.js v24.22.3\n"
+    },
+    {
+      "label": "main",
+      "sha": "a4429fa26b2bdacf5bbe674d8927eeca648ab4bc",
+      "mode": "mobile-only",
+      "command": "node commons/test/merch-aletheia-visual-mobile-only.tmp.mjs",
+      "exit": 1,
+      "diagnostics": [
+        {
+          "viewport": 390,
+          "bodyScrollWidth": 422,
+          "warnings": [
+            {
+              "defect": "purple search band",
+              "bandPastViewportPx": 32,
+              "searchPastViewportPx": 32,
+              "searchRightPastBandPx": 0,
+              "band": {
+                "left": 0,
+                "right": 422,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 422,
+                "height": 60,
+                "clientWidth": 422,
+                "scrollWidth": 422,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "search": {
+                "left": 0,
+                "right": 422,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 422,
+                "height": 60,
+                "clientWidth": 422,
+                "scrollWidth": 422,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "input": {
+                "left": 19.5,
+                "right": 294.95,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 275.45,
+                "height": 45,
+                "clientWidth": 235,
+                "scrollWidth": 235,
+                "paddingLeft": 20,
+                "paddingRight": 18,
+                "overflowX": "clip"
+              },
+              "button": {
+                "left": 304.95,
+                "right": 402.5,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 97.55,
+                "height": 45,
+                "clientWidth": 96,
+                "scrollWidth": 96,
+                "paddingLeft": 22,
+                "paddingRight": 22,
+                "overflowX": "visible"
+              }
+            },
+            {
+              "defect": "size table",
+              "tablePastViewportPx": 42,
+              "tablePastScrollerPx": 62,
+              "localHorizontalScrollPx": 49,
+              "table": {
+                "left": 52,
+                "right": 432,
+                "top": 1918.48,
+                "bottom": 2050.98,
+                "width": 380,
+                "height": 132.5,
+                "clientWidth": 380,
+                "scrollWidth": 380,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 39,
+                "right": 383,
+                "top": 1871.98,
+                "bottom": 2177.98,
+                "width": 344,
+                "height": 306,
+                "clientWidth": 344,
+                "scrollWidth": 393,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "auto"
+              }
+            }
+          ],
+          "measurements": {
+            "searchBand": {
+              "bandPastViewportPx": 32,
+              "searchPastViewportPx": 32,
+              "searchRightPastBandPx": 0,
+              "band": {
+                "left": 0,
+                "right": 422,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 422,
+                "height": 60,
+                "clientWidth": 422,
+                "scrollWidth": 422,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "search": {
+                "left": 0,
+                "right": 422,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 422,
+                "height": 60,
+                "clientWidth": 422,
+                "scrollWidth": 422,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "input": {
+                "left": 19.5,
+                "right": 294.95,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 275.45,
+                "height": 45,
+                "clientWidth": 235,
+                "scrollWidth": 235,
+                "paddingLeft": 20,
+                "paddingRight": 18,
+                "overflowX": "clip"
+              },
+              "button": {
+                "left": 304.95,
+                "right": 402.5,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 97.55,
+                "height": 45,
+                "clientWidth": 96,
+                "scrollWidth": 96,
+                "paddingLeft": 22,
+                "paddingRight": 22,
+                "overflowX": "visible"
+              }
+            },
+            "actionsCard": {
+              "card": {
+                "left": 38,
+                "right": 384,
+                "top": 1705.98,
+                "bottom": 1837.36,
+                "width": 346,
+                "height": 131.38,
+                "clientWidth": 344,
+                "scrollWidth": 344,
+                "paddingLeft": 10,
+                "paddingRight": 10,
+                "overflowX": "visible"
+              },
+              "buttons": [
+                {
+                  "label": "Save draft",
+                  "left": 49,
+                  "right": 206.5,
+                  "top": 1720.98,
+                  "bottom": 1771.77,
+                  "width": 157.5,
+                  "height": 50.78,
+                  "clientWidth": 156,
+                  "scrollWidth": 156,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\udcf7 Generate Printful mockup",
+                  "left": 215.5,
+                  "right": 373,
+                  "top": 1720.98,
+                  "bottom": 1771.77,
+                  "width": 157.5,
+                  "height": 50.78,
+                  "clientWidth": 156,
+                  "scrollWidth": 156,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\ude80 Approve and publish",
+                  "left": 49,
+                  "right": 373,
+                  "top": 1780.77,
+                  "bottom": 1824.36,
+                  "width": 324,
+                  "height": 43.59,
+                  "clientWidth": 320,
+                  "scrollWidth": 320,
+                  "paddingLeft": 17,
+                  "paddingRight": 17,
+                  "overflowX": "visible"
+                }
+              ],
+              "actionButtonsPastCardPx": 0,
+              "actionButtonsPastViewportPx": 0
+            },
+            "pricing": {
+              "headingPastCardPx": 0,
+              "pricePastCardPx": 0,
+              "headingTextOverflowPx": 0,
+              "headingPriceOverlapPx": 0,
+              "heading": {
+                "left": 55,
+                "right": 209.11,
+                "top": 1721.98,
+                "bottom": 1743.98,
+                "width": 154.11,
+                "height": 22,
+                "clientWidth": 154,
+                "scrollWidth": 154,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "price": {
+                "left": 55,
+                "right": 226.66,
+                "top": 1751.98,
+                "bottom": 1788.48,
+                "width": 171.66,
+                "height": 36.5,
+                "clientWidth": 172,
+                "scrollWidth": 172,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "priceInput": {
+                "left": 124.66,
+                "right": 226.66,
+                "top": 1751.98,
+                "bottom": 1788.48,
+                "width": 102,
+                "height": 36.5,
+                "clientWidth": 88,
+                "scrollWidth": 88,
+                "paddingLeft": 6,
+                "paddingRight": 6,
+                "overflowX": "clip"
+              },
+              "payhead": {
+                "left": 39,
+                "right": 383,
+                "top": 1706.98,
+                "bottom": 1788.48,
+                "width": 344,
+                "height": 81.5,
+                "clientWidth": 344,
+                "scrollWidth": 344,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "overflowX": "visible"
+              }
+            },
+            "sizeTable": {
+              "tablePastViewportPx": 42,
+              "tablePastScrollerPx": 62,
+              "localHorizontalScrollPx": 49,
+              "table": {
+                "left": 52,
+                "right": 432,
+                "top": 1918.48,
+                "bottom": 2050.98,
+                "width": 380,
+                "height": 132.5,
+                "clientWidth": 380,
+                "scrollWidth": 380,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 39,
+                "right": 383,
+                "top": 1871.98,
+                "bottom": 2177.98,
+                "width": 344,
+                "height": 306,
+                "clientWidth": 344,
+                "scrollWidth": 393,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "auto"
+              }
+            }
+          }
+        }
+      ],
+      "stdout_tail": "eading\":{\"left\":55,\"right\":209.11,\"top\":1721.98,\"bottom\":1743.98,\"width\":154.11,\"height\":22,\"clientWidth\":154,\"scrollWidth\":154,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"price\":{\"left\":55,\"right\":226.66,\"top\":1751.98,\"bottom\":1788.48,\"width\":171.66,\"height\":36.5,\"clientWidth\":172,\"scrollWidth\":172,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"priceInput\":{\"left\":124.66,\"right\":226.66,\"top\":1751.98,\"bottom\":1788.48,\"width\":102,\"height\":36.5,\"clientWidth\":88,\"scrollWidth\":88,\"paddingLeft\":6,\"paddingRight\":6,\"overflowX\":\"clip\"},\"payhead\":{\"left\":39,\"right\":383,\"top\":1706.98,\"bottom\":1788.48,\"width\":344,\"height\":81.5,\"clientWidth\":344,\"scrollWidth\":344,\"paddingLeft\":16,\"paddingRight\":16,\"overflowX\":\"visible\"}},\"sizeTable\":{\"tablePastViewportPx\":42,\"tablePastScrollerPx\":62,\"localHorizontalScrollPx\":49,\"table\":{\"left\":52,\"right\":432,\"top\":1918.48,\"bottom\":2050.98,\"width\":380,\"height\":132.5,\"clientWidth\":380,\"scrollWidth\":380,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"breakdown\":{\"left\":39,\"right\":383,\"top\":1871.98,\"bottom\":2177.98,\"width\":344,\"height\":306,\"clientWidth\":344,\"scrollWidth\":393,\"paddingLeft\":13,\"paddingRight\":13,\"overflowX\":\"auto\"}}}}\n",
+      "stderr_tail": "file:///tmp/cohabi-main-a4429fa2/workspace-a4429fa26b2bdacf5bbe674d8927eeca648ab4bc/commons/test/merch-aletheia-visual-mobile-only.tmp.mjs:104\n    if(metrics.bodyScroll>width+4)throw Error('Horizontal overflow at '+width+': '+JSON.stringify(metrics));\n                                        ^\n\nError: Horizontal overflow at 390: {\"viewport\":390,\"bodyScroll\":422,\"rail\":{\"x\":35,\"y\":559,\"w\":352,\"h\":87},\"stage\":{\"x\":38,\"y\":660,\"w\":346,\"h\":428},\"side\":{\"x\":38,\"y\":1706,\"w\":346,\"h\":967},\"header\":{\"x\":38,\"y\":378,\"w\":346,\"h\":167},\"buttons\":[{\"name\":\"Save draft\",\"disabled\":false},{\"name\":\"\ud83d\udcf7 Generate Printful mockup\",\"disabled\":false},{\"name\":\"\ud83d\ude80 Approve and publish\",\"disabled\":true}]}\n    at file:///tmp/cohabi-main-a4429fa2/workspace-a4429fa26b2bdacf5bbe674d8927eeca648ab4bc/commons/test/merch-aletheia-visual-mobile-only.tmp.mjs:104:41\n\nNode.js v24.22.3\n"
+    },
+    {
+      "label": "pr299",
+      "sha": "3e60cce9e99f6a5dce76082d893783f72105798d",
+      "mode": "desktop",
+      "command": "node commons/test/merch-aletheia-visual.mjs",
+      "exit": 0,
+      "diagnostics": [
+        {
+          "viewport": 1536,
+          "bodyScrollWidth": 1536,
+          "warnings": [],
+          "measurements": {
+            "searchBand": {
+              "bandPastViewportPx": 0,
+              "searchPastViewportPx": 0,
+              "searchRightPastBandPx": 0,
+              "band": {
+                "left": 0,
+                "right": 1200,
+                "top": 138.59,
+                "bottom": 216.59,
+                "width": 1200,
+                "height": 78,
+                "clientWidth": 1200,
+                "scrollWidth": 1200,
+                "paddingLeft": 76.8,
+                "paddingRight": 76.8,
+                "overflowX": "visible"
+              },
+              "search": {
+                "left": 0,
+                "right": 1200,
+                "top": 138.59,
+                "bottom": 216.59,
+                "width": 1200,
+                "height": 78,
+                "clientWidth": 1200,
+                "scrollWidth": 1200,
+                "paddingLeft": 76.8,
+                "paddingRight": 76.8,
+                "overflowX": "visible"
+              },
+              "input": {
+                "left": 76.8,
+                "right": 1015.66,
+                "top": 138.59,
+                "bottom": 183.59,
+                "width": 938.86,
+                "height": 45,
+                "clientWidth": 899,
+                "scrollWidth": 899,
+                "paddingLeft": 20,
+                "paddingRight": 18,
+                "overflowX": "clip"
+              },
+              "button": {
+                "left": 1025.66,
+                "right": 1123.2,
+                "top": 138.59,
+                "bottom": 183.59,
+                "width": 97.55,
+                "height": 45,
+                "clientWidth": 96,
+                "scrollWidth": 96,
+                "paddingLeft": 22,
+                "paddingRight": 22,
+                "overflowX": "visible"
+              }
+            },
+            "actionsCard": {
+              "card": {
+                "left": 997.28,
+                "right": 1445.36,
+                "top": 1007.31,
+                "bottom": 1138.69,
+                "width": 448.08,
+                "height": 131.38,
+                "clientWidth": 446,
+                "scrollWidth": 446,
+                "paddingLeft": 10,
+                "paddingRight": 10,
+                "overflowX": "visible"
+              },
+              "buttons": [
+                {
+                  "label": "Save draft",
+                  "left": 1008.28,
+                  "right": 1216.81,
+                  "top": 1022.31,
+                  "bottom": 1073.09,
+                  "width": 208.53,
+                  "height": 50.78,
+                  "clientWidth": 207,
+                  "scrollWidth": 207,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\udcf7 Generate Printful mockup",
+                  "left": 1225.81,
+                  "right": 1434.36,
+                  "top": 1022.31,
+                  "bottom": 1073.09,
+                  "width": 208.55,
+                  "height": 50.78,
+                  "clientWidth": 207,
+                  "scrollWidth": 207,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\ude80 Approve and publish",
+                  "left": 1008.28,
+                  "right": 1434.36,
+                  "top": 1082.09,
+                  "bottom": 1125.69,
+                  "width": 426.08,
+                  "height": 43.59,
+                  "clientWidth": 422,
+                  "scrollWidth": 422,
+                  "paddingLeft": 17,
+                  "paddingRight": 17,
+                  "overflowX": "visible"
+                }
+              ],
+              "actionButtonsPastCardPx": 0,
+              "actionButtonsPastViewportPx": 0
+            },
+            "pricing": {
+              "headingPastCardPx": 0,
+              "pricePastCardPx": 0,
+              "headingTextOverflowPx": 0,
+              "headingPriceOverlapPx": 0,
+              "heading": {
+                "left": 1014.28,
+                "right": 1168.39,
+                "top": 588.56,
+                "bottom": 610.56,
+                "width": 154.11,
+                "height": 22,
+                "clientWidth": 154,
+                "scrollWidth": 154,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "price": {
+                "left": 1256.7,
+                "right": 1428.36,
+                "top": 581.31,
+                "bottom": 617.81,
+                "width": 171.66,
+                "height": 36.5,
+                "clientWidth": 172,
+                "scrollWidth": 172,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "priceInput": {
+                "left": 1326.36,
+                "right": 1428.36,
+                "top": 581.31,
+                "bottom": 617.81,
+                "width": 102,
+                "height": 36.5,
+                "clientWidth": 88,
+                "scrollWidth": 88,
+                "paddingLeft": 6,
+                "paddingRight": 6,
+                "overflowX": "clip"
+              },
+              "payhead": {
+                "left": 998.28,
+                "right": 1444.36,
+                "top": 566.31,
+                "bottom": 617.81,
+                "width": 446.08,
+                "height": 51.5,
+                "clientWidth": 446,
+                "scrollWidth": 446,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "overflowX": "visible"
+              }
+            },
+            "sizeTable": {
+              "tablePastViewportPx": 0,
+              "tablePastScrollerPx": 0,
+              "localHorizontalScrollPx": 0,
+              "table": {
+                "left": 1011.28,
+                "right": 1431.36,
+                "top": 752.81,
+                "bottom": 885.31,
+                "width": 420.08,
+                "height": 132.5,
+                "clientWidth": 420,
+                "scrollWidth": 420,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 998.28,
+                "right": 1444.36,
+                "top": 706.31,
+                "bottom": 994.31,
+                "width": 446.08,
+                "height": 288,
+                "clientWidth": 446,
+                "scrollWidth": 446,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "visible"
+              }
+            }
+          }
+        },
+        {
+          "viewport": 390,
+          "bodyScrollWidth": 390,
+          "warnings": [
+            {
+              "defect": "size table",
+              "tablePastViewportPx": 42,
+              "tablePastScrollerPx": 94,
+              "localHorizontalScrollPx": 81,
+              "table": {
+                "left": 52,
+                "right": 432,
+                "top": 1900.98,
+                "bottom": 2033.48,
+                "width": 380,
+                "height": 132.5,
+                "clientWidth": 380,
+                "scrollWidth": 380,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 39,
+                "right": 351,
+                "top": 1854.48,
+                "bottom": 2178.48,
+                "width": 312,
+                "height": 324,
+                "clientWidth": 312,
+                "scrollWidth": 393,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "auto"
+              }
+            }
+          ],
+          "measurements": {
+            "searchBand": {
+              "bandPastViewportPx": 0,
+              "searchPastViewportPx": 0,
+              "searchRightPastBandPx": 0,
+              "band": {
+                "left": 0,
+                "right": 390,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 390,
+                "height": 60,
+                "clientWidth": 390,
+                "scrollWidth": 390,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "search": {
+                "left": 0,
+                "right": 390,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 390,
+                "height": 60,
+                "clientWidth": 390,
+                "scrollWidth": 390,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "input": {
+                "left": 19.5,
+                "right": 262.95,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 243.45,
+                "height": 45,
+                "clientWidth": 203,
+                "scrollWidth": 203,
+                "paddingLeft": 20,
+                "paddingRight": 18,
+                "overflowX": "clip"
+              },
+              "button": {
+                "left": 272.95,
+                "right": 370.5,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 97.55,
+                "height": 45,
+                "clientWidth": 96,
+                "scrollWidth": 96,
+                "paddingLeft": 22,
+                "paddingRight": 22,
+                "overflowX": "visible"
+              }
+            },
+            "actionsCard": {
+              "card": {
+                "left": 38,
+                "right": 352,
+                "top": 1688.48,
+                "bottom": 1819.86,
+                "width": 314,
+                "height": 131.38,
+                "clientWidth": 312,
+                "scrollWidth": 312,
+                "paddingLeft": 10,
+                "paddingRight": 10,
+                "overflowX": "visible"
+              },
+              "buttons": [
+                {
+                  "label": "Save draft",
+                  "left": 49,
+                  "right": 190.5,
+                  "top": 1703.48,
+                  "bottom": 1754.27,
+                  "width": 141.5,
+                  "height": 50.78,
+                  "clientWidth": 140,
+                  "scrollWidth": 140,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\udcf7 Generate Printful mockup",
+                  "left": 199.5,
+                  "right": 341,
+                  "top": 1703.48,
+                  "bottom": 1754.27,
+                  "width": 141.5,
+                  "height": 50.78,
+                  "clientWidth": 140,
+                  "scrollWidth": 140,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\ude80 Approve and publish",
+                  "left": 49,
+                  "right": 341,
+                  "top": 1763.27,
+                  "bottom": 1806.86,
+                  "width": 292,
+                  "height": 43.59,
+                  "clientWidth": 288,
+                  "scrollWidth": 288,
+                  "paddingLeft": 17,
+                  "paddingRight": 17,
+                  "overflowX": "visible"
+                }
+              ],
+              "actionButtonsPastCardPx": 0,
+              "actionButtonsPastViewportPx": 0
+            },
+            "pricing": {
+              "headingPastCardPx": 0,
+              "pricePastCardPx": 0,
+              "headingTextOverflowPx": 0,
+              "headingPriceOverlapPx": 0,
+              "heading": {
+                "left": 55,
+                "right": 209.11,
+                "top": 1704.48,
+                "bottom": 1726.48,
+                "width": 154.11,
+                "height": 22,
+                "clientWidth": 154,
+                "scrollWidth": 154,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "price": {
+                "left": 55,
+                "right": 226.66,
+                "top": 1734.48,
+                "bottom": 1770.98,
+                "width": 171.66,
+                "height": 36.5,
+                "clientWidth": 172,
+                "scrollWidth": 172,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "priceInput": {
+                "left": 124.66,
+                "right": 226.66,
+                "top": 1734.48,
+                "bottom": 1770.98,
+                "width": 102,
+                "height": 36.5,
+                "clientWidth": 88,
+                "scrollWidth": 88,
+                "paddingLeft": 6,
+                "paddingRight": 6,
+                "overflowX": "clip"
+              },
+              "payhead": {
+                "left": 39,
+                "right": 351,
+                "top": 1689.48,
+                "bottom": 1770.98,
+                "width": 312,
+                "height": 81.5,
+                "clientWidth": 312,
+                "scrollWidth": 312,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "overflowX": "visible"
+              }
+            },
+            "sizeTable": {
+              "tablePastViewportPx": 42,
+              "tablePastScrollerPx": 94,
+              "localHorizontalScrollPx": 81,
+              "table": {
+                "left": 52,
+                "right": 432,
+                "top": 1900.98,
+                "bottom": 2033.48,
+                "width": 380,
+                "height": 132.5,
+                "clientWidth": 380,
+                "scrollWidth": 380,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 39,
+                "right": 351,
+                "top": 1854.48,
+                "bottom": 2178.48,
+                "width": 312,
+                "height": 324,
+                "clientWidth": 312,
+                "scrollWidth": 393,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "auto"
+              }
+            }
+          }
+        }
+      ],
+      "stdout_tail": "able\":{\"left\":52,\"right\":432,\"top\":1900.98,\"bottom\":2033.48,\"width\":380,\"height\":132.5,\"clientWidth\":380,\"scrollWidth\":380,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"breakdown\":{\"left\":39,\"right\":351,\"top\":1854.48,\"bottom\":2178.48,\"width\":312,\"height\":324,\"clientWidth\":312,\"scrollWidth\":393,\"paddingLeft\":13,\"paddingRight\":13,\"overflowX\":\"auto\"}}}}\n{\n  \"image\": \"/tmp/cohabi-pr299-3e60cce9/workspace-3e60cce9e99f6a5dce76082d893783f72105798d/teams/build/outputs/aletheia-customizer/product-customizer-390-fixture.png\",\n  \"metrics\": {\n    \"viewport\": 390,\n    \"bodyScroll\": 390,\n    \"rail\": {\n      \"x\": 35,\n      \"y\": 575,\n      \"w\": 320,\n      \"h\": 87\n    },\n    \"stage\": {\n      \"x\": 38,\n      \"y\": 676,\n      \"w\": 314,\n      \"h\": 394\n    },\n    \"side\": {\n      \"x\": 38,\n      \"y\": 1688,\n      \"w\": 314,\n      \"h\": 985\n    },\n    \"header\": {\n      \"x\": 38,\n      \"y\": 378,\n      \"w\": 314,\n      \"h\": 184\n    },\n    \"buttons\": [\n      {\n        \"name\": \"Save draft\",\n        \"disabled\": false\n      },\n      {\n        \"name\": \"\ud83d\udcf7 Generate Printful mockup\",\n        \"disabled\": false\n      },\n      {\n        \"name\": \"\ud83d\ude80 Approve and publish\",\n        \"disabled\": true\n      }\n    ]\n  }\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "label": "pr299",
+      "sha": "3e60cce9e99f6a5dce76082d893783f72105798d",
+      "mode": "mobile-only",
+      "command": "node commons/test/merch-aletheia-visual-mobile-only.tmp.mjs",
+      "exit": 0,
+      "diagnostics": [
+        {
+          "viewport": 390,
+          "bodyScrollWidth": 390,
+          "warnings": [
+            {
+              "defect": "size table",
+              "tablePastViewportPx": 42,
+              "tablePastScrollerPx": 94,
+              "localHorizontalScrollPx": 81,
+              "table": {
+                "left": 52,
+                "right": 432,
+                "top": 1900.98,
+                "bottom": 2033.48,
+                "width": 380,
+                "height": 132.5,
+                "clientWidth": 380,
+                "scrollWidth": 380,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 39,
+                "right": 351,
+                "top": 1854.48,
+                "bottom": 2178.48,
+                "width": 312,
+                "height": 324,
+                "clientWidth": 312,
+                "scrollWidth": 393,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "auto"
+              }
+            }
+          ],
+          "measurements": {
+            "searchBand": {
+              "bandPastViewportPx": 0,
+              "searchPastViewportPx": 0,
+              "searchRightPastBandPx": 0,
+              "band": {
+                "left": 0,
+                "right": 390,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 390,
+                "height": 60,
+                "clientWidth": 390,
+                "scrollWidth": 390,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "search": {
+                "left": 0,
+                "right": 390,
+                "top": 131.59,
+                "bottom": 191.59,
+                "width": 390,
+                "height": 60,
+                "clientWidth": 390,
+                "scrollWidth": 390,
+                "paddingLeft": 19.5,
+                "paddingRight": 19.5,
+                "overflowX": "visible"
+              },
+              "input": {
+                "left": 19.5,
+                "right": 262.95,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 243.45,
+                "height": 45,
+                "clientWidth": 203,
+                "scrollWidth": 203,
+                "paddingLeft": 20,
+                "paddingRight": 18,
+                "overflowX": "clip"
+              },
+              "button": {
+                "left": 272.95,
+                "right": 370.5,
+                "top": 131.59,
+                "bottom": 176.59,
+                "width": 97.55,
+                "height": 45,
+                "clientWidth": 96,
+                "scrollWidth": 96,
+                "paddingLeft": 22,
+                "paddingRight": 22,
+                "overflowX": "visible"
+              }
+            },
+            "actionsCard": {
+              "card": {
+                "left": 38,
+                "right": 352,
+                "top": 1688.48,
+                "bottom": 1819.86,
+                "width": 314,
+                "height": 131.38,
+                "clientWidth": 312,
+                "scrollWidth": 312,
+                "paddingLeft": 10,
+                "paddingRight": 10,
+                "overflowX": "visible"
+              },
+              "buttons": [
+                {
+                  "label": "Save draft",
+                  "left": 49,
+                  "right": 190.5,
+                  "top": 1703.48,
+                  "bottom": 1754.27,
+                  "width": 141.5,
+                  "height": 50.78,
+                  "clientWidth": 140,
+                  "scrollWidth": 140,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\udcf7 Generate Printful mockup",
+                  "left": 199.5,
+                  "right": 341,
+                  "top": 1703.48,
+                  "bottom": 1754.27,
+                  "width": 141.5,
+                  "height": 50.78,
+                  "clientWidth": 140,
+                  "scrollWidth": 140,
+                  "paddingLeft": 15,
+                  "paddingRight": 15,
+                  "overflowX": "visible"
+                },
+                {
+                  "label": "\ud83d\ude80 Approve and publish",
+                  "left": 49,
+                  "right": 341,
+                  "top": 1763.27,
+                  "bottom": 1806.86,
+                  "width": 292,
+                  "height": 43.59,
+                  "clientWidth": 288,
+                  "scrollWidth": 288,
+                  "paddingLeft": 17,
+                  "paddingRight": 17,
+                  "overflowX": "visible"
+                }
+              ],
+              "actionButtonsPastCardPx": 0,
+              "actionButtonsPastViewportPx": 0
+            },
+            "pricing": {
+              "headingPastCardPx": 0,
+              "pricePastCardPx": 0,
+              "headingTextOverflowPx": 0,
+              "headingPriceOverlapPx": 0,
+              "heading": {
+                "left": 55,
+                "right": 209.11,
+                "top": 1704.48,
+                "bottom": 1726.48,
+                "width": 154.11,
+                "height": 22,
+                "clientWidth": 154,
+                "scrollWidth": 154,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "price": {
+                "left": 55,
+                "right": 226.66,
+                "top": 1734.48,
+                "bottom": 1770.98,
+                "width": 171.66,
+                "height": 36.5,
+                "clientWidth": 172,
+                "scrollWidth": 172,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "priceInput": {
+                "left": 124.66,
+                "right": 226.66,
+                "top": 1734.48,
+                "bottom": 1770.98,
+                "width": 102,
+                "height": 36.5,
+                "clientWidth": 88,
+                "scrollWidth": 88,
+                "paddingLeft": 6,
+                "paddingRight": 6,
+                "overflowX": "clip"
+              },
+              "payhead": {
+                "left": 39,
+                "right": 351,
+                "top": 1689.48,
+                "bottom": 1770.98,
+                "width": 312,
+                "height": 81.5,
+                "clientWidth": 312,
+                "scrollWidth": 312,
+                "paddingLeft": 16,
+                "paddingRight": 16,
+                "overflowX": "visible"
+              }
+            },
+            "sizeTable": {
+              "tablePastViewportPx": 42,
+              "tablePastScrollerPx": 94,
+              "localHorizontalScrollPx": 81,
+              "table": {
+                "left": 52,
+                "right": 432,
+                "top": 1900.98,
+                "bottom": 2033.48,
+                "width": 380,
+                "height": 132.5,
+                "clientWidth": 380,
+                "scrollWidth": 380,
+                "paddingLeft": 0,
+                "paddingRight": 0,
+                "overflowX": "visible"
+              },
+              "breakdown": {
+                "left": 39,
+                "right": 351,
+                "top": 1854.48,
+                "bottom": 2178.48,
+                "width": 312,
+                "height": 324,
+                "clientWidth": 312,
+                "scrollWidth": 393,
+                "paddingLeft": 13,
+                "paddingRight": 13,
+                "overflowX": "auto"
+              }
+            }
+          }
+        }
+      ],
+      "stdout_tail": "able\":{\"left\":52,\"right\":432,\"top\":1900.98,\"bottom\":2033.48,\"width\":380,\"height\":132.5,\"clientWidth\":380,\"scrollWidth\":380,\"paddingLeft\":0,\"paddingRight\":0,\"overflowX\":\"visible\"},\"breakdown\":{\"left\":39,\"right\":351,\"top\":1854.48,\"bottom\":2178.48,\"width\":312,\"height\":324,\"clientWidth\":312,\"scrollWidth\":393,\"paddingLeft\":13,\"paddingRight\":13,\"overflowX\":\"auto\"}}}}\n{\n  \"image\": \"/tmp/cohabi-pr299-3e60cce9/workspace-3e60cce9e99f6a5dce76082d893783f72105798d/teams/build/outputs/aletheia-customizer/product-customizer-390-fixture.png\",\n  \"metrics\": {\n    \"viewport\": 390,\n    \"bodyScroll\": 390,\n    \"rail\": {\n      \"x\": 35,\n      \"y\": 575,\n      \"w\": 320,\n      \"h\": 87\n    },\n    \"stage\": {\n      \"x\": 38,\n      \"y\": 676,\n      \"w\": 314,\n      \"h\": 394\n    },\n    \"side\": {\n      \"x\": 38,\n      \"y\": 1688,\n      \"w\": 314,\n      \"h\": 985\n    },\n    \"header\": {\n      \"x\": 38,\n      \"y\": 378,\n      \"w\": 314,\n      \"h\": 184\n    },\n    \"buttons\": [\n      {\n        \"name\": \"Save draft\",\n        \"disabled\": false\n      },\n      {\n        \"name\": \"\ud83d\udcf7 Generate Printful mockup\",\n        \"disabled\": false\n      },\n      {\n        \"name\": \"\ud83d\ude80 Approve and publish\",\n        \"disabled\": true\n      }\n    ]\n  }\n}\n",
+      "stderr_tail": ""
+    }
+  ]
+}
