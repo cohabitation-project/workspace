@@ -89,7 +89,17 @@ function publicPath(hrefPath) {
   return target;
 }
 
-test('literal internal hrefs in public HTML and JS have a public target or registered route', () => {
+function literalPaths(text, pattern) {
+  const links = [];
+  for (const match of text.matchAll(pattern)) {
+    const raw = match.slice(1).find((value) => value !== undefined);
+    if (!raw || raw.includes('${')) continue;
+    links.push({ index: match.index, end: match.index + match[0].length, path: raw.split(/[?#]/, 1)[0] || '/' });
+  }
+  return links;
+}
+
+test('literal internal hrefs and data links in public files have a public target or registered route', () => {
   const fixtureRoutes = registeredRoutes("app.get(['/one', '/two'], handler); app.get(/^\\/show\\/([a-z]+)\\.html$/, handler);");
   assert.ok(routeMatches('/two', fixtureRoutes), 'route arrays are recognized');
   assert.ok(routeMatches('/show/garden.html', fixtureRoutes), 'literal regular-expression routes are recognized');
