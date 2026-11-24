@@ -1,0 +1,54 @@
+{
+  "retrieved_at": "2026-11-24T08:12:29.137624+00:00",
+  "authentication": "none; no credential read or supplied",
+  "responses": {
+    "145:printfiles": {
+      "url": "https://api.printful.com/mockup-generator/printfiles/145",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "145:templates": {
+      "url": "https://api.printful.com/mockup-generator/templates/145",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "867:printfiles": {
+      "url": "https://api.printful.com/mockup-generator/printfiles/867",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "867:templates": {
+      "url": "https://api.printful.com/mockup-generator/templates/867",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "395:printfiles": {
+      "url": "https://api.printful.com/mockup-generator/printfiles/395",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "395:templates": {
+      "url": "https://api.printful.com/mockup-generator/templates/395",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "853:printfiles": {
+      "url": "https://api.printful.com/mockup-generator/printfiles/853",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    },
+    "853:templates": {
+      "url": "https://api.printful.com/mockup-generator/templates/853",
+      "status": 401,
+      "sha256": "f3fb7dd900cc74ce9682556cb396bdd26774b494707be736b9e99aecb0a793dc",
+      "body": "{\"code\":401,\"result\":\"Unauthorized\",\"error\":{\"reason\":\"Unauthorized\",\"message\":\"Unauthorized\"}}"
+    }
+  }
+}

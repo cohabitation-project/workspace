@@ -1,0 +1,32 @@
+COMMAND: node --test commons/test/merch-printful.mjs commons/test/merch-printful-retry.mjs
+EXIT: 1
+SECONDS: 17.73
+
+STDOUT
+✔ a Printful 429 is not cached as "no products": the list comes back after the retry window, and a later hiccup keeps the good list (316.45248ms)
+✖ a maker turns their art into a Printful product with a real mockup (15090.565564ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15378.638664
+
+✖ failing tests:
+
+test at commons/test/merch-printful.mjs:16:1
+✖ a maker turns their art into a Printful product with a real mockup (15090.565564ms)
+  [TypeError [Error]: fetch failed] {
+    [cause]: Error: connect ECONNREFUSED 127.0.0.1:33791
+        at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16) {
+      errno: -111,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 33791
+    }
+  }
+
+STDERR
