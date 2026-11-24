@@ -1,0 +1,20 @@
+{
+  "status": "failed",
+  "head": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "viewport": {
+    "width": 1536,
+    "height": 900
+  },
+  "stage": "close",
+  "started_at": "2026-11-24T15:20:05.203Z",
+  "evidence": {
+    "member_id": "h_mwuucl1r01c07d8e",
+    "listing_id": "l_dfb3bacb06b88f"
+  },
+  "failure": {
+    "stage": "browser-launch",
+    "message": "Failed to launch the browser process! spawn /tmp/kimi-pr299-browser/chrome-headless-shell EACCES\n\n\nTROUBLESHOOTING: https://pptr.dev/troubleshooting\n",
+    "stack": "Error: Failed to launch the browser process! spawn /tmp/kimi-pr299-browser/chrome-headless-shell EACCES\n\n\nTROUBLESHOOTING: https://pptr.dev/troubleshooting\n\n    at ChildProcess.onClose (file:///tmp/kimi-round50-pr299/workspace/node_modules/@puppeteer/browsers/lib/esm/launch.js:303:24)\n    at ChildProcess.emit (node:events:514:28)\n    at ChildProcess._handle.onexit (node:internal/child_process:322:12)\n    at onErrorNT (node:internal/child_process:554:16)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"
+  },
+  "finished_at": "2026-11-24T15:20:05.805Z"
+}

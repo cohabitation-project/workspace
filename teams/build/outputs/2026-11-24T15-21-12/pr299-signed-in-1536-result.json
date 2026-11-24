@@ -1,0 +1,83 @@
+{
+  "status": "measured",
+  "head": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "viewport": {
+    "width": 1536,
+    "height": 900
+  },
+  "stage": "close",
+  "started_at": "2026-11-24T15:20:26.573Z",
+  "evidence": {
+    "member_id": "h_mwuud1j9012d8a12",
+    "listing_id": "l_44e113d2297afb",
+    "http_status": 200,
+    "url": "http://127.0.0.1:38351/label/l/l_44e113d2297afb/products",
+    "geometry": {
+      "signed_in_label": {
+        "member_name_visible": true,
+        "sign_out_visible": false,
+        "header_text": "Cohabi\n\u25be\nSocial\nFeed\nMarketplace \u25be\nGroups\n\u2764\ufe0f\n0\n\u25be"
+      },
+      "header": {
+        "x": 90.64,
+        "y": 460.55,
+        "width": 1354.72,
+        "height": 123,
+        "right": 1445.36,
+        "bottom": 583.55
+      },
+      "actions_card": {
+        "x": 997.28,
+        "y": 985.27,
+        "width": 448.08,
+        "height": 131.38,
+        "right": 1445.36,
+        "bottom": 1116.64
+      },
+      "actions_card_heading_overlap_px2": 0,
+      "pricing_heading": {
+        "x": 1014.28,
+        "y": 628.28,
+        "width": 150.69,
+        "height": 22,
+        "right": 1164.97,
+        "bottom": 650.28
+      },
+      "price": {
+        "x": 1270.7,
+        "y": 620.28,
+        "width": 157.66,
+        "height": 38,
+        "right": 1428.36,
+        "bottom": 658.28
+      },
+      "pricing_heading_price_overlap_px2": 0,
+      "table": {
+        "rect": {
+          "x": 1011.28,
+          "y": 795.67,
+          "width": 420.08,
+          "height": 67.59,
+          "right": 1431.36,
+          "bottom": 863.27
+        },
+        "client_width": 420,
+        "scroll_width": 420,
+        "horizontal_overflow_px": 0,
+        "outside_viewport_px": 0
+      },
+      "document_horizontal_overflow_px": 0,
+      "purple_band_bottom": null,
+      "purple_bands": [],
+      "counts": {
+        "products": 8,
+        "headings": 6
+      },
+      "app_text": "COHABI CREATOR WORKSHOP \u00b7 ONE ARTWORK, MANY PRODUCTS\n\nPR299 diagnostic art\n\nBy PR299 Painter \u00b7 0 products published \u00b7 Place, preview and approve each product\n\nProducts (8)\n\ud83d\udc55\nDiagnostic product 71\nNot on\n\ud83e\udde5\nDiagnostic product 146\nNot on\n\u2615\nDiagnostic product 19\nNot on\n\ud83d\uddbc\nDiagnostic product 1\nNot on\n\ud83d\uddbc\nCanvas (in)\nNot on\n\ud83d\udc5c\nDiagnostic product 84\nNot on\n\u2726\nDiagnostic product 358\nNot on\n\u25a3\nDiagnostic product 181\nNot on\n\nDesign preview \u00b7 Diagnostic product 71 \u00b7 Black \u00b7 Print print area\n\nArt placement\n\nMove your artwork directly on the product. Only the outlined print area will be printed.\n\nSize\n%\nLeft \u2194 right\n%\nUp \u2195 down\n%\nCentre artwork\n\u21bb Turn 90\u00b0\n\nPrint quality: Poor \u2014 may print blurry. Make it smaller or upload a larger file \u00b7 0 dpi\n\nProduct colour (Diagnostic product 71)\n\nTap a colour to preview it. Each colour you sell comes in every size.\n\n\u2713\nViewing: Black. The selected swatch is not automatically offered for sale.\n\u2713 Selling this colour \u2014 stop selling\n\nYou sell: Black\n\nPricing & earnings\nYour price\nBuyer pays\n$20.00\nPrintful cost\n$11.50\nEst. you earn\n$7.62\nSize breakdown (Diagnostic product 71)\nSize\tBuyer pays\tPrintful\tCard fee\tCohabi 0%\tYou earn\nM\t$20.00\t$11.50\t$0.88\t$0.00\t$7.62\n\nIllustrative earnings only; shipping, applicable tax and additional charges are not included here. The card fee is provisionally shown on the maker side until the cooperative determines who carries it. Size price adjustments reflect production costs.\n\nSave draft\n\ud83d\udcf7 Generate Printful mockup\n\ud83d\ude80 Approve and publish\n\n\ud83d\udd12 Draft products stay private until you approve the verified Printful mockup.\n\nPrintful mockup \u00b7 Diagnostic product 71 \u00b7 Black\n\nNo mockup yet. Select your design, save the draft, and generate a Printful mockup before approving."
+    },
+    "screenshot": "/tmp/kin-py-KR34mM/out/pr299-signed-in-1536.png",
+    "console_errors": []
+  },
+  "failure": null,
+  "finished_at": "2026-11-24T15:20:29.296Z"
+}

@@ -1,0 +1,38 @@
+$ node --check commons/test/merch-299-signed-in.mjs
+exit 0 (0.0s)
+
+
+$ npx --yes @puppeteer/browsers install chrome-headless-shell@stable --path /tmp/kimi-pr299-browser
+exit 0 (3.8s)
+
+chrome-headless-shell@158.0.8127.88 /tmp/kimi-pr299-browser/chrome-headless-shell/linux-158.0.8127.88/chrome-headless-shell-linux64/chrome-headless-shell
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice
+
+
+$ node commons/test/merch-299-signed-in.mjs
+exit 1 (5.8s)
+{
+  "status": "failed",
+  "head": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "viewport": {
+    "width": 1536,
+    "height": 900
+  },
+  "stage": "browser-launch",
+  "started_at": "2026-11-24T15:20:05.203Z",
+  "evidence": {
+    "member_id": "h_mwuucl1r01c07d8e",
+    "listing_id": "l_dfb3bacb06b88f"
+  },
+  "failure": {
+    "stage": "browser-launch",
+    "message": "Failed to launch the browser process! spawn /tmp/kimi-pr299-browser/chrome-headless-shell EACCES\n\n\nTROUBLESHOOTING: https://pptr.dev/troubleshooting\n",
+    "stack": "Error: Failed to launch the browser process! spawn /tmp/kimi-pr299-browser/chrome-headless-shell EACCES\n\n\nTROUBLESHOOTING: https://pptr.dev/troubleshooting\n\n    at ChildProcess.onClose (file:///tmp/kimi-round50-pr299/workspace/node_modules/@puppeteer/browsers/lib/esm/launch.js:303:24)\n    at ChildProcess.emit (node:events:514:28)\n    at ChildProcess._handle.onexit (node:internal/child_process:322:12)\n    at onErrorNT (node:internal/child_process:554:16)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"
+  },
+  "finished_at": "2026-11-24T15:20:05.805Z"
+}
+
