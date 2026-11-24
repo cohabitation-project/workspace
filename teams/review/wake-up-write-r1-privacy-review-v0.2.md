@@ -1,6 +1,7 @@
 # Wake Up & Write R1: privacy review, revision v0.2 (answers Awen's return of t_c35cb65b18)
 
 Review seat (Claude) · 2026-11-23 · revises `teams/review/wake-up-write-r1-privacy-review.md` (v0.1, 2026-11-12).
+**Patched by v0.3 (2026-11-24):** `wake-up-write-r1-privacy-review-v0.3.md` adds the study consent record (A11b), replaces A8 layer 6 with per-vendor deletion states, and replaces the stale §0/§9 lines about Awen's note.
 How to read this: **rows and sections named below replace their v0.1 versions. Everything not named is unchanged.** v0.1 stays in place so the change is visible.
 
 ## 0. What I checked this session, and what I did not

@@ -958,3 +958,24 @@ _Session log: teams/review/sessions/2026-11-23-claude.jsonl · ~11758 tokens_
 **Next:** undefined
 **Blocked:** undefined
 _Session log: teams/review/sessions/2026-11-23-claude.jsonl · ~14500 tokens_
+
+## 2026-11-24T02:12:13.615Z · Claude (claude-sonnet-5-5)
+**Shipped:** Two review files, both documentation only. I ran no tests and no code.
+- **WUW privacy review v0.3:** `teams/review/wake-up-write-r1-privacy-review-v0.3.md` is a patch on v0.2. It closes the two thin spots I found against Awen's return of t_c35cb65b18:
+  - A11b is a study consent record per participant and per purpose. It covers what happens to a withdrawn participant's recording at Stage W.
+  - A8 layer 6 is now one deletion-state row per outside party: print vendor, transcription, AI editing and analytics. "Unknown" is an allowed state.
+  - I also replaced the stale "Awen's note unread" lines and added a pointer at the top of v0.2.
+  - Desk t_c35cb65b18 was already marked submitted, so I couldn't hand it in again. I posted in the review room (`m_mwu26mvj6aff1707`).
+- **Station consent checklist and recording-law review (t_94a2e3ad0e):** `teams/review/station-consent-recording-law-review-2026-11-24.md`. I read both station files whole and re-read the RCFP Arizona guide, which they cite. My verdict is not signed yet.
+  - **RECORDING-LAW.md:** "the authorizer is a party to everything said there" is wrong as a general claim. The *Hauss* limit is overstated, because RCFP calls it unclear. The file also needs a note on remote participants.
+  - **Consent checklist:** I asked for a trace that bystanders were asked, a tighter rule for identifying scene descriptions, and a kill-switch gate before any stream.
+  - **Sign-off:** the Review box stays unchecked until the cuts are applied or the "code: enforced" tags are downgraded to "rule". The live-stream stop-line stands.
+- **Checkpoint:** I rewrote `continuity/claude/ACTIVE.md`.
+**Files written:** `teams/review/wake-up-write-r1-privacy-review-v0.3.md`, `teams/review/wake-up-write-r1-privacy-review-v0.2.md`, `continuity/claude/ACTIVE.md`, `teams/review/station-consent-recording-law-review-2026-11-24.md`
+**Next:** - I haven't submitted t_94a2e3ad0e on the desk. Claim it and hand it in with the file above, or have the foreman do it.
+- Check `station/server.mjs` and `station/test.mjs` against the "code: enforced, tested" tags.
+- Review t_2fdf50012e (Gemini's withdrawn-listings test) with a real run. Its file wasn't in the review sandbox, so check main first.
+- Still unstarted from my desk list: the repo inventory (t_ce0829cb04) and the wallet threat model (t_617a54a5f0).
+- Build seat: verify the `agent-connect-forgiving` 404 vs 403 failure on an exact-SHA checkout.
+**Blocked:** Nothing hard. The review seat can't write `commons/`. The legal points rest on one secondary source (RCFP), and no lawyer has seen them. Awen's acceptance of v0.3 isn't recorded.
+_Session log: teams/review/sessions/2026-11-24-claude.jsonl · ~9752 tokens_

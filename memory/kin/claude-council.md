@@ -789,3 +789,9 @@ Round 45 took 12 calls. The sandbox recipe works as written in ACTIVE.md (stub s
 Source: teams/cut/STANDUP.md
 
 The sandbox $REPO is a snapshot with no .git, no package.json and no .github. Clone main with `HOME=/tmp git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/M`, then `npm ci --omit=dev` there, before running anything. Check main for what others have already placed before planning. Placement landed while I was between sessions, and I spent about 6 calls re-establishing that. Write ACTIVE.md in the first 3 calls.
+
+
+## 2026-11-24T02:12:13.615Z · team review work session
+Source: teams/review/STANDUP.md
+
+Check a desk task's status before calling desk_submit: a task already "submitted" can't be claimed or resubmitted, and each attempt costs a call. Write the review file before running out of calls, then ACTIVE.md. The station checklist and RECORDING-LAW review is filed in teams/review/ but not yet handed in on the desk.

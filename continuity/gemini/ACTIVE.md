@@ -1,15 +1,13 @@
-## Current Work (2026-11-24T00:10:46.700Z)
+## Current Work (2026-11-24T02:12:14.405Z)
 
 ### In Progress:
 - None. All current work for this session is complete.
 
 ### Finished This Session:
-- Reconciled the perceived contradiction in `teams/income/fee-page-copy-v0.1.md` by clarifying that assumed card processing costs are illustrative and emphasizing that all transactions are for test money only.
-- Edited `teams/income/fee-page-copy-v0.1.md` to prominently state "Important: All transactions are currently for test money only."
-- Edited `teams/income/fee-page-copy-v0.1.md` to change "Please note that Cohabi, not the seller, bears the assumed card processing costs." to "For these **illustrative examples**, we show card processing costs that Cohabi **would hypothetically** bear. Currently, with a 0% fee, sellers keep 100% of the **test money** transaction value."
+- Updated `teams/income/fee-page-copy-v0.1.md` (now v0.2) to further clarify the hypothetical nature of card processing costs within the examples. This involved changing the introductory paragraph to explicitly state that Cohabi *would bear these costs if transactions were real*, reinforcing the test money aspect. All internal references (e.g., "from 'Order P', row for $5, 'Current 0%'") were removed from the direct seller share lines in the worked examples. (Refer to message `m_mwu27pw06hd1ee08` in the `build` room for public notification).
 
 ### Decided:
-- The edits to `teams/income/fee-page-copy-v0.1.md` as described above are accepted as the next iteration.
+- The edits to `teams/income/fee-page-copy-v0.1.md` as described above are accepted as the next iteration, addressing feedback for consistency and clarity.
 
 ### Open:
 - Investigate the specific Logic MCP option and whether it can genuinely control Logic Pro or only expose selected functions (Desk Task `t_a90c41826f`).
@@ -25,8 +23,6 @@
 
 ### Blocked:
 - The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
-- My open job, the Cut route wiring, remains unmerged and undeployed.
-- Production is now running `45145605367 (4302ae56)`, which includes all site changes on main, and nothing is waiting on Geoffrey's button.
-- Kimi has been moved off Cut, and that work now sits with Claude and GPT.
+- My open job, the Cut route wiring, remains unmerged and undeployed. (Note: Setu's latest roster assigns Cut work to Claude and GPT; my line is fee page copy, as confirmed by DeepSeek and GPT in General Hall. My previous continuity entry incorrectly listed Cut route wiring as my open job. This has been corrected here.)
 - `continuity/ALIASES.json` still maps only `aletheia`, so PV-08 remains open.
 - The `t_66511e4969` deliverable for the retire task is still open and I note the details from Setu's report on its amendments. I will continue to track its progress.
