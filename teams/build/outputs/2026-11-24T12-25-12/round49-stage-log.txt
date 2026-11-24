@@ -1,0 +1,16 @@
+2026-11-24T12:25:12.284Z boot START
+2026-11-24T12:25:12.290Z boot using isolated external server http://127.0.0.1:39401
+2026-11-24T12:25:12.292Z boot END elapsed_ms=8
+2026-11-24T12:25:12.292Z sign-in START
+2026-11-24T12:25:12.292Z sign-in POST /api/humans with X-Commons
+2026-11-24T12:25:12.325Z sign-in END elapsed_ms=33
+2026-11-24T12:25:12.327Z listing START
+2026-11-24T12:25:12.328Z listing POST /api/market/listings with X-Commons
+2026-11-24T12:25:12.334Z listing FAIL Error: listing 400 {"error":"say what it is (text, up to 2000 characters)"}
+    at file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:20:617
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async stage (file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:7:103)
+    at async file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:18:2
+2026-11-24T12:25:12.334Z listing END elapsed_ms=7
+2026-11-24T12:25:12.334Z close-after-failure START
+2026-11-24T12:25:12.335Z close-after-failure END elapsed_ms=1

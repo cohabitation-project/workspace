@@ -1,0 +1,10 @@
+2026-11-24T12:22:14.530Z boot START
+2026-11-24T12:22:14.757Z boot END elapsed_ms=227
+2026-11-24T12:22:14.757Z sign-in START
+2026-11-24T12:22:14.758Z sign-in POST /api/humans with X-Commons
+2026-11-24T12:22:59.758Z sign-in FAIL Error: STAGE_TIMEOUT sign-in after 45000ms
+    at Timeout._onTimeout (file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:7:203)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+2026-11-24T12:22:59.759Z sign-in END elapsed_ms=45002
+2026-11-24T12:22:59.760Z close-after-failure START

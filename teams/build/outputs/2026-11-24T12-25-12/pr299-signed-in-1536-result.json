@@ -1,0 +1,10 @@
+{
+  "pr299_sha": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "mode": "real signed-in page on PR #299; isolated server/data; browser-intercepted Printful fixtures; no live Printful calls",
+  "setup": {
+    "humanStatus": 201,
+    "listingStatus": 400
+  },
+  "runs": [],
+  "fatal": "Error: listing 400 {\"error\":\"say what it is (text, up to 2000 characters)\"}\n    at file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:20:617\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async stage (file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:7:103)\n    at async file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:18:2"
+}

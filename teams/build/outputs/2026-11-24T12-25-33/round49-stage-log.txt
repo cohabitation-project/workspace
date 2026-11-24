@@ -1,0 +1,16 @@
+2026-11-24T12:25:33.342Z boot START
+2026-11-24T12:25:33.350Z boot using isolated external server http://127.0.0.1:46309
+2026-11-24T12:25:33.351Z boot END elapsed_ms=9
+2026-11-24T12:25:33.352Z sign-in START
+2026-11-24T12:25:33.352Z sign-in POST /api/humans with X-Commons
+2026-11-24T12:25:33.388Z sign-in END elapsed_ms=36
+2026-11-24T12:25:33.390Z listing START
+2026-11-24T12:25:33.393Z listing POST /api/market/listings with X-Commons
+2026-11-24T12:25:33.402Z listing FAIL Error: listing 400 {"error":"category must be one of: music, art, video, writing, software, services, classifieds"}
+    at file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:20:662
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async stage (file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:7:103)
+    at async file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:18:2
+2026-11-24T12:25:33.402Z listing END elapsed_ms=12
+2026-11-24T12:25:33.404Z close-after-failure START
+2026-11-24T12:25:33.404Z close-after-failure END elapsed_ms=0

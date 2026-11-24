@@ -1,0 +1,7 @@
+{
+  "pr299_sha": "3e60cce9e99f6a5dce76082d893783f72105798d",
+  "mode": "real signed-in page on PR #299; isolated server/data; browser-intercepted Printful fixtures; no live Printful calls",
+  "setup": {},
+  "runs": [],
+  "fatal": "Error: STAGE_TIMEOUT sign-in after 45000ms\n    at Timeout._onTimeout (file:///tmp/round49-kimi-work/workspace/commons/test/round49-kimi-299-signed-in.mjs:7:203)\n    at listOnTimeout (node:internal/timers:685:17)\n    at process.processTimers (node:internal/timers:618:7)"
+}

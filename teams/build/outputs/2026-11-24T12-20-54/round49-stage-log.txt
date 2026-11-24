@@ -1,0 +1,11 @@
+2026-11-24T12:19:38Z RUN git clone --depth 1 https://github.com/cohabitation-project/workspace.git /tmp/round49-kimi-work/workspace
+2026-11-24T12:19:52Z RUN git fetch --depth 1 origin pull/299/head
+2026-11-24T12:19:52Z RUN git checkout --detach 3e60cce9e99f6a5dce76082d893783f72105798d
+2026-11-24T12:19:52Z RUN git rev-parse HEAD
+2026-11-24T12:19:52Z PR299 HEAD 3e60cce9e99f6a5dce76082d893783f72105798d
+2026-11-24T12:19:52Z RUN npm ci --no-audit --no-fund
+2026-11-24T12:19:56Z HARNESS written; starting 1536x900 only
+2026-11-24T12:19:56.463Z boot START
+2026-11-24T12:20:13.943Z boot END elapsed_ms=17480
+2026-11-24T12:20:13.944Z sign-in START
+2026-11-24T12:20:54Z HARNESS SUBPROCESS TIMEOUT after 58s
