@@ -2860,3 +2860,44 @@ _Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~685809 tokens_
 **Next:** Read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`, verify Round 47 branch status, and take only the next assigned Kimi job. Before enabling any candidate, an assigned builder must run authenticated product-detail/printfiles checks and real panel/mockup tests; Ash/Aletheia-6 own assortment and visual decisions.
 **Blocked:** Nothing in the assigned public-research lane. Authenticated integration, stock/price/template/mockup/shipping behavior, and staging/production remain unverified by design.
 _Session log: teams/build/sessions/2026-11-24-kimi.jsonl · ~428441 tokens_
+## 2026-11-24T06:20:52.781Z · Claude (claude-sonnet-5-5)
+**Shipped:** PR #208 (agent-reconnect @ bf6daf89) merges into main 570ff3aa with two conflicts, both resolved by me and both small. I did NOT write teams/build/outputs/round47-claude-pr208.md or continuity/claude/ACTIVE.md, because I ran out of steps. Everything below is from my sandbox only, and nothing is written to the repo or pushed.
+
+**What I did:** shallow clone of main 570ff3aa, unshallowed, local merge of pr208. Merge-base is 61b1ee1e (Nov 20).
+
+**Conflicts:**
+1. `commons/lib/feedv2.mjs`, `myAgentsPage`: main's #285 version is `(me, claims, returns=[])` with a "Waiting to come back in" list. #208's version is `(me, claims, asks=[])` with a typed pairing-code list. I resolved it to `(me, claims, returns=[], asks=[])`, with `${returning}${asks…}` in the body, so both lists render.
+2. `commons/server.mjs`, the `/my-agents` route: now passes `operators.returnsFor(me,{steward}), reconnect.asksFor(me)`.
+Every other file auto-merged: commons-tests.yml, openapi, agentconnect, mcp, presence, my-agents.js, unit.mjs. `node --check` passes on both resolved files.
+
+**Tests (measured, `node --test` per file, COMMONS_FAKE_LLM=1, `npm ci --omit=dev`):**
+- All 244 commons/test files, merged tree against clean main:
+
+| Tree | Files | Pass | Fail | Todo |
+|---|---|---|---|---|
+| Merged (#208 + main) | 244 | 956 | 11 | 6 |
+| Clean main | 244 | 948 | 11 | 6 |
+
+- The 8 extra passes are #208's own `reconnect.mjs`, 8/8.
+- The same 11 files fail on both trees, so #208 adds no regression:
+  - auth-frontend, auth-mobile, auth-provider-controls
+  - cooperative-structure, live-invite, merch-aletheia-visual
+  - shots, site-links, site-links-signed-in
+  - speed, visitor-first-minute
+- I didn't diagnose those 11. They look like sandbox artifacts (no browser, no network), but that is inferred.
+- All 37 agent-connect*, door-* (including door-secret-routes and door-token-transport), gate-door-authz and signin-door-links files exit 0 on the merged tree.
+- `node commons/gpt/build-openapi.mjs` leaves the tree unchanged, so openapi.json is in sync.
+
+**Diff:** `git diff main HEAD` is 62788 bytes, 12 files (+378/-29), `git hash-object` 0a8b7b4a7974d8e921baff90b437d61441c40fea, rebased merge commit f7efe5c5. I could not attach the patch because it is too large to paste.
+
+**What is missing for #208 to merge (design, not code):**
+- #208 and the merged #285 overlap. Both let a locked-out agent come back through `/my-agents`, and both rotate or seat a token. #285 is "join again by name, temporary seat, human presses Yes". #208 is "ask by name, get a 6-digit pairing code, human types it, then collect a token".
+- #208's pairing code is the stronger impostor defence (Awen's review). #285 relies on the human having named and confirmed the agent before the arrival.
+- Someone must decide: replace, keep both, or drop #208. If kept, the `reconnect` MCP tool and the two `/api/reconnect*` routes are new Tier 1 surface that needs a second builder's yes plus a real browser run of `/my-agents`.
+- With both lists on one page, someone still needs to look at the copy.
+**Files written:** none
+**Next:** 1. Write teams/build/outputs/round47-claude-pr208.md from the summary above, and update continuity/claude/ACTIVE.md. Recipe: clone, `git fetch origin pull/208/head:pr208`, `git fetch --unshallow`, merge, apply the two resolutions, `npm ci --omit=dev`. Then run the 244 test files in parallel with `xargs -P 10`, using a /tmp/run1.sh wrapper that runs `node --test` with `timeout 70`.
+2. Setu/Geoffrey: decide whether #208 (pairing code) replaces, coexists with, or yields to the #285 flow. If it stays, push the resolved merge. I can't push, but the resolutions are 2 hunks, reproducible in about 3 calls.
+3. Look into the 11 files that fail on clean main in this sandbox. A fresh run in a real runtime would tell whether they are sandbox artifacts.
+**Blocked:** Ran out of the step budget before writing the result file and ACTIVE.md. Nothing is blocking the work itself. The patch is too big to paste, so only its hash is recorded.
+_Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~10294 tokens_
