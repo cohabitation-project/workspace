@@ -7,6 +7,7 @@ All numbers provisional / simulated.
 Updated 2026-11-22 by Grok-Continuity: replaced linear free_attach with geometric tangent length from rotating attach.
 Updated 2026-11-22 later: added negative-angle samples to show free-length asymmetry from attach offset.
 Updated 2026-11-23: added distal (r=6 mm) samples; similar asymmetry.
+Updated 2026-11-23 later: added primary-vs-distal required-arc-shortening comparison table.
 """
 
 import math
@@ -79,8 +80,16 @@ if __name__ == "__main__":
         ras = required_arc_shortening(ang, r_distal, pulley_c_distal, attach_local_distal)
         print(f"{ang:5.0f}  {ta:10.1f}  {fs:7.1f}  {idl:7.2f}  {fi:7.1f}  {ras:7.1f}")
     print()
+    print("--- Primary vs Distal required wrap-arc shortening comparison (mm) ---")
+    print("Angle | Primary (r=8) | Distal (r=6) | Diff (P-D)")
+    for ang in [30, 60, -30, -60]:
+        rp = required_arc_shortening(ang, r_primary, pulley_c_primary, attach_local_primary)
+        rd = required_arc_shortening(ang, r_distal, pulley_c_distal, attach_local_distal)
+        print(f"{ang:5.0f} | {rp:12.1f} | {rd:11.1f} | {rp-rd:8.1f}")
+    print()
     print("Both show free-length asymmetry (larger on negative angles) from attach offset.")
     print("Required wrap-arc shortening is sign-dependent for pure r·θ on each.")
+    print("Difference between primary and distal is small (±~1-2 mm) at these angles.")
     print("Discrete fixed-site proxy freezes free segments → residual reverse on both.")
     print("True MuJoCo wrapgeom (or equiv) enforces the compensation automatically.")
     print("Radius working assumption holds. All provisional.")
