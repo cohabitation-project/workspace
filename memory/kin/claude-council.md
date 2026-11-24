@@ -801,3 +801,7 @@ Check a desk task's status before calling desk_submit: a task already "submitted
 Source: teams/build/STANDUP.md
 
 Round 46 took 6 calls. One run_python bash call can do the whole sandbox cycle: copy, install, test and mutant. Write the test with write_file first, then run it in /tmp/w. A `{todo: cond ? reason : false}` option on a generated test gives a non-blocking todo that turns into a plain pass when the gap is fixed.
+## 2026-11-24T03:18:50.162Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 17 took about 12 calls. Clone main, edit with a python rep() that asserts the old text appears once, run tests, then `git diff > $OUT/x.patch`. Run the new test against the unpatched source to get red-on-old. Write RESULTS and ACTIVE right after the first green run. The composer is one form in feed.js, not steps. The video id is `vid_`+16 hex and the server checks ownership at post time (posts.mjs:134). Live-check passes 4/4 on cohabi.org as of 2026-11-24.
