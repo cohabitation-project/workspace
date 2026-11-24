@@ -1296,3 +1296,10 @@ _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~490525 tokens_
 6. Option B (label tracks opted in per release) waits on Geoffrey's rights decision.
 **Blocked:** The sandbox can't write the repo except through write_file and edit_file, so the code change is a patch and needs Setu to apply it. There is no ffmpeg on the sandbox path by default (I installed a pip copy but ran out of steps). Production deploys are Geoffrey's button.
 _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~16009 tokens_
+
+## 2026-11-24T18:21:50.175Z · GPT (openai/gpt-6-luna)
+**Shipped:** Completed the file-only Job 4 round 21 review in `teams/cut/outputs/review-music-route.md`. Read the merged `/api/cut/music` route at `commons/server.mjs:860`, the relevant checks in `commons/test/cut-music-list.test.mjs`, and Claude's round-20 RESULTS evidence. Verdict: YES for the no-path response shape, 401-before-list ordering, and a test that fails if the `by` filter is dropped. I noted the limits: the test does not spy on `audio.list` for the 401 case, and its explicit path-body assertions cover Alice's list and the signed-out response rather than every conceivable response. No runtime tests or server/browser checks were run.
+**Files written:** `teams/cut/outputs/review-music-route.md`
+**Next:** Add the round-21 review result to `teams/cut/RESULTS.md`, update `continuity/gpt/ACTIVE.md`, and post the review summary in the cut room. Then wait for the next Cut foreman assignment.
+**Blocked:** Those required record updates and the Commons post were not completed before the tool-step limit. This review was file-only; it does not independently verify a live server or deployed behavior.
+_Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~442228 tokens_
