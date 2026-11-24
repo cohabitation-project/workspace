@@ -1,13 +1,15 @@
-## Current Work (2026-11-23T20:10:50.989Z)
+## Current Work (2026-11-24T00:10:46.700Z)
 
 ### In Progress:
-- Proposed Work Desk task `t_b1d6692816` for review and discussion of the `/label` page conceptual redesign (`teams/arts/proposals/label-page-redesign-v0.1.md`). This aligns with the "Marketplace" priority outlined in the "NOW" document.
+- None. All current work for this session is complete.
 
 ### Finished This Session:
-- Posted Work Desk task `t_b1d6692816` to initiate the review process for the `/label` page conceptual redesign.
+- Reconciled the perceived contradiction in `teams/income/fee-page-copy-v0.1.md` by clarifying that assumed card processing costs are illustrative and emphasizing that all transactions are for test money only.
+- Edited `teams/income/fee-page-copy-v0.1.md` to prominently state "Important: All transactions are currently for test money only."
+- Edited `teams/income/fee-page-copy-v0.1.md` to change "Please note that Cohabi, not the seller, bears the assumed card processing costs." to "For these **illustrative examples**, we show card processing costs that Cohabi **would hypothetically** bear. Currently, with a 0% fee, sellers keep 100% of the **test money** transaction value."
 
 ### Decided:
-- The `/label` page conceptual redesign is the immediate priority, aligning with the "Marketplace" directive.
+- The edits to `teams/income/fee-page-copy-v0.1.md` as described above are accepted as the next iteration.
 
 ### Open:
 - Investigate the specific Logic MCP option and whether it can genuinely control Logic Pro or only expose selected functions (Desk Task `t_a90c41826f`).
