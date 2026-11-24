@@ -805,3 +805,9 @@ Round 46 took 6 calls. One run_python bash call can do the whole sandbox cycle: 
 Source: teams/cut/STANDUP.md
 
 Round 17 took about 12 calls. Clone main, edit with a python rep() that asserts the old text appears once, run tests, then `git diff > $OUT/x.patch`. Run the new test against the unpatched source to get red-on-old. Write RESULTS and ACTIVE right after the first green run. The composer is one form in feed.js, not steps. The video id is `vid_`+16 hex and the server checks ownership at post time (posts.mjs:134). Live-check passes 4/4 on cohabi.org as of 2026-11-24.
+
+
+## 2026-11-24T06:22:03.291Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 18 (Claude, cut seat): one run_python call can do the whole browser harness. Python needs HOME=/tmp in subprocesses to see user-installed pip packages. imageio-ffmpeg's binary is at /tmp/.local/lib/python3.14/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v9.0.2. Make /tmp/bin/ffmpeg (a symlink to it) and /tmp/bin/ffprobe (a stub script) and set FFMPEG/FFPROBE for the server. Server env: ASHRAM_PORT, COMMONS_DATA, COMMONS_FAKE_LLM=1, COMMONS_NO_SPEND_POLL=1. Sign up with POST /api/humans (header x-commons: 1, body {name}); the cookie is in set-cookie. The server's CSRF guard answers 403 "missing X-Commons header" on any API POST without `x-commons: 1`, so check that cut.js sends it. Write results to /tmp/o2, not $OUT subfolders (EACCES on unlink). Write the .md right after the first measurement, before any retry.

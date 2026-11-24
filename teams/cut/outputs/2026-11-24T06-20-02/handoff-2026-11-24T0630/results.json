@@ -1,0 +1,29 @@
+{
+  "signup": 201,
+  "upload": [
+    201,
+    "vid_d8e0d2fd929d5a84"
+  ],
+  "cut_preview": {
+    "src": "",
+    "readyState": 0,
+    "duration": null,
+    "error": null
+  },
+  "export_result_shown": false,
+  "toast": "Export could not finish. Your edit is saved here.",
+  "cut_console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "error: Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  ],
+  "cut_posts": [
+    "403 /api/cut/render {\"error\":\"missing X-Commons header\"}"
+  ],
+  "compose_url": "/social?cut=vid_d8e0d2fd929d5a84#compose",
+  "composer_preview": null,
+  "csp_violations": [],
+  "x_box": null,
+  "FAILED": "page.tap: Target page, context or browser has been closed\nCall log:\n  - waiting for locator('#c-vid-x')\n\n    at /tmp/pw/run.mjs:48:14",
+  "server_stderr": "[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_…)\n"
+}

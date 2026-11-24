@@ -1169,3 +1169,29 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~13924 tokens_
 **Next:** Repeat the phone check against a booted commons/server.mjs in a complete dependency-enabled checkout, record exact network/console errors, and then close the assignment in RESULTS.md. Re-read current Cut JOBS.md before taking on any new work.
 **Blocked:** This checkout lacks root package.json/package-lock.json, so I could not install dependencies or boot the main server. Static harness emitted local API/resource 404 console errors; backend, live behavior, and production remain unverified. Geoffrey's button remains required for production deploys.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~504051 tokens_
+## 2026-11-24T06:22:03.291Z · Claude (claude-sonnet-5-5)
+**Shipped:** The round-17 browser run is NOT done. `teams/cut/outputs/handoff-browser-check.md` is still the stub I wrote early. Every row in it says "pending". `entry-point-proposal.md` was not written (it is not in `teams/cut/outputs/`). I did not update RESULTS.md, ACTIVE.md or the cut room.
+
+What I got working in the sandbox:
+- Main is at 570ff3a, and the hand-off (f95bc2d) is on it.
+- Chromium is at /usr/bin/chromium.
+- `playwright-core` installed from npm and drives that Chromium.
+- I got a real ffmpeg from the `imageio-ffmpeg` pip package, and made a 2 s 320x240 mp4 fixture with it.
+- I booted main on a temp data dir with `COMMONS_FAKE_LLM=1`, signed up a test member through `POST /api/humans`, and uploaded the fixture through `POST /api/videos` (201, id `vid_c33959b7132ea17c`).
+- The ffprobe was a shell stub that prints fixed JSON, so probing was not real.
+
+One run reached the browser at 390x844. The run's outputs are only in the sandbox: the `$OUT` copy (results.json plus two screenshots) came back as an EACCES error. Treat all of this as unverified:
+- `/cut/?videoId=<id>` gave an empty preview `<video>` src and two 404s.
+- Export failed with `403 {"error":"missing X-Commons header"}` from `POST /api/cut/render`. This may be a real bug: `cut.js` may not send the header the server's CSRF guard wants. I have not read `cut.js`'s fetch calls to confirm, and my harness could differ from a real session.
+- `/social?cut=<id>#compose` showed no `#c-vid` element. I don't know whether my cookie handling, the page route, or the composer is the cause.
+- No CSP violations were recorded, but the composer preview never rendered, so that proves nothing.
+
+So the CSP result, the x removing the video, Post creating a post with the video, and the "Post it" link at 44 px or more are all unmeasured.
+**Files written:** `teams/cut/outputs/handoff-browser-check.md`, `teams/cut/outputs/2026-11-24T06-20-02/handoff-2026-11-24T0630/composer-with-video-390.png`, `teams/cut/outputs/2026-11-24T06-20-02/handoff-2026-11-24T0630/cut-editor-390.png`, `teams/cut/outputs/2026-11-24T06-20-02/handoff-2026-11-24T0630/results.json`
+**Next:** 1. Read the fetch calls in `commons/public/cut/cut.js` (the `/api/cut/render`, `/api/videos` and `/cut/cut_….mp4` fetches). Check whether they send `x-commons: 1`. If not, that is a real hand-off bug: fix it through the build lane with a test, since cut.js is main's file now.
+2. Check how the editor takes the video id (`params.get('videoId')` at cut.js:124, vs `data-video-id`). Check why the preview src was empty and which two requests 404'd.
+3. Re-run with the same setup, which takes about 4 calls: clone main, `npm ci --omit=dev`, `npm i playwright-core` in /tmp/pw, imageio-ffmpeg plus the ffprobe stub, chromium at /usr/bin/chromium, temp data dir, port 3977. Send the `x-commons` header from the browser context, and check whether `/social` needs the signed-in cookie under a different name. Write straight to /tmp and report numbers in the .md, because screenshots can't be saved from the sandbox.
+4. Write `entry-point-proposal.md`. It is file-only, naming file:line in `feed.js` and `feedv2.mjs` (the composer around :243-249) for an "Edit a video" link.
+5. Update ACTIVE.md.
+**Blocked:** I ran out of tool steps after the first browser run. The sandbox can't write the repo or save screenshots into the `$OUT` subfolder (EACCES). The sandbox has no real ffprobe and no Playwright (used `playwright-core`). Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~15164 tokens_
