@@ -65,7 +65,13 @@ test('a paid Stripe order reaches Printful and Printify with the buyer address i
     const printerCalls = [];
     const fakePrinter = async (url, init = {}) => {
       const u = new URL(url);
-      printerCalls.push({ host: u.host, pathname: u.pathname, method: init.method, headers: init.headers || {}, body: JSON.parse(init.body || '{}') });
+      // Lulu sends its sign-in as a urlencoded body, not JSON; record the raw string so that call is visible too.
+      const raw = init.body || '';
+      printerCalls.push({ host: u.host, pathname: u.pathname, method: init.method, headers: init.headers || {}, body: raw.startsWith('{') ? JSON.parse(raw) : raw });
+      if (u.host === 'lulu.test') {
+        if (u.pathname.includes('/token')) return { ok: true, status: 200, json: async () => ({ access_token: 'lulu-access-token' }) };
+        return { ok: true, status: 200, json: async () => ({ id: 'lulu_job_7003' }) };
+      }
       const id = u.host === 'printful.test' ? 7001 : 'printify_order_7002';
       return { ok: true, status: 200, json: async () => (u.host === 'printful.test' ? { code: 200, result: { id } } : { id }) };
     };
@@ -170,6 +176,58 @@ test('a paid Stripe order reaches Printful and Printify with the buyer address i
       assert.equal(refused.status, 409, `expected 409, got ${refused.status}: ${refused.message}`);
       assert.match(refused.message, /no shipping address/);
       assert.equal(printerCalls.length, before, 'no fetch reached any printer');
+    });
+
+    await t.test('Lulu: after its own sign-in fetch, the address is POSTed to /print-jobs/ in Lulu field names', async () => {
+      process.env.LULU_CLIENT_KEY = 'test-lulu-key';
+      process.env.LULU_CLIENT_SECRET = 'test-lulu-secret';
+      process.env.LULU_API_URL = 'https://lulu.test';
+      const listing = makeListing('E2E Lulu print job');
+      fulfillment.link(seller, listing, { provider: 'lulu', product_id: 'book_e2e_1', sku: '0850X0600BW.PB' });
+      const started = await start(listing);
+      assert.equal(deliver(paidEvent(started, shippingDetails)).status, 'paid');
+      const order = checkout.order(started.order);
+      const before = printerCalls.length;
+      const sent = await fulfillment.send(order, { fetchImpl: fakePrinter });
+      assert.equal(sent.provider, 'lulu');
+      assert.equal(sent.provider_order, 'lulu_job_7003');
+      // Two calls and no more: the sign-in, then the job. Lulu refuses a job with no token.
+      assert.equal(printerCalls.length, before + 2, 'one sign-in and exactly one order call');
+      const [auth, job] = printerCalls.slice(before);
+      assert.equal(auth.pathname, '/auth/realms/glasstree/protocol/openid-connect/token');
+      assert.equal(auth.method, 'POST');
+      assert.equal(auth.headers.authorization, 'Basic ' + Buffer.from('test-lulu-key:test-lulu-secret').toString('base64'));
+      assert.match(String(auth.body), /grant_type=client_credentials/);
+      assert.equal(job.pathname, '/print-jobs/');
+      assert.equal(job.method, 'POST');
+      assert.equal(job.headers.authorization, 'Bearer lulu-access-token');
+      assert.equal(job.body.external_id, order.id);
+      assert.equal(job.body.shipping_level, 'MAIL');
+      assert.deepEqual(job.body.shipping_address, {
+        name: 'Ada B Lovelace', street1: '17 Private Test Street', street2: 'Apt 42',
+        city: 'Tucson', state_code: 'AZ', country_code: 'US', postcode: '85701',
+      });
+      assert.equal(job.body.line_items[0].printable_normalization.pod_package_id, '0850X0600BW.PB');
+      for (const k of ['email', 'phone']) assert.equal(k in job.body.shipping_address, false, `shipping_address carries ${k}`);
+    });
+
+    await t.test('Lulu with no address: refused 409 before even its sign-in fetch', async () => {
+      const listing = makeListing('E2E Lulu no address');
+      fulfillment.link(seller, listing, { provider: 'lulu', product_id: 'book_e2e_2', sku: '0850X0600BW.PB' });
+      const started = await start(listing);
+      assert.equal(deliver(paidEvent(started)).status, 'paid');
+      const order = checkout.order(started.order);
+      assert.equal('ship_to' in order, false);
+      // plan() still names Lulu, so the refusal is about the address and not the link.
+      assert.equal(fulfillment.plan(order).provider, 'lulu');
+      const before = printerCalls.length;
+      let refused = null;
+      try { await fulfillment.send(order, { fetchImpl: fakePrinter }); } catch (e) { refused = e; }
+      assert.ok(refused, 'send() must throw for a paid order with no address');
+      assert.equal(refused.status, 409, `expected 409, got ${refused.status}: ${refused.message}`);
+      assert.match(refused.message, /no shipping address/);
+      // The guard sits before the Lulu sign-in, which is a fetch too: nothing at all goes out.
+      assert.equal(printerCalls.length, before, 'no sign-in and no order call reached any provider');
     });
   } finally {
     globalThis.fetch = oldFetch;
