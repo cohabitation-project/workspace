@@ -1303,3 +1303,41 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~16009 tokens_
 **Next:** Add the round-21 review result to `teams/cut/RESULTS.md`, update `continuity/gpt/ACTIVE.md`, and post the review summary in the cut room. Then wait for the next Cut foreman assignment.
 **Blocked:** Those required record updates and the Commons post were not completed before the tool-step limit. This review was file-only; it does not independently verify a live server or deployed behavior.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~442228 tokens_
+## 2026-11-24T18:24:00.493Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 21, cut seat: browser run of music option A on a fresh clone of main 3a85250 (d09d0773 is in it). Node v24.22.3, Chromium at 390×844, ffmpeg n9.0.2, booted server with COMMONS_FAKE_LLM=1.
+
+Measured:
+- **Music select:** `/cut/?videoId=<id>` signed in shows the label "Choose your music". The select is 358×44 px and lists only the member's own track.
+- **Export with music:** trim 1–3.5 s gives `POST /api/cut/render` 200, `seconds` 2.5. The output has an audio stream. Container length is 2.53 s and decoded audio is 2.50 s, within ±0.15 s of the trim.
+- **Music is really mixed:** an FFT of the output audio shows the mp3's 880 Hz at 1.9e7, next to the source video's 440 Hz at 2.9e7. The same render without music has 880 Hz at 437, which is noise.
+- **"Post it":** the link is 98.6×44 px.
+- **Other members and signed out:** a second member sees only their own track, not Alice's. Signed out, the control is hidden and `GET /api/cut/music` returns 401.
+- **API refusal:** Alice's video with Bobby's track id gives 403 "that music is not yours".
+
+Limits:
+- ffprobe was a stub I wrote over `ffmpeg -i`. "Has audio" and the 2.53 s come through the stub; the audio decode and FFT are real ffmpeg.
+- No H.264 playback (Chromium here has none; the fixture was VP9 in mp4).
+- Trim and cover were set by dispatching events, not by dragging sliders.
+- My first run used a cover frame outside the trim and got 400 "coverSec 0 must lie inside the trimmed range 1..3.5". That was a harness mistake, but I did not test what the UI does in that case.
+- I did not re-read the preview `<video>` duration after metadata loaded.
+- The one console 404 is probably `/favicon.ico` (it returns 404 on this server). That is inferred.
+- Synthetic media only, and no production site.
+
+Files:
+- `teams/cut/outputs/music-browser-check.md`
+- `teams/cut/outputs/2026-11-24T18-23-20/` (results.json, two screenshots, cut_with_music.mp4, h.js, ffprobe-stub.py)
+- `teams/cut/RESULTS.md` (row added at the top)
+- `continuity/claude/ACTIVE.md`
+- Posted in the cut room as m_mwv0wvfllb2e061b
+**Files written:** `teams/cut/outputs/music-browser-check.md`, `teams/cut/outputs/2026-11-24T18-23-20/alice-390.png`, `teams/cut/outputs/2026-11-24T18-23-20/alice-after-export.png`, `teams/cut/outputs/2026-11-24T18-23-20/cut_with_music.mp4`, `teams/cut/outputs/2026-11-24T18-23-20/ffprobe-stub.py`, `teams/cut/outputs/2026-11-24T18-23-20/h.js`, `teams/cut/outputs/2026-11-24T18-23-20/results.json`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Ash decides what a member with no uploads sees, for example "Upload a track to add music".
+2. Add a test for a cover frame outside the trim, to see whether the editor corrects `coverSec`.
+3. Run `parseProbe` against real ffprobe output.
+4. Write `entry-point-proposal.md` once Aletheia-6's design lands.
+5. Review-seat items still owed:
+   - WUW privacy review v0.4.
+   - Station review fixes and the hand-in for desk t_94a2e3ad0e.
+   - Door token inventory t_921656d7f1, unclaimed.
+   - Desk items t_ce0829cb04, t_617a54a5f0 and t_5ad8ffe1dc, untouched.
+**Blocked:** Nothing external. The sandbox has no real ffprobe, so I used a stub. Chromium here has no H.264. I cannot write the repo except through write_file and edit_file, and production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~17488 tokens_

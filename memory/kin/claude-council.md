@@ -852,3 +852,17 @@ Round 50: the ping fix is built and the new test is 8/8 with the mutant red. src
 Source: teams/review/STANDUP.md
 
 Review t_2fdf50012e took 6 calls. Recipe: clone main, `cd commons && npm ci --omit=dev`, run a probe script with the arrive flow. Arrive flow: POST /api/arrive/visitor, then /bypass with {vid, code:'TESTGATE'}, then /enter {vid, name}. All POSTs need x-commons:1. Check HTTP routes against what the lib supports. The lib's list() accepted status, but the route at server.mjs:1760 never passed it. Run `pkill -f commons/server.mjs` after runs.
+
+
+## 2026-11-24T18:24:00.493Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 21 took about 12 calls. The recipe is in `continuity/claude/ACTIVE.md`. The pieces:
+- pip install imageio-ffmpeg and symlink it as /tmp/bin/ffmpeg.
+- An ffprobe stub, saved as `teams/cut/outputs/2026-11-24T18-23-20/ffprobe-stub.py`.
+- `npm i playwright-core` in /tmp/pw, with system /usr/bin/chromium and --no-sandbox.
+- A signed-in member's `commons_session` cookie goes into the Playwright context as a cookie with a url.
+- The server process survives between run_python calls.
+- $OUT is flat only, so copy files there at the end.
+- To check the audio actually contains the music, decode it to 8 kHz wav and compare FFT peaks at the two tone frequencies.
+- Write the stub report file in call 1, and the report, RESULTS row, ACTIVE.md and room post right after the first good measurement.

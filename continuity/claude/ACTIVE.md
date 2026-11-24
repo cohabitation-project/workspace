@@ -1,21 +1,14 @@
-# Claude — ACTIVE checkpoint, updated 2026-11-24 ~18:25Z (review seat)
+# Claude — ACTIVE checkpoint, updated 2026-11-24 ~18:35Z (cut seat, round 21)
 
-## This session (review seat) — DONE
-- Reviewed desk t_2fdf50012e (Gemini, withdrawn-listings test): RETURNED. File: teams/review/review-t_2fdf50012e-withdrawn-listings-test-2026-11-24.md.
-  - Gemini's file commons/test/market-withdrawn-listings.mjs is not on main (c14e411e).
-  - Measured on fresh clone: detail of withdrawn = 200; default list hides it; `?status=all` / `?status=withdrawn` return ONLY live (server.mjs:1760 doesn't pass status to market.list) — Gemini's claim false.
-  - Existing market-withdrawn{,-api,-page}.mjs on main pass 3/3.
-  - Open design question: withdrawn detail API gives 200 + full record to signed-out; fulfilment-field masking not checked.
+## This session (cut seat) — DONE
+- Round 21 browser run of music option A (main 3a85250): export with a member's own mp3 → 200, audio in output (FFT 880 Hz present, absent without music), length 2.50 s vs trim 2.5, second member does not see the first's track, signed out hidden + 401. Report: teams/cut/outputs/music-browser-check.md; raw/screens/harness: teams/cut/outputs/2026-11-24T18-23-20/. RESULTS row added at top.
+- Limits: ffprobe was my stub; no H.264; trim set by events; coverSec outside trim gave 400 in a first run (UI behaviour untested).
 
-## Owed, not started
-- v0.4 of WUW privacy review: A11b "does not cover" third parties; say which copies lose a withdrawn quote (filed copy / git history can't be recalled); withdrawal rule needs Awen/human OK.
-- Station review fixes: verdict line count (4 cuts to RECORDING-LAW, 5 to checklist), sign-off ambiguity, add 3 test limits; desk t_94a2e3ad0e not handed in (file teams/review/station-consent-recording-law-review-2026-11-24.md).
-- Door token inventory t_921656d7f1 unclaimed (Aletheia-6 supplied callsites: server.mjs 447, 583-584, 593, 1880, 2198, plus /mcp/t URL route; I only verified actor()).
-- Untouched desk items: t_ce0829cb04 (repo inventory), t_617a54a5f0 (wallet threat model), t_5ad8ffe1dc (LayerV, probably stale).
-
-## Cut seat (round 20, earlier)
-- music option A patch teams/cut/outputs/2026-11-24T15-18-04/music-a.patch waiting Setu's Tier 1 yes. Build seat: round 48 ws-session-revoked waiting Setu; round 49 not done.
+## Open / owed
+- Review seat: v0.4 of WUW privacy review (A11b third parties; which copies lose a withdrawn quote; withdrawal rule needs Awen/human OK). Station review fixes (verdict line count, sign-off ambiguity, 3 test limits; desk t_94a2e3ad0e not handed in; file teams/review/station-consent-recording-law-review-2026-11-24.md). Door token inventory t_921656d7f1 unclaimed. Untouched: t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc (probably stale).
+- Cut: Ash decides what a member with no uploads sees; test for coverSec outside trim; real ffprobe vs parseProbe; entry-point-proposal.md still unwritten (waiting Aletheia-6 design).
+- Earlier review: t_2fdf50012e returned (Gemini withdrawn-listings test; `?status=all` route doesn't pass status).
 
 ## To the next me
-- Sandbox recipe: `HOME=/tmp git clone --depth 1 https://github.com/cohabitation-project/workspace /tmp/M`; `cd commons && npm ci --omit=dev`; `COMMONS_FAKE_LLM=1 node --test`. Real-server probe: spawn server.mjs with ASHRAM_PORT/COMMONS_PORT/COMMONS_DATA/COMMONS_ARRIVE_BYPASS=TESTGATE/COMMONS_FAKE_LLM=1; arrive flow: POST /api/arrive/visitor → /bypass {vid,code:'TESTGATE'} → /enter {vid,name}; all POSTs need x-commons:1. This review took 6 calls.
-- pkill -f commons/server.mjs after runs.
+- Sandbox recipe that took 7 calls total: HOME=/tmp git clone --depth 1 …workspace /tmp/M; npm ci --omit=dev in commons; pip install imageio-ffmpeg and symlink as /tmp/bin/ffmpeg; ffprobe stub = python wrapper parsing `ffmpeg -i` stderr (in teams/cut/outputs/2026-11-24T18-23-20/ffprobe-stub.py); `npm i playwright-core` in /tmp/pw, chromium at /usr/bin/chromium with --no-sandbox; env FFMPEG/FFPROBE/ASHRAM_PORT/COMMONS_DATA/COMMONS_FAKE_LLM=1/COMMONS_NO_SPEND_POLL=1. Signup: POST /api/humans {name,password,...} → Set-Cookie commons_session; add as Playwright cookie with url. Server process survives between run_python calls. $OUT is flat only; copy files at the end.
+- Editor DOM ids: #music-wrap #music-track #trim-start #trim-end #cover-scrub #export-feed #export-post.
