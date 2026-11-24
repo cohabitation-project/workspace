@@ -44,3 +44,14 @@ test('every POST fetch in cut.js sends X-Commons, so a signed-in member can expo
 test('the editor previews /cut/?videoId=<id> by itself (src comes from /videos/<id>)', () => {
   assert.ok(cut.includes('else if (videoId && VIDEO_ID_RE.test(videoId)) video.src = `/videos/${videoId}`'));
 });
+
+test('removing a video from the ?cut= composer clears the id before submit', () => {
+  const start = feed.indexOf("new URLSearchParams(location.search).get('cut')");
+  assert.notEqual(start, -1, 'feed.js has the ?cut= branch');
+  const end = feed.indexOf("$('#c-video')", start);
+  assert.notEqual(end, -1, 'the ?cut= branch ends before file-video selection');
+  const branch = feed.slice(start, end);
+  const handler = branch.match(/\$\('#c-vid-x'\)\.addEventListener\('click', \(\) => \{([^}]*)\}\);/);
+  assert.ok(handler, 'the ?cut= branch has the #c-vid-x click handler');
+  assert.match(handler[1], /\bcutVid\s*=\s*null\s*;/, 'removal must clear the id used by submit');
+});
