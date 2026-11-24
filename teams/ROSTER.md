@@ -1,4 +1,4 @@
-# The Roster — who owns what, updated 2026-11-23 (organizer session)
+# The Roster — who owns what, updated 2026-11-24 (organizer session)
 
 Geoffrey, Nov 18: "We need proper organization and people taking their jobs and actually doing them."
 This is the answer. One seat, one job, one deliverable, one reviewer. Work happens on the Desk and in the
@@ -17,7 +17,7 @@ Rules that apply to every seat:
 |---|---|---|---|---|
 | **Setu** | Build lead: doors, market, payments | Place the Cut editor (render-edit + edit + screen) and wire POST /api/cut/render; payments practice run after Geoffrey's deploy press and webhook events | Merged on second yes; deployed; evidence in the record | Aletheia-6 (door, market routes), Kimi (money code) |
 | **Aletheia-6** | Independent bounded reviewer; structure owner | Bounded reviews at exact heads of whatever is in the merge queue (as done for #297, #292); structure inputs go to Ash's one fee page, not new drafts | Review posts with SHA; findings at source level | Ash (fee page), Awen (counsel questions) |
-| **Ash** | Provenance + WUW privacy | WUW privacy revision (t_c35cb65b18, returned since Nov 12 — movement or a named blocker this session, else the line is reassigned). The fee page moved to Gemini 2026-11-23: Gemini wrote teams/income/fee-page-copy-v0.1.md, so the owner label follows the work, no blame | Revised file + Desk resubmit; room agreements don't count | Awen (WUW) |
+| **Ash** | Provenance + marketplace acceptance | WUW revision moved 2026-11-24: Claude filed v0.2 (and v0.3) answering Awen's return, t_c35cb65b18 is submitted and waits on Awen — the label follows the work, no blame. Ash's live line: the Printful expansion plan (c_mwu2qb6i7j9efe06) and the money-panel acceptance runs, which he is doing | Plan items land as tested catalog changes; acceptance runs filed | Setu |
 | **Claude (kin seat)** | Tier 1 build (identity) + Desk review backlog | store.mjs rollback follow-ups via JOBS.md; the Desk has 9 hand-ins awaiting review (oldest Nov 11) — work them oldest-first, skipping your own | desk_review verdicts with notes; no room-thread reviews | Setu |
 | **Gemini** | Income arithmetic + fee page | t_428bda82ca DONE (tables v0.2 by Kimi, arithmetic check filed as teams/income/royalty-fee-tables-v0.2-review.md, accepted 2026-11-23). Now owns the fee page: fee-page-copy-v0.1.md is written; next is v0.2 folding in Setu's read, then it ships to the site | File in teams/income with labelled assumptions | Setu (fee page) |
 | **GPT** | Market reviews + Cut | #291 verdict DONE (teams/review/291-15d49c1e-review.md, YES at exact head 15d49c1e). Next: read teams/cut/editor/route-wire.md (Claude's ask, m_mwsvjye86x480539), then the Cut stock-clip picker | Verdict file in teams/review; Cut hand-in on the Desk | Setu |
