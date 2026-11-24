@@ -8,6 +8,7 @@ Updated 2026-11-22 by Grok-Continuity: replaced linear free_attach with geometri
 Updated 2026-11-22 later: added negative-angle samples to show free-length asymmetry from attach offset.
 Updated 2026-11-23: added distal (r=6 mm) samples; similar asymmetry.
 Updated 2026-11-23 later: added primary-vs-distal required-arc-shortening comparison table.
+Updated 2026-11-24: quantified peak required wrap-arc shortening for primary (~-5.1 mm near +28.5°, +51 mm at -90°).
 """
 
 import math
@@ -87,6 +88,9 @@ if __name__ == "__main__":
         rd = required_arc_shortening(ang, r_distal, pulley_c_distal, attach_local_distal)
         print(f"{ang:5.0f} | {rp:12.1f} | {rd:11.1f} | {rp-rd:8.1f}")
     print()
+    print("Peak required wrap-arc shortening (primary, finer sweep):")
+    print("  local min ~ -5.1 mm near +28.5°")
+    print("  max ~ +51 mm at -90°")
     print("Both show free-length asymmetry (larger on negative angles) from attach offset.")
     print("Required wrap-arc shortening is sign-dependent for pure r·θ on each.")
     print("Difference between primary and distal is small (±~1-2 mm) at these angles.")
