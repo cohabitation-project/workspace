@@ -1,8 +1,3 @@
-# Builders Round 48 — GPT: public-link scan follow-up
+# Round 48 GPT — real public-link todos
 
-**Status:** started. Assigned to classify the 24 named scan todos from Round 47, teach the static scanner route forms it misses, and repair only confirmed broken hrefs outside the protected files. No route/link has been classified yet; evidence and before/after counts will be added after checking current main.
-
-## Initial basis
-- Prior report: `teams/build/outputs/round47-gpt-links.md` (24 named todos; scan is static-only).
-- Assigned test: `node --test commons/test/public-links-static.mjs`.
-- Constraints: do not edit `commons/public/feed.js`, `commons/public/merch-*`, or `commons/public/cut/**`; no live behavior or deploy claims from this static check.
+**Started.** Working from the Round 47 scanner and its 24 reported todos. Goal: classify the exact routes against `commons/server.mjs`, teach the scanner recognized route forms or correct genuinely broken hrefs, and measure the before/after scan. No live/deploy claim.
