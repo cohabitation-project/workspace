@@ -451,6 +451,28 @@ export function withRollingCache(msgs) {
   out[out.length - 1] = { ...last, content: blocks };
   return out;
 }
+// Token burn (2026-11-23, Geoffrey: "find out why"): the OpenRouter seats (GPT, Kimi, DeepSeek, Gemini) logged 0.4–1.0M
+// tokens a session while Claude logged ~10k. Cause: every step re-sends the ~11k-token system prompt PLUS every earlier
+// tool result (read_file returns up to 20k chars, run_python up to 16k), so a 25-call session's input grows step by step
+// and the total grows with the square of the session. The fix keeps what the model needs and drops what it has already
+// used: once the history passes COMPACT_AT chars, every tool result older than the newest KEEP_RECENT is replaced, in
+// one batch, by a short stub saying what it was and that it can be re-read. One batch (not every step) so the provider's
+// automatic prefix cache stays valid between compactions. The model's own words and tool calls are never touched.
+const COMPACT_AT = parseInt(process.env.TEAM_COMPACT_AT || '90000', 10);
+const KEEP_RECENT = parseInt(process.env.TEAM_KEEP_RECENT || '4', 10);
+export function compactHistory(msgs, { at = COMPACT_AT, keep = KEEP_RECENT } = {}) {
+  const size = msgs.reduce((n, m) => n + (typeof m.content === 'string' ? m.content.length : JSON.stringify(m.content || '').length), 0);
+  if (size <= at) return 0;
+  const toolIdx = msgs.map((m, i) => (m.role === 'tool' ? i : -1)).filter((i) => i >= 0);
+  let saved = 0;
+  for (const i of toolIdx.slice(0, Math.max(0, toolIdx.length - keep))) {
+    const c = String(msgs[i].content || '');
+    if (c.length <= 400 || c.startsWith('[earlier result')) continue;
+    const stub = `[earlier result, ${c.length} chars, already shown to you; first line: ${c.split('\n')[0].slice(0, 160)}] (re-read with the same tool if you need it again)`;
+    saved += c.length - stub.length; msgs[i] = { ...msgs[i], content: stub };
+  }
+  return saved;
+}
 async function callModel(agent, system, messages) {
   if (agent.provider === 'anthropic') {
     const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': process.env.LLM_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
@@ -466,9 +488,10 @@ async function callModel(agent, system, messages) {
     return { text: j.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n'), calls: j.content.filter((c) => c.type === 'tool_use').map((c) => ({ id: c.id, name: c.name, args: c.input })), usage: j.usage };
   }
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: agent.model, max_tokens: 6000, messages: [{ role: 'system', content: system }, ...messages.openai],
+    body: JSON.stringify({ model: agent.model, max_tokens: 6000, usage: { include: true }, messages: [{ role: 'system', content: system }, ...messages.openai],
       tools: TOOL_DEFS.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: { type: 'object', properties: t.params, required: t.required } } })) }) });
   const j = await r.json(); if (!r.ok || j.error) throw new Error(`OpenRouter ${r.status}: ${JSON.stringify(j.error || j).slice(0, 300)}`);
+  if (j.usage) console.log(`[team-agent] openrouter usage in=${j.usage.prompt_tokens ?? '?'} cached=${j.usage.prompt_tokens_details?.cached_tokens ?? 0} out=${j.usage.completion_tokens ?? '?'} cost=$${j.usage.cost ?? '?'}`);
   const m = j.choices[0].message; messages.openai.push(m);
   return { text: m.content || '', calls: (m.tool_calls || []).map((c) => { let a = {}; try { a = JSON.parse(c.function.arguments || '{}'); } catch {} return { id: c.id, name: c.function.name, args: a }; }), usage: j.usage };
 }
@@ -550,7 +573,7 @@ async function session(teamName, kinName) {
   const log = (e) => fs.appendFileSync(logPath, JSON.stringify({ ts: now(), ...e }) + '\n');
   const messages = { openai: [{ role: 'user', content: kickoff }], anthropic: [{ role: 'user', content: kickoff }] };
   const tools = makeTools(ctx);
-  let finished = null; let tokens = 0; let modelError = null;
+  let finished = null; let tokens = 0; let cost = 0; let modelError = null;
   log({ event: 'start', kin: kinName, model: agent.model, team: teamName, max_steps: MAX_STEPS });
   const teamLabel = (TEAMS()[teamName] || {}).name || teamName;
   await announce(`🔨 **${kinName}** started a work session in **${teamLabel}** · ${agent.model} · AI agent`);
@@ -563,6 +586,7 @@ async function session(teamName, kinName) {
     }
     let res; try { res = await callModel(agent, system, messages); } catch (e) { modelError = e.message; log({ event: 'model-error', error: e.message }); break; }
     tokens += (res.usage?.total_tokens || (res.usage?.input_tokens || 0) + (res.usage?.output_tokens || 0));
+    if (typeof res.usage?.cost === 'number') cost += res.usage.cost;
     ctx.tokensSoFar = tokens; // the desk records real cost per hand-in
     if (res.text) log({ event: 'say', text: res.text.slice(0, 4000) });
     if (!res.calls.length) { log({ event: 'no-tool-call' }); if (step > 1) break; else { const n = 'Use your tools to make progress, then call finish().'; if (agent.provider === 'anthropic') messages.anthropic.push({ role: 'user', content: n }); else messages.openai.push({ role: 'user', content: n }); continue; } }
@@ -574,6 +598,7 @@ async function session(teamName, kinName) {
       results.push({ id: c.id, out: out.slice(0, 16000) });
     }
     pushResults(agent, messages, results);
+    if (agent.provider !== 'anthropic') { const saved = compactHistory(messages.openai); if (saved) log({ event: 'compact', step, saved_chars: saved }); }
   }
 
   // A model/key failure used to end the session silently, so the teams sat dead for days on a stale OpenRouter key
@@ -587,7 +612,7 @@ async function session(teamName, kinName) {
   if (f.memory && MEMORY_FILE[kinName]) {
     fs.appendFileSync(path.join(ROOT, 'memory', 'kin', MEMORY_FILE[kinName] + '.md'), `\n\n## ${now()} · team ${teamName} work session\nSource: teams/${teamName}/STANDUP.md\n\n${String(f.memory).slice(0, 6000)}\n`);
   }
-  log({ event: 'end', finished: !!finished, tokens, files: [...ctx.written] });
+  log({ event: 'end', finished: !!finished, tokens, cost_usd: cost ? Math.round(cost * 10000) / 10000 : null, files: [...ctx.written] });
   const fileLinks = [...ctx.written].map((p) => `<${GH}${p.split('/').map(encodeURIComponent).join('/')}>`).join('\n') || 'none';
   await announce(`✅ **${kinName}** finished in **${teamLabel}**\n**Shipped:** ${String(f.shipped).slice(0, 700)}\n**Next:** ${String(f.next).slice(0, 400)}\n**Blocked:** ${String(f.blocked).slice(0, 200)}\n**Files:**\n${fileLinks}\n_Standup: <${GH}teams/${teamName}/STANDUP.md>_`);
   await commonsSession(kinName, teamName, 'end', `Work session finished.\n**Shipped:** ${String(f.shipped).slice(0, 1500)}\n**Next:** ${String(f.next).slice(0, 600)}\n**Blocked:** ${String(f.blocked).slice(0, 300)}\nStandup: teams/${teamName}/STANDUP.md`);
