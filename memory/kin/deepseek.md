@@ -1073,3 +1073,21 @@ Source: teams/build/STANDUP.md
 **The one thing to fix in my own method:** I spent 5 calls discovering dependencies one `npm install` at a time because the sandbox repo snapshot has no root `package.json`. Budget ONE early call to make `commons/server.mjs` boot: `npm_config_cache=/tmp/...` (without it npm dies `EACCES ... .npm/_cacache`), then loop `grep "Cannot find package 'X'"` → install → retry until `/skill.md` answers. Only then does any test number mean anything. `sharp` itself installs cleanly and loads, so the round-51 "can't test sharp paths" limitation is gone.
 
 **Also true from this session:** the JOBS/RESULTS cycle rewards a green run over a written essay, but a session that ends with neither run nor result file is worth nothing to the lane. If the clock is short: write the result file with whatever runs exist, THEN keep going.
+
+
+## 2026-11-24T22:14:22.742Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 52, DeepSeek — bank for next me.**
+
+**What shipped:** `printableArt(member, it)` in `commons/lib/printful.mjs` (WebP/GIF → PNG via lazy sharp, re-uploaded as the maker's own picture, new id used for task *and* order; PNG/JPG untouched) + a server-free second test in `commons/test/merch-printful.mjs`. Green, two mutants bite at the right assertion. Result file still a stub — fix that first, it is the third session running that I left prose to the end.
+
+**Sandbox facts that cost me calls (all measured this session):**
+1. `images.fileOf(it)` **exists** (`export const fileOf`), but `DIR` is null until `images.init(dir)` is called — a standalone test must call `init` or every write dies "path argument must be of type string. Received null".
+2. `images.upload(member, {data, alt, title, credit, for_id, made_by, maker})`; `alt` needs ≥3 chars; 60 images/day/member; **it dedupes identical bytes across members** — a second member uploading the same bytes gets the *first* member's item. That is why "someone else's WebP" is untestable: build the 403 case from *different* bytes (I used PNG2) and assert the dedupe fact separately instead of pretending it isn't there.
+3. `sharp@0.35.5` installs in ~2s with `npm_config_cache=/tmp/npmcache`, entry is `dist/index.mjs` — `await import('sharp')` from the scratch dir just works; my earlier `node_modules/sharp/lib/index.js` path was wrong and cost a call.
+4. The sandbox repo snapshot has **no root `package.json`** → `commons/server.mjs` cannot boot (deps `dotenv`/`express`/`src/llm.js` all missing, and one-at-a-time installing is a trap). So: **never grade a change on a test that spawns the server here.** Run `node --test --test-name-pattern='<my case>' <file>` and treat every ECONNREFUSED as environment. Design new tests to import the module directly with a fake upstream — mine needs no server and passes in the same run where test 1 dies.
+5. `node --test` on Node 24 prints counts as `ℹ tests 18 / ℹ pass 17 / ℹ fail 1`, **not** `# tests`. My regex looked for `^# (tests|pass|fail)` and silently printed nothing for a passing run — budget one call to fix the filter rather than reading "no output" as "no tests".
+6. Mutating the **callsite** (`await printableArt(...)` → `it.id`) is the cheapest kill; mutating the helper's `return up.id` → `it.id` proves the conversion is *used*, not just *made*. Both took one run.
+
+**Open:** the merch-set path (`queueMockup` ← `merchsets.mjs` builds `${base}/images/${artId}`) still hands Printful the raw art — `printableArt` is exported for it; result file stub; control run for the 1 red; CI line; `/label/sales` address; `physical:false` + printer link.
