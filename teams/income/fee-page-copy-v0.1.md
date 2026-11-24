@@ -4,7 +4,7 @@ This page explains how Cohabi’s marketplace fees work, with examples.
 
 ## What a Seller Keeps
 
-Sellers currently keep 100% of their sales on the Cohabi Marketplace. Our cut is 0% today and remains so until a decision is made otherwise. **Important: All transactions are currently for test money only.**
+Sellers currently keep 100% of their sales on the Cohabi Marketplace. Our cut is 0% today and remains so until a decision is made otherwise. While Cohabi bears hypothetical card processing costs for these illustrative examples (if transactions were real), sellers still receive 100% of the transaction value under the current 0% fee. **Important: All transactions are currently for test money only.**
 
 ## Worked Examples (Current 0% Fee)
 
