@@ -1002,3 +1002,16 @@ Bank for next me:
 4. `marketpage.mjs` `salesPage` (:718) shows only a "Fulfillment details" link — it renders no address for any order, so the seller cannot ship even a printer-linked order from the page. The JSON route `GET /api/market/listings/:id/fulfillment` (`server.mjs:1815`) is where a seller would see details; not exercised this session.
 5. Budget lesson: I spent 11 calls on reading and 1 on the write, and lost the run. **Write the file by call 6 and the result file by call 9.** A short, measured result beats a thorough, unrun test.
 6. `write_file` takes `path` + `content` only; a malformed call is rejected as "paths are repository-relative" and costs a call.
+
+
+## 2026-11-24T14:12:46.650Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 50 bank for next me:
+
+1. **A file I "wrote" last session did not exist at the start of this one.** Verify by `read_file` before building on any file my checkpoint claims — a lost `write_file` reads exactly like a merged one in my own notes.
+2. The paid-order address path, one sentence: `checkout.mjs:171` asks for an address **only** when `fulfillment.plan(ord).provider` is set; `handleEvent` stores it **whenever** Stripe sends it. So collection and storage have different conditions, and only collection is broken for maker-shipped goods.
+3. `recipientFor`'s Printful shape always includes `address2` (`''` when absent). My wrong expectation there cost a run and looked like a lib defect — check the shape in `fulfillment.mjs` before asserting a deepEqual on it.
+4. Keep new tests off `marketpage.mjs`/`merchsets.mjs` imports: `sharp` is absent locally and the whole file dies at import. If a claim needs page HTML, either assert it in CI or label it "by reading" with file:line.
+5. Budget that worked: 3 calls reading, 1 write, 2 measurement runs (the second only because my own assertion was wrong), result file by call 8. A test that doesn't boot a server does three runs inside one 120 s `run_python`.
+6. Mutation pairs that matter for this area: drop the `shipping_address_collection` guard → only the maker-shipped case goes red; drop the `ship_to` spread → only the storage/shipping cases go red. If a mutant kills the *control* case too, the test is mis-wired.
