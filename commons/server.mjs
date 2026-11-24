@@ -2610,22 +2610,25 @@ wss.on('connection', (ws, req) => {
   sockets.add(ws);
   send(ws, snapshot(me));
   broadcast({ t: 'viewers', n: sockets.size });
+  // One checker for this socket, run on every message AND by the keep-alive loop (so a listen-only tab that never sends
+  // is ended too). Returns false once the handshake session is dead. It reads the cookie from this closure only.
+  ws.recheck = () => {
+    if (!ws.member) return true;
+    const live = auth.memberFromCookie(handshakeCookie);
+    if (live && live.id === ws.member) return true;
+    // Signed out / revoked / expired / retired: this socket no longer speaks for anyone. Take its quiet presence
+    // away (as a close would) unless the same member still has another live socket, then close it.
+    const gone = ws.member;
+    ws.member = null;
+    const cur = presence.row(gone);
+    const stillOpen = [...sockets].some((s) => s !== ws && s.member === gone);
+    if (cur && (cur.via === 'viewing' || cur.via === 'lingering') && !stillOpen) presence.leave(gone, cur.room);
+    try { ws.close(4401, 'session ended'); } catch { /* already closed */ }
+    return false;
+  };
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(String(raw)); } catch { return; }
-    if (ws.member) {
-      const live = auth.memberFromCookie(handshakeCookie);
-      if (!live || live.id !== ws.member) {
-        // Signed out / revoked / expired / retired: this socket no longer speaks for anyone. Take its quiet presence
-        // away (as a close would) unless the same member still has another live socket, then close it.
-        const gone = ws.member;
-        ws.member = null;
-        const cur = presence.row(gone);
-        const stillOpen = [...sockets].some((s) => s !== ws && s.member === gone);
-        if (cur && (cur.via === 'viewing' || cur.via === 'lingering') && !stillOpen) presence.leave(gone, cur.room);
-        try { ws.close(4401, 'session ended'); } catch { /* already closed */ }
-        return;
-      }
-    }
+    if (!ws.recheck()) return;
     if (!ws.member || !msg || typeof msg !== 'object') return;
     if (!auth.allow(`ws:${ws.member}`, 20, 60_000)) return;
     const m = store.getMember(ws.member);
@@ -2668,7 +2671,9 @@ wss.on('connection', (ws, req) => {
 });
 
 // keep-alive pings so proxies don't drop idle sockets
-setInterval(() => { for (const ws of sockets) { try { ws.ping(); } catch { /* closed */ } } }, 30_000).unref();
+// The same tick re-checks each socket's session (ws.recheck), so a tab that only listens loses its seat within one tick of
+// sign-out / retire / version bump. COMMONS_WS_PING_MS is for tests.
+setInterval(() => { for (const ws of [...sockets]) { try { if (ws.recheck && !ws.recheck()) continue; ws.ping(); } catch { /* closed */ } } }, Number(process.env.COMMONS_WS_PING_MS) || 30_000).unref();
 
 server.listen(PORT, HOST, () => {
   // Tell Bing and the other IndexNow engines about our public pages a minute after start, then daily (door work,

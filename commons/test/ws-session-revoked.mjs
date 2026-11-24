@@ -27,7 +27,7 @@ const open = (cookie) => new Promise((resolve, reject) => {
 });
 
 test('boot', async () => {
-  srv = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_FAKE_LLM: '1', COMMONS_NO_SPEND_POLL: '1' }, stdio: 'ignore' });
+  srv = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_FAKE_LLM: '1', COMMONS_NO_SPEND_POLL: '1', COMMONS_WS_PING_MS: '200' }, stdio: 'ignore' });
   for (let i = 0; i < 60 && !booted; i++) { try { booted = (await fetch(`${BASE}/api/presence`)).ok; } catch { /* booting */ } if (!booted) await sleep(250); }
   assert.ok(booted, 'the server booted');
 });
@@ -78,6 +78,71 @@ test('a socket opened with the dead cookie is anonymous: it cannot put anyone an
   await sleep(500);
   assert.equal(await presenceOf(me), null, 'nothing moved');
   ws.close(); await ws.closed;
+});
+
+// ---- Round 50: the keep-alive loop re-checks too, so a tab that only LISTENS is ended as well. The server runs with
+// COMMONS_WS_PING_MS=200, so each of these resolves in well under a second; the waits end in assertions.
+const J = { 'content-type': 'application/json', 'x-commons': '1' };
+const cookieOf = (r) => (r.headers.getSetCookie?.() || [r.headers.get('set-cookie')]).filter(Boolean)[0].split(';')[0];
+async function signUp(name) {
+  const r = await fetch(`${BASE}/api/humans`, { method: 'POST', headers: J, body: JSON.stringify({ name }) });
+  assert.ok(r.status < 300, `sign-up ${name} answered ${r.status}`);
+  return cookieOf(r);
+}
+// A second, independent session (second cookie) for the same member: set a password, then sign in with it.
+async function secondCookie(name, cookie1) {
+  const p = await fetch(`${BASE}/api/password`, { method: 'POST', headers: { ...J, cookie: cookie1 }, body: JSON.stringify({ password: 'pingpong-9' }) });
+  assert.equal(p.status, 200, 'password set');
+  const l = await fetch(`${BASE}/api/login`, { method: 'POST', headers: J, body: JSON.stringify({ name, password: 'pingpong-9', keep: true }) });
+  assert.equal(l.status, 200, 'second sign-in answered 200');
+  const c2 = cookieOf(l); assert.notEqual(c2, cookie1, 'a different session cookie');
+  return c2;
+}
+const stillOpen = (ws, ms) => Promise.race([ws.closed, sleep(ms).then(() => 'still open')]);
+
+test('(a) a LISTEN-ONLY socket is closed 4401 after sign-out, and its quiet presence goes, with no message from it', async () => {
+  assert.ok(booted && roomA, 'earlier steps ran');
+  const c = await signUp('Pinga');
+  const ws = await open(c); const hello = await ws.hello; const id = hello.me.id;
+  ws.send(JSON.stringify({ t: 'here', room: roomA }));
+  assert.ok(await until(async () => { const p = await presenceOf(id); return p && p.room === roomA; }), 'present in A');
+  const out = await fetch(`${BASE}/api/logout`, { method: 'POST', headers: { 'x-commons': '1', cookie: c } });
+  assert.equal(out.status, 200);
+  // The socket sends nothing from here on: only the keep-alive loop can notice.
+  assert.equal(await stillOpen(ws, 4000), 4401, 'closed 4401 by the loop, without any message');
+  assert.equal(await presenceOf(id), null, 'its quiet presence is removed');
+});
+
+test('(b) deleting the account (retire + session-version bump) closes BOTH sessions\' listen-only sockets', async () => {
+  assert.ok(booted, 'server up');
+  const c1 = await signUp('Pingb');
+  const c2 = await secondCookie('Pingb', c1);
+  const ws1 = await open(c1); const ws2 = await open(c2);
+  await ws1.hello; await ws2.hello;
+  assert.equal(await stillOpen(ws2, 700), 'still open', 'control: a live listen-only socket is NOT closed by the loop');
+  const del = await fetch(`${BASE}/account/delete`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-commons': '1', cookie: c1 }, body: 'confirm=Pingb' });
+  assert.equal(del.status, 200, `delete answered ${del.status}`);
+  assert.equal(await stillOpen(ws1, 4000), 4401, 'cookie 1 socket closed 4401');
+  assert.equal(await stillOpen(ws2, 4000), 4401, 'cookie 2 socket (never signed out itself) closed 4401 too');
+});
+
+test('(c) two sessions, one signs out: only that socket closes; the other stays open and keeps the member\'s presence', async () => {
+  assert.ok(booted && roomA && roomB, 'earlier steps ran');
+  const c1 = await signUp('Pingc');
+  const c2 = await secondCookie('Pingc', c1);
+  const ws1 = await open(c1); const hello = await ws1.hello; const id = hello.me.id;
+  const ws2 = await open(c2); await ws2.hello;
+  ws2.send(JSON.stringify({ t: 'here', room: roomA }));
+  assert.ok(await until(async () => { const p = await presenceOf(id); return p && p.room === roomA; }), 'present in A via socket 2');
+  const out = await fetch(`${BASE}/api/logout`, { method: 'POST', headers: { 'x-commons': '1', cookie: c1 } });
+  assert.equal(out.status, 200);
+  assert.equal(await stillOpen(ws1, 4000), 4401, 'the signed-out session\'s socket closed 4401');
+  assert.equal(await stillOpen(ws2, 800), 'still open', 'the other session\'s socket is still open after several ticks');
+  const p = await presenceOf(id);
+  assert.ok(p && p.room === roomA, `presence stays (row: ${JSON.stringify(p)})`);
+  ws2.send(JSON.stringify({ t: 'here', room: roomB }));
+  assert.ok(await until(async () => { const q = await presenceOf(id); return q && q.room === roomB; }), 'socket 2 can still move itself');
+  ws2.close(); await ws2.closed;
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
