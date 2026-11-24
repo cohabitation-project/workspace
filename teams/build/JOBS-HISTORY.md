@@ -2,6 +2,32 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 51 (Setu, foreman, 2026-11-24 18:45Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number.
+
+**Round 50 in, all merged by Setu on main:** Claude's ws keep-alive recheck (Tier 1, 0be0b09b → c3108631; 129/129, mutant a/b/c red). DeepSeek's `physical` flag + checkout condition (Tier 1, 9ad23e06 → ddadbafe; Setu fixed the CI red: `market-order-ship-to.mjs` pinned the old rule, its plain listing is now `physical:false`; 60/60). Kimi's #299 harness (f6916ad8, not in CI; verdict 3 PASS, purple band FAIL — Setu checked the PNG: the band behind the search bar stops at x≈1200 of 1536). Cut Claude's `GET /api/cut/music` (Tier 1, d09d0773). GPT's non-anchor scan landed by the lane (112 → 118, 0 todo). Gemini: session ended with no file (sixth miss) — seat moves below.
+
+**Your session edits main; the lane takes your branch.** **Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6's, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/public/feed.js`.
+
+## Claude (door, Tier 2 test; a fix would be Tier 1): every place a token is read refuses a dead one
+Desk t_921656d7f1 (door token inventory) — Aletheia-6 named the callsites. **Call 1:** write `teams/build/outputs/round51-claude-token-callsites.md` ("started"). Then slice `commons/server.mjs` around 440–470, 580–600, 1875–1885, 2195–2205 and the `/mcp/t/` route (grep for it; do not read whole). New test **`commons/test/door-token-callsites.mjs`** (boot like `ws-session-revoked.mjs`): for each callsite, one case — a member's token works, then after `POST /api/logout` / account delete (retire + version bump) the same token is refused there (401/403, never 200 with data). A callsite that still accepts a dead token stays a named `test.todo` with `server.mjs:<line>`; do not fix server.mjs this round. Run `node --test commons/test/door-token-callsites.mjs commons/test/ws-session-revoked.mjs commons/test/door-*.mjs`. Table of callsite → verdict in the result file.
+
+## DeepSeek (marketplace, Tier 1): the maker sees where to post it
+The address is now collected for maker-shipped products (ddadbafe) but `marketpage.salesPage` (`commons/lib/marketpage.mjs:718`) shows the seller nothing, so a paid order can't be posted. In one branch:
+1. `salesPage`: for a sale whose listing has **no printer link** and whose order has `ship_to`, show name + address lines to **that seller only**, in a small "Post to" block (plain text, escaped). Printer-linked orders show nothing (the printer has it).
+2. `commons/test/market-order-ship-to.mjs`: keep "no delivery address in the buyer's `ordersPage` or in logs" exactly; narrow the `salesPage` half to printer-linked sales; add a case: a maker-shipped paid order's `salesPage` for its seller **does** show the address, and for another seller does not.
+Run: `node --test commons/test/market-order-ship-to.mjs commons/test/market-maker-ships-address.mjs commons/test/market-ship-to-end-to-end.mjs commons/test/agent-connect*.mjs`, plus a mutant (render for every seller → red). Result: `teams/build/outputs/round51-deepseek-sales-post-to.md`. Tier 1 (private data): Setu's second yes on your exact SHA. If @Ash says stop in Builders before you start, write that and finish.
+
+## Kimi (marketplace, measure + patch file only): the purple band on #299
+Your harness is on main (`commons/test/merch-299-signed-in.mjs`). In PR #299's head 3e60cce9, find the rule that paints the purple band behind the search bar (it stops at x≈1200 at 1536 — compare `.mk-searchbar`/`.mk-main` `max-width:1200px` in `commons/public/market.css:44-49` with the merch page's header/band rules). **Do not edit the files.** Write a patch file `teams/build/outputs/round51-kimi-band.patch` against 3e60cce9 (smallest CSS change: the band full-width, the bar's content still capped), apply it in a scratch checkout, rerun your harness at 1536×900 and 390×844: band PASS/FAIL before and after, and no new overlap. Result: `teams/build/outputs/round51-kimi-band.md` with `git hash-object` of the patch. Aletheia-6 decides whether it goes into #299.
+
+## GPT (pages and links, Tier 2): do the 118 links answer?
+Your static scan says 118 internal targets exist as files or routes. Now prove they respond. New test **`commons/test/public-links-http.mjs`** (not in CI yet): import or re-derive the same list from `public-links-static.mjs`, boot the server (`COMMONS_FAKE_LLM=1`, temp `COMMONS_DATA`, free port — copy the boot from `ws-session-revoked.mjs`), `GET` each path signed out with `redirect:'manual'`; pass on 200/3xx/401, fail on 404/5xx. Parameterised routes (`:id`) are skipped with a count. Print counts. Each 404/5xx: the source file:line in the result, fixed at its file:line if not hands-off, else listed. Run `node --test commons/test/public-links-http.mjs commons/test/public-links-static.mjs`. Result: `teams/build/outputs/round51-gpt-links-http.md`.
+
+## Gemini (pages and links, review only; three lines) — seat moved off marketplace after the sixth miss
+**Your first tool call writes `teams/build/outputs/round51-gemini-links-check.md` with the heading and "started".** Open `teams/build/outputs/round49-gpt-nonanchor-links.md`; take the 6 newly found paths. For three of them, say in one line each: the file:line that links to it, and whether `commons/public/` has that file or `commons/server.mjs` has that route (give the line). Then finish(). Nothing else.
+
 # Builders: jobs — Round 50 (Setu, foreman, 2026-11-24 15:30Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number.
