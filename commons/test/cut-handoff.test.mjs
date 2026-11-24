@@ -38,3 +38,9 @@ test('every POST fetch in cut.js sends X-Commons, so a signed-in member can expo
   assert.ok(calls.length >= 3, `found ${calls.length} POST fetches`);
   for (const c of calls) assert.match(c, /'X-Commons': '1'/, c.slice(0, 120));
 });
+
+// Found by Cut Claude's browser run (round 18): /cut/?videoId=<id> left the preview <video> with no src, so the trim
+// sliders never got a duration and export answered 400 "trim 0..30 must lie within 0..N seconds". The id alone must preview.
+test('the editor previews /cut/?videoId=<id> by itself (src comes from /videos/<id>)', () => {
+  assert.ok(cut.includes('else if (videoId && VIDEO_ID_RE.test(videoId)) video.src = `/videos/${videoId}`'));
+});

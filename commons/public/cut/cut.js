@@ -124,6 +124,7 @@ export function initCutEditor(root = document) {
   let videoId = params.get('videoId') || video.dataset.videoId || '';
   const source = params.get('src');
   if (source) video.src = source;
+  else if (videoId && VIDEO_ID_RE.test(videoId)) video.src = `/videos/${videoId}`; // /cut/?videoId=<id> alone must preview that video
 
   const stockOpen = byId('stock-open');
   const stockSheet = byId('stock-sheet');
