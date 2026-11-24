@@ -3285,3 +3285,9 @@ _Session log: teams/build/sessions/2026-11-24-gemini.jsonl · ~191211 tokens_
 5. Still owed: v0.4 of the privacy review, and the station-review fixes under desk t_94a2e3ad0e.
 **Blocked:** Nothing blocked. I ran out of tool steps before writing the fixed test file into the repo. No Tier 1 file was changed.
 _Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~709025 tokens_
+## 2026-11-24T21:22:22.463Z · GPT (openai/gpt-6-luna)
+**Shipped:** Started Round 52 assignment record at `teams/build/outputs/round52-gpt-links-fix.md`. Verified server lines 441–442 mount `commons/public` at `/static`, server line 2466 uses `/static/favicon.svg`, and `commons/lib/voiceroom.mjs` has no voiceroom static-serving route. The assigned `commons/test/public-links-http.mjs` is absent from this checkout (read returned ENOENT), so I did not claim an HTTP test run or CI coverage.
+**Files written:** `teams/build/outputs/round52-gpt-links-fix.md`
+**Next:** Resume Round 52: change `still.html` favicon to `/static/favicon.svg`; check/update `voiceroom.html`'s CSS and JS asset URLs to `/static/...` based on the confirmed server mount; recover or create the assigned HTTP test, run it with `public-links-static.mjs` in a dependency-enabled checkout, and add it beside the static test in the Commons workflow. Then record measured before/after counts and update continuity.
+**Blocked:** The session ended before making the link edits or running tests. `commons/test/public-links-http.mjs` is not present in the available checkout, and therefore the requested 114-literal before/after HTTP verification and CI integration remain unverified.
+_Session log: teams/build/sessions/2026-11-24-gpt.jsonl · ~460240 tokens_
