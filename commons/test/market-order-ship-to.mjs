@@ -63,6 +63,7 @@ test('print orders collect and persist only shipping_details name + address', as
     // The maker said nothing is posted (physical: false), so no printer and no address. A maker-shipped product that
     // never answered now over-asks: that rule is pinned in market-maker-ships-address.mjs.
     const plainListing = makeListing('Digital work', { physical: false });
+    const makerListing = makeListing('Maker ships it', { physical: true });
     fulfillment.link(seller, linkedListing, { provider: 'printful', product_id: 'print_product_1', variant_ids: ['4012'] });
 
     const start = async (listing) => {
@@ -115,14 +116,43 @@ test('print orders collect and persist only shipping_details name + address', as
       assert.equal('ship_to' in checkout.order(plain.order), false);
     });
 
-    await t.test('no delivery address is printed to application logs or order-page HTML', () => {
+    // A maker-shipped product: the maker said it is posted, so the address is asked for, stored, and shown to them.
+    const makerAddress = { line1: '9 Maker Street', line2: '', city: 'Bisbee', state: 'AZ', postal_code: '85603', country: 'US' };
+    const makerDetails = { name: 'Maker Post Name', address: makerAddress, phone: '+15550000001' };
+    let maker;
+    await t.test('a maker-shipped checkout asks for an address and keeps it', async () => {
+      maker = await start(makerListing);
+      assert.equal(sessionBodies.get(maker.session).get('shipping_address_collection[allowed_countries][0]'), 'US');
+      assert.equal(deliver(paidEvent(maker, makerDetails)).status, 'paid');
+      assert.deepEqual(checkout.order(maker.order).ship_to, { name: makerDetails.name, address: makerAddress });
+    });
+
+    await t.test('no delivery address is printed to application logs or the buyer order-page HTML', () => {
       const purchases = checkout.ordersFor(buyer).purchases;
-      const sales = checkout.ordersFor(seller).sales;
-      const html = ordersPage({ me: buyer, purchases }) + salesPage({ me: seller, sales });
-      for (const privateText of [address.line1, address.line2, address.postal_code, shippingDetails.phone, shippingDetails.carrier]) {
-        assert.equal(html.includes(privateText), false, `order HTML contains ${JSON.stringify(privateText)}`);
+      const html = ordersPage({ me: buyer, purchases });
+      for (const privateText of [address.line1, address.line2, address.postal_code, shippingDetails.phone, shippingDetails.carrier, makerAddress.line1, makerAddress.postal_code]) {
+        assert.equal(html.includes(privateText), false, `the buyer's order HTML contains ${JSON.stringify(privateText)}`);
         assert.equal(consoleLines.join('\n').includes(privateText), false, `application log contains ${JSON.stringify(privateText)}`);
       }
+      // Narrowed in round 51: the printer-linked sale shows no address on the seller's page either — the printer has it.
+      const printerSale = checkout.ordersFor(seller).sales.filter((s) => s.id === linked.order);
+      const printerHtml = salesPage({ me: seller, sales: printerSale });
+      for (const privateText of [address.line1, address.line2, address.postal_code]) {
+        assert.equal(printerHtml.includes(privateText), false, `the seller's page shows a printer address: ${JSON.stringify(privateText)}`);
+      }
+    });
+
+    await t.test('the maker sees where to post a sale it ships itself — and no other member does', () => {
+      const sales = checkout.ordersFor(seller).sales;
+      const mine = salesPage({ me: seller, sales });
+      assert.ok(mine.includes('Post to'), 'the seller needs a Post to block for a maker-shipped sale');
+      for (const line of ['Maker Post Name', makerAddress.line1, '85603 Bisbee']) assert.ok(mine.includes(line), `the seller's page is missing ${JSON.stringify(line)}`);
+      assert.equal(mine.includes(address.line1), false, 'the printer-linked address stays out of the seller page too');
+      // Handed the seller's sales by mistake, another member still sees nothing: the guard is the seller id, not the list.
+      const other = add({ id: 'h_ship_to_other', kind: 'human', name: 'Someone Else' });
+      const theirs = salesPage({ me: other, sales });
+      for (const line of ['Maker Post Name', makerAddress.line1, '85603 Bisbee']) assert.equal(theirs.includes(line), false, `another member saw ${JSON.stringify(line)}`);
+      assert.equal(salesPage({ me: null, sales }).includes(makerAddress.line1), false, 'a signed-out page shows no address');
     });
   } finally {
     globalThis.fetch = oldFetch;
