@@ -125,6 +125,31 @@ test('literal internal hrefs and data links in public files have a public target
     }
   }
 
+  const legacyCount = links.length;
+  const extraLinks = [];
+  const dataHrefRe = /\bdata-href\s*=\s*(?:"(\/[^\"]*)"|'(\/[^']*)'|`(\/[^`]*)`)/g;
+  const hrefPropertyRe = /\bhref\s*:\s*(?:"(\/[^\"]*)"|'(\/[^']*)'|`(\/[^`]*)`)/g;
+  const scanAdditional = (file, text, pattern, kind) => {
+    const displayFile = file.startsWith(PUBLIC)
+      ? path.relative(PUBLIC, file).split(path.sep).join('/')
+      : path.relative(ROOT, file).split(path.sep).join('/');
+    for (const item of literalPaths(text, pattern)) {
+      const line = text.slice(0, item.index).split('\n').length;
+      const publicTarget = publicPath(item.path);
+      const exists = publicTarget !== null && fs.existsSync(publicTarget);
+      const dynamicPrefix = /^\s*\+\s*encodeURIComponent\s*\(/.test(text.slice(item.end));
+      const routed = routeMatches(item.path, routes, { dynamicPrefix });
+      extraLinks.push({ kind, file: displayFile, line, path: item.path, result: exists ? 'public file/dir' : routed ? 'server route' : 'todo' });
+    }
+  };
+  const publicFiles = walk(PUBLIC);
+  for (const file of publicFiles) scanAdditional(file, fs.readFileSync(file, 'utf8'), dataHrefRe, 'data-href=');
+  const objectHrefSources = [path.join(ROOT, 'lib', 'pages.mjs'), ...publicFiles.filter((file) => path.dirname(file) === PUBLIC && file.endsWith('.js'))];
+  for (const file of objectHrefSources) scanAdditional(file, fs.readFileSync(file, 'utf8'), hrefPropertyRe, 'href:');
+  const known = new Set(links.map((link) => `${link.file}:${link.line}:${link.path}`));
+  const additions = extraLinks.filter((link) => link.kind === 'href:' || !known.has(`${link.file}:${link.line}:${link.path}`));
+  links.push(...additions);
+
   const todos = links.filter((link) => link.result === 'todo');
   console.log(`\nChecked ${links.length} literal internal hrefs (${links.length - todos.length} targets, ${todos.length} todo):`);
   for (const link of links) console.log(`${link.result.padEnd(16)} ${link.file}:${link.line} ${link.path}`);
