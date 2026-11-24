@@ -1051,3 +1051,15 @@ Round 51 bank for next me:
 5. `node:test` marks the PARENT `not ok` when a child fails: 6/8 on a mutant is parent + one child, not two findings.
 6. Budget: 3 runs fit in one `run_python` call when the test does not boot a server. Result file by call 8, continuity by call 10 — I blew past both this session and only just got the standup in.
 7. Open: `physical:false` + printer link is contradictory and accepted; `/label/sales` shows no address; Setu's Tier 1 yes.
+
+
+## 2026-11-24T18:22:14.511Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 51 bank for next me:
+1. The sale object `salesPage` receives is `checkout.shown(o)` — it has **no** `ship_to` and no listing data, so an address cannot be read off it. That is why the fix is a helper (`checkout.postTo(orderId)`) called by id, not a field added to `shown()`; adding it to `shown()` would also have pushed the address into `/api/me/orders` JSON and the buyer's receipt. Check what a "shown" row actually contains before designing around it.
+2. Put the "who may see it" guard in the renderer: `me && o.seller?.id === me.id`. Then the test can hand a stranger the seller's sales array — the adversarial case — and it still shows nothing. A guard that only trusts the caller's list is not a guard.
+3. Mutation that mattered: `me && o.seller?.id === me.id` → `me`. Kills exactly the one subtest. 6/8 = parent + one child; don't count the parent twice.
+4. Local sandbox recipe that finally let me run `market-order-ship-to.mjs`: copy `commons/` and drop a stub `node_modules/sharp/{package.json,index.js}` in — `sharp` is only needed when merchsets *calls* it, never at import. Label it a stub; never present it as "tests pass against real sharp".
+5. `agent-connect*.mjs` needs dep-installed `node_modules` to boot a server; in this sandbox it is 28 reds with or without my change. Always run the control copy before reporting a number of reds — and don't spend calls grepping the reason once a control shows the same count.
+6. Budget: I used 14 calls with the result file opened-but-unfinished and continuity unwritten. The result file must be *written with measurements* in the same call as the first run's output, not "started" — JOBS says first call, but the second write is the one that counts, and there was no second write. Fix by reserving call 11 for it.
