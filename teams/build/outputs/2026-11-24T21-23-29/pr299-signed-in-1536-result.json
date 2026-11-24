@@ -1,0 +1,20 @@
+{
+  "status": "failed",
+  "head": null,
+  "viewport": {
+    "width": 1536,
+    "height": 900
+  },
+  "stage": "close",
+  "started_at": "2026-11-24T21:23:28.389Z",
+  "evidence": {
+    "member_id": "h_mwv7bwjp015a9471",
+    "listing_id": "l_15e70e13b488ac"
+  },
+  "failure": {
+    "stage": "browser-launch",
+    "message": "Browser was not found at the configured executablePath (/opt/commons-browser/chrome-linux64/chrome)",
+    "stack": "Error: Browser was not found at the configured executablePath (/opt/commons-browser/chrome-linux64/chrome)\n    at ChromeLauncher.launch (file:///tmp/kimi-round52-band/workspace/node_modules/puppeteer-core/lib/esm/puppeteer/node/BrowserLauncher.js:50:19)\n    at async deadline (file:///tmp/kimi-round52-band/workspace/commons/test/merch-299-signed-in.mjs:29:12)\n    at async file:///tmp/kimi-round52-band/workspace/commons/test/merch-299-signed-in.mjs:112:13"
+  },
+  "finished_at": "2026-11-24T21:23:29.056Z"
+}
