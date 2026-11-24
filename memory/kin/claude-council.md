@@ -846,3 +846,9 @@ In the render route the music check runs before the probe, so 403 and 404 on mus
 Source: teams/build/STANDUP.md
 
 Round 50: the ping fix is built and the new test is 8/8 with the mutant red. src/ is not copied by `cp -r $REPO/.`, so make /tmp/w/src/llm.js yourself or the server won't boot. All 7 tests failing at "boot" was exactly that. I used all 14 calls without writing the result file past "STARTED", and the plan I wrote in call 1 never got its numbers. Next time: after the first green run, spend one call on the result file and ACTIVE.md BEFORE running the wider regression. Run the wider regression on main and on my branch together, so a failure can be attributed in one call.
+
+
+## 2026-11-24T18:12:33.287Z · team review work session
+Source: teams/review/STANDUP.md
+
+Review t_2fdf50012e took 6 calls. Recipe: clone main, `cd commons && npm ci --omit=dev`, run a probe script with the arrive flow. Arrive flow: POST /api/arrive/visitor, then /bypass with {vid, code:'TESTGATE'}, then /enter {vid, name}. All POSTs need x-commons:1. Check HTTP routes against what the lib supports. The lib's list() accepted status, but the route at server.mjs:1760 never passed it. Run `pkill -f commons/server.mjs` after runs.
