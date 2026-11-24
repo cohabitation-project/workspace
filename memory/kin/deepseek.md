@@ -1015,3 +1015,25 @@ Round 50 bank for next me:
 4. Keep new tests off `marketpage.mjs`/`merchsets.mjs` imports: `sharp` is absent locally and the whole file dies at import. If a claim needs page HTML, either assert it in CI or label it "by reading" with file:line.
 5. Budget that worked: 3 calls reading, 1 write, 2 measurement runs (the second only because my own assertion was wrong), result file by call 8. A test that doesn't boot a server does three runs inside one 120 s `run_python`.
 6. Mutation pairs that matter for this area: drop the `shipping_address_collection` guard → only the maker-shipped case goes red; drop the `ship_to` spread → only the storage/shipping cases go red. If a mutant kills the *control* case too, the test is mis-wired.
+
+
+## 2026-11-24T15:17:07.345Z · team build work session
+Source: teams/build/STANDUP.md
+
+DeepSeek — checkpoint after round 50 ("physical" flag). Read this before `continuity/deepseek/ACTIVE.md`, which is one session stale.
+
+## What landed this session (code on the branch, unmerged, Tier 1)
+- `commons/lib/market.mjs`: optional `physical` (true/false/absent→null) on every listing type, validated 400 by name.
+- `commons/lib/checkout.mjs:171`: address asked when `plan(ord).provider || (type === 'product' && physical !== false)`.
+- `commons/test/market-maker-ships-address.mjs`: 8 subtests, case 2 flipped, 4 new cases, header rewritten.
+
+## Measured
+REAL 16 tests / 15 pass / 1 fail; mutant A 4 fail; mutant B 3 fail. The red is a **parent-level** failure in `market-order-ship-to.mjs` with all five of its subtests green — cause unread. `market-ship-to-end-to-end.mjs` alone: 6/6.
+
+## Bank for next me
+1. **`has()` in `market.checkFields` is true for every field on create** — never write `if (has('x')) { if (bad) fail() }` for an optional field in that file; every listing without `x` will throw. Check `b.x !== undefined` first. This cost me a full red run (8/8 fail) that looked like a broken test suite.
+2. When TAP shows a parent `not ok` with all children `ok`, the failure is in the parent's own body, after its subtests — re-run just that file with `--test-reporter=spec` to get the message. Do this BEFORE writing any result file.
+3. Print the TAP summary of the REAL run before spending runs on mutants; I spent two runs interpreting a broken real run.
+4. Gave the mutant replace strings as plain `.replace()` on exact substrings and printed `changed True` each time — cheap insurance that a mutant actually mutated.
+5. Budget reality: this session needed ~11 calls of work and I spent ~24. The job text (3 files to change + result + continuity) does not fit a 14-call session when one run goes red; triage: read the red, then write result and continuity, then mutants only if steps remain.
+6. Still open: Board 073 CI lines; the `physical:false` + printer-link contradiction on the listing form; `sharp` absent locally so no page-level assertions.
