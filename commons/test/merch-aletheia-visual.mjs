@@ -63,6 +63,43 @@ try{
     });
     const image=path.join(out,'product-customizer-'+width+'-fixture.png');
     await page.screenshot({path:image,fullPage:true});
+    // Measurement only: Aletheia-6's three reported defects remain visible in
+    // the output even though the existing whole-page overflow check may abort.
+    const diagnostics=await page.evaluate(()=>{
+      const n=v=>Math.round(v*100)/100;
+      const box=target=>{
+        const el=typeof target==='string'?document.querySelector(target):target;
+        if(!el)return null;
+        const r=el.getBoundingClientRect(),cs=getComputedStyle(el);
+        return {left:n(r.left),right:n(r.right),top:n(r.top),bottom:n(r.bottom),width:n(r.width),height:n(r.height),
+          clientWidth:el.clientWidth,scrollWidth:el.scrollWidth,paddingLeft:n(parseFloat(cs.paddingLeft)||0),
+          paddingRight:n(parseFloat(cs.paddingRight)||0),overflowX:cs.overflowX};
+      };
+      const pastViewport=r=>r?n(Math.max(0,-r.left,r.right-innerWidth)):null;
+      const pastContent=(inner,outer,side)=>inner&&outer?n(Math.max(0,side==='left'?outer.left+outer.paddingLeft-inner.left:inner.right-(outer.right-outer.paddingRight))):null;
+      const warnings=[];
+      const band=box('.mv-search'),search=box('.mk-searchbar'),searchInput=box('.mk-searchbar input'),searchButton=box('.mk-searchbar .btn');
+      const searchBand={bandPastViewportPx:pastViewport(band),searchPastViewportPx:pastViewport(search),
+        searchRightPastBandPx:search&&band?n(search.right-band.right):null,band,search,input:searchInput,button:searchButton};
+      if(searchBand.bandPastViewportPx>.5||searchBand.searchPastViewportPx>.5)warnings.push({defect:'purple search band',...searchBand});
+      const actions=box('.cz-actions'),buttons=[...document.querySelectorAll('.cz-actions .cz-btn')].map(el=>({label:el.textContent.trim(),...box(el)}));
+      const actionButtonsPastCardPx=actions?n(Math.max(0,...buttons.map(b=>Math.max(pastContent(b,actions,'left'),pastContent(b,actions,'right'))))):null;
+      const actionButtonsPastViewportPx=n(Math.max(0,...buttons.map(b=>pastViewport(b))));
+      const actionsCard={card:actions,buttons,actionButtonsPastCardPx,actionButtonsPastViewportPx};
+      if(actionButtonsPastCardPx>.5||actionButtonsPastViewportPx>.5)warnings.push({defect:'actions card',...actionsCard});
+      const payhead=box('.cz-payhead'),heading=box('.cz-payhead h3'),price=box('.cz-price'),priceInput=box('.cz-price input');
+      const verticalOverlap=heading&&price?n(Math.max(0,Math.min(heading.bottom,price.bottom)-Math.max(heading.top,price.top))):null;
+      const headingPriceOverlapPx=heading&&price&&verticalOverlap>.5?n(Math.max(0,Math.min(heading.right,price.right)-Math.max(heading.left,price.left))):0;
+      const pricing={headingPastCardPx:pastContent(heading,payhead,'right'),pricePastCardPx:pastContent(price,payhead,'right'),
+        headingTextOverflowPx:heading?n(heading.scrollWidth-heading.clientWidth):null,headingPriceOverlapPx,heading,price,priceInput,payhead};
+      if(pricing.headingPastCardPx>.5||pricing.pricePastCardPx>.5||pricing.headingTextOverflowPx>.5||headingPriceOverlapPx>.5)warnings.push({defect:'pricing heading',...pricing});
+      const breakdown=box('.cz-breakdown'),table=box('.cz-breakdown table');
+      const sizeTable={tablePastViewportPx:pastViewport(table),tablePastScrollerPx:pastContent(table,breakdown,'right'),
+        localHorizontalScrollPx:breakdown?n(breakdown.scrollWidth-breakdown.clientWidth):null,table,breakdown};
+      if(sizeTable.tablePastViewportPx>.5||sizeTable.localHorizontalScrollPx>.5)warnings.push({defect:'size table',...sizeTable});
+      return {viewport:innerWidth,bodyScrollWidth:document.body.scrollWidth,warnings,measurements:{searchBand,actionsCard,pricing,sizeTable}};
+    });
+    console.log('visual-diagnostics '+JSON.stringify(diagnostics));
     if(errors.length)throw Error('JS errors: '+errors.join('; '));
     if(metrics.bodyScroll>width+4)throw Error('Horizontal overflow at '+width+': '+JSON.stringify(metrics));
     console.log(JSON.stringify({image,metrics},null,2));
