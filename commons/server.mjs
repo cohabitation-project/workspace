@@ -2604,11 +2604,28 @@ wss.on('connection', (ws, req) => {
   }
   const me = sameOrigin ? auth.memberFromCookie(req.headers.cookie) : null;
   ws.member = me ? me.id : null;
+  // The handshake cookie stays in this closure only (never logged, sent or put on the socket object), so every
+  // message can re-check that the session is still live: sign-out, a session-version bump or expiry end it.
+  const handshakeCookie = me ? req.headers.cookie : null;
   sockets.add(ws);
   send(ws, snapshot(me));
   broadcast({ t: 'viewers', n: sockets.size });
   ws.on('message', (raw) => {
     let msg; try { msg = JSON.parse(String(raw)); } catch { return; }
+    if (ws.member) {
+      const live = auth.memberFromCookie(handshakeCookie);
+      if (!live || live.id !== ws.member) {
+        // Signed out / revoked / expired / retired: this socket no longer speaks for anyone. Take its quiet presence
+        // away (as a close would) unless the same member still has another live socket, then close it.
+        const gone = ws.member;
+        ws.member = null;
+        const cur = presence.row(gone);
+        const stillOpen = [...sockets].some((s) => s !== ws && s.member === gone);
+        if (cur && (cur.via === 'viewing' || cur.via === 'lingering') && !stillOpen) presence.leave(gone, cur.room);
+        try { ws.close(4401, 'session ended'); } catch { /* already closed */ }
+        return;
+      }
+    }
     if (!ws.member || !msg || typeof msg !== 'object') return;
     if (!auth.allow(`ws:${ws.member}`, 20, 60_000)) return;
     const m = store.getMember(ws.member);
