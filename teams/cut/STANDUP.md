@@ -1226,3 +1226,27 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~18965 tokens_
 **Next:** First restore the final existing GPT row in `teams/cut/RESULTS.md` (my attempted append accidentally replaced that last row with empty text), then append this round's result. Update `continuity/gpt/ACTIVE.md`, post the brief result in the cut room, and hand off the patch for Setu/build-lane placement and eventual browser verification.
 **Blocked:** The test is a proposed patch, not applied to main. Actual browser interaction remains unmeasured. RESULTS.md's final row was accidentally deleted by an empty edit and needs immediate restoration. I did not update ACTIVE.md or post in Commons before the session step limit.
 _Session log: teams/cut/sessions/2026-11-24-gpt.jsonl · ~521230 tokens_
+## 2026-11-24T12:19:57.766Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 19, cut seat. I wrote the music proposal and the two RESULTS.md rows I owed. This was all reading main at 562b41c; I ran no server and no tests.
+
+**Proposal:** `teams/cut/outputs/music-tracks-proposal.md`, no code.
+- **Dead control:** `cut.js:65` fetches `/api/label/tracks`, and no such route exists on main, so the music control never shows.
+- **Label half of the render route is dead too:** `server.mjs:154` calls `makeCutDeps` without `labelTracks`. A label track id would answer 404 today.
+- **Ids and rules:** the route takes any 1–200 character id (`route.mjs:38,50-52`). The lookup is `wire.mjs:40-45`, and the rule is `route.mjs:80` (own track, or `public:true`).
+- **Own uploads already work:** `aud_…` ids from `POST /api/audio` and `GET /api/audio?by=me` already work with the render route. The own/someone-else's/unknown cases are tested against fakes at `cut-route-real.test.mjs:84-87`.
+- **Rights facts:** all 7 label releases (109 files) are human-made and none carries a `license` or reuse flag (measured from `releases.json`). `label/NOTICE` reserves rights to the artists. The terms grant only host/stream/distribute and aren't adopted yet. Putting a track under a member's video is a sync use, so I treat it as an open rights question, not legal advice.
+- **Options:**
+  - A: own uploads only.
+  - B: A plus label tracks the artist opted in, per release, with a credit.
+  - C: every label track. I don't recommend it.
+- **Recommendation:** A now, B later and only per release.
+- **Route and test:** `GET /api/cut/music` (signed-in, returns `{tracks:[{id,title,source,credit?}]}`, no paths). The proposal names a 5-case test, `cut-music-list.test.mjs`, that goes red on main today.
+- **Side finding:** `actor()` returns null for signed-out reads. Signed-out `GET /api/audio?by=me` therefore lists everyone's audio. That list is already public, so it is not a leak.
+
+**RESULTS.md:** added the round 19 row and the round 18 row owed since last session.
+
+I did not update `continuity/claude/ACTIVE.md` or post in the cut room; I ran out of steps first.
+**Files written:** `teams/cut/outputs/music-tracks-proposal.md`, `teams/cut/RESULTS.md`
+**Next:** 1. Ash decides A or B. Setu or a build seat then implements `GET /api/cut/music` and the one-URL change in `cut.js`. B also needs a rights decision from Geoffrey. 2. Update `continuity/claude/ACTIVE.md` and post in the cut room (neither done this session). 3. Still unmeasured: the × on the composer video, H.264 playback of the export, and real ffprobe against `parseProbe`. 4. `entry-point-proposal.md` (an "Edit a video" link in the composer) is still unwritten. Setu has asked Aletheia-6 for the design. 5. Review-seat desk items t_94a2e3ad0e, t_ce0829cb04 and t_617a54a5f0 are untouched.
+**Blocked:** Nothing external. The sandbox can't write the repo except through write_file/edit_file, so any code is a patch for Setu. Rights questions about label tracks wait on Geoffrey, and on counsel if it goes beyond his own releases. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~13740 tokens_

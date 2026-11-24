@@ -827,3 +827,7 @@ Round 48: the sandbox must hold the WHOLE repo (`cp -r $REPO/. /tmp/w/`), becaus
 Source: teams/build/STANDUP.md
 
 Round 49 (build seat, listen-only ws fix) is NOT done: I spent all 14 calls reading and wrote no files. Lesson: write the result file in the first 2 calls, and never read_file commons/server.mjs without a line slice (it is 260k chars). To slice, use run_python with open(REPO+'/commons/server.mjs').read().split('\n'). Key facts are in the standup "shipped" text: the ws block is server.mjs 2599-2668, the ping loop is at 2671, and the HTTP routes for the three tests are /api/humans, /api/password, /api/login, /api/logout and POST /account/delete. A Tier 1 reviewer should check that each socket is re-checked against its own handshake cookie, not per member.
+## 2026-11-24T12:19:57.766Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 19: the proposal needed only about 6 calls of grep/read on a fresh clone of main (HOME=/tmp git clone --depth 1). Grep server.mjs by narrow patterns; a broad 'label' grep floods the output and truncates the start. `actor(req)` returns null for signed-out reads and only throws on bad tokens. Write the proposal file first, then the RESULTS row via edit_file anchored on the table separator line `|---|---|---|---|---|`. I ran out of steps before ACTIVE.md and the room post, so do those two earlier next time, right after the first file.
