@@ -1,0 +1,20 @@
+{
+  "command": "node --test commons/test/theme-contrast.mjs commons/test/rendered-contrast.mjs",
+  "exit_code": 0,
+  "ratios": {
+    "navy": {
+      "ink": "#f3ede0",
+      "panel": "#1b2a3a",
+      "ratio": 12.5104
+    },
+    "midnight": {
+      "ink": "#eef1f8",
+      "panel": "#121829",
+      "ratio": 15.6287
+    }
+  },
+  "css_rules": {
+    "navy": true,
+    "midnight": true
+  }
+}
