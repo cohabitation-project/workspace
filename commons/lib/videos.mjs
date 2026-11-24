@@ -81,6 +81,8 @@ export function posterFor(vid) { const v = meta.get(String(vid || '')); const f 
 export const get = (vid) => { const v = meta.get(String(vid || '')); return v ? publicVideo(v) : null; };
 export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !!v.ready || !ff().ffmpeg });
 export const byMember = (memberId) => [...meta.values()].filter((v) => v.by === memberId).map(publicVideo);
+/** A member's own videos, newest first (Cohabi Cut's "From Cohabi" tab). */
+export const listMine = (memberId, limit = 60) => [...meta.values()].filter((v) => v.by === memberId).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, Math.max(1, Math.min(100, limit))).map(publicVideo);
 
 export function remove(member, vid) {
   const v = meta.get(String(vid || '')); if (!v) fail(404, 'no such video');

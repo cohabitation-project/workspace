@@ -854,6 +854,8 @@ app.post('/api/videos', express.raw({ type: ['video/*'], limit: videos.MAX_BYTES
 // Stock footage for making videos (Geoffrey, 2026-11-21): search Pixabay, copy a clip into your own videos, credited.
 app.get('/api/stock/videos', wrap(async (req) => stock.search(houseWriter(req), req.query.q, { vertical: req.query.vertical === '1' })));
 app.post('/api/stock/videos/:id/import', wrap(async (req, res) => { const me = houseWriter(req); const v = await stock.importClip(me, req.params.id); res.status(201); return v; }));
+// Your own videos, newest first (Cohabi Cut on OpenCut, 2026-11-24: the "From Cohabi" tab lists them). Signed in only.
+app.get('/api/videos', wrap((req) => { const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in to see your videos'); if (req.query.by !== 'me') throw new core.CommonsError(400, 'only your own videos are listed here: use ?by=me'); return { videos: videos.listMine(me.id, parseInt(req.query.limit, 10) || 60) }; }));
 app.delete('/api/videos/:id', wrap((req) => videos.remove(houseWriter(req), req.params.id)));
 app.post('/api/cut/render', wrap(async (req, res) => { const r = await handleCutRender({ member: houseWriter(req), body: req.body || {}, deps: cutDeps }); res.status(r.status); return r.json; }));
 // The editor's music list: the signed-in member's OWN uploads, newest first, no file path. actor() returns null when signed out, so this route says 401 itself.
