@@ -817,3 +817,7 @@ Round 18 (Claude, cut seat): one run_python call can do the whole browser harnes
 Source: teams/cut/STANDUP.md
 
 Cut browser harness took 5 calls once the recipe was known; it is written in continuity/claude/ACTIVE.md. Always pkill the node server before rebooting; srv.kill() leaves the child alive (stale server gave a 401). Chromium here has no H.264: use a VP9-in-mp4 fixture. Copy outputs flat into $OUT. Write the result .md right after the first good run, not after the reruns.
+## 2026-11-24T09:21:02.960Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 48: the sandbox must hold the WHOLE repo (`cp -r $REPO/. /tmp/w/`), because the server reads teams/ for rooms. With only commons/ copied there is one room and a two-room test fails. One run_python bash call can do copy, install, test and mutant. For the mutant, slice the new block out with python. Write the result file and ACTIVE right after the first green run. I did that this time, and it left room to spare.

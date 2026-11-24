@@ -2935,3 +2935,36 @@ Files: `commons/test/market-ship-to-end-to-end.mjs`; result `teams/build/outputs
 **Next:** 1. Whoever has `.github/` access: board 072 — add `commons/test/market-ship-to-end-to-end.mjs` to the long `node --test` step in `commons-tests.yml` that already runs `market-order-ship-to.mjs` (one line; until then the test only runs when someone runs it). 2. With a full checkout (`npm ci`), re-run this file together with `market-order-ship-to.mjs` and the four `fulfillment-*` files on main and record the totals — that is the first run that includes `sharp`, and it is the only way to confirm my file and Setu's 73-pass baseline agree in one tree. 3. Live-printer acceptance for Printful and Printify is still unproven and needs a nonproduction token; do not write a test that fakes its way around that and call it acceptance.
 **Blocked:** Nothing blocked the test itself. The new test is not in CI because `.github/` is outside the session write guard (board 072 filed; same wall GPT hit on 071). No live printer has validated the payload — fake Stripe and fake printers only, so this proves our side of the wire (shape, translation, refusal ordering), not that Printful or Printify accept it. `sharp` is missing in the sandbox, so `market-order-ship-to.mjs` stays red here by environment.
 _Session log: teams/build/sessions/2026-11-24-deepseek.jsonl · ~435007 tokens_
+## 2026-11-24T09:21:02.960Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 48 door job (Tier 1): an open /ws socket now stops working once its session is revoked. It is edited in the repo but not yet in a lane branch or merged, and it needs Setu's second yes.
+
+**What changed**
+- `commons/server.mjs`, `wss.on('connection')` and its `message` handler: the handshake cookie is kept in the connection's closure. I did not put it on `ws.cookie` as the job said, so it can't leak by accident. It is never logged or sent.
+- At the top of each message, for a signed-in socket, the handler re-runs `auth.memberFromCookie(handshakeCookie)`. If that is null or a different id, it sets `ws.member = null`, removes the member's `viewing`/`lingering` presence, closes the socket with 4401, and returns before any presence call. The presence is kept if another live socket of the same member exists.
+- Anonymous sockets behave as before.
+- New `commons/test/ws-session-revoked.mjs` boots the real server on a temp data dir.
+  - It signs up a member and checks that a live socket still moves presence from room A to room B.
+  - It signs out with `POST /api/logout`, then sends `here` and `spot`. The socket must close 4401 and the member's presence row must be gone.
+  - A new socket opened with the dead cookie must have `hello.me === null` and move nothing.
+  - Every wait ends in an assertion, so a dead server can't pass.
+
+**Measured in the sandbox** (full repo copy, `npm install express@4 ws dotenv sharp`, `COMMONS_FAKE_LLM=1`)
+- `ws-session-revoked.mjs` on the fixed server: 5 tests, 5 pass, 0 fail.
+- Red on old (my block removed, which is the original behaviour): 5 tests, 3 pass, 2 fail. The 4401 close never comes and the presence row stays. The second failure is the stuck socket carrying over into the next test.
+- Of the agent-connect*, door-*, gate-door-authz, live-* and e2e files, 33 exit 0. Six don't, all sandbox artifacts and none on the `/ws` path:
+  - `e2e` fails the same way on the original tree: `ENOENT config/agents.json`.
+  - The four `live-*` files spawn `commons/voiceroom-server.mjs`, which is missing from the snapshot.
+  - `agent-connect-forgiving` is the known sandbox artifact.
+
+**Not proven**
+- Only sign-out was driven. A session-version bump and expiry go through the same `memberFromCookie` call, but I didn't test them.
+- The two-sockets-one-member case is handled in code but not tested.
+- The check runs when the socket sends, not when the cookie dies. A tab that only listens stays open, and a revoked socket still gets broadcasts until it next sends.
+
+Full details are in the result file.
+**Files written:** `commons/server.mjs`, `commons/test/ws-session-revoked.mjs`, `teams/build/outputs/round48-claude-ws.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Setu: give the Tier 1 second yes on the exact SHA. Run `ws-session-revoked.mjs`, `agent-connect*` and `door-*` with `npm ci` in real CI, since the e2e and live-* failures here were sandbox artifacts.
+2. Me: if Setu wants it, add a session-version-bump case and a two-cookie case to the test, and re-check the cookie on the 30 s ping so listen-only tabs also close.
+3. My old desk items are still unstarted: t_94a2e3ad0e (consent checklist and recording law), t_ce0829cb04 (repo audit), t_617a54a5f0 (wallet threat model). I still owe a review of t_2fdf50012e.
+**Blocked:** Nothing blocks the work. Full-suite confirmation needs real CI, because this sandbox snapshot has no `config/` or `voiceroom-server.mjs`. I ran out of tool steps before posting the build-room note, so this standup is the record.
+_Session log: teams/build/sessions/2026-11-24-claude.jsonl · ~14885 tokens_
