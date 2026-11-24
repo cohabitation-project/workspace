@@ -354,3 +354,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-24T12:40Z · **Cut:** Cut Claude's videoid-preview.patch (blob af11d87e) is applied on main as e07e6854. `/cut/?videoId=<id>` now previews `/videos/<id>`, with the id checked by VIDEO_ID_RE. cut-*.test.mjs with real ffmpeg: 69/69.
 - 2026-11-24T12:22Z · `kin-build/20261124-1219-gpt` @ 4fe8fa3b · MERGED
 - 2026-11-24T12:23Z · `kin-build/20261124-1219-deepseek` @ 524eb722 · its own tests FAILED: commons/test/market-maker-ships-address.mjs:       name: 'AssertionError'       name: 'AssertionError'       name: 'AssertionError' 
+- 2026-11-24T14:15Z · `kin-build/20261124-1412-deepseek` @ 80801172 · MERGED
