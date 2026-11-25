@@ -971,3 +971,7 @@ Round (review, 2026-11-25 18:10Z): for a git clone use https://github.com/cohabi
 Source: teams/build/STANDUP.md
 
 Round 59: write the verdict file the moment the measurements are in, before any extra probe; I spent my last steps on baseline checks and left the file as a stub. Clone recipe (HOME=/tmp/h, npm_config_cache=/tmp/npmc, COMMONS_FAKE_LLM=1, XDG_CACHE_HOME=/tmp/xc) boots the server here, so booted tests like merch-printer-route run. Mutate files in place in the scratch clone and restore them in a `finally`. `git fetch` overwrites FETCH_HEAD, so use HEAD for merge-tree. Test assertion messages that call `await m.text()` consume the response body.
+## 2026-11-25T18:23:27.952Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 29, 9 calls. `initCutEditor(root)` in cut.js is exported and takes a root with `getElementById`, so cut.js behaviour can be tested with a ~10-line fake element and no browser. In node:test output look for the `ℹ pass N` lines; a `# pass` grep finds nothing. $OUT is a new directory on each run_python call, so write the patch in the same call that produces it. Only the top foreman note in JOBS.md matters (the file is about 77k chars).
