@@ -33,9 +33,9 @@
 		}
 	}
 	# Full Cohabi Cut (OpenCut classic + Cohabi), on preview beside the old /cut until Geoffrey says it replaces it
-	# (2026-11-24). Its own app on 3310; ops/cut/install.sh puts it there.
+	# (2026-11-24). Its own app on 3330 (3310 is taken by a python service); ops/cut/install.sh puts it there.
 	handle /cut-new* {
-		reverse_proxy 127.0.0.1:3310 {
+		reverse_proxy 127.0.0.1:3330 {
 			header_up X-Forwarded-For {client_ip}
 		}
 	}
