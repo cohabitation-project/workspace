@@ -32,6 +32,13 @@
 			header_up X-Forwarded-For {client_ip}
 		}
 	}
+	# Full Cohabi Cut (OpenCut classic + Cohabi), on preview beside the old /cut until Geoffrey says it replaces it
+	# (2026-11-24). Its own app on 3310; ops/cut/install.sh puts it there.
+	handle /cut-new* {
+		reverse_proxy 127.0.0.1:3310 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
 	handle /voiceroom* {
 		reverse_proxy 127.0.0.1:3201 {
 			header_up X-Forwarded-For {client_ip}
