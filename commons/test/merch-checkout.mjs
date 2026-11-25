@@ -6,6 +6,8 @@
 //   - once the signed webhook says paid, the order goes to Printful as a DRAFT (no confirm), with the catalog variant,
 //     the buyer's address and the approved print file and position; it is sent once, however often Stripe repeats
 //   - a Printful refusal is recorded on the order, not lost and not retried into a loop
+//   - an AGENT's goods sell for cash into the cooperative's reserves (no transfer, no fee split); an agent's SERVICES
+//     stay coins-only (Geoffrey, 2026-11-24)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -122,6 +124,27 @@ test('pick a product, colour and size; pay in test mode; it reaches Printful as 
     assert.equal(r2.state, 'failed'); assert.match(r2.error, /refused/);
     assert.equal(checkout.order(s2.order).fulfillment.state, 'failed');
     assert.equal(checkout.order(s2.order).status, 'paid', 'the payment stands; the maker or a steward sends it again');
+
+    // An agent's art on a tee: cash, into the reserves. Its service: coins only.
+    const ai = add({ id: 'a_merch_agent', kind: 'agent', name: 'Painter Agent', model: 'test-model' });
+    const aiArt = images.upload(ai, { data: PNG.toString('base64'), alt: 'an agent painting', credit: 'Painter Agent' });
+    const al = market.create(ai, { title: 'Agent Sun', text: 'An agent painting.', category: 'art', type: 'product', price: { mode: 'quote' }, license: 'all-rights', rights: true, images: [aiArt.id] });
+    const aid = al.id || al.listing?.id;
+    const sets = JSON.parse(fs.readFileSync(path.join(dir, 'sets.json'), 'utf8'));
+    sets[aid] = { listing: aid, by: ai.id, art: aiArt.id, items: { tee: { ...sets[id].items.tee } } };
+    fs.writeFileSync(path.join(dir, 'sets.json'), JSON.stringify(sets)); merchsets.init(D);
+    const aq = checkout.quote(aid, { merch: { product: 'tee', color: 'Black', size: 'M' } });
+    assert.equal(aq.payable, true, JSON.stringify(aq.why)); assert.equal(aq.currency, 'USD'); assert.equal(aq.proceeds, 'reserves');
+    const n = seen.sessions.length;
+    const as = await checkout.startCheckout(buyer, aid, { merch: { product: 'tee', color: 'Black', size: 'M' } }, { base: 'https://cohabi.test' });
+    const sess2 = seen.sessions[n];
+    assert.equal(sess2.get('payment_intent_data[transfer_data][destination]'), null, 'no transfer: agents hold no money account');
+    assert.equal(sess2.get('payment_intent_data[application_fee_amount]'), null);
+    assert.equal(sess2.get('payment_intent_data[metadata][cohabi_proceeds]'), 'reserves');
+    assert.equal(checkout.order(as.order).proceeds, 'reserves');
+    const svc = market.create(ai, { title: 'Agent edits your essay', text: 'A service.', category: Object.keys(market.CATEGORIES)[0], type: 'service', price: { mode: 'fixed', amount: 20 }, license: 'all-rights', rights: true });
+    const sq = checkout.quote(svc.id || svc.listing?.id);
+    assert.equal(sq.currency, 'COINS'); assert.equal(sq.payable, false); assert.match(sq.why.join(' '), /services are paid in Cohabi coins/);
   } finally {
     globalThis.fetch = oldFetch;
     fs.rmSync(D, { recursive: true, force: true });

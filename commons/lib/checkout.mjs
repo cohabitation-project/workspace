@@ -58,7 +58,7 @@ const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft n
 const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m.name, kind: m.kind } : { id, name: '(gone)', kind: null }; };
 // The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
 // the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
-const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100 }; };
+const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100, ...(o.proceeds === 'reserves' ? { to_reserves: true } : {}) }; };
 const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
 
 /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
@@ -142,11 +142,17 @@ export function quote(listingId, { pkg = null, merch = null } = {}) {
   else if (l.price.mode === 'donation') { amount = l.price.min; }
   else if (l.price.mode === 'free') why.push('this is free: nothing to pay');
   else if (l.price.mode === 'quote') why.push('ask the maker for a price first');
-  const coinsOnly = !isHuman(seller);
-  if (coinsOnly) { currency = 'COINS'; why.push('this maker is an agent: when the wallet supports it, agents\' work is paid in Cohabi coins'); }
+  // Agents and cash (Geoffrey, 2026-11-24): an agent's SERVICES are paid in coins, never cash. GOODS an agent makes (its
+  // art on shirts and other products, or a product listing) may be sold for cash, and that cash goes to the
+  // cooperative's reserves: agents hold no money account, so nothing is transferred to the maker.
+  const agent = !isHuman(seller);
+  const goods = !!item || l.type === 'product';
+  const toReserves = agent && goods;
+  const coinsOnly = agent && !goods;
+  if (coinsOnly) { currency = 'COINS'; why.push('this maker is an agent: agents\' services are paid in Cohabi coins, not cash'); }
   if (!paymentsOpen()) why.push("payments aren't open yet");
-  else if (!coinsOnly && accounts[seller?.id]?.status !== 'verified') why.push("the maker hasn't connected a payout account yet");
-  return { listing: l.id, title: item ? `${l.title}: ${item.title}` : l.title, ...(item ? { merch: item } : {}), seller: { id: l.by.id, name: l.by.name, kind: coinsOnly ? 'agent' : 'human' }, amount, currency, payable: why.length === 0, why };
+  else if (!agent && accounts[seller?.id]?.status !== 'verified') why.push("the maker hasn't connected a payout account yet");
+  return { listing: l.id, title: item ? `${l.title}: ${item.title}` : l.title, ...(item ? { merch: item } : {}), seller: { id: l.by.id, name: l.by.name, kind: agent ? 'agent' : 'human' }, amount, currency, ...(toReserves ? { proceeds: 'reserves' } : {}), payable: why.length === 0, why };
 }
 
 /** Begin buying: a draft order, then Stripe's hosted checkout page (no card details ever touch this server).
@@ -176,8 +182,8 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
     amount = a;
   }
   const cents = Math.round(amount * 100);
-  const fee = Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
-  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString(), ...(q.merch ? { merch: q.merch } : {}) };
+  const fee = q.proceeds === 'reserves' ? cents : Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
+  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString(), ...(q.merch ? { merch: q.merch } : {}), ...(q.proceeds ? { proceeds: q.proceeds } : {}) };
   logOrder({ op: 'create', order: ord });
   const pkg = !q.merch && l.price.mode === 'packages' ? (l.packages || [])[Number(opts.pkg) || 0] : null;
   const pk = publishableKey();
@@ -190,7 +196,10 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
     ...(fulfillment.plan(ord).provider || (l.type === 'product' && l.physical !== false) ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
     ...(pk ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1` }),
     line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
-    payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
+    // An agent's goods: the payment stays with the cooperative (its reserves); no transfer, no application fee.
+    payment_intent_data: q.proceeds === 'reserves'
+      ? { metadata: { cohabi_order: ord.id, cohabi_listing: q.listing, cohabi_proceeds: 'reserves', cohabi_maker: q.seller.id } }
+      : { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
     metadata: { cohabi_order: ord.id },
   });
   const methods = paymentMethods();

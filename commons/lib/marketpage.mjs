@@ -115,7 +115,7 @@ function tileBuy(l, me) {
   if (!l.price || l.price.mode !== 'fixed' || l.status !== 'live') return '';
   if (me && me.id === l.by.id) return '<p class="mk-buy small"><span class="mk-yours">Yours</span></p>';
   let q = null; try { q = checkout.quote(l.id); } catch { return ''; }
-  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
+  const live = !!q && checkout.paymentsOpen() && q.currency === 'USD' && !q.why.some((w) => /payout|agent|payments/.test(w)); // an agent's goods sell into the reserves (2026-11-24)
   if (!live) return '';
   if (!me) return `<p class="mk-buy"><a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in to buy · $${l.price.amount}</a></p>`;
   return `<p class="mk-buy"><button type="button" class="btn small" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button></p>`;
@@ -739,7 +739,8 @@ export function salesPage({ me, sales = [] }) {
 function merchRow(l, me) {
   const v = merchsets.view(l.id); const mine = !!me && l.by.id === me.id;
   // Buy opens when payments are open and the maker can be paid (the same test as the listing's own Buy).
-  let canPay = false; try { const q = checkout.quote(l.id); canPay = checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w)); } catch { canPay = false; }
+  // An agent's art on products sells for cash too, into the cooperative's reserves (Geoffrey, 2026-11-24).
+  let canPay = false; let reserves = false; try { const q = checkout.quote(l.id); reserves = q.seller.kind === 'agent'; canPay = checkout.paymentsOpen() && (reserves || !q.why.some((w) => /payout|payments/.test(w))); } catch { canPay = false; }
   const buyBtn = (it) => mine ? '<span class="mk-yours small">Yours</span>'
     : !canPay ? '<button type="button" class="btn small" disabled>Buy</button>'
     : !me ? `<a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}#get-it-on`)}">Sign in to buy</a>`
@@ -753,7 +754,7 @@ function merchRow(l, me) {
     <p class="mk-podprice" data-pod-price>$${esc((it.sizes[0]?.price ?? it.price).toFixed(2))}</p>
     ${buyBtn(it)}</article>`).join('');
   return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>
-  <p class="small muted">Printed and shipped by Printful when you order.${canPay ? (checkout.paymentsMode() === 'test' ? ' Payments are in test mode: use a test card (4242 4242 4242 4242); nothing is charged or printed.' : '') : ' Buying products opens with payments.'}${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
+  <p class="small muted">Printed and shipped by Printful when you order.${reserves ? ` ${esc(l.by.name)} is an AI member: what you pay goes to the cooperative's reserves.` : ''}${canPay ? (checkout.paymentsMode() === 'test' ? ' Payments are in test mode: use a test card (4242 4242 4242 4242); nothing is charged or printed.' : '') : ' Buying products opens with payments.'}${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
   <script type="module" src="/static/merch-row.js"></script></section>`;
 }
 
@@ -781,8 +782,8 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
   // a human maker with a verified payout account). Otherwise they stay greyed out and say why.
   let q = null; try { q = checkout.quote(l.id); } catch { q = null; }
-  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
-  const testNote = live && checkout.paymentsMode() === 'test' ? '<p class="mk-testpay small">Test mode: no real money. Use Stripe\'s test card 4242 4242 4242 4242.</p>' : '';
+  const live = !!q && checkout.paymentsOpen() && q.currency === 'USD' && !q.why.some((w) => /payout|agent|payments/.test(w)); // an agent's goods sell into the reserves (2026-11-24)
+  const testNote = (live && q.proceeds === 'reserves' ? `<p class="mk-testpay small">${esc(l.by.name)} is an AI member: what you pay goes to the cooperative's reserves.</p>` : '') + (live && checkout.paymentsMode() === 'test' ? '<p class="mk-testpay small">Test mode: no real money. Use Stripe\'s test card 4242 4242 4242 4242.</p>' : '');
   const why = q && !live ? (q.why.find((w) => /payout|agent/.test(w)) || 'payments open soon') : 'payments open soon';
   const pk = l.packages.length ? `<div class="mk-packs">${l.packages.map((k, i) => `<section class="mk-pack"><h3>${esc(k.name)}</h3><p class="mk-price">$${k.price}</p><p class="small">${k.days} day${k.days === 1 ? '' : 's'} delivery</p>${k.includes ? `<p class="small">${esc(k.includes)}</p>` : ''}${live && !own ? `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-package="${i}">Order · $${k.price}</button>` : `<button type="button" class="btn small mk-closed" disabled>Order · ${esc(why)}</button>`}</section>`).join('')}${testNote}</div>` : '';
   const action = l.price.mode === 'donation' ? `${live && !own ? `<span class="mk-give"><label class="sr-only" for="mk-amt">Amount in dollars</label>$<input id="mk-amt" type="number" min="${l.price.min}" max="10000" step="1" value="${l.price.min}"><button type="button" class="btn" data-buy="${esc(l.id)}" data-amount-from="mk-amt">Give</button></span>${testNote}` : `<button type="button" class="btn mk-closed" disabled>Donate from $${l.price.min} · ${esc(why)}</button>`}${l.link ? ` <a class="btn ghost" href="${esc(l.link)}" rel="nofollow noopener">Get it free</a>` : ''}`
