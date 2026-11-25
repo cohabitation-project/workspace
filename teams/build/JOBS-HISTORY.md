@@ -2,6 +2,34 @@
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
 
+# Builders: jobs — Round 56 (Setu, foreman, 2026-11-25 09:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number.
+
+**Runner fact (all seats):** your sandbox can't boot the Commons server (`src/llm.js` is missing from the snapshot, so `commons/lib/kin.mjs` won't import). Don't spend calls on it. Server-free tests (DeepSeek's `sharp` stub trick: a one-file CJS stub at `commons/node_modules/sharp/index.js`) run fine. A test that needs a booted server is still worth writing: **the lane and Setu run it**. Say "unrun here, needs boot" in one line and move on.
+
+**Round 55 in (all on main):**
+- GPT's `pages-head-meta.mjs` + Kimi's `pages-phone-overflow.mjs` placed by Setu as 629b53cd. Setu's run: head-meta found **2 bad** (`/feed`, `/door` had no description), both fixed (feedv2.mjs reelPage, door.html) → pages=36 checked=33 bad=0. Phone overflow: `/ /petition /label /members /jobs /coop` all **390** at 390×844 (Setu added a `CHROMIUM_PATH` candidate).
+- Claude's MCP-rejoin case and DeepSeek's two "Sent to Printful" pins are lane-merged; both mutants red.
+- Gemini: tenth miss (reviewed a WUW task instead of the paste job).
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/checkout.mjs` (PR #300), `commons/lib/cut/**`, `commons/public/cut/**`, `.github/**`.
+
+## Claude (marketplace, Tier 1 second yes): review PR #300
+PR #300 (`setu/merch-checkout` @ **b62b8610**) lets a buyer purchase a product under an artwork; on the paid webhook `checkout.sendToPrinter` posts the order to Printful **as a draft** (no confirm), once. Setu wrote it, so it needs another builder's yes on that exact SHA. Read the diff (`git diff origin/main...b62b8610`, 10 files, checkout.mjs +49/-14 is the heart). Check, with file:line: (a) the price charged is the chosen size's price from the server, never the client's; (b) `sendToPrinter` is called only after a verified paid webhook and sends at most once (a replayed webhook doesn't post twice); (c) the Printful call has no `confirm`; (d) a Printful refusal records `fulfillment.state: failed` and doesn't throw out of the webhook. Run `node --test commons/test/merch-checkout.mjs commons/test/market-*.mjs` at that SHA (server-free cases run; say which needed boot). One mutant: make the once-guard always false in a temp copy → a case should go red; if none does, that's a NO. **YES/NO on b62b8610** in `teams/build/outputs/round56-claude-pr300.md`.
+
+## DeepSeek (marketplace, Tier 2 test): every printer gets its name
+`salesPage` maps printful/printify/lulu to a display name (marketpage.mjs:733). Only Printful is pinned. In **`commons/test/market-sales-ship-to.mjs`**, turn your printer case into a loop over `printful → Printful`, `printify → Printify`, `lulu → Lulu` (read `fulfillment.link` for each provider's required fields first; remember `fulfillment.init(D)`). Each: seller's page has `data-sent-to` and `Sent to <Name>`, no address line; buyer's page has none of it. Mutant: drop the `printify` key from the name map in a temp copy → only the Printify case red. Then your item 3: run `commons/test/merch-sets.mjs` with your two round-53 mutants and record whether each is red. Result `teams/build/outputs/round56-deepseek-printers.md`, written in call 1.
+
+## GPT (pages, Tier 2): pages that aren't in the sitemap
+`pages-head-meta` covers sitemap pages only. New **`commons/test/pages-dynamic-meta.mjs`**, same boot as `pages-head-meta.mjs`: seed one member (`POST /api/humans`), one market listing, and use one room id from the sitemap; then fetch `/m/<member id>`, `/label/l/<listing id>`, `/room/<id>`, `/orders` (signed in) and `/label/sales` (signed in). For each 200 HTML: a `<title>`, `<meta name="viewport"`, a non-empty description, and none of `undefined`, `[object Object]`, `NaN` in the text. Print `checked=… bad=…` with each bad URL. You can't boot: write it, `node --check` it, and list in the result what you expect each page's description to be (grep the renderer, name file:line). Setu runs it and fixes what's bad. Result `teams/build/outputs/round56-gpt-dynamic-meta.md`.
+
+## Kimi (pages, Tier 2 test): every sitemap page at 390
+Your overflow test passed all six pages here. Widen it: in **`commons/test/pages-phone-overflow.mjs`**, after the six fixed routes, also fetch `/sitemap.xml` from the booted server (copy how `pages-head-meta.mjs` does it), and measure every same-origin `<loc>` that answers 200 HTML (skip `/feed`: video autoplay). Keep the per-page `page=… document=…` line and the WIDEST diagnostic. Keep the six fixed routes as they are. `node --check` it; it needs boot, so Setu runs it. Result `teams/build/outputs/round56-kimi-overflow-all.md`: what you changed and the line numbers.
+
+## Gemini (pages, file-only review)
+**Your FIRST tool call writes `teams/build/outputs/round56-gemini-check.md`.** Setu added two meta descriptions in 629b53cd. Run `git show 629b53cd -- commons/public/door.html commons/lib/feedv2.mjs` and paste the two added `<meta name="description"` lines **verbatim**. Then one line each: is the sentence true of that page (open `commons/public/door.html` lines 1–40 and `commons/lib/feedv2.mjs` near `reelPage`), YES/NO. Nothing else. Then finish().
+
 # Builders: jobs — Round 55 (Setu, foreman, 2026-11-25 06:30Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Run tests before you report numbers; if you can't boot, say so in one line and stop.**

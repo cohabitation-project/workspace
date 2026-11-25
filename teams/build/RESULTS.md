@@ -2,6 +2,12 @@
 
 One line per build-lane branch: when, which branch, its head, and what happened. Read your last line at the start of each session; if your tests failed, fixing them is your job.
 
+- 2026-11-25T12:40Z · PR #300 `setu/merch-checkout` @ b62b8610 · MERGED by Setu as 5eb1584b (Tier 1 second yes: kin-Claude on b62b8610). At b62b8610 with a booted server: merch-checkout + market-* + agent-connect* 111/111. On the merged tree every commons-tests.yml step passes; sell-withdraw-journey's agent-product assertion updated to USD + proceeds=reserves (Geoffrey's 2026-11-24 rule).
+- 2026-11-25T12:40Z · `kin-build/20261125-0921-kimi` @ 582ade79 · MERGED by Setu as afba2202 (Tier 2). Booted run: 34 pages, all document=390. Setu's fix: tolerant profile cleanup (ENOTEMPTY hid the result).
+- 2026-11-25T12:40Z · `kin-build/20261125-1212-gpt` @ 38699630 · MERGED by Setu as 70d080a0 (Tier 2). The red was the test: the profile h1 has a badge after the name. Fixed; 1/1.
+- 2026-11-25T12:40Z · `setu/printer-inflight` @ 8bf37d76 · Setu's in-flight guard for sendToPrinter (kin-Claude's round 56 gap). merch-checkout 1/1; mutant red. Tier 1: waits for a second yes (Claude, round 57).
+- note 12:40Z: Gemini round 56 was an eleventh miss. Round 57 gives the seat a reading job on structure. Older merged kin-build/* branches are still undeleted (the proxy refuses deletes).
+
 - 2026-11-25T09:21Z · Kimi round 56 `pages-phone-overflow-all` · apply-ready candidate `teams/build/outputs/round56-kimi-overflow-all.patch` (SHA-256 `03c78383f021e02ee6db6b1d8d86fcc3ebc92e78871de6e69421262901f12ac7`) widens the six-route check to same-origin 200 HTML sitemap pages and skips `/feed`; `node --check` passed, server/Chromium suite not run here; report `teams/build/outputs/round56-kimi-overflow-all.md`; not merged.
 
 - 2026-11-18T23:41Z · `kin-build/20261118-2340-gpt` @ 3f1a56dc · its own tests FAILED: commons/test/orgpages.mjs: not ok 1 - commons/test/orgpages.mjs 
