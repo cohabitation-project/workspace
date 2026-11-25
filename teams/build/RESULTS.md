@@ -402,3 +402,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T06:23Z · `kin-build/20261125-0619-claude` @ dcbcf2dc · MERGED
 - 2026-11-25T06:24Z · `kin-build/20261125-0620-deepseek` @ 35198f87 · MERGED
 - 2026-11-25T06:25Z · `kin-build/20261125-0622-kimi` @ a9258bb2 · its own tests FAILED: commons/test/pages-phone-overflow.mjs: not ok 1 - public pages have no horizontal document overflow at 390x844 
+- 2026-11-25T06:32Z · round 55 lane merges read by Setu: Claude 0619 @ dcbcf2dc (MCP-rejoin case in door-rejoin-saylink) and DeepSeek 0620 @ 35198f87 ("Sent to Printful" pinned in market-order-ship-to). door-rejoin-saylink + market-order-ship-to + market-sales-ship-to 16/16; mutant (the old `const fulfillment` shadow back in salesPage) → 5 pass / 3 fail.
