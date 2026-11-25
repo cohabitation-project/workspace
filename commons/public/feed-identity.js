@@ -92,7 +92,7 @@ if (composer && scrim) {
     if (rec && rec.state !== 'inactive') { rec.onstop = null; rec.stop(); }
     rec = null; stream?.getTracks().forEach((t) => t.stop()); stream = null;
     if (camV) camV.srcObject = null; if (cam) cam.hidden = true; document.body.classList.remove('cx-camopen');
-    go?.classList.remove('cx-recording'); if (go) go.setAttribute('aria-label', 'Start recording');
+    go?.classList.remove('cx-recording'); document.querySelectorAll('[data-cam-mode]').forEach((b) => { b.disabled = false; }); if (go) go.setAttribute('aria-label', go.classList.contains('cx-photo') ? 'Take a photo' : 'Start recording');
   }
   const startCam = async () => {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg.textContent = "This browser can't record here. Tap Choose a video: on a phone it offers your camera too."; return; }
@@ -120,8 +120,30 @@ if (composer && scrim) {
   showFit();
   fitBtn?.addEventListener('click', () => { fill = !fill; try { localStorage.setItem('cohabi-cam-fit', fill ? 'fill' : 'fit'); } catch { /* private mode */ } showFit(); });
   byId('cx-cam-flip')?.addEventListener('click', () => { if (rec) return; facing = facing === 'user' ? 'environment' : 'user'; startCam(); });
+  // Photo or Video, like a phone's camera app (Geoffrey, 2026-11-25: "you can't take a photo with the camera").
+  // Photo mode: the shutter takes a still of exactly what the preview shows and adds it to the post's photos.
+  let shoot = 'video';
+  const modeBtns = [...document.querySelectorAll('[data-cam-mode]')];
+  const setCamMode = (m) => {
+    if (rec) return; shoot = m;
+    for (const b of modeBtns) { const on = b.dataset.camMode === m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+    go?.classList.toggle('cx-photo', m === 'photo'); go?.setAttribute('aria-label', m === 'photo' ? 'Take a photo' : 'Start recording');
+    time.hidden = m === 'photo';
+  };
+  for (const b of modeBtns) b.addEventListener('click', () => setCamMode(b.dataset.camMode));
+  const takePhoto = () => {
+    canvas.toBlob((blob) => {
+      if (!blob) { msg.textContent = "Couldn't take the photo. Try again, or tap Add photos."; return; }
+      const file = new File([blob], `photo-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.jpg`, { type: 'image/jpeg' });
+      const input = byId('c-files'); const dt = new DataTransfer();
+      for (const f of input.files || []) dt.items.add(f); // keep photos already chosen (up to 4)
+      if (dt.items.length >= 4) { msg.textContent = 'A post holds up to 4 photos.'; return; }
+      dt.items.add(file); input.files = dt.files; stopCam(); input.dispatchEvent(new Event('change', { bubbles: true }));
+    }, 'image/jpeg', 0.92);
+  };
   go?.addEventListener('click', () => {
     if (!stream) return;
+    if (shoot === 'photo') { takePhoto(); return; }
     if (rec) { rec.stop(); return; }
     const out = canvas.captureStream(30); stream.getAudioTracks().forEach((t) => out.addTrack(t));
     const type = pickType(); chunks = [];
@@ -133,7 +155,7 @@ if (composer && scrim) {
       rec = null; stopCam();
       const input = byId('c-video'); const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true }));
     };
-    rec.start(1000); started = Date.now(); go.classList.add('cx-recording'); go.setAttribute('aria-label', 'Stop recording');
+    rec.start(1000); started = Date.now(); modeBtns.forEach((b) => { b.disabled = true; }); go.classList.add('cx-recording'); go.setAttribute('aria-label', 'Stop recording');
     tick = setInterval(() => { const s = (Date.now() - started) / 1000; time.textContent = `${fmt(s)} / ${fmt(MAX)}`; if (s >= MAX) rec?.stop(); }, 250);
   });
 

@@ -526,6 +526,11 @@ body.cx-camopen{overflow:hidden}
 .cx-dialog .cx-cam-btns{position:absolute;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:42px}
 .cx-cam-side{width:52px;height:52px;border-radius:50%;border:0;background:#0008;color:#fff;font-size:22px;cursor:pointer}
 .cx-cam-fit{font-size:13px;font-weight:700;letter-spacing:.02em}
+.cx-cam-modes{position:absolute;left:0;right:0;bottom:calc(max(28px,env(safe-area-inset-bottom)) + 96px);display:flex;justify-content:center;gap:6px}
+.cx-cam-mode{min-height:44px;padding:0 16px;border:0;border-radius:22px;background:#0006;color:#fffc;font:700 14px system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}
+.cx-cam-mode.on{background:#fff;color:#111}
+.cx-cam-mode:disabled{opacity:.4}
+.cx-shutter.cx-photo span{background:#fff}
 .cx-shutter{width:78px;height:78px;border-radius:50%;border:5px solid #fff;background:transparent;display:grid;place-items:center;cursor:pointer;padding:0}
 .cx-shutter span{width:60px;height:60px;border-radius:50%;background:#e2323a;transition:all .2s}
 .cx-shutter.cx-recording span{width:30px;height:30px;border-radius:7px}
@@ -534,7 +539,7 @@ body.cx-camopen{overflow:hidden}
 .cx-vprev{width:min(100%,340px);max-height:none;margin:0 auto}
 /* 2026-11-16: camera preview is the recording canvas (fitted, never zoomed) */
 .cx-dialog .cx-cam .cx-cam-src{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.cx-dialog .cx-cam canvas{height:100%;max-height:100dvh;width:auto;max-width:100%;aspect-ratio:9/16;background:#000}
+.cx-dialog .cx-cam canvas{height:100%;max-height:100dvh;width:auto;max-width:100%;aspect-ratio:9/16;object-fit:cover;background:#000}
 /* composer like Facebook's: the prompt, then Record video · Photo/video · Reel */
 .cx-cardtop .cx-ic{width:44px;height:44px;border:0;border-radius:10px;background:none;display:grid;place-items:center;cursor:pointer;flex:none}
 .cx-cardtop .cx-ic:hover{background:#f2eaf3}
