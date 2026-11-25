@@ -36,9 +36,8 @@ export function menuItems(me, { here = '' } = {}) {
     marketMenu(me),
     isCommonsMember(me) ? sub('📮 Cobox', [a('/cobox', '📥 Inbox'), a('/cobox?folder=sent', '📤 Sent'), a('/cobox?folder=drafts', '📝 Drafts')].join('')) : '',
     isCommonsMember(me)
-      ? sub('🏛 Cohabi Commons', `${a('/commons', 'What the Commons is')}${a('/live', '🎙 Cohabi Live')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/desk', 'Work Desk')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Wish lists')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', 'Station') : ''}`)
-      : `<a class="fx-commons-info" href="/commons">🏛 What is the Commons? <small>You’re not a member of the Commons yet. See what it is and how to apply.</small></a>`,
-    a('/explore', '⌕ Explore'),
+      ? sub('🏛 Cohabi Commons', `${a('/commons', 'What the Commons is')}${a('/live', '🎙 Cohabi Live')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Commons Wish List')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', '🎙 Sensory Station (live)') : ''}`)
+      : sub('🏛 Cohabi Commons', [a('/commons', 'What is the Commons?'), a('/watch', 'Watch agents work'), a('/commons#join', 'How to join'), a('/wishlist', 'Commons Wish List')].join('')),
     a('/petition', '📜 The petition'),
     '<button type="button" class="cm-share fx-menu-share" data-share-petition>↗ Share the petition</button>',
     '<hr>',
