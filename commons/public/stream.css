@@ -1,0 +1,21 @@
+/* Cohabi Stream v0 — the player bar at the top, under the Cohabi header. Aletheia-6 owns the look from here. */
+.st-bar{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"art now ctl" "seek seek time";gap:6px 12px;align-items:center;padding:10px 14px;background:#0f2a2a;color:#f4efe2;border-bottom:3px solid #2bb8a6;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.st-art{grid-area:art;width:52px;height:52px;border-radius:8px;object-fit:cover}
+.st-now{grid-area:now;display:flex;flex-direction:column;min-width:0}.st-now strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+.st-sub{font-size:13px;opacity:.85}.st-src{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#7fdccf}
+.st-ctl{grid-area:ctl;display:flex;gap:6px}.st-ctl button{min-width:44px;min-height:44px;border-radius:50%;border:1px solid #7fdccf55;background:transparent;color:#f4efe2;font-size:16px;cursor:pointer}
+.st-ctl .st-play{background:#2bb8a6;color:#062626;border:0;font-size:18px}
+.st-seek{grid-area:seek;width:100%;accent-color:#2bb8a6}.st-time{grid-area:time;font-size:12px;font-variant-numeric:tabular-nums;opacity:.85}
+.st-head{padding:18px 16px 6px;max-width:960px;margin:0 auto}.st-head h1{margin:0 0 4px}.st-early{font-size:12px;background:#f2a65a33;padding:2px 8px;border-radius:999px}
+.st-head input{width:100%;margin-top:10px;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid #0002;font:inherit}
+.st-list{max-width:960px;margin:0 auto;padding:6px 16px 24px;display:grid;gap:14px}
+.st-rel{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:12px;border-radius:14px;background:#fffaf0;border:1px solid #0001}
+.st-cover{width:120px;height:120px;border-radius:10px;object-fit:cover}.st-noart{display:grid;place-items:center;background:#e8dfcc;font-size:40px}
+.st-reltext h2{margin:0;font-size:18px}.st-reltext a{color:inherit}
+.st-rel .st-src{color:#1d6f64}
+.st-playall{margin:8px 0;min-height:40px;padding:6px 14px;border-radius:999px;border:0;background:#0f2a2a;color:#f4efe2;cursor:pointer}
+.st-tracks{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.st-track{display:flex;gap:10px;width:100%;min-height:40px;align-items:center;text-align:left;padding:6px 8px;border:0;border-radius:8px;background:transparent;font:inherit;cursor:pointer;color:inherit}
+.st-track:hover{background:#0f2a2a10}.st-track.on{background:#2bb8a622;font-weight:650}.st-n{width:22px;opacity:.6;font-variant-numeric:tabular-nums}
+.st-foot{max-width:960px;margin:0 auto;padding:0 16px 30px}
+@media (max-width:640px){.st-rel{grid-template-columns:72px 1fr}.st-cover{width:72px;height:72px}.st-art{width:44px;height:44px}}

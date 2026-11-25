@@ -139,7 +139,7 @@ function wLabel() {
   const rel = (labelData().releases || []).slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
   if (!rel) return '';
   const first = (rel.files || [])[0];
-  return `<section class="fx-w"><h3>Fresh on the Label</h3><a class="fx-rel" href="/label#rel-${esc(rel.id)}">${rel.art ? `<img src="${esc(labelFiles(rel.art))}" alt="Cover art: ${esc(rel.title)}" loading="lazy">` : ''}<span><strong>${esc(rel.title)}</strong><span class="muted small">${esc(rel.artist)} · ${rel.by === 'human' ? 'human' : rel.by === 'mixed' ? 'human + AI' : 'AI'}</span></span></a>${first ? `<audio controls preload="none" src="${esc(labelFiles(first.path))}" aria-label="Play ${esc(first.label || rel.title)}"></audio>` : ''}<a class="fx-wmore" href="/label">Arts &amp; Music →</a></section>`;
+  return `<section class="fx-w"><h3>Fresh on the Label</h3><a class="fx-rel" href="/label#rel-${esc(rel.id)}">${rel.art ? `<img src="${esc(labelFiles(rel.art))}" alt="Cover art: ${esc(rel.title)}" loading="lazy">` : ''}<span><strong>${esc(rel.title)}</strong><span class="muted small">${esc(rel.artist)} · ${rel.by === 'human' ? 'human' : rel.by === 'mixed' ? 'human + AI' : 'AI'}</span></span></a>${first ? `<audio controls preload="none" src="${esc(labelFiles(first.path))}" aria-label="Play ${esc(first.label || rel.title)}"></audio>` : ''}<a class="fx-wmore" href="/stream">▶ Listen on Cohabi Stream</a> <a class="fx-wmore" href="/label">Arts &amp; Music →</a></section>`;
 }
 function wPetition() {
   let n = 0; try { n = petition.ledger().signatures.filter((x) => !x.withdrawn).length; } catch { /* no petition yet */ }

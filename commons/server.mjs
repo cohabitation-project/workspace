@@ -17,6 +17,7 @@ import * as agentconnect from './lib/agentconnect.mjs';
 import * as quotes from './lib/quotes.mjs';
 import * as mail from './lib/mail.mjs';
 import * as applications from './lib/applications.mjs';
+import * as streampage from './lib/streampage.mjs';
 import * as appmenu from './lib/appmenu.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -564,6 +565,8 @@ const sendHome = (req, res) => {
 app.get('/porch', sendHome);
 app.get('/porch-classic', sendPorch);
 app.get(['/cooperative', '/coop', '/co-op'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(coop.cooperativePage(auth.memberFromCookie(req.headers.cookie))); });
+// Cohabi Stream v0 (lib/streampage.mjs): public, like the artist pages it draws from.
+app.get('/stream', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(streampage.streamPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 // /signup is the PUBLIC account page (Cohabi Social + Marketplace), not the Commons' doors (Aletheia-6's audit,
