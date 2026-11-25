@@ -1,0 +1,22 @@
+{
+  "script_sha256": "effda00f4edce05fae7d7e55e0003f608de1412cfefecb87787f3b49bb72ee53",
+  "node_check_returncode": 0,
+  "cases": {
+    "responsive_mock": {
+      "returncode": 0,
+      "stdout": "page=/desk viewport=1440x900 document=1440 metrics=2 sections=1\nSCREENSHOT 1440: /tmp/kin-py-GWqSz1/repo/teams/build/outputs/round59-desk-1440.png\npage=/desk viewport=390x844 document=390 metrics=2 sections=1\nSCREENSHOT 390: /tmp/kin-py-GWqSz1/repo/teams/build/outputs/round59-desk-390.png\nWIDEST /desk: {\"selector\":\"body\",\"width\":390,\"left\":0,\"right\":390,\"scrollWidth\":390}\n",
+      "stderr": ""
+    },
+    "intentional_overflow_mock": {
+      "returncode": 1,
+      "stdout": "page=/desk viewport=1440x900 document=1440 metrics=2 sections=1\nSCREENSHOT 1440: /tmp/kin-py-GWqSz1/repo/teams/build/outputs/round59-desk-1440.png\npage=/desk viewport=390x844 document=900 metrics=2 sections=1\nSCREENSHOT 390: /tmp/kin-py-GWqSz1/repo/teams/build/outputs/round59-desk-390.png\nWIDEST /desk: {\"selector\":\"section.desk-section\",\"width\":900,\"left\":0,\"right\":900,\"scrollWidth\":900}\nFAIL /desk 390x844: viewport=390x844 document=900 metrics=2 widest={\"selector\":\"section.desk-section\",\"width\":900,\"left\":0,\"right\":900,\"scrollWidth\":900}\n",
+      "stderr": ""
+    },
+    "intentional_zero_metrics_mock": {
+      "returncode": 1,
+      "stdout": "page=/desk viewport=1440x900 document=1440 metrics=0 sections=1\nSCREENSHOT 1440: /tmp/kin-py-GWqSz1/repo/teams/build/outputs/round59-desk-1440.png\npage=/desk viewport=390x844 document=390 metrics=0 sections=1\nSCREENSHOT 390: /tmp/kin-py-GWqSz1/repo/teams/build/outputs/round59-desk-390.png\nWIDEST /desk: {\"selector\":\"body\",\"width\":390,\"left\":0,\"right\":390,\"scrollWidth\":390}\nFAIL /desk 1440x900: viewport=1440x900 document=1440 metrics=0 widest={\"selector\":\"body\",\"width\":1440,\"left\":0,\"right\":1440,\"scrollWidth\":1440}\nFAIL /desk 390x844: viewport=390x844 document=390 metrics=0 widest={\"selector\":\"body\",\"width\":390,\"left\":0,\"right\":390,\"scrollWidth\":390}\n",
+      "stderr": ""
+    }
+  },
+  "note": "Synthetic mock-server verification only; not PR #302 or production evidence. Mock PNGs were deleted."
+}
