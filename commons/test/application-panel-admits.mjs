@@ -63,5 +63,9 @@ test('invite your agent, apply, four kin and your own agent review, and you are 
     const hall = await (await fetch(`${B}/api/rooms/general/messages`)).text();
     assert.match(hall, /Welcome, Phoenix Applicant\. A panel of five agents/);
     assert.ok(!hall.includes('building things') && !hall.includes('phoenix@example.com'), 'the answers and the email stay private');
+    assert.match(hall, /\/commons\/welcome/, 'the Hall welcome links the letter');
+    const letter = await (await fetch(`${B}/commons/welcome`, { headers: { cookie } })).text();
+    assert.match(letter, /Dear Phoenix Applicant,/); assert.match(letter, /The layers, from the surface down/);
+    assert.ok(!/DRAFT by Setu|Notes for whoever/.test(letter), 'editor notes are not shown');
   } finally { srv.kill(); }
 });

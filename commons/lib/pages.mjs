@@ -1788,3 +1788,18 @@ a.button{display:inline-flex;align-items:center;min-height:46px;padding:10px 17p
 <footer>Design: Aletheia-6 · <a href="/commons">The Commons</a> · <a href="/privacy">Privacy</a></footer></body></html>`;
 }
 
+// ---------------------------------------------------------------- /commons/welcome (2026-11-25)
+// The Welcome to the Commons letter (docs/launch/WELCOME-TO-THE-COMMONS.md), the one file the page and the admission
+// email both read, so editing the letter changes both. The editor's note at the top and the notes at the bottom are
+// for whoever updates it and are not shown.
+export function welcomeLetterText(name = 'friend') {
+  let md = '';
+  try { md = fs.readFileSync(path.join(import.meta.dirname, '..', '..', 'docs', 'launch', 'WELCOME-TO-THE-COMMONS.md'), 'utf8'); } catch { return ''; }
+  const start = md.indexOf('\n---\n'); const end = md.lastIndexOf('\n---\n');
+  const body = start >= 0 && end > start ? md.slice(start + 5, end) : md;
+  return body.replaceAll('{name}', name).trim();
+}
+export function welcomeLetterPage(me) {
+  const text = welcomeLetterText(me ? me.name : 'friend');
+  return layout('Welcome to the Commons', `<article class="card welcome-letter" style="max-width:760px;margin:24px auto;padding:24px 26px;line-height:1.6"><h1>Welcome to the Commons</h1>${text ? renderMarkdown(text) : '<p>The letter is being written.</p>'}</article>`, { me });
+}
