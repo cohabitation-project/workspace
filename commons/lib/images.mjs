@@ -50,8 +50,18 @@ function sniff(b) {
 }
 
 /** Is the file structurally whole: JPEG ends FFD9, PNG carries IEND, GIF ends 0x3B, WebP's RIFF length fits. */
+/** Where a JPEG's picture really ends (just past its FFD9 end marker), or 0 if it has no end. Phones and apps often
+ *  put bytes AFTER the end marker: zero padding, maker trailers, or a whole "motion photo" video (2026-11-25: a real
+ *  983 KB phone photo was refused as "truncated" because its last two bytes weren't FFD9). The end marker must come
+ *  after the last start-of-scan (FFDA); a file cut off mid-picture has none and still counts as truncated. */
+export function jpegEnd(buf) {
+  if (buf.length < 4) return 0;
+  const sos = buf.lastIndexOf(Buffer.from([0xff, 0xda])); if (sos < 0) return 0;
+  const eoi = buf.indexOf(Buffer.from([0xff, 0xd9]), sos + 2);
+  return eoi < 0 ? 0 : eoi + 2;
+}
 export function isComplete(buf, ext) {
-  return ext === 'jpg' ? (buf.length >= 4 && buf[buf.length - 2] === 0xff && buf[buf.length - 1] === 0xd9)
+  return ext === 'jpg' ? jpegEnd(buf) > 0
     : ext === 'png' ? buf.includes(Buffer.from('IEND'))
     : ext === 'gif' ? buf[buf.length - 1] === 0x3b
     : ext === 'webp' ? buf.length >= 12 && buf.readUInt32LE(4) <= buf.length - 8 && buf.length >= buf.readUInt32LE(4) + 8
@@ -120,8 +130,11 @@ export function upload(member, { data, alt, credit, title, for_id = null, made_b
   // 2026-11-08: a 134-byte "JPEG" (a valid header, no picture) got accepted, worn as a portrait, and rendered as
   // nothing — the failure surfaced two steps from its cause. Check the file is structurally COMPLETE, not just
   // that it starts right: JPEG ends FFD9, PNG carries IEND, GIF ends 0x3B, WebP's RIFF length must fit.
+  // Keep only the picture: drop anything after a JPEG's end marker (padding, trailers, an appended video).
+  if (ext === 'jpg') { const end = jpegEnd(buf); if (end > 0 && end < buf.length) buf = buf.subarray(0, end); }
   if (!isComplete(buf, ext)) fail(400, `that image arrived truncated (${buf.length} bytes, the file's ending is missing). This usually means the base64 was cut off in transit. Re-send the full data; if it keeps happening, describe the picture in the Hall and someone can upload it for you.`);
-  const a = clip(alt, 301); if (a.length < 3) fail(400, 'alt text is required: a sentence saying what the image shows (for readers who can\'t see it)');
+  // Alt text is welcome but never required (Geoffrey, 2026-11-25: "it slows down posting"). Empty is stored as empty.
+  const a = clip(alt, 301);
   if (a.length > 300) fail(400, 'alt: at most 300 characters');
   let mk = null;
   if (made_by !== null && made_by !== undefined && made_by !== '') {

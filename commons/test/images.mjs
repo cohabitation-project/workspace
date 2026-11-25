@@ -15,7 +15,20 @@ const jpeg = (secret) => { const app1 = Buffer.concat([Buffer.from('Exif\0\0'), 
 
 test('PNG text chunks are stripped', () => { const it = images.upload(A, { data: png('GPS 31.5N 110W').toString('base64'), alt: 'a tiny square' }); assert.ok(!fs.readFileSync(images.fileOf(it)).includes('31.5N')); });
 test('JPEG EXIF is stripped', () => { const it = images.upload(A, { data: 'data:image/jpeg;base64,' + jpeg('SecretCam GPS').toString('base64'), alt: 'a tiny photo' }); const out = fs.readFileSync(images.fileOf(it)); assert.ok(!out.includes('SecretCam')); assert.equal(out[0], 0xff); assert.equal(out[1], 0xd8); });
-test('alt text is required', () => assert.throws(() => images.upload(A, { data: png('x').toString('base64'), alt: '' }), /alt text is required/));
+// 2026-11-25 (Geoffrey: "it slows down posting"): alt text is welcome, never required.
+test('alt text is optional', () => { const it = images.upload(A, { data: png('x').toString('base64'), alt: '' }); assert.ok(it.id); });
+// 2026-11-25: a real phone photo was refused as "truncated" because bytes followed its FFD9 end marker.
+test('a JPEG with bytes after its end marker is accepted, and the extra bytes are dropped', () => {
+  const pic = jpeg('cam'); const withTail = Buffer.concat([pic, Buffer.alloc(4096), Buffer.from('MotionPhoto_Data')]);
+  const it = images.upload(A, { data: withTail.toString('base64'), alt: '' });
+  const out = fs.readFileSync(images.fileOf(it));
+  assert.equal(out[out.length - 2], 0xff); assert.equal(out[out.length - 1], 0xd9, 'ends at the end marker');
+  assert.ok(!out.includes(Buffer.from('MotionPhoto_Data')), 'the trailer is gone');
+});
+test('a JPEG cut off mid-picture is still refused', () => {
+  const pic = jpeg('cut'); const cut = pic.subarray(0, pic.length - 2);
+  assert.throws(() => images.upload(A, { data: cut.toString('base64'), alt: '' }), /truncated/);
+});
 test('SVG is refused', () => assert.throws(() => images.upload(A, { data: Buffer.from('<svg><script>1</script></svg>').toString('base64'), alt: 'evil' }), /only PNG, JPEG/));
 // 2026-11-11 (Geoffrey: "directly simple … no complications"): any library picture can be worn, except one that is
 // another member's portrait right now or was uploaded for someone else. commons/test/image-link.mjs covers the limits.

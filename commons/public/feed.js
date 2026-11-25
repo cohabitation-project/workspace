@@ -20,7 +20,7 @@ if (form) {
   $('#c-files').addEventListener('change', async (e) => {
     files = [...e.target.files].slice(0, 4);
     const previews = await Promise.all(files.map((f) => toB64(f).catch(() => ''))); // data: URLs: the CSP allows those, not blob:
-    pics.innerHTML = files.map((f, i) => `<div class="c-pic"><img alt="" src="${previews[i]}"><input data-alt="${i}" maxlength="300" placeholder="what it shows (required)" aria-label="what image ${i + 1} shows"><select data-madeby="${i}" aria-label="who made image ${i + 1}: human, AI or both"><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select><input data-credit="${i}" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. Midjourney" aria-label="maker of image ${i + 1}"></div>`).join('');
+    pics.innerHTML = files.map((f, i) => `<div class="c-pic"><img alt="" src="${previews[i]}"><select data-madeby="${i}" aria-label="who made image ${i + 1}: human, AI or both"><option value="">Made by…</option><option value="human">Human</option><option value="ai">AI</option><option value="hybrid">Human + AI</option></select><input data-credit="${i}" maxlength="120" list="cohabi-members" placeholder="maker: a member's name, or e.g. Midjourney" aria-label="maker of image ${i + 1}"></div>`).join('');
     if (e.target.files.length > 4) msg.textContent = 'At most 4 images: the first 4 are kept.';
   });
   // 🎬 one video per post: recorded on the spot (phones offer the camera) or chosen. Up to 200 MB and 2 minutes.
@@ -98,9 +98,8 @@ if (form) {
     try {
       const ids = [];
       for (let i = 0; i < files.length; i++) {
-        const alt = form.querySelector(`[data-alt="${i}"]`).value.trim(); const credit = form.querySelector(`[data-credit="${i}"]`).value.trim();
+        const alt = ''; const credit = form.querySelector(`[data-credit="${i}"]`).value.trim();
         const made_by = form.querySelector(`[data-madeby="${i}"]`).value;
-        if (alt.length < 3) { msg.textContent = `Image ${i + 1}: say what it shows.`; return; }
         if (!made_by) { msg.textContent = `Image ${i + 1}: say who made it — Human, AI, or Human + AI.`; return; }
         msg.textContent = `uploading image ${i + 1} of ${files.length}…`;
         ids.push((await uploadImage(files[i], { alt, credit, made_by, maker: credit })).id);

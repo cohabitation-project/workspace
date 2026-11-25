@@ -2,8 +2,8 @@
 // Reactions, comments and replies come from social.js; compose/upload/delete/groups from feed.js. This file adds
 // the v2 behaviors: expanding composer + phone bottom sheet, group/release on posts, "coming soon" toasts,
 // copy-link, the new-posts pill, load-more / infinite scroll, focus-comment, and the desktop hover card.
-import './feed.js';
-import './feed-identity.js?v=cam2-20261125';
+import './feed.js?v=cam3-20261125';
+import './feed-identity.js?v=cam3-20261125';
 import './messenger-widget.js?v=cam-20261125';
 const $ = (s, el = document) => el.querySelector(s);
 const H = { 'Content-Type': 'application/json', 'X-Commons': '1' };
