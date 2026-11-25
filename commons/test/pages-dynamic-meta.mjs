@@ -18,6 +18,19 @@ const attributes = (tag) => Object.fromEntries(
     .map((match) => [match[1].toLowerCase(), match[2] ?? match[3] ?? match[4] ?? ''])
 );
 const PLACEHOLDER = /(?:\bTODO\b|\bplaceholder\b|lorem ipsum|your page title|undefined|null)/i;
+const decodeEntities = (text) => text
+  .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+  .replace(/&#x([\da-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+  .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<')
+  .replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'");
+const visibleText = (html) => decodeEntities(html
+  .replace(/<!--[\s\S]*?-->/g, ' ')
+  .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ')
+  .replace(/<[^>]*>/g, ' '))
+  .replace(/\s+/g, ' ').trim();
+// No authentic prose exception is known for these five seeded pages; only add an exact phrase if observed.
+const VISIBLE_PROSE_ALLOWLIST = [];
+const VISIBLE_ARTIFACT = /\b(?:undefined|NaN|null)\b|\[object Object\]/g;
 
 function checkMetadata(html, route) {
   const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1] || '';
@@ -66,12 +79,19 @@ test('dynamic profile, listing, room, orders and sales pages have metadata and r
     const listing = await listingResponse.json();
     assert.ok(listing.id, 'listing response has an id');
 
+    const visibleTextFailures = [];
+    let checked = 0;
     const load = async (route, signedIn = false) => {
       const response = await fetch(`${base}${route}`, { headers: signedIn ? { Cookie: cookie } : {} });
       assert.equal(response.status, 200, `${route} is served successfully`);
       assert.match(response.headers.get('content-type') || '', /text\/html/i, `${route} is HTML`);
       const html = await response.text();
       checkMetadata(html, route);
+      checked++;
+      const rendered = VISIBLE_PROSE_ALLOWLIST.reduce((text, phrase) => text.split(phrase).join(' '), visibleText(html));
+      for (const match of rendered.matchAll(VISIBLE_ARTIFACT)) {
+        visibleTextFailures.push({ route, marker: match[0] });
+      }
       return html;
     };
 
@@ -93,6 +113,10 @@ test('dynamic profile, listing, room, orders and sales pages have metadata and r
     const sales = await load('/label/sales', true);
     assert.match(sales, /<h1 class="mv-title">Your sales<\/h1>/, 'sales page has its real heading');
     assert.match(sales, /No sales yet\. <a href="\/label\/new">Make a listing<\/a>/, 'empty sales state offers a useful next step');
+
+    console.log(`checked=${checked} bad=${visibleTextFailures.length}`);
+    for (const item of visibleTextFailures) console.log(`BAD ${item.route}: visible text contains ${JSON.stringify(item.marker)}`);
+    assert.equal(visibleTextFailures.length, 0, `${visibleTextFailures.length} dynamic page(s) contain visible render artifacts`);
   } finally {
     server.kill();
     fs.rmSync(dataDir, { recursive: true, force: true });
