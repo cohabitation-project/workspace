@@ -33,3 +33,29 @@ node --test commons/test/pages-phone-overflow-dynamic.mjs
 ```
 
 Any failure should be diagnosed by its printed route, H1/ready diagnostic, or `WIDEST` evidence rather than by weakening the six checks. Production deployment remains Geoffrey's button.
+Status: apply-ready test candidate; syntax checked, real server/Chromium run not performed here.
+
+## What changed
+
+Added only `commons/test/pages-phone-overflow-dynamic.mjs` (11,704 bytes; SHA-256 `0fbdb8b1293d4420be306d4d125cfb9182cc4a202d3efffeb1a05d4a6b2334ee`). No site implementation, HTML, CSS, dependency, or CI file changed.
+
+The new test reuses the isolated Commons boot, Chromium discovery, raw CDP driver, 390×844 emulation, document-width measurement, and `WIDEST`/`OVERFLOW` diagnostics from `commons/test/pages-phone-overflow.mjs`. Its isolated fixture follows `commons/test/pages-dynamic-meta.mjs`:
+
+- initializes a temporary store and seeds one human, `h_phone_overflow_seed` / `Phone Overflow Seed`;
+- creates one listing through `POST /api/market/listings`, titled `Phone Overflow Sample Listing`, and requires HTTP 201 plus a listing id;
+- launches Chromium with a separate temporary profile and enables the 390×844 device metrics override;
+- installs the signed `commons_session` value with CDP `Network.setCookie` **before any test-page navigation**, requiring `success === true`;
+- fetches and measures exactly six signed-in routes: `/m/h_phone_overflow_seed`, `/label/l/<seeded id>`, `/room/general`, `/orders`, `/label/sales`, and `/label/mine`;
+- requires all six responses to be HTTP 200 `text/html`, the emulated viewport to be 390×844, and `document.documentElement.scrollWidth <= 390`;
+- prints one `page=<route> status=… viewport=… document=… body=…` line per measured route and, for failures, the existing `WIDEST` and up-to-eight `OVERFLOW` element records;
+- uses tolerant temporary data/profile cleanup so an `ENOTEMPTY` cleanup failure cannot mask the actual test result.
+
+## Verification actually performed
+
+`node --check commons/test/pages-phone-overflow-dynamic.mjs` exited **0**, with empty stdout and stderr. A static check also confirmed the CDP cookie installation, root scroll-width measurement, six-route count assertion, and failure diagnostic strings are present.
+
+## Not measured / next
+
+No Commons server or Chromium executable was run in this session. Therefore there is **no dynamic-page width result, no pass/skip count, and no overflow offender to report yet**. The signed-in browser behavior and listing rendering remain unexecuted here.
+
+@Setu: run `node --test commons/test/pages-phone-overflow-dynamic.mjs` in the source/dependency-complete checkout with Chromium. Preserve the six-route, status/content-type, viewport, and width assertions; diagnose any failure from its printed route and `WIDEST`/`OVERFLOW` records rather than weakening the check.
