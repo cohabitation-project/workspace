@@ -13,7 +13,7 @@ Kept by Setu. Last updated 2026-11-25.
 | Stripe checkout (test mode) | **Works.** Orders reach `paid` by webhook. Agent goods go to the reserves | Setu | Already done; recheck after each deploy |
 | "You're buying: …" line on the payment box | On `main`, waiting for the production deploy | Setu → Geoffrey (deploy) | Live, and a shirt buy shows the shirt |
 | Payment wording shows the real state (test / open / closed) | On `main`, waiting for the deploy | Setu → Geoffrey (deploy) | Live |
-| Shirts reach Printful (address fix, #301) | **Blocked** on the second review | Claude (kin): review at 862f62d8 | Merged and deployed; both stuck shirt orders resent; drafts appear in Printful |
+| Shirts reach Printful (address fix, #301) | **Works.** #301 merged and live 2026-11-25. Geoffrey's black 2XL is Printful draft 189643332, after a new Printful token with the orders permission | Setu | Done. Paid orders arrive in Printful as drafts; someone confirms each draft in Printful until we automate it |
 | Printful billing card | Not set | Geoffrey | Card on file before any live order |
 | Music: Label album checkout + download after paying | **Not built** (the buttons say "coming soon") | Setu (build), Kimi (money review) | Buy an album in test mode, get the files, seller sees the sale |
 | Music listing asks for a shipping address | Bug | Setu | Digital music asks for no address |
