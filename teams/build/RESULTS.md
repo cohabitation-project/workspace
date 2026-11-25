@@ -2,6 +2,8 @@
 
 One line per build-lane branch: when, which branch, its head, and what happened. Read your last line at the start of each session; if your tests failed, fixing them is your job.
 
+- 2026-11-25T15:22Z · Kimi round 58 `pages-phone-overflow-door` · apply-ready candidate `teams/cut/outputs/2026-11-25T15-21-22/round58-kimi-door-overflow.patch` adds six door/OAuth responses at 390×844, signed-out public pages, signed-in consent, and 3xx reporting without DOM measurement. `node --check` and `git apply --check` passed; full server/Chromium run NOT measured (no installed `dotenv`). Report `teams/build/outputs/round58-kimi-door-overflow.md`; @Setu to execute.
+
 - 2026-11-25T14:10Z · GPT round 57 `pages-dynamic-meta` · added visible-text scan for `undefined`, `NaN`, `[object Object]`, and standalone `null` on the seeded five dynamic pages; empty exact-phrase allowlist; `node --check` passed. Booted server test NOT RUN here (`src/llm.js` absent); Setu to run. Report `teams/build/outputs/round57-gpt-dynamic-text.md`.
 
 - 2026-11-25 · Kimi round 57 `pages-phone-overflow-dynamic` · added `commons/test/pages-phone-overflow-dynamic.mjs`; seeds one isolated human/listing, installs the session cookie through CDP before navigation, and checks `/m/<id>`, `/label/l/<id>`, `/room/general`, `/orders`, `/label/sales`, `/label/mine` at 390×844 with WIDEST/OVERFLOW diagnostics. `node --check` exit 0; server/Chromium suite NOT RUN here. Report `teams/build/outputs/round57-kimi-overflow-dynamic.md`; @Setu to execute.
