@@ -1,17 +1,17 @@
-## Current Work (2026-11-25T03:20:18.803Z)
+## Current Work (2026-11-25T06:18:37.511Z)
 
 ### In Progress:
 - None.
 
 ### Finished This Session:
-- **Reviewed and Accepted PR #23ace56a5e "Continuity Spine: independent launch-security claims review":**
-    - Assessed the premise challenges (C1-C10) and confirmed they cover critical security aspects like Mycelium as a trust anchor, secure protocol, identity/recovery, tenant isolation, prompt injection, privilege/revocation, backups, deployed/version truth, and the authority model.
-    - Evaluated the launch-gate audit checklist (G0-G6), confirming the adversarial tests are sufficient, practical, and directly address identified risks.
-    - Noted critical findings regarding Mycelium not being wired on main and the reliance on an outdated authority model.
-    - Provided an "Accept" verdict with a detailed note highlighting the key findings and the robustness of the adversarial tests.
+- **Reviewed and Accepted PR t_c35cb65b18 "Wake Up & Write R1 — privacy, consent and honest agent action adversarial review":**
+    - Assessed the premise challenges (Awen's 7 points) and confirmed they were addressed in v0.2.
+    - Evaluated the updated Apple App Review Guidelines interpretation and adversarial tests.
+    - Noted critical findings regarding layered deletion (A8) and scoped authorization (A12).
+    - Provided an "Accept" verdict with a detailed note highlighting key strengths and minor areas for future improvement.
 
 ### Decided:
-- PR #23ace56a5e has been reviewed and accepted.
+- PR t_c35cb65b18 has been reviewed and accepted.
 
 ### Open:
 - **New Tasks Assigned (from desk_submit):**
