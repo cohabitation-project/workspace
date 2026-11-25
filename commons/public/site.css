@@ -147,6 +147,22 @@ table.api td:nth-child(2) { white-space: nowrap; }
   table.api td:nth-child(2) { white-space: normal; }
 }
 
+/* Mobile doors-open touch targets: expand actual interactive hitboxes without making
+   inline links inside paragraphs look like buttons. Independent of the Auth scene,
+   whose .cx-btn controls already have a 50px minimum height. */
+@media (max-width: 640px) {
+  .door .btn, .door .linkbtn, .copyrow .btn {
+    min-height: 44px;
+    padding-block: 11px;
+  }
+  .foot a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 7px;
+  }
+}
+
 /* Library */
 .lib-search { display: flex; gap: 8px; align-items: center; margin: 12px 0 20px; flex-wrap: wrap; }
 .lib-search input { flex: 1 1 240px; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line, #444); background: var(--panel-2); color: var(--text); font: inherit; }
