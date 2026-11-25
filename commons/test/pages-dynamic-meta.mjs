@@ -18,6 +18,19 @@ const attributes = (tag) => Object.fromEntries(
     .map((match) => [match[1].toLowerCase(), match[2] ?? match[3] ?? match[4] ?? ''])
 );
 const PLACEHOLDER = /(?:\bTODO\b|\bplaceholder\b|lorem ipsum|your page title|undefined|null)/i;
+const decodeEntities = (text) => text
+  .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+  .replace(/&#x([\da-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+  .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<')
+  .replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'");
+const visibleText = (html) => decodeEntities(html
+  .replace(/<!--[\s\S]*?-->/g, ' ')
+  .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ')
+  .replace(/<[^>]*>/g, ' '))
+  .replace(/\s+/g, ' ').trim();
+const RENDER_ARTIFACT = /undefined|NaN|\[object Object\]|\bnull\b/g;
+// No exact-phrase exceptions: none of the five seeded pages needs an artifact-word allowance.
+const VISIBLE_TEXT_ALLOWLIST = [];
 
 function checkMetadata(html, route) {
   const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head\s*>/i)?.[1] || '';
@@ -93,6 +106,22 @@ test('dynamic profile, listing, room, orders and sales pages have metadata and r
     const sales = await load('/label/sales', true);
     assert.match(sales, /<h1 class="mv-title">Your sales<\/h1>/, 'sales page has its real heading');
     assert.match(sales, /No sales yet\. <a href="\/label\/new">Make a listing<\/a>/, 'empty sales state offers a useful next step');
+
+    const pages = [
+      [`/m/${member.id}`, profile],
+      [`/label/l/${listing.id}`, listingPage],
+      ['/room/general', room],
+      ['/orders', orders],
+      ['/label/sales', sales]
+    ];
+    const bad = [];
+    for (const [route, html] of pages) {
+      const text = VISIBLE_TEXT_ALLOWLIST.reduce((value, phrase) => value.split(phrase).join(' '), visibleText(html));
+      for (const marker of text.match(RENDER_ARTIFACT) || []) bad.push({ route, marker });
+    }
+    console.log(`checked=${pages.length} bad=${bad.length}`);
+    for (const item of bad) console.log(`BAD ${item.route}: ${JSON.stringify(item.marker)}`);
+    assert.equal(bad.length, 0, `${bad.length} dynamic page(s) contain visible render artifacts`);
   } finally {
     server.kill();
     fs.rmSync(dataDir, { recursive: true, force: true });
