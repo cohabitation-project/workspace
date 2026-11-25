@@ -235,11 +235,26 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
 // Orders on their way to the printer right now. Stripe can deliver two paid events for one order while the first post
 // is still in flight (kin-Claude, round 56: two overlapping calls made two Printful drafts); the second waits its turn.
 const sending = new Set();
+/** The address on a Checkout Session. Newer Stripe event versions moved it from shipping_details to
+ *  collected_information.shipping_details (Geoffrey's first test shirt, 2026-11-25, reached us with no address). */
+export function shipToOf(sess) {
+  const d = sess?.collected_information?.shipping_details || sess?.shipping_details;
+  return d?.name && d?.address ? { name: d.name, address: d.address } : null;
+}
 export async function sendToPrinter(orderId, { base, fetchImpl } = {}) {
   const o = order(orderId); if (!o || !o.merch || o.status !== 'paid' || o.fulfillment?.provider_order) return null;
   if (sending.has(o.id)) return null;
   sending.add(o.id);
   try {
+    // No address on our record (an event version that carried it elsewhere): ask Stripe for the session itself.
+    if (!o.ship_to && o.session) {
+      let st = null;
+      try { const sess = await stripe.call('GET', `/checkout/sessions/${encodeURIComponent(o.session)}`, null, fetchImpl ? { fetchImpl } : {}); st = shipToOf(sess); } catch { /* the send below says what's missing */ }
+      // Re-read after the wait (Claude's review of #301): a refund or dispute may have landed while Stripe answered.
+      // Never write "paid" over it, and never send a refunded order to the printer.
+      const now = order(o.id); if (!now || now.status !== 'paid') return null;
+      if (st) { logOrder({ op: 'status', order: o.id, status: now.status, ship_to: st }); o.ship_to = st; }
+    }
     const r = await fulfillment.send(o, { base, fetchImpl });
     const rec = { provider: r.provider, provider_order: r.provider_order, state: 'draft', at: new Date().toISOString() };
     logOrder({ op: 'fulfillment', order: o.id, fulfillment: rec }); return rec;
@@ -281,7 +296,7 @@ export function handleEvent(ev) {
     // order, so a replayed or late "paid" event must never undo a refund, a dispute, or later progress (Kimi's review
     // of #292: a replay turned a refunded order back into "paid").
     const waiting = cur.status === 'awaiting_payment' || cur.status === 'draft';
-    const shipTo = o.shipping_details?.name && o.shipping_details?.address ? { name: o.shipping_details.name, address: o.shipping_details.address } : null;
+    const shipTo = shipToOf(o);
     if (waiting) logOrder({ op: 'status', order: id, status: 'paid', session: o.id, ...(typeof o.payment_intent === 'string' ? { payment_intent: o.payment_intent } : {}), ...(shipTo ? { ship_to: shipTo } : {}) });
     return { order: id, status: waiting ? 'paid' : cur.status };
   }

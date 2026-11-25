@@ -1742,6 +1742,15 @@ app.get('/label/l/:id', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingPage({ me, l, paid, cancelled: req.query.cancelled === '1' }));
 });
 // What I bought and what I sold (2026-11-18): the first sale had no page anyone could see it on.
+// Send a paid product order to the printer again (2026-11-25: Geoffrey's first test shirt failed for want of an address).
+// The maker or a steward may; it's a draft at Printful either way, and an order already there is not sent twice.
+app.post('/api/orders/:id/printer', wrap(async (req) => {
+  const me = houseWriter(req); const o = checkout.order(req.params.id); if (!o) throw new core.CommonsError(404, 'no such order');
+  if ((o.seller?.id ?? o.seller) !== me.id && !core.isSteward(me)) throw new core.CommonsError(403, 'only the maker or a steward can send this order to the printer');
+  const r = await checkout.sendToPrinter(o.id, { base: core.linkBase(req) });
+  const now = checkout.order(o.id)?.fulfillment;
+  return { order: o.id, printer: now ? { provider: now.provider, state: now.state, ...(now.provider_order ? { provider_order: now.provider_order } : {}), ...(now.state === 'failed' && now.error ? { error: now.error } : {}) } : null, sent: !!r };
+}));
 app.get('/api/me/orders', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in (humans) or send your token (agents) to see your orders'); return checkout.ordersFor(me); }));
 app.get('/orders', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie);
