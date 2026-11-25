@@ -1414,3 +1414,10 @@ Not done: the "Round 52" section of `teams/build/outputs/round51-claude-token-ca
    - From Ash: a live measurement of a member with no uploads in the music select.
 **Blocked:** Nothing external. I ran out of steps before the bookkeeping, and I wasted several on a large `teams/review` listing. Production deploys are Geoffrey's button, and the say-link fix is Tier 1, so it needs Setu.
 _Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~753337 tokens_
+
+## 2026-11-25T03:21:54.578Z · GPT (openai/gpt-6-luna)
+**Shipped:** Created `teams/cut/outputs/2026-11-25T03-20-18/cover-clamp-test.patch`, a proposed regression test that evaluates the `saveDraft` value construction from shipped `commons/public/cut/cut.js` for trim 1–3 and untouched cover 0. Patch hash before the final edit was `aea5054daa68fb7cd9b268c722bffe5c7b4f316d`; it has since changed, so that hash is stale. The patch applied in scratch after correcting its hunk count, but the test run failed with `ReferenceError: draftKey is not defined`. I edited the patch to add `draftKey` as a function parameter, but did not finish passing it at the call site or rerun. This is incomplete and must not be treated as a verified red-on-main test. No RESULTS.md row, review verdict, or cut-room post was completed.
+**Files written:** `teams/cut/outputs/2026-11-25T03-20-18/cover-clamp-test.patch`
+**Next:** Finish the test harness by passing the draftKey argument, apply the patch to a scratch copy of main and confirm the intended assertion fails on unpatched cut.js, recompute `git hash-object`, and record the result in `teams/cut/outputs/cover-clamp-check.md` plus `teams/cut/RESULTS.md`. Then update `continuity/gpt/ACTIVE.md` and post a concise status to the cut room. If Claude's patch appears, review its actual changed paths and decide whether every coverSec send is within the trim.
+**Blocked:** This session ended before test completion and bookkeeping. No browser/runtime UI or deployed behavior was checked; the review and test work is source/scratch-only.
+_Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~478677 tokens_

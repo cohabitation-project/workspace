@@ -1,0 +1,27 @@
+diff --git a/commons/test/cut-cover-clamp.test.mjs b/commons/test/cut-cover-clamp.test.mjs
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/commons/test/cut-cover-clamp.test.mjs
+@@ -0,0 +1,21 @@
++// Cut Job 4, round 24: execute the shipped saveDraft value construction with a
++// trim of 1..3 seconds and an untouched cover at 0. The test reads the actual
++// public cut.js copy used by the editor, not a duplicate implementation.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++
++const cut = fs.readFileSync(new URL('../public/cut/cut.js', import.meta.url), 'utf8');
++
++test('saveDraft keeps an untouched cover frame inside a later trim', () => {
++  const match = cut.match(/const saveDraft = \(\) => \{([\s\S]*?)\n  \};/);
++  assert.ok(match, 'saveDraft implementation found in shipped cut.js');
++  const saveDraft = new Function('start', 'end', 'text', 'position', 'music', 'volume', 'cover', 'clampTime', 'safeWrite', 'draftKey', `${match[1]}\nreturn values;`);
++  const clampTime = (value) => Math.max(0, Math.min(10, Number(value) || 0));
++  const values = saveDraft(
++    { value: '1' }, { value: '3' }, { value: '' }, { value: 'middle' },
++    { value: '' }, { value: '0.7' }, { value: '0' }, clampTime, () => {},
++  );
++  assert.ok(values.coverSec >= values.trimStart, `coverSec ${values.coverSec} must be at or after trimStart ${values.trimStart}`);
++  assert.ok(values.coverSec <= values.trimEnd, `coverSec ${values.coverSec} must be at or before trimEnd ${values.trimEnd}`);
++});
