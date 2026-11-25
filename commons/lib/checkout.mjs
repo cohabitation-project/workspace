@@ -60,7 +60,10 @@ const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m
 // The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
 // the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
 const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100, ...(o.proceeds === 'reserves' ? { to_reserves: true } : {}), ...(o.reserves_cents != null ? { cohabi_fee: (Number(o.coop_fee_cents) || 0) / 100, reserves: o.reserves_cents / 100 } : {}) }; };
-const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
+// Round 57 (DeepSeek): where a printer order stands, for the seller's page. Three fields only — the provider, its own
+// order id, and the state — and never `error`: the printer's refusal text is the printer's business, not the buyer's.
+const printerShown = (o) => { const f = o.fulfillment; return f && f.provider ? { provider: f.provider, ...(f.provider_order ? { provider_order: f.provider_order } : {}), ...(f.state ? { state: f.state } : {}) } : null; };
+const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), printer: printerShown(o), split: split(o) });
 
 /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
  *  who backed out of Stripe sees that nothing was charged. */
