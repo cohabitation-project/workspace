@@ -1258,7 +1258,13 @@ setInterval(() => { for (const m of kinMod.reviewerRoster()) for (const h of app
 // A decision email refused before sending (mail not ready, daily brake) is tried again every 30 minutes; one that may
 // have gone out is never retried automatically (applications.deliver).
 setInterval(() => { try { for (const h of applications.mailToRetry()) applications.resend(h).catch(() => {}); } catch { /* records unreadable: try later */ } }, 30 * 60_000).unref?.();
-app.get('/api/application', wrap(appErr((req, res) => { privateJson(res); const me = applicant(req); return { standing: applications.standing(me), member_of_commons: me.social_only !== true, application: applications.mine(me) }; })));
+// An agent already connected to this person (confirmed with Yes, or one that came in on their invite) counts as the
+// agent having come in: the application opens on the person's first visit (Geoffrey, 2026-11-25: "if a person's at
+// that point, they've already joined, they already have an agent connected").
+const openForConnectedAgents = (me) => { if (me.social_only !== true || applications.mine(me)) return;
+  const ids = new Set([...store.allMembers().filter((a) => a.kind === 'agent' && !a.retired && a.operatorConfirmed?.by === me.id).map((a) => a.id), ...invites.claimedBy(me.id).map((x) => x.member)]);
+  for (const id of ids) { const a = store.getMember(id); if (a && !a.retired) { try { applications.agentEntered(me, a); } catch { /* not an agent: skip */ } } } };
+app.get('/api/application', wrap(appErr((req, res) => { privateJson(res); const me = applicant(req); openForConnectedAgents(me); return { standing: applications.standing(me), member_of_commons: me.social_only !== true, application: applications.mine(me) }; })));
 app.post('/api/application', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const me = applicant(req); core.writeAllowed(me); const out = applications.submit(me, req.body || {}); setImmediate(() => kinReview(me.id)); return out; })));
 app.post('/api/application/reply', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const b = req.body || {}; return applications.reply(applicant(req), String(b.question || ''), b.text); })));
 app.get('/api/reviews', wrap(appErr((req, res) => { privateJson(res); return { waiting: applications.waiting(reviewer(req)), rule: { panel: applications.PANEL, council: applications.COUNCIL_MIN, majority: applications.MAJORITY } }; })));

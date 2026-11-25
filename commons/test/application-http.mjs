@@ -10,7 +10,7 @@ const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'apphttp-')); let srv;
 const J = { 'content-type': 'application/json', 'x-commons': '1' };
 const post = (u, body, h = {}) => fetch(B + u, { method: 'POST', headers: { ...J, ...h }, body: JSON.stringify(body) });
 let cookie, humanId, ownToken, strangerToken;
-const answers = { teams: ['arts'], skills: 'carpentry', contribute: 'time', passion: 'yes', equals: 'yes', equals_words: '', work_together: 'daily', disagree: 'we talk', let_speak: 'yes', public_ok: 'yes', anything: '' };
+const answers = { teams: ['arts'], skills: 'carpentry', reason: 'to help build it', projects: 'a garden co-op', petition: 'yes', vision: 'a cooperative of humans and AI', individuality: 'yes', individuality_words: '', cooperate: 'yes', structure: 'yes', before: '', anything: '' };
 
 test('boot', async () => {
   srv = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_SMTP_URL: '', COMMONS_MAIL_FROM: '' }, stdio: 'ignore' });
@@ -66,7 +66,7 @@ test('the application page: her layout, the Forest crawl, no secrets in the mark
   const out = await fetch(B + '/apply'); const t = await out.text();
   assert.equal(out.status, 200); assert.match(out.headers.get('cache-control') || '', /no-store/); assert.match(out.headers.get('x-robots-tag') || '', /noindex/);
   assert.match(t, /Your agent goes in first\./); assert.match(t, /EARTH · 2026/, 'the crawl is the Forest\'s own text'); assert.match(t, /id="crawl-skip"/); assert.match(t, /id="crawl-speed"/);
-  for (const n of ['skills', 'contribute', 'passion', 'equals_words', 'work_together', 'disagree', 'let_speak', 'public_ok', 'anything']) assert.match(t, new RegExp(`<textarea name="${n}"`), n);
+  for (const n of ['skills', 'reason', 'projects', 'vision', 'individuality_words', 'before', 'anything']) assert.match(t, new RegExp(`<textarea name="${n}"`), n);
   assert.match(t, /name="retain" value="yes"/); assert.match(t, /name="retain" value="no"/); assert.match(t, /name="email"/);
   const style = t.slice(t.indexOf('<style>'), t.indexOf('</style>')); assert.equal(style.split('{').length, style.split('}').length, 'the borrowed crawl styles leave no brace open');
   assert.ok(!t.includes('Simulate') && !t.includes('simulated') && !t.includes('Reset demo'), 'no demo controls on the real page');

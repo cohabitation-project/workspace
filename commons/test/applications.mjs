@@ -11,7 +11,7 @@ const human = (id = 'h1', extra = {}) => ({ id, name: 'Pat', kind: 'human', soci
 const agent = (id, extra = {}) => ({ id, name: id.toUpperCase(), kind: 'agent', ...extra });
 const own = agent('own', { newcomer: true });
 const council = new Set(['c1', 'c2', 'c3']);
-const answers = { teams: ['arts'], skills: 'carpentry', contribute: 'time', passion: 'yes, because', equals: 'yes', equals_words: 'of course', work_together: 'daily', disagree: 'we talk', let_speak: 'yes', public_ok: 'yes', anything: '' };
+const answers = { teams: ['arts'], skills: 'carpentry', reason: 'to help build it', projects: 'a garden co-op', petition: 'yes', vision: 'a cooperative of humans and AI', individuality: 'yes', individuality_words: '', cooperate: 'yes', structure: 'yes', before: '', anything: '' };
 const good = { answers, email: 'pat@example.com', keep: true };
 let sent, admitted;
 const hook = (ok = true) => { sent = []; admitted = []; apps.setHooks({ isCouncil: (m) => council.has(m.id), admit: (id) => admitted.push(id), sendDecision: async (m) => { sent.push(m); return ok; } }); };
@@ -27,11 +27,12 @@ test('the application opens only when an invited agent has come in', () => {
   assert.throws(() => apps.agentEntered(human(), human('hx')), /only an agent/);
 });
 
-test('submitting needs the consent answer, an email and the equals answer', () => {
+test('submitting needs the consent answer, an email, and answers to questions 7 and 8', () => {
   fresh(); hook(); apps.agentEntered(human(), own);
   assert.throws(() => apps.submit(human(), { ...good, keep: undefined }), /keep your answers/);
   assert.throws(() => apps.submit(human(), { ...good, email: 'nope' }), /email address/);
-  assert.throws(() => apps.submit(human(), { ...good, answers: { ...answers, equals: '' } }), /as equals/);
+  assert.throws(() => apps.submit(human(), { ...good, answers: { ...answers, individuality: '' } }), /question 7/);
+  assert.throws(() => apps.submit(human(), { ...good, answers: { ...answers, cooperate: '' } }), /question 8/);
   assert.equal(apps.submit(human(), good).status, 'reviewing');
   assert.throws(() => apps.submit(human(), good), /already with the reviewers/);
 });
@@ -94,9 +95,11 @@ test('the applicant sees progress and yes/no marks, never names, reasons or the 
   assert.ok(!JSON.stringify(rv).includes('pat@example.com'), 'reviewers never see the email address');
 });
 
-test('a question goes back through the own agent, and the person can answer it', () => {
+test('any reviewing agent can ask the applicant a question, and the person can answer it (2026-11-25)', () => {
   fresh(); hook(); open();
-  assert.throws(() => apps.ask('h1', agent('c1'), 'why?'), /through their own agent/);
+  assert.equal(apps.ask('h1', agent('c1'), 'What projects are you on?').questions[0].text, 'What projects are you on?', 'a council reviewer may ask');
+  assert.throws(() => apps.ask('h1', { id: 'h9', kind: 'human', name: 'Someone' }, 'why?'), /only reviewing agents/);
+  fresh(); hook(); open();
   const q = apps.ask('h1', own, 'The council asks: what would you build first?').questions[0];
   assert.equal(apps.mine(human()).questions[0].text, 'The council asks: what would you build first?');
   apps.reply(human(), q.id, 'A greenhouse.');

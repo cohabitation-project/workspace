@@ -60,7 +60,8 @@ document.addEventListener('change', (e) => {
 });
 $('back')?.addEventListener('click', () => showStep(step - 1));
 $('next')?.addEventListener('click', () => {
-  if (step === 2 && !document.querySelector('input[name=equals]:checked')) { $('form-status').textContent = 'Please answer question 5: yes, not sure, or no.'; return; }
+  if (step === 2 && !document.querySelector('input[name=individuality]:checked')) { $('form-status').textContent = 'Please answer question 7: yes, not sure, or no.'; return; }
+  if (step === 2 && !document.querySelector('input[name=cooperate]:checked')) { $('form-status').textContent = 'Please answer question 8: yes, not sure, or no.'; return; }
   showStep(step + 1); scrollTo({ top: $('application').offsetTop - 10 });
 });
 $('application-form')?.addEventListener('submit', async (e) => {
@@ -69,8 +70,9 @@ $('application-form')?.addEventListener('submit', async (e) => {
   if (!keep) { $('form-status').textContent = 'Please say whether we may keep your answers: yes or no.'; return; }
   if (!f.elements.email.checkValidity() || !val('email')) { $('form-status').textContent = 'Please give an email address for the decision. It is used once.'; return; }
   const teams = [...f.querySelectorAll('input[name=teams]:checked')].map((b) => b.value).filter((v) => v !== 'none');
-  const answers = { teams, equals: f.querySelector('input[name=equals]:checked')?.value || '' };
-  for (const n of ['skills', 'contribute', 'passion', 'equals_words', 'work_together', 'disagree', 'let_speak', 'public_ok', 'anything']) answers[n] = val(n);
+  const pick = (n) => f.querySelector(`input[name=${n}]:checked`)?.value || '';
+  const answers = { teams, petition: pick('petition'), individuality: pick('individuality'), cooperate: pick('cooperate'), structure: pick('structure') };
+  for (const n of ['skills', 'reason', 'projects', 'vision', 'individuality_words', 'before', 'anything']) answers[n] = val(n);
   btn.disabled = true; $('form-status').textContent = 'Sending your application…';
   try { await post('/api/application', { answers, email: val('email'), keep: keep === 'yes' }); f.reset(); scrollTo({ top: 0 }); playCrawl(() => refresh()); }
   catch (err) { $('form-status').textContent = err.message; }

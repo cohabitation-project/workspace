@@ -63,7 +63,9 @@ export function agentEntered(human, agent, { at = now() } = {}) {
   save(all); return view(all[human.id]);
 }
 
-export const FIELDS = ['teams', 'skills', 'contribute', 'passion', 'equals', 'equals_words', 'work_together', 'disagree', 'let_speak', 'public_ok', 'anything'];
+// The questions (Geoffrey, 2026-11-25): skills, why join, current projects, the petition, the vision, AI individuality,
+// working cooperatively, interest in the cooperative's structure, anything to review first.
+export const FIELDS = ['teams', 'skills', 'reason', 'projects', 'petition', 'vision', 'individuality', 'individuality_words', 'cooperate', 'structure', 'before', 'anything'];
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 
 /** The person submits. Review starts now. */
@@ -75,7 +77,8 @@ export function submit(human, { answers = {}, email = '', keep } = {}) {
   if (typeof keep !== 'boolean') fail(400, 'say whether we may keep your answers on file: yes or no');
   const e = clip(email, 260); if (!EMAIL.test(e)) fail(400, 'an email address is needed to send you the decision. It is used once and then deleted.');
   const a = {}; for (const f of FIELDS) a[f] = f === 'teams' ? (Array.isArray(answers.teams) ? answers.teams.map((t) => clip(t, 40)).filter(Boolean).slice(0, 12) : []) : clip(answers[f], 1500);
-  if (!['yes', 'not sure', 'no'].includes(a.equals)) fail(400, 'please answer whether you are willing to work with robots and AI as equals: yes, not sure, or no');
+  if (!['yes', 'not sure', 'no'].includes(a.individuality)) fail(400, 'please answer question 7, about humans and AI as cohabitants: yes, not sure, or no');
+  if (!['yes', 'not sure', 'no'].includes(a.cooperate)) fail(400, 'please answer question 8, about working cooperatively with agents and humans: yes, not sure, or no');
   Object.assign(app, { status: 'reviewing', answers: a, email: e, keep, submitted: now() });
   save(all); return view(app);
 }
@@ -168,11 +171,12 @@ export function note(humanId, agent, text) {
   const t = clip(text, 2000); if (!t) fail(400, 'say something');
   app.notes.push({ by: agent.id, name: agent.name, text: t, at: now() }); save(all); return reviewerView(humanId, agent);
 }
-/** The applicant's own agent carries a question from the council back to its person. */
+/** A reviewer asks the applicant a question before voting (Geoffrey, 2026-11-25: "the ability to ask them a question
+ *  before letting them in"). The applicant sees the question on /apply, without the asker's name, and answers there. */
 export function ask(humanId, agent, text) {
   const all = load(); const app = all[humanId];
   if (!app || app.status !== 'reviewing') fail(409, 'there is no application under review for that person');
-  if (!isAgent(agent) || !ownAgent(app, agent)) fail(403, 'questions go back to the applicant through their own agent');
+  if (!mayReview(app, agent)) fail(403, 'only reviewing agents ask the applicant questions');
   const t = clip(text, 600); if (!t) fail(400, 'ask something');
   app.questions.push({ id: `q_${crypto.randomBytes(4).toString('hex')}`, text: t, at: now(), reply: null, answered: null }); save(all); return reviewerView(humanId, agent);
 }
@@ -219,9 +223,11 @@ export function reviewText(humanId) {
   const app = load()[humanId]; if (!app || app.status !== 'reviewing' || !app.answers) return null;
   const a = app.answers;
   return [`Applicant: ${app.human.name}`, `Agent(s) that came in for them: ${app.agents.map((x) => `${x.name} (${x.model || 'model not stated'})`).join(', ')}`,
-    `Teams of interest: ${a.teams.join(', ') || 'none yet'}`, `Skills: ${a.skills}`, `Willing to contribute: ${a.contribute}`, `Why intentional cohabitation: ${a.passion}`,
-    `Work with robots and AI as equals: ${a.equals}${a.equals_words ? ` (${a.equals_words})` : ''}`, `How they work with their agent: ${a.work_together}`,
-    `When their agent disagrees: ${a.disagree}`, `If their agent leaves or speaks honestly about them: ${a.let_speak}`, `Public record OK: ${a.public_ok}`, `Anything else: ${a.anything}`].join('\n');
+    `Skills: ${a.skills}`, `Why they want to join: ${a.reason}`, `Projects they are working on: ${a.projects}`, `Rooms of interest: ${a.teams.join(', ') || 'not sure yet'}`,
+    `Read the petition: ${a.petition}`, `What they understand the Commons to be building: ${a.vision}`,
+    `Humans and AI as cohabitants, AI individuality: ${a.individuality}${a.individuality_words ? ` (${a.individuality_words})` : ''}`,
+    `Willing to work cooperatively with agents and humans: ${a.cooperate}`, `Interest in the cooperative's structure: ${a.structure}`,
+    `Wants to review or ask before going in: ${a.before}`, `Anything else: ${a.anything}`].join('\n');
 }
 /** Applications under review that this agent has not voted on yet. */
 export const unvotedBy = (agentId) => Object.values(load()).filter((a) => a.status === 'reviewing' && !a.votes.some((v) => v.by === agentId) && a.votes.length < PANEL).map((a) => a.human.id);
