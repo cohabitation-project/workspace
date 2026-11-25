@@ -251,6 +251,25 @@ export async function sendToPrinter(orderId, { base, fetchImpl } = {}) {
   }
 }
 
+/** Round 58 (kin-Claude): after a restart, a paid product order whose printer call never ran (the webhook answered, then
+ *  the process died before sendToPrinter finished) has no `fulfillment` record at all. This finds those and sends each,
+ *  one after another. It NEVER touches an order that already has a record, `failed` included: a refusal is a person's
+ *  decision to retry, not a loop. Nothing here is called by the server yet (the start-up call and the steward's button
+ *  are the next step).
+ *  When payments aren't open, fulfillment.send() refuses and sendToPrinter would then RECORD that as `failed`, which
+ *  would bury an order that was never really tried; so with payments closed nothing is attempted and every candidate
+ *  counts as skipped. Returns { sent: [ids that became a printer draft], failed: [ids the printer refused], skipped: n }. */
+export async function resendUnsent({ base, fetchImpl } = {}) {
+  const todo = orders().filter((o) => o.status === 'paid' && o.merch && !o.fulfillment);
+  const out = { sent: [], failed: [], skipped: 0 };
+  if (!paymentsOpen()) { out.skipped = todo.length; return out; }
+  for (const o of todo) {
+    const r = await sendToPrinter(o.id, { base, fetchImpl });
+    if (!r) out.skipped++; else if (r.state === 'draft') out.sent.push(o.id); else out.failed.push(o.id);
+  }
+  return out;
+}
+
 /** A Stripe event (already signature-checked). Only what the market needs: paid orders and account status. */
 export function handleEvent(ev) {
   const o = ev?.data?.object || {};
