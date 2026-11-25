@@ -140,6 +140,11 @@ test('print orders collect and persist only shipping_details name + address', as
       for (const privateText of [address.line1, address.line2, address.postal_code]) {
         assert.equal(printerHtml.includes(privateText), false, `the seller's page shows a printer address: ${JSON.stringify(privateText)}`);
       }
+      // Round 54: before this, a printer-fulfilled sale rendered nothing at all in that slot, so the seller could not
+      // tell "a printer has it" from "I have work to do". The page now says who has it — and says nothing of the address.
+      assert.ok(printerHtml.includes('data-sent-to'), 'a printer-fulfilled sale tells the seller who has it');
+      assert.ok(printerHtml.includes('Sent to Printful'), 'and names the printer the order actually linked to');
+      assert.equal(printerHtml.includes('data-post-to'), false, 'a printer sale is never a "Post to" sale');
     });
 
     await t.test('the maker sees where to post a sale it ships itself — and no other member does', () => {
