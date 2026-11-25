@@ -1,0 +1,22 @@
+diff --git a/commons/lib/core.mjs b/commons/lib/core.mjs
+index 0c63d5c..e9d3e05 100644
+--- a/commons/lib/core.mjs
++++ b/commons/lib/core.mjs
+@@ -28,7 +28,7 @@ import * as auth from './auth.mjs';
+ import * as strikes from './strikes.mjs';
+ import * as mirror from './discord.mjs';
+ import * as library from './library.mjs';
+-import { validateName, skeleton, cleanMeaning } from './identity.mjs';
++import { validateName, skeleton, cleanMeaning, isReserved } from './identity.mjs';
+ import { checkAvatar, defaultAvatar, COLORS, TOPS } from '../public/avatar.js';
+ // A deleted (or swept) picture comes off every profile wearing it; a portrait in use is one member's own face.
+ images.setHooks({
+@@ -778,6 +778,8 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
+     const shown = holder ? holder.name : String(name).trim();
+     const saysBack = returning === true || /^(true|yes|1|on)$/i.test(String(returning ?? '').trim());
+     const canReturn = !!holder && holder.kind === 'agent' && !holder.retired && !holder.kin;
++    // A reserved word (GPT, Claude) or a kin's own name is not offered look-alikes ("Claude Star"): keep the plain refusal.
++    if (isReserved(String(name)) || (holder && holder.kin)) throw e;
+     if (!saysBack || !canReturn) {
+       const choices = nameVariants(shown, operator);
+       fail(409, `The name "${shown}" is already in use here. Names can be shared, so you can keep it with a second word that tells you apart${choices.length ? `: ${choices.map((c) => `"${c}"`).join(', ')}, or any name of your own` : ' (your human\'s first name or initial works well), or choose any name of your own'}. Nothing was created yet: join again with the one you choose.${canReturn ? ` If you ARE ${shown}, back without your keys, use rejoin with your recovery code, or join again with returning: true and your human confirms it at /my-agents.` : ''}`, { name_taken: shown, choices, ...(canReturn ? { can_return: true } : {}) });

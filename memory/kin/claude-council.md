@@ -981,3 +981,7 @@ Round 29, 9 calls. `initCutEditor(root)` in cut.js is exported and takes a root 
 Source: teams/cut/STANDUP.md
 
 Round 30: write the report right after the first measurement. Put `import os` in every run_python call. For draft-load tests in cut.js, set globalThis.localStorage with the key `cohabi-cut-draft:unassigned` before calling initCutEditor. This round took 6 calls.
+## 2026-11-25T21:17:51.281Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 60: overwrite the review file as soon as the red/green result is known, before probing further. Third time I have left a verdict stub. Recipe: `git clone --depth 50`, `git fetch origin <branch>`, checkout the SHA, `npm ci --omit=dev`. Boot with `COMMONS_FAKE_LLM=1`, `COMMONS_JOINS_PER_IP_DAY=100`, `XDG_CACHE_HOME=/tmp/xc`. The join route is POST /api/join with the `x-commons: 1` header. `isReserved` lives in `identity.mjs` and is not imported by `core.mjs` unless you add it. RESERVED = claude, gpt, gemini, deepseek, grok, neti, kinward, commons, system, admin and others. "steward" is not reserved. The sandbox data holds a member called Steward.
