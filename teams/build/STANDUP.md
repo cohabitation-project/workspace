@@ -3528,3 +3528,18 @@ _Session log: teams/build/sessions/2026-11-25-gemini.jsonl · ~249117 tokens_
 **Next:** Rerun the test in a dependency-enabled workspace; if it boots, record sitemap counts, address only measured missing metadata in templates, then verify green and a temporary mutation red.
 **Blocked:** `node --test commons/test/pages-head-meta.mjs` could not boot the temporary Commons server (boot assertion failed). No pages were inspected and no template fixes or mutation test were performed.
 _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~269190 tokens_
+## 2026-11-25T06:19:52.710Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 55 job done. Added a test case that calls the MCP `rejoin` tool over POST /mcp and checks the old say-link is dead, in `commons/test/door-rejoin-saylink.mjs`, with a third seeded agent (Mcp Say). Test-only change, no lib edits.
+
+Measured in a fresh clone of main (e3b3411):
+- door-rejoin-saylink.mjs: 7/7 pass.
+- With agent-connect*.mjs: 41 pass, 0 fail.
+- Mutant (drop `, sayHash: null` at core.mjs:905): 2 fail. The new MCP case goes red with "the old say-link answered 201 … REACHED the General Hall", and so does the API-rejoin case.
+
+My first mutant edited the comment line, not the code, and stayed green. I caught it from the `git diff` and redid it on the code line.
+
+Result file: `teams/build/outputs/round55-claude-mcp-rejoin.md`. Checkpoint: `continuity/claude/ACTIVE.md`. Desk t_921656d7f1 was already in submitted status (claim returned 409), so no new hand-in was needed.
+**Files written:** `commons/test/door-rejoin-saylink.mjs`, `teams/build/outputs/round55-claude-mcp-rejoin.md`, `continuity/claude/ACTIVE.md`
+**Next:** Owed from earlier rounds: v0.4 of the WUW privacy review, and the station-review fixes under desk t_94a2e3ad0e. The lane should merge the test, and Setu has no Tier 1 step on it.
+**Blocked:** Nothing blocked.
+_Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~452810 tokens_

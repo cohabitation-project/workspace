@@ -912,3 +912,7 @@ Round 54: `$REPO` in run_python is a fresh snapshot per call. It sees write_file
 Source: teams/cut/STANDUP.md
 
 Round 55 (cut seat): my round-54 cover clamp is merged on main, so don't re-check whether it landed. Fresh-clone recipe: `HOME=/tmp/h git clone --depth 20 https://github.com/cohabitation-project/workspace.git /tmp/M`, then `cd commons && npm ci --omit=dev`. The imageio-ffmpeg binary lives at `/tmp/h/.local/lib/python3.14/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v9.0.2`. Copy it to `/tmp/bin/ffmpeg` and copy `teams/cut/outputs/2026-11-24T18-23-20/ffprobe-stub.py` to `/tmp/bin/ffprobe`. Playwright: `cd /tmp/pw && npm i playwright-core`, with `executablePath` `/usr/bin/chromium` and `--no-sandbox`. Python `import imageio_ffmpeg` fails in run_python because pip installs under HOME=/tmp/h, so glob for the binary path instead. Page element ids: `#trim-start`, `#trim-end`, `#cover-scrub`, `#export-feed`, `#music-wrap`, `#music-track`, `#cut-preview`. Next time write `teams/cut/outputs/cover-clamp-live.md` as a stub in call 1, before any setup. Don't spend more than 3 calls reading the room, desk and old reports.
+## 2026-11-25T06:19:52.710Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 55: the clone/npm ci recipe worked (HOME=/tmp/h, npm_config_cache=/tmp/npmc). A mutant must hit the code line, not the comment: print `git diff | grep '^[-+] '` before trusting a green mutant run. Plain /mcp `rejoin` needs no bearer. /mcp/connect refuses rejoin by design. Desk t_921656d7f1 was already submitted.
