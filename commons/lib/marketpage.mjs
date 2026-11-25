@@ -738,16 +738,22 @@ export function salesPage({ me, sales = [] }) {
 // product checkout step is wired (Tier 1) — the line under the row says so.
 function merchRow(l, me) {
   const v = merchsets.view(l.id); const mine = !!me && l.by.id === me.id;
+  // Buy opens when payments are open and the maker can be paid (the same test as the listing's own Buy).
+  let canPay = false; try { const q = checkout.quote(l.id); canPay = checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w)); } catch { canPay = false; }
+  const buyBtn = (it) => mine ? '<span class="mk-yours small">Yours</span>'
+    : !canPay ? '<button type="button" class="btn small" disabled>Buy</button>'
+    : !me ? `<a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}#get-it-on`)}">Sign in to buy</a>`
+    : `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-merch="${esc(it.product)}">Buy</button>`;
   if (!v.items.length) return mine && ['art', 'music'].includes(l.category) ? `<section class="mk-pods"><p><a class="btn ghost" href="/label/l/${esc(l.id)}/products">Put this art on products →</a></p></section>` : '';
   const cards = v.items.map((it) => `<article class="mk-pod" data-pod>
     <a class="mk-podimg" href="${esc(it.main || '#')}" target="_blank" rel="noopener" title="See it bigger">${it.main ? `<img data-pod-img src="${esc(it.main)}" alt="${esc(it.title)} printed with this art" loading="lazy">` : '<span class="mk-podwait">Photo coming</span>'}</a>
     <h3>${esc(it.title)}</h3>
     ${it.kind === 'colors' ? `<div class="mk-swatches" role="group" aria-label="Colour">${it.options.map((c, i) => `<button type="button" class="mk-sw${i ? '' : ' on'}" data-photo="${esc(c.photo || '')}" title="${esc(c.name)}" aria-label="${esc(c.name)}" style="--sw:${esc(c.code || '#ccc')}"></button>`).join('')}</div>` : ''}
-    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}" data-photo="${esc(z.photo || '')}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
+    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}" data-size="${esc(z.size)}" data-photo="${esc(z.photo || '')}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
     <p class="mk-podprice" data-pod-price>$${esc((it.sizes[0]?.price ?? it.price).toFixed(2))}</p>
-    <button type="button" class="btn small" disabled>Buy</button></article>`).join('');
+    ${buyBtn(it)}</article>`).join('');
   return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>
-  <p class="small muted">Printed and shipped by Printful when you order. Buying products opens with payments.${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
+  <p class="small muted">Printed and shipped by Printful when you order.${canPay ? (checkout.paymentsMode() === 'test' ? ' Payments are in test mode: use a test card (4242 4242 4242 4242); nothing is charged or printed.' : '') : ' Buying products opens with payments.'}${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
   <script type="module" src="/static/merch-row.js"></script></section>`;
 }
 
