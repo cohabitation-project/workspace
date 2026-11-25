@@ -175,14 +175,13 @@ test('public pages have no horizontal document overflow at 390x844', { timeout: 
       screenHeight: VIEWPORT.height,
     });
 
-    for (const route of ROUTES) {
-      const response = await fetch(`${base}${route}`, { redirect: 'manual' });
+    const measureRoute = async (route, response) => {
       const contentType = response.headers.get('content-type') || '';
       await response.body?.cancel();
       await driver.call('Page.navigate', { url: `${base}${route}` });
       let ready = false;
       for (let i = 0; i < 80 && !ready; i++) {
-        ready = await evaluate(driver, `document.readyState === 'complete' && location.pathname === ${JSON.stringify(route)}`);
+        ready = await evaluate(driver, `document.readyState === 'complete' && location.pathname + location.search === ${JSON.stringify(route)}`);
         if (!ready) await sleep(100);
       }
       assert.ok(ready, `${route} finished loading in Chromium`);
@@ -190,13 +189,48 @@ test('public pages have no horizontal document overflow at 390x844', { timeout: 
       await evaluate(driver, 'new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))', true);
       const measured = await evaluate(driver, MEASURE);
       results.push({ route, status: response.status, contentType, ...measured });
+    };
+
+    for (const route of ROUTES) {
+      const response = await fetch(`${base}${route}`, { redirect: 'manual' });
+      await measureRoute(route, response);
+    }
+
+    // The sitemap uses the configured public origin rather than this temporary server's
+    // origin. Check that <loc>s share their declared origin, then measure their paths here.
+    const sitemap = await fetch(`${base}/sitemap.xml`, { redirect: 'manual' });
+    assert.equal(sitemap.status, 200, 'GET /sitemap.xml returns 200');
+    const xml = await sitemap.text();
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].trim());
+    assert.ok(locs.length > 0, 'sitemap contains at least one <loc>');
+    const targets = locs.map((loc) => {
+      try { return new URL(loc); }
+      catch { assert.fail(`invalid sitemap URL: ${loc}`); }
+    });
+    const sitemapOrigin = targets[0].origin;
+    const measuredRoutes = new Set(ROUTES);
+    for (const target of targets) {
+      if (target.origin !== sitemapOrigin || target.pathname === '/feed') continue;
+      const route = `${target.pathname}${target.search}`;
+      if (measuredRoutes.has(route)) continue;
+      const response = await fetch(`${base}${route}`, { redirect: 'manual' });
+      const contentType = response.headers.get('content-type') || '';
+      if (response.status !== 200 || !/text\/html/i.test(contentType)) {
+        await response.body?.cancel();
+        continue;
+      }
+      measuredRoutes.add(route);
+      await measureRoute(route, response);
     }
   } finally {
     if (driver) driver.close();
     if (chrome) chrome.kill();
     server.kill();
-    fs.rmSync(dataDir, { recursive: true, force: true });
-    fs.rmSync(profileDir, { recursive: true, force: true });
+    // Chromium may still be writing its profile for a moment after kill(); a failed cleanup must not
+    // hide the real result (Setu, round 57: ENOTEMPTY masked the whole run).
+    for (const dir of [dataDir, profileDir]) {
+      try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch {}
+    }
   }
 
   const bad = [];
