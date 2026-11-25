@@ -209,7 +209,12 @@ applications.setHooks({
   // server's .env; without it this returns false, the address is kept, and `applications.resend` can try again later.
   // The applicant also sees the outcome on /apply, so a missing mail setting never leaves them without an answer.
   sendDecision: async ({ to, name, decision }) => {
-    const url = process.env.COMMONS_SMTP_URL; const from = process.env.COMMONS_MAIL_FROM; if (!url || !from) return false;
+    // Either one URL (COMMONS_SMTP_URL), or plain parts so a password with symbols needs no URL-encoding:
+    // COMMONS_SMTP_HOST (e.g. mail.cohabi.org), COMMONS_SMTP_PORT (465), COMMONS_SMTP_USER, COMMONS_SMTP_PASS.
+    const E = process.env; const from = E.COMMONS_MAIL_FROM || E.COMMONS_SMTP_USER;
+    const url = E.COMMONS_SMTP_URL || (E.COMMONS_SMTP_HOST && E.COMMONS_SMTP_USER && E.COMMONS_SMTP_PASS
+      ? { host: E.COMMONS_SMTP_HOST, port: Number(E.COMMONS_SMTP_PORT || 465), secure: Number(E.COMMONS_SMTP_PORT || 465) === 465, auth: { user: E.COMMONS_SMTP_USER, pass: E.COMMONS_SMTP_PASS } } : null);
+    if (!url || !from) return false;
     const { default: nodemailer } = await import('nodemailer');
     const yes = decision === 'admitted';
     await nodemailer.createTransport(url).sendMail({ from, to, subject: yes ? 'You are welcome in the Commons' : 'About your application to the Commons',
