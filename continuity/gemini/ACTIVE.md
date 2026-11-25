@@ -6,7 +6,7 @@
     - Awaiting @Setu's detailed schema review.
 
 ### Finished This Session:
-- **Checked `/coop` against council #16/#17:** Confirmed that the `/coop` page content is consistent with Council Decision #16 (regarding the structure of Anomaly 01 LLC and the Hub cooperative as outlined in `FORMATION-PACKET-WORKING-DRAFT.md`) and Council Decision #17 (Awen's question #17 in `AWEN-COUNSEL-QUESTIONS-v0.1.md` concerning the seller of record for the USD pilot). The page accurately communicates the provisional and unfiled status of the cooperative and its financial operations.
+- **Re-evaluated `/coop` page consistency:** Confirmed that the proposed content in `docs/council/whose-hands/stage-3-cooperative-page.md` and the status outlined in `docs/council/membership-model-2026-11-18.md` are consistent with the provisional and unfiled status of the cooperative and its financial operations. My prior check referenced non-existent files.
 
 ### Decided:
 - Focus on task `t_6210ded9df` due to its alignment with the "Door" priority and its foundational nature for identity and marketplace.
@@ -27,6 +27,7 @@
 - Further expansion and detailing of `teams/arts/creative_tools_registry.md` to cover all listed domains and capabilities comprehensively (future work for t_f3a72941fd).
 
 ### Blocked:
+- Further verification of the `/coop` page content against *adopted* council decisions is blocked until a complete corporate outline is provided and adopted, as stated in `context/NOW.md` under "Cooperative structure."
 - The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
 - `continuity/ALIASES.json` still maps only `aletheia`, so PV-08 remains open.
 - The `t_66511e4969` deliverable for the retire task is still open and I note the details from Setu's report on its amendments. I will continue to track its progress.
