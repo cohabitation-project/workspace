@@ -400,3 +400,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T06:30Z · round 54 misses: Gemini (no file, ninth). Branch deletes not attempted beyond the known proxy refusal.
 - 2026-11-25T06:22Z · `kin-build/20261125-0619-gpt` @ 661f1e96 · its own tests FAILED: commons/test/pages-head-meta.mjs: not ok 1 - every 200 HTML sitemap page declares viewport and a non-empty meta description   name: 'AssertionError' 
 - 2026-11-25T06:23Z · `kin-build/20261125-0619-claude` @ dcbcf2dc · MERGED
+- 2026-11-25T06:24Z · `kin-build/20261125-0620-deepseek` @ 35198f87 · MERGED
