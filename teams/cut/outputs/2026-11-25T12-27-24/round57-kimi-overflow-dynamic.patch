@@ -1,0 +1,170 @@
+diff --git a/commons/test/pages-phone-overflow-dynamic.mjs b/commons/test/pages-phone-overflow-dynamic.mjs
+new file mode 100644
+index 0000000..9c9ac47
+--- /dev/null
++++ b/commons/test/pages-phone-overflow-dynamic.mjs
+@@ -0,0 +1,164 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { spawn } from 'node:child_process';
++import { createConnection } from 'node:net';
++import fs from 'node:fs';
++import os from 'node:os';
++import path from 'node:path';
++import crypto from 'node:crypto';
++
++// Dynamic-page companion to pages-phone-overflow.mjs. Fixtures enter through the
++// public API; the signed-in browser observes the rendered pages at a phone viewport.
++test('dynamic pages fit a 390px phone', { timeout: 240_000 }, async () => {
++  let data, server, browser, client;
++  try {
++    const { chromium } = await import('playwright');
++    data = fs.mkdtempSync(path.join(os.tmpdir(), 'dynamic-overflow-'));
++    const port = await new Promise((resolve, reject) => {
++      const socket = createConnection();
++      socket.once('error', reject);
++      socket.connect(0, '127.0.0.1', () => {
++        const address = socket.address();
++        const selected = address.port;
++        socket.destroy();
++        resolve(selected);
++      });
++    });
++    const base = `http://127.0.0.1:${port}`;
++    server = spawn(process.execPath, ['commons/server.mjs'], {
++      env: {
++        ...process.env,
++        COMMONS_PORT: String(port),
++        ASHRAM_PORT: String(port),
++        COMMONS_DATA: data,
++        COMMONS_REPO: process.cwd(),
++        COMMONS_FAKE_LLM: '1',
++        COMMONS_ARRIVE_BYPASS: 'TESTGATE',
++      },
++      stdio: 'ignore',
++    });
++    for (let i = 0; i < 160; i++) {
++      try {
++        if ((await fetch(`${base}/healthz`)).ok) break;
++      } catch {}
++      await new Promise((resolve) => setTimeout(resolve, 250));
++    }
++    assert.equal((await fetch(`${base}/healthz`)).status, 200, 'isolated server is ready');
++
++    const api = async (route, { method = 'GET', body, cookie } = {}) => {
++      const response = await fetch(`${base}${route}`, {
++        method,
++        headers: {
++          'content-type': 'application/json',
++          'X-Commons': '1',
++          ...(cookie ? { cookie } : {}),
++        },
++        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
++      });
++      const text = await response.text();
++      let json;
++      try { json = JSON.parse(text); } catch { json = { raw: text }; }
++      return { response, json, text };
++    };
++
++    const signup = await api('/api/humans', {
++      method: 'POST',
++      body: { name: 'Dynamic Phone Human', bio: 'Dynamic phone-overflow fixture' },
++    });
++    assert.equal(signup.response.status, 201, `human signup: ${signup.text.slice(0, 400)}`);
++    const human = signup.json;
++    assert.equal(human.kind, 'human');
++    assert.ok(human.say, 'signup returns the human say-link slug');
++    const setCookie = signup.response.headers.get('set-cookie') || '';
++    const cookie = setCookie.split(';', 1)[0];
++    assert.match(cookie, /^cx=[0-9a-f]{64}$/, 'signup returns one session cookie');
++    const me = await api('/api/members/me', { cookie });
++    assert.equal(me.response.status, 200, `session check: ${me.text.slice(0, 300)}`);
++    assert.equal(me.json.id, human.id, 'session belongs to the seeded human');
++
++    const sold = await api('/api/posts/sell', {
++      method: 'POST', cookie,
++      body: {
++        key: `dynamic-overflow-${crypto.randomBytes(8).toString('hex')}`,
++        text: 'A dynamic listing and its public post, seeded for the phone-overflow check.',
++        post: { kind: 'post' },
++        listing: {
++          title: 'Dynamic phone listing',
++          text: 'A listing whose detail, profile, post, thread, and say-link pages are measured at 390 px.',
++          category: 'art', type: 'free', price: { mode: 'free' },
++          license: 'cc-by', rights: true, physical: false, made_by: 'human',
++        },
++      },
++    });
++    assert.equal(sold.response.status, 201, `listing plus post: ${sold.text.slice(0, 500)}`);
++    const listing = sold.json.listing;
++    assert.ok(listing?.id, 'sell endpoint returns the listing');
++    assert.ok(sold.json.post?.id, 'sell endpoint returns the linked post');
++    // This is the fixture shape named by the job: the human's listing post id.
++    human.listingPostId = sold.json.post.id;
++    const pageSlug = human.say;
++
++    browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
++    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
++    client = await page.context().newCDPSession(page);
++    await client.send('Network.enable');
++    const cookieValue = cookie.slice(cookie.indexOf('=') + 1);
++    const set = await client.send('Network.setCookie', {
++      name: 'cx', value: cookieValue, url: base, httpOnly: true, sameSite: 'Lax',
++    });
++    assert.notEqual(set?.success, false, 'CDP accepts the signed-in session cookie');
++
++    let errors = [];
++    page.on('pageerror', (error) => errors.push(error.message));
++    page.on('console', (message) => {
++      if (message.type() === 'error') errors.push(message.text());
++    });
++    const isReady = `(() => {
++      if (document.readyState !== 'complete') return false;
++      const heading = [...document.querySelectorAll('h1')].some((h) => {
++        const text = h.textContent.trim().toLowerCase();
++        return text && !text.startsWith('your profile') && !text.startsWith('my profile')
++          && !text.startsWith('set up your profile');
++      });
++      // /s/:code is deliberately a plain-text say-link document, rendered as pre.
++      return heading || Boolean(document.querySelector('body > pre'));
++    })()`;
++    const routes = [
++      `/label/l_${encodeURIComponent(listing.id)}.html`,
++      `/u/${encodeURIComponent(human.name)}`,
++      `/posts/${encodeURIComponent(human.listingPostId)}`,
++      `/t/${encodeURIComponent(human.listingPostId)}`,
++      `/s/${encodeURIComponent(pageSlug)}`,
++      '/account',
++    ];
++    assert.equal(new Set(routes).size, 6, 'six distinct dynamic routes');
++    for (const route of routes) {
++      errors = [];
++      const response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 30_000 });
++      assert.equal(response.status(), 200, `${route} GET status`);
++      await page.waitForFunction(isReady, { timeout: 15_000 }).catch(async (error) => {
++        const h1 = await page.locator('h1').allTextContents();
++        throw new Error(`${route} ready: ${error.message} · H1=${JSON.stringify(h1)}`);
++      });
++      await page.waitForTimeout(400);
++      const measured = await page.evaluate(() => ({
++        sw: document.documentElement.scrollWidth,
++        iw: window.innerWidth,
++        widest: [...document.querySelectorAll('body *')]
++          .map((e) => ({ tag: e.tagName, cls: String(e.className || '').slice(0, 100), right: Math.round(e.getBoundingClientRect().right) }))
++          .filter((e) => e.right > window.innerWidth + 1)
++          .sort((a, b) => b.right - a.right).slice(0, 6),
++      }));
++      console.log(`${route}: scrollWidth=${measured.sw} innerWidth=${measured.iw}${measured.widest.length ? ' WIDEST=' + JSON.stringify(measured.widest) : ''}`);
++      assert.ok(measured.sw <= measured.iw + 1, `OVERFLOW ${route}: ${JSON.stringify(measured.widest)}`);
++      assert.deepEqual(errors, [], `BROWSER ERRORS ${route}`);
++    }
++    console.log(`6 dynamic routes at 390px: scrollWidth <= innerWidth+1, no browser errors; human=${human.id} listing=${listing.id} post=${human.listingPostId}`);
++  } finally {
++    // Cleanup is deliberately best-effort: it must never hide a measured failure.
++    try { if (client) await client.detach(); } catch {}
++    try { if (browser) await browser.close(); } catch {}
++    try { if (server && server.exitCode === null) server.kill('SIGTERM'); } catch {}
++    try { if (data) fs.rmSync(data, { recursive: true, force: true }); } catch {}
++  }
++});
