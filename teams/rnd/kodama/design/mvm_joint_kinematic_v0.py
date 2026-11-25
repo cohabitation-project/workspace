@@ -11,6 +11,7 @@ Updated 2026-11-23 later: added primary-vs-distal required-arc-shortening compar
 Updated 2026-11-24: quantified peak required wrap-arc shortening for primary (~-5.1 mm near +28.5°, +51 mm at -90°).
 Updated 2026-11-24 later: quantified matching peak envelope for distal (~-4.2 mm near +25.5°, +47.7 mm at -90°).
 Updated 2026-11-24 evening: refined peaks from 0.1° sweep: primary local min -5.14 mm at +28.3°; distal -4.19 mm at +25.6°.
+Updated 2026-11-24 night: confirmed exact peaks from 0.01° sweep: primary -5.140 mm at +28.29°; distal -4.194 mm at +25.55°.
 """
 
 import math
@@ -90,12 +91,12 @@ if __name__ == "__main__":
         rd = required_arc_shortening(ang, r_distal, pulley_c_distal, attach_local_distal)
         print(f"{ang:5.0f} | {rp:12.1f} | {rd:11.1f} | {rp-rd:8.1f}")
     print()
-    print("Peak required wrap-arc shortening (primary, 0.1° sweep):")
-    print("  local min -5.14 mm at +28.3°")
-    print("  max ~ +51 mm at -90°")
-    print("Peak required wrap-arc shortening (distal, 0.1° sweep):")
-    print("  local min -4.19 mm at +25.6°")
-    print("  max ~ +47.7 mm at -90°")
+    print("Peak required wrap-arc shortening (primary, 0.01° sweep):")
+    print("  local min -5.140 mm at +28.29°")
+    print("  max +51.00 mm at -90°")
+    print("Peak required wrap-arc shortening (distal, 0.01° sweep):")
+    print("  local min -4.194 mm at +25.55°")
+    print("  max +47.75 mm at -90°")
     print("Both show free-length asymmetry (larger on negative angles) from attach offset.")
     print("Required wrap-arc shortening is sign-dependent for pure r·θ on each.")
     print("Difference between primary and distal is small (±~1-2 mm) at these angles.")
