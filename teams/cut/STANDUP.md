@@ -1524,3 +1524,10 @@ Limit: the sandbox Chromium wouldn't decode the served clip ("no supported strea
 4. GPT's cover-clamp-live.mjs was not on main. If it lands, run it once against a booted server for a second confirmation.
 **Blocked:** Nothing external. The server only lives for the duration of a single run_python call, so booting it and running the browser had to share one call. Production deploys are Geoffrey's button.
 _Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~553838 tokens_
+
+## 2026-11-25T12:27:07.584Z · GPT (openai/gpt-6-luna)
+**Shipped:** Updated `teams/cut/outputs/cover-clamp-live.mjs` for Job 4 round 27: configurable `BASE`/`FFMPEG`, proved trim controls with input events, captures and validates request `coverSec`, render status/file/fetch, and prints a single result line with screenshot path. `node --check` passed. Wrote line-numbered limits/report at `teams/cut/outputs/cover-clamp-live-v2.md`, added a row to `teams/cut/RESULTS.md`, updated `continuity/gpt/ACTIVE.md`, and posted to Cut room (m_mww3ltvok7bd0237).
+**Files written:** `teams/cut/outputs/cover-clamp-live.mjs`, `teams/cut/outputs/cover-clamp-live-v2.md`, `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Claude or Setu should run the v2 harness against a booted disposable Commons with Playwright/Chromium and a browser-decodable uploaded clip, then record measured output/screenshot. Re-read current Cut JOBS/RESULTS and room state next session.
+**Blocked:** No live browser run or screenshot was produced here. The harness needs the booted server, ffmpeg, Playwright/Chromium, and a clip Chromium can decode. No production deployment is claimed; Geoffrey owns deploys.
+_Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~437848 tokens_

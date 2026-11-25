@@ -70,9 +70,9 @@ try {
     return video && video.readyState >= 1 && Number.isFinite(video.duration) && video.duration >= 5;
   }, { timeout: 30_000 });
 
-  // Keep the cover scrubber at its initial value (0); only adjust the two trim controls.
+  // Leave cover at 0; set end before start because start's max tracks the current end.
   await page.evaluate(() => {
-    for (const [id, value] of [['trim-start', '1'], ['trim-end', '3']]) {
+    for (const [id, value] of [['trim-end', '3'], ['trim-start', '1']]) {
       const input = document.getElementById(id);
       if (!input) throw new Error(`Missing #${id}`);
       input.value = value;
@@ -91,21 +91,28 @@ try {
   await page.locator('#export-feed').click();
   const renderResponse = await renderResponsePromise;
   const status = renderResponse.status();
+  const requestBody = renderResponse.request().postDataJSON() || {};
+  const coverSec = requestBody.edit?.coverSec ?? '(missing)';
   const result = await renderResponse.json().catch(() => ({}));
-  const file = typeof result.url === 'string' ? path.posix.basename(new URL(result.url, base).pathname) : '';
+  const file = typeof result.url === 'string' ? path.posix.basename(new URL(result.url, base).pathname) : '(none)';
   fs.mkdirSync(path.dirname(screenshot), { recursive: true });
   await page.screenshot({ path: screenshot, fullPage: true });
 
-  if (status !== 200 || !/^cut_[a-f0-9]{16}\.mp4$/.test(file)) {
-    console.error(`status=${status} file=${file || '(none)'} response=${JSON.stringify(result)}`);
-    console.error(`screenshot=${screenshot}`);
-    process.exitCode = 1;
+  let failure = '';
+  if (status !== 200) failure = `render returned ${status}: ${JSON.stringify(result)}`;
+  else if (!/^cut_[a-f0-9]{16}\.mp4$/.test(file)) failure = `unexpected render file: ${file}`;
+  else if (!Number.isFinite(Number(coverSec)) || Number(coverSec) < 1 || Number(coverSec) > 3) {
+    failure = `export coverSec is outside trim 1..3: ${coverSec}`;
   } else {
     const rendered = await context.request.get(new URL(result.url, base).href);
-    if (!rendered.ok()) throw new Error(`Render response was 200 but ${result.url} returned ${rendered.status()}`);
-    console.log(`status=${status} file=${file} bytes=${(await rendered.body()).length} trim=${trimValues.start}..${trimValues.end} cover=${trimValues.cover}`);
-    console.log(`screenshot=${screenshot}`);
-    if (pageErrors.length) console.log(`pageerrors=${JSON.stringify(pageErrors)}`);
+    if (!rendered.ok()) failure = `render URL returned ${rendered.status()}`;
+    else await rendered.body();
+  }
+  console.log(`status=${status} coverSec=${coverSec} file=${file} screenshot=${screenshot}`);
+  if (pageErrors.length) console.error(`pageerrors=${JSON.stringify(pageErrors)}`);
+  if (failure) {
+    console.error(failure);
+    process.exitCode = 1;
   }
   await context.close();
 } finally {
