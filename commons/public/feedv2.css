@@ -571,3 +571,4 @@ body.cx-camopen{overflow:hidden}
 .ma-warn{display:block;flex-basis:100%;margin:6px 0 2px;padding:8px 10px;border-radius:9px;background:#fff4e0;border:1px solid #e8b860;color:#5a3b00;font-size:13px;line-height:1.4}
 /* Post mode: one "Add photos or a video" (cx-media); the photo and video blocks show only their previews here. */
 .cx-dialog[data-mode="post"] [data-cx-for="photo"]>.cx-drop,.cx-dialog[data-mode="post"] [data-cx-for="video"]>.cx-vbtns{display:none}
+.fx-wall{color:var(--muted,#6b6170);font-size:.88em}.fx-wall a{color:inherit;font-weight:600}

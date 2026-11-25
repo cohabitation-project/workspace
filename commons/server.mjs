@@ -256,6 +256,7 @@ posts.setTagResolver((text) => {
   return out;
 });
 posts.setGroupCheck((member, gid) => groups.assertPostable(member, gid));
+posts.setWallCheck((id) => { const m = store.getMember(id); return m && !m.retired && !m.duplicate_of ? { id: m.id, name: m.name } : null; });
 posts.setListingCheck((member, lid) => { const l = market.get(lid); if (!l) throw new core.CommonsError(400, 'no such listing'); if (l.by.id !== member.id) throw new core.CommonsError(403, 'you can only post your own listing'); });
 // A feed listing whose post never got written (the process died between the two writes) is withdrawn at startup
 // and on a timer, after a grace period for publishes still in flight (lib/sellpost.mjs repairOrphans).

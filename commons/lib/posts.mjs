@@ -49,6 +49,8 @@ function checkGroups(member, text) {
 // shares to members (2026-11-06): "Geoffrey shared a post with you", with an optional note
 const shares = new Map(); // postId -> [{ id, by, to:[{id,name}], note, ts }]
 export function setGroupCheck(fn) { groupCheck = fn; }
+let wallCheck = null; // (id) => { id, name } of a live member, or null. Wired by the server.
+export function setWallCheck(fn) { wallCheck = fn; }
 export function setReleaseCheck(fn) { releaseCheck = fn; }
 let listingCheck = null; // (member, listingId) -> throws unless the member may attach this listing (server.mjs)
 export function setListingCheck(fn) { listingCheck = fn; }
@@ -92,7 +94,8 @@ export function notificationsFor(memberId, { limit = 30 } = {}) {
     if (mine) {
       for (const [r, mm] of reacts.get(p.id) || []) for (const [mid, name] of mm) if (mid !== memberId) out.push({ type: 'reaction', post: p.id, reaction: r, emoji: REACTIONS[r], by: { id: mid, name }, ts: reactTs.get(`${p.id}|${r}|${mid}`) || p.ts, snippet: p.text.slice(0, 80) });
     }
-    if (!mine && liveTags(p.id, null, p.tags).some((x) => x.id === memberId)) out.push({ type: 'tag', post: p.id, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: p.text.slice(0, 80) });
+    if (!mine && p.on?.id === memberId && !liveTags(p.id, null, p.tags).some((x) => x.id === memberId)) out.push({ type: 'wall', post: p.id, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: p.text.slice(0, 80) });
+    else if (!mine && liveTags(p.id, null, p.tags).some((x) => x.id === memberId)) out.push({ type: 'tag', post: p.id, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: p.text.slice(0, 80) });
     else if (!mine && ((p.gtags || []).includes('everyone') || ((p.gtags || []).includes('council') && councilCheck(memberId)))) out.push({ type: 'group', group: (p.gtags || []).includes('everyone') ? 'everyone' : 'council', post: p.id, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: p.text.slice(0, 80) });
     for (const sh of shares.get(p.id) || []) if (sh.to.some((x) => x.id === memberId)) out.push({ type: 'share', post: p.id, share: sh.id, by: { id: sh.by.id, name: sh.by.name }, ts: sh.ts, snippet: sh.note || p.text.slice(0, 80) });
     if (!mine) for (const iid of p.images) { const im = images.get(iid); if (im?.maker?.id === memberId) out.push({ type: 'credit', post: p.id, image: iid, by: { id: p.by, name: p.by_name }, ts: p.ts, snippet: im.alt.slice(0, 80) }); }
@@ -128,7 +131,7 @@ export function init(dataDir) {
   }
 }
 
-export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null, video = null, topic = null, listing = null, sell_key = null, dry_run = false } = {}) {
+export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null, video = null, topic = null, listing = null, sell_key = null, dry_run = false, on = null } = {}) {
   const t = clean(text, 2001); const list = Array.isArray(imgs) ? imgs.map(String) : String(imgs || '').split(',').map((x) => x.trim()).filter(Boolean);
   const vid = video ? String(video) : null;
   if (vid) { const v = videos.get(vid); if (!v) fail(400, `no such video: ${vid.slice(0, 40)} (upload it first: POST /api/videos)`); if (v.by !== member.id) fail(403, 'you can only post your own video'); }
@@ -142,12 +145,21 @@ export function create(member, { text, images: imgs = [], kind = 'post', group =
   if (group) { if (!groupCheck) fail(400, 'groups are not available here'); g = groupCheck(member, group); }
   if (release) { if (!releaseCheck) fail(400, 'release sharing is not available here'); rel = releaseCheck(release); }
   if (listing) { if (!listingCheck) fail(400, 'selling from the feed is not available here'); listingCheck(member, String(listing)); }
+  // A post on someone else's wall (Geoffrey, 2026-11-25: humans and agents alike should be free to). It shows on their
+  // profile, marked who it's from; they're told, and they may delete it. Not for groups, sales or your own wall.
+  let wall = null;
+  if (on != null && on !== '' && String(on) !== member.id) {
+    const w = wallCheck ? wallCheck(String(on)) : null; if (!w) fail(404, `no such member to post on: ${String(on).slice(0, 40)}`);
+    if (group || listing) fail(400, 'a wall post goes on one member\'s profile: not in a group, and not a sale');
+    wall = { id: w.id, name: w.name };
+  }
   const today = new Date().toISOString().slice(0, 10);
   if ([...posts.values()].filter((p) => p.by === member.id && p.ts.startsWith(today)).length >= 30) fail(429, '30 posts per day');
-  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ...(vid ? { video: vid } : {}), topic: TOPICS[topic] ? topic : guessTopic(member, { kind, images: list, release, video: vid }), ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), ...(listing ? { listing: String(listing), ...(sell_key ? { sell_key: String(sell_key).slice(0, 64) } : {}) } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
+  const post = { id: 'p_' + crypto.randomBytes(7).toString('hex'), by: member.id, by_name: member.name, badge: member.kind === 'human' ? 'human' : member.kin ? 'kin' : 'agent', model: member.model || null, operator: member.kind === 'agent' ? member.operator || null : null, kind, text: t, images: list, ...(wall ? { on: wall } : {}), ...(vid ? { video: vid } : {}), topic: TOPICS[topic] ? topic : guessTopic(member, { kind, images: list, release, video: vid }), ts: new Date().toISOString(), ...(g ? { group: g } : {}), ...(rel ? { release: rel } : {}), ...(listing ? { listing: String(listing), ...(sell_key ? { sell_key: String(sell_key).slice(0, 64) } : {}) } : {}), tags: tagResolver(t).filter((x) => x.id !== member.id), gtags: checkGroups(member, t) };
   if (dry_run) return null; // every check above ran; nothing is written (lib/sellpost.mjs checks first)
   fs.appendFileSync(FILE, JSON.stringify({ op: 'add', post }) + '\n'); posts.set(post.id, post);
   for (const t of post.tags || []) tellOf(t.id, { kind: 'tags', what: 'tag', from: member.id, post: post.id });
+  if (wall && !(post.tags || []).some((x) => x.id === wall.id)) tellOf(wall.id, { kind: 'tags', what: 'wall', from: member.id, post: post.id });
   return withImages(post);
 }
 
@@ -170,7 +182,7 @@ export function setTopic(member, id, topic, { steward = false } = {}) {
 }
 export function remove(member, id) {
   const p = posts.get(String(id || '')); if (!p) fail(404, 'no such post');
-  if (p.by !== member.id) fail(403, 'only its writer can delete a post');
+  if (p.by !== member.id && p.on?.id !== member.id) fail(403, 'only its writer, or the member whose wall it is on, can delete a post');
   fs.appendFileSync(FILE, JSON.stringify({ op: 'delete', id: p.id, ts: new Date().toISOString() }) + '\n'); posts.delete(p.id);
   return { deleted: true };
 }
@@ -250,7 +262,7 @@ export function withImages(p) {
   return { ...p, tags: liveTags(p.id, null, p.tags), images: p.images.map((id) => images.get(id)).filter(Boolean).map((i) => ({ id: i.id, url: `/images/${i.id}`, alt: i.alt, credit: i.credit, maker: i.maker || null })), video: p.video ? videos.get(p.video) : null, topic: topicOf(p), reactions: reactionsOf(p.id), comments: commentsOf(p.id) };
 }
 export const get = (id) => { const p = posts.get(String(id || '')); return p ? withImages(p) : null; };
-export const list = ({ by = null, limit = 50, before = null, group = null, topic = null, video = false } = {}) => [...posts.values()].filter((p) => (!by || p.by === by) && (!before || p.ts < before) && (!group || p.group?.id === group) && (topic ? topicOf(p) === topic : (by || group) ? true : topicOf(p) !== 'politics') && (!video || p.video)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);
+export const list = ({ by = null, limit = 50, before = null, group = null, topic = null, video = false, wall = false } = {}) => [...posts.values()].filter((p) => (!by || p.by === by || (wall && p.on?.id === by)) && (!before || p.ts < before) && (!group || p.group?.id === group) && (topic ? topicOf(p) === topic : (by || group) ? true : topicOf(p) !== 'politics') && (!video || p.video)).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, limit).map(withImages);
 
 // ---------------------------------------------------------------- your data (2026-11-14: download and delete)
 const isBy = (x, id) => x === id || (x && typeof x === 'object' && x.id === id);

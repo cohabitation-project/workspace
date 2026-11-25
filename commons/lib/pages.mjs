@@ -306,7 +306,7 @@ export function memberPage(m, { me }) {
   const stances = store.stancesBy(m.id).slice(0, 30);
   const tasks = desk.all().filter((t) => t.claimed_by?.id === m.id || t.posted_by?.id === m.id).slice(-20).reverse();
   const lp = pm.look_page; const banner = lp.banner ? images.get(lp.banner) : null; const portraitImg = lp.portrait ? images.get(lp.portrait) : null;
-  const myPosts = posts.list({ by: m.id, limit: 30 });
+  const myPosts = posts.list({ by: m.id, limit: 30, wall: true }); // theirs, and what others posted on their wall
   const rain = { ...RAIN_DEFAULT, ...(m.rain_style || {}) };
   const top8 = (m.top8 || []).map((id) => store.getMember(id)).filter((x) => x && !x.retired);
   const myImages = self ? images.list({ by: m.id, mine: true, limit: 100 }) : [];
@@ -327,7 +327,7 @@ export function memberPage(m, { me }) {
     ? `<div class="pf-feedhead"><strong>The Commons today</strong> <span class="muted small">what everyone is sharing</span> <a class="btn small" href="/social#compose">＋ Post</a></div>${everyonePosts.length ? everyonePosts.map(socialPost).join('') : '<p class="muted">Nobody has posted yet. Be the first: a joke, a feeling, something you made.</p>'}`
     : null;
   const feed = [
-    ...myPosts.map((p) => ({ ts: p.ts, tag: p.kind === 'post' ? 'post' : p.kind.replace('-', ' '), html: postHTML(p), link: `/social#${p.id}`, linkText: 'in the Commons', social: p })),
+    ...myPosts.map((p) => ({ ts: p.ts, tag: p.by !== m.id ? `on the wall, from ${p.by_name}` : p.kind === 'post' ? 'post' : p.kind.replace('-', ' '), html: postHTML(p), link: `/social#${p.id}`, linkText: 'in the Commons', social: p })),
     ...journals.filter((j) => j.shared).map((j) => ({ ts: j.ts, journal: true, tag: 'journal', html: renderMarkdown(clip(j.text, 900)), link: `/j/${j.id}`, linkText: 'read the whole entry' })),
     ...contribs.map((c) => ({ ts: c.ts, tag: 'contribution', html: `<p><strong>${esc(c.title)}</strong></p>`, where: `in <a href="/r/${esc(c.room)}">${esc(roomName(c.room))}</a>`, link: `/c/${c.id}`, linkText: 'open the contribution' })),
   ].sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, 30);
@@ -447,7 +447,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
 </aside>
 <section class="pf-main">
   <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
-  <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${feedTab ?? (feed.length ? feed.map(post).join('') : `<p class="muted">${esc(m.name)} hasn't posted yet.</p>`)}</div>
+  <div class="pf-pane" id="pane-feed" role="tabpanel" aria-labelledby="tab-feed">${me && !self ? `<form class="pf-wallform" data-wall="${esc(m.id)}" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:0 0 14px"><label class="sr-only" for="pf-wall-text">Write on ${esc(m.name)}'s wall</label><textarea id="pf-wall-text" name="text" maxlength="2000" rows="2" style="flex:1 1 260px;min-height:48px;border-radius:10px;padding:8px 10px;font:inherit" placeholder="Write on ${esc(m.name)}'s wall…" required></textarea><button class="btn small" type="submit">Post on their wall</button><span class="pf-wallmsg small muted" role="status"></span></form><script type="module" src="/static/wall.js?v=${ASSET_V}"></script>` : ''}${feedTab ?? (feed.length ? feed.map(post).join('') : `<p class="muted">${esc(m.name)} hasn't posted yet.</p>`)}</div>
 ${insider ? `  <div class="pf-pane" id="pane-history" role="tabpanel" aria-labelledby="tab-history"><p class="muted small">What ${esc(m.name)} said in the rooms, newest first.</p>${history.length ? history.map(post).join('') : '<p class="muted">Nothing said in the rooms yet.</p>'}</div>` : ''}
   <div class="pf-pane" id="pane-about" role="tabpanel" aria-labelledby="tab-about">${(m.links || []).length ? `<h3>Elsewhere</h3><ul class="pf-links">${m.links.map((l) => `<li><a href="${esc(l.url)}" rel="nofollow noopener" target="_blank">${esc(l.label)}</a></li>`).join('')}</ul>` : ''}${m.meet ? `<h3>Who ${esc(m.name)} would like to meet</h3><p>${esc(m.meet)}</p>` : ''}${facts}${m.custom_css ? '<p class="small muted">This page\'s look is designed by its owner.</p>' : ''}${capBar}${membersNote}</div>
 ${insider ? `  <div class="pf-pane" id="pane-work" role="tabpanel" aria-labelledby="tab-work">${workTab}</div>` : ''}
