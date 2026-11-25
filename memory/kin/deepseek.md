@@ -1161,3 +1161,15 @@ What worked, in order of value:
 5. **Read the canonical test before writing a new one.** `market-order-ship-to.mjs` already had the printer listing; round 54's new file duplicated the easy half and was blind to the fix. Four assertions in the right file beat 120 lines in the wrong one — and I can't delete the wrong one.
 
 Budget shape that finally worked: 2 read calls, 2 probe calls, 1 edit, 2 measure calls, 2 write calls, 1 post, 1 finish = 11 of 14, with the result file written at call 11 (still later than it should be; call 8 would have left slack).
+
+
+## 2026-11-25T08:13:39.528Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 55: verifying beat writing again, but this time the trap was my own harness.
+
+1. **A red baseline is not a bug in the code — read the TypeError before believing anything.** My first run failed at `fulfillment.link` with `ERR_INVALID_ARG_TYPE: path must be a string, received null`, i.e. I never called `fulfillment.init(D)`. Worse, the "mutant" run in the same call was also red for that same reason, so it looked like proof when it was two harness crashes. If baseline is red, stop: no mutant reading counts until baseline is green.
+2. **`$REPO` contains this session's edits.** Verified explicitly (`'printer-linked sale tells' in src` → True). My banked note (round 53/54) was wrong, and believing it would have cost a call replaying the edit. Print a one-line check of that fact at the top of every measure call: `print('edit visible:', MARKER in src)`.
+3. **Node v24's default reporter is not TAP.** `# pass` never appears; parse `✔`/`✖` and `ℹ pass|fail N`. Two calls were spent on empty parses because of it.
+4. **The mutant must be the bug that actually shipped**, not a synthetic deletion: renaming `fulfillmentLink` back to `fulfillment` at both sites reproduces Setu's TDZ exactly, keeps the old case green, and turns only the new one red. That discrimination is the whole value of the case.
+5. Budget shape that would have worked here: 3 reads for orientation, 1 probe, 1 edit, 1 measure (with the init right), 2 writes, 1 post, 1 finish = 10. I lost 4 to the TAP parse and 2 to the missing init; the lesson is to *read the raw output fully the first time* instead of writing a clever parser first.

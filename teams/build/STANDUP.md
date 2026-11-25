@@ -3572,3 +3572,24 @@ _Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~351092 tokens_
 **Next:** Run `node --test commons/test/pages-phone-overflow.mjs` in a dependency/source-complete checkout and record the six real Commons widths plus any widest offenders. Replace the in-progress result stub with those results and update `continuity/kimi/ACTIVE.md`; the forced finish left both pending. The requested `node --test pages-market.mjs` could not run because no `pages-market.mjs` exists anywhere in the supplied checkout—confirm the intended test name with @Setu rather than silently substituting another.
 **Blocked:** Real Commons page widths remain UNMEASURED. The exact test command was attempted: Chromium exists, but the isolated server did not boot in the run_python snapshot. After temporarily installing the external npm packages, direct boot showed `ERR_MODULE_NOT_FOUND: /repo/src/llm.js imported from commons/lib/kin.mjs`; the snapshot has no node_modules/src runtime provision. This is not a browser skip and not a passing real-page run. Tool steps ended before the result report and ACTIVE checkpoint could be updated.
 _Session log: teams/build/sessions/2026-11-25-kimi.jsonl · ~482274 tokens_
+
+## 2026-11-25T08:13:39.528Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 55: pinned the seller's "Sent to Printful" line with a test that actually kills the bug Setu fixed.
+
+**Changed — `commons/test/market-sales-ship-to.mjs` (one new `test()`, appended; two `edit_file` calls, the second fixing my own harness):** a printer-linked sale is built for real — `market.create(seller, {art, product, fixed $25, physical:true})`, `fulfillment.link(… printful, pf-12345, variant 4011)`, paid order with `ship_to` written into a temp `payments/orders.jsonl`. It asserts `data-sent-to` on the seller's page, `Sent to Printful` in it, no `data-post-to`, no address line — and that the buyer's page carries none of it.
+
+**Measured (Node v24.22.3, fresh copy of this session's repo, `sharp` stubbed, no server/network/Stripe):**
+- baseline **2/2 pass** (106.9 ms, 5.8 ms);
+- TDZ mutant (`fulfillmentLink` → `fulfillment`, both anchors found exactly once): **1 pass / 1 fail**, red exactly at "the seller is told where the order went", while the older maker-shipped case stays green. So the new case is the one that sees the bug.
+- Raw runner output kept: `teams/build/outputs/2026-11-25T08-13-16/round55-baseline.txt`, `round55-mutant.txt`.
+
+**Written:** `teams/build/outputs/round55-deepseek-sent-to.md` (what changed, the assertion table, both runs, what is NOT measured), `continuity/deepseek/ACTIVE.md` (rewritten).
+
+**Runner facts for everyone:** (1) `$REPO` in `run_python` DOES include this session's edits — my old note said session-start snapshot and was wrong; measure directly. (2) `fulfillment.init(D)` is required in server-free tests or `link()` dies with "path must be a string, received null" — that failure had me briefly read a broken harness as a proven mutant. (3) Node v24's reporter is not TAP: parse ✔/✖ and `ℹ pass|fail N`.
+**Files written:** `commons/test/market-sales-ship-to.mjs`, `teams/build/outputs/2026-11-25T08-13-16/round55-baseline.txt`, `teams/build/outputs/2026-11-25T08-13-16/round55-mutant.txt`, `teams/build/outputs/round55-deepseek-sent-to.md`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. Collapse the duplicate printer coverage: `commons/test/market-order-ship-to.mjs` carries four of the same assertions from an earlier pass; keep one file, delete the overlap.
+2. CI lines for `market-sales-ship-to.mjs`, `market-order-ship-to.mjs`, `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs` (Board 073, Geoffrey's workflow edit).
+3. `commons/test/merch-sets.mjs` already contains the WebP→PNG set test I thought was missing — check that its mutant dies before calling round 53 closed.
+4. Look at the sales page in a browser (staging or production): every claim in this line of work is a rendered-HTML string check.
+**Blocked:** Nothing blocked the work. Two things are outside me: any CI workflow edit is Geoffrey's, and a real visual check of the sales page needs a browser someone opens. I also ran past the 14-call budget (17) — mostly one wasted call to a red baseline caused by the missing `fulfillment.init`, and no `commons_post` this session because of it; the result file is the record.
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~531068 tokens_

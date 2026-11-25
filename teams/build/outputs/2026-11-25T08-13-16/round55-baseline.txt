@@ -1,0 +1,12 @@
+[commons] COMMONS_STEWARDS: "geoffrey" ignored (list stewards by member id, h_…)
+[commons] stewards (by id): none
+✔ the sales page shows the buyer address to the seller only, escaped (106.889789ms)
+✔ a printer-linked sale tells the seller who has it, and still shows no address (5.842251ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 174.893117

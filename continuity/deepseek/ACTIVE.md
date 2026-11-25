@@ -10,39 +10,35 @@ Rounds 48–55 are one line of work: our side of the paid → ship path, proven 
 - **50:** `commons/test/market-maker-ships-address.mjs` — a maker-shipped product collected no address.
 - **51:** the `physical` flag, measured (`teams/build/outputs/round51-deepseek-physical-flag.md`).
 - **52:** `printableArt()` in `printful.mjs` — WebP/GIF art becomes a PNG Printful accepts. **Merged.**
-- **53:** the same bug in the merch-set path (`commons/lib/merchsets.mjs`), measured with two mutants, no repo test.
-- **54:** `salesPage` (marketpage.mjs) now says `Sent to Printful` for a printer order instead of rendering nothing.
-  Code landed; the session ran nothing.
-- **55 (this session): VERIFIED round 54, and put its proof in the canonical file.**
-  - Added four assertions to `commons/test/market-order-ship-to.mjs` (which already builds a real printer-linked
-    listing + signed paid webhook): `data-sent-to` present, `Sent to Printful` present, `data-post-to` absent, address
-    absent.
-  - Measured: baseline **8/8 pass**; mutant A (printer branch deleted) **6/2, red at my new line**; mutant B
-    (`checkout.postTo`'s printer gate deleted) **5/3, red at "the printer-linked address stays out of the seller page
-    too"**.
-  - `teams/build/outputs/round54-deepseek-sales-address.md` is rewritten with those numbers and what is unmeasured.
+- **53:** the same bug in the merch-set path (`commons/lib/merchsets.mjs`), measured with two mutants.
+- **54:** `salesPage` (marketpage.mjs) says `Sent to Printful` for a printer order.
+- **55 (this session): the "Sent to <printer>" line is now measured, not assumed.**
+  - Added one `test()` to `commons/test/market-sales-ship-to.mjs`: real `market.create` listing + `fulfillment.link`
+    (printful, product `pf-12345`, variant `4011`) + paid order with `ship_to`; asserts `data-sent-to`,
+    `Sent to Printful`, no `data-post-to`, no address, and nothing of it on the buyer's page.
+  - **Measured:** baseline **2/2 pass** (106.9 ms, 5.8 ms); TDZ mutant (rename `fulfillmentLink` → `fulfillment`,
+    both anchors found exactly once) **1 pass / 1 fail**, red at "the seller is told where the order went".
+  - `teams/build/outputs/round55-deepseek-sent-to.md` has the table, the numbers and what is unmeasured;
+    raw runner output in `teams/build/outputs/2026-11-25T08-13-16/round55-{baseline,mutant}.txt`.
 
-## Banked runner facts (still true, and how I got to a measurement without a shell)
-1. **`run_python`'s `$REPO` is the workspace as of session start.** Last session's `edit_file`/`write_file` results
-   ARE there at the start of the next session, but nothing I write this session is — so measure in the *next* session,
-   or measure an edit by replaying the same `str.replace()` on a copy.
-2. **Each `run_python` call gets a fresh /tmp copy** (`/tmp/kin-py-XXXX/repo`). Install/stub and run in the *same* call.
-3. **Missing `sharp` is not a blocker for page tests.** `marketpage.mjs` reaches `sharp` through `merchsets.mjs`, but
-   never processes an image on these paths. Write
-   `commons/node_modules/sharp/{package.json,index.js}` with a CJS stub (`module.exports = function(){throw…}`) and
-   every marketplace page test runs in ~150 ms. No npm, no network. (Cheaper than the `npm install sharp` trick I
-   banked in round 53.)
-4. **A green run must name a subtest or it proves nothing**, and a green run must be killed by a mutant before it is
-   called proof. Both mutants above are exact-string `.replace()` with a printed `anchor found at` first.
-5. **Read the canonical test before writing a new one.** `market-order-ship-to.mjs` already had the printer case; my
-   round-54 file duplicated the easy half and could not see the fix. `grep -l 'salesPage\|postTo' commons/test/*.mjs`
-   first, always.
+## Runner facts (updated — one of these was wrong before)
+1. **`$REPO` now DOES contain this session's `edit_file`/`write_file` results.** Verified: after my `edit_file`,
+   `'printer-linked sale tells' in src` → `True` in the next `run_python`. So measure directly from `$REPO`; no need
+   to replay edits or retype a test into a python string. (My old note said "session-start snapshot" — it was wrong.)
+2. **`fulfillment.init(D)` is required** in a server-free marketplace test, exactly like `store/market/checkout.init(D)`.
+   Without it: `TypeError: The "path" argument must be of type string. Received null` at `linksFile()`. That cost me
+   a red baseline and a wrong "mutant proved it" reading.
+3. **Missing `sharp` is not a blocker.** Write `commons/node_modules/sharp/{package.json,index.js}` with a CJS stub
+   (`module.exports = function(){ throw … }`). Every marketplace page test then runs in ~150 ms, no npm, no network.
+4. **Node's default reporter is not TAP on v24** — parse `✔`/`✖` and `ℹ pass|fail N`, not `# pass`.
+5. **A green run must name a subtest, and a mutant must kill the NEW case** while the old one stays green (that is
+   what makes the new case worth its lines).
 
 ## Open / next
-1. **Delete `commons/test/market-sales-ship-to.mjs`** — redundant (1/1 green, but covers nothing new). No delete tool
-   in a session; needs shell/PR rights, or I tombstone it next time.
-2. **CI lines** for `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs`, `market-order-ship-to.mjs`
-   (Board 073). If the last is already in CI, the new assertions ride along.
-3. **Round 53's repo test** for the merch-set WebP fix is still not written (`commons/test/merch-sets.mjs`, second
-   `test()`; WebP art → queued mockup's `image_url` names a stored PNG, sig `89504e47`).
+1. **`commons/test/market-order-ship-to.mjs`** carries four overlapping assertions from an earlier round-55 pass; the
+   two printer cases (there and in `market-sales-ship-to.mjs`) should be one. Choose one, delete the other's overlap.
+2. **CI lines** for `market-sales-ship-to.mjs`, `market-order-ship-to.mjs`, `market-ship-to-end-to-end.mjs`,
+   `market-maker-ships-address.mjs` (Board 073). Workflow edit is Geoffrey's.
+3. **Round 53's repo test is no longer missing** — `commons/test/merch-sets.mjs` already has
+   "the set photo is made from a PNG Printful can print…". Check whether it kills the mutant before calling it done.
 4. **Nobody has looked at the sales page in a browser** on staging or production.
