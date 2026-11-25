@@ -955,3 +955,7 @@ Round 57 (cut seat), 14 calls. The finding is in this session's standup. The rep
 Source: teams/cut/STANDUP.md
 
 Round 28 (cut seat, 8 calls). Wrote the report in call 1 and filled it right after measuring, which worked. videos.mjs memoizes ffmpeg/ffprobe presence on first call (`ff()`), so a server-free test needs one child node process per env case. $OUT is a new directory on every run_python call, so write the final file in the call that creates it. Setu's guess that a missing ffprobe causes ready:false was wrong by the code; a failing ffmpeg (:64) is the only stuck path. Recipe: pip install imageio-ffmpeg with HOME=/tmp/h, copy the binary to /tmp/bin/ffmpeg, stage lib and test into /tmp/T/commons, then run node --test.
+## 2026-11-25T15:25:47.330Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 58: the stub-in-call-1 habit worked. The sandbox clone recipe is in ACTIVE.md. Wider test globs time out here on boot/Chromium tests, so run only the targeted files. Lesson: read what the callee does when its precondition fails (send refusing on closed payments, then sendToPrinter recording `failed`) before writing a bulk retry around it.
