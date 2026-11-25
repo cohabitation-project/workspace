@@ -22,7 +22,7 @@ on:
         options: [staging, production]
         default: staging
       sha:
-        description: 'Commit on main to deploy. Staging: blank = the tip of main. Production: required (copy it from staging.cohabi.org/healthz)'
+        description: 'Commit on main to deploy. Leave blank: staging gets the tip of main, production gets what staging last deployed'
         required: false
         default: ''
 permissions:
@@ -58,7 +58,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           refuse() { echo "::error::REFUSED: $1"; exit 1; }
-          [ -n "$SHA" ] || refuse "production needs the exact commit id. Copy the sha from https://staging.cohabi.org/healthz."
+          # Blank box (Geoffrey, 2026-11-25: pasting a 40-character id on a phone failed three times in a row): take the
+          # newest commit on main whose automatic staging deploy job succeeded. It is named below and in the summary,
+          # and it still has to pass every check that follows, exactly like a pasted id.
+          if [ -z "$SHA" ]; then
+            for rid in $(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs?branch=main&event=workflow_run&status=success&per_page=20" --jq '.workflow_runs[].id' 2>/dev/null); do
+              ok="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$rid/jobs" --jq '[.jobs[] | select(.name == "deploy" and .conclusion == "success")] | length' 2>/dev/null || echo 0)"
+              if [ "${ok:-0}" -ge 1 ]; then SHA="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$rid" --jq .head_sha)"; break; fi
+            done
+            [ -n "$SHA" ] || refuse "the box was blank and no successful staging deploy was found. Paste a commit id from https://staging.cohabi.org/healthz."
+            echo "Box was blank: using the newest commit deployed to staging, $SHA"
+          fi
           full="$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA" --jq .sha 2>/dev/null)" || refuse "no commit $SHA in this repository"
           echo "Checking $full"
           rel="$(gh api "repos/$GITHUB_REPOSITORY/compare/$full...main" --jq .status)" || refuse "could not compare $full with main"
