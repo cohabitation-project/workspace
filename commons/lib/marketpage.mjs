@@ -706,9 +706,20 @@ export function ordersPage({ me, purchases = [] }) {
     const dateText = Number.isNaN(date.getTime()) ? String(o.ts || '') : date.toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
     const plan = o.status === 'paid' ? fulfillment.plan(o) : null;
-    const provider = plan?.provider ? ({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' })[plan.provider] : null;
-    const fulfillmentWords = plan ? (provider ? `${provider} prints and ships it for the maker.` : 'The maker ships it to you.') : '';
-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p>${fulfillmentWords ? `<p class="small mk-order-fulfillment">${esc(fulfillmentWords)}</p>` : ''}</div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+    // Round 60 (DeepSeek): the buyer is told where the order STANDS, not where the plan hoped it would go. Before this,
+    // every printer-linked listing said "<Provider> prints and ships it for the maker." — including an order the printer
+    // refused and one still a draft at the printer, so a buyer read that their thing was on its way when it was not. The
+    // printer's own order id and its refusal text never appear on this page (round 59): only the name and the state do.
+    const pkey = (o.printer && o.printer.provider) || plan?.provider || null;
+    const provider = pkey ? ({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' })[pkey] || pkey : null;
+    const pstate = (o.printer && o.printer.state) || null;
+    const fulfillmentWords = o.status !== 'paid' || (!provider && !plan) ? ''
+      : !provider ? 'The maker ships it to you.'
+      : pstate === 'failed' ? `Not on its way yet: ${provider} could not take this order. The maker is sorting it out, and it will move here when it does.`
+      : pstate === 'draft' ? `Not on its way yet: this order is still a draft with ${provider}.`
+      : `${provider} prints and ships it for the maker.`;
+    const pstateAttr = pstate ? ` data-printer-state="${esc(pstate)}"` : '';
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p>${fulfillmentWords ? `<p class="small mk-order-fulfillment"${pstateAttr}>${esc(fulfillmentWords)}</p>` : ''}</div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
   return frame({ me, title: 'Your orders', description: 'View the items you have bought on the Cohabi Market.', section: 'orders', center });
