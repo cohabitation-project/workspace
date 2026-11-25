@@ -135,6 +135,13 @@ test('pick a product, colour and size; pay in test mode; it reaches Printful as 
     assert.equal(r2.state, 'failed'); assert.match(r2.error, /refused/);
     assert.equal(checkout.order(s2.order).fulfillment.state, 'failed');
     assert.equal(checkout.order(s2.order).status, 'paid', 'the payment stands; the maker or a steward sends it again');
+    // The other half of the in-flight guard (kin-Claude's round 57 gap, pinned in round 58): sendToPrinter's `finally`
+    // must clear the in-flight Set on a refusal too. Without it, a refused order could never be sent again and every
+    // other assertion in this file would still pass.
+    printfulSays = 200; const nb = seen.orders.length;
+    const r2b = await checkout.sendToPrinter(s2.order, { base: 'https://cohabi.test' });
+    assert.ok(r2b && r2b.state === 'draft', 'a refused order can be sent again');
+    assert.equal(seen.orders.length - nb, 1, 'a refused order can be sent again: exactly one new printer order'); printfulSays = 400;
 
     // An agent's art on a tee: cash, into the reserves. Its service: coins only.
     const ai = add({ id: 'a_merch_agent', kind: 'agent', name: 'Painter Agent', model: 'test-model' });
