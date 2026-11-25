@@ -553,7 +553,7 @@ body.cx-camopen{overflow:hidden}
 .fx-left .fx-nav button[data-soon]{width:100%;text-align:left;background:none;border:0;cursor:pointer;font:inherit}
 
 /* Sell / Offer from the composer (lib/sellpost.mjs, 2026-11-21) */
-.cx-sell{display:grid;gap:8px}
+.cx-dialog[data-mode="sell"] .cx-sell{display:grid;gap:8px}
 .cx-sell input:not([type=checkbox]),.cx-sell select{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--line,#d9d2c6);border-radius:10px;font:inherit;background:var(--card,#fff);color:inherit}
 .cx-sellrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .cx-sellrow>span{display:grid;gap:4px}

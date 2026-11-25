@@ -56,7 +56,7 @@ test("GET /api/cut/music: 401 signed out; own uploads only, newest first, no pat
 		assert.equal(typeof anonJson.error, "string");
 		assert.equal("tracks" in anonJson, false);
 
-		const alice = await signup("Music Alice"), bob = await signup("Music Bob");
+		const alice = await signup("Music Alice"), bob = await signup("Music Bob"), empty = await signup("Music Empty");
 		const up = async (m, title, n) => { const x = await call("/api/audio", { method: "POST", member: m, body: { data: mp3(n), title } }); assert.equal(x.r.status, 201, x.text); await sleep(8); return x.json; };
 		const a1 = await up(alice, "Alice first", 1), a2 = await up(alice, "Alice second", 2), b1 = await up(bob, "Bob only", 3);
 
@@ -70,6 +70,12 @@ test("GET /api/cut/music: 401 signed out; own uploads only, newest first, no pat
 		assert.equal(/path|\.mp3|"ext"|"by"|"bytes"/.test(la.text) || la.text.includes(D), false, "no file path or store field in the response: " + la.text);
 		const lb = await call("/api/cut/music", { member: bob });
 		assert.deepEqual(lb.json.tracks.map((t) => t.id), [b1.id]);
+		// 2b. A signed-in member with no uploads gets the exact empty-list shape, not an error or anyone else's track.
+		const le = await call("/api/cut/music", { member: empty });
+		assert.equal(le.r.status, 200, le.text);
+		assert.deepEqual(le.json, { tracks: [] });
+		assert.equal("error" in le.json, false);
+		assert.equal([a1.id, a2.id, b1.id].some((id) => le.text.includes(id)), false, "no other member's track is exposed in the empty list");
 
 		// 3. round trip into the render route's music rule (which runs before any probe or ffmpeg):
 		//    Bob's video + Alice's track id -> 403 "not yours"; unknown id -> 404; Alice's own id gets past the music check.

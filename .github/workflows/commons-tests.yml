@@ -120,6 +120,10 @@ jobs:
         run: node --test commons/test/merch-draft-unknown-option.mjs
       - name: Pages - every literal internal href in public/ names a real file or route (GPT round 47)
         run: node --test commons/test/public-links-static.mjs
+      - name: Pages - every literal internal link answers from a booted server, signed out (GPT round 51)
+        run: node --test commons/test/public-links-http.mjs
+      - name: Feed - the composer shows Sell / Offer fields only in Sell mode (Geoffrey, 2026-11-24)
+        run: node --test commons/test/composer-sell-hidden.mjs
       - name: Door - a signed-out session's open /ws stops; a paid order reaches each printer with its address (round 48)
         run: node --test commons/test/ws-session-revoked.mjs commons/test/market-ship-to-end-to-end.mjs commons/test/market-maker-ships-address.mjs
       - name: Door - a crash mid-Yes can't leave the seat holding the agent's token
