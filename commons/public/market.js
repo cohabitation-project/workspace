@@ -93,6 +93,18 @@ if (askf) askf.addEventListener('submit', async (e) => {
 let stripeJs = null;
 const loadStripe = () => stripeJs || (stripeJs = new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://js.stripe.com/v3/'; s.onload = () => ok(window.Stripe); s.onerror = () => no(new Error("The payment form couldn't load. Check your connection and try again.")); document.head.appendChild(s); }));
 let openCheckout = null;
+// "You're buying: …" from the button that was pressed: a product under the art names product, colour, size and price.
+const buyingWhat = (b, body) => {
+  const art = document.querySelector('h1')?.textContent.trim() || 'this listing';
+  if (body.merch) {
+    const card = b.closest('[data-pod]');
+    const name = card?.querySelector('h3, h4, strong, .mk-podname')?.textContent.trim() || body.merch.product;
+    const price = card?.querySelector('[data-pod-price]')?.textContent.trim() || '';
+    return `You're buying: ${name}${body.merch.color ? `, ${body.merch.color}` : ''}${body.merch.size ? `, ${body.merch.size}` : ''}, with ${art}${price ? ` · ${price}` : ''}`;
+  }
+  const price = (b.textContent.match(/\$[\d.,]+/) || [''])[0];
+  return `You're buying: ${art} (the art itself, nothing printed)${price ? ` · ${price}` : ''}`;
+};
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-buy]'); if (!b) return;
   // A Buy on a section tile: Stripe's checkout may only load on the listing page, so go there and open it (?buy=1).
@@ -110,7 +122,10 @@ document.addEventListener('click', async (e) => {
     if (openCheckout) { openCheckout.destroy(); openCheckout = null; }
     let box = document.getElementById('mk-checkout');
     if (!box) { box = document.createElement('section'); box.id = 'mk-checkout'; box.className = 'mk-checkout'; box.setAttribute('aria-label', 'Payment'); (b.closest('.mk-pods') || b.closest('.mk-actions, .mk-pack, p') || b).after(box); }
-    box.innerHTML = '<div class="mk-checkout-head"><strong>Pay on Cohabi</strong><button type="button" class="btn ghost small" data-close-checkout>Close</button></div><div id="mk-checkout-form"></div>';
+    // Say exactly what is being bought, before any card is typed (Geoffrey, 2026-11-25: a shirt bought from the
+    // shirt card arrived as the art alone, and nothing on the payment form showed which it was).
+    box.innerHTML = '<div class="mk-checkout-head"><strong>Pay on Cohabi</strong><button type="button" class="btn ghost small" data-close-checkout>Close</button></div><p class="mk-checkout-what"></p><div id="mk-checkout-form"></div>';
+    box.querySelector('.mk-checkout-what').textContent = buyingWhat(b, body);
     openCheckout = await Stripe(j.publishable_key).initEmbeddedCheckout({ fetchClientSecret: async () => j.client_secret });
     openCheckout.mount('#mk-checkout-form');
     box.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -130,7 +145,11 @@ document.querySelectorAll('select[data-autosubmit]').forEach((s) => s.addEventLi
 if (new URLSearchParams(location.search).get('buy') === '1') {
   const main = document.querySelector('[data-buy]:not([data-package]):not([data-amount-from]):not([data-merch]):not(.mk-card [data-buy])');
   const u = new URL(location.href); u.searchParams.delete('buy'); history.replaceState(null, '', u.pathname + u.search + u.hash);
-  if (main && !main.disabled) main.click();
+  // A listing that also sells products (shirts…) never opens the art's checkout by itself: the buyer may have come for
+  // a shirt. Take them to the products instead, and let them choose.
+  const pods = document.querySelector('[data-pod]');
+  if (pods) pods.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  else if (main && !main.disabled) main.click();
 }
 
 // Print on demand: pick a product, place your art, see a real Printful mockup (Ash's spec, 2026-11-21).
