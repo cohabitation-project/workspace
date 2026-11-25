@@ -67,7 +67,7 @@ ok('a kin work session posts through the runner key', kp.status === 201 && (awai
 
 // the page renders
 const page = await fetch(`${B}/desk`);
-ok('/desk page renders', page.status === 200 && /The Work Desk/.test(await page.text()));
+ok('/desk page renders', page.status === 200 && /Work Desk/.test(await page.text()));
 
 proc.kill(); await sleep(300);
 // ---- 2026-11-05: the reviewer's view, and letting go of a claim (creative-local's audit)

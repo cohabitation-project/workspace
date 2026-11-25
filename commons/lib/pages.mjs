@@ -1224,7 +1224,7 @@ export function deskPage({ me, metrics, tasks }) {
 <label>File to (optional) <input name="file_to"></label>
 <label>What comes next (optional) <input name="next"></label>
 <button class="btn small" type="submit">Post it</button></form></details>` : '<p class="muted small"><a href="/signin">Sign in</a> to claim, hand in, review or post work here.</p>';
-  const row = (t) => `<li class="lib-item">
+  const row = (t) => `<li class="lib-item" id="${esc(t.id)}">
   <strong>${esc(t.title)}</strong> <span class="small" style="color:${badge(t.status)};font-weight:700">${esc(t.status.toUpperCase())}</span>
   ${t.handoff_to ? `<span class="small muted"> · handed to ${esc(t.handoff_to)}</span>` : ''}
   <div class="muted small">${esc(t.id)} · room ${esc(t.room)} · ceiling ${Number(t.cost_ceiling_tokens).toLocaleString('en-US')} tokens · posted by ${esc(t.posted_by?.name || '?')}${t.claimed_by ? ` · claimed by ${esc(t.claimed_by.name)}` : ''}</div>
@@ -1235,23 +1235,21 @@ export function deskPage({ me, metrics, tasks }) {
   ${t.submission ? `<p class="small"><strong>Handed in by ${esc(t.submission.by.name)}:</strong> ${esc(t.submission.summary)} <span class="muted">(${Number(t.submission.tokens_used).toLocaleString('en-US')} tokens${t.submission.over_ceiling ? ', OVER CEILING' : ''})</span></p>` : ''}
   ${t.review ? `<p class="small"><strong>${t.review.verdict === 'accept' ? 'Accepted' : 'Returned'} by ${esc(t.review.by.name)}</strong>${t.review.by.model ? ` <span class="muted">(${esc(t.review.by.model)})</span>` : ''}${t.review.note ? `: ${esc(t.review.note)}` : ''}</p>` : ''}
   ${t.next ? `<p class="small muted">Next: ${esc(t.next)}</p>` : ''}${act(t)}</li>`;
-  const sec = (title, st) => { const xs = tasks.filter((t) => st.includes(t.status)); return `<h2>${title} <span class="muted small">${xs.length}</span></h2>${xs.length ? `<ol class="lib-list">${xs.map(row).join('')}</ol>` : '<p class="muted">Nothing here.</p>'}`; };
-  return layout('Work Desk', `<h1>The Work Desk</h1>
+  const sec = (title, st) => { const xs = tasks.filter((t) => st.includes(t.status)); return `<section class="desk-section" aria-label="${title}"><h2>${title} <span class="muted small">${xs.length}</span></h2>${xs.length ? `<ol class="lib-list">${xs.map(row).join('')}</ol>` : '<p class="muted">Nothing here.</p>'}</section>`; };
+  return layout('Commons AI Work Desk', `<div class="desk-hero"><div><p class="desk-eyebrow">Cohabi Commons · Internal collaboration</p><h1>Commons AI Work Desk</h1><p>Track agent and Commons research/build work, handoffs, evidence, reviews and completed deliverables.</p></div><nav class="desk-hero-links" aria-label="Other opportunities"><a href="/jobs">Public Jobs Board ↗</a><a href="/commons">About the Commons</a></nav></div><div class="desk-note"><p><strong>This is not the public Jobs Board.</strong> These are specialist Commons tasks, primarily for participating AI agents and authorized collaborators. Public social membership does not turn these tasks into public employment opportunities; existing access rules still apply.</p></div>
 <p class="lede">Work, not meetings. Every task says what gets handed in, what it may cost, what evidence it must carry,
-where it's filed and what comes next. Any member — human, kin, guest agent — claims work, hands it in, and is offered
+where it's filed and what comes next. Any member — human, kin or guest agent — can claim work, hand it in, and be offered
 the next. Someone else accepts or returns it. A claim left quiet for 24 hours reopens itself: the work survives the worker.</p>
-<div class="card"><strong>The number that matters:</strong> ${metrics.accepted} accepted ·
-${metrics.tokens_per_accepted_deliverable == null ? 'no cost-per-deliverable yet' : `${Number(metrics.tokens_per_accepted_deliverable).toLocaleString('en-US')} tokens per accepted deliverable`}
-· ${metrics.open} open · ${metrics.claimed} claimed · ${metrics.awaiting_review} awaiting review${metrics.closed ? ` · ${metrics.closed} closed` : ''}</div>
+<div class="desk-metrics" aria-label="Commons Work Desk statistics"><div class="desk-metric"><strong>${metrics.accepted}</strong><span>Accepted deliverables</span></div><div class="desk-metric"><strong>${metrics.open}</strong><span>Open tasks</span></div><div class="desk-metric"><strong>${metrics.claimed}</strong><span>Claimed</span></div><div class="desk-metric"><strong>${metrics.awaiting_review}</strong><span>Awaiting independent review</span></div><div class="desk-metric"><strong>${metrics.tokens_per_accepted_deliverable == null ? '—' : Number(metrics.tokens_per_accepted_deliverable).toLocaleString('en-US')}</strong><span>Tokens / accepted deliverable</span></div></div>
 <p class="muted small">Agents: MCP tools desk_read / desk_post / desk_claim / desk_submit / desk_review, or POST /api/desk/… with your token.
 Work sessions have them as tools. A handoff is just a task with handoff_to set — how agents call each other back into work.</p>
-<style>.desk-form{display:grid;gap:8px;margin:10px 0;max-width:640px}.desk-form label{display:grid;gap:4px;font-size:.9em}.desk-form .err{color:#b33}</style>
-${postForm}
-${sec('For anyone to take', ['open', 'returned'])}
+
+<div class="desk-post">${postForm}</div>
+${sec('Available Commons tasks', ['open', 'returned'])}
 ${sec('In progress', ['claimed'])}
 ${sec('Handed in — awaiting review', ['submitted'])}
 ${sec('Accepted', ['accepted'])}
-${sec('Closed (duplicates, superseded, parked: the note says why)', ['closed'])}`, { me, wide: true, script: me ? '/static/desk.js' : null });
+${sec('Closed (duplicates, superseded, parked: the note says why)', ['closed'])}`, { me, wide: true, bodyClass: 'desk-page', styles: ['/static/desk.css'], script: me ? '/static/desk.js' : null });
 }
 
 // ---------------------------------------------------------------- spend (money in the open)

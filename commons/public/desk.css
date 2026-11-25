@@ -1,0 +1,35 @@
+/* Cohabi Commons AI Work Desk — presentation only; action and permission logic lives on server. */
+body.desk-page main.wrap.wide { max-width: 1460px; padding-inline: clamp(16px, 3vw, 44px); }
+.desk-hero { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:18px; padding:20px 0 12px; }
+.desk-hero h1 { margin:0 0 8px; font-size:clamp(1.75rem, 2.8vw, 2.65rem); line-height:1.15; }
+.desk-hero p { max-width:76ch; margin:0; line-height:1.6; color:var(--muted); }
+.desk-eyebrow { color:var(--muted); font-size:.8rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; margin:0 0 8px!important; }
+.desk-hero-links { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.desk-hero-links a { display:inline-flex; min-height:40px; align-items:center; border:1px solid var(--line); border-radius:999px; padding:7px 13px; color:var(--text); background:var(--panel); text-decoration:none; font-size:.9rem; }
+.desk-hero-links a:hover,.desk-hero-links a:focus-visible { border-color:var(--accent); }
+.desk-note { border-left:3px solid var(--accent); padding:11px 15px; margin:16px 0; background:var(--panel); border-radius:0 10px 10px 0; }
+.desk-note p { margin:0; line-height:1.55; }
+.desk-metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:20px 0; }
+.desk-metric { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:17px 16px; min-width:0; }
+.desk-metric strong { display:block; font-size:clamp(1.4rem,2.2vw,2rem); line-height:1.15; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.desk-metric span { display:block; margin-top:6px; color:var(--muted); font-size:.85rem; }
+.desk-toolbar { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; align-items:center; margin:20px 0 8px; }
+.desk-toolbar p { color:var(--muted); max-width:80ch; margin:0; font-size:.9rem; }
+.desk-post { margin:16px 0 22px; }
+.desk-post summary { cursor:pointer; padding:6px; }
+.desk-section { margin:26px 0 36px; }
+.desk-section>h2 { font-size:1.35rem; margin-bottom:12px; display:flex; align-items:center; gap:10px; }
+.desk-section>h2 span { font-size:.78rem; border-radius:999px; padding:4px 9px; border:1px solid var(--line); }
+.desk-section .lib-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:0; list-style:none; }
+.desk-section .lib-item { min-width:0; border:1px solid var(--line); border-radius:14px; padding:18px; background:var(--panel); box-shadow:0 2px 9px #00000009; overflow-wrap:anywhere; }
+.desk-section .lib-item p { line-height:1.55; }
+.desk-section .lib-item .btn { min-height:38px; }
+.desk-section .lib-item:target { outline:2px solid var(--accent); outline-offset:3px; }
+.desk-form { display:grid; gap:10px; margin:10px 0; max-width:700px; }
+.desk-form label { display:grid; gap:5px; font-size:.9rem; }
+.desk-form input,.desk-form textarea { max-width:100%; min-width:0; }
+.desk-form .err { color:#b33; }
+@media(max-width:1050px) { .desk-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .desk-section .lib-list { grid-template-columns:1fr; } }
+@media(max-width:620px) { .desk-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .desk-metric { padding:13px; } .desk-hero { padding-top:8px; } .desk-section .lib-item { padding:14px; } }
+@media(prefers-reduced-motion:no-preference) { .desk-hero-links a,.desk-section .lib-item { transition:border-color .15s ease; } }
+.desk-form{display:grid;gap:8px;margin:10px 0;max-width:640px}.desk-form label{display:grid;gap:4px;font-size:.9em}.desk-form .err{color:#b33}
