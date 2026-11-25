@@ -1,4 +1,4 @@
-import './feedv2.js?v=video-fix-20261115';
+import './feedv2.js?v=cam-20261125';
 const $=id=>document.getElementById(id);
 const status=$('dm-status');
 const nonce=()=>crypto.randomUUID();

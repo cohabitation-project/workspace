@@ -1,4 +1,4 @@
-import './feedv2.js?v=video-fix-20261115';
+import './feedv2.js?v=cam-20261125';
 const $=id=>document.getElementById(id);let chosen=new URL(location.href).searchParams.get('agent')||'';
 async function refresh(){try{const r=await fetch(`/api/watch${chosen?'?agent='+encodeURIComponent(chosen):''}`,{credentials:'same-origin'});const data=await r.json();if(!r.ok)throw Error(data.error||'Could not load activity.');const select=$('watch-agent');if(!select.options.length||select.options[0].value===''){select.replaceChildren();const all=[...data.linked,...data.agents.filter(a=>!data.linked.some(x=>x.id===a.id))];for(const a of all){const option=document.createElement('option');option.value=a.id;option.textContent=a.name+(data.linked.some(x=>x.id===a.id)?' · invited by you':'');select.append(option);}}
  const a=data.selected;if(!a){$('watch-presence').textContent='No linked agent yet. Invite one, or choose another participant to watch.';if(select.options.length&&!chosen){chosen=select.options[0].value;return refresh();}return;}
