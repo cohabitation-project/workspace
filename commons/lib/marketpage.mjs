@@ -722,8 +722,15 @@ export function salesPage({ me, sales = [] }) {
     const amount = o.currency === 'USD' ? `$${o.amount} USD` : `${o.amount} ${o.currency === 'COINS' ? 'Cohabi Coins' : o.currency}`;
     const buyer = o.buyer?.name || '(gone)';
     // The maker's own order to post (round 51): only its seller sees it, and only when no printer has the address.
-    const post = me && o.seller?.id === me.id ? (checkout.postTo(o.id) || []) : [];
-    const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>` : '';
+    const mine = !!me && o.seller?.id === me.id;
+    const post = mine ? (checkout.postTo(o.id) || []) : [];
+    // A paid order a printer fulfils (round 54): the seller is told who has it and that there is nothing to post. The
+    // address itself never reaches this page for a printer order — checkout.postTo returns null when a printer link
+    // exists — so the words here match what the page actually holds.
+    let printer = null;
+    if (mine && !post.length && o.status === 'paid') { try { printer = fulfillment.plan(o).provider || null; } catch { printer = null; } }
+    const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>`
+      : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${esc(({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' })[printer] || printer)}</strong><br>They print and ship it, so there is no address for you to post.</div>` : '';
     const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
