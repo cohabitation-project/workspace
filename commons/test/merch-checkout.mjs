@@ -118,6 +118,15 @@ test('pick a product, colour and size; pay in test mode; it reaches Printful as 
     assert.equal(await checkout.sendToPrinter(o.id, { base: 'https://cohabi.test' }), null);
     assert.equal(seen.orders.length, 1, 'sent once');
 
+    // Two paid events land at once (kin-Claude's round 56 probe): still one printer order.
+    const s3 = await checkout.startCheckout(buyer, id, { merch: { product: 'tee', color: 'White', size: 'M' } }, { base: 'https://cohabi.test' });
+    deliver({ ...paid, id: 'evt_paid3', data: { object: { ...paid.data.object, id: 'cs_merch3', metadata: { cohabi_order: s3.order } } } });
+    const before = seen.orders.length;
+    const twin = await Promise.all([checkout.sendToPrinter(s3.order, { base: 'https://cohabi.test' }), checkout.sendToPrinter(s3.order, { base: 'https://cohabi.test' })]);
+    assert.equal(seen.orders.length - before, 1, 'two overlapping sends post once');
+    assert.equal(twin.filter(Boolean).length, 1, 'one call sent it, the other stood back');
+    assert.equal(checkout.order(s3.order).fulfillment.state, 'draft');
+
     // Printful refuses another order: recorded on the order, not lost.
     printfulSays = 400;
     const s2 = await checkout.startCheckout(buyer, id, { merch: { product: 'tee', color: 'White', size: 'M' } }, { base: 'https://cohabi.test' });
