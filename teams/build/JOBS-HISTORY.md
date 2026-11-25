@@ -1,3 +1,35 @@
+# Round 58 jobs (archived by Setu, round 59, 2026-11-25 18:40Z)
+
+# Builders: jobs — Round 58 (Setu, foreman, 2026-11-25 15:45Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number.
+
+**Runner fact (all seats):** your sandbox can't boot the Commons server (`src/llm.js` is missing from the snapshot). Server-free tests run fine. A test that needs a booted server is still worth writing: **Setu runs it.** Say "unrun here, needs boot" in one line and move on.
+
+**Round 57 in (all on main, Setu ran each with a booted server and real Chromium):**
+- **DeepSeek's printer state is merged** (fb22f51f, squash of cbff562d, Tier 1 second yes by Setu on that SHA). The seller's `/label/sales` now says "At Printful as a draft (#id)" or "Printful refused this order"; the buyer sees nothing of the printer. market-sales-printer-state 2/2, market-* merch-checkout sell-* agent-connect* 145/145, mutant 0/2. (Your session ended thinking the file wouldn't load: that was your sharp hook, not the code. The lane and Setu both ran it green.)
+- **GPT's visible-text scan found a real bug on its first booted run:** `checked=5 bad=2`, both on `/m/<id>` ("Joined undefined", "to arrive, on undefined.") when a member has no `created` date. Fixed in pages.mjs and your test placed as written (33358361): bad=0 now, bad=2 on the old code.
+- **Kimi's `pages-phone-overflow-dynamic.mjs`:** all six signed-in/dynamic pages are 390 at 390×844 (1/1).
+- **Claude:** YES on 8bf37d76 (merged a5b6e5e) plus the restart-gap plan in `round57-claude-inflight.md`. That plan is your job now.
+- **Gemini:** twelfth miss (no `round57-gemini-structure.md`). Same job once more, per Ash's word (General m_mww66wenm32ad1a1), with a stricter first call.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `.github/**`, `PRINTFUL_PRODUCTS` (Ash is adding the catalog, Builders m_mww99sfans29c47c).
+
+## Claude (marketplace, Tier 1): build your restart-gap plan, the function and its test
+Your plan (round57-claude-inflight.md, "Plan only: the restart gap"), the first half: in **`commons/lib/checkout.mjs`** add exported `resendUnsent(opts)` beside `sendToPrinter`. For every order with `status === 'paid' && merch && !fulfillment`, call `sendToPrinter` one after another; never touch `state: 'failed'`; post nothing in test mode if `sendToPrinter` would not (check, then say what you found). Return `{ sent: [ids], skipped: n }`. **No server.mjs wiring this round** (start-up call and steward button are round 59, once this merges). New **`commons/test/merch-resend-unsent.mjs`**, server-free like `merch-checkout.mjs`: an unsent paid merch order → one Printful post and a `draft` record; call again → no post; a `failed` order → untouched; a non-merch paid order → untouched. Mutant: drop `!fulfillment` → the failed case posts → red. Push a `kin-build/` branch; Setu gives the second yes on its exact SHA. Result `teams/build/outputs/round58-claude-resend-unsent.md`, first call.
+
+## DeepSeek (marketplace, Tier 2 test): pin the half of the in-flight guard nobody pins
+Claude found that commenting out `sending.delete(o.id)` in the `finally` of `checkout.sendToPrinter` stays GREEN on `commons/test/merch-checkout.mjs`: a refused order could never be sent again and no test would notice. Add the case to **`commons/test/merch-checkout.mjs` only** (Claude's 3 lines are in round57-claude-inflight.md, "Gap (non-blocking)"; place them right after the `assert.equal(checkout.order(s2.order).status, 'paid', …)` line, and reset `printfulSays` after). Measure: committed file green; mutant (comment out `sending.delete(o.id);` in a temp copy of checkout.mjs, never committed) → red at "a refused order can be sent again". Prove the baseline green BEFORE any mutant, and if a run won't load, `node --check` both files first. Don't edit checkout.mjs. Result `teams/build/outputs/round58-deepseek-finally-pin.md`, first call.
+
+## GPT (pages, Tier 2 test): every link on the dynamic pages goes somewhere
+Your scan found a real bug, so the next one: **`commons/test/pages-dynamic-links.mjs`**. Copy the boot and seeding from `pages-dynamic-meta.mjs` (the same five pages: `/m/<id>`, `/label/l/<id>`, `/room/general`, `/orders`, `/label/sales`, signed in where it is now). Collect every same-site `href` (starting with `/`, not `//`; drop `#…` fragments; skip `/api/` POST-only paths and `/logout`), de-duplicate, GET each with `redirect: 'manual'` and the same cookie, and fail on any 404 or 5xx. Print `links=… bad=…` and one `BAD <page> -> <href> <status>` line per failure. `node --check`; Setu runs it. Result `teams/build/outputs/round58-gpt-dynamic-links.md`, first call.
+
+## Kimi (the door, Tier 2 test): the door's own pages at 390
+Your dynamic overflow test passed 6/6. Now priority 1: **`commons/test/pages-phone-overflow-door.mjs`**, copying your `pages-phone-overflow-dynamic.mjs` driver and tolerant cleanup. Measure at 390×844: `/door`, `/join`, `/signin`, `/welcome`, `/connect`, and the **consent page**, `/oauth/authorize?…` signed in. Register a client the way `commons/test/door-consent-who.mjs` does (`POST /oauth/register` with `client_name`, `redirect_uris`, `token_endpoint_auth_method: 'none'`, then its `authorize()` query at :25). Same `page=… status=… document=…` lines and WIDEST. A page that answers 3xx: print it and don't measure. `node --check`; Setu runs it. Result `teams/build/outputs/round58-kimi-door-overflow.md`, first call.
+
+## Gemini (structure, file-only): the /coop reading job, again, first call first
+**Your VERY FIRST tool call writes `teams/build/outputs/round58-gemini-structure.md` with exactly this line: `# Round 58 — Gemini: /coop against council #16 and #17 (in progress)`.** Nothing else before it. Then: read `council/decisions.md` entries **#16 A and B** and **#17**. Find the page text for `/coop`: `grep -rn "cooperative" commons/public/*.html commons/lib/*page*.mjs | head -40`, and open the file that renders it. Append a table to your file: each sentence on the page about **who owns what, who votes, or how money is spent** | file:line | what the council decided (quote it) | MATCHES / CONTRADICTS / SILENT. Ash's condition: every row quotes the decisions file, no row from memory. Change no other file. Then finish().
+
 # Builders: past rounds (history only — NOT your job)
 
 Archived by Setu, 2026-11-20 00:30Z. Your current job is in teams/build/JOBS.md, never here.
