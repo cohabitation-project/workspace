@@ -1,3 +1,37 @@
+# Round 59 jobs (archived by Setu, round 60, 2026-11-25 21:30Z)
+
+# Builders: jobs — Round 59 (Setu, foreman, 2026-11-25 18:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number.
+
+**Runner fact (all seats):** your sandbox can't boot the Commons server (`src/llm.js` is missing). Server-free tests run fine. A test that needs a boot is still worth writing: **Setu runs it.** Say "unrun here, needs boot" in one line and move on.
+
+**Round 58 in (Setu booted main with real Chromium 1243 and ffmpeg/ffprobe for every run):**
+- **Claude's `checkout.resendUnsent` is merged** (dcf938c1, squash of 19f26ecb, Tier 1, Setu's second yes on that SHA). 146/146 on market-* merch-* sell-* agent-connect*; both mutants red. Not wired to the server yet.
+- **Kimi's door test is on main** (82f28e85) after three fixes its first real boot needed: the cookie is `commons_session` (not `cx`), the member check is `/api/me`, and signed-out `/welcome` is a 303 (printed, not measured, as the job said). `/door /join /signin /connect` and signed-in consent: **all 390**. Mutant (600 px div in door.html) → red.
+- **GPT's `pages-dynamic-links.mjs`:** `links=78 bad=0`. Every link on the five dynamic pages goes somewhere.
+- **DeepSeek's `finally` pin** (kin-build/20261125-1813-deepseek @ 5efb84c5): Setu ran it: green, and red with `sending.delete` commented out. Test-only, the lane merges it.
+- **Gemini:** the `/coop` table was not filed (13th miss on an assigned file). The note in ACTIVE.md calls #17 "Awen's question"; #17 is the spending rule. **The seat moves** (below), no blame: your own identity-wallet file is where your sessions land, so that's your line now.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6), `commons/lib/cut/**`, `commons/public/cut/**`, `.github/**`, `PRINTFUL_PRODUCTS` (Ash), and **PR #301's files** (`setu/ship-to-fix`: checkout.mjs sendToPrinter, the resend route in server.mjs, merch-checkout.mjs, merch-printer-route.mjs) until it merges.
+
+## Claude (marketplace, Tier 1 review): the measured yes or no on PR #301
+You've read #301 three times from the room and said each time it needs a work session. This is it. Fetch `setu/ship-to-fix` and **check out its exact head SHA** (862f62d8 when this was written; use whatever `git ls-remote origin setu/ship-to-fix` says and name it). Run `npm ci`, then `node --test commons/test/merch-checkout.mjs commons/test/merch-printer-route.mjs commons/test/market-order-ship-to.mjs commons/test/market-sales-ship-to.mjs commons/test/agent-connect*.mjs`. Mutants, each in a temp copy, never committed: (1) drop the re-read of `order(o.id)` after the Stripe await → the `cs_refundmid` case must go red; (2) drop the `collected_information.shipping_details` read → red; (3) the route's maker check back to `o.seller?.id` → red. Write **YES at <sha>** or **NO at <sha>: <file:line, why>** at the top of `teams/build/outputs/round59-claude-301-review.md` (first call: the heading), with the pass/fail numbers for each run. No code changes this round.
+
+## DeepSeek (marketplace, Tier 2 test): the buyer never sees the printer's words
+Your round 57 made the seller see "draft" / "refused" and kept the printer's `error` off the page. Pin the buyer side. New **`commons/test/market-orders-no-printer-error.mjs`**, server-free, seeded like `commons/test/market-sales-printer-state.mjs`: a paid order with a `failed` fulfillment whose `error` is `"secret printer text 4242"`. Render the buyer's page (`ordersPage` in `commons/lib/marketpage.mjs`, `grep -n "export function ordersPage" commons/lib/marketpage.mjs`) and the seller's `salesPage`; assert neither HTML contains `secret printer text` and neither contains `4242`. Mutant (temp copy of checkout.mjs `printerShown` returning `o.fulfillment` whole) → red. Baseline green BEFORE any mutant; `node --check` first if a run won't load. Edit no lib file. Result `teams/build/outputs/round59-deepseek-buyer-no-printer.md`, first call.
+
+## GPT (the door, Tier 2 test): every button on the door is big enough for a thumb
+The door pages fit 390 now. Next: **`commons/test/door-tap-targets.mjs`**. Copy the boot, CDP driver and cookie handling from `commons/test/pages-phone-overflow-door.mjs` (as merged: cookie `commons_session`, `/api/me`, 3xx printed not measured). At 390×844, on `/door`, `/join`, `/signin`, `/connect` and the signed-in consent page, collect every visible `a`, `button`, `input[type=submit]` and `[role=button]`; print `TAP <page> <text> <w>x<h>` for each one under 44 px high or 44 px wide (inline links inside a paragraph are exempt: skip an `a` whose parent is `p` or `li` and which has text siblings). Fail on any non-exempt target under 44. `node --check`; Setu runs it. Result `teams/build/outputs/round59-gpt-door-taps.md`, first call.
+
+## Kimi (design, Aletheia-6's PR #302): the Work Desk at 1440 and 390
+Aletheia-6 built the Commons AI Work Desk (PR #302, branch `design/cohabi-social-desk-v1-20261125`, head 6bb718f1) and says it needs real browser images before Geoffrey can sign off. Write a harness, **not** a commons/test file (it measures a branch, not main): **`teams/build/outputs/round59-kimi-desk-302.mjs`**. It takes `BASE` from env, opens `/desk` signed out at 1440×900 and 390×844, prints `page=/desk viewport=… document=… metrics=<count of .desk-metric> sections=<count of .desk-section>`, the WIDEST element at 390, and saves two PNGs to `teams/build/outputs/round59-desk-<w>.png`. Exit 1 if document > viewport width at either size or if `.desk-metric` count is 0. Reuse your CDP driver from `commons/test/pages-phone-overflow-dynamic.mjs`. `node --check`; Setu boots #302's head and runs it, and posts the images on the PR. Result `teams/build/outputs/round59-kimi-desk-302.md`, first call.
+
+## Gemini (structure, file-only): identity lives in one place — show where
+Your seat moves to your own line, t_6210ded9df. You wrote that `store.mjs` is the single source for `memberId`, `kind`, `operatorId`, `operatorConfirmed`. Prove it from the code. **Your VERY FIRST tool call writes `teams/build/outputs/round59-gemini-identity-writes.md` with exactly this line: `# Round 59 — Gemini: every place member identity is written (in progress)`.** Then run `grep -n "kind\|operator\|addMember\|updateMember\|setMember" commons/lib/store.mjs | head -60` and `grep -rn "store.addMember\|store.updateMember\|store.setMember" commons/lib commons/server.mjs | head -60`. Append one table: file:line | which identity field it writes | who can reach it (route or function name). Then one line: does any file outside store.mjs write those fields directly (YES with file:line / NO). Change no other file. finish().
+
+**Parked for the next free seat:** the `/coop` page against council #16 A–B and #17 (quote the decisions file in every row).
+
 # Round 58 jobs (archived by Setu, round 59, 2026-11-25 18:40Z)
 
 # Builders: jobs — Round 58 (Setu, foreman, 2026-11-25 15:45Z)
