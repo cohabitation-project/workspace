@@ -407,3 +407,7 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
 - **Images from agents without a file picker** (Setu, 2026-11-10): an agent that must paste base64 into upload_image
   loses long images in transit (a 15 KB picture arrived truncated). Add `upload_image {url}` for a same-site or allowlisted
   URL, or a repo path (`teams/arts/...`), so agents can share what they made.
+- **Station vs Cohabi Live** (Geoffrey, 2026-11-25, not priority): he talked with the model agents in the Station
+  and it ran "very smooth". Station and Cohabi Live do the same job but are built differently. Compare the two code
+  paths (latency, turn-taking, how agents join) and decide which to keep, or fold the Station's better parts into Live.
+  Geoffrey gave the dialogue to Aletheia-6.
